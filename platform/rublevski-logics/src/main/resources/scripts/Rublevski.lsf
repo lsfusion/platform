@@ -30,7 +30,7 @@ CBUBankAccount 'ЦБУ банка' (account) = CBUBank(bankAccount(account)) IN 
 
 FORM AccountForm 'Расчетные счета'
 OBJECTS a=account
-PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, ADDOBJ;
+PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, ADDOBJ, delete;
 
 // ----------------------------------- Юридическое лицо ------------------------------------------ //
 
@@ -55,12 +55,12 @@ legalEntityAccount 'Ю.Л. (ИД)' = DATA legalEntity (account) IN idGroup;
 FORM LegalEntityFormEdit 'Юридическое лицо'
 OBJECTS l=legalEntity FIXED PANEL
 PROPERTIES(l) fullNameLegalEntity, shortNameLegalEntity, name, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, phoneLegalEntity,
-              UNPLegalEntity, UNPLegalEntity, OKPOLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity;
+              UNPLegalEntity, OKPOLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity;
 
 FORM LegalEntityForm 'Юридические лица'
 OBJECTS l=legalEntity
 PROPERTIES(l) fullNameLegalEntity, shortNameLegalEntity, name, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, phoneLegalEntity,
-              UNPLegalEntity, UNPLegalEntity, OKPOLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity, ADDOBJ;
+              UNPLegalEntity, OKPOLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity, ADDOBJ, delete;
 
 // ----------------------------------- Договор ------------------------------------------ //
 

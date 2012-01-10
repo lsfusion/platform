@@ -18,7 +18,7 @@
 	<field name="nameGenitiveClaimerProject" class="java.lang.String"/>
 	<field name="isR1Project" class="java.lang.Boolean"/>
 	<detail>
-		<band height="429">
+		<band height="448">
 			<staticText>
 				<reportElement style="DefaultStyle" x="50" y="11" width="489" height="48"/>
 				<textElement textAlignment="Center">
@@ -92,14 +92,14 @@ platform.base.BaseUtils.formatRussian($F{dateProject}) + " года (" + $F{name
 				<textFieldExpression><![CDATA["1. Присвоить " + $F{nameDativusClaimerProject} + " статус участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково»."]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement positionType="Float" x="50" y="374" width="247" height="48"/>
+				<reportElement positionType="Float" x="50" y="396" width="247" height="48"/>
 				<textElement verticalAlignment="Bottom"/>
 				<text><![CDATA[Вице-Президент
 Руководитель Аппарата Президента
 и Советов Фонда]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="435" y="374" width="104" height="48"/>
+				<reportElement positionType="Float" x="435" y="396" width="104" height="48"/>
 				<textElement verticalAlignment="Bottom"/>
 				<text><![CDATA[Д.Ю. Колосов]]></text>
 			</staticText>

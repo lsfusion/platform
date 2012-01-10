@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.4641000000000006"/>
-	<property name="ireport.x" value="28"/>
-	<property name="ireport.y" value="96"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="288"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -316,7 +316,7 @@
 			<band height="198">
 				<printWhenExpression><![CDATA[$F{succeededVote}!=null && !"R1".equals( $F{revisionVote})]]></printWhenExpression>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="49" y="10" width="489" height="14"/>
+					<reportElement positionType="Float" x="50" y="10" width="489" height="14"/>
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
@@ -337,7 +337,7 @@
 					<textFieldExpression><![CDATA["ДА - "+$F{quantityCompetitiveAdvantagesVote}+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityCompetitiveAdvantagesVote})+"."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="49" y="52" width="489" height="14"/>
+					<reportElement positionType="Float" x="50" y="52" width="489" height="14"/>
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
@@ -400,7 +400,7 @@
 					<textFieldExpression><![CDATA["Результат: Экспертной коллегией принято решение о "+ ($F{acceptedCanBeImplementedVote}==null ? "не" : "") + "соответствии проекта, представленного "+$V{statusPrevT}+", данному Критерию."]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="66">
+			<band height="65">
 				<printWhenExpression><![CDATA[$F{succeededVote}!=null && !"R1".equals( $F{revisionVote})]]></printWhenExpression>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="19" width="489" height="14"/>
@@ -509,14 +509,14 @@
 					<textFieldExpression><![CDATA[($F{succeededVote}!=null?"10.":"3.")+" Заполненные Бюллетени оценки прилагаются к настоящему протоколу."]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="34">
+			<band height="28">
 				<staticText>
-					<reportElement positionType="Float" mode="Opaque" x="433" y="8" width="104" height="16"/>
+					<reportElement positionType="Float" mode="Opaque" x="434" y="8" width="104" height="16"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom"/>
 					<text><![CDATA[Д.В. Дудина]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="49" y="8" width="359" height="16"/>
+					<reportElement positionType="Float" x="50" y="8" width="359" height="16"/>
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>

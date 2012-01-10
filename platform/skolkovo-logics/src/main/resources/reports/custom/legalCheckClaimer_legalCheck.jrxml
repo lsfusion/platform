@@ -64,7 +64,7 @@
 				<textFieldExpression><![CDATA["app.i-gorod.com: Ваша заявка успешно прошла формальную проверку"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="22" y="73" width="525" height="17" forecolor="#666666"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="92" width="525" height="17" forecolor="#666666"/>
 				<box leftPadding="0" rightPadding="0"/>
 				<textElement>
 					<font size="14" isUnderline="false"/>
@@ -75,16 +75,15 @@
 "This message is for the sole use of the intended recipient and may contain confidential information. Any unauthorized review, use or disclosure is prohibited. If you are not the intended recipient, please immediately contact the sender by reply email and delete the original message and destroy all copies thereof. \n"+
 "\n"+
 "Данное сообщение предназначено исключительно для указанного в нем получателя и может содержать информацию, составляющую коммерческую тайну. Любое неразрешенное ознакомление, использование или разглашение указанной информации запрещено. Если Вы не являетесь получателем данного сообщения, пожалуйста, незамедлительно свяжитесь с отправителем путем ответа на указанное сообщение, а также удалите сообщение и все его копии. \n"+
-"************************************************************************* \n"+
-"\n"+
-"\n"]]></textFieldExpression>
+"************************************************************************* \n"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="22" y="90" width="525" height="19"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="73" width="525" height="19"/>
 				<textElement>
 					<font size="14" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["С уважением, \n"+
+				<textFieldExpression><![CDATA["\n \n"+
+"С уважением, \n"+
 "Команда сопровождения проектов \n"+
 "Фонд «Сколково» \n"]]></textFieldExpression>
 			</textField>
@@ -124,7 +123,17 @@ $F{executiveLD}+"\n"+
 				<textFieldExpression><![CDATA["app.i-gorod.com: Ваша заявка успешно прошла формальную проверку"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="22" y="70" width="525" height="17" forecolor="#666666"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="70" width="525" height="19"/>
+				<textElement>
+					<font size="14" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["\n \n"+
+"С уважением, \n"+
+"Команда сопровождения проектов \n"+
+"Фонд «Сколково» \n"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="89" width="525" height="17" forecolor="#666666"/>
 				<box leftPadding="0" rightPadding="0"/>
 				<textElement>
 					<font size="14" isUnderline="false"/>
@@ -135,18 +144,7 @@ $F{executiveLD}+"\n"+
 "This message is for the sole use of the intended recipient and may contain confidential information. Any unauthorized review, use or disclosure is prohibited. If you are not the intended recipient, please immediately contact the sender by reply email and delete the original message and destroy all copies thereof. \n"+
 "\n"+
 "Данное сообщение предназначено исключительно для указанного в нем получателя и может содержать информацию, составляющую коммерческую тайну. Любое неразрешенное ознакомление, использование или разглашение указанной информации запрещено. Если Вы не являетесь получателем данного сообщения, пожалуйста, незамедлительно свяжитесь с отправителем путем ответа на указанное сообщение, а также удалите сообщение и все его копии. \n"+
-"************************************************************************* \n"+
-"\n"+
-"\n"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="22" y="87" width="525" height="19"/>
-				<textElement>
-					<font size="14" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["С уважением, \n"+
-"Команда сопровождения проектов \n"+
-"Фонд «Сколково» \n"]]></textFieldExpression>
+"************************************************************************* \n"]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="152">
@@ -177,7 +175,24 @@ $F{commentLegalCheck}]]></textFieldExpression>
 "*Согласно пункту 16 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» срок исправления несоответствий составляет тридцать дней с момента получения уведомления."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="22" y="100" width="525" height="17" forecolor="#666666"/>
+				<reportElement style="DefaultStyle" x="22" y="5" width="525" height="17"/>
+				<textElement>
+					<font size="14" isUnderline="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["app.i-gorod.com: в ходе формальной проверки Вашей заявки выявлены несоответствия"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="100" width="525" height="19"/>
+				<textElement>
+					<font size="14" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["\n \n"+
+"С уважением, \n"+
+"Команда сопровождения проектов \n"+
+"Фонд «Сколково» \n"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="119" width="525" height="17" forecolor="#666666"/>
 				<box leftPadding="0" rightPadding="0"/>
 				<textElement>
 					<font size="14" isUnderline="false"/>
@@ -188,28 +203,10 @@ $F{commentLegalCheck}]]></textFieldExpression>
 "This message is for the sole use of the intended recipient and may contain confidential information. Any unauthorized review, use or disclosure is prohibited. If you are not the intended recipient, please immediately contact the sender by reply email and delete the original message and destroy all copies thereof. \n"+
 "\n"+
 "Данное сообщение предназначено исключительно для указанного в нем получателя и может содержать информацию, составляющую коммерческую тайну. Любое неразрешенное ознакомление, использование или разглашение указанной информации запрещено. Если Вы не являетесь получателем данного сообщения, пожалуйста, незамедлительно свяжитесь с отправителем путем ответа на указанное сообщение, а также удалите сообщение и все его копии. \n"+
-"************************************************************************* \n"+
-"\n"+
-"\n"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="22" y="117" width="525" height="19"/>
-				<textElement>
-					<font size="14" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["С уважением, \n"+
-"Команда сопровождения проектов \n"+
-"Фонд «Сколково» \n"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" x="22" y="5" width="525" height="17"/>
-				<textElement>
-					<font size="14" isUnderline="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["app.i-gorod.com: в ходе формальной проверки Вашей заявки выявлены несоответствия"]]></textFieldExpression>
+"************************************************************************* \n"]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="110">
+		<band height="109">
 			<printWhenExpression><![CDATA["negativeLegalCheckResult".equals($F{sidResultLegalCheck})&&"overdueLC".equals($F{sidStatusProjectLegalCheck})]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="22" y="47" width="525" height="19"/>
@@ -238,16 +235,17 @@ $F{commentLegalCheck}]]></textFieldExpression>
 				<textFieldExpression><![CDATA["app.i-gorod.com:"+($F{isR1LegalCheck}!=null?" Ваша заявка отклонена":" Ваша заявка оставлена без рассмотрения")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="22" y="83" width="525" height="19"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="66" width="525" height="19"/>
 				<textElement>
 					<font size="14" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["С уважением, \n"+
+				<textFieldExpression><![CDATA["\n \n"+
+"С уважением, \n"+
 "Команда сопровождения проектов \n"+
 "Фонд «Сколково» \n"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="22" y="66" width="525" height="17" forecolor="#666666"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="85" width="525" height="17" forecolor="#666666"/>
 				<box leftPadding="0" rightPadding="0"/>
 				<textElement>
 					<font size="14" isUnderline="false"/>
@@ -258,9 +256,7 @@ $F{commentLegalCheck}]]></textFieldExpression>
 "This message is for the sole use of the intended recipient and may contain confidential information. Any unauthorized review, use or disclosure is prohibited. If you are not the intended recipient, please immediately contact the sender by reply email and delete the original message and destroy all copies thereof. \n"+
 "\n"+
 "Данное сообщение предназначено исключительно для указанного в нем получателя и может содержать информацию, составляющую коммерческую тайну. Любое неразрешенное ознакомление, использование или разглашение указанной информации запрещено. Если Вы не являетесь получателем данного сообщения, пожалуйста, незамедлительно свяжитесь с отправителем путем ответа на указанное сообщение, а также удалите сообщение и все его копии. \n"+
-"************************************************************************* \n"+
-"\n"+
-"\n"]]></textFieldExpression>
+"************************************************************************* \n"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

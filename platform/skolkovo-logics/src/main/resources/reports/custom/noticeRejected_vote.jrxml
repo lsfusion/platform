@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="640"/>
+	<property name="ireport.y" value="421"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
 			<pen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -76,7 +76,7 @@
 		<initialValueExpression><![CDATA[($F{isStatusVote}==null?"Заявителя по предварительной экспертизе":"Соискателя")]]></initialValueExpression>
 	</variable>
 	<detail>
-		<band height="419">
+		<band height="428">
 			<printWhenExpression><![CDATA[$F{isR1ProjectVote}!=null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="20" y="31" width="509" height="20"/>
@@ -209,8 +209,22 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedInnovativeVote}==null ? "не" : "") + "соответствии проекта, представленного Соискателем, данному Критерию."]]></textFieldExpression>
 			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="405" width="509" height="17" forecolor="#666666"/>
+				<box leftPadding="0" rightPadding="0"/>
+				<textElement>
+					<font size="14" isUnderline="false"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["\n"+
+"****************************DISCLAIMER****************************** \n"+
+"This message is for the sole use of the intended recipient and may contain confidential information. Any unauthorized review, use or disclosure is prohibited. If you are not the intended recipient, please immediately contact the sender by reply email and delete the original message and destroy all copies thereof. \n"+
+"\n"+
+"Данное сообщение предназначено исключительно для указанного в нем получателя и может содержать информацию, составляющую коммерческую тайну. Любое неразрешенное ознакомление, использование или разглашение указанной информации запрещено. Если Вы не являетесь получателем данного сообщения, пожалуйста, незамедлительно свяжитесь с отправителем путем ответа на указанное сообщение, а также удалите сообщение и все его копии. \n"+
+"*********************************************************************** \n"]]></textFieldExpression>
+			</textField>
 		</band>
-		<band height="684">
+		<band height="706">
 			<printWhenExpression><![CDATA[$F{isR1ProjectVote}==null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="20" y="221" width="509" height="20"/>
@@ -455,6 +469,20 @@
 					<paragraph firstLineIndent="40"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{acceptedEnoughDocumentsVote}!=null?" Учитывая изложенное, проект, представленный "+$V{statusPrevT}+", признан не соответствующим критериям, указанным в подпункте 2.6 пункта 2 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково».":" Учитывая изложенное и в соответствии с пунктом 29 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково», заявка "+$V{statusPrev}+" остается без рассмотрения.")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="683" width="509" height="17" forecolor="#666666"/>
+				<box leftPadding="0" rightPadding="0"/>
+				<textElement>
+					<font size="14" isUnderline="false"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["\n"+
+"****************************DISCLAIMER****************************** \n"+
+"This message is for the sole use of the intended recipient and may contain confidential information. Any unauthorized review, use or disclosure is prohibited. If you are not the intended recipient, please immediately contact the sender by reply email and delete the original message and destroy all copies thereof. \n"+
+"\n"+
+"Данное сообщение предназначено исключительно для указанного в нем получателя и может содержать информацию, составляющую коммерческую тайну. Любое неразрешенное ознакомление, использование или разглашение указанной информации запрещено. Если Вы не являетесь получателем данного сообщения, пожалуйста, незамедлительно свяжитесь с отправителем путем ответа на указанное сообщение, а также удалите сообщение и все его копии. \n"+
+"*********************************************************************** \n"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

@@ -37,7 +37,7 @@
 	<field name="isR1LegalCheck" class="java.lang.Boolean"/>
 	<field name="changeLegalCheck" class="java.lang.Boolean"/>
 	<detail>
-		<band height="116">
+		<band height="115">
 			<printWhenExpression><![CDATA["positiveLegalCheckResult".equals($F{sidResultLegalCheck})&&$F{isPreliminaryAndStatusProjectLegalCheck}==null&&$F{changeLegalCheck}!=null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" x="22" y="37" width="525" height="17"/>
@@ -66,7 +66,7 @@ $F{commentLegalCheck}+" \n"+
 				<textFieldExpression><![CDATA["app.i-gorod.com: в ходе формальной проверки Вашей заявки выявлены несоответствия"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="22" y="73" width="525" height="17" forecolor="#666666"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="92" width="525" height="17" forecolor="#666666"/>
 				<box leftPadding="0" rightPadding="0"/>
 				<textElement>
 					<font size="14" isUnderline="false"/>
@@ -77,16 +77,15 @@ $F{commentLegalCheck}+" \n"+
 "This message is for the sole use of the intended recipient and may contain confidential information. Any unauthorized review, use or disclosure is prohibited. If you are not the intended recipient, please immediately contact the sender by reply email and delete the original message and destroy all copies thereof. \n"+
 "\n"+
 "Данное сообщение предназначено исключительно для указанного в нем получателя и может содержать информацию, составляющую коммерческую тайну. Любое неразрешенное ознакомление, использование или разглашение указанной информации запрещено. Если Вы не являетесь получателем данного сообщения, пожалуйста, незамедлительно свяжитесь с отправителем путем ответа на указанное сообщение, а также удалите сообщение и все его копии. \n"+
-"************************************************************************* \n"+
-"\n"+
-"\n"]]></textFieldExpression>
+"************************************************************************* \n"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="22" y="90" width="525" height="19"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="73" width="525" height="19"/>
 				<textElement>
 					<font size="14" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["С уважением, \n"+
+				<textFieldExpression><![CDATA["\n \n"+
+"С уважением, \n"+
 "Команда сопровождения проектов \n"+
 "Фонд «Сколково» \n"]]></textFieldExpression>
 			</textField>

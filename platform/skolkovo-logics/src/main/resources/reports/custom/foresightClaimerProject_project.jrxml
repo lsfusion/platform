@@ -26,9 +26,9 @@
 	<field name="nameNativeClaimerProject" class="java.lang.String"/>
 	<field name="emailClaimerProject" class="java.lang.String"/>
 	<detail>
-		<band height="35">
+		<band height="83">
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" x="20" y="10" width="525" height="17"/>
+				<reportElement style="DefaultStyle" x="20" y="10" width="525" height="31"/>
 				<box leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.0"/>
 					<topPen lineWidth="0.0"/>
@@ -48,19 +48,44 @@
 "К сожалению, Ваша заявка была признана несоответствующей подпункту 2.5 пункта 2 Положения о присвоении и утрате статуса участника проекта Сколково. На основании пункта 17 указанного положения заявка возвращается Вам. \n"+
 "\n"+
 "Предлагаем Вам рассмотреть возможность обратиться в другие институты развития, или к профессиональным инвесторам. \n"+
-"\n"+
-"Позвольте еще раз поблагодарить Вас за заполнение анкеты и внимание к проекту. Мы желаем Вам успеха в реализации Вашего инновационного проекта. \n"+
-"\n"+
+"Позвольте еще раз поблагодарить Вас за заполнение анкеты и внимание к проекту. Мы желаем Вам успеха в реализации Вашего инновационного проекта. \n"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="41" width="525" height="19"/>
+				<box>
+					<pen lineWidth="0.0"/>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font size="14" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["\n \n"+
+"С уважением, \n"+
+"Команда сопровождения проектов \n"+
+"Фонд «Сколково» \n"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="60" width="525" height="17" forecolor="#666666"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineWidth="0.0"/>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font size="14" isUnderline="false"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["\n"+
 "****************************DISCLAIMER******************************** \n"+
 "This message is for the sole use of the intended recipient and may contain confidential information. Any unauthorized review, use or disclosure is prohibited. If you are not the intended recipient, please immediately contact the sender by reply email and delete the original message and destroy all copies thereof. \n"+
 "\n"+
 "Данное сообщение предназначено исключительно для указанного в нем получателя и может содержать информацию, составляющую коммерческую тайну. Любое неразрешенное ознакомление, использование или разглашение указанной информации запрещено. Если Вы не являетесь получателем данного сообщения, пожалуйста, незамедлительно свяжитесь с отправителем путем ответа на указанное сообщение, а также удалите сообщение и все его копии. \n"+
-"************************************************************************* \n"+
-"\n"+
-"\n"+
-"С уважением, \n"+
-"Команда сопровождения проектов \n"+
-"Фонд «Сколково» \n"]]></textFieldExpression>
+"************************************************************************* \n"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

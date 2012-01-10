@@ -133,7 +133,7 @@
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="105">
+			<band height="84">
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="0" width="489" height="37"/>
 					<textElement textAlignment="Justified" verticalAlignment="Top">
@@ -142,12 +142,12 @@
 					<textFieldExpression><![CDATA["4. Направить членам Экспертной коллегии" +($F{prevDateVote}==null?"":", указанным в пункте 2 настоящего Решения,") + ($F{isR1ProjectVote}==null?($F{prevDateVote}==null?" Анкету "+$V{statusPrev}+" (в электронном виде) и Бюллетень оценки.":" материалы заявки "+$V{statusPrev}+" (в электронном виде) и Бюллетень оценки."):" материалы заявки Соискателя (в электронном виде) и Бюллетень оценки.")]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement positionType="Float" x="435" y="74" width="104" height="16"/>
+					<reportElement positionType="Float" x="435" y="63" width="104" height="16"/>
 					<textElement verticalAlignment="Bottom"/>
 					<text><![CDATA[Д.В. Дудина]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="50" y="74" width="359" height="16"/>
+					<reportElement positionType="Float" x="50" y="63" width="359" height="16"/>
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
