@@ -94,7 +94,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         addQuery.and(prevWhere.or(query.where));
         for(Map.Entry<V, Expr> property : query.properties.entrySet())
             addQuery.properties.put(property.getKey(), prevJoin.getExpr(property.getKey()).ifElse(prevWhere, property.getValue()));
-        writeRows(session, query, baseClass, env);
+        writeRows(session, addQuery, baseClass, env);
     }
 
     private PropertyField getField(V property) {
