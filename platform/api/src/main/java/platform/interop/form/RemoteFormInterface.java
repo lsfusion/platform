@@ -65,6 +65,8 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     void changeClassView(int groupID, ClassViewType classView) throws RemoteException;
 
+    void changeClassView(int groupID, String classViewName) throws RemoteException;
+
     void changeGridClass(int objectID,int idClass) throws RemoteException;
 
     void changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException;

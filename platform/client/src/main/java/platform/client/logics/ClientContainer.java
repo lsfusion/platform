@@ -28,6 +28,9 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     private boolean tabbedPane = false;
 
+    public boolean gwtVertical;
+    public boolean gwtIsLayout;
+
     public ClientContainer() {
     }
 
@@ -47,6 +50,8 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         pool.writeString(outStream, description);
 
         outStream.writeBoolean(tabbedPane);
+        outStream.writeBoolean(gwtVertical);
+        outStream.writeBoolean(gwtIsLayout);
     }
 
     @Override
@@ -59,6 +64,8 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         description = pool.readString(inStream);
 
         tabbedPane = inStream.readBoolean();
+        gwtVertical = inStream.readBoolean();
+        gwtIsLayout = inStream.readBoolean();
     }
 
     @Override
@@ -145,6 +152,14 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         return description;
     }
 
+    public void setGwtVertical(boolean gwtVertical) {
+        this.gwtVertical = gwtVertical;
+    }
+
+    public void setGwtIsLayout(boolean gwtIsLayout) {
+        this.gwtIsLayout = gwtIsLayout;
+    }
+
     public void setDescription(String description) {
         this.description = description;
         updateDependency(this, "description");
@@ -196,6 +211,13 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         return "design.createContainer(" +
                 (title == null ? null : ("\"" + title + "\""))
                 + ", \"" + description + "\", " + (sID == null ? sID : ("\"" + sID + "\"")) + ")";
+    }
+    
+    public void initGwtComponent(GContainer container) {
+        super.initGwtComponent(container);
+        container.title = title;
+        container.gwtVertical = gwtVertical;
+        container.gwtIsLayout = gwtIsLayout;
     }
 
     private GContainer gwtContainer;

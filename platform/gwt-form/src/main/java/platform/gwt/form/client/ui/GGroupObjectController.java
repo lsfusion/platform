@@ -1,9 +1,8 @@
 package platform.gwt.form.client.ui;
 
-import com.smartgwt.client.types.Overflow;
+import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.form.fields.FormItem;
-import com.smartgwt.client.widgets.layout.SectionStackSection;
-import com.smartgwt.client.widgets.layout.VStack;
+import platform.gwt.base.shared.GClassViewType;
 import platform.gwt.view.GForm;
 import platform.gwt.view.GGroupObject;
 import platform.gwt.view.GPropertyDraw;
@@ -11,41 +10,53 @@ import platform.gwt.view.changes.GFormChanges;
 import platform.gwt.view.changes.GGroupObjectValue;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class GGroupObjectController {
-    private final GFormController formController;
-    private final GForm form;
     public GGroupObject groupObject;
 
-    public GGridTable grid;
-    public GGroupPanel panel;
-    public GFilterPanel filterPanel;
+    public GGridController grid;
+    public GPanelController panel;
+    public GToolbarPanel panelToolbar;
+    private GToolbarPanel gridToolbar;
+    private GClassViewType showType = GClassViewType.HIDE;
+    private GShowTypeView showTypeView;
 
-    public VStack view;
-    private SectionStackSection groupSection;
+    public GGroupObjectController(GFormController iformController, GForm iform, GGroupObject igroupObject, GFormLayout formLayout) {
+        groupObject = igroupObject;
 
-    public GGroupObjectController(GFormController iformController, GForm iform, GGroupObject igroupObject) {
-        this.formController = iformController;
-        this.form = iform;
-        this.groupObject = igroupObject;
+        gridToolbar = new GToolbarPanel();
 
-        grid = new GGridTable(formController, form, this);
+        panel = new GPanelController(iformController, iform, formLayout);
 
-        filterPanel = new GFilterPanel();
+        panelToolbar = new GToolbarPanel();
 
-        panel = new GGroupPanel(formController, form, this);
+        showTypeView = new GShowTypeView(igroupObject, iformController) {
+            @Override
+            public void hide() {
+                GGroupObjectController.this.hide();
+            }
 
-        view = new VStack();
-        view.setWidth100();
-        view.setHeight(1);
-        view.setOverflow(Overflow.VISIBLE);
-        view.addMember(grid);
-        view.addMember(filterPanel);
-        view.addMember(panel);
+            @Override
+            public void show() {
+                GGroupObjectController.this.show();
+            }
+        };
 
-        groupSection = new SectionStackSection(groupObject.getCaption());
-        groupSection.setItems(view);
-        groupSection.setExpanded(true);
+        if(groupObject != null) { 
+            grid = new GGridController(groupObject.grid, iformController, iform, this, formLayout);
+            grid.addView();
+
+            formLayout.add(groupObject.grid.container, panelToolbar);
+        }
+        
+        List<GClassViewType> banClassView = new ArrayList<GClassViewType>();
+        if (groupObject != null) {
+            for (String banView : groupObject.banClassView) {
+                banClassView.add(GClassViewType.valueOf(banView));
+            }
+        }
+        showTypeView.setBanClassView(banClassView);
     }
 
     public void processFormChanges(GFormChanges fc) {
@@ -55,6 +66,11 @@ public class GGroupObjectController {
             }
         }
 
+        String classViewValue = fc.classViews.get(groupObject);
+        if (classViewValue != null) {
+            setClassView(GClassViewType.valueOf(classViewValue));
+        }
+
         for (GPropertyDraw property : fc.properties.keySet()) {
             if (property.groupObject == groupObject) {
                 if (fc.panelProperties.contains(property)) {
@@ -62,51 +78,112 @@ public class GGroupObjectController {
                     panel.setValue(property, fc.properties.get(property));
                 } else {
                     addGridProperty(property);
-                    grid.setValues(property, fc.properties.get(property));
+                    if (grid != null)
+                        grid.getTable().setValues(property, fc.properties.get(property));
                 }
             }
         }
 
         ArrayList<GGroupObjectValue> keys = fc.gridObjects.get(groupObject);
-        if (keys != null) {
-            grid.setKeys(keys);
+        if (keys != null && grid != null) {
+            grid.getTable().setKeys(keys);
         }
 
         GGroupObjectValue currentKey = fc.objects.get(groupObject);
-        if (currentKey != null) {
-            grid.setCurrentKey(currentKey);
+        if (currentKey != null && grid != null) {
+            grid.getTable().setCurrentKey(currentKey);
         }
 
         update();
     }
 
+    public void hide() {
+        grid.hide();
+        panel.hide();
+        gridToolbar.removeComponent(showTypeView);
+        showTypeView.addToToolbar(panelToolbar);
+        for (Canvas component : panelToolbar.getComponents()) {
+            if (!component.equals(showTypeView)) {
+                component.setVisible(false);
+            }
+        }
+    }
+
+    public void show() {
+        grid.show();
+        panel.show();
+        for (Canvas component : panelToolbar.getComponents()) {
+            component.setVisible(true);
+        }
+    }
+
+    public void setClassView(GClassViewType classView) {
+        if (classView != null && !classView.equals(showType)) {
+            showType = classView;
+
+            if (showTypeView != null && showTypeView.changeClassView(classView)) {
+                updateToolbar();
+            }
+        }
+    }
+
+    public GToolbarPanel getGridToolbar() {
+        return gridToolbar;
+    }
+
     private void removeProperty(GPropertyDraw property) {
         panel.removeProperty(property);
-        grid.removeProperty(property);
+        if (grid != null)
+            grid.getTable().removeProperty(property);
     }
 
     private void addGridProperty(GPropertyDraw property) {
-        grid.addProperty(property);
+        if (grid != null)
+            grid.getTable().addProperty(property);
         panel.removeProperty(property);
     }
 
     private void addPanelProperty(GPropertyDraw property) {
-        grid.removeProperty(property);
+        if (grid != null)
+            grid.getTable().removeProperty(property);
         panel.addProperty(property);
     }
 
     public void addFilterComponent(FormItem item) {
-        filterPanel.addFilterComponent(item);
+        gridToolbar.addComponent(item);
+    }
+
+    public void addPanelFilterComponent(FormItem item) {
+        panelToolbar.addComponent(item);
     }
 
     private void update() {
-        grid.update();
+        if (grid != null) {
+            grid.update();
+        }
         panel.update();
 
-        groupSection.setHidden(panel.isEmpty() && grid.isEmpty() && filterPanel.isEmpty());
+//        updateToolbar();
+
+        gridToolbar.setVisible(!gridToolbar.isEmpty());
+        panelToolbar.setVisible(!panelToolbar.isEmpty());
     }
 
-    public SectionStackSection getSection() {
-        return groupSection;
+    public void updateToolbar() {
+        if (groupObject != null) {
+            if (showType == GClassViewType.GRID) {
+                panelToolbar.removeComponent(showTypeView);
+                showTypeView.addToToolbar(gridToolbar);
+                grid.show();
+            } else {
+                List<Canvas> list = new ArrayList<Canvas>(gridToolbar.getComponents());
+                for (Canvas component : list) {
+                    gridToolbar.removeComponent(component);
+                    panelToolbar.addComponent(component);
+                }
+                showTypeView.addToToolbar(panelToolbar);
+                grid.hide();
+            }
+        }
     }
 }

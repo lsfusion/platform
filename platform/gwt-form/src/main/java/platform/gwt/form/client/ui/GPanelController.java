@@ -1,7 +1,5 @@
 package platform.gwt.form.client.ui;
 
-import com.smartgwt.client.types.Overflow;
-import com.smartgwt.client.widgets.layout.FlowLayout;
 import platform.gwt.utils.GwtSharedUtils;
 import platform.gwt.view.GForm;
 import platform.gwt.view.GPropertyDraw;
@@ -12,22 +10,19 @@ import platform.gwt.view.renderer.PropertyChangedHandler;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class GGroupPanel extends FlowLayout {
+public class GPanelController {
     private final GFormController formController;
     private final GForm form;
-    private final GGroupObjectController groupController;
+    private GFormLayout formLayout;
 
     private ArrayList<GTypeRenderer> typeRenderers = new ArrayList<GTypeRenderer>();
     private ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
     private HashMap<GPropertyDraw, Object> values = new HashMap<GPropertyDraw, Object>();
 
-    public GGroupPanel(GFormController iformController, GForm iform, GGroupObjectController igroupController) {
+    public GPanelController(GFormController iformController, GForm iform, GFormLayout formLayout) {
         this.formController = iformController;
         form = iform;
-        this.groupController = igroupController;
-
-        setHeight(1);
-        setOverflow(Overflow.VISIBLE);
+        this.formLayout = formLayout;
     }
 
     public void addProperty(GPropertyDraw property) {
@@ -47,16 +42,15 @@ public class GGroupPanel extends FlowLayout {
             int ins = GwtSharedUtils.relativePosition(property, form.propertyDraws, properties);
             properties.add(ins, property);
             typeRenderers.add(ins, renderer);
-
-            addTile(renderer.getComponent(), ins);
+            formLayout.add(property, typeRenderers.get(ins).getComponent());
         }
     }
 
     public void removeProperty(GPropertyDraw property) {
         int ind = properties.indexOf(property);
         if (ind != -1) {
-            GTypeRenderer removedRenederer = typeRenderers.remove(ind);
-            removeTile(removedRenederer.getComponent());
+            formLayout.remove(property);
+            typeRenderers.remove(ind);
 
             properties.remove(ind);
             values.remove(property);
@@ -79,12 +73,12 @@ public class GGroupPanel extends FlowLayout {
 
         for (int i = 0; i < properties.size(); i++) {
             GPropertyDraw property = properties.get(i);
+            formLayout.remove(property);
 
             Object propValue = values.get(property);
             typeRenderers.get(i).setValue(propValue);
+            formLayout.add(property, typeRenderers.get(i).getComponent());
         }
-
-        setVisible(!isEmpty());
 
         dataChanged = false;
     }
@@ -92,12 +86,24 @@ public class GGroupPanel extends FlowLayout {
     public boolean isEmpty() {
         return properties.size() == 0;
     }
-
-    @Override
-    protected void onInit() {
-        super.onInit();
-        onInit_GGroupPanel();
+    
+    public void hide() {
+        for (GTypeRenderer propRenderer : typeRenderers) {
+            propRenderer.getComponent().setVisible(false);
+        }
     }
+    
+    public void show() {
+        for (GTypeRenderer propRenderer : typeRenderers) {
+            propRenderer.getComponent().setVisible(true);
+        }
+    }
+
+//    @Override
+//    protected void onInit() {
+//        super.onInit();
+//        onInit_GGroupPanel();
+//    }
 
     /**
      * Исправляет баг в TileLayout.js с добавлением в позицию 0

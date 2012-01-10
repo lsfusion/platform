@@ -123,6 +123,10 @@ public class ClientFormChanges {
         if (gwtFormChanges == null) {
             gwtFormChanges = new GFormChangesDTO();
 
+            for (Map.Entry<ClientGroupObject, ClassViewType> entry : classViews.entrySet()) {
+                gwtFormChanges.classViews.put(entry.getKey().getID(), new ObjectDTO(entry.getValue().name()));
+            }
+
             for (Map.Entry<ClientGroupObject, ClientGroupObjectValue> e : objects.entrySet()) {
                 gwtFormChanges.objects.put(e.getKey().ID, e.getValue().getGwtGroupObjectValueDTO());
             }

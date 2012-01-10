@@ -10,6 +10,7 @@ public class GGroupObject implements Serializable {
     public GGrid grid;
     public GShowType showType;
     public int ID;
+    public List<String> banClassView;
 
     public String getCaption() {
         if (objects.isEmpty()) {

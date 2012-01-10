@@ -8,6 +8,7 @@ import platform.interop.RemoteLogicsInterface;
 public class RemoteFormServiceImpl extends LogicsDispatchServlet<RemoteLogicsInterface> {
     @Override
     protected void addHandlers(InstanceActionHandlerRegistry registry) {
+        registry.addHandler(new ChangeClassViewHandler(this));
         registry.addHandler(new GetFormHandler(this));
         registry.addHandler(new ChangeGroupObjectHandler(this));
         registry.addHandler(new GetRemoteChangesHandler(this));

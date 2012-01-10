@@ -605,6 +605,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         form.changeClassView(form.getGroupObjectInstance(groupID), classView);
     }
 
+    public void changeClassView(int groupID, String classViewName) {
+        form.changeClassView(form.getGroupObjectInstance(groupID), ClassViewType.valueOf(classViewName));
+    }
+
     public void changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
         PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
         try {

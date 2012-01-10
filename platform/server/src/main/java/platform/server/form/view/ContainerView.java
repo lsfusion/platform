@@ -17,6 +17,9 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     public boolean tabbedPane = false;
 
+    public boolean gwtVertical = true;
+    public boolean gwtIsLayout = false;
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -25,6 +28,13 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         this.description = description;
     }
 
+    public void setGwtVertical(boolean gwtVertical) {
+        this.gwtVertical = gwtVertical;
+    }
+
+    public void setGwtIsLayout(boolean gwtIsLayout) {
+        this.gwtIsLayout = gwtIsLayout;
+    }
 
     public ContainerView() {
 
@@ -107,6 +117,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         pool.writeString(outStream, description);
 
         outStream.writeBoolean(tabbedPane);
+        outStream.writeBoolean(gwtVertical);
+        outStream.writeBoolean(gwtIsLayout);
     }
 
     @Override
@@ -119,5 +131,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         description = pool.readString(inStream);
 
         tabbedPane = inStream.readBoolean();
+        gwtVertical = inStream.readBoolean();
+        gwtIsLayout = inStream.readBoolean();
     }
 }

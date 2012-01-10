@@ -168,6 +168,14 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         }
     }
 
+    public boolean drawToToolbar() {
+        return panelLocation != null && panelLocation.isToolbarLocation();
+    }
+
+    public boolean drawToShortcut() {
+        return panelLocation != null && panelLocation.isShortcutLocation();
+    }
+
     public void setMinimumWidth(String minimumWidth) {
         minimumSize = changeWidth(minimumSize, minimumWidth);
         updateDependency(this, "minimumWidth");
@@ -249,6 +257,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         component.ID = ID;
         component.container = container == null ? null : container.getGwtComponent();
         component.defaultComponent = defaultComponent;
+        component.drawToToolbar = drawToToolbar();
     }
 
     private GComponent gwtComponent;

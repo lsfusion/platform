@@ -185,6 +185,13 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
+    public void changeClassView(int groupID, String classViewName) throws RemoteException {
+        logRemoteMethodStartVoidCall("changeClassView");
+        target.changeClassView(groupID, classViewName);
+        logRemoteMethodEndVoidCall("changeClassView");
+    }
+
+    @PendingRemoteMethod
     public void changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
         logRemoteMethodStartVoidCall("changePropertyOrder");
         target.changePropertyOrder(propertyID, modiType, columnKeys);

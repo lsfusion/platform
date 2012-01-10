@@ -2,8 +2,6 @@ package platform.gwt.form.client.ui;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.smartgwt.client.types.Overflow;
-import com.smartgwt.client.types.VisibilityMode;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
@@ -12,13 +10,11 @@ import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.SelectItem;
 import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
 import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
-import com.smartgwt.client.widgets.layout.HLayout;
-import com.smartgwt.client.widgets.layout.SectionStack;
-import com.smartgwt.client.widgets.layout.SectionStackSection;
-import com.smartgwt.client.widgets.layout.VStack;
+import com.smartgwt.client.widgets.layout.*;
 import com.smartgwt.client.widgets.toolbar.ToolStripButton;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Action;
+import platform.gwt.base.shared.GClassViewType;
 import platform.gwt.sgwtbase.client.ui.ToolStripPanel;
 import platform.gwt.form.client.FormDispatchAsync;
 import platform.gwt.form.shared.actions.GetForm;
@@ -31,8 +27,8 @@ import platform.gwt.view.changes.dto.GFormChangesDTO;
 import platform.gwt.view.logics.FormLogicsProvider;
 import platform.gwt.view.logics.SelectObjectCallback;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class GFormController extends HLayout implements FormLogicsProvider {
     private final boolean dialogMode;
@@ -46,7 +42,7 @@ public class GFormController extends HLayout implements FormLogicsProvider {
     private final FormDispatchAsync dispatcher = new FormDispatchAsync(new DefaultExceptionHandler());
 
     private GForm form;
-    private VStack mainPane;
+    private GFormLayout mainPane;
 
     public GFormController(String sid) {
         this(null, new GetForm(sid), false);
@@ -72,7 +68,7 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         });
     }
 
-    private HashMap<GGroupObject, GGroupObjectController> controllers = new HashMap<GGroupObject, GGroupObjectController>();
+    private Map<GGroupObject, GGroupObjectController> controllers = new LinkedHashMap<GGroupObject, GGroupObjectController>();
 
     private void initialize(GForm form) {
         this.form = form;
@@ -83,7 +79,7 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         setHeight100();
         setAutoHeight();
 
-        mainPane = new VStack();
+        mainPane = new GFormLayout(form.mainContainer);
         mainPane.setWidth100();
         mainPane.setHeight100();
         mainPane.setAutoHeight();
@@ -122,7 +118,7 @@ public class GFormController extends HLayout implements FormLogicsProvider {
                     addMember(applyBtn);
                     addMember(cancelBtn);
                 }
-            });
+            }, 0);
         }
 
         initializeControllers();
@@ -138,6 +134,8 @@ public class GFormController extends HLayout implements FormLogicsProvider {
                 createMultipleFilterComponent(filterGroup);
             }
         }
+        
+        applyRemoteChanges(form.changes);
     }
 
     private void createSingleFilterComponent(final GRegularFilterGroup filterGroup, final GRegularFilter filter) {
@@ -199,36 +197,25 @@ public class GFormController extends HLayout implements FormLogicsProvider {
     }
 
     private void addFilterComponent(GRegularFilterGroup filterGroup, FormItem item) {
-        controllers.get(filterGroup.groupObject).addFilterComponent(item);
+        if (filterGroup.drawToToolbar) 
+            controllers.get(filterGroup.groupObject).addFilterComponent(item);
+        else {
+            controllers.get(filterGroup.groupObject).addPanelFilterComponent(item);
+        }
     }
 
     private void initializeControllers() {
-        SectionStack groupsStack = new SectionStack();
-        groupsStack.setWidth100();
-        groupsStack.setAnimateSections(false);
-        groupsStack.setMargin(20);
-        groupsStack.setVisibilityMode(VisibilityMode.MULTIPLE);
-        groupsStack.setCanResizeSections(true);
-        groupsStack.setOverflow(Overflow.VISIBLE);
-
         for (GGroupObject group : form.groupObjects) {
-            GGroupObjectController controller = new GGroupObjectController(this, form, group);
-            groupsStack.addSection(controller.getSection());
+            GGroupObjectController controller = new GGroupObjectController(this, form, group, mainPane);
 
             controllers.put(group, controller);
         }
-        SectionStackSection emptySection = new SectionStackSection();
-        emptySection.setCanCollapse(false);
-        emptySection.setCanReorder(false);
-        groupsStack.addSection(emptySection);
-
-        HLayout hs = new HLayout();
-        hs.setWidth100();
-        hs.setHeight100();
-        hs.addMember(groupsStack);
-
-        mainPane.addMember(hs);
-//        mainPane.addMember(groupsStack);
+        
+        for (GPropertyDraw property : form.propertyDraws) {
+            if (property.groupObject == null) {
+                controllers.put(null, new GGroupObjectController(this, form, null, mainPane));
+            }
+        }
 
         addMember(mainPane);
 
@@ -240,6 +227,11 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         for (GGroupObjectController controller : controllers.values()) {
             controller.processFormChanges(fc);
         }
+        hideEmpty();
+    }
+
+    public void hideEmpty() {
+        mainPane.hideEmpty();
     }
 
     @Override
@@ -267,6 +259,10 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         if (isEditingEnabled()) {
             executeConsecutiveActions(new ChangeGroupObject(group.ID, key.getValues(group)), new ChangeProperty(property.ID, value));
         }
+    }
+    
+    public void changeClassView(GGroupObject groupObject, GClassViewType classView) {
+        dispatcher.execute(new ChangeClassView(groupObject.ID, classView.name()), new FormChangesBlockingCallback());
     }
 
     private void executeConsecutiveActions(Action<FormChangesResult>... actions) {

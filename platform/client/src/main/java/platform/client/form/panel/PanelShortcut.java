@@ -91,7 +91,7 @@ public class PanelShortcut extends JPopupMenu {
         List<PropertyController> actionProperties = new ArrayList<PropertyController>();
         TreeMap<Integer, ClientPropertyDraw> sortedMap = new TreeMap<Integer, ClientPropertyDraw>(); //расставляем свойства в том же порядке, что и в форме
         for (PropertyController property : properties) {
-            if (property.getKey().panelLocation.isShortcutLocation()) {
+            if (property.getKey().drawToShortcut()) {
                 String onlyPropertySID = ((ShortcutPanelLocation) property.getKey().panelLocation).getOnlyPropertySID();
                 if (onlyPropertySID == null || onlyPropertySID.equals(currentProperty.getSID())) {
                     sortedMap.put(form.getPropertyDraws().indexOf(property.getKey()), property.getKey());

@@ -1,7 +1,9 @@
 package platform.gwt.view;
 
 import com.smartgwt.client.widgets.Canvas;
+import com.smartgwt.client.widgets.grid.HoverCustomizer;
 import com.smartgwt.client.widgets.grid.ListGridField;
+import com.smartgwt.client.widgets.grid.ListGridRecord;
 import platform.gwt.view.classes.GType;
 import platform.gwt.view.logics.FormLogicsProvider;
 import platform.gwt.view.renderer.GTypeRenderer;
@@ -24,6 +26,7 @@ public class GPropertyDraw extends GComponent {
         if (baseType != changeType) {
             gridField.setEditorType(changeType.createEditorType(formLogics, this));
         }
+        gridField.setShowHover(true);
 
         return gridField;
     }

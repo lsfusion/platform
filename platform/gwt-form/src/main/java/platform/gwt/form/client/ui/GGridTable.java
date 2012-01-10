@@ -43,7 +43,7 @@ public class GGridTable extends ListGrid {
         this.groupController = igroupController;
         this.groupObject = groupController.groupObject;
 
-        setHeight(150);
+        setHeight("*");
         setWidth("100%");
         setSelectionType(SelectionStyle.SINGLE);
         setShowAllRecords(true);
@@ -56,6 +56,7 @@ public class GGridTable extends ListGrid {
         setAutoFitData(Autofit.VERTICAL);
         setAutoFitMaxRecords(10);
         setEmptyCellValue("--");
+        setHoverWidth(350);
 
         setCanEdit(iformController.isEditingEnabled());
         setEditEvent(ListGridEditEvent.DOUBLECLICK);
@@ -208,10 +209,6 @@ public class GGridTable extends ListGrid {
             internalSelecting = true;
             selectSingleRecord(currentInd);
             internalSelecting = false;
-        }
-
-        if (isVisible() != !isEmpty()) {
-            setVisible(!isEmpty());
         }
     }
 

@@ -95,7 +95,7 @@ public class PanelController {
     private void addPropertyToPanelLocation(PropertyController controller) {
         GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(controller.getKey().groupObject);
         if (logicsSupplier != null) {
-            if (controller.getKey().panelLocation.isToolbarLocation()) {
+            if (controller.getKey().drawToToolbar()) {
                 logicsSupplier.addPropertyToToolbar(controller);
                 logicsSupplier.updateToolbar();
             } else {
@@ -107,7 +107,7 @@ public class PanelController {
     private void removePropertyFromPanelLocation(PropertyController controller) {
         GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(controller.getKey().groupObject);
         if (logicsSupplier != null) {
-            if (controller.getKey().panelLocation.isToolbarLocation()) {
+            if (controller.getKey().drawToToolbar()) {
                 logicsSupplier.removePropertyFromToolbar(controller);
                 logicsSupplier.updateToolbar();
             } else {
