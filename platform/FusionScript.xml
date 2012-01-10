@@ -16,6 +16,7 @@
       <keyword name="ABSTRACT" />
       <keyword name="ACTION" />
       <keyword name="ADD" />
+      <keyword name="ADDFORM" />
       <keyword name="ADDOBJ" />
       <keyword name="AFTER" />
       <keyword name="ALL" />
@@ -39,6 +40,7 @@
       <keyword name="DESIGN" />
       <keyword name="DOUBLE" />
       <keyword name="EDITABLE" />
+      <keyword name="EDITFORM" />
       <keyword name="EXCEPTLAST" />
       <keyword name="EXCLUSIVE" />
       <keyword name="FALSE" />

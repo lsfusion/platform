@@ -14,7 +14,8 @@ infoBank 'Дополнительные сведения' = DATA STRING[100] (ban
 
 FORM BankForm 'Банки'
 OBJECTS b=bank
-PROPERTIES(b) name, addressBank, MFOBank, departmentBank, CBUBank, infoBank, ADDOBJ, delete;
+PROPERTIES(b) READONLY name, addressBank, MFOBank, departmentBank, CBUBank, infoBank
+PROPERTIES(b) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Расчетный счет ------------------------------------------ //
 
@@ -27,10 +28,6 @@ addressBankAccount 'Адрес банка' (account) = addressBank(bankAccount(a
 MFOBankAccount 'Код МФО банка' (account) = MFOBank(bankAccount(account)) IN baseGroup;
 departmentBankAccount 'Отдел банка' (account) = departmentBank(bankAccount(account)) IN baseGroup;
 CBUBankAccount 'ЦБУ банка' (account) = CBUBank(bankAccount(account)) IN baseGroup;
-
-FORM AccountForm 'Расчетные счета'
-OBJECTS a=account
-PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, ADDOBJ, delete;
 
 // ----------------------------------- Юридическое лицо ------------------------------------------ //
 
@@ -47,20 +44,10 @@ OKPOLegalEntity 'ОКПО' = DATA STRING[20] (legalEntity) IN baseGroup;
 emailLegalEntity 'e-mail' = DATA STRING[100] (legalEntity) IN baseGroup;
 siteLegalEntity 'Сайт' = DATA STRING[100] (legalEntity) IN baseGroup;
 licenseLegalEntity 'Номер лицензии' = DATA STRING[20] (legalEntity) IN baseGroup;
-dateFromLicenseLegalEntity 'Дата выдачи лицензии' = DATA STRING[10] (legalEntity) IN baseGroup;
-dateToLicenseLegalEntity 'Дата окончания лицензии' = DATA STRING[10] (legalEntity) IN baseGroup;
+dateFromLicenseLegalEntity 'Дата выдачи лицензии' = DATA DATE (legalEntity) IN baseGroup;
+dateToLicenseLegalEntity 'Дата окончания лицензии' = DATA DATE (legalEntity) IN baseGroup;
 
 legalEntityAccount 'Ю.Л. (ИД)' = DATA legalEntity (account) IN idGroup;
-
-FORM LegalEntityFormEdit 'Юридическое лицо'
-OBJECTS l=legalEntity FIXED PANEL
-PROPERTIES(l) fullNameLegalEntity, shortNameLegalEntity, name, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, phoneLegalEntity,
-              UNPLegalEntity, OKPOLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity;
-
-FORM LegalEntityForm 'Юридические лица'
-OBJECTS l=legalEntity
-PROPERTIES(l) fullNameLegalEntity, shortNameLegalEntity, name, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, phoneLegalEntity,
-              UNPLegalEntity, OKPOLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity, ADDOBJ, delete;
 
 // ----------------------------------- Договор ------------------------------------------ //
 

@@ -138,16 +138,14 @@ public class ScriptingFormEntity extends FormEntity {
                 }
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                LP<?> addObjAction = LM.getAddFormAction((CustomClass)obj[0].baseClass);
-                property = addPropertyDraw(addObjAction);
+                property = LM.addAddFormAction(this, obj[0]);
             } else if (properties.get(i).equals("EDITFORM")) {
                 if (mapping.size() != 1) {
                     LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
                 }
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                LP<?> editObjAction = LM.getEditFormAction((CustomClass)obj[0].baseClass);
-                property = addPropertyDraw(editObjAction, obj[0]);
+                property = LM.addEditFormAction(this, obj[0]);
             } else {
                 MappedProperty prop = getPropertyWithMapping(properties.get(i), mapping);
                 property = addPropertyDraw(prop.property, prop.mapping);

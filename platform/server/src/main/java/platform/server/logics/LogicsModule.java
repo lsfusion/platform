@@ -2034,13 +2034,14 @@ public abstract class LogicsModule {
     }
 
     public void addFormActions(FormEntity form, ObjectEntity object) {
-        addFormActions(form, object, true);
+        addAddFormAction(form, object);
+        addEditFormAction(form, object);
+        form.addPropertyDraw(baseLM.delete, object);
     }
-
-    protected void addFormActions(FormEntity form, ObjectEntity object, boolean shouldBeLast) {
+    
+    public PropertyDrawEntity addAddFormAction(FormEntity form, ObjectEntity object) {
         LP addForm = getAddFormAction((CustomClass)object.baseClass);
         PropertyDrawEntity actionAddPropertyDraw = form.addPropertyDraw(addForm);
-        actionAddPropertyDraw.shouldBeLast = shouldBeLast;
         actionAddPropertyDraw.toDraw = object.groupTo;
 
         // todo : так не очень правильно делать - получается, что мы добавляем к Immutable объекту FormActionProperty ссылки на ObjectEntity
@@ -2048,9 +2049,10 @@ public abstract class LogicsModule {
         ClassFormEntity classForm = (ClassFormEntity)formAction.form;
 
         formAction.seekOnOk.add(classForm.getObject());
-
-        form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass), object).shouldBeLast = shouldBeLast;
-
-        form.addPropertyDraw(baseLM.delete, object).shouldBeLast = shouldBeLast;
+        return actionAddPropertyDraw;
+    }
+    
+    public PropertyDrawEntity addEditFormAction(FormEntity form, ObjectEntity object) {
+        return form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass), object);
     }
 }
