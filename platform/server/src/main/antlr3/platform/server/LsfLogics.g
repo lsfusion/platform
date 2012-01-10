@@ -74,25 +74,21 @@ grammar LsfLogics;
 		return inParseState(ScriptingLogicsModule.State.PROP);
 	}
 
-	public boolean inNavigatorParseState() {
-		return inParseState(ScriptingLogicsModule.State.NAVIGATOR);
-	}
-
 	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
-		if (inNavigatorParseState()) {
+		if (inPropParseState()) {
 			$designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue);
 		}
     }
 
 	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids) throws ScriptingErrorLog.SemanticErrorException {
-		if (inNavigatorParseState()) {
+		if (inPropParseState()) {
 			return $formStatement::form.getGroupObjectsList(ids);
 		}
 		return null;
 	}
 
 	public MappedProperty getPropertyWithMapping(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-		if (inNavigatorParseState()) {
+		if (inPropParseState()) {
 			return $formStatement::form.getPropertyWithMapping(name, mapping);
 		}
 		return null;
@@ -223,7 +219,7 @@ scope {
 	ScriptingFormEntity form;
 }
 @after {
-	if (inNavigatorParseState()) {
+	if (inPropParseState()) {
 		self.addScriptedForm($formStatement::form);
 	}
 }
@@ -239,7 +235,7 @@ scope {
 
 formDeclaration returns [ScriptingFormEntity form]
 @after {
-	if (inNavigatorParseState()) {
+	if (inPropParseState()) {
 		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption);
 	}
 }
@@ -256,7 +252,7 @@ formGroupObjectsList // needs refactoring
 	List<Boolean> isInitType = new ArrayList<Boolean>();
 }
 @after {
-	if (inNavigatorParseState()) {
+	if (inPropParseState()) {
 		$formStatement::form.addScriptedGroupObjects(names, classNames, groupViewType, isInitType);
 	}
 }
@@ -307,7 +303,7 @@ formPropertiesList
 	List<FormPropertyOptions> options = new ArrayList<FormPropertyOptions>();
 }
 @after {
-	if (inNavigatorParseState()) {
+	if (inPropParseState()) {
 		$formStatement::form.addScriptedPropertyDraws(properties, mapping, commonOptions, options);
 	}
 }
@@ -356,7 +352,7 @@ formMappedPropertiesList returns [List<String> properties, List<List<String>> ma
 formPropertyObject returns [PropertyObjectEntity property = null]
 	: mappedProperty=formMappedProperty
 		{
-			if (inNavigatorParseState()) {
+			if (inPropParseState()) {
 				$property = $formStatement::form.addPropertyObject(mappedProperty.name, mappedProperty.mapping);
 			}
 		}
@@ -393,7 +389,7 @@ formFiltersList
 	List<List<String>> propertyMappings = new ArrayList<List<String>>();
 }
 @after {
-	if (inNavigatorParseState()) {
+	if (inPropParseState()) {
 		$formStatement::form.addScriptedFilters(propertyNames, propertyMappings);
 	}
 }
@@ -411,7 +407,7 @@ filterGroupDeclaration
 	List<List<String>> mappings = new ArrayList<List<String>>();
 }
 @after {
-	if (inNavigatorParseState()) {
+	if (inPropParseState()) {
 		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, captions, keystrokes, properties, mappings);
 	}
 }
@@ -440,7 +436,7 @@ formOrderByList
 	List<Boolean> orders = new ArrayList<Boolean>();
 }
 @after {
-	if (inNavigatorParseState()) {
+	if (inPropParseState()) {
 		$formStatement::form.addScriptedDefaultOrder(properties, orders);
 	}
 }
@@ -912,7 +908,7 @@ scope {
 		nameWithCaption=simpleNameWithCaption
 		('FROM' 'DEFAULT' {applyDefault = true;} )?
 		{
-			if (inNavigatorParseState()) {
+			if (inPropParseState()) {
 				$designStatement::design = $formView = self.createScriptedFormView($nameWithCaption.name, $nameWithCaption.caption, applyDefault);
 			}
 		}
@@ -948,7 +944,7 @@ setupGroupObjectStatement
 	  '('
 		ID
 		{
-			if (inNavigatorParseState()) {
+			if (inPropParseState()) {
 				groupObject = $designStatement::design.getGroupObject($ID.text);
 			}
 		}
@@ -967,7 +963,7 @@ addComponentStatement[ComponentView parentComponent]
 	: 'ADD' insSelector=componentSelector[false] { insComp = $insSelector.component; }
 		( posDefinition=addPositionDefinition posSelector=componentSelector[true] { hasPosition = true; } )?
 		{
-			if (inNavigatorParseState()) {
+			if (inPropParseState()) {
 				insComp = $designStatement::design.addComponent($insSelector.sid,
 																insComp,
 																hasPosition ? $posDefinition.position : InsertPosition.IN,
@@ -983,7 +979,7 @@ removeComponentStatement
 }
 	: 'REMOVE' compSelector=componentSelector[true] ('CASCADE' { cascade = true; } )? ';'
 		{
-			if (inNavigatorParseState()) {
+			if (inPropParseState()) {
 				$designStatement::design.removeComponent($compSelector.component, cascade);
 			}
 		}
@@ -992,14 +988,14 @@ removeComponentStatement
 componentSelector[boolean hasToExist] returns [String sid, ComponentView component]
 	: 'PARENT' '(' child=componentSelector[true] ')'
 		{
-			if (inNavigatorParseState()) {
+			if (inPropParseState()) {
 				$designStatement::design.getParentContainer($child.component);
 			}
 		}
 	| 'PROPERTY' '(' prop=propertySelector ')' { $component = $prop.propertyView; }
 	| mid=multiCompoundID
 		{
-			if (inNavigatorParseState()) {
+			if (inPropParseState()) {
 				$sid = $mid.sid;
 				$component = $designStatement::design.getComponentBySID($sid, hasToExist);
 			}
@@ -1010,13 +1006,13 @@ componentSelector[boolean hasToExist] returns [String sid, ComponentView compone
 propertySelector returns [PropertyDrawView propertyView = null]
 	: pname=formPropertyName
 		{
-			if (inNavigatorParseState()) {
+			if (inPropParseState()) {
 				$propertyView = $designStatement::design.getPropertyView($pname.text);
 			}
 		}
 	| mappedProp=formMappedProperty
 		{
-			if (inNavigatorParseState()) {
+			if (inPropParseState()) {
 				$propertyView = $designStatement::design.getPropertyView($mappedProp.name, $mappedProp.mapping);
 			}
 		}
@@ -1028,7 +1024,7 @@ positionComponentsStatement[ComponentView parentComponent]
 }
 	: 'POSITION' compSelector1=componentSelector[true] constrDefinition=constraintDefinition ( compSelector2=componentSelector[true]  { hasSecondComponent = true; } )? ';'
     	{
-		if (inNavigatorParseState()) {
+		if (inPropParseState()) {
 	    		$designStatement::design.addIntersection($compSelector1.component,
 	    							 					$constrDefinition.constraint,
 	    							 					hasSecondComponent ? $compSelector2.component : parentComponent);

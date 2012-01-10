@@ -1,6 +1,5 @@
 package paas;
 
-import net.sf.jasperreports.engine.JRException;
 import paas.properties.RefreshStatusActionProperty;
 import paas.properties.StartConfigurationActionProperty;
 import paas.properties.StopConfigurationActionProperty;
@@ -20,8 +19,6 @@ import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
-
-import java.io.FileNotFoundException;
 
 public class PaasLogicsModule extends LogicsModule {
 
@@ -133,6 +130,8 @@ public class PaasLogicsModule extends LogicsModule {
                                       addJProp(baseLM.diff2, configurationStatus, 1, addCProp(status, "started")), 1);
 
         databaseConfiguration = addAGProp("databaseConfiguration", "Конфигурация", configurationDatabase);
+
+        initNavigators();
     }
 
     public LP addRefreshStatusProperty() {
@@ -151,8 +150,7 @@ public class PaasLogicsModule extends LogicsModule {
     public void initIndexes() {
     }
 
-    @Override
-    public void initNavigators() throws JRException, FileNotFoundException {
+    private void initNavigators() {
         FormEntity modulesForm = new ModuleFormEntity(baseLM.baseElement, "modulesForm", "Модули");
         addFormEntity(modulesForm);
 

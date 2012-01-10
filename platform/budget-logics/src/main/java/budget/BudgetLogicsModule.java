@@ -1,6 +1,5 @@
 package budget;
 
-import net.sf.jasperreports.engine.JRException;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -16,11 +15,6 @@ import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
-
-import javax.swing.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.io.FileNotFoundException;
 
 /**
  * User: DAle
@@ -498,6 +492,8 @@ public class BudgetLogicsModule extends LogicsModule {
         investmentTotal = addSGProp("investmentTotal", "Всего проинвестировано", sumBaseInvestment);
 
         shareInvestor = addJProp("shareInvestor", "Доля (%)", baseLM.share2, sumInvestmentInvestor, 1, investmentTotal);
+
+        initNavigators();
     }
 
     
@@ -508,8 +504,7 @@ public class BudgetLogicsModule extends LogicsModule {
 
     FormEntity mainAccountForm, salesArticleStoreForm;
 
-    @Override
-    public void initNavigators() throws JRException, FileNotFoundException {
+    private void initNavigators() {
         NavigatorElement primaryData = new NavigatorElement(baseLM.baseElement, "primaryData", "Первичные данные");
         FormEntity incomeForm = addFormEntity(new IncomeFormEntity(primaryData, "incomeForm", "Приход"));
         FormEntity investmentNotMoney = addFormEntity(new InvestmentFormEntity(primaryData, "investment", "Инвестиции"));

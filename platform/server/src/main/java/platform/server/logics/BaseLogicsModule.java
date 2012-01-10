@@ -844,6 +844,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         translationDictionary = addDProp(baseGroup, "translationDictionary", getString("logics.dictionary.translation"), StringClass.get(50), dictionaryEntry);
         translationDictionaryTerm = addCGProp(null, "translationDictionayTerm", getString("logics.dictionary.translation"), translationDictionary, termDictionary, entryDictionary, 1, termDictionary, 1);
         nameEntryDictionary = addJProp(baseGroup, "nameEntryDictionary", getString("logics.dictionary"), name, entryDictionary, 1);
+
+        initNavigators();
     }
 
     @Override
@@ -1122,8 +1124,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    @Override
-    public void initNavigators() {
+    private void initNavigators() {
         baseClass.named.setListForm(new NamedListFormEntity(this, baseClass.named));
 
         navigatorWindow = new TreeNavigatorWindow("navigator", getString("logics.navigator"), 0, 0, 20, 70);

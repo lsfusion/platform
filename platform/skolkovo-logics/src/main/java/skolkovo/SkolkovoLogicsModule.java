@@ -15,7 +15,8 @@ import net.sf.jasperreports.engine.export.JRPdfExporter;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
-import platform.interop.*;
+import platform.interop.ClassViewType;
+import platform.interop.Compare;
 import platform.interop.ToolbarPanelLocation;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
@@ -33,12 +34,13 @@ import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
-import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.view.*;
+import platform.server.form.view.ContainerView;
+import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.FormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.BaseLogicsModule;
@@ -4379,6 +4381,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailConferenceExpert.setImage("email.png");
         emailConferenceExpert.property.askConfirm = true;
 
+        initNavigators();
     }
 
     @Override
@@ -4402,8 +4405,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private StatusLogFormEntity logNameStatusForm;
     private LP formLogNameStatusProject;
 
-    @Override
-    public void initNavigators() throws JRException, FileNotFoundException {
+    private void initNavigators() {
 
         projectStatus.setDialogForm(new StatusFormEntity(null, "StatusForm"));
 

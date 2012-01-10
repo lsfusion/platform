@@ -1,10 +1,11 @@
 package retail;
 
-import net.sf.jasperreports.engine.JRException;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.server.classes.*;
-import platform.server.form.entity.*;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.*;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
@@ -18,7 +19,6 @@ import platform.server.logics.linear.LP;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
-import java.io.FileNotFoundException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -320,9 +320,11 @@ import java.io.FileNotFoundException;
 
    //     addShipmentDetailSupplierShipment = addJProp(true, "Добавить строку поставки", addAAProp(shipmentDetail, purchaseRecadvBatch), 1);
         sidDocumentPurchaseRecadvBatch = addJProp("sidDocumentSupplierShipmentBatch", "Документ", sidDocument, purchaseRecadvBatch, 1);
+
+        initNavigators();
     }
 
-    public void initNavigators() throws JRException, FileNotFoundException {
+    private void initNavigators() {
 
         ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор");
         mainToolbar.titleShown = false;

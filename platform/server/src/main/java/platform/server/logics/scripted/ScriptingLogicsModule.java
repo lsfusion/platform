@@ -1,6 +1,5 @@
 package platform.server.logics.scripted;
 
-import net.sf.jasperreports.engine.JRException;
 import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
@@ -22,7 +21,6 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.StoredDataProperty;
 import platform.server.logics.property.group.AbstractGroup;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -45,7 +43,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final ScriptingErrorLog errLog;
     private LsfLogicsParser parser;
 
-    public enum State {GROUP, CLASS, PROP, NAVIGATOR}
+    public enum State {GROUP, CLASS, PROP}
     public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM }
 
     private Map<String, ValueClass> primitiveTypeAliases = BaseUtils.buildMap(
@@ -825,11 +823,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public void initIndexes() {
-    }
-
-    @Override
-    public void initNavigators() throws JRException, FileNotFoundException {
-        parseStep(ScriptingLogicsModule.State.NAVIGATOR);
     }
 
     @Override

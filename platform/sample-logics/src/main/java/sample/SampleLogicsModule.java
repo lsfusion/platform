@@ -1,6 +1,5 @@
 package sample;
 
-import net.sf.jasperreports.engine.JRException;
 import platform.interop.Compare;
 import platform.server.classes.*;
 import platform.server.form.entity.FormEntity;
@@ -19,7 +18,6 @@ import platform.server.logics.linear.LP;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.io.FileNotFoundException;
 
 /**
  * User: DAle
@@ -107,6 +105,8 @@ public class SampleLogicsModule extends LogicsModule {
 
         parentGroup = addDProp(baseGroup, "parentGroup", "Родитель", articleGroup, articleGroup);
         articleToGroup = addDProp(baseGroup, "articleToGroup", "Группа товаров", articleGroup, article);
+
+        initNavigators();
     }
 
     @Override
@@ -115,8 +115,7 @@ public class SampleLogicsModule extends LogicsModule {
 
     FormEntity mainAccountForm, salesArticleStoreForm;
 
-    @Override
-    public void initNavigators() throws JRException, FileNotFoundException {
+    private void initNavigators() {
 
         NavigatorElement primaryData = new NavigatorElement(baseLM.baseElement, "primaryData", "Первичные данные");
             FormEntity documentForm = new DocumentFormEntity(primaryData, "documentForm", "Документ");

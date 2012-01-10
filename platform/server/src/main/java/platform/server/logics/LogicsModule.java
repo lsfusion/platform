@@ -57,8 +57,6 @@ public abstract class LogicsModule {
 
     public abstract void initIndexes();
 
-    public abstract void initNavigators() throws JRException, FileNotFoundException;
-
     public String getErrorsDescription() { return "";}
 
     /// Добавляется к SID объектов модуля: классам, группам, свойствам...

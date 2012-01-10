@@ -711,16 +711,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             for (LogicsModule module : logicModules) {
                 module.initTables();
             }
-            for (LogicsModule module : logicModules) {
-                module.initProperties();
-            }
 
             initExternalScreens();
 
-            logger.debug("Initializing navigators...");
-
             for (LogicsModule module : logicModules) {
-                module.initNavigators();
+                module.initProperties();
             }
 
             Set idSet = new HashSet<String>();

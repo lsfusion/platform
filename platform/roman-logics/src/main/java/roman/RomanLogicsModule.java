@@ -1,6 +1,5 @@
 package roman;
 
-import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
@@ -27,7 +26,10 @@ import platform.server.form.view.PropertyDrawView;
 import platform.server.form.window.PanelNavigatorWindow;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
-import platform.server.logics.*;
+import platform.server.logics.BaseLogicsModule;
+import platform.server.logics.DataObject;
+import platform.server.logics.LogicsModule;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormActionProperty;
@@ -40,10 +42,9 @@ import platform.server.session.PropertyChange;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Iterator;
 
 /**
  * Created by IntelliJ IDEA.
@@ -3370,6 +3371,8 @@ public class RomanLogicsModule extends LogicsModule {
         scalesComPort = addDProp(baseGroup, "scalesComPort", "COM-порт весов", IntegerClass.instance, baseLM.computer);
         scalesSpeed = addDProp(baseGroup, "scalesSpeed", "Скорость весов", IntegerClass.instance, baseLM.computer);
         scannerComPort = addDProp(baseGroup, "scannerComPort", "COM-порт сканера", IntegerClass.instance, baseLM.computer);
+
+        initNavigators();
     }
 
     public LP addDEAProp(String sID) {
@@ -3380,8 +3383,7 @@ public class RomanLogicsModule extends LogicsModule {
     public void initIndexes() {
     }
 
-    @Override
-    public void initNavigators() throws JRException, FileNotFoundException {
+    private void initNavigators() {
 
         ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор");
         mainToolbar.titleShown = false;

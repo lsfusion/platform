@@ -1370,6 +1370,8 @@ public class VEDLogicsModule extends LogicsModule {
        articleOutDocumentPrice = addJProp(baseGroup, "articleOutDocumentPrice", "Цена", orderSalePrice, obligationIssued, 1, 2);
 
         initDateProperties();
+
+        initNavigators();
     }
 
     void initDateProperties() {
@@ -1580,8 +1582,7 @@ public class VEDLogicsModule extends LogicsModule {
     public SaleCheckCertFormEntity saleCheckCertBrowseForm;
     public ReturnSaleCheckRetailFormEntity returnSaleCheckRetailBrowse;
 
-    @Override
-    public void initNavigators() throws JRException, FileNotFoundException {
+    private void initNavigators() {
 
         NavigatorElement print = new NavigatorElement(baseLM.baseElement, "print", "Печатные формы");
         FormEntity incomePrice = addFormEntity(new IncomePriceFormEntity(print, "incomePrice"));
@@ -3409,7 +3410,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(shopPrice)));
 
-            addFAProp(documentPrintRetailGroup, "Реестр цен", this, objDoc);
+  //          addFAProp(documentPrintRetailGroup, "Реестр цен", this, objDoc);
         }
     }
 
