@@ -16,7 +16,6 @@ import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.ObjectInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
@@ -319,8 +318,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    protected PropertyDrawEntity addPropertyDraw(AbstractNode group, boolean upClasses, ObjectEntity... objects) {
-        return addPropertyDraw(group, upClasses, null, false, objects).iterator().next();
+    protected List<PropertyDrawEntity> addPropertyDraw(AbstractNode group, boolean upClasses, ObjectEntity... objects) {
+        return addPropertyDraw(group, upClasses, null, false, objects);
     }
 
     protected void addPropertyDraw(AbstractNode group, boolean upClasses, boolean useObjSubsets, ObjectEntity... objects) {

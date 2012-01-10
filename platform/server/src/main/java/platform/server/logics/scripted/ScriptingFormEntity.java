@@ -1,7 +1,7 @@
 package platform.server.logics.scripted;
 
+import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
-import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.NotNullFilterEntity;
@@ -121,9 +121,16 @@ public class ScriptingFormEntity extends FormEntity {
                 if (mapping.size() != 1) {
                     LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
                 }
-                property = addPropertyDraw(LM.baseLM.objectValue, false, getMappingObjectsArray(mapping));
+
+                //assertion, что создастся только один PropertyDrawEntity
+                property = BaseUtils.<PropertyDrawEntity>single(
+                        addPropertyDraw(LM.baseLM.objectValue, false, getMappingObjectsArray(mapping))
+                );
             } else if (properties.get(i).equals("SELECTION")) {
-                property = addPropertyDraw(LM.baseLM.sessionGroup, false, getMappingObjectsArray(mapping));
+                //assertion, что создастся только один PropertyDrawEntity
+                property = BaseUtils.<PropertyDrawEntity>single(
+                        addPropertyDraw(LM.baseLM.sessionGroup, false, getMappingObjectsArray(mapping))
+                );
             } else if (properties.get(i).equals("ADDOBJ")) {
                 if (mapping.size() != 1) {
                     LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
