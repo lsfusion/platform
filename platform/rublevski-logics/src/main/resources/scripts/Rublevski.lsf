@@ -3,39 +3,51 @@ MODULE Rublevski;
 IMPORT BaseLogicsModule;
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
-CLASS goodsGroup 'Товарная группа' : named;
+CLASS itemGroup 'Товарная группа' : named;
 
-parentGroupGoodsGroup = DATA goodsGroup (goodsGroup);
-nameParentGroupGoodsGroup 'Родительская группа' = name(parentGroupGoodsGroup(goodsGroup));
+parentItemGroup = DATA itemGroup (itemGroup);
+nameParentItemGroup 'Родительская группа' = name(parentItemGroup(itemGroup));
 
-FORM goodsGroup 'Товарные группы'
-OBJECTS gg=goodsGroup
-PROPERTIES (gg) name, nameParentGroupGoodsGroup
-PROPERTIES (gg) ADDFORM, EDITFORM, delete;
+FORM itemGroup 'Товарная группа'
+OBJECTS g=itemGroup
+PROPERTIES(g) name, nameParentItemGroup;
+
+FORM itemGroups 'Товарные группы'
+OBJECTS g=itemGroup
+PROPERTIES(g) READONLY name, nameParentItemGroup
+PROPERTIES(g) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Единицы измерения ------------------------------------------ //
 CLASS unitOfMeasure 'Единица измерения' : named;
 shortNameUnitOfMeasure 'Краткое наименование' = DATA STRING[4] (unitOfMeasure) IN baseGroup;
 
-FORM UnitOfMeasureForm 'Справочник единиц измерения'
-OBJECTS uom=unitOfMeasure
-PROPERTIES(uom) READONLY name, shortNameUnitOfMeasure
-PROPERTIES(uom) ADDFORM, EDITFORM, delete;
+FORM unitOfMeasure 'Единица измерения'
+OBJECTS u=unitOfMeasure FIXED PANEL
+PROPERTIES(u) name, shortNameUnitOfMeasure;
+
+FORM unitsOfMeasure 'Единицы измерений'
+OBJECTS u=unitOfMeasure
+PROPERTIES(u) READONLY name, shortNameUnitOfMeasure
+PROPERTIES(u) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Товар ------------------------------------------ //
 CLASS ABSTRACT sku 'SKU' : named;
-CLASS goods 'Товар' : sku;
+CLASS item 'Товар' : sku;
 CLASS brand 'Бренд' : named;
 
-brandGoods = DATA brand(goods);
-unitOfMeasureSku = DATA unitOfMeasure (sku) IN baseGroup;
-shortNameUnitOfMeasureSku 'Единица измерения' = shortNameUnitOfMeasure(unitOfMeasureSku(sku));
-kindGoods = DATA STRING[20] (goods);
+brandItem = DATA brand(item);
+unitOfMeasureItem = DATA unitOfMeasure (item) IN idGroup;
+shortNameUnitOfMeasureItem 'Единица измерения' = shortNameUnitOfMeasure(unitOfMeasureItem(item)) IN baseGroup;
+kindItem = DATA STRING[20] (item);
 
-FORM GoodsForm 'Справочник товаров'
-OBJECTS g=goods
-PROPERTIES (g) name, shortNameUnitOfMeasureSku
-PROPERTIES (g) ADDFORM, EDITFORM, delete;
+FORM item 'Товар'
+OBJECTS i=item FIXED PANEL
+PROPERTIES(i) name, shortNameUnitOfMeasureItem;
+
+FORM items 'Товары'
+OBJECTS i=item
+PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
+PROPERTIES(i) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Штрих код ------------------------------------------ //
 CLASS barcode 'Штрих код' : barcodeObject;
@@ -58,13 +70,13 @@ nameDepartmentStore 'Наименование отдела магазина' = D
 
 inStoreDepartment(store, department) = storeDepartmentStore(department) == store;
 
-FORM StoreEditForm 'Магазин'
+FORM store 'Магазин'
 OBJECTS s=store FIXED PANEL, d=departmentStore
 PROPERTIES(s) READONLY name, addressStore
 PROPERTIES(d) name, ADDOBJ, delete
 FILTERS NOT NULL inStoreDepartment(s, d);
 
-FORM StoreForm 'Магазины'
+FORM stores 'Магазины'
 OBJECTS s=store
 PROPERTIES(s) READONLY name, addressStore
 PROPERTIES(s) ADDFORM, EDITFORM, delete;
@@ -85,7 +97,7 @@ departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN baseGroup;
 CBUBank 'ЦБУ' = DATA STRING[3] (bank) IN baseGroup;
 infoBank 'Дополнительные сведения' = DATA STRING[100] (bank) IN baseGroup;
 
-FORM BankForm 'Банки'
+FORM banks 'Банки'
 OBJECTS b=bank
 PROPERTIES(b) name, addressBank, MFOBank, departmentBank, CBUBank, infoBank;
 PROPERTIES(b) ADDFORM, EDITFORM, delete;
