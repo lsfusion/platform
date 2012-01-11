@@ -718,6 +718,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             for (LogicsModule module : logicModules) {
                 module.initProperties();
             }
+            LM.initClassForms();
 
             Set idSet = new HashSet<String>();
             for (Property property : getProperties()) {

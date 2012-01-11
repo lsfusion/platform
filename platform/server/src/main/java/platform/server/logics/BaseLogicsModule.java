@@ -370,6 +370,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public NavigatorElement<T> adminElement;
 
     public FormEntity<T> dictionaryForm;
+    public FormEntity<T> objectForm;
 
     public NavigatorWindow navigatorWindow;
     public AbstractWindow relevantFormsWindow;
@@ -1137,9 +1138,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         baseElement = new NavigatorElement("baseElement", getString("logics.forms"));
         baseElement.window = navigatorWindow;
-        adminElement = new NavigatorElement(baseElement, "adminElement",  getString("logics.administration"));
+        adminElement = new NavigatorElement(baseElement, "adminElement", getString("logics.administration"));
 
-        objectElement = baseClass.getBaseClassForm(this);
+        objectElement = new NavigatorElement(adminElement, "objectElement", getString("logics.object"));
         adminElement.add(objectElement);
 
         addFormEntity(new UserPolicyFormEntity(adminElement, "userPolicyForm"));
@@ -1154,6 +1155,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         dictionaryForm = addFormEntity(new DictionariesFormEntity(adminElement, "dictionariesForm"));
 
         addFormEntity(new RemindUserPassFormEntity(adminElement, "remindPasswordLetter"));
+    }
+
+    public void initClassForms() {
+        objectForm = baseClass.getBaseClassForm(this);
+        objectElement.add(objectForm);
     }
 
     @Override
