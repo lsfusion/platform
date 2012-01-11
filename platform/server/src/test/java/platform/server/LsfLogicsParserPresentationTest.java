@@ -254,7 +254,7 @@ public class LsfLogicsParserPresentationTest {
         FileUtils.writeStringToFile(testScriptFile, fileContent, "UTF-8");
 
         bl = new ScriptedBusinessLogics("scriptedLogicsUnitTest",
-                                        new PostgreDataAdapter("scripted_logic_unittest", "localhost", "postgres", "11111", false),
+                                        new PostgreDataAdapter("scripted_logic_presentation_unittest", "localhost", "postgres", "11111", false),
                                         1234,
                                         testScriptFile.getAbsolutePath());
         bl.afterPropertiesSet();

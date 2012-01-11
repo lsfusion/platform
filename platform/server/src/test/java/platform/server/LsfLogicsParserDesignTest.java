@@ -3,17 +3,14 @@ package platform.server;
 import org.apache.commons.io.FileUtils;
 import org.junit.*;
 import org.junit.rules.TestName;
+import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.form.view.ComponentView;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.GroupObjectView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.logics.scripted.ScriptedBusinessLogics;
-import platform.server.logics.scripted.ScriptingErrorLog;
-import platform.server.logics.scripted.*;
-import platform.server.logics.scripted.ScriptingFormEntity;
 import platform.server.logics.linear.LP;
-import platform.server.logics.scripted.ScriptingLogicsModule;
+import platform.server.logics.scripted.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -160,7 +157,7 @@ public class LsfLogicsParserDesignTest {
                   "        highlightColor = #321233;\n" +
                   "        tableRowsCount = 10;\n" +
                   "        needVerticalScroll = FALSE;\n" +
-                  "    }" +
+                  "    }\n" +
                   "}");
 
         assertEquals(sGroup.highlightColor, new Color(0x321233));
@@ -247,6 +244,77 @@ public class LsfLogicsParserDesignTest {
         assertEquals(barView.design.font, new Font("Tahoma", Font.BOLD | Font.ITALIC, 12));
     }
 
+    @Test
+    public void testContainers1() throws Exception {
+        setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
+                  "    ADD root {\n" +
+                  "        title = 'The One';\n" +
+                  "        ADD child1 {\n" +
+                  "            background = #1232AC;\n" +
+                  "        };\n" +
+                  "        ADD child2 {\n" +
+                  "            ADD child21 { title = 'sdf'; }\n" +
+                  "        }\n" +
+                  "        ADD child3 BEFORE child1 {\n" +
+                  "            ADD child31 {\n" +
+                  "                title = 'sdf';\n" +
+                  "                ADD child311 { title = 'sdfsdf'; }\n" +
+                  "            }\n" +
+                  "            ADD child32 { title = 'sdf'; }\n" +
+                  "            POSITION child1 TO NOT INTERSECT;\n" +
+                  "        }\n" +
+                  "\n" +
+                  "        ADD functions.box AFTER child3;\n" +
+                  "    }\n" +
+                  "    REMOVE child2 CASCADE;\n" +
+                  "    REMOVE child31;\n" +
+                  "}");
+
+        ContainerView root = getContainer("root");
+        ContainerView child1 = getContainer("child1");
+        ComponentView child2 = getComponent("child2");
+        ComponentView child21 = getComponent("child21");
+        ContainerView child3 = getContainer("child3");
+        ComponentView child31 = getComponent("child31");
+        ContainerView child311 = getContainer("child311");
+        ContainerView child32 = getContainer("child32");
+
+        assertNotNull(root);
+        assertNotNull(child1);
+        assertNull(child2);
+        assertNull(child21);
+        assertNotNull(child3);
+        assertNull(child31);
+        assertNotNull(child32);
+        assertNotNull(child311);
+        assertNotNull(child32);
+
+        assertEquals(root.getChildren().size(), 3);
+        assertSame(root.getChildren().get(0), child3);
+        assertSame(root.getChildren().get(1), getComponent("functions.box"));
+        assertSame(root.getChildren().get(2), child1);
+
+        assertEquals(child3.constraints.intersects.get(child1), DoNotIntersectSimplexConstraint.DO_NOT_INTERSECT);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testDenyRecursiveContainersMove() throws Exception {
+        setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
+                  "    main {\n" +
+                  "        ADD outer {\n" +
+                  "            title = '7+2+3';\n" +
+                  "            ADD s.box;\n" +
+                  "            ADD inner {\n" +
+                  "                title = '2+3';\n" +
+                  "                ADD a.box;\n" +
+                  "                ADD s.box;\n" +
+                  "                ADD outer;\n" +
+                  "            }\n" +
+                  "        }\n" +
+                  "    }\n" +
+                  "}");
+    }
+
     @Test(expected = RuntimeException.class)
     public void testSetKeyStrokePropertyFails() throws Exception {
         setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
@@ -287,6 +355,16 @@ public class LsfLogicsParserDesignTest {
         return LM.findLPByCompoundName(sid);
     }
 
+    private ComponentView getComponent(String sid) throws Exception {
+        return design.getComponentBySID(sid, false);
+    }
+
+    private ContainerView getContainer(String sid) throws Exception {
+        ComponentView component = design.getComponentBySID(sid, false);
+        assertTrue(component instanceof ContainerView);
+        return (ContainerView) component;
+    }
+
     private void setupTest(String testCode) throws Exception {
         setupTest(testCode, true);
     }
@@ -297,12 +375,12 @@ public class LsfLogicsParserDesignTest {
         FileUtils.writeStringToFile(testScriptFile, fileContent, "UTF-8");
 
         bl = new ScriptedBusinessLogics("scriptedLogicsUnitTest",
-                                        new PostgreDataAdapter("scripted_logic_unittest", "localhost", "postgres", "11111", false),
+                                        new PostgreDataAdapter("scripted_logic_design_unittest", "localhost", "postgres", "11111", false),
                                         1234,
                                         testScriptFile.getAbsolutePath());
         bl.afterPropertiesSet();
 
-        LM = (ScriptingLogicsModule)bl.findModule("testDesign");
+        LM = (ScriptingLogicsModule) bl.findModule("testDesign");
         assertNotNull(LM);
 
         entity = (ScriptingFormEntity) bl.LM.baseElement.getNavigatorElement("storeArticle");

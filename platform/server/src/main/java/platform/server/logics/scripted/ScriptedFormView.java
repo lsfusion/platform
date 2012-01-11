@@ -229,7 +229,7 @@ public class ScriptedFormView extends DefaultFormView {
     }
 
     public ComponentView addComponent(String sid, ComponentView component, InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {
-        //дополнительная жёсткая проверка, такого не должно произойти в результате разбора грамматикой
+        //дополнительная жёсткая проверка, противного не должно произойти в результате разбора грамматикой
         assert sid == null || sid.matches("[a-zA-Z][a-zA-Z_0-9]*(\\.[a-zA-Z][a-zA-Z_0-9]*)*");
 
         if (component == null) {
@@ -252,28 +252,40 @@ public class ScriptedFormView extends DefaultFormView {
     }
 
     private ContainerView createNewContainer(String sid) {
-        ContainerView container = new ContainerView();
+        ContainerView container = new ContainerView(idGenerator.idShift());
         container.setSID(sid);
         sidToComponent.put(sid, container);
         return container;
     }
 
     private void moveComponent(ComponentView component, InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {
+        ContainerView parent = null;
         if (pos == InsertPosition.IN) {
-            if (anchorComponent instanceof ContainerView) {
-                ((ContainerView) anchorComponent).add(component);
-            } else {
+            if (!(anchorComponent instanceof ContainerView)) {
                 errLog.emitComponentMustBeAContainerError(parser);
             }
+            parent = (ContainerView)anchorComponent;
         } else {
             if (anchorComponent == mainContainer) {
-                errLog.emitInsertBeforeAfterMainContinaerError(parser);
+                errLog.emitInsertBeforeAfterMainContainerError(parser);
             }
+            parent = anchorComponent.getContainer();
+        }
 
+        if (component instanceof ContainerView) {
+            ContainerView container = (ContainerView) component;
+            if (container.isAncestorOf(parent)) {
+                errLog.emitIllegalMoveComponentToSubcomponent(parser, parent.getSID(), container.getSID());
+            }
+        }
+
+        if (pos == InsertPosition.IN) {
+            ((ContainerView) anchorComponent).add(component);
+        } else {
             if (pos == InsertPosition.BEFORE) {
-                anchorComponent.getContainer().addBefore(component, anchorComponent);
+                parent.addBefore(component, anchorComponent);
             } else {
-                anchorComponent.getContainer().addAfter(component, anchorComponent);
+                parent.addAfter(component, anchorComponent);
             }
         }
     }

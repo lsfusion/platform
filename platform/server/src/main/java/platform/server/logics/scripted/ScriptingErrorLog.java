@@ -8,6 +8,8 @@ import platform.server.logics.linear.LP;
 
 import java.io.StringWriter;
 
+import static java.lang.String.format;
+
 /**
  * User: DAle
  * Date: 17.10.11
@@ -114,8 +116,12 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "Component must be a container.");
     }
 
-    public void emitInsertBeforeAfterMainContinaerError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitInsertBeforeAfterMainContainerError(LsfLogicsParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "Can't insert before or after main container.");
+    }
+
+    public void emitIllegalMoveComponentToSubcomponent(LsfLogicsParser parser, String outerComponent, String innerComponent) throws SemanticErrorException {
+        emitSimpleError(parser, format("Can't move component '%s' to it's subcomponent '%s'.", outerComponent, innerComponent));
     }
 
     public void emitRemoveMainContinaerError(LsfLogicsParser parser) throws SemanticErrorException {

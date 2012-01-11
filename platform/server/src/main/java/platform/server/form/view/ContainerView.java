@@ -98,6 +98,10 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         }
     }
 
+    public boolean isAncestorOf(ContainerView container) {
+        return container != null && (equals(container) || isAncestorOf(container.container));
+    }
+
     public void fillOrderList(List<ContainerView> containers) {
         if(container!=null) container.fillOrderList(containers);
         if(!containers.contains(this)) containers.add(this);
