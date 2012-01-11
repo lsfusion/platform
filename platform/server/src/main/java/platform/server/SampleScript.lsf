@@ -41,6 +41,7 @@ FORM test_document 'По документам'
 OBJECTS document, article
 PROPERTIES name(document), store(document), name(article), storeName(document)
 PROPERTIES quantity(document, article)
+PROPERTIES quantity(document, article)
 PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article);
 
 FORM test_storeArticle 'По складам'
