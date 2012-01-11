@@ -2275,7 +2275,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     @Override
     public void remindPassword(String email, String localeLanguage) throws RemoteException {
         assert email != null;
-        ServerResourceBundle.load(localeLanguage);
+            //todo: в будущем нужно поменять на проставление локали в Context
+//            ServerResourceBundle.load(localeLanguage);
         try {
             DataSession session = createSession();
             try {
@@ -2343,7 +2344,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     @Override
     public String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException {
         try {
-            ServerResourceBundle.load(localeLanguage);
+            //todo: в будущем нужно поменять на проставление локали в Context
+//            ServerResourceBundle.load(localeLanguage);
             DataSession session = createSession();
             Object userId = LM.loginToUser.read(session, new DataObject(username, StringClass.get(30)));
             if (userId != null)
