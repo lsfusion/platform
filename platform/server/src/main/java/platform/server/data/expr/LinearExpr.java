@@ -14,7 +14,6 @@ import java.util.*;
 
 // среднее что-то между CaseExpr и FormulaExpr - для того чтобы не плодить экспоненциальные case'ы
 // придется делать BaseExpr
-@TranslateExprLazy
 public class LinearExpr extends UnionExpr {
 
     final LinearOperandMap map;
@@ -50,8 +49,7 @@ public class LinearExpr extends UnionExpr {
         return map.equals(((LinearExpr)obj).map);
     }
 
-    @HashOuterLazy
-    public int hashOuter(HashContext hashContext) {
+    protected int hash(HashContext hashContext) {
         return map.hashOuter(hashContext) * 5;
     }
 
@@ -69,8 +67,7 @@ public class LinearExpr extends UnionExpr {
     }
 
     // транслирует выражение/ также дополнительно вытаскивает ExprCase'ы
-    @ParamLazy
-    public BaseExpr translateOuter(MapTranslate translator) {
+    protected BaseExpr translate(MapTranslate translator) {
         LinearOperandMap transMap = new LinearOperandMap();
         for(Map.Entry<Expr, Integer> operand : map.entrySet())
             transMap.put(operand.getKey().translateOuter(translator),operand.getValue());

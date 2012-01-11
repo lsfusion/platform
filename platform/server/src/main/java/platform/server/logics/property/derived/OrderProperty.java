@@ -7,20 +7,20 @@ import platform.server.data.PropertyField;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
-import platform.server.data.expr.query.OrderExpr;
+import platform.server.data.expr.query.PartitionExpr;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.property.*;
-import platform.server.session.Changes;
 import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.util.*;
 
 public class OrderProperty<T extends PropertyInterface> extends SimpleIncrementProperty<OrderProperty.Interface<T>> {
 
-    protected final OrderType orderType;
+    protected final OrderType partitionType;
 
     protected final Collection<T> innerInterfaces;
     protected final List<PropertyInterfaceImplement<T>> props;
@@ -28,16 +28,16 @@ public class OrderProperty<T extends PropertyInterface> extends SimpleIncrementP
     protected final Collection<PropertyInterfaceImplement<T>> partitions;
     protected boolean includeLast;
 
-    public OrderProperty(String sID, String caption, OrderType orderType, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, List<PropertyInterfaceImplement<T>> extras, boolean includeLast) {
-        this(sID, caption, orderType, property.interfaces, BaseUtils.mergeList(Collections.singletonList(property.getImplement()), extras), partitions, orders, includeLast);
+    public OrderProperty(String sID, String caption, OrderType partitionType, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, List<PropertyInterfaceImplement<T>> extras, boolean includeLast) {
+        this(sID, caption, partitionType, property.interfaces, BaseUtils.mergeList(Collections.singletonList(property.getImplement()), extras), partitions, orders, includeLast);
     }
 
-    public OrderProperty(String sID, String caption, OrderType orderType, Collection<T> innerInterfaces, List<PropertyInterfaceImplement<T>> props, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
+    public OrderProperty(String sID, String caption, OrderType partitionType, Collection<T> innerInterfaces, List<PropertyInterfaceImplement<T>> props, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
         super(sID, caption, getInterfaces(innerInterfaces));
         this.innerInterfaces = innerInterfaces;
         this.props = props;
         this.orders = orders;
-        this.orderType = orderType;
+        this.partitionType = partitionType;
         this.partitions = partitions;
         this.includeLast = includeLast;
     }
@@ -89,44 +89,44 @@ public class OrderProperty<T extends PropertyInterface> extends SimpleIncrementP
         return result;
     }
 
-    protected Map<PropertyInterfaceImplement<T>,Expr> getPartitionImplements(Map<T, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected Map<PropertyInterfaceImplement<T>,Expr> getPartitionImplements(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Map<PropertyInterfaceImplement<T>,Expr> result = new HashMap<PropertyInterfaceImplement<T>,Expr>();
         for(PropertyInterfaceImplement<T> partition : partitions)
-            result.put(partition,partition.mapExpr(joinImplement, modifier, changedWhere));
+            result.put(partition,partition.mapExpr(joinImplement, propChanges, changedWhere));
         return result;
     }
 
-    protected OrderedMap<Expr, Boolean> getOrderImplements(Map<T, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected OrderedMap<Expr, Boolean> getOrderImplements(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         OrderedMap<Expr, Boolean> result = new OrderedMap<Expr, Boolean>();
         for(Map.Entry<PropertyInterfaceImplement<T>, Boolean> order : orders.entrySet())
-            result.put(order.getKey().mapExpr(joinImplement, modifier, changedWhere), order.getValue());
+            result.put(order.getKey().mapExpr(joinImplement, propChanges, changedWhere), order.getValue());
         return result;
     }
 
-    protected List<Expr> getExprImplements(Map<T, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected List<Expr> getExprImplements(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         List<Expr> exprs = new ArrayList<Expr>();
         for(PropertyInterfaceImplement<T> extra : props)
-            exprs.add(extra.mapExpr(joinImplement, modifier, changedWhere));
+            exprs.add(extra.mapExpr(joinImplement, propChanges, changedWhere));
         return exprs;
     }
 
-    protected Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
         Map<KeyExpr, Expr> mapExprs = new HashMap<KeyExpr, Expr>();
         Map<T, ? extends Expr> mapKeys = getGroupKeys(joinImplement, mapExprs);
 
         WhereBuilder orderWhere = cascadeWhere(changedWhere);
-        Map<PropertyInterfaceImplement<T>,Expr> partitionImplements = getPartitionImplements(mapKeys, modifier, orderWhere);
-        OrderedMap<Expr, Boolean> orderExprs = getOrderImplements(mapKeys, modifier, orderWhere);
-        List<Expr> exprs = getExprImplements(mapKeys, modifier, orderWhere);
+        Map<PropertyInterfaceImplement<T>,Expr> partitionImplements = getPartitionImplements(mapKeys, propChanges, orderWhere);
+        OrderedMap<Expr, Boolean> orderExprs = getOrderImplements(mapKeys, propChanges, orderWhere);
+        List<Expr> exprs = getExprImplements(mapKeys, propChanges, orderWhere);
 
         if(changedWhere!=null) { // изменившиеся ряды (orderWhere) -> ряды с изменившимися partition'ами -> изменившиеся записи
             changedWhere.add(getPartitionWhere(orderWhere.toWhere(), partitionImplements, exprs, orderExprs, mapExprs));
-            changedWhere.add(getPartitionWhere(orderWhere.toWhere(), getPartitionImplements(mapKeys, defaultModifier, null),
-                    getExprImplements(mapKeys, defaultModifier, null), getOrderImplements(mapKeys, defaultModifier, null), mapExprs));
+            changedWhere.add(getPartitionWhere(orderWhere.toWhere(), getPartitionImplements(mapKeys, PropertyChanges.EMPTY, null),
+                    getExprImplements(mapKeys, PropertyChanges.EMPTY, null), getOrderImplements(mapKeys, PropertyChanges.EMPTY, null), mapExprs));
         }
 
-        return OrderExpr.create(orderType, exprs, orderExprs, new HashSet<Expr>(partitionImplements.values()), mapExprs);
+        return PartitionExpr.create(partitionType, exprs, orderExprs, new HashSet<Expr>(partitionImplements.values()), mapExprs);
     }
 
     private Where getPartitionWhere(Where where, Map<PropertyInterfaceImplement<T>,Expr> partitionImplements, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Map<KeyExpr, Expr> mapExprs) {

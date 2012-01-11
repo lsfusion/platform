@@ -2,6 +2,7 @@ package platform.server.form.instance;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.QuickSet;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.Order;
@@ -12,6 +13,7 @@ import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
@@ -26,6 +28,7 @@ import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ClassProperty;
 import platform.server.logics.property.Property;
 import platform.server.session.*;
 
@@ -288,21 +291,24 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 //        throw new RuntimeException("key not found");
     }
 
-    public Where getFilterWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
+    public Where getFilterWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
         Where where = Where.TRUE;
         for(FilterInstance filt : filters)
             where = where.and(filt.getWhere(mapKeys, modifier));
         return where;
     }
 
-    private Where getClassWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
-        Where where = Where.TRUE;
+    public static Map<ObjectInstance, ValueClass> getGridClasses(Collection<ObjectInstance> objects) {
+        Map<ObjectInstance, ValueClass> result = new HashMap<ObjectInstance, ValueClass>();
         for(ObjectInstance object : objects)
-            where = where.and(modifier.getSession().getIsClassWhere(mapKeys.get(object), object.getGridClass(), null));
-        return where;
+            result.put(object,object.getGridClass());
+        return result;
+    }
+    private Where getClassWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
+        return ClassProperty.getIsClassWhere(getGridClasses(objects), mapKeys, modifier);
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
         return getFilterWhere(mapKeys, modifier).and(getClassWhere(mapKeys, modifier));
     }
 
@@ -378,8 +384,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         Map<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
 
-        Set<KeyExpr> usedContext = new HashSet<KeyExpr>();
-        getFilterWhere(mapKeys, Property.defaultModifier).enumKeys(usedContext);
+        QuickSet<KeyExpr> usedContext = getFilterWhere(mapKeys, Property.defaultModifier).getOuterKeys();
         for(ObjectInstance object : objects)
             if(object instanceof DataObjectInstance && !usedContext.contains(mapKeys.get(object))) // если DataObject и нету ключей
                 freeObjects.add((DataObjectInstance) object);
@@ -397,7 +402,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             return expandTable.getWhere(mapKeys);
     }
 
-    private OrderedMap<Map<ObjectInstance, DataObject>, Map<ObjectInstance, ObjectValue>> executeTree(SQLSession session, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
+    private OrderedMap<Map<ObjectInstance, DataObject>, Map<ObjectInstance, ObjectValue>> executeTree(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass) throws SQLException {
         assert isInTree();
 
         Map<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
@@ -447,7 +452,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     @Message("message.form.update.group.keys")
     @ThisMessage
-    public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<Property> changedProps, Collection<CustomClass> changedClasses) throws SQLException {
+    public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<Property> changedProps, Collection<CustomClass> changedClasses) throws SQLException {
         if ((updated & UPDATED_CLASSVIEW) != 0) {
             result.classViews.put(this, curClassView);
         }
@@ -647,7 +652,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return null; // ничего не изменилось
     }
 
-    public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> seekObjects(SQLSession sql, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass, int readSize) throws SQLException {
+    public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> seekObjects(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, int readSize) throws SQLException {
         SeekObjects orderSeeks = new SeekObjects(keys.getValue(keys.indexOf(getGroupObjectValue())), false);
         return orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, true);
     }
@@ -700,7 +705,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         // возвращает OrderInstance из orderSeeks со значениями, а также если есть parent, то parent'ы
-        public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeOrders(SQLSession session, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass, int readSize, boolean down) throws SQLException {
+        public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeOrders(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, int readSize, boolean down) throws SQLException {
             assert !isInTree();
 
             Map<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
@@ -743,7 +748,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         // считывает одну запись
-        private Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> readObjects(SQLSession session, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
+        private Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> readObjects(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass) throws SQLException {
             OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> result = executeOrders(session, env, modifier, baseClass, 1, !end);
             if (result.size() == 0)
                 result = new SeekObjects(values, !end).executeOrders(session, env, modifier, baseClass, 1, end);
@@ -754,7 +759,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 return null;
         }
 
-        public Map<ObjectInstance, DataObject> readKeys(SQLSession session, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
+        public Map<ObjectInstance, DataObject> readKeys(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass) throws SQLException {
             Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> objects = readObjects(session, env, modifier, baseClass);
             if (objects != null)
                 return objects.getKey();
@@ -762,7 +767,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 return new HashMap<ObjectInstance, DataObject>();
         }
 
-        public SeekObjects readValues(SQLSession session, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
+        public SeekObjects readValues(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass) throws SQLException {
             Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> objects = readObjects(session, env, modifier, baseClass);
             if (objects != null)
                 return new SeekObjects(objects.getValue(), end);

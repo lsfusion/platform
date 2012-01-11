@@ -1,24 +1,22 @@
 package platform.server.data.expr.query;
 
+import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractOuterContext;
+import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
-import platform.server.data.query.InnerJoin;
-import platform.server.data.query.SourceJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
-import platform.server.data.translator.HashLazy;
-import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
 import java.util.Map;
-import java.util.Set;
 
-public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query> {
+public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, GroupJoin.QueryOuterContext> {
 
     public static class Query extends AbstractOuterContext<Query> {
         private final Where where;
@@ -35,18 +33,33 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query> {
             return stats.equals(((Query) o).stats) && where.equals(((Query) o).where) && keyTypes.equals(((Query) o).keyTypes);
         }
 
-        @HashOuterLazy
-        public int hashOuter(HashContext hashContext) {
+        protected boolean isComplex() {
+            return true;
+        }
+        protected int hash(HashContext hashContext) {
             return (31 * hashKeysOuter(keyTypes, hashContext) + where.hashOuter(hashContext))* 31 + StatKeys.hashOuter(stats, hashContext);
         }
 
-        public Query translateOuter(MapTranslate translator) {
+        protected Query translate(MapTranslate translator) {
             return new Query(where.translateOuter(translator), StatKeys.translateOuter(stats, translator), translator.translateMapKeys(keyTypes));
         }
 
-        public SourceJoin[] getEnum() {
-            return where.getEnum();
+        public QuickSet<OuterContext> calculateOuterDepends() {
+            return new QuickSet<OuterContext>(keyTypes.keySet(),where).merge(BaseUtils.<QuickSet<OuterContext>>immutableCast(stats.getKeys()));
         }
+    }
+
+    public static class QueryOuterContext extends QueryJoin.QueryOuterContext<Expr, GroupJoin.Query, GroupJoin, GroupJoin.QueryOuterContext> {
+        public QueryOuterContext(GroupJoin thisObj) {
+            super(thisObj);
+        }
+
+        public GroupJoin translateThis(MapTranslate translator) {
+            return new GroupJoin(thisObj, translator);
+        }
+    }
+    protected QueryOuterContext createOuterContext() {
+        return new QueryOuterContext(this);
     }
 
     // дублируем аналогичную логику GroupExpr'а
@@ -54,19 +67,15 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query> {
         super(join, translator);
     }
 
-    public InnerJoin translateOuter(MapTranslate translator) {
-        return new GroupJoin(this, translator);
+    public GroupJoin(Map<KeyExpr, Type> keyTypes, QuickSet<Value> values, Where where, StatKeys<Expr> joins, Map<Expr, BaseExpr> group) {
+        super(new QuickSet<KeyExpr>(keyTypes.keySet()),values,new Query(where, joins, keyTypes),group);
     }
 
-    public GroupJoin(Map<KeyExpr, Type> keyTypes, Set<Value> values, Where where, StatKeys<Expr> joins, Map<Expr, BaseExpr> group) {
-        super(keyTypes.keySet(),values,new Query(where, joins, keyTypes),group);
-    }
-
-    public GroupJoin(Set<KeyExpr> keys, Set<Value> values, Query inner, Map<Expr, BaseExpr> group) {
+    public GroupJoin(QuickSet<KeyExpr> keys, QuickSet<Value> values, Query inner, Map<Expr, BaseExpr> group) {
         super(keys, values, inner, group);
     }
 
-    protected GroupJoin createThis(Set<KeyExpr> keys, Set<Value> values, Query query, Map<Expr, BaseExpr> group) {
+    protected GroupJoin createThis(QuickSet<KeyExpr> keys, QuickSet<Value> values, Query query, Map<Expr, BaseExpr> group) {
         return new GroupJoin(keys, values, query, group);
     }
 

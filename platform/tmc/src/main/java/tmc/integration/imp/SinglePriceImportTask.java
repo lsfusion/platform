@@ -113,7 +113,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                     Map<PropertyInterface, KeyExpr> mapBarKeys = BL.VEDLM.baseLM.barcode.property.getMapKeys();
                     MapDataChanges<PropertyInterface> barcodeChanges = BL.VEDLM.baseLM.barcode.property.getDataChanges(new PropertyChange(mapBarKeys, new DataObject(barcode).getExpr(),
                             BaseUtils.singleValue(mapBarKeys).compare(article, Compare.EQUALS)),
-                            null, session.modifier);
+                            session.modifier, null);
 
                     session.execute(barcodeChanges, null, null);
                 }
@@ -126,7 +126,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
 
             MapDataChanges<PropertyInterface> nameChanges = (MapDataChanges<PropertyInterface>) BL.VEDLM.baseLM.name.property.getDataChanges(
                                                 new PropertyChange(mapNameKeys, priceImpJoin.getExpr(nameField), priceImpJoin.getWhere()),
-                                                null, session.modifier);
+                    session.modifier, null);
 
             // импорт количества и цены
             ObjectValue docValue = session.getObjectValue(impDocID, ObjectType.instance);
@@ -141,7 +141,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
             MapDataChanges<PropertyInterface> quantityChanges = (MapDataChanges<PropertyInterface>) BL.VEDLM.outerCommitedQuantity.property.getDataChanges(
                                                 new PropertyChange(mapQuantityKeys, new DataObject(999999.0).getExpr(),
                                                 priceImpJoin.getWhere().and(mapQuantityKeys.getValue(0).compare(docValue.getExpr(), Compare.EQUALS))),
-                                                null, session.modifier);
+                    session.modifier, null);
 
             // импорт цены
             OrderedMap<PropertyInterface, KeyExpr> mapPriceKeys = BL.VEDLM.shopPrice.getMapKeys();
@@ -153,7 +153,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
             MapDataChanges<PropertyInterface> priceChanges = (MapDataChanges<PropertyInterface>) BL.VEDLM.shopPrice.property.getDataChanges(
                                                 new PropertyChange(mapPriceKeys, priceImpJoin.getExpr(priceField),
                                                 priceImpJoin.getWhere().and(mapPriceKeys.getValue(0).compare(docValue.getExpr(), Compare.EQUALS))),
-                                                null, session.modifier);
+                    session.modifier, null);
 
             // импорт распродаж
             ObjectValue saleActionValue = session.getObjectValue(impSaleActionID, ObjectType.instance);
@@ -167,7 +167,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
             MapDataChanges<PropertyInterface> actionChanges = (MapDataChanges<PropertyInterface>) BL.VEDLM.xorActionArticle.property.getDataChanges(
                                                 new PropertyChange(mapActionKeys, priceImpJoin.getExpr(noDiscField),
                                                 priceImpJoin.getWhere().and(mapActionKeys.getValue(0).compare(saleActionValue.getExpr(), Compare.EQUALS))),
-                                                null, session.modifier);
+                    session.modifier, null);
 
             // сначала execute'им чтобы возврату были только созданные партии
             session.execute(actionChanges.add(priceChanges.add(quantityChanges.add(nameChanges))), null, null);

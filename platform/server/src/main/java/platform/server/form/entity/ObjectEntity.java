@@ -9,7 +9,6 @@ import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
@@ -67,7 +66,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     }
 
     @Override
-    public Object getValue(InstanceFactory factory, DataSession session, Modifier<? extends Changes> modifier) {
+    public Object getValue(InstanceFactory factory, DataSession session, Modifier modifier) {
         return factory.getInstance(this).getDataObject().getValue();
     }
 

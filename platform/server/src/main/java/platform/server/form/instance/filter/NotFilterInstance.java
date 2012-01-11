@@ -6,7 +6,6 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.logics.property.Property;
-import platform.server.session.Changes;
 import platform.server.session.Modifier;
 
 import java.io.DataInputStream;
@@ -49,7 +48,7 @@ public class NotFilterInstance extends FilterInstance {
         return filter.getApplyObject();
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
         return filter.getWhere(mapKeys, modifier).not();
     }
 

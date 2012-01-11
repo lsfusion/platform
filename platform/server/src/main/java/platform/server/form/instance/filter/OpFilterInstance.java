@@ -10,7 +10,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyValueImplement;
-import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
@@ -63,7 +62,7 @@ public abstract class OpFilterInstance extends FilterInstance {
     }
 
     @Override
-    public void resolveAdd(DataSession session, Modifier<? extends Changes> modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
+    public void resolveAdd(DataSession session, Modifier modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
         op1.resolveAdd(session, modifier, object, addObject);
         op2.resolveAdd(session, modifier, object, addObject);
     }

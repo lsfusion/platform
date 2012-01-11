@@ -1,6 +1,8 @@
 package platform.server.data.expr.where.extra;
 
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
+import platform.server.caches.OuterContext;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
@@ -14,8 +16,6 @@ import platform.server.data.expr.query.Stat;
 import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.KeyStat;
-import platform.server.data.translator.HashLazy;
-import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
@@ -23,8 +23,6 @@ import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.MapWhere;
 import platform.server.data.where.classes.ClassExprWhere;
-
-import java.util.Set;
 
 public class IsClassWhere extends DataWhere {
 
@@ -58,8 +56,7 @@ public class IsClassWhere extends DataWhere {
         return ((ObjectClassSet)classes).getNotWhereString(classExpr.getSource(compile));
     }
 
-    @ParamLazy
-    public Where translateOuter(MapTranslate translator) {
+    protected Where translate(MapTranslate translator) {
         return new IsClassWhere(expr.translateOuter(translator),classes);
     }
     @ParamLazy
@@ -67,8 +64,8 @@ public class IsClassWhere extends DataWhere {
         return expr.translateQuery(translator).isClass(classes);
     }
 
-    public void enumDepends(ExprEnumerator enumerator) {
-        expr.enumerate(enumerator);
+    public QuickSet<OuterContext> calculateOuterDepends() {
+        return new QuickSet<OuterContext>(expr);
     }
 
     protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -90,7 +87,7 @@ public class IsClassWhere extends DataWhere {
         BaseClass baseClass = classes.getBaseClass();
         return new Stat((double) (classes.getCount() * baseClass.objectClass.getCount()) / (double) baseClass.getCount());
     }
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
         if(classes instanceof ObjectValueClassSet)
             return new GroupJoinsWheres(new ExprJoin(classExpr, getClassStat((ObjectValueClassSet)classes)), this);
         return expr.getWhere().groupJoinsWheres(keepStat, keyStat).and(new GroupJoinsWheres(this));
@@ -99,8 +96,7 @@ public class IsClassWhere extends DataWhere {
         return expr.getClassWhere(classes).and(expr.getWhere().getClassWhere());
     }
 
-    @HashOuterLazy
-    public int hashOuter(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return expr.hashOuter(hashContext) ^ classes.hashCode()*31;
     }
 
@@ -108,7 +104,4 @@ public class IsClassWhere extends DataWhere {
         return expr.equals(((IsClassWhere)obj).expr) && classes.equals(((IsClassWhere)obj).classes);
     }
 
-    public long calculateComplexity() {
-        return expr.getComplexity();
-    }
 }

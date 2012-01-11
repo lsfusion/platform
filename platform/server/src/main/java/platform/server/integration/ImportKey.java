@@ -12,8 +12,6 @@ import platform.server.data.query.Query;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
-import platform.server.logics.LogicsModule;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
@@ -67,11 +65,11 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
         return getProperty().read(session, mapObjects(row));
     }
 
-    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Modifier<? extends Changes> modifier) {
+    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Modifier modifier) {
         return implement.property.getExpr(getImplementExprs(importKeys), modifier);
     }
 
-    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier<? extends Changes> modifier) {
+    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier modifier) {
         Map<P, Expr> implementExprs = getImplementExprs(importKeys);
 
         Join<String> addedJoin = ((SinglePropertyTableUsage<P>) addedKeys.get(this)).join(implementExprs);
@@ -113,7 +111,7 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
     }
 
     @Override
-    public Expr getDeleteExpr(SessionTableUsage<String, ImportField> importTable, KeyExpr intraKeyExpr, Modifier<SimpleChanges> modifier) {
+    public Expr getDeleteExpr(SessionTableUsage<String, ImportField> importTable, KeyExpr intraKeyExpr, Modifier modifier) {
         Map<ImportField, Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
         Expr interfaceKeyExpr = getExpr(importExprs, modifier);
         return GroupExpr.create(Collections.singletonMap("key", interfaceKeyExpr),

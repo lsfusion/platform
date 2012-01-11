@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.interop.Compare;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.IntegralClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
@@ -10,10 +11,7 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Changes;
-import platform.server.session.MapDataChanges;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
+import platform.server.session.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,16 +59,17 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         return result;
     }
 
-    protected <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
-        return property.getUsedDataChanges(modifier);
+    @IdentityLazy
+    private Map<Interface<P>, ValueClass> getInterfaceClasses() {
+        return BaseUtils.crossJoin(getMapInterfaces(), property.getMapClasses());
     }
 
-    protected Expr calculateExpr(Map<Interface<P>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
+        return ClassProperty.getIsClassUsed(getInterfaceClasses(), propChanges);
+    }
 
-        Where classWhere = Where.TRUE;
-        for(Map.Entry<Interface<P>, ValueClass> interfaceClass : BaseUtils.crossJoin(getMapInterfaces(), property.getMapClasses()).entrySet())
-            classWhere = classWhere.and(modifier.getSession().getIsClassWhere(joinImplement.get(interfaceClass.getKey()), interfaceClass.getValue(), changedWhere));
-        return ValueExpr.TRUE.and(classWhere);
+    protected Expr calculateExpr(Map<Interface<P>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return ValueExpr.TRUE.and(ClassProperty.getIsClassWhere(getInterfaceClasses(), joinImplement, propChanges, changedWhere));
 //        return ((IntegralClass) property.getType()).getActionExpr().and(classWhere);
 
 /*          слишком сложное выполнение
@@ -85,21 +84,21 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
 
     // без решения reverse'а и timeChanges не включишь этот механизм
     @Override
-    public <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
-        return property.getUsedDataChanges(modifier).add(reverse.property.getUsedDataChanges(modifier)).add(property.getUsedChanges(modifier)).add(reverse.property.getUsedChanges(modifier));
+    public PropertyChanges calculateUsedDataChanges(PropertyChanges propChanges) {
+        return property.getUsedDataChanges(propChanges).add(reverse.property.getUsedDataChanges(propChanges)).add(property.getUsedChanges(propChanges)).add(reverse.property.getUsedChanges(propChanges));
     }
 
     @Override
-    protected MapDataChanges<Interface<P>> calculateDataChanges(PropertyChange<Interface<P>> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    protected MapDataChanges<Interface<P>> calculateDataChanges(PropertyChange<Interface<P>> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         Map<P, Interface<P>> mapInterfaces = getMapInterfaces();
         Map<P, KeyExpr> mapKeys = BaseUtils.join(mapInterfaces, change.mapKeys);
 
-        Where reverseWhere = reverse.mapExpr(mapKeys, modifier).getWhere();
-        Expr propertyExpr = property.getExpr(mapKeys, modifier);
+        Where reverseWhere = reverse.mapExpr(mapKeys, propChanges).getWhere();
+        Expr propertyExpr = property.getExpr(mapKeys, propChanges);
         ValueExpr shiftExpr = new ValueExpr(1, (IntegralClass) property.getType());
 
         return property.getDataChanges(new PropertyChange<P>(mapKeys, propertyExpr.sum(shiftExpr.scale(-1)).and(propertyExpr.compare(shiftExpr, Compare.EQUALS).not()).
-            ifElse(reverseWhere,propertyExpr.sum(shiftExpr)), change.where), changedWhere, modifier).
-                add(reverse.mapJoinDataChanges(mapKeys, CaseExpr.NULL, reverseWhere, null, modifier)).map(mapInterfaces); // reverse'им
+            ifElse(reverseWhere,propertyExpr.sum(shiftExpr)), change.where), propChanges, changedWhere).
+                add(reverse.mapJoinDataChanges(mapKeys, CaseExpr.NULL, reverseWhere, null, propChanges)).map(mapInterfaces); // reverse'им
     }
 }

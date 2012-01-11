@@ -136,7 +136,7 @@ public class LP<T extends PropertyInterface> {
         return new ClassWhere<Integer>(classWhere, mapping);
     }
 
-    public Expr getExpr(Modifier<? extends Changes> modifier, Expr... exprs) {
+    public Expr getExpr(Modifier modifier, Expr... exprs) {
         Map<T, Expr> mapExprs = new HashMap<T, Expr>();
         for(int i=0;i<listInterfaces.size();i++)
             mapExprs.put(listInterfaces.get(i),exprs[i]);        
@@ -150,7 +150,7 @@ public class LP<T extends PropertyInterface> {
         return property.getExpr(mapExprs);
     }
 
-    public Object read(SQLSession session, Modifier<? extends Changes> modifier, QueryEnvironment env, DataObject... objects) throws SQLException {
+    public Object read(SQLSession session, Modifier modifier, QueryEnvironment env, DataObject... objects) throws SQLException {
         Map<T, DataObject> mapValues = getMapValues(objects);
         return property.read(session, mapValues, modifier, env);
     }
@@ -159,7 +159,7 @@ public class LP<T extends PropertyInterface> {
         return read(context.getSession(), context.getModifier(), objects);
     }
 
-    public Object read(DataSession session, Modifier<? extends Changes> modifier, DataObject... objects) throws SQLException {
+    public Object read(DataSession session, Modifier modifier, DataObject... objects) throws SQLException {
         return read(session.sql, modifier, session.env, objects);
     }
 
@@ -167,7 +167,7 @@ public class LP<T extends PropertyInterface> {
         return read(session.sql, session.modifier, session.env, objects);
     }
 
-    public ObjectValue readClasses(DataSession session, Modifier<? extends Changes> modifier, QueryEnvironment env, DataObject... objects) throws SQLException {
+    public ObjectValue readClasses(DataSession session, Modifier modifier, QueryEnvironment env, DataObject... objects) throws SQLException {
         Map<T, DataObject> mapValues = getMapValues(objects);
         return property.readClasses(session, mapValues, modifier, env);
     }
@@ -176,7 +176,7 @@ public class LP<T extends PropertyInterface> {
         return readClasses(context.getSession(), context.getModifier(), objects);
     }
 
-    public ObjectValue readClasses(DataSession session, Modifier<? extends Changes> modifier, DataObject... objects) throws SQLException {
+    public ObjectValue readClasses(DataSession session, Modifier modifier, DataObject... objects) throws SQLException {
         return readClasses(session, modifier, session.env, objects);
     }
 
@@ -193,7 +193,7 @@ public class LP<T extends PropertyInterface> {
         return execute(value, context.getSession(), context.getModifier(), objects);
     }
 
-    public List<ClientAction> execute(Object value, DataSession session, Modifier<? extends Changes> modifier, DataObject... objects) throws SQLException {
+    public List<ClientAction> execute(Object value, DataSession session, Modifier modifier, DataObject... objects) throws SQLException {
         //отдельно обрабатываем false-значения: используем null вместо false
         if (value instanceof Boolean && !(Boolean)value) {
             value = null;
@@ -228,11 +228,11 @@ public class LP<T extends PropertyInterface> {
         return new PropertyImplement<T, U>(property, propertyMapping);
     }
 
-    public MapDataChanges<T> getDataChanges(Expr expr, Where where, Modifier<? extends Changes> modifier, KeyExpr... keys) {
+    public MapDataChanges<T> getDataChanges(Expr expr, Where where, Modifier modifier, KeyExpr... keys) {
         Map<T, KeyExpr> mapKeys = new HashMap<T, KeyExpr>();
         for(int i=0;i<listInterfaces.size();i++)
             mapKeys.put(listInterfaces.get(i), keys[i]);
-        return property.getDataChanges(new PropertyChange<T>(mapKeys, expr, where), null, modifier);
+        return property.getDataChanges(new PropertyChange<T>(mapKeys, expr, where), modifier, null);
     }
     /*
     public <L extends PropertyInterface> void follows(LP<L> lp, int... mapping) {

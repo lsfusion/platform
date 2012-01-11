@@ -87,10 +87,10 @@ public class ExprCaseList extends CaseList<Expr, BaseExpr, ExprCase> implements 
         return hash;
     }
 
-    public long getComplexity() {
+    public long getComplexity(boolean outer) {
         long complexity = 0;
         for(ExprCase exprCase : this)
-            complexity += exprCase.getComplexity();
+            complexity += exprCase.getComplexity(outer);
         return complexity;
     }
 }

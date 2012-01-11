@@ -4,8 +4,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,7 +58,7 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
         objectInterface = objInterface;
     }
 
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Where where = Where.TRUE;
         for(Interface propertyInterface : interfaces)
             if(propertyInterface!= objectInterface) {

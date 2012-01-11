@@ -1,19 +1,27 @@
 package platform.server.caches;
 
+import platform.base.QuickSet;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.translator.MapTranslate;
 
 import java.util.Set;
 
-public interface OuterContext<This extends OuterContext> {
+public interface OuterContext<T extends OuterContext> {
 
-    Set<Value> getOuterValues();
+    QuickSet<KeyExpr> getOuterKeys();
+
+    QuickSet<Value> getOuterValues();
 
     int hashOuter(HashContext hashContext);
 
-    This translateOuter(MapTranslate translator);
+    T translateOuter(MapTranslate translator);
 
-    SourceJoin[] getEnum();
+    QuickSet<OuterContext> getOuterDepends();
+
+    void enumerate(ExprEnumerator enumerator);
+    long getComplexity(boolean outer);
 }

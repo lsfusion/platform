@@ -3,9 +3,7 @@ package platform.server.form.entity;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
 import platform.server.form.instance.OrderInstance;
-import platform.server.logics.DataObject;
 import platform.server.serialization.ServerCustomSerializable;
-import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
@@ -15,7 +13,7 @@ import java.util.Set;
 public interface OrderEntity<T extends OrderInstance> extends Instantiable<T>, ServerCustomSerializable {
     void fillObjects(Set<ObjectEntity> objects);
 
-    Object getValue(InstanceFactory factory, DataSession session, Modifier<? extends Changes> modifier) throws SQLException;
+    Object getValue(InstanceFactory factory, DataSession session, Modifier modifier) throws SQLException;
 
     /**
      * Возвращает OrderEntity, которая заменяет все старые ObjectEntities, на их текущие значения, взятые из instanceFactory,

@@ -9,7 +9,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.Property;
-import platform.server.session.Changes;
 import platform.server.session.SessionChanges;
 import platform.server.session.Modifier;
 
@@ -84,7 +83,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
         return getObjectValue().getExpr();
     }
 
-    public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) {
+    public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier modifier) {
         Expr result;
         if(classSource!=null && (result = classSource.get(this))!=null)
             return result;

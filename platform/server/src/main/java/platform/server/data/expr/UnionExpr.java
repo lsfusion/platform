@@ -2,11 +2,11 @@ package platform.server.data.expr;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.QuickSet;
 import platform.server.caches.IdentityLazy;
-import platform.server.classes.ConcreteClass;
+import platform.server.caches.OuterContext;
 import platform.server.classes.DataClass;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.stat.CalculateJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
@@ -39,8 +39,9 @@ public abstract class UnionExpr extends StaticClassExpr {
         return result;
     }
 
-    public void enumDepends(ExprEnumerator enumerator) {
-        enumerator.fill(getParams());
+    @Override
+    public QuickSet<OuterContext> calculateOuterDepends() {
+        return new QuickSet<OuterContext>(getParams());
     }
 
     @Override
@@ -49,12 +50,12 @@ public abstract class UnionExpr extends StaticClassExpr {
             operand.fillJoinWheres(joins, andWhere);
     }
 
-    // мы и так перегрузили fillJoinWheres
-    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    protected boolean isComplex() {
+        return true;
     }
 
-    public long calculateComplexity() {
-        return getComplexity(getParams());
+    // мы и так перегрузили fillJoinWheres
+    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
     }
 
     public Stat getStatValue(KeyStat keyStat) {

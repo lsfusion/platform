@@ -1,10 +1,7 @@
 package platform.server.data;
 
 import platform.base.*;
-import platform.server.caches.AbstractOuterContext;
-import platform.server.caches.IdentityLazy;
-import platform.server.caches.ParamLazy;
-import platform.server.caches.TwinLazy;
+import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
@@ -21,8 +18,6 @@ import platform.server.data.expr.where.pull.AddPullWheres;
 import platform.server.data.expr.where.ifs.NullJoin;
 import platform.server.data.expr.where.ifs.IfJoin;
 import platform.server.data.query.stat.WhereJoin;
-import platform.server.data.translator.HashLazy;
-import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
@@ -45,7 +40,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public abstract class Table extends TwinImmutableObject implements MapKeysInterface<KeyField> {
+public abstract class Table extends AbstractOuterContext<Table> implements MapKeysInterface<KeyField> {
     public final String name;
     public final List<KeyField> keys; // List потому как в таком порядке индексы будут строиться
     public final Set<PropertyField> properties;
@@ -218,18 +213,19 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
         return new Join(joinImplement);
     }
 
-    public int hashOuter(HashContext hashContext) {
+    protected int hash(HashContext hashContext) {
         return hashCode();
     }
 
-    public Table translateOuter(MapTranslate translator) {
+    protected Table translate(MapTranslate translator) {
         return this;
     }
 
-    public void enumInnerValues(Set<Value> values) {
+    public QuickSet<OuterContext> calculateOuterDepends() {
+        return QuickSet.EMPTY();
     }
 
-    public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin<KeyField>, TwinImmutableInterface {
+    public class Join extends AbstractOuterContext<InnerJoin<KeyField>> implements InnerJoin<KeyField>, platform.server.data.query.Join<PropertyField>, TwinImmutableInterface {
 
         public final Map<KeyField, BaseExpr> joins;
 
@@ -283,46 +279,30 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
             return Table.this.properties;
         }
 
-        // множественное наследование TwinImmutableObject {
-
-        @Override
-        public boolean equals(Object o) {
-            return TwinImmutableObject.equals(this, o);
-        }
-
-        boolean hashCoded = false;
-        int hashCode;
-        @Override
-        public int hashCode() {
-            if(!hashCoded) {
-                hashCode = immutableHashCode();
-                hashCoded = true;
-            }
-            return hashCode;
-        }
-
-        // }
-
         public boolean twins(TwinImmutableInterface o) {
             return Table.this.equals(((Join) o).getTable()) && joins.equals(((Join) o).joins);
         }
 
-        public int immutableHashCode() {
-            return hashOuter(HashContext.hashCode);
+        public Map<PropertyField, platform.server.data.expr.Expr> getExprs() {
+            return AbstractJoin.getExprs(this);
         }
 
-        @HashOuterLazy
-        public int hashOuter(HashContext hashContext) {
+        public platform.server.data.query.Join<PropertyField> and(Where where) {
+            return AbstractJoin.and(this, where);
+        }
+
+        protected boolean isComplex() {
+            return true;
+        }
+        protected int hash(HashContext hashContext) {
             return Table.this.hashOuter(hashContext)*31 + AbstractSourceJoin.hashOuter(joins, hashContext);
         }
 
-        @ParamLazy
-        public Join translateOuter(MapTranslate translator) {
+        protected Join translate(MapTranslate translator) {
             return Table.this.translateOuter(translator).joinAnd(translator.translateDirect(joins));
         }
-        
-        public void enumInnerValues(Set<Value> values) {
-            Table.this.enumInnerValues(values);
+        public Join translateOuter(MapTranslate translator) {
+            return (Join) aspectTranslate(translator);
         }
 
         @ParamLazy
@@ -350,17 +330,8 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
             return QueryJoin.getInnerExpr(this, join);
         }
 
-        private long getComplexity() {
-            return AbstractSourceJoin.getComplexity(joins.values()); 
-        }
-
-        public SourceJoin[] getEnum() {
-            return getWhere().getEnum();
-        }
-
-        @IdentityLazy
-        public Set<Value> getOuterValues() {
-            return AbstractOuterContext.getOuterValues(this);
+        public QuickSet<OuterContext> calculateOuterDepends() {
+            return new QuickSet<OuterContext>(joins.values(), Table.this);
         }
 
         public class IsIn extends DataWhere implements JoinData {
@@ -371,8 +342,8 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
                 return keys.iterator().next().toString();
             }
 
-            public void enumDepends(ExprEnumerator enumerator) {
-                enumerator.fill(joins);
+            public QuickSet<OuterContext> calculateOuterDepends() {
+                return new QuickSet<OuterContext>(Join.this);
             }
 
             public Join getJoin() {
@@ -395,7 +366,7 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
                 return "IN JOIN " + Join.this.toString();
             }
 
-            public Where translateOuter(MapTranslate translator) {
+            protected Where translate(MapTranslate translator) {
                 return Join.this.translateOuter(translator).getDirectWhere();
             }
             public Where translateQuery(QueryTranslator translator) {
@@ -418,7 +389,7 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
                 return exprFJ + " IS NOT NULL";
             }
 
-            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
+            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
                 return new GroupJoinsWheres(Join.this, this);
             }
             public ClassExprWhere calculateClassWhere() {
@@ -429,23 +400,20 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
                 return Join.this.equals(((IsIn) o).getJoin());
             }
 
-            public int hashOuter(HashContext hashContext) {
+            public int hash(HashContext hashContext) {
                 return Join.this.hashOuter(hashContext);
             }
 
-            public long calculateComplexity() {
-                return Join.this.getComplexity();
-            }
-
-            @Override
-            public void enumInnerValues(Set<Value> values) {
-                Join.this.enumInnerValues(values);
-            }
         }
 
         public class Expr extends InnerExpr {
 
             public final PropertyField property;
+
+            @Override
+            public QuickSet<OuterContext> calculateOuterDepends() {
+                return new QuickSet<OuterContext>(Join.this);
+            }
 
             // напрямую может конструироваться только при полной уверенности что не null
             private Expr(PropertyField property) {
@@ -461,17 +429,8 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
                 return Join.this.packFollowFalse(where).getExpr(property);
             }
 
-            public Expr translateOuter(MapTranslate translator) {
+            protected Expr translate(MapTranslate translator) {
                 return Join.this.translateOuter(translator).getDirectExpr(property);
-            }
-
-            @Override
-            public void enumInnerValues(Set<Value> values) {
-                Join.this.enumInnerValues(values);
-            }
-
-            public void enumDepends(ExprEnumerator enumerator) {
-                enumerator.fill(joins);
             }
 
             public String toString() {
@@ -494,8 +453,10 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
                 return Join.this.equals(((Expr) o).getInnerJoin()) && property.equals(((Expr) o).property);
             }
 
-            @HashOuterLazy
-            public int hashOuter(HashContext hashContext) {
+            protected boolean isComplex() {
+                return true;
+            }
+            protected int hash(HashContext hashContext) {
                 return Join.this.hashOuter(hashContext)*31+property.hashCode();
             }
 
@@ -526,10 +487,6 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
             public void fillFollowSet(DataWhereSet fillSet) {
                 super.fillFollowSet(fillSet);
                 fillSet.add((DataWhere) Join.this.getWhere());
-            }
-
-            public long calculateComplexity() {
-                return Join.this.getComplexity();
             }
 
             public Table.Join getInnerJoin() {

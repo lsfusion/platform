@@ -1,7 +1,17 @@
 package platform.server.data.where.classes;
 
+import platform.base.BaseUtils;
+import platform.base.QuickSet;
+import platform.base.TwinImmutableInterface;
+import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.OuterContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.data.Value;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableClassExpr;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.CheckWhere;
 import platform.server.data.where.DNFWheres;
@@ -11,7 +21,7 @@ import platform.server.data.where.Where;
 import java.util.Map;
 
 
-public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanClassWheres> {
+public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanClassWheres> implements OuterContext<MeanClassWheres> {
 
     protected CheckWhere andValue(MeanClassWhere key, CheckWhere prevValue, CheckWhere newValue) {
         return prevValue.andCheck(newValue);
@@ -40,16 +50,8 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
     public ClassExprWhere calculateClassWhere() {
         ClassExprWhere result = ClassExprWhere.FALSE;
         for(int i=0;i<size;i++)
-            if(!getValue(i).not().checkTrue()) { // если что можно на checkTrue переставить
-                MeanClassWhere orMean = getKey(i);
-
-                EqualMap equalMap = new EqualMap(orMean.equals.size()*2);
-                for(Map.Entry<VariableClassExpr,VariableClassExpr> equal : orMean.equals.entrySet())
-                    equalMap.add(equal.getKey(),equal.getValue());
-
-                result = result.or(orMean.classWhere.andEquals(equalMap));
-//                assert !orMean.classWhere.means(getValue(i).not());
-            }
+            if(!getValue(i).not().checkTrue())
+                result = result.or(getKey(i).getClassWhere());
         return result;
     }
 
@@ -60,10 +62,64 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
         add(join,where);
     }
 
-    public MeanClassWheres translateOuter(MapTranslate translator) {
-        MeanClassWheres result = new MeanClassWheres();
+    private MeanClassWheres(MeanClassWheres wheres, MapTranslate translator) {
         for(int i=0;i<size;i++)
-            result.add(getKey(i).translate(translator),getValue(i).translateOuter(translator));
-        return result;
+            add(getKey(i).translateOuter(translator),getValue(i).translateOuter(translator));
+    }
+
+    public class OuterContext extends AbstractOuterContext<OuterContext> {
+        protected OuterContext translate(MapTranslate translator) {
+            return new MeanClassWheres(getThis(), translator).getOuter();
+        }
+
+        protected boolean isComplex() {
+            return true;
+        }
+
+        protected int hash(HashContext hash) {
+            int result = 0;
+            for(int i=0;i<size;i++)
+                result += getKey(i).hashOuter(hash) ^ ((Where)getValue(i)).hashOuter(hash);
+            return result;
+        }
+
+        public QuickSet<platform.server.caches.OuterContext> calculateOuterDepends() {
+            return new QuickSet<platform.server.caches.OuterContext>(keyIt()).merge(
+                    new QuickSet<platform.server.caches.OuterContext>(BaseUtils.<Iterable<platform.server.caches.OuterContext>>immutableCast(valueIt())));
+        }
+
+        public MeanClassWheres getThis() {
+            return MeanClassWheres.this;
+        }
+        public boolean twins(TwinImmutableInterface o) {
+            return getThis().equals(((OuterContext)o).getThis());
+        }
+    }
+    private OuterContext outer;
+    public OuterContext getOuter() {
+        if(outer==null)
+            outer = new OuterContext();
+        return outer;
+    }
+    public QuickSet<KeyExpr> getOuterKeys() {
+        return getOuter().getOuterKeys();
+    }
+    public QuickSet<Value> getOuterValues() {
+        return getOuter().getOuterValues();
+    }
+    public int hashOuter(HashContext hashContext) {
+        return getOuter().hashOuter(hashContext);
+    }
+    public QuickSet<platform.server.caches.OuterContext> getOuterDepends() {
+        return getOuter().getOuterDepends();
+    }
+    public void enumerate(ExprEnumerator enumerator) {
+        getOuter().enumerate(enumerator);
+    }
+    public long getComplexity(boolean outer) {
+        return getOuter().getComplexity(outer);
+    }
+    public MeanClassWheres translateOuter(MapTranslate translator) {
+        return getOuter().translateOuter(translator).getThis();
     }
 }

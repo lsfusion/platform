@@ -5,7 +5,6 @@ import platform.server.data.where.Where;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.session.Changes;
 import platform.server.session.Modifier;
 
 import java.io.DataInputStream;
@@ -23,7 +22,7 @@ public class AndFilterInstance extends OpFilterInstance {
         super(inStream, form);
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
         return op1.getWhere(mapKeys, modifier).and(op2.getWhere(mapKeys, modifier));
     }
 

@@ -16,9 +16,7 @@ import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
-import platform.server.session.SimpleChanges;
+import platform.server.session.PropertyChanges;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -53,12 +51,12 @@ public class ObjectClassProperty extends ExecuteProperty {
             context.getSession().changeClass(context.getSingleKeyValue(), baseClass.findConcreteClassID((Integer) context.getValueObject()), context.isGroupLast());
     }
 
-    protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        return modifier.getSession().getIsClassExpr(BaseUtils.singleValue(joinImplement),baseClass,changedWhere);
+    protected PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
+        return PropertyChanges.EMPTY;
     }
 
-    protected <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
-        return modifier.newChanges().addChanges(new SimpleChanges(modifier.getChanges(), true));
+    protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return BaseUtils.singleValue(joinImplement).classExpr(baseClass);
     }
 
     @Override

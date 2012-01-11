@@ -1,5 +1,7 @@
 package platform.server.data.expr.where.ifs;
 
+import platform.base.QuickSet;
+import platform.server.caches.OuterContext;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.ExprCaseList;
@@ -12,7 +14,6 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.classes.BaseClass;
 import platform.server.classes.sets.AndClassSet;
@@ -76,19 +77,15 @@ public class NullExpr extends Expr {
         return this;
     }
 
-    protected long calculateComplexity() {
-        return 1;
-    }
-
     public boolean twins(TwinImmutableInterface o) {
         return true;
     }
 
-    public int hashOuter(HashContext hashContext) {
+    protected int hash(HashContext hashContext) {
         return 132;
     }
 
-    public Expr translateOuter(MapTranslate translator) {
+    protected Expr translate(MapTranslate translator) {
         return this;
     }
 
@@ -99,7 +96,8 @@ public class NullExpr extends Expr {
     public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
     }
 
-    public void enumDepends(ExprEnumerator enumerator) {
+    public QuickSet<OuterContext> calculateOuterDepends() {
+        return QuickSet.EMPTY();
     }
 
     public Where getBaseWhere() {

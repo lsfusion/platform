@@ -1,12 +1,13 @@
 package platform.server.data.expr.where.ifs;
 
+import platform.server.data.query.AbstractJoin;
 import platform.server.data.where.Where;
 import platform.server.data.query.Join;
 import platform.server.data.expr.Expr;
 
 import java.util.Collection;
 
-public class IfJoin<U> extends Join<U> {
+public class IfJoin<U> extends AbstractJoin<U> {
 
     private Where ifWhere;
     private Join<U> trueJoin;

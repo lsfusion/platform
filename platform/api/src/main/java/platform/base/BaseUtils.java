@@ -14,11 +14,17 @@ public class BaseUtils {
     public static final String lineSeparator = System.getProperty("line.separator");
 
     public static boolean nullEquals(Object obj1, Object obj2) {
-
         if (obj1 == null)
             return obj2 == null;
         else
             return obj1.equals(obj2);
+    }
+
+    public static boolean nullHashEquals(Object obj1, Object obj2) {
+        if (obj1 == null)
+            return obj2 == null;
+        else
+            return hashEquals(obj1,obj2);
     }
 
     public static int nullHash(Object obj) {
@@ -193,6 +199,16 @@ public class BaseUtils {
         Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<BK, V> entry : map.entrySet())
             if (keys.contains(entry.getKey()))
+                result.put((K) entry.getKey(), entry.getValue());
+            else
+                rest.put(entry.getKey(), entry.getValue());
+        return result;
+    }
+
+    public static <BK, K extends BK, V> Map<K, V> splitKeys(Map<BK, V> map, QuickSet<K> keys, Map<BK, V> rest) {
+        Map<K, V> result = new HashMap<K, V>();
+        for (Map.Entry<BK, V> entry : map.entrySet())
+            if (keys.contains((K) entry.getKey()))
                 result.put((K) entry.getKey(), entry.getValue());
             else
                 rest.put(entry.getKey(), entry.getValue());
@@ -494,7 +510,7 @@ public class BaseUtils {
         return removeMap;
     }
 
-    public static <K> Collection<K> add(Collection<K> col, K add) {
+    public static <K> Collection<K> add(Collection<? extends K> col, K add) {
         Collection<K> result = new ArrayList<K>(col);
         result.add(add);
         return result;
@@ -881,7 +897,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <G, K> Map<G, Set<K>> groupSet(Group<G, K> getter, Set<K> keys) {
+    public static <G, K> Map<G, Set<K>> groupSet(Group<G, K> getter, Collection<K> keys) { // assert что keys - set
         Map<G, Set<K>> result = new HashMap<G, Set<K>>();
         for (K key : keys) {
             G group = getter.group(key);
@@ -915,11 +931,23 @@ public class BaseUtils {
         return groupSet(getter, getter.keySet());
     }
 
+    public static <G, K> Map<G, Set<K>> groupSet(final QuickMap<K, G> getter, Collection<K> keys) {
+        return groupSet(new Group<G, K>() {
+            public G group(K key) {
+                return getter.get(key);
+            }
+        }, keys);
+    }
+
+    public static <G, K> Map<G, Set<K>> groupSet(final QuickMap<K, G> getter) {
+        return groupSet(getter, getter.keys());
+    }
+
     public static <G, K> Map<G, List<K>> groupList(final OrderedMap<K, G> getter) {
         return groupList(getter, getter.keyList());
     }
 
-    public static <G, K> SortedMap<G, Set<K>> groupSortedSet(Group<G, K> getter, Set<K> keys, Comparator<? super G> comparator) {
+    public static <G, K> SortedMap<G, Set<K>> groupSortedSet(Group<G, K> getter, Collection<K> keys, Comparator<? super G> comparator) { // вообще assert что set
         SortedMap<G, Set<K>> result = new TreeMap<G, Set<K>>(comparator);
         for (K key : keys) {
             G group = getter.group(key);
@@ -942,6 +970,18 @@ public class BaseUtils {
     }
 
     public static <G extends GlobalObject, K> SortedMap<G, Set<K>> groupSortedSet(final Map<K, G> getter) {
+        return groupSortedSet(getter, GlobalObject.comparator);
+    }
+
+    public static <G, K> SortedMap<G, Set<K>> groupSortedSet(final QuickMap<K, G> getter, Comparator<? super G> comparator) {
+        return groupSortedSet(new Group<G, K>() {
+            public G group(K key) {
+                return getter.get(key);
+            }
+        }, getter.keys(), comparator);
+    }
+
+    public static <G extends GlobalObject, K> SortedMap<G, Set<K>> groupSortedSet(final QuickMap<K, G> getter) {
         return groupSortedSet(getter, GlobalObject.comparator);
     }
 
@@ -1181,8 +1221,8 @@ public class BaseUtils {
         return (Map<K, E>) (Map<K, ? extends I>) map;
     }
 
-    public static <K, I> I immutableCast(K object) {
-        return (I) (Object) object;
+    public static <I> I immutableCast(Object object) {
+        return (I) object;
     }
 
     public static <I> I single(Collection<I> col) {
@@ -1439,10 +1479,10 @@ public class BaseUtils {
 
     // есть в общем то другая схема с генерацией всех перестановок, и поиском минимума (или суммированием)
     public static class HashComponents<K> {
-        public final Map<K, GlobalObject> map; // или сам класс или HashClass, то есть всегда содержит информацию о классе
+        public final QuickMap<K, GlobalObject> map; // или сам класс или HashClass, то есть всегда содержит информацию о классе
         public final int hash;
 
-        public HashComponents(Map<K, GlobalObject> map, int hash) {
+        public HashComponents(QuickMap<K, GlobalObject> map, int hash) {
             this.map = map;
             this.hash = hash;
         }
@@ -1450,18 +1490,18 @@ public class BaseUtils {
 
     public static interface HashInterface<K, C> {
 
-        Map<K, C> getParams(); // важно чтобы для C был статичный компаратор
+        QuickMap<K, C> getParams(); // важно чтобы для C был статичный компаратор
 
-        int hashParams(Map<K, ? extends GlobalObject> map);
+        int hashParams(QuickMap<K, ? extends GlobalObject> map);
     }
 
     // цель минимизировать количество hashParams
     public static <K, C extends GlobalObject> HashComponents<K> getComponents(HashInterface<K, C> hashInterface) {
-        Map<K, GlobalObject> components = new HashMap<K, GlobalObject>();
+        QuickMap<K, GlobalObject> components = new SimpleMap<K, GlobalObject>();
 
-        final Map<K, C> classParams = hashInterface.getParams();
-        if (classParams.size() == 0)
-            return new HashComponents<K>(new HashMap<K, GlobalObject>(), hashInterface.hashParams(components));
+        final QuickMap<K, C> classParams = hashInterface.getParams();
+        if (classParams.size == 0)
+            return new HashComponents<K>(new SimpleMap<K, GlobalObject>(), hashInterface.hashParams(components));
 
         int resultHash = 0; // как по сути "список" минимальных хэшей
         int compHash = 16769023;
@@ -1474,9 +1514,9 @@ public class BaseUtils {
                 int minHash = Integer.MAX_VALUE;
                 Set<K> minKeys = new HashSet<K>();
                 for (K key : freeKeys) {
-                    Map<K, GlobalObject> mergedComponents = new HashMap<K, GlobalObject>(classParams); // замещаем базовые ъэши - новыми
-                    mergedComponents.putAll(components);
-                    mergedComponents.put(key, new HashClass<C>(classGroupParam.getKey(), compHash));
+                    QuickMap<K, GlobalObject> mergedComponents = new SimpleMap<K, GlobalObject>(classParams); // замещаем базовые ъэши - новыми
+                    mergedComponents.addAll(components);
+                    mergedComponents.add(key, new HashClass<C>(classGroupParam.getKey(), compHash));
 
                     int hash = hashInterface.hashParams(mergedComponents);
                     if (hash < minHash) { // сбрасываем минимальные ключи
@@ -1489,7 +1529,7 @@ public class BaseUtils {
                 }
 
                 for (K key : minKeys)
-                    components.put(key, new HashClass<C>(classGroupParam.getKey(), compHash));
+                    components.add(key, new HashClass<C>(classGroupParam.getKey(), compHash));
 
                 resultHash = resultHash * 31 + minHash;
 
@@ -1499,7 +1539,7 @@ public class BaseUtils {
             }
 
             if (freeKeys.size() == 1) // если остался один объект в классе оставляем его с hashCode'ом (для оптимизации)
-                components.put(BaseUtils.single(freeKeys), classGroupParam.getKey());
+                components.add(BaseUtils.single(freeKeys), classGroupParam.getKey());
         }
 
         if (freeKeys.size() == 1) // если остался один объект то финальный хэш не учтен (для оптимизации)
@@ -1781,6 +1821,10 @@ public class BaseUtils {
     }
 
     public static int max(int a, int b) {
+        return a > b ? a : b;
+    }
+
+    public static long max(long a, long b) {
         return a > b ? a : b;
     }
 

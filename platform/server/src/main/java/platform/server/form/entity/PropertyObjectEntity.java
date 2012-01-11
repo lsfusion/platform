@@ -8,7 +8,6 @@ import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.serialization.ServerCustomSerializable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
@@ -63,7 +62,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
     }
 
     @Override
-    public Object getValue(InstanceFactory factory, DataSession session, Modifier<? extends Changes> modifier) throws SQLException {
+    public Object getValue(InstanceFactory factory, DataSession session, Modifier modifier) throws SQLException {
         return factory.getInstance(this).read(session, modifier);
     }
 

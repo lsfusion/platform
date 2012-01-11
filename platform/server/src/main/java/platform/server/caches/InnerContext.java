@@ -1,112 +1,24 @@
 package platform.server.caches;
 
-import platform.base.BaseUtils;
-import platform.base.Result;
-import platform.base.GlobalObject;
-import platform.base.GlobalInteger;
-import platform.server.caches.hash.*;
+import platform.base.*;
+import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.MapValuesTranslate;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class InnerContext<I extends InnerContext<I>> extends InnerHashContext implements MapValues<I> {
+public interface InnerContext<I extends InnerContext<I>> extends InnerHashContext, ValuesContext<I>, TwinImmutableInterface {
 
-    public abstract Set<Value> getValues();
+    I translateInner(MapTranslate translate);
 
-    public static Map<Value, Value> getBigValues(Set<Value> values) {
-        Set<Value> usedValues = new HashSet<Value>(values);
+    QuickSet<Value> getInnerValues();
 
-        Map<Value, Value> result = new HashMap<Value, Value>();
-        for(Value value : values) {
-            Value removeValue = value.removeBig(usedValues);
-            if(removeValue!=null) {
-                result.put(value, removeValue);
-                usedValues.add(removeValue);
-            }
-        }
-        if(result.isEmpty())
-            return null;
+    BaseUtils.HashComponents<KeyExpr> getInnerComponents(boolean values);
+    int hashInner(boolean values);
+    QuickMap<KeyExpr, GlobalObject> getInnerMap(boolean values);
 
-        for(Value value : values)
-            if(!result.containsKey(value))
-                result.put(value, value);
-        return result;
-    }
-
-    public Map<Value, Value> getBigValues() {
-        return getBigValues(getValues());
-    }
-
-    public abstract I translateInner(MapTranslate translate);
-    // проверка на соответствие если одинаковые контексты
-    public abstract boolean equalsInner(I object);
-
-    public MapTranslate mapInner(I object, boolean values) {
-        Result<MapTranslate> mapTranslate = new Result<MapTranslate>();
-        if(mapInner(object, values, mapTranslate)!=null)
-            return mapTranslate.result;
-        else
-            return null;
-    }
-
-    public I mapInner(I object, boolean values, Result<MapTranslate> mapTranslate) {
-        for(MapTranslate translator : new MapContextIterable(this, object, values)) {
-            I transContext = translateInner(translator);
-            if(transContext.equalsInner(object)) {
-                mapTranslate.set(translator);
-                return transContext;
-            }
-        }
-        return null;
-    }
-
-    public int hashInner(boolean values) {
-        return hashValues(values ? new HashMapValues(getValueComponents()) : HashCodeValues.instance);
-    }
-
-    private final GlobalInteger keyValueHash = new GlobalInteger(5);
-
-    private Map<Value, GlobalObject> valueComponents;
-    @ManualLazy
-    public Map<Value, GlobalObject> getValueComponents() {
-        if(valueComponents==null) {
-            final HashMapKeys hashKeys = new HashMapKeys(BaseUtils.toMap(getKeys(), keyValueHash));
-            valueComponents = BaseUtils.getComponents(new BaseUtils.HashInterface<Value, GlobalObject>() {
-                public Map<Value, GlobalObject> getParams() {
-                    return AbstractMapValues.getParamClasses(getValues());
-                }
-
-                public int hashParams(Map<Value, ? extends GlobalObject> map) {
-                    return hashInner(new HashContext(hashKeys, map.size()>0?new HashMapValues(map):HashCodeValues.instance));
-                }
-            }).map;
-        }
-
-        return valueComponents;
-    }
-
-    @Override
-    @HashLazy
-    public BaseUtils.HashComponents<KeyExpr> getComponents(HashValues hashValues) {
-        return super.getComponents(hashValues);
-    }
-
-    // нижние методы как таковые пока не используются, нужно для implement MapValues
-    private BaseUtils.HashComponents<Value> components = null;
-    public BaseUtils.HashComponents<Value> getComponents() {
-        if(components==null)
-            components = AbstractMapValues.getComponents(this);
-        return components;
-    }
-
-    public I translate(MapValuesTranslate mapValues) {
-        return translateInner(mapValues.mapKeys());
-    }
+    MapTranslate mapInner(I object, boolean values);
+    boolean equalsInner(I object); // проверка на соответствие если одинаковые контексты, на самом деле protected
 }

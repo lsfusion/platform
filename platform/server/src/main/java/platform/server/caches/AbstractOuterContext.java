@@ -1,21 +1,79 @@
 package platform.server.caches;
 
-import platform.base.ImmutableObject;
+import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.base.TwinImmutableObject;
+import platform.base.QuickMap;
+import platform.base.QuickSet;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.query.SourceJoin;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.query.ExprEnumerator;
+import platform.server.data.translator.MapTranslate;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-public abstract class AbstractOuterContext<This extends OuterContext> extends TwinImmutableObject implements OuterContext<This> {
+public abstract class AbstractOuterContext<T extends OuterContext<T>> extends AbstractKeysValuesContext<T> implements OuterContext<T> {
+
+    public static QuickSet<KeyExpr> getOuterKeys(OuterContext<?> context) {
+        return getOuterKeys(context.getOuterDepends());
+    }
+
+    public static QuickSet<Value> getOuterValues(OuterContext<?> context) {
+        return getOuterValues(context.getOuterDepends());
+    }
+
+    public static long getComplexity(Iterable<? extends OuterContext> elements, boolean outer) {
+        long complexity = 0;
+        for(OuterContext element : elements)
+            complexity += element.getComplexity(outer);
+        return complexity;
+    }
+
+    public static QuickSet<KeyExpr> getOuterKeys(Collection<? extends OuterContext> array) {
+        QuickSet<KeyExpr> result = new QuickSet<KeyExpr>();
+        for(OuterContext<?> element : array)
+            result.addAll(element.getOuterKeys());
+        return result;
+    }
+
+    public static QuickSet<KeyExpr> getOuterKeys(QuickSet<? extends OuterContext> array) {
+        QuickSet<KeyExpr> result = new QuickSet<KeyExpr>();
+        for(int i=0;i<array.size;i++)
+            result.addAll(array.get(i).getOuterKeys());
+        return result;
+    }
+
+    public static QuickSet<Value> getOuterValues(Collection<? extends OuterContext> set) {
+        QuickSet<Value> result = new QuickSet<Value>();
+        for(OuterContext<?> element : set)
+            result.addAll(element.getOuterValues());
+        return result;
+    }
+
+    public static QuickSet<Value> getOuterValues(QuickSet<? extends OuterContext> set) {
+        QuickSet<Value> result = new QuickSet<Value>();
+        for(int i=0;i<set.size;i++)
+            result.addAll(set.get(i).getOuterValues());
+        return result;
+    }
+
+    public T translateOuter(MapTranslate translator) {
+        return aspectTranslate(translator);
+    }
+
+    public int hashOuter(HashContext hashContext) {
+        return aspectHash(hashContext);
+    }
+
+    public QuickSet<Value> getOuterValues() {
+        return aspectGetValues();
+    }
+
+    public QuickSet<KeyExpr> getOuterKeys() {
+        return aspectGetKeys();
+    }
 
     public int immutableHashCode() {
         return hashOuter(HashContext.hashCode);
@@ -42,6 +100,13 @@ public abstract class AbstractOuterContext<This extends OuterContext> extends Tw
         return hash;
     }
 
+    public static int hashOuter(QuickSet<? extends OuterContext> set, HashContext hashContext) {
+        int hash = 0;
+        for(int i=0;i<set.size;i++)
+            hash += set.get(i).hashOuter(hashContext);
+        return hash;
+    }
+
     public static <T extends OuterContext> int hashSetOuter(T[] array, HashContext hashContext) {
         int hash = 0;
         for(OuterContext element : array)
@@ -63,12 +128,66 @@ public abstract class AbstractOuterContext<This extends OuterContext> extends Tw
         return hash;
     }
 
-    public static Set<Value> getOuterValues(OuterContext outerContext) {
-        return AbstractSourceJoin.enumValues(outerContext.getEnum());
+    public static int hashKeysOuter(QuickMap<? extends OuterContext, ?> map, HashContext hashContext) {
+        int hash = 0;
+        for(int i=0;i<map.size;i++)
+            hash += map.getKey(i).hashOuter(hashContext) ^ map.getValue(i).hashCode();
+        return hash;
     }
 
-    @IdentityLazy
-    public Set<Value> getOuterValues() {
+    public static void enumerate(OuterContext<?> context, ExprEnumerator enumerator) {
+        if(enumerator.enumerate(context))
+            for(OuterContext outerDepend : context.getOuterDepends())
+                outerDepend.enumerate(enumerator);
+    }
+
+    public void enumerate(ExprEnumerator enumerator) {
+        enumerate(this, enumerator);
+    }
+
+    public static long getComplexity(OuterContext<?> context, boolean outer) {
+        long result = 1;
+        for(OuterContext outerDepend : context.getOuterDepends())
+            result += outerDepend.getComplexity(outer);
+        return result;
+    }
+
+    protected long calculateComplexity(boolean outer) {
+        return getComplexity(this, outer);
+    }
+
+    private Long outerComplexity;
+    private Long complexity;
+    @ManualLazy
+    public long getComplexity(boolean outer) {
+        if(outer) {
+            if(outerComplexity == null)
+                outerComplexity = calculateComplexity(outer);
+            return outerComplexity;
+        } else {
+            if(complexity == null)
+                complexity = calculateComplexity(outer);
+            return complexity;
+        }
+    }
+
+    protected abstract QuickSet<OuterContext> calculateOuterDepends();
+    private QuickSet<OuterContext> outerDepends;
+    @Override
+    public QuickSet<OuterContext> getOuterDepends() {
+        if(isComplex()) {
+            if(outerDepends==null)
+                outerDepends = calculateOuterDepends();
+            return outerDepends;
+        } else
+            return calculateOuterDepends();
+    }
+
+    protected QuickSet<KeyExpr> getKeys() {
+        return getOuterKeys(this);
+    }
+
+    public QuickSet<Value> getValues() {
         return getOuterValues(this);
     }
 }

@@ -1,6 +1,7 @@
 package platform.server.data.query;
 
 import platform.base.OrderedMap;
+import platform.base.QuickSet;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.sql.SQLSyntax;
@@ -16,9 +17,9 @@ public interface ParsedQuery<K,V> {
     CompiledQuery<K,V> compileSelect(SQLSyntax syntax, OrderedMap<V, Boolean> orders, int top, String prefix);    
     <B> ClassWhere<B> getClassWhere(Collection<? extends V> classProps);
 
-    Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues); // последний параметр = какой есть\какой нужно, joinImplement не translate'ся
+    Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues); // последний параметр = какой есть\какой нужно, joinImplement не translateOuter'ся
 
-    Set<Value> getValues();
+    QuickSet<Value> getValues();
 
     public Query<K,V> pullValues(Map<K, Expr> pullKeys, Map<V, Expr> pullProps);
 }

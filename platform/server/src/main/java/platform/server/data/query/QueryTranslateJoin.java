@@ -7,7 +7,7 @@ import platform.server.data.where.Where;
 
 import java.util.Collection;
 
-public class QueryTranslateJoin<U> extends Join<U> {
+public class QueryTranslateJoin<U> extends AbstractJoin<U> {
 
     QueryTranslator translator;
     Join<U> join;

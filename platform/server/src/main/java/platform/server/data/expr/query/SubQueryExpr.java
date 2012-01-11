@@ -1,0 +1,112 @@
+package platform.server.data.expr.query;
+
+import platform.base.BaseUtils;
+import platform.server.caches.IdentityLazy;
+import platform.server.data.expr.*;
+import platform.server.data.expr.where.pull.ExprPullWheres;
+import platform.server.data.query.CompileSource;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
+import platform.server.data.type.Type;
+import platform.server.data.where.Where;
+
+import java.util.Map;
+
+public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQueryExpr, SubQueryExpr.QueryInnerContext> {
+
+    public SubQueryExpr(Expr query, Map<KeyExpr, BaseExpr> group) {
+        super(query, group);
+    }
+
+    public static class QueryInnerContext extends QueryExpr.QueryInnerContext<KeyExpr, Expr, SubQueryJoin, SubQueryExpr, QueryInnerContext> {
+        public QueryInnerContext(SubQueryExpr thisObj) {
+            super(thisObj);
+        }
+
+        public Type getType() {
+            return thisObj.query.getType(thisObj.query.getWhere());
+        }
+
+        protected Expr getMainExpr() {
+            return thisObj.query;
+        }
+
+        protected Where getFullWhere() {
+            return thisObj.query.getWhere();
+        }
+
+        protected boolean isSelect() {
+            return true;
+        }
+    }
+    protected QueryInnerContext createInnerContext() {
+        return new QueryInnerContext(this);
+    }
+
+    protected SubQueryExpr createThis(Expr query, Map<KeyExpr, BaseExpr> group) {
+        return new SubQueryExpr(query, group);
+    }
+
+    @IdentityLazy
+    public SubQueryJoin getInnerJoin() {
+        return new SubQueryJoin(getInner().getInnerKeys(), getInner().getInnerValues(), query.getWhere(), group);
+    }
+
+    public SubQueryExpr(SubQueryExpr expr, MapTranslate translator) {
+        super(expr, translator);
+    }
+
+    protected InnerExpr translate(MapTranslate translator) {
+        return new SubQueryExpr(this, translator);
+    }
+
+    public class NotNull extends QueryExpr.NotNull {
+    }
+
+    public Where calculateWhere() {
+        return new NotNull();
+    }
+
+    public Expr translateQuery(QueryTranslator translator) {
+        return create(query, translator.translate(group));
+    }
+
+    public String getSource(CompileSource compile) {
+        return compile.getSource(this);
+    }
+
+    @Override
+    public Expr packFollowFalse(Where falseWhere) {
+        Map<KeyExpr, Expr> packedGroup = packPushFollowFalse(group, falseWhere);
+        Expr packedQuery = query.pack();
+        if(!(BaseUtils.hashEquals(packedQuery, query) && BaseUtils.hashEquals(packedGroup,group)))
+            return create(packedQuery, packedGroup);
+        else
+            return this;
+    }
+
+    public static Expr create(Expr expr) {
+        return createBase(expr, BaseUtils.<Map<KeyExpr, BaseExpr>>immutableCast(expr.getOuterKeys().toMap()));
+    }
+
+    public static Where create(Where where) {
+        return create(ValueExpr.get(where)).getWhere();
+    }
+
+    public static Expr create(final Expr expr, Map<KeyExpr, ? extends Expr> group) {
+        return new ExprPullWheres<KeyExpr>() {
+            protected Expr proceedBase(Map<KeyExpr, BaseExpr> map) {
+                return createBase(expr, map);
+            }
+        }.proceed(group);
+    }
+
+    public static Expr createBase(Expr expr, Map<KeyExpr, BaseExpr> group) {
+        return BaseExpr.create(new SubQueryExpr(expr, group));
+    }
+
+    @Override
+    public String toString() {
+        return "SUBQUERY(" + query + "," + group + ")";
+    }
+}

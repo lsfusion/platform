@@ -1,31 +1,37 @@
 package platform.server.logics.property;
 
-import platform.server.classes.StaticClass;
+import platform.base.BaseUtils;
+import platform.server.caches.ManualLazy;
+import platform.server.classes.ConcreteObjectClass;
+import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Changes;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
+import platform.server.logics.property.derived.DerivedProperty;
+import platform.server.session.DataSession;
 import platform.server.session.Modifier;
-import platform.server.session.SimpleChanges;
+import platform.server.session.PropertyChanges;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.sql.SQLException;
+import java.util.*;
 
-public abstract class ClassProperty<S extends StaticClass> extends AggregateProperty<ClassPropertyInterface> {
+public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
-    public final S staticClass;
-
-    public ClassProperty(String sID, String caption, ValueClass[] classes, S staticClass) {
-        super(sID, caption, DataProperty.getInterfaces(classes));
-
-        this.staticClass = staticClass;
+    public ClassProperty(String sID, String caption, ValueClass valueClass) {
+        super(sID, caption, DataProperty.getInterfaces(new ValueClass[]{valueClass}));
     }
 
-    public ValueClass getValueClass() {
-        return staticClass;
+    public static Map<ClassPropertyInterface, ValueClass> getMapClasses(Collection<ClassPropertyInterface> interfaces) {
+        Map<ClassPropertyInterface, ValueClass> result = new HashMap<ClassPropertyInterface, ValueClass>();
+        for(ClassPropertyInterface propertyInterface : interfaces)
+            result.put(propertyInterface,propertyInterface.interfaceClass);
+        return result;
     }
 
     public static Set<ValueClass> getValueClasses(Collection<ClassPropertyInterface> interfaces) {
@@ -35,29 +41,83 @@ public abstract class ClassProperty<S extends StaticClass> extends AggregateProp
         return interfaceClasses;
     }
 
-    public static <U extends Changes<U>> U getIsClassUsedChanges(Collection<ClassPropertyInterface> interfaces, Modifier<U> modifier) {
-        return modifier.newChanges().addChanges(new SimpleChanges(modifier.getChanges(), getValueClasses(interfaces), false));
+    public final static Map<Map<ValueClass, Integer>, PropertyImplement<?, ValueClass>> cacheClasses = new HashMap<Map<ValueClass, Integer>, PropertyImplement<?, ValueClass>>();
+    @ManualLazy
+    public static <T, P extends PropertyInterface> PropertyImplement<?, T> getIsClassProperty(Map<T, ValueClass> classes) {
+        Map<ValueClass, Integer> multiClasses = BaseUtils.multiSet(classes.values());
+        PropertyImplement<P, ValueClass> implement = (PropertyImplement<P, ValueClass>) cacheClasses.get(multiClasses);
+        if(implement==null) {
+            PropertyImplement<?, T> classImplement = DerivedProperty.createCProp(LogicalClass.instance, true, classes);
+            cacheClasses.put(multiClasses, classImplement.mapImplement(classes));
+            return classImplement;
+        } else
+            return new PropertyImplement<P, T>(implement.property, BaseUtils.mapValues(implement.mapping, classes));
     }
 
-    public <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
-        return getIsClassUsedChanges(interfaces, modifier);
+    public static <T> PropertyImplement<?, T> getIsClassProperty(ValueClass valueClass, T map) {
+        ClassProperty classProperty = valueClass.getProperty();
+        return new PropertyImplement<ClassPropertyInterface, T>(classProperty, Collections.singletonMap(BaseUtils.single(classProperty.interfaces), map));
     }
 
-    public static Where getIsClassWhere(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        Where classWhere = Where.TRUE;
-        for(Map.Entry<ClassPropertyInterface,? extends Expr> join : joinImplement.entrySet()) // берем (нужного класса and не remove'уты) or add'уты
-            classWhere = classWhere.and(modifier.getSession().getIsClassWhere(join.getValue(), join.getKey().interfaceClass, changedWhere));
-        return classWhere;
+    public static PropertyImplement<?, ClassPropertyInterface> getIsClassProperty(Collection<ClassPropertyInterface> interfaces) {
+         return getIsClassProperty(getMapClasses(interfaces));
+     }
+
+    public static <T> PropertyChanges getIsClassUsed(Map<T, ValueClass> joinClasses, PropertyChanges propChanges) {
+        return getIsClassProperty(joinClasses).property.getUsedChanges(propChanges);
+    }
+    public static <T> Where getIsClassWhere(Map<T, ValueClass> joinClasses, Map<T, ? extends Expr> joinImplement, Modifier modifier) {
+        return getIsClassWhere(joinClasses, joinImplement, modifier.getPropertyChanges(), null);
+    }
+    public static <T> Where getIsClassWhere(Map<T, ValueClass> joinClasses, Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return getIsClassProperty(joinClasses).mapExpr(joinImplement, propChanges, changedWhere).getWhere();
     }
 
-    protected abstract Expr getStaticExpr();
+    public static PropertyChanges getIsClassUsed(ValueClass valueClass, PropertyChanges propChanges) {
+        return getIsClassProperty(valueClass, "value").property.getUsedChanges(propChanges);
+    }
+    public static Where getIsClassWhere(ValueClass valueClass, Expr valueExpr, Modifier modifier) {
+        return getIsClassWhere(valueClass, valueExpr, modifier.getPropertyChanges(), null);
+    }
+    public static Where getIsClassWhere(ValueClass valueClass, Expr valueExpr, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return getIsClassProperty(valueClass, "value").mapExpr(Collections.singletonMap("value", valueExpr), propChanges, changedWhere).getWhere();
+    }
 
-    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        // здесь session может быть null
-        return getStaticExpr().and(getIsClassWhere(joinImplement, modifier, changedWhere));
+    public static PropertyChanges getIsClassUsed(Collection<ClassPropertyInterface> interfaces, PropertyChanges propChanges) {
+        return getIsClassProperty(interfaces).property.getUsedChanges(propChanges);
+    }
+    public static Where getIsClassWhere(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return getIsClassProperty(joinImplement.keySet()).mapExpr(joinImplement, propChanges, changedWhere).getWhere();
+    }
+
+    public PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
+        return PropertyChanges.EMPTY;
+    }
+
+    public ValueClass getValueClass() {
+        return BaseUtils.single(interfaces).interfaceClass;
+    }
+    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return ValueExpr.get(BaseUtils.singleValue(joinImplement).isClass(getValueClass().getUpSet()));
     }
 
     protected boolean useSimpleIncrement() {
         return true;
+    }
+
+    @Override
+    protected void proceedNotNull(Map<ClassPropertyInterface, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
+        ValueClass valueClass = getValueClass();
+        if(valueClass instanceof ConcreteObjectClass)
+            for(Map<ClassPropertyInterface, DataObject> row : new Query<ClassPropertyInterface, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet())
+                session.changeClass(BaseUtils.singleValue(row), (ConcreteObjectClass) valueClass);
+    }
+
+    @Override
+    protected void proceedNull(Map<ClassPropertyInterface, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
+        ValueClass valueClass = getValueClass();
+        if(valueClass instanceof ConcreteObjectClass)
+            for(Map<ClassPropertyInterface, DataObject> row : new Query<ClassPropertyInterface, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet())
+                session.changeClass(BaseUtils.singleValue(row), session.baseClass.unknown);
     }
 }

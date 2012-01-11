@@ -4,8 +4,7 @@ import platform.server.classes.ConcreteValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.FormulaExpr;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +45,7 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         this.formula = formula;
     }
 
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
         Map<String, Expr> params = new HashMap<String, Expr>();
         for(Interface propertyInterface : interfaces)

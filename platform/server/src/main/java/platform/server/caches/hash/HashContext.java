@@ -1,8 +1,9 @@
 package platform.server.caches.hash;
 
+import platform.base.QuickSet;
 import platform.server.data.Value;
-
-import java.util.Set;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.translator.MapTranslate;
 
 public class HashContext extends HashObject {
 
@@ -12,6 +13,10 @@ public class HashContext extends HashObject {
     public HashContext(HashKeys keys, HashValues values) {
         this.keys = keys;
         this.values = values;
+    }
+
+    public boolean isGlobal() {
+        return keys.isGlobal() && values.isGlobal();
     }
 
     public final static HashContext hashCode = new HashContext(HashCodeKeys.instance,HashCodeValues.instance);
@@ -26,8 +31,17 @@ public class HashContext extends HashObject {
         return 31 * keys.hashCode() + values.hashCode();
     }
 
-    @Override
-    public HashContext filterValues(Set<Value> filter) {
-        return new HashContext(keys, values.filterValues(filter));
+    public HashContext filterKeysValues(QuickSet<KeyExpr> filterKeys, QuickSet<Value> filterValues) {
+        return new HashContext(keys.filterKeys(filterKeys), values.filterValues(filterValues));
+    }
+
+    public HashContext reverseTranslate(MapTranslate translator, QuickSet<KeyExpr> contextKeys, QuickSet<Value> contextValues) {
+        HashKeys transKeys = keys.reverseTranslate(translator, contextKeys);
+        if(transKeys==null)
+            return null;
+        HashValues transValues = values.reverseTranslate(translator.mapValues(), contextValues);
+        if(transValues==null)
+            return null;
+        return new HashContext(transKeys, transValues);
     }
 }

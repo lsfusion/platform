@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.base.ImmutableObject;
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Data;
 import platform.server.auth.SecurityPolicy;
@@ -18,7 +19,6 @@ import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -34,6 +34,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.property.ClassProperty;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -332,7 +333,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             this.valueClass = valueClass;
         }
 
-        public VariableClassExpr translateOuter(MapTranslate translator) {
+        protected VariableClassExpr translate(MapTranslate translator) {
             return this;
         }
 
@@ -350,7 +351,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
                 return new ClassExprWhere(ClassExpr.this, valueClass.getUpSet());
             }
 
-            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
+            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
                 return new GroupJoinsWheres(this);
             }
         }
@@ -371,7 +372,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             return valueClass.equals(((ClassExpr) obj).valueClass);
         }
 
-        public int hashOuter(HashContext hashContext) {
+        protected int hash(HashContext hashContext) {
             return valueClass.hashCode();
         }
 
@@ -379,13 +380,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             if(compile instanceof ToString)
                 return "act(" + valueClass + ")";
             throw new RuntimeException("not supported");
-        }
-
-        public void enumDepends(ExprEnumerator enumerator) {
-        }
-
-        public long calculateComplexity() {
-            return 1;
         }
 
         public Stat getStatValue(KeyStat keyStat) {
@@ -495,5 +489,21 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     public void setEditForm(ClassFormEntity form) {
         editFormHolder.setForm(form);
+    }
+
+    public static ClassProperty getProperty(ValueClass valueClass) {
+        return new ClassProperty("cp_" + valueClass.getSID(), valueClass.getCaption() + ServerResourceBundle.getString("logics.pr"), valueClass);
+    }
+
+    @IdentityLazy
+    public ClassProperty getProperty() {
+        return getProperty(this);
+    }
+
+    public static Set<ClassProperty> getProperties(Set<? extends ValueClass> classes) {
+        Set<ClassProperty> result = new HashSet<ClassProperty>();
+        for(ValueClass valueClass : classes)
+            result.add(valueClass.getProperty());
+        return result;
     }
 }

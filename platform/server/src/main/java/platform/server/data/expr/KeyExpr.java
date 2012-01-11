@@ -1,5 +1,6 @@
 package platform.server.data.expr;
 
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.query.Stat;
@@ -8,7 +9,6 @@ import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -45,9 +45,6 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
         return compile.keySelect.get(this);
     }
 
-    public void enumDepends(ExprEnumerator enumerator) {
-    }
-
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
     }
 
@@ -67,8 +64,11 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
         return translator.translate(this);
     }
 
-    public KeyExpr translateOuter(MapTranslate translator) {
+    protected KeyExpr translate(MapTranslate translator) {
         return translator.translate(this);
+    }
+    public KeyExpr translateOuter(MapTranslate translator) {
+        return (KeyExpr) aspectTranslate(translator);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
         return System.identityHashCode(this);
     }
 
-    public int hashOuter(HashContext hashContext) {
+    protected int hash(HashContext hashContext) {
         return hashContext.keys.hash(this);
     }
 
@@ -85,10 +85,6 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
     }
 
     public void fillFollowSet(DataWhereSet fillSet) {
-    }
-
-    public long calculateComplexity() {
-        return 1;
     }
 
     public Stat getStatValue(KeyStat keyStat) {
@@ -109,5 +105,10 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
 
     public InnerExprSet getExprFollows(boolean recursive) {
         return InnerExpr.getExprFollows(this, recursive);
+    }
+
+    @Override
+    protected QuickSet<KeyExpr> getKeys() {
+        return new QuickSet<KeyExpr>(this);
     }
 }

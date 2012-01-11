@@ -428,7 +428,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public void initGroups() {
         initBaseGroupAliases();
 
-        Settings.instance.setCountJoinsUseUnionInsteadOfUnionAll(5);
+        Settings.instance.setLimitUnionAllCount(5);
 //        Settings.instance.setEditLogicalOnSingleClick(true);
 //        Settings.instance.setEditActionOnSingleClick(true);
 
@@ -4030,11 +4030,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         preliminaryApplicationProject = addAGProp(idGroup, false, "preliminaryApplicationProject", false, "Заяка на предварительную экспертизу", applicationPreliminary, projectApplication);
         follows(isPreliminaryStatusProject, preliminaryApplicationProject, 1);
-        follows(addCProp("Заяка предв.", LogicalClass.instance, true, applicationPreliminary), isPreliminaryApplication, 1);
+        follows(is(applicationPreliminary), isPreliminaryApplication, 1);
 
         statusApplicationProject = addAGProp(idGroup, false, "statusApplicationProject", false, "Заяка на статус участника", applicationStatus, projectApplication);
         follows(isStatusProject, statusApplicationProject, 1);
-        follows(addCProp("Заяка на статус (сразу)", LogicalClass.instance, true, applicationStatus), isStatusApplication, 1);
+        follows(is(applicationStatus), isStatusApplication, 1);
 
         dateApplicationPreliminary = addJProp("dateApplicationPreliminary", "Дата (предв. экспертиза)", dateProject, projectApplicationPreliminary, 1);
         dateApplicationStatus = addJProp("dateApplicationStatus", "Дата (статус участника)", dateStatusProject, projectApplicationStatus, 1);

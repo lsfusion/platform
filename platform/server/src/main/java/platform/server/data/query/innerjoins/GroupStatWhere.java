@@ -31,14 +31,6 @@ public class GroupStatWhere<K> {
         return result;
     }
 
-    private Where fullWhere;
-    @ManualLazy
-    public Where getFullWhere() {
-        if(fullWhere==null)
-            fullWhere = where.and(keyEqual.getWhere());
-        return fullWhere;
-    }
-
     @Override
     public boolean equals(Object o) {
         return this == o || o instanceof GroupStatWhere && keyEqual.equals(((GroupStatWhere) o).keyEqual) && stats.equals(((GroupStatWhere) o).stats) && where.equals(((GroupStatWhere) o).where);

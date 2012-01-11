@@ -1,6 +1,8 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
+import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
 import platform.server.caches.ManualLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -10,7 +12,7 @@ import platform.server.logics.property.UserProperty;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapDataChanges<P extends PropertyInterface> {
+public class MapDataChanges<P extends PropertyInterface> extends TwinImmutableObject {
 
     public final DataChanges changes;
     public final Map<UserProperty, Map<ClassPropertyInterface, P>> map;
@@ -38,7 +40,7 @@ public class MapDataChanges<P extends PropertyInterface> {
     @ManualLazy
     public long getComplexity() {
         if(complexity==null)
-            complexity = changes.getComplexity();
+            complexity = changes.getComplexity(false);
         return complexity;
     }
 
@@ -70,10 +72,18 @@ public class MapDataChanges<P extends PropertyInterface> {
     }
 
     private MapDataChanges(MapDataChanges<P> trans, MapValuesTranslate mapValues) {
-        changes = trans.changes.translate(mapValues);
+        changes = trans.changes.translateValues(mapValues);
         map = trans.map;
     }
-    public MapDataChanges<P> translate(MapValuesTranslate mapValues) {
+    public MapDataChanges<P> translateValues(MapValuesTranslate mapValues) {
         return new MapDataChanges<P>(this, mapValues);
+    }
+
+    public boolean twins(TwinImmutableInterface o) {
+        return changes.equals(((MapDataChanges<P>)o).changes) && map.equals(((MapDataChanges<P>)o).map);
+    }
+
+    public int immutableHashCode() {
+        return changes.hashCode() * 31 + map.hashCode();
     }
 }

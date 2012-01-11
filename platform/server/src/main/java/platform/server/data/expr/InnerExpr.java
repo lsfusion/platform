@@ -1,27 +1,23 @@
 package platform.server.data.expr;
 
+import platform.base.QuickSet;
 import platform.base.Result;
 import platform.server.caches.ManualLazy;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.InnerJoins;
-import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.*;
-import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.BaseJoin;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.JoinData;
-import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-@TranslateExprLazy
 public abstract class InnerExpr extends NotNullExpr implements JoinData {
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -42,7 +38,7 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
 
     public abstract class NotNull extends NotNullExpr.NotNull {
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
             return new GroupJoinsWheres(InnerExpr.this.getInnerJoin(), this);
         }
 
@@ -93,9 +89,9 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
     }
 
     public abstract InnerJoin<?> getInnerJoin();
-    public InnerBaseJoin<?> getBaseJoin() {
+    public InnerJoin<?> getBaseJoin() {
         return getInnerJoin();
     }
 
-    public abstract InnerExpr translateOuter(MapTranslate translator);
+    protected abstract InnerExpr translate(MapTranslate translator);
 }

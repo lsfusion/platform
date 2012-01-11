@@ -12,7 +12,10 @@ import platform.server.data.where.Where;
 
 public abstract class SingleClassExpr extends BaseExpr {
 
-    public abstract SingleClassExpr translateOuter(MapTranslate translator);
+    protected abstract SingleClassExpr translate(MapTranslate translator);
+    public SingleClassExpr translateOuter(MapTranslate translator) {
+        return (SingleClassExpr) aspectTranslate(translator);
+    }
 
     private boolean isTrueWhere() {
         return this instanceof KeyExpr || this instanceof CurrentEnvironmentExpr;

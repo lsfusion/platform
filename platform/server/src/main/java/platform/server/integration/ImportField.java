@@ -6,7 +6,6 @@ import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
-import platform.server.session.Changes;
 import platform.server.session.Modifier;
 import platform.server.session.SinglePropertyTableUsage;
 
@@ -54,7 +53,7 @@ public class ImportField implements ImportFieldInterface, ImportKeyInterface {
         return importKeys.get(this);
     }
 
-    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier<? extends Changes> modifier) {
+    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier modifier) {
         return getExpr(importKeys);
     }
 

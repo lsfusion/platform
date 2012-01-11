@@ -2,6 +2,7 @@ package platform.server.data.expr;
 
 import platform.base.BaseUtils;
 import platform.base.GlobalObject;
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashContext;
@@ -27,7 +28,7 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
 
     public final Object object;
 
-    public Value removeBig(Set<Value> usedValues) {
+    public Value removeBig(QuickSet<Value> usedValues) {
         if(objectClass instanceof FileClass && ((byte[])object).length > 1000) {
             int i=0;
             while(true) {
@@ -81,7 +82,7 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
         return object.hashCode()*31+objectClass.hashCode();
     }
 
-    public int hashOuter(HashContext hashContext) {
+    protected int hash(HashContext hashContext) {
         return hashContext.values.hash(this);
     }
 
@@ -95,41 +96,44 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
         return this;
     }
 
-    public ValueExpr translateOuter(MapTranslate translator) {
+    protected ValueExpr translate(MapTranslate translator) {
         return translator.translate(this);
     }
 
-    @Override
-    public void enumInnerValues(Set<Value> values) {
-        values.add(this);
+    public QuickSet<Value> getValues() {
+        return new QuickSet<Value>(this);
     }
 
-    public static Value ZERO = new ValueExpr(0, DoubleClass.instance);
+    public static Value ZERO = new ValueExpr(0.0, DoubleClass.instance);
     public static Value TRUEVAL = new ValueExpr(true, LogicalClass.instance);
 
     private static Set<Value> staticExprs;
-    {
-        staticExprs = new HashSet<Value>();
-        staticExprs.add(ValueExpr.ZERO);
-        staticExprs.add(ValueExpr.TRUEVAL);
-        staticExprs.add(null);
+    private static Set<Value> getStaticExprs() {
+        if(staticExprs == null) {
+            staticExprs = new HashSet<Value>();
+            staticExprs.add(ValueExpr.ZERO);
+            staticExprs.add(ValueExpr.TRUEVAL);
+            staticExprs.add(ActionClass.instance.getDefaultExpr());
+            staticExprs.add(null);
+        }
+        return staticExprs;
     }
 
     public static Set<? extends Value> removeStatic(Set<? extends Value> col) {
-        return BaseUtils.removeSet(col,staticExprs);
+        Set<Value> result = new HashSet<Value>();
+        for(Value value : BaseUtils.removeSet(col,getStaticExprs()))
+            if(!(value instanceof ValueExpr && ((ValueExpr)value).objectClass instanceof ActionClass)) // && ((ValueExpr) value).equals(((ActionClass)((ValueExpr)value).objectClass).getDefaultExpr())))
+                result.add(value);
+        return result;
     }
 
     public static <V> Map<Value,V> removeStatic(Map<Value,V> map) {
-        return BaseUtils.filterNotKeys(map,staticExprs);
+        return BaseUtils.filterNotKeys(map,getStaticExprs());
     }
 
     // пересечение с игнорированием ValueExpr.TRUE
     public static boolean noStaticEquals(Set<? extends Value> col1, Set<? extends Value> col2) {
         return removeStatic(col1).equals(removeStatic(col2));
-    }
-
-    public long calculateComplexity() {
-        return 1;
     }
 
     public TypeObject getParseInterface() {

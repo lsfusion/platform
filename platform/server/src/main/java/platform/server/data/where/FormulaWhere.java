@@ -2,19 +2,19 @@ package platform.server.data.where;
 
 import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
-import platform.server.caches.IdentityLazy;
+import platform.base.QuickSet;
+import platform.server.Settings;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.KeyStat;
-import platform.server.data.translator.HashLazy;
-import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.data.where.classes.MeanClassWhere;
+import platform.server.data.where.classes.MeanClassWheres;
 
-import java.util.Arrays;
 import java.util.Set;
 
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
@@ -40,13 +40,14 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return "("+result+")";
     }
 
-    public void enumDepends(ExprEnumerator enumerator) {
-        for(Where where : wheres)
-            where.enumerate(enumerator);
+    public QuickSet<OuterContext> calculateOuterDepends() {
+        return new QuickSet<OuterContext>(wheres);
     }
 
-    @HashOuterLazy
-    public int hashOuter(HashContext hashContext) {
+    protected boolean isComplex() {
+        return true;
+    }
+    public int hash(HashContext hashContext) {
         return hashCoeff() + hashSetOuter(wheres, hashContext);
     }
 
@@ -119,16 +120,20 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return checkTrue;
     }
 
-    public long calculateComplexity() {
-        return getComplexity(Arrays.asList(wheres)) + 1;
+    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat);
+
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
+        GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat);
+        if(result.size > Settings.instance.getLimitWhereJoinsCount() || result.getComplexity(true) > Settings.instance.getLimitWhereJoinsComplexity())
+            result = result.compileMeans(keepStat, keyStat);
+        return result;
     }
 
-    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(Set<K> keepStat, KeyStat keyStat);
-
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
-        GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat);
-        if(false) // result.size > 20 || result.getComplexity() > 200
-            result = result.compileMeans(keepStat, keyStat);
+    protected abstract MeanClassWheres calculateGroupMeanClassWheres();
+    public MeanClassWheres calculateMeanClassWheres() {
+        MeanClassWheres result = calculateGroupMeanClassWheres();
+        if(result.size > Settings.instance.getLimitClassWhereCount() || result.getComplexity(true) > Settings.instance.getLimitClassWhereComplexity())
+            result = new MeanClassWheres(new MeanClassWhere(result.getClassWhere()), this);
         return result;
     }
 }

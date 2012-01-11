@@ -1,8 +1,5 @@
 package platform.server;
 
-import platform.server.classes.ActionClass;
-import platform.server.classes.DataClass;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 
 public class Settings {
@@ -63,9 +60,7 @@ public class Settings {
     // будет ли компилятор вместо UNION (когда OR'ов слишком много) использовать FULL JOIN
     boolean useFJInsteadOfUnion = false;
 
-    int countJoinsUseUnionInsteadOfUnionAll = 15;
-
-    // будет ли оптимизатор разбивать группирующие выражения на максимум, так чтобы в группируемом выражении не было бы Case'ов 
+    // будет ли оптимизатор разбивать группирующие выражения на максимум, так чтобы в группируемом выражении не было бы Case'ов
     private boolean splitGroupSelectExprcases = false;
 
     // будет ли высчитываться что именно изменилось в группирующих свойствах или же будет считаться что изменилось все
@@ -114,14 +109,6 @@ public class Settings {
 
     public void setUseFJInsteadOfUnion(boolean useFJInsteadOfUnion) {
         this.useFJInsteadOfUnion = useFJInsteadOfUnion;
-    }
-
-    public int getCountJoinsUseUnionInsteadOfUnionAll() {
-        return countJoinsUseUnionInsteadOfUnionAll;
-    }
-
-    public void setCountJoinsUseUnionInsteadOfUnionAll(int countJoinsUseUnionInsteadOfUnionAll) {
-        this.countJoinsUseUnionInsteadOfUnionAll = countJoinsUseUnionInsteadOfUnionAll;
     }
 
     public void setPushOrderWhere(boolean pushOrderWhere) {
@@ -295,5 +282,85 @@ public class Settings {
 
     public boolean getUseUniPass() {
         return useUniPass;
+    }
+    
+    private int limitWhereJoinsCount = 20;
+    private int limitWhereJoinsComplexity = 200;
+    private int limitClassWhereCount = 40;
+    private int limitClassWhereComplexity = 400;
+    private int limitWhereJoinPack = 300;
+    private int limitUnionAllCount = 10;
+    private int limitUnionAllComplexity = 100;
+
+    private int limitHintIncrementComplexity = 50;
+    private int limitHintIncrementStat = 1000;
+    private int limitHintNoUpdateComplexity = 400;
+    private int limitWrapComplexity = 200;
+
+    public int getLimitWhereJoinsCount() {
+        return limitWhereJoinsCount;
+    }
+    public void setLimitWhereJoinsCount(int limitWhereJoinsCount) {
+        this.limitWhereJoinsCount = limitWhereJoinsCount;
+    }
+    public int getLimitWhereJoinsComplexity() {
+        return limitWhereJoinsComplexity;
+    }
+    public void setLimitWhereJoinsComplexity(int limitWhereJoinsComplexity) {
+        this.limitWhereJoinsComplexity = limitWhereJoinsComplexity;
+    }
+    public int getLimitClassWhereCount() {
+        return limitClassWhereCount;
+    }
+    public void setLimitClassWhereCount(int limitClassWhereCount) {
+        this.limitClassWhereCount = limitClassWhereCount;
+    }
+    public int getLimitClassWhereComplexity() {
+        return limitClassWhereComplexity;
+    }
+    public void setLimitClassWhereComplexity(int limitClassWhereComplexity) {
+        this.limitClassWhereComplexity = limitClassWhereComplexity;
+    }
+    public int getLimitWhereJoinPack() {
+        return limitWhereJoinPack;
+    }
+    public void setLimitWhereJoinPack(int limitWhereJoinPack) {
+        this.limitWhereJoinPack = limitWhereJoinPack;
+    }
+    public int getLimitHintIncrementComplexity() {
+        return limitHintIncrementComplexity;
+    }
+    public void setLimitHintIncrementComplexity(int limitHintIncrementComplexity) {
+        this.limitHintIncrementComplexity = limitHintIncrementComplexity;
+    }
+    public int getLimitHintIncrementStat() {
+        return limitHintIncrementStat;
+    }
+    public void setLimitHintIncrementStat(int limitHintIncrementStat) {
+        this.limitHintIncrementStat = limitHintIncrementStat;
+    }
+    public int getLimitHintNoUpdateComplexity() {
+        return limitHintNoUpdateComplexity;
+    }
+    public void setLimitHintNoUpdateComplexity(int limitHintNoUpdateComplexity) {
+        this.limitHintNoUpdateComplexity = limitHintNoUpdateComplexity;
+    }
+    public int getLimitWrapComplexity() {
+        return limitWrapComplexity;
+    }
+    public void setLimitWrapComplexity(int limitWrapComplexity) {
+        this.limitWrapComplexity = limitWrapComplexity;
+    }
+    public int getLimitUnionAllCount() {
+        return limitUnionAllCount;
+    }
+    public void setLimitUnionAllCount(int limitUnionAllCount) {
+        this.limitUnionAllCount = limitUnionAllCount;
+    }
+    public int getLimitUnionAllComplexity() {
+        return limitUnionAllComplexity;
+    }
+    public void setLimitUnionAllComplexity(int limitUnionAllComplexity) {
+        this.limitUnionAllComplexity = limitUnionAllComplexity;
     }
 }

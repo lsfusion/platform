@@ -1,8 +1,9 @@
 package platform.server.data.translator;
 
-import platform.base.BaseUtils;
-import platform.base.TwinImmutableInterface;
-import platform.server.caches.MapValues;
+import platform.base.*;
+import platform.server.caches.ValuesContext;
+import platform.server.caches.hash.HashCodeValues;
+import platform.server.caches.hash.HashTranslateValues;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
@@ -25,8 +26,8 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         return hash;
     }
 
-    public Set<Value> getValues() {
-        return new HashSet<Value>(mapValues.values());
+    public QuickSet<Value> getValues() {
+        return new QuickSet<Value>(mapValues.values());
     }
 
     private MapValuesTranslator() {
@@ -42,18 +43,19 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
     }
 
     public <V extends Value> V translate(V expr) {
-        return BaseUtils.nvl((V)mapValues.get(expr),expr);
+        return BaseUtils.nvl((V) mapValues.get(expr), expr);
     }
 
-    public boolean identity() {
-        return BaseUtils.identity(mapValues);
-    }
-    public boolean identityValues(Set<? extends Value> values) {
+    public boolean identityValues(QuickSet<? extends Value> values) {
         return BaseUtils.identity(BaseUtils.filterKeys(mapValues, values));
     }
 
+    public boolean identityKeysValues(QuickSet<KeyExpr> keys, QuickSet<? extends Value> values) {
+        return identityValues(values);
+    }
+
     public MapValuesTranslate map(MapValuesTranslate map) {
-        if(this==noTranslate) return noTranslate;
+        if(this==noTranslate) return map;
 
         Map<Value, Value> mapResult = new HashMap<Value, Value>();
         for(Map.Entry<Value,Value> mapValue : mapValues.entrySet())
@@ -61,16 +63,16 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         return new MapValuesTranslator(mapResult);
     }
 
-    public MapValuesTranslate filter(Set<? extends Value> values) {
+    public MapValuesTranslate filter(QuickSet<? extends Value> values) {
         if(this==noTranslate) return noTranslate;
 
         return new MapValuesTranslator(BaseUtils.filterKeys(mapValues,values));
     }
 
-    public <K,U extends MapValues<U>> Map<K,U> translateValues(Map<K,U> map) {
+    public <K,U extends ValuesContext<U>> Map<K,U> translateValues(Map<K,U> map) {
         Map<K,U> result = new HashMap<K,U>();
         for(Map.Entry<K,U> entry : map.entrySet())
-            result.put(entry.getKey(), entry.getValue().translate(this));
+            result.put(entry.getKey(), entry.getValue().translateValues(this));
         return result;
     }
 
@@ -78,6 +80,20 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         Set<V> result = new HashSet<V>();
         for(V value : values)
             result.add(translate(value));
+        return result;
+    }
+
+    public <V extends Value> QuickSet<V> translateValues(QuickSet<V> set) {
+        QuickSet<V> result = new QuickSet<V>();
+        for(V value : set)
+            result.add(translate(value));
+        return result;
+    }
+
+    public <K, U extends Value> Map<K, U> translateMapValues(Map<K, U> map) {
+        Map<K,U> result = new HashMap<K,U>();
+        for(Map.Entry<K, U> entry : map.entrySet())
+            result.put(entry.getKey(), translate(entry.getValue()));
         return result;
     }
 
@@ -101,6 +117,10 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         return this;
     }
 
+    public boolean identityKeys(QuickSet<KeyExpr> keys) {
+        return true;
+    }
+
     public <K> Map<K, KeyExpr> translateKey(Map<K, KeyExpr> map) {
         return map;
     }
@@ -119,5 +139,11 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         if(this==noTranslate) return (MapTranslate) noTranslate;
 
         return new MapValuesTranslator(BaseUtils.reverse(mapValues));
+    }
+
+    public HashValues getHashValues() {
+        if(this==noTranslate || mapValues.isEmpty()) return HashCodeValues.instance;
+
+        return new HashTranslateValues(this);
     }
 }

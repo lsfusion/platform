@@ -1,9 +1,8 @@
 package platform.base;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-public class QuickSet<T> {
+public class QuickSet<T> implements Iterable<T> {
     public int size;
     protected Object[] table;
     protected int[] htable;
@@ -20,6 +19,11 @@ public class QuickSet<T> {
         indexes = new int[(int)(table.length * loadFactor)];
     }
 
+    private final static QuickSet EMPTY = new QuickSet();
+    public static <T> QuickSet<T> EMPTY() {
+        return EMPTY;
+    }
+
     public QuickSet(QuickSet<T> set) {
         size = set.size;
         loadFactor = set.loadFactor;
@@ -28,6 +32,37 @@ public class QuickSet<T> {
         htable = set.htable.clone();
 
         indexes = set.indexes.clone();
+    }
+
+    public QuickSet(T element) {
+        this();
+        add(element);
+    }
+
+    public QuickSet(T... elements) {
+        this();
+        addAll(elements);
+    }
+
+    public QuickSet(T[] elements, int size) {
+        this();
+        addAll(elements, size);
+    }
+
+    public <V> QuickSet(int size, V[] elements) {
+        this();
+        addAll(size, elements);
+    }
+
+    public QuickSet(Iterable<? extends T> col) {
+        this();
+        addAll(col);
+    }
+
+    public QuickSet(Collection<? extends T> col, T element) {
+        this();
+        addAll(col);
+        add(element);
     }
 
     public Set<T> toSet() {
@@ -130,10 +165,31 @@ public class QuickSet<T> {
         return false;
     }
 
-    public void addAll(QuickSet<T> set) {
+    public void addAll(QuickSet<? extends T> set) {
         for(int i=0;i<set.size;i++)
             add(set.get(i),set.htable[set.indexes[i]]);
     }
+
+    public void addAll(Iterable<? extends T> col) {
+        for(T element : col)
+            add(element);
+    }
+
+    public void addAll(T... col) {
+        for(T element : col)
+            add(element);
+    }
+
+    public void addAll(T[] col, int size) {
+        for(int i=0;i<size;i++)
+            add(col[i]);
+    }
+
+    public <V> void addAll(int size, V[] col) {
+        for(int i=0;i<size;i++)
+            add((T)col[i]);
+    }
+
 
     public T get(int i) {
         return (T) table[indexes[i]];
@@ -173,5 +229,82 @@ public class QuickSet<T> {
         for(int i=0;i<size;i++)
             hash = hash + htable[indexes[i]];
         return hash * 31;
+    }
+
+    public Iterator<T> iterator() {
+        return new Iterator<T>() {
+            int i=0;
+
+            public boolean hasNext() {
+                return i<size;
+            }
+
+            @Override
+            public T next() {
+                return (T) table[indexes[i++]];
+            }
+
+            @Override
+            public void remove() {
+                throw new RuntimeException();
+            }
+        };
+    }
+
+    public QuickSet<T> merge(QuickSet<T> merge) {
+        if(merge.size==0) return this;
+        if(size==0) return merge;
+
+        QuickSet<T> result = new QuickSet<T>(this);
+        result.addAll(merge);
+        return result;
+    }
+
+    public QuickSet<T> merge(T element) {
+        QuickSet<T> result = new QuickSet<T>(this);
+        result.add(element);
+        return result;
+    }
+
+    public Map<T, String> mapString() {
+        Map<T, String> result = new HashMap<T, String>();
+        for (T element : this)
+            result.put(element, element.toString());
+        return result;
+    }
+
+    public boolean disjoint(Collection<T> col) {
+        for(T element : col)
+            if(contains(element))
+                return false;
+        return true;
+    }
+
+    public Map<T, T> toMap() {
+        Map<T, T> result = new HashMap<T, T>();
+        for(T element : this)
+            result.put(element, element);
+        return result;
+    }
+
+    public <V> Map<T, V> toMap(V value) {
+        Map<T, V> result = new HashMap<T, V>();
+        for(T element : this)
+            result.put(element, value);
+        return result;
+    }
+
+    public <V> QuickMap<T, V> toQuickMap(V value) {
+        QuickMap<T, V> result = new SimpleMap<T, V>();
+        for(T element : this)
+            result.add(element, value);
+        return result;
+    }
+
+    public Set<T> getSet() {
+        Set<T> result = new HashSet<T>();
+        for(T element : this)
+            result.add(element);
+        return result;
     }
 }

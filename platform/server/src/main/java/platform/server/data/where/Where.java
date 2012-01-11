@@ -2,6 +2,7 @@ package platform.server.data.where;
 
 import org.springframework.core.Ordered;
 import platform.base.OrderedMap;
+import platform.base.QuickSet;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
@@ -58,7 +59,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     
     Where pack();
 
-    <K> Map<K, Expr> followTrue(Map<K,? extends Expr> map);
+    <K> Map<K, Expr> followTrue(Map<K, ? extends Expr> map, boolean pack);
     List<Expr> followFalse(List<Expr> list);
     <K> OrderedMap<Expr, K> followFalse(OrderedMap<Expr, K> map);
 
@@ -81,15 +82,15 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive, Set<K> keepStat);
-    <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(Set<K> keys, boolean notExclusive);
-    <K extends BaseExpr> StatKeys<K> getStatKeys(Set<K> keys);
-    <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(boolean notExclusive, Set<K> exprs);
-    <K extends Expr> StatKeys<K> getStatExprs(Set<K> keys);
+    <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive, QuickSet<K> keepStat);
+    <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keys, boolean notExclusive);
+    <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> keys);
+    <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(boolean notExclusive, QuickSet<K> exprs);
+    <K extends Expr> StatKeys<K> getStatExprs(QuickSet<K> keys);
 
     // группировки в ДНФ, protected по сути
     KeyEquals getKeyEquals();
-    <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat);
+    <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat);
     MeanClassWheres groupMeanClassWheres();
 
     abstract public ClassExprWhere getClassWhere();

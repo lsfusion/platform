@@ -1,11 +1,12 @@
 package platform.server.data.expr;
 
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
+import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
-import platform.server.data.expr.query.OrderExpr;
+import platform.server.data.expr.query.PartitionExpr;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -30,22 +31,26 @@ public abstract class NotNullExpr extends VariableClassExpr {
             return NotNullExpr.this.getSource(compile) + " IS NULL";
         }
 
-        public Where translateOuter(MapTranslate translator) {
+        protected boolean isComplex() {
+            return false;
+        }
+
+        protected Where translate(MapTranslate translator) {
             return NotNullExpr.this.translateOuter(translator).getWhere();
         }
         public Where translateQuery(QueryTranslator translator) {
             return NotNullExpr.this.translateQuery(translator).getWhere();
         }
 
-        public void enumDepends(ExprEnumerator enumerator) {
-            NotNullExpr.this.enumerate(enumerator);
+        public QuickSet<OuterContext> calculateOuterDepends() {
+            return new QuickSet<OuterContext>(NotNullExpr.this);
         }
 
         protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
             NotNullExpr.this.fillAndJoinWheres(joins,andWhere);
         }
 
-        public int hashOuter(HashContext hashContext) {
+        public int hash(HashContext hashContext) {
             return NotNullExpr.this.hashOuter(hashContext);
         }
 
@@ -54,9 +59,6 @@ public abstract class NotNullExpr extends VariableClassExpr {
             return NotNullExpr.this.equals(((NotNull) o).getExpr());
         }
 
-        public long calculateComplexity() {
-            return NotNullExpr.this.getComplexity();
-        }
     }
 
     public void fillFollowSet(DataWhereSet fillSet) {
@@ -64,7 +66,7 @@ public abstract class NotNullExpr extends VariableClassExpr {
         if(where instanceof DataWhere)
             fillSet.add((DataWhere) getWhere());
         else
-            assert this instanceof OrderExpr;
+            assert PartitionExpr.isWhereCalculated(this);
     }
 
 

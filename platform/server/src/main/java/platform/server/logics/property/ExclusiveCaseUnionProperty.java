@@ -4,10 +4,9 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
 import platform.server.session.MapDataChanges;
 import platform.server.session.PropertyChange;
+import platform.server.session.PropertyChanges;
 
 import java.util.*;
 
@@ -22,23 +21,23 @@ public class ExclusiveCaseUnionProperty extends AbstractCaseUnionProperty {
     }
 
     @Override
-    protected Expr calculateNewExpr(Map<UnionProperty.Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         CaseExprInterface exprCases = Expr.newCases();
         for(Case propCase : cases)
-            exprCases.add(propCase.where.mapExpr(joinImplement, modifier, changedWhere).getWhere(), propCase.property.mapExpr(joinImplement, modifier, changedWhere));
+            exprCases.add(propCase.where.mapExpr(joinImplement, propChanges, changedWhere).getWhere(), propCase.property.mapExpr(joinImplement, propChanges, changedWhere));
         return exprCases.getFinal();
     }
 
     @Override
-    protected Expr calculateIncrementExpr(Map<UnionProperty.Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere) {
+    protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
         Where nullWhere = Where.FALSE;
         CaseExprInterface exprCases = Expr.newCases();
         for(Case propCase : cases) {
             WhereBuilder changedWhereCase = new WhereBuilder();
-            Where caseWhere = propCase.where.mapExpr(joinImplement, modifier, changedWhereCase).getWhere();
+            Where caseWhere = propCase.where.mapExpr(joinImplement, propChanges, changedWhereCase).getWhere();
 
             WhereBuilder changedExprCase = new WhereBuilder();
-            Expr caseExpr = propCase.property.mapExpr(joinImplement, modifier, changedExprCase);
+            Expr caseExpr = propCase.property.mapExpr(joinImplement, propChanges, changedExprCase);
 
             Where changedCase = changedWhereCase.toWhere().or(changedExprCase.toWhere());
             if(changedWhere!=null) changedWhere.add(changedCase);
@@ -53,11 +52,11 @@ public class ExclusiveCaseUnionProperty extends AbstractCaseUnionProperty {
         super(sID, caption, intNum);
     }
 
-    protected MapDataChanges<Interface> calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    protected MapDataChanges<Interface> calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         MapDataChanges<Interface> result = new MapDataChanges<Interface>();
         for(Case operand : cases)
             result = result.add(operand.property.mapDataChanges(
-                    change.and(operand.where.mapExpr(change.mapKeys, modifier).getWhere()), changedWhere, modifier));
+                    change.and(operand.where.mapExpr(change.mapKeys, propChanges).getWhere()), changedWhere, propChanges));
         return result;
     }
 }

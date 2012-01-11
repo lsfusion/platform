@@ -2,12 +2,13 @@ package platform.server.data.expr.where.cases;
 
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
+import platform.server.data.query.AbstractJoin;
 import platform.server.data.where.Where;
 import platform.server.data.query.Join;
 
 import java.util.Collection;
 
-public class CaseJoin<U> extends Join<U> {
+public class CaseJoin<U> extends AbstractJoin<U> {
 
     private final JoinCaseList<U> cases;
 

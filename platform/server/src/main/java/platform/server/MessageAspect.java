@@ -16,7 +16,6 @@ import java.util.List;
 public class MessageAspect {
 
     @Around("execution(@platform.server.Message * *.*(..))")
-    // с call'ом есть баги
     public Object callTwinMethod(ProceedingJoinPoint thisJoinPoint) throws Throwable {
         Method method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
         Object[] args = thisJoinPoint.getArgs();

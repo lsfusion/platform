@@ -1,15 +1,15 @@
 package platform.server.data.query;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.base.Result;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractOuterContext;
+import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.InnerExpr;
 import platform.server.data.expr.InnerExprSet;
-import platform.server.data.expr.query.DistinctKeys;
-import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.stat.WhereJoin;
@@ -29,16 +29,16 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
         this.expr2 = expr2;
     }
 
-    public int hashOuter(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return 31 * expr1.hashOuter(hashContext) + expr2.hashOuter(hashContext);
     }
 
-    public ExprEqualsJoin translateOuter(MapTranslate translator) {
+    protected ExprEqualsJoin translate(MapTranslate translator) {
         return new ExprEqualsJoin(expr1.translateOuter(translator), expr2.translateOuter(translator));
     }
 
-    public SourceJoin[] getEnum() {
-        return new SourceJoin[]{expr1, expr2};
+    public QuickSet<OuterContext> calculateOuterDepends() {
+        return new QuickSet<OuterContext>(expr1, expr2);
     }
 
     public InnerJoins getInnerJoins() {

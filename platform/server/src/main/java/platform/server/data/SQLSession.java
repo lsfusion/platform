@@ -16,6 +16,7 @@ import platform.server.data.type.ParseInterface;
 import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
+import platform.server.form.instance.FormInstance;
 import platform.server.logics.*;
 
 import java.lang.ref.WeakReference;
@@ -212,16 +213,16 @@ public class SQLSession extends MutableObject {
             dropDefaultCommand = (dropDefaultCommand.length()==0?"":dropDefaultCommand + ",") + " ALTER COLUMN " + field.getKey().name + " DROP DEFAULT";
         }
 
-        execute("ALTER TABLE " + tableName + " " + addCommand + " ADD " + getConstraintDeclare(table, keys) +
+        executeDerived("ALTER TABLE " + tableName + " " + addCommand + " ADD " + getConstraintDeclare(table, keys) +
                 (keys.size()==fields.size()?"":", DROP CONSTRAINT " + constraintName));
-        execute("ALTER TABLE " + tableName + " " + dropDefaultCommand);
+        executeDerived("ALTER TABLE " + tableName + " " + dropDefaultCommand);
 
         logger.info(" Done");
     }
 
     public void addTemporaryColumn(String table, PropertyField field) throws SQLException {
         addColumn(table, field);
-//        execute("CREATE INDEX " + "idx_" + table + "_" + field.name + " ON " + table + " (" + field.name + ")"); //COLUMN
+//        executeDerived("CREATE INDEX " + "idx_" + table + "_" + field.name + " ON " + table + " (" + field.name + ")"); //COLUMN
     }*/
 
     public void addColumn(String table, PropertyField field) throws SQLException {
@@ -321,7 +322,7 @@ public class SQLSession extends MutableObject {
 //        if(inTransaction)
         executeDDL("ANALYZE " + table, true);
 //        else
-//            execute("VACUUM ANALYZE " + table);
+//            executeDerived("VACUUM ANALYZE " + table);
     }
 
     private void executeDDL(String DDL, boolean temporary) throws SQLException {

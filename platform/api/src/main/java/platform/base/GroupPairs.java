@@ -18,7 +18,7 @@ public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
 
     private final int maxIterations;
 
-    public GroupPairs(Map<O,G> group1, Map<O,G> group2, boolean mapConstruct, int maxIterations) {
+    public GroupPairs(QuickMap<O,G> group1, QuickMap<O,G> group2, boolean mapConstruct, int maxIterations) {
         this.map1 = BaseUtils.groupSet(group1);
         this.map2 = BaseUtils.groupSet(group2);
 

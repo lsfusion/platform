@@ -1,25 +1,99 @@
 package platform.server.data.translator;
 
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.DeclareParents;
+import platform.base.QuickSet;
+import platform.server.caches.AbstractTranslateContext;
+import platform.server.caches.CacheAspect;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.InnerExpr;
-import platform.server.data.expr.query.OrderExpr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.PartitionExpr;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.SourceJoin;
 import platform.server.data.where.AbstractWhere;
-import platform.server.data.where.DataWhere;
-import platform.server.data.where.NotWhere;
 import platform.server.data.where.Where;
-import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
+
+import javax.mail.Part;
+
 
 // аспект который заодно транслирует ManualLazy операции
 @Aspect
 public class AfterTranslateAspect {
 
-    public static interface TranslateLazyInterface {
+    @Around("execution(platform.server.data.where.Where platform.server.data.expr.Expr.calculateWhere()) && target(expr)")
+    public Object callCalculateWhere(ProceedingJoinPoint thisJoinPoint, Expr expr) throws Throwable {
+        Expr from = expr.getFrom();
+        MapTranslate translator = expr.getTranslator();
+        if(from!=null && translator!=null) { // объект не ушел
+            Where fromResult = from.getWhere();
+            if(expr instanceof InnerExpr && !PartitionExpr.isWhereCalculated(expr)) { // если результат использует сам объект, то вычисляем а затем в явную проставляем транслятор от основного объекта (если тот был посчитан или всегда)
+                AbstractTranslateContext calcObject = (AbstractTranslateContext) thisJoinPoint.proceed();
+                calcObject.initTranslate(fromResult, translator);
+                return calcObject;
+            } else
+                return fromResult.translateOuter(translator);
+        } else
+            return thisJoinPoint.proceed();
+    }
+
+    @Around("execution(platform.server.data.where.classes.ClassExprWhere platform.server.data.where.AbstractWhere.calculateClassWhere()) && target(where)")
+    public Object callCalculateClassWhere(ProceedingJoinPoint thisJoinPoint, AbstractWhere where) throws Throwable {
+        Where from = where.getFrom();
+        MapTranslate translator = where.getTranslator();
+        if(from!=null && translator!=null)
+            return from.getClassWhere().translateOuter(translator);
+        else
+            return thisJoinPoint.proceed();
+    }
+
+    @Around("execution(platform.server.data.where.classes.ClassExprWhere platform.server.data.where.AbstractWhere.calculateClassWhere()) && target(where)")
+    public Object callCalculateMeanClassWheres(ProceedingJoinPoint thisJoinPoint, AbstractWhere where) throws Throwable {
+        Where from = where.getFrom();
+        MapTranslate translator = where.getTranslator();
+        if(from!=null && translator!=null)
+            return from.groupMeanClassWheres().translateOuter(translator);
+        else
+            return thisJoinPoint.proceed();
+    }
+
+    @Around("execution(platform.server.data.where.classes.ClassExprWhere platform.server.data.where.classes.MeanClassWheres.calculateClassWhere()) && target(wheres)")
+    public Object callMeanCalculateClassWhere(ProceedingJoinPoint thisJoinPoint, MeanClassWheres wheres) throws Throwable {
+        MeanClassWheres.OuterContext from = wheres.getOuter().getFrom();
+        MapTranslate translator = wheres.getOuter().getTranslator();
+        if(from!=null && translator!=null)
+            return from.getThis().getClassWhere().translateOuter(translator);
+        else
+            return thisJoinPoint.proceed();
+    }
+
+    @Around("execution(java.util.Collection platform.server.data.where.AbstractWhere.getWhereJoins(boolean, platform.base.QuickSet)) && target(where) && args(notExclusive,keepStat)")
+    public Object callGetWhereJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean notExclusive, QuickSet keepStat) throws Throwable {
+        if(keepStat.equals(where.getOuterKeys()))
+            return CacheAspect.callMethod(where, thisJoinPoint);
+        return thisJoinPoint.proceed();
+    }
+
+    @Around("execution(* platform.server.data.query.AbstractSourceJoin.translateQuery(platform.server.data.translator.QueryTranslator)) && target(toTranslate) && args(translator)")
+    public Object callTranslateQuery(ProceedingJoinPoint thisJoinPoint, AbstractSourceJoin toTranslate, PartialQueryTranslator translator) throws Throwable {
+        QuickSet<KeyExpr> keys = ((SourceJoin<?>)toTranslate).getOuterKeys();
+        if(keys.disjoint(translator.keys.keySet()))
+            return toTranslate;
+        else
+            return thisJoinPoint.proceed();
+    }
+
+/*    @Around("execution(platform.server.data.where.classes.ClassExprWhere platform.server.data.where.classes.MeanClassWheres.calculateClassWhere()) && target(wheres)")
+    public Object callCalculateMeanClassWhere(ProceedingJoinPoint thisJoinPoint, MeanClassWheres wheres) throws Throwable {
+        Object o = wheres.getFrom();
+        if(o!=null)
+            return where.groupMeanClassWheres().translateOuter(where.getTranslator());
+        else
+            return thisJoinPoint.proceed();
+    }*/
+/*    public static interface TranslateLazyInterface {
         void initTranslate(Object object, MapTranslate translator, Object thisObject);
         Object lazyResult(ProceedingJoinPoint thisJoinPoint) throws Throwable;
     }
@@ -56,7 +130,7 @@ public class AfterTranslateAspect {
     public static class TranslateExprLazyImplement extends TranslateLazyImplement implements TranslateExprLazyInterface {
         protected Where lazyTranslate(ProceedingJoinPoint thisJoinPoint) throws Throwable {
             Where where = ((Expr) object).getWhere();
-            if(object instanceof InnerExpr && !(object instanceof OrderExpr)) { // не translate'им чтобы бесконечный цикл разорвать
+            if(object instanceof InnerExpr && !PartitionExpr.isWhereCalculated((Expr)object)) { // не translateOuter'им чтобы бесконечный цикл разорвать
                 Where result = (Where) thisJoinPoint.proceed();
                 ((TranslateClassWhereLazyInterface)result).initTranslate(where,translator,result);
                 return result;
@@ -79,11 +153,12 @@ public class AfterTranslateAspect {
     public static interface TranslateClassWhereLazyInterface extends TranslateLazyInterface {}
     public static class TranslateClassWhereLazyImplement extends TranslateLazyImplement implements TranslateClassWhereLazyInterface {
         protected ClassExprWhere lazyTranslate(ProceedingJoinPoint thisJoinPoint) {
-            return ((Where)object).getClassWhere().translate(translator);
+            return ((Where)object).getClassWhere().translateOuter(translator);
         }
     }
     @DeclareParents(value="platform.server.data.where.DataWhere+",defaultImpl=TranslateClassWhereLazyImplement.class)
     private TranslateClassWhereLazyInterface translateClassWhereLazy;
+
     @AfterReturning(pointcut="call(platform.server.data.where.Where platform.server.data.where.Where.translateOuter(platform.server.data.translator.MapTranslate)) && target(where) && args(translator)",returning="transWhere")
     public void afterDataWhereTranslate(AbstractWhere where, MapTranslate translator, TranslateClassWhereLazyInterface transWhere) {
         if(!(transWhere instanceof InnerExpr.NotNull)) // он уже обработан
@@ -92,8 +167,8 @@ public class AfterTranslateAspect {
     @Around("call(platform.server.data.where.classes.ClassExprWhere platform.server.data.where.AbstractWhere.calculateClassWhere()) && target(where)")
     public Object callCalculateClassWhere(ProceedingJoinPoint thisJoinPoint, TranslateClassWhereLazyInterface where) throws Throwable {
         return where.lazyResult(thisJoinPoint);
-    }
-
+    }*/
+/*
     // Where, MeanClassWheres, get/calculateMeanClassWheres
     public static interface TranslateMeanWhereLazyInterface extends TranslateLazyInterface {}
     public static class TranslateMeanWhereLazyImplement extends TranslateLazyImplement implements TranslateMeanWhereLazyInterface {
@@ -110,13 +185,13 @@ public class AfterTranslateAspect {
     @Around("call(platform.server.data.where.classes.MeanClassWheres platform.server.data.where.AbstractWhere.calculateMeanClassWheres()) && target(where)")
     public Object callCalculateMeanClassWheres(ProceedingJoinPoint thisJoinPoint, TranslateMeanWhereLazyInterface where) throws Throwable {
         return where.lazyResult(thisJoinPoint);
-    }
-
+    } */
+/*
     // MeanClassWheres, ClassExprWhere, get/calculateWhere
     public static interface TranslateMeanClassWhereLazyInterface extends TranslateLazyInterface {}
     public static class TranslateMeanClassWhereLazyImplement extends TranslateLazyImplement implements TranslateMeanClassWhereLazyInterface {
         protected ClassExprWhere lazyTranslate(ProceedingJoinPoint thisJoinPoint) {
-            return ((MeanClassWheres)object).getClassWhere().translate(translator);
+            return ((MeanClassWheres)object).getClassWhere().translateOuter(translator);
         }
     }
     @DeclareParents(value="platform.server.data.where.classes.MeanClassWheres+",defaultImpl=TranslateMeanClassWhereLazyImplement.class)
@@ -129,27 +204,27 @@ public class AfterTranslateAspect {
     public Object callCalculateMeanClassWhere(ProceedingJoinPoint thisJoinPoint, TranslateMeanClassWhereLazyInterface where) throws Throwable {
         return where.lazyResult(thisJoinPoint);
     }
+*/
+    // packFollowFalse noPush
+//    @Around("call(platform.server.data.expr.BaseExpr platform.server.data.expr.BaseExpr.packFollowFalse(platform.server.data.where.Where)) && target(groupExpr) && args(falseWhere)")
+//    public Object callPackFollowFalse(ProceedingJoinPoint thisJoinPoint, GroupExpr groupExpr, AbstractWhere falseWhere) throws Throwable {
+//        if(groupExpr.assertNoPush(falseWhere.not()))
+//            return groupExpr;
+//        else
+//            return thisJoinPoint.proceed();
+//   }
 
-/*    // packFollowFalse noPush
-    @Around("call(platform.server.data.expr.BaseExpr platform.server.data.expr.BaseExpr.packFollowFalse(platform.server.data.where.Where)) && target(groupExpr) && args(falseWhere)")
-    public Object callPackFollowFalse(ProceedingJoinPoint thisJoinPoint, GroupExpr groupExpr, AbstractWhere falseWhere) throws Throwable {
-        if(groupExpr.assertNoPush(falseWhere.not()))
-            return groupExpr;
-        else
-            return thisJoinPoint.proceed();
-   }*/
-    /*
-    @Around("execution(@platform.server.table.query.translator.KeepObject * *.*(..)) && target(object)") // с call'ом есть баги
-    public Object callKeepObject(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        Object result = thisJoinPoint.proceed();
-        if(object.equals(result)) // сохраним ссылку
-            return object;
-        else
-            return result;
-    } */
+//    @Around("execution(@platform.server.table.query.translator.KeepObject * *.*(..)) && target(object)") // с call'ом есть баги
+//    public Object callKeepObject(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+//        Object result = thisJoinPoint.proceed();
+//        if(object.equals(result)) // сохраним ссылку
+//            return object;
+//        else
+//            return result;
+//    }
 
 //    @AfterReturning(pointcut="call(* platform.server.data.where.CheckWhere+.not()) && this(DataWhere) && target(where)",returning="notWhere")
 //    public void afterDataWhereTranslate(Where where, NotWhere notWhere) {
-////        notWhere.not = where;
+//        notWhere.not = where;
 //    }
 }

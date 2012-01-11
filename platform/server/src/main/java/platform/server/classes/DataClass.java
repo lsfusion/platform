@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import platform.interop.Data;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
 import platform.server.data.SQLSession;
@@ -14,6 +15,7 @@ import platform.server.form.instance.DataObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.view.report.ReportDrawField;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.ClassProperty;
 import platform.server.logics.property.group.AbstractGroup;
 
 import java.io.DataInputStream;
@@ -155,7 +157,8 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
     }
 
     public Expr getStaticExpr(Object value) {
-        return getType().isSafeString(value) // идея в том что, если не Safe String то нужно по любому использовать ValueExpr, очень маловероятно что он пересекется с другим значением
+        Type type = getType();
+        return type instanceof DateClass || type.isSafeString(value) // идея в том что, если не Safe String то нужно по любому использовать ValueExpr, очень маловероятно что он пересекется с другим значением
                ? new StaticValueExpr(value, this)
                : new ValueExpr(value, this);
     }
@@ -240,5 +243,10 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
 
     public Stat getDefaultStat() {
         return getTypeStat().min(Stat.DEFAULT);
+    }
+
+    @IdentityLazy
+    public ClassProperty getProperty() {
+        return CustomClass.getProperty(this);
     }
 }

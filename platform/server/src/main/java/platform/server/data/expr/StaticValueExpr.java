@@ -2,7 +2,6 @@ package platform.server.data.expr;
 
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.DataClass;
 import platform.server.classes.StaticClass;
 import platform.server.classes.StaticCustomClass;
 import platform.server.data.query.CompileSource;
@@ -29,7 +28,7 @@ public class StaticValueExpr extends StaticExpr<StaticClass> {
         this(value, (StaticClass)customClass, sID);
     }
 
-    public StaticValueExpr translateOuter(MapTranslate translator) {
+    protected StaticValueExpr translate(MapTranslate translator) {
         return this;
     }
 
@@ -37,7 +36,7 @@ public class StaticValueExpr extends StaticExpr<StaticClass> {
         return this;
     }
 
-    public int hashOuter(HashContext hashContext) {
+    protected int hash(HashContext hashContext) {
         return object.hashCode() * 31 + objectClass.hashCode() + 6;
     }
 

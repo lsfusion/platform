@@ -2,7 +2,6 @@ package platform.server.data.expr;
 
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteValueClass;
@@ -14,16 +13,13 @@ import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.*;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
-@TranslateExprLazy
 public class FormulaExpr extends StaticClassExpr {
 
     public final static String MIN2 = "(prm1+prm2-ABS(prm1-prm2))/2"; // пока так сделаем min и проверку на infinite
@@ -60,10 +56,6 @@ public class FormulaExpr extends StaticClassExpr {
         }.proceed(params);
     }
 
-    public void enumDepends(ExprEnumerator enumerator) {
-        enumerator.fill(params);
-    }
-
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
         for(BaseExpr param : params.values())
             param.fillJoinWheres(joins, andWhere);
@@ -92,8 +84,7 @@ public class FormulaExpr extends StaticClassExpr {
         return create(formula, valueClass, translator.translate(params));
     }
 
-    @ParamLazy
-    public BaseExpr translateOuter(MapTranslate translator) {
+    protected BaseExpr translate(MapTranslate translator) {
         return new FormulaExpr(formula,translator.translateDirect(params),valueClass);
     }
 
@@ -115,17 +106,15 @@ public class FormulaExpr extends StaticClassExpr {
         return formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params) && valueClass.equals(((FormulaExpr) o).valueClass);
     }
 
-    @HashOuterLazy
-    public int hashOuter(HashContext hashContext) {
+    protected boolean isComplex() {
+        return true;
+    }
+    protected int hash(HashContext hashContext) {
         return valueClass.hashCode()*31*31 + hashOuter(params, hashContext) *31 + formula.hashCode();
     }
 
     public ConcreteValueClass getStaticClass() {
         return valueClass;
-    }
-
-    public long calculateComplexity() {
-        return getComplexity(params.values());
     }
 
     // для мн-вого наследования

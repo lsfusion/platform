@@ -1,14 +1,11 @@
 package platform.server.data.expr.where.ifs;
 
-import platform.server.caches.CacheAspect;
-import platform.server.caches.hash.HashMapValues;
-import platform.server.caches.hash.HashValues;
-import platform.server.data.Value;
+import platform.base.QuickSet;
+import platform.server.caches.OuterContext;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.ExprCaseList;
-import platform.server.data.expr.where.extra.EqualsWhere;
-import platform.server.data.where.AbstractWhere;
+import platform.server.data.query.SourceJoin;
 import platform.server.data.where.Where;
 import platform.server.data.where.MapWhere;
 import platform.server.data.type.Type;
@@ -17,7 +14,6 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
@@ -27,7 +23,6 @@ import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public class IfExpr extends Expr {
@@ -141,10 +136,10 @@ public class IfExpr extends Expr {
     }
 
     public boolean twins(TwinImmutableInterface o) { // порядок высот / общий
-        return ifWhere.equals(((IfExpr)o).ifWhere) && trueExpr.equals(((IfExpr)o).trueExpr) && falseExpr.equals(((IfExpr)o).falseExpr);
+        return ifWhere.equals(((IfExpr)o).ifWhere) && trueExpr.equals(((IfExpr)o).trueExpr) && falseExpr.equals(((IfExpr) o).falseExpr);
     }
 
-    public int hashOuter(HashContext hashContext) { // порядок высот / общий
+    protected int hash(HashContext hashContext) { // порядок высот / общий
         return 31 * (31 * ifWhere.hashOuter(hashContext) + trueExpr.hashOuter(hashContext)) + falseExpr.hashOuter(hashContext);
     }
 
@@ -184,11 +179,7 @@ public class IfExpr extends Expr {
         return IfExpr.create(ifWhere.translateQuery(translator), trueExpr.translateQuery(translator), falseExpr.translateQuery(translator));
     }
 
-    protected long calculateComplexity() {
-        return ifWhere.getComplexity() + trueExpr.getComplexity() + falseExpr.getComplexity();
-    }
-
-    public Expr translateOuter(MapTranslate translator) {
+    protected Expr translate(MapTranslate translator) {
         return new IfExpr(ifWhere.translateOuter(translator), trueExpr.translateOuter(translator), falseExpr.translateOuter(translator));
     }
 
@@ -205,13 +196,15 @@ public class IfExpr extends Expr {
         falseExpr.fillJoinWheres(joins, andWhere.and(ifWhere.not()));
     }
 
-    public void enumDepends(ExprEnumerator enumerator) {
-        ifWhere.enumerate(enumerator);
-        trueExpr.enumerate(enumerator);
-        falseExpr.enumerate(enumerator);
+    public QuickSet<OuterContext> calculateOuterDepends() {
+        return new QuickSet<OuterContext>(ifWhere, trueExpr, falseExpr);
     }
 
     public Set<BaseExpr> getBaseExprs() {
         return BaseUtils.mergeSet(trueExpr.getBaseExprs(), falseExpr.getBaseExprs());
+    }
+
+    protected boolean isComplex() {
+        return true;
     }
 }

@@ -2,15 +2,17 @@ package platform.server.data.expr;
 
 import platform.base.BaseUtils;
 import platform.base.QuickMap;
+import platform.base.QuickSet;
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.OuterContext;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.ExprCaseList;
 import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.expr.where.extra.GreaterWhere;
 import platform.server.data.expr.where.extra.LikeWhere;
-import platform.server.data.query.stat.BaseJoin;
+import platform.server.data.query.SourceJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.DataWhereSet;
@@ -56,7 +58,10 @@ public abstract class BaseExpr extends Expr {
         return getType(keyType); // assert'ится что не null
     }
 
-    public abstract BaseExpr translateOuter(MapTranslate translator);
+    protected abstract BaseExpr translate(MapTranslate translator);
+    public BaseExpr translateOuter(MapTranslate translator) {
+        return (BaseExpr) aspectTranslate(translator);
+    }
 
     public abstract void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere);
 
@@ -103,7 +108,7 @@ public abstract class BaseExpr extends Expr {
     }
 
     public boolean hasKey(KeyExpr key) {
-        return enumKeys(this).contains(key);
+        return getOuterKeys().contains(key);
     }
 
     // может возвращать null, оба метода для ClassExprWhere
@@ -150,6 +155,10 @@ public abstract class BaseExpr extends Expr {
     public abstract Stat getStatValue(KeyStat keyStat);
     public abstract InnerBaseJoin<?> getBaseJoin();
 
+    public QuickSet<OuterContext> calculateOuterDepends() {
+        return new QuickSet<OuterContext>(getBaseJoin().getJoins().values());
+    }
+
     public abstract void fillFollowSet(DataWhereSet fillSet);
 
     public abstract Stat getTypeStat(KeyStat keyStat);
@@ -164,8 +173,10 @@ public abstract class BaseExpr extends Expr {
 
     public boolean isOr() {
         boolean result = false;
-        for(BaseExpr baseExpr : getBaseJoin().getJoins().values())
-            result = result || baseExpr.isOr();
+        if(!(this instanceof NotNullExpr)) {
+            for(BaseExpr baseExpr : getBaseJoin().getJoins().values())
+                result = result || baseExpr.isOr();
+        }
         return result;
     }
 }

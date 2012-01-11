@@ -34,7 +34,6 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
@@ -45,6 +44,7 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -4105,10 +4105,10 @@ public class RomanLogicsModule extends LogicsModule {
             return property.equals(quantityListArticleCompositeColorSize.property);
         }
         @Override
-        public <P extends PropertyInterface> void onChange(Property<P> property, PropertyChange<P> change, DataSession session, Modifier<? extends Changes> modifier) throws SQLException {
+        public <P extends PropertyInterface> void onChange(Property<P> property, PropertyChange<P> change, DataSession session, Modifier modifier) throws SQLException {
             if(property.equals(quantityListArticleCompositeColorSize.property)) { // если изменяем quantityListArticle
                 // смотрим изменения
-                itemArticleCompositeColorSize.property.setNotNull(
+                itemArticleCompositeColorSize.property.setJoinNotNull(
                         BaseUtils.join(BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, quantityListArticleCompositeColorSize.listInterfaces.subList(1, 4)), change.mapKeys),
                         change.expr.getWhere().and(change.where), session);
             }
@@ -4394,12 +4394,12 @@ public class RomanLogicsModule extends LogicsModule {
             return property.equals(quantityListArticleCompositeColorSize.property);
         }
         @Override
-        public <P extends PropertyInterface> void onChange(Property<P> property, PropertyChange<P> change, DataSession session, Modifier<? extends Changes> modifier) throws SQLException {
+        public <P extends PropertyInterface> void onChange(Property<P> property, PropertyChange<P> change, DataSession session, Modifier modifier) throws SQLException {
             if(property.equals(quantityListArticleCompositeColorSize.property)) { // если изменяем quantityListArticle
                 // смотрим изменения
-                itemArticleCompositeColorSize.property.setNotNull(
-                        BaseUtils.join(BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, quantityListArticleCompositeColorSize.listInterfaces.subList(1, 4)), change.mapKeys),
-                        change.expr.getWhere().and(change.where), session);
+                Map mapKeys = BaseUtils.join(BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, quantityListArticleCompositeColorSize.listInterfaces.subList(1, 4)), change.mapKeys);
+                itemArticleCompositeColorSize.property.setJoinNotNull(
+                        mapKeys, change.expr.getWhere().and(change.where), session);
             }
         }
     }

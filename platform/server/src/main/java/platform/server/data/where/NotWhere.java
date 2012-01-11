@@ -1,11 +1,12 @@
 package platform.server.data.where;
 
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
+import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
@@ -13,8 +14,6 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
-
-import java.util.Set;
 
 public class NotWhere extends ObjectWhere {
 
@@ -40,21 +39,21 @@ public class NotWhere extends ObjectWhere {
         return where.equals(((NotWhere)o).where);
     }
 
-    public int hashOuter(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return where.hashOuter(hashContext)*31;
     }
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    public Where translateOuter(MapTranslate translator) {
+    protected Where translate(MapTranslate translator) {
         return where.translateOuter(translator).not();
     }
     public Where translateQuery(QueryTranslator translator) {
         return where.translateQuery(translator).not();
     }
 
-    public void enumDepends(ExprEnumerator enumerator) {
-        where.enumerate(enumerator);
+    public QuickSet<OuterContext> calculateOuterDepends() {
+        return new QuickSet<OuterContext>(where);
     }
 
     public String getSource(CompileSource compile) {
@@ -68,7 +67,7 @@ public class NotWhere extends ObjectWhere {
         where.fillDataJoinWheres(joins, andWhere);
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
         return new GroupJoinsWheres(this);
     }
 
@@ -83,10 +82,6 @@ public class NotWhere extends ObjectWhere {
     @Override
     public Where packFollowFalse(Where falseWhere) {
         return where.packFollowFalse(falseWhere).not();
-    }
-
-    public long calculateComplexity() {
-        return where.getComplexity();
     }
 
     public boolean isNot() {

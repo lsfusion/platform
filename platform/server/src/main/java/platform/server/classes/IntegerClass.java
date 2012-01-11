@@ -87,6 +87,6 @@ public class IntegerClass extends IntegralClass<Integer> {
     }
 
     public Stat getTypeStat() {
-        return new Stat(Integer.MAX_VALUE);
+        return Stat.ALOT;
     }
 }

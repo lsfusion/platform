@@ -9,7 +9,6 @@ import platform.server.data.translator.QueryTranslator;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 public class FormulaUnionExpr extends UnionExpr {
 
@@ -31,7 +30,7 @@ public class FormulaUnionExpr extends UnionExpr {
         return params.values();
     }
 
-    public BaseExpr translateOuter(MapTranslate translator) {
+    protected BaseExpr translate(MapTranslate translator) {
         return new FormulaUnionExpr(formula, dataClass, translator.translate(params));
     }
 
@@ -43,7 +42,7 @@ public class FormulaUnionExpr extends UnionExpr {
         return FormulaExpr.getSource(formula, params, compile);
     }
 
-    public int hashOuter(HashContext hashContext) {
+    protected int hash(HashContext hashContext) {
         return (formula.hashCode() * 31 + dataClass.hashCode()) * 31 + hashOuter(params, hashContext);
     }
 

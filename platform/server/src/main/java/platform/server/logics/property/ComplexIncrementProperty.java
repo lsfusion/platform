@@ -1,12 +1,6 @@
 package platform.server.logics.property;
 
-import platform.server.data.expr.Expr;
-import platform.server.data.where.WhereBuilder;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
-
 import java.util.List;
-import java.util.Map;
 
 // кроме OrderGroupProperty и FormulaUnionProperty
 public abstract class ComplexIncrementProperty<T extends PropertyInterface> extends FunctionProperty<T> {

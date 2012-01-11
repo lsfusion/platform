@@ -1,7 +1,5 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
-import platform.interop.action.ClientAction;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
@@ -11,10 +9,6 @@ import platform.server.data.PropertyField;
 import platform.server.data.type.Type;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.session.*;
 
 import java.sql.SQLException;
@@ -34,20 +28,17 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
     }
 
     public CommonClasses<ClassPropertyInterface> getCommonClasses() {
-        Map<ClassPropertyInterface, ValueClass> result = new HashMap<ClassPropertyInterface, ValueClass>();
-        for(ClassPropertyInterface propertyInterface : interfaces)
-            result.put(propertyInterface,propertyInterface.interfaceClass);
-        return new CommonClasses<ClassPropertyInterface>(result, getValueClass());
+        return new CommonClasses<ClassPropertyInterface>(ClassProperty.getMapClasses(interfaces), getValueClass());
     }
 
     @Override
-    protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
-        return modifier.newChanges().addChanges(new SimpleChanges(modifier.getChanges(), BaseUtils.merge(ValueClassProperty.getValueClasses(interfaces),Collections.singleton(getValueClass())), false));
+    protected PropertyChanges calculateUsedDataChanges(PropertyChanges propChanges) {
+        return ClassProperty.getIsClassUsed(interfaces, propChanges).add(ClassProperty.getIsClassUsed(getValueClass(), propChanges));
     }
 
     @Override
-    protected MapDataChanges<ClassPropertyInterface> calculateDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
-        change = change.and(ValueClassProperty.getIsClassWhere(change.mapKeys, modifier, null).and(modifier.getSession().getIsClassWhere(change.expr, getValueClass(), null).or(change.expr.getWhere().not())));
+    protected MapDataChanges<ClassPropertyInterface> calculateDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+        change = change.and(ClassProperty.getIsClassWhere(change.mapKeys, propChanges, null).and(ClassProperty.getIsClassWhere(getValueClass(), change.expr, propChanges, null).or(change.expr.getWhere().not())));
         if(change.where.isFalse()) // чтобы не плодить пустые change'и
             return new MapDataChanges<ClassPropertyInterface>();
 

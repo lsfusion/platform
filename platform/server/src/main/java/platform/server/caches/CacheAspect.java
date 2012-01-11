@@ -186,9 +186,7 @@ public class CacheAspect {
     public static Object callMethod(Object object, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs(), false);
     }
-    //@net.jcip.annotations.Immutable
     @Around("execution(@platform.server.caches.IdentityLazy * *.*(..)) && target(object)")
-    // с call'ом есть баги
     public Object callMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         return callMethod(object, thisJoinPoint);
     }
@@ -201,16 +199,13 @@ public class CacheAspect {
 
         return lazyIdentityExecute(args[0], thisJoinPoint, switchArgs, false);
     }
-    //@net.jcip.annotations.Immutable *
     @Around("execution(@platform.server.caches.ParamLazy * *.*(..)) && target(object)")
-    // с call'ом есть баги
     public Object callParamMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         return callParamMethod(object, thisJoinPoint);
     }
 
     //@net.jcip.annotations.Immutable
     @Around("execution(@platform.server.caches.SynchronizedLazy * *.*(..)) && target(object)")
-    // с call'ом есть баги
     public Object callSynchronizedMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         synchronized (object) {
             return callMethod(thisJoinPoint, object);

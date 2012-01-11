@@ -1,23 +1,17 @@
 package platform.server.data.query.stat;
 
-import platform.base.AddSet;
-import platform.base.BaseUtils;
-import platform.base.Pair;
-import platform.base.Result;
-import platform.server.caches.IdentityLazy;
+import platform.base.*;
+import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.*;
-import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.InnerJoins;
-import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.KeyEqual;
-import platform.server.data.translator.HashLazy;
-import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.Where;
@@ -69,7 +63,6 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return innerJoins;
     }
 
-    @HashOuterLazy
     public int hashOuter(HashContext hashContext) {
         int hash = 0;
         for(WhereJoin where : wheres)
@@ -84,18 +77,8 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return new WhereJoins(transJoins);
     }
 
-    public SourceJoin[] getEnum() {
-        SourceJoin[][] enums = new SourceJoin[wheres.length][]; int tot = 0;
-        for(int i=0;i<wheres.length;i++) {
-            enums[i] = wheres[i].getEnum();
-            tot += enums[i].length;
-        }
-        SourceJoin[] result = new SourceJoin[tot]; int wr = 0;
-        for(int i=0;i<wheres.length;i++) {
-            System.arraycopy(enums[i], 0, result, wr, enums[i].length);
-            wr += enums[i].length;
-        }
-        return result;
+    public QuickSet<OuterContext> getOuterDepends() {
+        return new QuickSet<OuterContext>(wheres);
     }
 
     private static class Edge<K> {
@@ -129,7 +112,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return getPropStat(valueExpr, keyStat, propStats).min(joinStats.get(valueExpr.getBaseJoin()));
     }
 
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(Set<K> groups, KeyStat keyStat) {
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> groups, KeyStat keyStat) {
         Map<BaseJoin, Stat> statJoins = new HashMap<BaseJoin, Stat>();
         Map<BaseExpr, Stat> propStats = new HashMap<BaseExpr, Stat>();
 
@@ -221,7 +204,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return new StatKeys<K>(distinct.getMax().min(rowStat), distinct); // возвращаем min(суммы groups, расчитанного результата)
     }
 
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(Set<K> groups, Map<WhereJoin, Where> upWheres, WhereBuilder result, KeyStat stat) {
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> groups, Map<WhereJoin, Where> upWheres, WhereBuilder result, KeyStat stat) {
         // нужно попытаться опускаться ниже, устраняя "избыточные" WhereJoin'ы или InnerJoin'ы
 
         StatKeys<K> resultStat = getStatKeys(groups, stat);
@@ -261,17 +244,9 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return resultStat;
     }
 
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(Set<K> groups, final KeyStat keyStat, final KeyEqual keyEqual) {
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> groups, final KeyStat keyStat, final KeyEqual keyEqual) {
         if(!keyEqual.isEmpty()) { // для оптимизации
-            return and(keyEqual.getWhereJoins()).getStatKeys(groups, new KeyStat() {
-                public Stat getKeyStat(KeyExpr key) {
-                    BaseExpr keyExpr = keyEqual.keyExprs.get(key);
-                    if(keyExpr!=null)
-                        return keyExpr.getTypeStat(keyStat);
-                    else
-                        return keyStat.getKeyStat(key);
-                }
-            });
+            return and(keyEqual.getWhereJoins()).getStatKeys(groups, keyEqual.getKeyStat(keyStat));
         } else
             return getStatKeys(groups, keyStat);
     }
@@ -288,12 +263,12 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
     }
 
     // получает подможнство join'ов которое дает joinKeys, пропуская skipJoin. тут же алгоритм по определению достаточных ключей
-    public <K extends Expr> StatKeys<K> getStatKeys(Set<K> joinKeys, Map<WhereJoin, Where> upWheres, QueryJoin<K, ?> skipJoin, WhereBuilder result, KeyStat keyStat) {
+    public <K extends Expr> StatKeys<K> getStatKeys(Set<K> joinKeys, Map<WhereJoin, Where> upWheres, QueryJoin<K, ?, ?, ?> skipJoin, WhereBuilder result, KeyStat keyStat) {
         // joinKeys из skipJoin.getJoins()
 
-        Map<BaseExpr, K> groupKeys = BaseUtils.reverse(BaseUtils.filterKeys(skipJoin.getJoins(), joinKeys));
+        Map<BaseExpr, K> groupKeys = BaseUtils.reverse(BaseUtils.filterKeys(skipJoin.getJoins(), joinKeys), true);
         Map<WhereJoin, Where> upFitWheres = new HashMap<WhereJoin, Where>();
-        return removeJoin(skipJoin, upWheres, upFitWheres).getStatKeys(groupKeys.keySet(), upFitWheres, result, keyStat).map(groupKeys);
+        return removeJoin(skipJoin, upWheres, upFitWheres).getStatKeys(new QuickSet<BaseExpr>(groupKeys.keySet()), upFitWheres, result, keyStat).map(groupKeys);
     }
 
     // может как MeanUpWheres сделать
@@ -351,8 +326,19 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return result;
     }
 
-    @IdentityLazy
-    public Set<Value> getOuterValues() {
-        return AbstractSourceJoin.getOuterValues(this);
+    public QuickSet<KeyExpr> getOuterKeys() {
+        return AbstractOuterContext.getOuterKeys(this);
+    }
+
+    public QuickSet<Value> getOuterValues() {
+        return AbstractOuterContext.getOuterValues(this);
+    }
+
+    public void enumerate(ExprEnumerator enumerator) {
+        AbstractOuterContext.enumerate(this, enumerator);
+    }
+
+    public long getComplexity(boolean outer) {
+        return AbstractOuterContext.getComplexity(this, outer);
     }
 }

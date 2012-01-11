@@ -30,7 +30,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     final Property<P> toChange;
 
     public CycleGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends PropertyInterfaceImplement<I>> groupInterfaces, PropertyInterfaceImplement<I> property, Property<P> toChange) {
-        super(sID, caption, innerInterfaces, groupInterfaces, property);
+        super(sID, caption, innerInterfaces, groupInterfaces, property, false);
         this.toChange = toChange;
     }
 
@@ -51,24 +51,24 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     }
 
     @Override
-    protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
+    protected PropertyChanges calculateUsedDataChanges(PropertyChanges propChanges) {
         if(toChange!=null)
-            return MaxChangeProperty.getUsedChanges(this,toChange,modifier).addChanges(toChange.getUsedDataChanges(modifier));
+            return MaxChangeProperty.getUsedChanges(this,toChange, propChanges).add(toChange.getUsedDataChanges(propChanges));
         else
-            return modifier.newChanges();
+            return PropertyChanges.EMPTY;
     }
 
     @Override
-    protected MapDataChanges<Interface<I>> calculateDataChanges(PropertyChange<Interface<I>> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    protected MapDataChanges<Interface<I>> calculateDataChanges(PropertyChange<Interface<I>> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
 
         if(toChange!=null) {
             Map<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
-            Expr resultExpr = getChangeExpr(change, modifier, toChangeKeys);
+            Expr resultExpr = getChangeExpr(change, propChanges, toChangeKeys);
     //        return toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere()),changedWhere,modifier);
-            DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, modifier, toChangeKeys))),null, modifier).changes;
+            DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, propChanges, toChangeKeys))), propChanges, null).changes;
             if(changedWhere!=null) {
                 if (Settings.instance.isCalculateGroupDataChanged())
-                    getExpr(change.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);
+                    getExpr(change.mapKeys, dataChanges.add(propChanges), changedWhere);
                 else
                     changedWhere.add(change.where);
             }
@@ -78,13 +78,13 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
 
     }
 
-    private Expr getChangeExpr(PropertyChange<Interface<I>> change, Modifier<? extends Changes> modifier, Map<P,KeyExpr> toChangeKeys) {
+    private Expr getChangeExpr(PropertyChange<Interface<I>> change, PropertyChanges propChanges, Map<P,KeyExpr> toChangeKeys) {
         Map<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
         
         // для G=newValue - изменением toChange
         // сделать чтобы все\хоть один I1=M1 AND I2=M2 AND … In=Mn AND G=newValue выполнялось - !FALSE - была хоть одна
         // берем I1=M1 AND I2=M2 AND … In=Mn, G=newValue and changed, "заменяя" DataProperty (C1=J1..CN=JN,D), группируем по C1,…,Cn,D ставим getWhere - отбираем
-        Modifier<? extends Changes> changeModifier = toChange.getChangeModifier(modifier, false);
+        PropertyChanges changeModifier = toChange.getChangeModifier(propChanges, false);
         WhereBuilder changedWhere = new WhereBuilder();
         Join<String> changeJoin = change.join(getGroupImplements(mapKeys, changeModifier, changedWhere));
         // группируем по новому значению, интерфейсам, а также по изменению toChange
@@ -93,21 +93,21 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         return GroupExpr.create(toChange.getChangeExprs(), toChange.changeExpr, changedWhere.toWhere().and(compareWhere), getGroupType(), toChangeKeys, (PullExpr)toChange.changeExpr);
     }
 
-    private Where getNullWhere(PropertyChange<Interface<I>> change, Modifier<? extends Changes> modifier, Map<P,KeyExpr> toChangeKeys) {
+    private Where getNullWhere(PropertyChange<Interface<I>> change, PropertyChanges propChanges, Map<P,KeyExpr> toChangeKeys) {
         Map<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
 
         // для G!=newValue, изменением toChange на null
         // сделать чтобы I1=M1 AND I2=M2 … In=Mn не выполнялось == FALSE - не было вообще
         // берем I1=M1, I2=M2, …, In=Mn, G!=newValue and changed (and один из всех Ii - null), группируем по C1, …, Cn получаем те кого null'им в changeProperty
         // пока не будем проверять на G!=newValue пусть все зануляет
-        Modifier<? extends Changes> changeModifier = toChange.getChangeModifier(modifier,true);
+        PropertyChanges changeModifier = toChange.getChangeModifier(propChanges, true);
         WhereBuilder newOldChangedWhere = new WhereBuilder();
 
         Where newOldWhere = Where.FALSE;
         for(Interface<I> groupInterface : interfaces)
             newOldWhere = newOldWhere.or(groupInterface.implement.mapExpr(mapKeys,changeModifier,newOldChangedWhere).getWhere().not());
-        newOldWhere = newOldWhere.and(groupProperty.mapExpr(mapKeys, modifier).getWhere());
+        newOldWhere = newOldWhere.and(groupProperty.mapExpr(mapKeys, propChanges).getWhere());
 
-        return GroupExpr.create(toChange.getChangeExprs(), newOldChangedWhere.toWhere().and(change.getWhere(getGroupImplements(mapKeys, modifier)).and(newOldWhere)), toChangeKeys).getWhere();
+        return GroupExpr.create(toChange.getChangeExprs(), newOldChangedWhere.toWhere().and(change.getWhere(getGroupImplements(mapKeys, propChanges)).and(newOldWhere)), toChangeKeys).getWhere();
     }
 }

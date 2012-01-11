@@ -80,6 +80,6 @@ public class SystemClass extends DataClass<Integer> {
     }
 
     public Stat getTypeStat() {
-        return new Stat(100);
+        return Stat.ALOT;
     }
 }

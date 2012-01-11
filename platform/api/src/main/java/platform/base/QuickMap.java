@@ -1,8 +1,6 @@
 package platform.base;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 // дублируем QuickSet
 public abstract class QuickMap<K, V> {
@@ -136,6 +134,13 @@ public abstract class QuickMap<K, V> {
         return true;
     }
 
+    public boolean addAll(QuickMap<? extends K, ? extends V> set, QuickSet<K> skip) {
+        for (int i = 0; i < set.size; i++)
+            if (!skip.contains(set.getKey(i)) &&  !add(i, set))
+                return false;
+        return true;
+    }
+
     public void addAll(Collection<K> keys, V value) {
         for(K key : keys)
             add(key, value);
@@ -213,23 +218,47 @@ public abstract class QuickMap<K, V> {
         return keys;
     }
 
+    public QuickSet<K> keyQuickSet() {
+        QuickSet<K> keys = new QuickSet<K>();
+        for (int i = 0; i < size; i++)
+            keys.add(getKey(i));
+        return keys;
+    }
+
     public Iterable<K> keyIt() {
         return new Iterable<K>() {
-            @Override
             public Iterator<K> iterator() {
                 return new Iterator<K>() {
                     int i=0;
-                    @Override
                     public boolean hasNext() {
                         return i<size;
                     }
 
-                    @Override
                     public K next() {
                         return getKey(i++);
                     }
 
-                    @Override
+                    public void remove() {
+                        throw new RuntimeException("not supported");
+                    }
+                };
+            }
+        };
+    }
+
+    public Iterable<V> valueIt() {
+        return new Iterable<V>() {
+            public Iterator<V> iterator() {
+                return new Iterator<V>() {
+                    int i=0;
+                    public boolean hasNext() {
+                        return i<size;
+                    }
+
+                    public V next() {
+                        return getValue(i++);
+                    }
+
                     public void remove() {
                         throw new RuntimeException("not supported");
                     }
@@ -250,5 +279,27 @@ public abstract class QuickMap<K, V> {
             }
         }
         return false;
+    }
+
+    public <EK extends K> QuickMap<EK, V> filterKeys(QuickSet<? extends EK> keys) {
+        QuickMap<EK, V> result = new SimpleMap<EK, V>();
+        for (int i=0;i<keys.size;i++) {
+            EK key = keys.get(i);
+            V value = get(key);
+            if(value!=null)
+                result.add(key, value);
+        }
+        return result;
+    }
+
+    public <EK extends K> QuickMap<EK, V> filterInclKeys(QuickSet<? extends EK> keys) {
+        QuickMap<EK, V> result = new SimpleMap<EK, V>();
+        for (int i=0;i<keys.size;i++) {
+            EK key = keys.get(i);
+            V value = get(key);
+            assert value!=null;
+            result.add(key, value);
+        }
+        return result;
     }
 }

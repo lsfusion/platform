@@ -6,11 +6,10 @@ import platform.base.Counter;
 import platform.base.OrderedMap;
 import platform.server.Settings;
 import platform.server.caches.OuterContext;
-import platform.server.classes.IntegralClass;
 import platform.server.data.*;
 import platform.server.data.expr.*;
-import platform.server.data.expr.order.OrderCalc;
-import platform.server.data.expr.order.OrderToken;
+import platform.server.data.expr.order.PartitionCalc;
+import platform.server.data.expr.order.PartitionToken;
 import platform.server.data.expr.query.*;
 import platform.server.data.query.innerjoins.GroupJoinsWhere;
 import platform.server.data.query.stat.KeyStat;
@@ -27,6 +26,7 @@ import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.ServerResourceBundle;
+import platform.base.QuickSet;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -113,9 +113,14 @@ public class CompiledQuery<K,V> {
             return joinData.get(groupExpr);
         }
 
-        public String getSource(OrderExpr orderExpr) {
-            assert joinData.get(orderExpr)!=null;
-            return joinData.get(orderExpr);
+        public String getSource(PartitionExpr partitionExpr) {
+            assert joinData.get(partitionExpr)!=null;
+            return joinData.get(partitionExpr);
+        }
+
+        public String getSource(SubQueryExpr subQueryExpr) {
+            assert joinData.get(subQueryExpr)!=null;
+            return joinData.get(subQueryExpr);
         }
 
         public String getSource(IsClassExpr classExpr) {
@@ -160,7 +165,7 @@ public class CompiledQuery<K,V> {
         union = !useFJ && queryJoins.size() >= 2;
         boolean unionAll = false;
         if(union) {
-            if(queryJoins.size() < Settings.instance.getCountJoinsUseUnionInsteadOfUnionAll()) {
+            if(!(queryJoins.size() > Settings.instance.getLimitUnionAllCount()) || GroupJoinsWhere.getComplexity(queryJoins, true) > Settings.instance.getLimitUnionAllComplexity()) {
                 queryJoins = query.getWhereJoins(false);
                 unionAll = true;
             } else
@@ -180,7 +185,7 @@ public class CompiledQuery<K,V> {
             String fromString = "";
             for(GroupJoinsWhere queryJoin : queryJoins) {
                 boolean orderUnion = syntax.orderUnion(); // нужно чтобы фигачило внутрь orders а то многие SQL сервера не видят индексы внутри union all
-                fromString = (fromString.length()==0?"":fromString+" UNION " + (unionAll?"ALL ":"")) + "(" + getInnerSelect(query.mapKeys, queryJoin, queryJoin.getFullWhere().followTrue(query.properties), params, orderUnion?orders:new OrderedMap<V, Boolean>(), orderUnion?top:0, syntax, keyNames, propertyNames, keyOrder, propertyOrder, castTypes, prefix, false) + ")";
+                fromString = (fromString.length()==0?"":fromString+" UNION " + (unionAll?"ALL ":"")) + "(" + getInnerSelect(query.mapKeys, queryJoin, queryJoin.getFullWhere().followTrue(query.properties, !queryJoin.isComplex()), params, orderUnion?orders:new OrderedMap<V, Boolean>(), orderUnion?top:0, syntax, keyNames, propertyNames, keyOrder, propertyOrder, castTypes, prefix, false) + ")";
                 if(!orderUnion)
                     castTypes = null;
             }
@@ -398,7 +403,7 @@ public class CompiledQuery<K,V> {
             return getSource(classExpr.getJoinExpr());
         }
 
-        private abstract class QuerySelect<K extends Expr,I extends OuterContext<I>,J extends QueryJoin<K,?>,E extends QueryExpr<K,I,J>> extends JoinSelect<J> {
+        private abstract class QuerySelect<K extends Expr, I extends OuterContext<I>,J extends QueryJoin<K,?,?,?>,E extends QueryExpr<K,I,J,?,?>> extends JoinSelect<J> {
             Map<String, K> group;
 
             protected Map<String, BaseExpr> initJoins(J groupJoin) {
@@ -431,13 +436,13 @@ public class CompiledQuery<K,V> {
             }
         }
 
-        private class GroupSelect extends QuerySelect<Expr,GroupExpr.Query,GroupJoin,GroupExpr> {
+        private class GroupSelect extends QuerySelect<Expr, GroupExpr.Query,GroupJoin,GroupExpr> {
 
-            final Set<KeyExpr> keys;
+            final QuickSet<KeyExpr> keys;
 
             GroupSelect(GroupJoin groupJoin) {
                 super(groupJoin);
-                keys = groupJoin.getKeys();
+                keys = groupJoin.getInnerKeys();
             }
 
             public String getSource() {
@@ -465,7 +470,7 @@ public class CompiledQuery<K,V> {
 
                 Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
                 Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
-                String fromSelect = new Query<KeyExpr,Expr>(BaseUtils.toMap(keys),BaseUtils.toMap(queryExprs), fullWhere)
+                String fromSelect = new Query<KeyExpr,Expr>(keys.toMap(),BaseUtils.toMap(queryExprs), fullWhere)
                     .compile(syntax, prefix).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, params);
 
                 Map<String, String> keySelect = BaseUtils.join(group,fromPropertySelect);
@@ -489,18 +494,18 @@ public class CompiledQuery<K,V> {
             }
         }
 
-        private class OrderSelect extends QuerySelect<KeyExpr, OrderExpr.Query,OrderJoin,OrderExpr> {
+        private class PartitionSelect extends QuerySelect<KeyExpr, PartitionExpr.Query,PartitionJoin,PartitionExpr> {
 
             final Map<KeyExpr,BaseExpr> mapKeys;
-            private OrderSelect(OrderJoin orderJoin) {
-                super(orderJoin);
-                mapKeys = orderJoin.group;
+            private PartitionSelect(PartitionJoin partitionJoin) {
+                super(partitionJoin);
+                mapKeys = partitionJoin.group;
             }
 
             public String getSource() {
 
                 Set<Expr> queryExprs = new HashSet<Expr>();
-                for(OrderExpr.Query query : queries.keySet())
+                for(PartitionExpr.Query query : queries.keySet())
                     queryExprs.addAll(query.getExprs());
                 Where fullWhere = innerJoin.getWhere();
 
@@ -509,7 +514,7 @@ public class CompiledQuery<K,V> {
                     Set<KeyExpr> joins = innerJoin.getJoins().keySet();
                     WhereBuilder insufWhere = new WhereBuilder();
                     if(whereJoins.getStatKeys(joins, upWheres, innerJoin, insufWhere, keyStat).rows.less(statKeys.rows)) // проталкивание по многим ключам
-                        fullWhere = fullWhere.and(OrderExpr.getPartitionWhere(false, insufWhere.toWhere(), innerJoin.getJoins(), innerJoin.getPartitions()));
+                        fullWhere = fullWhere.and(PartitionExpr.getPartitionWhere(false, insufWhere.toWhere(), innerJoin.getJoins(), innerJoin.getPartitions()));
                 }
 
                 Map<String,String> keySelect = new HashMap<String,String>();
@@ -519,10 +524,10 @@ public class CompiledQuery<K,V> {
                     .compile(syntax, prefix).fillSelect(keySelect, fromPropertySelect, whereSelect, params);
 
                 // обработка multi-level order'ов
-                Map<OrderToken, String> tokens = new HashMap<OrderToken, String>();
-                Map<OrderCalc, String> resultNames = new HashMap<OrderCalc, String>();
-                for(Map.Entry<OrderExpr.Query, String> query : queries.entrySet()) {
-                    OrderCalc calc = query.getKey().orderType.createAggr(tokens,
+                Map<PartitionToken, String> tokens = new HashMap<PartitionToken, String>();
+                Map<PartitionCalc, String> resultNames = new HashMap<PartitionCalc, String>();
+                for(Map.Entry<PartitionExpr.Query, String> query : queries.entrySet()) {
+                    PartitionCalc calc = query.getKey().type.createAggr(tokens,
                             BaseUtils.mapList(query.getKey().exprs, fromPropertySelect),
                             BaseUtils.mapOrder(query.getKey().orders, fromPropertySelect),
                             new HashSet<String>(BaseUtils.filterKeys(fromPropertySelect, query.getKey().partitions).values()));
@@ -531,12 +536,12 @@ public class CompiledQuery<K,V> {
 
                 Set<String> proceeded = new HashSet<String>();
                 for(int i=1;;i++) {
-                    Set<OrderToken> next = new HashSet<OrderToken>();
+                    Set<PartitionToken> next = new HashSet<PartitionToken>();
                     boolean last = true;
-                    for(Map.Entry<OrderToken, String> token : tokens.entrySet()) {
+                    for(Map.Entry<PartitionToken, String> token : tokens.entrySet()) {
                         boolean neededUp = token.getKey().next.isEmpty(); // верхний, надо протаскивать
                         last = true;
-                        for(OrderCalc usedToken : token.getKey().next) {
+                        for(PartitionCalc usedToken : token.getKey().next) {
                             if(usedToken.getLevel() >= i) {
                                 if(usedToken.getLevel() == i) // если тот же уровень
                                     next.add(usedToken);
@@ -551,10 +556,10 @@ public class CompiledQuery<K,V> {
                     if(last)
                         return fromSelect;
 
-                    Map<OrderToken, String> nextTokens = new HashMap<OrderToken, String>();
+                    Map<PartitionToken, String> nextTokens = new HashMap<PartitionToken, String>();
                     Map<String, String> propertySelect = new HashMap<String, String>(BaseUtils.toMap(proceeded));
-                    for(OrderToken token : next) {
-                        String name = token.next.isEmpty() ? resultNames.get((OrderCalc) token) : "ne" + nextTokens.size(); // если верхний то нужно с нормальным именем тащить
+                    for(PartitionToken token : next) {
+                        String name = token.next.isEmpty() ? resultNames.get((PartitionCalc) token) : "ne" + nextTokens.size(); // если верхний то нужно с нормальным именем тащить
                         propertySelect.put(name, token.getSource(tokens, syntax));
                         nextTokens.put(token, name);
                     }
@@ -567,14 +572,49 @@ public class CompiledQuery<K,V> {
 
             protected Where getInnerWhere() {
                 Where result = Where.TRUE;
-                for(Map.Entry<OrderExpr.Query, OrderExpr> expr : exprs.entrySet())
-                    if(!expr.getKey().orderType.canBeNull())
+                for(Map.Entry<PartitionExpr.Query, PartitionExpr> expr : exprs.entrySet())
+                    if(!expr.getKey().type.canBeNull())
                         result = result.and(expr.getValue().getWhere());
                 return result;
             }
         }
 
-        private <K extends Expr,I extends OuterContext<I>,IJ extends OuterContext<IJ>,J extends QueryJoin<K,IJ>,E extends QueryExpr<K,I,J>,Q extends QuerySelect<K,I,J,E>>
+        private class SubQuerySelect extends QuerySelect<KeyExpr,Expr,SubQueryJoin,SubQueryExpr> {
+
+            final Map<KeyExpr,BaseExpr> mapKeys;
+            private SubQuerySelect(SubQueryJoin subQueryJoin) {
+                super(subQueryJoin);
+                mapKeys = subQueryJoin.group;
+            }
+
+            public String getSource() {
+
+                Where fullWhere = innerJoin.getWhere();
+
+                StatKeys<KeyExpr> statKeys = innerJoin.getStatKeys(keyStat);
+                Set<KeyExpr> joins = innerJoin.getJoins().keySet();
+                WhereBuilder insufWhere = new WhereBuilder();
+                if(whereJoins.getStatKeys(joins, upWheres, innerJoin, insufWhere, keyStat).rows.less(statKeys.rows)) // проталкивание по многим ключам
+                    fullWhere = fullWhere.and(GroupExpr.create(innerJoin.getJoins(), insufWhere.toWhere(), BaseUtils.toMap(joins)).getWhere());
+
+                Map<String, String> keySelect = new HashMap<String, String>();
+                Map<String, String> propertySelect = new HashMap<String, String>();
+                Collection<String> whereSelect = new ArrayList<String>();
+                String fromSelect = new Query<String,String>(group, BaseUtils.reverse(queries), fullWhere).compile(syntax, prefix).fillSelect(keySelect, propertySelect, whereSelect, params);
+                return "(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect,propertySelect),
+                    BaseUtils.toString(whereSelect," AND "),"","","") + ")";
+
+            }
+
+            protected Where getInnerWhere() {
+                Where result = Where.TRUE;
+                for(Map.Entry<Expr, SubQueryExpr> expr : exprs.entrySet())
+                    result = result.and(expr.getValue().getWhere());
+                return result;
+            }
+        }
+
+        private <K extends Expr,I extends OuterContext<I>,IJ extends OuterContext<IJ>,J extends QueryJoin<K,IJ,J,?>,E extends QueryExpr<K,I,J,?,?>,Q extends QuerySelect<K, I,J,E>>
                     String getSource(Map<J,Q> selects, E expr) {
             J exprJoin = expr.getInnerJoin();
 
@@ -587,7 +627,10 @@ public class CompiledQuery<K,V> {
             if(((Object)exprJoin) instanceof GroupJoin) // нету группы - создаем, чтобы не нарушать модульность сделаем без наследования
                 select = (Q) (Object) new GroupSelect((GroupJoin)(Object)exprJoin);
             else
-                select = (Q) (Object) new OrderSelect((OrderJoin)(Object)exprJoin);
+            if(((Object)exprJoin) instanceof PartitionJoin)
+                select = (Q) (Object) new PartitionSelect((PartitionJoin)(Object)exprJoin);
+            else
+                select = (Q) (Object) new SubQuerySelect((SubQueryJoin)(Object)exprJoin);
 
             selects.put(exprJoin,select);
             return select.add(expr.query,expr);
@@ -604,12 +647,17 @@ public class CompiledQuery<K,V> {
                 }
                 return groupExprSource;
             } else
-                return getSource(groups,groupExpr);
+                return getSource(groups, groupExpr);
         }
 
-        private final Map<OrderJoin,OrderSelect> orders = new HashMap<OrderJoin, OrderSelect>();
-        public String getSource(OrderExpr orderExpr) {
-            return getSource(orders,orderExpr);
+        private final Map<PartitionJoin,PartitionSelect> partitions = new HashMap<PartitionJoin, PartitionSelect>();
+        public String getSource(PartitionExpr partitionExpr) {
+            return getSource(partitions, partitionExpr);
+        }
+
+        private final Map<SubQueryJoin,SubQuerySelect> subqueries = new HashMap<SubQueryJoin, SubQuerySelect>();
+        public String getSource(SubQueryExpr subQueryExpr) {
+            return getSource(subqueries, subQueryExpr);
         }
 
         private JoinSelect getJoinSelect(InnerJoin innerJoin) {
@@ -617,8 +665,10 @@ public class CompiledQuery<K,V> {
                 return tables.get((Table.Join)innerJoin);
             if(innerJoin instanceof GroupJoin)
                 return groups.get((GroupJoin)innerJoin);
-            if(innerJoin instanceof OrderJoin)
-                return orders.get((OrderJoin)innerJoin);
+            if(innerJoin instanceof PartitionJoin)
+                return partitions.get((PartitionJoin)innerJoin);
+            if(innerJoin instanceof SubQueryJoin)
+                return subqueries.get((SubQueryJoin)innerJoin);
             throw new RuntimeException("no matching class");
         }
     }
@@ -692,7 +742,7 @@ public class CompiledQuery<K,V> {
             final Set<GroupExpr> groupExprs = new HashSet<GroupExpr>(); final Counter repeats = new Counter();
             for(Expr property : compiledProps.values())
                 property.enumerate(new ExprEnumerator() {
-                    public boolean enumerate(SourceJoin join) {
+                    public boolean enumerate(OuterContext join) {
                         if(join instanceof JoinData) { // если JoinData то что внутри не интересует
                             if(join instanceof GroupExpr && !compile.isInner(((GroupExpr) join).getInnerJoin()) && !groupExprs.add((GroupExpr)join))
                                 repeats.add();
@@ -859,9 +909,16 @@ public class CompiledQuery<K,V> {
         return translateParam(from, params);
     }
 
+    private Map<String, String> getTranslate(Map<Value, String> mapValues) {
+        return BaseUtils.join(BaseUtils.reverse(params), mapValues);
+    }
+    public String getSelect(Map<Value, String> params) {
+        return translateParam(select, getTranslate(params));
+    }
+
     // для GroupQuery
     public String fillSelect(Map<K, String> fillKeySelect, Map<V, String> fillPropertySelect, Collection<String> fillWhereSelect, Map<Value,String> mapValues) {
-        return fillSelect(BaseUtils.join(BaseUtils.reverse(params), mapValues), fillKeySelect, fillPropertySelect, fillWhereSelect);
+        return fillSelect(getTranslate(mapValues), fillKeySelect, fillPropertySelect, fillWhereSelect);
     }
 
     public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session, QueryEnvironment env) throws SQLException {

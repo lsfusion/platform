@@ -3,13 +3,9 @@ package platform.server.data.expr;
 import platform.base.BaseUtils;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.IntegralClass;
+import platform.server.data.expr.query.PartitionExpr;
 import platform.server.data.expr.where.cases.CaseExpr;
-import platform.server.data.expr.query.OrderExpr;
-import platform.server.data.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
-import platform.server.data.query.JoinData;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
 
@@ -72,7 +68,7 @@ public class LinearOperandMap extends HashMap<Expr,Integer> {
         for(Map.Entry<Expr,Integer> operand : entrySet()) {
             if(operand.getValue()!=0)
                 source = source + addToString(source.length() == 0, compile.syntax.isNULL(operand.getKey().getSource(compile), "0", true), operand.getValue());
-            if(operand.getKey() instanceof OrderExpr) // ?? зачем
+            if(PartitionExpr.isWhereCalculated(operand.getKey())) // ?? зачем
                 orderWhere.add(operand.getKey().getSource(compile)+" IS NOT NULL");
             else
                 linearWhere = linearWhere.or(operand.getKey().getWhere());

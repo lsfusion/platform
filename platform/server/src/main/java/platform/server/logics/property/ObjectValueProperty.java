@@ -7,7 +7,6 @@ import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.FormInstance;
@@ -17,8 +16,7 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -58,12 +56,12 @@ public class ObjectValueProperty extends ExecuteProperty {
             context.addActions(remoteForm.changeObject((ObjectInstance) context.getSingleObjectInstance(), context.getValue(), context.getRemoteForm()));
     }
 
-    protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        return BaseUtils.singleValue(joinImplement).and(ClassProperty.getIsClassWhere(joinImplement, modifier, changedWhere));
+    protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return BaseUtils.singleValue(joinImplement).and(ClassProperty.getIsClassWhere(joinImplement, propChanges, changedWhere));
     }
 
-    protected <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
-        return ClassProperty.getIsClassUsedChanges(interfaces, modifier);
+    protected PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
+        return ClassProperty.getIsClassUsed(interfaces, propChanges);
     }
 
     @Override

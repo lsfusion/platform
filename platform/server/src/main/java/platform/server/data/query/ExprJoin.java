@@ -1,8 +1,10 @@
 package platform.server.data.query;
 
+import platform.base.QuickSet;
 import platform.base.Result;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractOuterContext;
+import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.InnerExpr;
@@ -42,8 +44,9 @@ public class ExprJoin extends AbstractOuterContext<ExprJoin> implements WhereJoi
         return InnerExpr.getExprFollows(this, recursive);
     }
 
-    public SourceJoin[] getEnum() {
-        return new SourceJoin[]{baseExpr};
+    @Override
+    public QuickSet<OuterContext> calculateOuterDepends() {
+        return new QuickSet<OuterContext>(baseExpr);
     }
 
     public Map<Integer, BaseExpr> getJoins() {
@@ -54,11 +57,11 @@ public class ExprJoin extends AbstractOuterContext<ExprJoin> implements WhereJoi
         return new StatKeys<Integer>(Collections.singleton(0), getStat());
     }
 
-    public int hashOuter(HashContext hashContext) {
+    protected int hash(HashContext hashContext) {
         return 31 * (31 * baseExpr.hashOuter(hashContext) + stat.hashCode()) + 5;
     }
 
-    public ExprJoin translateOuter(MapTranslate translator) {
+    protected ExprJoin translate(MapTranslate translator) {
         return new ExprJoin(baseExpr.translateOuter(translator), stat);
     }
 

@@ -7,8 +7,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.FormulaProperty;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.util.Collections;
 import java.util.Map;
@@ -31,7 +30,7 @@ public class DeconcatenateProperty extends FormulaProperty<DeconcatenateProperty
         this.baseClass = baseClass;
     }
 
-    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return DeconcatenateExpr.create(BaseUtils.singleValue(joinImplement),part,baseClass);
     }
 }

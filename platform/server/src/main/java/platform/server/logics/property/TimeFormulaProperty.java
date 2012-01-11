@@ -1,13 +1,10 @@
 package platform.server.logics.property;
 
-import platform.server.classes.DateTimeClass;
-import platform.server.classes.DoubleClass;
 import platform.server.data.Time;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.TimeExpr;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -22,7 +19,7 @@ public class TimeFormulaProperty extends ValueFormulaProperty<PropertyInterface>
         this.time = time;
     }
 
-    protected Expr calculateExpr(Map<PropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<PropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return new TimeExpr(time);
     }
 

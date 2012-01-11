@@ -1,11 +1,15 @@
 package platform.server.data.query;
 
+import org.apache.xpath.operations.Mult;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.QuickSet;
+import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.Message;
+import platform.server.caches.AbstractInnerContext;
+import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
-import platform.server.caches.InnerContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;
@@ -14,7 +18,6 @@ import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.MapValuesTranslator;
@@ -29,16 +32,14 @@ import java.sql.SQLException;
 import java.util.*;
 
 // запрос JoinSelect
-public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInterface<K> {
+public class Query<K,V> extends AbstractInnerContext<Query<K,V>> implements MapKeysInterface<K> {
 
     public final Map<K,KeyExpr> mapKeys;
     public Map<V, Expr> properties;
     public Where where;
 
     public Query(Map<K,KeyExpr> mapKeys) {
-        this.mapKeys = mapKeys;
-        properties = new HashMap<V, Expr>();
-        where = Where.TRUE;
+        this(mapKeys, Where.TRUE);
     }
 
     public Query(Collection<K> keys) {
@@ -56,12 +57,7 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
     }
 
     public Query(Map<K, KeyExpr> mapKeys, Map<V, Expr> properties) {
-        this.mapKeys = mapKeys;
-        this.properties = properties;
-
-        where = Where.FALSE;
-        for(Map.Entry<V, Expr> property : properties.entrySet())
-            where = where.or(property.getValue().getWhere());
+        this(mapKeys, properties, Expr.getOrWhere(properties.values()));
     }
 
     public Query(Map<K, KeyExpr> mapKeys, Expr property, V value) {
@@ -73,9 +69,7 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
     }
 
     public Query(Map<K,KeyExpr> mapKeys,Where where) {
-        this.mapKeys = mapKeys;
-        properties = new HashMap<V, Expr>();
-        this.where = where;
+        this(mapKeys, new HashMap<V, Expr>(), where);
     }
 
     public Query(MapKeysInterface<K> mapInterface) {
@@ -98,13 +92,12 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         return properties.get(property).getType(where);
     }
 
-    public Set<KeyExpr> getKeys() {
-        return new HashSet<KeyExpr>(mapKeys.values());
+    public QuickSet<KeyExpr> getKeys() {
+        return new QuickSet<KeyExpr>(mapKeys.values());
     }
 
-    @IdentityLazy
-    public Set<Value> getValues() {
-        return AbstractSourceJoin.enumValues(properties.values(),where);
+    public QuickSet<Value> getValues() {
+        return AbstractOuterContext.getOuterValues(properties.values()).merge(where.getOuterValues());
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {
@@ -139,6 +132,7 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
             and(mapKeys.get(mapKey.getKey()).compare(mapKey.getValue(),Compare.EQUALS));
     }
 
+    @Message("message.core.query.parse")
     public ParsedQuery<K,V> parse() { // именно ParsedQuery потому как aspect'ами корректируется
         return new ParsedJoinQuery<K,V>(this);
     }
@@ -273,23 +267,62 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
 
     // конструктор копирования
     public Query(Query<K, V> query) {
-        mapKeys = query.mapKeys;
-        properties = new HashMap<V, Expr>(query.properties);
-        where = query.where;
+        this(query.mapKeys, new HashMap<V, Expr>(query.properties), query.where);
     }
 
-    public Query<K, V> translateInner(MapTranslate translate) {
+    protected Query<K, V> translate(MapTranslate translate) {
         return new Query<K,V>(translate.translateKey(mapKeys), translate.translate(properties), where.translateOuter(translate));
     }
-
-    @HashLazy
-    public int hashInner(HashContext hashContext) {
-        return where.hashOuter(hashContext) * 31 + AbstractSourceJoin.hashOuter(properties.values(), hashContext);
+    public Query<K, V> translateInner(MapTranslate translate) {
+        return (Query<K, V>) aspectTranslate(translate);
     }
 
-    public boolean equalsInner(Query<?, ?> object) {
-        // нужно проверить что совпадут
-        return BaseUtils.hashEquals(where,object.where) && BaseUtils.hashEquals(BaseUtils.multiSet(properties.values()),BaseUtils.multiSet(object.properties.values()));
+    protected boolean isComplex() {
+        return true;
+    }
+    public static class MultiParamsContext<K,V> extends AbstractInnerContext<MultiParamsContext<?,?>> {
+
+        private final Query<K,V> thisObj;
+        public MultiParamsContext(Query<K, V> thisObj) {
+            this.thisObj = thisObj;
+        }
+
+        protected QuickSet<KeyExpr> getKeys() {
+            return thisObj.getInnerKeys();
+        }
+        public QuickSet<Value> getValues() {
+            return thisObj.getInnerValues();
+        }
+        protected MultiParamsContext translate(MapTranslate translator) {
+            return thisObj.translateInner(translator).getMultiParamsContext();
+        }
+        public Query<K,V> getQuery() {
+            return thisObj;
+        }
+        protected boolean isComplex() {
+            return true;
+        }
+
+        protected int hash(HashContext hash) {
+            return thisObj.where.hashOuter(hash) * 31 + AbstractSourceJoin.hashOuter(thisObj.properties.values(), hash);
+        }
+        public boolean equalsInner(MultiParamsContext object) {
+            return BaseUtils.hashEquals(thisObj.where,object.getQuery().where) && BaseUtils.hashEquals(BaseUtils.multiSet(thisObj.properties.values()),BaseUtils.multiSet(object.getQuery().properties.values()));
+        }
+    }
+    private MultiParamsContext<K,V> multiParamsContext;
+    public MultiParamsContext<K,V> getMultiParamsContext() {
+        if(multiParamsContext==null)
+            multiParamsContext = new MultiParamsContext<K,V>(this);
+        return multiParamsContext;
+    }
+
+    public int hash(HashContext hashContext) {
+        return 31 * (where.hashOuter(hashContext) * 31 + AbstractSourceJoin.hashOuter(properties, hashContext)) + AbstractSourceJoin.hashOuter(mapKeys, hashContext);
+    }
+
+    public boolean equalsInner(Query<K, V> object) { // нужно проверить что совпадут
+        return BaseUtils.hashEquals(where, object.where) && BaseUtils.hashEquals(properties, object.properties) && BaseUtils.hashEquals(mapKeys, object.mapKeys);
     }
 }
 

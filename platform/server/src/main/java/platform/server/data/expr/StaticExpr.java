@@ -5,8 +5,8 @@ import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.ValueJoin;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.MapWhere;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
@@ -36,13 +36,6 @@ public abstract class StaticExpr<C extends ConcreteClass> extends StaticClassExp
     // возвращает Where без следствий
     public Where calculateWhere() {
         return Where.TRUE;
-    }
-
-    public long calculateComplexity() {
-        return 1;
-    }
-
-    public void enumDepends(ExprEnumerator enumerator) {
     }
 
     public Stat getStatValue(KeyStat keyStat) {

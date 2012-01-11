@@ -6,7 +6,7 @@ import platform.server.data.where.Where;
 import java.util.Collection;
 import java.util.Map;
 
-public class MapJoin<V,MV> extends Join<V> {
+public class MapJoin<V,MV> extends AbstractJoin<V> {
     private Join<MV> join;
     protected Map<V,MV> mapProps;
 

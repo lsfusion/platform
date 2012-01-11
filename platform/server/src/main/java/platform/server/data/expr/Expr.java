@@ -1,18 +1,15 @@
 package platform.server.data.expr;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.IntegerClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.KeyField;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
-import platform.server.data.expr.query.GroupExpr;
-import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.expr.where.cases.ExprCaseList;
@@ -21,7 +18,9 @@ import platform.server.data.expr.where.ifs.NullExpr;
 import platform.server.data.expr.where.ifs.IfCases;
 import platform.server.data.expr.where.ifs.IfExpr;
 import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.Query;
+import platform.server.data.query.SourceJoin;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.ClassReader;
@@ -29,6 +28,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 
 import java.sql.SQLException;
@@ -149,10 +149,17 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public abstract Expr translateQuery(QueryTranslator translator);
 
-    public static Where getWhere(Collection<? extends Expr> col) {
+    public static Where getWhere(Iterable<? extends Expr> col) {
         Where where = Where.TRUE;
         for(Expr expr : col)
             where = where.and(expr.getWhere());
+        return where;
+    }
+
+    public static Where getOrWhere(Iterable<? extends Expr> col) {
+        Where where = Where.FALSE;
+        for(Expr expr : col)
+            where = where.or(expr.getWhere());
         return where;
     }
 
@@ -161,8 +168,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }
 
     public void checkInfiniteKeys() {
-        Set<KeyExpr> keys = new HashSet<KeyExpr>();
-        enumKeys(keys);
+        QuickSet<KeyExpr> keys = getOuterKeys();
 
         Map<KeyExpr,BaseExpr> keyValues = new HashMap<KeyExpr, BaseExpr>();
         Set<KeyExpr> keyRest = new HashSet<KeyExpr>();
@@ -181,10 +187,22 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     // проверка на статичность, временно потом более сложный алгоритм надо будет
     public boolean isValue() {
-        return enumKeys(this).isEmpty();
+        return getOuterKeys().isEmpty();
     }
     public static <K> Map<K, ObjectValue> readValues(SQLSession session, BaseClass baseClass, Map<K,Expr> mapExprs, QueryEnvironment env) throws SQLException { // assert что в mapExprs только values
-        return new Query<Object, K>(new HashMap<Object, KeyExpr>(), mapExprs, Where.TRUE).executeClasses(session, env, baseClass).singleValue();
+        Map<K, ObjectValue> mapValues = new HashMap<K, ObjectValue>();
+        Map<K, Expr> mapExprValues = new HashMap<K, Expr>();
+        for(Map.Entry<K, Expr> mapExpr : mapExprs.entrySet())
+            if(mapExpr.getValue() instanceof ValueExpr)
+                mapValues.put(mapExpr.getKey(), ((ValueExpr) mapExpr.getValue()).getDataObject());
+            else if(mapExpr.getValue().getWhere().isFalse())
+                mapValues.put(mapExpr.getKey(), NullValue.instance);
+            else
+                mapExprValues.put(mapExpr.getKey(), mapExpr.getValue());
+        if(mapExprValues.isEmpty()) // чисто для оптимизации чтобы лишний раз executeClasses не вызывать
+            return mapValues;
+        else
+            return BaseUtils.merge(mapValues, new Query<Object, K>(new HashMap<Object, KeyExpr>(), mapExprValues, Where.TRUE).executeClasses(session, env, baseClass).singleValue());
     }
 
     public abstract Where getBaseWhere();

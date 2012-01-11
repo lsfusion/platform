@@ -11,7 +11,6 @@ import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
@@ -72,7 +71,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         return super.objectUpdated(gridGroups) || value.objectUpdated(gridGroups);
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
         Where where = property.getExpr(mapKeys, modifier).compare(value.getExpr(mapKeys, modifier), compare);
         return negate ? where.not() : where;
     }
@@ -89,7 +88,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public void resolveAdd(DataSession session, Modifier<? extends Changes> modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
+    public void resolveAdd(DataSession session, Modifier modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
 
         if(compare!=Compare.EQUALS)
             return;

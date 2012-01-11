@@ -95,10 +95,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     public void updateEnvironmentProperty(Property property, ObjectValue value) {
-        Modifier<? extends Changes> userModifier = new PropertyChangesModifier(Property.defaultModifier, new PropertyChanges(
-                property, new PropertyChange<PropertyInterface>(new HashMap<PropertyInterface, KeyExpr>(), value.getExpr(), Where.TRUE)));
+        PropertyChanges userChange = new PropertyChanges(property, new PropertyChange<PropertyInterface>(
+                new HashMap<PropertyInterface, KeyExpr>(), value.getExpr(), Where.TRUE));
         for (DataSession session : sessions)
-            session.updateProperties(userModifier);
+            session.updateProperties(userChange);
     }
 
     public void relogin(String login) throws RemoteException {

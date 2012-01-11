@@ -2,7 +2,6 @@ package platform.server.data.expr;
 
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.ConcreteClass;
 import platform.server.classes.DataClass;
 import platform.server.data.query.CompileSource;
 import platform.server.data.translator.MapTranslate;
@@ -19,8 +18,7 @@ public class InfiniteExpr extends StaticExpr<DataClass> {
         return "Inf " + objectClass;
     }
 
-    @Override
-    public BaseExpr translateOuter(MapTranslate translator) {
+    protected BaseExpr translate(MapTranslate translator) {
         return this;
     }
 
@@ -29,7 +27,7 @@ public class InfiniteExpr extends StaticExpr<DataClass> {
         return this;
     }
 
-    public int hashOuter(HashContext hashContext) {
+    protected int hash(HashContext hashContext) {
         return objectClass.hashCode() + 17;
     }
 

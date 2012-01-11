@@ -1,12 +1,11 @@
 package platform.server.caches;
 
+import platform.base.BaseUtils;
 import platform.base.EmptyIterator;
 import platform.base.GlobalObject;
-import platform.base.BaseUtils;
+import platform.base.QuickMap;
 import platform.server.caches.hash.HashCodeValues;
 import platform.server.caches.hash.HashMapValues;
-import platform.server.caches.hash.HashValues;
-import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapTranslator;
@@ -40,34 +39,26 @@ public class MapContextIterable implements Iterable<MapTranslate> {
         private Iterator<Map<KeyExpr,KeyExpr>> keysIterator;
 
         public MapIterator() {
-            HashValues hashFromValues; HashValues hashToValues;
             mapValues = null;
             if(values) {
-                Map<Value, GlobalObject> mapFromValues = from.getValueComponents();
-                Map<Value, GlobalObject> mapToValues = to.getValueComponents();
-                valueIterator = new ValuePairs(mapFromValues,mapToValues).iterator();
+                valueIterator = new ValuePairs(from.getValuesMap(), to.getValuesMap()).iterator();
                 if(valueIterator.hasNext())
                     mapValues = valueIterator.next();
-
-                hashFromValues = new HashMapValues(mapFromValues);
-                hashToValues = new HashMapValues(mapToValues);
             } else {
                 valueIterator = new EmptyIterator<MapValuesTranslate>();
-                if(from.getValues().equals(to.getValues())) // если контексты не совпадают то сразу вываливаемся
+                if(from.getInnerValues().equals(to.getInnerValues())) // если контексты не совпадают то сразу вываливаемся
                     mapValues = MapValuesTranslator.noTranslate;
-
-                hashFromValues = HashCodeValues.instance;
-                hashToValues = HashCodeValues.instance;
             }
 
-            if(mapValues==null)
+            if(mapValues==null) {
                 keysIterator = new EmptyIterator<Map<KeyExpr, KeyExpr>>();
-            else {
-                keyPairs = new KeyPairs(from.getComponents(hashFromValues).map,to.getComponents(hashToValues).map);
-                keysIterator = keyPairs.iterator();
-                if(!keysIterator.hasNext())
-                    valueIterator = new EmptyIterator<MapValuesTranslate>();    
+                return;
             }
+
+            keyPairs = new KeyPairs(from.getInnerMap(values),to.getInnerMap(values));
+            keysIterator = keyPairs.iterator();
+            if(!keysIterator.hasNext())
+                valueIterator = new EmptyIterator<MapValuesTranslate>();
         }
 
         public boolean hasNext() {

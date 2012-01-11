@@ -5,8 +5,10 @@ import platform.base.TwinImmutableObject;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.query.ExprEqualsJoin;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.query.stat.WhereJoins;
 import platform.server.data.translator.PartialQueryTranslator;
@@ -85,5 +87,17 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
         for(Map.Entry<KeyExpr, BaseExpr> keyExpr : keyExprs.entrySet())
             wheres[iw++] = new ExprEqualsJoin(keyExpr.getKey(), keyExpr.getValue());
         return new WhereJoins(wheres);
+    }
+    
+    public KeyStat getKeyStat(final KeyStat keyStat) {
+        return new platform.server.data.query.stat.KeyStat() {
+            public Stat getKeyStat(KeyExpr key) {
+                BaseExpr keyExpr = keyExprs.get(key);
+                if(keyExpr!=null)
+                    return keyExpr.getTypeStat(keyStat);
+                else
+                    return keyStat.getKeyStat(key);
+            }
+        };
     }
 }

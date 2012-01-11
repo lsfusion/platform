@@ -1,17 +1,12 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.where.CaseExprInterface;
-import platform.server.data.query.Join;
-import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -31,44 +26,12 @@ public abstract class DataProperty extends UserProperty {
         return interfaces;
     }
 
-    public <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
-        SimpleChanges modifierChanges = modifier.getChanges();
-        return (derivedChange != null ? derivedChange.getUsedChanges(modifier) : modifier.newChanges()).
-                addChanges(new SimpleChanges(modifierChanges, BaseUtils.merge(ClassProperty.getValueClasses(interfaces), Collections.singleton(value)), true)).
-                addChanges(new SimpleChanges(modifierChanges, this));
+    public PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
+        return PropertyChanges.EMPTY;
     }
 
-    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-
-        ExprChanges session = modifier.getSession();
-
-        Expr dataExpr = getExpr(joinImplement);
-
-        CaseExprInterface cases = Expr.newCases();
-
-        // ручные изменения
-        Join<String> changedJoin = session.getDataChange(this, joinImplement);
-        if(changedJoin!=null)
-            cases.add(changedJoin.getWhere(),changedJoin.getExpr("value"));
-
-        // блок с удалением
-        Where removeWhere = session.getRemoveWhere(value,dataExpr);
-        for(ClassPropertyInterface remove : interfaces)
-            removeWhere = removeWhere.or(session.getRemoveWhere(remove.interfaceClass,joinImplement.get(remove)));
-        cases.add(removeWhere.and(dataExpr.getWhere()), Expr.NULL);
-
-        // производные изменения
-        if(derivedChange !=null) {
-            PropertyChange<ClassPropertyInterface> defaultChanges = derivedChange.getDataChanges(modifier).get(this);
-            if(defaultChanges !=null) {
-                Join<String> defaultJoin = defaultChanges.join(joinImplement);
-                cases.add(defaultJoin.getWhere(),defaultJoin.getExpr("value"));
-            }
-        }
-
-        if(changedWhere !=null) changedWhere.add(cases.getUpWhere());
-        cases.add(Where.TRUE,dataExpr);
-        return cases.getFinal();
+    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        throw new RuntimeException("should not be"); // так как stored должен
     }
 
     public ValueClass getValueClass() {

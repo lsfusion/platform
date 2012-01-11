@@ -1,5 +1,6 @@
 package platform.server.data.expr.where.pull;
 
+import platform.base.QuickSet;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.Stat;
@@ -12,7 +13,7 @@ public class StatPullWheres extends ExclPullWheres<Stat, Integer, Where> {
 
     protected Stat proceedBase(Where data, Map<Integer, BaseExpr> map) {
         BaseExpr baseExpr = map.get(0);
-        return data.getStatKeys(Collections.singleton(baseExpr)).rows;
+        return data.getStatKeys(new QuickSet<BaseExpr>(baseExpr)).rows;
     }
 
     protected Stat initEmpty() {

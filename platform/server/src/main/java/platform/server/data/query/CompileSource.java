@@ -6,7 +6,8 @@ import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.GroupExpr;
-import platform.server.data.expr.query.OrderExpr;
+import platform.server.data.expr.query.PartitionExpr;
+import platform.server.data.expr.query.SubQueryExpr;
 import platform.server.data.sql.SQLSyntax;
 
 import java.util.HashMap;
@@ -30,6 +31,7 @@ public abstract class CompileSource {
     public abstract String getSource(Table.Join.Expr expr);
     public abstract String getSource(Table.Join.IsIn where);
     public abstract String getSource(GroupExpr groupExpr);
-    public abstract String getSource(OrderExpr orderExpr);
+    public abstract String getSource(PartitionExpr partitionExpr);
+    public abstract String getSource(SubQueryExpr subQueryExpr);
     public abstract String getSource(IsClassExpr classExpr);
 }

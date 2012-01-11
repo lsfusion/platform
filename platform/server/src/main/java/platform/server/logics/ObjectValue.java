@@ -1,6 +1,6 @@
 package platform.server.logics;
 
-import platform.server.caches.AbstractMapValues;
+import platform.server.caches.AbstractValuesContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.sql.SQLSyntax;
@@ -10,7 +10,6 @@ import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.filter.CompareValue;
 import platform.server.logics.property.Property;
-import platform.server.session.Changes;
 import platform.server.session.SessionChanges;
 import platform.server.session.Modifier;
 
@@ -20,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractMapValues<T> implements CompareValue {
+public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValuesContext<T> implements CompareValue {
 
     public abstract String getString(SQLSyntax syntax);
 
@@ -38,7 +37,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractMapV
             return new DataObject(value, objectClass);
     }
 
-    public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) {
+    public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier modifier) {
         return getExpr();
     }
 

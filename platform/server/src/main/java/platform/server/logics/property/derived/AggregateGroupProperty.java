@@ -10,9 +10,8 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
-import platform.server.session.Changes;
 import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -58,7 +57,7 @@ public class AggregateGroupProperty<T extends PropertyInterface, I extends Prope
     }
 
     @Override
-    public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<I>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
         return changedExpr.ifElse(changedExpr.getWhere(), prevExpr.and(changedPrevExpr.getWhere().not()));
     }

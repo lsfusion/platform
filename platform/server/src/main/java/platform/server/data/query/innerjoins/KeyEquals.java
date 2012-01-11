@@ -2,6 +2,7 @@ package platform.server.data.query.innerjoins;
 
 import platform.base.BaseUtils;
 import platform.base.QuickMap;
+import platform.base.QuickSet;
 import platform.interop.Compare;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
@@ -58,9 +59,8 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
                     Iterator<Map.Entry<KeyExpr,Expr>> it = transEq1.entrySet().iterator();
                     while(it.hasNext()) {
                         Map.Entry<KeyExpr,Expr> keyEq = it.next();
-                        Set<KeyExpr> enumKeys = new HashSet<KeyExpr>();
-                        keyEq.getValue().enumKeys(enumKeys);
-                        if(Collections.disjoint(enumKeys, transEq1.keySet())) {// если не зависит от остальных
+                        QuickSet<KeyExpr> enumKeys = keyEq.getValue().getOuterKeys();
+                        if(enumKeys.disjoint(transEq1.keySet())) {// если не зависит от остальных
                             cleanEq1.put(keyEq.getKey(),keyEq.getValue().translateQuery(new PartialQueryTranslator(cleanEq1))); // транслэйтим clean'ами
                             it.remove();
                             found = true; 
@@ -80,7 +80,7 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
                 PartialQueryTranslator cleanTranslator2 = new PartialQueryTranslator(cleanEq2);
                 Where andWhere = where2.translateQuery(cleanTranslator1).and(where1.translateQuery(cleanTranslator2));
 
-                // сливаем same'ы, их также надо translate'ить так как могут быть несвободными от противоположных ключей 
+                // сливаем same'ы, их также надо translateOuter'ить так как могут быть несвободными от противоположных ключей
                 Where extraWhere = Where.TRUE;
                 Map<KeyExpr,Expr> mergeSame = new HashMap<KeyExpr,Expr>(cleanTranslator2.translate(sameEq1));
                 for(Map.Entry<KeyExpr,Expr> andKeyExpr : cleanTranslator1.translate(sameEq2).entrySet()) {
@@ -123,16 +123,17 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
         return where;
     }
 
-    private <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(Set<K> keepStat) {
+    private <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(QuickSet<K> keepStat) {
         Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>();
         for(int i=0;i<size;i++) {
+            KeyEqual keyEqual = getKey(i); // keyEqual закидывается в статистику так как keepStat не всегда translate'ся
             Where where = getValue(i);
-            where.groupJoinsWheres(keepStat, where).compileMeans().fillList(getKey(i), result);
+            where.groupJoinsWheres(keepStat, keyEqual.getKeyStat(where)).compileMeans().fillList(keyEqual, result);
         }
         return result;
     }
 
-    public <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive, Set<K> keepStat) {
+    public <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive, QuickSet<K> keepStat) {
         Collection<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat);
         if(notExclusive || whereJoins.size()<=1)
             return whereJoins;

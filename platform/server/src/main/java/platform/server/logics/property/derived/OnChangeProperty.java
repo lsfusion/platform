@@ -9,12 +9,10 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.AggregateProperty;
 import platform.server.logics.property.ChangeProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -114,11 +112,11 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         this.toChange = toChange;
     }
 
-    protected <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
-        return MaxChangeProperty.getUsedChanges(onChange,toChange,modifier);
+    protected PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
+        return MaxChangeProperty.getUsedChanges(onChange,toChange, propChanges);
     }
 
-    protected Expr calculateExpr(Map<Interface<T, P>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface<T, P>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Map<Interface<T, P>, Expr> mapExprs = new HashMap<Interface<T, P>, Expr>();
         Map<T, Expr> onChangeExprs = new HashMap<T, Expr>();
         for(Interface<T, P> propertyInterface : interfaces)
@@ -129,7 +127,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
 
         WhereBuilder onChangeWhere = new WhereBuilder();
         Expr resultExpr = GroupExpr.create(mapExprs, onChange.getExpr(onChangeExprs,
-                        toChange.getChangeModifier(modifier, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.ANY, BaseUtils.filterKeys(joinImplement, mapExprs.keySet()));
+                        toChange.getChangeModifier(propChanges, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.ANY, BaseUtils.filterKeys(joinImplement, mapExprs.keySet()));
         if(changedWhere!=null) changedWhere.add(resultExpr.getWhere());
         return resultExpr;
     }

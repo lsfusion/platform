@@ -1,15 +1,16 @@
 package platform.server.data.expr.where.extra;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.OuterContext;
 import platform.server.caches.ParamLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.InnerExprSet;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.KeyStat;
@@ -20,7 +21,6 @@ import platform.server.data.where.classes.ClassExprWhere;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 
 public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWhere {
 
@@ -32,9 +32,8 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         this.operator2 = operator2;
     }
 
-    public void enumDepends(ExprEnumerator enumerator) {
-        operator1.enumerate(enumerator);
-        operator2.enumerate(enumerator);
+    public QuickSet<OuterContext> calculateOuterDepends() {
+        return new QuickSet<OuterContext>(operator1, operator2);
     }
 
     public void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -72,8 +71,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
     protected abstract This createThis(BaseExpr operator1, BaseExpr operator2);
     protected abstract Compare getCompare();
 
-    @ParamLazy
-    public Where translateOuter(MapTranslate translator) {
+    protected Where translate(MapTranslate translator) {
         return createThis(operator1.translateOuter(translator),operator2.translateOuter(translator));
     }
     @ParamLazy
@@ -91,16 +89,12 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return packOperator1.compare(packOperator2, getCompare());
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
         return getOperandWhere().groupJoinsWheres(keepStat, keyStat).and(new GroupJoinsWheres(this));
     }
 
     protected Where getOperandWhere() {
         return Expr.getWhere(getAndOperands());
-    }
-
-    public long calculateComplexity() {
-        return operator1.getComplexity() + operator2.getComplexity() + 1;
     }
 
     public ClassExprWhere calculateClassWhere() {

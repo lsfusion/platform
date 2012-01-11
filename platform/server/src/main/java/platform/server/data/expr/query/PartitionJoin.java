@@ -1,28 +1,23 @@
 package platform.server.data.expr.query;
 
-import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractOuterContext;
-import platform.server.caches.IdentityLazy;
+import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.query.InnerJoin;
-import platform.server.data.query.SourceJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
-import platform.server.data.translator.HashLazy;
-import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 
 import java.util.Map;
 import java.util.Set;
 
-public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
+public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, PartitionJoin, PartitionJoin.QueryOuterContext> {
 
     public static class Query extends AbstractOuterContext<Query> {
         private final Where where;
@@ -37,41 +32,51 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
             return partitions.equals(((Query) o).partitions) && where.equals(((Query) o).where);
         }
 
-        @HashOuterLazy
-        public int hashOuter(HashContext hashContext) {
+        protected boolean isComplex() {
+            return true;
+        }
+        protected int hash(HashContext hashContext) {
             return hashOuter(partitions, hashContext) * 31 + where.hashOuter(hashContext);
         }
 
-        public Query translateOuter(MapTranslate translator) {
+        protected Query translate(MapTranslate translator) {
             return new Query(where.translateOuter(translator),translator.translate(partitions));
         }
 
-        public SourceJoin[] getEnum() {
-            return AbstractSourceJoin.merge(partitions, where);
+        public QuickSet<OuterContext> calculateOuterDepends() {
+            return new QuickSet<OuterContext>(partitions, where);
         }
     }
 
-    public OrderJoin(Set<KeyExpr> keys, Set<Value> values, Where inner, Set<Expr> partitions, Map<KeyExpr, BaseExpr> group) {
+    public PartitionJoin(QuickSet<KeyExpr> keys, QuickSet<Value> values, Where inner, Set<Expr> partitions, Map<KeyExpr, BaseExpr> group) {
         super(keys, values, new Query(inner, partitions), group);
     }
 
-    private OrderJoin(Set<KeyExpr> keys, Set<Value> values, Query inner, Map<KeyExpr, BaseExpr> group) {
+    private PartitionJoin(QuickSet<KeyExpr> keys, QuickSet<Value> values, Query inner, Map<KeyExpr, BaseExpr> group) {
         super(keys, values, inner, group);
     }
 
-    protected QueryJoin<KeyExpr, Query> createThis(Set<KeyExpr> keys, Set<Value> values, Query query, Map<KeyExpr, BaseExpr> group) {
-        return new OrderJoin(keys, values, query, group);
+    protected PartitionJoin createThis(QuickSet<KeyExpr> keys, QuickSet<Value> values, Query query, Map<KeyExpr, BaseExpr> group) {
+        return new PartitionJoin(keys, values, query, group);
     }
 
-    private OrderJoin(OrderJoin orderJoin, MapTranslate translator) {
-        super(orderJoin, translator);
+    public static class QueryOuterContext extends QueryJoin.QueryOuterContext<KeyExpr, PartitionJoin.Query, PartitionJoin, PartitionJoin.QueryOuterContext> {
+        public QueryOuterContext(PartitionJoin thisObj) {
+            super(thisObj);
+        }
+
+        public PartitionJoin translateThis(MapTranslate translator) {
+            return new PartitionJoin(thisObj, translator);
+        }
+    }
+    protected QueryOuterContext createOuterContext() {
+        return new QueryOuterContext(this);
     }
 
-    public InnerJoin translateOuter(MapTranslate translator) {
-        return new OrderJoin(this, translator);
+    private PartitionJoin(PartitionJoin partitionJoin, MapTranslate translator) {
+        super(partitionJoin, translator);
     }
 
-    @Override
     public StatKeys<KeyExpr> getStatKeys(KeyStat keyStat) {
         return query.where.getStatKeys(keys);
     }

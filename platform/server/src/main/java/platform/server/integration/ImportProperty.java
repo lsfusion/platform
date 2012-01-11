@@ -52,7 +52,7 @@ public class ImportProperty <P extends PropertyInterface> {
         return implement;
     }
 
-    private static <P> Map<P, Expr> getImplementExprs(Map<P, ImportKeyInterface> mapping, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Map<ImportField, Expr> importExprs, Modifier<? extends Changes> modifier) {
+    private static <P> Map<P, Expr> getImplementExprs(Map<P, ImportKeyInterface> mapping, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Map<ImportField, Expr> importExprs, Modifier modifier) {
         Map<P, Expr> importKeyExprs = new HashMap<P, Expr>();
         for(Map.Entry<P, ImportKeyInterface> entry : mapping.entrySet())
             importKeyExprs.put(entry.getKey(), entry.getValue().getExpr(importExprs, addedKeys, modifier));
@@ -90,6 +90,6 @@ public class ImportProperty <P extends PropertyInterface> {
             changeWhere = changeWhere.and(implement.property.getExpr(mapKeys).compare(changeExpr, Compare.EQUALS).not());
         }
 
-        return implement.property.getDataChanges(new PropertyChange<P>(mapKeys, changeExpr, changeWhere), null, session.modifier);
+        return implement.property.getDataChanges(new PropertyChange<P>(mapKeys, changeExpr, changeWhere), session.modifier, null);
     }
 }

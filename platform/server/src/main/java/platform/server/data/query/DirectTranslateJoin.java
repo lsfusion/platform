@@ -7,7 +7,7 @@ import platform.server.data.where.Where;
 
 import java.util.Collection;
 
-public class DirectTranslateJoin<U> extends Join<U>  {
+public class DirectTranslateJoin<U> extends AbstractJoin<U>  {
 
     MapTranslate translator;
     Join<U> join;

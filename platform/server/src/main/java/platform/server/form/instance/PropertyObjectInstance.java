@@ -21,7 +21,6 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyValueImplement;
-import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
@@ -126,15 +125,15 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return property.getEditorType(mapping);
     }
 
-    public Object read(SQLSession session, Modifier<? extends Changes> modifier, QueryEnvironment env) throws SQLException {
+    public Object read(SQLSession session, Modifier modifier, QueryEnvironment env) throws SQLException {
         return property.read(session, getInterfaceValues(), modifier, env);
     }
 
-    public Object read(DataSession session, Modifier<? extends Changes> modifier) throws SQLException {
+    public Object read(DataSession session, Modifier modifier) throws SQLException {
         return read(session.sql, modifier, session.env);
     }
 
-    public List<ClientAction> execute(DataSession session, CompareValue getterValue, Modifier<? extends Changes> modifier, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
+    public List<ClientAction> execute(DataSession session, CompareValue getterValue, Modifier modifier, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
 
         Map<ObjectInstance, KeyExpr> groupKeys = new HashMap<ObjectInstance, KeyExpr>();
@@ -153,7 +152,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
                                modifier, executeForm, mapping);
     }
 
-    public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) {
+    public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier modifier) {
 
         Map<P, Expr> joinImplement = new HashMap<P, Expr>();
         for(P propertyInterface : property.interfaces)

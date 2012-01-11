@@ -62,6 +62,13 @@ public class PropertyUtils {
         return classes;
     }
 
+    public static Object[] getParams(LP prop) {
+        Object[] params  = new Object[prop.listInterfaces.size()];
+        for(int i=0;i<prop.listInterfaces.size();i++)
+            params[i] = (i+1);
+        return params;
+    }
+
     public static Object[] getUParams(LP[] props, int exoff) {
         int intNum = props[0].listInterfaces.size();
         Object[] params = new Object[props.length * (1 + intNum + exoff)];

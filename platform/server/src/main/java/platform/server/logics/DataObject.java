@@ -1,6 +1,7 @@
 package platform.server.logics;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.auth.SecurityPolicy;
@@ -158,7 +159,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     @Override
-    public Object getValue(InstanceFactory factory, DataSession session, Modifier<? extends Changes> modifier) {
+    public Object getValue(InstanceFactory factory, DataSession session, Modifier modifier) {
         return getDataObject().getValue();
     }
 
@@ -166,15 +167,15 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return getExpr().equals(((DataObject) o).getExpr());
     }
 
-    public int hashValues(HashValues hashValues) {
+    protected int hash(HashValues hashValues) {
         return hashValues.hash(getExpr());
     }
 
-    public Set<Value> getValues() {
-        return Collections.<Value>singleton(getExpr());
+    public QuickSet<Value> getValues() {
+        return new QuickSet<Value>(getExpr());
     }
 
-    public DataObject translate(MapValuesTranslate mapValues) {
+    protected DataObject translate(MapValuesTranslate mapValues) {
         return mapValues.translate(getExpr()).getDataObject();
     }
 
@@ -214,7 +215,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return getExpr();
     }
 
-    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier<? extends Changes> modifier) {
+    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier modifier) {
         return getExpr(importKeys);
     }
 
@@ -223,7 +224,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     @Override
-    public Expr getDeleteExpr(SessionTableUsage<String, ImportField> importTable, KeyExpr intraKeyExpr, Modifier<SimpleChanges> modifier) {
+    public Expr getDeleteExpr(SessionTableUsage<String, ImportField> importTable, KeyExpr intraKeyExpr, Modifier modifier) {
         return getExpr();
     }
 }

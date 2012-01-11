@@ -2,9 +2,10 @@ package platform.server.data;
 
 import platform.base.*;
 import platform.interop.Compare;
-import platform.server.caches.AbstractMapValues;
+import platform.server.caches.AbstractInnerContext;
+import platform.server.caches.AbstractValuesContext;
 import platform.server.caches.ManualLazy;
-import platform.server.caches.MapValues;
+import platform.server.caches.ValuesContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.ConcreteClass;
@@ -28,7 +29,7 @@ import java.util.*;
 import static java.util.Collections.singletonMap;
 import static platform.base.BaseUtils.merge;
 
-public class SessionTable extends Table implements MapValues<SessionTable>, Value {// в явную хранимые ряды
+public class SessionTable extends Table implements ValuesContext<SessionTable>, Value {// в явную хранимые ряды
 
     public final int count;
 
@@ -36,7 +37,7 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         return getStatKeys(this, count);
     }
 
-    public Value removeBig(Set<Value> usedValues) {
+    public Value removeBig(QuickSet<Value> usedValues) {
         return null;
     }
 
@@ -72,10 +73,6 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         this.count = count;
     }
 
-    public List<KeyField> getKeys() {
-        return keys;
-    }
-
     public Set<PropertyField> getProperties() {
         return properties;
     }
@@ -91,31 +88,28 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         return source.params.get(this);
     }
 
-    @Override
-    public int hashOuter(HashContext hashContext) {
+    protected Table translate(MapTranslate translator) {
+        return translateValues(translator.mapValues());
+    }
+
+    protected int hash(HashContext hashContext) {
         return hashValues(hashContext.values);
     }
 
-    @Override
-    public Table translateOuter(MapTranslate translator) {
-        return translate(translator.mapValues());
+    public QuickSet<Value> getValues() {
+        return getContextValues();
     }
 
-    @Override
-    public void enumInnerValues(Set<Value> values) {
-        values.add(this);
+    public SessionTable translateValues(MapValuesTranslate mapValues) {
+        return mapValues.translate(this);
     }
 
     public int hashValues(HashValues hashValues) {
         return hashValues.hash(this);
     }
 
-    public Set<Value> getValues() {
-        return Collections.singleton((Value) this);
-    }
-
-    public SessionTable translate(MapValuesTranslate mapValues) {
-        return mapValues.translate(this);
+    public QuickSet<Value> getContextValues() {
+        return new QuickSet<Value>(this);
     }
 
     public ParseInterface getParseInterface() {
@@ -208,11 +202,11 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         ClassWhere<KeyField> andKeyClasses = classes.and(addKeyClasses);
         Map<PropertyField, ClassWhere<Field>> andPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
         for(Map.Entry<PropertyField, ClassWhere<Field>> propertyClass : propertyClasses.entrySet()) // добавляем старые
-            andPropertyClasses.put(propertyClass.getKey(), propertyClass.getValue().and(BaseUtils.<ClassWhere<KeyField>,ClassWhere<Field>>immutableCast(addKeyClasses)));
+            andPropertyClasses.put(propertyClass.getKey(), propertyClass.getValue().and(BaseUtils.<ClassWhere<Field>>immutableCast(addKeyClasses)));
         for(Map.Entry<PropertyField, ObjectValue> addProp : propFields.entrySet()) // добавляем новые
             andPropertyClasses.put(addProp.getKey(), !(addProp.getValue() instanceof DataObject)?ClassWhere.<Field>STATIC(false):
                         new ClassWhere<Field>(Collections.<Field, ConcreteClass>singletonMap(addProp.getKey(), ((DataObject) addProp.getValue()).objectClass)).
-                                and(BaseUtils.<ClassWhere<KeyField>,ClassWhere<Field>>immutableCast(andKeyClasses)));
+                                and(BaseUtils.<ClassWhere<Field>>immutableCast(andKeyClasses)));
         return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(andKeyClasses, andPropertyClasses);
     }
 
@@ -314,13 +308,20 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
     }
 
     private BaseUtils.HashComponents<Value> components = null;
-
     @ManualLazy
-    public BaseUtils.HashComponents<Value> getComponents() {
-        if (components == null) {
-            components = AbstractMapValues.getComponents(this);
-        }
+    public BaseUtils.HashComponents<Value> getValueComponents() {
+        if (components == null)
+            components = AbstractValuesContext.getComponents(this);
         return components;
+    }
+    public int hashValues() {
+        return AbstractValuesContext.hash(this);
+    }
+    public QuickMap<Value, GlobalObject> getValuesMap() {
+        return AbstractValuesContext.getMap(this);
+    }
+    public Map<Value, Value> getBigValues() {
+        return AbstractInnerContext.getBigValues(getContextValues());
     }
 
     public void drop(SQLSession session, Object owner) throws SQLException {

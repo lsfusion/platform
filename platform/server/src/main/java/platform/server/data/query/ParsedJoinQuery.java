@@ -2,6 +2,7 @@ package platform.server.data.query;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.QuickSet;
 import platform.server.Message;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.SynchronizedLazy;
@@ -21,24 +22,24 @@ import platform.server.data.where.classes.ClassWhere;
 
 import java.util.*;
 
-class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
+public class ParsedJoinQuery<K,V> extends AbstractJoin<V> implements ParsedQuery<K,V> {
 
     public final Map<K,KeyExpr> mapKeys;
     public final Map<V, Expr> properties;
     protected final Where where;
 
-    protected final Set<Value> values;
+    protected final QuickSet<Value> values;
 
-    public Set<Value> getValues() {
+    public QuickSet<Value> getValues() {
         return values;
     }
 
     ParsedJoinQuery(Query<K,V> query) {
         mapKeys = query.mapKeys;
-        values = query.getValues();
+        values = query.getInnerValues();
 
         where = query.where.pack();
-        properties = where.followTrue(query.properties);
+        properties = where.followTrue(query.properties, true);
     }
 
     @SynchronizedLazy
@@ -49,7 +50,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues) {
         assert joinImplement.size()==mapKeys.size();
-        assert mapValues.assertValuesEquals(values); // все должны быть параметры
+        assert mapValues.assertValuesEquals(values.getSet()); // все должны быть параметры
 
         Map<K,KeyExpr> joinKeys = new HashMap<K, KeyExpr>();
         for(Map.Entry<K,? extends Expr> joinExpr : joinImplement.entrySet()) {
@@ -60,7 +61,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         return new DirectTranslateJoin<V>(new MapTranslator(BaseUtils.crossJoin(mapKeys, joinKeys), mapValues), this);
     }
 
-    public Join<V> joinExprs(Map<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues) { // последний параметр = какой есть\какой нужно, joinImplement не translate'ся
+    public Join<V> joinExprs(Map<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues) { // последний параметр = какой есть\какой нужно, joinImplement не translateOuter'ся
         assert joinImplement.size()==mapKeys.size();
 
         Join<V> join = this;
@@ -78,6 +79,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
     }
 
     // для заданных свойств вытягивает условия на классы для них, assertion что K extends B и V extends B
+    @IdentityLazy
     public <B> ClassWhere<B> getClassWhere(Collection<? extends V> classProps) {
         return (ClassWhere<B>) getClassWhere(where, mapKeys, BaseUtils.filterKeys(properties, classProps));
     }
@@ -114,8 +116,8 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         return where;
     }
 
-    public Set<KeyExpr> getKeys() {
-        return new HashSet<KeyExpr>(mapKeys.values());
+    public QuickSet<KeyExpr> getKeys() {
+        return new QuickSet<KeyExpr>(mapKeys.values());
     }
 
     public Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive) {

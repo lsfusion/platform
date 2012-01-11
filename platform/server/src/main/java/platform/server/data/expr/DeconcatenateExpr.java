@@ -3,7 +3,6 @@ package platform.server.data.expr;
 import platform.base.QuickMap;
 import platform.base.TwinImmutableInterface;
 import platform.base.BaseUtils;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
@@ -13,12 +12,9 @@ import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.stat.CalculateJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
-import platform.server.data.translator.HashLazy;
-import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -63,7 +59,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
     }
 
 
-    public DeconcatenateExpr translateOuter(MapTranslate translator) {
+    protected DeconcatenateExpr translate(MapTranslate translator) {
         return new DeconcatenateExpr(expr.translateOuter(translator), part, baseClass);
     }
 
@@ -95,13 +91,11 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return expr.equals(((DeconcatenateExpr)obj).expr) && part == ((DeconcatenateExpr)obj).part && baseClass.equals(((DeconcatenateExpr)obj).baseClass);  
     }
 
-    @HashOuterLazy
-    public int hashOuter(HashContext hashContext) {
-        return expr.hashOuter(hashContext) * 31 + part;
+    protected boolean isComplex() {
+        return true;
     }
-
-    public void enumDepends(ExprEnumerator enumerator) {
-        expr.enumerate(enumerator);
+    protected int hash(HashContext hashContext) {
+        return expr.hashOuter(hashContext) * 31 + part;
     }
 
     public ClassExprWhere getClassWhere(AndClassSet classes) {
@@ -122,10 +116,6 @@ public class DeconcatenateExpr extends SingleClassExpr {
 
     public String getSource(CompileSource compile) {
         return ((ConcatenateType) expr.getType(compile.keyType)).getDeconcatenateSource(expr.getSource(compile), part, compile.syntax);
-    }
-
-    public long calculateComplexity() {
-        return expr.getComplexity()+1;
     }
 
     public Stat getStatValue(KeyStat keyStat) {

@@ -2,6 +2,7 @@ package platform.server.data.where;
 
 import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.BaseExpr;
@@ -13,8 +14,6 @@ import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
-
-import java.util.Set;
 
 
 public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWhere<OrWhere>, ArrayInstancer<OrObjectWhere> {
@@ -87,7 +86,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return wheres.length==0 || (where instanceof AndWhere && (BaseUtils.hashEquals(this, where) || (substractWheres(((AndWhere)where).wheres,wheres,instancer)!=null)));
     }
 
-    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
+    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
         GroupJoinsWheres result = new GroupJoinsWheres(TRUE);
         for(Where where : wheres)
             result = result.and(where.groupJoinsWheres(keepStat, keyStat));
@@ -99,7 +98,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
             result = result.and(where.getKeyEquals());
         return result;
     }
-    public MeanClassWheres calculateMeanClassWheres() {
+    public MeanClassWheres calculateGroupMeanClassWheres() {
         MeanClassWheres result = new MeanClassWheres(MeanClassWhere.TRUE, TRUE);
         for(Where where : wheres)
             result = result.and(where.groupMeanClassWheres());
@@ -109,12 +108,14 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     public OrWhere not = null;
     @ManualLazy
     public OrWhere not() { // именно здесь из-за того что типы надо перегружать без generics
-        if(not==null)
+        if(not==null) {
             not = new OrWhere(not(wheres), check);
+            not.not = this; // для оптимизации
+        }
         return not;
     }
 
-    public Where translateOuter(MapTranslate translator) {
+    protected Where translate(MapTranslate translator) {
         return not().translateOuter(translator).not();
     }
     public Where translateQuery(QueryTranslator translator) {

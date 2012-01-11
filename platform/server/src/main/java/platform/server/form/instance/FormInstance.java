@@ -8,14 +8,11 @@ import platform.interop.action.ClientAction;
 import platform.interop.action.ContinueAutoActionsClientAction;
 import platform.interop.action.ResultClientAction;
 import platform.interop.action.StopAutoActionsClientAction;
-import platform.interop.exceptions.ComplexQueryException;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
-import platform.server.data.QueryEnvironment;
-import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -68,7 +65,7 @@ import static platform.server.form.instance.GroupObjectInstance.*;
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<PropertyInterface> {
+public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier {
 
     public final T BL;
 
@@ -78,37 +75,60 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         return BL.LM.baseClass.findClassID(classID);
     }
 
-    public Modifier<? extends Changes> update(final ExprChanges sessionChanges) {
-        return new IncrementProps<Object>(noUpdate) {
-            public ExprChanges getSession() {
-                return sessionChanges;
-            }
-            public SQLSession getSql() {
-                return null;
-            }
-            public QueryEnvironment getEnv() {
-                return null;
-            }
-        };
+    private Set<Property> hintsIncrementTable;
+    private List<Property> hintsIncrementList = null;
+    private List<Property> getHintsIncrementList() {
+        if(hintsIncrementList==null) {
+            hintsIncrementList = new ArrayList<Property>();
+            for(Property property : BL.getPropertyList(false))
+                if(hintsIncrementTable.contains(property)) // чтобы в лексикографике был список
+                    hintsIncrementList.add(property);
+        }
+        return hintsIncrementList;
+    }
+    
+    Set<Property> hintsNoUpdate = new HashSet<Property>();
+
+    public final DataSession session;
+    public final NoUpdate noUpdate = new NoUpdate();
+    public final IncrementProps increment = new IncrementProps();
+    
+    public void addHintNoUpdate(Property property) {
+        hintsNoUpdate.add(property);
+        noUpdate.add(property);
     }
 
-    List<Property> incrementTableProps = new ArrayList<Property>();
-
-    private void read(final Property property) throws SQLException {
-        remove(property);
-        read(((Property<?>)property).getInterfaceGroup(), Collections.singleton(property), BL.LM.baseClass);
+    public boolean isHintIncrement(Property property) {
+        return hintsIncrementTable.contains(property);
+    }
+    public void addHintIncrement(Property property) {
+        hintsIncrementList = null;
+        usedProperties = null;
+        boolean noHint = hintsIncrementTable.add(property);
+        assert noHint;
+        try {
+            readIncrement(property);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public Set<Property> getUpdateProperties(ExprChanges sessionChanges) {
-        return getUpdateProperties(update(sessionChanges));
+    private <P extends PropertyInterface> void rereadIncrement(Property<P> property) throws SQLException {
+        increment.remove(property, session.sql);
+        readIncrement(property);
     }
 
-    public Set<Property> getUpdateProperties(Modifier<? extends Changes> modifier) {
-        Set<Property> properties = new HashSet<Property>();
-        for (Property<?> updateProperty : getUpdateProperties())
-            if (updateProperty.hasChanges(modifier))
-                properties.add(updateProperty);
-        return properties;
+    private <P extends PropertyInterface> void readIncrement(Property<P> property) throws SQLException {
+        if(property.hasChanges(this))
+            increment.add(property, property.readChangeTable(session.sql, this, BL.LM.baseClass, session.env));
+    }
+
+    public Set<Property> getUpdateProperties(PropertyChanges propChanges) {
+        return Property.hasChanges(getUsedProperties(), noUpdate.getPropertyChanges().add(propChanges));
+    }
+
+    public Set<Property> getUpdateProperties() {
+        return Property.hasChanges(getUsedProperties(), getPropertyChanges());
     }
 
     private final WeakReference<FocusListener<T>> weakFocusListener;
@@ -138,21 +158,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         this(entity, BL, session, securityPolicy, focusListener, classListener, computer, mapObjects, interactive, null);
     }
 
-    public final DataSession session;
-
-    public ExprChanges getSession() {
-        return session;
-    }
-
-    public SQLSession getSql() {
-        return session.sql;
-    }
-
-    public QueryEnvironment getEnv() {
-        return session.env;
-    }
-
     public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean interactive, Set<FilterEntity> additionalFixedFilters) throws SQLException {
+        lateInit(noUpdate, increment, session);
         this.session = session;
         this.entity = entity;
         this.BL = BL;
@@ -163,11 +170,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         this.weakFocusListener = new WeakReference<FocusListener<T>>(focusListener);
         this.weakClassListener = new WeakReference<CustomClassListener>(classListener);
 
-        for(Property property : BL.getPropertyList(false))
-            if(entity.hintsIncrementTable.contains(property)) // чтобы в лексикографике был список
-                incrementTableProps.add(property);
-
-        noUpdate = entity.hintsNoUpdate;
+        fillHints(false);
 
         for (int i = 0; i < entity.groups.size(); i++) {
             GroupObjectInstance groupObject = instanceFactory.getInstance(entity.groups.get(i));
@@ -732,6 +735,20 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
             applyChanges(clientResult, actions);
     }
 
+    private void fillHints(boolean restart) throws SQLException {
+        if(restart) {
+            increment.cleanIncrementTables(session.sql);
+            noUpdate.clear();
+            
+            hintsIncrementList = null;
+            usedProperties = null;
+        }
+
+        hintsIncrementTable = new HashSet<Property>(entity.hintsIncrementTable);
+        hintsNoUpdate = new HashSet<Property>(entity.hintsNoUpdate);
+        noUpdate.addAll(hintsNoUpdate);
+    }
+    
     public void applyChanges(String checkResult, List<ClientAction> actions) throws SQLException {
         if(checkResult == null)
             checkResult = session.apply(BL, actions);
@@ -742,7 +759,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
             return;
         }
 
-        cleanIncrementTables();
+        fillHints(true);
 
         refreshData();
         addObjectOnTransaction(FormEventType.APPLY);
@@ -754,7 +771,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
 
     public void cancelChanges() throws SQLException {
         session.restart(true);
-        cleanIncrementTables();
+
+        fillHints(true);
 
         // пробежим по всем объектам
         for (ObjectInstance object : getObjects())
@@ -805,34 +823,35 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         return ((CustomObjectInstance) object).currentClass;
     }
 
-    public Collection<Property> getUpdateProperties() {
-
-        Set<Property> result = new HashSet<Property>();
-        for (PropertyDrawInstance<?> propertyDraw : properties) {
-            result.add(propertyDraw.propertyObject.property);
-            if (propertyDraw.propertyCaption != null) {
-                result.add(propertyDraw.propertyCaption.property);
+    private Collection<Property> usedProperties;
+    public Collection<Property> getUsedProperties() {
+        if(usedProperties == null) {
+            usedProperties = new HashSet<Property>();
+            for (PropertyDrawInstance<?> propertyDraw : properties) {
+                usedProperties.add(propertyDraw.propertyObject.property);
+                if (propertyDraw.propertyCaption != null) {
+                    usedProperties.add(propertyDraw.propertyCaption.property);
+                }
+                if (propertyDraw.propertyReadOnly != null) {
+                    usedProperties.add(propertyDraw.propertyReadOnly.property);
+                }
+                if (propertyDraw.propertyFooter != null) {
+                    usedProperties.add(propertyDraw.propertyFooter.property);
+                }
+                if (propertyDraw.propertyHighlight != null) {
+                    usedProperties.add(propertyDraw.propertyHighlight.property);
+                }
             }
-            if (propertyDraw.propertyReadOnly != null) {
-                result.add(propertyDraw.propertyReadOnly.property);
+            for (GroupObjectInstance group : groups) {
+                if (group.propertyHighlight != null) {
+                    usedProperties.add(group.propertyHighlight.property);
+                }
+                group.fillUpdateProperties((Set<Property>) usedProperties);
             }
-            if (propertyDraw.propertyFooter != null) {
-                result.add(propertyDraw.propertyFooter.property);
-            }
-            if (propertyDraw.propertyHighlight != null) {
-                result.add(propertyDraw.propertyHighlight.property);
-            }
+            usedProperties.addAll(hintsIncrementTable); // собственно пока только hintsIncrementTable не позволяет сделать usedProperties просто IdentityLazy
         }
-        for (GroupObjectInstance group : groups) {
-            if (group.propertyHighlight != null) {
-                result.add(group.propertyHighlight.property);
-            }
-            group.fillUpdateProperties(result);
-        }
-        result.addAll(incrementTableProps);
-        return result;
+        return usedProperties;
     }
-
     public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, boolean newSession, boolean interactive) throws SQLException {
         return new FormInstance<T>(form, BL, newSession ? session.createSession() : session, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, interactive);
     }
@@ -880,171 +899,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         }
 
         dataChanged = session.hasChanges();
-    }
-
-    // транзакция для отката при exception'ах
-    private class ApplyTransaction {
-
-        private class Group {
-
-            private abstract class Object<O extends ObjectInstance> {
-                O object;
-                int updated;
-
-                private Object(O object) {
-                    this.object = object;
-                    updated = object.updated;
-                }
-
-                void rollback() {
-                    object.updated = updated;
-                }
-            }
-
-            private class Custom extends Object<CustomObjectInstance> {
-                ObjectValue value;
-                ConcreteCustomClass currentClass;
-
-                private Custom(CustomObjectInstance object) {
-                    super(object);
-                    value = object.value;
-                    currentClass = object.currentClass;
-                }
-
-                void rollback() {
-                    super.rollback();
-                    object.value = value;
-                    object.currentClass = currentClass;
-                }
-            }
-
-            private class Data extends Object<DataObjectInstance> {
-                java.lang.Object value;
-
-                private Data(DataObjectInstance object) {
-                    super(object);
-                    value = object.value;
-                }
-
-                void rollback() {
-                    super.rollback();
-                    object.value = value;
-                }
-            }
-
-            GroupObjectInstance group;
-            boolean upKeys, downKeys;
-            Set<FilterInstance> filters;
-            OrderedMap<OrderInstance, Boolean> orders;
-            OrderedMap<Map<ObjectInstance, platform.server.logics.DataObject>, Map<OrderInstance, ObjectValue>> keys;
-            int updated;
-
-            Collection<Object> objects = new ArrayList<Object>();
-
-            NoPropertyTableUsage<ObjectInstance> groupObjectTable;
-            NoPropertyTableUsage<ObjectInstance> expandObjectTable;
-
-            private Group(GroupObjectInstance iGroup) {
-                group = iGroup;
-
-                filters = new HashSet<FilterInstance>(group.filters);
-                orders = new OrderedMap<OrderInstance, Boolean>(group.orders);
-                upKeys = group.upKeys;
-                downKeys = group.downKeys;
-                keys = new OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>(group.keys);
-                updated = group.updated;
-
-                for (ObjectInstance object : group.objects)
-                    objects.add(object instanceof CustomObjectInstance ? new Custom((CustomObjectInstance) object) : new Data((DataObjectInstance) object));
-
-                groupObjectTable = group.keyTable;
-                expandObjectTable = group.expandTable;
-            }
-
-            void rollback() throws SQLException {
-                group.filters = filters;
-                group.orders = orders;
-                group.upKeys = upKeys;
-                group.downKeys = downKeys;
-                group.keys = keys;
-                group.updated = updated;
-
-                for (Object object : objects)
-                    object.rollback();
-
-                // восстанавливаем ключи в сессии
-                if (groupObjectTable == null) {
-                    if (group.keyTable != null) {
-                        group.keyTable.drop(session.sql);
-                        group.keyTable = null;
-                    }
-                } else {
-                    groupObjectTable.writeKeys(session.sql, group.keys.keySet());
-                    group.keyTable = groupObjectTable;
-                }
-                if (expandObjectTable == null) {
-                    if (group.expandTable != null) {
-                        group.expandTable.drop(session.sql);
-                        group.expandTable = null;
-                    }
-                } else {
-                    expandObjectTable.writeKeys(session.sql, group.keys.keySet());
-                    group.expandTable = expandObjectTable;
-                }
-            }
-        }
-
-        Collection<Group> groups = new ArrayList<Group>();
-        Map<PropertyDrawInstance, Boolean> isDrawed;
-        Map<RegularFilterGroupInstance, RegularFilterInstance> regularFilterValues;
-
-        IdentityHashMap<FormInstance, DataSession.UpdateChanges> incrementChanges;
-        IdentityHashMap<FormInstance, DataSession.UpdateChanges> appliedChanges;
-        IdentityHashMap<FormInstance, DataSession.UpdateChanges> updateChanges;
-
-        Map<CustomClass, SingleKeyNoPropertyUsage> add;
-        Map<CustomClass, SingleKeyNoPropertyUsage> remove;
-        Map<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> data;
-
-        SingleKeyPropertyUsage news = null;
-
-        ApplyTransaction() {
-            for (GroupObjectInstance group : FormInstance.this.groups)
-                groups.add(new Group(group));
-            isDrawed = new HashMap<PropertyDrawInstance, Boolean>(FormInstance.this.isDrawed);
-            regularFilterValues = new HashMap<RegularFilterGroupInstance, RegularFilterInstance>(FormInstance.this.regularFilterValues);
-
-            if (dataChanged) {
-                incrementChanges = new IdentityHashMap<FormInstance, DataSession.UpdateChanges>(session.incrementChanges);
-                appliedChanges = new IdentityHashMap<FormInstance, DataSession.UpdateChanges>(session.appliedChanges);
-                updateChanges = new IdentityHashMap<FormInstance, DataSession.UpdateChanges>(session.updateChanges);
-
-                add = new HashMap<CustomClass, SingleKeyNoPropertyUsage>(session.add);
-                remove = new HashMap<CustomClass, SingleKeyNoPropertyUsage>(session.remove);
-                data = new HashMap<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>>(session.data);
-
-                news = session.news;
-            }
-        }
-
-        void rollback() throws SQLException {
-            for (Group group : groups)
-                group.rollback();
-            FormInstance.this.isDrawed = isDrawed;
-            FormInstance.this.regularFilterValues = regularFilterValues;
-
-            if (dataChanged) {
-                session.incrementChanges = incrementChanges;
-                session.appliedChanges = appliedChanges;
-                session.updateChanges = updateChanges;
-
-                session.add = add;
-                session.remove = remove;
-                session.data = data;
-
-                session.news = news;
-            }
-        }
     }
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
@@ -1102,10 +956,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
     }
 
     @Message("message.form.increment.read.properties")
-    private void updateIncrementTableProps(Collection<Property> changedProps) throws SQLException {
-        for(Property property : incrementTableProps) // в changedProps могут быть и cancel'ы и новые изменения
-            if((refresh || changedProps.contains(property)) && property.hasChanges(this)) // поэтому проверим что hasChanges
-                read(property);
+    private <P extends PropertyInterface> void updateIncrementTableProps(Collection<Property> changedProps) throws SQLException {
+        for(Property<P> property : getHintsIncrementList()) // в changedProps могут быть и cancel'ы и новые изменения
+            if(refresh || changedProps.contains(property))
+                rereadIncrement(property);
     }
 
     @Message("message.form.update.props")
@@ -1134,59 +988,37 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
 
         assert interactive;
 
-        ApplyTransaction transaction = new ApplyTransaction();
-
         final FormChanges result = new FormChanges();
 
-        try {
-            // если изменились данные, применяем изменения
-            Collection<Property> changedProps;
-            Collection<CustomClass> changedClasses = new HashSet<CustomClass>();
-            if (dataChanged) {
-                changedProps = session.update(this, changedClasses);
-            } else {
-                changedProps = new ArrayList<Property>();
-            }
+        // если изменились данные, применяем изменения
+        Collection<Property> changedProps;
+        Collection<CustomClass> changedClasses = new HashSet<CustomClass>();
+        if (dataChanged) {
+            changedProps = session.update(this, changedClasses);
 
             updateIncrementTableProps(changedProps);
+        } else
+            changedProps = new ArrayList<Property>();
 
-            GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
-            for (GroupObjectInstance group : groups) {
-                if (refresh) {
-                    //обновляем classViews при refresh
-                    result.classViews.put(group, group.curClassView);
-                }
-
-                Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, session.env, this, BL.LM.baseClass, refresh, result, changedProps, changedClasses);
-                if(selectObjects!=null) // то есть нужно изменять объект
-                    updateGroupObject = new GroupObjectValue(group, selectObjects);
-
-                if (group.getDownTreeGroups().size() == 0 && updateGroupObject != null) {
-                    // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
-                    updateGroupObject.group.update(session, result, updateGroupObject.value);
-                    updateGroupObject = null;
-                }
+        GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
+        for (GroupObjectInstance group : groups) {
+            if (refresh) {
+                //обновляем classViews при refresh
+                result.classViews.put(group, group.curClassView);
             }
 
-            for (Entry<Set<GroupObjectInstance>, Set<PropertyReaderInstance>> entry : BaseUtils.groupSet(getChangedDrawProps(result, changedProps)).entrySet())
-                updateDrawProps(result, entry.getKey(), entry.getValue());
+            Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, session.env, this, BL.LM.baseClass, refresh, result, changedProps, changedClasses);
+            if(selectObjects!=null) // то есть нужно изменять объект
+                updateGroupObject = new GroupObjectValue(group, selectObjects);
 
-        } catch (ComplexQueryException e) {
-            transaction.rollback();
-            if (dataChanged) { // если изменились данные cancel'им изменения
-                cancelChanges();
-                FormChanges cancelResult = endApply();
-                cancelResult.message = e.getMessage() + ". Изменения будут отменены";
-                return cancelResult;
-            } else
-                throw e;
-        } catch (RuntimeException e) {
-            transaction.rollback();
-            throw e;
-        } catch (SQLException e) {
-            transaction.rollback();
-            throw e;
+            if (group.getDownTreeGroups().size() == 0 && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
+                updateGroupObject.group.update(session, result, updateGroupObject.value);
+                updateGroupObject = null;
+            }
         }
+
+        for (Entry<Set<GroupObjectInstance>, Set<PropertyReaderInstance>> entry : BaseUtils.groupSet(getChangedDrawProps(result, changedProps)).entrySet())
+            updateDrawProps(result, entry.getKey(), entry.getValue());
 
         if (dataChanged)
             result.dataChanged = session.hasStoredChanges();

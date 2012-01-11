@@ -3,8 +3,7 @@ package platform.server.logics.property;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.StringConcatenateExpr;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -45,7 +44,7 @@ public class StringConcatenateProperty extends FormulaProperty<StringConcatenate
         return it.next();
     }
     
-    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         List<Expr> exprs = new ArrayList<Expr>();
         for(int i=0;i<interfaces.size();i++) // assertion что порядок сохранился
             exprs.add(joinImplement.get(getInterface(i)));

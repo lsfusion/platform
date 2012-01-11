@@ -4,8 +4,7 @@ import platform.server.classes.DataClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.FormulaUnionExpr;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,10 +25,10 @@ public abstract class FormulaUnionProperty extends UnionProperty {
     }
 
     @Override
-    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Map<String, Expr> paramExprs = new HashMap<String, Expr>();
         for(Map.Entry<String, PropertyMapImplement<?, Interface>> param : getParams().entrySet())
-            paramExprs.put(param.getKey(), param.getValue().mapExpr(joinImplement, modifier, changedWhere));
+            paramExprs.put(param.getKey(), param.getValue().mapExpr(joinImplement, propChanges, changedWhere));
         return new FormulaUnionExpr(getFormula(), getDataClass(), paramExprs);
     }
 

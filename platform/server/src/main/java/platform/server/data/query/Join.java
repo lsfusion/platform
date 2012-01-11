@@ -12,27 +12,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class Join<U> extends ImmutableObject {
+public interface Join<U> extends AndContext<Join<U>> {
 
-    public Join<U> and(Where where) {
-        if(Expr.useCases)
-            return new CaseJoin<U>(where, this);
-        else
-            return new IfJoin<U>(where, this);
-    }
+    Expr getExpr(U property);
+    Where getWhere();
 
-    public abstract Expr getExpr(U property);
-    public abstract Where getWhere();
+    Collection<U> getProperties();
 
-    public abstract Collection<U> getProperties();
-
-    @TwinLazy
-    public Map<U, Expr> getExprs() {
-        Map<U, Expr> exprs = new HashMap<U, Expr>();
-        for(U property : getProperties())
-            exprs.put(property,getExpr(property));
-        return exprs;
-    }
-
+    Map<U, Expr> getExprs();
 }
 

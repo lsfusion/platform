@@ -1,6 +1,7 @@
 package platform.server.data.expr.where.extra;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.caches.hash.HashContext;
@@ -11,16 +12,12 @@ import platform.server.data.query.ExprJoin;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.stat.KeyStat;
-import platform.server.data.translator.HashLazy;
-import platform.server.data.translator.HashOuterLazy;
-import platform.server.data.where.EqualMap;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
@@ -51,8 +48,10 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
                (BaseUtils.hashEquals(operator1,((EqualsWhere)o).operator2) && BaseUtils.hashEquals(operator2,((EqualsWhere)o).operator1)));
     }
 
-    @HashOuterLazy
-    public int hashOuter(HashContext hashContext) {
+    protected boolean isComplex() {
+        return true;
+    }
+    public int hash(HashContext hashContext) {
         return operator1.hashOuter(hashContext)*31 + operator2.hashOuter(hashContext)*31;
     }
 
@@ -74,7 +73,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
     }
 
     @Override
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
         if(operator1.isValue() && !operator2.isOr())
             return new GroupJoinsWheres(new ExprJoin(operator2, Stat.ONE), this);
         if(operator2.isValue() && !operator1.isOr())
@@ -84,13 +83,13 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     @Override
     public MeanClassWhere getMeanClassWhere() {
-        Map<VariableClassExpr,VariableClassExpr> equals = new HashMap<VariableClassExpr, VariableClassExpr>();
+        QuickSet<QuickSet<VariableClassExpr>> equals = new QuickSet<QuickSet<VariableClassExpr>>();
         ClassExprWhere classWhere = getOperandWhere().getClassWhere();
 
         if(operator2 instanceof VariableClassExpr && operator1 instanceof StaticClassExpr)
             classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator2,((StaticClassExpr)operator1).getStaticClass()));
         if(operator2 instanceof VariableClassExpr && operator1 instanceof VariableClassExpr)
-            equals.put((VariableClassExpr)operator1,(VariableClassExpr)operator2);
+            equals.add(new QuickSet<VariableClassExpr>((VariableClassExpr)operator1, (VariableClassExpr) operator2));
         if(operator1 instanceof VariableClassExpr && operator2 instanceof StaticClassExpr)
             classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator1,((StaticClassExpr)operator2).getStaticClass()));
 
@@ -99,15 +98,6 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
     // повторяет FormulaWhere так как должен andEquals сделать
     @Override
     public ClassExprWhere calculateClassWhere() {
-        MeanClassWhere meanWhere = getMeanClassWhere(); // именно так а не как Formula потому как иначе бесконечный цикл getMeanClassWheres -> MeanClassWhere.getClassWhere -> means(isFalse) и т.д. пойдет
-        if(operator1 instanceof VariableClassExpr && operator2 instanceof VariableClassExpr) {
-            assert meanWhere.equals.size()==1;
-            EqualMap equalMap = new EqualMap(2);
-            equalMap.add(operator1,operator2);
-            return meanWhere.classWhere.andEquals(equalMap);
-        } else {
-            assert meanWhere.equals.size()==0;
-            return meanWhere.classWhere;
-        }
+        return getMeanClassWhere().getClassWhere(operator1, operator2); // именно так а не как Formula потому как иначе бесконечный цикл getMeanClassWheres -> MeanClassWhere.getClassWhere -> means(isFalse) и т.д. пойдет
     }
 }

@@ -1,21 +1,15 @@
 package platform.server.caches.hash;
 
+import platform.base.*;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
-import platform.base.BaseUtils;
-import platform.base.GlobalObject;
-
-import java.util.Map;
+import platform.server.data.translator.MapTranslate;
 
 public class HashMapKeys implements HashKeys {
 
-    private Map<KeyExpr, ? extends GlobalObject> hashKeys;
-    public HashMapKeys(Map<KeyExpr, ? extends GlobalObject> hashKeys) {
+    private QuickMap<KeyExpr, ? extends GlobalObject> hashKeys;
+    public HashMapKeys(QuickMap<KeyExpr, ? extends GlobalObject> hashKeys) {
         this.hashKeys = hashKeys;
-    }
-
-    public boolean isGlobal() {
-        return false;
     }
 
     public int hash(KeyExpr expr) {
@@ -35,5 +29,23 @@ public class HashMapKeys implements HashKeys {
     @Override
     public int hashCode() {
         return hashKeys.hashCode();
+    }
+
+    @Override
+    public HashKeys filterKeys(QuickSet<KeyExpr> keys) {
+        return new HashMapKeys(hashKeys.filterKeys(keys)); // вообще InclKeys но могут быть PullExpr'ы
+    }
+
+    public HashKeys reverseTranslate(MapTranslate translator, QuickSet<KeyExpr> keys) {
+        QuickMap<KeyExpr, GlobalObject> transKeys = new SimpleMap<KeyExpr, GlobalObject>();
+        for(int i=0;i<keys.size;i++) {
+            KeyExpr keyExpr = keys.get(i);
+            transKeys.add(keyExpr, hashKeys.get(translator.translate(keyExpr)));
+        }
+        return new HashMapKeys(transKeys);
+    }
+
+    public boolean isGlobal() {
+        return false;
     }
 }

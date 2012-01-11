@@ -2,8 +2,7 @@ package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,21 +17,21 @@ public class MaxUnionProperty extends IncrementUnionProperty {
         return true;
     }
 
-    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         throw new RuntimeException("not supported"); // используется simple increment
     }
 
     @Override
-    protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere) {
+    protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
         throw new RuntimeException("not supported"); // используется simple increment
     }
 
     @Override
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
         Expr result = null;
         for(PropertyMapImplement<?, Interface> operand : operands) {
-            Expr operandExpr = operand.mapExpr(joinImplement, modifier, changedWhere);
+            Expr operandExpr = operand.mapExpr(joinImplement, propChanges, changedWhere);
             if(result==null)
                 result = operandExpr;
             else

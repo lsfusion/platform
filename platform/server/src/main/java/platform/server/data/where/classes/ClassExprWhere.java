@@ -1,14 +1,17 @@
 package platform.server.data.where.classes;
 
-import platform.base.BaseUtils;
-import platform.base.QuickMap;
-import platform.base.ReversedHashMap;
-import platform.base.ReversedMap;
+import platform.base.*;
+import platform.server.caches.AbstractOuterContext;
+import platform.server.caches.OuterContext;
+import platform.server.caches.hash.HashContext;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExclPullWheres;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
@@ -16,7 +19,7 @@ import platform.server.data.where.*;
 
 import java.util.Map;
 
-public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassExprWhere> implements DNFWheres.Interface<ClassExprWhere> {
+public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassExprWhere> implements DNFWheres.Interface<ClassExprWhere>, OuterContext<ClassExprWhere> {
 
     public Type getType(KeyExpr keyExpr) {
         if (wheres.length == 0) {
@@ -39,7 +42,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         AndClassSet classSet = wheres[0].get(keyExpr);
         if(classSet==null) {
             if(keyExpr instanceof PullExpr)
-                return new Stat(100000);
+                return Stat.ALOT;
             else
                 throw new RuntimeException("no classes");
         } else
@@ -147,9 +150,6 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     private ClassExprWhere(ClassExprWhere classes, Map<VariableClassExpr, VariableClassExpr> map) {
         super(classes, map);
     }
-    public ClassExprWhere translate(MapTranslate translator) {
-        return new ClassExprWhere(this, translator.translateVariable(BaseUtils.toMap(keySet())));
-    }
 
     // получает классы для BaseExpr'ов
     public <K> ClassWhere<K> get(Map<K, BaseExpr> map) {
@@ -159,7 +159,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
             And<K> andTrans = new And<K>();
             for(Map.Entry<K, BaseExpr> mapEntry : map.entrySet()) {
                 AndClassSet classSet = mapEntry.getValue().getAndClassSet(andWhere);
-//                assert classSet!=null;  для outputClasses и других элементов настройки БЛ, где могут быть висячие ключи   
+//                assert classSet!=null;  для outputClasses и других элементов настройки БЛ, где могут быть висячие ключи
                 if(!andTrans.add(mapEntry.getKey(), classSet)) {
                     isFalse = true;
                     break;
@@ -216,7 +216,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     }
 
     // assert reversed, where содержит groups
-    public static ClassExprWhere map(Where innerWhere, Map<Expr, BaseExpr> innerOuter) {
+    public static ClassExprWhere mapBack(Map<BaseExpr, ? extends Expr> outerInner, Where innerWhere) {
         return new ExclPullWheres<ClassExprWhere, BaseExpr, Where>() {
             protected ClassExprWhere initEmpty() {
                 return ClassExprWhere.FALSE;
@@ -227,7 +227,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
             protected ClassExprWhere add(ClassExprWhere op1, ClassExprWhere op2) {
                 return op1.or(op2);
             }
-        }.proceed(innerWhere, BaseUtils.reverse(innerOuter));
+        }.proceed(innerWhere, outerInner);
     }
 
     // assert reversed, where не содержит groups
@@ -246,5 +246,62 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
                 return op1.or(op2);
             }
         }.proceed(Expr.getWhere(innerOuter.keySet()), BaseUtils.reverse(innerOuter));
+    }
+
+    private class OuterContext extends AbstractOuterContext<OuterContext> {
+
+        protected OuterContext translate(MapTranslate translator) {
+            return new ClassExprWhere(ClassExprWhere.this, translator.translateVariable(BaseUtils.toMap(keySet()))).getOuter();
+        }
+
+        protected int hash(HashContext hash) {
+            int result = 0;
+            for(And<VariableClassExpr> andWhere : wheres)
+                result += AbstractOuterContext.hashKeysOuter(andWhere, hash);
+            return result;
+        }
+
+        public QuickSet<platform.server.caches.OuterContext> calculateOuterDepends() {
+            return new QuickSet<platform.server.caches.OuterContext>(keySet());
+        }
+
+        protected boolean isComplex() {
+            return true;
+        }
+
+        private ClassExprWhere getThis() {
+            return ClassExprWhere.this;
+        }
+
+        public boolean twins(TwinImmutableInterface o) {
+            return getThis().equals(((OuterContext)o).getThis());
+        }
+    }
+    private OuterContext outer;
+    private OuterContext getOuter() {
+        if(outer==null)
+            outer = new OuterContext();
+        return outer;
+    }
+    public QuickSet<KeyExpr> getOuterKeys() {
+        return getOuter().getOuterKeys();
+    }
+    public QuickSet<Value> getOuterValues() {
+        return getOuter().getOuterValues();
+    }
+    public int hashOuter(HashContext hashContext) {
+        return getOuter().hashOuter(hashContext);
+    }
+    public QuickSet<platform.server.caches.OuterContext> getOuterDepends() {
+        return getOuter().getOuterDepends();
+    }
+    public void enumerate(ExprEnumerator enumerator) {
+        getOuter().enumerate(enumerator);
+    }
+    public long getComplexity(boolean outer) {
+        return getOuter().getComplexity(outer);
+    }
+    public ClassExprWhere translateOuter(MapTranslate translator) {
+        return getOuter().translateOuter(translator).getThis();
     }
 }

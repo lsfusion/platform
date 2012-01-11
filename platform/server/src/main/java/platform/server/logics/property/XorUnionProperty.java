@@ -5,10 +5,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Changes;
-import platform.server.session.MapDataChanges;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
+import platform.server.session.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,19 +24,19 @@ public class XorUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Where xorWhere = Where.FALSE;
         for(PropertyMapImplement<?, Interface> operand : operands)
-            xorWhere = xorWhere.xor(operand.mapExpr(joinImplement, modifier, changedWhere).getWhere());
+            xorWhere = xorWhere.xor(operand.mapExpr(joinImplement, propChanges, changedWhere).getWhere());
         return ValueExpr.get(xorWhere);
     }
 
     @Override
-    protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere) {
+    protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
         Where resultWhere = prevExpr.getWhere();
         for(PropertyMapImplement<?, Interface> operand : operands) {
             WhereBuilder changedOperandWhere = new WhereBuilder();
-            Where newOperandWhere = operand.mapExpr(joinImplement, modifier, changedOperandWhere).getWhere();
+            Where newOperandWhere = operand.mapExpr(joinImplement, propChanges, changedOperandWhere).getWhere();
             Where prevOperandWhere = operand.mapExpr(joinImplement).getWhere();
             resultWhere = resultWhere.xor(newOperandWhere.xor(prevOperandWhere).and(changedOperandWhere.toWhere()));
             if(changedWhere!=null) changedWhere.add(changedOperandWhere.toWhere());
@@ -48,20 +45,20 @@ public class XorUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
-        return modifier.getUsedDataChanges(getDepends()).add(modifier.getUsedChanges(getDepends()));
+    protected PropertyChanges calculateUsedDataChanges(PropertyChanges propChanges) {
+        return propChanges.getUsedDataChanges(getDepends()).add(propChanges.getUsedChanges(getDepends()));
     }
 
     @Override
-    protected MapDataChanges<Interface> calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    protected MapDataChanges<Interface> calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         MapDataChanges<Interface> result = new MapDataChanges<Interface>();
         for(PropertyMapImplement<?, Interface> operand : BaseUtils.reverse(operands)) {
             Where siblingWhere = Where.FALSE;
             for(PropertyMapImplement<?, Interface> siblingOperand : operands) // считаем where сиблингов и потом ими xor'им change
                 if(siblingOperand!=operand)
-                    siblingWhere = siblingWhere.xor(siblingOperand.mapExpr(change.mapKeys, modifier).getWhere());
+                    siblingWhere = siblingWhere.xor(siblingOperand.mapExpr(change.mapKeys, propChanges).getWhere());
             WhereBuilder operandWhere = new WhereBuilder();
-            result = result.add(operand.mapDataChanges(new PropertyChange<Interface>(change.mapKeys, ValueExpr.get(change.expr.getWhere().xor(siblingWhere)), change.where), operandWhere, modifier));
+            result = result.add(operand.mapDataChanges(new PropertyChange<Interface>(change.mapKeys, ValueExpr.get(change.expr.getWhere().xor(siblingWhere)), change.where), operandWhere, propChanges));
             change = change.and(operandWhere.toWhere().not());
             if(changedWhere!=null) changedWhere.add(operandWhere.toWhere());
         }

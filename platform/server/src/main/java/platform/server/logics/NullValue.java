@@ -1,5 +1,6 @@
 package platform.server.logics;
 
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
@@ -50,15 +51,15 @@ public class NullValue extends ObjectValue<NullValue> {
         return true;
     }
 
-    public int hashValues(HashValues hashValues) {
+    protected int hash(HashValues hashValues) {
         return 0;
     }
 
-    public Set<Value> getValues() {
-        return new HashSet<Value>();
+    public QuickSet<Value> getValues() {
+        return QuickSet.EMPTY();
     }
 
-    public NullValue translate(MapValuesTranslate mapValues) {
+    protected NullValue translate(MapValuesTranslate mapValues) {
         return this;
     }
 

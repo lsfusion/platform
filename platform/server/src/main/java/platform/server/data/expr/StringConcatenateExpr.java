@@ -14,7 +14,6 @@ import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -50,8 +49,12 @@ public class StringConcatenateExpr extends StaticClassExpr {
         return getType(getWhere());
     }
 
-    public BaseExpr translateOuter(MapTranslate translator) {
+    protected BaseExpr translate(MapTranslate translator) {
         return new StringConcatenateExpr(translator.translateDirect(exprs), separator, caseSensitive);
+    }
+
+    protected boolean isComplex() {
+        return true;
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -84,7 +87,7 @@ public class StringConcatenateExpr extends StaticClassExpr {
         return exprs.equals(((StringConcatenateExpr)obj).exprs);
     }
 
-    public int hashOuter(HashContext hashContext) {
+    protected int hash(HashContext hashContext) {
         return 31 * hashOuter(exprs, hashContext) + 5;
     }
 
@@ -99,14 +102,6 @@ public class StringConcatenateExpr extends StaticClassExpr {
             source = source + (source.length()==0?"":" || '" + separator + "' || ") + exprSource;
         }
         return "(" + source + ")";
-    }
-
-    public void enumDepends(ExprEnumerator enumerator) {
-        enumerator.fill(exprs);
-    }
-
-    public long calculateComplexity() {
-        return getComplexity(exprs);
     }
 
     public Stat getStatValue(KeyStat keyStat) {

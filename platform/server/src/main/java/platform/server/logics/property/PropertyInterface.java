@@ -7,13 +7,12 @@ import platform.server.data.expr.PullExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.MapDataChanges;
 import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -28,7 +27,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         this(-1);
 
     }
-    
+
     public PropertyInterface(int ID) {
         this.ID = ID;
 
@@ -39,11 +38,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return "I/"+ID;
     }
 
-    public Expr mapExpr(Map<P, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    public Expr mapExpr(Map<P, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere) {
         return mapExpr(joinImplement);
     }
 
-    public Expr mapExpr(Map<P, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
+    public Expr mapExpr(Map<P, ? extends Expr> joinImplement, PropertyChanges propChanges) {
         return mapExpr(joinImplement);
     }
 
@@ -51,8 +50,12 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return joinImplement.get((P) this);
     }
 
-    public Object read(DataSession session, Map<P, DataObject> interfaceValues, Modifier<? extends Changes> modifier) {
+    public Object read(DataSession session, Map<P, DataObject> interfaceValues, Modifier modifier) {
         return interfaceValues.get((P) this).object;
+    }
+
+    public Expr mapIncrementExpr(Map<P, ? extends Expr> joinImplement, PropertyChanges newChanges, PropertyChanges prevChanges, WhereBuilder changedWhere, IncrementType incrementType) {
+        return mapExpr(joinImplement);
     }
 
     public void mapFillDepends(Collection<Property> depends) {
@@ -65,11 +68,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     // для того чтобы "попробовать" изменения (на самом деле для кэша)
     public Expr changeExpr;
 
-    public MapDataChanges<P> mapDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
-        return new MapDataChanges<P>();
-    }
-
-    public MapDataChanges<P> mapJoinDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    public MapDataChanges<P> mapJoinDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges) {
         return new MapDataChanges<P>();
     }
 

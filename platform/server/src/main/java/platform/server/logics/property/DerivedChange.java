@@ -1,15 +1,11 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.interop.Compare;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Changes;
-import platform.server.session.DataChanges;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
+import platform.server.session.*;
 
 import java.util.*;
 
@@ -35,7 +31,7 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
 
     protected void fillDepends(Set<Property> depends) {
         if(valueChanged) depends.add(value.property);
-        FunctionProperty.fillDepends(depends,BaseUtils.merge(value.mapping.values(),onChange));
+        FunctionProperty.fillDepends(depends, BaseUtils.merge(value.mapping.values(), onChange));
     }
 
     public Set<Property> getDepends() {
@@ -44,51 +40,46 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
         return used;
     }
 
-    public <U extends Changes<U>> boolean hasDerivedChange(Modifier<U> modifier) {
-        return getDerivedUsedChange(modifier).hasChanges();
-    }
-
-    public <U extends Changes<U>> U getDerivedUsedChange(Modifier<U> modifier) {
-        return modifier.getApplyUsedChanges(getDepends());
-    }
-
-    public Expr getDerivedChange(Map<C, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier, WhereBuilder changeWhere) {
-        WhereBuilder onChangeWhere = new WhereBuilder();
-        Map<D, Expr> implementExprs = new HashMap<D, Expr>();
-        for(Map.Entry<D,PropertyInterfaceImplement<C>> interfaceImplement : value.mapping.entrySet()) {
-            implementExprs.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapExpr(mapKeys, modifier, onChangeWhere));
-            interfaceImplement.getValue().mapExpr(mapKeys, modifier.getApplyStart(), onChangeWhere);
+    public boolean hasDerivedChange(Modifier modifier, Modifier prevModifier) {
+        for(Property depend : getDepends()) {
+            if(depend.hasChanges(modifier))
+                return true;
+            if(depend.hasChanges(prevModifier))
+                return true;
         }
-
-        Where andWhere = Where.TRUE; // докинем дополнительные условия
-        for(PropertyMapImplement<?,C> propChange : onChange) {
-            WhereBuilder onValueChangeWhere = new WhereBuilder();
-            Expr newExpr = propChange.mapExpr(mapKeys, modifier, onValueChangeWhere);
-            Expr prevExpr = propChange.mapExpr(mapKeys, modifier.getApplyStart(), onValueChangeWhere);
-
-            Where forceWhere;
-            if(forceChanged) // при forceChanged проверяем что раньше null был
-                forceWhere = prevExpr.getWhere();
-            else
-                forceWhere = newExpr.compare(prevExpr, Compare.EQUALS);
-
-            onChangeWhere.add(onValueChangeWhere.toWhere().and(forceWhere.not()));
-            andWhere = andWhere.and(newExpr.getWhere());
-        }
-
-        changeWhere.add(andWhere.and(onChangeWhere.toWhere())); // если не делать нижней проверки могут пойти сложные не нужные getExpr
-        return valueChanged && !changeWhere.toWhere().isFalse() ? value.property.getExpr(implementExprs, modifier): value.property.getExpr(implementExprs, modifier.getApplyStart());
+        return false;
     }
 
-    public <U extends Changes<U>> U getUsedChanges(Modifier<U> modifier) {
-        return getDerivedUsedChange(modifier).add(property.getUsedDataChanges(modifier));
-    }
+    private PropertyChange<C> getDerivedChange(PropertyChanges newChanges, PropertyChanges prevChanges) {
 
-    public DataChanges getDataChanges(Modifier<? extends Changes> modifier) {
         Map<C,KeyExpr> mapKeys = property.getMapKeys();
 
         WhereBuilder onChangeWhere = new WhereBuilder();
-        Expr expr = getDerivedChange(mapKeys, modifier, onChangeWhere);
-        return property.getDataChanges(new PropertyChange<C>(mapKeys, expr, onChangeWhere.toWhere()), null, modifier).changes;
+        Map<D, Expr> implementExprs = new HashMap<D, Expr>();
+        for(Map.Entry<D,PropertyInterfaceImplement<C>> interfaceImplement : value.mapping.entrySet())
+            implementExprs.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapIncrementExpr(mapKeys, newChanges, prevChanges, onChangeWhere, IncrementType.CHANGE));
+
+        Where andWhere = Where.TRUE; // докинем дополнительные условия
+        for(PropertyMapImplement<?,C> propChange : onChange)
+            andWhere = andWhere.and(propChange.mapIncrementExpr(mapKeys, newChanges, prevChanges, onChangeWhere, forceChanged ? IncrementType.SET : IncrementType.CHANGE).getWhere());
+
+        andWhere = andWhere.and(onChangeWhere.toWhere()); // если не делать нижней проверки могут пойти сложные не нужные getExpr
+        return new PropertyChange<C>(mapKeys, value.property.getExpr(implementExprs, valueChanged && !andWhere.isFalse() ? newChanges : prevChanges), andWhere);
+    }
+
+    public DataChanges getDataChanges(Modifier modifier) {
+        return getDataChanges(modifier, Property.defaultModifier);
+    }
+
+    public DataChanges getDataChanges(Modifier modifier, Modifier prevModifier) {
+        return getDataChanges(modifier.getPropertyChanges(), prevModifier.getPropertyChanges());
+    }
+
+    public DataChanges getDataChanges(PropertyChanges changes) {
+        return getDataChanges(changes, PropertyChanges.EMPTY);
+    }
+
+    public DataChanges getDataChanges(PropertyChanges newChanges, PropertyChanges prevChanges) {
+        return property.getDataChanges(getDerivedChange(newChanges, prevChanges), newChanges, null).changes;
     }
 }

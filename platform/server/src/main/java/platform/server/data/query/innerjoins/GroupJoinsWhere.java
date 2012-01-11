@@ -1,7 +1,10 @@
 package platform.server.data.query.innerjoins;
 
+import platform.base.QuickSet;
+import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.query.stat.WhereJoins;
@@ -24,25 +27,32 @@ public class GroupJoinsWhere {
         this.upWheres = upWheres;
     }
 
-    public GroupJoinsWhere pack() { // upWheres особого смысла паковать нет, все равно
-        return new GroupJoinsWhere(keyEqual, joins, upWheres, where.pack());
-    }
-
     public static Collection<GroupJoinsWhere> pack(Collection<GroupJoinsWhere> whereJoins) {
         if(whereJoins.size()==1) // нет смысла упаковывать если один whereJoins
             return whereJoins;
         else {
             Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>();
             for(GroupJoinsWhere innerJoin : whereJoins) {
-                GroupJoinsWhere packJoin = innerJoin.pack();
-                if(!packJoin.where.isFalse())
-                    result.add(packJoin);
+                if(innerJoin.isComplex())
+                    result.add(innerJoin);
+                else {
+                    GroupJoinsWhere packJoin = innerJoin.pack();
+                    if(!packJoin.where.isFalse())
+                        result.add(packJoin);
+                }
             }
             return result;
         }
     }
 
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(Set<K> groups) {
+    public static long getComplexity(Collection<GroupJoinsWhere> whereJoins, boolean outer) {
+        int complexity = 0;
+        for(GroupJoinsWhere whereJoin : whereJoins)
+            complexity += whereJoin.where.getComplexity(outer);
+        return complexity;
+    }
+
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> groups) {
         return joins.getStatKeys(groups, where, keyEqual);
     }
 
@@ -52,6 +62,14 @@ public class GroupJoinsWhere {
         if(fullWhere==null)
             fullWhere = where.and(keyEqual.getWhere());
         return fullWhere;
+    }
+
+    public boolean isComplex() {
+        return where.getComplexity(false) > Settings.instance.getLimitWhereJoinPack();
+
+    }
+    public GroupJoinsWhere pack() { // upWheres особого смысла паковать нет, все равно
+        return new GroupJoinsWhere(keyEqual, joins, upWheres, where.pack());
     }
 
     @Override

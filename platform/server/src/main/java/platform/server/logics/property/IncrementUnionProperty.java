@@ -2,8 +2,8 @@ package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Changes;
 import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.util.Map;
 
@@ -13,13 +13,13 @@ public abstract class IncrementUnionProperty extends UnionProperty {
         super(sID, caption, intNum);
     }
 
-    protected abstract Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere);
-    protected abstract Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere);
+    protected abstract Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere);
+    protected abstract Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere);
 
     @Override
-    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        if(!hasChanges(modifier) || !isStored())
-            return calculateNewExpr(joinImplement, modifier, changedWhere);
-        return calculateIncrementExpr(joinImplement, modifier, getExpr(joinImplement), changedWhere);
+    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        if(!hasChanges(propChanges) || !isStored())
+            return calculateNewExpr(joinImplement, propChanges, changedWhere);
+        return calculateIncrementExpr(joinImplement, propChanges, getExpr(joinImplement), changedWhere);
     }
 }

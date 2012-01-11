@@ -5,6 +5,6 @@ import org.aspectj.lang.annotation.DeclarePrecedence;
 
 
 @Aspect
-@DeclarePrecedence("platform.server.data.translator.TranslateAspect, platform.server.caches.CacheAspect,*")
+@DeclarePrecedence("platform.server.caches.CacheAspect, platform.server.data.translator.AfterTranslateAspect, platform.server.caches.AutoHintsAspect, platform.server.data.query.MapCacheAspect, platform.server.caches.WrapComplexityAspect, platform.server.MessageAspect")
 public class OrderAspect {
 }

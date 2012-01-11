@@ -1,8 +1,8 @@
 package platform.server.caches.hash;
 
+import platform.base.QuickSet;
 import platform.server.data.Value;
-
-import java.util.Set;
+import platform.server.data.translator.MapValuesTranslate;
 
 public class HashCodeValues extends HashValues {
 
@@ -14,7 +14,18 @@ public class HashCodeValues extends HashValues {
         return expr.hashCode();
     }
 
-    public HashValues filterValues(Set<Value> values) {
+    public boolean isGlobal() {
+        return true;
+    }
+
+    public HashValues filterValues(QuickSet<Value> values) {
         return this;
+    }
+
+    public HashValues reverseTranslate(MapValuesTranslate translate, QuickSet<Value> values) {
+        if(translate.identityValues(values))
+            return this;
+        else
+            return null;
     }
 }

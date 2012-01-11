@@ -3,6 +3,7 @@ package platform.server.caches;
 import platform.base.GroupPairs;
 import platform.base.BaseUtils;
 import platform.base.GlobalObject;
+import platform.base.QuickMap;
 import platform.server.Settings;
 import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
@@ -16,7 +17,7 @@ public class ValuePairs extends GroupPairs<GlobalObject, Value, MapValuesTransla
         return new MapValuesTranslator(map);
     }
 
-    public ValuePairs(Map<Value, GlobalObject> map1, Map<Value, GlobalObject> map2) {
+    public ValuePairs(QuickMap<Value, GlobalObject> map1, QuickMap<Value, GlobalObject> map2) {
         super(map1, map2, true, Settings.instance.getMapInnerMaxIterations());
     }
 }

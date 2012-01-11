@@ -9,6 +9,7 @@ import platform.server.data.expr.SingleClassExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.property.ObjectClassProperty;
 import platform.server.logics.table.ObjectTable;
 import platform.server.logics.linear.LP;
 import platform.server.logics.DataObject;
@@ -166,5 +167,10 @@ public class BaseClass extends AbstractCustomClass {
 
     public int getCount() {
         return getUpSet().getCount();
+    }
+
+    @IdentityLazy
+    public ObjectClassProperty getObjectClassProperty() {
+        return new ObjectClassProperty("objectClass", this);
     }
 }

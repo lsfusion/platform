@@ -43,6 +43,7 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.scheduler.Scheduler;
+import platform.server.logics.table.DataTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
@@ -1349,13 +1350,28 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public List<DerivedChange<?, ?>> notDeterministic = new ArrayList<DerivedChange<?, ?>>();
 
     // получает список св-в в порядке использования
-
     private void fillPropertyList(Property<?> property, LinkedHashSet<Property> set) {
-        for (Property depend : property.getDepends())
-            fillPropertyList(depend, set);
+        fillPropertyList(property, set, new Stack<Property>());
+    }
+
+    private List<Property> fillPropertyList(Property<?> property, LinkedHashSet<Property> set, Stack<Property> stack) {
+        if(stack.contains(property)) // цикл
+            return new ArrayList<Property>(stack);
+
+        stack.push(property);
+        for (Property depend : property.getDepends()) {
+            List<Property> cycle = fillPropertyList(depend, set, stack);
+            if(cycle!=null) {
+                stack.pop();
+                return cycle;
+            }
+        }
         for (Property follow : property.getFollows())
-            fillPropertyList(follow, set);
+            fillPropertyList(follow, set, stack); // здесь игнорируются циклы (то есть разрез идет по следствию)
+        stack.pop();
+
         set.add(property);
+        return null;
     }
 
     public List<Property> getProperties() {
@@ -1434,7 +1450,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // здесь нужно вернуть список stored или тех кто
         List<Property> result = new ArrayList<Property>();
         for (Property property : getPropertyList(onlyCheck))
-            if (property.isStored() || property.isExecuteDerived() || property.isFalse)
+            if (property.isStored() || property.isDerived() || property.isFalse)
                 result.add(property);
         return result;
     }
@@ -1553,7 +1569,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ByteArrayOutputStream outDBStruct = new ByteArrayOutputStream();
         DataOutputStream outDB = new DataOutputStream(outDBStruct);
 
-        Map<String, ImplementTable> implementTables = LM.tableFactory.getImplementTables();
+        Map<String, ImplementTable> implementTables = LM.tableFactory.getImplementTablesMap();
 
         Map<ImplementTable, Set<List<String>>> mapIndexes = new HashMap<ImplementTable, Set<List<String>>>();
         for (ImplementTable table : implementTables.values())
@@ -1723,11 +1739,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportKey<?> tableColumnKey = new ImportKey(LM.tableColumn, LM.sidToTableColumn.getMapping(tableColumnSidField));
 
         List<List<Object>> data = new ArrayList<List<Object>>();
-        for(ImplementTable implementTable : LM.tableFactory.getImplementTables().values()) {
-            Object tableName = implementTable.name;
-            Map classes = implementTable.getClasses().getCommonParent(implementTable.keys);
-            for (KeyField key : implementTable.keys) {
-                data.add(Arrays.asList(tableName, key.name, tableName + "." + key.name, ((ValueClass) classes.get(key)).getCaption()));
+        for(DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
+            Object tableName = dataTable.name;
+            Map<KeyField, ValueClass> classes = dataTable.getClasses().getCommonParent(dataTable.keys);
+            for (KeyField key : dataTable.keys) {
+                data.add(Arrays.asList(tableName, key.name, tableName + "." + key.name, classes.get(key).getCaption()));
             }
         }
 
@@ -1745,9 +1761,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportTable table = new ImportTable(Arrays.asList(tableSidField, tableKeyNameField, tableKeySidField, tableKeyClassField), data);
 
         List<List<Object>> data2 = new ArrayList<List<Object>>();
-        for(ImplementTable implementTable : LM.tableFactory.getImplementTables().values()) {
-            Object tableName = implementTable.name;
-            for (PropertyField property : implementTable.properties) {
+        for(DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
+            Object tableName = dataTable.name;
+            for (PropertyField property : dataTable.properties) {
                 data2.add(Arrays.asList(tableName, property.name));
             }
         }
@@ -1780,13 +1796,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public void recalculateStats() throws SQLException {
-        DataSession session = createSession();
-        for (ImplementTable implementTable : LM.tableFactory.getImplementTables().values()) {
-            implementTable.calculateStat(LM, session);
-        }
-        if (session.hasChanges()) {
-            session.apply(this);
+    public void recalculateStats(DataSession session) throws SQLException {
+        for (DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
+            dataTable.calculateStat(LM, session);
         }
     }
 
@@ -1798,8 +1810,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void updateStats(boolean statDefault) throws SQLException {
         DataSession session = createSession();
-        for (ImplementTable implementTable : LM.tableFactory.getImplementTables().values()) {
-            implementTable.updateStat(LM, session, statDefault);
+        for (DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
+            dataTable.updateStat(LM, session, statDefault);
         }
     }
 

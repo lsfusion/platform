@@ -4,7 +4,6 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.logics.DataObject;
-import platform.server.session.Changes;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
@@ -31,8 +30,7 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
         return new PropertyChange<P>(mapKeys,expr,CompareWhere.compareValues(mapKeys,mapping));
     }
 
-    public boolean canBeChanged(Modifier<? extends Changes> modifier) throws SQLException {
-        return !property.getDataChanges(getPropertyChange(property.changeExpr), null, modifier).changes.isEmpty();
+    public boolean canBeChanged(Modifier modifier) throws SQLException {
+        return !property.getDataChanges(getPropertyChange(property.changeExpr), modifier, null).changes.isEmpty();
     }
-
 }

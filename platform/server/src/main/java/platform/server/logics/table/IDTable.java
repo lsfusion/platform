@@ -62,10 +62,10 @@ public class IDTable extends GlobalTable {
 
     public Integer generateID(SQLSession dataSession, int idType) throws SQLException {
 
-        assert !dataSession.isInTransaction();
-
         Integer freeID;
         synchronized (this) {
+            assert !dataSession.isInTransaction();
+
             dataSession.startTransaction();
             freeID = (Integer) BaseUtils.singleValue(getGenerateQuery(idType).execute(dataSession)).get(value); // замещаем
             reserveID(dataSession, idType, freeID);

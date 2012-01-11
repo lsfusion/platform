@@ -1,12 +1,13 @@
 package platform.server.data.expr;
 
 import platform.base.QuickMap;
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
+import platform.server.caches.OuterContext;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
-import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.StaticCustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Table;
@@ -59,8 +60,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     public Expr packFollowFalse(Where where) {
         return expr.packFollowFalse(where).classExpr(baseClass);
     }
-    @ParamLazy
-    public IsClassExpr translateOuter(MapTranslate translator) {
+    protected IsClassExpr translate(MapTranslate translator) {
         return new IsClassExpr(expr.translateOuter(translator),baseClass);
     }
 
@@ -68,7 +68,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return expr.isClass(baseClass.getUpSet());
     }
 
-    public int hashOuter(HashContext hashContext) {
+    protected int hash(HashContext hashContext) {
         return expr.hashOuter(hashContext)+1;
     }
 
@@ -76,16 +76,8 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return compile.getSource(this);
     }
 
-    public void enumDepends(ExprEnumerator enumerator) {
-        expr.enumerate(enumerator);
-    }
-
     public boolean twins(TwinImmutableInterface obj) {
         return expr.equals(((IsClassExpr)obj).expr) && baseClass.equals(((IsClassExpr)obj).baseClass);
-    }
-
-    public long calculateComplexity() {
-        return expr.getComplexity() + 1;
     }
 
     public Stat getStatValue(KeyStat keyStat) {
@@ -93,6 +85,9 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     }
     public InnerJoin<?> getInnerJoin() {
         return getJoinExpr().getInnerJoin();
+    }
+    public QuickSet<OuterContext> calculateOuterDepends() {
+        return new QuickSet<OuterContext>(getJoinExpr());
     }
 
     // множественное наследование StaticClassExpr

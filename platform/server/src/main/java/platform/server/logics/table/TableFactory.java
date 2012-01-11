@@ -1,5 +1,6 @@
 package platform.server.logics.table;
 
+import platform.base.BaseUtils;
 import platform.server.classes.SystemClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.BaseClass;
@@ -27,16 +28,27 @@ public class TableFactory {
         new ImplementTable(name,classes).include(implementTables[classes.length], true, new HashSet<ImplementTable>());
     }
 
+    public Collection<DataTable> getDataTables(BaseClass baseClass) {
+        return BaseUtils.add(getImplementTables(), baseClass.table);
+    }
+
     // получает постоянные таблицы
-    public Map<String,ImplementTable> getImplementTables() {
-        Map<String,ImplementTable> result = new HashMap<String, ImplementTable>();
+    public Collection<ImplementTable> getImplementTables() {
+        Collection<ImplementTable> result = new ArrayList<ImplementTable>();
         for(int i=0;i<=MAX_INTERFACE;i++) {
             Set<ImplementTable> intTables = new HashSet<ImplementTable>();
             for(ImplementTable implementTable : implementTables[i])
                 implementTable.fillSet(intTables);            
             for(ImplementTable intTable : intTables)
-                result.put(intTable.name,intTable);
+                result.add(intTable);
         }
+        return result;
+    }
+    
+    public Map<String, ImplementTable> getImplementTablesMap() {
+        Map<String, ImplementTable> result = new HashMap<String, ImplementTable>();
+        for(ImplementTable impTable : getImplementTables())
+            result.put(impTable.name, impTable);
         return result;
     }
 

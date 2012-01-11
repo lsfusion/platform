@@ -1,7 +1,7 @@
 package platform.server.data.translator;
 
-import platform.base.OrderedMap;
-import platform.base.TwinImmutableObject;
+import platform.base.*;
+import platform.server.caches.AbstractTranslateContext;
 import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
@@ -37,6 +37,13 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
         Map<KeyExpr, K> transMap = new HashMap<KeyExpr, K>();
         for(Map.Entry<KeyExpr,K> entry : map.entrySet())
             transMap.put(entry.getKey().translateOuter(this),entry.getValue());
+        return transMap;
+    }
+
+    public <K> QuickMap<KeyExpr,K> translateMapKeys(QuickMap<KeyExpr, K> map) {
+        QuickMap<KeyExpr, K> transMap = new SimpleMap<KeyExpr, K>();
+        for(int i=0;i<map.size;i++)
+            transMap.add(map.getKey(i).translateOuter(this),map.getValue(i));
         return transMap;
     }
 
@@ -83,8 +90,29 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
         return result;
     }
 
+    public QuickSet<KeyExpr> translateKeys(QuickSet<KeyExpr> set) {
+        QuickSet<KeyExpr> result = new QuickSet<KeyExpr>();
+        for(KeyExpr expr : set)
+            result.add(expr.translateOuter(this));
+        return result;
+    }
+
+    public QuickSet<VariableClassExpr> translateVariable(QuickSet<VariableClassExpr> set) {
+        QuickSet<VariableClassExpr> result = new QuickSet<VariableClassExpr>();
+        for(VariableClassExpr expr : set)
+            result.add(expr.translateOuter(this));
+        return result;
+    }
+
     public <V extends Value> Set<V> translateValues(Set<V> set) {
         Set<V> result = new HashSet<V>();
+        for(V expr : set)
+            result.add(translate(expr));
+        return result;
+    }
+
+    public <V extends Value> QuickSet<V> translateValues(QuickSet<V> set) {
+        QuickSet<V> result = new QuickSet<V>();
         for(V expr : set)
             result.add(translate(expr));
         return result;
@@ -102,5 +130,20 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
         for(Expr expr : set)
             result.add(expr.translateOuter(this));
         return result;
+    }
+
+    public <K extends Value, U> QuickMap<K, U> translateValuesMapKeys(QuickMap<K, U> map) {
+        QuickMap<K,U> result = new SimpleMap<K,U>();
+        for(int i=0;i<map.size;i++)
+            result.add(translate(map.getKey(i)), map.getValue(i));
+        return result;
+    }
+
+    private final QuickMap<AbstractTranslateContext, AbstractTranslateContext> caches = new SimpleMap<AbstractTranslateContext, AbstractTranslateContext>();
+    public AbstractTranslateContext aspectGetCache(AbstractTranslateContext context) {
+        return caches.get(context);
+    }
+    public void aspectSetCache(AbstractTranslateContext context, AbstractTranslateContext result) {
+        caches.add(context, result);
     }
 }

@@ -1,72 +1,67 @@
 package platform.server.session;
 
-import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.SQLSession;
 import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
 
-import java.util.Set;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
-public abstract class IncrementProps<T> extends AbstractIncrementProps<T, IncrementProps.UsedChanges> {
+public class IncrementProps extends BaseMutableModifier {
 
-    protected IncrementProps() {
+    public IncrementProps() {
     }
 
-    protected IncrementProps(Set<Property> noUpdate) {
-        super(noUpdate);
+    public <P extends PropertyInterface> IncrementProps(Property<P> property, SinglePropertyTableUsage<P> table) {
+        add(property, table);
     }
 
-    public static class UsedChanges extends AbstractIncrementProps.UsedChanges<UsedChanges> {
+    private Map<Property, SinglePropertyTableUsage<PropertyInterface>> tables = new HashMap<Property, SinglePropertyTableUsage<PropertyInterface>>();
 
-        private UsedChanges() {
-        }
-        protected final static UsedChanges EMPTY = new UsedChanges();
+    public Collection<Property> getProperties() {
+        return tables.keySet();
+    }
 
-        public <T> UsedChanges(IncrementProps<T> modifier) {
-            super(modifier);
-        }
+    public <P extends PropertyInterface> SinglePropertyTableUsage<P> getTable(Property<P> property) {
+        return (SinglePropertyTableUsage<P>)tables.get(property);
+    }
 
-        public UsedChanges(Property property, SessionTableUsage<?, Property> incrementTable) {
-            super(property, incrementTable);
-        }
+    protected boolean isFinal() {
+        return true;
+    }
 
-        public UsedChanges(Property property) {
-            super(property);
-        }
+    protected <P extends PropertyInterface> PropertyChange<P> getPropertyChange(Property<P> property) {
+        SinglePropertyTableUsage<P> table = getTable(property);
+        if(table!=null)
+            return SinglePropertyTableUsage.getChange(table);
+        return null;
+    }
 
-        private UsedChanges(UsedChanges changes, Changes merge) {
-            super(changes, merge);
-        }
-        protected UsedChanges calculateAddChanges(Changes changes) {
-            return new UsedChanges(this, changes);
-        }
+    public <P extends PropertyInterface> void add(Property<P> property, SinglePropertyTableUsage<P> changeTable) {
+        tables.put(property, (SinglePropertyTableUsage<PropertyInterface>) changeTable);
 
-        public UsedChanges(UsedChanges changes, UsedChanges merge) {
-            super(changes, merge);
-        }
-        protected UsedChanges calculateAdd(UsedChanges changes) {
-            return new UsedChanges(this, changes);
-        }
+        addChange(property);
+    }
 
-        private UsedChanges(UsedChanges usedChanges, MapValuesTranslate mapValues) {
-            super(usedChanges, mapValues);
-        }
-        public UsedChanges translate(MapValuesTranslate mapValues) {
-            return new UsedChanges(this, mapValues);
+    public void remove(Property property, SQLSession session) throws SQLException {
+        SinglePropertyTableUsage<PropertyInterface> table = tables.remove(property);
+        if(table!=null) {
+            table.drop(session);
+            addChange(property);
         }
     }
 
-    protected UsedChanges newUsedChanges(Property property, SessionTableUsage<T, Property> incrementTable) {
-        return new UsedChanges(property, incrementTable);
+    public void cleanIncrementTables(SQLSession session) throws SQLException {
+        for (Map.Entry<Property, SinglePropertyTableUsage<PropertyInterface>> addTable : tables.entrySet()) {
+            addTable.getValue().drop(session);
+            addChange(addTable.getKey());
+        }
+        tables = new HashMap<Property, SinglePropertyTableUsage<PropertyInterface>>();
     }
 
-    protected UsedChanges newUsedChanges(Property property) {
-        return new UsedChanges(property);
-    }
-
-    public UsedChanges newChanges() {
-        return UsedChanges.EMPTY;
-    }
-
-    protected UsedChanges newFullChanges() {
-        return new UsedChanges(this);
+    protected Collection<Property> calculateProperties() {
+        return tables.keySet();
     }
 }

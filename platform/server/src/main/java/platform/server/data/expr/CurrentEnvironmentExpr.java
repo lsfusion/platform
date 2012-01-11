@@ -1,5 +1,6 @@
 package platform.server.data.expr;
 
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ValueClass;
@@ -11,7 +12,6 @@ import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.ValueJoin;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -19,8 +19,6 @@ import platform.server.data.type.Type;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
-
-import java.util.Set;
 
 public class CurrentEnvironmentExpr extends NotNullExpr {
 
@@ -35,7 +33,7 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
     public void fillFollowSet(DataWhereSet fillSet) {
     }
 
-    public CurrentEnvironmentExpr translateOuter(MapTranslate translator) {
+    protected CurrentEnvironmentExpr translate(MapTranslate translator) {
         return this;
     }
 
@@ -57,19 +55,12 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
         return paramString.equals(((CurrentEnvironmentExpr) obj).paramString);
     }
 
-    public int hashOuter(HashContext hashContext) {
+    protected int hash(HashContext hashContext) {
         return paramString.hashCode();
     }
 
     public String getSource(CompileSource compile) {
         return paramString;
-    }
-
-    public void enumDepends(ExprEnumerator enumerator) {
-    }
-
-    public long calculateComplexity() {
-        return 1;
     }
 
     public class NotNull extends NotNullExpr.NotNull {
@@ -81,7 +72,7 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
             return new ClassExprWhere(CurrentEnvironmentExpr.this, paramClass);
         }
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
             return new GroupJoinsWheres(this);
         }
     }

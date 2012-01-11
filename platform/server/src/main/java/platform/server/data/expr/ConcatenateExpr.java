@@ -3,7 +3,6 @@ package platform.server.data.expr;
 import platform.base.BaseUtils;
 import platform.base.QuickMap;
 import platform.base.TwinImmutableInterface;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
@@ -13,12 +12,9 @@ import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.stat.CalculateJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
-import platform.server.data.translator.HashLazy;
-import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -52,7 +48,7 @@ public class ConcatenateExpr extends BaseExpr {
         }.proceed(BaseUtils.toMap(exprs));
     }
 
-    public ConcatenateExpr translateOuter(MapTranslate translator) {
+    protected ConcatenateExpr translate(MapTranslate translator) {
         return new ConcatenateExpr(translator.translateDirect(exprs));
     }
 
@@ -105,8 +101,10 @@ public class ConcatenateExpr extends BaseExpr {
         return exprs.equals(((ConcatenateExpr)obj).exprs);
     }
 
-    @HashOuterLazy
-    public int hashOuter(HashContext hashContext) {
+    protected boolean isComplex() {
+        return true;
+    }
+    public int hash(HashContext hashContext) {
         return hashOuter(exprs, hashContext);
     }
 
@@ -128,14 +126,6 @@ public class ConcatenateExpr extends BaseExpr {
         for(BaseExpr expr : exprs)
             sources.add(expr.getSource(compile));
         return ((ConcatenateType)getType(compile.keyType)).getConcatenateSource(sources,compile.syntax);
-    }
-
-    public void enumDepends(ExprEnumerator enumerator) {
-        enumerator.fill(exprs);
-    }
-
-    public long calculateComplexity() {
-        return getComplexity(exprs) + 1;
     }
 
     @Override

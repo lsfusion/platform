@@ -1,13 +1,10 @@
 package platform.server.data.expr.where.extra;
 
 import platform.interop.Compare;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.InsensitiveStringClass;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.CompileSource;
-import platform.server.data.translator.HashLazy;
-import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.where.Where;
 
 public class LikeWhere extends BinaryWhere<LikeWhere> {
@@ -27,8 +24,10 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
         return isStartWith ? Compare.START_WITH : Compare.LIKE;
     }
 
-    @HashOuterLazy
-    public int hashOuter(HashContext hashContext) {
+    protected boolean isComplex() {
+        return true;
+    }
+    public int hash(HashContext hashContext) {
         return 1 + operator1.hashOuter(hashContext)*31 + operator2.hashOuter(hashContext)*31*31;
     }
 

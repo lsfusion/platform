@@ -19,8 +19,6 @@ import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.where.classes.PackClassWhere;
 
-import java.util.Set;
-
 
 public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhere<AndWhere> {
 
@@ -215,7 +213,11 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                 result = orPairs(result, (Where) siblingNewWheres[N+j]);
 
         change.type = changeType;
-        return result;
+        if(changeType==FollowType.EQUALS) { // для оптимизации сохраняем ссылку
+            assert BaseUtils.hashEquals(result, this);
+            return this;
+        } else
+            return result;
     }
 
     private static CheckWhere checkff(CheckWhere where, CheckWhere falseWhere) {
@@ -422,15 +424,16 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     public AndWhere not = null;
     @ManualLazy
     public AndWhere not() { // именно здесь из-за того что типы надо перегружать без generics
-        if(not==null)
+        if(not==null) {
             not = new AndWhere(not(wheres), check);
+            not.not = this; // для оптимизации
+        }
         return not;
     }
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    @ParamLazy
-    public Where translateOuter(MapTranslate translator) {
+    protected Where translate(MapTranslate translator) {
         AndObjectWhere[] resultWheres = new AndObjectWhere[wheres.length];
         for(int i=0;i<wheres.length;i++)
             resultWheres[i] = (AndObjectWhere) wheres[i].translateOuter(translator);
@@ -472,7 +475,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
+    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
         GroupJoinsWheres result = new GroupJoinsWheres();
         for(Where where : wheres)
             result.or(where.groupJoinsWheres(keepStat, keyStat));
@@ -484,7 +487,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             result.addAll(where.getKeyEquals());
         return result;
     }
-    public MeanClassWheres calculateMeanClassWheres() {
+    public MeanClassWheres calculateGroupMeanClassWheres() {
         MeanClassWheres result = new MeanClassWheres();
         for(Where where : wheres)
             result.or(where.groupMeanClassWheres());

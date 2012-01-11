@@ -2,7 +2,7 @@ package platform.server.session;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.caches.MapValues;
+import platform.server.caches.ValuesContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
@@ -16,14 +16,13 @@ import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.table.ImplementTable;
 
 import java.sql.SQLException;
 import java.util.*;
 
 public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
 
-    protected SessionData<?> table;
+    protected SessionDataInterface<?> table;
     protected Map<KeyField, K> mapKeys;
     protected Map<PropertyField, V> mapProps;
 
@@ -123,11 +122,11 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     }
 
     // assert что ни вызывается при нижнем конструкторе пока
-    public MapValues getUsage() { // IMMUTABLE
+    public ValuesContext getUsage() { // IMMUTABLE
         return table;
     }
 
-    public SessionTableUsage(SessionData<?> table, Map<KeyField, K> mapKeys, Map<PropertyField, V> mapProps) {
+    public SessionTableUsage(SessionDataInterface<?> table, Map<KeyField, K> mapKeys, Map<PropertyField, V> mapProps) {
         this.table = table;
         this.mapKeys = mapKeys;
         this.mapProps = mapProps;
@@ -137,11 +136,20 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         return new SessionTableUsage<MK, V>(table, BaseUtils.join(mapKeys, remapKeys), mapProps);
     }
 
-    public <B> ClassWhere<B> getClassWhere(V property, B mapProp) {
+    public <MK, MV> SessionTableUsage<MK, MV> map(Map<K, MK> remapKeys, Map<V, MV> remapProps) {
+        return new SessionTableUsage<MK, MV>(table, BaseUtils.join(mapKeys, remapKeys), BaseUtils.join(mapProps, remapProps));
+    }
+
+    public <B> ClassWhere<B> getClassWhere(V property, Map<K, ? extends B> remapKeys, B mapProp) {
         return new ClassWhere<B>(table.getClassWhere(getField(property)),
-                BaseUtils.merge(BaseUtils.<Map<KeyField, K>,Map<KeyField, B>>immutableCast(mapKeys),
+                BaseUtils.merge(BaseUtils.join(mapKeys, remapKeys),
                                 BaseUtils.rightJoin(mapProps, Collections.singletonMap(property, mapProp))));
     }
+
+    public <B> ClassWhere<B> getClassWhere(Map<K, B> remapKeys) {
+        return new ClassWhere<B>(table.getClassWhere(), BaseUtils.join(mapKeys, remapKeys));
+    }
+
 
     public boolean isEmpty() {
         return table.isEmpty();

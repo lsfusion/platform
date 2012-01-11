@@ -1,6 +1,7 @@
 package platform.server.data.query.innerjoins;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.WhereJoin;
@@ -62,7 +63,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         return new GroupJoinsWheres();
     }
 
-    private static <K extends BaseExpr> boolean compileMeans(WhereJoins from, WhereJoins what, Set<K> keepStat, KeyStat keyStat) {
+    private static <K extends BaseExpr> boolean compileMeans(WhereJoins from, WhereJoins what, QuickSet<K> keepStat, KeyStat keyStat) {
         return from.means(what) && (keepStat == null || BaseUtils.hashEquals(from.getStatKeys(keepStat, keyStat), what.getStatKeys(keepStat, keyStat)));
     }
 
@@ -72,7 +73,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }
 
     // keepStat нужен чтобы можно было гарантировать что не образуется case с недостающим WhereJoin существенно влияющим на статистику
-    public <K extends BaseExpr> GroupJoinsWheres compileMeans(Set<K> keepStat, KeyStat keyStat) {
+    public <K extends BaseExpr> GroupJoinsWheres compileMeans(QuickSet<K> keepStat, KeyStat keyStat) {
         if(!Settings.instance.isCompileMeans())
             return this;
 
@@ -130,10 +131,10 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         this(new WhereJoins(join), new Value(join, where));
     }
 
-    public int getComplexity() {
+    public int getComplexity(boolean outer) {
         int result = 0;
         for(int i=0;i<size;i++)
-            result += getValue(i).where.getComplexity();
+            result += getValue(i).where.getComplexity(outer);
         return result;
     }
 }

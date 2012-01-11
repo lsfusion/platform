@@ -2,6 +2,8 @@ package platform.server.data.where;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.QuickSet;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.data.expr.BaseExpr;
@@ -58,14 +60,18 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
 //        assert BaseUtils.hashEquals(oldff(falseWhere, false, packExprs, new FollowChange()),result);
         return result;
     }
-    public Where pack() { // собсно все packExprs нужен только для этого метода, он в свою очередь нужен чтобы в LinearExpr убрать лишние и в GroupExpr протолкнуть классы \ exprValues
-        return followFalse(Where.FALSE, true);
+    private Where packed = null;
+    @ManualLazy
+    public Where pack() {
+        if(packed==null)
+            packed = followFalse(Where.FALSE, true);
+        return packed;
     }
 
-    public <K> Map<K, Expr> followTrue(Map<K, ? extends Expr> map) {
+    public <K> Map<K, Expr> followTrue(Map<K, ? extends Expr> map, boolean pack) {
         Map<K, Expr> result = new HashMap<K, Expr>();
         for(Map.Entry<K,? extends Expr> entry : map.entrySet())
-            result.put(entry.getKey(),entry.getValue().followFalse(not(), true));
+            result.put(entry.getKey(),entry.getValue().followFalse(not(), pack));
         return result;
     }
 
@@ -193,11 +199,11 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     // 2-й параметр чисто для оптимизации пока
-    public <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive, Set<K> keepStat) {
+    public <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive, QuickSet<K> keepStat) {
         return getKeyEquals().getWhereJoins(notExclusive, keepStat);
     }
 
-    public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(Set<K> keys, boolean notExclusive) {
+    public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keys, boolean notExclusive) {
         Collection<GroupStatWhere<K>> statJoins = new ArrayList<GroupStatWhere<K>>();
         for(GroupJoinsWhere whereJoin : getWhereJoins(notExclusive, keys))
             statJoins.add(new GroupStatWhere<K>(whereJoin.keyEqual, whereJoin.getStatKeys(keys), whereJoin.where));
@@ -205,11 +211,11 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         // return getKeyEquals().getStatJoins(keys, notExclusive), пока убрал, все равно приходится WhereJoins считать
     }
 
-    public <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(final boolean noExclusive, Set<K> exprs) {
+    public <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(final boolean noExclusive, QuickSet<K> exprs) {
         return new ExclPullWheres<Collection<GroupStatWhere<K>>, K, Where>() {
             protected Collection<GroupStatWhere<K>> proceedBase(Where data, Map<K, BaseExpr> map) {
                 return GroupStatWhere.mapBack(data.and(Expr.getWhere(map)).getStatJoins(
-                        new HashSet<BaseExpr>(map.values()), noExclusive), map);
+                        new QuickSet<BaseExpr>(map.values()), noExclusive), map);
             }
 
             protected Collection<GroupStatWhere<K>> initEmpty() {
@@ -219,17 +225,17 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             protected Collection<GroupStatWhere<K>> add(Collection<GroupStatWhere<K>> op1, Collection<GroupStatWhere<K>> op2) {
                 return BaseUtils.merge(op1, op2);
             }
-        }.proceed(this, BaseUtils.toMap(exprs));
+        }.proceed(this, exprs.toMap());
     }
 
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(Set<K> groups) { // assertion что where keys входят в это where
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> groups) { // assertion что where keys входят в это where
         StatKeys<K> result = new StatKeys<K>(groups);
         for(GroupStatWhere<K> groupJoin : getStatJoins(groups, true))
             result = result.or(groupJoin.stats);
         return result;
     }
 
-    public <K extends Expr> StatKeys<K> getStatExprs(Set<K> groups) {
+    public <K extends Expr> StatKeys<K> getStatExprs(QuickSet<K> groups) {
         StatKeys<K> result = new StatKeys<K>(groups);
         for(GroupStatWhere<K> groupJoin : getStatJoins(true, groups))
             result = result.or(groupJoin.stats);
@@ -246,7 +252,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return getClassWhere().getKeepWhere(expr);
     }
 
-    public abstract Where translateOuter(MapTranslate translator);
+    protected abstract Where translate(MapTranslate translator);
 
     protected abstract KeyEquals calculateKeyEquals();
 

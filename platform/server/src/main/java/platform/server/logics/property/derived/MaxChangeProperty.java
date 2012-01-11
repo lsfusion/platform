@@ -8,12 +8,11 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.AggregateProperty;
 import platform.server.logics.property.ChangeProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.session.Changes;
 import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -90,22 +89,22 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         this.toChange = toChange;
     }
 
-    public static <U extends Changes<U>> U getUsedChanges(Property<?> onChange, Property<?> toChange, Modifier<U> modifier) {
-        return toChange.getUsedDataChanges(modifier).addChanges(onChange.getUsedChanges(toChange.getChangeModifier(modifier, false)));
+    public static PropertyChanges getUsedChanges(Property<?> onChange, Property<?> toChange, PropertyChanges propChanges) {
+        return toChange.getUsedDataChanges(propChanges).add(onChange.getUsedChanges(toChange.getChangeModifier(propChanges, false)));
     }
 
-    protected <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
-        return getUsedChanges(onChange,toChange,modifier);
+    protected PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
+        return getUsedChanges(onChange,toChange, propChanges);
     }
 
-    protected Expr calculateExpr(Map<Interface<P>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface<P>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Map<Interface<P>, Expr> mapExprs = new HashMap<Interface<P>, Expr>();
         for(Interface<P> propertyInterface : interfaces)
             mapExprs.put(propertyInterface, propertyInterface.getExpr());
 
         WhereBuilder onChangeWhere = new WhereBuilder();
         Expr resultExpr = GroupExpr.create(mapExprs, onChange.getExpr(onChange.getMapKeys(),
-                toChange.getChangeModifier(modifier, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.ANY, joinImplement);
+                toChange.getChangeModifier(propChanges, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.ANY, joinImplement);
         if(changedWhere!=null) changedWhere.add(resultExpr.getWhere());
         return resultExpr;
     }

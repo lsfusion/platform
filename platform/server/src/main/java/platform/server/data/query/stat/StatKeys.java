@@ -1,5 +1,6 @@
 package platform.server.data.query.stat;
 
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.base.TwinImmutableObject;
 import platform.server.caches.hash.HashContext;
@@ -18,11 +19,15 @@ public class StatKeys<K> extends TwinImmutableObject {
 
     public final DistinctKeys<K> distinct;
 
-    public StatKeys(Set<K> allKeys) {
+    public StatKeys(Iterable<K> allKeys) {
         this(allKeys, Stat.MIN);
     }
 
-    public StatKeys(Set<K> allKeys, Stat stat) {
+    public QuickSet<K> getKeys() {
+        return distinct.keyQuickSet();
+    }
+
+    public StatKeys(Iterable<K> allKeys, Stat stat) {
         rows = stat;
         distinct = new DistinctKeys<K>();
         for(K key : allKeys)

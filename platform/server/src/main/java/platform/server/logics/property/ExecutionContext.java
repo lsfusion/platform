@@ -11,7 +11,6 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
@@ -23,13 +22,13 @@ public class ExecutionContext {
     private final Map<ClassPropertyInterface, DataObject> keys;
     private final ObjectValue value;
     private final DataSession session;
-    private final Modifier<? extends Changes> modifier;
+    private final Modifier modifier;
     private final List<ClientAction> actions;
     private final RemoteForm form;
     private final Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects;
     private final boolean groupLast; // обозначает, что изменение последнее, чтобы форма начинала определять, что изменилось
 
-    public ExecutionContext(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm form, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) {
+    public ExecutionContext(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier modifier, List<ClientAction> actions, RemoteForm form, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) {
         this.keys = keys;
         this.value = value;
         this.session = session;
@@ -83,7 +82,7 @@ public class ExecutionContext {
             return session;
     }
 
-    public Modifier<? extends Changes> getModifier() {
+    public Modifier getModifier() {
         if (form != null)
             return getFormInstance();
         else

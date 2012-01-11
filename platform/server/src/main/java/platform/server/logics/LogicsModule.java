@@ -38,6 +38,7 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 import static platform.base.BaseUtils.consecutiveInts;
+import static platform.base.BaseUtils.innerJoin;
 import static platform.server.logics.PropertyUtils.*;
 
 /**
@@ -551,11 +552,6 @@ public abstract class LogicsModule {
         return addProperty(group, new LP<ShiftChangeProperty.Interface<P>>(new ShiftChangeProperty<P, PropertyInterface>(genSID(), caption, lp.property, new PropertyMapImplement<PropertyInterface, P>(baseLM.reverseBarcode.property))));
     }
 
-    // добавляет свойство с бесконечным значением
-    protected LP addICProp(DataClass valueClass, ValueClass... params) {
-        return addProperty(baseLM.privateGroup, false, new LP<ClassPropertyInterface>(new InfiniteClassProperty(genSID(), ServerResourceBundle.getString("logics.infinity"), params, valueClass)));
-    }
-
     protected LP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
         return addCProp("sys", valueClass, value, params);
     }
@@ -574,9 +570,17 @@ public abstract class LogicsModule {
         return addCProp(group, genSID(), persistent, caption, valueClass, value, params.toArray(new ValueClass[]{}));
     }
 
-    protected LP addCProp(AbstractGroup group, String name, boolean persistent, String caption, StaticClass valueClass, Object value, ValueClass... params) {
-        return addProperty(group, persistent, new LP<ClassPropertyInterface>(new ValueClassProperty(name, caption, params, valueClass, value)));
+    protected <T extends PropertyInterface> LP addCProp(AbstractGroup group, String name, boolean persistent, String caption, StaticClass valueClass, Object value, ValueClass... params) {
+        PropertyImplement<T, Integer> implement = (PropertyImplement<T, Integer>) DerivedProperty.createCProp(name, caption, valueClass, value, BaseUtils.toMap(params));
+        return addProperty(group, persistent, new LP<T>(implement.property, BaseUtils.toList(BaseUtils.reverse(implement.mapping))));
     }
+
+    // добавляет свойство с бесконечным значением
+    protected <T extends PropertyInterface> LP addICProp(DataClass valueClass, ValueClass... params) {
+        PropertyImplement<T, Integer> implement = (PropertyImplement<T, Integer>) DerivedProperty.createCProp(genSID(), ServerResourceBundle.getString("logics.infinity"), valueClass, BaseUtils.toMap(params));
+        return addProperty(baseLM.privateGroup, false, new LP<T>(implement.property, BaseUtils.toList(BaseUtils.reverse(implement.mapping))));
+    }
+
 
     protected LP addTProp(Time time) {
         return addProperty(null, new LP<PropertyInterface>(new TimeFormulaProperty(genSID(), time)));
@@ -859,16 +863,16 @@ public abstract class LogicsModule {
         return mapLGProp(group, persistent, new PropertyImplement<GroupProperty.Interface<P>, PropertyInterfaceImplement<P>>(property, property.getMapInterfaces()), listImplements);
     }
 
-    protected <P extends PropertyInterface> LP addOProp(String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
-        return addOProp(genSID(), caption, orderType, sum, ascending, includeLast, partNum, params);
+    protected <P extends PropertyInterface> LP addOProp(String caption, OrderType partitionType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp(genSID(), caption, partitionType, sum, ascending, includeLast, partNum, params);
     }
 
-    protected <P extends PropertyInterface> LP addOProp(String name, String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
-        return addOProp((AbstractGroup) null, name, caption, orderType, sum, ascending, includeLast, partNum, params);
+    protected <P extends PropertyInterface> LP addOProp(String name, String caption, OrderType partitionType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp((AbstractGroup) null, name, caption, partitionType, sum, ascending, includeLast, partNum, params);
     }
 
-    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
-        return addOProp(group, genSID(), caption, orderType, sum, ascending, includeLast, partNum, params);
+    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String caption, OrderType partitionType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp(group, genSID(), caption, partitionType, sum, ascending, includeLast, partNum, params);
     }
 
     protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String name, String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
@@ -1037,8 +1041,7 @@ public abstract class LogicsModule {
 
     protected LP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, int interfaces, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        List<PropertyInterfaceImplement<PropertyInterface>> implement = readImplements(innerInterfaces, params);
-        return addSGProp(group, name, persistent, notZero, caption, innerInterfaces, implement);
+        return addSGProp(group, name, persistent, notZero, caption, innerInterfaces, readImplements(innerInterfaces, params));
     }
 
     private <T extends PropertyInterface> LP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, List<T> innerInterfaces, List<PropertyInterfaceImplement<T>> implement) {
@@ -1109,7 +1112,11 @@ public abstract class LogicsModule {
     }
 
     protected LP addMGProp(AbstractGroup group, String name, boolean persist, String caption, boolean min, LP groupProp, Object... params) {
-        return addMGProp(group, persist, new String[]{name}, new String[]{caption}, 0, min, groupProp, params)[0];
+        return addMGProp(group, name, persist, caption, min, groupProp.listInterfaces.size(), BaseUtils.add(directLI(groupProp), params));
+    }
+
+    protected LP addMGProp(AbstractGroup group, String name, boolean persist, String caption, boolean min, int interfaces, Object... params) {
+        return addMGProp(group, persist, new String[]{name}, new String[]{caption}, 1, min, interfaces, params)[0];
     }
 
     protected <T extends PropertyInterface> LP[] addMGProp(AbstractGroup group, String[] names, String[] captions, int extra, LP<T> groupProp, Object... params) {
@@ -1117,18 +1124,22 @@ public abstract class LogicsModule {
     }
 
     protected <T extends PropertyInterface> LP[] addMGProp(AbstractGroup group, boolean persist, String[] names, String[] captions, int extra, LP<T> groupProp, Object... params) {
-        return addMGProp(group, persist, names, captions, extra, false, groupProp, params);
+        return addMGProp(group, persist, names, captions, extra + 1, false, groupProp.listInterfaces.size(), BaseUtils.add(directLI(groupProp), params));
     }
 
-    protected <T extends PropertyInterface> LP[] addMGProp(AbstractGroup group, boolean persist, String[] names, String[] captions, int extra, boolean min, LP<T> groupProp, Object... params) {
-        LP[] result = new LP[extra + 1];
+    protected LP[] addMGProp(AbstractGroup group, boolean persist, String[] names, String[] captions, int exprs, boolean min, int interfaces, Object... params) {
+        List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
+        return addMGProp(group, persist, names, captions, exprs, min, innerInterfaces, readImplements(innerInterfaces, params));
+    }
+
+    protected <T extends PropertyInterface> LP[] addMGProp(AbstractGroup group, boolean persist, String[] names, String[] captions, int exprs, boolean min, List<T> listInterfaces, List<PropertyInterfaceImplement<T>> listImplements) {
+        LP[] result = new LP[exprs];
 
         Collection<Property> overridePersist = new ArrayList<Property>();
 
-        List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
-        List<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(extra, listImplements.size());
-        List<PropertyImplement<?, PropertyInterfaceImplement<T>>> mgProps = DerivedProperty.createMGProp(names, captions, groupProp.property, baseLM.baseClass,
-                listImplements.subList(0, extra), new HashSet<PropertyInterfaceImplement<T>>(groupImplements), overridePersist, min);
+        List<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(exprs, listImplements.size());
+        List<PropertyImplement<?, PropertyInterfaceImplement<T>>> mgProps = DerivedProperty.createMGProp(names, captions, listInterfaces, baseLM.baseClass,
+                listImplements.subList(0, exprs), new HashSet<PropertyInterfaceImplement<T>>(groupImplements), overridePersist, min);
 
         for (int i = 0; i < mgProps.size(); i++)
             result[i] = mapLGProp(group, mgProps.get(i), groupImplements);
@@ -1442,7 +1453,8 @@ public abstract class LogicsModule {
     }
 
     public LP addLProp(LP lp, ValueClass... classes) {
-        return addDCProp("LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log")+" " + lp.property, baseLM.object1, BaseUtils.add(BaseUtils.add(directLI(lp), new Object[]{addJProp(baseLM.equals2, 1, baseLM.currentSession), lp.listInterfaces.size() + 1}), classes));
+        LP writeProp = addJProp(baseLM.and1, BaseUtils.add(directLI(lp), new Object[]{addJProp(baseLM.equals2, 1, baseLM.currentSession), lp.listInterfaces.size() + 1}));
+        return addDCProp("LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log")+" " + lp.property, writeProp, BaseUtils.add(new Object[]{true},BaseUtils.add(getParams(writeProp), BaseUtils.add(directLI(lp), classes))));
     }
 
     // XOR
@@ -1896,13 +1908,16 @@ public abstract class LogicsModule {
         }
     }
 
-    protected void setNotNull(LP property) {
-        setNotNull(property, PropertyFollows.RESOLVE_TRUE);
+    protected void setNotNull(LP property, ValueClass... classes) {
+        setNotNull(property, PropertyFollows.RESOLVE_TRUE, classes);
     }
 
-    protected void setNotNull(LP property, int resolve) {
+    protected void setNotNull(LP property, int resolve, ValueClass... classes) {
 
-        ValueClass[] values = property.getMapClasses();
+        ValueClass[] values = new ValueClass[property.listInterfaces.size()];
+        System.arraycopy(classes, 0, values, 0, classes.length);
+        ValueClass[] propertyClasses = property.getMapClasses();
+        System.arraycopy(propertyClasses, classes.length, values, classes.length, propertyClasses.length - classes.length);
 
         LP checkProp = addCProp(LogicalClass.instance, true, values);
 
@@ -1953,23 +1968,12 @@ public abstract class LogicsModule {
     }
 
     // получает свойство is
-    // для множества классов есть CProp
     public LP is(ValueClass valueClass) {
-        LP isProp = baseLM.is.get(valueClass);
-        if (isProp == null) {
-            isProp = addCProp(valueClass.toString() + ServerResourceBundle.getString("logics.pr"), LogicalClass.instance, true, valueClass);
-            baseLM.is.put(valueClass, isProp);
-        }
-        return isProp;
+        return baseLM.is(valueClass);
     }
 
     public LP object(ValueClass valueClass) {
-        LP objectProp = baseLM.object.get(valueClass);
-        if (objectProp == null) {
-            objectProp = addJProp(valueClass.toString(), baseLM.and1, 1, is(valueClass), 1);
-            baseLM.object.put(valueClass, objectProp);
-        }
-        return objectProp;
+        return baseLM.object(valueClass);
     }
 
     protected LP and(boolean... nots) {

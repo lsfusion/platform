@@ -1,13 +1,11 @@
 package platform.server.data.translator;
 
-import platform.base.BaseUtils;
-import platform.base.TwinImmutableInterface;
+import platform.base.*;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
 
 import java.util.Map;
-import java.util.Set;
 
 public class MapTranslator extends AbstractMapTranslator {
 
@@ -55,7 +53,13 @@ public class MapTranslator extends AbstractMapTranslator {
         return new MapTranslator(BaseUtils.reverse(keys), values.reverse());
     }
 
-    public boolean identityValues(Set<? extends Value> values) {
-        return BaseUtils.identity(keys) && this.values.identityValues(values);
+    public boolean identityKeys(QuickSet<KeyExpr> keys) {
+        return BaseUtils.identity(BaseUtils.filterKeys(this.keys, keys));
+    }
+    public boolean identityValues(QuickSet<? extends Value> values) {
+        return this.values.identityValues(values);
+    }
+    public boolean identityKeysValues(QuickSet<KeyExpr> keys, QuickSet<? extends Value> values) {
+        return identityKeys(keys) && identityValues(values);
     }
 }

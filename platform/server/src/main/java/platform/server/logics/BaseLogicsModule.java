@@ -726,7 +726,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         reverseBarcode = addSDProp("reverseBarcode", getString("logics.barcode.reverse"), LogicalClass.instance);
 
-        objectClass = addProperty(null, new LP<ClassPropertyInterface>(new ObjectClassProperty(genSID(), baseClass)));
+        objectClass = addProperty(null, new LP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
         objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
 
         navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", getString("logics.forms.code"), formSIDValueClass, navigatorElement);
@@ -1179,9 +1179,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     Collection<LP[]> checkSUProps = new ArrayList<LP[]>();
 
 
-    Map<ValueClass, LP> is = new HashMap<ValueClass, LP>();
-
-    Map<ValueClass, LP> object = new HashMap<ValueClass, LP>();
+    @Override
+    @IdentityLazy
+    public LP is(ValueClass valueClass) {
+        return addProperty(null, new LP<ClassPropertyInterface>(valueClass.getProperty()));
+    }
+    @Override
+    @IdentityLazy
+    public LP object(ValueClass valueClass) {
+        return addJProp(valueClass.toString(), baseLM.and1, 1, is(valueClass), 1);
+    }
 
     protected LP addRestartActionProp() {
         return BL.addRestartActionProp();
@@ -1419,7 +1426,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             SQLSession sqlSession = context.getSession().sql;
 
             sqlSession.startTransaction();
-            BL.packTables(sqlSession, tableFactory.getImplementTables().values());
+            BL.packTables(sqlSession, tableFactory.getImplementTables());
             sqlSession.commitTransaction();
 
             context.addAction(new MessageClientAction(getString("logics.tables.packing.completed"), getString("logics.tables.packing")));
@@ -1449,7 +1456,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         @Override
         public void execute(ExecutionContext context) throws SQLException {
-            BL.recalculateStats();
+            BL.recalculateStats(context.getSession());
         }
     }
 

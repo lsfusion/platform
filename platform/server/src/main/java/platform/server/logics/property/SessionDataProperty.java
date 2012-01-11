@@ -1,137 +1,67 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.server.caches.hash.HashValues;
+import platform.base.ImmutableObject;
+import platform.base.QuickMap;
+import platform.base.SimpleMap;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.cases.CaseExpr;
-import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
-import platform.server.session.ExprChanges;
+import platform.server.session.BaseMutableModifier;
+import platform.server.session.ModifyChange;
+import platform.server.session.PropertyChange;
+import platform.server.session.PropertyChanges;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class SessionDataProperty extends DataProperty implements NoValueProperty{
 
     public SessionDataProperty(String sID, String caption, ValueClass[] classes, ValueClass value) {
         super(sID, caption, classes, value);
 
-        noValueProps.add(this);
+        modifier.addProperty(this);
     }
 
     @Override
-    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        if(modifier == (Modifier<? extends Changes>)defaultModifier)
-            return CaseExpr.NULL;
-        return super.calculateExpr(joinImplement, modifier, changedWhere);
+    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return CaseExpr.NULL;
     }
 
     public boolean isStored() {
         return false;
     }
 
-    public final static Set<NoValueProperty> noValueProps = new HashSet<NoValueProperty>();
 
-    protected static class UsedChanges extends Changes<UsedChanges> {
-        private final Set<NoValueProperty> properties;
+    public static class Modifier extends BaseMutableModifier {
 
-        private UsedChanges() {
-            properties = new HashSet<NoValueProperty>();
-        }
-        public final static UsedChanges EMPTY = new UsedChanges();
-
-        public UsedChanges(Set<NoValueProperty> properties) {
-            this.properties = properties;
+        public final Set<NoValueProperty> noValueProps = new HashSet<NoValueProperty>();
+        public void addProperty(NoValueProperty property) {
+            noValueProps.add(property);
+            addChange((Property)property);
         }
 
-        public UsedChanges(NoValueProperty property) {
-            properties = Collections.singleton(property);
+        protected boolean isFinal() {
+            return true;
         }
 
-        private UsedChanges(UsedChanges changes, Changes merge) {
-            super(changes, merge, true);
-            properties = changes.properties;
-        }
-        public UsedChanges calculateAddChanges(Changes changes) {
-            return new UsedChanges(this, changes);
+        protected Collection<Property> calculateProperties() {
+            return BaseUtils.immutableCast(noValueProps);
         }
 
-        private UsedChanges(UsedChanges changes, UsedChanges merge) {
-            super(changes, merge);
-            properties = BaseUtils.mergeSet(changes.properties, merge.properties);
-        }
-        public UsedChanges calculateAdd(UsedChanges changes) {
-            return new UsedChanges(this, changes);
-        }
-
-        public UsedChanges(UsedChanges changes, MapValuesTranslate mapValues) {
-            super(changes, mapValues);
-            properties = changes.properties;
-        }
-        public UsedChanges translate(MapValuesTranslate mapValues) {
-            return new UsedChanges(this, mapValues);
-        }
-
-        @Override
-        public boolean modifyUsed() {
-            return !properties.isEmpty();
-        }
-
-        @Override
-        public boolean hasChanges() {
-            return super.hasChanges() || !properties.isEmpty();
-        }
-
-        @Override
-        @HashLazy
-        public int hashValues(HashValues hashValues) {
-            return super.hashValues(hashValues) * 31 + properties.hashCode();
-        }
-
-        @Override
-        protected boolean modifyEquals(UsedChanges changes) {
-            return properties.equals(changes.properties);
-        }
-    }
-
-    // modifier для классов
-    public final static Modifier<UsedChanges> modifier = new Modifier<UsedChanges>() {
-
-        public UsedChanges newChanges() {
-            return UsedChanges.EMPTY;
-        }
-
-        public UsedChanges newFullChanges() {
-            return new UsedChanges(noValueProps);
-        }
-
-        public UsedChanges preUsed(Property property) {
-            if(property instanceof NoValueProperty)
-                return new UsedChanges((NoValueProperty) property);
-            return null;
-        }
-
-        public ExprChanges getSession() {
-            return ExprChanges.EMPTY;
-        }
-
-        public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
-            if(property instanceof NoValueProperty) {
-                changedWhere.add(ValueClassProperty.getIsClassWhere((Map<ClassPropertyInterface, ? extends Expr>) joinImplement, this, changedWhere));
-                return ((NoValueProperty)property).getValueClass().getClassExpr();
+        protected <P extends PropertyInterface> PropertyChange<P> getPropertyChange(Property<P> property) {
+            if(noValueProps.contains(property)) {
+                Property<ClassPropertyInterface> classProperty = (Property)property;
+                Map<ClassPropertyInterface,KeyExpr> mapKeys = classProperty.getMapKeys();
+                return (PropertyChange<P>) new PropertyChange<ClassPropertyInterface>(mapKeys, ((NoValueProperty)property).getValueClass().getClassExpr(),
+                        ClassProperty.getIsClassWhere(mapKeys, PropertyChanges.EMPTY, null));
             }
             return null;
         }
-
-        public boolean neededClass(Changes changes) {
-            return changes instanceof UsedChanges;
-        }
-    };
+    }
+    public final static Modifier modifier = new Modifier(); // modifier для noValue
 }
 

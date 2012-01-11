@@ -7,8 +7,7 @@ import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
 
 import java.util.Collection;
 import java.util.List;
@@ -43,20 +42,20 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
     }
 
 
-    protected Expr calculateExpr(Map<Interface<I>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         // если нужна инкрементность
         Map<I, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
 
         WhereBuilder changedGroupWhere = cascadeWhere(changedWhere);
 
-        Map<Interface<I>, Expr> groups = getGroupImplements(mapKeys, modifier, changedGroupWhere);
-        List<Expr> exprs = getExprImplements(mapKeys, modifier, changedGroupWhere);
-        OrderedMap<Expr, Boolean> orders = getOrderImplements(mapKeys, modifier, changedGroupWhere);
+        Map<Interface<I>, Expr> groups = getGroupImplements(mapKeys, propChanges, changedGroupWhere);
+        List<Expr> exprs = getExprImplements(mapKeys, propChanges, changedGroupWhere);
+        OrderedMap<Expr, Boolean> orders = getOrderImplements(mapKeys, propChanges, changedGroupWhere);
 
         if(changedWhere!=null) {
             changedWhere.add(getPartitionWhere(changedGroupWhere.toWhere(), groups, exprs, orders, joinImplement));
-            changedWhere.add(getPartitionWhere(changedGroupWhere.toWhere(), getGroupImplements(mapKeys, defaultModifier),
-                    getExprImplements(mapKeys, defaultModifier), getOrderImplements(mapKeys, defaultModifier), joinImplement));
+            changedWhere.add(getPartitionWhere(changedGroupWhere.toWhere(), getGroupImplements(mapKeys, PropertyChanges.EMPTY),
+                    getExprImplements(mapKeys, PropertyChanges.EMPTY), getOrderImplements(mapKeys, PropertyChanges.EMPTY), joinImplement));
         }
         return GroupExpr.create(groups, exprs, orders, getGroupType(), joinImplement);
     }

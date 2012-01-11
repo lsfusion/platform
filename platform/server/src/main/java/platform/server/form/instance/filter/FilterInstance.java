@@ -10,7 +10,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyValueImplement;
-import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
@@ -62,9 +61,9 @@ public abstract class FilterInstance implements Updated {
 
     public abstract GroupObjectInstance getApplyObject();
 
-    public abstract Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier);
+    public abstract Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier);
 
-    public void resolveAdd(DataSession session, Modifier<? extends Changes> modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
+    public void resolveAdd(DataSession session, Modifier modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
     }
     public <X extends PropertyInterface> Set<? extends FilterEntity> getResolveChangeFilters(ClassFormEntity<?> formEntity, PropertyValueImplement<X> implement) {
         return new HashSet<FilterEntity>();

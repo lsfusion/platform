@@ -1,9 +1,10 @@
 package platform.server.data.expr.where.cases;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
-import platform.server.caches.IdentityLazy;
+import platform.server.caches.OuterContext;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
@@ -11,10 +12,10 @@ import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.query.SourceJoin;
 import platform.server.data.translator.*;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ClassReader;
@@ -24,7 +25,6 @@ import platform.server.data.where.Where;
 
 import java.util.*;
 
-@TranslateExprLazy
 public class CaseExpr extends Expr {
 
     private final ExprCaseList cases;
@@ -101,8 +101,7 @@ public class CaseExpr extends Expr {
         return type;
     }
 
-    @ParamLazy
-    public CaseExpr translateOuter(MapTranslate translator) {
+    protected CaseExpr translate(MapTranslate translator) {
         ExprCaseList translatedCases = new ExprCaseList();
         for(ExprCase exprCase : cases)
             translatedCases.add(new ExprCase(exprCase.where.translateOuter(translator),exprCase.data.translateOuter(translator)));
@@ -153,11 +152,13 @@ public class CaseExpr extends Expr {
         return result;
     }
 
-    public void enumDepends(ExprEnumerator enumerator) {
+    public QuickSet<OuterContext> calculateOuterDepends() {
+        QuickSet<OuterContext> result = new QuickSet<OuterContext>();
         for(ExprCase exprCase : cases) {
-            exprCase.where.enumerate(enumerator);
-            exprCase.data.enumerate(enumerator);
+            result.addAll(exprCase.where.getOuterDepends());
+            result.addAll(exprCase.data.getOuterDepends());
         }
+        return result;
     }
 
     public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -172,8 +173,10 @@ public class CaseExpr extends Expr {
         return cases.equals(((CaseExpr)obj).cases);
     }
 
-    @HashOuterLazy
-    public int hashOuter(HashContext hashContext) {
+    protected boolean isComplex() {
+        return true;
+    }
+    protected int hash(HashContext hashContext) {
         return cases.hashOuter(hashContext) + 5;
     }
 
@@ -218,14 +221,14 @@ public class CaseExpr extends Expr {
         
         ExprCaseList result = new ExprCaseList();
         for(ExprCase exprCase : cases)
-            result.add(exprCase.where, exprCase.data.scale(coeff)); // new ExprCase(exprCase.where,exprCase.data.scale(coeff))
+            result.add(exprCase.where, exprCase.props.scale(coeff)); // new ExprCase(exprCase.where,exprCase.props.scale(coeff))
         return result.getExpr();
     }
 
     public Expr sum(Expr expr) {
         ExprCaseList result = new ExprCaseList();
         for(ExprCase exprCase : cases)
-            result.add(exprCase.where,exprCase.data.sum(expr));
+            result.add(exprCase.where,exprCase.props.sum(expr));
         result.add(Where.TRUE,expr); // если null то expr
         return result.getExpr();
     }*/
@@ -235,10 +238,6 @@ public class CaseExpr extends Expr {
         for(ExprCase exprCase : cases)
             result.add(exprCase.where,exprCase.data.classExpr(baseClass));
         return result.getFinal();
-    }
-
-    public long calculateComplexity() {
-        return cases.getComplexity();
     }
 
     public Where getBaseWhere() {

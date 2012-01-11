@@ -1,17 +1,12 @@
 package platform.server.data.query;
 
+import platform.server.caches.OuterContext;
+
 import java.util.Collection;
 import java.util.Map;
 
-public abstract class ExprEnumerator {
+public interface ExprEnumerator {
 
-    public abstract boolean enumerate(SourceJoin join);
+    boolean enumerate(OuterContext join);
 
-    public <U> void fill(Map<U, ? extends SourceJoin> exprs) {
-        fill(exprs.values());
-    }
-    public void fill(Collection<? extends SourceJoin> exprs) {
-        for(SourceJoin expr : exprs)
-            expr.enumerate(this);
-    }
 }

@@ -3,7 +3,6 @@ package platform.server.data.expr;
 import platform.base.QuickMap;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.translator.MapTranslate;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.classes.ClassExprWhere;
 
 public abstract class VariableClassExpr extends SingleClassExpr {
@@ -12,7 +11,10 @@ public abstract class VariableClassExpr extends SingleClassExpr {
         return new ClassExprWhere(this,classes);
     }
 
-    public abstract VariableClassExpr translateOuter(MapTranslate translator);
+    protected abstract VariableClassExpr translate(MapTranslate translator);
+    public VariableClassExpr translateOuter(MapTranslate translator) {
+        return (VariableClassExpr) aspectTranslate(translator);
+    }
 
     public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
         return and.getPartial(this);
