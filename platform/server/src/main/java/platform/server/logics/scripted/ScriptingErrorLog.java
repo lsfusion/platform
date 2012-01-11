@@ -113,31 +113,31 @@ public class ScriptingErrorLog {
     }
 
     public void emitComponentMustBeAContainerError(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "Component must be a container.");
+        emitSimpleError(parser, "component must be a container.");
     }
 
     public void emitInsertBeforeAfterMainContainerError(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "Can't insert before or after main container.");
+        emitSimpleError(parser, "can't insert before or after main container.");
     }
 
     public void emitIllegalMoveComponentToSubcomponent(LsfLogicsParser parser, String outerComponent, String innerComponent) throws SemanticErrorException {
-        emitSimpleError(parser, format("Can't move component '%s' to it's subcomponent '%s'.", outerComponent, innerComponent));
+        emitSimpleError(parser, format("can't move component '%s' to it's subcomponent '%s'.", outerComponent, innerComponent));
     }
 
     public void emitRemoveMainContinaerError(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "Can't remove main container.");
+        emitSimpleError(parser, "can't remove main container.");
     }
 
     public void emitIntersectionInDifferentContainersError(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "Forbidden to create the intersection of objects in different containers.");
+        emitSimpleError(parser, "forbidden to create the intersection of objects in different containers.");
     }
 
     public void emitUnableToSetPropertyError(LsfLogicsParser parser, String propertyName, String cause) throws SemanticErrorException {
-        emitSimpleError(parser, "Unable to set property '" + propertyName + "'. Cause: " + cause);
+        emitSimpleError(parser, "unable to set property '" + propertyName + "'. Cause: " + cause);
     }
 
     public void emitWrongKeyStrokeFormat(LsfLogicsParser parser, String ksLiteral) throws SemanticErrorException {
-        emitSimpleError(parser, "Can't create keystroke from string '" + ksLiteral + "'");
+        emitSimpleError(parser, "can't create keystroke from string '" + ksLiteral + "'");
     }
 
     public void emitParamIndexError(LsfLogicsParser parser, int paramIndex, int paramCount) throws SemanticErrorException {
@@ -154,13 +154,13 @@ public class ScriptingErrorLog {
 
     public void emitBuiltInClassAsParentError(LsfLogicsParser parser, String className) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("Built-in class '" + className + "' cannot be inherited\n", parser, e);
+        String msg = getSemanticRecognitionErrorText("built-in class '" + className + "' cannot be inherited\n", parser, e);
         emitSemanticError(msg, e);
     }
 
     public void emitStaticClassAsParentError(LsfLogicsParser parser, String className) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("Static class '" + className + "' cannot be inherited\n", parser, e);
+        String msg = getSemanticRecognitionErrorText("static class '" + className + "' cannot be inherited\n", parser, e);
         emitSemanticError(msg, e);
     }
 

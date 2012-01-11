@@ -202,7 +202,7 @@ public class ScriptedFormView extends DefaultFormView {
 
     public ContainerView getParentContainer(ComponentView child) throws ScriptingErrorLog.SemanticErrorException {
         if (child == null) {
-            errLog.emitComponentIsNullError(parser, "Can't get parent:");
+            errLog.emitComponentIsNullError(parser, "can't get parent:");
         }
 
         return child.getContainer();
@@ -218,7 +218,7 @@ public class ScriptedFormView extends DefaultFormView {
 
     public void addIntersection(ComponentView comp1, DoNotIntersectSimplexConstraint cons, ComponentView comp2) throws ScriptingErrorLog.SemanticErrorException {
         if (comp1 == null || comp2 == null) {
-            errLog.emitComponentIsNullError(parser, "Can't add intersection:");
+            errLog.emitComponentIsNullError(parser, "can't add intersection:");
         }
 
         if (comp1.getContainer() != comp2.getContainer()) {
@@ -237,7 +237,7 @@ public class ScriptedFormView extends DefaultFormView {
             //т.е. он содержит либо property, либо parent, а не просто sid
             if (sid != null) {
                 if (anchorComponent == null) {
-                    errLog.emitComponentIsNullError(parser, "Can't create new container:");
+                    errLog.emitComponentIsNullError(parser, "can't create new container:");
                 }
 
                 component = createNewContainer(sid);
@@ -292,7 +292,7 @@ public class ScriptedFormView extends DefaultFormView {
 
     public void removeComponent(ComponentView component, boolean cascade) throws ScriptingErrorLog.SemanticErrorException {
         if (component == null) {
-            errLog.emitComponentIsNullError(parser, "Can't remove component:");
+            errLog.emitComponentIsNullError(parser, "can't remove component:");
         }
 
         if (component == mainContainer) {

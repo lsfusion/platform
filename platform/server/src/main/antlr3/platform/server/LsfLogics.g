@@ -124,7 +124,7 @@ grammar LsfLogics;
 }
 
 script	
-	:	moduleHeader importDirective* statement*
+	:	moduleHeader importDirective* statement* EOF
 	;
 
 
