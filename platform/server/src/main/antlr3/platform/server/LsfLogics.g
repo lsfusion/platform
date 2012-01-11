@@ -157,8 +157,9 @@ statement
 		|	tableStatement
 		|	indexStatement
 		|	formStatement
-		)	';'
-	|	designStatement
+		|	designStatement
+		|	emptyStatement
+		)	
 	;
 
 
@@ -183,15 +184,19 @@ classStatement
 	:	'CLASS' ('ABSTRACT' {isAbstract = true;} | 'STATIC' {isStatic = true;})?
 		nameCaption=simpleNameWithCaption 
 		(
-		'{'
-			firstInstData=simpleNameWithCaption { instanceNames.add($firstInstData.name); instanceCaptions.add($firstInstData.caption); }
-			(',' nextInstData=simpleNameWithCaption { instanceNames.add($nextInstData.name); instanceCaptions.add($nextInstData.caption); })*
-		'}'
-		)?
-		(':'
-		parentList=nonEmptyCompoundIdList { classParents = $parentList.ids; })?
+			'{'
+				firstInstData=simpleNameWithCaption { instanceNames.add($firstInstData.name); instanceCaptions.add($firstInstData.caption); }
+				(',' nextInstData=simpleNameWithCaption { instanceNames.add($nextInstData.name); instanceCaptions.add($nextInstData.caption); })*
+			'}'
+			(parents=classParentsList ';' { classParents = $parents.list; })?	
+		|	
+			(parents=classParentsList { classParents = $parents.list; })? ';'
+		)
 	;	  
 
+classParentsList returns [List<String> list] 
+	:	':' parentList=nonEmptyCompoundIdList { $list = $parentList.ids; }
+	; 
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// GROUP STATEMENT /////////////////////////////
@@ -207,6 +212,7 @@ groupStatement
 }
 	:	'GROUP' groupNameCaption=simpleNameWithCaption 
 		(':' parentName=compoundID { parent = $parentName.text; })?
+		';'
 	;
 
 
@@ -230,6 +236,7 @@ scope {
 		|	filterGroupDeclaration
 		|	formOrderByList
 		)*
+		';'
 	;
 
 
@@ -465,6 +472,7 @@ propertyStatement
 		|	expr=propertyExpression[context, dynamic] { property = $expr.property; }
 		)
 		settings=commonPropertySettings[property, $declaration.name, $declaration.caption, context, isData]
+		';'
 	;
 
 
@@ -809,6 +817,7 @@ constraintStatement
 	:	'CONSTRAINT' ('CHECKED' { checked = true; })? 
 		expr=propertyExpression[new ArrayList<String>(), true] 	
 		'MSG' message=STRING_LITERAL 
+		';'
 	;
 
 
@@ -842,6 +851,7 @@ followsStatement
 		     	options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
 			}
 		)*
+		';'
 	;
 
 followsResolveType returns [Integer type]
@@ -872,6 +882,7 @@ writeOnChangeStatement
 		valueExpr=propertyExpression[context, false] 
 		'ON' ('CHANGE' | 'ASSIGN' { anyChange = false; }) 
 		changeExpr=propertyExpression[context, false] 
+		';'
 	;
 
 
@@ -880,7 +891,7 @@ writeOnChangeStatement
 ////////////////////////////////////////////////////////////////////////////////
 
 tableStatement 
-	:	't';
+	:	't' ';';
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -888,7 +899,7 @@ tableStatement
 ////////////////////////////////////////////////////////////////////////////////
 
 indexStatement
-	:	'z';
+	:	'i' ';';
 
 
 ////////////////////////////////////////////////////////////////////////////////
