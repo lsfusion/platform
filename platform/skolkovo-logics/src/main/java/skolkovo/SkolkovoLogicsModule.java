@@ -84,7 +84,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP incrementVote;
 
     public SkolkovoLogicsModule(BaseLogicsModule<SkolkovoBusinessLogics> baseLM, SkolkovoBusinessLogics BL) {
-        super("SkolkovLogicsModule");
+        super("SkolkovoLogicsModule");
         setBaseLogicsModule(baseLM);
         this.BL = BL;
     }
