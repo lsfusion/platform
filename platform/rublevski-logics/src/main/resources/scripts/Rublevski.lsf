@@ -89,52 +89,82 @@ PROPERTIES(s) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Банк ------------------------------------------- //
 
+GROUP banksGroup : baseGroup;
+
 CLASS bank 'Банк' : named;
 
-addressBank 'Адрес банка' = DATA STRING[100] (bank) IN baseGroup;
-MFOBank 'Код МФО' = DATA STRING[9] (bank) IN baseGroup;
-departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN baseGroup;
-CBUBank 'ЦБУ' = DATA STRING[3] (bank) IN baseGroup;
-infoBank 'Дополнительные сведения' = DATA STRING[100] (bank) IN baseGroup;
+addressBank 'Адрес банка' = DATA STRING[100] (bank) IN banksGroup;
+MFOBank 'Код МФО' = DATA STRING[9] (bank) IN banksGroup;
+departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN banksGroup;
+CBUBank 'ЦБУ' = DATA STRING[3] (bank) IN banksGroup;
+infoBank 'Дополнительные сведения' = DATA STRING[100] (bank) IN banksGroup;
 
 FORM banks 'Банки'
 OBJECTS b=bank
-PROPERTIES(b) name, addressBank, MFOBank, departmentBank, CBUBank, infoBank;
-PROPERTIES(b) ADDFORM, EDITFORM, delete;
+PROPERTIES(b) name, addressBank, MFOBank, departmentBank, CBUBank, infoBank, ADDOBJ, delete;
 
 // ----------------------------------- Расчетный счет ------------------------------------------ //
+
+GROUP scoreGroup : baseGroup;
 
 CLASS account 'Расчетный счет';
 
 bankAccount 'Банк (ИД)' = DATA bank (account) IN idGroup;
-dataAccount 'Номер расчетного счета'  = DATA STRING[13] (account) IN baseGroup;
-nameBankAccount 'Наименование банка' (account) = name(bankAccount(account)) IN baseGroup;
-addressBankAccount 'Адрес банка' (account) = addressBank(bankAccount(account)) IN baseGroup;
-MFOBankAccount 'Код МФО банка' (account) = MFOBank(bankAccount(account)) IN baseGroup;
-departmentBankAccount 'Отдел банка' (account) = departmentBank(bankAccount(account)) IN baseGroup;
-CBUBankAccount 'ЦБУ банка' (account) = CBUBank(bankAccount(account)) IN baseGroup;
+dataAccount 'Номер расчетного счета'  = DATA STRING[13] (account) IN scoreGroup;
+primaryAccount 'Основной договор'  = DATA BOOLEAN (account) IN scoreGroup;
+nameBankAccount 'Наименование банка' (account) = name(bankAccount(account)) IN scoreGroup;
+addressBankAccount 'Адрес банка' (account) = addressBank(bankAccount(account)) IN scoreGroup;
+MFOBankAccount 'Код МФО банка' (account) = MFOBank(bankAccount(account)) IN scoreGroup;
+departmentBankAccount 'Отдел банка' (account) = departmentBank(bankAccount(account)) IN scoreGroup;
+CBUBankAccount 'ЦБУ банка' (account) = CBUBank(bankAccount(account)) IN scoreGroup;
+noteAccount 'Примечание'  = DATA STRING[50] (account) IN scoreGroup;
+
+FORM AccountForm 'Расчетные счета'
+OBJECTS a=account
+PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, ADDOBJ, delete;
 
 // ----------------------------------- Юридическое лицо ------------------------------------------ //
 
+GROUP lawGroup : baseGroup;
+
 CLASS ABSTRACT legalEntity 'Юридическое лицо' : named;
 
-shortNameLegalEntity 'Сокращенное наименование' = DATA STRING[30] (legalEntity) IN baseGroup;
-fullNameLegalEntity 'Полное  наименование' = DATA STRING[200] (legalEntity) IN baseGroup;
-addressLegalEntity 'Фактический адрес :' = DATA STRING[100] (legalEntity) IN baseGroup;
-lawLegalEntity 'Юридический адрес :' = DATA STRING[100] (legalEntity) IN baseGroup;
-postAddressLegalEntity 'Почтовый адрес :' = DATA STRING[100] (legalEntity) IN baseGroup;
-phoneLegalEntity 'Телефоны' = DATA STRING[100] (legalEntity) IN baseGroup;
-UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN baseGroup;
-OKPOLegalEntity 'ОКПО' = DATA STRING[20] (legalEntity) IN baseGroup;
-emailLegalEntity 'e-mail' = DATA STRING[100] (legalEntity) IN baseGroup;
-siteLegalEntity 'Сайт' = DATA STRING[100] (legalEntity) IN baseGroup;
-licenseLegalEntity 'Номер лицензии' = DATA STRING[20] (legalEntity) IN baseGroup;
-dateFromLicenseLegalEntity 'Дата выдачи лицензии' = DATA DATE (legalEntity) IN baseGroup;
-dateToLicenseLegalEntity 'Дата окончания лицензии' = DATA DATE (legalEntity) IN baseGroup;
+ownershipLegalEntity 'Форма собственности' = DATA STRING[30] (legalEntity) IN lawGroup;
+fullNameLegalEntity 'Полное  наименование' = DATA STRING[200] (legalEntity) IN lawGroup;
+addressLegalEntity 'Фактический адрес :' = DATA STRING[100] (legalEntity) IN lawGroup;
+lawLegalEntity 'Юридический адрес :' = DATA STRING[100] (legalEntity) IN lawGroup;
+postAddressLegalEntity 'Почтовый адрес :' = DATA STRING[100] (legalEntity) IN lawGroup;
+managerLegalEntity 'Руководитель' = DATA STRING[30] (legalEntity) IN lawGroup;
+accountantLegalEntity 'Главный бухгалтер' = DATA STRING[30] (legalEntity) IN lawGroup;
+phoneLegalEntity 'Телефон/факс' = DATA STRING[100] (legalEntity) IN lawGroup;
+UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN lawGroup;
+OKPOLegalEntity 'Код по ОКПО' = DATA STRING[20] (legalEntity) IN lawGroup;
+OKYLPLegalEntity 'Код ОКЮЛП' = DATA STRING[20] (legalEntity) IN lawGroup;
+emailLegalEntity 'e-mail для передачи заказа' = DATA STRING[100] (legalEntity) IN lawGroup;
+siteLegalEntity 'Сайт' = DATA STRING[100] (legalEntity) IN lawGroup;
+contactsLegalEntity 'Контактная информация' = DATA STRING[100] (legalEntity) IN lawGroup;
+licenseLegalEntity 'Номер лицензии' = DATA STRING[20] (legalEntity) IN lawGroup;
+dateFromLicenseLegalEntity 'Дата выдачи лицензии' = DATA STRING[10] (legalEntity) IN lawGroup;
+dateToLicenseLegalEntity 'Дата окончания лицензии' = DATA STRING[10] (legalEntity) IN lawGroup;
 
 legalEntityAccount 'Ю.Л. (ИД)' = DATA legalEntity (account) IN idGroup;
 
+FORM LegalEntityEditForm 'Юридическое лицо'
+OBJECTS l=legalEntity FIXED PANEL
+PROPERTIES(l) fullNameLegalEntity, name, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, phoneLegalEntity,
+              UNPLegalEntity, OKPOLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity;
+
+FORM LegalEntityForm 'Юридические лица'
+OBJECTS l=legalEntity
+PROPERTIES(l) fullNameLegalEntity, name, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, phoneLegalEntity,
+              UNPLegalEntity, OKPOLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity, ADDOBJ, delete;
+
 // ----------------------------------- Договор ------------------------------------------ //
+
+GROUP treatyGroup : baseGroup;
+
+CLASS ABSTRACT contract 'Договор';
+CLASS contractProvider 'Договор с поставщиком' : contract;
 
 CLASS STATIC contractType 'Тип договора'
 {
@@ -145,21 +175,80 @@ CLASS STATIC contractType 'Тип договора'
 CLASS STATIC contractForm 'Порядок оплаты'
 {
     delay 'с отсрочкой платежа',
-    prepayment 'по предоплате',
-    partial 'частичная предоплата',
     implement 'на реализацию'
 };
 
-dataContract 'Номер договора' = DATA STRING[30] (contract) IN baseGroup; // номер договора с и по валюта
-formContract 'Порядок оплаты договора' = DATA contractForm (contract) IN baseGroup;
-typeContract 'Тип договора' = DATA contractType (contract) IN baseGroup;
-dateFromContract 'Действует с' = DATA STRING[20] (contract) IN baseGroup;
-dateToContract 'Действует по' = DATA STRING[20] (contract) IN baseGroup;
-currencyContract 'Валюта взаиморасчетов' = DATA STRING[20] (contract) IN baseGroup; // может и не надо   или справочником
+dataContract 'Номер договора' = DATA STRING[30] (contract) IN treatyGroup; // номер договора с и по валюта
+formContract 'Порядок оплаты договора' (contract) = DATA contractForm (contract) IN treatyGroup;
+typeContract 'Тип договора' (contract) = DATA contractType (contract) IN treatyGroup;
+nameFormContract 'Порядок оплаты по договору' (contract) = name(formContract(contract)) IN treatyGroup;
+nameTypeContract 'Тип договора' (contract) = name(typeContract(contract)) IN treatyGroup;
+dateFromContract 'Дата начала договора' = DATA DATE (contract) IN treatyGroup;
+dateToContract 'Дата окончания договора' = DATA DATE (contract) IN treatyGroup;
+currencyContract 'Валюта взаиморасчетов' = DATA STRING[20] (contract) IN treatyGroup; // может и не надо   или справочником
+warnContract 'За сколько дней предупредить об окончании' = DATA INTEGER (contract) IN treatyGroup;
+banContract 'За сколько дней запретить закупку товара' = DATA INTEGER (contract) IN treatyGroup;
+delayContract 'Отсрочка платежа, дней' = DATA INTEGER (contract) IN treatyGroup;
+requestContract 'Форма оплаты: Платежное требование' = DATA BOOLEAN (contract) IN treatyGroup;
+noteContract 'Примечание' = DATA STRING[100] (contract) IN treatyGroup;
+
 
 // ----------------------------------- Поставщик ------------------------------------------ //
 
+GROUP supplierGroup : baseGroup;
 CLASS supplier 'Поставщик' : legalEntity;
-CLASS organization 'Организация' : legalEntity;
-CLASS ABSTRACT contract 'Договор' : named;
-CLASS contractProvider 'Договор с поставщиком' : contract;
+CLASS company 'Компания' : legalEntity;
+
+companyContract 'Организация (ИД)' = DATA company (contract) IN idGroup;
+supplierContract 'Поставщик (ИД)' = DATA supplier (contract) IN idGroup;
+companySupplier 'Организация (ИД)' = DATA company (supplier) IN idGroup;
+
+sureSupplier 'Обязателен заказ поставщику?' = DATA BOOLEAN (supplier) IN supplierGroup;
+controlSupplier 'Контролировать ассортимент поставщика?' = DATA BOOLEAN (supplier) IN supplierGroup;
+surePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = DATA INTEGER (supplier) IN supplierGroup;
+allowablePercentSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (supplier) IN supplierGroup;
+afterDaysSupplier 'Максимальное число дней до поставки после заказа' = DATA INTEGER (supplier) IN supplierGroup;
+forHoursSupplier 'За сколько часов до поставки закрыть заказ' = DATA INTEGER (supplier) IN supplierGroup;
+
+inSupplierContract(supplier, contract) = supplierContract(contract) == supplier;
+inSupplierAccount(supplier, account) = legalEntityAccount(account) == supplier;
+
+inCompanyContract(company, contract) = companyContract(contract) == company;
+inCompanyAccount(company, account) = legalEntityAccount(account) == company;
+
+
+FORM supplierEditForm 'Поставщик'
+OBJECTS s=supplier FIXED PANEL
+OBJECTS a=account
+OBJECTS c=contract
+PROPERTIES(s) ownershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
+              phoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity,
+              dateToLicenseLegalEntity, sureSupplier, controlSupplier, surePercentSupplier, allowablePercentSupplier, afterDaysSupplier, forHoursSupplier
+PROPERTIES(a) dataAccount, primaryAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+PROPERTIES(c) dataContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract, delayContract,
+              requestContract, noteContract, ADDOBJ, delete
+FILTERS NOT NULL inSupplierContract(s, c),
+        NOT NULL inSupplierAccount(s, a);
+
+
+FORM supplierForm 'Поставщики'
+OBJECTS s=supplier
+PROPERTIES(s) READONLY ownershipLegalEntity, name, fullNameLegalEntity, lawLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity
+PROPERTIES(s) ADDFORM, EDITFORM, delete;
+
+FORM companyEditForm 'Компания'
+OBJECTS co=company FIXED PANEL
+OBJECTS a=account
+OBJECTS c=contract
+PROPERTIES(co) ownershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
+              phoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity,
+              dateToLicenseLegalEntity
+PROPERTIES(a) dataAccount, primaryAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+PROPERTIES(c) dataContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, noteContract, ADDOBJ, delete
+FILTERS NOT NULL inCompanyContract(co, c),
+        NOT NULL inCompanyAccount(co, a);
+
+FORM companyForm 'Компании'
+OBJECTS co=company
+PROPERTIES(co) READONLY ownershipLegalEntity, name, fullNameLegalEntity, lawLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity
+PROPERTIES(co) ADDFORM, EDITFORM, delete;
