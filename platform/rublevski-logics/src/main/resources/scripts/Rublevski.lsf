@@ -216,6 +216,8 @@ inSupplierAccount(supplier, account) = legalEntityAccount(account) == supplier;
 inCompanyContract(company, contract) = companyContract(contract) == company;
 inCompanyAccount(company, account) = legalEntityAccount(account) == company;
 
+nameSupplierContract 'Контрагент' (contract) = name(supplierContract(contract));
+nameCompanyContract 'Контрагент' (contract) = name(companyContract(contract));
 
 FORM supplierEditForm 'Поставщик'
 OBJECTS s=supplier FIXED PANEL
@@ -225,7 +227,7 @@ PROPERTIES(s) ownershipLegalEntity, name, fullNameLegalEntity, addressLegalEntit
               phoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity,
               dateToLicenseLegalEntity, sureSupplier, controlSupplier, surePercentSupplier, allowablePercentSupplier, afterDaysSupplier, forHoursSupplier
 PROPERTIES(a) dataAccount, primaryAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
-PROPERTIES(c) dataContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract, delayContract,
+PROPERTIES(c) dataContract, nameCompanyContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract, delayContract,
               requestContract, noteContract, ADDOBJ, delete
 FILTERS NOT NULL inSupplierContract(s, c),
         NOT NULL inSupplierAccount(s, a);
@@ -244,7 +246,7 @@ PROPERTIES(co) ownershipLegalEntity, name, fullNameLegalEntity, addressLegalEnti
               phoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity,
               dateToLicenseLegalEntity
 PROPERTIES(a) dataAccount, primaryAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
-PROPERTIES(c) dataContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, noteContract, ADDOBJ, delete
+PROPERTIES(c) dataContract, nameSupplierContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, noteContract, ADDOBJ, delete
 FILTERS NOT NULL inCompanyContract(co, c),
         NOT NULL inCompanyAccount(co, a);
 
