@@ -235,23 +235,22 @@ DESIGN storeArticle FROM DEFAULT {
     }
 
         //просто для демонстрации, пока не придумается реальный пример использования
-        ADD newContainer {
-            title = 'new';
-            ADD child1 {
-                background = #1232AC;
-                minimumSize = (200, 200);
-                font = 'Tahoma bold 12';
-            };
-            ADD child2 {
-                POSITION child1 TO NOT INTERSECT;
+    ADD newContainer {
+        title = 'new';
+        ADD child1 {
+            background = #1232AC;
+            minimumSize = (200, 200);
+            font = 'Tahoma bold 12';
+        };
+        ADD child2 {
+            POSITION child1 TO NOT INTERSECT;
 
-                headerFont = '13 Tahoma';
-            }
-
-            POSITION child1 TO THE LEFT child2;
+            headerFont = '13 Tahoma';
         }
-        REMOVE newContainer CASCADE;
+
+        POSITION child1 TO THE LEFT child2;
     }
+    REMOVE newContainer CASCADE;
 
     PROPERTY(bar) { caption = 'Барр'; }
 
