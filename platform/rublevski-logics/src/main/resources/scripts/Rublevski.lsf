@@ -91,13 +91,15 @@ GROUP storeGroup : baseGroup;
 
 CLASS store 'Магазин' : named;
 CLASS tm 'Торговая марка' : named; // "Рублевский", "Базар"
-CLASS storeType 'Тип магазина' : named; //Мини, Супер, ...
-addressStore 'Адрес магазина' = DATA STRING[100] (store) IN storeGroup;
-tmStore 'Торговая марка магазина (ИД)' = DATA tm (store) IN idGroup;
-nameTmStore 'Торговая марка магазина' (store) = name(tmStore(store)) IN storeGroup;
-storeTypeStore 'Тип магазина (ИД)' = DATA storeType (store) IN idGroup;
-nameStoreTypeStore 'Тип магазина' (store) = name(storeTypeStore(store)) IN storeGroup;
+CLASS storeType 'Формат магазина' : named; //Мини, Супер, ...
 
+addressStore 'Адрес магазина' = DATA STRING[100] (store) IN storeGroup;
+
+storeTypeStore 'Формат магазина (ИД)' = DATA storeType (store) IN idGroup;
+nameStoreTypeStore 'Формат магазина' (store) = name(storeTypeStore(store)) IN storeGroup;
+
+tmStoreType 'Торговая марка формата магазина (ИД)' = DATA tm (storeType) IN idGroup;
+nameTmStoreType 'Торговая марка формата магазина' (storeType) = name(tmStoreType(storeType)) IN storeGroup;
 
 // ----------------------------------- Отдел магазина (Подразделение) ----------------- //
 
@@ -110,9 +112,9 @@ nameDepartmentStoreTypeDepartmentStore 'Тип отдела магазина' (d
 
 inStoreDepartment(store, department) = storeDepartmentStore(department) == store;
 
-FORM storeType 'Тип магазина'
+FORM storeType 'Формат магазина'
 OBJECTS s=storeType
-PROPERTIES(s) READONLY name
+PROPERTIES(s) READONLY name, nameTmStoreType
 PROPERTIES(s) ADDFORM, EDITFORM, delete;
 
 FORM tm 'Торговая марка'
@@ -122,7 +124,7 @@ PROPERTIES(m) ADDFORM, EDITFORM, delete;
 
 FORM store 'Магазин'
 OBJECTS s=store FIXED PANEL, d=departmentStore
-PROPERTIES(s) READONLY name, addressStore, nameTmStore, nameStoreTypeStore
+PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore
 PROPERTIES(d) name, nameDepartmentStoreTypeDepartmentStore, ADDOBJ, delete
 FILTERS NOT NULL inStoreDepartment(s, d);
 
@@ -133,7 +135,7 @@ PROPERTIES(d) ADDFORM, EDITFORM, delete;
 
 FORM stores 'Магазины'
 OBJECTS s=store
-PROPERTIES(s) READONLY name, addressStore, nameTmStore, nameStoreTypeStore
+PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore
 PROPERTIES(s) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Банк ------------------------------------------- //
