@@ -2842,12 +2842,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         internationalExperienceExpertVote = addDProp(voteResultCheckGroup, "internationalExperienceExpertVote", "Международный опыт", LogicalClass.instance, expert, voteR2);
         enoughDocumentsExpertVote = addDProp(voteResultCheckGroup, "enoughDocumentsExpertVote", "Достаточно документов", LogicalClass.instance, expert, voteR2);
 
-        competitiveAdvantagesCorExpertVote = addJProp("competitiveAdvantagesCorExpertVote", "Конкур. преим. (не анулл.)", and(true, false), competitiveAdvantagesExpertVote, 1, 2, exclExpertVote, 1, 2, inNewExpertVote, 1, 2); // добавил, чтобы только новые
-        commercePotentialCorExpertVote = addJProp("commercePotentialCorExpertVote", "Потенциал коммерц. (не анулл.)", and(true, false), commercePotentialExpertVote, 1, 2, exclExpertVote, 1, 2, inNewExpertVote, 1, 2);       // добавил, чтобы только новые
-        canBeImplementedCorExpertVote = addJProp("canBeImplementedCorExpertVote", "Теоретически реализуем (не анулл.)", and(true, false), canBeImplementedExpertVote, 1, 2, exclExpertVote, 1, 2, inNewExpertVote, 1, 2);      // добавил, чтобы только новые
-        haveExpertiseCorExpertVote = addJProp("haveExpertiseCorExpertVote", "Наличие экспертизы (не анулл.)", and(true, false), haveExpertiseExpertVote, 1, 2, exclExpertVote, 1, 2, inNewExpertVote, 1, 2);                           // добавил, чтобы только новые
-        internationalExperienceCorExpertVote = addJProp("internationalExperienceCorExpertVote", "Международный опыт (не анулл.)", and(true, false), internationalExperienceExpertVote, 1, 2, exclExpertVote, 1, 2, inNewExpertVote, 1, 2);     // добавил, чтобы только новые
-        enoughDocumentsCorExpertVote = addJProp("enoughDocumentsCorExpertVote", "Достаточно документов (не анулл.)", and(true, false), enoughDocumentsExpertVote, 1, 2, exclExpertVote, 1, 2, inNewExpertVote, 1, 2);                 // добавил, чтобы только новые
+        competitiveAdvantagesCorExpertVote = addJProp("competitiveAdvantagesCorExpertVote", "Конкур. преим. (не анулл.)", and(true), competitiveAdvantagesExpertVote, 1, 2, exclExpertVote, 1, 2);
+        commercePotentialCorExpertVote = addJProp("commercePotentialCorExpertVote", "Потенциал коммерц. (не анулл.)", and(true), commercePotentialExpertVote, 1, 2, exclExpertVote, 1, 2);
+        canBeImplementedCorExpertVote = addJProp("canBeImplementedCorExpertVote", "Теоретически реализуем (не анулл.)", and(true), canBeImplementedExpertVote, 1, 2, exclExpertVote, 1, 2);
+        haveExpertiseCorExpertVote = addJProp("haveExpertiseCorExpertVote", "Наличие экспертизы (не анулл.)", and(true), haveExpertiseExpertVote, 1, 2, exclExpertVote, 1, 2);
+        internationalExperienceCorExpertVote = addJProp("internationalExperienceCorExpertVote", "Международный опыт (не анулл.)", and(true), internationalExperienceExpertVote, 1, 2, exclExpertVote, 1, 2);
+        enoughDocumentsCorExpertVote = addJProp("enoughDocumentsCorExpertVote", "Достаточно документов (не анулл.)", and(true), enoughDocumentsExpertVote, 1, 2, exclExpertVote, 1, 2);
 
         commentCompetitiveAdvantagesExpertVote = addDProp(voteResultCommentGroup, "commentCompetitiveAdvantagesExpertVote", "Конкур. преим. (обоснование)", TextClass.instance, expert, voteR2);
         commentCommercePotentialExpertVote = addDProp(voteResultCommentGroup, "commentCommercePotentialExpertVote", "Потенциал коммерц. (обоснование)", TextClass.instance, expert, voteR2);

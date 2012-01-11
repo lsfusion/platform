@@ -138,6 +138,9 @@ public class ExportProjectDocumentsActionProperty extends ActionProperty {
             putFileIfNotNull(files, LM.constituentClaimerProject.read(context, projectObject), "Учредительные документы");
             putFileIfNotNull(files, LM.extractClaimerProject.read(context, projectObject), "Выписка из реестра");
 
+            putFileIfNotNull(files, LM.fileMinutesOfMeetingExpertCollegiumProject.read(context, projectObject), "Протокол заседания экспертной коллегии");
+            putFileIfNotNull(files, LM.fileWrittenConsentClaimerProject.read(context, projectObject), "Письменное согласие заявителя");
+
             context.addAction(new ExportFileClientAction(files));
 
             System.gc();

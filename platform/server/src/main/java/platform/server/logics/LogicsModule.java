@@ -36,6 +36,7 @@ import javax.mail.Message;
 import javax.mail.internet.MimeMessage;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.jar.JarOutputStream;
 
 import static platform.base.BaseUtils.consecutiveInts;
 import static platform.base.BaseUtils.innerJoin;
@@ -670,6 +671,10 @@ public abstract class LogicsModule {
         return addProperty(null, new LP<ConcatenateProperty.Interface>(new ConcatenateProperty(paramCount)));
     }
 
+    protected boolean isDefaultJoinImplementChange(Property property) {
+        return property instanceof ActionProperty;
+    }
+
     protected LP addJProp(LP mainProp, Object... params) {
         return addJProp(baseLM.privateGroup, "sys", mainProp, params);
     }
@@ -703,11 +708,11 @@ public abstract class LogicsModule {
     }
 
     protected LP addJProp(AbstractGroup group, String name, String caption, LP mainProp, Object... params) {
-        return addJProp(group, mainProp.property instanceof ActionProperty, name, caption, mainProp, params);
+        return addJProp(group, isDefaultJoinImplementChange(mainProp.property), name, caption, mainProp, params);
     }
 
     protected LP addJProp(AbstractGroup group, String name, boolean persistent, String caption, LP mainProp, Object... params) {
-        return addJProp(group, mainProp.property instanceof ActionProperty, name, persistent, caption, mainProp, params);
+        return addJProp(group, isDefaultJoinImplementChange(mainProp.property), name, persistent, caption, mainProp, params);
     }
 
     protected LP addJProp(boolean implementChange, LP mainProp, Object... params) {

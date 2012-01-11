@@ -36,13 +36,42 @@ CLASS item 'Товар' : sku;
 CLASS brand 'Бренд' : named;
 
 brandItem = DATA brand(item);
+nameBrandItem 'Брэнд' (item) = name(brandItem(item));
+
 unitOfMeasureItem = DATA unitOfMeasure (item) IN idGroup;
-shortNameUnitOfMeasureItem 'Единица измерения' = shortNameUnitOfMeasure(unitOfMeasureItem(item)) IN baseGroup;
-kindItem = DATA STRING[20] (item);
+shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortNameUnitOfMeasure(unitOfMeasureItem(item)) IN baseGroup;
+
+// ----------------------------------- Атрибуты ------------------------------------------ //
+
+CLASS ABSTRACT itemAttribute 'Атрибут товара' : named;
+
+CLASS stringItemAttribute 'Строковый атрибут' : itemAttribute;
+valueStringItemAttribute = DATA STRING[255] (item, stringItemAttribute);
+
+CLASS STATIC customStringItemAttribute 'Предопределенный строковый атрибут' {
+    caption 'Название',
+    storageConditions 'Условия хранения'
+} : stringItemAttribute;
+
+CLASS STATIC objectItemAttribute 'Объектный атрибут' {
+    unitOfMeasure 'Единица измерения',
+    brand 'Брэнд'
+} : itemAttribute;
+
+valueUOMItemAttribute(item, attribute) = unitOfMeasureItem(item) AND attribute == objectItemAttribute.unitOfMeasure;
+valueBrandItemAttribute(item, attribute) = brandItem(item) AND attribute == objectItemAttribute.brand;
+
+valueObjectItemAttribute(item, attribute) = UNION EXCLUSIVE valueUOMItemAttribute(item, attribute),
+                                                            valueBrandItemAttribute(item, attribute);
+nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
+
+valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(item, attribute),
+                                                      nameObjectItemAttribute(item, attribute);
 
 FORM item 'Товар'
-OBJECTS i=item FIXED PANEL
-PROPERTIES(i) name, shortNameUnitOfMeasureItem;
+OBJECTS i=item FIXED PANEL, a=itemAttribute
+PROPERTIES(i) name, shortNameUnitOfMeasureItem, nameBrandItem
+PROPERTIES name(a), valueItemAttribute(i, a);
 
 FORM items 'Товары'
 OBJECTS i=item
@@ -139,10 +168,6 @@ departmentBankAccount 'Отдел банка' (account) = departmentBank(bankAcc
 CBUBankAccount 'ЦБУ банка' (account) = CBUBank(bankAccount(account)) IN scoreGroup;
 noteAccount 'Примечание'  = DATA STRING[50] (account) IN scoreGroup;
 
-FORM AccountForm 'Расчетные счета'
-OBJECTS a=account
-PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, ADDOBJ, delete;
-
 // ----------------------------------- Юридическое лицо ------------------------------------------ //
 
 GROUP lawGroup : baseGroup;
@@ -168,16 +193,6 @@ dateFromLicenseLegalEntity 'Дата выдачи лицензии' = DATA STRIN
 dateToLicenseLegalEntity 'Дата окончания лицензии' = DATA STRING[10] (legalEntity) IN lawGroup;
 
 legalEntityAccount 'Ю.Л. (ИД)' = DATA legalEntity (account) IN idGroup;
-
-FORM LegalEntityEditForm 'Юридическое лицо'
-OBJECTS l=legalEntity FIXED PANEL
-PROPERTIES(l) fullNameLegalEntity, name, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, phoneLegalEntity,
-              UNPLegalEntity, OKPOLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity;
-
-FORM LegalEntityForm 'Юридические лица'
-OBJECTS l=legalEntity
-PROPERTIES(l) fullNameLegalEntity, name, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, phoneLegalEntity,
-              UNPLegalEntity, OKPOLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity, ADDOBJ, delete;
 
 // ----------------------------------- Договор ------------------------------------------ //
 
@@ -211,7 +226,6 @@ banContract 'За сколько дней запретить закупку то
 delayContract 'Отсрочка платежа, дней' = DATA INTEGER (contract) IN treatyGroup;
 requestContract 'Форма оплаты: Платежное требование' = DATA BOOLEAN (contract) IN treatyGroup;
 noteContract 'Примечание' = DATA STRING[100] (contract) IN treatyGroup;
-
 
 // ----------------------------------- Поставщик ------------------------------------------ //
 
