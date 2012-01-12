@@ -2,6 +2,10 @@ MODULE Rublevski;
 
 IMPORT BaseLogicsModule;
 
+CLASS doubleNamed 'Объект с кратким наименованием' : named;
+
+shortName 'Краткое наименование' = DATA STRING[5] (doubleNamed) IN baseGroup;
+
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 CLASS itemGroup 'Товарная группа' : named;
 
@@ -18,16 +22,15 @@ PROPERTIES(g) READONLY name, nameParentItemGroup
 PROPERTIES(g) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Единицы измерения ------------------------------------------ //
-CLASS unitOfMeasure 'Единица измерения' : named;
-shortNameUnitOfMeasure 'Краткое наименование' = DATA STRING[4] (unitOfMeasure) IN baseGroup;
+CLASS unitOfMeasure 'Единица измерения' : doubleNamed;
 
 FORM unitOfMeasure 'Единица измерения'
 OBJECTS u=unitOfMeasure FIXED PANEL
-PROPERTIES(u) name, shortNameUnitOfMeasure;
+PROPERTIES(u) name, shortName;
 
 FORM unitsOfMeasure 'Единицы измерений'
 OBJECTS u=unitOfMeasure
-PROPERTIES(u) READONLY name, shortNameUnitOfMeasure
+PROPERTIES(u) READONLY name, shortName
 PROPERTIES(u) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Товар ------------------------------------------ //
@@ -39,7 +42,7 @@ brandItem = DATA brand(item);
 nameBrandItem 'Брэнд' (item) = name(brandItem(item));
 
 unitOfMeasureItem = DATA unitOfMeasure (item) IN idGroup;
-shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortNameUnitOfMeasure(unitOfMeasureItem(item)) IN baseGroup;
+shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortName(unitOfMeasureItem(item)) IN baseGroup;
 
 // ----------------------------------- Атрибуты ------------------------------------------ //
 
@@ -88,7 +91,7 @@ unitOfMeasureBarcode 'Ед.изм. штрих-кода (ИД)' (barcode) = DATA 
 
 titleScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode) IN barcodeGroup;
 titleCashBarcode 'Наименование для касс' = DATA STRING[100] (barcode) IN barcodeGroup;
-shortNameUnitOfMeasureBarcode 'Единица измерения' (barcode) = shortNameUnitOfMeasure(unitOfMeasureBarcode(barcode)) IN barcodeGroup;
+shortNameUnitOfMeasureBarcode 'Единица измерения' (barcode) = shortName(unitOfMeasureBarcode(barcode)) IN barcodeGroup;
 amountBarcode 'Количество (сколько списать при продаже)' = DATA INTEGER (barcode) IN barcodeGroup;
 removeBarcode 'Заблокирован (удален с оборудования)?' = DATA BOOLEAN (barcode) IN barcodeGroup;
 commentRemoveBarcode 'Причина блокировки' = DATA STRING[100] (barcode) IN barcodeGroup;
