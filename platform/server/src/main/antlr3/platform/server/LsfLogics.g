@@ -386,7 +386,7 @@ formPropertiesNamesList returns [List<String> properties, List<FormPropertyOptio
 
 
 formPropertyName 
-	: compoundID | ('OBJVALUE') | ('SELECTION') | ('ADDOBJ')
+	: compoundID | ('OBJVALUE') | ('SELECTION') | ('ADDOBJ') | ('ADDFORM') | ('EDITFORM')
 	;
 
 

@@ -96,9 +96,8 @@ CONSTRAINT hostGoals(game) == guestGoals(game) MSG 'The game cannot end in a dra
 
 FORM MainForm 'Scoreboard'
 OBJECTS game, team
-PROPERTIES gameDate(game), hostTeamName(game), hostGoals(game), guestGoals(game), guestTeamName(game), gameResultName(game)
-PROPERTIES place(team), conferencePlace(team),
-           teamName(team), gamesPlayed(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team),
-           gamesLostSO(team), gamesLostOT(team), gamesLost(team), goalsScored(team), goalsConceded(team), points(team)
+PROPERTIES(game) gameDate, hostTeamName, hostGoals, guestGoals, guestTeamName, gameResultName
+PROPERTIES(team) place, conferencePlace, teamName, gamesPlayed, gamesWon, gamesWonOT, gamesWonSO,
+                 gamesLostSO, gamesLostOT, gamesLost, goalsScored, goalsConceded, points
 PROPERTIES ADDOBJ(game), ADDOBJ(team);
            
