@@ -517,7 +517,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (isSGProp) {
             resultProp = addSGProp(null, genSID(), false, false, "", groupPropParamCount, resultParams.toArray());
         } else {
-            //resultProp = addMGProp(caption, groupProp, resultParams.toArray());
+            resultProp = addMGProp(null, genSID(), false, "", false, groupPropParamCount, resultParams.toArray());
         }
         return resultProp;
     }
