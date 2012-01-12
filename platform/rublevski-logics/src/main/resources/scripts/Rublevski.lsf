@@ -114,7 +114,7 @@ CLASS ABSTRACT stock 'Склад' : named;
 GROUP storeGroup : baseGroup;
 
 CLASS store 'Магазин' : named;
-CLASS tm 'Торговая марка' : named; // "Рублевский", "Базар"
+CLASS tradingNetwork 'Торговая сеть' : named; // "Рублевский", "Базар"
 CLASS storeType 'Формат магазина' : named; //Мини, Супер, ...
 
 addressStore 'Адрес магазина' = DATA STRING[100] (store) IN storeGroup;
@@ -122,8 +122,10 @@ addressStore 'Адрес магазина' = DATA STRING[100] (store) IN storeGr
 storeTypeStore 'Формат магазина (ИД)' = DATA storeType (store) IN idGroup;
 nameStoreTypeStore 'Формат магазина' (store) = name(storeTypeStore(store)) IN storeGroup;
 
-tmStoreType 'Торговая марка формата магазина (ИД)' = DATA tm (storeType) IN idGroup;
-nameTmStoreType 'Торговая марка формата магазина' (storeType) = name(tmStoreType(storeType)) IN storeGroup;
+tradingNetworkStoreType 'Торговая сеть формата магазина (ИД)' = DATA tradingNetwork (storeType) IN idGroup;
+nameTradingNetworkStoreType 'Торговая сеть формата магазина' (storeType) = name(tradingNetworkStoreType(storeType)) IN storeGroup;
+
+inStoreTypeTradingNetwork(storeType, tradingNetwork) = tradingNetworkStoreType(storeType) == tradingNetwork;
 
 // ----------------------------------- Физические лица -------------------------------------------------- //
 
@@ -142,18 +144,49 @@ CLASS restaurant 'Ресторан' : departmentStore;
 CLASS guild 'Цех' : departmentStore;
 
 storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) IN idGroup;
+nameStoreDepartmentStore 'Магазин отдела' (departmentStore) = name(storeDepartmentStore(departmentStore));
+
+
 
 inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
 
+FORM employee 'Сотрудник'
+OBJECTS e=employee FIXED PANEL
+PROPERTIES(e) READONLY name;
+
+FORM employees 'Сотрудники'
+OBJECTS e=employee
+PROPERTIES(e) READONLY name
+PROPERTIES(e) ADDFORM, EDITFORM, delete;
+
+FORM departmentStore 'Отдел магазина'
+OBJECTS d=departmentStore FIXED PANEL
+PROPERTIES(d) READONLY name, nameStoreDepartmentStore;
+
+FORM departmentStores 'Отделы магазина'
+OBJECTS d=departmentStore
+PROPERTIES(d) READONLY name, nameStoreDepartmentStore
+PROPERTIES(d) ADDFORM, EDITFORM, delete;
+
 FORM storeType 'Формат магазина'
+OBJECTS s=storeType FIXED PANEL, n=tradingNetwork
+PROPERTIES(s) READONLY name
+PROPERTIES(n) name, ADDOBJ, delete
+FILTERS NOT NULL inStoreTypeTradingNetwork(s, n);
+
+FORM storeTypes 'Форматы магазинов'
 OBJECTS s=storeType
-PROPERTIES(s) READONLY name, nameTmStoreType
+PROPERTIES(s) READONLY name, nameTradingNetworkStoreType
 PROPERTIES(s) ADDFORM, EDITFORM, delete;
 
-FORM tm 'Торговая марка'
-OBJECTS m=tm
-PROPERTIES(m) READONLY name
-PROPERTIES(m) ADDFORM, EDITFORM, delete;
+FORM tradingNetwork 'Торговая сеть'
+OBJECTS n=tradingNetwork FIXED PANEL
+PROPERTIES(n) READONLY name;
+
+FORM tradingNetworkes 'Торговые сети'
+OBJECTS n= tradingNetwork
+PROPERTIES(n) READONLY name
+PROPERTIES(n) ADDFORM, EDITFORM, delete;
 
 FORM store 'Магазин'
 OBJECTS s=store FIXED PANEL, d=departmentStore
