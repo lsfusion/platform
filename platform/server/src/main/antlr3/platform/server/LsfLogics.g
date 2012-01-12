@@ -669,15 +669,16 @@ groupPropertyDefinition returns [LP property]
 @init {
 	List<LP<?>> paramProps = new ArrayList<LP<?>>();
 	List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
-	boolean isSGProp = true;
+	boolean isSGProp = false;
+	boolean isMax = false;
 	List<String> groupContext = new ArrayList<String>();
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedGProp(isSGProp, paramProps, usedParams);
+		$property = self.addScriptedGProp(isSGProp, isMax, paramProps, usedParams);
 	}
 }
-	:	'GROUP' (('SUM') { isSGProp = true; } | ('MAX') { isSGProp = false; })
+	:	'GROUP' (('SUM') { isSGProp = true; } | ('MAX') { isMax = true; } | 'MIN')
 		prop=propertyExpression[groupContext, true] { paramProps.add($prop.property); usedParams.add($prop.usedParams); }
 		'BY'
 		exprList=nonEmptyPropertyExpressionList[groupContext, true] 
