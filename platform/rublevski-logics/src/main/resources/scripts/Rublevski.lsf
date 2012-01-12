@@ -85,12 +85,10 @@ inSkuBarcode(sku, barcode) = skuBarcode(barcode) == sku;
 FORM items 'Товары'
 OBJECTS i=item
 OBJECTS b=barcode
-
 PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
 PROPERTIES(i) ADDFORM, EDITFORM, delete
 PROPERTIES(b) READONLY barcode
 PROPERTIES(b) ADDFORM, EDITFORM, delete
-
 FILTERS NOT NULL inSkuBarcode(i, b);
 
 // ----------------------------------- Склад ------------------------------------------ //
@@ -113,16 +111,25 @@ nameStoreTypeStore 'Формат магазина' (store) = name(storeTypeStore
 tmStoreType 'Торговая марка формата магазина (ИД)' = DATA tm (storeType) IN idGroup;
 nameTmStoreType 'Торговая марка формата магазина' (storeType) = name(tmStoreType(storeType)) IN storeGroup;
 
-// ----------------------------------- Отдел магазина (Подразделение) ----------------- //
+// ----------------------------------- Физические лица -------------------------------------------------- //
 
-CLASS departmentStoreType 'Типа отдела магазина' : named; //кафетерий, магазин, оптовый склад, приемный пункт, ресторан, склад, цех
+CLASS ABSTRACT person 'Физическое лицо': named;
+CLASS employee 'Сотрудник' : person;
+
+// ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
+
 CLASS departmentStore 'Отдел магазина' : stock;
+CLASS kafeteria 'Кафетерий' : departmentStore;
+CLASS tradingFloar 'Торговый зал' : departmentStore;
+CLASS wholesaleStock 'Оптовый склад' : departmentStore;
+CLASS placeOfAcceptance 'Приемный пункт' : departmentStore;
+CLASS restaurant 'Ресторан' : departmentStore;
+//CLASS stock 'Склад' : departmentStore; в дальнейшем будет распределительный центр
+CLASS guild 'Цех' : departmentStore;
 
 storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) IN idGroup;
-departmentStoreTypeDepartmentStore 'Тип отдела магазина (ИД)' = DATA departmentStoreType (departmentStore) IN idGroup;
-nameDepartmentStoreTypeDepartmentStore 'Тип отдела магазина' (departmentStore) = name(departmentStoreTypeDepartmentStore(departmentStore)) IN storeGroup;
 
-inStoreDepartment(store, department) = storeDepartmentStore(department) == store;
+inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
 
 FORM storeType 'Формат магазина'
 OBJECTS s=storeType
@@ -137,13 +144,8 @@ PROPERTIES(m) ADDFORM, EDITFORM, delete;
 FORM store 'Магазин'
 OBJECTS s=store FIXED PANEL, d=departmentStore
 PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore
-PROPERTIES(d) name, nameDepartmentStoreTypeDepartmentStore, ADDOBJ, delete
+PROPERTIES(d) name, ADDOBJ, delete
 FILTERS NOT NULL inStoreDepartment(s, d);
-
-FORM departmentStoreType 'Тип отдела магазина'
-OBJECTS d=departmentStoreType
-PROPERTIES(d) READONLY name
-PROPERTIES(d) ADDFORM, EDITFORM, delete;
 
 FORM stores 'Магазины'
 OBJECTS s=store
@@ -279,7 +281,6 @@ PROPERTIES(c) dataContract, nameCompanyContract, nameFormContract, nameTypeContr
               requestContract, noteContract, ADDOBJ, delete
 FILTERS NOT NULL inSupplierContract(s, c),
         NOT NULL inSupplierAccount(s, a);
-
 
 FORM supplierForm 'Поставщики'
 OBJECTS s=supplier
