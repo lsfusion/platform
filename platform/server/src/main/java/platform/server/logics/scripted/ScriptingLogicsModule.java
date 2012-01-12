@@ -11,7 +11,7 @@ import platform.server.LsfLogicsLexer;
 import platform.server.LsfLogicsParser;
 import platform.server.classes.*;
 import platform.server.data.Union;
-import platform.server.data.expr.query.OrderType;
+import platform.server.data.expr.query.PartitionType;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
@@ -544,12 +544,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(prop, mergeLists(usedParams));
     }
 
-    public LPWithParams addScriptedOProp(OrderType orderType, boolean isAscending, boolean useLast, int groupPropsCnt,
+    public LPWithParams addScriptedOProp(PartitionType partitionType, boolean isAscending, boolean useLast, int groupPropsCnt,
                                          List<LP<?>> paramProps, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedOProp(" + orderType + ", " + isAscending + ", " + useLast + ", " + groupPropsCnt + ", " + paramProps + ", " + usedParams + ");");
+        scriptLogger.info("addScriptedOProp(" + partitionType + ", " + isAscending + ", " + useLast + ", " + groupPropsCnt + ", " + paramProps + ", " + usedParams + ");");
 
         List<Object> resultParams = getParamsPlainList(paramProps, usedParams);
-        LP prop = addOProp(null, genSID(), false, "", orderType, isAscending, useLast, groupPropsCnt, resultParams.toArray());
+        LP prop = addOProp(null, genSID(), false, "", partitionType, isAscending, useLast, groupPropsCnt, resultParams.toArray());
         return new LPWithParams(prop, mergeLists(usedParams));
     }
 

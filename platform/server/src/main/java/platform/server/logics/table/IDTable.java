@@ -1,6 +1,7 @@
 package platform.server.logics.table;
 
 import platform.base.BaseUtils;
+import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.SystemClass;
 import platform.server.data.*;
@@ -56,7 +57,7 @@ public class IDTable extends GlobalTable {
         query.and(joinTable.getWhere());
         query.properties.put(value, joinTable.getExpr(value));
 
-        query.and(new EqualsWhere(query.mapKeys.get(key),new ValueExpr(idType, SystemClass.instance)));
+        query.and(query.mapKeys.get(key).compare(new ValueExpr(idType, SystemClass.instance), Compare.EQUALS));
         return query;
     }
 

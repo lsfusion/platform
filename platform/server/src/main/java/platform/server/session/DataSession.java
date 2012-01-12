@@ -580,7 +580,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
                 ObjectValue executeValue = executeRow.getValue().get("value");
 
                 if(pendingPropExecute!=null)
-                    // иначе "pend'им" выполнение
+                    // иначе "pend'им" выполнение, но уже с новыми классами
                     pendingPropExecute.add(new ExecutionContext(getCurrentObjects(executeKeys), getCurrentValue(executeValue), this, modifier, actions, null, null, !iterator.hasNext()));
                 else
                     property.execute(new ExecutionContext(executeKeys, executeValue, this, incrementApply, actions, null, null, !iterator.hasNext()));

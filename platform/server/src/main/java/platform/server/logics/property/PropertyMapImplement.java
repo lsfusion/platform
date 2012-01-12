@@ -10,7 +10,6 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.form.instance.PropertyObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.session.*;
 
@@ -65,8 +64,11 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         property.setJoinNotNull(BaseUtils.join(mapping, mapKeys), where, session);
     }
 
-    public PropertyMapImplement<?, T> mapChangeImplement() {
-        return property.getChangeImplement(new Result<Property>()).map(mapping);
+    public PropertyMapImplement<?, T> mapChangeImplement(Map<T, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
+        PropertyMapImplement<?, P> changeImplement = property.modifyChangeImplement(new Result<Property>(), BaseUtils.join(mapping, interfaceValues), session, modifier);
+        if(changeImplement!=null)
+            return changeImplement.map(mapping);
+        return null;
     }
 
     public PropertyObjectInstance<P> mapObjects(Map<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {

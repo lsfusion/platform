@@ -1,8 +1,13 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.Result;
+import platform.server.logics.DataObject;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
 
+import java.sql.SQLException;
 import java.util.*;
 
 public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
@@ -26,7 +31,7 @@ public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
         return BaseUtils.mergeSet(getWheres(), getProps());
     }
 
-    protected abstract Collection<Case> getCases();
+    protected abstract Iterable<Case> getCases();
 
     protected Set<PropertyMapImplement<?, Interface>> getWheres() {
         Set<PropertyMapImplement<?, Interface>> operands = new HashSet<PropertyMapImplement<?,Interface>>();
@@ -45,5 +50,20 @@ public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
         Set<Property> propValues = new HashSet<Property>(); fillDepends(propValues, getProps());
         Set<Property> propWheres = new HashSet<Property>(); fillDepends(propWheres, getWheres());
         return propChanges.getUsedDataChanges(propValues).add(propChanges.getUsedChanges(propValues));
+    }
+
+    protected boolean checkWhere() {
+        return true;
+    }
+    @Override
+    public PropertyMapImplement<?, Interface> modifyChangeImplement(Result<Property> aggProp, Map<Interface, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
+        for(Case propCase : getCases()) {
+            if(!checkWhere() || propCase.where.read(session, interfaceValues, modifier)!=null) {
+                PropertyMapImplement<?, Interface> operandImplement = propCase.property.mapChangeImplement(interfaceValues, session, modifier);
+                if(operandImplement!=null)
+                    return operandImplement;
+            }
+        }
+        return super.modifyChangeImplement(aggProp, interfaceValues, session, modifier);
     }
 }

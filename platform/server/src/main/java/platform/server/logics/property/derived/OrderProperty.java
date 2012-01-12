@@ -2,25 +2,21 @@ package platform.server.logics.property.derived;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.data.Field;
-import platform.server.data.PropertyField;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.PartitionExpr;
-import platform.server.data.expr.query.OrderType;
+import platform.server.data.expr.query.PartitionType;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.property.*;
-import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
 
 import java.util.*;
 
 public class OrderProperty<T extends PropertyInterface> extends SimpleIncrementProperty<OrderProperty.Interface<T>> {
 
-    protected final OrderType partitionType;
+    protected final PartitionType partitionType;
 
     protected final Collection<T> innerInterfaces;
     protected final List<PropertyInterfaceImplement<T>> props;
@@ -28,11 +24,11 @@ public class OrderProperty<T extends PropertyInterface> extends SimpleIncrementP
     protected final Collection<PropertyInterfaceImplement<T>> partitions;
     protected boolean includeLast;
 
-    public OrderProperty(String sID, String caption, OrderType partitionType, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, List<PropertyInterfaceImplement<T>> extras, boolean includeLast) {
+    public OrderProperty(String sID, String caption, PartitionType partitionType, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, List<PropertyInterfaceImplement<T>> extras, boolean includeLast) {
         this(sID, caption, partitionType, property.interfaces, BaseUtils.mergeList(Collections.singletonList(property.getImplement()), extras), partitions, orders, includeLast);
     }
 
-    public OrderProperty(String sID, String caption, OrderType partitionType, Collection<T> innerInterfaces, List<PropertyInterfaceImplement<T>> props, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
+    public OrderProperty(String sID, String caption, PartitionType partitionType, Collection<T> innerInterfaces, List<PropertyInterfaceImplement<T>> props, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
         super(sID, caption, getInterfaces(innerInterfaces));
         this.innerInterfaces = innerInterfaces;
         this.props = props;

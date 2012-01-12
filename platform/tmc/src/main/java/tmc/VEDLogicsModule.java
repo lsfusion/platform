@@ -2,7 +2,6 @@ package tmc;
 
 import jxl.Sheet;
 import jxl.Workbook;
-import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
@@ -16,7 +15,7 @@ import platform.server.data.Union;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.FormulaExpr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.query.OrderType;
+import platform.server.data.expr.query.PartitionType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
@@ -44,7 +43,6 @@ import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
@@ -1051,7 +1049,7 @@ public class VEDLogicsModule extends LogicsModule {
         orderMinute = addDCProp(baseGroup, "orderMinute", "Минута", baseLM.currentMinute, is(orderSale), 1, orderSaleArticleRetail);
 
         changeQuantityTime = addTCProp(Time.EPOCH, "changeQuantityTime", "Время выбора", articleInnerQuantity, orderSaleArticleRetail);
-        changeQuantityOrder = addOProp(documentGroup, "Номер", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), true, true, 1, 1, changeQuantityTime, 1, 2);
+        changeQuantityOrder = addOProp(documentGroup, "Номер", PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), true, true, 1, 1, changeQuantityTime, 1, 2);
 
         LP monthDay = addSFProp("EXTRACT(MONTH FROM prm1) * 40 + EXTRACT(DAY FROM prm1)", IntegerClass.instance, 1);
         orderBirthDay = addDCProp("orderBirthDay", "День рожд.", addJProp(baseLM.equals2, monthDay, 1, addJProp(monthDay, bornCustomerCheckRetail, 1), 2), true, baseLM.date, 1, subjectIncOrder, 1);

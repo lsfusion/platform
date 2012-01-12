@@ -16,7 +16,7 @@ public class ExclusiveCaseUnionProperty extends AbstractCaseUnionProperty {
     public void addCase(PropertyMapImplement<?, Interface> where, PropertyMapImplement<?, Interface> property) {
         cases.add(new Case(where, property));
     }
-    protected Collection<Case> getCases() {
+    protected Iterable<Case> getCases() {
         return cases;
     }
 

@@ -1,6 +1,5 @@
 package platform.server.logics.property;
 
-import org.aspectj.lang.ProceedingJoinPoint;
 import platform.base.BaseUtils;
 import platform.base.ListPermutations;
 import platform.base.Result;
@@ -498,9 +497,17 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return BaseUtils.toMap(new HashSet<T>(interfaces));
     }
 
+    public PropertyMapImplement<?, T> modifyChangeImplement(Result<Property> aggProp, Map<T, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
+        if (new ClassWhere<T>(DataObject.getMapClasses(session.getCurrentObjects(interfaceValues))).means(getClassWhere()))
+            return new PropertyMapImplement<T, T>(this, getIdentityInterfaces());
+        return null;
+    }
     // assert пока что aggrProps со свойствами с одним входом
-    public PropertyMapImplement<?, T> getChangeImplement(Result<Property> aggProp) {
-        return new PropertyMapImplement<T, T>(this, getIdentityInterfaces());
+    public PropertyMapImplement<?, T> getChangeImplement(Result<Property> aggProp, Map<T, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
+        PropertyMapImplement<?, T> changedImplement;
+        if(interfaceValues==null || (changedImplement = modifyChangeImplement(aggProp, interfaceValues, session, modifier)) == null)
+            return new PropertyMapImplement<T, T>(this, getIdentityInterfaces());
+        return changedImplement;
     }
 
     public boolean checkEquals() {

@@ -5,8 +5,8 @@ import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.server.classes.*;
 import platform.server.data.expr.query.GroupType;
+import platform.server.data.expr.query.PartitionType;
 import platform.server.logics.property.*;
-import platform.server.data.expr.query.OrderType;
 
 import java.util.*;
 
@@ -277,9 +277,9 @@ public class DerivedProperty {
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders, boolean includeLast) {
-        return createOProp(genID(), "sys", OrderType.SUM, property, partitions, orders, includeLast);
+        return createOProp(genID(), "sys", PartitionType.SUM, property, partitions, orders, includeLast);
     }
-    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(String sID, String caption, OrderType partitionType, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(String sID, String caption, PartitionType partitionType, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
         if(true) {
             List<PropertyInterfaceImplement<T>> propList = Collections.<PropertyInterfaceImplement<T>>singletonList(property.getImplement());
             return createOProp(sID, caption, partitionType, property.interfaces, propList, partitions, orders, includeLast);
@@ -303,8 +303,8 @@ public class DerivedProperty {
         return new PropertyMapImplement<UnionProperty.Interface,T>(unionProperty,BaseUtils.reverse(mapInterfaces));
     }
 
-    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(String sID, String caption, OrderType orderType, Collection<T> innerInterfaces, List<PropertyInterfaceImplement<T>> props, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
-        OrderProperty<T> orderProperty = new OrderProperty<T>(sID, caption, orderType, innerInterfaces, props, partitions, orders, includeLast);
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(String sID, String caption, PartitionType partitionType, Collection<T> innerInterfaces, List<PropertyInterfaceImplement<T>> props, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
+        OrderProperty<T> orderProperty = new OrderProperty<T>(sID, caption, partitionType, innerInterfaces, props, partitions, orders, includeLast);
         return new PropertyMapImplement<OrderProperty.Interface<T>,T>(orderProperty,orderProperty.getMapInterfaces());
     }
 
@@ -450,7 +450,7 @@ public class DerivedProperty {
             OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<T>, Boolean>();
             for(T propertyInterface : proportion.interfaces)
                 orders.put(propertyInterface, false);
-            OrderProperty<T> orderProperty = new OrderProperty<T>(sID, caption, OrderType.DISTR_CUM_PROPORTION, proportion, partitions, orders, BaseUtils.<PropertyInterfaceImplement<T>>toList(distribute), false);
+            OrderProperty<T> orderProperty = new OrderProperty<T>(sID, caption, PartitionType.DISTR_CUM_PROPORTION, proportion, partitions, orders, BaseUtils.<PropertyInterfaceImplement<T>>toList(distribute), false);
             return new PropertyMapImplement<OrderProperty.Interface<T>, T>(orderProperty, orderProperty.getMapInterfaces());
         }
 

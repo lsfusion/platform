@@ -23,6 +23,7 @@ import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -92,7 +93,11 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public Type getChangeType() {
-        return entity.propertyObject.property.getChangeImplement(new Result<Property>()).property.getEditorType(new HashMap());
+        try {
+            return entity.propertyObject.property.getChangeImplement(new Result<Property>(), null, null, null).property.getEditorType(new HashMap());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String getSID() {

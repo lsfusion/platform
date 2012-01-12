@@ -353,7 +353,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
 
     public void serializePropertyEditorType(DataOutputStream outStream, PropertyDrawInstance<?> propertyDraw, Map<ObjectInstance, DataObject> keys, boolean aggValue) throws SQLException, IOException {
-        PropertyObjectInstance<?> change = propertyDraw.getChangeInstance(aggValue, BL, keys);
+        PropertyObjectInstance<?> change = propertyDraw.getChangeInstance(aggValue, BL, keys, this);
         boolean isReadOnly = propertyDraw.isReadOnly() || (propertyDraw.propertyReadOnly!=null && propertyDraw.propertyReadOnly.read(session, this)!=null);
         if (!isReadOnly && securityPolicy.property.change.checkPermission(change.property) &&
                 (entity.isActionOnChange(change.property) || change.getValueImplement().canBeChanged(this))) {
@@ -497,12 +497,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> mapDataValues,
                                              PropertyDrawInstance<?> value, Map<ObjectInstance, DataObject> valueColumnKeys, RemoteForm executeForm, boolean all, boolean aggValue) throws SQLException {
-        return changeProperty(property, mapDataValues, value.getChangeInstance(aggValue, BL, valueColumnKeys), executeForm, all, aggValue);
+        return changeProperty(property, mapDataValues, value.getChangeInstance(aggValue, BL, valueColumnKeys, this), executeForm, all, aggValue);
     }
 
     public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> mapDataValues, Object value, RemoteForm executeForm, boolean all, boolean aggValue) throws SQLException {
         assert !property.isReadOnly();
-        return changeProperty(property.getChangeInstance(aggValue, BL, mapDataValues), value, executeForm, all ? property.toDraw : null);
+        return changeProperty(property.getChangeInstance(aggValue, BL, mapDataValues, this), value, executeForm, all ? property.toDraw : null);
     }
 
     @Message("message.form.change.property")
@@ -1215,7 +1215,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public DialogInstance<T> createObjectEditorDialog(int viewID) throws RemoteException, SQLException {
         PropertyDrawInstance propertyDraw = getPropertyDraw(viewID);
-        PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(BL);
+        PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(BL, this);
 
         CustomClass objectClass = changeProperty.getDialogClass();
         ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
@@ -1234,7 +1234,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         PropertyDrawInstance propertyDraw = getPropertyDraw(viewID);
 
         Result<Property> aggProp = new Result<Property>();
-        PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(aggProp, BL);
+        PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(aggProp, BL, this);
 
         ClassFormEntity<T> formEntity = changeProperty.getDialogClass().getDialogForm(BL.LM);
         Set<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, changeProperty, propertyDraw.toDraw);

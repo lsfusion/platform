@@ -1,6 +1,7 @@
 package platform.server.form.instance.filter;
 
 import platform.base.BaseUtils;
+import platform.interop.Compare;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.where.Where;
@@ -70,12 +71,12 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         Where mapWhere;
         for(Map.Entry<PropertyObjectInterfaceInstance, KeyExpr> mapObject : mapObjects.entrySet()) {
             if(mapObject.getKey().getApplyObject() != object.groupTo)
-                mapWhere = new EqualsWhere(mapObject.getValue(), mapObject.getKey().getDataObject().getExpr());
+                mapWhere = mapObject.getValue().compare(mapObject.getKey().getDataObject(), Compare.EQUALS);
             else // assert что тогда sibObject instanceof ObjectInstance потому как ApplyObject = null а object.groupTo !=null
                 if(!mapObject.getKey().equals(object))
                     mapWhere = mapObject.getValue().isClass(((ObjectInstance)mapObject.getKey()).getGridClass().getUpSet());
                 else
-                    mapWhere = new EqualsWhere(mapObject.getValue(),addObject.getExpr());
+                    mapWhere = mapObject.getValue().compare(addObject.getExpr(), Compare.EQUALS);
             changeWhere = changeWhere.and(mapWhere);
         }
         

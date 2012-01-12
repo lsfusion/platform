@@ -17,6 +17,7 @@ import platform.server.session.PropertyChanges;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -78,6 +79,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
 
     public <K extends PropertyInterface> PropertyInterfaceImplement<K> map(Map<P, K> remap) {
         return remap.get((P)this);
+    }
+
+    public PropertyMapImplement<?, P> mapChangeImplement(Map<P, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
+        return null;
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

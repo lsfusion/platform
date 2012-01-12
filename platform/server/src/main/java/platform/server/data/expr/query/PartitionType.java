@@ -8,7 +8,7 @@ import platform.server.data.expr.order.PartitionToken;
 
 import java.util.*;
 
-public enum OrderType implements AggrType {
+public enum PartitionType implements AggrType {
     SUM, DISTR_CUM_PROPORTION, DISTR_RESTRICT, DISTR_RESTRICT_OVER, PREVIOUS;
 
     public static <K> Set<K> getSet(List<K> exprs, OrderedMap<K, Boolean> orders, Collection<K> partitions) {

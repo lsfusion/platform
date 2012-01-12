@@ -114,9 +114,9 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return new PropertyValueImplement<P>(property, getInterfaceValues());
     }
 
-    public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, boolean aggValue) {
+    public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, boolean aggValue, DataSession session, Modifier modifier) throws SQLException {
         if(aggValue)
-            return property.getChangeImplement(aggProp).mapObjects(mapping);
+            return property.getChangeImplement(aggProp, getInterfaceValues(), session, modifier).mapObjects(mapping);
         else
             return this;
     }
@@ -136,10 +136,10 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
     public List<ClientAction> execute(DataSession session, CompareValue getterValue, Modifier modifier, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
 
-        Map<ObjectInstance, KeyExpr> groupKeys = new HashMap<ObjectInstance, KeyExpr>();
+        Map<ObjectInstance, ? extends Expr> groupKeys = new HashMap<ObjectInstance, KeyExpr>();
         Where changeWhere = Where.TRUE;
-        if (groupObject != null) {
-            groupKeys = BaseUtils.filterKeys(BaseUtils.crossJoin(mapping, mapKeys), groupObject.objects);
+        if (groupObject != null) { // в общем то replace потому как changeImplement может быть с меньшим количеством ключей, а для getWhere они все равно нужны
+            groupKeys = BaseUtils.replace(DataObject.getMapExprs(groupObject.getGroupObjectValue()), BaseUtils.crossJoin(mapping, mapKeys));
             changeWhere = groupObject.getWhere(groupKeys, modifier);
         }
 

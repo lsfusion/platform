@@ -22,7 +22,7 @@ import java.util.*;
 
 public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
 
-    protected SessionDataInterface<?> table;
+    protected SessionData<?> table;
     protected Map<KeyField, K> mapKeys;
     protected Map<PropertyField, V> mapProps;
 
@@ -126,7 +126,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         return table;
     }
 
-    public SessionTableUsage(SessionDataInterface<?> table, Map<KeyField, K> mapKeys, Map<PropertyField, V> mapProps) {
+    public SessionTableUsage(SessionData<?> table, Map<KeyField, K> mapKeys, Map<PropertyField, V> mapProps) {
         this.table = table;
         this.mapKeys = mapKeys;
         this.mapProps = mapProps;

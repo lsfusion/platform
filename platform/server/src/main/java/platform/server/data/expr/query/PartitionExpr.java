@@ -18,12 +18,12 @@ import platform.server.data.where.classes.ClassExprWhere;
 
 import java.util.*;
 
-public class PartitionExpr extends AggrExpr<KeyExpr, OrderType, PartitionExpr.Query, PartitionJoin, PartitionExpr, PartitionExpr.QueryInnerContext> {
+public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExpr.Query, PartitionJoin, PartitionExpr, PartitionExpr.QueryInnerContext> {
 
-    public static class Query extends AggrExpr.Query<OrderType, Query> {
+    public static class Query extends AggrExpr.Query<PartitionType, Query> {
         public Set<Expr> partitions;
 
-        public Query(List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions, OrderType type) {
+        public Query(List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions, PartitionType type) {
             super(exprs, orders, type);
             this.partitions = partitions;
         }
@@ -66,11 +66,11 @@ public class PartitionExpr extends AggrExpr<KeyExpr, OrderType, PartitionExpr.Qu
         }
 
         public Set<Expr> getExprs() {
-            return OrderType.getSet(exprs, orders, partitions);
+            return PartitionType.getSet(exprs, orders, partitions);
         }
     }
 
-    public static class QueryInnerContext extends AggrExpr.QueryInnerContext<KeyExpr, OrderType, PartitionExpr.Query, PartitionJoin, PartitionExpr, QueryInnerContext> {
+    public static class QueryInnerContext extends AggrExpr.QueryInnerContext<KeyExpr, PartitionType, PartitionExpr.Query, PartitionJoin, PartitionExpr, QueryInnerContext> {
         public QueryInnerContext(PartitionExpr thisObj) {
             super(thisObj);
         }
@@ -87,7 +87,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, OrderType, PartitionExpr.Qu
         return new QueryInnerContext(this);
     }
 
-    private PartitionExpr(OrderType partitionType, Map<KeyExpr, BaseExpr> group, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
+    private PartitionExpr(PartitionType partitionType, Map<KeyExpr, BaseExpr> group, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
         this(new Query(exprs, orders, partitions, partitionType), group);
     }
 
@@ -162,7 +162,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, OrderType, PartitionExpr.Qu
             return this;
     }
 
-    protected static Expr createBase(OrderType partitionType, Map<KeyExpr, BaseExpr> group, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
+    protected static Expr createBase(PartitionType partitionType, Map<KeyExpr, BaseExpr> group, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
         // проверим если в group есть ключи которые ссылаются на ValueExpr и они есть в partition'е - убираем их из partition'а
         Map<KeyExpr,BaseExpr> restGroup = new HashMap<KeyExpr, BaseExpr>();
         Set<Expr> restPartitions = new HashSet<Expr>(partitions);
@@ -182,7 +182,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, OrderType, PartitionExpr.Qu
         return BaseExpr.create(new PartitionExpr(partitionType, restGroup, exprs, orders, restPartitions));
     }
 
-    public static Expr create(final OrderType partitionType, final List<Expr> exprs, final OrderedMap<Expr, Boolean> orders, final Set<? extends Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
+    public static Expr create(final PartitionType partitionType, final List<Expr> exprs, final OrderedMap<Expr, Boolean> orders, final Set<? extends Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
         return new ExprPullWheres<KeyExpr>() {
             protected Expr proceedBase(Map<KeyExpr, BaseExpr> map) {
                 return createBase(partitionType, map, exprs, orders, (Set<Expr>) partitions);

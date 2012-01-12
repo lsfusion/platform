@@ -13,7 +13,7 @@ import platform.server.classes.*;
 import platform.server.data.SQLSession;
 import platform.server.data.Time;
 import platform.server.data.Union;
-import platform.server.data.expr.query.OrderType;
+import platform.server.data.expr.query.PartitionType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
@@ -520,6 +520,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass.sidClass);
         dataName = addDProp("name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
+        dataName.property.aggProp = true;
 
         // математические св-ва
         equals2 = addCFProp("equals2", Compare.EQUALS);
@@ -618,7 +619,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         
         workingDay = addJProp(baseGroup, "workingDay", getString("logics.day.working"), andNot1, addCProp(IntegerClass.instance, 1, country, DateClass.instance), 1, 2, isDayOffCountryDate, 1, 2);
         isWorkingDay = addJProp(baseGroup, "isWorkingDay", getString("logics.day.working"), and(false, false), workingDay, 1, 3, groeq2, 3, 2, is(DateClass.instance), 3);
-        workingDaysQuantity = addOProp(baseGroup, "workingDaysQuantity", getString("logics.day.working.days"), OrderType.SUM, isWorkingDay, true, true, 1, 2, 1, 3);
+        workingDaysQuantity = addOProp(baseGroup, "workingDaysQuantity", getString("logics.day.working.days"), PartitionType.SUM, isWorkingDay, true, true, 1, 2, 1, 3);
         equalsWorkingDaysQuantity = addJProp(baseGroup, "equalsWorkingDaysQuantity", getString("logics.day.equals.quantity.of.working.days"), equals2, object(IntegerClass.instance), 1, workingDaysQuantity, 2, 3, 4);
 
         transactionLater = addSUProp(getString("logics.transaction.later"), Union.OVERRIDE, addJProp(getString("logics.date.later"), greater2, date, 1, date, 2),
@@ -668,6 +669,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         name = addCUProp(recognizeGroup, "commonName", getString("logics.name"), dataName,
                 addJProp(insensitiveString2, userFirstName, 1, userLastName, 1));
+        name.property.aggProp = true;
 
         connectionComputer = addDProp("connectionComputer", getString("logics.computer"), computer, connection);
         addJProp(baseGroup, getString("logics.computer"), hostname, connectionComputer, 1);

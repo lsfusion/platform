@@ -3,8 +3,6 @@ package platform.server.data;
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
-import platform.server.caches.AbstractValuesContext;
-import platform.server.caches.ManualLazy;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.Expr;
@@ -24,7 +22,7 @@ import java.util.*;
 
 import static platform.base.BaseUtils.*;
 
-public class SessionDataTable extends SessionDataInterface<SessionDataTable> {
+public class SessionDataTable extends SessionData<SessionDataTable> {
     private SessionTable table;
 
     private List<KeyField> keys; // чисто для порядка ключей
@@ -140,13 +138,13 @@ public class SessionDataTable extends SessionDataInterface<SessionDataTable> {
         return query.getInnerValues().contains(table);
     }
 
-    public SessionDataInterface deleteRecords(SQLSession session, Map<KeyField, DataObject> deleteKeys) throws SQLException {
+    public SessionData deleteRecords(SQLSession session, Map<KeyField, DataObject> deleteKeys) throws SQLException {
         if(BaseUtils.filterKeys(deleteKeys, keyValues.keySet()).equals(keyValues)) //если константная часть ключа не равна, то нечего удалять
             table.deleteRecords(session, filterKeys(deleteKeys, table.keys));
         return this;
     }
 
-    public SessionDataInterface deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException {
+    public SessionData deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException {
         DataObject keyValue = keyValues.get(mapField);
         if (keyValue!=null) {
             if (keyValue.equals(object)) //удаляем всё
@@ -156,7 +154,7 @@ public class SessionDataTable extends SessionDataInterface<SessionDataTable> {
         return this;
     }
 
-    public SessionDataInterface deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException {
+    public SessionData deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException {
         ObjectValue propValue = propertyValues.get(property);
         if (propValue!=null) {
             if (propValue.equals(object)) //удаляем всё

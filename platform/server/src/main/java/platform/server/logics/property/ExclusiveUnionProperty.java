@@ -30,4 +30,9 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
             result = result.add(operand.mapDataChanges(change, changedWhere, propChanges));
         return result;
     }
+
+    @Override
+    protected boolean checkWhere() {
+        return false;
+    }
 }

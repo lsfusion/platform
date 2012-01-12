@@ -17,8 +17,10 @@ import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
+import platform.server.logics.DataObject;
 import platform.server.session.*;
 
+import java.sql.SQLException;
 import java.util.*;
 
 public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementProperty<JoinProperty.Interface> {
@@ -154,17 +156,26 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                     new PropertyChange<Interface>(change.mapKeys, groupExpr, change.where), changedWhere, propChanges);
         }
 
-
         return super.calculateDataChanges(change, changedWhere, propChanges);
     }
 
     @Override
-    public PropertyMapImplement<?,Interface> getChangeImplement(Result<Property> aggProp) {
+    public PropertyMapImplement<?, Interface> modifyChangeImplement(Result<Property> aggProp, Map<Interface, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
+        if(implement.property instanceof AndFormulaProperty) {
+            AndFormulaProperty andProperty = (AndFormulaProperty)implement.property;
+            for(AndFormulaProperty.Interface andInterface : andProperty.interfaces)
+                if(andInterface != andProperty.objectInterface) {
+                    Object read = implement.mapping.get(andInterface).read(session, interfaceValues, modifier);
+                    if((read!=null) == ((AndFormulaProperty.AndInterface)andInterface).not)
+                        return null; // не подходит
+                }
+            return implement.mapping.get(andProperty.objectInterface).mapChangeImplement(interfaceValues, session, modifier);
+        }
         if(implement.mapping.size()==1 && !implementChange) {
             aggProp.set(implement.property);
-            return ((PropertyMapImplement<?,Interface>)BaseUtils.singleValue(implement.mapping)).mapChangeImplement();
-        } else
-            return super.getChangeImplement(aggProp);
+            return BaseUtils.singleValue(implement.mapping).mapChangeImplement(interfaceValues, session, modifier);
+        }
+        return super.modifyChangeImplement(aggProp, interfaceValues, session, modifier);
     }
 
     public boolean checkEquals() {

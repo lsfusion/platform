@@ -36,4 +36,9 @@ public class OverrideUnionProperty extends CaseUnionProperty {
         }
         return result;
     }
+
+    @Override
+    protected boolean checkWhere() {
+        return false;
+    }
 }

@@ -14,7 +14,7 @@ import platform.server.logics.ObjectValue;
 import java.sql.SQLException;
 import java.util.*;
 
-public abstract class SessionDataInterface<T extends SessionDataInterface<T>> extends AbstractValuesContext<T> {
+public abstract class SessionData<T extends SessionData<T>> extends AbstractValuesContext<T> {
 
     public abstract List<KeyField> getKeys();
     public abstract Set<PropertyField> getProperties();
@@ -25,13 +25,13 @@ public abstract class SessionDataInterface<T extends SessionDataInterface<T>> ex
 
     public abstract boolean used(Query<?, ?> query);
 
-    public abstract SessionDataInterface insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, Object owner) throws SQLException;
+    public abstract SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, Object owner) throws SQLException;
 
-    public abstract SessionDataInterface deleteRecords(SQLSession session, Map<KeyField,DataObject> keys) throws SQLException;
+    public abstract SessionData deleteRecords(SQLSession session, Map<KeyField,DataObject> keys) throws SQLException;
 
-    public abstract SessionDataInterface deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException;
+    public abstract SessionData deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException;
 
-    public abstract SessionDataInterface deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException;
+    public abstract SessionData deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException;
 
     public abstract void out(SQLSession session) throws SQLException;
 
@@ -40,7 +40,7 @@ public abstract class SessionDataInterface<T extends SessionDataInterface<T>> ex
 
     public abstract boolean isEmpty();
 
-    private static SessionDataInterface write(final SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Query<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, Object owner) throws SQLException {
+    private static SessionData write(final SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Query<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, Object owner) throws SQLException {
 
         assert properties.equals(query.properties.keySet());
 
@@ -84,12 +84,12 @@ public abstract class SessionDataInterface<T extends SessionDataInterface<T>> ex
         }
     }
 
-    public SessionDataInterface rewrite(SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, Object owner) throws SQLException {
+    public SessionData rewrite(SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, Object owner) throws SQLException {
         boolean used = used(query);
         if(!used)
             drop(session, owner);
 
-        SessionDataInterface result = write(session, getKeys(), getProperties(), query, baseClass, env, owner);
+        SessionData result = write(session, getKeys(), getProperties(), query, baseClass, env, owner);
 
         if(used)
             drop(session, owner);
@@ -97,7 +97,7 @@ public abstract class SessionDataInterface<T extends SessionDataInterface<T>> ex
     }
 
     // "обновляет" ключи в таблице
-    public SessionDataInterface rewrite(SQLSession session, Collection<Map<KeyField, DataObject>> writeRows, Object owner) throws SQLException {
+    public SessionData rewrite(SQLSession session, Collection<Map<KeyField, DataObject>> writeRows, Object owner) throws SQLException {
         assert getProperties().isEmpty();
         drop(session, owner);
 

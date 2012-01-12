@@ -1,9 +1,7 @@
 package platform.server.data;
 
 import platform.base.*;
-import platform.server.caches.AbstractValuesContext;
 import platform.server.caches.IdentityLazy;
-import platform.server.caches.ManualLazy;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.Expr;
@@ -22,7 +20,7 @@ import platform.server.logics.ObjectValue;
 import java.sql.SQLException;
 import java.util.*;
 
-public class SessionRows extends SessionDataInterface<SessionRows> {
+public class SessionRows extends SessionData<SessionRows> {
 
     public final static int MAX_ROWS = 1;
 
@@ -106,7 +104,7 @@ public class SessionRows extends SessionDataInterface<SessionRows> {
         return keys.equals(((SessionRows)obj).keys) && properties.equals(((SessionRows)obj).properties) && rows.equals(((SessionRows)obj).rows);
     }
 
-    public SessionDataInterface insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, Object owner) throws SQLException {
+    public SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, Object owner) throws SQLException {
 
         Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> orRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(rows);
         Map<PropertyField, ObjectValue> prevValue = orRows.put(keyFields,propFields);
@@ -121,11 +119,11 @@ public class SessionRows extends SessionDataInterface<SessionRows> {
     public void drop(SQLSession session, Object owner) {
     }
 
-    public SessionDataInterface deleteRecords(SQLSession session, Map<KeyField,DataObject> keys) throws SQLException {
+    public SessionData deleteRecords(SQLSession session, Map<KeyField,DataObject> keys) throws SQLException {
         return new SessionRows(this.keys, properties, BaseUtils.removeKey(rows, keys));
     }
 
-    public SessionDataInterface deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException {
+    public SessionData deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException {
         Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> removeRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(rows);
         Iterator<Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>>> iterator = removeRows.entrySet().iterator();
         while(iterator.hasNext())
@@ -134,7 +132,7 @@ public class SessionRows extends SessionDataInterface<SessionRows> {
         return new SessionRows(keys, properties, removeRows);
     }
 
-    public SessionDataInterface deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException {
+    public SessionData deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException {
         Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> removeRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(rows);
         Iterator<Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>>> iterator = removeRows.entrySet().iterator();
         while(iterator.hasNext())

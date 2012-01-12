@@ -12,6 +12,7 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.ObjectValueProperty;
 import platform.server.logics.BusinessLogics;
 
+import java.sql.SQLException;
 import java.util.*;
 
 // представление св-ва
@@ -72,14 +73,14 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return result;
     }
 
-    public PropertyObjectInstance<?> getChangeInstance(BusinessLogics<?> BL) {
-        return getChangeInstance(new Result<Property>(), true, BL);
+    public PropertyObjectInstance<?> getChangeInstance(BusinessLogics<?> BL, FormInstance form) throws SQLException {
+        return getChangeInstance(new Result<Property>(), true, BL, form);
     }
-    public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, BusinessLogics<?> BL) {
-        return getChangeInstance(aggProp, true, BL);
+    public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, BusinessLogics<?> BL, FormInstance form) throws SQLException {
+        return getChangeInstance(aggProp, true, BL, form);
     }
-    public PropertyObjectInstance<?> getChangeInstance(boolean aggValue, BusinessLogics<?> BL, Map<ObjectInstance, DataObject> mapValues) {
-        return getChangeInstance(new Result<Property>(), aggValue, BL).getRemappedPropertyObject(mapValues);
+    public PropertyObjectInstance<?> getChangeInstance(boolean aggValue, BusinessLogics<?> BL, Map<ObjectInstance, DataObject> mapValues, FormInstance form) throws SQLException {
+        return getChangeInstance(new Result<Property>(), aggValue, BL, form).getRemappedPropertyObject(mapValues);
     }
 
     public boolean isReadOnly() {
@@ -94,8 +95,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             && toDraw.objects.iterator().next().entity.addOnEvent.isEmpty();
     }
 
-    public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, boolean aggValue, BusinessLogics<?> BL) {
-        PropertyObjectInstance<?> change = propertyObject.getChangeInstance(aggProp, aggValue);
+    public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, boolean aggValue, BusinessLogics<?> BL, FormInstance form) throws SQLException {
+        PropertyObjectInstance<?> change = propertyObject.getChangeInstance(aggProp, aggValue, form.session, form);
 
         // если readOnly свойство лежит в groupObject в виде панели с одним входом, то показываем диалог выбора объекта
         if (entity.readOnly && isSingleSimplePanel()) {

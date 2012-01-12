@@ -1,6 +1,5 @@
 package platform.server.logics;
 
-import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Result;
@@ -15,7 +14,7 @@ import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.data.expr.StringAggUnionProperty;
 import platform.server.data.expr.query.GroupType;
-import platform.server.data.expr.query.OrderType;
+import platform.server.data.expr.query.PartitionType;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.*;
 import platform.server.form.entity.FormEntity;
@@ -36,7 +35,6 @@ import javax.mail.Message;
 import javax.mail.internet.MimeMessage;
 import java.io.FileNotFoundException;
 import java.util.*;
-import java.util.jar.JarOutputStream;
 
 import static platform.base.BaseUtils.consecutiveInts;
 import static platform.base.BaseUtils.innerJoin;
@@ -868,35 +866,35 @@ public abstract class LogicsModule {
         return mapLGProp(group, persistent, new PropertyImplement<GroupProperty.Interface<P>, PropertyInterfaceImplement<P>>(property, property.getMapInterfaces()), listImplements);
     }
 
-    protected <P extends PropertyInterface> LP addOProp(String caption, OrderType partitionType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+    protected <P extends PropertyInterface> LP addOProp(String caption, PartitionType partitionType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
         return addOProp(genSID(), caption, partitionType, sum, ascending, includeLast, partNum, params);
     }
 
-    protected <P extends PropertyInterface> LP addOProp(String name, String caption, OrderType partitionType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+    protected <P extends PropertyInterface> LP addOProp(String name, String caption, PartitionType partitionType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
         return addOProp((AbstractGroup) null, name, caption, partitionType, sum, ascending, includeLast, partNum, params);
     }
 
-    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String caption, OrderType partitionType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String caption, PartitionType partitionType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
         return addOProp(group, genSID(), caption, partitionType, sum, ascending, includeLast, partNum, params);
     }
 
-    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String name, String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
-        return addOProp(group, name, false, caption, sum, orderType, ascending, includeLast, partNum, params);
+    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String name, String caption, PartitionType partitionType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp(group, name, false, caption, sum, partitionType, ascending, includeLast, partNum, params);
     }
 
-    private <P extends PropertyInterface> LP addOProp(AbstractGroup group, String name, boolean persistent, String caption, LP<P> sum, OrderType orderType, boolean ascending, boolean includeLast, int partNum, Object... params) {
+    private <P extends PropertyInterface> LP addOProp(AbstractGroup group, String name, boolean persistent, String caption, LP<P> sum, PartitionType partitionType, boolean ascending, boolean includeLast, int partNum, Object... params) {
         List<LI> li = readLI(params);
 
         Collection<PropertyInterfaceImplement<P>> partitions = mapLI(li.subList(0, partNum), sum.listInterfaces);
         OrderedMap<PropertyInterfaceImplement<P>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<P>, Boolean>(mapLI(li.subList(partNum, li.size()), sum.listInterfaces), !ascending);
 
         PropertyMapImplement<?, P> orderProperty;
-        orderProperty = DerivedProperty.createOProp(name, caption, orderType, sum.property, partitions, orders, includeLast);
+        orderProperty = DerivedProperty.createOProp(name, caption, partitionType, sum.property, partitions, orders, includeLast);
 
         return mapLProp(group, persistent, orderProperty, sum);
     }
 
-    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String name, boolean persistent, String caption, OrderType orderType, boolean ascending, boolean includeLast, int partNum, Object... params) {
+    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String name, boolean persistent, String caption, PartitionType partitionType, boolean ascending, boolean includeLast, int partNum, Object... params) {
         List<LI> li = readLI(params);
         List<PropertyInterface> interfaces = genInterfaces(getIntNum(params));
 
@@ -906,7 +904,7 @@ public abstract class LogicsModule {
                 new OrderedMap<PropertyInterfaceImplement<PropertyInterface>, Boolean>(mapLI(li.subList(partNum + 1, li.size()), interfaces), !ascending);
 
         PropertyMapImplement<P, PropertyInterface> orderProperty;
-        orderProperty = (PropertyMapImplement<P, PropertyInterface>) DerivedProperty.createOProp(name, caption, orderType, interfaces, mainProp, partitions, orders, includeLast);
+        orderProperty = (PropertyMapImplement<P, PropertyInterface>) DerivedProperty.createOProp(name, caption, partitionType, interfaces, mainProp, partitions, orders, includeLast);
 
         return addProperty(group, persistent, new LP<P>(orderProperty.property, BaseUtils.mapList(interfaces, BaseUtils.reverse(orderProperty.mapping))));
     }

@@ -29,7 +29,7 @@ import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupType;
-import platform.server.data.expr.query.OrderType;
+import platform.server.data.expr.query.PartitionType;
 import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.form.entity.*;
@@ -3311,7 +3311,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isPreliminaryFormalControl = addJProp("isPreliminaryFormalControl", "На предв. экспертизу", baseLM.equals2, projectActionFormalControl, 1, addCProp(projectAction, "preliminary"));
         isStatusFormalControl = addJProp("isStatusFormalControl", "На статус", baseLM.equals2, projectActionFormalControl, 1, addCProp(projectAction, "status"));
 
-        prevFormalControl = addOProp("prevFormalControl", "Пред. формальная экспертиза", OrderType.PREVIOUS, object(formalControl), true, true, 2, projectFormalControl, 1, projectActionFormalControl, 1, object(formalControl), 1);
+        prevFormalControl = addOProp("prevFormalControl", "Пред. формальная экспертиза", PartitionType.PREVIOUS, object(formalControl), true, true, 2, projectFormalControl, 1, projectActionFormalControl, 1, object(formalControl), 1);
         datePrevFormalControl = addJProp("datePrevFormalControl", "Дата пред. формальной эскпертизы", dateFormalControl, prevFormalControl, 1);
 
         overdueFormalControlProject = addJProp("overdueFormalControlProject", true, "Просрочена формальная экспертиза", baseLM.and1,
@@ -3347,7 +3347,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isPreliminaryLegalCheck = addJProp("isPreliminaryLegalCheck", "На предв. экспертизу", baseLM.equals2, projectActionLegalCheck, 1, addCProp(projectAction, "preliminary"));
         isStatusLegalCheck = addJProp("isStatusLegalCheck", "На статус", baseLM.equals2, projectActionLegalCheck, 1, addCProp(projectAction, "status"));
 
-        prevLegalCheck = addOProp("prevLegalCheck", "Пред. юридическая проверка", OrderType.PREVIOUS, object(legalCheck), true, true, 2, projectLegalCheck, 1, projectActionLegalCheck, 1, object(legalCheck), 1);
+        prevLegalCheck = addOProp("prevLegalCheck", "Пред. юридическая проверка", PartitionType.PREVIOUS, object(legalCheck), true, true, 2, projectLegalCheck, 1, projectActionLegalCheck, 1, object(legalCheck), 1);
         datePrevLegalCheck = addJProp("datePrevLegalCheck", "Дата пред. юридической проверки", dateLegalCheck, prevLegalCheck, 1);
 
         positiveStatusLegalCheckProject = addMGProp("executeStatusLegalCheckProject", true, "Положительная (статус)", false,
@@ -3471,7 +3471,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         positiveOriginalDocsCheckProject = addJProp("positiveOriginalDocsCheckProject", true, "Полный пакет документов", baseLM.equals2, resultExecuteOriginalDocsCheckProject, 1, addCProp(originalDocsCheckResult, "completeOriginalDocsPacket"));
         overdueOriginalDocsCheckProject = addJProp("overdueOriginalDocsCheckProject", true, "Пакет оригиналов документов не пополнен в срок", baseLM.greater2, baseLM.currentDate, addJProp(overdueDateOriginalDocsCheck, executeOriginalDocsCheckProject, 1), 1);
 
-        prevOriginalDocsCheck = addOProp("prevOriginalDocsCheck", "Пред. проверка", OrderType.PREVIOUS, object(originalDocsCheck), true, true, 1, projectOriginalDocsCheck, 1, object(originalDocsCheck), 1);
+        prevOriginalDocsCheck = addOProp("prevOriginalDocsCheck", "Пред. проверка", PartitionType.PREVIOUS, object(originalDocsCheck), true, true, 1, projectOriginalDocsCheck, 1, object(originalDocsCheck), 1);
         datePrevOriginalDocsCheck = addJProp("datePrevOriginalDocsCheck", "Дата пред. проверки", dateOriginalDocsCheck, prevOriginalDocsCheck, 1);
 
         sentForSignatureProject = addDProp(registerGroup, "sentForSignatureProject", "Решение передано на подпись", LogicalClass.instance, project);
@@ -3627,14 +3627,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), enoughDocumentsCorExpertVote, 1, 2), 1);
         percentEnoughDocumentsExpert = addJProp(expertResultGroup, "percentEnoughDocumentsExpert", "Достаточно голосов (%)", baseLM.share2, quantityEnoughDocumentsExpert, 1, quantityIsR2DoneExpert, 1);
 
-        prevDateStartVote = addOProp("prevDateStartVote", "Пред. засед. (старт)", OrderType.PREVIOUS, dateStartVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
-        prevDateVote = addOProp("prevDateVote", "Пред. засед. (окончание)", OrderType.PREVIOUS, dateEndVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
+        prevDateStartVote = addOProp("prevDateStartVote", "Пред. засед. (старт)", PartitionType.PREVIOUS, dateStartVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
+        prevDateVote = addOProp("prevDateVote", "Пред. засед. (окончание)", PartitionType.PREVIOUS, dateEndVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
 
-        prevClusterVote = addOProp(idGroup, "prevClusterVote", "Пред. кластер. (ИД)", OrderType.PREVIOUS, clusterVote, true, true, 1, projectVote, 1, baseLM.date, 1);
+        prevClusterVote = addOProp(idGroup, "prevClusterVote", "Пред. кластер. (ИД)", PartitionType.PREVIOUS, clusterVote, true, true, 1, projectVote, 1, baseLM.date, 1);
         nameNativePrevClusterVote = addJProp("nameNativePrevClusterVote", "Пред. кластер", nameNative, prevClusterVote, 1);
 
-        numberNewExpertVote = addOProp("numberNewExpertVote", "Номер (нов.)", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), true, true, 1, 2, 1);
-        numberOldExpertVote = addOProp("numberOldExpertVote", "Номер (стар.)", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inOldExpertVote, 1, 2), true, true, 1, 2, 1);
+        numberNewExpertVote = addOProp("numberNewExpertVote", "Номер (нов.)", PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), true, true, 1, 2, 1);
+        numberOldExpertVote = addOProp("numberOldExpertVote", "Номер (стар.)", PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inOldExpertVote, 1, 2), true, true, 1, 2, 1);
 
         emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
         emailIO = addDProp(baseGroup, "emailIO", "E-mail инвестиционного отдела", StringClass.get(50));
@@ -4352,8 +4352,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         submitDaysRegisterApplicationDateWeek = addSGProp("submitDaysRegisterApplicationDateWeek", "Дней на статус", addJProp(daysStatusApplication, inActTestApplicationDate, 1, 2), 2, weekSubmitRegisterApplicationDate, 1, 2);
         submitRegisterApplicationsDateWeek = addSGProp("submitRegisterApplicationsDateWeek", "К-во заявок за неделю", addJProp(addCProp(IntegerClass.instance, 1, application), inActTestApplicationDate, 1, 2), 2, weekSubmitRegisterApplicationDate, 1, 2);
-        risingDaysRegisterApplicationDateWeek = addOProp("risingDaysRegisterApplicationDateWeek", "Дней на статус, нарастающий", OrderType.SUM, submitDaysRegisterApplicationDateWeek, true, true, 1, 1, 2);
-        risingRegisterApplicationsDateWeek = addOProp("risingRegisterApplicationsDateWeek", "К-во заявок, нарастающий", OrderType.SUM, submitRegisterApplicationsDateWeek, true, true, 1, 1, 2);
+        risingDaysRegisterApplicationDateWeek = addOProp("risingDaysRegisterApplicationDateWeek", "Дней на статус, нарастающий", PartitionType.SUM, submitDaysRegisterApplicationDateWeek, true, true, 1, 1, 2);
+        risingRegisterApplicationsDateWeek = addOProp("risingRegisterApplicationsDateWeek", "К-во заявок, нарастающий", PartitionType.SUM, submitRegisterApplicationsDateWeek, true, true, 1, 1, 2);
 
         averageDaysRegisterApplicationsDateWeekWeek = addJProp("averageDaysRegisterApplicationsDateWeekWeek", "Ср.срок на статус, за нед.",
                 baseLM.divideInteger0, submitDaysRegisterApplicationDateWeek, 1, 2, submitRegisterApplicationsDateWeek, 1, 2);

@@ -1,13 +1,14 @@
 package platform.server.logics.property;
 
+import platform.base.Result;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.MapDataChanges;
-import platform.server.session.PropertyChange;
-import platform.server.session.PropertyChanges;
+import platform.server.logics.DataObject;
+import platform.server.session.*;
 
+import java.sql.SQLException;
 import java.util.*;
 
 public class CaseUnionProperty extends AbstractCaseUnionProperty {
@@ -23,7 +24,7 @@ public class CaseUnionProperty extends AbstractCaseUnionProperty {
         else
             cases.add(propCase);
     }
-    protected Collection<Case> getCases() {
+    protected Iterable<Case> getCases() {
         return cases;
     }
 
