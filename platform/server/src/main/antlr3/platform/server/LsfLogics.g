@@ -6,7 +6,7 @@ grammar LsfLogics;
 	import platform.interop.ClassViewType;
 	import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 	import platform.server.data.Union;
-	import platform.server.data.expr.query.OrderType;
+	import platform.server.data.expr.query.PartitionType;
 	import platform.server.form.entity.GroupObjectEntity;
 	import platform.server.form.entity.PropertyObjectEntity;
 	import platform.server.form.view.ComponentView;
@@ -690,7 +690,7 @@ partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LP p
 @init {
 	List<List<Integer>> usedSubParams = new ArrayList<List<Integer>>();
 	List<LP<?>> paramProps = new ArrayList<LP<?>>();
-	OrderType type = null;
+	PartitionType type = null;
 	int groupExprCnt;
 	boolean ascending = true;
 	boolean useLast = true;
@@ -703,7 +703,7 @@ partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LP p
 		$usedParams = result.usedParams;	
 	}
 }
-	:	'PARTITION' ('SUM' {type = OrderType.SUM;} | 'PREV' {type = OrderType.PREVIOUS;})
+	:	'PARTITION' ('SUM' {type = PartitionType.SUM;} | 'PREV' {type = PartitionType.PREVIOUS;})
 		expr=propertyExpression[context, dynamic] { paramProps.add($expr.property); usedSubParams.add($expr.usedParams); }
 		(	'BY'
 			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($exprList.props); usedSubParams.addAll($exprList.usedParams); }
