@@ -73,13 +73,25 @@ OBJECTS i=item FIXED PANEL, a=itemAttribute
 PROPERTIES(i) name, shortNameUnitOfMeasureItem, nameBrandItem
 PROPERTIES name(a), valueItemAttribute(i, a);
 
-FORM items 'Товары'
-OBJECTS i=item
-PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
-PROPERTIES(i) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Штрих код ------------------------------------------ //
 CLASS barcode 'Штрих код' : barcodeObject;
+
+skuBarcode = DATA sku (barcode) IN idGroup;
+nameSkuBarcode = name((skuBarcode(barcode))) IN baseGroup;
+
+inSkuBarcode(sku, barcode) = skuBarcode(barcode) == sku;
+
+FORM items 'Товары'
+OBJECTS i=item
+OBJECTS b=barcode
+
+PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
+PROPERTIES(i) ADDFORM, EDITFORM, delete
+PROPERTIES(b) READONLY barcode
+PROPERTIES(b) ADDFORM, EDITFORM, delete
+
+FILTERS NOT NULL inSkuBarcode(i, b);
 
 // ----------------------------------- Склад ------------------------------------------ //
 
@@ -290,3 +302,7 @@ FORM companyForm 'Компании'
 OBJECTS co=company
 PROPERTIES(co) READONLY ownershipLegalEntity, name, fullNameLegalEntity, lawLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity
 PROPERTIES(co) ADDFORM, EDITFORM, delete;
+
+
+//---------------------------- по поставщикам и товарам ----------------------------------------
+
