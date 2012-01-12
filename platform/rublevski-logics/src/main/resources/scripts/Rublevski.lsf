@@ -146,7 +146,23 @@ CLASS guild 'Цех' : departmentStore;
 storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) IN idGroup;
 nameStoreDepartmentStore 'Магазин отдела' (departmentStore) = name(storeDepartmentStore(departmentStore));
 
-
+controlCommodityStocksDepartmentStore 'Контролировать товарные запасы подразделения?' = DATA BOOLEAN (departmentStore) IN storeGroup;
+controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore) IN storeGroup;
+deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore) IN storeGroup;
+controlMinusRestsContainerDepartmentStore 'Контроль за минусовыми остатками тары' = DATA BOOLEAN (departmentStore) IN storeGroup;
+tradingSquareDepartmentStore 'Торговая площадь магазина, кв.м.' = DATA DOUBLE (departmentStore) IN storeGroup;
+resolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' = DATA BOOLEAN (departmentStore) IN storeGroup;
+controlAssortmentProviderDepartmentStore 'Контролировать ассортимент поставщиков в подразделении?' = DATA BOOLEAN (departmentStore) IN storeGroup;
+verifyOrderArrivalDepartmentStore 'Сверять заказ и приход в подразделении?' = DATA BOOLEAN (departmentStore) IN storeGroup;
+maxQuantityDeliveryHourDepartmentStore 'Максимальное допустимое число поставок в час' = DATA INTEGER (departmentStore) IN storeGroup;
+resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore 'Разрешить превысить количество поставок/час при ассортименте <' = DATA DOUBLE (departmentStore) IN storeGroup;
+resolveOrderItemDepartmentStore 'Разрешить заказ товара в подразделение?' = DATA BOOLEAN (departmentStore) IN storeGroup;
+marginPublicCateringDepartmentStore 'Наценка общепита по умолчанию для формирования цены в подразделении' = DATA DOUBLE (departmentStore) IN storeGroup;
+quantityCashChangeOneOperationAccountDepartmentStore ' Количество кассовых смен в одном оперативном отчете' = DATA INTEGER (departmentStore) IN storeGroup;
+ChairmanCommissionOverestimateDepartmentStore 'Председатель комиссии по переоценке' = DATA employee (departmentStore) IN storeGroup;
+materiallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' = DATA employee (departmentStore) IN storeGroup;
+bookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет' = DATA employee (departmentStore) IN storeGroup;
+personCheckReportDepartmentStore 'Кто проверяет товарный отчет' = DATA employee (departmentStore) IN storeGroup;
 
 inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
 
@@ -161,7 +177,12 @@ PROPERTIES(e) ADDFORM, EDITFORM, delete;
 
 FORM departmentStore 'Отдел магазина'
 OBJECTS d=departmentStore FIXED PANEL
-PROPERTIES(d) READONLY name, nameStoreDepartmentStore;
+PROPERTIES(d) READONLY name
+PROPERTIES(d) nameStoreDepartmentStore, controlCommodityStocksDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
+              tradingSquareDepartmentStore, resolveDiscountDepartmentStore, controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
+              maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
+              marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, ChairmanCommissionOverestimateDepartmentStore,
+              materiallyResponsiblePersonItemReportDepartmentStore, bookkeeperItemReportDepartmentStore, personCheckReportDepartmentStore;
 
 FORM departmentStores 'Отделы магазина'
 OBJECTS d=departmentStore
