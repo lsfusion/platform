@@ -505,7 +505,7 @@ PROPERTIES(c) ADDFORM, EDITFORM, delete;
 CLASS flash 'Прошивка';
 nameFlash 'Модель весов/версия прошивки' = DATA STRING[100] (flash) IN baseGroup;
 
-flashScalesModel 'Прошивка (ИД)' = DATA flash (cashModel) IN idGroup;
+flashScalesModel 'Прошивка (ИД)' = DATA flash (scalesModel) IN idGroup;
 nameFlashScalesModel 'Модель весов/версия прошивки' = nameFlash(flashScalesModel(scalesModel)) IN baseGroup;
 maxTextScalesModel 'MAX допустимое колич.дополнительных текстов' = DATA INTEGER (scalesModel) IN baseGroup;
 folderScalesModel 'Папка на сервере весов с драйвером весов' = DATA STRING[200] (scalesModel) IN baseGroup;
