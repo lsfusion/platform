@@ -14,7 +14,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 
 public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObject {
     private static Set<String> elementsSIDs = new HashSet<String>();
@@ -66,6 +65,10 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         return result;
     }
 
+    public boolean isAncestorOf(NavigatorElement element) {
+        return element != null && (equals(element) || isAncestorOf(element.parent));
+    }
+
     private void fillChildren(Collection<NavigatorElement<T>> result) {
 
         if (result.contains(this))
@@ -84,10 +87,34 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
     }
 
     public void add(NavigatorElement child) {
-        if (children.contains(child))
+        add(children.size(), child);
+    }
+
+    public void add(int index, NavigatorElement child) {
+        int currIndex = children.indexOf(child);
+        if (currIndex != -1) {
             children.remove(child);
-        children.add(child);
+            if (currIndex < index) {
+                index--;
+            }
+        } else if (child.parent != null) {
+            child.parent.remove(child);
+        }
+
+        children.add(index, child);
         child.parent = this;
+    }
+
+    public void addBefore(NavigatorElement child, NavigatorElement elemBefore) {
+        add(elemBefore != null ? children.indexOf(elemBefore) : children.size(), child);
+    }
+
+    public void addAfter(NavigatorElement child, NavigatorElement elemAfter) {
+        add(elemAfter != null ? children.indexOf(elemAfter) + 1 : children.size(), child);
+    }
+
+    public boolean remove(NavigatorElement child) {
+        return child != null && children.remove(child);
     }
 
     public boolean hasChildren() {

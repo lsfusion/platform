@@ -8,6 +8,7 @@ import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.view.FormView;
 import platform.server.logics.linear.LP;
 
 import javax.swing.*;
@@ -29,6 +30,11 @@ public class ScriptingFormEntity extends FormEntity {
     public ScriptingFormEntity(NavigatorElement parent, ScriptingLogicsModule LM, String sID, String caption) {
         super(parent, sID, caption);
         this.LM = LM;
+    }
+
+    @Override
+    public FormView createDefaultRichDesign() {
+        return new ScriptedFormView(this, true, LM);
     }
 
     public void addScriptedGroupObjects(List<List<String>> names, List<List<String>> classes, List<ClassViewType> viewTypes, List<Boolean> isInitType) throws ScriptingErrorLog.SemanticErrorException {

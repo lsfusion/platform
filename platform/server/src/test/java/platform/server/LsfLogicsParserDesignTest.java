@@ -141,8 +141,7 @@ public class LsfLogicsParserDesignTest {
     @Test
     public void testSetFormViewProperties() throws Exception {
         setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
-                  "    caption='some';\n" +
-                  "    title='some2';\n" + //title <==> caption
+                  "    title='some2';\n" +
                   "    overridePageWidth=12;\n" +
                   "}");
 
@@ -202,6 +201,8 @@ public class LsfLogicsParserDesignTest {
                   "        panelLabelAbove = TRUE;\n" +
                   "        caption = 'This is bar\\'s caption!';\n" +
                   "        clearText = TRUE;\n" +
+                  "        childConstraints = TO THE LEFT;\n" +
+                  "        insetsInside = (100, 223  , -  123, 123);\n" +
                   "    }\n" +
                   "}");
 
@@ -224,6 +225,8 @@ public class LsfLogicsParserDesignTest {
         assertTrue(nameView.showEditKey);
 
         assertEquals(fooView.caption, "This is bar's caption!");
+        assertEquals(fooView.constraints.childConstraints, DoNotIntersectSimplexConstraint.TOTHE_LEFT);
+        assertEquals(fooView.constraints.insetsInside, new Insets(100, 223, -123, 123));
     }
 
     @Test
@@ -298,7 +301,7 @@ public class LsfLogicsParserDesignTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void testDenyRecursiveContainersMove() throws Exception {
+    public void testMoveToSubcontainerFails() throws Exception {
         setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
                   "    main {\n" +
                   "        ADD outer {\n" +

@@ -1,4 +1,4 @@
-MODULE testPresentation;
+MODULE testNavigator;
 
 IMPORT BaseLogicsModule;
 
@@ -150,4 +150,10 @@ foo(store, article) => foo2(store, article) RESOLVE NOTHING, bar2(store, article
 
 //////////////// FORM STATEMENT /////////////////
 
+FORM storeArticle 'По складам'
+OBJECTS s=store, a=article
+PROPERTIES SELECTION(s), name(s), OBJVALUE(a), name(a)
+PROPERTIES(s, a) incomeQuantity, incomeQuantity2, outcomeQuantity, outcomeQuantity2
+PROPERTIES(s) storeSizeName, storeIsHuge, storeIsHuge2
+PROPERTIES(s, a) foo, foo2, bar, foobar, bar2, baz, baz2, balanceQuantity, testUnion, testPartition, testFormula;
 

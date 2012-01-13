@@ -108,6 +108,18 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "component", name);
     }
 
+    public void emitNavigatorElementNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+        emitNotFoundError(parser, "navigator element", name);
+    }
+
+    public void emitIllegalInsertBeforeAfterNavigatorElement(LsfLogicsParser parser, String element) throws SemanticErrorException {
+        emitSimpleError(parser, "can't insert component after or before '" + element + "'");
+    }
+
+    public void emitIllegalMoveNavigatorToSubnavigator(LsfLogicsParser parser, String movingElement, String movedToElement) throws SemanticErrorException {
+        emitSimpleError(parser, format("can't move navigator element '%s' to it's subelement '%s'.", movingElement, movedToElement));
+    }
+
     public void emitComponentIsNullError(LsfLogicsParser parser, String mainMsg) throws SemanticErrorException {
         emitSimpleError(parser, mainMsg + " component is null");
     }
@@ -120,8 +132,8 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "can't insert before or after main container.");
     }
 
-    public void emitIllegalMoveComponentToSubcomponent(LsfLogicsParser parser, String outerComponent, String innerComponent) throws SemanticErrorException {
-        emitSimpleError(parser, format("can't move component '%s' to it's subcomponent '%s'.", outerComponent, innerComponent));
+    public void emitIllegalMoveComponentToSubcomponent(LsfLogicsParser parser, String movingComponent, String movedToComponent) throws SemanticErrorException {
+        emitSimpleError(parser, format("can't move component '%s' to it's subcomponent '%s'.", movingComponent, movedToComponent));
     }
 
     public void emitRemoveMainContinaerError(LsfLogicsParser parser) throws SemanticErrorException {

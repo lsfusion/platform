@@ -9,6 +9,7 @@ grammar LsfLogics;
 	import platform.server.data.expr.query.PartitionType;
 	import platform.server.form.entity.GroupObjectEntity;
 	import platform.server.form.entity.PropertyObjectEntity;
+	import platform.server.form.navigator.NavigatorElement;
 	import platform.server.form.view.ComponentView;
 	import platform.server.form.view.GroupObjectView;
 	import platform.server.form.view.PropertyDrawView;
@@ -16,7 +17,7 @@ grammar LsfLogics;
 	import platform.server.logics.property.PropertyFollows;
 	import platform.server.logics.scripted.*;
 	import platform.server.logics.scripted.ScriptingFormEntity.MappedProperty;
-	import platform.server.logics.scripted.ScriptedFormView.InsertPosition;
+	import platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition;
 
 	import java.awt.*;
 	import java.util.ArrayList;
@@ -158,8 +159,9 @@ statement
 		|	indexStatement
 		|	formStatement
 		|	designStatement
+		|	navigatorStatement
 		|	emptyStatement
-		)	
+		)
 	;
 
 
@@ -182,7 +184,7 @@ classStatement
 	}
 }
 	:	'CLASS' ('ABSTRACT' {isAbstract = true;} | 'STATIC' {isStatic = true;})?
-		nameCaption=simpleNameWithCaption 
+		nameCaption=simpleNameWithCaption
 		(
 			'{'
 				firstInstData=simpleNameWithCaption { instanceNames.add($firstInstData.name); instanceCaptions.add($firstInstData.caption); }
@@ -210,7 +212,7 @@ groupStatement
 		self.addScriptedGroup($groupNameCaption.name, $groupNameCaption.caption, parent);
 	}
 }
-	:	'GROUP' groupNameCaption=simpleNameWithCaption 
+	:	'GROUP' groupNameCaption=simpleNameWithCaption
 		(':' parentName=compoundID { parent = $parentName.text; })?
 		';'
 	;
@@ -230,9 +232,9 @@ scope {
 	}
 }
 	:	declaration=formDeclaration { $formStatement::form = $declaration.form; }
-		(	formGroupObjectsList 
+		(	formGroupObjectsList
 		|	formFiltersList
-		| 	formPropertiesList
+		|	formPropertiesList
 		|	filterGroupDeclaration
 		|	formOrderByList
 		)*
@@ -247,7 +249,7 @@ formDeclaration returns [ScriptingFormEntity form]
 	}
 }
 	:	'FORM' 
-		formNameCaption=simpleNameWithCaption 
+		formNameCaption=simpleNameWithCaption
 	;
 
 
@@ -264,7 +266,7 @@ formGroupObjectsList // needs refactoring
 	}
 }
 	:	'OBJECTS'
-	    groupElement=formGroupObjectDeclaration { names.add($groupElement.objectNames); classNames.add($groupElement.classIds); 
+		groupElement=formGroupObjectDeclaration { names.add($groupElement.objectNames); classNames.add($groupElement.classIds);
 												  groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType); }
 		(',' groupElement=formGroupObjectDeclaration { names.add($groupElement.objectNames); classNames.add($groupElement.classIds); 
 													   groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType); })*
@@ -314,14 +316,14 @@ formPropertiesList
 		$formStatement::form.addScriptedPropertyDraws(properties, mapping, commonOptions, options);
 	}
 }
-	: 'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertiesNamesList
+	:	'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertiesNamesList
 		{
 			commonOptions = $opts.options;
 			properties = $list.properties;
 			mapping = Collections.nCopies(properties.size(), $objects.ids);
 			options = $list.options;
 		}
-	| 'PROPERTIES' opts=formPropertyOptionsList mappedList=formMappedPropertiesList
+	|	'PROPERTIES' opts=formPropertyOptionsList mappedList=formMappedPropertiesList
 		{
 			commonOptions = $opts.options;
 			properties = $mappedList.properties;
@@ -334,15 +336,14 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 @init {
 	$options = new FormPropertyOptions();
 }
-	:
-	(	'READONLY' { $options.setReadOnly(true); }
-	|	'EDITABLE' { $options.setReadOnly(false); }
-	|	'COLUMNS' '(' ids=nonEmptyIdList ')' { $options.setColumns(getGroupObjectsList($ids.ids)); }
-	|	'SHOWIF' mappedProp=formMappedProperty { $options.setShowIf(getPropertyWithMapping($mappedProp.name, $mappedProp.mapping)); }
-	|	'HIGHLIGHTIF' propObj=formPropertyObject { $options.setHighlightIf($propObj.property); }
-	|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
-	|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
-	)*
+	:	(	'READONLY' { $options.setReadOnly(true); }
+		|	'EDITABLE' { $options.setReadOnly(false); }
+		|	'COLUMNS' '(' ids=nonEmptyIdList ')' { $options.setColumns(getGroupObjectsList($ids.ids)); }
+		|	'SHOWIF' mappedProp=formMappedProperty { $options.setShowIf(getPropertyWithMapping($mappedProp.name, $mappedProp.mapping)); }
+		|	'HIGHLIGHTIF' propObj=formPropertyObject { $options.setHighlightIf($propObj.property); }
+		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
+		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
+		)*
 	;
 
 
@@ -357,7 +358,7 @@ formMappedPropertiesList returns [List<String> properties, List<List<String>> ma
 	;
 
 formPropertyObject returns [PropertyObjectEntity property = null]
-	: mappedProperty=formMappedProperty
+	:	mappedProperty=formMappedProperty
 		{
 			if (inPropParseState()) {
 				$property = $formStatement::form.addPropertyObject(mappedProperty.name, mappedProperty.mapping);
@@ -366,10 +367,10 @@ formPropertyObject returns [PropertyObjectEntity property = null]
 	;
 
 formMappedProperty returns [String name, List<String> mapping]
-	:   pname=formPropertyName { $name = $pname.text; }
-	    '('
-		    objects=idList { $mapping = $objects.ids; }
-	    ')'
+	:	pname=formPropertyName { $name = $pname.text; }
+		'('
+			objects=idList { $mapping = $objects.ids; }
+		')'
 	;
 
 
@@ -379,14 +380,12 @@ formPropertiesNamesList returns [List<String> properties, List<FormPropertyOptio
 	$options = new ArrayList<FormPropertyOptions>();
 }
 	:	pname=formPropertyName opts=formPropertyOptionsList { $properties.add($pname.text); $options.add($opts.options); }
-		(
-			',' pname=formPropertyName opts=formPropertyOptionsList { $properties.add($pname.text); $options.add($opts.options); }
-		)*
+		(',' pname=formPropertyName opts=formPropertyOptionsList { $properties.add($pname.text); $options.add($opts.options); })*
 	;
 
 
 formPropertyName 
-	: compoundID | ('OBJVALUE') | ('SELECTION') | ('ADDOBJ') | ('ADDFORM') | ('EDITFORM')
+	:	compoundID | ('OBJVALUE') | ('SELECTION') | ('ADDOBJ') | ('ADDFORM') | ('EDITFORM')
 	;
 
 
@@ -400,8 +399,8 @@ formFiltersList
 		$formStatement::form.addScriptedFilters(propertyNames, propertyMappings);
 	}
 }
-	:   'FILTERS'
-	    decl=formFilterDeclaration { propertyNames.add($decl.name); propertyMappings.add($decl.mapping);}
+	:	'FILTERS'
+		decl=formFilterDeclaration { propertyNames.add($decl.name); propertyMappings.add($decl.mapping);}
 	    (',' decl=formFilterDeclaration { propertyNames.add($decl.name); propertyMappings.add($decl.mapping);})*
 	;
 	
@@ -432,7 +431,7 @@ filterGroupDeclaration
 
 	
 formFilterDeclaration returns [String name, List<String> mapping] 
-	: 'NOT' 'NULL' propDecl=formMappedProperty { $name = $propDecl.name; $mapping = $propDecl.mapping; }
+	:	'NOT' 'NULL' propDecl=formMappedProperty { $name = $propDecl.name; $mapping = $propDecl.mapping; }
 	;
 	
 
@@ -447,7 +446,7 @@ formOrderByList
 		$formStatement::form.addScriptedDefaultOrder(properties, orders);
 	}
 }
-	: 'ORDER' 'BY' orderedProp=formPropertyWithOrder { properties.add($orderedProp.id); orders.add($orderedProp.order); }
+	:	'ORDER' 'BY' orderedProp=formPropertyWithOrder { properties.add($orderedProp.id); orders.add($orderedProp.order); }
 		(',' orderedProp=formPropertyWithOrder { properties.add($orderedProp.id); orders.add($orderedProp.order); } )*
 	;
 	
@@ -656,9 +655,9 @@ joinPropertyDefinition[List<String> context, boolean dynamic] returns [LP proper
 		$usedParams = result.usedParams;
 	}
 }
-	:	mainPropObj=propertyObject 
+	:	mainPropObj=propertyObject
 		'('
-		exprList=propertyExpressionList[context, dynamic] 
+		exprList=propertyExpressionList[context, dynamic]
 		')'
 	;
 
@@ -724,9 +723,9 @@ dataPropertyDefinition[boolean innerPD] returns [LP property]
 	}
 }
 	:	'DATA'
-		returnClass=classId 
+		returnClass=classId
 		'('
-			paramClassNames=classIdList 
+			paramClassNames=classIdList
 		')'
 	;
 
@@ -745,7 +744,7 @@ unionPropertyDefinition[List<String> context, boolean dynamic] returns [LP prope
 }
 	:	'UNION'
 		(('MAX' {type = Union.MAX;}) | ('SUM' {type = Union.SUM;}) | ('OVERRIDE' {type = Union.OVERRIDE;}) | ('XOR' { type = Union.XOR;}) | ('EXCLUSIVE' {type = Union.EXCLUSIVE;}))
-		exprList=nonEmptyPropertyExpressionList[context, dynamic] 
+		exprList=nonEmptyPropertyExpressionList[context, dynamic]
 	;
 
 
@@ -755,7 +754,7 @@ formulaPropertyDefinition returns [LP property]
 		$property = self.addScriptedSFProp($className.text, $formulaText.text);
 	}
 }
-	:	'FORMULA' className=classId formulaText=STRING_LITERAL 
+	:	'FORMULA' className=classId formulaText=STRING_LITERAL
 	;
 
 
@@ -769,7 +768,7 @@ typePropertyDefinition returns [LP property]
 	}	
 }
 	:	('IS' { bIs = true; } | 'AS')
-		clsId=classId 
+		clsId=classId
 	;
 
 
@@ -811,13 +810,13 @@ constraintStatement
 	boolean checked = false;
 }
 @after {
-	if (inPropParseState()) { 
-		self.addScriptedConstraint($expr.property, checked, $message.text);	
+	if (inPropParseState()) {
+		self.addScriptedConstraint($expr.property, checked, $message.text);
 	}
 }
-	:	'CONSTRAINT' ('CHECKED' { checked = true; })? 
-		expr=propertyExpression[new ArrayList<String>(), true] 	
-		'MSG' message=STRING_LITERAL 
+	:	'CONSTRAINT' ('CHECKED' { checked = true; })?
+		expr=propertyExpression[new ArrayList<String>(), true]
+		'MSG' message=STRING_LITERAL
 		';'
 	;
 
@@ -873,16 +872,16 @@ writeOnChangeStatement
 	List<String> context;
 }
 @after {
-	if (inPropParseState()) { 
+	if (inPropParseState()) {
 		self.addScriptedWriteOnChange($mainProp.name, context.size(), old, anyChange, $valueExpr.property, $valueExpr.usedParams, $changeExpr.property, $changeExpr.usedParams);
 	}
 }
 	:	mainProp=propertyWithNamedParams { context = $mainProp.params; }
 		'<-'
 		('OLD' { old = true; })?
-		valueExpr=propertyExpression[context, false] 
-		'ON' ('CHANGE' | 'ASSIGN' { anyChange = false; }) 
-		changeExpr=propertyExpression[context, false] 
+		valueExpr=propertyExpression[context, false]
+		'ON' ('CHANGE' | 'ASSIGN' { anyChange = false; })
+		changeExpr=propertyExpression[context, false]
 		';'
 	;
 
@@ -901,6 +900,61 @@ tableStatement
 
 indexStatement
 	:	'I' ';';
+
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// NAVIGATOR STATEMENT ////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+navigatorStatement
+	:	'NAVIGATOR' navigatorElementStatementBody[self.baseLM.baseElement]
+	;
+
+navigatorElementStatementBody[NavigatorElement parentElement]
+	:	'{'
+			(	addNavigatorElementStatement[parentElement]
+			|	setupNavigatorElementStatement
+			|	emptyStatement
+			)*
+		'}'
+	| emptyStatement
+	;
+
+addNavigatorElementStatement[NavigatorElement parentElement]
+@init {
+	boolean hasPosition = false;
+	String caption = null;
+	NavigatorElement insElem = null;
+}
+	:	'ADD' insSelector=navigatorElementSelector[false] { insElem = $insSelector.element; }
+		(capt=stringLiteral { caption = $capt.val; })?
+		(posDefinition=positionDefinition posSelector=navigatorElementSelector[true] {hasPosition = true; })?
+		('TO' ID)? //todo: window will go here
+		{
+			if (inPropParseState()) {
+				insElem = self.addNavigatorElement($insSelector.sid,
+													caption,
+													insElem,
+													hasPosition ? $posDefinition.position : InsertPosition.IN,
+													hasPosition ? $posSelector.element : $parentElement);
+			}
+		}
+		navigatorElementStatementBody[insElem]
+	;
+	
+setupNavigatorElementStatement
+	:	e=navigatorElementSelector[true] ('TO' ID)? navigatorElementStatementBody[$e.element]
+	;
+	
+navigatorElementSelector[boolean hasToExist] returns [String sid, NavigatorElement element]
+	:	id=ID
+		{
+			if (inPropParseState()) {
+				$sid = $id.text;
+				$element = self.getNavigatorElementBySID($sid, hasToExist);
+			}
+		}
+	;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -928,43 +982,41 @@ scope {
 	;
 
 componentStatementBody [Object propertyReceiver, ComponentView parentComponent]
-	: '{'
-		( setObjectPropertyStatement[propertyReceiver]
-		| positionComponentsStatement[parentComponent]
-		| setupComponentStatement
-		| setupGroupObjectStatement
-		| addComponentStatement[parentComponent]
-		| removeComponentStatement
-		| emptyStatement )*
-	  '}'
-	| emptyStatement
-	;
-
-emptyStatement
-	: ';'	
+	:	'{'
+			(	setObjectPropertyStatement[propertyReceiver]
+			|	positionComponentsStatement[parentComponent]
+			|	setupComponentStatement
+			|	setupGroupObjectStatement
+			|	addComponentStatement[parentComponent]
+			|	removeComponentStatement
+			|	emptyStatement
+			)*
+		'}'
+	|	emptyStatement
 	;
 
 setupComponentStatement
-	: comp=componentSelector[true] componentStatementBody[$comp.component, $comp.component]
+	:	comp=componentSelector[true] componentStatementBody[$comp.component, $comp.component]
 	;
 
 setupGroupObjectStatement
 @init {
 	GroupObjectView groupObject = null;
 }
-	: 'GROUP'
-	  '('
-		ID
-		{
-			if (inPropParseState()) {
-				groupObject = $designStatement::design.getGroupObject($ID.text);
+	:	'GROUP'
+		'('
+			ID
+			{
+				if (inPropParseState()) {
+					groupObject = $designStatement::design.getGroupObject($ID.text);
+				}
 			}
-		}
-	  ')'	'{'
-                ( setObjectPropertyStatement[groupObject]
-                | emptyStatement
-                )*
-            '}'
+		')'
+		'{'
+			( setObjectPropertyStatement[groupObject]
+			| emptyStatement
+			)*
+		'}'
 	;
 
 addComponentStatement[ComponentView parentComponent]
@@ -972,8 +1024,8 @@ addComponentStatement[ComponentView parentComponent]
 	boolean hasPosition = false;
 	ComponentView insComp = null;
 }
-	: 'ADD' insSelector=componentSelector[false] { insComp = $insSelector.component; }
-		( posDefinition=addPositionDefinition posSelector=componentSelector[true] { hasPosition = true; } )?
+	:	'ADD' insSelector=componentSelector[false] { insComp = $insSelector.component; }
+		( posDefinition=positionDefinition posSelector=componentSelector[true] { hasPosition = true; } )?
 		{
 			if (inPropParseState()) {
 				insComp = $designStatement::design.addComponent($insSelector.sid,
@@ -982,14 +1034,14 @@ addComponentStatement[ComponentView parentComponent]
 																hasPosition ? $posSelector.component : $parentComponent);
 			}
 		}
-   	    componentStatementBody[insComp, insComp]
+		componentStatementBody[insComp, insComp]
 	;
 
 removeComponentStatement
 @init {
 	boolean cascade = false;
 }
-	: 'REMOVE' compSelector=componentSelector[true] ('CASCADE' { cascade = true; } )? ';'
+	:	'REMOVE' compSelector=componentSelector[true] ('CASCADE' { cascade = true; } )? ';'
 		{
 			if (inPropParseState()) {
 				$designStatement::design.removeComponent($compSelector.component, cascade);
@@ -998,14 +1050,14 @@ removeComponentStatement
 	;
 
 componentSelector[boolean hasToExist] returns [String sid, ComponentView component]
-	: 'PARENT' '(' child=componentSelector[true] ')'
+	:	'PARENT' '(' child=componentSelector[true] ')'
 		{
 			if (inPropParseState()) {
 				$designStatement::design.getParentContainer($child.component);
 			}
 		}
-	| 'PROPERTY' '(' prop=propertySelector ')' { $component = $prop.propertyView; }
-	| mid=multiCompoundID
+	|	'PROPERTY' '(' prop=propertySelector ')' { $component = $prop.propertyView; }
+	|	mid=multiCompoundID
 		{
 			if (inPropParseState()) {
 				$sid = $mid.sid;
@@ -1016,13 +1068,13 @@ componentSelector[boolean hasToExist] returns [String sid, ComponentView compone
 
 
 propertySelector returns [PropertyDrawView propertyView = null]
-	: pname=formPropertyName
+	:	pname=formPropertyName
 		{
 			if (inPropParseState()) {
 				$propertyView = $designStatement::design.getPropertyView($pname.text);
 			}
 		}
-	| mappedProp=formMappedProperty
+	|	mappedProp=formMappedProperty
 		{
 			if (inPropParseState()) {
 				$propertyView = $designStatement::design.getPropertyView($mappedProp.name, $mappedProp.mapping);
@@ -1034,77 +1086,39 @@ positionComponentsStatement[ComponentView parentComponent]
 @init {
 	boolean hasSecondComponent = false;
 }
-	: 'POSITION' compSelector1=componentSelector[true] constrDefinition=constraintDefinition ( compSelector2=componentSelector[true]  { hasSecondComponent = true; } )? ';'
-    	{
-		if (inPropParseState()) {
-	    		$designStatement::design.addIntersection($compSelector1.component,
-	    							 					$constrDefinition.constraint,
-	    							 					hasSecondComponent ? $compSelector2.component : parentComponent);
-	    	}
-    	}
+	:	'POSITION' compSelector1=componentSelector[true] constrDefinition=constraintDefinition ( compSelector2=componentSelector[true]  { hasSecondComponent = true; } )? ';'
+		{
+			if (inPropParseState()) {
+				$designStatement::design.addIntersection($compSelector1.component,
+															$constrDefinition.constraint,
+															hasSecondComponent ? $compSelector2.component : parentComponent);
+			}
+		}
 	;
-
-constraintDefinition returns [DoNotIntersectSimplexConstraint constraint]
-	: 'TO' 'THE' 'LEFT' { $constraint = TOTHE_LEFT; }
-	| 'TO' 'THE' 'RIGHT' { $constraint = TOTHE_RIGHT; }
-	| 'TO' 'THE' 'BOTTOM' { $constraint = TOTHE_BOTTOM; }
-	| 'TO' 'THE' 'RIGHTBOTTOM' { $constraint = TOTHE_RIGHTBOTTOM; }
-	| 'TO' 'NOT' 'INTERSECT' { $constraint = DO_NOT_INTERSECT; }
-	;
-
-addPositionDefinition returns [InsertPosition position]
-	: 'IN' { $position = InsertPosition.IN; }
-	| 'BEFORE' { $position = InsertPosition.BEFORE; }
-	| 'AFTER' { $position = InsertPosition.AFTER; }
-	;
-
 
 setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object value]
-	: ID '=' componentPropertyValue ';'  { setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value); }
+	:	ID '=' componentPropertyValue ';'  { setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value); }
 	;
 
 componentPropertyValue returns [Object value]
-	: c=colorLiteral { $value = $c.val; }
-	| s=stringLiteral { $value = $s.val; }
-	| i=intLiteral { $value = $i.val; }
-	| d=doubleLiteral { $value = $d.val; }
-	| dim=dimensionLiteral { $value = $dim.val; }
-	| b=booleanLiteral { $value = $b.val; }
+	:	c=colorLiteral { $value = $c.val; }
+	|	s=stringLiteral { $value = $s.val; }
+	|	i=intLiteral { $value = $i.val; }
+	|	d=doubleLiteral { $value = $d.val; }
+	|	dim=dimensionLiteral { $value = $dim.val; }
+	|	b=booleanLiteral { $value = $b.val; }
+	|	cons=constraintsLiteral { $value = $cons.val; }
+	|	ins=insetsLiteral { $value = $ins.val; }
 	;
 
-colorLiteral returns [Color val]
-	: c=COLOR_LITERAL { $val = Color.decode($c.text); }
-	;
-
-stringLiteral returns [String val]
-	: s=STRING_LITERAL { $val = self.transformStringLiteral($s.text); }
-	;
-
-intLiteral returns [int val]
-@init {
-	boolean isMinus = false;
-}
-	: (MINUS {isMinus=true;})? ui=uintLiteral  { $val = (isMinus ? -1 : 1) * Integer.parseInt($ui.text); }
-	;
-
-doubleLiteral returns [double val]
-@init {
-	boolean isMinus = false;
-}
-	: (MINUS {isMinus=true;})? ud=udoubleLiteral { $val = (isMinus ? -1 : 1) * Double.parseDouble($ud.text); }
-	;
-
-booleanLiteral returns [boolean val]
-	: bool=LOGICAL_LITERAL { $val = Boolean.valueOf($bool.text); }
-	;
-
-dimensionLiteral returns [Dimension val]
-	: '(' x=intLiteral ',' y=intLiteral ')' { $val = new Dimension(Integer.parseInt($x.text), Integer.parseInt($y.text)); }
-	;
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// COMMON /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
+emptyStatement
+	:	';'
+	;
 
 propertyWithNamedParams returns [String name, List<String> params]
 	:	propName=compoundID { $name = $propName.text; }
@@ -1221,6 +1235,60 @@ multiCompoundID returns [String sid]
 	:	id=ID { $sid = $id.text; } ('.' cid=ID { $sid = $sid + "." + $cid.text; } )*
 	;
 
+colorLiteral returns [Color val]
+	:	c=COLOR_LITERAL { $val = Color.decode($c.text); }
+	;
+
+stringLiteral returns [String val]
+	:	s=STRING_LITERAL { $val = self.transformStringLiteral($s.text); }
+	;
+
+intLiteral returns [int val]
+@init {
+	boolean isMinus = false;
+}
+	:	(MINUS {isMinus=true;})?
+		ui=uintLiteral  { $val = (isMinus ? -1 : 1) * Integer.parseInt($ui.text); }
+	;
+
+doubleLiteral returns [double val]
+@init {
+	boolean isMinus = false;
+}
+	:	(MINUS {isMinus=true;})?
+		ud=udoubleLiteral { $val = (isMinus ? -1 : 1) * Double.parseDouble($ud.text); }
+	;
+
+booleanLiteral returns [boolean val]
+	:	bool=LOGICAL_LITERAL { $val = Boolean.valueOf($bool.text); }
+	;
+
+dimensionLiteral returns [Dimension val]
+	:	'(' x=intLiteral ',' y=intLiteral ')' { $val = new Dimension($x.val, $y.val); }
+	;
+	
+insetsLiteral returns [Insets val]
+	:	'(' top=intLiteral ',' left=intLiteral ',' bottom=intLiteral ',' right=intLiteral ')' { $val = new Insets($top.val, $left.val, $bottom.val, $right.val); }
+	;
+	
+constraintsLiteral returns [DoNotIntersectSimplexConstraint val]
+	:	c=constraintDefinition { $val = $c.constraint; }
+	;
+
+constraintDefinition returns [DoNotIntersectSimplexConstraint constraint]
+	:	'TO' 'THE' 'LEFT' { $constraint = TOTHE_LEFT; }
+	|	'TO' 'THE' 'RIGHT' { $constraint = TOTHE_RIGHT; }
+	|	'TO' 'THE' 'BOTTOM' { $constraint = TOTHE_BOTTOM; }
+	|	'TO' 'THE' 'RIGHTBOTTOM' { $constraint = TOTHE_RIGHTBOTTOM; }
+	|	'TO' 'NOT' 'INTERSECT' { $constraint = DO_NOT_INTERSECT; }
+	;
+
+positionDefinition returns [InsertPosition position]
+	:	'IN' { $position = InsertPosition.IN; }
+	|	'BEFORE' { $position = InsertPosition.BEFORE; }
+	|	'AFTER' { $position = InsertPosition.AFTER; }
+	;
+
 udoubleLiteral
 	:	POSITIVE_DOUBLE_LITERAL
 	; 
@@ -1228,7 +1296,6 @@ udoubleLiteral
 uintLiteral
 	:	UINT_LITERAL
 	;		
-
 
 
 /////////////////////////////////////////////////////////////////////////////////

@@ -31,14 +31,14 @@ CLASS outcomeDocument 'Расход' : document, emptyClass;
 //      ...
 //      [, instanceNameN ['instanceCaptionN']]
 // }
-// [: nonStaticBaseClass1 [, nonStaticBaseClass2, ..., nonStaticBaseClassN]];
+// [: nonStaticBaseClass1 [, nonStaticBaseClass2, ..., nonStaticBaseClassN];]
 CLASS STATIC storeSize 'Размер склада'
 {
     huge 'огромный',
     big 'большой',
     medium 'средний',
     small 'маленький'
-};
+}
 
 
 //////////// PROPERTY STATEMENT///////////
@@ -132,6 +132,21 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // Syntax:
 // CONSTRAINT [CHECKED] propertyExpression MSG 'message';
 CONSTRAINT CHECKED foo(store, article) > 1000 MSG 'ошибка: >1000';
+
+
+////////////////FOLLOWS STATEMENT////////////////
+// Syntax:
+// propertyName(param1, ..., paramN) =>
+//      propertyExpression1 [RESOLVE (TRUE | FALSE | ALL | NOTHING)],
+//      ...
+//      propertyExpressionK [RESOLVE (TRUE | FALSE | ALL | NOTHING)];
+foo(store, article) => foo2(store, article) RESOLVE NOTHING, bar2(store, article);
+
+
+//////////////WRITEONCHANGE STATEMENT////////////
+// Syntax:
+// propertyName(param1, ..., paramN) <- [OLD] valueProperty(param1, ..., paramK) ON (ASSIGN | CHANGE) changeProperty(param1, ..., paramL);
+
 
 //////////////// FORM STATEMENT /////////////////
 

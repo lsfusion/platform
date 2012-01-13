@@ -27,6 +27,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
+
 /**
  * User: DAle
  * Date: 03.06.11
@@ -36,6 +38,11 @@ import java.util.regex.Pattern;
 public class ScriptingLogicsModule extends LogicsModule {
 
     private final static Logger scriptLogger = Logger.getLogger(ScriptingLogicsModule.class);
+
+    private final CompoundNameResolver<LP<?>> lpResolver = new LPNameResolver();
+    private final CompoundNameResolver<AbstractGroup> groupResolver = new AbstractGroupNameResolver();
+    private final CompoundNameResolver<NavigatorElement> navigatorResolver = new NavigatorElementNameResolver();
+
     private String code = null;
     private String filename = null;
     private final BusinessLogics<?> BL;
@@ -45,6 +52,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public enum State {GROUP, CLASS, PROP}
     public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM }
+    public enum InsertPosition {IN, BEFORE, AFTER}
 
     private Map<String, ValueClass> primitiveTypeAliases = BaseUtils.buildMap(
             Arrays.<String>asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN"),
@@ -186,46 +194,24 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private AbstractGroup findGroupByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
-        AbstractGroup group;
-        int dotPosition = name.indexOf('.');
-        if (dotPosition > 0) {
-            LogicsModule module = findModule(name.substring(0, dotPosition));
-            group = module.getGroupByName(name.substring(dotPosition + 1));
-        } else {
-            group = getGroupByName(name);
-            if (group == null) {
-                for (String importModuleName : importedModules) {
-                    LogicsModule module = findModule(importModuleName);
-                    if ((group = module.getGroupByName(name)) != null) {
-                        break;
-                    }
-                }
-            }
-        }
+        AbstractGroup group = groupResolver.resolve(name);
         checkGroup(group, name);
         return group;
     }
 
     public LP<?> findLPByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?> property;
-        int dotPosition = name.indexOf('.');
-        if (dotPosition > 0) {
-            LogicsModule module = findModule(name.substring(0, dotPosition));
-            property = module.getLPByName(name.substring(dotPosition + 1));
-        } else {
-            property = getLPByName(name);
-            if (property == null) {
-                for (String importModuleName : importedModules) {
-                    LogicsModule module = findModule(importModuleName);
-                    if ((property = module.getLPByName(name)) != null) {
-                        break;
-                    }
-                }
-            }
-        }
-
+        LP<?> property = lpResolver.resolve(name);
         checkProperty(property, name);
         return property;
+    }
+
+    public NavigatorElement getNavigatorElementBySID(String sid, boolean hasToExist) throws ScriptingErrorLog.SemanticErrorException {
+        NavigatorElement elem = navigatorResolver.resolve(sid);
+        if (elem == null && hasToExist) {
+            errLog.emitNavigatorElementNotFoundError(parser, sid);
+        }
+
+        return elem;
     }
 
     public List<String> getNamedParamsList(String propertyName) throws ScriptingErrorLog.SemanticErrorException {
@@ -667,6 +653,47 @@ public class ScriptingLogicsModule extends LogicsModule {
         mainProp.setDerivedChange(useOld, !anyChange, valueProp, BL, params.subList(1, params.size()).toArray());
     }
 
+    public NavigatorElement addNavigatorElement(String sid, String caption, NavigatorElement element, InsertPosition pos, NavigatorElement anchorElement) throws ScriptingErrorLog.SemanticErrorException {
+        assert sid != null && anchorElement != null;
+
+        if (element == null) {
+            element = new NavigatorElement(sid, caption);
+        } else if (caption != null) {
+            element.caption = caption;
+        }
+        moveElement(element, pos, anchorElement);
+
+        return element;
+    }
+
+    private void moveElement(NavigatorElement element, InsertPosition pos, NavigatorElement anchorElement) throws ScriptingErrorLog.SemanticErrorException {
+        NavigatorElement parent = null;
+        if (pos == IN) {
+            parent = anchorElement;
+        } else {
+            parent = anchorElement.getParent();
+            if (parent == null) {
+                errLog.emitIllegalInsertBeforeAfterNavigatorElement(parser, anchorElement.getSID());
+            }
+        }
+
+        if (element.isAncestorOf(parent)) {
+            errLog.emitIllegalMoveNavigatorToSubnavigator(parser, element.getSID(), parent.getSID());
+        }
+
+        switch (pos) {
+            case IN:
+                parent.add(element);
+                break;
+            case BEFORE:
+                parent.addBefore(element, anchorElement);
+                break;
+            case AFTER:
+                parent.addAfter(element, anchorElement);
+                break;
+        }
+    }
+
     private void checkGroup(AbstractGroup group, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (group == null) {
             errLog.emitGroupNotFoundError(parser, name);
@@ -833,5 +860,51 @@ public class ScriptingLogicsModule extends LogicsModule {
     @Override
     public String getNamePrefix() {
         return getSID();
+    }
+
+    public abstract class CompoundNameResolver<T> {
+        public final T resolve(String name) throws ScriptingErrorLog.SemanticErrorException {
+            T result;
+            int dotPosition = name.indexOf('.');
+            if (dotPosition > 0) {
+                LogicsModule module = findModule(name.substring(0, dotPosition));
+                result = resolveInModule(module, name.substring(dotPosition + 1));
+            } else {
+                result = resolveInModule(ScriptingLogicsModule.this, name);
+                if (result == null) {
+                    for (String importModuleName : importedModules) {
+                        LogicsModule module = findModule(importModuleName);
+                        if ((result = resolveInModule(module, name)) != null) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        public abstract T resolveInModule(LogicsModule module, String simpleName);
+    }
+
+    private class LPNameResolver extends CompoundNameResolver<LP<?>> {
+        @Override
+        public LP<?> resolveInModule(LogicsModule module, String simpleName) {
+            return module.getLPByName(simpleName);
+        }
+    }
+
+    private class AbstractGroupNameResolver extends CompoundNameResolver<AbstractGroup> {
+        @Override
+        public AbstractGroup resolveInModule(LogicsModule module, String simpleName) {
+            return module.getGroupByName(simpleName);
+        }
+    }
+
+    private class NavigatorElementNameResolver extends CompoundNameResolver<NavigatorElement> {
+        @Override
+        public NavigatorElement resolveInModule(LogicsModule module, String simpleName) {
+            //пока используем просто глобальные sid, далее можно будет расширить
+            return baseLM.baseElement.getNavigatorElement(simpleName);
+        }
     }
 }

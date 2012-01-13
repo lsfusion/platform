@@ -41,7 +41,7 @@ public class AbstractWindow extends IdentityObject {
         this.borderConstraint = borderConstraint;
     }
 
-    public AbstractWindow(String SID, String caption) {
+    public AbstractWindow(String sID, String caption) {
         this.sID = sID;
         setID(BusinessLogics.generateStaticNewID());
         this.caption = caption;
