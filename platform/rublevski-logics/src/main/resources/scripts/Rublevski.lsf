@@ -144,6 +144,25 @@ OBJECTS e=employee
 PROPERTIES(e) READONLY name, nameDepartmentStoreEmployee
 PROPERTIES(e) ADDFORM, EDITFORM, delete;
 
+// ----------------------------------- Торговая площадь -------------------------------------------------- //
+
+CLASS tradingSquare 'Торговая площадь' : named;
+squareTradingSquare 'Размер торговой площади' = DATA DOUBLE (tradingSquare) IN storeGroup;
+departmentStoreTradingSquare 'Отдел торговой площади (ИД)' = DATA departmentStore (tradingSquare) IN idGroup;
+nameDepartmentStoreTradingSquare 'Отдел торговой площади' (tradingSquare) = name(departmentStoreTradingSquare(tradingSquare)) IN storeGroup;
+dateTradingSquare 'Дата' = DATA DATE (tradingSquare) IN storeGroup;
+//defaultTradingSquareDepartmentStore 'Торговая площадь магазина, кв.м.' (tradingSquare) = GROUP MAX dateTradingSquare(tradingSquare) BY departmentStoreTradingSquare(tradingSquare) IN storeGroup;
+
+FORM tradingSquare 'Торговая площадь'
+OBJECTS s=tradingSquare FIXED PANEL
+PROPERTIES(s) READONLY name
+PROPERTIES(s) squareTradingSquare, nameDepartmentStoreTradingSquare, dateTradingSquare;
+
+FORM tradingSquares 'Торговые площади'
+OBJECTS s=tradingSquare
+PROPERTIES(s) READONLY name, squareTradingSquare, nameDepartmentStoreTradingSquare, dateTradingSquare
+PROPERTIES(s) ADDFORM, EDITFORM, delete;
+
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
 
 CLASS departmentStore 'Отдел магазина' : stock;
@@ -157,11 +176,13 @@ CLASS manufactory 'Цех' : departmentStore;
 
 storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) IN idGroup;
 nameStoreDepartmentStore 'Магазин отдела' (departmentStore) = name(storeDepartmentStore(departmentStore));
+revaluationCommitteeDepartmentStore 'Комиссия отдела (ИД)' = DATA revaluationCommittee (departmentStore) IN idGroup;
+nameRevaluationCommitteeDepartmentStore 'Комиссия отдела' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore));
 
 controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore) IN storeGroup;
 deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore) IN storeGroup;
 controlMinusRestsContainerDepartmentStore 'Контроль за минусовыми остатками тары' = DATA BOOLEAN (departmentStore) IN storeGroup;
-tradingSquareDepartmentStore 'Торговая площадь магазина, кв.м.' = DATA DOUBLE (departmentStore) IN storeGroup;
+//tradingSquareDepartmentStore 'Торговая площадь магазина, кв.м.' (departmentStore) = GROUP MAX tradingSquare AS tradingSquare BY dateTradingSquare(tradingSquare) IN storeGroup;
 resolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' = DATA BOOLEAN (departmentStore) IN storeGroup;
 controlAssortmentProviderDepartmentStore 'Контролировать ассортимент поставщиков в подразделении?' = DATA BOOLEAN (departmentStore) IN storeGroup;
 verifyOrderArrivalDepartmentStore 'Сверять заказ и приход в подразделении?' = DATA BOOLEAN (departmentStore) IN storeGroup;
@@ -170,7 +191,6 @@ resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore 'Разрешить 
 resolveOrderItemDepartmentStore 'Разрешить заказ товара в подразделение?' = DATA BOOLEAN (departmentStore) IN storeGroup;
 marginPublicCateringDepartmentStore 'Наценка общепита по умолчанию для формирования цены в подразделении' = DATA DOUBLE (departmentStore) IN storeGroup;
 quantityCashChangeOneOperationAccountDepartmentStore ' Количество кассовых смен в одном оперативном отчете' = DATA INTEGER (departmentStore) IN storeGroup;
-chairmanCommissionRevaluationDepartmentStore 'Председатель комиссии по переоценке' = DATA employee (departmentStore) IN storeGroup;
 materiallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' = DATA employee (departmentStore) IN storeGroup;
 bookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет' = DATA employee (departmentStore) IN storeGroup;
 personCheckReportDepartmentStore 'Кто проверяет товарный отчет' = DATA employee (departmentStore) IN storeGroup;
@@ -181,10 +201,10 @@ FORM departmentStore 'Отдел магазина'
 OBJECTS d=departmentStore FIXED PANEL
 PROPERTIES(d) READONLY name
 PROPERTIES(d) nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
-              tradingSquareDepartmentStore, resolveDiscountDepartmentStore, controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
+              resolveDiscountDepartmentStore, controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
               maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
-              marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, chairmanCommissionRevaluationDepartmentStore,
-              materiallyResponsiblePersonItemReportDepartmentStore, bookkeeperItemReportDepartmentStore, personCheckReportDepartmentStore;
+              marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, materiallyResponsiblePersonItemReportDepartmentStore,
+              bookkeeperItemReportDepartmentStore, personCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore, tradingSquareDepartmentStore;
 
 FORM departmentStores 'Отделы магазина'
 OBJECTS d=departmentStore
@@ -232,6 +252,7 @@ nameChairmanRevaluationCommittee 'Председатель комиссии' (re
 departmentStoreRevaluationCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (revaluationCommittee) IN idGroup;
 nameDepartmentStoreRevaluationCommittee 'Отдел комиссии' (revaluationCommittee) = name(departmentStoreRevaluationCommittee(revaluationCommittee)) IN storeGroup;
 CONSTRAINT CHECKED departmentStoreEmployee(chairmanRevaluationCommittee(revaluationCommittee))!=departmentStoreRevaluationCommittee(revaluationCommittee) MSG 'Отдел комиссии должен соответствовать отделу председателя комиссии';
+CONSTRAINT CHECKED departmentStoreRevaluationCommittee(revaluationCommitteeDepartmentStore(departmentStore))!=departmentStore MSG 'Отдел комиссии должен соответствовать текущему отделу';
 
 inDepartmentStoreEmployeeRevaluationCommittee (revaluationCommittee, employee) = departmentStoreRevaluationCommittee(revaluationCommittee)==departmentStoreEmployee(employee);
 inCommitteeDepartmentStore 'Является членом комиссии' (revaluationCommittee, employee) = DATA BOOLEAN (revaluationCommittee, employee) IN storeGroup;
