@@ -162,6 +162,24 @@ OBJECTS s=tradingSquare
 PROPERTIES(s) READONLY name, squareTradingSquare, nameDepartmentStoreTradingSquare, dateTradingSquare
 PROPERTIES(s) ADDFORM, EDITFORM, delete;
 
+// ------------------------------------- Скидки ---------------------------------------------------------- //
+
+CLASS discount 'Скидка' : named;
+dateDiscount 'Дата разрещения/запрещения скидок' = DATA DATE (discount) IN storeGroup;
+agreeDiscount 'Разрешать скидку?' = DATA BOOLEAN (discount) IN storeGroup;
+departmentStoreDiscount 'Отдел скидки (ИД)' = DATA departmentStore (discount) IN idGroup;
+nameDepartmentStoreDiscount (discount) = name(departmentStoreDiscount(discount)) IN storeGroup;
+
+FORM discount 'Скидка'
+OBJECTS d=discount
+PROPERTIES(d) READONLY name
+PROPERTIES(d) dateDiscount, agreeDiscount, nameDepartmentStoreDiscount;
+
+FORM discountes 'Скидки'
+OBJECTS d=discount
+PROPERTIES(d) READONLY name, dateDiscount, agreeDiscount, nameDepartmentStoreDiscount
+PROPERTIES(d) ADDFORM, EDITFORM, delete;
+
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
 
 CLASS departmentStore 'Отдел магазина' : stock;
@@ -177,11 +195,9 @@ storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departme
 nameStoreDepartmentStore 'Магазин отдела' (departmentStore) = name(storeDepartmentStore(departmentStore));
 revaluationCommitteeDepartmentStore 'Комиссия отдела (ИД)' = DATA revaluationCommittee (departmentStore) IN idGroup;
 nameRevaluationCommitteeDepartmentStore 'Комиссия отдела' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore));
-
 controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore) IN storeGroup;
 deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore) IN storeGroup;
 controlMinusRestsContainerDepartmentStore 'Контроль за минусовыми остатками тары' = DATA BOOLEAN (departmentStore) IN storeGroup;
-resolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' = DATA BOOLEAN (departmentStore) IN storeGroup;
 controlAssortmentProviderDepartmentStore 'Контролировать ассортимент поставщиков в подразделении?' = DATA BOOLEAN (departmentStore) IN storeGroup;
 verifyOrderArrivalDepartmentStore 'Сверять заказ и приход в подразделении?' = DATA BOOLEAN (departmentStore) IN storeGroup;
 maxQuantityDeliveryHourDepartmentStore 'Максимальное допустимое число поставок в час' = DATA INTEGER (departmentStore) IN storeGroup;
@@ -194,6 +210,8 @@ bookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий 
 personCheckReportDepartmentStore 'Кто проверяет товарный отчет' = DATA employee (departmentStore) IN storeGroup;
 idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (tradingSquare) = GROUP MAX tradingSquare AS tradingSquare BY departmentStoreTradingSquare(tradingSquare);   //максимизирует только по ID, переделать после расширения функционала
 defaultTradingSquareDepartmentStore 'Торговая площадь отдела магазина, кв.м.' (tradingSquare) = squareTradingSquare(idTradingSquareDepartmentStore(tradingSquare));
+idResolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = GROUP MAX discount AS discount BY departmentStoreDiscount(discount);
+resolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = agreeDiscount(idResolveDiscountDepartmentStore(discount));
 
 //tradingSquareStore 'Торговая площадь магазина' = GROUP SUM defaultTradingSquareDepartmentStore(tradingSquare) BY storeDepartmentStore(departmentStoreTradingSquare(tradingSquare));
 
