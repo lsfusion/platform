@@ -171,7 +171,7 @@ departmentStoreDiscount 'Отдел скидки (ИД)' = DATA departmentStore 
 nameDepartmentStoreDiscount (discount) = name(departmentStoreDiscount(discount)) IN storeGroup;
 
 FORM discount 'Скидка'
-OBJECTS d=discount
+OBJECTS d=discount FIXED PANEL
 PROPERTIES(d) READONLY name
 PROPERTIES(d) dateDiscount, agreeDiscount, nameDepartmentStoreDiscount;
 
@@ -260,6 +260,30 @@ FORM tradingNetworks 'Торговые сети'
 OBJECTS n= tradingNetwork
 PROPERTIES(n) READONLY name
 PROPERTIES(n) ADDFORM, EDITFORM, delete;
+
+// ----------------------------------- Ассортимент -------------------------------------------------------- //
+
+CLASS assortment 'Ассортимент' : named;
+departmentStoreAssortment 'Отдел ассортимента (ИД)' = DATA departmentStore (assortment) IN idGroup;
+nameDepartmentStoreAssortment 'Отдел ассортимента' (assortment) = name(departmentStoreAssortment(assortment)) IN storeGroup;
+supplierAssortment 'Поставщик ассортимента (ИД)' = DATA supplier (assortment) IN idGroup;
+nameSupplierAssortment 'Поставщик ассортимента' (assortment) = name(supplierAssortment(assortment)) IN storeGroup;
+itemAssortment 'Товар ассортимента' = DATA BOOLEAN (assortment, item);
+
+//когда повиться связь поставщик-товар, нужно добавить сюда constraint, что бы сразу загружался список товаров данного поставщика
+//и убрать возможность добавлять товар вручную
+
+FORM assortment 'Ассортимент'
+OBJECTS a=assortment FIXED PANEL, i=item
+PROPERTIES(a) READONLY name
+PROPERTIES(a) nameDepartmentStoreAssortment, nameSupplierAssortment
+PROPERTIES(a, i) itemAssortment
+PROPERTIES(i) name, ADDOBJ, delete;
+
+FORM assortments 'Ассортименты'
+OBJECTS a=assortment
+PROPERTIES(a) READONLY name, nameDepartmentStoreAssortment, nameSupplierAssortment
+PROPERTIES(a) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
 
@@ -597,6 +621,7 @@ NAVIGATOR {
         ADD cashModels;
         ADD scalesModels;
         ADD checkModels;
+        ADD assortments;
     }
 
     ADD objects 'Карточки' {
@@ -618,5 +643,6 @@ NAVIGATOR {
         ADD cashModel;
         ADD scalesModel;
         ADD checkModel;
+        ADD assortment;
     }
 }
