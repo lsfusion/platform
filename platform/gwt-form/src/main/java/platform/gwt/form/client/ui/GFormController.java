@@ -44,8 +44,15 @@ public class GFormController extends HLayout implements FormLogicsProvider {
     private GForm form;
     private GFormLayout mainPane;
 
+    private Map<String, String> urlParameters;
+
     public GFormController(String sid) {
         this(null, new GetForm(sid), false);
+    }
+
+    public GFormController(Map<String, String> params) {
+        this(params.get("formSID"));
+        urlParameters = params;
     }
 
     public GFormController(FormDispatchAsync creationDispatcher, Action<GetFormResult> getFormAction, final boolean dialogMode) {
@@ -124,6 +131,22 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         initializeControllers();
 
         initializeRegularFilters();
+
+        for (GGroupObject groupObject : form.groupObjects) {
+            GGroupObjectValue goValue = new GGroupObjectValue();
+            for (GObject object : groupObject.objects) {
+                for (String sid : urlParameters.keySet()) {
+                    if (object.sID.equals(sid)) {
+                        try {
+                            goValue.put(object, Integer.decode(urlParameters.get(sid)));
+                        } catch (NumberFormatException e) {}
+                        break;
+                    }
+                }
+            }
+            if (!goValue.isEmpty())
+                dispatcher.execute(new AdjustGroupObject(groupObject.ID, goValue.getValues(groupObject)), new FormChangesBlockingCallback());
+        }
     }
 
     private void initializeRegularFilters() {

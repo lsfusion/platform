@@ -75,6 +75,7 @@ public class ClientObject extends IdentityObject implements Serializable, Client
         if (gwtObject == null) {
             gwtObject = new GObject();
             gwtObject.ID = ID;
+            gwtObject.sID = getSID();
             gwtObject.caption = getCaption();
         }
 

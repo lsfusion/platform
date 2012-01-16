@@ -99,4 +99,6 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     void applyChanges(Object clientResult) throws RemoteException;
 
     void continueAutoActions() throws RemoteException;
+
+    void adjustGroupObject(int groupID, byte[] value) throws RemoteException;
 }

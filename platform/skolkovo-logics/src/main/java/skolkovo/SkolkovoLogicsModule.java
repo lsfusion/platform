@@ -3986,9 +3986,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         baseCurrency = addDProp(baseGroup, "baseCurrency", "Базовая валюта", LogicalClass.instance, currency);
         baseCurrencyExpert = addJProp("baseCurrencyExpert", "Базовая валюта", baseCurrency, currencyExpert, 1);
 
-        englCountry = addDProp(baseGroup, "englCountry", "Страна на ангийском", StringClass.get(40), baseLM.country);
+        englCountry = addDProp(baseGroup, "englCountry", "Страна на английском", StringClass.get(40), baseLM.country);
         englCountryExpert = addJProp("englCountryExpert", "Страна эксперта англ", englCountry, countryExpert, 1);
-        englCurrency = addDProp(baseGroup, "englCurrency", "Валюта на ангийском", StringClass.get(40), currency);
+        englCurrency = addDProp(baseGroup, "englCurrency", "Валюта на английском", StringClass.get(40), currency);
         englCurrencyExpert = addJProp("englCurrencyExpert", "Валюта эксперта англ", englCurrency, currencyExpert, 1);
         pluralCurrency = addDProp(baseGroup, "pluralCurrency", "Валюта множ.числ", StringClass.get(40), currency);
         pluralCurrencyExpert = addJProp("pluralCurrencyExpert", "Валюта эксперта мн.ч.", pluralCurrency, currencyExpert, 1);

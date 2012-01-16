@@ -10,6 +10,8 @@ import com.smartgwt.client.widgets.layout.VStack;
 import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.form.client.ui.GFormController;
 
+import java.util.*;
+
 public class FormFrame extends HLayout implements EntryPoint {
     public void onModuleLoad() {
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
@@ -24,26 +26,33 @@ public class FormFrame extends HLayout implements EntryPoint {
         vs.setWidth100();
         vs.setHeight100();
 
-        vs.addMember(new GFormController(getFormSID()));
+        vs.addMember(new GFormController(getParameters()));
         vs.draw();
 
         GwtClientUtils.removeLoaderFromHostedPage();
     }
 
-    public String getFormSID() {
+    public Map<String, String> getParameters() {
+        Map<String, String> params = new HashMap<String, String>();
         try {
             Dictionary dict = Dictionary.getDictionary("parameters");
             if (dict != null) {
-                return dict.get("formSID");
+                for (String param : dict.keySet()) {
+                    params.put(param, dict.get(param));
+                }
+                return params;
             }
         } catch (Exception ignored) {
         }
 
         try {
-            return Window.Location.getParameter("formSID");
+            Map<String, List<String>> paramMap = Window.Location.getParameterMap();
+            for (String param : paramMap.keySet()) {
+                params.put(param, paramMap.get(param).isEmpty() ? null : paramMap.get(param).get(0));
+            }
         } catch (Exception ignored) {
         }
 
-        return null;
+        return params;
     }
 }
