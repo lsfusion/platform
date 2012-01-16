@@ -213,7 +213,7 @@ groupStatement
 	}
 }
 	:	'GROUP' groupNameCaption=simpleNameWithCaption
-		(':' parentName=compoundID { parent = $parentName.text; })?
+		(':' parentName=compoundID { parent = $parentName.sid; })?
 		';'
 	;
 
@@ -300,7 +300,7 @@ formSingleGroupObjectDeclaration returns [String name, String className]
 
 formObjectDeclaration returns [String name, String className] 
 	:	(objectName=ID { $name = $objectName.text; } '=')?	
-		id=classId { $className = $id.text; }
+		id=classId { $className = $id.sid; }
 	; 
 	
 	
@@ -367,7 +367,7 @@ formPropertyObject returns [PropertyObjectEntity property = null]
 	;
 
 formMappedProperty returns [String name, List<String> mapping]
-	:	pname=formPropertyName { $name = $pname.text; }
+	:	pname=formPropertyName { $name = $pname.name; }
 		'('
 			objects=idList { $mapping = $objects.ids; }
 		')'
@@ -379,13 +379,18 @@ formPropertiesNamesList returns [List<String> properties, List<FormPropertyOptio
 	$properties = new ArrayList<String>();
 	$options = new ArrayList<FormPropertyOptions>();
 }
-	:	pname=formPropertyName opts=formPropertyOptionsList { $properties.add($pname.text); $options.add($opts.options); }
-		(',' pname=formPropertyName opts=formPropertyOptionsList { $properties.add($pname.text); $options.add($opts.options); })*
+	:	pname=formPropertyName opts=formPropertyOptionsList { $properties.add($pname.name); $options.add($opts.options); }
+		(',' pname=formPropertyName opts=formPropertyOptionsList { $properties.add($pname.name); $options.add($opts.options); })*
 	;
 
 
-formPropertyName 
-	:	compoundID | ('OBJVALUE') | ('SELECTION') | ('ADDOBJ') | ('ADDFORM') | ('EDITFORM')
+formPropertyName returns [String name]
+	:	id=compoundID	{ $name = $id.sid; }
+	|	cid='OBJVALUE'	{ $name = $cid.text; }
+	|	cid='SELECTION'	{ $name = $cid.text; }
+	|	cid='ADDOBJ'	{ $name = $cid.text; }
+	|	cid='ADDFORM'	{ $name = $cid.text; }
+	|	cid='EDITFORM'	{ $name = $cid.text; }
 	;
 
 
@@ -719,7 +724,7 @@ partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LP p
 dataPropertyDefinition[boolean innerPD] returns [LP property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedDProp($returnClass.text, $paramClassNames.ids, innerPD);
+		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, innerPD);
 	}
 }
 	:	'DATA'
@@ -751,7 +756,7 @@ unionPropertyDefinition[List<String> context, boolean dynamic] returns [LP prope
 formulaPropertyDefinition returns [LP property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedSFProp($className.text, $formulaText.text);
+		$property = self.addScriptedSFProp($className.sid, $formulaText.text);
 	}
 }
 	:	'FORMULA' className=classId formulaText=STRING_LITERAL
@@ -764,7 +769,7 @@ typePropertyDefinition returns [LP property]
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedTypeProp($clsId.text, bIs);
+		$property = self.addScriptedTypeProp($clsId.sid, bIs);
 	}	
 }
 	:	('IS' { bIs = true; } | 'AS')
@@ -777,7 +782,7 @@ propertyObject returns [LP property, String propName, List<String> innerContext]
 	List<String> newContext = new ArrayList<String>(); 
 }
 	:	name=compoundID	{ if (inPropParseState())
-							{$property = self.findLPByCompoundName($name.text); $propName = $name.text;}
+							{$property = self.findLPByCompoundName($name.sid); $propName = $name.sid;}
 						}
 	|	'[' 
 			(expr=propertyExpression[newContext, true] { $property = $expr.property; $innerContext = newContext; } 
@@ -796,7 +801,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, isData);	
 	}
 } 
-	: 	('IN' name=compoundID { groupName = $name.text; })?
+	: 	('IN' name=compoundID { groupName = $name.sid; })?
 		('PERSISTENT' { isPersistent = true; })?
 	;
 
@@ -1071,7 +1076,7 @@ propertySelector returns [PropertyDrawView propertyView = null]
 	:	pname=formPropertyName
 		{
 			if (inPropParseState()) {
-				$propertyView = $designStatement::design.getPropertyView($pname.text);
+				$propertyView = $designStatement::design.getPropertyView($pname.name);
 			}
 		}
 	|	mappedProp=formMappedProperty
@@ -1121,7 +1126,7 @@ emptyStatement
 	;
 
 propertyWithNamedParams returns [String name, List<String> params]
-	:	propName=compoundID { $name = $propName.text; }
+	:	propName=compoundID { $name = $propName.sid; }
 		'('
 		list=idList { $params = $list.ids; }
 		')'
@@ -1148,8 +1153,8 @@ classIdList returns [List<String> ids]
 @init {
 	ids = new ArrayList<String>();
 }
-	:	((firstClassName=classId { ids.add($firstClassName.text); })
-		(',' className=classId { ids.add($className.text); })*)?
+	:	((firstClassName=classId { ids.add($firstClassName.sid); })
+		(',' className=classId { ids.add($className.sid); })*)?
 	;
 
 compoundIdList returns [List<String> ids] 
@@ -1171,8 +1176,8 @@ nonEmptyCompoundIdList returns [List<String> ids]
 @init {
 	ids = new ArrayList<String>();
 }
-	:	firstId=compoundID	{ $ids.add($firstId.text); }
-		(',' nextId=compoundID	{ $ids.add($nextId.text); })*
+	:	firstId=compoundID	{ $ids.add($firstId.sid); }
+		(',' nextId=compoundID	{ $ids.add($nextId.sid); })*
 	;
 
 parameterList returns [List<String> ids]
@@ -1216,19 +1221,20 @@ literal returns [LP property]
 	|	strReal=udoubleLiteral	{ cls = ScriptingLogicsModule.ConstType.REAL; text = $strReal.text; }
 	|	str=STRING_LITERAL	{ cls = ScriptingLogicsModule.ConstType.STRING; text = $str.text; }  
 	|	str=LOGICAL_LITERAL	{ cls = ScriptingLogicsModule.ConstType.LOGICAL; text = $str.text; }
-	|	strEnum=strictCompoundID{ cls = ScriptingLogicsModule.ConstType.ENUM; text = $strEnum.text; } 
+	|	strEnum=strictCompoundID { cls = ScriptingLogicsModule.ConstType.ENUM; text = $strEnum.sid; } 
 	;
 	
-classId 
-	:	compoundID | PRIMITIVE_TYPE
+classId returns [String sid]
+	:	id=compoundID { $sid = $id.sid; }
+	|	pid=PRIMITIVE_TYPE { $sid = $pid.text; }
 	;
 
-compoundID
-	:	(ID '.')? ID
+compoundID returns [String sid]
+	:	firstPart=ID { $sid = $firstPart.text; } ('.' secondPart=ID { $sid = $sid + '.' + $secondPart.text; })?
 	;
 
-strictCompoundID
-	:	ID '.' ID
+strictCompoundID returns [String sid]
+	:	firstPart=ID '.' secondPart=ID { $sid = $firstPart.text + '.' + $secondPart.text; }
 	;
 	
 multiCompoundID returns [String sid]
