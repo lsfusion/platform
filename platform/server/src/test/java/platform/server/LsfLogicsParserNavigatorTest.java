@@ -4,18 +4,20 @@ import org.apache.commons.io.FileUtils;
 import org.junit.*;
 import org.junit.rules.TestName;
 import platform.server.data.sql.PostgreDataAdapter;
-import platform.server.form.entity.FormEntity;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.window.PanelNavigatorWindow;
+import platform.server.form.window.ToolBarNavigatorWindow;
+import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.scripted.ScriptedBusinessLogics;
 import platform.server.logics.scripted.ScriptingFormEntity;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class LsfLogicsParserNavigatorTest {
     private static final String SCRIPTS_FOLDER = "src/test/resources/testnavigator/";
@@ -65,7 +67,7 @@ public class LsfLogicsParserNavigatorTest {
                   "    ADD element2 'Element 2' BEFORE userPolicyForm;\n" +
                   "    ADD storeArticle IN element2;\n" +
                   "\n" +
-                  "    ADD outer 'Outer element' IN element1 TO leftWindow {\n" +
+                  "    ADD outer 'Outer element' IN element1 {\n" +
                   "        ADD dictionariesForm 'Dictionaries' {\n" +
                   "            ADD underForm 'under form element';\n" +
                   "        }\n" +
@@ -117,14 +119,123 @@ public class LsfLogicsParserNavigatorTest {
         );
     }
 
-    private NavigatorElement getElement(String sid) {
-        return bl.LM.baseElement.getNavigatorElement(sid);
+    @Test
+    public void testCreateWindows() throws Exception {
+        setupTest("WINDOW PANEL panel1 'Панель 1' HIDETITLE VERTICAL DRAWROOT HIDESCROLLBARS;\n" +
+                  "WINDOW PANEL panel2 'Панель 2' HORIZONTAL HIDESCROLLBARS;\n" +
+                  "\n" +
+                  "WINDOW TREE tree1 'Объекты' HIDESCROLLBARS HIDETITLE ;\n" +
+                  "WINDOW TREE tree2 'Объекты' POSITION(56, 23, 200, 123) HIDETITLE;\n" +
+                  "\n" +
+                  "WINDOW TOOLBAR toolbar1 'Навигатор' VERTICAL POSITION(12, 324, 45, 652) HALIGN(LEFT) VALIGN(TOP) TEXTHALIGN(LEFT) TEXTVALIGN(TOP) DRAWROOT HIDESCROLLBARS;\n" +
+                  "WINDOW TOOLBAR toolbar2 'Навигатор' VERTICAL LEFT HALIGN(CENTER) VALIGN(CENTER) HIDETITLE;"
+        );
+
+        PanelNavigatorWindow panel1 = (PanelNavigatorWindow) LM.getWindowByName("panel1");
+        PanelNavigatorWindow panel2 = (PanelNavigatorWindow) LM.getWindowByName("panel2");
+
+        TreeNavigatorWindow tree1 = (TreeNavigatorWindow) LM.getWindowByName("tree1");
+        TreeNavigatorWindow tree2 = (TreeNavigatorWindow) LM.getWindowByName("tree2");
+
+        ToolBarNavigatorWindow toolbar1 = (ToolBarNavigatorWindow) LM.getWindowByName("toolbar1");
+        ToolBarNavigatorWindow toolbar2 = (ToolBarNavigatorWindow) LM.getWindowByName("toolbar2");
+
+        assertEquals(panel1.orientation, SwingConstants.VERTICAL);
+        assertEquals(panel1.caption, "Панель 1");
+        assertTrue(panel1.drawRoot);
+        assertFalse(panel1.drawScrollBars);
+        assertFalse(panel1.titleShown);
+
+        assertEquals(panel2.orientation, SwingConstants.HORIZONTAL);
+
+        assertFalse(tree1.drawScrollBars);
+        assertFalse(tree1.titleShown);
+        assertFalse(tree2.titleShown);
+        assertEquals(tree2.x, 56);
+        assertEquals(tree2.y, 23);
+        assertEquals(tree2.width, 200);
+        assertEquals(tree2.height, 123);
+
+        assertTrue(toolbar1.drawRoot);
+        assertFalse(toolbar1.drawScrollBars);
+        assertEquals(toolbar1.x, 12);
+        assertEquals(toolbar1.y, 324);
+        assertEquals(toolbar1.width, 45);
+        assertEquals(toolbar1.height, 652);
+        assertTrue(toolbar1.alignmentX == JToolBar.LEFT_ALIGNMENT);
+        assertTrue(toolbar1.alignmentY == JToolBar.TOP_ALIGNMENT);
+        assertTrue(toolbar1.verticalTextPosition == SwingConstants.TOP);
+        assertTrue(toolbar1.horizontalTextPosition == SwingConstants.LEADING);
+
+        assertEquals(toolbar2.borderConstraint, BorderLayout.WEST);
     }
 
-    private FormEntity getForm(String sid) {
-        NavigatorElement element = bl.LM.baseElement.getNavigatorElement(sid);
-        assertTrue(element instanceof FormEntity);
-        return (FormEntity) element;
+    @Test(expected = RuntimeException.class)
+    public void testDuplicateWindowSIDFails() throws Exception {
+        setupTest("WINDOW PANEL panel1 'Панель 1' HIDETITLE VERTICAL DRAWROOT HIDESCROLLBARS;\n" +
+                  "WINDOW PANEL panel1 'Панель 1' HORIZONTAL HIDESCROLLBARS;"
+        );
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testToolbarWindowPositionConflictFails() throws Exception {
+        setupTest("WINDOW TOOLBAR tb1 'Объекты' LEFT POSITION(12, 23, 32, 45) HIDESCROLLBARS HIDETITLE;");
+    }
+
+    @Test
+    public void testSetNavigatorWindows() throws Exception {
+        setupTest("WINDOW PANEL panel1 'Панель 1' HIDETITLE VERTICAL DRAWROOT HIDESCROLLBARS;\n" +
+                  "WINDOW PANEL panel2 'Панель 2' HORIZONTAL HIDESCROLLBARS;\n" +
+                  "WINDOW PANEL panel3 'Панель 3' HORIZONTAL HIDESCROLLBARS;\n" +
+                  "\n" +
+                  "NAVIGATOR {\n" +
+                  "    ADD element1 'Element 1' AFTER userPolicyForm TO panel1;\n" +
+                  "    ADD element2 'Element 2' TO panel2;\n" +
+                  "    ADD storeArticle IN element2;\n" +
+                  "\n" +
+                  "    storeArticle TO panel3 {\n" +
+                  "        ADD underForm;\n" +
+                  "    };\n" +
+                  "}"
+        );
+
+        PanelNavigatorWindow panel1 = (PanelNavigatorWindow) LM.getWindowByName("panel1");
+        PanelNavigatorWindow panel2 = (PanelNavigatorWindow) LM.getWindowByName("panel2");
+        PanelNavigatorWindow panel3 = (PanelNavigatorWindow) LM.getWindowByName("panel3");
+
+        NavigatorElement elem1 = getElement("element1");
+        NavigatorElement elem2 = getElement("element2");
+        NavigatorElement underForm = getElement("underForm");
+        NavigatorElement storeArticle = getElement("storeArticle");
+
+        assertSame(elem1.window, panel1);
+        assertSame(elem2.window, panel2);
+        assertSame(storeArticle.window, panel3);
+
+        assertSame(underForm.getParent(), storeArticle);
+        assertNull(underForm.window);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testAddNavigatorToSystemWindowFails() throws Exception {
+        setupTest("NAVIGATOR {\n" +
+                  "    ADD element1 'Element 1' AFTER userPolicyForm TO status;\n" +
+                  "}"
+        );
+    }
+
+    @Test
+    public void testHideWindows() throws Exception {
+        setupTest("HIDE WINDOW BaseLogicsModule.status;\n" +
+                  "HIDE WINDOW log;"
+        );
+
+        assertFalse(LM.baseLM.statusWindow.visible);
+        assertFalse(LM.baseLM.logWindow.visible);
+    }
+
+    private NavigatorElement getElement(String sid) {
+        return bl.LM.baseElement.getNavigatorElement(sid);
     }
 
     private void setupTest(String testCode) throws Exception {

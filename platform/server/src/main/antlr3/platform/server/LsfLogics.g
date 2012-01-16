@@ -159,6 +159,7 @@ statement
 		|	indexStatement
 		|	formStatement
 		|	designStatement
+		|	windowStatement
 		|	navigatorStatement
 		|	emptyStatement
 		)
@@ -908,6 +909,121 @@ indexStatement
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// WINDOW STATEMENT ////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+windowStatement
+	:	windowPanelStatement
+	|	windowToolbarStatement
+	|	windowTreeStatement
+	|	hideWindowStatement
+	;
+	
+windowPanelStatement
+@after {
+	if (inPropParseState()) {
+		self.addScriptedPanelWindow($id.text, $caption.val, $opts.options);
+	}
+}
+	:	'WINDOW' 'PANEL' id=ID caption=stringLiteral opts=windowPanelOptions ';'
+	;
+	
+windowPanelOptions returns [NavigatorWindowOptions options]
+@init {
+	$options = new NavigatorWindowOptions();
+}
+	:	(	'HIDETITLE' { $options.setDrawTitle(false); }
+		|	'DRAWROOT' { $options.setDrawRoot(true); }
+		|	'HIDESCROLLBARS' { $options.setDrawScrollBars(false); }
+		|	o=orientation	{ $options.setOrientation($o.val); }
+		|	dp=dockPosition { $options.setDockPosition($dp.val); }
+		)*
+	;
+
+windowToolbarStatement
+@after {
+	if (inPropParseState()) {
+		self.addScriptedToolbarWindow($id.text, $caption.val, $opts.options);
+	}
+}
+	:	'WINDOW' 'TOOLBAR' id=ID caption=stringLiteral opts=windowToolbarOptions ';'
+	;
+	
+windowToolbarOptions returns [NavigatorWindowOptions options]
+@init {
+	$options = new NavigatorWindowOptions();
+}
+	:	(	'HIDETITLE' { $options.setDrawTitle(false); }
+		|	'DRAWROOT' { $options.setDrawRoot(true); }
+		|	'HIDESCROLLBARS' { $options.setDrawScrollBars(false); }
+		|	o=orientation { $options.setOrientation($o.val); }
+		|	dp=dockPosition { $options.setDockPosition($dp.val); }
+		|	bp=borderPosition { $options.setBorderPosition($bp.val); }
+		|	'HALIGN' '(' ha=horizontalAlignment ')' { $options.setHAlign($ha.val); }
+		|	'VALIGN' '(' va=verticalAlignment ')' { $options.setVAlign($va.val); }
+		|	'TEXTHALIGN' '(' tha=horizontalAlignment ')' { $options.setTextHAlign($tha.val); }
+		|	'TEXTVALIGN' '(' tva=verticalAlignment ')' { $options.setTextVAlign($tva.val); }
+		)*
+	;
+
+windowTreeStatement
+@after {
+	if (inPropParseState()) {
+		self.addScriptedTreeWindow($id.text, $caption.val, $opts.options);
+	}
+}
+	:	'WINDOW' 'TREE' id=ID caption=stringLiteral opts=windowTreeOptions ';'
+	;
+	
+windowTreeOptions returns [NavigatorWindowOptions options]
+@init {
+	$options = new NavigatorWindowOptions();
+}
+	:	(	'HIDETITLE' { $options.setDrawTitle(false); }
+		|	'DRAWROOT' { $options.setDrawRoot(true); }
+		|	'HIDESCROLLBARS' { $options.setDrawScrollBars(false); }
+		|	dp=dockPosition { $options.setDockPosition($dp.val); }
+		)*
+	;
+	
+borderPosition returns [BorderPosition val]
+	:	'LEFT'		{ $val = BorderPosition.LEFT; }
+	|	'RIGHT'		{ $val = BorderPosition.RIGHT; }
+	|	'TOP'		{ $val = BorderPosition.TOP; }
+	|	'BOTTOM'	{ $val = BorderPosition.BOTTOM; }
+	;
+	
+dockPosition returns [DockPosition val]
+	:	'POSITION' '(' x=intLiteral ',' y=intLiteral ',' w=intLiteral ',' h=intLiteral ')' { $val = new DockPosition($x.val, $y.val, $w.val, $h.val); }
+	;
+
+verticalAlignment returns [VAlign val]
+	:	'TOP'		{ $val = VAlign.TOP; }
+	|	'CENTER'	{ $val = VAlign.CENTER; }
+	|	'BOTTOM'	{ $val = VAlign.BOTTOM; }
+	;
+
+horizontalAlignment returns [HAlign val]
+	:	'LEFT'		{ $val = HAlign.LEFT; }
+	|	'CENTER'	{ $val = HAlign.CENTER; }
+	|	'RIGHT'		{ $val = HAlign.RIGHT; }
+	;
+	
+orientation returns [Orientation val]
+	:	'VERTICAL'		{ $val = Orientation.VERTICAL; }
+	|	'HORIZONTAL'	{ $val = Orientation.HORIZONTAL; }
+	;
+	
+hideWindowStatement
+	:	'HIDE' 'WINDOW' wid=compoundID ';'
+		{
+			if (inPropParseState()) {
+				self.hideWindow($wid.sid);
+			}
+		}
+	;
+	
+////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////// NAVIGATOR STATEMENT ////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -934,21 +1050,29 @@ addNavigatorElementStatement[NavigatorElement parentElement]
 	:	'ADD' insSelector=navigatorElementSelector[false] { insElem = $insSelector.element; }
 		(capt=stringLiteral { caption = $capt.val; })?
 		(posDefinition=positionDefinition posSelector=navigatorElementSelector[true] {hasPosition = true; })?
-		('TO' ID)? //todo: window will go here
+		('TO' wid=compoundID)?
 		{
 			if (inPropParseState()) {
 				insElem = self.addNavigatorElement($insSelector.sid,
 													caption,
 													insElem,
 													hasPosition ? $posDefinition.position : InsertPosition.IN,
-													hasPosition ? $posSelector.element : $parentElement);
+													hasPosition ? $posSelector.element : $parentElement,
+													$wid.sid);
 			}
 		}
 		navigatorElementStatementBody[insElem]
 	;
 	
 setupNavigatorElementStatement
-	:	e=navigatorElementSelector[true] ('TO' ID)? navigatorElementStatementBody[$e.element]
+	:	e=navigatorElementSelector[true]
+		('TO' wid=compoundID)?
+		{
+			if (inPropParseState()) {
+				self.setNavigatorElementWindow($e.element, $wid.sid);
+			}
+		}
+		navigatorElementStatementBody[$e.element]
 	;
 	
 navigatorElementSelector[boolean hasToExist] returns [String sid, NavigatorElement element]

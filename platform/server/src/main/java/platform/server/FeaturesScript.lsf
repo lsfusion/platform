@@ -188,14 +188,38 @@ ORDER BY name, foo
 ;
 
 
+//////////////// WINDOW STATEMENT /////////////////
+// Add new window statement
+// Syntax:
+// WINDOW (PANEL | TREE | TOOLBAR) <name> '<caption>' [ option [, option ...] ]
+// option ::=   HIDETITLE |
+//              HIDESCROLLBARS |
+//              DRAWROOT |
+//              (VERTICAL | HORIZONTAL) |
+//              (LEFT | RIGHT | TOP | BOTTOM) |
+//              POSITION(x, y, w, h) |
+//              HALIGN( LEFT | CENTER | RIGHT ) |
+//              VALIGN( TOP | CENTER | BOTTOM ) |
+//              TEXTHALIGN( LEFT | CENTER | RIGHT ) |
+//              TEXTVALIGN( TOP | CENTER | BOTTOM )
+WINDOW TOOLBAR mainToolbar 'Навигатор' VERTICAL LEFT HIDETITLE HALIGN(CENTER) TEXTVALIGN(BOTTOM) TEXTHALIGN(CENTER);
+WINDOW TOOLBAR leftToolbar 'Список' VERTICAL POSITION(0, 0, 20, 60);
+WINDOW TREE objectsWindow 'Объекты' POSITION(0, 30, 20, 30) DRAWROOT;
+
+//Hide window
+HIDE WINDOW BaseLogicsModule.log;
+HIDE WINDOW BaseLogicsModule.relevantForms;
+HIDE WINDOW relevantClassForms;
+
 //////////////// NAVIGATOR STATEMENT /////////////////
 //настройка навигатора
 NAVIGATOR {
     // чтобы добавить один элемент в другой элемент используется команда следующего вида
+    // ADD <имя> '<заголовок>' (IN | AFTER | BEFORE) <имя> [TO <имя окна>];
     ADD element1 'Element 1' AFTER userPolicyForm;
-    // если контейнер не существовал, то он будет создан
+    // если элемент не существовал, то он будет создан
     // при этом по умолчанию он будет добавлен в элемент текущей области видимости
-    // (при использовании прямо внутри NAVIGATOR - он будет добавлен в корневой элемент)
+    // (при использовании прямо внутри NAVIGATOR - он будет добавлен в baseElement)
 
     ADD element2 'Element 2' BEFORE userPolicyForm;
     ADD storeArticle IN element2;
@@ -208,7 +232,8 @@ NAVIGATOR {
         ADD element2;
     }
 
-    ADD testNavigators 'Тестовые навигаторы' AFTER remindPasswordLetter;
+    //при создании элемента можно указать окно для него
+    ADD testNavigators 'Тестовые навигаторы' AFTER remindPasswordLetter TO mainToolbar;
 
     // также можно просто добавлять в существующий элемент без его перемещения
     testNavigators {
@@ -218,9 +243,15 @@ NAVIGATOR {
         ADD element2;
         ADD underForm;
     }
+    // так можно отдельно настроить окно, в которое будет рисоваться элемент
+    baseElement TO mainToolbar;
+    testNavigators TO leftToolbar;
+    adminElement TO leftToolbar;
+    objectElement TO objectsWindow;
+
+    ADD dictionariesForm 'Словари' AFTER daysOffForm;
     ADD storeArticle;
 }
-
 
 //////////////// DESIGN STATEMENT /////////////////
 //При создании дизайна по умолчанию создаётся набор контейнеров и компонентов с определёнными именами

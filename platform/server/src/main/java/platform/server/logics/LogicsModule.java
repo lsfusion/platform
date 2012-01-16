@@ -17,10 +17,8 @@ import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.*;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.FilterEntity;
+import platform.server.form.window.AbstractWindow;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
@@ -37,7 +35,6 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 import static platform.base.BaseUtils.consecutiveInts;
-import static platform.base.BaseUtils.innerJoin;
 import static platform.server.logics.PropertyUtils.*;
 
 /**
@@ -79,6 +76,7 @@ public abstract class LogicsModule {
     private final Map<String, LP<?>> moduleProperties = new HashMap<String, LP<?>>();
     private final Map<String, AbstractGroup> moduleGroups = new HashMap<String, AbstractGroup>();
     private final Map<String, ValueClass> moduleClasses = new HashMap<String, ValueClass>();
+    private final Map<String, AbstractWindow> windows = new HashMap<String, AbstractWindow>();
 
     private final Map<String, List<String>> propNamedParams = new HashMap<String, List<String>>();
 
@@ -139,6 +137,25 @@ public abstract class LogicsModule {
     protected void addModuleClass(ValueClass valueClass) {
         assert !moduleClasses.containsKey(valueClass.getSID());
         moduleClasses.put(valueClass.getSID(), valueClass);
+    }
+
+    protected <T extends AbstractWindow> T addWindow(T window) {
+        assert !windows.containsKey(window.getSID());
+        windows.put(window.getSID(), window);
+        return window;
+    }
+
+    protected <T extends AbstractWindow> T addWindow(String name, T window) {
+        window.setSID(transformNameToSID(name));
+        return addWindow(window);
+    }
+
+    public AbstractWindow getWindowByName(String name) {
+        return getWindowBySID(transformNameToSID(name));
+    }
+
+    public AbstractWindow getWindowBySID(String sid) {
+        return windows.get(sid);
     }
 
     public List<String> getNamedParams(String sID) {

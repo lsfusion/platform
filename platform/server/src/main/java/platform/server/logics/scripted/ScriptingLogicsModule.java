@@ -13,6 +13,7 @@ import platform.server.classes.*;
 import platform.server.data.Union;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.window.*;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.LogicsModule;
@@ -27,6 +28,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static platform.base.BaseUtils.nvl;
 import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
 
 /**
@@ -42,6 +44,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final CompoundNameResolver<LP<?>> lpResolver = new LPNameResolver();
     private final CompoundNameResolver<AbstractGroup> groupResolver = new AbstractGroupNameResolver();
     private final CompoundNameResolver<NavigatorElement> navigatorResolver = new NavigatorElementNameResolver();
+    private final CompoundNameResolver<AbstractWindow> windowResolver = new WindowNameResolver();
 
     private String code = null;
     private String filename = null;
@@ -203,6 +206,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP<?> property = lpResolver.resolve(name);
         checkProperty(property, name);
         return property;
+    }
+
+    public AbstractWindow findWindowByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+        AbstractWindow window = windowResolver.resolve(name);
+        checkWindow(window, name);
+        return window;
     }
 
     public NavigatorElement getNavigatorElementBySID(String sid, boolean hasToExist) throws ScriptingErrorLog.SemanticErrorException {
@@ -653,7 +662,106 @@ public class ScriptingLogicsModule extends LogicsModule {
         mainProp.setDerivedChange(useOld, !anyChange, valueProp, BL, params.subList(1, params.size()).toArray());
     }
 
-    public NavigatorElement addNavigatorElement(String sid, String caption, NavigatorElement element, InsertPosition pos, NavigatorElement anchorElement) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedPanelWindow(String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+        if (scriptLogger.isInfoEnabled()) {
+            scriptLogger.info("addScriptedPanelWindow(" + name + ", " + caption + ", " + options + ");");
+        }
+
+        checkDuplicateWindow(name);
+
+        Orientation orientation = options.getOrientation();
+        DockPosition dockPosition = options.getDockPosition();
+
+        if (orientation == null) {
+            errLog.emitWindowOrientationNotSpecified(parser, name);
+        }
+
+        PanelNavigatorWindow window = new PanelNavigatorWindow(orientation.asToolbarOrientation(), null, caption);
+        if (dockPosition != null) {
+            window.setDockPosition(dockPosition.x, dockPosition.y, dockPosition.width, dockPosition.height);
+        }
+
+        setCommonNavigatorWindowsProperties(window, options);
+        addWindow(name, window);
+    }
+
+    public void addScriptedToolbarWindow(String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+        if (scriptLogger.isInfoEnabled()) {
+            scriptLogger.info("addScriptedToolbarWindow(" + name + ", " + caption + ", " + options + ");");
+        }
+
+        checkDuplicateWindow(name);
+
+        Orientation orientation = options.getOrientation();
+        BorderPosition borderPosition = options.getBorderPosition();
+        DockPosition dockPosition = options.getDockPosition();
+
+        if (orientation == null) {
+            errLog.emitWindowOrientationNotSpecified(parser, name);
+        }
+
+        if (borderPosition != null && dockPosition != null) {
+            errLog.emitWindowPositionConflict(parser, name);
+        }
+
+        ToolBarNavigatorWindow window;
+        if (borderPosition != null) {
+            window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), null, caption, borderPosition.asLayoutConstraint());
+        } else if (dockPosition != null) {
+            window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), null, caption, dockPosition.x, dockPosition.y, dockPosition.width, dockPosition.height);
+        } else {
+            window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), null, caption);
+        }
+
+        HAlign hAlign = options.getHAlign();
+        VAlign vAlign = options.getVAlign();
+        HAlign thAlign = options.getTextHAlign();
+        VAlign tvAlign = options.getTextVAlign();
+        if (hAlign != null) {
+            window.alignmentX = hAlign.asToolbarAlign();
+        }
+        if (vAlign != null) {
+            window.alignmentY = vAlign.asToolbarAlign();
+        }
+        if (thAlign != null) {
+            window.horizontalTextPosition = thAlign.asTextPosition();
+        }
+        if (tvAlign != null) {
+            window.verticalTextPosition = tvAlign.asTextPosition();
+        }
+
+        setCommonNavigatorWindowsProperties(window, options);
+        addWindow(name, window);
+    }
+
+    public void addScriptedTreeWindow(String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+        if (scriptLogger.isInfoEnabled()) {
+            scriptLogger.info("addScriptedTreeWindow(" + name + ", " + caption + ", " + options + ");");
+        }
+
+        checkDuplicateWindow(name);
+
+        TreeNavigatorWindow window = new TreeNavigatorWindow(null, caption);
+        DockPosition dp = options.getDockPosition();
+        if (dp != null) {
+            window.setDockPosition(dp.x, dp.y, dp.width, dp.height);
+        }
+
+        setCommonNavigatorWindowsProperties(window, options);
+        addWindow(name, window);
+    }
+
+    private void setCommonNavigatorWindowsProperties(NavigatorWindow window, NavigatorWindowOptions options) {
+        window.drawRoot = nvl(options.getDrawRoot(), false);
+        window.drawScrollBars = nvl(options.getDrawScrollBars(), true);
+        window.titleShown = nvl(options.getDrawTitle(), true);
+    }
+
+    public void hideWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
+        findWindowByCompoundName(name).visible = false;
+    }
+
+    public NavigatorElement addNavigatorElement(String sid, String caption, NavigatorElement element, InsertPosition pos, NavigatorElement anchorElement, String windowName) throws ScriptingErrorLog.SemanticErrorException {
         assert sid != null && anchorElement != null;
 
         if (element == null) {
@@ -661,6 +769,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else if (caption != null) {
             element.caption = caption;
         }
+
+        setNavigatorElementWindow(element, windowName);
+
         moveElement(element, pos, anchorElement);
 
         return element;
@@ -694,6 +805,23 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public void setNavigatorElementWindow(NavigatorElement element, String windowName) throws ScriptingErrorLog.SemanticErrorException {
+        assert element != null;
+
+        if (windowName != null) {
+            AbstractWindow window = findWindowByCompoundName(windowName);
+            if (window == null) {
+                errLog.emitWindowNotFoundError(parser, windowName);
+            }
+
+            if (window instanceof NavigatorWindow) {
+                element.window = (NavigatorWindow) window;
+            } else {
+                errLog.emitAddToSystemWindowError(parser, windowName);
+            }
+        }
+    }
+
     private void checkGroup(AbstractGroup group, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (group == null) {
             errLog.emitGroupNotFoundError(parser, name);
@@ -715,6 +843,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkModule(LogicsModule module, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (module == null) {
             errLog.emitModuleNotFoundError(parser, name);
+        }
+    }
+
+    private void checkWindow(AbstractWindow window, String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (window == null) {
+            errLog.emitWindowNotFoundError(parser, name);
         }
     }
 
@@ -745,6 +879,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkDuplicateProperty(String propName) throws ScriptingErrorLog.SemanticErrorException {
         if (getLPByName(propName) != null) {
             errLog.emitAlreadyDefinedError(parser, "property", propName);
+        }
+    }
+
+    private void checkDuplicateWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (getWindowByName(name) != null) {
+            errLog.emitAlreadyDefinedError(parser, "window", name);
         }
     }
 
@@ -905,6 +1045,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         public NavigatorElement resolveInModule(LogicsModule module, String simpleName) {
             //пока используем просто глобальные sid, далее можно будет расширить
             return baseLM.baseElement.getNavigatorElement(simpleName);
+        }
+    }
+
+    private class WindowNameResolver extends CompoundNameResolver<AbstractWindow> {
+        @Override
+        public AbstractWindow resolveInModule(LogicsModule module, String simpleName) {
+            return module.getWindowByName(simpleName);
         }
     }
 }

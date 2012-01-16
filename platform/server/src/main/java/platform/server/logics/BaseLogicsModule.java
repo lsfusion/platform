@@ -1149,13 +1149,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         NamedListFormEntity namedListFormEntity = new NamedListFormEntity(this, baseClass.named);
         baseClass.named.setListForm(namedListFormEntity, namedListFormEntity.object);
 
-        navigatorWindow = new TreeNavigatorWindow("navigator", getString("logics.navigator"), 0, 0, 20, 70);
-        relevantFormsWindow = new AbstractWindow("relevantForms", getString("logics.forms.relevant.forms"), 0, 70, 20, 29);
-        relevantClassFormsWindow = new AbstractWindow("relevantClassForms", getString("logics.forms.relevant.class.forms"), 0, 70, 20, 29);
-        logWindow = new AbstractWindow("log", getString("logics.log"), 0, 70, 20, 29);
-        statusWindow = new AbstractWindow("status", getString("logics.status"), 0, 99, 100, 1);
+        navigatorWindow = addWindow(new TreeNavigatorWindow("navigator", getString("logics.navigator"), 0, 0, 20, 70));
+        relevantFormsWindow = addWindow(new AbstractWindow("relevantForms", getString("logics.forms.relevant.forms"), 0, 70, 20, 29));
+        relevantClassFormsWindow = addWindow(new AbstractWindow("relevantClassForms", getString("logics.forms.relevant.class.forms"), 0, 70, 20, 29));
+        logWindow = addWindow(new AbstractWindow("log", getString("logics.log"), 0, 70, 20, 29));
+        statusWindow = addWindow(new AbstractWindow("status", getString("logics.status"), 0, 99, 100, 1));
         statusWindow.titleShown = false;
-        formsWindow = new AbstractWindow("forms", getString("logics.forms"), 20, 20, 80, 79);
+        formsWindow = addWindow(new AbstractWindow("forms", getString("logics.forms"), 20, 20, 80, 79));
 
         baseElement = new NavigatorElement("baseElement", getString("logics.forms"));
         baseElement.window = navigatorWindow;

@@ -29,6 +29,7 @@
       <keyword name="BOTTOM" />
       <keyword name="BY" />
       <keyword name="CASCADE" />
+      <keyword name="CENTER" />
       <keyword name="CHECKED" />
       <keyword name="CLASS" />
       <keyword name="COLUMNS" />
@@ -39,6 +40,7 @@
       <keyword name="DESC" />
       <keyword name="DESIGN" />
       <keyword name="DOUBLE" />
+      <keyword name="DRAWROOT" />
       <keyword name="EDITABLE" />
       <keyword name="EDITFORM" />
       <keyword name="EXCEPTLAST" />
@@ -54,10 +56,14 @@
       <keyword name="FROM" />
       <keyword name="GRID" />
       <keyword name="GROUP" />
+      <keyword name="HALIGN" />
       <keyword name="HEADER" />
       <keyword name="HIDE" />
+      <keyword name="HIDESCROLLBARS" />
+      <keyword name="HIDETITLE" />
       <keyword name="HIGHLIGHTIF" />
       <keyword name="HINT" />
+      <keyword name="HORIZONTAL" />
       <keyword name="IF" />
       <keyword name="IMPORT" />
       <keyword name="IN" />
@@ -99,12 +105,18 @@
       <keyword name="STRING" />
       <keyword name="SUM" />
       <keyword name="TABLE" />
+      <keyword name="TEXTHALIGN" />
+      <keyword name="TEXTVALIGN" />
       <keyword name="THE" />
       <keyword name="TO" />
+      <keyword name="TOOLBAR" />
+      <keyword name="TOP" />
       <keyword name="TREE" />
       <keyword name="TRUE" />
       <keyword name="UNION" />
       <keyword name="UPDATE" />
+      <keyword name="VALIGN" />
+      <keyword name="VERTICAL" />
       <keyword name="WINDOW" />
       <keyword name="XOR" />
     </keywords>

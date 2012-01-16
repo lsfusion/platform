@@ -27,18 +27,13 @@ public class AbstractWindow extends IdentityObject {
     public AbstractWindow(String sID, String caption, int x, int y, int width, int height) {
         this(sID, caption);
 
-        this.position = AbstractWindowType.DOCKING_POSITION;
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+        setDockPosition(x, y, width, height);
     }
 
     public AbstractWindow(String sID, String caption, String borderConstraint) {
         this(sID, caption);
 
-        this.position = AbstractWindowType.BORDER_POSITION;
-        this.borderConstraint = borderConstraint;
+        setBorderPosition(borderConstraint);
     }
 
     public AbstractWindow(String sID, String caption) {
@@ -73,5 +68,10 @@ public class AbstractWindow extends IdentityObject {
         this.y = y;
         this.width = width;
         this.height = height;
+    }
+
+    private void setBorderPosition(String borderConstraint) {
+        this.position = AbstractWindowType.BORDER_POSITION;
+        this.borderConstraint = borderConstraint;
     }
 }

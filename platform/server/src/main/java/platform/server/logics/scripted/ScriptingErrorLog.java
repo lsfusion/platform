@@ -112,6 +112,10 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "navigator element", name);
     }
 
+    public void emitWindowNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+        emitNotFoundError(parser, "window", name);
+    }
+
     public void emitIllegalInsertBeforeAfterNavigatorElement(LsfLogicsParser parser, String element) throws SemanticErrorException {
         emitSimpleError(parser, "can't insert component after or before '" + element + "'");
     }
@@ -150,6 +154,19 @@ public class ScriptingErrorLog {
 
     public void emitWrongKeyStrokeFormat(LsfLogicsParser parser, String ksLiteral) throws SemanticErrorException {
         emitSimpleError(parser, "can't create keystroke from string '" + ksLiteral + "'");
+    }
+
+    public void emitWindowOrientationNotSpecified(LsfLogicsParser parser, String sid) throws SemanticErrorException {
+        emitSimpleError(parser, "orientation (VERTICAL or HORIZONTAL) isn't specified for window '" + sid + "'.");
+    }
+
+    public void emitWindowPositionConflict(LsfLogicsParser parser, String sid) throws SemanticErrorException {
+        emitSimpleError(parser, "both border position (LEFT, RIGHT, TOP or BOTTOM) and dock position (POSITION(x, y, widht, height)) are specified for window '" + sid + "', " +
+                                "only one of those should be used.");
+    }
+
+    public void emitAddToSystemWindowError(LsfLogicsParser parser, String sid) throws SemanticErrorException {
+        emitSimpleError(parser, "it's illegal to add navigator element to system window '" + sid + "'. ");
     }
 
     public void emitParamIndexError(LsfLogicsParser parser, int paramIndex, int paramCount) throws SemanticErrorException {

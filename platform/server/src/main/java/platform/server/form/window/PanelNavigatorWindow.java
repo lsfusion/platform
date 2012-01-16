@@ -6,7 +6,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class PanelNavigatorWindow extends NavigatorWindow {
-    int orientation;
+    public int orientation;
 
     public PanelNavigatorWindow(int orientation, String sid, String caption) {
         super(sid, caption);
