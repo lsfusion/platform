@@ -70,6 +70,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass form;
     public ConcreteCustomClass abstractGroup;
     public ConcreteCustomClass property;
+    public ConcreteCustomClass notification;
     public AbstractCustomClass exception;
     public ConcreteCustomClass clientException;
     public ConcreteCustomClass serverException;
@@ -277,6 +278,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP storedProperty;
     public LP captionProperty;
     public LP SIDToProperty;
+    LP emailFromNotification;
+    LP emailToNotification;
+    LP emailToCCNotification;
+    LP emailToBCNotification;
+    LP textNotification;
+    LP subjectNotification;
+    LP inNotificationProperty;
     public LP permitViewUserRoleProperty;
     public LP permitViewUserProperty;
     public LP forbidViewUserRoleProperty;
@@ -444,6 +452,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         form = addConcreteClass("form", getString("logics.forms.form"), navigatorElement);
         abstractGroup = addConcreteClass("abstractGroup", getString("logics.property.group"), baseClass);
         property = addConcreteClass("property", getString("logics.property"), baseClass);
+        notification = addConcreteClass("notification", getString("logics.notification"), baseClass);
         exception = addAbstractClass("exception", getString("logics.exception"), baseClass);
         clientException = addConcreteClass("clientException", getString("logics.exception.client"), exception);
         serverException = addConcreteClass("serverException", getString("logics.exception.server"), exception);
@@ -760,6 +769,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         storedProperty = addDProp(baseGroup, "storedProperty", getString("logics.property.stored"), LogicalClass.instance, property);
         captionProperty = addDProp(baseGroup, "captionProperty", getString("logics.property.caption"), propertyCaptionValueClass, property);
         SIDToProperty = addAGProp("SIDToProperty", getString("logics.property"), SIDProperty);
+
+        emailFromNotification = addDProp(baseGroup, "emailFromNotification", "Адрес отправителя", StringClass.get(50), notification);
+        emailToNotification = addDProp(baseGroup, "emailToNotification", "Адрес получателя", StringClass.get(50), notification);
+        emailToCCNotification = addDProp(baseGroup, "emailToCCNotification", "Копия", StringClass.get(50), notification);
+        emailToBCNotification = addDProp(baseGroup, "emailToBCNotification", "Скрытая копия", StringClass.get(50), notification);
+        textNotification = addDProp(baseGroup, "textNotification", "Текст письма", TextClass.instance, notification);
+        subjectNotification = addDProp(baseGroup, "subjectNotification", "Тема письма", StringClass.get(100), notification);
+        inNotificationProperty = addDProp(baseGroup, "inNotificationProperty", "Вкл", LogicalClass.instance, notification, baseLM.property);
+
         permitViewUserRoleProperty = addDProp(baseGroup, "permitViewUserRoleProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, userRole, property);
         permitViewUserProperty = addJProp(baseGroup, "permitViewUserProperty", getString("logics.policy.permit.property.view"), permitViewUserRoleProperty, userMainRole, 1, 2);
         forbidViewUserRoleProperty = addDProp(baseGroup, "forbidViewUserRoleProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, userRole, property);
@@ -1151,6 +1169,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new ConnectionsFormEntity(adminElement, "connectionsForm"));
         addFormEntity(new PhysicalModelFormEntity(adminElement, "physicalModelForm"));
         addFormEntity(new PropertiesFormEntity(adminElement, "propertiesForm"));
+        addFormEntity(new NotificationFormEntity(adminElement, "notification"));
         addFormEntity(new ExceptionsFormEntity(adminElement, "exceptionsForm"));
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
@@ -1773,8 +1792,61 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             return design;
         }
+    }
 
+    public class NotificationFormEntity extends FormEntity {
 
+        private ObjectEntity objNotification;
+        private ObjectEntity objProperty;
+
+        public NotificationFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.notification.notifications"));
+
+            objNotification = addSingleGroupObject(notification, getString("logics.notification"));
+            objProperty = addSingleGroupObject(property, getString("logics.property.properties"));
+
+            addPropertyDraw(inNotificationProperty, objNotification, objProperty);
+            addPropertyDraw(objNotification, subjectNotification, textNotification, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification);
+            addObjectActions(this, objNotification);
+            addPropertyDraw(objProperty, captionProperty, SIDProperty);
+            setForceViewType(textNotification, ClassViewType.PANEL);
+            setReadOnly(captionProperty, true);
+            setReadOnly(SIDProperty, true);
+
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(
+                    new RegularFilterEntity(genID(),
+                            new NotNullFilterEntity(addPropertyObject(inNotificationProperty, objNotification, objProperty)),
+                            getString("logics.only.checked"),
+                            KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)
+                    ), true);
+            addRegularFilterGroup(filterGroup);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            ContainerView textContainer = design.createContainer(getString("logics.notification.text"));
+            textContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            textContainer.add(design.get(getPropertyDraw(textNotification, objNotification)));
+            textContainer.constraints.fillHorizontal = 1.0;
+            textContainer.constraints.fillVertical = 1.0;
+
+            PropertyDrawView textView = design.get(getPropertyDraw(textNotification, objNotification));
+            textView.constraints.fillHorizontal = 1.0;
+            textView.preferredSize = new Dimension(-1, 300);
+            textView.panelLabelAbove = true;
+
+            ContainerView specContainer = design.createContainer();
+            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objNotification.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
+            specContainer.add(textContainer);
+            specContainer.tabbedPane = true;
+
+            addDefaultOrder(getPropertyDraw(SIDProperty, objProperty), true);
+            return design;
+        }
     }
 
     class ExceptionsFormEntity extends FormEntity {

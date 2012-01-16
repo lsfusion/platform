@@ -30,6 +30,7 @@ import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.FormEntity;
@@ -45,6 +46,7 @@ import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.DataTable;
 import platform.server.logics.table.ImplementTable;
+import platform.server.mail.NotificationActionProperty;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
 import platform.server.session.PropertyChange;
@@ -54,6 +56,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
 import static platform.server.logics.ServerResourceBundle.getString;
@@ -733,6 +737,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             synchronizeDB();
 
             //setUserLoggableProperties();
+            setPropertyNotifications();
         } catch (Exception e) {
             e.printStackTrace();
             String msg = e.getMessage();
@@ -2054,6 +2059,60 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     }
 
+    public void setPropertyNotifications() throws SQLException {
+
+        DataSession session = createSession();
+
+        LP isNotification = LM.is(LM.notification);
+        Map<Object, KeyExpr> keys = isNotification.getMapKeys();
+        KeyExpr key = BaseUtils.singleValue(keys);
+        Query<Object, Object> query = new Query<Object, Object>(keys);
+        query.properties.put("subject", LM.subjectNotification.getExpr(session.modifier, key));
+        query.properties.put("text", LM.textNotification.getExpr(session.modifier, key));
+        query.properties.put("emailFrom", LM.emailFromNotification.getExpr(session.modifier, key));
+        query.properties.put("emailTo", LM.emailToNotification.getExpr(session.modifier, key));
+        query.properties.put("emailToCC", LM.emailToCCNotification.getExpr(session.modifier, key));
+        query.properties.put("emailToBC", LM.emailToBCNotification.getExpr(session.modifier, key));
+        query.and(isNotification.getExpr(key).getWhere());
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+
+        for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
+            DataObject notificationObject = new DataObject(rows.getKey().values().iterator().next(), LM.notification);
+            KeyExpr propertyExpr2 = new KeyExpr("property");
+            KeyExpr notificationExpr2 = new KeyExpr("notification");
+            Map<Object, KeyExpr> newKeys2 = new HashMap<Object, KeyExpr>();
+            newKeys2.put("property", propertyExpr2);
+            newKeys2.put("notification", notificationExpr2);
+
+            Query<Object, Object> query2 = new Query<Object, Object>(newKeys2);
+            query2.properties.put("SIDProperty", LM.SIDProperty.getExpr(session.modifier, propertyExpr2));
+            query2.and(LM.inNotificationProperty.getExpr(session.modifier, notificationExpr2, propertyExpr2).getWhere());
+            query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
+            OrderedMap<Map<Object, Object>, Map<Object, Object>> result2 = query2.execute(session.sql);
+            List<LP> listInNotificationProperty = new ArrayList();
+            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows2 : result2.entrySet()) {
+                listInNotificationProperty.add(getLP(rows2.getValue().get("SIDProperty").toString().trim()));
+            }
+
+            for (LP prop : listInNotificationProperty) {
+                Map<Object, Object> rowValue = rows.getValue();
+                String subject = rowValue.get("subject") == null ? "" : rowValue.get("subject").toString().trim();
+                String text = rowValue.get("text") == null ? "" : rowValue.get("text").toString().trim();
+                String emailFrom = rowValue.get("emailFrom") == null ? "" : rowValue.get("emailFrom").toString().trim();
+                String emailTo = rowValue.get("emailTo") == null ? "" : rowValue.get("emailTo").toString().trim();
+                String emailToCC = rowValue.get("emailToCC") == null ? "" : rowValue.get("emailToCC").toString().trim();
+                String emailToBC = rowValue.get("emailToBC") == null ? "" : rowValue.get("emailToBC").toString().trim();
+                LP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LP<ClassPropertyInterface>(new NotificationActionProperty(prop.property.getSID() + "emailNotificationProperty", "emailNotificationProperty", prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, LM.BL)));
+
+                Object[] params = new Object[prop.listInterfaces.size() + 1];
+                params[0] = prop;
+                for (int i = 1; i <= prop.listInterfaces.size(); i++)
+                    params[i] = i;
+                emailNotificationProperty.setDerivedForcedChange(LM.addCProp(ActionClass.instance, true), params);
+            }
+        }
+    }
+    
     public byte[] getBaseClassByteArray() throws RemoteException {
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();

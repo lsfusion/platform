@@ -160,6 +160,25 @@ public class EmailSender {
         sendMail(message, subject);
     }
 
+    public void sendPlainMail(String subject, String inlineForms, List<AttachmentProperties> attachmentForms, Map<ByteArray, String> files) throws MessagingException, IOException {
+        assert inlineForms != null && attachmentForms != null && files != null;
+
+        setMessageHeading();
+        message.setSubject(subject, "utf-8");
+
+        setText(inlineForms);
+
+        for (AttachmentProperties formProps : attachmentForms) {
+            attachFile(formProps);
+        }
+        for (Map.Entry<ByteArray, String> entry : files.entrySet()) {
+            attachFile(entry.getKey().array, entry.getValue());
+        }
+
+        message.setContent(mp);
+        sendMail(message, subject);
+    }
+
     private void sendMail(final MimeMessage message, final String subject) {
         new Thread() {
             public void run() {
