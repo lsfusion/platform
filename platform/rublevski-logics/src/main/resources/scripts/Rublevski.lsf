@@ -208,12 +208,11 @@ quantityCashChangeOneOperationAccountDepartmentStore ' Количество ка
 materiallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' = DATA employee (departmentStore) IN storeGroup;
 bookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет' = DATA employee (departmentStore) IN storeGroup;
 personCheckReportDepartmentStore 'Кто проверяет товарный отчет' = DATA employee (departmentStore) IN storeGroup;
-idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (tradingSquare) = GROUP MAX tradingSquare AS tradingSquare BY departmentStoreTradingSquare(tradingSquare);   //максимизирует только по ID, переделать после расширения функционала
-defaultTradingSquareDepartmentStore 'Торговая площадь отдела магазина, кв.м.' (tradingSquare) = squareTradingSquare(idTradingSquareDepartmentStore(tradingSquare));
+idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (departmentStore) = GROUP MAX tradingSquare AS tradingSquare BY departmentStoreTradingSquare(tradingSquare);
+defaultTradingSquareDepartmentStore 'Торговая площадь отдела магазина, кв.м.' (departmentStore) = squareTradingSquare(idTradingSquareDepartmentStore(departmentStore)) IN storeGroup;
 idResolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = GROUP MAX discount AS discount BY departmentStoreDiscount(discount);
-resolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = agreeDiscount(idResolveDiscountDepartmentStore(discount));
-
-//tradingSquareStore 'Торговая площадь магазина' = GROUP SUM defaultTradingSquareDepartmentStore(tradingSquare) BY storeDepartmentStore(departmentStoreTradingSquare(tradingSquare));
+resolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = agreeDiscount(idResolveDiscountDepartmentStore(discount)) IN storeGroup;
+tradingSquareStore 'Торговая площадь магазина' = GROUP SUM defaultTradingSquareDepartmentStore(tradingSquare) BY storeDepartmentStore(departmentStore) IN storeGroup;
 
 inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
 
@@ -233,9 +232,9 @@ PROPERTIES(d) ADDFORM, EDITFORM, delete;
 
 FORM store 'Магазин'
 OBJECTS s=store FIXED PANEL, d=departmentStore
-PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore
-PROPERTIES(d) name, ADDOBJ, delete
-FILTERS NOT NULL inStoreDepartment(s, d);
+PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, tradingSquareStore
+PROPERTIES(d) name, ADDOBJ, delete;
+//FILTERS NOT NULL inStoreDepartment(s, d);
 
 FORM stores 'Магазины'
 OBJECTS s=store
