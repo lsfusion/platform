@@ -1756,8 +1756,8 @@ public abstract class LogicsModule {
 
         LP addObjectAction = getAddObjectAction(cls);
         LP property = addMFAProp(actionGroup, "addForm" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.add") + "(" + cls + ")",
-                                form, new ObjectEntity[] {},
-                                new PropertyObjectEntity[] {form.addPropertyObject(addObjectAction)},
+                                form.form, new ObjectEntity[] {},
+                                new PropertyObjectEntity[] {form.form.addPropertyObject(addObjectAction)},
                                 new OrderEntity[] {null}, ((ActionProperty)addObjectAction.property).getValueClass(), true);
         property.setImage("add.png");
         property.setShouldBeLast(true);
@@ -1765,6 +1765,11 @@ public abstract class LogicsModule {
         property.setShowEditKey(true);
         property.setPanelLocation(new ToolbarPanelLocation());
         property.setForceViewType(ClassViewType.PANEL);
+
+        // todo : так не очень правильно делать - получается, что мы добавляем к Immutable объекту FormActionProperty ссылки на ObjectEntity
+        FormActionProperty formAction = (FormActionProperty)property.property;
+        formAction.seekOnOk.add(form.object);
+
         return property;
     }
 
@@ -1772,7 +1777,7 @@ public abstract class LogicsModule {
     public LP getEditFormAction(CustomClass cls) {
         ClassFormEntity form = cls.getEditForm(baseLM);
         LP property = addMFAProp(actionGroup, "editForm" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit") + "(" + cls + ")",
-                                form, new ObjectEntity[] {form.getObject()}, true);
+                                form.form, new ObjectEntity[] {form.object}, true);
         property.setImage("edit.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
@@ -2049,11 +2054,6 @@ public abstract class LogicsModule {
         PropertyDrawEntity actionAddPropertyDraw = form.addPropertyDraw(addForm);
         actionAddPropertyDraw.toDraw = object.groupTo;
 
-        // todo : так не очень правильно делать - получается, что мы добавляем к Immutable объекту FormActionProperty ссылки на ObjectEntity
-        FormActionProperty formAction = (FormActionProperty)addForm.property;
-        ClassFormEntity classForm = (ClassFormEntity)formAction.form;
-
-        formAction.seekOnOk.add(classForm.getObject());
         return actionAddPropertyDraw;
     }
     

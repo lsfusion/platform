@@ -1128,7 +1128,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     }
 
     private void initNavigators() {
-        baseClass.named.setListForm(new NamedListFormEntity(this, baseClass.named));
+        NamedListFormEntity namedListFormEntity = new NamedListFormEntity(this, baseClass.named);
+        baseClass.named.setListForm(namedListFormEntity, namedListFormEntity.object);
 
         navigatorWindow = new TreeNavigatorWindow("navigator", getString("logics.navigator"), 0, 0, 20, 70);
         relevantFormsWindow = new AbstractWindow("relevantForms", getString("logics.forms.relevant.forms"), 0, 70, 20, 29);

@@ -293,7 +293,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     private FormEntity baseClassForm = null;
     public FormEntity getBaseClassForm(BaseLogicsModule LM) {
         if(baseClassForm==null) {
-            baseClassForm = getListForm(LM);
+            baseClassForm = getListForm(LM).form;
             for(CustomClass child : children)
                 baseClassForm.add(child.getBaseClassForm(LM));
         }
@@ -437,21 +437,24 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     private ClassFormHolder listFormHolder = new ClassFormHolder() {
         @Override
         protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
-            return new ListFormEntity(LM, CustomClass.this);
+            ListFormEntity listFormEntity = new ListFormEntity(LM, CustomClass.this);
+            return new ClassFormEntity(listFormEntity, listFormEntity.object);
         }
     };
 
     private ClassFormHolder dialogFormHolder = new ClassFormHolder() {
         @Override
         protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
-            return new DialogFormEntity(LM, CustomClass.this);
+            DialogFormEntity dialogFormEntity = new DialogFormEntity(LM, CustomClass.this);
+            return new ClassFormEntity(dialogFormEntity, dialogFormEntity.object);
         }
     };
 
     private ClassFormHolder editFormHolder = new ClassFormHolder() {
         @Override
         protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
-            return new EditFormEntity(LM, CustomClass.this);
+            EditFormEntity editFormEntity = new EditFormEntity(LM, CustomClass.this);
+            return new ClassFormEntity(editFormEntity, editFormEntity.object);
         }
     };
 
@@ -463,8 +466,8 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return listFormHolder.getForm(LM);
     }
 
-    public void setListForm(ClassFormEntity form) {
-        listFormHolder.setForm(form);
+    public void setListForm(FormEntity form, ObjectEntity object) {
+        listFormHolder.setForm(new ClassFormEntity(form, object));
     }
 
     /**
@@ -475,8 +478,8 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return dialogFormHolder.getForm(LM);
     }
 
-    public void setDialogForm(ClassFormEntity form) {
-        dialogFormHolder.setForm(form);
+    public void setDialogForm(FormEntity form, ObjectEntity object) {
+        dialogFormHolder.setForm(new ClassFormEntity(form, object));
     }
 
     /**
@@ -487,8 +490,8 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return editFormHolder.getForm(LM);
     }
 
-    public void setEditForm(ClassFormEntity form) {
-        editFormHolder.setForm(form);
+    public void setEditForm(FormEntity form, ObjectEntity object) {
+        editFormHolder.setForm(new ClassFormEntity(form, object));
     }
 
     public static ClassProperty getProperty(ValueClass valueClass) {

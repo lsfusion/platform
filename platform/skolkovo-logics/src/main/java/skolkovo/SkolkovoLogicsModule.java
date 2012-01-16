@@ -626,6 +626,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP openFileDocument;
 
     LP fileDecisionVote;
+    LP attachProtocolDecisionVote;
     LP loadFileDecisionVote;
     LP openFileDecisionVote;
 
@@ -3420,8 +3421,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         numberProjectStatus = addDProp(baseGroup, "numberProjectStatus", "Номер", StringClass.get(10), projectStatus);
 
         fileDecisionVote = addDProp("fileDecisionVote", "Решение по проекту", PDFClass.instance, vote);
-        loadFileDecisionVote = addJProp(actionGroup, true, "Загрузить решение", baseLM.and1, addLFAProp(fileDecisionVote), 1, closedSucceededVote, 1);
-        openFileDecisionVote = addJProp(actionGroup, true, "Открыть решение", baseLM.and1, addOFAProp(fileDecisionVote), 1, closedSucceededVote, 1);
+
+        attachProtocolDecisionVote = addJProp(actionGroup, "attachProtocolDecisionVote", "Сгенерировать протокол", baseLM.and1, addAProp(new AttachProtocolDecisionVoteActionProperty()), 1, closedSucceededVote, 1);
+        loadFileDecisionVote = addJProp(actionGroup, true, "loadFileDecisionVote", "Загрузить решение", baseLM.and1, addLFAProp(fileDecisionVote), 1, closedSucceededVote, 1);
+        openFileDecisionVote = addJProp(actionGroup, true, "openFileDecisionVote", "Открыть решение", baseLM.and1, addOFAProp(fileDecisionVote), 1, closedSucceededVote, 1);
 
         fileDecisionProject = addJProp("fileDecisionProject", "Решение по проекту", fileDecisionVote, voteLastProject, 1);
 
@@ -4405,9 +4408,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private StatusLogFormEntity logNameStatusForm;
     private LP formLogNameStatusProject;
 
+    private VoteProtocolFormEntity voteProtocolSimple;
+
     private void initNavigators() {
 
-        projectStatus.setDialogForm(new StatusFormEntity(null, "StatusForm"));
+        StatusFormEntity statusForm = new StatusFormEntity(null, "StatusForm");
+        projectStatus.setDialogForm(statusForm, statusForm.objStatus);
 
         ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "mainToolbar", "Навигатор", BorderLayout.WEST);
         mainToolbar.titleShown = false;
@@ -4433,7 +4439,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        formLogNameStatusProject.setImage("history.png");
 
         projectFullNative = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", "rus"));
-        project.setEditForm(projectFullNative);
+        project.setEditForm(projectFullNative, projectFullNative.objProject);
         projectFullBoth = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullBoth", "Резюме проекта для эксперта", "both"));
         projectFullForeign = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", "eng"));
 
@@ -4444,14 +4450,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectCompleteR2Foreign = addFormEntity(new ProjectFullR2FormEntity(baseLM.objectElement, "projectCompleteR2Foreign", "Full resume project R2"));
 
         claimerFull = addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "claimerFull"));
-        claimer.setEditForm(claimerFull);
+        claimer.setEditForm(claimerFull, claimerFull.objClaimer);
 
         NavigatorElement print = new NavigatorElement(baseLM.baseElement, "print", "Печатные формы");
         print.window = leftToolbar;
 
         addFormEntity(new VoteStartFormEntity(print, "voteStart"));
         addFormEntity(new ExpertLetterFormEntity(print, "expertLetter"));
-        addFormEntity(new VoteProtocolFormEntity(print, "voteProtocol"));
+        addFormEntity(new VoteProtocolFormEntity(print, "voteProtocol", false));
+        voteProtocolSimple = addFormEntity(new VoteProtocolFormEntity(print, "voteProtocolSimple", true));
         addFormEntity(new ExpertProtocolFormEntity(print, "expertProtocol"));
         addFormEntity(new ExpertProtocolClusterFormEntity(print, "expertProtocolCluster"));
         addFormEntity(new ExpertAuthFormEntity(print, "expertAuth"));
@@ -4583,7 +4590,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    private class ProjectFullFormEntity extends ClassFormEntity<SkolkovoBusinessLogics> {
+    private class ProjectFullFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
         private String lng;
 
@@ -4772,11 +4779,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             }
             design.setHighlightColor(new Color(255, 250, 205));
             return design;
-        }
-
-        @Override
-        public ObjectEntity getObject() {
-            return objProject;
         }
     }
 
@@ -5610,13 +5612,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     quantityInClusterVote, quantityInnovativeVote, quantityForeignVote,
                     quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote,
                     quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote,
-                    loadFileDecisionVote, openFileDecisionVote,
+                    attachProtocolDecisionVote, loadFileDecisionVote, openFileDecisionVote,
                     emailClaimerVote, emailNoticeRejectedVote, emailNoticeAcceptedStatusVote, emailNoticeAcceptedPreliminaryVote,
                     decisionNoticedVote, dateDecisionNoticedVote, baseLM.delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
             getPropertyDraw(percentNeededVote).forceViewType = ClassViewType.GRID;
             showIf(this, percentNeededVote, isR2Project, objProject);
+            
+            getPropertyDraw(attachProtocolDecisionVote).forceViewType = ClassViewType.GRID;
+            showIf(this, attachProtocolDecisionVote, isR2Project, objProject);
 
             setForceViewType(voteResultGroup, ClassViewType.GRID, objVote.groupTo);
 
@@ -6382,7 +6387,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     }
 
 
-    private class ClaimerFullFormEntity extends ClassFormEntity<SkolkovoBusinessLogics> {
+    private class ClaimerFullFormEntity extends FormEntity<SkolkovoBusinessLogics> {
         public ObjectEntity objClaimer;
 
         private ClaimerFullFormEntity(NavigatorElement parent, String sID) {
@@ -6393,11 +6398,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             editClaimer = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objClaimer}).setImage("form.gif");
             editClaimerProject = addJProp(actionGroup, true, "Юр.лицо", editClaimer, claimerProject, 1);
-        }
-
-        @Override
-        public ObjectEntity getObject() {
-            return objClaimer;
         }
     }
 
@@ -6657,8 +6657,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objPrevVote;
         private ObjectEntity objExpert;
 
-        private VoteProtocolFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Протокол заседания", true);
+        private VoteProtocolFormEntity(NavigatorElement parent, String sID, boolean simple) {
+            super(parent, sID, simple ? "Протокол заседания (без бюллетеней)" : "Протокол заседания", true);
 
             objVote = addSingleGroupObject(1, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote,
                     quantityInVote, quantityRepliedVote, quantityDoneVote, quantityDoneNewVote, quantityDoneOldVote, quantityRefusedVote, quantityConnectedVote, succeededVote, acceptedVote,
@@ -6672,16 +6672,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedVote, objVote)));
 
-            objExpert = addSingleGroupObject(12, "expert", expert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert);
+            if (!simple) {
+                objExpert = addSingleGroupObject(12, "expert", expert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert);
 
-            addPropertyDraw(voteResultGroup, true, objExpert, objVote);
+                addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
-            addPropertyDraw(objExpert, objVote, connectedExpertVote, competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote, haveExpertiseExpertVote, internationalExperienceExpertVote, enoughDocumentsExpertVote, commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote, commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote, commentEnoughDocumentsExpertVote);
-            addPropertyDraw(objExpert, objVote, quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote, quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote, acceptedCompetitiveAdvantagesVote, acceptedCommercePotentialVote, acceptedCanBeImplementedVote, acceptedHaveExpertiseVote, acceptedInternationalExperienceVote, acceptedEnoughDocumentsVote);
+                addPropertyDraw(objExpert, objVote, connectedExpertVote, competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote, haveExpertiseExpertVote, internationalExperienceExpertVote, enoughDocumentsExpertVote, commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote, commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote, commentEnoughDocumentsExpertVote);
+                addPropertyDraw(objExpert, objVote, quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote, quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote, acceptedCompetitiveAdvantagesVote, acceptedCommercePotentialVote, acceptedCanBeImplementedVote, acceptedHaveExpertiseVote, acceptedInternationalExperienceVote, acceptedEnoughDocumentsVote);
+
+                addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(doneCorExpertVote, objExpert, objVote)),
+                        new NotNullFilterEntity(addPropertyObject(connectedExpertVote, objExpert, objVote))));
+            }
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(isPrevVoteVote, objPrevVote, objVote)));
-            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(doneCorExpertVote, objExpert, objVote)),
-                    new NotNullFilterEntity(addPropertyObject(connectedExpertVote, objExpert, objVote))));
 
             addAttachEAForm(emailProtocolVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
             addAttachEAForm(emailProtocolVoteEA, this, EmailActionProperty.Format.DOCX, objVote, 1);
@@ -7182,7 +7185,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    private class StatusFormEntity extends ClassFormEntity<SkolkovoBusinessLogics> {
+    private class StatusFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
         private ObjectEntity objStatus;
 
@@ -7193,11 +7196,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setReadOnly(true);
 
             addDefaultOrder(getPropertyDraw(numberProjectStatus, objStatus), true);
-        }
-
-        @Override
-        public ObjectEntity getObject() {
-            return objStatus;
         }
     }
 
@@ -7484,6 +7482,45 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 if (file == null)
                     file = generateApplicationFile(context, projectObject, false, newRegulation, complete);
                 context.addAction(new OpenFileClientAction(file, "pdf"));
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (JRException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public class AttachProtocolDecisionVoteActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface voteInterface;
+
+        public AttachProtocolDecisionVoteActionProperty() {
+            super(genSID(), "Генерация протокола", new ValueClass[]{voteR2});
+
+            voteInterface = interfaces.iterator().next();
+        }
+
+        @Override
+        public void execute(ExecutionContext context) throws SQLException {
+            try {
+                DataObject voteObject = context.getKeyValue(voteInterface);
+
+                RemoteFormInterface remoteForm = context.getRemoteForm().createForm(voteProtocolSimple, Collections.singletonMap(voteProtocolSimple.objVote, voteObject));
+
+                ReportGenerator report = new ReportGenerator(remoteForm, BL.getTimeZone());
+                JasperPrint print = report.createReport(false, false, new HashMap());
+
+                File tempFile = File.createTempFile("lsfReport", ".pdf");
+
+                JRAbstractExporter exporter = new JRPdfExporter();
+                exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
+                exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
+                exporter.exportReport();
+
+                fileDecisionVote.execute(IOUtils.getFileBytes(tempFile), context, voteObject);
 
             } catch (IOException e) {
                 e.printStackTrace();

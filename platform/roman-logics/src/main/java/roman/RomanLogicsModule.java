@@ -3416,34 +3416,55 @@ public class RomanLogicsModule extends LogicsModule {
         classifier.window = leftToolbar;
         //NavigatorElement classifierItem = new NavigatorElement(classifier, "classifierItem", "Для описания товаров");
         addFormEntity(new NomenclatureFormEntity(classifier, "nomenclatureForm", "Номенклатура"));
-        category.setDialogForm(addFormEntity(new CategoryFormEntity(classifier, "categoryForm", "Номенклатурные группы")));
+
+        CategoryFormEntity categoryForm = addFormEntity(new CategoryFormEntity(classifier, "categoryForm", "Номенклатурные группы"));
+        category.setDialogForm(categoryForm, categoryForm.objCategory);
+
         addFormEntity(new ColorSizeSupplierFormEntity(classifier, "сolorSizeSupplierForm", "Поставщики"));
         addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm", "ТН ВЭД (изменения)", false));
         addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm2", "ТН ВЭД (дерево)", true));
-        customCategory10.setDialogForm(addFormEntity(new CustomCategory10FormEntity(classifier, "customCategory10Form", "ТН ВЭД")));
-        classifier.add(baseLM.country.getListForm(baseLM));
-        classifier.add(unitOfMeasure.getListForm(baseLM));
-        classifier.add(typeFabric.getListForm(baseLM));
-        classifier.add(commonSize.getListForm(baseLM));
+
+        CustomCategory10FormEntity customCategory10Form = addFormEntity(new CustomCategory10FormEntity(classifier, "customCategory10Form", "ТН ВЭД"));
+        customCategory10.setDialogForm(customCategory10Form, customCategory10Form.objCustomCategory10);
+
+        classifier.add(baseLM.country.getListForm(baseLM).form);
+        classifier.add(unitOfMeasure.getListForm(baseLM).form);
+        classifier.add(typeFabric.getListForm(baseLM).form);
+        classifier.add(commonSize.getListForm(baseLM).form);
         addFormEntity(new CommonSizeEditFormEntity(classifier, "commonEditSizeForm", "Белорусские размеры"));
         addFormEntity(new CommonSizeImportFormEntity(classifier, "commonImportSizeForm", "Белорусские размеры (таблицей)"));
-        classifier.add(seasonSupplier.getListForm(baseLM));
-        classifier.add(importer.getListForm(baseLM));
-        classifier.add(exporter.getListForm(baseLM));
+        classifier.add(seasonSupplier.getListForm(baseLM).form);
+        classifier.add(importer.getListForm(baseLM).form);
+        classifier.add(exporter.getListForm(baseLM).form);
         addFormEntity(new ContractFormEntity(classifier, "contractForm", "Договора"));
         addFormEntity(new StoreFormEntity(classifier, "storeForm", "Магазины"));
         //classifier.add(store.getListForm(baseLM));
-        classifier.add(freightType.getListForm(baseLM));
+        classifier.add(freightType.getListForm(baseLM).form);
         classifier.add(baseLM.dictionaryForm);
 
-        articleComposite.setEditForm(new ArticleCompositeEditFormEntity(null, "articleCompositeEditForm", "Артикул (составной)"));
-        articleComposite.setDialogForm(new ArticleCompositeFormEntity(null, "articleCompositeForm", "Артикул (составной)"));
-        colorSupplier.setDialogForm(new ColorSupplierFormEntity(null, "colorSupplierForm", "Цвет поставщика"));
-        sizeSupplier.setDialogForm(new SizeSupplierFormEntity(null, "sizeSupplierForm", "Размер поставщика"));
-        seasonSupplier.setDialogForm(new SeasonSupplierFormEntity(null, "seasonSupplierForm", "Сезон поставщика"));
-        themeSupplier.setDialogForm(new ThemeSupplierFormEntity(null, "themeSupplierForm", "Тема поставщика"));
-        genderSupplier.setDialogForm(new GenderSupplierFormEntity(null, "genderSupplierForm", "Пол поставщика"));
-        commonSize.setDialogForm(new CommonSizeFormEntity(null, "commonSizeForm", "Унифицированный размер"));
+        ArticleCompositeEditFormEntity articleCompositeEditForm = new ArticleCompositeEditFormEntity(null, "articleCompositeEditForm", "Артикул (составной)");
+        articleComposite.setEditForm(articleCompositeEditForm, articleCompositeEditForm.objArticleComposite);
+
+        ArticleCompositeFormEntity articleCompositeForm = new ArticleCompositeFormEntity(null, "articleCompositeForm", "Артикул (составной)");
+        articleComposite.setDialogForm(articleCompositeForm, articleCompositeForm.objArticleComposite);
+
+        ColorSupplierFormEntity colorSupplierForm = new ColorSupplierFormEntity(null, "colorSupplierForm", "Цвет поставщика");
+        colorSupplier.setDialogForm(colorSupplierForm, colorSupplierForm.objColor);
+
+        SizeSupplierFormEntity sizeSupplierForm = new SizeSupplierFormEntity(null, "sizeSupplierForm", "Размер поставщика");
+        sizeSupplier.setDialogForm(sizeSupplierForm, sizeSupplierForm.objSize);
+
+        SeasonSupplierFormEntity seasonSupplierForm = new SeasonSupplierFormEntity(null, "seasonSupplierForm", "Сезон поставщика");
+        seasonSupplier.setDialogForm(seasonSupplierForm, seasonSupplierForm.objSeason);
+
+        ThemeSupplierFormEntity themeSupplierForm = new ThemeSupplierFormEntity(null, "themeSupplierForm", "Тема поставщика");
+        themeSupplier.setDialogForm(themeSupplierForm, themeSupplierForm.objTheme);
+
+        GenderSupplierFormEntity genderSupplierForm = new GenderSupplierFormEntity(null, "genderSupplierForm", "Пол поставщика");
+        genderSupplier.setDialogForm(genderSupplierForm, genderSupplierForm.objGender);
+
+        CommonSizeFormEntity commonSizeForm = new CommonSizeFormEntity(null, "commonSizeForm", "Унифицированный размер");
+        commonSize.setDialogForm(commonSizeForm, commonSizeForm.objCommonSize);
 
         createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
         editItemForm = addFormEntity(new EditItemFormEntity(null, "editItemForm", "Редактирование товара"));
@@ -3557,8 +3578,8 @@ public class RomanLogicsModule extends LogicsModule {
         settings.window = leftToolbar;
         addFormEntity(new GlobalParamFormEntity(settings, "globalParamForm", "Общие параметры"));
         NavigatorElement classifierCurrency = new NavigatorElement(settings, "classifierCurrency", "Валюты и курсы");
-        classifierCurrency.add(currency.getListForm(baseLM));
-        classifierCurrency.add(typeExchange.getListForm(baseLM));
+        classifierCurrency.add(currency.getListForm(baseLM).form);
+        classifierCurrency.add(typeExchange.getListForm(baseLM).form);
         addFormEntity(new RateCurrencyFormEntity(classifierCurrency, "rateCurrencyForm", "Курсы валют"));
 
         // пока не поддерживается из-за того, что пока нет расчета себестоимости для внутреннего перемещения
@@ -3621,7 +3642,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    private class CategoryFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+    private class CategoryFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objCategory;
 
@@ -3635,15 +3656,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             addDefaultOrder(baseLM.name, true);
         }
-
-        @Override
-        public ObjectEntity getObject() {
-            return objCategory;
-        }
-
     }
 
-    private class ArticleCompositeEditFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+    private class ArticleCompositeEditFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objArticleComposite;
 
@@ -3655,15 +3670,10 @@ public class RomanLogicsModule extends LogicsModule {
 
             addDefaultOrder(sidArticle, true);
         }
-
-        @Override
-        public ObjectEntity getObject() {
-            return objArticleComposite;
-        }
     }
 
 
-    private class ArticleCompositeFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+    private class ArticleCompositeFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objArticleComposite;
 
@@ -3677,15 +3687,10 @@ public class RomanLogicsModule extends LogicsModule {
 
             addDefaultOrder(sidArticle, true);
         }
-
-        @Override
-        public ObjectEntity getObject() {
-            return objArticleComposite;
-        }
     }
 
 
-    private class ColorSupplierFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+    private class ColorSupplierFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objColor;
 
@@ -3699,14 +3704,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             addDefaultOrder(sidColorSupplier, true);
         }
-
-        @Override
-        public ObjectEntity getObject() {
-            return objColor;
-        }
     }
 
-    private class SeasonSupplierFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+    private class SeasonSupplierFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objSeason;
 
@@ -3720,16 +3720,11 @@ public class RomanLogicsModule extends LogicsModule {
 
             addDefaultOrder(sidSeasonSupplier, true);
         }
-
-        @Override
-        public ObjectEntity getObject() {
-            return objSeason;
-        }
     }
 
-    private class GenderSupplierFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+    private class GenderSupplierFormEntity extends FormEntity<RomanBusinessLogics> {
 
-        private ObjectEntity objGender;
+        public ObjectEntity objGender;
 
         public GenderSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
@@ -3741,14 +3736,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             addDefaultOrder(sidGenderSupplier, true);
         }
-
-        @Override
-        public ObjectEntity getObject() {
-            return objGender;
-        }
     }
 
-     private class ThemeSupplierFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+     private class ThemeSupplierFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objTheme;
 
@@ -3762,14 +3752,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             addDefaultOrder(sidThemeSupplier, true);
         }
-
-        @Override
-        public ObjectEntity getObject() {
-            return objTheme;
-        }
     }
 
-    private class SizeSupplierFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+    private class SizeSupplierFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objSize;
 
@@ -3783,14 +3768,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             addDefaultOrder(orderSizeSupplier, true);
         }
-
-        @Override
-        public ObjectEntity getObject() {
-            return objSize;
-        }
     }
 
-    private class CustomCategory10FormEntity extends ClassFormEntity<RomanBusinessLogics> {
+    private class CustomCategory10FormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objCustomCategory10;
 
@@ -3802,15 +3782,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             addDefaultOrder(numberIdCustomCategory10, true);
         }
-
-        @Override
-        public ObjectEntity getObject() {
-            return objCustomCategory10;
-        }
-
     }
 
-    private class CommonSizeFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+    private class CommonSizeFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objCommonSize;
 
@@ -3822,12 +3796,6 @@ public class RomanLogicsModule extends LogicsModule {
 
             addDefaultOrder(baseLM.name, true);
         }
-
-        @Override
-        public ObjectEntity getObject() {
-            return objCommonSize;
-        }
-
     }
 
     private class GlobalParamFormEntity extends FormEntity<RomanBusinessLogics> {

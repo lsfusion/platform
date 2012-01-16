@@ -15,8 +15,4 @@ public class ListFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEn
     public ListFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
         this(LM, cls, "listForm_" + cls.getSID(), cls.caption);
     }
-
-    public ObjectEntity getObject() {
-        return object;
-    }
 }

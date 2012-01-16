@@ -23,9 +23,4 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends BaseClassForm
     public DialogFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
         this(LM, cls, "dialogForm_" + cls.getSID(), cls.caption);
     }
-
-    public ObjectEntity getObject() {
-        return object;
-    }
-
 }

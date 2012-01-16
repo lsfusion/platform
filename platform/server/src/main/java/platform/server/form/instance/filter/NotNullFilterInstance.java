@@ -53,7 +53,7 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
             OnChangeProperty<P, X> onChangeProperty = filterImplement.property.getOnChangeProperty(implement.property);
             return Collections.singleton(
                             new NotNullFilterEntity<OnChangeProperty.Interface<P, X>>(
-                                    onChangeProperty.getPropertyObjectEntity(filterImplement.mapping, implement.mapping, formEntity.getObject())
+                                    onChangeProperty.getPropertyObjectEntity(filterImplement.mapping, implement.mapping, formEntity.object)
                             )
             );
         }

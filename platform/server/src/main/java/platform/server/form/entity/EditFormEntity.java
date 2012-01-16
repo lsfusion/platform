@@ -32,8 +32,4 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEn
         return design;
     }
 
-    public ObjectEntity getObject() {
-        return object;
-    }
-
 }

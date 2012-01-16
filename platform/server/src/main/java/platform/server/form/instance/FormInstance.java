@@ -1181,13 +1181,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             fixedFilters.add(
                     new NotFilterEntity(
                             new NotNullFilterEntity<MaxChangeProperty.Interface<P>>(
-                                    constrainedProperty.getPropertyObjectEntity(implement.mapping, editForm.getObject())
+                                    constrainedProperty.getPropertyObjectEntity(implement.mapping, editForm.object)
                             )
                     )
             );
         }
 
-        ObjectEntity object = editForm.getObject();
+        ObjectEntity object = editForm.object;
         for (FilterEntity filterEntity : entity.fixedFilters) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             if (filter.getApplyObject() == selectionGroupObject) {
@@ -1206,7 +1206,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public DialogInstance<T> createClassPropertyDialog(int viewID, int value) throws RemoteException, SQLException {
         ClassFormEntity<T> classForm = getPropertyDraw(viewID).propertyObject.getDialogClass().getDialogForm(BL.LM);
-        return new DialogInstance<T>(classForm, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.getObject(), value, instanceFactory.computer);
+        return new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, value, instanceFactory.computer);
     }
 
     public Object read(PropertyObjectInstance<?> property) throws SQLException {
@@ -1227,7 +1227,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         return currentObject == null
                ? null
-               : new DialogInstance<T>(classForm, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.getObject(), currentObject, instanceFactory.computer);
+               : new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, currentObject, instanceFactory.computer);
     }
 
     public DialogInstance<T> createEditorPropertyDialog(int viewID) throws SQLException {
@@ -1239,14 +1239,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         ClassFormEntity<T> formEntity = changeProperty.getDialogClass().getDialogForm(BL.LM);
         Set<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, changeProperty, propertyDraw.toDraw);
 
-        ObjectEntity dialogObject = formEntity.getObject();
-        DialogInstance<T> dialog = new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, read(changeProperty), instanceFactory.computer, additionalFilters);
+        ObjectEntity dialogObject = formEntity.object;
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, read(changeProperty), instanceFactory.computer, additionalFilters);
 
         Property<PropertyInterface> filterProperty = aggProp.result;
         if (filterProperty != null) {
-            PropertyDrawEntity filterPropertyDraw = formEntity.getPropertyDraw(filterProperty, dialogObject);
+            PropertyDrawEntity filterPropertyDraw = formEntity.form.getPropertyDraw(filterProperty, dialogObject);
             if (filterPropertyDraw == null)
-                filterPropertyDraw = formEntity.addPropertyDraw(filterProperty,
+                filterPropertyDraw = formEntity.form.addPropertyDraw(filterProperty,
                         Collections.singletonMap(BaseUtils.single(filterProperty.interfaces), (PropertyObjectInterfaceEntity) dialogObject));
             dialog.initFilterPropertyDraw = filterPropertyDraw;
         }
