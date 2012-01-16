@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="288"/>
+	<property name="ireport.y" value="192"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -177,7 +177,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression><![CDATA["для проведения экспертизы заявки "+($F{isR1ProjectVote}==null?"":"Соискателя - ")+ $F{nameNativeClaimerVote} + " (проект «" + $F{nameNativeProjectVote} + "») по существу было созвано заседание Экспертной коллегии, для чего был определен ее состав "+($F{isR1ProjectVote}==null?"из чилсла экспертов по Инновационному приоритету «"+$F{nameMaxForesightVote}+"», в рамках Направления деятельности «"+$F{nameNativeClusterVote}+"» в количестве "+$F{quantityInVote}+" членов и направлены членам Экспертной коллегии Анкета "+$V{statusPrev}+" (в электронном виде), а так же Бюллетень оценки.":"в количестве " + $F{quantityInVote} + " членов и направлены членам Экспертной коллегии материалы заявки Соискателя (в электронном виде), а также Бюллетень оценки.")]]></textFieldExpression>
+					<textFieldExpression><![CDATA["для проведения экспертизы заявки "+($F{isR1ProjectVote}==null?"":"Соискателя - ")+ $F{nameNativeClaimerVote} + " (проект «" + $F{nameNativeProjectVote} + "») по существу было созвано заседание Экспертной коллегии, для чего был определен ее состав "+($F{isR1ProjectVote}==null?"из числа экспертов по Инновационному приоритету «"+$F{nameMaxForesightVote}+"», в рамках Направления деятельности «"+$F{nameNativeClusterVote}+"» в количестве "+$F{quantityInVote}+" членов и направлены членам Экспертной коллегии Анкета "+$V{statusPrev}+" (в электронном виде), а так же Бюллетень оценки.":"в количестве " + $F{quantityInVote} + " членов и направлены членам Экспертной коллегии материалы заявки Соискателя (в электронном виде), а также Бюллетень оценки.")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="36" width="489" height="14"/>
@@ -207,7 +207,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Также в соответствии с пунктом "+($F{isR1ProjectVote}==null?"17":"14")+" Положения об Экспертных коллегиях Фонда для определения результатов голосования учтены " + ($F{quantityDoneOldVote}) + " " + new ChoiceFormat("0#заполненных Бюллетеней|1#заполненный Бюллетень|1<заполненных Бюллетеня|4<заполненных Бюллетеней").format($F{quantityDoneOldVote}) + " оценки, направленные для целей участия в заседании Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{prevDateStartVote}) + " года, признанном несостоявшимся."]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Также в соответствии с пунктом "+($F{isR1ProjectVote}==null?"17":"14")+" Положения об Экспертных коллегиях Фонда для определения результатов голосования учтены " + ($F{quantityDoneOldVote}) + " " + new ChoiceFormat("0#заполненных Бюллетеней|1#заполненный Бюллетень|1<заполненных Бюллетеня|4<заполненных Бюллетеней").format($F{quantityDoneOldVote}) + " оценки, направленные для целей участия в заседании Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{prevDateVote}) + " года, признанном несостоявшимся."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="0" width="489" height="14" isRemoveLineWhenBlank="true">
