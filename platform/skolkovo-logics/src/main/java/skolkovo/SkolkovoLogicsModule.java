@@ -6,12 +6,7 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PdfCopyFields;
 import com.lowagie.text.pdf.PdfReader;
 import jasperapi.PdfUtils;
-import jasperapi.ReportGenerator;
-import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporterParameter;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.export.JRPdfExporter;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
@@ -7526,25 +7521,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             try {
                 DataObject voteObject = context.getKeyValue(voteInterface);
 
-                RemoteFormInterface remoteForm = context.getRemoteForm().createForm(voteProtocolSimple, Collections.singletonMap(voteProtocolSimple.objVote, voteObject));
-
-                ReportGenerator report = new ReportGenerator(remoteForm, BL.getTimeZone());
-                JasperPrint print = report.createReport(false, false, new HashMap());
-
-                File tempFile = File.createTempFile("lsfReport", ".pdf");
-
-                JRAbstractExporter exporter = new JRPdfExporter();
-                exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
-                exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
-                exporter.exportReport();
-
+                File tempFile = context.getRemoteForm().generateFileFromForm(BL, voteProtocolSimple, voteProtocolSimple.objVote, voteObject);
                 fileDecisionVote.execute(IOUtils.getFileBytes(tempFile), context, voteObject);
 
             } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (JRException e) {
                 e.printStackTrace();
             }
         }
@@ -7920,26 +7900,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     public byte[] generateApplicationFile(ExecutionContext context, DataObject project, boolean foreign, boolean newRegulation, boolean complete) throws IOException, ClassNotFoundException, JRException, SQLException {
 
-        RemoteFormInterface remoteForm;
-
+        File tempFile;
         if (newRegulation) {
             ProjectFullR2FormEntity applicationForm = foreign ? (complete ? projectCompleteR2Foreign : projectFullR2Foreign) : (complete ? projectCompleteR2Native : projectFullR2Native);
-            remoteForm = context.getRemoteForm().createForm(applicationForm, Collections.singletonMap(applicationForm.objProject, project));
+            tempFile = context.getRemoteForm().generateFileFromForm(BL, applicationForm, applicationForm.objProject, project);
         } else {
             ProjectFullFormEntity applicationForm = foreign ? projectFullForeign : projectFullNative;
-            remoteForm = context.getRemoteForm().createForm(applicationForm, Collections.singletonMap(applicationForm.objProject, project));
+            tempFile = context.getRemoteForm().generateFileFromForm(BL, applicationForm, applicationForm.objProject, project);
         }
-
-        ReportGenerator report = new ReportGenerator(remoteForm, BL.getTimeZone());
-        JasperPrint print = report.createReport(false, false, new HashMap());
-
-        File tempFile = File.createTempFile("lsfReport", ".pdf");
-
-        JRAbstractExporter exporter = new JRPdfExporter();
-        exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
-        exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
-        exporter.exportReport();
-
         if (newRegulation) {
             byte[] descriptionFile;
             if (foreign)

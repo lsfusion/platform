@@ -1,12 +1,14 @@
 package platform.server.form.instance.remote;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
+import jasperapi.ReportGenerator;
+import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
+import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
@@ -31,6 +33,8 @@ import platform.server.form.view.report.ReportDesignGenerator;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.linear.LP;
+import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.Property;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
@@ -41,6 +45,7 @@ import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import static platform.base.BaseUtils.deserializeObject;
 
@@ -706,6 +711,31 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public String getSID() {
         return form.entity.getSID();
+    }
+
+    public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) {
+
+        RemoteFormInterface remoteForm = createForm(formEntity, Collections.singletonMap(objectEntity, dataObject));
+        try {
+            ReportGenerator report = new ReportGenerator(remoteForm, BL.getTimeZone());
+            JasperPrint print = report.createReport(false, false, new HashMap());
+            File tempFile = File.createTempFile("lsfReport", ".pdf");
+
+            JRAbstractExporter exporter = new JRPdfExporter();
+            exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
+            exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
+            exporter.exportReport();
+
+            return tempFile;
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (JRException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        return null;
     }
 
     public void refreshData() {
