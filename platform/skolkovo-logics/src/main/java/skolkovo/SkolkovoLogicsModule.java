@@ -1193,7 +1193,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameProjectActionFormalControl;
 
     LP isPreliminaryFormalControl, isStatusFormalControl;
-
+    LP dateStatusProjectFormalControl;
     LP updateDateLegalCheck;
     LP dateTimeSubmitLegalCheck, dateSubmitLegalCheck;
 
@@ -2795,7 +2795,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         doneOldExpertVote = addJProp(baseGroup, "doneOldExpertVote", "Проголосовал (старый)", baseLM.and1,
                 doneCorExpertVote, 1, 2, inOldExpertVote, 1, 2);
 
-        refusedExpertVote = addJProp(baseGroup, "refusedExpertVote", "Проголосовал", baseLM.equals2,
+        refusedExpertVote = addJProp(baseGroup, "refusedExpertVote", "Отказался", baseLM.equals2,
                 voteResultCorExpertVote, 1, 2, addCProp(voteResult, "refused"));
 
         connectedExpertVote = addJProp(baseGroup, "connectedExpertVote", "Аффилирован", baseLM.equals2,
@@ -3311,6 +3311,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         isPreliminaryFormalControl = addJProp("isPreliminaryFormalControl", "На предв. экспертизу", baseLM.equals2, projectActionFormalControl, 1, addCProp(projectAction, "preliminary"));
         isStatusFormalControl = addJProp("isStatusFormalControl", "На статус", baseLM.equals2, projectActionFormalControl, 1, addCProp(projectAction, "status"));
+        dateStatusProjectFormalControl = addJProp("dateStatusProjectFormalControl", "Дата подачи на статус", dateStatusProject, projectFormalControl, 1);
 
         prevFormalControl = addOProp("prevFormalControl", "Пред. формальная экспертиза", PartitionType.PREVIOUS, object(formalControl), true, true, 2, projectFormalControl, 1, projectActionFormalControl, 1, object(formalControl), 1);
         datePrevFormalControl = addJProp("datePrevFormalControl", "Дата пред. формальной эскпертизы", dateFormalControl, prevFormalControl, 1);
@@ -6899,7 +6900,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, caption, true);
 
             objFormalControl = addSingleGroupObject(1, "formalControl", formalControl, "Формальная экспертиза", nameNativeClaimerFormalControl, nameNativeProjectFormalControl, claimerEmailFormalControl, dateProjectFormalControl, sidResultFormalControl, sidStatusProjectFormalControl, nameResultFormalControl, nameNativeClusterProjectFormalControl, nameProjectActionFormalControl, commentFormalControl,
-                    dateTimeFormalControl, overdueDateFormalControl, dateResultNoticedFormalControl, isPreliminaryAndStatusProjectFormalControl);
+                    dateTimeFormalControl, overdueDateFormalControl, dateResultNoticedFormalControl, dateStatusProjectFormalControl, isStatusFormalControl, isPreliminaryAndStatusProjectFormalControl);
             objFormalControl.groupTo.initClassView = ClassViewType.PANEL;
             addPropertyDraw(executiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
             addPropertyDraw(phoneExecutiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
@@ -7019,20 +7020,37 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private class NoticeRejectedFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
         private ObjectEntity objVote;
+        private ObjectEntity objExpert;
 
         private NoticeRejectedFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption, true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, "Заседание", nameNativeClusterVote, prevDateVote, nameNativePrevClusterVote, nameNativeFinalClusterProjectVote, isLastClusterVote,
+            objVote = addSingleGroupObject(1, "vote", vote, "Заседание", nameNativeClusterVote, prevDateVote, nameNativePrevClusterVote, nameNativeFinalClusterProjectVote, isLastClusterVote, dateProjectVote, nameNativeProjectVote,
                     quantityDoneVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote, isR1ProjectVote, isStatusVote,
                     quantityCompetitiveAdvantagesVote, acceptedCompetitiveAdvantagesVote, quantityCommercePotentialVote, acceptedCommercePotentialVote, quantityCanBeImplementedVote, acceptedCanBeImplementedVote,
                     quantityHaveExpertiseVote, acceptedHaveExpertiseVote, quantityInternationalExperienceVote, acceptedInternationalExperienceVote, quantityEnoughDocumentsVote, acceptedEnoughDocumentsVote, nameMaxForesightVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
+            objExpert = addSingleGroupObject(2, "expert", expert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert);
+
+            addPropertyDraw(voteResultGroup, true, objExpert, objVote);
+            addPropertyDraw(objExpert, objVote, connectedExpertVote, competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote, haveExpertiseExpertVote, internationalExperienceExpertVote, enoughDocumentsExpertVote, commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote, commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote, commentEnoughDocumentsExpertVote);
+            addPropertyDraw(objExpert, objVote, quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote, quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote, acceptedCompetitiveAdvantagesVote, acceptedCommercePotentialVote, acceptedCanBeImplementedVote, acceptedHaveExpertiseVote, acceptedInternationalExperienceVote, acceptedEnoughDocumentsVote);
+
+//            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(acceptedEnoughDocumentsVote, objExpert, objVote))));
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneCorExpertVote, objExpert, objVote)));
+
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedRejectedVote, objVote)));
 
             addInlineEAForm(emailNoticeRejectedVoteEA, this, objVote, 1);
         }
+
+        @Override
+        public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
+            groupHierarchy.markGroupAsNonJoinable(objVote.groupTo);
+        }
+
     }
 
     private class NoticeAcceptedStatusFormEntity extends FormEntity<SkolkovoBusinessLogics> {

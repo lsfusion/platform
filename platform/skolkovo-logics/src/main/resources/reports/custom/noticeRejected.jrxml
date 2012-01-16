@@ -18,7 +18,7 @@
 				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 				<parametersMapExpression><![CDATA[$P{vote_params}]]></parametersMapExpression>
 				<dataSourceExpression><![CDATA[$P{vote_source}]]></dataSourceExpression>
-				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{vote_report}]]></subreportExpression>
+				<subreportExpression><![CDATA[$P{vote_report}]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
