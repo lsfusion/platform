@@ -192,9 +192,9 @@ CLASS restaurant 'Ресторан' : departmentStore;
 CLASS manufactory 'Цех' : departmentStore;
 
 storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) IN idGroup;
-nameStoreDepartmentStore 'Магазин отдела' (departmentStore) = name(storeDepartmentStore(departmentStore));
+nameStoreDepartmentStore 'Магазин отдела' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN storeGroup;
 revaluationCommitteeDepartmentStore 'Комиссия отдела (ИД)' = DATA revaluationCommittee (departmentStore) IN idGroup;
-nameRevaluationCommitteeDepartmentStore 'Комиссия отдела' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore));
+nameRevaluationCommitteeDepartmentStore 'Комиссия отдела' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore)) IN storeGroup;
 controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore) IN storeGroup;
 deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore) IN storeGroup;
 controlMinusRestsContainerDepartmentStore 'Контроль за минусовыми остатками тары' = DATA BOOLEAN (departmentStore) IN storeGroup;
@@ -208,11 +208,11 @@ quantityCashChangeOneOperationAccountDepartmentStore ' Количество ка
 materiallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' = DATA employee (departmentStore) IN storeGroup;
 bookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет' = DATA employee (departmentStore) IN storeGroup;
 personCheckReportDepartmentStore 'Кто проверяет товарный отчет' = DATA employee (departmentStore) IN storeGroup;
-idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (departmentStore) = GROUP MAX tradingSquare AS tradingSquare BY departmentStoreTradingSquare(tradingSquare);
+idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (departmentStore) = GROUP MAX tradingSquare AS tradingSquare BY departmentStoreTradingSquare(tradingSquare);   //максимизирует только по ID, переделать после расширения функционала
 defaultTradingSquareDepartmentStore 'Торговая площадь отдела магазина, кв.м.' (departmentStore) = squareTradingSquare(idTradingSquareDepartmentStore(departmentStore)) IN storeGroup;
-idResolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = GROUP MAX discount AS discount BY departmentStoreDiscount(discount);
+idResolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = GROUP MAX discount AS discount BY departmentStoreDiscount(discount);  //максимизирует только по ID, переделать после расширения функционала
 resolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = agreeDiscount(idResolveDiscountDepartmentStore(discount)) IN storeGroup;
-tradingSquareStore 'Торговая площадь магазина' = GROUP SUM defaultTradingSquareDepartmentStore(tradingSquare) BY storeDepartmentStore(departmentStore) IN storeGroup;
+tradingSquareStore 'Торговая площадь магазина' = GROUP SUM defaultTradingSquareDepartmentStore(departmentStore) BY storeDepartmentStore(departmentStore) IN storeGroup;
 
 inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
 
@@ -233,8 +233,8 @@ PROPERTIES(d) ADDFORM, EDITFORM, delete;
 FORM store 'Магазин'
 OBJECTS s=store FIXED PANEL, d=departmentStore
 PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, tradingSquareStore
-PROPERTIES(d) name, ADDOBJ, delete;
-//FILTERS NOT NULL inStoreDepartment(s, d);
+PROPERTIES(d) name, ADDOBJ, delete
+FILTERS NOT NULL inStoreDepartment(s, d);
 
 FORM stores 'Магазины'
 OBJECTS s=store
