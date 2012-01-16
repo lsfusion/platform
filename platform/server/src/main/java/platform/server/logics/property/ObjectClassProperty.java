@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.interop.ClassViewType;
 import platform.server.classes.BaseClass;
 import platform.server.classes.CustomClass;
@@ -17,6 +18,7 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.session.PropertyChanges;
+import platform.server.session.StructChanges;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -51,8 +53,8 @@ public class ObjectClassProperty extends ExecuteProperty {
             context.getSession().changeClass(context.getSingleKeyValue(), baseClass.findConcreteClassID((Integer) context.getValueObject()), context.isGroupLast());
     }
 
-    protected PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
-        return PropertyChanges.EMPTY;
+    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
+        return QuickSet.EMPTY();
     }
 
     protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {

@@ -2,16 +2,15 @@ package platform.server.session;
 
 import platform.base.*;
 import platform.server.caches.AbstractValuesContext;
+import platform.server.caches.ManualLazy;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.WhereBuilder;
-import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.UserProperty;
 
 import java.util.Collection;
 import java.util.Map;
@@ -88,6 +87,17 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return result;
     }
 
+    public PropertyChanges filter(QuickSet<? extends Property> properties) {
+        PropertyChanges result = new PropertyChanges();
+        for(int i=0;i<properties.size;i++) {
+            Property property = properties.get(i);
+            ModifyChange<PropertyInterface> change = getModify(property);
+            if(change!=null)
+                result.changes.add(property, change);
+        }
+        return result;
+    }
+
     public PropertyChanges() {
         changes = new Changes();
     }
@@ -128,10 +138,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return new PropertyChanges(this, add);
     }
 
-    public int size() {
-        return changes.size;
-    }
-    public boolean isEmpty() {
+    private boolean isEmpty() {
         return changes.isEmpty();
     }
 
@@ -139,17 +146,9 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return (ModifyChange<P>)changes.getObject(property);
     }
 
-    private <P extends PropertyInterface> PropertyChange<P> getDerivedChange(Property<P> property) {
-        if(property instanceof DataProperty) {
-            DataProperty dataProperty = (DataProperty)property;
-            if(dataProperty.derivedChange!=null)
-                return (PropertyChange<P>) dataProperty.derivedChange.getDataChanges(this).get(dataProperty);
-        }
-        return null;
-    }
     public <P extends PropertyInterface> PropertyChange<P> getChange(Property<P> property) {
         ModifyChange<P> propChange = getModify(property);
-        return PropertyChange.addNull(propChange==null? null : propChange.change, propChange == null || !propChange.isFinal ? getDerivedChange(property) : null);
+        return PropertyChange.addNull(propChange==null? null : propChange.change, propChange != null && propChange.isFinal ? null : property.getDerivedChange(this));
     }
 
     public <P extends PropertyInterface> Expr getChangeExpr(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
@@ -160,25 +159,12 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
             return null;
     }
 
-    public PropertyChanges getUsedChanges(Collection<Property> col) {
-        PropertyChanges result = PropertyChanges.EMPTY;
-        for(Property<?> property : col)
-            result = result.add(property.getUsedChanges(this));
-        return result;
-    }
-
-    public PropertyChanges getUsedDataChanges(Collection<Property> col) {
-        PropertyChanges result = PropertyChanges.EMPTY;
-        for(Property<?> property : col)
-            result = result.add(property.getUsedDataChanges(this));
-        return result;
-    }
-
-    public boolean hasChanges() {
-        for(int i=0;i<changes.size;i++)
-            if(!changes.getValue(i).isEmpty())
-                return true;
-        return false;
+    private StructChanges struct;
+    @ManualLazy
+    public StructChanges getStruct() {
+        if(struct==null)
+            struct = new StructChanges(this);
+        return struct;
     }
 
     protected int hash(HashValues hash) {

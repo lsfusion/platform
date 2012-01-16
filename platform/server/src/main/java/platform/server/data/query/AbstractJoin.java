@@ -4,10 +4,12 @@ import platform.base.ImmutableObject;
 import platform.base.TwinImmutableInterface;
 import platform.base.TwinImmutableObject;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.TranslateValues;
 import platform.server.caches.TwinLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.cases.CaseJoin;
 import platform.server.data.expr.where.ifs.IfJoin;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 
 import java.util.Collection;
@@ -37,5 +39,12 @@ public abstract class AbstractJoin<U> extends ImmutableObject implements Join<U>
     @IdentityLazy
     public Map<U, Expr> getExprs() {
         return getExprs(this);
+    }
+
+    public static <U> Join<U> translateValues(Join<U> join, MapValuesTranslate translate) {
+        return new DirectTranslateJoin<U>(translate.mapKeys(), join);
+    }
+    public Join<U> translateValues(MapValuesTranslate translate) {
+        return translateValues(this, translate);
     }
 }

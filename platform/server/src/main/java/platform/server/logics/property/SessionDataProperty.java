@@ -18,7 +18,7 @@ import platform.server.session.PropertyChanges;
 
 import java.util.*;
 
-public class SessionDataProperty extends DataProperty implements NoValueProperty{
+public class SessionDataProperty extends DataProperty implements NoValueProperty {
 
     public SessionDataProperty(String sID, String caption, ValueClass[] classes, ValueClass value) {
         super(sID, caption, classes, value);

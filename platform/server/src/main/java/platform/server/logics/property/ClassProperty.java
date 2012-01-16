@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.LogicalClass;
@@ -11,12 +12,12 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
+import platform.server.session.StructChanges;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -63,7 +64,7 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
          return getIsClassProperty(getMapClasses(interfaces));
      }
 
-    public static <T> PropertyChanges getIsClassUsed(Map<T, ValueClass> joinClasses, PropertyChanges propChanges) {
+    public static <T> QuickSet<Property> getIsClassUsed(Map<T, ValueClass> joinClasses, StructChanges propChanges) {
         return getIsClassProperty(joinClasses).property.getUsedChanges(propChanges);
     }
     public static <T> Where getIsClassWhere(Map<T, ValueClass> joinClasses, Map<T, ? extends Expr> joinImplement, Modifier modifier) {
@@ -73,7 +74,7 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return getIsClassProperty(joinClasses).mapExpr(joinImplement, propChanges, changedWhere).getWhere();
     }
 
-    public static PropertyChanges getIsClassUsed(ValueClass valueClass, PropertyChanges propChanges) {
+    public static QuickSet<Property> getIsClassUsed(ValueClass valueClass, StructChanges propChanges) {
         return getIsClassProperty(valueClass, "value").property.getUsedChanges(propChanges);
     }
     public static Where getIsClassWhere(ValueClass valueClass, Expr valueExpr, Modifier modifier) {
@@ -83,15 +84,15 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return getIsClassProperty(valueClass, "value").mapExpr(Collections.singletonMap("value", valueExpr), propChanges, changedWhere).getWhere();
     }
 
-    public static PropertyChanges getIsClassUsed(Collection<ClassPropertyInterface> interfaces, PropertyChanges propChanges) {
+    public static QuickSet<Property> getIsClassUsed(Collection<ClassPropertyInterface> interfaces, StructChanges propChanges) {
         return getIsClassProperty(interfaces).property.getUsedChanges(propChanges);
     }
     public static Where getIsClassWhere(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return getIsClassProperty(joinImplement.keySet()).mapExpr(joinImplement, propChanges, changedWhere).getWhere();
     }
 
-    public PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
-        return PropertyChanges.EMPTY;
+    public QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
+        return QuickSet.EMPTY();
     }
 
     public ValueClass getValueClass() {

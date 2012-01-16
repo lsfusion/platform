@@ -736,6 +736,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             synchronizeDB();
 
+            prereadCaches();
+
             //setUserLoggableProperties();
             setPropertyNotifications();
         } catch (Exception e) {
@@ -756,6 +758,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             errors = "\n" + syntaxErrors + errors;
             throw new RuntimeException(errors);
         }
+    }
+
+    private void prereadCaches() {
+        for(Property property : getPropertyList()) // сделалем чтобы
+            property.prereadCaches();
     }
 
     public BusinessLogics(DataAdapter adapter, int exportPort) throws RemoteException {

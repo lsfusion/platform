@@ -1,5 +1,6 @@
 package platform.server.logics.property.derived;
 
+import platform.base.QuickSet;
 import platform.interop.Compare;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
@@ -51,11 +52,11 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     }
 
     @Override
-    protected PropertyChanges calculateUsedDataChanges(PropertyChanges propChanges) {
+    protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
         if(toChange!=null)
-            return MaxChangeProperty.getUsedChanges(this,toChange, propChanges).add(toChange.getUsedDataChanges(propChanges));
+            return MaxChangeProperty.getUsedChanges(this,toChange, propChanges);
         else
-            return PropertyChanges.EMPTY;
+            return QuickSet.EMPTY();
     }
 
     @Override
@@ -64,7 +65,6 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         if(toChange!=null) {
             Map<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
             Expr resultExpr = getChangeExpr(change, propChanges, toChangeKeys);
-    //        return toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere()),changedWhere,modifier);
             DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, propChanges, toChangeKeys))), propChanges, null).changes;
             if(changedWhere!=null) {
                 if (Settings.instance.isCalculateGroupDataChanged())

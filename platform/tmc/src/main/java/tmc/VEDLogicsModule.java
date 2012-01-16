@@ -1306,8 +1306,8 @@ public class VEDLogicsModule extends LogicsModule {
         contractOrder = addDProp(idGroup, "contractOrder", "Договор (ИД)", contract, orderWhole);
         LP nameContractOrder = addJProp(baseGroup, "nameContractOrder", "Договор", baseLM.name, contractOrder, 1);
 
-        addConstraint(addJProp("только между этими юрлицами", baseLM.diff2, legalEntityDoIncOrder, 1, addJProp(legalIncContract, contractOrder, 1), 1), true);
-        addConstraint(addJProp("только между этими юрлицами", baseLM.diff2, legalEntityDoOutOrder, 1, addJProp(legalOutContract, contractOrder, 1), 1), true);
+//        addConstraint(addJProp("только между этими юрлицами", baseLM.diff2, legalEntityDoIncOrder, 1, addJProp(legalIncContract, contractOrder, 1), 1), true);
+//        addConstraint(addJProp("только между этими юрлицами", baseLM.diff2, legalEntityDoOutOrder, 1, addJProp(legalOutContract, contractOrder, 1), 1), true);
 
         formatAssortment = addDProp("formatAssortment", "Формат ассортимента", format, assortment);
         nameFormatAssortment = addJProp(baseGroup, "nameFormatAssortment", "Имя формата", baseLM.name, formatAssortment, 1);
@@ -1326,8 +1326,8 @@ public class VEDLogicsModule extends LogicsModule {
                 addJProp(baseLM.less2, specificationDateFrom, 1, baseLM.date, 2), 2, 3,
                 addJProp(baseLM.greater2, specificationDateTo, 1, baseLM.date, 2), 2, 3,
                 addJProp(baseLM.equals2, contractSpecification, 1, contractOrder, 2), 2, 3), 1, 3);
-        addConstraint(addJProp("Можно выбирать товары только согласно договору", baseLM.andNot1, articleInnerQuantity, 2, 1, addJProp(baseLM.equals2, baseLM.vtrue, articleToDocument, 1, 2), 1, 2), true);
-        addConstraint(addJProp("Можно выбирать товары только согласно договору", baseLM.andNot1, outerOrderQuantity, 2, 1, addJProp(baseLM.equals2, baseLM.vtrue, articleToDocument, 1, 2), 1, 2), true);
+//        addConstraint(addJProp("Можно выбирать товары только согласно договору", baseLM.andNot1, articleInnerQuantity, 2, 1, addJProp(baseLM.equals2, baseLM.vtrue, articleToDocument, 1, 2), 1, 2), true);
+//        addConstraint(addJProp("Можно выбирать товары только согласно договору", baseLM.andNot1, outerOrderQuantity, 2, 1, addJProp(baseLM.equals2, baseLM.vtrue, articleToDocument, 1, 2), 1, 2), true);
 
         LP invoiceOrderRetail = addDProp("invoiceOrderRetail", "Счет-фактура", StringClass.get(50), orderSaleInvoiceArticleRetail);
         LP purposeOrderRetail = addDProp("purposeOrderRetail", "Цель приобретения", StringClass.get(50), orderSaleInvoiceArticleRetail);

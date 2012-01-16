@@ -233,7 +233,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             }
 
             StatKeys<K> reducedStat = new WhereJoins(reduced.toArray(new WhereJoin[reduced.size()])).getStatKeys(groups, stat);
-            assert !reducedStat.rows.less(resultStat.rows); // вообще это не правильный assertion, потому как если уходит ключ статистика может уменьшиться
+//            assert !reducedStat.rows.less(resultStat.rows); // вообще это не правильный assertion, потому как если уходит ключ статистика может уменьшиться
             if(reducedStat.rows.equals(resultStat.rows))
                 current = reduced;
             else

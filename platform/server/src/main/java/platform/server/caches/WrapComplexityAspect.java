@@ -39,7 +39,7 @@ public class WrapComplexityAspect {
     public <T extends PropertyInterface> Expr getJoinExpr(ProceedingJoinPoint thisJoinPoint, Property<T> property, Map<T, ? extends Expr> joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         WhereBuilder cascadeWhere = Property.cascadeWhere(changedWhere);
         return wrapComplexity((Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, propChanges, cascadeWhere}),
-                cascadeWhere.toWhere(), property, joinExprs, changedWhere);
+                changedWhere!=null?cascadeWhere.toWhere():null, property, joinExprs, changedWhere);
     }
     @Around("execution(* platform.server.logics.property.Property.getJoinExpr(java.util.Map,platform.server.session.PropertyChanges,platform.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(joinExprs,propChanges,changedWhere)")

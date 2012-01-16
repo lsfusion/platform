@@ -18,6 +18,7 @@ import platform.server.data.expr.where.pull.AddPullWheres;
 import platform.server.data.expr.where.ifs.NullJoin;
 import platform.server.data.expr.where.ifs.IfJoin;
 import platform.server.data.query.stat.WhereJoin;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
@@ -289,6 +290,10 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
         public platform.server.data.query.Join<PropertyField> and(Where where) {
             return AbstractJoin.and(this, where);
+        }
+
+        public platform.server.data.query.Join<PropertyField> translateValues(MapValuesTranslate translate) {
+            return AbstractJoin.translateValues(this, translate);
         }
 
         protected boolean isComplex() {

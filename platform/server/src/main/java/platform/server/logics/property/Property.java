@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.ListPermutations;
+import platform.base.QuickSet;
 import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
@@ -12,6 +13,7 @@ import platform.server.Message;
 import platform.server.Settings;
 import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.ManualLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
@@ -175,16 +177,34 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return !getClassWhere().andCompatible(new ClassWhere<T>(interfaceClasses)).isFalse();
     }
 
-    @IdentityLazy
-    public boolean isFull() {
-        boolean result = true;
-        for (AbstractClassWhere.And where : getClassWhere().wheres) {
-            for (T i : interfaces) {
-                result = result && (where.get(i) != null);
-            }
-            result = result && !(where).containsNullValue();
+    
+    private boolean calculateIsFull() {
+        ClassWhere<T> classWhere = getClassWhere();
+        if(classWhere.isFalse())
+            return false;
+        for (AbstractClassWhere.And where : classWhere.wheres) {
+            for (T i : interfaces)
+                if(where.get(i)==null)
+                    return false;
+            if(where.containsNullValue())
+                return false;
         }
-        return result;
+        return true;
+    }
+    private Boolean isFull;
+    private static ThreadLocal<Boolean> isFullRunning = new ThreadLocal<Boolean>();
+    @ManualLazy
+    public boolean isFull() {
+        if(isFull==null) {
+            if(isFullRunning.get()!=null)
+                return false;
+            isFullRunning.set(true);
+
+            isFull = calculateIsFull();
+
+            isFullRunning.set(null);
+        }
+        return isFull;
     }
 
     public Property(String sID, String caption, List<T> interfaces) {
@@ -250,7 +270,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return getIncrementChange(modifier.getPropertyChanges());
     }
 
-    @ParamLazy
     public PropertyChange<T> getIncrementChange(PropertyChanges propChanges) {
         Map<T, KeyExpr> mapKeys = getMapKeys(); WhereBuilder changedWhere = new WhereBuilder();
         return new PropertyChange<T>(mapKeys, getIncrementExpr(mapKeys, propChanges, changedWhere), changedWhere.toWhere());
@@ -347,10 +366,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Expr getExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if(this instanceof AndFormulaProperty)
-            return aspectGetExpr(joinImplement, propChanges, changedWhere);
-        else
+        if (isFull()) // !(this instanceof FormulaProperty)
             return getQueryExpr(joinImplement, propChanges, changedWhere);
+        else
+            return getJoinExpr(joinImplement, propChanges, changedWhere);
     }
 
     public Expr calculateExpr(Map<T, ? extends Expr> joinImplement) {
@@ -391,29 +410,33 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     // возвращает от чего "зависят" изменения - с callback'ов
-    protected abstract PropertyChanges calculateUsedChanges(PropertyChanges propChanges);
+    protected abstract QuickSet<Property> calculateUsedChanges(StructChanges propChanges);
 
-    @ParamLazy
-    public PropertyChanges getUsedChanges(PropertyChanges propChanges) {
+    public QuickSet<Property> getUsedChanges(StructChanges propChanges) {
         if(propChanges.isEmpty()) // чтобы рекурсию разбить
-            return propChanges;
+            return QuickSet.EMPTY();
 
-        PropertyChange<T> propChange = propChanges.getChange(this);
-
-        PropertyChanges usedChanges = null;
-        if(propChange==null || propChange.isEmpty())
-            usedChanges = calculateUsedChanges(propChanges);
-
-        if(propChange!=null && (!propChange.isEmpty() || usedChanges.hasChanges()))
-            return new PropertyChanges(this, propChange);
+        QuickSet<Property> usedChanges;
+        QuickSet<Property> modifyChanges = propChanges.getUsedChanges(this);
+        if(propChanges.hasChanges(modifyChanges) || (propChanges.hasChanges(usedChanges  = calculateUsedChanges(propChanges)) && !modifyChanges.isEmpty()))
+            return modifyChanges;
         return usedChanges;
+    }
+
+    public PropertyChanges getUsedChanges(PropertyChanges propChanges) {
+        return propChanges.filter(getUsedChanges(propChanges.getStruct()));
+    }
+
+    public PropertyChanges getUsedDataChanges(PropertyChanges propChanges) {
+        return propChanges.filter(getUsedDataChanges(propChanges.getStruct()));
     }
 
     public boolean hasChanges(Modifier modifier) {
         return hasChanges(modifier.getPropertyChanges());
     }
     public boolean hasChanges(PropertyChanges propChanges) {
-        return getUsedChanges(propChanges).hasChanges();
+        StructChanges struct = propChanges.getStruct();
+        return struct.hasChanges(getUsedChanges(struct));
     }
     public static Set<Property> hasChanges(Collection<Property> properties, PropertyChanges propChanges) {
         Set<Property> result = new HashSet<Property>();
@@ -596,10 +619,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return result;
     }
 
-    public PropertyChanges getUsedDataChanges(PropertyChanges propChanges) {
-        PropertyChanges result = calculateUsedDataChanges(propChanges);
+    public QuickSet<Property> getUsedDataChanges(StructChanges propChanges) {
+        QuickSet<Property> result = new QuickSet<Property>(calculateUsedDataChanges(propChanges));
         for (TimePropertyChange<T> timeChange : timeChanges.values())
-            result = result.add(timeChange.property.getUsedDataChanges(propChanges));
+            result.addAll(timeChange.property.getUsedDataChanges(propChanges));
         return result;
     }
 
@@ -633,8 +656,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return new MapDataChanges<T>();
     }
 
-    protected PropertyChanges calculateUsedDataChanges(PropertyChanges propChanges) {
-        return PropertyChanges.EMPTY;
+    protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+        return QuickSet.EMPTY();
     }
 
     // для оболочки чтобы всем getDataChanges можно было бы timeChanges вставить
@@ -937,10 +960,21 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public Set<Property> getChangeProps() {
         return new HashSet<Property>();
     }
-    
 
+    public QuickSet<Property> getUsedDerivedChange(StructChanges propChanges) {
+        return QuickSet.EMPTY();
+    }
+
+    public PropertyChange<T> getDerivedChange(PropertyChanges propChanges) {
+        return null;
+    }
+    
     @IdentityLazy
     public PropertyChange<T> getNoChange() {
         return new PropertyChange<T>(getMapKeys(), CaseExpr.NULL);
+    }
+    
+    public void prereadCaches() {
+        isFull();
     }
 }

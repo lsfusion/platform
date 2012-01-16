@@ -23,6 +23,12 @@ public class QuickSet<T> implements Iterable<T> {
     public static <T> QuickSet<T> EMPTY() {
         return EMPTY;
     }
+    public static <T> QuickSet<T> add(QuickSet<T>... sets) {
+        QuickSet<T> result = new QuickSet<T>(sets[0]);
+        for(int i=1;i<sets.length;i++)
+            result.addAll(sets[i]);
+        return result;
+    }
 
     public QuickSet(QuickSet<T> set) {
         size = set.size;
@@ -74,6 +80,13 @@ public class QuickSet<T> implements Iterable<T> {
 
     public boolean contains(T where) {
         return contains(where,hash(where.hashCode()));
+    }
+
+    public boolean containsAll(QuickSet<? extends T> wheres) {
+        for(int i=0;i<wheres.size;i++)
+            if(!contains(wheres.get(i)))
+                return false;
+        return true;
     }
 
     private boolean contains(T where,int hash) {
@@ -276,6 +289,13 @@ public class QuickSet<T> implements Iterable<T> {
     public boolean disjoint(Collection<T> col) {
         for(T element : col)
             if(contains(element))
+                return false;
+        return true;
+    }
+
+    public boolean containsAll(Collection<? extends T> col) {
+        for(T element : col)
+            if(!contains(element))
                 return false;
         return true;
     }

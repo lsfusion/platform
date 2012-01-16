@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.IntegralClass;
@@ -64,7 +65,7 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         return BaseUtils.crossJoin(getMapInterfaces(), property.getMapClasses());
     }
 
-    protected PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
+    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
         return ClassProperty.getIsClassUsed(getInterfaceClasses(), propChanges);
     }
 
@@ -84,8 +85,8 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
 
     // без решения reverse'а и timeChanges не включишь этот механизм
     @Override
-    public PropertyChanges calculateUsedDataChanges(PropertyChanges propChanges) {
-        return property.getUsedDataChanges(propChanges).add(reverse.property.getUsedDataChanges(propChanges)).add(property.getUsedChanges(propChanges)).add(reverse.property.getUsedChanges(propChanges));
+    public QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+        return QuickSet.add(property.getUsedDataChanges(propChanges), reverse.property.getUsedDataChanges(propChanges), property.getUsedChanges(propChanges), reverse.property.getUsedChanges(propChanges));
     }
 
     @Override

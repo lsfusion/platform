@@ -40,7 +40,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         }
 
         mapProps = new HashMap<PropertyField, V>();
-        for(V property : properties) // нужен детерминированный порядок, хотя бы для UsedChanges
+        for(V property : properties) // нужен детерминированный порядок, хотя бы для StructChanges
             mapProps.put(new PropertyField("p"+mapProps.size(), propertyType.getType(property)), property);
 
         table = new SessionRows(keyList, mapProps.keySet());

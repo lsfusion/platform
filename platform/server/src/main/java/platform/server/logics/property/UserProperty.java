@@ -1,5 +1,6 @@
 package platform.server.logics.property;
 
+import platform.base.QuickSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
@@ -32,8 +33,22 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
     }
 
     @Override
-    protected PropertyChanges calculateUsedDataChanges(PropertyChanges propChanges) {
-        return ClassProperty.getIsClassUsed(interfaces, propChanges).add(ClassProperty.getIsClassUsed(getValueClass(), propChanges));
+    protected void fillDepends(Set<Property> depends, boolean derived) {
+        if(derived && derivedChange !=null) derivedChange.fillDepends(depends);
+    }
+
+    public DerivedChange<?,?> derivedChange = null;
+
+    @Override
+    public void prereadCaches() {
+        super.prereadCaches();
+        ClassProperty.getIsClassProperty(interfaces).property.prereadCaches();
+        getValueClass().getProperty().prereadCaches();
+    }
+
+    @Override
+    protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+        return QuickSet.add(ClassProperty.getIsClassUsed(interfaces, propChanges), ClassProperty.getIsClassUsed(getValueClass(), propChanges));
     }
 
     @Override
@@ -67,12 +82,4 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
     }
 
     public abstract void execute(ExecutionContext context) throws SQLException;
-
-    @Override
-    protected void fillDepends(Set<Property> depends, boolean derived) {
-        if(derived && derivedChange !=null) derivedChange.fillDepends(depends);
-    }
-
-    public DerivedChange<?,?> derivedChange = null;
-
 }

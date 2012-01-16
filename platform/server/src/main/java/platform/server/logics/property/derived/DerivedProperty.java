@@ -530,5 +530,19 @@ public class DerivedProperty {
 
         return createDeconcatenate(sIDs, captions, max, props.size(), baseClass);
     }
+    
+    public static <T extends PropertyInterface> PropertyMapImplement<ClassPropertyInterface, T> createDataProp(boolean session, Property<T> property) {
+        Property.CommonClasses<T> classes = property.getCommonClasses();
+        ValueClass[] interfaceClasses = new ValueClass[classes.interfaces.size()]; int iv = 0;
+        List<T> listInterfaces = new ArrayList<T>();
+        for(Map.Entry<T, ValueClass> entry : classes.interfaces.entrySet()) {
+            interfaceClasses[iv++] = entry.getValue();
+            listInterfaces.add(entry.getKey());
+        }
+        String sID = "pc" + property.getSID(); String caption = property.toString();
+        DataProperty dataProperty = (session ? new SessionDataProperty(sID, caption, interfaceClasses, classes.value) :
+                        new StoredDataProperty(sID, caption, interfaceClasses, classes.value));
+        return new PropertyMapImplement<ClassPropertyInterface, T>(dataProperty, dataProperty.getMapInterfaces(listInterfaces));
+    }
 
 }

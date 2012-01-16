@@ -1,5 +1,6 @@
 package platform.server.logics.property;
 
+import platform.base.QuickSet;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.*;
 
@@ -19,7 +20,7 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
     }
 
     @Override
-    protected PropertyChanges calculateUsedDataChanges(PropertyChanges propChanges) {
+    protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
         return propChanges.getUsedDataChanges(getDepends());
     }
 

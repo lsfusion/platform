@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.*;
 
@@ -21,7 +22,7 @@ public class OverrideUnionProperty extends CaseUnionProperty {
     private List<PropertyMapImplement<?,Interface>> operands = new ArrayList<PropertyMapImplement<?, Interface>>();
 
     @Override
-    protected PropertyChanges calculateUsedDataChanges(PropertyChanges propChanges) {
+    protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
         return propChanges.getUsedDataChanges(getDepends());
     }
 

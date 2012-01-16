@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
@@ -41,13 +42,16 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
     }
 
     public boolean hasDerivedChange(Modifier modifier, Modifier prevModifier) {
-        for(Property depend : getDepends()) {
-            if(depend.hasChanges(modifier))
-                return true;
-            if(depend.hasChanges(prevModifier))
-                return true;
-        }
-        return false;
+        return hasDerivedChange(modifier.getPropertyChanges()) || hasDerivedChange(prevModifier.getPropertyChanges());
+    }
+
+    public boolean hasDerivedChange(PropertyChanges propChanges) {
+        StructChanges struct = propChanges.getStruct();
+        return struct.hasChanges(getUsedDerivedChange(struct));
+    }
+
+    public QuickSet<Property> getUsedDerivedChange(StructChanges changes) {
+        return changes.getUsedChanges(getDepends());
     }
 
     private PropertyChange<C> getDerivedChange(PropertyChanges newChanges, PropertyChanges prevChanges) {
@@ -75,6 +79,15 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
         return getDataChanges(modifier.getPropertyChanges(), prevModifier.getPropertyChanges());
     }
 
+    public boolean hasUsedDataChanges(PropertyChanges propChanges) {
+        StructChanges struct = propChanges.getStruct();
+        return struct.hasChanges(getUsedDataChanges(struct));
+    }
+
+    public QuickSet<Property> getUsedDataChanges(StructChanges changes) {
+        return QuickSet.add(property.getUsedDataChanges(changes),getUsedDerivedChange(changes));
+    }
+    
     public DataChanges getDataChanges(PropertyChanges changes) {
         return getDataChanges(changes, PropertyChanges.EMPTY);
     }

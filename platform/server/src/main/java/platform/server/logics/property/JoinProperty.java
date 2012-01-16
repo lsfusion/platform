@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
@@ -65,11 +66,13 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     public final boolean implementChange;
     
     @Override
-    protected PropertyChanges calculateUsedDataChanges(PropertyChanges propChanges) {
+    protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
-            PropertyChanges result = PropertyChanges.EMPTY;
-            for(Property<?> property : getDepends())
-                result = result.add(property.getUsedDataChanges(propChanges)).add(property.getUsedChanges(propChanges));
+            QuickSet<Property> result = new QuickSet<Property>();
+            for(Property<?> property : getDepends()) {
+                result.addAll(property.getUsedDataChanges(propChanges));
+                result.addAll(property.getUsedChanges(propChanges));
+            }
             return result;
         }
 
@@ -81,7 +84,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                     implement.mapping.get(andInterface).mapFillDepends(depends);
             Set<Property> implementDepends = new HashSet<Property>();
             implement.mapping.get(andProperty.objectInterface).mapFillDepends(implementDepends);
-            return propChanges.getUsedDataChanges(implementDepends).add(propChanges.getUsedChanges(depends));
+            return QuickSet.add(propChanges.getUsedDataChanges(implementDepends), propChanges.getUsedChanges(depends));
         }
 
         if(implement.property.isOnlyNotZero)
@@ -90,11 +93,11 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(implementChange) {
             Set<Property> implementProps = new HashSet<Property>();
             fillDepends(implementProps,implement.mapping.values());
-            return implement.property.getUsedDataChanges(propChanges).add(propChanges.getUsedChanges(implementProps));
+            return QuickSet.add(implement.property.getUsedDataChanges(propChanges), propChanges.getUsedChanges(implementProps));
         }
         if(implement.mapping.size()==1 && !implementChange && implement.property.aggProp) {
             // пока тупо MGProp'им назад
-            return ((PropertyMapImplement<?,Interface>)BaseUtils.singleValue(implement.mapping)).property.getUsedDataChanges(propChanges).add(implement.property.getUsedChanges(propChanges));
+            return QuickSet.add(((PropertyMapImplement<?, Interface>) BaseUtils.singleValue(implement.mapping)).property.getUsedDataChanges(propChanges), implement.property.getUsedChanges(propChanges));
         }
 
         return super.calculateUsedDataChanges(propChanges);

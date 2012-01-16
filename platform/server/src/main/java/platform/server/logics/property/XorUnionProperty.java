@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.Where;
@@ -45,8 +46,8 @@ public class XorUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    protected PropertyChanges calculateUsedDataChanges(PropertyChanges propChanges) {
-        return propChanges.getUsedDataChanges(getDepends()).add(propChanges.getUsedChanges(getDepends()));
+    protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+        return QuickSet.add(propChanges.getUsedDataChanges(getDepends()), propChanges.getUsedChanges(getDepends()));
     }
 
     @Override

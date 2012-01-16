@@ -1,6 +1,7 @@
 package platform.server.logics.property.derived;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
@@ -13,6 +14,7 @@ import platform.server.logics.property.ChangeProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.PropertyChanges;
+import platform.server.session.StructChanges;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -112,7 +114,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         this.toChange = toChange;
     }
 
-    protected PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
+    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
         return MaxChangeProperty.getUsedChanges(onChange,toChange, propChanges);
     }
 

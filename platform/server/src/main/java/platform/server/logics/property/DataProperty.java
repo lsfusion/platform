@@ -1,5 +1,6 @@
 package platform.server.logics.property;
 
+import platform.base.QuickSet;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
@@ -7,6 +8,7 @@ import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,8 +28,8 @@ public abstract class DataProperty extends UserProperty {
         return interfaces;
     }
 
-    public PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
-        return PropertyChanges.EMPTY;
+    public QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
+        return QuickSet.EMPTY();
     }
 
     public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
@@ -40,5 +42,33 @@ public abstract class DataProperty extends UserProperty {
 
     public void execute(ExecutionContext context) throws SQLException {
         context.getSession().changeProperty(this, context.getKeys(), context.getValue(), context.isGroupLast());
+    }
+
+    @Override
+    public QuickSet<Property> getUsedDerivedChange(StructChanges propChanges) {
+        if(derivedChange!=null)
+            return derivedChange.getUsedDataChanges(propChanges);
+        return super.getUsedDerivedChange(propChanges);
+    }
+
+    @Override
+    public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges propChanges) {
+        if(derivedChange!=null && derivedChange.hasUsedDataChanges(propChanges)) {
+            PropertyChange<ClassPropertyInterface> propertyChange = derivedChange.getDataChanges(propChanges).get(this);
+            if(propertyChange!=null)
+                return propertyChange;
+            else
+                return getNoChange();
+        }
+        return super.getDerivedChange(propChanges);
+    }
+    
+    // не сильно структурно поэтому вынесено в метод
+    public <V> Map<ClassPropertyInterface, V> getMapInterfaces(List<V> list) {
+        int i=0;
+        Map<ClassPropertyInterface, V> result = new HashMap<ClassPropertyInterface, V>();
+        for(ClassPropertyInterface propertyInterface : interfaces)
+            result.put(propertyInterface, list.get(i++));
+        return result;
     }
 }

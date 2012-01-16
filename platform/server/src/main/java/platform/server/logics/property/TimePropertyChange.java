@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class TimePropertyChange<T extends PropertyInterface> {
 
-    public final Map<ClassPropertyInterface, T> mapInterfaces = new HashMap<ClassPropertyInterface, T>();
+    public final Map<ClassPropertyInterface, T> mapInterfaces;
 
     public DataProperty property;
 
@@ -20,8 +20,6 @@ public class TimePropertyChange<T extends PropertyInterface> {
             ? new StoredDataProperty(sID, caption, classes, valueClass)
             : new SessionDataProperty(sID, caption, classes, valueClass);
 
-        int i=0;
-        for(ClassPropertyInterface propertyInterface : property.interfaces)
-            mapInterfaces.put(propertyInterface, propInterfaces.get(i++));
+        mapInterfaces = property.getMapInterfaces(propInterfaces);
     }
 }

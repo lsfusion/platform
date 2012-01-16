@@ -1,11 +1,12 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.base.Result;
 import platform.server.logics.DataObject;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
-import platform.server.session.PropertyChanges;
+import platform.server.session.StructChanges;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -46,10 +47,10 @@ public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
         return operands;
     }
 
-    protected PropertyChanges calculateUsedDataChanges(PropertyChanges propChanges) {
+    protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
         Set<Property> propValues = new HashSet<Property>(); fillDepends(propValues, getProps());
         Set<Property> propWheres = new HashSet<Property>(); fillDepends(propWheres, getWheres());
-        return propChanges.getUsedDataChanges(propValues).add(propChanges.getUsedChanges(propValues));
+        return QuickSet.add(propChanges.getUsedDataChanges(propValues),propChanges.getUsedChanges(propValues));
     }
 
     protected boolean checkWhere() {

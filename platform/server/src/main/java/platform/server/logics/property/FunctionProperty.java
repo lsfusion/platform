@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
-import platform.server.session.PropertyChanges;
+import platform.base.QuickSet;
+import platform.server.session.StructChanges;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,7 +19,7 @@ public abstract class FunctionProperty<T extends PropertyInterface> extends Aggr
             propImplement.mapFillDepends(depends);
     }
 
-    public PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
+    public QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
         return propChanges.getUsedChanges(getDepends());
     }
 }

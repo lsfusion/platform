@@ -1,5 +1,6 @@
 package platform.server.logics.property.derived;
 
+import platform.base.QuickSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
@@ -11,8 +12,8 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.ChangeProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
+import platform.server.session.StructChanges;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,11 +90,11 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         this.toChange = toChange;
     }
 
-    public static PropertyChanges getUsedChanges(Property<?> onChange, Property<?> toChange, PropertyChanges propChanges) {
-        return toChange.getUsedDataChanges(propChanges).add(onChange.getUsedChanges(toChange.getChangeModifier(propChanges, false)));
+    public static QuickSet<Property> getUsedChanges(Property<?> onChange, Property<?> toChange, StructChanges propChanges) {
+        return QuickSet.add(toChange.getUsedDataChanges(propChanges), onChange.getUsedChanges(propChanges));
     }
 
-    protected PropertyChanges calculateUsedChanges(PropertyChanges propChanges) {
+    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
         return getUsedChanges(onChange,toChange, propChanges);
     }
 
