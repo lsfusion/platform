@@ -96,11 +96,11 @@ amountBarcode 'Количество (сколько списать при про
 removeBarcode 'Заблокирован (удален с оборудования)' = DATA BOOLEAN (barcode) IN barcodeGroup;
 commentRemoveBarcode 'Причина блокировки' = DATA STRING[100] (barcode) IN barcodeGroup;
 
-FORM barcodeEditForm 'Штрих-код'
+FORM barcode 'Штрих-код'
 OBJECTS b=barcode FIXED PANEL
 PROPERTIES(b) barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode;
 
-FORM barcodeForm 'Штрих-коды'
+FORM barcodes 'Штрих-коды'
 OBJECTS b=barcode
 PROPERTIES(b) READONLY barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode    // barcode
 PROPERTIES(b) ADDFORM, EDITFORM, delete;
@@ -175,7 +175,7 @@ OBJECTS d=discount
 PROPERTIES(d) READONLY name
 PROPERTIES(d) dateDiscount, agreeDiscount, nameDepartmentStoreDiscount;
 
-FORM discountes 'Скидки'
+FORM discounts 'Скидки'
 OBJECTS d=discount
 PROPERTIES(d) READONLY name, dateDiscount, agreeDiscount, nameDepartmentStoreDiscount
 PROPERTIES(d) ADDFORM, EDITFORM, delete;
@@ -256,7 +256,7 @@ FORM tradingNetwork 'Торговая сеть'
 OBJECTS n=tradingNetwork FIXED PANEL
 PROPERTIES(n) READONLY name;
 
-FORM tradingNetworkes 'Торговые сети'
+FORM tradingNetworks 'Торговые сети'
 OBJECTS n= tradingNetwork
 PROPERTIES(n) READONLY name
 PROPERTIES(n) ADDFORM, EDITFORM, delete;
@@ -506,7 +506,7 @@ PROPERTIES(c) dataContract, nameSupplierContract, nameFormContract, nameTypeCont
 FILTERS NOT NULL inCompanyContract(co, c),
         NOT NULL inCompanyAccount(co, a);
 
-FORM companys 'Компании'
+FORM companies 'Компании'
 OBJECTS co=company
 PROPERTIES(co) READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, lawLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity
 PROPERTIES(co) ADDFORM, EDITFORM, delete;
@@ -574,3 +574,49 @@ FORM checkModels 'Модели прайс чекеров'
 OBJECTS ch=checkModel
 PROPERTIES(ch) READONLY name, nameModelCheckModel, noteModel, useModel, maxProductModel
 PROPERTIES(ch) ADDFORM, EDITFORM, delete;
+
+NAVIGATOR {
+
+    ADD lists 'Справочники' {
+        ADD itemGroups;
+        ADD unitsOfMeasure;
+        ADD items;
+        ADD barcodes;
+        ADD employees;
+        ADD tradingSquares;
+        ADD discounts;
+        ADD departmentStores;
+        ADD stores;
+        ADD storeTypes;
+        ADD tradingNetworks;
+        ADD revaluationCommittees;
+        ADD banks;
+        ADD ownerships;
+        ADD suppliers;
+        ADD companies;
+        ADD cashModels;
+        ADD scalesModels;
+        ADD checkModels;
+    }
+
+    ADD objects 'Карточки' {
+        ADD itemGroup;
+        ADD unitOfMeasure;
+        ADD item;
+        ADD barcode;
+        ADD employee;
+        ADD tradingSquare;
+        ADD discount;
+        ADD departmentStore;
+        ADD store;
+        ADD storeType;
+        ADD tradingNetwork;
+        ADD revaluationCommittee;
+        ADD ownership;
+        ADD supplier;
+        ADD company;
+        ADD cashModel;
+        ADD scalesModel;
+        ADD checkModel;
+    }
+}

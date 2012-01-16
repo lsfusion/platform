@@ -1188,7 +1188,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameProjectActionFormalControl;
 
     LP isPreliminaryFormalControl, isStatusFormalControl;
-    LP dateStatusProjectFormalControl;
+    LP datePreliminaryProjectFormalControl, dateStatusProjectFormalControl;
     LP updateDateLegalCheck;
     LP dateTimeSubmitLegalCheck, dateSubmitLegalCheck;
 
@@ -3196,7 +3196,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         //формальная экспертиза и юридическая проверка
 
         projectFormalControl = addDProp("projectFormalControl", "Проект (ИД)", project, formalControl);
-        dateProjectFormalControl = addJProp("dateProjectFormalControl", "Дата проекта", dateProject, projectFormalControl, 1);
+//        dateProjectFormalControl = addJProp("dateProjectFormalControl", "Дата проекта", dateProject, projectFormalControl, 1);
         clusterProjectFormalControl = addJProp("clusterProjectFormalControl", "Кластер (ИД)", finalClusterProject, projectFormalControl, 1);
         nameNativeClusterProjectFormalControl = addJProp("nameNativeClusterProjectFormalControl", "Кластер", nameNative, clusterProjectFormalControl, 1);
         resultFormalControl = addDProp("resultFormalControl", "Решение формальной экспертизы", formalControlResult, formalControl);
@@ -3306,7 +3306,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         isPreliminaryFormalControl = addJProp("isPreliminaryFormalControl", "На предв. экспертизу", baseLM.equals2, projectActionFormalControl, 1, addCProp(projectAction, "preliminary"));
         isStatusFormalControl = addJProp("isStatusFormalControl", "На статус", baseLM.equals2, projectActionFormalControl, 1, addCProp(projectAction, "status"));
+        datePreliminaryProjectFormalControl = addJProp("datePreliminaryProjectFormalControl", "Дата подачи на предварительную экспертизу", dateProject, projectFormalControl, 1);
         dateStatusProjectFormalControl = addJProp("dateStatusProjectFormalControl", "Дата подачи на статус", dateStatusProject, projectFormalControl, 1);
+        dateProjectFormalControl = addIfElseUProp(privateGroup, "dateProjectFormalControl", "Дата проекта",
+                datePreliminaryProjectFormalControl,
+                dateStatusProjectFormalControl,
+                isPreliminaryFormalControl, 1);
 
         prevFormalControl = addOProp("prevFormalControl", "Пред. формальная экспертиза", PartitionType.PREVIOUS, object(formalControl), true, true, 2, projectFormalControl, 1, projectActionFormalControl, 1, object(formalControl), 1);
         datePrevFormalControl = addJProp("datePrevFormalControl", "Дата пред. формальной эскпертизы", dateFormalControl, prevFormalControl, 1);
@@ -4879,7 +4884,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addDefaultHintsIncrementTable(this);
 
             if (sID.equals("projectFullR2Native") || sID.equals("projectFullR2Foreign"))
-                addAttachEAForm(emailBureauTrProjectEA, this, EmailActionProperty.Format.PDF, objProject, 1);
+                addAttachEAForm(emailBureauTrProjectEA, this, EmailActionProperty.Format.PDF, 
+                        sID.equals("projectFullR2Native") ? nameNativeClaimerProject : nameForeignClaimerProject,
+                        objProject, 1);
         }
 
         @Override
@@ -6895,7 +6902,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, caption, true);
 
             objFormalControl = addSingleGroupObject(1, "formalControl", formalControl, "Формальная экспертиза", nameNativeClaimerFormalControl, nameNativeProjectFormalControl, claimerEmailFormalControl, dateProjectFormalControl, sidResultFormalControl, sidStatusProjectFormalControl, nameResultFormalControl, nameNativeClusterProjectFormalControl, nameProjectActionFormalControl, commentFormalControl,
-                    dateTimeFormalControl, overdueDateFormalControl, dateResultNoticedFormalControl, dateStatusProjectFormalControl, isStatusFormalControl, isPreliminaryAndStatusProjectFormalControl);
+                    dateTimeFormalControl, overdueDateFormalControl, dateResultNoticedFormalControl, isStatusFormalControl, isPreliminaryAndStatusProjectFormalControl);
             objFormalControl.groupTo.initClassView = ClassViewType.PANEL;
             addPropertyDraw(executiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
             addPropertyDraw(phoneExecutiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
@@ -7037,6 +7044,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneCorExpertVote, objExpert, objVote)));
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedRejectedVote, objVote)));
+            
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(enoughDocumentsCorExpertVote, objExpert, objVote))));
 
             addInlineEAForm(emailNoticeRejectedVoteEA, this, objVote, 1);
         }
