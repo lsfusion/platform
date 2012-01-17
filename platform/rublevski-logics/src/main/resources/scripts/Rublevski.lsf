@@ -33,6 +33,44 @@ OBJECTS u=unitOfMeasure
 PROPERTIES(u) READONLY name, shortName
 PROPERTIES(u) ADDFORM, EDITFORM, delete;
 
+// ------------------------------------ Цвета ------------------------------------------------ //
+CLASS color 'Цвет' : named;
+
+FORM color 'Цвет'
+OBJECTS c=color FIXED PANEL
+PROPERTIES(c) name;
+
+FORM colors 'Цвета'
+OBJECTS c=color
+PROPERTIES(c) READONLY name
+PROPERTIES(c) ADDFORM, EDITFORM, delete;
+
+// ------------------------------------ Вкусы ------------------------------------------------------ //
+
+CLASS taste 'Вкус' : named;
+
+FORM taste 'Вкус'
+OBJECTS t=taste FIXED PANEL
+PROPERTIES(t) name;
+
+FORM tastes 'Вкусы'
+OBJECTS t=taste
+PROPERTIES(t) READONLY name
+PROPERTIES(t) ADDFORM, EDITFORM, delete;
+
+// ----------------------------------- Производители ---------------------------------- //
+
+CLASS manufacturer 'Производитель' : named;
+
+FORM manufacturer 'Производитель'
+OBJECTS m=manufacturer FIXED PANEL
+PROPERTIES(m) name;
+
+FORM manufacturers 'Производитель'
+OBJECTS m=manufacturer
+PROPERTIES(m) READONLY name
+PROPERTIES(m) ADDFORM, EDITFORM, delete;
+
 // ----------------------------------- Товар ------------------------------------------ //
 CLASS ABSTRACT sku 'SKU' : named;
 CLASS item 'Товар' : sku;
@@ -43,6 +81,46 @@ nameBrandItem 'Брэнд' (item) = name(brandItem(item));
 
 unitOfMeasureItem = DATA unitOfMeasure (item) IN idGroup;
 shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortName(unitOfMeasureItem(item)) IN baseGroup;
+
+isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN baseGroup;
+volumeItem 'Объём' = DATA DOUBLE (item) IN baseGroup;
+netWeightItem 'Вес нетто' = DATA DOUBLE (item) IN baseGroup;
+
+colorItem = DATA color (item) IN idGroup;
+nameColorItem 'Цвет' = name(colorItem(item)) IN baseGroup;
+tasteItem = DATA taste (item) IN idGroup;
+nameTasteItem 'Вкус' = name(tasteItem(item)) IN baseGroup;
+
+percentFatItem '% жирности' =  DATA DOUBLE (item) IN baseGroup;
+percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN baseGroup;
+
+lengthItem 'Длина товара' = DATA INTEGER (item) IN baseGroup;
+widthItem 'Ширина товара' = DATA INTEGER (item) IN baseGroup;
+heightItem 'Высота товара' = DATA INTEGER (item) IN baseGroup;
+grossWeightItem 'Вес брутто товара' = DATA DOUBLE (item) IN baseGroup;
+
+lengthPackItem 'Длина упаковки' = DATA INTEGER (item) IN baseGroup;
+widthPackItem 'Ширина упаковки' = DATA INTEGER (item) IN baseGroup;
+heightPackItem 'Высота упаковки' = DATA INTEGER (item) IN baseGroup;
+grossWeightPackItem 'Вес брутто упаковки' = DATA DOUBLE (item) IN baseGroup;
+
+articleItem 'Артикул поставщика/производителя' = DATA STRING[50] (item)IN baseGroup;
+manufacturerItem = DATA manufacturer (item) IN idGroup;
+nameManufacturerItem 'Производитель' = name(manufacturerItem(item)) IN baseGroup;
+countryItem = DATA country (item) IN idGroup;
+nameCountryItem 'Страна' = name(countryItem(item)) IN baseGroup;
+
+minResourceItem 'Минимальный запас' = DATA INTEGER (item) IN baseGroup;
+minReserveItem 'Минимальный резерв' = DATA INTEGER (item) IN baseGroup;
+
+isFixPriceItem 'Товар с фиксированной ценой' = DATA BOOLEAN (item) IN baseGroup;
+
+isManufacteredItem 'Товар производится' = DATA BOOLEAN (item) IN baseGroup;
+
+energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN baseGroup;
+fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN baseGroup;
+carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN baseGroup;
+proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN baseGroup;
 
 // ----------------------------------- Атрибуты ------------------------------------------ //
 
@@ -58,14 +136,20 @@ CLASS STATIC customStringItemAttribute 'Предопределенный стр�
 
 CLASS STATIC objectItemAttribute 'Объектный атрибут' {
     unitOfMeasure 'Единица измерения',
-    brand 'Брэнд'
+    brand 'Брэнд',
+    color 'Цвет',
+    taste 'Вкус'
 } : itemAttribute;
 
 valueUOMItemAttribute(item, attribute) = unitOfMeasureItem(item) AND attribute == objectItemAttribute.unitOfMeasure;
 valueBrandItemAttribute(item, attribute) = brandItem(item) AND attribute == objectItemAttribute.brand;
+valueColorItemAttribute(item, attribute) = colorItem(item) AND attribute == objectItemAttribute.color;
+valueTasteItemAttribute(item, attribute) = tasteItem(item) AND attribute == objectItemAttribute.taste;
 
 valueObjectItemAttribute(item, attribute) = UNION EXCLUSIVE valueUOMItemAttribute(item, attribute),
-                                                            valueBrandItemAttribute(item, attribute);
+                                                            valueBrandItemAttribute(item, attribute),
+                                                            valueColorItemAttribute(item, attribute),
+                                                            valueTasteItemAttribute(item, attribute);
 nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
 
 valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(item, attribute),
@@ -76,34 +160,53 @@ OBJECTS i=item FIXED PANEL, a=itemAttribute
 PROPERTIES(i) name, shortNameUnitOfMeasureItem, nameBrandItem
 PROPERTIES name(a), valueItemAttribute(i, a);
 
-FORM items 'Товары'
-OBJECTS i=item
-PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
-PROPERTIES(i) ADDFORM, EDITFORM, delete;
+//FORM items 'Товары'
+//OBJECTS i=item
+//PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem, isWeightItem, volumeItem, netWeightItem, nameColorItem, nameTasteItem,
+// percentFatItem, percentAlcoholItem, lengthItem
+//PROPERTIES(i) ADDFORM, EDITFORM, delete;
+
 
 // ----------------------------------- Штрих код ------------------------------------------ //
 GROUP barcodeGroup : baseGroup;
 
 CLASS barcode 'Штрих код' : barcodeObject;
 
-itemBarcode 'Товар штрих-кода (ИД)' (barcode) = DATA item (barcode) IN idGroup;
-unitOfMeasureBarcode 'Ед.изм. штрих-кода (ИД)' (barcode) = DATA unitOfMeasure (barcode) IN idGroup;
+skuBarcode = DATA sku (barcode) IN idGroup;
+nameSkuBarcode = name(skuBarcode(barcode)) IN baseGroup;
 
 titleScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode) IN barcodeGroup;
 titleCashBarcode 'Наименование для касс' = DATA STRING[100] (barcode) IN barcodeGroup;
+unitOfMeasureBarcode = DATA unitOfMeasure (barcode) IN idGroup;
 shortNameUnitOfMeasureBarcode 'Единица измерения' (barcode) = shortName(unitOfMeasureBarcode(barcode)) IN barcodeGroup;
 amountBarcode 'Количество (сколько списать при продаже)' = DATA INTEGER (barcode) IN barcodeGroup;
 removeBarcode 'Заблокирован (удален с оборудования)' = DATA BOOLEAN (barcode) IN barcodeGroup;
 commentRemoveBarcode 'Причина блокировки' = DATA STRING[100] (barcode) IN barcodeGroup;
 
-FORM barcode 'Штрих-код'
-OBJECTS b=barcode FIXED PANEL
-PROPERTIES(b) barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode;
+userBarcodeSku = DATA barcode(sku) IN idGroup;
+barcodeUserBarcodeSku 'Установленный штрих-код' = barcode(userBarcodeSku(sku)) IN baseGroup;
+defaultBarcodeSku(sku) = GROUP MAX barcode BY skuBarcode(barcode) IN idGroup;
+barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku);
 
-FORM barcodes 'Штрих-коды'
+CONSTRAINT CHECKED skuBarcode(userBarcodeSku(sku)) != sku AS sku  MSG 'Товар основного штрих-кода должен совпадать с товаром';
+
+barcodeBarcodeSku  'Действующий штрих-код' = barcode(barcodeSku(sku)) IN baseGroup;
+
+FORM barcode 'Штрих-код'
 OBJECTS b=barcode
-PROPERTIES(b) READONLY barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode    // barcode
+PROPERTIES(b) barcode, nameSkuBarcode;
+
+FORM barcodes 'Штрих-кода'
+OBJECTS b=barcode
+PROPERTIES(b) READONLY barcode, nameSkuBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
 PROPERTIES(b) ADDFORM, EDITFORM, delete;
+
+FORM items 'Товары'
+OBJECTS i=item
+PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem, isWeightItem, volumeItem, netWeightItem, nameColorItem, nameTasteItem,
+ percentFatItem, percentAlcoholItem, lengthItem, nameManufacturerItem, nameCountryItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, barcodeUserBarcodeSku, barcodeBarcodeSku
+PROPERTIES(i) ADDFORM, EDITFORM, delete;
+
 
 // ----------------------------------- Склад ------------------------------------------ //
 
@@ -223,7 +326,7 @@ PROPERTIES(d) nameStoreDepartmentStore, controlMinusRestsDepartmentStore, delete
               resolveDiscountDepartmentStore, controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
               maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
               marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, materiallyResponsiblePersonItemReportDepartmentStore,
-              bookkeeperItemReportDepartmentStore, personCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore, defaultTradingSquareDepartmentStore;
+              bookkeeperItemReportDepartmentStore, personCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore;
 
 FORM departmentStores 'Отделы магазина'
 OBJECTS d=departmentStore
