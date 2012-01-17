@@ -193,6 +193,10 @@ public class ScriptingErrorLog {
         emitSemanticError(msg, e);
     }
 
+    public void emitBuiltInClassFormSetupError(LsfLogicsParser parser, String className) throws SemanticErrorException {
+        emitSimpleError(parser, "can't set custom form for built-in class '" + className + "'.");
+    }
+
     public void emitAbstractStaticClassError(LsfLogicsParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "static сlass cannot be abstract");
     }

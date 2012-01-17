@@ -4,8 +4,10 @@ import org.apache.commons.io.FileUtils;
 import org.junit.*;
 import org.junit.rules.TestName;
 import platform.base.BaseUtils;
+import platform.server.classes.CustomClass;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
@@ -47,6 +49,9 @@ public class LsfLogicsParserPresentationTest {
     private GroupObjectEntity sGroup;
     private GroupObjectEntity aGroup;
 
+    private ObjectEntity sObject;
+    private ObjectEntity aObject;
+
     @BeforeClass
     public static void setUpTests() throws Exception {
         Settings.instance = new Settings();
@@ -71,6 +76,8 @@ public class LsfLogicsParserPresentationTest {
         design = null;
         aGroup = null;
         sGroup = null;
+        aObject = null;
+        sObject = null;
     }
 
     private LP findLPBySID(String sid) throws ScriptingErrorLog.SemanticErrorException {
@@ -248,6 +255,40 @@ public class LsfLogicsParserPresentationTest {
         assertEquals(inc2Prop.columnGroupObjects.size(), 0);
     }
 
+    @Test
+    public void testCustomClassForms() throws Exception {
+        setupTest("FORM storeArticle\n" +
+                  "OBJECTS s=store, a=article\n" +
+                  "PROPERTIES(s, a) incomeQuantity COLUMNS (s), incomeQuantity2\n" +
+                  "DIALOG article OBJECT a\n" +
+                  "EDIT article OBJECT a\n" +
+                  "LIST article OBJECT a\n" +
+                  "DIALOG store OBJECT s\n" +
+                  "EDIT store OBJECT s\n" +
+                  "LIST store OBJECT s"
+        );
+
+        CustomClass article = (CustomClass) LM.findClassByCompoundName("article");
+        CustomClass store = (CustomClass) LM.findClassByCompoundName("store");
+
+        assertSame(article.getEditForm(LM.baseLM).form, entity);
+        assertSame(article.getDialogForm(LM.baseLM).form, entity);
+        assertSame(article.getListForm(LM.baseLM).form, entity);
+
+        assertSame(store.getEditForm(LM.baseLM).form, entity);
+        assertSame(store.getDialogForm(LM.baseLM).form, entity);
+        assertSame(store.getListForm(LM.baseLM).form, entity);
+
+
+        assertSame(article.getEditForm(LM.baseLM).object, aObject);
+        assertSame(article.getDialogForm(LM.baseLM).object, aObject);
+        assertSame(article.getListForm(LM.baseLM).object, aObject);
+
+        assertSame(store.getEditForm(LM.baseLM).object, sObject);
+        assertSame(store.getDialogForm(LM.baseLM).object, sObject);
+        assertSame(store.getListForm(LM.baseLM).object, sObject);
+    }
+
     private void setupTest(String testCode) throws Exception {
         String fileContent = FileUtils.readFileToString(new File("src/test/resources/testpresentation.lsf"), "UTF-8") + testCode + "\n;";
         testScriptFile = new File(SCRIPTS_FOLDER + name.getMethodName() + ".lsf");
@@ -270,5 +311,8 @@ public class LsfLogicsParserPresentationTest {
 
         aGroup = entity.getGroupObject("a");
         sGroup = entity.getGroupObject("s");
+
+        aObject = entity.getGroupObject("a").objects.iterator().next();
+        sObject = entity.getGroupObject("s").objects.iterator().next();
     }
 }

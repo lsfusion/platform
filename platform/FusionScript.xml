@@ -39,8 +39,10 @@
       <keyword name="DEFAULT" />
       <keyword name="DESC" />
       <keyword name="DESIGN" />
+      <keyword name="DIALOG" />
       <keyword name="DOUBLE" />
       <keyword name="DRAWROOT" />
+      <keyword name="EDIT" />
       <keyword name="EDITABLE" />
       <keyword name="EDITFORM" />
       <keyword name="EXCEPTLAST" />
@@ -74,6 +76,7 @@
       <keyword name="IS" />
       <keyword name="ISTRING" />
       <keyword name="LEFT" />
+      <keyword name="LIST" />
       <keyword name="LONG" />
       <keyword name="MAX" />
       <keyword name="MODULE" />
@@ -83,6 +86,7 @@
       <keyword name="NOT" />
       <keyword name="NOTHING" />
       <keyword name="NULL" />
+      <keyword name="OBJECT" />
       <keyword name="OBJECTS" />
       <keyword name="OBJVALUE" />
       <keyword name="ORDER" />

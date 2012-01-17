@@ -187,6 +187,14 @@ FILTERGROUP filters1
 ORDER BY name, foo
 ;
 
+FORM editStore 'Редактирование склада'
+OBJECTS s=store FIXED PANEL
+PROPERTIES(s) name, storeSizeName, storeIsHuge, storeIsHuge2
+// To use this form as EDIT\DIALOG\LIST form for some class (for ex. store)
+// Use this syntax:
+//(EDIT | DIALOG | LIST) <className> OBJECT <objectName>
+EDIT store OBJECT s
+;
 
 //////////////// WINDOW STATEMENT /////////////////
 // Add new window statement

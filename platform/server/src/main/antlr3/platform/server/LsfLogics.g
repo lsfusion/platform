@@ -238,10 +238,39 @@ scope {
 		|	formPropertiesList
 		|	filterGroupDeclaration
 		|	formOrderByList
+		|	dialogFormDeclaration
+		|	editFormDeclaration
+		|	listFormDeclaration
 		)*
 		';'
 	;
 
+dialogFormDeclaration
+	:	'DIALOG' cid=classId 'OBJECT' oid=ID
+		{
+			if (inPropParseState()) {
+				$formStatement::form.setAsDialogForm($cid.sid, $oid.text);
+			}
+		}
+	;
+
+editFormDeclaration
+	:	'EDIT' cid=classId 'OBJECT' oid=ID
+		{
+			if (inPropParseState()) {
+				$formStatement::form.setAsEditForm($cid.sid, $oid.text);
+			}
+		}
+	;
+	
+listFormDeclaration
+	:	'LIST' cid=classId 'OBJECT' oid=ID
+		{
+			if (inPropParseState()) {
+				$formStatement::form.setAsListForm($cid.sid, $oid.text);
+			}
+		}
+	;
 
 formDeclaration returns [ScriptingFormEntity form]
 @after {
@@ -1215,11 +1244,11 @@ positionComponentsStatement[ComponentView parentComponent]
 @init {
 	boolean hasSecondComponent = false;
 }
-	:	'POSITION' compSelector1=componentSelector[true] constrDefinition=constraintDefinition ( compSelector2=componentSelector[true]  { hasSecondComponent = true; } )? ';'
+	:	'POSITION' compSelector1=componentSelector[true] constraint=constraintLiteral ( compSelector2=componentSelector[true]  { hasSecondComponent = true; } )? ';'
 		{
 			if (inPropParseState()) {
 				$designStatement::design.addIntersection($compSelector1.component,
-															$constrDefinition.constraint,
+															$constraint.val,
 															hasSecondComponent ? $compSelector2.component : parentComponent);
 			}
 		}
@@ -1236,7 +1265,7 @@ componentPropertyValue returns [Object value]
 	|	d=doubleLiteral { $value = $d.val; }
 	|	dim=dimensionLiteral { $value = $dim.val; }
 	|	b=booleanLiteral { $value = $b.val; }
-	|	cons=constraintsLiteral { $value = $cons.val; }
+	|	cons=constraintLiteral { $value = $cons.val; }
 	|	ins=insetsLiteral { $value = $ins.val; }
 	;
 
@@ -1401,16 +1430,12 @@ insetsLiteral returns [Insets val]
 	:	'(' top=intLiteral ',' left=intLiteral ',' bottom=intLiteral ',' right=intLiteral ')' { $val = new Insets($top.val, $left.val, $bottom.val, $right.val); }
 	;
 	
-constraintsLiteral returns [DoNotIntersectSimplexConstraint val]
-	:	c=constraintDefinition { $val = $c.constraint; }
-	;
-
-constraintDefinition returns [DoNotIntersectSimplexConstraint constraint]
-	:	'TO' 'THE' 'LEFT' { $constraint = TOTHE_LEFT; }
-	|	'TO' 'THE' 'RIGHT' { $constraint = TOTHE_RIGHT; }
-	|	'TO' 'THE' 'BOTTOM' { $constraint = TOTHE_BOTTOM; }
-	|	'TO' 'THE' 'RIGHTBOTTOM' { $constraint = TOTHE_RIGHTBOTTOM; }
-	|	'TO' 'NOT' 'INTERSECT' { $constraint = DO_NOT_INTERSECT; }
+constraintLiteral returns [DoNotIntersectSimplexConstraint val]
+	:	'TO' 'THE' 'LEFT' { $val = TOTHE_LEFT; }
+	|	'TO' 'THE' 'RIGHT' { $val = TOTHE_RIGHT; }
+	|	'TO' 'THE' 'BOTTOM' { $val = TOTHE_BOTTOM; }
+	|	'TO' 'THE' 'RIGHTBOTTOM' { $val = TOTHE_RIGHTBOTTOM; }
+	|	'TO' 'NOT' 'INTERSECT' { $val = DO_NOT_INTERSECT; }
 	;
 
 positionDefinition returns [InsertPosition position]

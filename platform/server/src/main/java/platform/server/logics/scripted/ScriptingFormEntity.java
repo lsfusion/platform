@@ -2,6 +2,7 @@ package platform.server.logics.scripted;
 
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
+import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.NotNullFilterEntity;
@@ -88,12 +89,17 @@ public class ScriptingFormEntity extends FormEntity {
     private ObjectEntity[] getMappingObjectsArray(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         ObjectEntity[] objects = new ObjectEntity[mapping.size()];
         for (int i = 0; i < mapping.size(); i++) {
-            objects[i] = objectEntities.get(mapping.get(i));
-            if (objects[i] == null) {
-                LM.getErrLog().emitParamNotFoundError(LM.getParser(), mapping.get(i));
-            }
+            objects[i] = getObjectEntity(mapping.get(i));
         }
         return objects;
+    }
+
+    private ObjectEntity getObjectEntity(String name) throws ScriptingErrorLog.SemanticErrorException {
+        ObjectEntity obj = objectEntities.get(name);
+        if (obj == null) {
+            LM.getErrLog().emitParamNotFoundError(LM.getParser(), name);
+        }
+        return obj;
     }
 
     public List<GroupObjectEntity> getGroupObjectsList(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
@@ -239,5 +245,26 @@ public class ScriptingFormEntity extends FormEntity {
         }
 
         return property;
+    }
+
+    public void setAsDialogForm(String className, String objectID) throws ScriptingErrorLog.SemanticErrorException {
+        findCustomClassForFormSetup(className).setDialogForm(this, getObjectEntity(objectID));
+    }
+
+    public void setAsEditForm(String className, String objectID) throws ScriptingErrorLog.SemanticErrorException {
+        findCustomClassForFormSetup(className).setEditForm(this, getObjectEntity(objectID));
+    }
+
+    public void setAsListForm(String className, String objectID) throws ScriptingErrorLog.SemanticErrorException {
+        findCustomClassForFormSetup(className).setListForm(this, getObjectEntity(objectID));
+    }
+
+    private CustomClass findCustomClassForFormSetup(String className) throws ScriptingErrorLog.SemanticErrorException {
+        ValueClass valueClass = LM.findClassByCompoundName(className);
+        if (!(valueClass instanceof CustomClass)) {
+            LM.getErrLog().emitBuiltInClassFormSetupError(LM.getParser(), className);
+        }
+
+        return (CustomClass) valueClass;
     }
 }
