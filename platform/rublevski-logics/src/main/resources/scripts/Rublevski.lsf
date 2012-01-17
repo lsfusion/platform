@@ -521,17 +521,17 @@ CONSTRAINT CHECKED legalEntity != legalEntityAccount(userAccountLegalEntity(lega
 equalsLegalEntityAccount 'Основной р/сч.' (legalEntity, account) = userAccountLegalEntity(legalEntity) == account;
 
 legalEntityLicense 'ЮЛ (ИД)' = DATA legalEntity (license) IN idGroup;
-userLicenseLegalEntity 'ЮЛ (ИД)' = DATA license (legalEntity) IN idGroup;
-defaultLicenseLegalEntity (legalEntity) = GROUP MAX license AS license BY legalEntityLicense(license);
-
-overrideLicenseLegalEntity 'Действующая' (legalEntity) = UNION OVERRIDE defaultLicenseLegalEntity(legalEntity) IF dateFromLicense(defaultLicenseLegalEntity(legalEntity)) < currentDate() AND dateToLicense(defaultLicenseLegalEntity(legalEntity)) > currentDate(),
-                                                                        userLicenseLegalEntity(legalEntity) IF dateFromLicense(userLicenseLegalEntity(legalEntity)) < currentDate() AND dateToLicense(userLicenseLegalEntity(legalEntity)) > currentDate();
-dataOverrideLicenseLegalEntity 'Действующая лицензия' (legalEntity) = dataLicense(overrideLicenseLegalEntity(legalEntity)) IN lawGroup;
+//userLicenseLegalEntity 'ЮЛ (ИД)' = DATA license (legalEntity) IN idGroup;
+actingLicense 'Действующая, м/у датами' (license) = license AS license IF dateFromLicense(license) <= currentDate() AND dateToLicense(license) >= currentDate();
+actingLicenseLegalEntity (legalEntity) = GROUP MAX actingLicense(license) BY legalEntityLicense(license);        // сгруппировали по ID
+//overrideLicenseLegalEntity 'Действующая' (legalEntity) = UNION OVERRIDE defaultLicenseLegalEntity(legalEntity) IF dateFromLicense(defaultLicenseLegalEntity(legalEntity)) < currentDate() AND dateToLicense(defaultLicenseLegalEntity(legalEntity)) > currentDate(),
+//                                                                        userLicenseLegalEntity(legalEntity) IF dateFromLicense(userLicenseLegalEntity(legalEntity)) < currentDate() AND dateToLicense(userLicenseLegalEntity(legalEntity)) > currentDate();
+dataActingLicenseLegalEntity 'Действующая лицензия' (legalEntity) = dataLicense(actingLicenseLegalEntity(legalEntity)) IN lawGroup;
                         // работает как то не так, надо проверить //
-CONSTRAINT CHECKED legalEntity != legalEntityLicense(userLicenseLegalEntity(legalEntity)) MSG 'ошибка: Лицензия по умолчанию должен соответствовать лицензии Ю.Л.';
+//CONSTRAINT CHECKED legalEntity != legalEntityLicense(userLicenseLegalEntity(legalEntity)) MSG 'ошибка: Лицензия по умолчанию должен соответствовать лицензии Ю.Л.';
 //CONSTRAINT  dateFromLicense(overrideLicenseLegalEntity(legalEntity)) > currentDate() MSG 'ошибка: действие лицензии еще не началось';
 //CONSTRAINT  dateToLicense(overrideLicenseLegalEntity(legalEntity)) < currentDate() MSG 'ошибка: действие выбранной лицензии уже окончилось';
-equalsLegalEntityLicense 'Действующая' (legalEntity, license) = userLicenseLegalEntity(legalEntity) == license IN lawGroup;
+//equalsLegalEntityLicense 'Действующая' (legalEntity, license) = userLicenseLegalEntity(legalEntity) == license IN lawGroup;
 
 // ----------------------------------- Договор ------------------------------------------ //
 
@@ -548,8 +548,10 @@ CLASS STATIC contractType 'Тип договора'
 
 CLASS STATIC contractForm 'Порядок оплаты'
 {
-    delay 'с отсрочкой платежа',
-    implement 'на реализацию'
+    prepayment 'с отсрочкой платежа',
+    implement 'По факту реализации',
+    instruction 'Платежное поручение',
+    requirement 'Платежное требование'
 };
 
 dataContract 'Номер договора' = DATA STRING[30] (contract) IN contractGroup;
@@ -617,14 +619,14 @@ OBJECTS l=license
 PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
               phoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
               dataOverrideAccountLegalEntity, residentLegalEntity, manufacturerLegalEntity, dataOverrideContractSupplier, sureSupplier, controlSupplier, surePercentSupplier, allowablePercentSupplier,
-              afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier, dataOverrideLicenseLegalEntity
+              afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier, dataActingLicenseLegalEntity
 PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
 PROPERTIES(c) dataContract, nameCompanyContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract, delayContract,
               requestContract, noteContract, ADDOBJ, delete
 PROPERTIES(l) dataLicense, dateFromLicense, dateToLicense, ADDOBJ, delete   //        tabaccoLicense
 PROPERTIES(s,c) equalsSupplierContract
 PROPERTIES(s,a) equalsLegalEntityAccount
-PROPERTIES(s,l) equalsLegalEntityLicense
+//PROPERTIES(s,l) equalsLegalEntityLicense
 FILTERS NOT NULL inSupplierContract(s, c),
         NOT NULL inSupplierAccount(s, a),
         NOT NULL inSupplierLicense(s, l)
@@ -668,19 +670,9 @@ lettersModel 'Преобразовать наименование товара �
 
 
 frontOfficeCashModel 'Модель касс (ИД)' = DATA frontOffice (cashModel) IN idGroup;
-nameFrontOfficeCashModel 'Версия фронт офиса на кассе' = nameFrontOffice(frontOfficeCashModel(cashModel)) IN baseGroup;
+nameFrontOfficeCashModel 'Версия фронт офиса на кассе' (cashModel) = nameFrontOffice(frontOfficeCashModel(cashModel)) IN baseGroup;
 dateToCashModel 'Дата, до которой модель внесена в реестр' = DATA DATE (cashModel) IN baseGroup;
 maxProductModel 'MAX допустимое колич.товаров' = DATA INTEGER (model) IN baseGroup;
-
-
-FORM cashModel 'Модель касс'
-OBJECTS c=cashModel FIXED PANEL
-PROPERTIES(c) name, nameFrontOfficeCashModel, noteModel, useModel, dateToCashModel, lettersModel;
-
-FORM cashModels 'Модели касс'
-OBJECTS c=cashModel
-PROPERTIES(c) READONLY name, nameFrontOfficeCashModel, noteModel, useModel, dateToCashModel, lettersModel
-PROPERTIES(c) ADDFORM, EDITFORM, delete;
 
 CLASS flash 'Прошивка';
 nameFlash 'Модель весов/версия прошивки' = DATA STRING[100] (flash) IN baseGroup;
@@ -691,29 +683,133 @@ maxTextScalesModel 'MAX допустимое колич.дополнительн
 folderScalesModel 'Папка на сервере весов с драйвером весов' = DATA STRING[200] (scalesModel) IN baseGroup;
 compositionScalesModel 'Число знаков в доп.тексте(составе товара)' = DATA INTEGER (scalesModel) IN baseGroup;
 
-FORM scalesModel 'Модель весов'
-OBJECTS s=scalesModel FIXED PANEL
-PROPERTIES(s) name, nameFlashScalesModel, noteModel, useModel, maxProductModel, maxTextScalesModel, folderScalesModel, lettersModel, compositionScalesModel;
-
-FORM scalesModels 'Модели весов'
-OBJECTS s=scalesModel
-PROPERTIES(s) READONLY name, nameFlashScalesModel, noteModel, useModel, maxProductModel, maxTextScalesModel, folderScalesModel, lettersModel, compositionScalesModel
-PROPERTIES(s) ADDFORM, EDITFORM, delete;
-
 CLASS modelCheck 'Модель чекера';
 nameModelCheck 'Модель прайс чекера' = DATA STRING[100] (modelCheck) IN baseGroup;
 
 modelCheckModel 'Модель (ИД)' = DATA modelCheck (checkModel) IN idGroup;
 nameModelCheckModel 'Модель прайс чекера' = nameModelCheck(modelCheckModel(checkModel)) IN baseGroup;
 
+FORM models 'Модели оборудования'
+OBJECTS s=scalesModel, ch=checkModel, c=cashModel
+PROPERTIES(ch) READONLY name, nameModelCheckModel, noteModel, useModel, maxProductModel
+PROPERTIES(s)  READONLY name, nameFlashScalesModel, noteModel, useModel, maxProductModel, maxTextScalesModel,
+               folderScalesModel, lettersModel, compositionScalesModel
+PROPERTIES(c)  READONLY name, nameFrontOfficeCashModel, noteModel, useModel, dateToCashModel, lettersModel
+PROPERTIES(s) ADDFORM, EDITFORM, delete
+PROPERTIES(c) ADDFORM, EDITFORM, delete
+PROPERTIES(ch) ADDFORM, EDITFORM, delete;
+
+
 FORM checkModel 'Модель прайс чекера'
 OBJECTS ch=checkModel FIXED PANEL
-PROPERTIES(ch) name, nameModelCheckModel, noteModel, useModel, maxProductModel;
+PROPERTIES(ch) name, nameModelCheckModel, noteModel, useModel, maxProductModel
+EDIT checkModel OBJECT ch;
 
-FORM checkModels 'Модели прайс чекеров'
-OBJECTS ch=checkModel
-PROPERTIES(ch) READONLY name, nameModelCheckModel, noteModel, useModel, maxProductModel
-PROPERTIES(ch) ADDFORM, EDITFORM, delete;
+FORM cashModel 'Модель касс'
+OBJECTS c=cashModel FIXED PANEL
+PROPERTIES(c) name, nameFrontOfficeCashModel, noteModel, useModel, dateToCashModel, lettersModel
+EDIT cashModel OBJECT c;
+
+FORM scalesModel 'Модель весов'
+OBJECTS s=scalesModel FIXED PANEL
+PROPERTIES(s) name, nameFlashScalesModel, noteModel, useModel, maxProductModel, maxTextScalesModel,
+              folderScalesModel, lettersModel, compositionScalesModel
+EDIT scalesModel OBJECT s;
+
+
+//---------------------------- группы оборудования ----------------------------------------//
+
+CLASS ABSTRACT groupMachinery 'Группы оборудования';
+CLASS groupScales 'Группы весов' : groupMachinery;
+CLASS groupCash 'Группы касс' : groupMachinery;
+
+nameGroupMachinery 'Наименование группы' = DATA STRING[200] (groupMachinery) IN baseGroup;
+
+cellGroupScales 'Помещать на ценники номера ячеек с этой группы' = DATA BOOLEAN (groupScales) IN baseGroup;
+transferGroupScales 'Передать товар на группу весов' = DATA BOOLEAN (groupScales) IN baseGroup;
+sidSectionGroupScales 'Код отдела в Set Retail' = DATA INTEGER (groupScales) IN baseGroup;
+directoryGroupScales 'Директория сервера Set Retail' = DATA STRING[200] (groupScales) IN baseGroup;
+
+InDepartmentStoreGroupMachinery 'Вкл.' = DATA BOOLEAN (departmentStore, groupMachinery) IN baseGroup;
+
+//---------------------------- типы оборудования оборудования ----------------------------------------//
+CLASS ABSTRACT machinery 'Оборудование';
+CLASS cash 'Кассы' : machinery;
+CLASS scales 'Весы' : machinery;
+
+groupCashCash 'Группа ИД' = DATA groupCash (cash) IN idGroup;
+groupScalesScales 'Группа ИД' = DATA groupScales (scales) IN idGroup;
+nameGroupMachineryCash 'Наименование группы' (cash) = nameGroupMachinery(groupCashCash(cash)) IN baseGroup;
+nameGroupMachineryScales 'Наименование группы' (scales) = nameGroupMachinery(groupScalesScales(scales)) IN baseGroup;
+//dataGroupMachineryMachinery 'Наименование группы' (machinery) = UNION EXCLUSIVE nameGroupMachineryCash(machinery), nameGroupMachineryScales(machinery);
+
+descriptionMachinery 'Описание' = DATA STRING[200] (machinery) IN baseGroup;
+portMachinery 'Адрес/порт' = DATA STRING[100] (machinery) IN baseGroup;
+useMachinery 'Оборудование используется' = DATA BOOLEAN (machinery) IN baseGroup;
+
+cashModelCash 'Модель ИД' = DATA cashModel (cash) IN idGroup;
+numberCash 'Регистрационный номер кассы' = DATA STRING[100] (cash) IN baseGroup;
+directoryCash 'Директория обмена с кассой' = DATA STRING[100] (cash) IN baseGroup;
+nameCashModelCash 'Модель кассы' (cash) = name(cashModelCash(cash)) IN baseGroup;
+statusCash 'Статус кассы (на момент посл.передачи)' = DATA STRING[200] (cash) IN baseGroup;
+resultCash 'Результат передачи на кассу товаров' = DATA STRING[200] (cash) IN baseGroup;
+dateCash 'Дата фискализации кассового аппарата' = DATA DATE (cash) IN baseGroup;
+nppCash 'Порядковый номер кассы в торговом объекте ' = DATA INTEGER (cash) IN baseGroup;
+
+
+CLASS STATIC feature 'Свойства для оборудования'
+{
+    no 'HET,(пример: для годен это значит - печатаем в поле этикетки "Годен до")',
+    yes 'ДА для ВСЕХ товаров поместить в состав',
+    sometimes 'ДА (для товаров с признаком [Контролировать срок годности по товару?]'
+};
+
+scalesModelScales 'Модель ИД' = DATA scalesModel (scales) IN idGroup;
+numberScales 'Заводской(серийный) номер ' = DATA STRING[100] (scales) IN baseGroup;
+nameScalesModelScales 'Модель весов' (scales) = name(scalesModelScales(scales)) IN baseGroup;
+dateScales 'Дата следующей обязательной поверки' = DATA DATE (scales) IN baseGroup;
+passScales 'свойство ИД' = DATA feature (scales) IN idGroup;
+namePassScales 'Свойство товара [Годен до] помещать в ингредиенты' (scales) = name(passScales(scales)) IN baseGroup;
+manufactureScales 'свойство ИД' = DATA feature (scales) IN idGroup;
+nameManufactureScales 'Свойство товара [Дата изг.] помещать в ингредиенты' (scales) = name(manufactureScales(scales)) IN baseGroup;
+productionScales 'свойство ИД' = DATA feature (scales) IN idGroup;
+nameProductionScales 'Св-во товара[Срок годн.в часах] поместить в ингр-ты' (scales) = name(productionScales(scales)) IN baseGroup;
+sidScales 'ID весов для Set Retail' = DATA INTEGER (scales) IN baseGroup;
+
+
+FORM machinerys 'Типы оборудования'
+OBJECTS c=cash, s=scales
+PROPERTIES(c) READONLY numberCash, descriptionMachinery, nameCashModelCash, nameGroupMachineryCash, portMachinery, useMachinery
+PROPERTIES(s) READONLY numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery
+PROPERTIES(c) ADDFORM, EDITFORM, delete
+PROPERTIES(s) ADDFORM, EDITFORM, delete;
+
+FORM cash 'Касса'
+OBJECTS c=cash FIXED PANEL
+PROPERTIES(c) numberCash, descriptionMachinery, nameGroupMachineryCash, portMachinery, useMachinery, directoryCash, nameCashModelCash,
+              dateCash, nppCash, statusCash, resultCash
+EDIT cash OBJECT c;
+
+FORM scales 'Весы'
+OBJECTS s=scales FIXED PANEL
+PROPERTIES(s) numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
+              dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales
+EDIT scales OBJECT s;
+
+ //---------------------------- Карты проработки (разруба) ----------------------------------------//
+GROUP cutGroup 'Разделка' : baseGroup;
+CLASS cutting 'Карта разруба' : named;
+
+sidCutting 'Номер корты (из сборника и прочее)' = DATA INTEGER (cutting) IN cutGroup;
+dateCutting 'Дата создания' = DATA DATE (cutting) IN cutGroup;
+useCutting 'Используется' = DATA BOOLEAN (cutting) IN cutGroup;
+//             номер из сборника.....
+descriptionCutting 'Описание' = DATA STRING[200] (cutting) IN cutGroup;
+percAllowancesCutting 'Процент надбавок' = DATA DOUBLE (cutting) IN cutGroup;
+percLossesCutting 'Процент потерь' = DATA DOUBLE (cutting) IN cutGroup;
+percSweepsCutting 'Процент зачисток' = DATA DOUBLE (cutting) IN cutGroup;
+
+
 
 //---------------------------- Настройка навигатора ----------------------------------------//
 
@@ -745,13 +841,15 @@ NAVIGATOR {
         ADD ownerships;
         ADD suppliers;
         ADD companies;
-        ADD cashModels;
-        ADD scalesModels;
-        ADD checkModels;
+        ADD models;
+//        ADD cashModels;
+//        ADD scalesModels;
+//        ADD checkModels;
         ADD assortments;
         ADD colors;
         ADD tastes;
         ADD manufacturers;
+        ADD machinerys;
     }
 
     ADD documents 'Документы' TO formsToolbar {
@@ -782,6 +880,8 @@ NAVIGATOR {
             ADD color;
             ADD taste;
             ADD manufacturer;
+            ADD cash;
+            ADD scales;
         }
     }
 }
