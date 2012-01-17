@@ -239,8 +239,8 @@ nameDepartmentStoreEmployee 'Отдел сотрудника' (employee) = name(
 
 FORM employee 'Сотрудник'
 OBJECTS e=employee FIXED PANEL
-PROPERTIES(e) READONLY name
-PROPERTIES(e) nameDepartmentStoreEmployee;
+PROPERTIES(e) name, nameDepartmentStoreEmployee
+EDIT employee OBJECT e;
 
 FORM employees 'Сотрудники'
 OBJECTS e=employee
@@ -257,8 +257,8 @@ dateTradingSquare 'Дата' = DATA DATE (tradingSquare) IN storeGroup;
 
 FORM tradingSquare 'Торговая площадь'
 OBJECTS s=tradingSquare FIXED PANEL
-PROPERTIES(s) READONLY name
-PROPERTIES(s) squareTradingSquare, nameDepartmentStoreTradingSquare, dateTradingSquare;
+PROPERTIES(s) name, squareTradingSquare, nameDepartmentStoreTradingSquare, dateTradingSquare
+EDIT tradingSquare OBJECT s;
 
 FORM tradingSquares 'Торговые площади'
 OBJECTS s=tradingSquare
@@ -275,8 +275,8 @@ nameDepartmentStoreDiscount (discount) = name(departmentStoreDiscount(discount))
 
 FORM discount 'Скидка'
 OBJECTS d=discount FIXED PANEL
-PROPERTIES(d) READONLY name
-PROPERTIES(d) dateDiscount, agreeDiscount, nameDepartmentStoreDiscount;
+PROPERTIES(d) name, dateDiscount, agreeDiscount, nameDepartmentStoreDiscount
+EDIT discount OBJECT d;
 
 FORM discounts 'Скидки'
 OBJECTS d=discount
@@ -321,12 +321,12 @@ inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore
 
 FORM departmentStore 'Отдел магазина'
 OBJECTS d=departmentStore FIXED PANEL
-PROPERTIES(d) READONLY name
-PROPERTIES(d) nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
+PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
               resolveDiscountDepartmentStore, controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
               maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
               marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, materiallyResponsiblePersonItemReportDepartmentStore,
-              bookkeeperItemReportDepartmentStore, personCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore;
+              bookkeeperItemReportDepartmentStore, personCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
+EDIT departmentStore OBJECT d;
 
 FORM departmentStores 'Отделы магазина'
 OBJECTS d=departmentStore
@@ -335,9 +335,10 @@ PROPERTIES(d) ADDFORM, EDITFORM, delete;
 
 FORM store 'Магазин'
 OBJECTS s=store FIXED PANEL, d=departmentStore
-PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, tradingSquareStore
-PROPERTIES(d) name, ADDOBJ, delete
-FILTERS NOT NULL inStoreDepartment(s, d);
+PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore
+PROPERTIES(d) name, ADDFORM, EDITFORM, delete
+FILTERS NOT NULL inStoreDepartment(s, d)
+EDIT store OBJECT s;
 
 FORM stores 'Магазины'
 OBJECTS s=store
@@ -346,9 +347,10 @@ PROPERTIES(s) ADDFORM, EDITFORM, delete;
 
 FORM storeType 'Формат магазина'
 OBJECTS s=storeType FIXED PANEL, n=tradingNetwork
-PROPERTIES(s) READONLY name
+PROPERTIES(s) name
 PROPERTIES(n) name, ADDOBJ, delete
-FILTERS NOT NULL inStoreTypeTradingNetwork(s, n);
+FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
+EDIT storeType OBJECT s;
 
 FORM storeTypes 'Форматы магазинов'
 OBJECTS s=storeType
@@ -357,7 +359,8 @@ PROPERTIES(s) ADDFORM, EDITFORM, delete;
 
 FORM tradingNetwork 'Торговая сеть'
 OBJECTS n=tradingNetwork FIXED PANEL
-PROPERTIES(n) READONLY name;
+PROPERTIES(n) name
+EDIT tradingNetwork OBJECT n;
 
 FORM tradingNetworks 'Торговые сети'
 OBJECTS n= tradingNetwork
@@ -367,26 +370,34 @@ PROPERTIES(n) ADDFORM, EDITFORM, delete;
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
 
 CLASS assortment 'Ассортимент' : named;
-departmentStoreAssortment 'Отдел ассортимента (ИД)' = DATA departmentStore (assortment) IN idGroup;
-nameDepartmentStoreAssortment 'Отдел ассортимента' (assortment) = name(departmentStoreAssortment(assortment)) IN storeGroup;
-supplierAssortment 'Поставщик ассортимента (ИД)' = DATA supplier (assortment) IN idGroup;
-nameSupplierAssortment 'Поставщик ассортимента' (assortment) = name(supplierAssortment(assortment)) IN storeGroup;
 itemAssortment 'Товар ассортимента' = DATA BOOLEAN (assortment, item);
-
-//когда повиться связь поставщик-товар, нужно добавить сюда constraint, что бы сразу загружался список товаров данного поставщика
-//и убрать возможность добавлять товар вручную
+infoAssortment 'Описание' = DATA STRING[100] (assortment) IN storeGroup;
 
 FORM assortment 'Ассортимент'
 OBJECTS a=assortment FIXED PANEL, i=item
-PROPERTIES(a) READONLY name
-PROPERTIES(a) nameDepartmentStoreAssortment, nameSupplierAssortment
+PROPERTIES(a) name, infoAssortment
 PROPERTIES(a, i) itemAssortment
-PROPERTIES(i) name, ADDOBJ, delete;
+PROPERTIES(i) name
+PROPERTIES(i) ADDFORM, EDITFORM, delete
+EDIT assortment OBJECT a;
 
 FORM assortments 'Ассортименты'
 OBJECTS a=assortment
-PROPERTIES(a) READONLY name, nameDepartmentStoreAssortment, nameSupplierAssortment
+PROPERTIES(a) READONLY name, infoAssortment
 PROPERTIES(a) ADDFORM, EDITFORM, delete;
+
+// ----------------------------------- Ассортимент поставщиков-------------------------------------------- //
+
+itemAssortmentSupplier 'Товар поставщика в ассортименте' = DATA BOOLEAN (departmentStore, supplier, item);
+
+FORM assortmentSupplier 'Ассортимент поставщика'
+OBJECTS d=departmentStore FIXED PANEL, s=supplier, i=item
+PROPERTIES(d) READONLY name
+PROPERTIES(s) name
+PROPERTIES(s) ADDFORM, EDITFORM, delete
+PROPERTIES(i) name
+PROPERTIES(i) ADDFORM, EDITFORM, delete
+PROPERTIES(d, s, i)  itemAssortmentSupplier;
 
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
 
@@ -405,11 +416,12 @@ inCommitteeDepartmentStore 'Является членом комиссии' (rev
 
 FORM revaluationCommittee 'Комиссия переоценки'
 OBJECTS c=revaluationCommittee FIXED PANEL, e=employee
-PROPERTIES(c) READONLY name
-PROPERTIES(c) nameDepartmentStoreRevaluationCommittee, nameChairmanRevaluationCommittee
+PROPERTIES(c) name, nameDepartmentStoreRevaluationCommittee, nameChairmanRevaluationCommittee
 PROPERTIES(e) READONLY name
 PROPERTIES(c, e) inCommitteeDepartmentStore
-FILTERS NOT NULL inDepartmentStoreEmployeeRevaluationCommittee(c, e);
+FILTERS NOT NULL inDepartmentStoreEmployeeRevaluationCommittee(c, e)
+PROPERTIES(e) ADDFORM, EDITFORM, delete
+EDIT revaluationCommittee OBJECT c;
 
 FORM revaluationCommittees 'Комиссии переоценки'
 OBJECTS c=revaluationCommittee
@@ -615,7 +627,8 @@ PROPERTIES(s,a) equalsLegalEntityAccount
 PROPERTIES(s,l) equalsLegalEntityLicense
 FILTERS NOT NULL inSupplierContract(s, c),
         NOT NULL inSupplierAccount(s, a),
-        NOT NULL inSupplierLicense(s, l);
+        NOT NULL inSupplierLicense(s, l)
+EDIT supplier OBJECT s;
 
 FORM suppliers 'Поставщики'
 OBJECTS s=supplier
