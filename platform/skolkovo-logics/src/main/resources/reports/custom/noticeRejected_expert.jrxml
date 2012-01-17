@@ -18,6 +18,7 @@
 	<field name="sidExpert2" class="java.lang.String"/>
 	<field name="readInformation" class="java.lang.Boolean"/>
 	<field name="commentEnoughDocumentsExpertVote" class="java.lang.String"/>
+	<field name="quantityEnoughDocumentsVote" class="java.lang.Integer"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer (1)]]></initialValueExpression>
@@ -29,7 +30,7 @@
 				<textElement>
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{npp}+") "+$F{commentEnoughDocumentsExpertVote}+($V{npp}==$F{quantityDoneVote}?".":";")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{npp}+") "+$F{commentEnoughDocumentsExpertVote}+($V{npp}==($F{quantityDoneVote}-$F{quantityEnoughDocumentsVote})?".":";")]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
