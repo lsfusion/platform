@@ -156,9 +156,9 @@ foo(store, article) => foo2(store, article) RESOLVE NOTHING, bar2(store, article
 FORM documentArticle 'По документам'
 
 // Objects list syntax:
-// OBJECTS [alias=] className | ([alias1=] className1, ..., [aliasN=] classNameN) [INIT | FIXED] [PANEL | HIDE | GRID],
+// OBJECTS [alias=] className '<caption>' | [groupAlias=] ([alias1=] className1 '<caption1>', ..., [aliasN=] classNameN '<captionN>') [INIT | FIXED] [PANEL | HIDE | GRID],
 //         ...
-//         [alias=] className | ([alias1=] className1, ..., [aliasN=] classNameN) [INIT | FIXED] [PANEL | HIDE | GRID]
+//         [alias=] className '<caption>' | [groupAlias=] ([alias1=] className1 '<caption1>', ..., [aliasN=] classNameN '<captionN>') [INIT | FIXED] [PANEL | HIDE | GRID]
 OBJECTS document, article
 
 // Property list syntax:
@@ -177,7 +177,7 @@ FILTERS NOT NULL name(article);
 
 
 FORM storeArticle 'По складам'
-OBJECTS s=store, a=article
+OBJECTS s=store '-Склад-', a=article
 PROPERTIES SELECTION(s), name(s) READONLY, OBJVALUE(a), name(a)
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity, incomeQuantity2, outcomeQuantity, outcomeQuantity2
 PROPERTIES(s) storeSizeName, storeIsHuge, storeIsHuge2
@@ -199,7 +199,7 @@ EDIT store OBJECT s
 //////////////// WINDOW STATEMENT /////////////////
 // Add new window statement
 // Syntax:
-// WINDOW (PANEL | TREE | TOOLBAR) <name> '<caption>' [ option [, option ...] ]
+// WINDOW (MENU | PANEL | TREE | TOOLBAR) <name> '<caption>' [ option [, option ...] ]
 // option ::=   HIDETITLE |
 //              HIDESCROLLBARS |
 //              DRAWROOT |
@@ -368,8 +368,6 @@ DESIGN storeArticle FROM DEFAULT {
         }
 
         s.box {
-            title = 'Склад';
-
             // в Java: someComponent.constraints.fillVertical = 0.3; соответсвует
             fillVertical = 0.2;
 

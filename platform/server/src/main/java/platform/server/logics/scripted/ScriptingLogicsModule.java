@@ -56,6 +56,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum State {GROUP, CLASS, PROP}
     public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM }
     public enum InsertPosition {IN, BEFORE, AFTER}
+    public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
+
 
     private Map<String, ValueClass> primitiveTypeAliases = BaseUtils.buildMap(
             Arrays.<String>asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN"),
@@ -662,13 +664,46 @@ public class ScriptingLogicsModule extends LogicsModule {
         mainProp.setDerivedChange(useOld, !anyChange, valueProp, BL, params.subList(1, params.size()).toArray());
     }
 
-    public void addScriptedPanelWindow(String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedWindow(WindowType type, String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
         if (scriptLogger.isInfoEnabled()) {
-            scriptLogger.info("addScriptedPanelWindow(" + name + ", " + caption + ", " + options + ");");
+            scriptLogger.info("addScriptedWindow(" + name + ", " + type + ", " + caption + ", " + options + ");");
         }
 
         checkDuplicateWindow(name);
 
+        NavigatorWindow window = null;
+        switch (type) {
+            case MENU:
+                window = createMenuWindow(name, caption, options);
+                break;
+            case PANEL:
+                window = createPanelWindow(name, caption, options);
+                break;
+            case TOOLBAR:
+                window = createToolbarWindow(name, caption, options);
+                break;
+            case TREE:
+                window = createTreeWindow(caption, options);
+                break;
+        }
+
+        window.drawRoot = nvl(options.getDrawRoot(), false);
+        window.drawScrollBars = nvl(options.getDrawScrollBars(), true);
+        window.titleShown = nvl(options.getDrawTitle(), true);
+
+        addWindow(name, window);
+    }
+
+    private MenuNavigatorWindow createMenuWindow(String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+        DockPosition dp = options.getDockPosition();
+        if (dp == null) {
+            errLog.emitWindowPositionNotSpecified(parser, name);
+        }
+
+        return new MenuNavigatorWindow(null, caption, dp.x, dp.y, dp.width, dp.height);
+    }
+
+    private PanelNavigatorWindow createPanelWindow(String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
         Orientation orientation = options.getOrientation();
         DockPosition dockPosition = options.getDockPosition();
 
@@ -680,18 +715,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (dockPosition != null) {
             window.setDockPosition(dockPosition.x, dockPosition.y, dockPosition.width, dockPosition.height);
         }
-
-        setCommonNavigatorWindowsProperties(window, options);
-        addWindow(name, window);
+        return window;
     }
 
-    public void addScriptedToolbarWindow(String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
-        if (scriptLogger.isInfoEnabled()) {
-            scriptLogger.info("addScriptedToolbarWindow(" + name + ", " + caption + ", " + options + ");");
-        }
-
-        checkDuplicateWindow(name);
-
+    private ToolBarNavigatorWindow createToolbarWindow(String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
         Orientation orientation = options.getOrientation();
         BorderPosition borderPosition = options.getBorderPosition();
         DockPosition dockPosition = options.getDockPosition();
@@ -729,33 +756,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (tvAlign != null) {
             window.verticalTextPosition = tvAlign.asTextPosition();
         }
-
-        setCommonNavigatorWindowsProperties(window, options);
-        addWindow(name, window);
+        return window;
     }
 
-    public void addScriptedTreeWindow(String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
-        if (scriptLogger.isInfoEnabled()) {
-            scriptLogger.info("addScriptedTreeWindow(" + name + ", " + caption + ", " + options + ");");
-        }
-
-        checkDuplicateWindow(name);
-
+    private TreeNavigatorWindow createTreeWindow(String caption, NavigatorWindowOptions options) {
         TreeNavigatorWindow window = new TreeNavigatorWindow(null, caption);
         DockPosition dp = options.getDockPosition();
         if (dp != null) {
             window.setDockPosition(dp.x, dp.y, dp.width, dp.height);
         }
-
-        setCommonNavigatorWindowsProperties(window, options);
-        addWindow(name, window);
+        return window;
     }
 
-    private void setCommonNavigatorWindowsProperties(NavigatorWindow window, NavigatorWindowOptions options) {
-        window.drawRoot = nvl(options.getDrawRoot(), false);
-        window.drawScrollBars = nvl(options.getDrawScrollBars(), true);
-        window.titleShown = nvl(options.getDrawTitle(), true);
-    }
 
     public void hideWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
         findWindowByCompoundName(name).visible = false;

@@ -161,6 +161,17 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return null;
     }
 
+    public ObjectEntity getObject(String sid) {
+        for (GroupObjectEntity group : groups) {
+            for (ObjectEntity object : group.objects) {
+                if (object.getSID().equals(sid)) {
+                    return object;
+                }
+            }
+        }
+        return null;
+    }
+
     public ObjectEntity getObject(ValueClass cls) {
         for (GroupObjectEntity group : groups) {
             for (ObjectEntity object : group.objects) {

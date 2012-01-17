@@ -17,6 +17,7 @@ grammar LsfLogics;
 	import platform.server.logics.property.PropertyFollows;
 	import platform.server.logics.scripted.*;
 	import platform.server.logics.scripted.ScriptingFormEntity.MappedProperty;
+	import platform.server.logics.scripted.ScriptingLogicsModule.WindowType;
 	import platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition;
 
 	import java.awt.*;
@@ -25,7 +26,9 @@ grammar LsfLogics;
 	import java.util.List;
 	import java.util.Stack;
 
+	import static java.util.Arrays.asList;
 	import static platform.interop.form.layout.SingleSimplexConstraint.*;
+	import static platform.server.logics.scripted.ScriptingLogicsModule.WindowType.*;
 }
 
 @lexer::header { 
@@ -285,35 +288,42 @@ formDeclaration returns [ScriptingFormEntity form]
 
 formGroupObjectsList // needs refactoring
 @init {
+	List<String> groupNames = new ArrayList<String>();
 	List<List<String>> names = new ArrayList<List<String>>();
 	List<List<String>> classNames = new ArrayList<List<String>>(); 
+	List<List<String>> captions = new ArrayList<List<String>>(); 
 	List<ClassViewType> groupViewType = new ArrayList<ClassViewType>();
 	List<Boolean> isInitType = new ArrayList<Boolean>();
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedGroupObjects(names, classNames, groupViewType, isInitType);
+		$formStatement::form.addScriptedGroupObjects(groupNames, names, classNames, captions, groupViewType, isInitType);
 	}
 }
 	:	'OBJECTS'
-		groupElement=formGroupObjectDeclaration { names.add($groupElement.objectNames); classNames.add($groupElement.classIds);
-												  groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType); }
-		(',' groupElement=formGroupObjectDeclaration { names.add($groupElement.objectNames); classNames.add($groupElement.classIds); 
-													   groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType); })*
+		groupElement=formGroupObjectDeclaration { groupNames.add($groupElement.groupName); names.add($groupElement.objectNames); classNames.add($groupElement.classNames);
+												  captions.add($groupElement.captions); groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType); }
+		(',' groupElement=formGroupObjectDeclaration { groupNames.add($groupElement.groupName); names.add($groupElement.objectNames); classNames.add($groupElement.classNames);
+													   captions.add($groupElement.captions); groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType); })*
 	;
 
 
-formGroupObjectDeclaration returns [List<String> objectNames, List<String> classIds, ClassViewType type, boolean isInitType]
-@init {
-	$objectNames = new ArrayList<String>();
-	$classIds = new ArrayList<String>();
-}
-	:	(decl=formSingleGroupObjectDeclaration { $objectNames.add($decl.name); $classIds.add($decl.className); }
-	|	('(' 
-		objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classIds.add($objDecl.className); }	
-		(',' objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classIds.add($objDecl.className); })+	
-		')'))
-		(viewType=formGroupObjectViewType { $type = $viewType.type; $isInitType = $viewType.isInitType; })?
+formGroupObjectDeclaration returns [String groupName, List<String> objectNames, List<String> classNames, List<String> captions, ClassViewType type, boolean isInitType]
+	:	(	sdecl=formSingleGroupObjectDeclaration
+			{
+				$objectNames = asList($sdecl.name);
+				$classNames = asList($sdecl.className);
+				$captions = asList($sdecl.caption);
+			}
+		|	mdecl=formMultiGroupObjectDeclaration
+			{
+				$groupName = $mdecl.groupName;
+				$objectNames = $mdecl.objectNames;
+				$classNames = $mdecl.classNames;
+				$captions = $mdecl.captions;
+			}
+		)
+		(	viewType=formGroupObjectViewType { $type = $viewType.type; $isInitType = $viewType.isInitType; } )?
 	; 
 
 
@@ -323,14 +333,28 @@ formGroupObjectViewType returns [ClassViewType type, boolean isInitType]
 	;
 
 
-formSingleGroupObjectDeclaration returns [String name, String className] 
-	:	foDecl=formObjectDeclaration { $name = $foDecl.name; $className = $foDecl.className; }
+formSingleGroupObjectDeclaration returns [String name, String className, String caption] 
+	:	foDecl=formObjectDeclaration { $name = $foDecl.name; $className = $foDecl.className; $caption = $foDecl.caption; }
+	;
+
+formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNames, List<String> classNames, List<String> captions]
+@init {
+	$objectNames = new ArrayList<String>();
+	$classNames = new ArrayList<String>();
+	$captions = new ArrayList<String>();
+}
+	:	(gname=ID { $groupName = $gname.text; } '=')?
+		'('
+			objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); }
+			(',' objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); })+
+		')'
 	;
 
 
-formObjectDeclaration returns [String name, String className] 
+formObjectDeclaration returns [String name, String className, String caption] 
 	:	(objectName=ID { $name = $objectName.text; } '=')?	
 		id=classId { $className = $id.sid; }
+		(c=stringLiteral { $caption = $c.val; })?
 	; 
 	
 	
@@ -942,43 +966,36 @@ indexStatement
 ////////////////////////////////////////////////////////////////////////////////
 
 windowStatement
-	:	windowPanelStatement
-	|	windowToolbarStatement
-	|	windowTreeStatement
-	|	hideWindowStatement
-	;
-	
-windowPanelStatement
-@after {
-	if (inPropParseState()) {
-		self.addScriptedPanelWindow($id.text, $caption.val, $opts.options);
-	}
-}
-	:	'WINDOW' 'PANEL' id=ID caption=stringLiteral opts=windowPanelOptions ';'
-	;
-	
-windowPanelOptions returns [NavigatorWindowOptions options]
-@init {
-	$options = new NavigatorWindowOptions();
-}
-	:	(	'HIDETITLE' { $options.setDrawTitle(false); }
-		|	'DRAWROOT' { $options.setDrawRoot(true); }
-		|	'HIDESCROLLBARS' { $options.setDrawScrollBars(false); }
-		|	o=orientation	{ $options.setOrientation($o.val); }
-		|	dp=dockPosition { $options.setDockPosition($dp.val); }
-		)*
+	:	windowCreateStatement
+	|	windowHideStatement
 	;
 
-windowToolbarStatement
+windowCreateStatement
 @after {
 	if (inPropParseState()) {
-		self.addScriptedToolbarWindow($id.text, $caption.val, $opts.options);
+		self.addScriptedWindow($type.type, $id.text, $caption.val, $opts.options);
 	}
 }
-	:	'WINDOW' 'TOOLBAR' id=ID caption=stringLiteral opts=windowToolbarOptions ';'
+	:	'WINDOW' type=windowType id=ID caption=stringLiteral opts=windowOptions ';'
 	;
-	
-windowToolbarOptions returns [NavigatorWindowOptions options]
+
+windowHideStatement
+	:	'HIDE' 'WINDOW' wid=compoundID ';'
+		{
+			if (inPropParseState()) {
+				self.hideWindow($wid.sid);
+			}
+		}
+	;
+
+windowType returns [WindowType type]
+	:	'MENU'		{ $type = MENU; }
+	|	'PANEL'		{ $type = PANEL; }
+	|	'TOOLBAR'	{ $type = TOOLBAR; }
+	|	'TREE'		{ $type = TREE; }
+	;
+
+windowOptions returns [NavigatorWindowOptions options]
 @init {
 	$options = new NavigatorWindowOptions();
 }
@@ -995,33 +1012,13 @@ windowToolbarOptions returns [NavigatorWindowOptions options]
 		)*
 	;
 
-windowTreeStatement
-@after {
-	if (inPropParseState()) {
-		self.addScriptedTreeWindow($id.text, $caption.val, $opts.options);
-	}
-}
-	:	'WINDOW' 'TREE' id=ID caption=stringLiteral opts=windowTreeOptions ';'
-	;
-	
-windowTreeOptions returns [NavigatorWindowOptions options]
-@init {
-	$options = new NavigatorWindowOptions();
-}
-	:	(	'HIDETITLE' { $options.setDrawTitle(false); }
-		|	'DRAWROOT' { $options.setDrawRoot(true); }
-		|	'HIDESCROLLBARS' { $options.setDrawScrollBars(false); }
-		|	dp=dockPosition { $options.setDockPosition($dp.val); }
-		)*
-	;
-	
 borderPosition returns [BorderPosition val]
 	:	'LEFT'		{ $val = BorderPosition.LEFT; }
 	|	'RIGHT'		{ $val = BorderPosition.RIGHT; }
 	|	'TOP'		{ $val = BorderPosition.TOP; }
 	|	'BOTTOM'	{ $val = BorderPosition.BOTTOM; }
 	;
-	
+
 dockPosition returns [DockPosition val]
 	:	'POSITION' '(' x=intLiteral ',' y=intLiteral ',' w=intLiteral ',' h=intLiteral ')' { $val = new DockPosition($x.val, $y.val, $w.val, $h.val); }
 	;
@@ -1037,21 +1034,13 @@ horizontalAlignment returns [HAlign val]
 	|	'CENTER'	{ $val = HAlign.CENTER; }
 	|	'RIGHT'		{ $val = HAlign.RIGHT; }
 	;
-	
+
 orientation returns [Orientation val]
 	:	'VERTICAL'		{ $val = Orientation.VERTICAL; }
 	|	'HORIZONTAL'	{ $val = Orientation.HORIZONTAL; }
 	;
-	
-hideWindowStatement
-	:	'HIDE' 'WINDOW' wid=compoundID ';'
-		{
-			if (inPropParseState()) {
-				self.hideWindow($wid.sid);
-			}
-		}
-	;
-	
+
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////// NAVIGATOR STATEMENT ////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -1078,14 +1067,14 @@ addNavigatorElementStatement[NavigatorElement parentElement]
 }
 	:	'ADD' insSelector=navigatorElementSelector[false] { insElem = $insSelector.element; }
 		(capt=stringLiteral { caption = $capt.val; })?
-		(posDefinition=positionDefinition posSelector=navigatorElementSelector[true] {hasPosition = true; })?
+		(insPosition=insertPositionLiteral posSelector=navigatorElementSelector[true] {hasPosition = true; })?
 		('TO' wid=compoundID)?
 		{
 			if (inPropParseState()) {
 				insElem = self.addNavigatorElement($insSelector.sid,
 													caption,
 													insElem,
-													hasPosition ? $posDefinition.position : InsertPosition.IN,
+													hasPosition ? $insPosition.val : InsertPosition.IN,
 													hasPosition ? $posSelector.element : $parentElement,
 													$wid.sid);
 			}
@@ -1183,12 +1172,12 @@ addComponentStatement[ComponentView parentComponent]
 	ComponentView insComp = null;
 }
 	:	'ADD' insSelector=componentSelector[false] { insComp = $insSelector.component; }
-		( posDefinition=positionDefinition posSelector=componentSelector[true] { hasPosition = true; } )?
+		( insPosition=insertPositionLiteral posSelector=componentSelector[true] { hasPosition = true; } )?
 		{
 			if (inPropParseState()) {
 				insComp = $designStatement::design.addComponent($insSelector.sid,
 																insComp,
-																hasPosition ? $posDefinition.position : InsertPosition.IN,
+																hasPosition ? $insPosition.val : InsertPosition.IN,
 																hasPosition ? $posSelector.component : $parentComponent);
 			}
 		}
@@ -1244,7 +1233,7 @@ positionComponentsStatement[ComponentView parentComponent]
 @init {
 	boolean hasSecondComponent = false;
 }
-	:	'POSITION' compSelector1=componentSelector[true] constraint=constraintLiteral ( compSelector2=componentSelector[true]  { hasSecondComponent = true; } )? ';'
+	:	'POSITION' compSelector1=componentSelector[true] constraint=simplexConstraintLiteral ( compSelector2=componentSelector[true]  { hasSecondComponent = true; } )? ';'
 		{
 			if (inPropParseState()) {
 				$designStatement::design.addIntersection($compSelector1.component,
@@ -1265,7 +1254,7 @@ componentPropertyValue returns [Object value]
 	|	d=doubleLiteral { $value = $d.val; }
 	|	dim=dimensionLiteral { $value = $dim.val; }
 	|	b=booleanLiteral { $value = $b.val; }
-	|	cons=constraintLiteral { $value = $cons.val; }
+	|	cons=simplexConstraintLiteral { $value = $cons.val; }
 	|	ins=insetsLiteral { $value = $ins.val; }
 	;
 
@@ -1430,7 +1419,7 @@ insetsLiteral returns [Insets val]
 	:	'(' top=intLiteral ',' left=intLiteral ',' bottom=intLiteral ',' right=intLiteral ')' { $val = new Insets($top.val, $left.val, $bottom.val, $right.val); }
 	;
 	
-constraintLiteral returns [DoNotIntersectSimplexConstraint val]
+simplexConstraintLiteral returns [DoNotIntersectSimplexConstraint val]
 	:	'TO' 'THE' 'LEFT' { $val = TOTHE_LEFT; }
 	|	'TO' 'THE' 'RIGHT' { $val = TOTHE_RIGHT; }
 	|	'TO' 'THE' 'BOTTOM' { $val = TOTHE_BOTTOM; }
@@ -1438,10 +1427,10 @@ constraintLiteral returns [DoNotIntersectSimplexConstraint val]
 	|	'TO' 'NOT' 'INTERSECT' { $val = DO_NOT_INTERSECT; }
 	;
 
-positionDefinition returns [InsertPosition position]
-	:	'IN' { $position = InsertPosition.IN; }
-	|	'BEFORE' { $position = InsertPosition.BEFORE; }
-	|	'AFTER' { $position = InsertPosition.AFTER; }
+insertPositionLiteral returns [InsertPosition val]
+	:	'IN' { $val = InsertPosition.IN; }
+	|	'BEFORE' { $val = InsertPosition.BEFORE; }
+	|	'AFTER' { $val = InsertPosition.AFTER; }
 	;
 
 udoubleLiteral

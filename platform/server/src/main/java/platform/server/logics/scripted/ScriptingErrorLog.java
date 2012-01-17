@@ -160,6 +160,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "orientation (VERTICAL or HORIZONTAL) isn't specified for window '" + sid + "'.");
     }
 
+    public void emitWindowPositionNotSpecified(LsfLogicsParser parser, String sid) throws SemanticErrorException {
+        emitSimpleError(parser, "position ( POSITION(x, y, width, height) ) isn't specified for window '" + sid + "'.");
+    }
+
     public void emitWindowPositionConflict(LsfLogicsParser parser, String sid) throws SemanticErrorException {
         emitSimpleError(parser, "both border position (LEFT, RIGHT, TOP or BOTTOM) and dock position (POSITION(x, y, widht, height)) are specified for window '" + sid + "', " +
                                 "only one of those should be used.");

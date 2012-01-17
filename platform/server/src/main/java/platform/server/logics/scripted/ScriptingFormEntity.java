@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static platform.base.BaseUtils.nvl;
+
 /**
  * User: DAle
  * Date: 26.07.11
@@ -38,28 +40,36 @@ public class ScriptingFormEntity extends FormEntity {
         return new ScriptedFormView(this, true, LM);
     }
 
-    public void addScriptedGroupObjects(List<List<String>> names, List<List<String>> classes, List<ClassViewType> viewTypes, List<Boolean> isInitType) throws ScriptingErrorLog.SemanticErrorException {
-        assert names.size() == classes.size();
+    public void addScriptedGroupObjects(List<String> groupNames, List<List<String>> names, List<List<String>> classNames,
+                                        List<List<String>> captions, List<ClassViewType> viewTypes, List<Boolean> isInitType) throws ScriptingErrorLog.SemanticErrorException {
+        assert names.size() == groupNames.size() && names.size() == classNames.size() && names.size() == captions.size();
         for (int i = 0; i < names.size();  i++) {
             List<String> groupObjectNames = names.get(i);
-            List<String> groupClassIds = classes.get(i);
-            assert groupObjectNames.size() == groupClassIds.size();
-            GroupObjectEntity groupObj = new GroupObjectEntity(genID());
-            String groupObjectSID = "";
-            for (int j = 0; j < groupObjectNames.size(); j++) {
-                String objectName = groupObjectNames.get(j);
-                String objectSID = objectName;
-                ValueClass cls = LM.findClassByCompoundName(groupClassIds.get(j));
-                if (objectSID == null) {
-                    objectSID = cls.getSID();
-                    objectName = groupClassIds.get(j);
-                }
-                ObjectEntity obj = new ObjectEntity(genID(), objectSID, cls, objectName);
-                groupObj.add(obj);
-                assert !objectEntities.containsKey(objectName);
-                objectEntities.put(objectName, obj);
+            List<String> groupClassNames = classNames.get(i);
+            List<String> groupCaptions = captions.get(i);
 
-                groupObjectSID = (groupObjectSID.length() == 0 ? "" : groupObjectSID + ".") + objectSID;
+            assert groupObjectNames.size() == groupClassNames.size() && groupCaptions.size() == groupObjectNames.size();
+
+            GroupObjectEntity groupObj = new GroupObjectEntity(genID());
+
+            for (int j = 0; j < groupObjectNames.size(); j++) {
+                String className = groupClassNames.get(j);
+                ValueClass cls = LM.findClassByCompoundName(groupClassNames.get(j));
+                String objectName = nvl(groupObjectNames.get(j), className);
+                String objectCaption = nvl(groupCaptions.get(j), cls.getCaption());
+
+                ObjectEntity obj = new ObjectEntity(genID(), objectName, cls, objectCaption);
+                addObjectEntity(objectName, obj);
+
+                groupObj.add(obj);
+            }
+
+            String groupName = groupNames.get(i);
+            if (groupName == null) {
+                groupName = "";
+                for (ObjectEntity obj : groupObj.objects) {
+                    groupName = (groupName.length() == 0 ? "" : groupName + ".") + obj.getSID();
+                }
             }
 
             ClassViewType viewType = viewTypes.get(i);
@@ -71,9 +81,23 @@ public class ScriptingFormEntity extends FormEntity {
                 }
             }
 
-            groupObj.setSID(groupObjectSID);
-            addGroup(groupObj);
+            addGroupObjectEntity(groupName, groupObj);
         }
+    }
+
+    private void addGroupObjectEntity(String groupName, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
+        if (getGroupObject(groupName) != null) {
+            LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "group object", groupName);
+        }
+        group.setSID(groupName);
+        addGroup(group);
+    }
+
+    private void addObjectEntity(String objectName, ObjectEntity obj) throws ScriptingErrorLog.SemanticErrorException {
+        if (objectEntities.containsKey(objectName)) {
+            LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "object", objectName);
+        }
+        objectEntities.put(objectName, obj);
     }
 
     public static final class MappedProperty {

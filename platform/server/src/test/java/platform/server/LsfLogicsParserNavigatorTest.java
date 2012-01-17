@@ -6,6 +6,7 @@ import org.junit.rules.TestName;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.window.MenuNavigatorWindow;
 import platform.server.form.window.PanelNavigatorWindow;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
@@ -128,7 +129,9 @@ public class LsfLogicsParserNavigatorTest {
                   "WINDOW TREE tree2 'Объекты' POSITION(56, 23, 200, 123) HIDETITLE;\n" +
                   "\n" +
                   "WINDOW TOOLBAR toolbar1 'Навигатор' VERTICAL POSITION(12, 324, 45, 652) HALIGN(LEFT) VALIGN(TOP) TEXTHALIGN(LEFT) TEXTVALIGN(TOP) DRAWROOT HIDESCROLLBARS;\n" +
-                  "WINDOW TOOLBAR toolbar2 'Навигатор' VERTICAL LEFT HALIGN(CENTER) VALIGN(CENTER) HIDETITLE;"
+                  "WINDOW TOOLBAR toolbar2 'Навигатор' VERTICAL LEFT HALIGN(CENTER) VALIGN(CENTER) HIDETITLE;\n" +
+                  "\n" +
+                  "WINDOW MENU menu1 'Меню' POSITION(12, 23, 56, 7) VERTICAL LEFT HALIGN(CENTER) VALIGN(CENTER) HIDETITLE;"
         );
 
         PanelNavigatorWindow panel1 = (PanelNavigatorWindow) LM.getWindowByName("panel1");
@@ -139,6 +142,8 @@ public class LsfLogicsParserNavigatorTest {
 
         ToolBarNavigatorWindow toolbar1 = (ToolBarNavigatorWindow) LM.getWindowByName("toolbar1");
         ToolBarNavigatorWindow toolbar2 = (ToolBarNavigatorWindow) LM.getWindowByName("toolbar2");
+
+        MenuNavigatorWindow menu1 = (MenuNavigatorWindow) LM.getWindowByName("menu1");
 
         assertEquals(panel1.orientation, SwingConstants.VERTICAL);
         assertEquals(panel1.caption, "Панель 1");
@@ -168,6 +173,11 @@ public class LsfLogicsParserNavigatorTest {
         assertTrue(toolbar1.horizontalTextPosition == SwingConstants.LEADING);
 
         assertEquals(toolbar2.borderConstraint, BorderLayout.WEST);
+
+        assertEquals(menu1.x, 12);
+        assertEquals(menu1.y, 23);
+        assertEquals(menu1.width, 56);
+        assertEquals(menu1.height, 7);
     }
 
     @Test(expected = RuntimeException.class)

@@ -114,6 +114,29 @@ public class LsfLogicsParserPresentationTest {
     }
 
     @Test
+    public void testObjectEntities() throws Exception {
+        setupTest("FORM storeArticle 'По складам'\n" +
+                  "OBJECTS s=store 'SSdd', a=article 'AAee', g1=(s1=store 'Some', a1=article 'Any'), a2=article\n"
+        );
+
+        ObjectEntity s1 = entity.getObject("s1");
+        ObjectEntity a1 = entity.getObject("a1");
+        ObjectEntity a2 = entity.getObject("a2");
+
+        GroupObjectEntity g1 = entity.getGroupObject("g1");
+
+        assertNotNull(g1);
+
+        assertEquals(sObject.getCaption(), "SSdd");
+        assertEquals(aObject.getCaption(), "AAee");
+
+        assertEquals(s1.getCaption(), "Some");
+        assertEquals(a1.getCaption(), "Any");
+
+        assertEquals(a2.getCaption(), "Товар");
+    }
+
+    @Test
     public void testDefaultOrders() throws Exception {
         setupTest("FORM storeArticle 'По складам'\n" +
                   "OBJECTS s=store, a=article\n" +
