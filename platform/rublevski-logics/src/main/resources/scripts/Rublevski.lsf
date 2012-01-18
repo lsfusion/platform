@@ -74,6 +74,9 @@ PROPERTIES(m) ADDFORM, EDITFORM, delete;
 // ----------------------------------- Товар ------------------------------------------ //
 CLASS ABSTRACT sku 'SKU' : named;
 CLASS item 'Товар' : sku;
+CLASS dish 'Блюдо' : sku;
+CLASS component 'Компонент' : sku;
+
 CLASS brand 'Бренд' : named;
 
 brandItem = DATA brand(item);
@@ -311,7 +314,7 @@ quantityCashChangeOneOperationAccountDepartmentStore ' Количество ка
 materiallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' = DATA employee (departmentStore) IN storeGroup;
 bookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет' = DATA employee (departmentStore) IN storeGroup;
 personCheckReportDepartmentStore 'Кто проверяет товарный отчет' = DATA employee (departmentStore) IN storeGroup;
-idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (departmentStore) = GROUP MAX tradingSquare AS tradingSquare BY departmentStoreTradingSquare(tradingSquare);   //максимизирует только по ID, переделать после расширения функционала
+idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (departmentStore) = GROUP MAX tradingSquare BY departmentStoreTradingSquare(tradingSquare);   //максимизирует только по ID, переделать после расширения функционала
 defaultTradingSquareDepartmentStore 'Торговая площадь отдела магазина, кв.м.' (departmentStore) = squareTradingSquare(idTradingSquareDepartmentStore(departmentStore)) IN storeGroup;
 idResolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = GROUP MAX discount AS discount BY departmentStoreDiscount(discount);  //максимизирует только по ID, переделать после расширения функционала
 resolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = agreeDiscount(idResolveDiscountDepartmentStore(discount)) IN storeGroup;
@@ -385,19 +388,6 @@ FORM assortments 'Ассортименты'
 OBJECTS a=assortment
 PROPERTIES(a) READONLY name, infoAssortment
 PROPERTIES(a) ADDFORM, EDITFORM, delete;
-
-// ----------------------------------- Ассортимент поставщиков-------------------------------------------- //
-
-itemAssortmentSupplier 'Товар поставщика в ассортименте' = DATA BOOLEAN (departmentStore, supplier, item);
-
-FORM assortmentSupplier 'Ассортимент поставщика'
-OBJECTS d=departmentStore FIXED PANEL, s=supplier, i=item
-PROPERTIES(d) READONLY name
-PROPERTIES(s) name
-PROPERTIES(s) ADDFORM, EDITFORM, delete
-PROPERTIES(i) name
-PROPERTIES(i) ADDFORM, EDITFORM, delete
-PROPERTIES(d, s, i)  itemAssortmentSupplier;
 
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
 
@@ -653,6 +643,19 @@ OBJECTS co=company
 PROPERTIES(co) READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, lawLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity
 PROPERTIES(co) ADDFORM, EDITFORM, delete;
 
+// ----------------------------------- Ассортимент поставщиков-------------------------------------------- //
+
+itemAssortmentSupplier 'Товар поставщика в ассортименте' = DATA BOOLEAN (departmentStore, supplier, item);
+
+FORM assortmentSupplier 'Ассортимент поставщика'
+OBJECTS d=departmentStore FIXED PANEL, s=supplier, i=item
+PROPERTIES(d) READONLY name
+PROPERTIES(s) name
+PROPERTIES(s) ADDFORM, EDITFORM, delete
+PROPERTIES(i) name
+PROPERTIES(i) ADDFORM, EDITFORM, delete
+PROPERTIES(d, s, i)  itemAssortmentSupplier;
+
 //---------------------------- по поставщикам и товарам ----------------------------------------
 
 //---------------------------- Модели внешних устройств ----------------------------------------//
@@ -809,7 +812,41 @@ percAllowancesCutting 'Процент надбавок' = DATA DOUBLE (cutting) 
 percLossesCutting 'Процент потерь' = DATA DOUBLE (cutting) IN cutGroup;
 percSweepsCutting 'Процент зачисток' = DATA DOUBLE (cutting) IN cutGroup;
 
+//---------------------------- Рецепты блюд ----------------------------------------//
+CLASS recipe 'Рецепт' : named;
+CLASS recipeDetail 'Сырье рецепта';
 
+dishRecipe  'Блюдо (ИД)' = DATA dish (recipe) IN idGroup;
+nameDishRecipe 'Блюдо' = name(dishRecipe(recipe)) IN baseGroup;
+
+beginDateRecipe 'Используется с' = DATA DATE (recipe) IN baseGroup;
+isUsedRecipe 'Используется' = DATA BOOLEAN (recipe) IN baseGroup;
+numberRecipe 'Номер рецептуры (из сборника и пр.)' = DATA STRING[40] (recipe) IN baseGroup;
+notesRecipe 'Технология приготовления' = DATA STRING[100] (recipe) IN baseGroup;
+outWeightRecipe 'Количество выхода изделия' = DATA DOUBLE (recipe) IN baseGroup;
+
+recipeRecipeDetail 'Рецепт (ИД)' = DATA recipe(recipeDetail) IN baseGroup;
+componentRecipeDetail 'Компонент (ИД)' = DATA component(recipeDetail) IN idGroup;
+nameComponentRecipeDetail 'Компонент' = name(componentRecipeDetail(recipeDetail)) IN baseGroup;
+normQuantityRecipeDetail 'Норма закладки (брутто)' = DATA DOUBLE (recipeDetail) IN baseGroup;
+
+inRecipeRecipeDetail(recipe, recipeDetail) = recipeRecipeDetail(recipeDetail) == recipe;
+
+FORM recipe 'Рецепт блюда'
+OBJECTS r=recipe FIXED PANEL
+OBJECTS rd=recipeDetail
+PROPERTIES(r) nameDishRecipe, numberRecipe, beginDateRecipe, isUsedRecipe, notesRecipe, outWeightRecipe
+PROPERTIES(rd) nameComponentRecipeDetail, normQuantityRecipeDetail, ADDOBJ, delete
+FILTERS NOT NULL inRecipeRecipeDetail(r, rd)
+EDIT recipe OBJECT r;
+
+FORM recipes 'Рецепты блюд'
+OBJECTS r=recipe
+OBJECTS rd=recipeDetail
+PROPERTIES(r) READONLY nameDishRecipe, numberRecipe, isUsedRecipe
+PROPERTIES(r) ADDFORM, EDITFORM, delete
+PROPERTIES(rd) READONLY nameComponentRecipeDetail, normQuantityRecipeDetail
+FILTERS NOT NULL inRecipeRecipeDetail(r, rd);
 
 //---------------------------- Настройка навигатора ----------------------------------------//
 
@@ -849,7 +886,7 @@ NAVIGATOR {
         ADD colors;
         ADD tastes;
         ADD manufacturers;
-        ADD machinerys;
+        ADD recipes;
     }
 
     ADD documents 'Документы' TO formsToolbar {
@@ -882,6 +919,7 @@ NAVIGATOR {
             ADD manufacturer;
             ADD cash;
             ADD scales;
+            ADD recipe;
         }
     }
 }
