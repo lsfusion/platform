@@ -5095,7 +5095,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public ForesightAdviceFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption, true);
 
-            objProject = addSingleGroupObject(1, "project", project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, sidResultForesightCheckProject);
+            objProject = addSingleGroupObject(1, "project", project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, sidResultForesightCheckProject, langProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(sidResultForesightCheckProject, objProject)));
             setReadOnly(true);

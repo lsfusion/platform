@@ -197,7 +197,7 @@ public class EmailActionProperty extends ActionProperty {
 
             List<ClassPropertyInterface> listInterfaces = (List<ClassPropertyInterface>)interfaces;
 
-            String subject = (this.subject == null ? (String) context.getKeyValue(listInterfaces.get(listInterfaces.size() - 1)).getValue() : this.subject);
+            String subject = (this.subject == null ? (String) context.getKeyValue(listInterfaces.get(listInterfaces.size() - 1)).getValue() : this.subject).trim();
 
             String smtpHost = (String) BL.LM.smtpHost.read(context);
             String smtpPort = (String) BL.LM.smtpPort.read(context);
