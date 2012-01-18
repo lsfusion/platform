@@ -2074,6 +2074,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Map<Object, KeyExpr> keys = isNotification.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
+        query.properties.put("isDerivedChange", LM.isDerivedChangeNotification.getExpr(session.modifier, key));
         query.properties.put("subject", LM.subjectNotification.getExpr(session.modifier, key));
         query.properties.put("text", LM.textNotification.getExpr(session.modifier, key));
         query.properties.put("emailFrom", LM.emailFromNotification.getExpr(session.modifier, key));
@@ -2103,6 +2104,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             for (LP prop : listInNotificationProperty) {
                 Map<Object, Object> rowValue = rows.getValue();
+                boolean isDerivedChange = rowValue.get("isDerivedChange") == null ? false : true;
                 String subject = rowValue.get("subject") == null ? "" : rowValue.get("subject").toString().trim();
                 String text = rowValue.get("text") == null ? "" : rowValue.get("text").toString().trim();
                 String emailFrom = rowValue.get("emailFrom") == null ? "" : rowValue.get("emailFrom").toString().trim();
@@ -2115,7 +2117,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 params[0] = prop;
                 for (int i = 1; i <= prop.listInterfaces.size(); i++)
                     params[i] = i;
-                emailNotificationProperty.setDerivedForcedChange(LM.addCProp(ActionClass.instance, true), params);
+                if (isDerivedChange)
+                    emailNotificationProperty.setDerivedChange(LM.addCProp(ActionClass.instance, true), params);
+                else
+                    emailNotificationProperty.setDerivedForcedChange(LM.addCProp(ActionClass.instance, true), params);
             }
         }
     }

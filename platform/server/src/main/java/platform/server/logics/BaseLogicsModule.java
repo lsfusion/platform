@@ -278,13 +278,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP storedProperty;
     public LP captionProperty;
     public LP SIDToProperty;
-    LP emailFromNotification;
-    LP emailToNotification;
-    LP emailToCCNotification;
-    LP emailToBCNotification;
-    LP textNotification;
-    LP subjectNotification;
-    LP inNotificationProperty;
+    public LP isDerivedChangeNotification;
+    public LP emailFromNotification;
+    public LP emailToNotification;
+    public LP emailToCCNotification;
+    public LP emailToBCNotification;
+    public LP textNotification;
+    public LP subjectNotification;
+    public LP inNotificationProperty;
     public LP permitViewUserRoleProperty;
     public LP permitViewUserProperty;
     public LP forbidViewUserRoleProperty;
@@ -770,6 +771,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         captionProperty = addDProp(baseGroup, "captionProperty", getString("logics.property.caption"), propertyCaptionValueClass, property);
         SIDToProperty = addAGProp("SIDToProperty", getString("logics.property"), SIDProperty);
 
+        isDerivedChangeNotification = addDProp(baseGroup, "isDerivedChangeNotification", "При любом изменении", LogicalClass.instance, notification);
         emailFromNotification = addDProp(baseGroup, "emailFromNotification", "Адрес отправителя", StringClass.get(50), notification);
         emailToNotification = addDProp(baseGroup, "emailToNotification", "Адрес получателя", StringClass.get(50), notification);
         emailToCCNotification = addDProp(baseGroup, "emailToCCNotification", "Копия", StringClass.get(50), notification);
@@ -1806,7 +1808,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             objProperty = addSingleGroupObject(property, getString("logics.property.properties"));
 
             addPropertyDraw(inNotificationProperty, objNotification, objProperty);
-            addPropertyDraw(objNotification, subjectNotification, textNotification, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification);
+            addPropertyDraw(objNotification, subjectNotification, textNotification, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification, isDerivedChangeNotification);
             addObjectActions(this, objNotification);
             addPropertyDraw(objProperty, captionProperty, SIDProperty);
             setForceViewType(textNotification, ClassViewType.PANEL);
