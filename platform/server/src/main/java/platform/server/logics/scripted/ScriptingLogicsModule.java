@@ -695,12 +695,16 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private MenuNavigatorWindow createMenuWindow(String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+        Orientation orientation = options.getOrientation();
         DockPosition dp = options.getDockPosition();
         if (dp == null) {
             errLog.emitWindowPositionNotSpecified(parser, name);
         }
 
-        return new MenuNavigatorWindow(null, caption, dp.x, dp.y, dp.width, dp.height);
+        MenuNavigatorWindow window = new MenuNavigatorWindow(null, caption, dp.x, dp.y, dp.width, dp.height);
+        window.orientation = orientation.asMenuOrientation();
+        
+        return window;
     }
 
     private PanelNavigatorWindow createPanelWindow(String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {

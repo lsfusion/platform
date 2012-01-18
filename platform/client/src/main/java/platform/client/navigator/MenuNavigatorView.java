@@ -2,6 +2,7 @@ package platform.client.navigator;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Set;
@@ -12,7 +13,7 @@ public class MenuNavigatorView extends NavigatorView {
     ClientNavigatorElement selected;
 
     public MenuNavigatorView(ClientMenuNavigatorWindow iWindow, INavigatorController controller) {
-        super(iWindow, new JMenuBar(), controller);
+        super(iWindow, iWindow.orientation == SwingConstants.VERTICAL ? new VerticalMenuBar() : new JMenuBar(), controller);
         menuBar = (JMenuBar) getComponent();
         window = iWindow;
     }
@@ -91,5 +92,12 @@ public class MenuNavigatorView extends NavigatorView {
             controller.update();
             controller.openForm(getSelectedElement());
         }
+    }
+}
+
+class VerticalMenuBar extends JMenuBar {
+    private static final LayoutManager grid = new GridLayout(0,1);
+    public VerticalMenuBar() {
+        setLayout(grid);
     }
 }
