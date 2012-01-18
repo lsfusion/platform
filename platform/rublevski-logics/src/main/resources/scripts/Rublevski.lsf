@@ -244,11 +244,6 @@ OBJECTS e=employee FIXED PANEL
 PROPERTIES(e) name, nameDepartmentStoreEmployee
 EDIT employee OBJECT e;
 
-FORM employees 'Сотрудники'
-OBJECTS e=employee
-PROPERTIES(e) READONLY name, nameDepartmentStoreEmployee
-PROPERTIES(e) ADDFORM, EDITFORM, delete;
-
 // ----------------------------------- Торговая площадь -------------------------------------------------- //
 
 CLASS tradingSquare 'Торговая площадь' : named;
@@ -261,11 +256,6 @@ FORM tradingSquare 'Торговая площадь'
 OBJECTS s=tradingSquare FIXED PANEL
 PROPERTIES(s) name, squareTradingSquare, nameDepartmentStoreTradingSquare, dateTradingSquare
 EDIT tradingSquare OBJECT s;
-
-FORM tradingSquares 'Торговые площади'
-OBJECTS s=tradingSquare
-PROPERTIES(s) READONLY name, squareTradingSquare, nameDepartmentStoreTradingSquare, dateTradingSquare
-PROPERTIES(s) ADDFORM, EDITFORM, delete;
 
 // ------------------------------------- Скидки ---------------------------------------------------------- //
 
@@ -310,9 +300,12 @@ resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore 'Разрешить 
 resolveOrderItemDepartmentStore 'Разрешить заказ товара в подразделение?' = DATA BOOLEAN (departmentStore) IN storeGroup;
 marginPublicCateringDepartmentStore 'Наценка общепита по умолчанию для формирования цены в подразделении' = DATA DOUBLE (departmentStore) IN storeGroup;
 quantityCashChangeOneOperationAccountDepartmentStore ' Количество кассовых смен в одном оперативном отчете' = DATA INTEGER (departmentStore) IN storeGroup;
-materiallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' = DATA employee (departmentStore) IN storeGroup;
-bookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет' = DATA employee (departmentStore) IN storeGroup;
-personCheckReportDepartmentStore 'Кто проверяет товарный отчет' = DATA employee (departmentStore) IN storeGroup;
+materiallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (departmentStore) IN storeGroup;
+nameMateriallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' (departmentStore) = name(materiallyResponsiblePersonItemReportDepartmentStore(departmentStore));
+bookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (departmentStore) IN storeGroup;
+nameBookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет' (departmentStore) = name(bookkeeperItemReportDepartmentStore(departmentStore));
+personCheckReportDepartmentStore 'Кто проверяет товарный отчет (ИД)' = DATA employee (departmentStore) IN storeGroup;
+namePersonCheckReportDepartmentStore 'Кто проверяет товарный отчет' (departmentStore) = name(personCheckReportDepartmentStore(departmentStore));
 idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (departmentStore) = GROUP MAX tradingSquare BY departmentStoreTradingSquare(tradingSquare);   //максимизирует только по ID, переделать после расширения функционала
 defaultTradingSquareDepartmentStore 'Торговая площадь отдела магазина, кв.м.' (departmentStore) = squareTradingSquare(idTradingSquareDepartmentStore(departmentStore)) IN storeGroup;
 idResolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = GROUP MAX discount AS discount BY departmentStoreDiscount(discount);  //максимизирует только по ID, переделать после расширения функционала
@@ -320,27 +313,38 @@ resolveDiscountDepartmentStore 'Разрешать скидку в подраз�
 tradingSquareStore 'Торговая площадь магазина' = GROUP SUM defaultTradingSquareDepartmentStore(departmentStore) BY storeDepartmentStore(departmentStore) IN storeGroup;
 
 inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
+inTradingSquareStore(store, tradingSquare) = storeDepartmentStore(departmentStoreTradingSquare(tradingSquare)) == store;
 
 FORM departmentStore 'Отдел магазина'
 OBJECTS d=departmentStore FIXED PANEL
 PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
               resolveDiscountDepartmentStore, controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
               maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
-              marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, materiallyResponsiblePersonItemReportDepartmentStore,
-              bookkeeperItemReportDepartmentStore, personCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
+              marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, nameMateriallyResponsiblePersonItemReportDepartmentStore,
+              nameBookkeeperItemReportDepartmentStore, namePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
 EDIT departmentStore OBJECT d;
 
-FORM departmentStores 'Отделы магазина'
-OBJECTS d=departmentStore
-PROPERTIES(d) READONLY name, nameStoreDepartmentStore
-PROPERTIES(d) ADDFORM, EDITFORM, delete;
-
 FORM store 'Магазин'
-OBJECTS s=store FIXED PANEL, d=departmentStore
+OBJECTS s=store FIXED PANEL, d=departmentStore, t=tradingSquare
 PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore
-PROPERTIES(d) name, ADDFORM, EDITFORM, delete
+PROPERTIES(d) READONLY name
+PROPERTIES(d) ADDFORM, EDITFORM, delete
+PROPERTIES(t) READONLY nameDepartmentStoreTradingSquare, squareTradingSquare, dateTradingSquare
+PROPERTIES(t) ADDFORM, EDITFORM, delete
 FILTERS NOT NULL inStoreDepartment(s, d)
+FILTERS NOT NULL inTradingSquareStore(s, t)
 EDIT store OBJECT s;
+
+DESIGN store FROM DEFAULT {
+    main{
+       ADD prop.box BEFORE functions.box{
+            tabbedPane = TRUE;
+            ADD d.box;
+            ADD t.box;
+
+    }
+   }
+}
 
 FORM stores 'Магазины'
 OBJECTS s=store
@@ -354,20 +358,17 @@ PROPERTIES(n) name, ADDOBJ, delete
 FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
 EDIT storeType OBJECT s;
 
-FORM storeTypes 'Форматы магазинов'
-OBJECTS s=storeType
-PROPERTIES(s) READONLY name, nameTradingNetworkStoreType
-PROPERTIES(s) ADDFORM, EDITFORM, delete;
-
 FORM tradingNetwork 'Торговая сеть'
 OBJECTS n=tradingNetwork FIXED PANEL
 PROPERTIES(n) name
 EDIT tradingNetwork OBJECT n;
 
-FORM tradingNetworks 'Торговые сети'
-OBJECTS n= tradingNetwork
+FORM qualifier 'Классификатор магазинов'
+OBJECTS s=storeType, n=tradingNetwork
 PROPERTIES(n) READONLY name
-PROPERTIES(n) ADDFORM, EDITFORM, delete;
+PROPERTIES(n) ADDFORM, EDITFORM, delete
+PROPERTIES(s) READONLY name, nameTradingNetworkStoreType
+PROPERTIES(s) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
 
@@ -412,8 +413,10 @@ FILTERS NOT NULL inDepartmentStoreEmployeeRevaluationCommittee(c, e)
 PROPERTIES(e) ADDFORM, EDITFORM, delete
 EDIT revaluationCommittee OBJECT c;
 
-FORM revaluationCommittees 'Комиссии переоценки'
-OBJECTS c=revaluationCommittee
+FORM employeesCommittees 'Сотрудники и комиссии '
+OBJECTS e=employee, c=revaluationCommittee
+PROPERTIES(e) READONLY name, nameDepartmentStoreEmployee
+PROPERTIES(e) ADDFORM, EDITFORM, delete
 PROPERTIES(c) READONLY name, nameDepartmentStoreRevaluationCommittee, nameChairmanRevaluationCommittee
 PROPERTIES(c) ADDFORM, EDITFORM, delete;
 
@@ -927,14 +930,16 @@ NAVIGATOR {
         ADD unitsOfMeasure;
         ADD items;
         ADD barcodes;
-        ADD employees;
-        ADD tradingSquares;
+        //ADD employees;
+        //ADD tradingSquares;
         ADD discounts;
-        ADD departmentStores;
+        //ADD departmentStores;
         ADD stores;
-        ADD storeTypes;
-        ADD tradingNetworks;
-        ADD revaluationCommittees;
+        ADD qualifier;
+        ADD employeesCommittees;
+        //ADD storeTypes;
+        //ADD tradingNetworks;
+        //ADD revaluationCommittees;
         ADD banks;
         ADD ownerships;
         ADD suppliers;
