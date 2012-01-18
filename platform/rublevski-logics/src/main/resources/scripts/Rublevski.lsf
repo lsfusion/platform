@@ -321,19 +321,17 @@ CLASS ABSTRACT stock 'Склад' : named;
 
 // ----------------------------------- Магазин ----------------------------------------- //
 
-GROUP storeGroup : baseGroup;
-
 CLASS store 'Магазин' : named;
 CLASS tradingNetwork 'Торговая сеть' : named; // "Рублевский", "Базар"
 CLASS storeType 'Формат магазина' : named; //Мини, Супер, ...
 
-addressStore 'Адрес магазина' = DATA STRING[100] (store) IN storeGroup;
+addressStore 'Адрес магазина' = DATA STRING[100] (store);
 
-storeTypeStore 'Формат магазина (ИД)' = DATA storeType (store) IN idGroup;
-nameStoreTypeStore 'Формат магазина' (store) = name(storeTypeStore(store)) IN storeGroup;
+storeTypeStore 'Формат магазина (ИД)' = DATA storeType (store);
+nameStoreTypeStore 'Формат магазина' (store) = name(storeTypeStore(store)) IN baseGroup;
 
-tradingNetworkStoreType 'Торговая сеть формата магазина (ИД)' = DATA tradingNetwork (storeType) IN idGroup;
-nameTradingNetworkStoreType 'Торговая сеть формата магазина' (storeType) = name(tradingNetworkStoreType(storeType)) IN storeGroup;
+tradingNetworkStoreType 'Торговая сеть формата магазина (ИД)' = DATA tradingNetwork (storeType);
+nameTradingNetworkStoreType 'Торговая сеть формата магазина' (storeType) = name(tradingNetworkStoreType(storeType)) IN baseGroup;
 
 inStoreTypeTradingNetwork(storeType, tradingNetwork) = tradingNetworkStoreType(storeType) == tradingNetwork;
 
@@ -341,21 +339,26 @@ inStoreTypeTradingNetwork(storeType, tradingNetwork) = tradingNetworkStoreType(s
 
 CLASS ABSTRACT person 'Физическое лицо' : named;
 CLASS employee 'Сотрудник' : person;
-departmentStoreEmployee 'Отдел сотрудника (ИД)' = DATA departmentStore (employee) IN idGroup;
-nameDepartmentStoreEmployee 'Отдел сотрудника' (employee) = name(departmentStoreEmployee(employee)) IN storeGroup; //в далнейшем переделать с привязкой к дате приема на работу
+departmentStoreEmployee 'Отдел сотрудника (ИД)' = DATA departmentStore (employee);
+nameDepartmentStoreEmployee 'Отдел сотрудника' (employee) = name(departmentStoreEmployee(employee)) IN baseGroup; //в далнейшем переделать с привязкой к дате приема на работу
 
 FORM employee 'Сотрудник'
 OBJECTS e=employee FIXED PANEL
 PROPERTIES(e) name, nameDepartmentStoreEmployee
 EDIT employee OBJECT e;
 
+FORM employees 'Сотрудники'
+OBJECTS e=employee
+PROPERTIES(e) READONLY name, nameDepartmentStoreEmployee
+PROPERTIES(e) ADDFORM, EDITFORM, delete;
+
 // ----------------------------------- Торговая площадь -------------------------------------------------- //
 
 CLASS tradingSquare 'Торговая площадь' : named;
-squareTradingSquare 'Размер торговой площади' = DATA DOUBLE (tradingSquare) IN storeGroup;
-departmentStoreTradingSquare 'Отдел торговой площади (ИД)' = DATA departmentStore (tradingSquare) IN idGroup;
-nameDepartmentStoreTradingSquare 'Отдел торговой площади' (tradingSquare) = name(departmentStoreTradingSquare(tradingSquare)) IN storeGroup;
-dateTradingSquare 'Дата' = DATA DATE (tradingSquare) IN storeGroup;
+squareTradingSquare 'Размер торговой площади' = DATA DOUBLE (tradingSquare) IN baseGroup;
+departmentStoreTradingSquare 'Отдел торговой площади (ИД)' = DATA departmentStore (tradingSquare);
+nameDepartmentStoreTradingSquare 'Отдел торговой площади' (tradingSquare) = name(departmentStoreTradingSquare(tradingSquare)) IN baseGroup;
+dateTradingSquare 'Дата' = DATA DATE (tradingSquare) IN baseGroup;
 
 FORM tradingSquare 'Торговая площадь'
 OBJECTS s=tradingSquare FIXED PANEL
@@ -365,10 +368,10 @@ EDIT tradingSquare OBJECT s;
 // ------------------------------------- Скидки ---------------------------------------------------------- //
 
 CLASS discount 'Скидка' : named;
-dateDiscount 'Дата разрещения/запрещения скидок' = DATA DATE (discount) IN storeGroup;
-agreeDiscount 'Разрешать скидку?' = DATA BOOLEAN (discount) IN storeGroup;
-departmentStoreDiscount 'Отдел скидки (ИД)' = DATA departmentStore (discount) IN idGroup;
-nameDepartmentStoreDiscount (discount) = name(departmentStoreDiscount(discount)) IN storeGroup;
+dateDiscount 'Дата разрещения/запрещения скидок' = DATA DATE (discount) IN baseGroup;
+agreeDiscount 'Разрешать скидку?' = DATA BOOLEAN (discount) IN baseGroup;
+departmentStoreDiscount 'Отдел скидки (ИД)' = DATA departmentStore (discount);
+nameDepartmentStoreDiscount (discount) = name(departmentStoreDiscount(discount)) IN baseGroup;
 
 FORM discount 'Скидка'
 OBJECTS d=discount FIXED PANEL
@@ -391,70 +394,75 @@ CLASS restaurant 'Ресторан' : departmentStore;
 //CLASS stock 'Склад' : departmentStore; в дальнейшем будет распределительный центр
 CLASS manufactory 'Цех' : departmentStore;
 
-storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) IN idGroup;
-nameStoreDepartmentStore 'Магазин отдела' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN storeGroup;
-revaluationCommitteeDepartmentStore 'Комиссия отдела (ИД)' = DATA revaluationCommittee (departmentStore) IN idGroup;
-nameRevaluationCommitteeDepartmentStore 'Комиссия отдела' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore)) IN storeGroup;
-controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore) IN storeGroup;
-deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore) IN storeGroup;
-controlMinusRestsContainerDepartmentStore 'Контроль за минусовыми остатками тары' = DATA BOOLEAN (departmentStore) IN storeGroup;
-controlAssortmentProviderDepartmentStore 'Контролировать ассортимент поставщиков в подразделении?' = DATA BOOLEAN (departmentStore) IN storeGroup;
-verifyOrderArrivalDepartmentStore 'Сверять заказ и приход в подразделении?' = DATA BOOLEAN (departmentStore) IN storeGroup;
-maxQuantityDeliveryHourDepartmentStore 'Максимальное допустимое число поставок в час' = DATA INTEGER (departmentStore) IN storeGroup;
-resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore 'Разрешить превысить количество поставок/час при ассортименте <' = DATA DOUBLE (departmentStore) IN storeGroup;
-resolveOrderItemDepartmentStore 'Разрешить заказ товара в подразделение?' = DATA BOOLEAN (departmentStore) IN storeGroup;
-marginPublicCateringDepartmentStore 'Наценка общепита по умолчанию для формирования цены в подразделении' = DATA DOUBLE (departmentStore) IN storeGroup;
-quantityCashChangeOneOperationAccountDepartmentStore ' Количество кассовых смен в одном оперативном отчете' = DATA INTEGER (departmentStore) IN storeGroup;
-materiallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (departmentStore) IN storeGroup;
+storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore);
+nameStoreDepartmentStore 'Магазин отдела' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
+revaluationCommitteeDepartmentStore 'Комиссия отдела (ИД)' = DATA revaluationCommittee (departmentStore);
+nameRevaluationCommitteeDepartmentStore 'Комиссия отдела' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore));
+controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore);
+deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore);
+controlMinusRestsContainerDepartmentStore 'Контроль за минусовыми остатками тары' = DATA BOOLEAN (departmentStore);
+controlAssortmentProviderDepartmentStore 'Контролировать ассортимент поставщиков в подразделении?' = DATA BOOLEAN (departmentStore);
+verifyOrderArrivalDepartmentStore 'Сверять заказ и приход в подразделении?' = DATA BOOLEAN (departmentStore);
+maxQuantityDeliveryHourDepartmentStore 'Максимальное допустимое число поставок в час' = DATA INTEGER (departmentStore);
+resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore 'Разрешить превысить количество поставок/час при ассортименте <' = DATA DOUBLE (departmentStore);
+resolveOrderItemDepartmentStore 'Разрешить заказ товара в подразделение?' = DATA BOOLEAN (departmentStore);
+marginPublicCateringDepartmentStore 'Наценка общепита по умолчанию для формирования цены в подразделении' = DATA DOUBLE (departmentStore);
+quantityCashChangeOneOperationAccountDepartmentStore ' Количество кассовых смен в одном оперативном отчете' = DATA INTEGER (departmentStore);
+materiallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (departmentStore);
 nameMateriallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' (departmentStore) = name(materiallyResponsiblePersonItemReportDepartmentStore(departmentStore));
-bookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (departmentStore) IN storeGroup;
+bookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (departmentStore);
 nameBookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет' (departmentStore) = name(bookkeeperItemReportDepartmentStore(departmentStore));
-personCheckReportDepartmentStore 'Кто проверяет товарный отчет (ИД)' = DATA employee (departmentStore) IN storeGroup;
+personCheckReportDepartmentStore 'Кто проверяет товарный отчет (ИД)' = DATA employee (departmentStore);
 namePersonCheckReportDepartmentStore 'Кто проверяет товарный отчет' (departmentStore) = name(personCheckReportDepartmentStore(departmentStore));
 idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (departmentStore) = GROUP MAX tradingSquare BY departmentStoreTradingSquare(tradingSquare);   //максимизирует только по ID, переделать после расширения функционала
-defaultTradingSquareDepartmentStore 'Торговая площадь отдела магазина, кв.м.' (departmentStore) = squareTradingSquare(idTradingSquareDepartmentStore(departmentStore)) IN storeGroup;
+defaultTradingSquareDepartmentStore 'Торговая площадь отдела магазина, кв.м.' (departmentStore) = squareTradingSquare(idTradingSquareDepartmentStore(departmentStore));
 idResolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = GROUP MAX discount AS discount BY departmentStoreDiscount(discount);  //максимизирует только по ID, переделать после расширения функционала
-resolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = agreeDiscount(idResolveDiscountDepartmentStore(discount)) IN storeGroup;
-tradingSquareStore 'Торговая площадь магазина' = GROUP SUM defaultTradingSquareDepartmentStore(departmentStore) BY storeDepartmentStore(departmentStore) IN storeGroup;
+resolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = agreeDiscount(idResolveDiscountDepartmentStore(discount));
+tradingSquareStore 'Торговая площадь магазина' = GROUP SUM defaultTradingSquareDepartmentStore(departmentStore) BY storeDepartmentStore(departmentStore);
 
 inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
-inTradingSquareStore(store, tradingSquare) = storeDepartmentStore(departmentStoreTradingSquare(tradingSquare)) == store;
+inTradingSquareDepartmentStore(departmentStore, tradingSquare) = departmentStoreTradingSquare(tradingSquare) == departmentStore;
+inEmployeeDepartmentStore(departmentStore, employee) = departmentStoreEmployee(employee) == departmentStore;
 
 FORM departmentStore 'Отдел магазина'
-OBJECTS d=departmentStore FIXED PANEL
+OBJECTS d=departmentStore FIXED PANEL, t=tradingSquare, e=employee
 PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
               resolveDiscountDepartmentStore, controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
               maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
               marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, nameMateriallyResponsiblePersonItemReportDepartmentStore,
               nameBookkeeperItemReportDepartmentStore, namePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
+PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
+PROPERTIES(t) ADDFORM, EDITFORM, delete
+PROPERTIES(e) READONLY name
+PROPERTIES(e) ADDFORM, EDITFORM, delete
+FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
+FILTERS NOT NULL inEmployeeDepartmentStore(d, e)
 EDIT departmentStore OBJECT d;
 
-FORM store 'Магазин'
-OBJECTS s=store FIXED PANEL, d=departmentStore, t=tradingSquare
-PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore
-PROPERTIES(d) READONLY name
-PROPERTIES(d) ADDFORM, EDITFORM, delete
-PROPERTIES(t) READONLY nameDepartmentStoreTradingSquare, squareTradingSquare, dateTradingSquare
-PROPERTIES(t) ADDFORM, EDITFORM, delete
-FILTERS NOT NULL inStoreDepartment(s, d)
-FILTERS NOT NULL inTradingSquareStore(s, t)
-EDIT store OBJECT s;
-
-DESIGN store FROM DEFAULT {
+DESIGN departmentStore FROM DEFAULT {
     main{
        ADD prop.box BEFORE functions.box{
             tabbedPane = TRUE;
-            ADD d.box;
+            ADD e.box;
             ADD t.box;
-
     }
    }
 }
 
+FORM store 'Магазин'
+OBJECTS s=store FIXED PANEL, d=departmentStore, t=tradingSquare
+PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore
+PROPERTIES(d) READONLY name, defaultTradingSquareDepartmentStore
+PROPERTIES(d) ADDFORM, EDITFORM, delete
+FILTERS NOT NULL inStoreDepartment(s, d)
+EDIT store OBJECT s;
+
 FORM stores 'Магазины'
-OBJECTS s=store
+OBJECTS s=store, d=departmentStore
 PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore
-PROPERTIES(s) ADDFORM, EDITFORM, delete;
+PROPERTIES(s) ADDFORM, EDITFORM, delete
+PROPERTIES(d) READONLY name
+FILTERS NOT NULL inStoreDepartment(s, d);
 
 FORM storeType 'Формат магазина'
 OBJECTS s=storeType FIXED PANEL, n=tradingNetwork
@@ -469,7 +477,7 @@ PROPERTIES(n) name
 EDIT tradingNetwork OBJECT n;
 
 FORM qualifier 'Классификатор магазинов'
-OBJECTS s=storeType, n=tradingNetwork
+OBJECTS n=tradingNetwork, s=storeType
 PROPERTIES(n) READONLY name
 PROPERTIES(n) ADDFORM, EDITFORM, delete
 PROPERTIES(s) READONLY name, nameTradingNetworkStoreType
@@ -479,7 +487,7 @@ PROPERTIES(s) ADDFORM, EDITFORM, delete;
 
 CLASS assortment 'Ассортимент' : named;
 itemAssortment 'Товар ассортимента' = DATA BOOLEAN (assortment, item);
-infoAssortment 'Описание' = DATA STRING[100] (assortment) IN storeGroup;
+infoAssortment 'Описание' = DATA STRING[100] (assortment) IN baseGroup;
 
 FORM assortment 'Ассортимент'
 OBJECTS a=assortment FIXED PANEL, i=item
@@ -490,24 +498,26 @@ PROPERTIES(i) ADDFORM, EDITFORM, delete
 EDIT assortment OBJECT a;
 
 FORM assortments 'Ассортименты'
-OBJECTS a=assortment
+OBJECTS a=assortment, i=item
 PROPERTIES(a) READONLY name, infoAssortment
-PROPERTIES(a) ADDFORM, EDITFORM, delete;
+PROPERTIES(a) ADDFORM, EDITFORM, delete
+PROPERTIES(i) READONLY name
+FILTERS NOT NULL itemAssortment(a, i);
 
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
 
 CLASS ABSTRACT committee 'Комиссия' : named;
 CLASS revaluationCommittee 'Комиссия переоценки' : committee;
 
-chairmanRevaluationCommittee 'Председатель комиссии (ИД)' = DATA employee (revaluationCommittee) IN idGroup;
-nameChairmanRevaluationCommittee 'Председатель комиссии' (revaluationCommittee) = name(chairmanRevaluationCommittee(revaluationCommittee)) IN storeGroup;
-departmentStoreRevaluationCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (revaluationCommittee) IN idGroup;
-nameDepartmentStoreRevaluationCommittee 'Отдел комиссии' (revaluationCommittee) = name(departmentStoreRevaluationCommittee(revaluationCommittee)) IN storeGroup;
+chairmanRevaluationCommittee 'Председатель комиссии (ИД)' = DATA employee (revaluationCommittee);
+nameChairmanRevaluationCommittee 'Председатель комиссии' (revaluationCommittee) = name(chairmanRevaluationCommittee(revaluationCommittee)) IN baseGroup;
+departmentStoreRevaluationCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (revaluationCommittee);
+nameDepartmentStoreRevaluationCommittee 'Отдел комиссии' (revaluationCommittee) = name(departmentStoreRevaluationCommittee(revaluationCommittee)) IN baseGroup;
 CONSTRAINT CHECKED departmentStoreEmployee(chairmanRevaluationCommittee(revaluationCommittee))!=departmentStoreRevaluationCommittee(revaluationCommittee) MSG 'Отдел комиссии должен соответствовать отделу председателя комиссии';
 CONSTRAINT CHECKED departmentStoreRevaluationCommittee(revaluationCommitteeDepartmentStore(departmentStore))!=departmentStore MSG 'Отдел комиссии должен соответствовать текущему отделу';
 
 inDepartmentStoreEmployeeRevaluationCommittee (revaluationCommittee, employee) = departmentStoreRevaluationCommittee(revaluationCommittee)==departmentStoreEmployee(employee);
-inCommitteeDepartmentStore 'Является членом комиссии' (revaluationCommittee, employee) = DATA BOOLEAN (revaluationCommittee, employee) IN storeGroup;
+inCommitteeDepartmentStore 'Является членом комиссии' (revaluationCommittee, employee) = DATA BOOLEAN (revaluationCommittee, employee);
 
 FORM revaluationCommittee 'Комиссия переоценки'
 OBJECTS c=revaluationCommittee FIXED PANEL, e=employee
@@ -519,11 +529,11 @@ PROPERTIES(e) ADDFORM, EDITFORM, delete
 EDIT revaluationCommittee OBJECT c;
 
 FORM employeesCommittees 'Сотрудники и комиссии '
-OBJECTS e=employee, c=revaluationCommittee
-PROPERTIES(e) READONLY name, nameDepartmentStoreEmployee
-PROPERTIES(e) ADDFORM, EDITFORM, delete
+OBJECTS c=revaluationCommittee, e=employee
 PROPERTIES(c) READONLY name, nameDepartmentStoreRevaluationCommittee, nameChairmanRevaluationCommittee
-PROPERTIES(c) ADDFORM, EDITFORM, delete;
+PROPERTIES(c) ADDFORM, EDITFORM, delete
+PROPERTIES(e) READONLY name, nameDepartmentStoreEmployee
+FILTERS NOT NULL inCommitteeDepartmentStore(c, e);
 
 // ----------------------------------- Банк ------------------------------------------- //
 
@@ -1034,16 +1044,11 @@ NAVIGATOR {
         ADD itemGroups;
         ADD unitsOfMeasure;
         ADD items;
-        //ADD employees;
-        //ADD tradingSquares;
         ADD discounts;
-        //ADD departmentStores;
         ADD stores;
+        ADD employees;
         ADD qualifier;
         ADD employeesCommittees;
-        //ADD storeTypes;
-        //ADD tradingNetworks;
-        //ADD revaluationCommittees;
         ADD banks;
         ADD ownerships;
         ADD suppliers;
