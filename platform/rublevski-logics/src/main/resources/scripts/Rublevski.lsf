@@ -76,7 +76,6 @@ CLASS ABSTRACT sku 'SKU' : named;
 CLASS item 'Товар' : sku;
 CLASS dish 'Блюдо' : sku;
 CLASS component 'Компонент' : sku;
-
 CLASS brand 'Бренд' : named;
 
 brandItem = DATA brand(item);
@@ -648,7 +647,8 @@ PROPERTIES(co) nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, name, fu
 PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
 PROPERTIES(c) dataContract, nameSupplierContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, noteContract, ADDOBJ, delete
 FILTERS NOT NULL inCompanyContract(co, c),
-        NOT NULL inCompanyAccount(co, a);
+        NOT NULL inCompanyAccount(co, a)
+EDIT company OBJECT c;
 
 FORM companies 'Компании'
 OBJECTS co=company
@@ -670,7 +670,7 @@ PROPERTIES(d, s, i)  itemAssortmentSupplier;
 
 //---------------------------- по поставщикам и товарам ----------------------------------------
 
-//---------------------------- Модели внешних устройств ----------------------------------------//
+//---------------------------- Модели оборудования ----------------------------------------//
 CLASS ABSTRACT model 'Модель' : named;
 CLASS cashModel 'Модель касс' : model;
 CLASS scalesModel 'Модель весов' : model;
@@ -745,9 +745,9 @@ transferGroupScales 'Передать товар на группу весов' =
 sidSectionGroupScales 'Код отдела в Set Retail' = DATA INTEGER (groupScales) IN baseGroup;
 directoryGroupScales 'Директория сервера Set Retail' = DATA STRING[200] (groupScales) IN baseGroup;
 
-InDepartmentStoreGroupMachinery 'Вкл.' = DATA BOOLEAN (departmentStore, groupMachinery) IN baseGroup;
+InDepartmentStoreGroupMachinery 'Подразделения, из которых возможна правка групп оборудования' = DATA BOOLEAN (departmentStore, groupMachinery) IN baseGroup;
 
-//---------------------------- типы оборудования оборудования ----------------------------------------//
+//---------------------------- типы оборудования  ----------------------------------------//
 CLASS ABSTRACT machinery 'Оборудование';
 CLASS cash 'Кассы' : machinery;
 CLASS scales 'Весы' : machinery;
@@ -772,7 +772,7 @@ dateCash 'Дата фискализации кассового аппарата'
 nppCash 'Порядковый номер кассы в торговом объекте ' = DATA INTEGER (cash) IN baseGroup;
 
 
-CLASS STATIC feature 'Свойства для оборудования'
+CLASS STATIC feature 'Свойство для оборудования'
 {
     no 'HET,(пример: для годен это значит - печатаем в поле этикетки "Годен до")',
     yes 'ДА для ВСЕХ товаров поместить в состав',
@@ -813,9 +813,10 @@ EDIT scales OBJECT s;
 
  //---------------------------- Карты проработки (разруба) ----------------------------------------//
 GROUP cutGroup 'Разделка' : baseGroup;
-CLASS cutting 'Карта разруба' : named;
+CLASS cutting 'Карта пророботки (разделки)' : named;
+CLASS detailCutting 'Компоненты';
 
-sidCutting 'Номер корты (из сборника и прочее)' = DATA INTEGER (cutting) IN cutGroup;
+sidCutting 'Номер карты (из сборника и прочее)' = DATA INTEGER (cutting) IN cutGroup;
 dateCutting 'Дата создания' = DATA DATE (cutting) IN cutGroup;
 useCutting 'Используется' = DATA BOOLEAN (cutting) IN cutGroup;
 //             номер из сборника.....
@@ -823,6 +824,51 @@ descriptionCutting 'Описание' = DATA STRING[200] (cutting) IN cutGroup;
 percAllowancesCutting 'Процент надбавок' = DATA DOUBLE (cutting) IN cutGroup;
 percLossesCutting 'Процент потерь' = DATA DOUBLE (cutting) IN cutGroup;
 percSweepsCutting 'Процент зачисток' = DATA DOUBLE (cutting) IN cutGroup;
+InDepartmentStoreCutting 'В каких подразделениях разрешено использовать карту' = DATA BOOLEAN (departmentStore, cutting) IN baseGroup;
+
+cuttingDetailCutting 'Строка ИД' = DATA cutting (detailCutting) IN idGroup;
+sidCuttingDetailCutting 'Номер карты' (detailCutting) =  sidCutting(cuttingDetailCutting(detailCutting)) IN cutGroup;
+itemDetailCutting 'Товар ИД' = DATA item (detailCutting) IN idGroup;
+shortNameUnitOfMeasureItemDetailCutting 'Ед.изм.' (detailCutting) = shortNameUnitOfMeasureItem(itemDetailCutting(detailCutting)) IN cutGroup;
+nameItemDetailCutting 'Наименование товара' (detailCutting) = name(itemDetailCutting(detailCutting)) IN cutGroup;
+factorDetailCutting 'Рассчетный коэффициент цены' = DATA DOUBLE (detailCutting) IN cutGroup;
+percGoodsDetailCutting '% выхода товара' = DATA DOUBLE (detailCutting) IN cutGroup;
+
+isCuttingDetailCutting(cutting, detailCutting) = cuttingDetailCutting(detailCutting) == cutting;
+// todo : надо сделать свойство на уникальность товара в карте разруба
+
+FORM cutting 'Карта проработки'
+OBJECTS c=cutting FIXED PANEL
+OBJECTS d=detailCutting, dep=departmentStore
+PROPERTIES(c) sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting, percSweepsCutting
+PROPERTIES(d) nameItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting, ADDOBJ, delete
+PROPERTIES(dep)   nameStoreDepartmentStore, name
+PROPERTIES(dep, c)  InDepartmentStoreCutting
+FILTERS NOT NULL isCuttingDetailCutting(c, d)
+EDIT cutting OBJECT c;
+
+FORM cuttings 'Карты проработки'
+OBJECTS c=cutting, d=detailCutting, dep=departmentStore
+PROPERTIES(c)      READONLY sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting, percSweepsCutting
+PROPERTIES(c)      ADDFORM, EDITFORM, delete
+PROPERTIES(d)      READONLY nameItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting
+PROPERTIES(dep)    READONLY nameStoreDepartmentStore, name
+PROPERTIES(dep, c) READONLY InDepartmentStoreCutting
+FILTERS NOT NULL   isCuttingDetailCutting(c, d),
+        NOT NULL   InDepartmentStoreCutting(dep, c)
+ORDER BY           nameStoreDepartmentStore, sidCutting, nameItemDetailCutting;
+
+
+
+DESIGN cutting FROM DEFAULT {
+    main{
+       ADD kalina.box BEFORE functions.box{
+            tabbedPane = TRUE;
+            ADD d.box;
+            ADD dep.box;
+       }
+   }
+}
 
 //---------------------------- Рецепты блюд ----------------------------------------//
 CLASS recipe 'Рецепт' : named;
@@ -860,6 +906,9 @@ PROPERTIES(r) ADDFORM, EDITFORM, delete
 PROPERTIES(rd) READONLY nameComponentRecipeDetail, normQuantityRecipeDetail
 FILTERS NOT NULL inRecipeRecipeDetail(r, rd);
 
+
+
+
 //---------------------------- Настройка навигатора ----------------------------------------//
 
 WINDOW TOOLBAR topToolbar 'Папки' VERTICAL HIDETITLE HIDESCROLLBARS POSITION(0, 0, 20, 5);
@@ -891,13 +940,12 @@ NAVIGATOR {
         ADD suppliers;
         ADD companies;
         ADD models;
-//        ADD cashModels;
-//        ADD scalesModels;
-//        ADD checkModels;
         ADD assortments;
         ADD colors;
         ADD tastes;
         ADD manufacturers;
+        ADD machinerys;
+        ADD cuttings;
         ADD recipes;
     }
 
@@ -931,6 +979,7 @@ NAVIGATOR {
             ADD manufacturer;
             ADD cash;
             ADD scales;
+            ADD cutting;
             ADD recipe;
         }
     }
