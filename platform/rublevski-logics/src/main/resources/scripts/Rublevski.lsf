@@ -58,7 +58,6 @@ PROPERTIES(c) READONLY name
 PROPERTIES(c) ADDFORM, EDITFORM, delete;
 
 // ------------------------------------ Вкусы ------------------------------------------------------ //
-
 CLASS taste 'Вкус' : named;
 
 FORM taste 'Вкус'
@@ -71,7 +70,6 @@ PROPERTIES(t) READONLY name
 PROPERTIES(t) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Производители ---------------------------------- //
-
 CLASS manufacturer 'Производитель' : named;
 
 FORM manufacturer 'Производитель'
@@ -83,7 +81,60 @@ OBJECTS m=manufacturer
 PROPERTIES(m) READONLY name
 PROPERTIES(m) ADDFORM, EDITFORM, delete;
 
+//------------------------------------ Сорта-категории --------------------------------- //
+CLASS sort 'Сорт/Категория' : named;
+
+FORM sort 'Сорт/Категория'
+OBJECTS s=sort FIXED PANEL
+PROPERTIES(s) name;
+
+FORM sortes 'Сорта/Категории'
+OBJECTS s=sort
+PROPERTIES(s) READONLY name
+PROPERTIES(s) ADDFORM, EDITFORM, delete;
+
+//------------------------------------ Упаковки ----------------------------------------//
+CLASS pack 'Упаковка' : doubleNamed;
+
+FORM pack 'Упаковка'
+OBJECTS p=pack FIXED PANEL
+PROPERTIES(p) name, shortName;
+
+FORM packs 'Упаковки'
+OBJECTS p=pack
+PROPERTIES(p) READONLY name, shortName
+PROPERTIES(p) ADDFORM, EDITFORM, delete;
+
+//------------------------------------ Особенности изготовления ------------------------//
+CLASS specialty 'Особенность' : doubleNamed;
+
+FORM specialty 'Особенность'
+OBJECTS s=specialty FIXED PANEL
+PROPERTIES(s) name, shortName;
+
+FORM specialties 'Особенности'
+OBJECTS  s=specialty
+PROPERTIES(s) READONLY name, shortName
+PROPERTIES(s) ADDFORM, EDITFORM, delete;
+
+//------------------------------------ Размеры/Калибры/Габариты ------------------------//
+CLASS size 'Размер/калибр' : doubleNamed;
+
+FORM size 'Размер/калибр'
+OBJECTS s=size FIXED PANEL
+PROPERTIES(s) name, shortName;
+
+FORM sizes 'Размеры/калибры'
+OBJECTS s=size
+PROPERTIES(s) READONLY name, shortName
+PROPERTIES(s) ADDFORM, EDITFORM, delete;
+
 // ----------------------------------- Товар ------------------------------------------ //
+GROUP descriptionGroup 'Общее описание' : baseGroup;
+GROUP sizeGroup 'Физические характиристики' : baseGroup;
+GROUP substanceGroup 'Пищевые характеристики' : baseGroup;
+GROUP retailGroup 'Ценовые характеристики' : baseGroup;
+
 CLASS ABSTRACT sku 'SKU' : named;
 CLASS item 'Товар' : sku;
 CLASS dish 'Блюдо' : sku;
@@ -91,50 +142,96 @@ CLASS component 'Компонент' : sku;
 CLASS brand 'Бренд' : named;
 
 brandItem = DATA brand(item);
-nameBrandItem 'Брэнд' (item) = name(brandItem(item));
+nameBrandItem 'Бренд' (item) = name(brandItem(item)) IN descriptionGroup;
 
 unitOfMeasureItem = DATA unitOfMeasure (item) IN idGroup;
-shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortName(unitOfMeasureItem(item)) IN baseGroup;
+shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortName(unitOfMeasureItem(item)) IN descriptionGroup;
 
-isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN baseGroup;
-volumeItem 'Объём' = DATA DOUBLE (item) IN baseGroup;
-netWeightItem 'Вес нетто' = DATA DOUBLE (item) IN baseGroup;
+isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN descriptionGroup;
+volumeItem 'Объём' = DATA DOUBLE (item) IN sizeGroup;
+netWeightItem 'Вес нетто' = DATA DOUBLE (item) IN sizeGroup;
+isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN descriptionGroup;
+
+sortItem = DATA sort(item) IN idGroup;
+nameSortItem 'Сорт/категория товара' = name(sortItem(item)) IN descriptionGroup;
+
+packItem = DATA pack(item) IN idGroup;
+shortNamePackItem 'Упаковка' = shortName(packItem(item)) IN descriptionGroup;
+
+specialtyItem = DATA specialty(item) IN idGroup;
+shortNameSpecialtyItem 'Особенности' = shortName(specialtyItem(item)) IN descriptionGroup;
+
+sizeItem = DATA size(item) IN idGroup;
+shortNameSizeItem 'Размер/калибр' = shortName(sizeItem(item)) IN descriptionGroup;
 
 colorItem = DATA color (item) IN idGroup;
-nameColorItem 'Цвет' = name(colorItem(item)) IN baseGroup;
+nameColorItem 'Цвет' = name(colorItem(item)) IN descriptionGroup;
 tasteItem = DATA taste (item) IN idGroup;
-nameTasteItem 'Вкус' = name(tasteItem(item)) IN baseGroup;
+nameTasteItem 'Вкус' = name(tasteItem(item)) IN descriptionGroup;
 
-percentFatItem '% жирности' =  DATA DOUBLE (item) IN baseGroup;
-percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN baseGroup;
+percentFatItem '% жирности' =  DATA DOUBLE (item) IN descriptionGroup;
+percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN descriptionGroup;
 
-lengthItem 'Длина товара' = DATA INTEGER (item) IN baseGroup;
-widthItem 'Ширина товара' = DATA INTEGER (item) IN baseGroup;
-heightItem 'Высота товара' = DATA INTEGER (item) IN baseGroup;
-grossWeightItem 'Вес брутто товара' = DATA DOUBLE (item) IN baseGroup;
+lengthItem 'Длина товара' = DATA INTEGER (item) IN sizeGroup;
+widthItem 'Ширина товара' = DATA INTEGER (item) IN sizeGroup;
+heightItem 'Высота товара' = DATA INTEGER (item) IN sizeGroup;
+grossWeightItem 'Вес брутто товара' = DATA DOUBLE (item) IN sizeGroup;
+lengthPackItem 'Длина упаковки' = DATA INTEGER (item) IN sizeGroup;
+widthPackItem 'Ширина упаковки' = DATA INTEGER (item) IN sizeGroup;
+heightPackItem 'Высота упаковки' = DATA DOUBLE (item) IN sizeGroup;
+grossWeightPackItem 'Вес брутто упаковки' = DATA DOUBLE (item) IN sizeGroup;
 
-lengthPackItem 'Длина упаковки' = DATA INTEGER (item) IN baseGroup;
-widthPackItem 'Ширина упаковки' = DATA INTEGER (item) IN baseGroup;
-heightPackItem 'Высота упаковки' = DATA INTEGER (item) IN baseGroup;
-grossWeightPackItem 'Вес брутто упаковки' = DATA DOUBLE (item) IN baseGroup;
+hallmarkItem 'Отличительный признак (особенности)' = DATA STRING[100] (item) IN descriptionGroup;
 
-articleItem 'Артикул поставщика/производителя' = DATA STRING[50] (item)IN baseGroup;
-manufacturerItem = DATA manufacturer (item) IN idGroup;
-nameManufacturerItem 'Производитель' = name(manufacturerItem(item)) IN baseGroup;
+articleItem 'Артикул поставщика/производителя' = DATA STRING[100] (item) IN descriptionGroup;
+
+quantityPackItem 'Количество в грузовом месте' = DATA DOUBLE (item) IN descriptionGroup;
+
+minResourceItem 'Минимальный запас' = DATA INTEGER (item) IN retailGroup;
+minReserveItem 'Минимальный резерв' = DATA INTEGER (item) IN retailGroup;
+
+compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA STRING[400] (item)IN descriptionGroup;
+compositionMenuItem 'Состав изделия для печати в меню' = DATA STRING[400] (item)IN descriptionGroup;
+
+//manufacturerItem = DATA manufacturer (item) IN idGroup;
+//nameManufacturerItem 'Производитель' = name(manufacturerItem(item)) IN baseGroup;
 countryItem = DATA country (item) IN idGroup;
-nameCountryItem 'Страна' = name(countryItem(item)) IN baseGroup;
+nameCountryItem 'Страна' = name(countryItem(item)) IN descriptionGroup;
 
-minResourceItem 'Минимальный запас' = DATA INTEGER (item) IN baseGroup;
-minReserveItem 'Минимальный резерв' = DATA INTEGER (item) IN baseGroup;
+bonusReturnItem 'Уценка (бонус) по товару при возврате поставщику' = DATA DOUBLE (item) IN retailGroup;
+nameReturnItem 'Наименование для уценки, бонуса по товару в возврат' = DATA STRING[200] (item)IN retailGroup;
 
-isFixPriceItem 'Товар с фиксированной ценой' = DATA BOOLEAN (item) IN baseGroup;
+isFixPriceItem 'Товар с фиксированной ценой' = DATA BOOLEAN (item) IN retailGroup;
+isManufacteredItem 'Товар производится' = DATA BOOLEAN (item) IN descriptionGroup;
 
-isManufacteredItem 'Товар производится' = DATA BOOLEAN (item) IN baseGroup;
+controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN descriptionGroup;
+daysExpiryItem 'Срок годности в днях' = DATA DOUBLE (item) IN descriptionGroup;
 
-energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN baseGroup;
-fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN baseGroup;
-carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN baseGroup;
-proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN baseGroup;
+isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN descriptionGroup;
+hintItem 'Подсказка по товару' = DATA STRING[200] (item)IN descriptionGroup;
+
+minTradeAllowance 'MIN допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
+maxTradeAllowance 'MAX допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
+minAllowedRetailPrice 'MIN допустимая розн.цена' = DATA INTEGER (item) IN retailGroup;
+
+nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item)IN substanceGroup;
+energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN substanceGroup;
+fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
+carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
+proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
+
+isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGroup;
+
+daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA DOUBLE (item) IN descriptionGroup;
+hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN descriptionGroup;
+
+isCutedItem 'Товар разрубается/прорабатывается' = DATA BOOLEAN (item) IN descriptionGroup;
+isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN descriptionGroup;
+
+passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN descriptionGroup;
+
+bonusItem 'Бонус получаемый по товару' = DATA DOUBLE (item) IN retailGroup;
+percentWholesaleMarkItem '% оптовой надбавки' = DATA DOUBLE (item) IN retailGroup;
 
 // ----------------------------------- Атрибуты ------------------------------------------ //
 
@@ -174,13 +271,6 @@ OBJECTS i=item FIXED PANEL, a=itemAttribute
 PROPERTIES(i) name, shortNameUnitOfMeasureItem, nameBrandItem
 PROPERTIES name(a), valueItemAttribute(i, a);
 
-//FORM items 'Товары'
-//OBJECTS i=item
-//PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem, isWeightItem, volumeItem, netWeightItem, nameColorItem, nameTasteItem,
-// percentFatItem, percentAlcoholItem, lengthItem
-//PROPERTIES(i) ADDFORM, EDITFORM, delete;
-
-
 // ----------------------------------- Штрих код ------------------------------------------ //
 GROUP barcodeGroup : baseGroup;
 
@@ -188,6 +278,8 @@ CLASS barcode 'Штрих код' : barcodeObject;
 
 skuBarcode = DATA sku (barcode) IN idGroup;
 nameSkuBarcode = name(skuBarcode(barcode)) IN baseGroup;
+
+inBarcodeSku 'Вхождение в товар' (barcode, sku) = skuBarcode(barcode) == sku;
 
 titleScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode) IN barcodeGroup;
 titleCashBarcode 'Наименование для касс' = DATA STRING[100] (barcode) IN barcodeGroup;
@@ -210,17 +302,18 @@ FORM barcode 'Штрих-код'
 OBJECTS b=barcode
 PROPERTIES(b) barcode, nameSkuBarcode;
 
-FORM barcodes 'Штрих-кода'
-OBJECTS b=barcode
-PROPERTIES(b) READONLY barcode, nameSkuBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
-PROPERTIES(b) ADDFORM, EDITFORM, delete;
 
 FORM items 'Товары'
 OBJECTS i=item
+OBJECTS b=barcode
 PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem, isWeightItem, volumeItem, netWeightItem, nameColorItem, nameTasteItem,
- percentFatItem, percentAlcoholItem, lengthItem, nameManufacturerItem, nameCountryItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, barcodeUserBarcodeSku, barcodeBarcodeSku
-PROPERTIES(i) ADDFORM, EDITFORM, delete;
-
+ percentFatItem, percentAlcoholItem, lengthItem, nameCountryItem, nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem,
+ isContainGMOItem, daysExpiryPackItem, hoursExpiryPackItem, isCutedItem, isLoafCutItem, passScalesItem, bonusItem, percentWholesaleMarkItem,
+ minTradeAllowance, maxTradeAllowance, minAllowedRetailPrice, barcodeBarcodeSku
+PROPERTIES(i) ADDFORM, EDITFORM, delete
+PROPERTIES(b) READONLY barcode, nameSkuBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
+FILTERS NOT NULL inBarcodeSku(b, i)
+PROPERTIES(b) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Склад ------------------------------------------ //
 
@@ -941,7 +1034,6 @@ NAVIGATOR {
         ADD itemGroups;
         ADD unitsOfMeasure;
         ADD items;
-        ADD barcodes;
         //ADD employees;
         //ADD tradingSquares;
         ADD discounts;
