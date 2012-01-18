@@ -622,6 +622,18 @@ FILTERS NOT NULL inSupplierContract(s, c),
         NOT NULL inSupplierLicense(s, l)
 EDIT supplier OBJECT s;
 
+DESIGN supplier FROM DEFAULT {
+    main{
+       ADD prop.box BEFORE functions.box{
+            tabbedPane = TRUE;
+            ADD a.box;
+            ADD c.box;
+            ADD l.box;
+
+    }
+   }
+}
+
 FORM suppliers 'Поставщики'
 OBJECTS s=supplier
 PROPERTIES(s) READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, lawLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity
