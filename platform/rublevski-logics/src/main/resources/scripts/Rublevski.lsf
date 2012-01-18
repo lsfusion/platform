@@ -24,13 +24,25 @@ PROPERTIES(g) ADDFORM, EDITFORM, delete;
 // ----------------------------------- Единицы измерения ------------------------------------------ //
 CLASS unitOfMeasure 'Единица измерения' : doubleNamed;
 
+unitOfMeasureUnitOfMeasure 'Базовая ед.изм. ИД' = DATA unitOfMeasure(unitOfMeasure) IN idGroup;
+shortNameUnitOfMeasureUnitOfMeasure 'Базовая ед.изм.' (unitOfMeasure) = shortName(unitOfMeasureUnitOfMeasure(unitOfMeasure)) IN baseGroup;
+rightUnitOfMeasure 'Разместить от значения: справа' = DATA BOOLEAN (unitOfMeasure) IN baseGroup;
+useUnitOfMeasure 'Используется' = DATA BOOLEAN (unitOfMeasure) IN baseGroup;
+factorUnitOfMeasure 'Коэффициент пересчета в баз.ед.' = DATA DOUBLE (unitOfMeasure) IN baseGroup;
+weightUnitOfMeasure 'Для весовых товаров/услуг' = DATA BOOLEAN (unitOfMeasure) IN baseGroup;
+pieceUnitOfMeasure 'Для штучных товаров/услуг' = DATA BOOLEAN (unitOfMeasure) IN baseGroup;
+
+
 FORM unitOfMeasure 'Единица измерения'
 OBJECTS u=unitOfMeasure FIXED PANEL
-PROPERTIES(u) name, shortName;
+PROPERTIES(u) name, shortName, shortNameUnitOfMeasureUnitOfMeasure, factorUnitOfMeasure, rightUnitOfMeasure,
+              useUnitOfMeasure, weightUnitOfMeasure, pieceUnitOfMeasure
+EDIT unitOfMeasure OBJECT u;
 
 FORM unitsOfMeasure 'Единицы измерений'
 OBJECTS u=unitOfMeasure
-PROPERTIES(u) READONLY name, shortName
+PROPERTIES(u) READONLY name, shortName, shortNameUnitOfMeasureUnitOfMeasure, factorUnitOfMeasure, rightUnitOfMeasure,
+              useUnitOfMeasure, weightUnitOfMeasure, pieceUnitOfMeasure
 PROPERTIES(u) ADDFORM, EDITFORM, delete;
 
 // ------------------------------------ Цвета ------------------------------------------------ //
@@ -742,9 +754,9 @@ CLASS groupScales 'Группы весов' : groupMachinery;
 CLASS groupCash 'Группы касс' : groupMachinery;
 
 nameGroupMachinery 'Наименование группы' = DATA STRING[200] (groupMachinery) IN baseGroup;
+transferGroupMachinery 'Передать товар на группу оборудования' = DATA BOOLEAN (groupMachinery) IN baseGroup;
 
 cellGroupScales 'Помещать на ценники номера ячеек с этой группы' = DATA BOOLEAN (groupScales) IN baseGroup;
-transferGroupScales 'Передать товар на группу весов' = DATA BOOLEAN (groupScales) IN baseGroup;
 sidSectionGroupScales 'Код отдела в Set Retail' = DATA INTEGER (groupScales) IN baseGroup;
 directoryGroupScales 'Директория сервера Set Retail' = DATA STRING[200] (groupScales) IN baseGroup;
 
