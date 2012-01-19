@@ -121,6 +121,7 @@ public class NotificationActionProperty extends ActionProperty {
         List<EmailSender.AttachmentProperties> attachmentForms = new ArrayList<EmailSender.AttachmentProperties>();
         Map<ByteArray, String> attachmentFiles = new HashMap<ByteArray, String>();
 
+        String encryptedConnectionType = (String) BL.LM.nameEncryptedConnectionType.read(context);
         String smtpHost = (String) BL.LM.smtpHost.read(context);
         String smtpPort = (String) BL.LM.smtpPort.read(context);
         String userName = (String) BL.LM.emailAccount.read(context);
@@ -131,7 +132,7 @@ public class NotificationActionProperty extends ActionProperty {
             EmailSender.logger.error(errorMessage);
             context.addAction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
         } else {
-            EmailSender sender = new EmailSender(smtpHost.trim(), BaseUtils.nullTrim(smtpPort), emailFromNotification.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recipientEmails);
+            EmailSender sender = new EmailSender(smtpHost.trim(),BaseUtils.nullTrim(smtpPort), encryptedConnectionType.trim(), emailFromNotification.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recipientEmails);
             try {
                 sender.sendPlainMail(subjectNotification, currentText, attachmentForms, attachmentFiles);
             } catch (Exception e) {

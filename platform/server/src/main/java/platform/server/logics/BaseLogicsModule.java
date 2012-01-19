@@ -86,6 +86,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public AbstractCustomClass emailObject;
 
+    public StaticCustomClass encryptedConnectionTypeStatus;
 
     // groups
     public AbstractGroup rootGroup;
@@ -96,6 +97,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public AbstractGroup actionGroup;
     public AbstractGroup sessionGroup;
     public AbstractGroup recognizeGroup;
+    public AbstractGroup emailGroup;
 
 
     // properties
@@ -337,6 +339,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LP webHost;
 
+    public LP encryptedConnectionType;
+    public LP nameEncryptedConnectionType;
     public LP smtpHost;
     public LP smtpPort;
     public LP emailAccount;
@@ -345,6 +349,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP fromAddress;
     public LP disableEmail;
     public LP defaultCountry;
+    public LP nameDefaultCountry;
 
     public LP sidCountry;
     protected LP generateDatesCountry;
@@ -434,6 +439,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         emailObject = addAbstractClass("emailObject", getString("logics.object.with.email"), baseClass);
 
+        encryptedConnectionTypeStatus = addStaticClass("encryptedConnectionTypeStatus", getString("logics.connection.type.status"),
+                new String[]{"SSL", "TLS"},
+                new String[]{"SSL", "TLS"});
+
         user = addAbstractClass("user", getString("logics.user"), baseClass);
         customUser = addConcreteClass("customUser", getString("logics.user.ordinary.user"), user, barcodeObject, emailObject);
         systemUser = addConcreteClass("systemUser", getString("logics.user.system.user"), user);
@@ -475,6 +484,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         baseGroup = addAbstractGroup("baseGroup", getString("logics.groups.basegroup"), publicGroup, false);
         idGroup = addAbstractGroup("idGroup", getString("logics.groups.idgroup"), publicGroup, false);
         recognizeGroup = addAbstractGroup("recognizeGroup", getString("logics.groups.recognizegroup"), baseGroup, false);
+        emailGroup = addAbstractGroup("emailGroup", getString("logics.groups.emailgroup"), rootGroup, true);
     }
 
     @Override
@@ -851,16 +861,21 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         webHost = addDProp("webHost", getString("logics.host.webhost"), StringClass.get(50));
 
-        smtpHost = addDProp("smtpHost", getString("logics.host.smtphost"), StringClass.get(50));
-        smtpPort = addDProp("smtpPort", getString("logics.host.smtpport"), StringClass.get(10));
-        emailAccount = addDProp("emailAccount", getString("logics.email.accountname"), StringClass.get(50));
-        emailPassword = addDProp("emailPassword", getString("logics.email.password"), StringClass.get(50));
-        emailBlindCarbonCopy = addDProp("emailBlindCarbonCopy", getString("logics.email.copy.bcc"), StringClass.get(50));
-        fromAddress = addDProp("fromAddress", getString("logics.email.sender"), StringClass.get(50));
+        encryptedConnectionType = addDProp(emailGroup, "encryptedConnectionType", getString("logics.connection.type.status"), encryptedConnectionTypeStatus);
+        nameEncryptedConnectionType = addJProp(emailGroup, "nameEncryptedConnectionType", getString("logics.connection.type.status"), baseLM.name, encryptedConnectionType);
+        nameEncryptedConnectionType.setPreferredCharWidth(3);
+        smtpHost = addDProp(emailGroup, "smtpHost", getString("logics.host.smtphost"), StringClass.get(50));
+        smtpPort = addDProp(emailGroup, "smtpPort", getString("logics.host.smtpport"), StringClass.get(10));
+        emailAccount = addDProp(emailGroup, "emailAccount", getString("logics.email.accountname"), StringClass.get(50));
+        emailPassword = addDProp(emailGroup, "emailPassword", getString("logics.email.password"), StringClass.get(50));
+        emailBlindCarbonCopy = addDProp(emailGroup, "emailBlindCarbonCopy", getString("logics.email.copy.bcc"), StringClass.get(50));
+        fromAddress = addDProp(emailGroup, "fromAddress", getString("logics.email.sender"), StringClass.get(50));
 
-        disableEmail = addDProp("disableEmail", getString("logics.email.disable.email.sending"), LogicalClass.instance);
+        disableEmail = addDProp(emailGroup, "disableEmail", getString("logics.email.disable.email.sending"), LogicalClass.instance);
 
         defaultCountry = addDProp("defaultCountry", getString("logics.country.default.country"), country);
+        nameDefaultCountry = addJProp("nameDefaultCountry", getString("logics.country.default.country"), baseLM.name, defaultCountry);
+        nameDefaultCountry.setPreferredCharWidth(30);
 
         entryDictionary = addDProp("entryDictionary", getString("logics.dictionary"), dictionary, dictionaryEntry);
         termDictionary = addDProp(recognizeGroup, "termDictionary", getString("logics.dictionary.termin"), StringClass.get(50), dictionaryEntry);
@@ -1953,7 +1968,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private AdminFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.global.parameters"));
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, disableEmail, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, checkAggregationsAction, recalculateAction, recalculateFollowsAction, packAction, runGarbageCollector});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, disableEmail, webHost, nameDefaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, checkAggregationsAction, recalculateAction, recalculateFollowsAction, packAction, runGarbageCollector});
         }
     }
 

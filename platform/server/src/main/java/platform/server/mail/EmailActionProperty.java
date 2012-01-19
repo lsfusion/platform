@@ -205,6 +205,7 @@ public class EmailActionProperty extends ActionProperty {
 
             String subject = (this.subject == null ? (String) context.getKeyValue(listInterfaces.get(listInterfaces.size() - 1)).getValue() : this.subject).trim();
 
+            String encryptedConnectionType = (String) BL.LM.nameEncryptedConnectionType.read(context);
             String smtpHost = (String) BL.LM.smtpHost.read(context);
             String smtpPort = (String) BL.LM.smtpPort.read(context);
             String fromAddress = (String) this.fromAddress.read(context);
@@ -220,7 +221,7 @@ public class EmailActionProperty extends ActionProperty {
                 EmailSender.logger.error(errorMessage);
                 context.addAction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
             } else {
-                EmailSender sender = new EmailSender(smtpHost.trim(), BaseUtils.nullTrim(smtpPort), fromAddress.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recipientEmails);
+                EmailSender sender = new EmailSender(smtpHost.trim(), BaseUtils.nullTrim(smtpPort), encryptedConnectionType.trim(),fromAddress.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recipientEmails);
                 sender.sendMail(subject, inlineForms, attachmentForms, attachmentFiles);
             }
         } catch (Exception e) {

@@ -23,7 +23,7 @@ public class EmailSender {
     Properties mailProps = new Properties();
     String userName;
     String password;
-    Map<String,Message.RecipientType> emails = new HashMap<String, Message.RecipientType>();
+    Map<String, Message.RecipientType> emails = new HashMap<String, Message.RecipientType>();
 
     public static class AttachmentProperties {
         public String fileName;
@@ -37,23 +37,24 @@ public class EmailSender {
         }
     }
 
-    public EmailSender(String smtpHost, String fromAddress, Map<String,Message.RecipientType> targets) {
-        //mailProps.setProperty("mail.debug", "true");
+    public EmailSender(String smtpHost, String fromAddress, Map<String, Message.RecipientType> targets) {
+        mailProps.setProperty("mail.debug", "true");
         mailProps.setProperty("mail.smtp.host", smtpHost);
         mailProps.setProperty("mail.from", fromAddress);
         emails = targets;
     }
 
-    public EmailSender(String smtpHost, String smtpPort, String fromAddress, String userName, String password, Map<String,Message.RecipientType> targets) {
+    public EmailSender(String smtpHost, String smtpPort, String encryptedConnectionType, String fromAddress, String userName, String password, Map<String, Message.RecipientType> targets) {
         this(smtpHost, fromAddress, targets);
 
         if (!smtpPort.isEmpty()) {
             mailProps.put("mail.smtp.port", smtpPort);
+        }
+        if ("TLS".equals(encryptedConnectionType))
             mailProps.setProperty("mail.smtp.starttls.enable", "true");
-            if (smtpPort.equals("465")) {
-                mailProps.put("mail.smtp.socketFactory.port", smtpPort);
-                mailProps.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-            }
+        if ("SSL".equals(encryptedConnectionType)) {
+            mailProps.put("mail.smtp.socketFactory.port", smtpPort);
+            mailProps.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         }
 
         if (!userName.isEmpty() && !password.isEmpty()) {
