@@ -910,7 +910,7 @@ nameProductionScales 'Св-во товара[Срок годн.в часах] п
 sidScales 'ID весов для Set Retail' = DATA INTEGER (scales) IN baseGroup;
 
 
-FORM machinerys 'Типы оборудования'
+FORM machineries 'Типы оборудования'
 OBJECTS c=cash, s=scales
 PROPERTIES(c) READONLY numberCash, descriptionMachinery, nameCashModelCash, nameGroupMachineryCash, portMachinery, useMachinery
 PROPERTIES(s) READONLY numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery
@@ -953,37 +953,61 @@ factorDetailCutting 'Рассчетный коэффициент цены' = DAT
 percGoodsDetailCutting '% выхода товара' = DATA DOUBLE (detailCutting) IN cutGroup;
 
 isCuttingDetailCutting(cutting, detailCutting) = cuttingDetailCutting(detailCutting) == cutting;
-// todo : надо сделать свойство на уникальность товара в карте разруба
+    // todo :  надо сделать свойство на уникальность товара в карте разруба
+
+inItemCutting 'Вкл.' = DATA BOOLEAN (item, cutting) IN cutGroup;
 
 FORM cutting 'Карта проработки'
 OBJECTS c=cutting FIXED PANEL
-OBJECTS d=detailCutting, dep=departmentStore
-PROPERTIES(c) sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting, percSweepsCutting
-PROPERTIES(d) nameItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting, ADDOBJ, delete
-PROPERTIES(dep)   nameStoreDepartmentStore, name
-PROPERTIES(dep, c)  InDepartmentStoreCutting
+OBJECTS d=detailCutting, dep=departmentStore, i=item
+PROPERTIES(c)      sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting, percSweepsCutting
+PROPERTIES(d)      nameItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting, ADDOBJ, delete
+PROPERTIES(dep)    nameStoreDepartmentStore, name
+PROPERTIES(i)      name, shortNameUnitOfMeasureItem, nameBrandItem
+PROPERTIES(dep, c) InDepartmentStoreCutting
+PROPERTIES(i, c)   inItemCutting
+
 FILTERS NOT NULL isCuttingDetailCutting(c, d)
 EDIT cutting OBJECT c;
 
+DESIGN cutting FROM DEFAULT {
+    main{
+       ADD cut.box BEFORE functions.box{
+            tabbedPane = TRUE;
+            ADD d.box;
+            ADD dep.box { title = 'Подразделение'; }
+            ADD i.box { title = 'Товар, для которого действует карта'; }
+       }
+   }
+}
+
 FORM cuttings 'Карты проработки'
-OBJECTS c=cutting, d=detailCutting, dep=departmentStore
+OBJECTS c=cutting, d=detailCutting, dep=departmentStore, i=item
 PROPERTIES(c)      READONLY sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting, percSweepsCutting
 PROPERTIES(c)      ADDFORM, EDITFORM, delete
 PROPERTIES(d)      READONLY nameItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting
 PROPERTIES(dep)    READONLY nameStoreDepartmentStore, name
+PROPERTIES(i)      READONLY name, shortNameUnitOfMeasureItem, nameBrandItem
 PROPERTIES(dep, c) READONLY InDepartmentStoreCutting
+PROPERTIES(i, c) READONLY inItemCutting
 FILTERS NOT NULL   isCuttingDetailCutting(c, d),
-        NOT NULL   InDepartmentStoreCutting(dep, c)
-ORDER BY           nameStoreDepartmentStore, sidCutting, nameItemDetailCutting;
+        NOT NULL   InDepartmentStoreCutting(dep, c),
+        NOT NULL   inItemCutting(i, c)
+ORDER BY           nameStoreDepartmentStore, sidCutting, nameItemDetailCutting, name;
 
 
-
-DESIGN cutting FROM DEFAULT {
+DESIGN cuttings FROM DEFAULT {
     main{
-       ADD kalina.box BEFORE functions.box{
-            tabbedPane = TRUE;
+
+       ADD cut2.box BEFORE functions.box{
+            ADD dep.box { title = 'Подразделение'; }
+
+            ADD i.box { title = 'Товар, для которого действует карта'; }
+            POSITION dep.box TO THE LEFT i.box;
+       }
+       ADD cut1.box BEFORE cut2.box{
             ADD d.box;
-            ADD dep.box;
+
        }
    }
 }
@@ -1058,7 +1082,7 @@ NAVIGATOR {
         ADD colors;
         ADD tastes;
         ADD manufacturers;
-        ADD machinerys;
+        ADD machineries;
         ADD cuttings;
         ADD recipes;
     }
