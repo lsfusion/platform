@@ -429,7 +429,7 @@ PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, 
               maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
               marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, nameMateriallyResponsiblePersonItemReportDepartmentStore,
               nameBookkeeperItemReportDepartmentStore, namePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
-PROPERTIES(e) READONLY name
+PROPERTIES(e) READONLY userFirstName, userLastName
 PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
 PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
 PROPERTIES(t) ADDOBJ, delete
@@ -534,7 +534,7 @@ FORM employeesCommittees 'Сотрудники и комиссии '
 OBJECTS c=revaluationCommittee, e=employee
 PROPERTIES(c) READONLY name, nameDepartmentStoreRevaluationCommittee, nameChairmanRevaluationCommittee
 PROPERTIES(c) ADDFORM, EDITFORM, delete
-PROPERTIES(e) READONLY commonName, nameDepartmentStoreEmployee
+PROPERTIES(e) READONLY userFirstName, userLastName, nameDepartmentStoreEmployee
 FILTERS NOT NULL inCommitteeDepartmentStore(c, e);
 
 // ----------------------------------- Банк ------------------------------------------- //
@@ -1116,6 +1116,7 @@ NAVIGATOR {
         ADD stores;
         ADD employees;
         ADD qualifier;
+        ADD assortmentSupplier;
         ADD employeesCommittees;
         ADD banks;
         ADD ownerships;
