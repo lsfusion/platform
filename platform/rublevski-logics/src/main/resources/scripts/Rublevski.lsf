@@ -863,7 +863,8 @@ cellGroupScales 'Помещать на ценники номера ячеек с
 sidSectionGroupScales 'Код отдела в Set Retail' = DATA INTEGER (groupScales) IN baseGroup;
 directoryGroupScales 'Директория сервера Set Retail' = DATA STRING[200] (groupScales) IN baseGroup;
 
-InDepartmentStoreGroupMachinery 'Подразделения, из которых возможна правка групп оборудования' = DATA BOOLEAN (departmentStore, groupMachinery) IN baseGroup;
+departmentStoreGroupMachinery 'Подразделение ИД' = DATA departmentStore (groupMachinery) IN baseGroup;
+nameDepartmentStoreGroupMachinery 'Подразделение' (groupMachinery) = name(departmentStoreGroupMachinery(groupMachinery)) IN baseGroup;
 
 //---------------------------- типы оборудования  ----------------------------------------//
 CLASS ABSTRACT machinery 'Оборудование';
@@ -871,7 +872,11 @@ CLASS cash 'Кассы' : machinery;
 CLASS scales 'Весы' : machinery;
 
 groupCashCash 'Группа ИД' = DATA groupCash (cash) IN idGroup;
+isGroupCashCash (groupCash, cash) = groupCashCash(cash) == groupCash;
+
 groupScalesScales 'Группа ИД' = DATA groupScales (scales) IN idGroup;
+isGroupScalesScales (groupScales, scales) = groupScalesScales(scales) == groupScales;
+
 nameGroupMachineryCash 'Наименование группы' (cash) = nameGroupMachinery(groupCashCash(cash)) IN baseGroup;
 nameGroupMachineryScales 'Наименование группы' (scales) = nameGroupMachinery(groupScalesScales(scales)) IN baseGroup;
 //dataGroupMachineryMachinery 'Наименование группы' (machinery) = UNION EXCLUSIVE nameGroupMachineryCash(machinery), nameGroupMachineryScales(machinery);
@@ -888,7 +893,6 @@ statusCash 'Статус кассы (на момент посл.передачи
 resultCash 'Результат передачи на кассу товаров' = DATA STRING[200] (cash) IN baseGroup;
 dateCash 'Дата фискализации кассового аппарата' = DATA DATE (cash) IN baseGroup;
 nppCash 'Порядковый номер кассы в торговом объекте ' = DATA INTEGER (cash) IN baseGroup;
-
 
 CLASS STATIC feature 'Свойство для оборудования'
 {
@@ -910,7 +914,7 @@ nameProductionScales 'Св-во товара[Срок годн.в часах] п
 sidScales 'ID весов для Set Retail' = DATA INTEGER (scales) IN baseGroup;
 
 
-FORM machineries 'Типы оборудования'
+FORM machineries 'Оборудование'
 OBJECTS c=cash, s=scales
 PROPERTIES(c) READONLY numberCash, descriptionMachinery, nameCashModelCash, nameGroupMachineryCash, portMachinery, useMachinery
 PROPERTIES(s) READONLY numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery
@@ -928,6 +932,25 @@ OBJECTS s=scales FIXED PANEL
 PROPERTIES(s) numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
               dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales
 EDIT scales OBJECT s;
+
+
+FORM groupsScales 'Группы весов'
+OBJECTS grs=groupScales, s=scales
+PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
+PROPERTIES(grs) ADDFORM, EDITFORM, delete
+PROPERTIES(s)   numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
+                dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales,  ADDOBJ, delete
+FILTERGROUP filters1
+    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupScalesScales(grs, s);
+
+FORM groupsCash 'Группы касс'
+OBJECTS grc=groupCash, c=cash
+PROPERTIES(grc) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
+PROPERTIES(grc) ADDFORM, EDITFORM, delete
+PROPERTIES(c)    numberCash, descriptionMachinery, nameGroupMachineryCash, portMachinery, useMachinery, directoryCash, nameCashModelCash,
+                               dateCash, nppCash, statusCash, resultCash, ADDOBJ, delete
+FILTERGROUP filters2
+    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupCashCash(grc, c);
 
  //---------------------------- Карты проработки (разруба) ----------------------------------------//
 GROUP cutGroup 'Разделка' : baseGroup;
@@ -1083,6 +1106,8 @@ NAVIGATOR {
         ADD tastes;
         ADD manufacturers;
         ADD machineries;
+        ADD groupsCash;
+        ADD groupsScales;
         ADD cuttings;
         ADD recipes;
     }
