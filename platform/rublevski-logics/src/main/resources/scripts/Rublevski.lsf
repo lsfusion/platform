@@ -325,6 +325,8 @@ CLASS store 'Магазин' : named;
 CLASS tradingNetwork 'Торговая сеть' : named; // "Рублевский", "Базар"
 CLASS storeType 'Формат магазина' : named; //Мини, Супер, ...
 
+companyStore 'Юридическое лицо магазина (ИД)' = DATA company (store);
+nameCompanyStore 'Юридическое лицо магазина' (store) = name(companyStore(store)) IN baseGroup;
 addressStore 'Адрес магазина' = DATA STRING[100] (store);
 
 storeTypeStore 'Формат магазина (ИД)' = DATA storeType (store);
@@ -378,11 +380,6 @@ OBJECTS d=discount FIXED PANEL
 PROPERTIES(d) name, dateDiscount, agreeDiscount, nameDepartmentStoreDiscount
 EDIT discount OBJECT d;
 
-FORM discounts 'Скидки'
-OBJECTS d=discount
-PROPERTIES(d) READONLY name, dateDiscount, agreeDiscount, nameDepartmentStoreDiscount
-PROPERTIES(d) ADDFORM, EDITFORM, delete;
-
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
 
 CLASS departmentStore 'Отдел магазина' : stock;
@@ -423,20 +420,24 @@ tradingSquareStore 'Торговая площадь магазина' = GROUP SU
 inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
 inTradingSquareDepartmentStore(departmentStore, tradingSquare) = departmentStoreTradingSquare(tradingSquare) == departmentStore;
 inEmployeeDepartmentStore(departmentStore, employee) = departmentStoreEmployee(employee) == departmentStore;
+inDepartmentStoreDiscount(departmentStore, discount) = departmentStoreDiscount(discount) == departmentStore;
 
 FORM departmentStore 'Отдел магазина'
-OBJECTS d=departmentStore FIXED PANEL, t=tradingSquare, e=employee
+OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare, c=discount
 PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
               resolveDiscountDepartmentStore, controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
               maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
               marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, nameMateriallyResponsiblePersonItemReportDepartmentStore,
               nameBookkeeperItemReportDepartmentStore, namePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
-PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
-PROPERTIES(t) ADDFORM, EDITFORM, delete
 PROPERTIES(e) READONLY name
 PROPERTIES(e) ADDFORM, EDITFORM, delete
+PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
+PROPERTIES(t) ADDOBJ, delete
+PROPERTIES(c) READONLY dateDiscount, agreeDiscount
+PROPERTIES(c) ADDOBJ, delete
 FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
 FILTERS NOT NULL inEmployeeDepartmentStore(d, e)
+FILTERS NOT NULL inDepartmentStoreDiscount(d, c)
 EDIT departmentStore OBJECT d;
 
 DESIGN departmentStore FROM DEFAULT {
@@ -445,13 +446,14 @@ DESIGN departmentStore FROM DEFAULT {
             tabbedPane = TRUE;
             ADD e.box;
             ADD t.box;
+            ADD c.box;
     }
    }
 }
 
 FORM store 'Магазин'
 OBJECTS s=store FIXED PANEL, d=departmentStore, t=tradingSquare
-PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore
+PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameCompanyStore
 PROPERTIES(d) READONLY name, defaultTradingSquareDepartmentStore
 PROPERTIES(d) ADDFORM, EDITFORM, delete
 FILTERS NOT NULL inStoreDepartment(s, d)
@@ -459,7 +461,7 @@ EDIT store OBJECT s;
 
 FORM stores 'Магазины'
 OBJECTS s=store, d=departmentStore
-PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore
+PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore
 PROPERTIES(s) ADDFORM, EDITFORM, delete
 PROPERTIES(d) READONLY name
 FILTERS NOT NULL inStoreDepartment(s, d);
