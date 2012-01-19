@@ -9,7 +9,7 @@
         <constructor-arg value="rublevski"/>
         <constructor-arg value="localhost"/>
         <constructor-arg value="postgres"/>
-        <constructor-arg value="241086"/>
+        <constructor-arg value="11111"/>
     </bean>
 
     <bean id="businessLogics" class="rublevski.RublevskiBusinessLogics">
