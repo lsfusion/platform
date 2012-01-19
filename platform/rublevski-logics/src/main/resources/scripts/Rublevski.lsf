@@ -339,19 +339,19 @@ inStoreTypeTradingNetwork(storeType, tradingNetwork) = tradingNetworkStoreType(s
 
 // ----------------------------------- Физические лица -------------------------------------------------- //
 
-CLASS ABSTRACT person 'Физическое лицо' : named;
-CLASS employee 'Сотрудник' : person;
+CLASS ABSTRACT person 'Физическое лицо';
+CLASS employee 'Сотрудник' : person, customUser;
 departmentStoreEmployee 'Отдел сотрудника (ИД)' = DATA departmentStore (employee);
 nameDepartmentStoreEmployee 'Отдел сотрудника' (employee) = name(departmentStoreEmployee(employee)) IN baseGroup; //в далнейшем переделать с привязкой к дате приема на работу
 
 FORM employee 'Сотрудник'
 OBJECTS e=employee FIXED PANEL
-PROPERTIES(e) name, nameDepartmentStoreEmployee
+PROPERTIES(e) userFirstName, userLastName, nameDepartmentStoreEmployee
 EDIT employee OBJECT e;
 
 FORM employees 'Сотрудники'
 OBJECTS e=employee
-PROPERTIES(e) READONLY name, nameDepartmentStoreEmployee
+PROPERTIES(e) READONLY userFirstName, userLastName, nameDepartmentStoreEmployee
 PROPERTIES(e) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Торговая площадь -------------------------------------------------- //
@@ -406,11 +406,11 @@ resolveOrderItemDepartmentStore 'Разрешить заказ товара в �
 marginPublicCateringDepartmentStore 'Наценка общепита по умолчанию для формирования цены в подразделении' = DATA DOUBLE (departmentStore);
 quantityCashChangeOneOperationAccountDepartmentStore ' Количество кассовых смен в одном оперативном отчете' = DATA INTEGER (departmentStore);
 materiallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (departmentStore);
-nameMateriallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' (departmentStore) = name(materiallyResponsiblePersonItemReportDepartmentStore(departmentStore));
+nameMateriallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' (departmentStore) = commonName(materiallyResponsiblePersonItemReportDepartmentStore(departmentStore));
 bookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (departmentStore);
-nameBookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет' (departmentStore) = name(bookkeeperItemReportDepartmentStore(departmentStore));
+nameBookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет' (departmentStore) = commonName(bookkeeperItemReportDepartmentStore(departmentStore));
 personCheckReportDepartmentStore 'Кто проверяет товарный отчет (ИД)' = DATA employee (departmentStore);
-namePersonCheckReportDepartmentStore 'Кто проверяет товарный отчет' (departmentStore) = name(personCheckReportDepartmentStore(departmentStore));
+namePersonCheckReportDepartmentStore 'Кто проверяет товарный отчет' (departmentStore) = commonName(personCheckReportDepartmentStore(departmentStore));
 idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (departmentStore) = GROUP MAX tradingSquare BY departmentStoreTradingSquare(tradingSquare);   //максимизирует только по ID, переделать после расширения функционала
 defaultTradingSquareDepartmentStore 'Торговая площадь отдела магазина, кв.м.' (departmentStore) = squareTradingSquare(idTradingSquareDepartmentStore(departmentStore));
 idResolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = GROUP MAX discount AS discount BY departmentStoreDiscount(discount);  //максимизирует только по ID, переделать после расширения функционала
@@ -512,13 +512,13 @@ CLASS ABSTRACT committee 'Комиссия' : named;
 CLASS revaluationCommittee 'Комиссия переоценки' : committee;
 
 chairmanRevaluationCommittee 'Председатель комиссии (ИД)' = DATA employee (revaluationCommittee);
-nameChairmanRevaluationCommittee 'Председатель комиссии' (revaluationCommittee) = name(chairmanRevaluationCommittee(revaluationCommittee)) IN baseGroup;
+nameChairmanRevaluationCommittee 'Председатель комиссии' (revaluationCommittee) = commonName(chairmanRevaluationCommittee(revaluationCommittee)) IN baseGroup;
 departmentStoreRevaluationCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (revaluationCommittee);
-nameDepartmentStoreRevaluationCommittee 'Отдел комиссии' (revaluationCommittee) = name(departmentStoreRevaluationCommittee(revaluationCommittee)) IN baseGroup;
-CONSTRAINT CHECKED departmentStoreEmployee(chairmanRevaluationCommittee(revaluationCommittee))!=departmentStoreRevaluationCommittee(revaluationCommittee) MSG 'Отдел комиссии должен соответствовать отделу председателя комиссии';
-CONSTRAINT CHECKED departmentStoreRevaluationCommittee(revaluationCommitteeDepartmentStore(departmentStore))!=departmentStore MSG 'Отдел комиссии должен соответствовать текущему отделу';
+nameDepartmentStoreRevaluationCommittee 'Отдел комиссии' (revaluationCommittee) = commonName(departmentStoreRevaluationCommittee(revaluationCommittee)) IN baseGroup;
+CONSTRAINT CHECKED departmentStoreEmployee(chairmanRevaluationCommittee(revaluationCommittee)) != departmentStoreRevaluationCommittee(revaluationCommittee) MSG 'Отдел комиссии должен соответствовать отделу председателя комиссии';
+CONSTRAINT CHECKED departmentStoreRevaluationCommittee(revaluationCommitteeDepartmentStore(departmentStore)) != departmentStore MSG 'Отдел комиссии должен соответствовать текущему отделу';
 
-inDepartmentStoreEmployeeRevaluationCommittee (revaluationCommittee, employee) = departmentStoreRevaluationCommittee(revaluationCommittee)==departmentStoreEmployee(employee);
+inDepartmentStoreEmployeeRevaluationCommittee (revaluationCommittee, employee) = departmentStoreRevaluationCommittee(revaluationCommittee) == departmentStoreEmployee(employee);
 inCommitteeDepartmentStore 'Является членом комиссии' (revaluationCommittee, employee) = DATA BOOLEAN (revaluationCommittee, employee);
 
 FORM revaluationCommittee 'Комиссия переоценки'
@@ -534,7 +534,7 @@ FORM employeesCommittees 'Сотрудники и комиссии '
 OBJECTS c=revaluationCommittee, e=employee
 PROPERTIES(c) READONLY name, nameDepartmentStoreRevaluationCommittee, nameChairmanRevaluationCommittee
 PROPERTIES(c) ADDFORM, EDITFORM, delete
-PROPERTIES(e) READONLY name, nameDepartmentStoreEmployee
+PROPERTIES(e) READONLY commonName, nameDepartmentStoreEmployee
 FILTERS NOT NULL inCommitteeDepartmentStore(c, e);
 
 // ----------------------------------- Банк ------------------------------------------- //
