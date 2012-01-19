@@ -94,7 +94,8 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     ClientApply checkClientChanges() throws RemoteException;
 
-    void dialogClosed() throws RemoteException;
+    void okPressed() throws RemoteException;
+    void closedPressed() throws RemoteException;
 
     void applyChanges(Object clientResult) throws RemoteException;
 

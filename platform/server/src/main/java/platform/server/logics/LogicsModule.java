@@ -1768,14 +1768,14 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
-    public LP getAddFormAction(CustomClass cls) {
+    public LP getAddFormAction(CustomClass cls, boolean session) {
         ClassFormEntity form = cls.getEditForm(baseLM);
 
         LP addObjectAction = getAddObjectAction(cls);
-        LP property = addMFAProp(actionGroup, "addForm" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.add") + "(" + cls + ")",
+        LP property = addMFAProp(actionGroup, "add" + (session ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.add") + "(" + cls + ")",
                                 form.form, new ObjectEntity[] {},
                                 new PropertyObjectEntity[] {form.form.addPropertyObject(addObjectAction)},
-                                new OrderEntity[] {null}, ((ActionProperty)addObjectAction.property).getValueClass(), true);
+                                new OrderEntity[] {null}, ((ActionProperty)addObjectAction.property).getValueClass(), !session);
         property.setImage("add.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
@@ -1786,15 +1786,17 @@ public abstract class LogicsModule {
         // todo : так не очень правильно делать - получается, что мы добавляем к Immutable объекту FormActionProperty ссылки на ObjectEntity
         FormActionProperty formAction = (FormActionProperty)property.property;
         formAction.seekOnOk.add(form.object);
+        if (session)
+            formAction.closeProperties.add(form.form.addPropertyObject(baseLM.delete, form.object));
 
         return property;
     }
 
     @IdentityLazy
-    public LP getEditFormAction(CustomClass cls) {
+    public LP getEditFormAction(CustomClass cls, boolean session) {
         ClassFormEntity form = cls.getEditForm(baseLM);
-        LP property = addMFAProp(actionGroup, "editForm" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit") + "(" + cls + ")",
-                                form.form, new ObjectEntity[] {form.object}, true);
+        LP property = addMFAProp(actionGroup, "edit" + (session ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit") + "(" + cls + ")",
+                                form.form, new ObjectEntity[] {form.object}, !session);
         property.setImage("edit.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
@@ -2061,20 +2063,24 @@ public abstract class LogicsModule {
     }
 
     public void addFormActions(FormEntity form, ObjectEntity object) {
-        addAddFormAction(form, object);
-        addEditFormAction(form, object);
+        addFormActions(form, object, false);
+    }
+
+    public void addFormActions(FormEntity form, ObjectEntity object, boolean session) {
+        addAddFormAction(form, object, session);
+        addEditFormAction(form, object, session);
         form.addPropertyDraw(baseLM.delete, object);
     }
     
-    public PropertyDrawEntity addAddFormAction(FormEntity form, ObjectEntity object) {
-        LP addForm = getAddFormAction((CustomClass)object.baseClass);
+    public PropertyDrawEntity addAddFormAction(FormEntity form, ObjectEntity object, boolean session) {
+        LP addForm = getAddFormAction((CustomClass)object.baseClass, session);
         PropertyDrawEntity actionAddPropertyDraw = form.addPropertyDraw(addForm);
         actionAddPropertyDraw.toDraw = object.groupTo;
 
         return actionAddPropertyDraw;
     }
     
-    public PropertyDrawEntity addEditFormAction(FormEntity form, ObjectEntity object) {
-        return form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass), object);
+    public PropertyDrawEntity addEditFormAction(FormEntity form, ObjectEntity object, boolean session) {
+        return form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass, session), object);
     }
 }

@@ -108,6 +108,13 @@ public class ClientModalForm extends JDialog {
                         return false;
                     }
                 }
+
+                try {
+                    remoteForm.closedPressed();
+                } catch (IOException e) {
+                    throw new RuntimeException(ClientResourceBundle.getString("form.error.closing.dialog"), e);
+                }
+
                 hideDialog();
                 return true;
             }

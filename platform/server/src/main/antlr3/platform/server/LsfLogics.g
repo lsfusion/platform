@@ -439,12 +439,14 @@ formPropertiesNamesList returns [List<String> properties, List<FormPropertyOptio
 
 
 formPropertyName returns [String name]
-	:	id=compoundID	{ $name = $id.sid; }
-	|	cid='OBJVALUE'	{ $name = $cid.text; }
-	|	cid='SELECTION'	{ $name = $cid.text; }
-	|	cid='ADDOBJ'	{ $name = $cid.text; }
-	|	cid='ADDFORM'	{ $name = $cid.text; }
-	|	cid='EDITFORM'	{ $name = $cid.text; }
+	:	id=compoundID	        { $name = $id.sid; }
+	|	cid='OBJVALUE'	        { $name = $cid.text; }
+	|	cid='SELECTION'	        { $name = $cid.text; }
+	|	cid='ADDOBJ'	        { $name = $cid.text; }
+	|	cid='ADDFORM'	        { $name = $cid.text; }
+	|	cid='ADDSESSIONFORM'	{ $name = $cid.text; }
+	|	cid='EDITFORM'	        { $name = $cid.text; }
+	|	cid='EDITSESSIONFORM'	{ $name = $cid.text; }
 	;
 
 

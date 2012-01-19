@@ -31,6 +31,7 @@ public class FormActionProperty extends ActionProperty {
     public final Map<ObjectEntity, ClassPropertyInterface> mapObjects;
     private final PropertyObjectEntity[] setProperties;
     private final OrderEntity[] getProperties;
+    public List<PropertyObjectEntity> closeProperties = new ArrayList<PropertyObjectEntity>();
     public Set<ObjectEntity> seekOnOk = new HashSet<ObjectEntity>();
     private DataClass valueClass;
     private final boolean newSession;
@@ -83,7 +84,7 @@ public class FormActionProperty extends ActionProperty {
                     ((SelfInstancePostProcessor) form).postProcessSelfInstance(context.getKeys(), context.getRemoteForm(), newFormInstance);
                 }
 
-                RemoteForm newRemoteForm = context.getRemoteForm().createForm(newFormInstance);
+                final RemoteForm newRemoteForm = context.getRemoteForm().createForm(newFormInstance);
 
                 for (int i = 0; i < setProperties.length; i++) {
                     newFormInstance.changeProperty(newFormInstance.instanceFactory.getInstance(setProperties[i]),
@@ -91,7 +92,7 @@ public class FormActionProperty extends ActionProperty {
                                                    newRemoteForm, null);
                 }
 
-                if (!seekOnOk.isEmpty()) {
+                if (!seekOnOk.isEmpty() || !closeProperties.isEmpty()) {
                     newFormInstance.addEventListener(new FormEventListener() {
                         @Override
                         public void handleEvent(Object event) {
@@ -101,6 +102,17 @@ public class FormActionProperty extends ActionProperty {
                                         ObjectInstance objectInstance = newFormInstance.instanceFactory.getInstance(object);
                                         if (objectInstance != null) // в принципе пока FormActionProperty может ссылаться на ObjectEntity из разных FormEntity
                                         thisFormInstance.seekObject(object.baseClass, objectInstance.getObjectValue());
+                                    } catch (SQLException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                            }
+                            if (event.equals(FormEventType.CLOSE)) {
+                                for (PropertyObjectEntity property : closeProperties) {
+                                    try {
+                                        newFormInstance.changeProperty(newFormInstance.instanceFactory.getInstance(property),
+                                                                       true,
+                                                                       newRemoteForm, null);
                                     } catch (SQLException e) {
                                         throw new RuntimeException(e);
                                     }

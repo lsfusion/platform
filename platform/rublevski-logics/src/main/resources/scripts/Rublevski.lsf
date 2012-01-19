@@ -430,7 +430,7 @@ PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, 
               marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, nameMateriallyResponsiblePersonItemReportDepartmentStore,
               nameBookkeeperItemReportDepartmentStore, namePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
 PROPERTIES(e) READONLY name
-PROPERTIES(e) ADDFORM, EDITFORM, delete
+PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
 PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
 PROPERTIES(t) ADDOBJ, delete
 PROPERTIES(c) READONLY dateDiscount, agreeDiscount
@@ -455,7 +455,7 @@ FORM store 'Магазин'
 OBJECTS s=store FIXED PANEL, d=departmentStore, t=tradingSquare
 PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameCompanyStore
 PROPERTIES(d) READONLY name, defaultTradingSquareDepartmentStore
-PROPERTIES(d) ADDFORM, EDITFORM, delete
+PROPERTIES(d) ADDSESSIONFORM, EDITSESSIONFORM, delete
 FILTERS NOT NULL inStoreDepartment(s, d)
 EDIT store OBJECT s;
 

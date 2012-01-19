@@ -175,20 +175,20 @@ public class ScriptingFormEntity extends FormEntity {
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
                 LP<?> addObjAction = LM.getAddObjectAction(obj[0].baseClass);
                 property = addPropertyDraw(addObjAction);
-            } else if (properties.get(i).equals("ADDFORM")) {
+            } else if (properties.get(i).equals("ADDFORM") || properties.get(i).equals("ADDSESSIONFORM")) {
                 if (mapping.size() != 1) {
                     LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
                 }
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                property = LM.addAddFormAction(this, obj[0]);
-            } else if (properties.get(i).equals("EDITFORM")) {
+                property = LM.addAddFormAction(this, obj[0], properties.get(i).equals("ADDSESSIONFORM"));
+            } else if (properties.get(i).equals("EDITFORM") || properties.get(i).equals("EDITSESSIONFORM")) {
                 if (mapping.size() != 1) {
                     LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
                 }
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                property = LM.addEditFormAction(this, obj[0]);
+                property = LM.addEditFormAction(this, obj[0], properties.get(i).equals("EDITSESSIONFORM"));
             } else {
                 MappedProperty prop = getPropertyWithMapping(properties.get(i), mapping);
                 property = addPropertyDraw(prop.property, prop.mapping);

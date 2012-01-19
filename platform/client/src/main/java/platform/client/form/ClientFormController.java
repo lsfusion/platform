@@ -859,7 +859,7 @@ public class ClientFormController {
 
     public boolean okPressed() {
         try {
-            remoteForm.dialogClosed();
+            remoteForm.okPressed();
 
             if (isNewSession()) {
                 return applyChanges(false);

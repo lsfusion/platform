@@ -1330,6 +1330,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return fireEvent(form, FormEventType.OK);
     }
 
+    public List<ClientAction> fireOnClose(RemoteForm form) throws SQLException {
+        return fireEvent(form, FormEventType.CLOSE);
+    }
+
     public List<ClientAction> fireEvent(RemoteForm form, Object eventObject) throws SQLException {
         List<ClientAction> clientActions;
         List<PropertyObjectEntity> actionsOnEvent = entity.getActionsOnEvent(eventObject);
