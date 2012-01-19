@@ -223,7 +223,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return (FormEntity) navigator;
     }
 
-    public NavigatorElement getNavigatorElementBySID(String sid, boolean hasToExist) throws ScriptingErrorLog.SemanticErrorException {
+    public NavigatorElement getNavigatorElementBySID(String sid, boolean hasToExist) throws ScriptingErrorLog.SemanticErrorException { // todo [dale]: переименовать?
         NavigatorElement elem = navigatorResolver.resolve(sid);
         if (elem == null && hasToExist) {
             errLog.emitNavigatorElementNotFoundError(parser, sid);
@@ -268,8 +268,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         addAbstractGroup(groupName, caption, parentGroup);
     }
 
-    public ScriptingFormEntity createScriptedForm(String formName, String caption) {
+    public ScriptingFormEntity createScriptedForm(String formName, String caption) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ");");
+        checkDuplicateNavigatorElement(formName);
         caption = (caption == null ? formName : transformStringLiteral(caption));
         return new ScriptingFormEntity(baseLM.baseElement, this, formName, caption);
     }
@@ -813,6 +814,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public NavigatorElement addScriptedNavigatorElement(String name, String caption, NavigatorElement<?> element, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName) throws ScriptingErrorLog.SemanticErrorException {
         assert name != null && anchorElement != null;
+        checkDuplicateNavigatorElement(name);
 
         if (element == null) {
             element = addNavigatorElement(name, caption);
@@ -941,6 +943,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkDuplicateWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
         if (getWindowByName(name) != null) {
             errLog.emitAlreadyDefinedError(parser, "window", name);
+        }
+    }
+
+    private void checkDuplicateNavigatorElement(String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (getNavigatorElementByName(name) != null) {
+            errLog.emitAlreadyDefinedError(parser, "form or navigator", name);
         }
     }
 

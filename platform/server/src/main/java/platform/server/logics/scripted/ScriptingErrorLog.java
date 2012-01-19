@@ -125,7 +125,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitIllegalMoveNavigatorToSubnavigator(LsfLogicsParser parser, String movingElement, String movedToElement) throws SemanticErrorException {
-        emitSimpleError(parser, format("can't move navigator element '%s' to it's subelement '%s'.", movingElement, movedToElement));
+        emitSimpleError(parser, format("can't move navigator element '%s' to it's subelement '%s'", movingElement, movedToElement));
     }
 
     public void emitComponentIsNullError(LsfLogicsParser parser, String mainMsg) throws SemanticErrorException {
@@ -133,23 +133,23 @@ public class ScriptingErrorLog {
     }
 
     public void emitComponentMustBeAContainerError(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "component must be a container.");
+        emitSimpleError(parser, "component must be a container");
     }
 
     public void emitInsertBeforeAfterMainContainerError(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "can't insert before or after main container.");
+        emitSimpleError(parser, "can't insert before or after main container");
     }
 
     public void emitIllegalMoveComponentToSubcomponent(LsfLogicsParser parser, String movingComponent, String movedToComponent) throws SemanticErrorException {
-        emitSimpleError(parser, format("can't move component '%s' to it's subcomponent '%s'.", movingComponent, movedToComponent));
+        emitSimpleError(parser, format("can't move component '%s' to it's subcomponent '%s'", movingComponent, movedToComponent));
     }
 
     public void emitRemoveMainContinaerError(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "can't remove main container.");
+        emitSimpleError(parser, "can't remove main container");
     }
 
     public void emitIntersectionInDifferentContainersError(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "forbidden to create the intersection of objects in different containers.");
+        emitSimpleError(parser, "forbidden to create the intersection of objects in different containers");
     }
 
     public void emitUnableToSetPropertyError(LsfLogicsParser parser, String propertyName, String cause) throws SemanticErrorException {
@@ -161,20 +161,20 @@ public class ScriptingErrorLog {
     }
 
     public void emitWindowOrientationNotSpecified(LsfLogicsParser parser, String sid) throws SemanticErrorException {
-        emitSimpleError(parser, "orientation (VERTICAL or HORIZONTAL) isn't specified for window '" + sid + "'.");
+        emitSimpleError(parser, "orientation (VERTICAL or HORIZONTAL) isn't specified for window '" + sid + "'");
     }
 
     public void emitWindowPositionNotSpecified(LsfLogicsParser parser, String sid) throws SemanticErrorException {
-        emitSimpleError(parser, "position ( POSITION(x, y, width, height) ) isn't specified for window '" + sid + "'.");
+        emitSimpleError(parser, "position ( POSITION(x, y, width, height) ) isn't specified for window '" + sid + "'");
     }
 
     public void emitWindowPositionConflict(LsfLogicsParser parser, String sid) throws SemanticErrorException {
         emitSimpleError(parser, "both border position (LEFT, RIGHT, TOP or BOTTOM) and dock position (POSITION(x, y, widht, height)) are specified for window '" + sid + "', " +
-                                "only one of those should be used.");
+                                "only one of those should be used");
     }
 
     public void emitAddToSystemWindowError(LsfLogicsParser parser, String sid) throws SemanticErrorException {
-        emitSimpleError(parser, "it's illegal to add navigator element to system window '" + sid + "'. ");
+        emitSimpleError(parser, "it's illegal to add navigator element to system window '" + sid + "'");
     }
 
     public void emitParamIndexError(LsfLogicsParser parser, int paramIndex, int paramCount) throws SemanticErrorException {
@@ -202,7 +202,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitBuiltInClassFormSetupError(LsfLogicsParser parser, String className) throws SemanticErrorException {
-        emitSimpleError(parser, "can't set custom form for built-in class '" + className + "'.");
+        emitSimpleError(parser, "can't set custom form for built-in class '" + className + "'");
     }
 
     public void emitAbstractStaticClassError(LsfLogicsParser parser) throws SemanticErrorException {
