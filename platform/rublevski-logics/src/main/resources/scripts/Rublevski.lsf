@@ -1113,7 +1113,6 @@ NAVIGATOR {
         ADD itemGroups;
         ADD unitsOfMeasure;
         ADD items;
-        ADD discounts;
         ADD stores;
         ADD employees;
         ADD qualifier;
