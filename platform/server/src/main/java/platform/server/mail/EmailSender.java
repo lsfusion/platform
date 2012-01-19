@@ -38,7 +38,7 @@ public class EmailSender {
     }
 
     public EmailSender(String smtpHost, String fromAddress, Map<String, Message.RecipientType> targets) {
-        mailProps.setProperty("mail.debug", "true");
+        //mailProps.setProperty("mail.debug", "true");
         mailProps.setProperty("mail.smtp.host", smtpHost);
         mailProps.setProperty("mail.from", fromAddress);
         emails = targets;
