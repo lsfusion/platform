@@ -52,11 +52,6 @@ FORM color 'Цвет'
 OBJECTS c=color FIXED PANEL
 PROPERTIES(c) name;
 
-FORM colors 'Цвета'
-OBJECTS c=color
-PROPERTIES(c) READONLY name
-PROPERTIES(c) ADDFORM, EDITFORM, delete;
-
 // ------------------------------------ Вкусы ------------------------------------------------------ //
 CLASS taste 'Вкус' : named;
 
@@ -64,22 +59,8 @@ FORM taste 'Вкус'
 OBJECTS t=taste FIXED PANEL
 PROPERTIES(t) name;
 
-FORM tastes 'Вкусы'
-OBJECTS t=taste
-PROPERTIES(t) READONLY name
-PROPERTIES(t) ADDFORM, EDITFORM, delete;
-
 // ----------------------------------- Производители ---------------------------------- //
-CLASS manufacturer 'Производитель' : named;
-
-FORM manufacturer 'Производитель'
-OBJECTS m=manufacturer FIXED PANEL
-PROPERTIES(m) name;
-
-FORM manufacturers 'Производители'
-OBJECTS m=manufacturer
-PROPERTIES(m) READONLY name
-PROPERTIES(m) ADDFORM, EDITFORM, delete;
+//CLASS manufacturer 'Производитель' : named;
 
 //------------------------------------ Сорта-категории --------------------------------- //
 CLASS sort 'Сорт/Категория' : named;
@@ -88,22 +69,12 @@ FORM sort 'Сорт/Категория'
 OBJECTS s=sort FIXED PANEL
 PROPERTIES(s) name;
 
-FORM sortes 'Сорта/Категории'
-OBJECTS s=sort
-PROPERTIES(s) READONLY name
-PROPERTIES(s) ADDFORM, EDITFORM, delete;
-
 //------------------------------------ Упаковки ----------------------------------------//
 CLASS pack 'Упаковка' : doubleNamed;
 
 FORM pack 'Упаковка'
 OBJECTS p=pack FIXED PANEL
 PROPERTIES(p) name, shortName;
-
-FORM packs 'Упаковки'
-OBJECTS p=pack
-PROPERTIES(p) READONLY name, shortName
-PROPERTIES(p) ADDFORM, EDITFORM, delete;
 
 //------------------------------------ Особенности изготовления ------------------------//
 CLASS specialty 'Особенность' : doubleNamed;
@@ -112,22 +83,12 @@ FORM specialty 'Особенность'
 OBJECTS s=specialty FIXED PANEL
 PROPERTIES(s) name, shortName;
 
-FORM specialties 'Особенности'
-OBJECTS  s=specialty
-PROPERTIES(s) READONLY name, shortName
-PROPERTIES(s) ADDFORM, EDITFORM, delete;
-
 //------------------------------------ Размеры/Калибры/Габариты ------------------------//
 CLASS size 'Размер/калибр' : doubleNamed;
 
 FORM size 'Размер/калибр'
 OBJECTS s=size FIXED PANEL
 PROPERTIES(s) name, shortName;
-
-FORM sizes 'Размеры/калибры'
-OBJECTS s=size
-PROPERTIES(s) READONLY name, shortName
-PROPERTIES(s) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Товар ------------------------------------------ //
 GROUP descriptionGroup 'Общее описание' : baseGroup;
@@ -193,8 +154,6 @@ minReserveItem 'Минимальный резерв' = DATA INTEGER (item) IN re
 compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA STRING[400] (item)IN descriptionGroup;
 compositionMenuItem 'Состав изделия для печати в меню' = DATA STRING[400] (item)IN descriptionGroup;
 
-//manufacturerItem = DATA manufacturer (item) IN idGroup;
-//nameManufacturerItem 'Производитель' = name(manufacturerItem(item)) IN baseGroup;
 countryItem = DATA country (item) IN idGroup;
 nameCountryItem 'Страна' = name(countryItem(item)) IN descriptionGroup;
 
@@ -210,9 +169,9 @@ daysExpiryItem 'Срок годности в днях' = DATA DOUBLE (item) IN d
 isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN descriptionGroup;
 hintItem 'Подсказка по товару' = DATA STRING[200] (item)IN descriptionGroup;
 
-minTradeAllowance 'MIN допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
-maxTradeAllowance 'MAX допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
-minAllowedRetailPrice 'MIN допустимая розн.цена' = DATA INTEGER (item) IN retailGroup;
+minTradeAllowanceItem 'MIN допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
+maxTradeAllowanceItem 'MAX допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
+minAllowedRetailPriceItem 'MIN допустимая розн.цена' = DATA INTEGER (item) IN retailGroup;
 
 nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item)IN substanceGroup;
 energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN substanceGroup;
@@ -309,7 +268,7 @@ OBJECTS b=barcode
 PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem, isWeightItem, volumeItem, netWeightItem, nameColorItem, nameTasteItem,
  percentFatItem, percentAlcoholItem, lengthItem, nameCountryItem, nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem,
  isContainGMOItem, daysExpiryPackItem, hoursExpiryPackItem, isCutedItem, isLoafCutItem, passScalesItem, bonusItem, percentWholesaleMarkItem,
- minTradeAllowance, maxTradeAllowance, minAllowedRetailPrice, barcodeBarcodeSku
+ minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem, barcodeBarcodeSku
 PROPERTIES(i) ADDFORM, EDITFORM, delete
 PROPERTIES(b) READONLY barcode, nameSkuBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
 FILTERS NOT NULL inBarcodeSku(b, i)
@@ -422,6 +381,22 @@ inTradingSquareDepartmentStore(departmentStore, tradingSquare) = departmentStore
 inEmployeeDepartmentStore(departmentStore, employee) = departmentStoreEmployee(employee) == departmentStore;
 inDepartmentStoreDiscount(departmentStore, discount) = departmentStoreDiscount(discount) == departmentStore;
 
+
+//----------------------------------- Для товара и подразделения -------------------
+additionPriceDepartmentStoreItem 'Торговая надбавка в рублях' = DATA DOUBLE (departmentStore, item) IN baseGroup;
+boundCertificateDepartmentStoreItem 'Сертификат / удостоверение обязательны для товара?' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
+maxAllowedRetailPriceDepartmentStoreItem 'MAX допустимая розн.цена' = DATA INTEGER (departmentStore, item) IN baseGroup;
+netWeightManufacterDepartmentStoreItem 'Вес нетто продукта для производства' = DATA DOUBLE (departmentStore, item) IN baseGroup;
+//statusCashDepartmentStoreItem 'Статус товара на кассах' = DATA     (departmentStore, item) IN baseGroup;
+percentHumidityFlourDepartmentStoreItem '% влажности муки' = DATA DOUBLE (departmentStore, item) IN baseGroup;
+dateManufactureDepartmentStoreItem 'Дата изготовления' = DATA DATE (departmentStore, item) IN baseGroup;
+dateFitToDepartmentStoreItem 'Годен до' = DATA DATE (departmentStore, item) IN baseGroup;
+fromDateDeliveryDepartmentStoreItem 'Дату [Годен до] рассчитывать от даты поставки?' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
+prohibitionSaleDepartmentStoreItem 'Запрет продаж товара в подразделении' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
+prohibitionMovementDepartmentStoreItem 'Запрет на внутреннее перемещение товара' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
+reserveDepartmentStoreItem 'Резерв по товару' = DATA DOUBLE (departmentStore, item) IN baseGroup;
+
+
 FORM departmentStore 'Отдел магазина'
 OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare, c=discount
 PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
@@ -484,6 +459,17 @@ PROPERTIES(n) READONLY name
 PROPERTIES(n) ADDFORM, EDITFORM, delete
 PROPERTIES(s) READONLY name, nameTradingNetworkStoreType
 PROPERTIES(s) ADDFORM, EDITFORM, delete;
+
+FORM itemInDepartment  'Товары в подразделениях'
+OBJECTS d=departmentStore, i=item
+PROPERTIES(d) READONLY name, nameStoreDepartmentStore
+PROPERTIES(d) ADDFORM, EDITFORM, delete
+PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
+PROPERTIES(i) ADDFORM, EDITFORM, delete
+PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem, maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacterDepartmentStoreItem,
+                 percentHumidityFlourDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem, fromDateDeliveryDepartmentStoreItem,
+                 prohibitionSaleDepartmentStoreItem, prohibitionMovementDepartmentStoreItem, reserveDepartmentStoreItem;
+
 
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
 
@@ -1149,9 +1135,6 @@ NAVIGATOR {
         ADD companies;
         ADD models;
         ADD assortments;
-        ADD colors;
-        ADD tastes;
-        ADD manufacturers;
         ADD machineries;
         ADD stages;
         ADD groupsCash;
@@ -1188,7 +1171,10 @@ NAVIGATOR {
             ADD assortment;
             ADD color;
             ADD taste;
-            ADD manufacturer;
+            ADD pack;
+            ADD sort;
+            ADD size;
+            ADD specialty;
             ADD cash;
             ADD scales;
             ADD check;
