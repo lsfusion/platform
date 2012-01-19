@@ -1093,7 +1093,32 @@ PROPERTIES(r) ADDFORM, EDITFORM, delete
 PROPERTIES(rd) READONLY nameComponentRecipeDetail, normQuantityRecipeDetail
 FILTERS NOT NULL inRecipeRecipeDetail(r, rd);
 
+//---------------------------- Товар на оборудовании ----------------------------------------//
 
+CLASS stage 'Ячейка';
+valueStage 'Ячейка' = DATA INTEGER (stage) IN baseGroup;
+barcodeStageGroupMachinery 'Штрих-код ИД' = DATA barcode (stage, groupMachinery) IN idGroup;
+priceStageGroupMachinery 'Розничная цена для штрих-кода' (stage, groupMachinery) = DATA DOUBLE (stage, groupMachinery) IN baseGroup;
+dateStageGroupMachinery 'Дата истечения срока годности' (stage, groupMachinery) = DATA DATE (stage, groupMachinery) IN baseGroup;
+timeStageGroupMachinery 'Время истечения срока годности' (stage, groupMachinery) = DATA INTEGER (stage, groupMachinery) IN baseGroup;
+stockStageGroupMachinery 'Остаток на момент передачи' (stage, groupMachinery) = DATA DOUBLE (stage, groupMachinery) IN baseGroup;
+
+barcodeBarcodeStageGroupMachinery 'Штрих-код' (stage, groupMachinery) = barcode(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
+nameSkuBarcodeStageGroupMachinery 'Товар' (stage, groupMachinery) = nameSkuBarcode(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
+//titleScalesBarcodeStageGroupMachinery 'Наименование для весов' (stage, groupMachinery) = titleScalesBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
+//titleCashBarcodeStageGroupMachinery 'Наименование для касс' (stage, groupMachinery) = titleCashBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
+//amountBarcodeStageGroupMachinery 'Количество (сколько списать при продаже)' (stage, groupMachinery) = amountBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
+//removeBarcodeStageGroupMachinery 'Заблокирован (удален с оборудования)' (stage, groupMachinery) = removeBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
+//commentRemoveBarcodeStageGroupMachinery 'Причина блокировки' (stage, groupMachinery) = commentRemoveBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
+
+FORM stages 'Товары на оборудовании'
+OBJECTS gr=groupMachinery
+OBJECTS st=stage
+PROPERTIES(gr) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
+PROPERTIES(st) valueStage
+PROPERTIES(st, gr)  barcodeBarcodeStageGroupMachinery, nameSkuBarcodeStageGroupMachinery, priceStageGroupMachinery, dateStageGroupMachinery,
+                    timeStageGroupMachinery, stockStageGroupMachinery
+FILTERS  NOT NULL barcodeStageGroupMachinery(st, gr);
 
 
 //---------------------------- Настройка навигатора ----------------------------------------//
@@ -1128,6 +1153,7 @@ NAVIGATOR {
         ADD tastes;
         ADD manufacturers;
         ADD machineries;
+        ADD stages;
         ADD groupsCash;
         ADD groupsScales;
         ADD groupsCheck;
