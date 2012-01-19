@@ -18,6 +18,7 @@
       <keyword name="ADD" />
       <keyword name="ADDFORM" />
       <keyword name="ADDOBJ" />
+      <keyword name="ADDSESSIONFORM" />
       <keyword name="AFTER" />
       <keyword name="ALL" />
       <keyword name="AND" />
@@ -45,6 +46,7 @@
       <keyword name="EDIT" />
       <keyword name="EDITABLE" />
       <keyword name="EDITFORM" />
+      <keyword name="EDITSESSIONFORM" />
       <keyword name="EXCEPTLAST" />
       <keyword name="EXCLUSIVE" />
       <keyword name="FALSE" />
@@ -79,9 +81,11 @@
       <keyword name="LIST" />
       <keyword name="LONG" />
       <keyword name="MAX" />
+      <keyword name="MODAL" />
       <keyword name="MODULE" />
       <keyword name="MSG" />
       <keyword name="NAVIGATOR" />
+      <keyword name="NEWSESSION" />
       <keyword name="NO" />
       <keyword name="NOT" />
       <keyword name="NOTHING" />
@@ -104,6 +108,7 @@
       <keyword name="RIGHT" />
       <keyword name="RIGHTBOTTOM" />
       <keyword name="SELECTION" />
+      <keyword name="SET" />
       <keyword name="SHOWIF" />
       <keyword name="STATIC" />
       <keyword name="STRING" />
