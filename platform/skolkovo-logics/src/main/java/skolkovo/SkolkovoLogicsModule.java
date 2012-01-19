@@ -3640,11 +3640,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         numberNewExpertVote = addOProp("numberNewExpertVote", "Номер (нов.)", PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), true, true, 1, 2, 1);
         numberOldExpertVote = addOProp("numberOldExpertVote", "Номер (стар.)", PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inOldExpertVote, 1, 2), true, true, 1, 2, 1);
 
-        emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
-        emailIO = addDProp(baseGroup, "emailIO", "E-mail инвестиционного отдела", StringClass.get(50));
-        emailExperts = addDProp(baseGroup, "emailExperts", "E-mail экспертного отдела", StringClass.get(50));
-        emailPresident = addDProp(baseGroup, "emailPresident", "E-mail аппарата президента Фонда", StringClass.get(50));
-        emailBureauTranslation = addDProp(baseGroup, "emailBureauTranslation", "E-mail для отправкм в бюро переводов", StringClass.get(50));
+        emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(100));
+        emailIO = addDProp(baseGroup, "emailIO", "E-mail инвестиционного отдела", StringClass.get(100));
+        emailExperts = addDProp(baseGroup, "emailExperts", "E-mail экспертного отдела", StringClass.get(100));
+        emailPresident = addDProp(baseGroup, "emailPresident", "E-mail аппарата президента Фонда", StringClass.get(100));
+        emailBureauTranslation = addDProp(baseGroup, "emailBureauTranslation", "E-mail для отправкм в бюро переводов", StringClass.get(100));
 
         emailFondFC = addDProp(baseGroup, "emailFondFC", "E-mail для формальной проверки", StringClass.get(100));      // внести записи kzosin@corp.i-gorod.com; Esinyatkina@corp.i-gorod.com; lkiselev@corp.i-gorod.com;
         emailForesightLC = addDProp(baseGroup, "emailForesightLC", "E-mail для решения проверки на соот. форсайту", StringClass.get(100));    // внести записи EChapysheva@corp.i-gorod.com; Lmerchenko@corp.i-gorod.com; Sizotova@corp.i-gorod.com;
@@ -3781,6 +3781,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailBureauTrProjectEA = addEAProp(emailIO, project);
         addEARecepient(emailBureauTrProjectEA, emailBureauTranslation);
+        addEARecepient(emailBureauTrProjectEA, MimeMessage.RecipientType.CC, emailIO);
         emailBureauTrProject = addJProp(baseGroup, true, "emailBureauTrProject", "Письмо в бюро переводов (e-mail)", emailBureauTrProjectEA, 1, addCProp(StringClass.get(2000), "Заявка на перевод. "));
         emailBureauTrProject.setImage("email.png");
         emailBureauTrProject.property.askConfirm = true;
@@ -5144,7 +5145,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public BureauTrProjectFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption, true);
 
-            objProject = addSingleGroupObject(1, "project", project, "Проект", nameResultForesightCheckProject, dateResultForesightCheckProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject, dateSentForTranslationProject, dateToSentForTranslationProject);
+            objProject = addSingleGroupObject(1, "project", project, "Проект",
+                    nameResultForesightCheckProject, dateResultForesightCheckProject, positiveResultForesightCheckProject,
+                    negativeResultForesightCheckProject, dateProject, nameNativeProject, nameForeignProject,
+                    nameNativeClaimerProject, emailClaimerProject, dateSentForTranslationProject, dateToSentForTranslationProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveResultForesightCheckProject, objProject)));   // или             positiveLegalResultProject
             setReadOnly(true);

@@ -178,6 +178,12 @@ public class EmailActionProperty extends ActionProperty {
                         if (attachmentName == null)
                             attachmentName = forms.get(i).caption;
                         attachmentName = BaseUtils.rtrim(attachmentName.replace('"', '\''));
+
+                        // добавляем расширение, поскольку видимо не все почтовые клиенты правильно его определяют по mimeType
+                        String extension =  extensions.get(formats.get(i));
+                        if (extension != null)
+                            attachmentName += extension;
+                                
                         attachmentForms.add(new EmailSender.AttachmentProperties(filePath, attachmentName, formats.get(i)));
                     }
                 }

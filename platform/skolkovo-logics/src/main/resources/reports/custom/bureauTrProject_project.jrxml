@@ -46,6 +46,10 @@
 "Перевод необходимо закончить до "+platform.base.BaseUtils.formatRussian($F{dateToSentForTranslationProject})+" года. \n"+
 "\n"+
 "\n"+
+"Название проекта : " + $F{nameNativeProject} + "\n"+
+"Электронный адрес : " + $F{emailClaimerProject} + "\n"+
+"\n"+
+"\n"+
 "****************************DISCLAIMER******************************** \n"+
 "This message is for the sole use of the intended recipient and may contain confidential information. Any unauthorized review, use or disclosure is prohibited. If you are not the intended recipient, please immediately contact the sender by reply email and delete the original message and destroy all copies thereof. \n"+
 "\n"+

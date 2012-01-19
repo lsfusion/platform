@@ -294,8 +294,11 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public FormEntity getBaseClassForm(BaseLogicsModule LM) {
         if(baseClassForm==null) {
             baseClassForm = getListForm(LM).form;
-            for(CustomClass child : children)
-                baseClassForm.add(child.getBaseClassForm(LM));
+            for(CustomClass child : children) {
+                FormEntity childForm = child.getBaseClassForm(LM);
+                if (childForm.getParent() == null)
+                    baseClassForm.add(childForm);
+            }
         }
         return baseClassForm;
     }
