@@ -28,9 +28,9 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.where.Where;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.listener.RemoteFormListener;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
+import platform.server.form.instance.listener.RemoteFormListener;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.FormView;
 import platform.server.logics.*;
@@ -39,7 +39,9 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.*;
+import platform.server.session.DataSession;
+import platform.server.session.PropertyChange;
+import platform.server.session.PropertyChanges;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -49,7 +51,6 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static platform.base.BaseUtils.nullBoolean;
 import static platform.base.BaseUtils.nvl;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс

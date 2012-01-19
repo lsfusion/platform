@@ -562,7 +562,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         deltaDouble2 = addSFProp("deltaDouble2", "abs((prm1)-(prm2))", DoubleClass.instance, 2);
         multiplyDouble2 = addMFProp("multiplyDouble2", DoubleClass.instance, 2);
         sumInteger2 = addSFProp("sumInteger2", "((prm1)+(prm2))", IntegerClass.instance, 2);
-        sumInteger3 = addSFProp("sumInteger2", "((prm1)+(prm2)+(prm3))", IntegerClass.instance, 3);
+        sumInteger3 = addSFProp("sumInteger3", "((prm1)+(prm2)+(prm3))", IntegerClass.instance, 3);
         subtractInteger2 = addSFProp("subtractInteger2", "((prm1)-(prm2))", IntegerClass.instance, 2);
         subtractInclInteger2 = addSFProp("subtractInclInteger2", "((prm1)-(prm2)+1)", IntegerClass.instance, 2);
         multiplyIntegerBy2 = addSFProp("((prm1)*2)", IntegerClass.instance, 1);
@@ -1174,11 +1174,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         statusWindow.titleShown = false;
         formsWindow = addWindow(new AbstractWindow("forms", getString("logics.forms"), 20, 20, 80, 79));
 
-        baseElement = new NavigatorElement("baseElement", getString("logics.forms"));
+        baseElement = addNavigatorElement("baseElement", getString("logics.forms"));
         baseElement.window = navigatorWindow;
-        adminElement = new NavigatorElement(baseElement, "adminElement", getString("logics.administration"));
+        adminElement = addNavigatorElement(baseElement, "adminElement", getString("logics.administration"));
 
-        objectElement = new NavigatorElement(adminElement, "objectElement", getString("logics.object"));
+        objectElement = addNavigatorElement(adminElement, "objectElement", getString("logics.object"));
         adminElement.add(objectElement);
 
         addFormEntity(new UserPolicyFormEntity(adminElement, "userPolicyForm"));

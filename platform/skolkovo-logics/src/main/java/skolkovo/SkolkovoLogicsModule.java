@@ -4454,7 +4454,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         claimerFull = addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "claimerFull"));
         claimer.setEditForm(claimerFull, claimerFull.objClaimer);
 
-        NavigatorElement print = new NavigatorElement(baseLM.baseElement, "print", "Печатные формы");
+        NavigatorElement print = addNavigatorElement(baseLM.baseElement, "print", "Печатные формы");
         print.window = leftToolbar;
 
         addFormEntity(new VoteStartFormEntity(print, "voteStart"));
@@ -4489,7 +4489,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new AcceptanceCertificateFormEntity(print, "acceptanceCertificate", "Акт оказанных услуг (резидент)", true));
         addFormEntity(new AcceptanceCertificateFormEntity(print, "acceptanceCertificateNonResident", "Акт оказанных услуг (нерезидент)", false));
 
-        NavigatorElement report = new NavigatorElement(baseLM.baseElement, "report", "Отчеты");
+        NavigatorElement report = addNavigatorElement(baseLM.baseElement, "report", "Отчеты");
         report.window = leftToolbar;
 
         addFormEntity(new ApplicationsSubmittedFormEntity(report, "applicationsSubmitted"));
@@ -4522,7 +4522,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         baseLM.baseElement.add(print);
         baseLM.baseElement.add(report);
 
-        NavigatorElement summaryTables = new NavigatorElement(baseLM.baseElement, "summaryTables", "Сводные таблицы");
+        NavigatorElement summaryTables = addNavigatorElement(baseLM.baseElement, "summaryTables", "Сводные таблицы");
         summaryTables.window = leftToolbar;
 
         addFormEntity(new ProjectClusterFormEntity(summaryTables, "projectCluster"));
@@ -4530,7 +4530,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         addFormEntity(new ExpertForesightFormEntity(summaryTables, "expertForesight"));
 
-        NavigatorElement options = new NavigatorElement(baseLM.baseElement, "options", "Настройки");
+        NavigatorElement options = addNavigatorElement(baseLM.baseElement, "options", "Настройки");
         options.window = leftToolbar;
 
         languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(options, "languageDocumentType"));

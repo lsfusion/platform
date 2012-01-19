@@ -706,6 +706,7 @@ contextIndependentPD[boolean innerPD] returns [LP property, boolean isData]
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $isData = false; }
 	|	groupDef=groupPropertyDefinition { $property = $groupDef.property; $isData = false; } 
 	|	typeDef=typePropertyDefinition { $property = $typeDef.property; $isData = false; }
+	|	formDef=formActionPropertyDefinition { $property = $formDef.property; $isData = false; }	
 	;
 
 joinPropertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
@@ -830,6 +831,26 @@ typePropertyDefinition returns [LP property]
 }
 	:	('IS' { bIs = true; } | 'AS')
 		clsId=classId
+	;
+
+
+formActionPropertyDefinition returns [LP property]
+@init {
+	boolean newSession = false;
+	boolean isModal = false;
+	List<String> objects = new ArrayList<String>();
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedFAProp($formName.sid, objects, $exprList.props, $exprList.usedParams, $className.sid, newSession, isModal);	
+	}
+}
+	:	'ACTION' 'FORM' formName=compoundID 
+		('OBJECTS' list=nonEmptyIdList { objects = $list.ids; })? 
+		('SET' exprList=nonEmptyPropertyExpressionList[objects, false])? 
+		('CLASS' className=classId)?
+		('NEWSESSION' { newSession = true; })? 
+		('MODAL' { isModal = true; })?  	
 	;
 
 
@@ -1073,12 +1094,12 @@ addNavigatorElementStatement[NavigatorElement parentElement]
 		('TO' wid=compoundID)?
 		{
 			if (inPropParseState()) {
-				insElem = self.addNavigatorElement($insSelector.sid,
-													caption,
-													insElem,
-													hasPosition ? $insPosition.val : InsertPosition.IN,
-													hasPosition ? $posSelector.element : $parentElement,
-													$wid.sid);
+				insElem = self.addScriptedNavigatorElement($insSelector.name,
+															caption,
+															insElem,
+															hasPosition ? $insPosition.val : InsertPosition.IN,
+															hasPosition ? $posSelector.element : $parentElement,
+															$wid.sid);
 			}
 		}
 		navigatorElementStatementBody[insElem]
@@ -1095,12 +1116,12 @@ setupNavigatorElementStatement
 		navigatorElementStatementBody[$e.element]
 	;
 	
-navigatorElementSelector[boolean hasToExist] returns [String sid, NavigatorElement element]
-	:	id=ID
+navigatorElementSelector[boolean hasToExist] returns [String name, NavigatorElement element]
+	:	id=ID	
 		{
 			if (inPropParseState()) {
-				$sid = $id.text;
-				$element = self.getNavigatorElementBySID($sid, hasToExist);
+				$name = $id.text;
+				$element = self.getNavigatorElementBySID($name, hasToExist);
 			}
 		}
 	;

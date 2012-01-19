@@ -18,6 +18,7 @@ import platform.server.data.expr.query.PartitionType;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.FilterEntity;
+import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.window.AbstractWindow;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
@@ -77,6 +78,7 @@ public abstract class LogicsModule {
     private final Map<String, AbstractGroup> moduleGroups = new HashMap<String, AbstractGroup>();
     private final Map<String, ValueClass> moduleClasses = new HashMap<String, ValueClass>();
     private final Map<String, AbstractWindow> windows = new HashMap<String, AbstractWindow>();
+    private final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<String, NavigatorElement<?>>();
 
     private final Map<String, List<String>> propNamedParams = new HashMap<String, List<String>>();
 
@@ -105,7 +107,7 @@ public abstract class LogicsModule {
     }
 
     protected void addModuleLP(LP<?> lp) {
-//        assert !moduleProperties.containsKey(lp.property.getSID());
+        assert !moduleProperties.containsKey(lp.property.getSID());
         moduleProperties.put(lp.property.getSID(), lp);
     }
 
@@ -2016,9 +2018,34 @@ public abstract class LogicsModule {
         return addCProp("dumbProperty" + interfaces, StringClass.get(0), "", params);
     }
 
+    protected NavigatorElement addNavigatorElement(String name, String caption) {
+        return addNavigatorElement(null, name, caption);
+    }
+
+    protected NavigatorElement addNavigatorElement(NavigatorElement parent, String name, String caption) {
+        NavigatorElement elem = new NavigatorElement(parent, transformNameToSID(name), caption);
+        addModuleNavigator(elem);
+        return elem;
+    }
+
+    public NavigatorElement getNavigatorElementBySID(String sid) {
+        return moduleNavigators.get(sid);
+    }
+
+    public NavigatorElement getNavigatorElementByName(String name) {
+        return getNavigatorElementBySID(transformNameToSID(name));
+    }
+
     protected <T extends FormEntity> T addFormEntity(T form) {
+        form.setSID(transformNameToSID(form.getSID()));
         form.richDesign = form.createDefaultRichDesign();
+        addModuleNavigator(form);
         return form;
+    }
+
+    protected void addModuleNavigator(NavigatorElement<?> element) {
+        assert !moduleNavigators.containsKey(element.getSID());
+        moduleNavigators.put(element.getSID(), element);
     }
 
     public void addObjectActions(FormEntity form, ObjectEntity object) {

@@ -115,7 +115,7 @@ public class PaasLogicsModule extends LogicsModule {
         configurationDatabaseName = addJProp(baseGroup, "configurationDatabaseName", "Имя базы данных", baseLM.name, configurationDatabase, 1);
         configurationPort = addDProp(baseGroup, "configurationPort", "Порт для запуска", IntegerClass.instance, configuration);
         configurationStatus = addDProp("configurationStatus", "Статус", status, configuration);
-        configurationStatusName = addJProp(baseGroup, "configurationStatus", "Статус", baseLM.name, configurationStatus, 1);
+        configurationStatusName = addJProp(baseGroup, "configurationStatusName", "Статус", baseLM.name, configurationStatus, 1);
 
         refreshStatus = addJProp("Обновить", baseLM.and1, addRefreshStatusProperty(), 1, baseLM.vtrue);
 

@@ -3416,9 +3416,9 @@ public class RomanLogicsModule extends LogicsModule {
         objectsWindow.setDockPosition(0, 6, 20, 64);
         baseLM.formsWindow.setDockPosition(20, 10, 80, 89);
 
-        NavigatorElement classifier = new NavigatorElement(baseLM.baseElement, "classifier", "Справочники");
+        NavigatorElement classifier = addNavigatorElement(baseLM.baseElement, "classifier", "Справочники");
         classifier.window = leftToolbar;
-        //NavigatorElement classifierItem = new NavigatorElement(classifier, "classifierItem", "Для описания товаров");
+        //NavigatorElement classifierItem = addNavigatorElement(classifier, "classifierItem", "Для описания товаров");
         addFormEntity(new NomenclatureFormEntity(classifier, "nomenclatureForm", "Номенклатура"));
 
         CategoryFormEntity categoryForm = addFormEntity(new CategoryFormEntity(classifier, "categoryForm", "Номенклатурные группы"));
@@ -3477,7 +3477,7 @@ public class RomanLogicsModule extends LogicsModule {
         findItemFormBoxBarcode = addFormEntity(new FindItemFormEntity(null, "findItemFormBoxBarcode", "Поиск товара (с коробами и выбором штрих-кода)", true, true));
         findItemFormSimpleBarcode = addFormEntity(new FindItemFormEntity(null, "findItemFormSimpleBarcode", "Поиск товара (с выбором штрих-кода)", false, true));
 
-        NavigatorElement printForms = new NavigatorElement(baseLM.baseElement, "printForms", "Печатные формы");
+        NavigatorElement printForms = addNavigatorElement(baseLM.baseElement, "printForms", "Печатные формы");
         printForms.window = leftToolbar;
         addFormEntity(new AnnexInvoiceFormEntity(printForms, "annexInvoiceForm", "Приложение к инвойсу", false));
         invoiceFromFormEntity = addFormEntity(new AnnexInvoiceFormEntity(printForms, "annexInvoiceForm2", "Приложение к инвойсу (перевод)", true));
@@ -3500,12 +3500,12 @@ public class RomanLogicsModule extends LogicsModule {
 
         invoiceExportForm = addFormEntity(new InvoiceExportFormEntity(printForms, "invoiceExportForm", "Экспорт инвойсов"));
 
-        NavigatorElement purchase = new NavigatorElement(baseLM.baseElement, "purchase", "Управление закупками");
+        NavigatorElement purchase = addNavigatorElement(baseLM.baseElement, "purchase", "Управление закупками");
         purchase.window = leftToolbar;
         addFormEntity(new PricatFormEntity(purchase, "pricatForm", "Прикаты"));
 
 
-        NavigatorElement purchaseCreate = new NavigatorElement(purchase, "purchaseCreate", "Создать");
+        NavigatorElement purchaseCreate = addNavigatorElement(purchase, "purchaseCreate", "Создать");
         addFormEntity(new OrderEditFormEntity(purchaseCreate, "orderAddForm", "Заказ", false)).showType = FormShowType.MODAL_FULLSCREEN;
         addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "boxInvoiceAddForm", "Инвойс по коробам", true, false)).showType = FormShowType.MODAL_FULLSCREEN;
         addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "simpleInvoiceAddForm", "Инвойс без коробов", false, false)).showType = FormShowType.MODAL_FULLSCREEN;
@@ -3522,10 +3522,10 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new ShipmentListFormEntity(purchase, "simpleShipmentListForm", "Поставки без коробов", false));
         addFormEntity(new InvoiceShipmentFormEntity(purchase, "invoiceShipmentForm", "Сравнение по инвойсам"));                                                                                                                       
 
-        NavigatorElement distribution = new NavigatorElement(baseLM.baseElement, "distribution", "Управление складом");
+        NavigatorElement distribution = addNavigatorElement(baseLM.baseElement, "distribution", "Управление складом");
         distribution.window = leftToolbar;
 
-        NavigatorElement generation = new NavigatorElement(distribution, "generation", "Генерация");
+        NavigatorElement generation = addNavigatorElement(distribution, "generation", "Генерация");
         generation.window = generateToolbar;
 
         FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(generation, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
@@ -3537,33 +3537,33 @@ public class RomanLogicsModule extends LogicsModule {
         FormEntity createStampFormAdd = addFormEntity(new CreateStampFormEntity(generation, "createStampFormAdd", "Сгенерировать марки", FormType.ADD));
         createStampFormAdd.showType = FormShowType.MODAL;
 
-        NavigatorElement preparation = new NavigatorElement(distribution, "preparation", "Подготовка к приемке");
+        NavigatorElement preparation = addNavigatorElement(distribution, "preparation", "Подготовка к приемке");
 
         addFormEntity(new CreatePalletFormEntity(preparation, "createPalletFormList", "Паллеты", FormType.LIST));
         addFormEntity(new CreateFreightBoxFormEntity(preparation, "createFreightBoxFormList", "Короба", FormType.LIST));
         addFormEntity(new CreateSkuFormEntity(preparation, "createSkuFormList", "Товары", FormType.LIST));
         addFormEntity(new CreateStampFormEntity(preparation, "createStampFormList", "Марки", FormType.LIST));
 
-        NavigatorElement acceptance = new NavigatorElement(distribution, "acceptance", "Приемка");
+        NavigatorElement acceptance = addNavigatorElement(distribution, "acceptance", "Приемка");
         addFormEntity(new ShipmentSpecFormEntity(acceptance, "boxShipmentSpecForm", "Прием товара по коробам", true));
         addFormEntity(new ShipmentSpecFormEntity(acceptance, "simpleShipmentSpecForm", "Прием товара без коробов", false));
 
-        NavigatorElement placing = new NavigatorElement(distribution, "placing", "Распределение");
+        NavigatorElement placing = addNavigatorElement(distribution, "placing", "Распределение");
         addFormEntity(new BoxPalletStoreFormEntity(placing, "boxPalletStoreForm", "Распределение коробов по паллетам"));
         addFormEntity(new FreightShipmentStoreFormEntity(placing, "freightShipmentStoreForm", "Распределение паллет по фрахтам"));
 
-        NavigatorElement balance = new NavigatorElement(distribution, "balance", "Остатки по товарам");
+        NavigatorElement balance = addNavigatorElement(distribution, "balance", "Остатки по товарам");
         addFormEntity(new BalanceBrandWarehouseFormEntity(balance, "balanceBrandWarehouseForm", "Остатки на складе (по брендам)"));
         addFormEntity(new BalanceWarehouseFormEntity(balance, "balanceWarehouseForm", "Остатки на складе"));
         addFormEntity(new BalanceWarehousePeriodFormEntity(balance, "balanceWarehousePeriodForm", "Движение товара за период"));
 
-        NavigatorElement shipment = new NavigatorElement(baseLM.baseElement, "shipment", "Управление фрахтами");
+        NavigatorElement shipment = addNavigatorElement(baseLM.baseElement, "shipment", "Управление фрахтами");
         shipment.window = leftToolbar;
 
         addFormEntity(new FreightContentFormEntity(shipment, "freightContentForm", "Содержимое фрахта"));
         addFormEntity(new FreightReportFormEntity(shipment, "freightReporttForm", "Отчёт по фрахту"));
         addFormEntity(new FreightBoxContentFormEntity(shipment, "freightBoxContentForm", "Содержимое короба"));
-        NavigatorElement actionFreight = new NavigatorElement(shipment, "actionFreight", "Действия");
+        NavigatorElement actionFreight = addNavigatorElement(shipment, "actionFreight", "Действия");
         addFormEntity(new FreightCreateFormEntity(actionFreight, "freightCreateForm", "Редактирование фрахта"));
         addFormEntity(new FreightShipmentFormEntity(actionFreight, "freightShipmentForm", "Комплектация фрахта"));
         addFormEntity(new FreightChangeFormEntity(actionFreight, "freightChangeForm", "Обработка фрахта"));
@@ -3578,10 +3578,10 @@ public class RomanLogicsModule extends LogicsModule {
 
         shipment.add(actionFreight);
 
-        NavigatorElement settings = new NavigatorElement(baseLM.baseElement, "settings", "Настройки");
+        NavigatorElement settings = addNavigatorElement(baseLM.baseElement, "settings", "Настройки");
         settings.window = leftToolbar;
         addFormEntity(new GlobalParamFormEntity(settings, "globalParamForm", "Общие параметры"));
-        NavigatorElement classifierCurrency = new NavigatorElement(settings, "classifierCurrency", "Валюты и курсы");
+        NavigatorElement classifierCurrency = addNavigatorElement(settings, "classifierCurrency", "Валюты и курсы");
         classifierCurrency.add(currency.getListForm(baseLM).form);
         classifierCurrency.add(typeExchange.getListForm(baseLM).form);
         addFormEntity(new RateCurrencyFormEntity(classifierCurrency, "rateCurrencyForm", "Курсы валют"));

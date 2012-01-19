@@ -1581,7 +1581,7 @@ public class VEDLogicsModule extends LogicsModule {
 
     private void initNavigators() {
 
-        NavigatorElement print = new NavigatorElement(baseLM.baseElement, "print", "Печатные формы");
+        NavigatorElement print = addNavigatorElement(baseLM.baseElement, "print", "Печатные формы");
         FormEntity incomePrice = addFormEntity(new IncomePriceFormEntity(print, "incomePrice"));
         FormEntity revalueAct = addFormEntity(new RevalueActFormEntity(print, "revalueAct"));
         FormEntity pricers = addFormEntity(new PricersFormEntity(print, "pricers"));
@@ -1605,7 +1605,7 @@ public class VEDLogicsModule extends LogicsModule {
         addFormEntity(new ArticleReportFormEntity(print, "articleReport"));
         createArticleForm = addFormEntity(new CreateArticleFormEntity(null, "createArticleForm", "Ввод нового товара"));
 
-        NavigatorElement classifier = new NavigatorElement(baseLM.baseElement, "classifier", "Справочники");
+        NavigatorElement classifier = addNavigatorElement(baseLM.baseElement, "classifier", "Справочники");
             addFormEntity(new ArticleInfoFormEntity(classifier, "articleInfoForm"));
             addFormEntity(new StoreInfoFormEntity(classifier, "storeInfoForm"));
             addFormEntity(new DocumentArticleFormEntity(classifier, "DocumentArticleForm"));
@@ -1613,32 +1613,32 @@ public class VEDLogicsModule extends LogicsModule {
             addFormEntity(new ArticleSpecificationFormEntity(classifier, " ArticleSpecificationForm"));
 
 
-        NavigatorElement delivery = new NavigatorElement(baseLM.baseElement, "delivery", "Управление закупками");
+        NavigatorElement delivery = addNavigatorElement(baseLM.baseElement, "delivery", "Управление закупками");
             addFormEntity(new ContragentWholeArticleFormEntity(delivery, "ContragentWholeArticleForm1", true));
             addFormEntity(new SpecificationSupplierFormEntity(delivery, "SpecificationSupplierForm"));
-            NavigatorElement deliveryLocal = new NavigatorElement(delivery, "deliveryLocal", "Закупки у местных поставщиков");
-                NavigatorElement deliveryShopLocal = new NavigatorElement(deliveryLocal, "deliveryShopLocal", "Закупки на магазин");
+            NavigatorElement deliveryLocal = addNavigatorElement(delivery, "deliveryLocal", "Закупки у местных поставщиков");
+                NavigatorElement deliveryShopLocal = addNavigatorElement(deliveryLocal, "deliveryShopLocal", "Закупки на магазин");
                     FormEntity deliveryCommitShopLocal = addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, true, "deliveryCommitShopLocal", 1));
                     deliveryCommitShopLocal.caption = "Ввод прихода";
                     FormEntity deliveryOrderShopLocal = addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, true, "deliveryOrderShopLocal", 0));
                     deliveryOrderShopLocal.caption = "Ввод заявки";
                     FormEntity deliveryShopLocalBrowse = addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, false, "deliveryShopLocalBrowse", 0));
                     deliveryShopLocalBrowse.caption = "Список документов";
-                NavigatorElement deliveryWarehouseLocal = new NavigatorElement(deliveryLocal, "deliveryWarehouseLocal", "Закупки на распред. центр");
+                NavigatorElement deliveryWarehouseLocal = addNavigatorElement(deliveryLocal, "deliveryWarehouseLocal", "Закупки на распред. центр");
                     FormEntity deliveryWarehouseShopLocal = addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, true, "deliveryWarehouseShopLocal", 1));
                     deliveryWarehouseShopLocal.caption = "Ввод прихода";
                     FormEntity deliveryOrderWarehouseLocal = addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, true, "deliveryOrderWarehouseLocal", 0));
                     deliveryOrderWarehouseLocal.caption = "Ввод заявки";
                     FormEntity deliveryCommitWarehouseLocal = addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, false, "deliveryCommitWarehouseLocal", 0));
                     deliveryCommitWarehouseLocal.caption = "Список документов";
-                NavigatorElement returnDeliveryLocal = new NavigatorElement(deliveryLocal, "returnDeliveryLocal", "Возвраты поставщику");
+                NavigatorElement returnDeliveryLocal = addNavigatorElement(deliveryLocal, "returnDeliveryLocal", "Возвраты поставщику");
                     FormEntity returnCommitDeliveryLocal = addFormEntity(new ReturnDeliveryLocalFormEntity(returnDeliveryLocal, true, "returnCommitDeliveryLocal", 1));
                     returnCommitDeliveryLocal.caption = "Ввод отгрузки";
                     FormEntity returnOrderDeliveryLocal = addFormEntity(new ReturnDeliveryLocalFormEntity(returnDeliveryLocal, true, "returnOrderDeliveryLocal", 0));
                     returnOrderDeliveryLocal.caption = "Ввод заявки";
                     FormEntity returnDeliveryLocalBrowse = addFormEntity(new ReturnDeliveryLocalFormEntity(returnDeliveryLocal, false, "returnDeliveryLocalBrowse", 0));
                     returnDeliveryLocalBrowse.caption = "Список документов";
-            NavigatorElement deliveryImport = new NavigatorElement(delivery, "deliveryImport", "Закупки у импортных поставщиков");
+            NavigatorElement deliveryImport = addNavigatorElement(delivery, "deliveryImport", "Закупки у импортных поставщиков");
                 FormEntity deliveryCommitImport = addFormEntity(new DeliveryImportFormEntity(deliveryImport, true, "deliveryCommitImport", 1));
                 deliveryCommitImport.caption = "Ввод прихода";
                 FormEntity deliveryOrderImport = addFormEntity(new DeliveryImportFormEntity(deliveryImport, true, "deliveryOrderImport", 0));
@@ -1646,9 +1646,9 @@ public class VEDLogicsModule extends LogicsModule {
                 FormEntity deliveryImportBrowse = addFormEntity(new DeliveryImportFormEntity(deliveryImport, false, "deliveryImportBrowse", 0));
                 deliveryImportBrowse.caption = "Список документов";
 
-        NavigatorElement sale = new NavigatorElement(baseLM.baseElement, "sale", "Управление продажами");
-            NavigatorElement saleRetailElement = new NavigatorElement(sale, "saleRetailElement", "Управление розничными продажами");
-                saleRetailCashRegisterElement = new NavigatorElement(saleRetailElement, "saleRetailCashRegisterElement", "Касса");
+        NavigatorElement sale = addNavigatorElement(baseLM.baseElement, "sale", "Управление продажами");
+            NavigatorElement saleRetailElement = addNavigatorElement(sale, "saleRetailElement", "Управление розничными продажами");
+                saleRetailCashRegisterElement = addNavigatorElement(saleRetailElement, "saleRetailCashRegisterElement", "Касса");
                     addFormEntity(new ShopArticleFormEntity(saleRetailCashRegisterElement, "shopArticleForm", "Товары в других магазинах"));
                     commitSaleForm = addFormEntity(new CommitSaleCheckRetailFormEntity(saleRetailCashRegisterElement, "commitSaleForm", true, false));
                         addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, "commitSaleCheckRetailForm", false, false));
@@ -1663,7 +1663,7 @@ public class VEDLogicsModule extends LogicsModule {
                     cachRegManagementForm = addFormEntity(VEDBL.cashRegController.createCashRegManagementFormEntity(saleRetailCashRegisterElement, "cachRegManagementForm"));
                     addFormEntity(new ShopMoneyFormEntity(saleRetailCashRegisterElement, "shopMoneyForm", "Данные из касс"));
                     addFormEntity(new ClientFormEntity(saleRetailCashRegisterElement, "clientForm", "Редактирование клиентов"));
-                NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetailElement, "saleRetailInvoice", "Безналичный расчет");
+                NavigatorElement saleRetailInvoice = addNavigatorElement(saleRetailElement, "saleRetailInvoice", "Безналичный расчет");
                     FormEntity saleRetailInvoiceForm = addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoice, "saleRetailInvoiceForm", true, false));
                         addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoiceForm, "orderSaleInvoiceRetailForm", false, false));
                     FormEntity saleInvoiceCert = addFormEntity(new SaleInvoiceCertFormEntity(saleRetailInvoice, "saleInvoiceCert", true, false));
@@ -1671,7 +1671,7 @@ public class VEDLogicsModule extends LogicsModule {
                     FormEntity returnSaleInvoiceRetailArticle = addFormEntity(new ReturnSaleInvoiceRetailFormEntity(saleRetailInvoice, true, "returnSaleInvoiceRetailArticle", false));
                         addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, "returnSaleInvoiceRetailArticle2", false));
                         addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, "returnSaleInvoiceRetailArticle3", true));
-            NavigatorElement saleWhole = new NavigatorElement(sale, "saleWhole", "Управление оптовыми продажами");
+            NavigatorElement saleWhole = addNavigatorElement(sale, "saleWhole", "Управление оптовыми продажами");
                 addFormEntity(new CustomerWholeFormEntity(saleWhole, "customerWholeForm"));
                 addFormEntity(new ContragentWholeArticleFormEntity(saleWhole, "ContragentWholeArticleForm2", false));
                 FormEntity saleWholeForm = addFormEntity(new SaleWholeFormEntity(saleWhole, "saleWholeForm", true));
@@ -1679,37 +1679,37 @@ public class VEDLogicsModule extends LogicsModule {
                 FormEntity returnSaleWholeArticle = addFormEntity(new ReturnSaleWholeFormEntity(saleWhole, "returnSaleWholeArticle", true));
                     addFormEntity(new ReturnSaleWholeFormEntity(returnSaleWholeArticle, "returnSaleWholeArticle2", false));
 
-        NavigatorElement distribute = new NavigatorElement(baseLM.baseElement, "distribute", "Управление распределением");
+        NavigatorElement distribute = addNavigatorElement(baseLM.baseElement, "distribute", "Управление распределением");
             addFormEntity(new StoreLegalEntityFormEntity(distribute, "storeLegalEntityForm"));
             FormEntity distributeShopForm = addFormEntity(new DistributeShopFormEntity(distribute, "distributeShopForm", true));
                 FormEntity distributeShopBrowseForm = addFormEntity(new DistributeShopFormEntity(distributeShopForm, "distributeShopBrowseForm", false));
             FormEntity distributeWarehouseForm = addFormEntity(new DistributeWarehouseFormEntity(distribute, "distributeWarehouseForm", true));
                 FormEntity distributeWarehouseBrowseForm = addFormEntity(new DistributeWarehouseFormEntity(distributeWarehouseForm, "distributeWarehouseBrowseForm", false));
 
-        NavigatorElement price = new NavigatorElement(baseLM.baseElement, "price", "Управление ценообразованием");
+        NavigatorElement price = addNavigatorElement(baseLM.baseElement, "price", "Управление ценообразованием");
             FormEntity documentRevalue = addFormEntity(new DocumentRevalueFormEntity(price, true, "documentRevalue"));
                 addFormEntity(new DocumentRevalueFormEntity(documentRevalue, false, "documentRevalue2"));
 
-        NavigatorElement toSell = new NavigatorElement(baseLM.baseElement, "toSell", "Управление ассортиментом");
+        NavigatorElement toSell = addNavigatorElement(baseLM.baseElement, "toSell", "Управление ассортиментом");
             //addFormEntity(new ArticleFormatFormEntity(toSell, "articleFormatForm", true));
             //addFormEntity(new ArticleFormatFormEntity(toSell, "articleFormatForm2", false));
             addFormEntity(new AssortmentFormEntity(toSell, "AssortmentFormEntity"));
 
-        NavigatorElement tax = new NavigatorElement(baseLM.baseElement, "tax", "Управление налогами");
+        NavigatorElement tax = addNavigatorElement(baseLM.baseElement, "tax", "Управление налогами");
             FormEntity nds = addFormEntity(new DocumentNDSFormEntity(tax, true, "nds"));
                 addFormEntity(new DocumentNDSFormEntity(nds, false, "nds2"));
 
-        NavigatorElement actions = new NavigatorElement(baseLM.baseElement, "actions", "Управление акциями");
+        NavigatorElement actions = addNavigatorElement(baseLM.baseElement, "actions", "Управление акциями");
             FormEntity saleAction = addFormEntity(new ActionFormEntity(actions, "saleAction"));
             FormEntity couponInterval = addFormEntity(new CouponIntervalFormEntity(actions, "couponInterval"));
             FormEntity couponArticle = addFormEntity(new CouponArticleFormEntity(actions, "couponArticle"));
             FormEntity obligationDocument = addFormEntity(new obligationDocumentFormEntity(actions, "obligationDocument"));
 
-        NavigatorElement balance = new NavigatorElement(baseLM.baseElement, "balance", "Управление хранением");
+        NavigatorElement balance = addNavigatorElement(baseLM.baseElement, "balance", "Управление хранением");
             FormEntity balanceCheck = addFormEntity(new BalanceCheckFormEntity(balance, "balanceCheck", true));
                 addFormEntity(new BalanceCheckFormEntity(balanceCheck, "balanceCheck2", false));
 
-        NavigatorElement store = new NavigatorElement(baseLM.baseElement, "store", "Сводная информация");
+        NavigatorElement store = addNavigatorElement(baseLM.baseElement, "store", "Сводная информация");
             addFormEntity(new StoreArticleFormEntity(store, "storeArticleForm"));
 
         addFormEntity(new GlobalFormEntity(baseLM.baseElement, "globalForm"));

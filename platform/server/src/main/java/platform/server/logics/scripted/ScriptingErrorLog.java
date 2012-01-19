@@ -104,6 +104,10 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "form", name);
     }
 
+    public void emitObjectNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+        emitNotFoundError(parser, "object", name);
+    }
+
     public void emitComponentNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "component", name);
     }
@@ -255,6 +259,10 @@ public class ScriptingErrorLog {
 
     public void emitFormulaReturnClassError(LsfLogicsParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "formula return class must be a built-in class");
+    }
+
+    public void emitFormDataClassError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "form class must be a built-in class");
     }
 
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {

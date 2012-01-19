@@ -350,20 +350,20 @@ import java.awt.event.KeyEvent;
         objectsWindow.drawRoot = true;
         baseLM.objectElement.window = objectsWindow;
 
-        NavigatorElement classifier = new NavigatorElement(baseLM.baseElement, "classifier", "Справочники");
+        NavigatorElement classifier = addNavigatorElement(baseLM.baseElement, "classifier", "Справочники");
         classifier.window = leftToolbar;
         FormEntity SkuBarcodeForm = addFormEntity(new SkuBarcodeForm(classifier, "SkuBarcodeForm", "Справочник товаров"));
         FormEntity UnitOfMeasureForm = addFormEntity(new UnitOfMeasureForm(classifier, "UnitOfMeasureForm", "Справочник единиц измерения"));
         FormEntity SubjectForm = addFormEntity(new SubjectForm(classifier, "SubjectForm", "Справочник мест учета"));
         FormEntity ContractorForm = addFormEntity(new ContractorForm(classifier, "ContractorForm", "Справочник контрагентов"));
 
-        NavigatorElement purchaseManagement = new NavigatorElement(baseLM.baseElement, "purchaseManagement", "Закупки");
+        NavigatorElement purchaseManagement = addNavigatorElement(baseLM.baseElement, "purchaseManagement", "Закупки");
         purchaseManagement.window = leftToolbar;
         FormEntity PurchaseInvoiceForm = addFormEntity(new PurchaseInvoiceForm(purchaseManagement, "PurchaseInvoiceForm", "Инвойсы"));
         FormEntity PurchaseDesadvForm = addFormEntity(new PurchaseDesadvForm(purchaseManagement, "PurchaseDesadvForm", "Отгрузки поставщиков"));
         FormEntity InDesadvInvoiceForm = addFormEntity(new InDesadvInvoiceForm(purchaseManagement, "InDesadvInvoiceForm", "Отгрузки по инвойсам"));
 
-        NavigatorElement materialManagement = new NavigatorElement(baseLM.baseElement, "materialManagement", "Управление материальными потоками");
+        NavigatorElement materialManagement = addNavigatorElement(baseLM.baseElement, "materialManagement", "Управление материальными потоками");
         materialManagement.window = leftToolbar;
         FormEntity ReceivingSupplierShipment = addFormEntity(new ReceivingSupplierShipment(materialManagement, "ReceivingSupplierShipment", "Приход от поставщика", false, false));
         FormEntity BalanceStockSkuBatch = addFormEntity(new BalanceStockSkuBatch(materialManagement, "BalanceStockSkuBatch", "Остаток по складам-товарам"));

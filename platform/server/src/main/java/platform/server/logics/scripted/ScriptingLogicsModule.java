@@ -12,6 +12,7 @@ import platform.server.LsfLogicsParser;
 import platform.server.classes.*;
 import platform.server.data.Union;
 import platform.server.data.expr.query.PartitionType;
+import platform.server.form.entity.*;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.window.*;
 import platform.server.logics.BaseLogicsModule;
@@ -216,6 +217,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return window;
     }
 
+    public FormEntity findFormByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+        NavigatorElement navigator = navigatorResolver.resolve(name);
+        checkForm(navigator, name);
+        return (FormEntity) navigator;
+    }
+
     public NavigatorElement getNavigatorElementBySID(String sid, boolean hasToExist) throws ScriptingErrorLog.SemanticErrorException {
         NavigatorElement elem = navigatorResolver.resolve(sid);
         if (elem == null && hasToExist) {
@@ -269,12 +276,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public ScriptedFormView createScriptedFormView(String formName, String caption, boolean applyDefault) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("createScriptedFormView(" + formName + ", " + applyDefault + ");");
-        NavigatorElement<? extends BusinessLogics<?>> formEntity = baseLM.baseElement.getNavigatorElement(formName);
-        if (!(formEntity instanceof ScriptingFormEntity)) {
-            errLog.emitFormNotFoundError(parser, formName);
-        }
+        FormEntity formEntity = findFormByCompoundName(formName);
 
-        ScriptingFormEntity scriptedEntity = (ScriptingFormEntity) formEntity;
+        ScriptingFormEntity scriptedEntity = (ScriptingFormEntity) formEntity; // todo [dale]: ???
 
         ScriptedFormView formView = new ScriptedFormView(scriptedEntity, applyDefault, this);
         if (caption != null) {
@@ -289,10 +293,6 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addScriptedForm(ScriptingFormEntity form) {
         scriptLogger.info("addScriptedFrom(" + form + ");");
         addFormEntity(form);
-    }
-
-    private String toLog(Object obj) {
-        return BaseUtils.toCaption(obj);
     }
 
     public LP<?> addScriptedDProp(String returnClass, List<String> paramClasses, boolean innerProp) throws ScriptingErrorLog.SemanticErrorException {
@@ -510,7 +510,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<Object> resultParams = getParamsPlainList(paramProps, usedParams);
         int groupPropParamCount = mergeLists(usedParams).size();
-        LP<?> resultProp = null;
+        LP<?> resultProp;
         if (isSGProp) {
             resultProp = addSGProp(null, genSID(), false, false, "", groupPropParamCount, resultParams.toArray());
         } else {
@@ -553,7 +553,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LP<?> addScriptedSFProp(String typeName, String formulaLiteral) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedSFProp(" + typeName + ", " + formulaLiteral + ");");
         ValueClass cls = findClassByCompoundName(typeName);
-        checkFormulaClass(cls, typeName);
+        checkFormulaClass(cls);
         String formulaText = transformStringLiteral(formulaLiteral);
         Set<Integer> params = findFormulaParameters(formulaText);
         checkFormulaParameters(params);
@@ -588,6 +588,40 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         return null;
     }
+
+    public LP<?> addScriptedFAProp(String formName, List<String> objectNames, List<LP<?>> props, List<List<Integer>> usedParams, String className, boolean newSession, boolean isModal) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + props + ", " + usedParams + ", " + className + ", " + newSession + ", " + isModal + ");");
+
+        FormEntity form = findFormByCompoundName(formName);
+
+        DataClass cls = null;
+        if (className != null) {
+            ValueClass valueClass = findClassByCompoundName(className);
+            checkFormDataClass(valueClass);
+            cls = (DataClass) valueClass;
+        }
+
+        ObjectEntity[] objects = new ObjectEntity[objectNames.size()];
+        for (int i = 0; i < objectNames.size(); i++) {
+            objects[i] = form.getObject(objectNames.get(i));
+            if (objects[i] == null) {
+                errLog.emitObjectNotFoundError(parser, objectNames.get(i));
+            }
+        }
+
+        PropertyObjectEntity[] propObjects = new PropertyObjectEntity[props == null ? 0 : props.size()];
+        if (props != null) {
+            for (int i = 0; i < props.size(); i++) {
+                PropertyObjectInterfaceEntity[] params = new PropertyObjectInterfaceEntity[usedParams.get(i).size()];
+                for (int j = 0; j < usedParams.get(i).size(); j++) {
+                    params[j] = objects[usedParams.get(i).get(j)];
+                }
+                propObjects[i] = form.addPropertyObject(props.get(i), params);
+            }
+        }
+        return addFAProp(null, genSID(), "", form, objects, propObjects, new OrderEntity[propObjects.length], cls, newSession, isModal);
+    }
+
 
     private LP<?> addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
         int pointPos = name.indexOf('.');
@@ -777,11 +811,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         findWindowByCompoundName(name).visible = false;
     }
 
-    public NavigatorElement addNavigatorElement(String sid, String caption, NavigatorElement element, InsertPosition pos, NavigatorElement anchorElement, String windowName) throws ScriptingErrorLog.SemanticErrorException {
-        assert sid != null && anchorElement != null;
+    public NavigatorElement addScriptedNavigatorElement(String name, String caption, NavigatorElement<?> element, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName) throws ScriptingErrorLog.SemanticErrorException {
+        assert name != null && anchorElement != null;
 
         if (element == null) {
-            element = new NavigatorElement(sid, caption);
+            element = addNavigatorElement(name, caption);
         } else if (caption != null) {
             element.caption = caption;
         }
@@ -868,6 +902,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    private void checkForm(NavigatorElement navElement, String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(navElement instanceof FormEntity)) {
+            errLog.emitFormNotFoundError(parser, name);
+        }
+    }
+
     private void checkParamCount(LP<?> mainProp, int paramCount) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp.property.interfaces.size() != paramCount) {
             errLog.emitParamCountError(parser, mainProp, paramCount);
@@ -944,10 +984,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private void checkFormulaClass(ValueClass cls, String name) throws ScriptingErrorLog.SemanticErrorException {
-        checkClass(cls, name);
+    private void checkFormulaClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof DataClass)) {
             errLog.emitFormulaReturnClassError(parser);
+        }
+    }
+
+    private void checkFormDataClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(cls instanceof DataClass)) {
+            errLog.emitFormDataClassError(parser);
         }
     }
 
@@ -1059,8 +1104,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private class NavigatorElementNameResolver extends CompoundNameResolver<NavigatorElement> {
         @Override
         public NavigatorElement resolveInModule(LogicsModule module, String simpleName) {
-            //пока используем просто глобальные sid, далее можно будет расширить
-            return baseLM.baseElement.getNavigatorElement(simpleName);
+            return module.getNavigatorElementByName(simpleName);
         }
     }
 

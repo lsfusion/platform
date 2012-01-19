@@ -156,9 +156,9 @@ foo(store, article) => foo2(store, article) RESOLVE NOTHING, bar2(store, article
 FORM documentArticle 'По документам'
 
 // Objects list syntax:
-// OBJECTS [alias=] className '<caption>' | [groupAlias=] ([alias1=] className1 '<caption1>', ..., [aliasN=] classNameN '<captionN>') [INIT | FIXED] [PANEL | HIDE | GRID],
+// OBJECTS [alias=] className ['<caption>'] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [INIT | FIXED] [PANEL | HIDE | GRID],
 //         ...
-//         [alias=] className '<caption>' | [groupAlias=] ([alias1=] className1 '<caption1>', ..., [aliasN=] classNameN '<captionN>') [INIT | FIXED] [PANEL | HIDE | GRID]
+//         [alias=] className ['<caption>'] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [INIT | FIXED] [PANEL | HIDE | GRID]
 OBJECTS document, article
 
 // Property list syntax:
@@ -195,6 +195,15 @@ PROPERTIES(s) name, storeSizeName, storeIsHuge, storeIsHuge2
 //(EDIT | DIALOG | LIST) <className> OBJECT <objectName>
 EDIT store OBJECT s
 ;
+
+// Form action property
+// Expression syntax:
+// ACTION FORM formName
+// [OBJECTS object1, ..., objectN]
+// [SET propertyExpr1, ..., propertyExprM]
+// [CLASS className]
+// [NEWSESSION] [MODAL]
+showForm(document) = ACTION FORM documentArticle OBJECTS document NEWSESSION MODAL;
 
 //////////////// WINDOW STATEMENT /////////////////
 // Add new window statement
