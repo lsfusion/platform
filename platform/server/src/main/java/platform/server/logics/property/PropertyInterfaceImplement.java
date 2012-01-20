@@ -5,6 +5,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.session.DataSession;
 import platform.server.session.MapDataChanges;
 import platform.server.session.Modifier;
@@ -26,6 +27,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> {
     abstract void mapFillDepends(Collection<Property> depends);
 
     Object read(DataSession session, Map<P, DataObject> interfaceValues, Modifier modifier) throws SQLException;
+    ObjectValue readClasses(DataSession session, Map<P, DataObject> interfaceValues, Modifier modifier) throws SQLException;
 
     public PropertyMapImplement<?, P> mapChangeImplement(Map<P, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException;
 

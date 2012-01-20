@@ -4888,6 +4888,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addAttachEAForm(emailBureauTrProjectEA, this, EmailActionProperty.Format.PDF, 
                         sID.equals("projectFullR2Native") ? nameNativeClaimerProject : nameForeignClaimerProject,
                         objProject, 1);
+
+            if (sID.equals("projectCompleteR2Native") || sID.equals("projectCompleteR2Foreign"))
+                addAttachEAForm(emailFondFormalControlEA, this, EmailActionProperty.Format.PDF, objProject, projectFormalControl, 1);
         }
 
         @Override

@@ -539,11 +539,25 @@ public abstract class LogicsModule {
         ((EmailActionProperty) eaProp.property).addRecipient(new PropertyMapImplement<X, ClassPropertyInterface>(emailProp.property, mapInterfaces), type);
     }
 
+    private Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> readObjectImplements(LP<ClassPropertyInterface> eaProp, Object[] params) {
+        Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> mapObjects = new HashMap<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>>();
+
+        int i = 0;
+        while (i < params.length) {
+            ObjectEntity object = (ObjectEntity)params[i];
+
+            ArrayList<Object> impls = new ArrayList<Object>();
+            while (++i < params.length && !(params[i] instanceof ObjectEntity)) {
+                impls.add(params[i]);
+            }
+            
+            mapObjects.put(object, readImplements(eaProp.listInterfaces, impls.toArray()).iterator().next()); // знаем, что только один будет
+        }
+        return mapObjects;
+    }
+    
     protected void addInlineEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, Object... params) {
-        Map<ObjectEntity, ClassPropertyInterface> mapObjects = new HashMap<ObjectEntity, ClassPropertyInterface>();
-        for (int i = 0; i < params.length / 2; i++)
-            mapObjects.put((ObjectEntity) params[2 * i], eaProp.listInterfaces.get((Integer) params[2 * i + 1] - 1));
-        ((EmailActionProperty) eaProp.property).addInlineForm(form, mapObjects);
+        ((EmailActionProperty) eaProp.property).addInlineForm(form, readObjectImplements(eaProp, params));
     }
 
     protected void addAttachEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, EmailActionProperty.Format format, Object... params) {
@@ -552,10 +566,7 @@ public abstract class LogicsModule {
             attachmentName = (LP) params[0];
             params = Arrays.copyOfRange(params, 1, params.length);
         }
-        Map<ObjectEntity, ClassPropertyInterface> mapObjects = new HashMap<ObjectEntity, ClassPropertyInterface>();
-        for (int i = 0; i < params.length / 2; i++)
-            mapObjects.put((ObjectEntity) params[2 * i], eaProp.listInterfaces.get((Integer) params[2 * i + 1] - 1));
-        ((EmailActionProperty) eaProp.property).addAttachmentForm(form, format, mapObjects, attachmentName);
+        ((EmailActionProperty) eaProp.property).addAttachmentForm(form, format, readObjectImplements(eaProp, params), attachmentName);
     }
 
     protected LP addTAProp(LP sourceProperty, LP targetProperty) {

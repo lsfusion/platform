@@ -11,6 +11,7 @@ import platform.server.form.instance.PropertyObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.session.*;
 
 import java.sql.SQLException;
@@ -50,6 +51,10 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
 
     public Object read(DataSession session, Map<T, DataObject> interfaceValues, Modifier modifier) throws SQLException {
         return property.read(session.sql, BaseUtils.join(mapping, interfaceValues), modifier, session.env);
+    }
+
+    public ObjectValue readClasses(DataSession session, Map<T, DataObject> interfaceValues, Modifier modifier) throws SQLException {
+        return property.readClasses(session, BaseUtils.join(mapping, interfaceValues), modifier, session.env);
     }
 
     public MapDataChanges<T> mapDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, PropertyChanges propChanges) {

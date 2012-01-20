@@ -7,6 +7,7 @@ import platform.server.data.expr.PullExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
@@ -53,6 +54,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
 
     public Object read(DataSession session, Map<P, DataObject> interfaceValues, Modifier modifier) {
         return interfaceValues.get((P) this).object;
+    }
+
+    public ObjectValue readClasses(DataSession session, Map<P, DataObject> interfaceValues, Modifier modifier) {
+        return interfaceValues.get((P) this);
     }
 
     public Expr mapIncrementExpr(Map<P, ? extends Expr> joinImplement, PropertyChanges newChanges, PropertyChanges prevChanges, WhereBuilder changedWhere, IncrementType incrementType) {

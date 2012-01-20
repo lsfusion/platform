@@ -20,6 +20,7 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
@@ -51,7 +52,7 @@ public class EmailActionProperty extends ActionProperty {
     private final List<FormEntity> forms = new ArrayList<FormEntity>();
     private final List<Format> formats = new ArrayList<Format>();
     private final List<FormStorageType> types = new ArrayList<FormStorageType>();
-    private final List<Map<ObjectEntity, ClassPropertyInterface>> mapObjects = new ArrayList<Map<ObjectEntity, ClassPropertyInterface>>();
+    private final List<Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>>> mapObjects = new ArrayList<Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>>>();
     private final List<LP> attachmentNames = new ArrayList<LP>();
 
     private final LinkedHashMap<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipients = new LinkedHashMap<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType>();
@@ -87,7 +88,7 @@ public class EmailActionProperty extends ActionProperty {
         recipients.put(recipient, type);
     }
 
-    public void addInlineForm(FormEntity form, Map<ObjectEntity, ClassPropertyInterface> objects) {
+    public void addInlineForm(FormEntity form, Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> objects) {
         forms.add(form);
         formats.add(Format.HTML);
         types.add(FormStorageType.INLINE);
@@ -95,7 +96,7 @@ public class EmailActionProperty extends ActionProperty {
         attachmentNames.add(null);
     }
 
-    public void addAttachmentForm(FormEntity form, Format format, Map<ObjectEntity, ClassPropertyInterface> objects, LP attachmentName) {
+    public void addAttachmentForm(FormEntity form, Format format, Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> objects, LP attachmentName) {
         forms.add(form);
         formats.add(format);
         types.add(FormStorageType.ATTACH);
@@ -152,7 +153,14 @@ public class EmailActionProperty extends ActionProperty {
             Map<ByteArray, String> attachmentFiles = new HashMap<ByteArray, String>();
 
             for (int i = 0; i < forms.size(); i++) {
-                Map<ObjectEntity, DataObject> formObjects = BaseUtils.join(mapObjects.get(i), context.getKeys());
+                Map<ObjectEntity, DataObject> formObjects = new HashMap<ObjectEntity, DataObject>();
+                Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> implementMap = mapObjects.get(i);
+                for (Map.Entry<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> objectImpl : implementMap.entrySet()) {
+                    ObjectValue objectValue = objectImpl.getValue().readClasses(context.getSession(), context.getKeys(), context.getModifier());
+                    if (objectValue instanceof DataObject)
+                        formObjects.put(objectImpl.getKey(), (DataObject)objectValue);
+                }
+                
                 RemoteFormInterface remoteForm;
                 if(context.getRemoteForm() !=null)
                     remoteForm = context.getRemoteForm().createForm(forms.get(i), formObjects);
@@ -221,7 +229,7 @@ public class EmailActionProperty extends ActionProperty {
                 EmailSender.logger.error(errorMessage);
                 context.addAction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
             } else {
-                EmailSender sender = new EmailSender(smtpHost.trim(), BaseUtils.nullTrim(smtpPort), encryptedConnectionType.trim(),fromAddress.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recipientEmails);
+                EmailSender sender = new EmailSender(smtpHost.trim(), BaseUtils.nullTrim(smtpPort), BaseUtils.nullTrim(encryptedConnectionType), fromAddress.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recipientEmails);
                 sender.sendMail(subject, inlineForms, attachmentForms, attachmentFiles);
             }
         } catch (Exception e) {
