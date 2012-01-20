@@ -128,14 +128,19 @@ public class EmailSender {
         mp.addBodyPart(filePart);
     }
 
-    private String createInlinePart(List<String> inlineForms) throws IOException {
+    private String convertFilesToUtf(List<String> files) throws IOException {
         String result = "";
-        for (String path : inlineForms) {
+        for (String path : files) {
             BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(path), "utf-8"));
             while (in.ready()) {
                 result += in.readLine();
             }
         }
+        return result;
+    }
+    
+    private String createInlinePart(List<String> inlineForms) throws IOException {
+        String result = convertFilesToUtf(inlineForms);
         if (result.equals("")) {
             result = ServerResourceBundle.getString("mail.you.have.received.reports");
         }

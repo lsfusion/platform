@@ -4808,7 +4808,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addPropertyDraw(objProject, problemGroup, analoguesGroup, commercializationGroup, historyGroup, projectmissionGroup, nativeResultsProject, foreignResultsProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
-            addPropertyDraw(baseLM.webHost, objProject);
+            addPropertyDraw(baseLM.webHost, objProject.groupTo);
             getPropertyDraw(baseLM.objectValue, objProject).setSID("project");
 
             objResearch = addSingleGroupObject(2, "research", research, "Исследования");
@@ -4845,8 +4845,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objSpecialist, teamGroup);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectSpecialist, objSpecialist), Compare.EQUALS, objProject));
             getPropertyDraw(baseLM.objectValue, objSpecialist).setSID("specialist");
-            addPropertyDraw(baseLM.webHost, objSpecialist);
-
+//            addPropertyDraw(baseLM.webHost, objSpecialist.groupTo);
 
             addObjectActions(this, objSpecialist);
 
@@ -4894,9 +4893,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addAttachEAForm(emailBureauTrProjectEA, this, EmailActionProperty.Format.PDF, 
                         sID.equals("projectFullR2Native") ? nameNativeClaimerProject : nameForeignClaimerProject,
                         objProject, 1);
-
-            if (sID.equals("projectCompleteR2Native") || sID.equals("projectCompleteR2Foreign"))
-                addAttachEAForm(emailFondFormalControlEA, this, EmailActionProperty.Format.PDF, objProject, projectFormalControl, 1);
         }
 
         @Override
@@ -6925,6 +6921,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(sidResultFormalControl, objFormalControl)));
 //            setReadOnly(true);
             addInlineEAForm(emailFondFormalControlEA, this, objFormalControl, 1);
+            addInlineEAForm(emailFondFormalControlEA, projectCompleteR2Native, projectCompleteR2Native.objProject, projectFormalControl, 1);
+            addInlineEAForm(emailFondFormalControlEA, projectCompleteR2Foreign, projectCompleteR2Foreign.objProject, projectFormalControl, 1);
         }
     }
 
@@ -7966,7 +7964,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private final ClassPropertyInterface projectInterface;
 
         public GenerateVoteActionProperty() {
-            super(genSID(), "Сгенерировать заседание", new ValueClass[]{project});
+            super("generateVote", "Сгенерировать заседание", new ValueClass[]{project});
 
             Iterator<ClassPropertyInterface> i = interfaces.iterator();
             projectInterface = i.next();
