@@ -300,18 +300,23 @@ inStoreTypeTradingNetwork(storeType, tradingNetwork) = tradingNetworkStoreType(s
 
 CLASS ABSTRACT person 'Физическое лицо';
 CLASS employee 'Сотрудник' : person, customUser;
-departmentStoreEmployee 'Отдел сотрудника (ИД)' = DATA departmentStore (employee);
-nameDepartmentStoreEmployee 'Отдел сотрудника' (employee) = name(departmentStoreEmployee(employee)) IN baseGroup; //в далнейшем переделать с привязкой к дате приема на работу
+departmentStoreEmployee 'Сотрудник отдела' = DATA BOOLEAN (departmentStore, employee);
 
 FORM employee 'Сотрудник'
-OBJECTS e=employee FIXED PANEL
-PROPERTIES(e) userFirstName, userLastName, nameDepartmentStoreEmployee
+OBJECTS e=employee FIXED PANEL, d=departmentStore
+PROPERTIES(e) userFirstName, userLastName
+PROPERTIES(d) name
+PROPERTIES(d, e) departmentStoreEmployee
+FILTERGROUP filterEmployeeDepartmentStore
+    FILTER 'Показывать только отделы данного сотрудника' 'F10' NOT NULL departmentStoreEmployee(d, e)
 EDIT employee OBJECT e;
 
 FORM employees 'Сотрудники'
-OBJECTS e=employee
-PROPERTIES(e) READONLY commonName, userFirstName, userLastName, nameDepartmentStoreEmployee
-PROPERTIES(e) ADDFORM, EDITFORM, delete;
+OBJECTS e=employee, d=departmentStore
+PROPERTIES(e) READONLY userFirstName, userLastName
+PROPERTIES(e) ADDFORM, EDITFORM, delete
+PROPERTIES(d) READONLY name
+FILTERS NOT NULL departmentStoreEmployee(d, e);
 
 // ----------------------------------- Торговая площадь -------------------------------------------------- //
 
@@ -378,7 +383,6 @@ tradingSquareStore 'Торговая площадь магазина' = GROUP SU
 
 inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
 inTradingSquareDepartmentStore(departmentStore, tradingSquare) = departmentStoreTradingSquare(tradingSquare) == departmentStore;
-inEmployeeDepartmentStore(departmentStore, employee) = departmentStoreEmployee(employee) == departmentStore;
 inDepartmentStoreDiscount(departmentStore, discount) = departmentStoreDiscount(discount) == departmentStore;
 
 
@@ -411,7 +415,7 @@ PROPERTIES(t) ADDOBJ, delete
 PROPERTIES(c) READONLY dateDiscount, agreeDiscount
 PROPERTIES(c) ADDOBJ, delete
 FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
-FILTERS NOT NULL inEmployeeDepartmentStore(d, e)
+FILTERS NOT NULL departmentStoreEmployee(d, e)
 FILTERS NOT NULL inDepartmentStoreDiscount(d, c)
 EDIT departmentStore OBJECT d;
 
@@ -482,7 +486,7 @@ OBJECTS a=assortment FIXED PANEL, i=item
 PROPERTIES(a) name, infoAssortment
 PROPERTIES(a, i) itemAssortment
 PROPERTIES(i) name
-PROPERTIES(i) ADDFORM, EDITFORM, delete
+PROPERTIES(i) ADDSESSIONFORM, EDITSESSIONFORM, delete
 EDIT assortment OBJECT a;
 
 FORM assortments 'Ассортименты'
@@ -501,17 +505,17 @@ chairmanRevaluationCommittee 'Председатель комиссии (ИД)' 
 commonNameChairmanRevaluationCommittee 'Председатель комиссии' (revaluationCommittee) = commonName(chairmanRevaluationCommittee(revaluationCommittee)) IN baseGroup;
 departmentStoreRevaluationCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (revaluationCommittee);
 nameDepartmentStoreRevaluationCommittee 'Отдел комиссии' (revaluationCommittee) = commonName(departmentStoreRevaluationCommittee(revaluationCommittee)) IN baseGroup;
-CONSTRAINT CHECKED departmentStoreEmployee(chairmanRevaluationCommittee(revaluationCommittee)) != departmentStoreRevaluationCommittee(revaluationCommittee) MSG 'Отдел комиссии должен соответствовать отделу председателя комиссии';
+//CONSTRAINT CHECKED departmentStoreEmployee(departmentStoreRevaluationCommittee(revaluationCommitteeDepartmentStore), chairmanRevaluationCommittee(revaluationCommittee)) MSG 'Отдел комиссии должен соответствовать отделу председателя комиссии';
 CONSTRAINT CHECKED departmentStoreRevaluationCommittee(revaluationCommitteeDepartmentStore(departmentStore)) != departmentStore MSG 'Отдел комиссии должен соответствовать текущему отделу';
 
-inDepartmentStoreEmployeeRevaluationCommittee (revaluationCommittee, employee) = departmentStoreRevaluationCommittee(revaluationCommittee) == departmentStoreEmployee(employee);
+inDepartmentStoreEmployeeRevaluationCommittee (revaluationCommittee, employee) = departmentStoreEmployee(departmentStoreRevaluationCommittee(revaluationCommittee), employee);
 inCommitteeDepartmentStore 'Является членом комиссии' (revaluationCommittee, employee) = DATA BOOLEAN (revaluationCommittee, employee);
 
 FORM revaluationCommittee 'Комиссия переоценки'
 OBJECTS c=revaluationCommittee FIXED PANEL, e=employee
 PROPERTIES(c) name, nameDepartmentStoreRevaluationCommittee, commonNameChairmanRevaluationCommittee
 PROPERTIES(e) READONLY name
-PROPERTIES(e) userFirstName, userLastName, ADDFORM, EDITFORM, delete
+PROPERTIES(e) userFirstName, userLastName, ADDSESSIONFORM, EDITSESSIONFORM, delete
 PROPERTIES(c, e) inCommitteeDepartmentStore
 FILTERS NOT NULL inDepartmentStoreEmployeeRevaluationCommittee(c, e)
 EDIT revaluationCommittee OBJECT c;
@@ -520,7 +524,7 @@ FORM employeesCommittees 'Сотрудники и комиссии '
 OBJECTS c=revaluationCommittee, e=employee
 PROPERTIES(c) READONLY name, nameDepartmentStoreRevaluationCommittee, commonNameChairmanRevaluationCommittee
 PROPERTIES(c) ADDFORM, EDITFORM, delete
-PROPERTIES(e) READONLY userFirstName, userLastName, nameDepartmentStoreEmployee
+PROPERTIES(e) READONLY userFirstName, userLastName
 FILTERS NOT NULL inCommitteeDepartmentStore(c, e);
 
 // ----------------------------------- Банк ------------------------------------------- //
