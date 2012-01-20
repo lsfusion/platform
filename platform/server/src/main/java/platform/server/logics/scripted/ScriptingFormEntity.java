@@ -209,6 +209,9 @@ public class ScriptingFormEntity extends FormEntity {
         property.propertyCaption = options.getHeader();
         property.propertyFooter = options.getFooter();
         property.propertyHighlight = options.getHighlightIf();
+        if (options.getForceViewType() != null) {
+            property.forceViewType = options.getForceViewType();
+        }
         MappedProperty showIf = options.getShowIf();
         if (showIf != null) {
             LM.showIf(this, property, showIf.property, showIf.mapping);

@@ -1,5 +1,6 @@
 package platform.server.logics.scripted;
 
+import platform.interop.ClassViewType;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 
@@ -14,6 +15,7 @@ public class FormPropertyOptions {
     private PropertyObjectEntity highlightIf;
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
+    private ClassViewType forceViewType;
 
     public Boolean getReadOnly() {
         return readOnly;
@@ -63,6 +65,14 @@ public class FormPropertyOptions {
         this.footer = footer;
     }
 
+    public void setForceViewType(ClassViewType forceViewType) {
+        this.forceViewType = forceViewType;
+    }
+
+    public ClassViewType getForceViewType() {
+        return forceViewType;
+    }
+
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
@@ -72,6 +82,7 @@ public class FormPropertyOptions {
         merged.setHighlightIf(nvl(overrides.getHighlightIf(), highlightIf));
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));
+        merged.setForceViewType(nvl(overrides.getForceViewType(), forceViewType));
 
         return merged;
     }

@@ -329,9 +329,12 @@ formGroupObjectDeclaration returns [String groupName, List<String> objectNames, 
 
 formGroupObjectViewType returns [ClassViewType type, boolean isInitType]
 	: 	('INIT' {$isInitType = true;} | 'FIXED' {$isInitType = false;})
-	  	('PANEL' {$type = ClassViewType.PANEL;} | 'HIDE' {$type = ClassViewType.HIDE;} | 'GRID' {$type = ClassViewType.GRID;})
+		viewType=classViewType { $type = $viewType.type; }
 	;
 
+classViewType returns [ClassViewType type]
+	: 	('PANEL' {$type = ClassViewType.PANEL;} | 'HIDE' {$type = ClassViewType.HIDE;} | 'GRID' {$type = ClassViewType.GRID;})
+	;
 
 formSingleGroupObjectDeclaration returns [String name, String className, String caption] 
 	:	foDecl=formObjectDeclaration { $name = $foDecl.name; $className = $foDecl.className; $caption = $foDecl.caption; }
@@ -397,6 +400,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HIGHLIGHTIF' propObj=formPropertyObject { $options.setHighlightIf($propObj.property); }
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
+		|	'FORCE' viewType=classViewType { $options.setForceViewType($viewType.type); }
 		)*
 	;
 
