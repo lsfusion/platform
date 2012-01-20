@@ -262,6 +262,7 @@ OBJECTS b=barcode
 PROPERTIES(b) barcode, nameSkuBarcode;
 
 
+
 FORM items 'Товары'
 OBJECTS i=item
 OBJECTS b=barcode
@@ -505,7 +506,7 @@ chairmanRevaluationCommittee 'Председатель комиссии (ИД)' 
 commonNameChairmanRevaluationCommittee 'Председатель комиссии' (revaluationCommittee) = commonName(chairmanRevaluationCommittee(revaluationCommittee)) IN baseGroup;
 departmentStoreRevaluationCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (revaluationCommittee);
 nameDepartmentStoreRevaluationCommittee 'Отдел комиссии' (revaluationCommittee) = commonName(departmentStoreRevaluationCommittee(revaluationCommittee)) IN baseGroup;
-//CONSTRAINT CHECKED departmentStoreEmployee(departmentStoreRevaluationCommittee(revaluationCommitteeDepartmentStore), chairmanRevaluationCommittee(revaluationCommittee)) MSG 'Отдел комиссии должен соответствовать отделу председателя комиссии';
+CONSTRAINT CHECKED chairmanRevaluationCommittee(revaluationCommittee) AND NOT departmentStoreEmployee(departmentStoreRevaluationCommittee(revaluationCommittee), chairmanRevaluationCommittee(revaluationCommittee)) MSG 'Отдел комиссии должен соответствовать отделу председателя комиссии';
 CONSTRAINT CHECKED departmentStoreRevaluationCommittee(revaluationCommitteeDepartmentStore(departmentStore)) != departmentStore MSG 'Отдел комиссии должен соответствовать текущему отделу';
 
 inDepartmentStoreEmployeeRevaluationCommittee (revaluationCommittee, employee) = departmentStoreEmployee(departmentStoreRevaluationCommittee(revaluationCommittee), employee);
