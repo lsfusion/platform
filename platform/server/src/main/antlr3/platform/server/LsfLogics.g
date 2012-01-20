@@ -480,20 +480,22 @@ filterGroupDeclaration
 	List<String> keystrokes = new ArrayList<String>();
 	List<String> properties = new ArrayList<String>();
 	List<List<String>> mappings = new ArrayList<List<String>>();
+	List<Boolean> defaults = new ArrayList<Boolean>();
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, captions, keystrokes, properties, mappings);
+		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, captions, keystrokes, properties, mappings, defaults);
 	}
 }
 	:	'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; }
 		(
-			'FILTER' caption=stringLiteral keystroke=stringLiteral filter=formFilterDeclaration
+			'FILTER' caption=stringLiteral keystroke=stringLiteral filter=formFilterDeclaration setDefault=filterSetDefault
 			{
 				captions.add($caption.val);
 				keystrokes.add($keystroke.val);
 				properties.add($filter.name);
 				mappings.add($filter.mapping);
+				defaults.add($setDefault.isDefault);
 			}
 		)+
 	;
@@ -503,6 +505,9 @@ formFilterDeclaration returns [String name, List<String> mapping]
 	:	'NOT' 'NULL' propDecl=formMappedProperty { $name = $propDecl.name; $mapping = $propDecl.mapping; }
 	;
 	
+filterSetDefault returns [boolean isDefault = false]
+	:	('DEFAULT' { $isDefault = true; })?
+	;
 
 formOrderByList
 @init {

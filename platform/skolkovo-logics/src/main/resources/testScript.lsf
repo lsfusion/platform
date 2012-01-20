@@ -1,0 +1,78 @@
+MODULE TestSkolkovo;
+
+IMPORT BaseLogicsModule;
+IMPORT SkolkovoLogicsModule;
+
+FORM simpleForm 'Всё о проектах'
+OBJECTS p1=project INIT PANEL,
+        p2=project INIT PANEL,
+        p3=project INIT PANEL,
+        p4=project,
+        p5=project INIT PANEL,
+        p6=project INIT PANEL,
+        p7=project INIT PANEL
+PROPERTIES(p1) dateProject, dateStatusProject, nameNativeProject, nameForeignProject,
+    nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
+    nameStatusProject, dateInStatusProject
+PROPERTIES(p2) normalPeriodStatusProject, quantityDaysToOverdueDateStatusProject
+PROPERTIES(p3) nameProjectActionProject, updateDateProject
+PROPERTIES(p4) autoGenerateProject, inactiveProject
+PROPERTIES(p5) quantityClusterProject, quantityClusterVotedProject
+PROPERTIES(p6) quantityVoteProject, nameRegulationsProject
+PROPERTIES(p7) useAllClusterExpertsUnionProject
+;
+
+DESIGN simpleForm FROM DEFAULT {
+    main {
+        ADD p57234 {
+            title = '5+7+2+3+4';
+            ADD p5723 {
+                title = '5+7+2+3';
+                gwtVertical = FALSE;
+                gwtIsLayout = TRUE;
+                ADD p5.box;
+                ADD p723 {
+                    title = '7+2+3';
+                    ADD p7.box;
+                    ADD p23 {
+                        title = '2+3';
+                        gwtVertical = FALSE;
+                        gwtIsLayout = TRUE;
+                        ADD p2.box;
+                        ADD p3.box;
+                    }
+                }
+            }
+            ADD p4.box;
+        }
+        ADD p6.box;
+    }
+
+    p1.panel  {
+        gwtIsLayout = TRUE;
+//        gwtVertical = TRUE;
+        ADD cont4 {
+            title = 'vertical';
+            ADD PROPERTY(nameNativeProject(p1));
+            ADD PROPERTY(nameForeignProject(p1));
+            ADD cont3 {
+                title = 'horizontal';
+                gwtVertical = FALSE;
+                ADD cont1 {
+                    title = 'vertical';
+                    ADD PROPERTY(nameNativeClaimerProject(p1));
+                    ADD PROPERTY(nameForeignClaimerProject(p1));
+                    ADD PROPERTY(emailClaimerProject(p1));
+                }
+                ADD cont2 {
+                    title = 'vertical';
+                    ADD PROPERTY(nameStatusProject(p1));
+                    ADD PROPERTY(dateInStatusProject(p1));
+                }
+            }
+        }
+    }
+}
+
+
+
