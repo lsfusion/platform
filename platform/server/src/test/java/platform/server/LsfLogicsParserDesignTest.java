@@ -28,13 +28,13 @@ public class LsfLogicsParserDesignTest {
 
     private File testScriptFile;
 
-    private ScriptedBusinessLogics bl;
+    private ScriptingBusinessLogics bl;
 
     private ScriptingLogicsModule LM;
 
     private ScriptingFormEntity entity;
 
-    private ScriptedFormView design;
+    private ScriptingFormView design;
 
     private GroupObjectView sGroup;
     private GroupObjectView aGroup;
@@ -377,7 +377,7 @@ public class LsfLogicsParserDesignTest {
         testScriptFile = new File(SCRIPTS_FOLDER + name.getMethodName() + ".lsf");
         FileUtils.writeStringToFile(testScriptFile, fileContent, "UTF-8");
 
-        bl = new ScriptedBusinessLogics("scriptedLogicsUnitTest",
+        bl = new ScriptingBusinessLogics("scriptedLogicsUnitTest",
                                         new PostgreDataAdapter("scripted_logic_design_unittest", "localhost", "postgres", "11111", false),
                                         1234,
                                         testScriptFile.getAbsolutePath());
@@ -389,7 +389,7 @@ public class LsfLogicsParserDesignTest {
         entity = (ScriptingFormEntity) bl.LM.baseElement.getNavigatorElement("storeArticle");
         assertNotNull(entity);
 
-        design = (ScriptedFormView) entity.richDesign;
+        design = (ScriptingFormView) entity.richDesign;
         assertNotNull(design);
 
         if (hasDefault) {

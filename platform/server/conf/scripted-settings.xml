@@ -12,7 +12,7 @@
         <constructor-arg value="11111"/>
     </bean>
 
-    <bean id="businessLogics" class="platform.server.logics.scripted.ScriptedBusinessLogics">
+    <bean id="businessLogics" class="platform.server.logics.scripted.ScriptingBusinessLogics">
         <constructor-arg index="0" value="scriptedLogics" />
         <constructor-arg index="1" ref="dataAdapter" />
         <constructor-arg index="2" value="1234" />

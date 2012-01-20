@@ -10,7 +10,7 @@ import platform.server.form.window.MenuNavigatorWindow;
 import platform.server.form.window.PanelNavigatorWindow;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
-import platform.server.logics.scripted.ScriptedBusinessLogics;
+import platform.server.logics.scripted.ScriptingBusinessLogics;
 import platform.server.logics.scripted.ScriptingFormEntity;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 
@@ -28,7 +28,7 @@ public class LsfLogicsParserNavigatorTest {
 
     private File testScriptFile;
 
-    private ScriptedBusinessLogics bl;
+    private ScriptingBusinessLogics bl;
 
     private ScriptingLogicsModule LM;
 
@@ -253,7 +253,7 @@ public class LsfLogicsParserNavigatorTest {
         testScriptFile = new File(SCRIPTS_FOLDER + name.getMethodName() + ".lsf");
         FileUtils.writeStringToFile(testScriptFile, fileContent, "UTF-8");
 
-        bl = new ScriptedBusinessLogics("scriptedLogicsUnitTest",
+        bl = new ScriptingBusinessLogics("scriptedLogicsUnitTest",
                                         new PostgreDataAdapter("scripted_logic_navigator_unittest", "localhost", "postgres", "11111", false),
                                         1234,
                                         testScriptFile.getAbsolutePath());

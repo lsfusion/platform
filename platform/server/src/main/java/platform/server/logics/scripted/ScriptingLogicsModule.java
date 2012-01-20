@@ -71,22 +71,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         errLog = new ScriptingErrorLog("");
     }
 
-    public static ScriptingLogicsModule createFromString(String code, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
-        ScriptingLogicsModule module = new ScriptingLogicsModule(baseModule, BL);
-        module.code = code;
-        return module;
+    public ScriptingLogicsModule(String filename, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
+        this(baseModule, BL);
+        this.filename = filename;
     }
 
-    public static ScriptingLogicsModule createFromFile(String filename, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
-        ScriptingLogicsModule module = new ScriptingLogicsModule(baseModule, BL);
-        module.filename = filename;
-        return module;
-    }
-
-    public static ScriptingLogicsModule createFromStream(InputStream stream, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) throws IOException {
-        ScriptingLogicsModule module = new ScriptingLogicsModule(baseModule, BL);
-        module.code = IOUtils.readStreamToString(stream, "utf-8");
-        return module;
+    public ScriptingLogicsModule(InputStream stream, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) throws IOException {
+        this(baseModule, BL);
+        this.code = IOUtils.readStreamToString(stream, "utf-8");
     }
 
     public void setModuleName(String moduleName) {
@@ -275,13 +267,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ScriptingFormEntity(baseLM.baseElement, this, formName, caption);
     }
 
-    public ScriptedFormView createScriptedFormView(String formName, String caption, boolean applyDefault) throws ScriptingErrorLog.SemanticErrorException {
+    public ScriptingFormView createScriptedFormView(String formName, String caption, boolean applyDefault) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("createScriptedFormView(" + formName + ", " + applyDefault + ");");
         FormEntity formEntity = findFormByCompoundName(formName);
 
         ScriptingFormEntity scriptedEntity = (ScriptingFormEntity) formEntity; // todo [dale]: ???
 
-        ScriptedFormView formView = new ScriptedFormView(scriptedEntity, applyDefault, this);
+        ScriptingFormView formView = new ScriptingFormView(scriptedEntity, applyDefault, this);
         if (caption != null) {
             formView.caption = caption;
         }

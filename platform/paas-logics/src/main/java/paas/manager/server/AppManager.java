@@ -23,7 +23,7 @@ import platform.server.data.query.Query;
 import platform.server.lifecycle.LifecycleAdapter;
 import platform.server.lifecycle.LifecycleEvent;
 import platform.server.logics.DataObject;
-import platform.server.logics.scripted.ScriptedBusinessLogics;
+import platform.server.logics.scripted.ScriptingBusinessLogics;
 import platform.server.session.DataSession;
 
 import java.io.File;
@@ -211,7 +211,7 @@ public final class AppManager {
 
         commandLine.addArgument("-cp");
         commandLine.addArgument(System.getProperty("java.class.path"));
-        commandLine.addArgument(ScriptedBusinessLogics.class.getName());
+        commandLine.addArgument(ScriptingBusinessLogics.class.getName());
 
         Executor executor = new DefaultExecutor();
         executor.setStreamHandler(new PumpStreamHandler(new NullOutpuStream(), new NullOutpuStream()));

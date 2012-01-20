@@ -37,7 +37,7 @@ public class ScriptingFormEntity extends FormEntity {
 
     @Override
     public FormView createDefaultRichDesign() {
-        return new ScriptedFormView(this, true, LM);
+        return new ScriptingFormView(this, true, LM);
     }
 
     public void addScriptedGroupObjects(List<String> groupNames, List<List<String>> names, List<List<String>> classNames,

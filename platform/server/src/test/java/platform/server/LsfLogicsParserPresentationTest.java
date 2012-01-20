@@ -15,7 +15,7 @@ import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.logics.scripted.ScriptedBusinessLogics;
+import platform.server.logics.scripted.ScriptingBusinessLogics;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingFormEntity;
 import platform.server.logics.scripted.ScriptingLogicsModule;
@@ -38,7 +38,7 @@ public class LsfLogicsParserPresentationTest {
 
     private File testScriptFile;
 
-    private ScriptedBusinessLogics bl;
+    private ScriptingBusinessLogics bl;
 
     private ScriptingLogicsModule LM;
 
@@ -317,7 +317,7 @@ public class LsfLogicsParserPresentationTest {
         testScriptFile = new File(SCRIPTS_FOLDER + name.getMethodName() + ".lsf");
         FileUtils.writeStringToFile(testScriptFile, fileContent, "UTF-8");
 
-        bl = new ScriptedBusinessLogics("scriptedLogicsUnitTest",
+        bl = new ScriptingBusinessLogics("scriptedLogicsUnitTest",
                                         new PostgreDataAdapter("scripted_logic_presentation_unittest", "localhost", "postgres", "11111", false),
                                         1234,
                                         testScriptFile.getAbsolutePath());

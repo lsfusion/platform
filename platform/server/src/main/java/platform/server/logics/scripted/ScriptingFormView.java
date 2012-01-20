@@ -16,7 +16,7 @@ import java.util.Map;
 
 import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
 
-public class ScriptedFormView extends DefaultFormView {
+public class ScriptingFormView extends DefaultFormView {
 
     private final ScriptingFormEntity entity;
     private final ScriptingLogicsModule LM;
@@ -25,7 +25,7 @@ public class ScriptedFormView extends DefaultFormView {
 
     private final Map<String, ComponentView> sidToComponent = new HashMap<String, ComponentView>();
 
-    public ScriptedFormView(ScriptingFormEntity entity, boolean applyDefault, ScriptingLogicsModule iLM) {
+    public ScriptingFormView(ScriptingFormEntity entity, boolean applyDefault, ScriptingLogicsModule iLM) {
         super(entity, applyDefault);
 
         this.entity = entity;
