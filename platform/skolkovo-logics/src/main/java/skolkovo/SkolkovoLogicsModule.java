@@ -7942,6 +7942,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                             "Приложение 1 к пункту «Технология и(или) направление прикладных исследований»")));
                 } catch (DocumentException e) {
                     e.printStackTrace();
+                } catch (IOException e) {
+                    return IOUtils.getFileBytes(tempFile);
                 }
                 File outputFile = File.createTempFile("merged", ".pdf");
                 PdfCopyFields copy = null;

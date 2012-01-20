@@ -28,11 +28,16 @@ public class PdfUtils {
             }
         }
     }
-    
+
     public static File makeStamp(InputStream inputFile, String title) throws IOException, DocumentException {
 
         File outputFile = File.createTempFile("output", ".pdf");
-        PdfReader reader = new PdfReader(inputFile);
+        PdfReader reader;
+        try {
+            reader = new PdfReader(inputFile);
+        } catch (IOException e) {
+            return outputFile;
+        }
         curePdfReader(reader);
         PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(outputFile));
         BaseFont bf = BaseFont.createFont("arial.ttf", BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);

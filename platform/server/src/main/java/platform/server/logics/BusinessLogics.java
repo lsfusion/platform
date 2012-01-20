@@ -989,6 +989,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         List<List<Object>> data2 = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
+            //if (!LM.idSet.contains(property.getSID()))
             data2.add(Arrays.asList(property.getSID(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
         }
 
