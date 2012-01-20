@@ -4802,12 +4802,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFullR2FormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objProject = addSingleGroupObject(1, "project", project, "Проект", nameNativeProject, nameForeignProject, sidProject, nameNativeClaimerProject, nameForeignClaimerProject, nameNativeFinalClusterProject,
+            objProject = addSingleGroupObject(1, "project", project, "Проект", baseLM.objectValue, nameNativeProject, nameForeignProject, sidProject, nameNativeClaimerProject, nameForeignClaimerProject, nameNativeFinalClusterProject,
                     nameForeignFinalClusterProject, nameProjectActionProject, updateDateProject, nameStatusProject, dateStatusProject, isStatusProject, nameNativeJoinClaimerProject, nameForeignJoinClaimerProject,
                     nativeProblemProject, foreignProblemProject, nativeInnovativeProject, foreignInnovativeProject, descGroup, techDescrGroup, minutesOfMettingGroup, writtenConsentGroup, claimerInformationGroup);
 
             addPropertyDraw(objProject, problemGroup, analoguesGroup, commercializationGroup, historyGroup, projectmissionGroup, nativeResultsProject, foreignResultsProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+            addPropertyDraw(baseLM.webHost, objProject);
+            getPropertyDraw(baseLM.objectValue, objProject).setSID("project");
 
             objResearch = addSingleGroupObject(2, "research", research, "Исследования");
             addPropertyDraw(objResearch, problemGroup);
@@ -4839,9 +4841,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectAnalogues, objAnalogues), Compare.EQUALS, objProject));
             addObjectActions(this, objAnalogues);
 
-            objSpecialist = addSingleGroupObject(8, "specialist", specialist, "Члены команды");
+            objSpecialist = addSingleGroupObject(8, "specialist", specialist, "Члены команды", baseLM.objectValue);
             addPropertyDraw(objSpecialist, teamGroup);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectSpecialist, objSpecialist), Compare.EQUALS, objProject));
+            getPropertyDraw(baseLM.objectValue, objSpecialist).setSID("specialist");
+            addPropertyDraw(baseLM.webHost, objSpecialist);
+
+
             addObjectActions(this, objSpecialist);
 
             objObjectives = addSingleGroupObject(9, "objectives", objectives, "Цели проекта");

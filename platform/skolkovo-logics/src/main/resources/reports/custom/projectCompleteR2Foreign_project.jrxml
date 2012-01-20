@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="project" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="98"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10"/>
 	<style name="BoldStyle" fontName="lsf.TimesNewRoman" fontSize="10" isBold="true">
@@ -105,6 +105,7 @@
 	<field name="INNClaimerProject" class="java.lang.String"/>
 	<field name="isStatusProject" class="java.lang.Boolean"/>
 	<field name="nameForeignJoinClaimerProject" class="java.lang.String"/>
+	<field name="webHost" class="java.lang.String"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -314,6 +315,33 @@
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18" isRemoveLineWhenBlank="true"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA[$F{INNClaimerProject}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="23">
+				<printWhenExpression><![CDATA[$F{isStatusProject}!=null]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement style="BoldStyle" positionType="Float" x="378" y="0" width="170" height="18" forecolor="#0099FF"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Link to extract"]]></textFieldExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/readFile?sid=extractClaimerProject&params="+$F{project}]]></hyperlinkReferenceExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement style="BoldStyle" positionType="Float" x="165" y="0" width="213" height="18" forecolor="#0099FF"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Link to constituent documents"]]></textFieldExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/readFile?sid=constituentClaimerProject&params="+$F{project}]]></hyperlinkReferenceExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="150" height="18" forecolor="#0099FF"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Link to file statements"]]></textFieldExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/readFile?sid=statementClaimerProject&params="+$F{project}]]></hyperlinkReferenceExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
