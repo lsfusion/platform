@@ -1131,9 +1131,9 @@ navigatorElementSelector[boolean hasToExist] returns [String name, NavigatorElem
 ////////////////////////////////// DESIGN STATEMENT ////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-designStatement returns [ScriptedFormView formView]
+designStatement returns [ScriptingFormView formView]
 scope {
-	ScriptedFormView design;
+	ScriptingFormView design;
 }
 @init {
 	boolean applyDefault = false;
