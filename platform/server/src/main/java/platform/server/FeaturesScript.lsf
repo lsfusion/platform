@@ -205,6 +205,7 @@ EDIT store OBJECT s
 // [NEWSESSION] [MODAL]
 showForm(document) = ACTION FORM documentArticle OBJECTS document NEWSESSION MODAL;
 
+
 //////////////// WINDOW STATEMENT /////////////////
 // Add new window statement
 // Syntax:
@@ -453,3 +454,9 @@ DESIGN storeArticle FROM DEFAULT {
     }
     REMOVE setupEx;
 }
+
+
+//////////////// TABLE STATEMENT ////////////////
+// Syntax:
+// TABLE name(className1, ..., classNameN);
+TABLE articleStore(article, store);

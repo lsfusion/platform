@@ -78,6 +78,10 @@ grammar LsfLogics;
 		return inParseState(ScriptingLogicsModule.State.PROP);
 	}
 
+	public boolean inTableParseState() {
+		return inParseState(ScriptingLogicsModule.State.TABLE);
+	}
+
 	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
 		if (inPropParseState()) {
 			$designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue);
@@ -977,7 +981,12 @@ writeOnChangeStatement
 ////////////////////////////////////////////////////////////////////////////////
 
 tableStatement 
-	:	'T' ';';
+@after {
+	if (inTableParseState()) {
+		self.addScriptedTable($name.text, $list.ids);
+	}
+}
+	:	'TABLE' name=ID '(' list=nonEmptyClassIdList ')' ';';
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1322,8 +1331,15 @@ classIdList returns [List<String> ids]
 @init {
 	ids = new ArrayList<String>();
 }
-	:	((firstClassName=classId { ids.add($firstClassName.sid); })
-		(',' className=classId { ids.add($className.sid); })*)?
+	:	(neList=nonEmptyClassIdList { ids = $neList.ids; })?
+	;
+
+nonEmptyClassIdList returns [List<String> ids]
+@init {
+	ids = new ArrayList<String>();
+}
+	:		firstClassName=classId { ids.add($firstClassName.sid); }
+			(',' className=classId { ids.add($className.sid); })*
 	;
 
 compoundIdList returns [List<String> ids] 

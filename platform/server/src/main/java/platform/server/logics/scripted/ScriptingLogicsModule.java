@@ -54,7 +54,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final ScriptingErrorLog errLog;
     private LsfLogicsParser parser;
 
-    public enum State {GROUP, CLASS, PROP}
+    public enum State {GROUP, CLASS, PROP, TABLE}
     public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM }
     public enum InsertPosition {IN, BEFORE, AFTER}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
@@ -691,6 +691,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         mainProp.setDerivedChange(useOld, !anyChange, valueProp, BL, params.subList(1, params.size()).toArray());
     }
 
+    public void addScriptedTable(String name, List<String> classIds) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedTable(" + name + ", " + classIds + ");");
+
+        ValueClass[] classes = new ValueClass[classIds.size()];
+        for (int i = 0; i < classIds.size(); i++) {
+            classes[i] = findClassByCompoundName(classIds.get(i));
+        }
+        baseLM.tableFactory.include(name, classes);
+    }
+
     public void addScriptedWindow(WindowType type, String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
         if (scriptLogger.isInfoEnabled()) {
             scriptLogger.info("addScriptedWindow(" + name + ", " + type + ", " + caption + ", " + options + ");");
@@ -1039,6 +1049,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public void initTables() {
+        parseStep(ScriptingLogicsModule.State.TABLE);
     }
 
     @Override
