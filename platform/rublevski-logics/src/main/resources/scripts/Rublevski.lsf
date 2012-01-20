@@ -567,11 +567,6 @@ FORM ownership 'Форма собственности'
 OBJECTS o=ownership FIXED PANEL
 PROPERTIES(o) name, shortNameOwnership;
 
-FORM ownerships 'Формы собственности'
-OBJECTS o=ownership
-PROPERTIES(o) READONLY name, shortNameOwnership
-PROPERTIES(o) ADDFORM, EDITFORM, delete;
-
 // ----------------------------------- Лицензия ------------------------------------------ //
 GROUP licensGroup 'Лицензиионная информация' : baseGroup;
 CLASS license 'Лицензия' ;
@@ -1125,27 +1120,38 @@ NAVIGATOR {
     baseElement TO topToolbar;
 
     ADD lists 'Справочники' TO formsToolbar {
-        ADD itemGroups;
-        ADD unitsOfMeasure;
-        ADD items;
-        ADD stores;
-        ADD employees;
-        ADD qualifier;
-        ADD assortmentSupplier;
-        ADD employeesCommittees;
-        ADD banks;
-        ADD ownerships;
-        ADD suppliers;
-        ADD companies;
-        ADD models;
-        ADD assortments;
-        ADD machineries;
-        ADD stages;
-        ADD groupsCash;
-        ADD groupsScales;
-        ADD groupsCheck;
-        ADD cuttings;
-        ADD recipes;
+        ADD goods 'Товары' {
+            ADD items;
+            ADD itemGroups;
+            ADD unitsOfMeasure;
+            ADD assortments;
+        }
+        ADD shopStructure 'Магазины' {
+            ADD companies;
+            ADD qualifier;
+            ADD stores;
+        }
+        ADD employeeRelations 'Сотрудники' {
+            ADD employees;
+            ADD employeesCommittees;
+        }
+        ADD supplierRelation 'Поставщики'{
+            ADD suppliers;
+            ADD banks;
+            ADD assortmentSupplier;
+        }
+        ADD equipment 'Оборудование' {
+            ADD groupsCash;
+            ADD groupsScales;
+            ADD groupsCheck;
+            ADD machineries;
+            ADD models;
+            ADD stages;
+        }
+        ADD producing 'Производство'{
+            ADD cuttings;
+            ADD recipes;
+        }
     }
 
     ADD documents 'Документы' TO formsToolbar {
