@@ -361,11 +361,4 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     public String getRemoteActionMessage() throws RemoteException {
         return target.getRemoteActionMessage();
     }
-
-    @Override
-    public void adjustGroupObject(int groupID, byte[] value) throws RemoteException {
-        logRemoteMethodStartVoidCall("seekObject");
-        target.adjustGroupObject(groupID, value);
-        logRemoteMethodEndVoidCall("seekObject");
-    }
 }

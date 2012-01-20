@@ -9,6 +9,7 @@ import platform.interop.remote.MethodInvocation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         extends RemoteObjectProxy<T>
@@ -49,6 +50,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         }
 
         return proxy;
+    }
+
+    @NonPendingRemoteMethod
+    public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean currentSession, boolean interactive) throws RemoteException {
+        return target.createForm(formSID, initialObjects, currentSession, interactive);
     }
 
     @NonPendingRemoteMethod

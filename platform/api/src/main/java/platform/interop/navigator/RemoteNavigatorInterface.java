@@ -8,12 +8,15 @@ import platform.interop.remote.PendingRemote;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Map;
 
 public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextInterface {
 
     String getForms(String formSet) throws RemoteException;
 
     RemoteFormInterface createForm(String formSID, boolean currentSession, boolean interactive) throws RemoteException;
+
+    RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean currentSession, boolean interactive) throws RemoteException;
 
     RemoteFormInterface createForm(byte[] formState) throws RemoteException;
 

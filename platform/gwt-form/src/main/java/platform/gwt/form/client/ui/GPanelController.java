@@ -42,7 +42,7 @@ public class GPanelController {
             int ins = GwtSharedUtils.relativePosition(property, form.propertyDraws, properties);
             properties.add(ins, property);
             typeRenderers.add(ins, renderer);
-            formLayout.add(property, typeRenderers.get(ins).getComponent());
+            formLayout.add(property, renderer.getComponent(), ins);
         }
     }
 
@@ -73,11 +73,9 @@ public class GPanelController {
 
         for (int i = 0; i < properties.size(); i++) {
             GPropertyDraw property = properties.get(i);
-            formLayout.remove(property);
 
             Object propValue = values.get(property);
             typeRenderers.get(i).setValue(propValue);
-            formLayout.add(property, typeRenderers.get(i).getComponent());
         }
 
         dataChanged = false;

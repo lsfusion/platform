@@ -39,7 +39,7 @@ public class GFormLayout extends VLayout {
         }
     }
 
-    public boolean add(GComponent key, Canvas view) {
+    public boolean add(GComponent key, Canvas view, int position) {
         if (key == null) {
             return false;
         }
@@ -49,8 +49,12 @@ public class GFormLayout extends VLayout {
             return false;
         }
 
-        keyContView.add(key, view);
+        keyContView.add(key, view, position);
         return true;
+    }
+
+    public void add(GComponent key, Canvas view) {
+        add(key, view, -1);
     }
 
     public boolean remove(GComponent key) {
@@ -86,7 +90,7 @@ public class GFormLayout extends VLayout {
     }
 
     private boolean hasVisibleChildren(GContainer container) {
-        if (contViews.get(container).getComponent().getMembers().length == 0) {
+        if (contViews.get(container).needToBeHidden()) {
             return false;
         }
         for (GComponent child : container.children) {

@@ -216,6 +216,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     public void initGwtComponent(GContainer container) {
         super.initGwtComponent(container);
         container.title = title;
+        container.tabbedPane = tabbedPane;
         container.gwtVertical = gwtVertical;
         container.gwtIsLayout = gwtIsLayout;
     }

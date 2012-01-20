@@ -450,18 +450,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public void adjustGroupObject(int groupID, byte[] value) {
-        try {
-            GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
-            Map<ObjectInstance, Object> deserializedKeys = deserializeKeysValues(value);
-            for (ObjectInstance key : deserializedKeys.keySet()) {
-                groupObject.addSeek(key, new DataObject(deserializedKeys.get(key), key.getCurrentClass()), false);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void expandGroupObject(int groupId, byte[] groupValues) throws RemoteException {
         try {
             GroupObjectInstance group = form.getGroupObjectInstance(groupId);

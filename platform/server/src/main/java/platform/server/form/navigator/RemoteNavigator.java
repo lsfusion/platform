@@ -28,6 +28,8 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.where.Where;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.GroupObjectInstance;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.form.instance.listener.RemoteFormListener;
@@ -52,6 +54,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static platform.base.BaseUtils.nvl;
+import static platform.base.BaseUtils.orderList;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
@@ -429,6 +432,27 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     public RemoteFormInterface createForm(String formSID, boolean currentSession, boolean interactive) {
         return createForm(getFormEntity(formSID), currentSession, interactive);
+    }
+
+    public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean currentSession, boolean interactive) {
+        RemoteForm form = (RemoteForm) createForm(formSID, currentSession, interactive);
+        for (String objectSID : initialObjects.keySet()) {
+            GroupObjectInstance groupObject = null;
+            ObjectInstance object = null;
+            for (GroupObjectInstance group : (List<GroupObjectInstance>) form.form.groups) {
+                for (ObjectInstance obj : group.objects) {
+                    if (obj.getsID().equals(objectSID)) {
+                        object = obj;
+                        groupObject = group;
+                        break;
+                    }
+                }
+            }
+            if (object != null) {
+                groupObject.addSeek(object, new DataObject(Integer.decode(initialObjects.get(objectSID)), object.getCurrentClass()), true);
+            }
+        }
+        return form;
     }
 
     private Map<FormEntity, RemoteForm> openForms = new HashMap<FormEntity, RemoteForm>();

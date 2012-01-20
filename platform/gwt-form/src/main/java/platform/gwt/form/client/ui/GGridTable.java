@@ -64,7 +64,8 @@ public class GGridTable extends ListGrid {
 
         setShowRecordComponents(true);
         setShowRecordComponentsByCell(true);
-        setRecordComponentPoolingMode(RecordComponentPoolingMode.RECYCLE);
+//        setRecordComponentPoolingMode(RecordComponentPoolingMode.RECYCLE);
+//        setPoolComponentsPerColumn(true);
 
         addSelectionChangedHandler(new SelectionChangedHandler() {
             @Override

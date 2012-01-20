@@ -20,7 +20,11 @@ public class GetFormHandler extends FormActionHandler<GetForm> {
                      ? action.sid
                      : "connectionsForm";
 
-        RemoteFormInterface remoteForm = servlet.getNavigator().createForm(sid, false, true);
+        RemoteFormInterface remoteForm;
+        if (action.initialObjects != null)
+            remoteForm = servlet.getNavigator().createForm(sid, action.initialObjects, false, true);
+        else
+            remoteForm = servlet.getNavigator().createForm(sid, false, true);
         return createResult(remoteForm);
     }
 }
