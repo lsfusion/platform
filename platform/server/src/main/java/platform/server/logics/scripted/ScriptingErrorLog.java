@@ -265,6 +265,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "form class must be a built-in class");
     }
 
+    public void emitCaptionNotSpecifiedError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+        emitSimpleError(parser, format("caption wasn't specified for '%s' element", name));
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

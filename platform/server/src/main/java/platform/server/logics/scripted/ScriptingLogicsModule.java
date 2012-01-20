@@ -808,7 +808,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         assert name != null && anchorElement != null;
 
         if (element == null) {
-            element = addNavigatorElement(name, caption);
+            if (caption != null)
+                element = addNavigatorElement(name, caption);
+            else
+                errLog.emitCaptionNotSpecifiedError(parser, name);
         } else if (caption != null) {
             element.caption = caption;
         }
