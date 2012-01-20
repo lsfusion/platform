@@ -2399,13 +2399,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     @Override
     public byte[] readFile(String sid, String... params) throws RemoteException {
         LP property = getLP(sid);
-        List<ClassPropertyInterface> interfaces = new ArrayList<ClassPropertyInterface>(property.property.interfaces);
+        List<PropertyInterface> interfaces = new ArrayList<PropertyInterface>(property.listInterfaces);
         DataObject[] objects = new DataObject[interfaces.size()];
         byte[] fileBytes;
         try {
             DataSession session = createSession();
             for (int i = 0; i < interfaces.size(); i++) {
-                objects[i] = session.getDataObject(Integer.decode(params[i]), interfaces.get(i).interfaceClass.getType());
+                objects[i] = session.getDataObject(Integer.decode(params[i]), property.property.getInterfaceType(interfaces.get(i)));
             }
             fileBytes = (byte[]) property.read(session, objects);
         } catch (Exception e) {
