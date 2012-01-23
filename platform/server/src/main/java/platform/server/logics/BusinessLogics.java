@@ -2389,11 +2389,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         try {
             DataSession session = createSession();
             DataObject propertyObject = new DataObject(LM.SIDToProperty.read(session, new DataObject(propertySid)), LM.property);
-            default2 = (Boolean) LM.forbidViewProperty.read(session, propertyObject);
+            default2 = (Boolean) LM.permitViewProperty.read(session, propertyObject);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return default1 && default2 == null;
+        return default1 && default2 != null;
     }
 
     @Override
