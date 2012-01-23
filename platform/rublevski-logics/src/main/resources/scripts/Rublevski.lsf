@@ -1042,6 +1042,89 @@ DESIGN cuttings FROM DEFAULT {
        }
    }
 }
+//---------------------------- Налоги ----------------------------------------//
+CLASS tax 'Налог';
+CLASS taxNDS 'НДС' : tax;
+
+nameTax 'Наименование налога' = DATA STRING[200] (tax) IN baseGroup;
+shortNameTax 'Сокращение' = DATA STRING[20] (tax) IN baseGroup;
+
+CLASS range 'Шкала';
+dataRange 'Шкала' = DATA INTEGER (range);
+
+CLASS rate 'История изменений';
+rangeRate 'Шкала ИД' = DATA range (rate) IN idGroup;
+taxRange 'Налог ИД' = DATA tax (range) IN idGroup;
+
+CLASS STATIC rangeType 'Тип действия'
+{
+    common 'Общий',
+    units 'Для подразделений'
+};
+rangeTypeRange 'Тип ИД' = DATA rangeType (range) IN idGroup;
+nameRangeTypeRange 'Тип действия' = name(rangeTypeRange(range)) IN baseGroup;
+inRangeStoreDefault 'Вкл.' (range, store) = DATA BOOLEAN (range, store) IN baseGroup;
+inRangeStore 'Вкл.' (range, store) = inRangeStoreDefault(range, store)  IF rangeTypeRange(range) == rangeType.units IN baseGroup;
+
+dataRate 'Значение ставки' = DATA DOUBLE (rate) IN baseGroup;
+dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
+dateToRate 'Действует по' = DATA DATE (rate) IN baseGroup;
+dateRate 'Дата ввода' = DATA DATE (rate) IN baseGroup;
+
+employeeRate 'Кто ввел ИД' = DATA employee (rate) IN baseGroup;
+
+userFirstNameEmployeeRate 'Кто ввел значение, имя' (rate) = userFirstName(employeeRate(rate)) IN baseGroup;
+userLastNameEmployeeRate 'Кто ввел значение, фамилия' (rate) = userLastName(employeeRate(rate)) IN baseGroup;
+
+//rateRange 'Шкала ИД' = DATA rate (range) IN baseGroup;
+userRate 'Действующая' (rate) = rate IF dateFromRate(rate) <= currentDate() AND dateToRate(rate) >= currentDate();
+userRateRange 'Действующая' (range) = GROUP MAX userRate(rate) BY rangeRate(rate);
+quantityUserRateRange 'Количество историй' (range) = GROUP SUM 1 IF userRate(rate) BY rangeRate(rate);
+CONSTRAINT CHECKED quantityUserRateRange > 1 MSG 'ошибка: Одновременно не может быть несколько действующих ставок';
+// не работает  //
+//   обязательно переделать на уникальность и по времени
+CONSTRAINT CHECKED rangeType IS rangeType AND NOT rangeTypeRange(range)  MSG 'ошибка: Не выбран тип действия для налога';
+// не работает//
+
+dataUserRateRange 'Значение ставки' (range) = dataRate(userRateRange(range)) IN baseGroup;
+dateFromUserRateRange 'Действует с' (range) = dateFromRate(userRateRange(range)) IN baseGroup;
+dateToUserRateRange 'Действует по' (range) = dateToRate(userRateRange(range)) IN baseGroup;
+
+userFirstNameEmployeeUserRateRange 'Кто ввел значение, имя' (range) = userFirstNameEmployeeRate(userRateRange(range)) IN baseGroup;
+userLastNameEmployeeUserRateRange 'Кто ввел значение, фамилия' (range) = userLastNameEmployeeRate(userRateRange(range)) IN baseGroup;
+
+inRangeRate(range, rate) = rangeRate(rate) == range;
+inTaxRange(tax, range) = taxRange(range) == tax;
+
+
+FORM tax 'Налог'
+OBJECTS t=tax FIXED PANEL
+OBJECTS ra=range, rt=rate, s=store
+PROPERTIES(t)     nameTax, shortNameTax
+PROPERTIES(ra)    dataRange, nameRangeTypeRange, ADDOBJ, delete
+PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, dateRate, userFirstNameEmployeeRate, userLastNameEmployeeRate, ADDOBJ, delete
+PROPERTIES(s)     name, addressStore//, ADDOBJ, delete
+PROPERTIES(ra, s) inRangeStore
+FILTERS NOT NULL  inRangeRate(ra, rt),
+        NOT NULL  inTaxRange(t, ra)
+FILTERGROUP filters6
+    FILTER 'Показывать магазиным только для данного налога' 'F10' NOT NULL inRangeStore(ra, s)
+
+EDIT tax OBJECT t;
+
+FORM taxes 'Налоги'
+OBJECTS t=tax
+OBJECTS ra=range, s=store
+PROPERTIES(t)      READONLY nameTax, shortNameTax
+PROPERTIES(t)      ADDFORM, EDITFORM, delete
+PROPERTIES(s)     READONLY name, addressStore
+PROPERTIES(ra, s)  READONLY inRangeStore
+PROPERTIES(ra)  READONLY dataRange, dataUserRateRange, dateFromUserRateRange, dateToUserRateRange, userFirstNameEmployeeUserRateRange, userLastNameEmployeeUserRateRange, nameRangeTypeRange, quantityUserRateRange
+FILTERGROUP filters4
+    FILTER 'Показывать ставки только для данного налога' 'F10' NOT NULL inTaxRange(t, ra)
+FILTERGROUP filters5
+    FILTER 'Показывать магазиным только для данного налога' 'F9' NOT NULL inRangeStore(ra, s);
+
 
 //---------------------------- Рецепты блюд ----------------------------------------//
 CLASS recipe 'Рецепт' : named;
@@ -1153,6 +1236,7 @@ NAVIGATOR {
             ADD cuttings;
             ADD recipes;
         }
+        ADD taxes;
     }
 
     ADD documents 'Документы' TO formsToolbar {
@@ -1189,6 +1273,7 @@ NAVIGATOR {
             ADD cash;
             ADD scales;
             ADD check;
+            ADD tax;
             ADD cutting;
             ADD recipe;
         }
