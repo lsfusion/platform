@@ -358,16 +358,23 @@ EDIT tradingSquare OBJECT s;
 
 // ------------------------------------- Скидки ---------------------------------------------------------- //
 
-CLASS discount 'Скидка' : named;
-dateDiscount 'Дата разрещения/запрещения скидок' = DATA DATE (discount) IN baseGroup;
-agreeDiscount 'Разрешать скидку?' = DATA BOOLEAN (discount) IN baseGroup;
-departmentStoreDiscount 'Отдел скидки (ИД)' = DATA departmentStore (discount);
-nameDepartmentStoreDiscount (discount) = name(departmentStoreDiscount(discount)) IN baseGroup;
+TABLE dt (departmentStore, DATE);
+discount 'Скидка' = DATA BOOLEAN (departmentStore, DATE) IN baseGroup;
 
-FORM discount 'Скидка'
-OBJECTS d=discount FIXED PANEL
-PROPERTIES(d) name, dateDiscount, agreeDiscount, nameDepartmentStoreDiscount
-EDIT discount OBJECT d;
+FORM addDiscount 'Скидка (новая)'
+OBJECTS d=departmentStore FIXED PANEL, t=DATE FIXED PANEL
+PROPERTIES(d) READONLY name
+PROPERTIES(t) OBJVALUE
+PROPERTIES(d, t) discount;
+
+showFormDiscount 'Добавить' (departmentStore) = ACTION FORM addDiscount OBJECTS d NEWSESSION MODAL;
+
+FORM discount 'Скидки'
+OBJECTS d=departmentStore, t=DATE
+PROPERTIES(d) READONLY name
+PROPERTIES(d) showFormDiscount
+PROPERTIES(t) OBJVALUE
+FILTERS NOT NULL discount(d, t);
 
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
 
@@ -402,13 +409,13 @@ personCheckReportDepartmentStore 'Кто проверяет товарный о�
 commonNamePersonCheckReportDepartmentStore 'Кто проверяет товарный отчет' (departmentStore) = commonName(personCheckReportDepartmentStore(departmentStore));
 idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (departmentStore) = GROUP MAX tradingSquare BY departmentStoreTradingSquare(tradingSquare);   //максимизирует только по ID, переделать после расширения функционала
 defaultTradingSquareDepartmentStore 'Торговая площадь отдела магазина, кв.м.' (departmentStore) = squareTradingSquare(idTradingSquareDepartmentStore(departmentStore));
-idResolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = GROUP MAX discount AS discount BY departmentStoreDiscount(discount);  //максимизирует только по ID, переделать после расширения функционала
-resolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = agreeDiscount(idResolveDiscountDepartmentStore(discount));
+//idResolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = GROUP MAX discount AS discount BY departmentStoreDiscount(discount);  //максимизирует только по ID, переделать после расширения функционала
+//resolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = agreeDiscount(idResolveDiscountDepartmentStore(discount));
 tradingSquareStore 'Торговая площадь магазина' = GROUP SUM defaultTradingSquareDepartmentStore(departmentStore) BY storeDepartmentStore(departmentStore);
 
 inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
 inTradingSquareDepartmentStore(departmentStore, tradingSquare) = departmentStoreTradingSquare(tradingSquare) == departmentStore;
-inDepartmentStoreDiscount(departmentStore, discount) = departmentStoreDiscount(discount) == departmentStore;
+//inDepartmentStoreDiscount(departmentStore, discount) = departmentStoreDiscount(discount) == departmentStore;
 
 
 //----------------------------------- Для товара и подразделения -------------------
@@ -426,9 +433,9 @@ prohibitionMovementDepartmentStoreItem 'Запрет на внутреннее �
 reserveDepartmentStoreItem 'Резерв по товару' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 
 FORM departmentStore 'Отдел магазина'
-OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare, c=discount
+OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare
 PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
-              resolveDiscountDepartmentStore, controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
+              controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
               maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
               marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, commonNameMateriallyResponsiblePersonItemReportDepartmentStore,
               commonNameBookkeeperItemReportDepartmentStore, commonNamePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
@@ -436,11 +443,8 @@ PROPERTIES(e) READONLY userFirstName, userLastName
 PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
 PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
 PROPERTIES(t) ADDOBJ, delete
-PROPERTIES(c) READONLY dateDiscount, agreeDiscount
-PROPERTIES(c) ADDOBJ, delete
 FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
 FILTERS NOT NULL departmentStoreEmployee(d, e)
-FILTERS NOT NULL inDepartmentStoreDiscount(d, c)
 EDIT departmentStore OBJECT d;
 
 DESIGN departmentStore FROM DEFAULT {
@@ -798,6 +802,28 @@ PROPERTIES(i) ADDFORM, EDITFORM, delete
 PROPERTIES(d, s, i)  itemAssortmentSupplier;
 
 //---------------------------- по поставщикам и товарам ----------------------------------------
+
+// ----------------------------------- График поставок ------------------------------------------- //
+
+TABLE sdd (supplier ,departmentStore, DATE);
+timeTable 'Поставка' = DATA BOOLEAN (supplier ,departmentStore, DATE) IN baseGroup;
+
+FORM addTimeTable 'Поставка (новая)'
+OBJECTS s=supplier FIXED PANEL, d=departmentStore FIXED PANEL, t=DATE FIXED PANEL
+PROPERTIES(s) READONLY name
+PROPERTIES(d) READONLY name
+PROPERTIES(t) OBJVALUE
+PROPERTIES(s, d, t) timeTable;
+
+showFormTimeTable 'Добавить' (supplier, departmentStore) = ACTION FORM addTimeTable OBJECTS s, d NEWSESSION MODAL;
+
+FORM timeTable 'График поставки'
+OBJECTS s=supplier, d=departmentStore , t=DATE
+PROPERTIES(t) OBJVALUE
+PROPERTIES(s) READONLY name
+PROPERTIES(d) READONLY name
+PROPERTIES(s, d) showFormTimeTable
+FILTERS NOT NULL timeTable(s, d, t);
 
 //---------------------------- Модели оборудования ----------------------------------------//
 CLASS ABSTRACT model 'Модель' : named;
@@ -1238,6 +1264,7 @@ NAVIGATOR {
             ADD companies;
             ADD qualifier;
             ADD stores;
+            ADD discount;
         }
         ADD employeeRelations 'Сотрудники' {
             ADD employees;
@@ -1247,6 +1274,7 @@ NAVIGATOR {
             ADD suppliers;
             ADD banks;
             ADD assortmentSupplier;
+            ADD timeTable;
         }
         ADD equipment 'Оборудование' {
             ADD groupsCash;
@@ -1275,7 +1303,6 @@ NAVIGATOR {
             ADD barcode;
             ADD employee;
             ADD tradingSquare;
-            ADD discount;
             ADD departmentStore;
             ADD store;
             ADD storeType;
@@ -1300,6 +1327,8 @@ NAVIGATOR {
             ADD tax;
             ADD cutting;
             ADD recipe;
+            ADD addTimeTable;
+            ADD addDiscount;
         }
     }
 }
