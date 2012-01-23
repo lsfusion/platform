@@ -964,13 +964,36 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportField numberPropertyField = new ImportField(LM.numberProperty);
         ImportField loggablePropertyField = new ImportField(LM.propertyLoggableValueClass);
         ImportField storedPropertyField = new ImportField(LM.propertyStoredValueClass);
-
+        ImportField signaturePropertyField = new ImportField(LM.propertySignatureValueClass);
+        ImportField returnPropertyField = new ImportField(LM.propertySignatureValueClass);
+        ImportField classPropertyField = new ImportField(LM.propertySignatureValueClass);
+        
         ImportKey<?> key = new ImportKey(LM.property, LM.SIDToProperty.getMapping(sidPropertyField));
 
         List<List<Object>> data = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
-            if (!LM.idSet.contains(property.getSID()))
-            data.add(Arrays.asList((Object) property.getSID(), property.caption, /*count,*/ property.loggable ? true : null, property.isStored() ? true : null));
+            if (!LM.idSet.contains(property.getSID())) {
+                String commonClasses = "";
+                String returnClass = "";
+                String classProperty = "";
+                try {
+                    classProperty = property.getClass().getSimpleName();
+                    returnClass = property.getCommonClasses().value.getSID();
+                    for (Object cc : property.getCommonClasses().interfaces.values()) {
+                        if (cc instanceof CustomClass)
+                            commonClasses += ((CustomClass) cc).getSID() + ", ";
+                        else if (cc instanceof DataClass)
+                            commonClasses += ((DataClass) cc).getSID() + ", ";
+                    }
+                    if (!"".equals(commonClasses))
+                        commonClasses = commonClasses.substring(0, commonClasses.length() - 2);
+                } catch (NullPointerException e) {
+                    commonClasses = "";
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    commonClasses = "";
+                }
+                data.add(Arrays.asList((Object) property.getSID(), property.caption, property.loggable ? true : null, property.isStored() ? true : null, commonClasses, returnClass, classProperty));
+            }
         }
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
@@ -978,11 +1001,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         properties.add(new ImportProperty(captionPropertyField, LM.captionProperty.getMapping(key)));
         properties.add(new ImportProperty(loggablePropertyField, LM.loggableProperty.getMapping(key)));
         properties.add(new ImportProperty(storedPropertyField, LM.storedProperty.getMapping(key)));
+        properties.add(new ImportProperty(signaturePropertyField, LM.signatureProperty.getMapping(key)));
+        properties.add(new ImportProperty(returnPropertyField, LM.returnProperty.getMapping(key)));
+        properties.add(new ImportProperty(classPropertyField, LM.classProperty.getMapping(key)));
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
         deletes.add(new ImportDelete(key, LM.is(LM.property).getMapping(key), false));
 
-        ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, captionPropertyField, loggablePropertyField, storedPropertyField), data);
+        ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, captionPropertyField, loggablePropertyField, storedPropertyField, signaturePropertyField, returnPropertyField, classPropertyField), data);
 
         List<List<Object>> data2 = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {

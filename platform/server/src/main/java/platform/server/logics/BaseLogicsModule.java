@@ -278,6 +278,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP loggableProperty;
     public LP userLoggableProperty;
     public LP storedProperty;
+    public LP signatureProperty;
+    public LP returnProperty;
+    public LP classProperty;
     public LP captionProperty;
     public LP SIDToProperty;
     public LP isDerivedChangeNotification;
@@ -400,6 +403,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public final StringClass propertySIDValueClass = StringClass.get(100);
     public final StringClass propertyCaptionValueClass = StringClass.get(250);
+    public final StringClass propertySignatureValueClass = StringClass.get(100);
     public final LogicalClass propertyLoggableValueClass = LogicalClass.instance;
     public final LogicalClass propertyStoredValueClass = LogicalClass.instance;
     public final StringClass loginValueClass = StringClass.get(100);
@@ -778,6 +782,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         loggableProperty = addDProp(baseGroup, "loggableProperty", getString("logics.property.loggable"), LogicalClass.instance, property);
         userLoggableProperty = addDProp(baseGroup, "userLoggableProperty", getString("logics.property.user.loggable"), LogicalClass.instance, property);
         storedProperty = addDProp(baseGroup, "storedProperty", getString("logics.property.stored"), LogicalClass.instance, property);
+        signatureProperty = addDProp(baseGroup, "signatureProperty", getString("logics.property.signature"), propertySignatureValueClass, property);
+        returnProperty = addDProp(baseGroup, "returnProperty", getString("logics.property.return"), propertySignatureValueClass, property);
+        classProperty = addDProp(baseGroup, "classProperty", getString("logics.property.class"), propertySignatureValueClass, property);
         captionProperty = addDProp(baseGroup, "captionProperty", getString("logics.property.caption"), propertyCaptionValueClass, property);
         SIDToProperty = addAGProp("SIDToProperty", getString("logics.property"), SIDProperty);
 
@@ -1774,9 +1781,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             objTreeProps.groupTo.setIsParents(addPropertyObject(parentAbstractGroup, objTreeProps));
             treePropertiesObject = addTreeGroupObject(objTreeProps.groupTo, objProps.groupTo);
 
-            addPropertyDraw(new LP[]{captionProperty, SIDProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty}, objProperties);
-            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, parentAbstractGroup, numberAbstractGroup, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1}, objTreeProps);
-            addPropertyDraw(new LP[]{captionProperty, SIDProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty}, objProps);
+            addPropertyDraw(new LP[]{captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty}, objProperties);
+            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1, parentAbstractGroup, numberAbstractGroup, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1}, objTreeProps);
+            addPropertyDraw(new LP[]{captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty}, objProps);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(parentProperty, objProps), Compare.EQUALS, objTreeProps));
 
