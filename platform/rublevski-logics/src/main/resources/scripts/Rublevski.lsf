@@ -164,7 +164,7 @@ bonusReturnItem 'Уценка (бонус) по товару при возвра
 nameReturnItem 'Наименование для уценки, бонуса по товару в возврат' = DATA STRING[200] (item)IN retailGroup;
 
 isFixPriceItem 'Товар с фиксированной ценой' = DATA BOOLEAN (item) IN retailGroup;
-isManufacteredItem 'Товар производится' = DATA BOOLEAN (item) IN descriptionGroup;
+isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN descriptionGroup;
 
 controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN descriptionGroup;
 daysExpiryItem 'Срок годности в днях' = DATA DOUBLE (item) IN descriptionGroup;
@@ -425,7 +425,6 @@ prohibitionSaleDepartmentStoreItem 'Запрет продаж товара в п
 prohibitionMovementDepartmentStoreItem 'Запрет на внутреннее перемещение товара' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
 reserveDepartmentStoreItem 'Резерв по товару' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 
-
 FORM departmentStore 'Отдел магазина'
 OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare, c=discount
 PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
@@ -503,7 +502,7 @@ PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentSto
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
 
 CLASS assortment 'Ассортимент' : named;
-itemAssortment 'Товар ассортимента' = DATA BOOLEAN (assortment, item);
+itemAssortment 'Товар включен в ассортимент' = DATA BOOLEAN (assortment, item);
 infoAssortment 'Описание' = DATA STRING[100] (assortment) IN baseGroup;
 
 FORM assortment 'Ассортимент'
@@ -787,7 +786,7 @@ PROPERTIES(co) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Ассортимент поставщиков-------------------------------------------- //
 
-itemAssortmentSupplier 'Товар поставщика в ассортименте' = DATA BOOLEAN (departmentStore, supplier, item);
+itemAssortmentSupplier 'Товар в ассортименте поставщика' = DATA BOOLEAN (departmentStore, supplier, item);
 
 FORM assortmentSupplier 'Ассортимент поставщика'
 OBJECTS d=departmentStore FIXED PANEL, s=supplier, i=item
@@ -1154,7 +1153,8 @@ FILTERGROUP filters5
 CLASS recipe 'Рецепт' : named;
 CLASS recipeDetail 'Сырье рецепта';
 
-dishRecipe  'Блюдо (ИД)' = DATA dish (recipe) IN idGroup;
+dishRecipe  'Блюдо (ИД)' = DATA item (recipe) IN idGroup;
+CONSTRAINT CHECKED dishRecipe (recipe) AND NOT isManufacturedItem(dishRecipe(recipe)) MSG 'Блюдо должно производиться';
 nameDishRecipe 'Блюдо' = name(dishRecipe(recipe)) IN baseGroup;
 
 beginDateRecipe 'Используется с' = DATA DATE (recipe) IN baseGroup;
