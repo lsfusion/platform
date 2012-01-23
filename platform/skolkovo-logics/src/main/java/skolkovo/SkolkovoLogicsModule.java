@@ -825,7 +825,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP reminderProfileExpertSubjectLanguage;
     LP authExpertSubjectLanguage, letterExpertSubjectLanguage;
     LP authProfileExpertSubjectLanguage;
-    LP emailClaimerFormalControlEA, claimerFormalControl, claimerEmailFormalControl, nameNativeJoinClaimerFormalControl, nameForeignJoinClaimerFormalControl, nameNativeClaimerFormalControl;
+    LP emailClaimerFormalControlEA, claimerFormalControl, claimerEmailFormalControl, nameNativeJoinClaimerFormalControl, nameForeignJoinClaimerFormalControl, nameNativeClaimerFormalControl, nameNativeUnionManagerFormalControl;
     LP needEmailClaimerFormalControl;
     LP resultNoticedFormalControl, dateResultNoticedFormalControl, setCurrentDateResultNoticedFormalControl, emailClaimerHeaderFormalControl, emailClaimerFormalControl;
     LP emailClaimerLegalCheckEA, claimerLegalCheck, claimerEmailLegalCheck, nameNativeJoinClaimerLegalCheck, nameForeignJoinClaimerLegalCheck, nameNativeClaimerLegalCheck;
@@ -3824,6 +3824,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeJoinClaimerFormalControl = addJProp(baseGroup, "nameNativeJoinClaimerFormalControl", nameNativeClaimer, claimerFormalControl, 1);
         nameForeignJoinClaimerFormalControl = addJProp(baseGroup, "nameForeignJoinClaimerFormalControl", nameForeign, claimerFormalControl, 1);
 
+        nameNativeUnionManagerFormalControl = addJProp(baseGroup, "nameNativeUnionManagerFormalControl", "Заявитель", nameNativeUnionManagerProject, projectFormalControl, 1);
+        
         nameNativeClaimerFormalControl = addIfElseUProp(baseGroup, "nameNativeClaimerFormalControl", "Заявитель", addJProp(nameNativeUnionManagerProject, projectFormalControl, 1), nameNativeJoinClaimerFormalControl, isPreliminaryFormalControl, 1);
         nameNativeClaimerFormalControl.setMinimumWidth(10);
         nameNativeClaimerFormalControl.setPreferredWidth(50);
@@ -6911,7 +6913,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, caption, true);
 
             objFormalControl = addSingleGroupObject(1, "formalControl", formalControl, "Формальная экспертиза", nameNativeClaimerFormalControl, nameNativeProjectFormalControl, claimerEmailFormalControl, dateProjectFormalControl, sidResultFormalControl, sidStatusProjectFormalControl, nameResultFormalControl, nameNativeClusterProjectFormalControl, nameProjectActionFormalControl, commentFormalControl,
-                    dateTimeFormalControl, overdueDateFormalControl, dateResultNoticedFormalControl, isStatusFormalControl, isPreliminaryAndStatusProjectFormalControl);
+                    dateTimeFormalControl, overdueDateFormalControl, dateResultNoticedFormalControl, isStatusFormalControl, isPreliminaryAndStatusProjectFormalControl, nameNativeUnionManagerFormalControl);
             objFormalControl.groupTo.initClassView = ClassViewType.PANEL;
             addPropertyDraw(executiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
             addPropertyDraw(phoneExecutiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
