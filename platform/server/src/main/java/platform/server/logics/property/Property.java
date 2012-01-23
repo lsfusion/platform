@@ -69,6 +69,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public int preferredCharWidth;
 
     public boolean loggable;
+    public boolean setNotNull;
     private LP logProperty;
     private LP logFormProperty;
 

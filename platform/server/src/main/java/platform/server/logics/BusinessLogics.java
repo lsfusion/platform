@@ -737,6 +737,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             //setUserLoggableProperties();
             setPropertyNotifications();
+            setNotNullProperties();
         } catch (Exception e) {
             e.printStackTrace();
             String msg = e.getMessage();
@@ -964,6 +965,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportField numberPropertyField = new ImportField(LM.numberProperty);
         ImportField loggablePropertyField = new ImportField(LM.propertyLoggableValueClass);
         ImportField storedPropertyField = new ImportField(LM.propertyStoredValueClass);
+        ImportField isSetNotNullPropertyField = new ImportField(LM.propertyIsSetNotNullValueClass);
         ImportField signaturePropertyField = new ImportField(LM.propertySignatureValueClass);
         ImportField returnPropertyField = new ImportField(LM.propertySignatureValueClass);
         ImportField classPropertyField = new ImportField(LM.propertySignatureValueClass);
@@ -992,7 +994,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 } catch (ArrayIndexOutOfBoundsException e) {
                     commonClasses = "";
                 }
-                data.add(Arrays.asList((Object) property.getSID(), property.caption, property.loggable ? true : null, property.isStored() ? true : null, commonClasses, returnClass, classProperty));
+                data.add(Arrays.asList((Object) property.getSID(), property.caption, property.loggable ? true : null, property.isStored() ? true : null, property.setNotNull ? true : null, commonClasses, returnClass, classProperty));
             }
         }
 
@@ -1001,6 +1003,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         properties.add(new ImportProperty(captionPropertyField, LM.captionProperty.getMapping(key)));
         properties.add(new ImportProperty(loggablePropertyField, LM.loggableProperty.getMapping(key)));
         properties.add(new ImportProperty(storedPropertyField, LM.storedProperty.getMapping(key)));
+        properties.add(new ImportProperty(isSetNotNullPropertyField, LM.isSetNotNullProperty.getMapping(key)));
         properties.add(new ImportProperty(signaturePropertyField, LM.signatureProperty.getMapping(key)));
         properties.add(new ImportProperty(returnPropertyField, LM.returnProperty.getMapping(key)));
         properties.add(new ImportProperty(classPropertyField, LM.classProperty.getMapping(key)));
@@ -1008,7 +1011,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
         deletes.add(new ImportDelete(key, LM.is(LM.property).getMapping(key), false));
 
-        ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, captionPropertyField, loggablePropertyField, storedPropertyField, signaturePropertyField, returnPropertyField, classPropertyField), data);
+        ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, captionPropertyField, loggablePropertyField, storedPropertyField, isSetNotNullPropertyField, signaturePropertyField, returnPropertyField, classPropertyField), data);
 
         List<List<Object>> data2 = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
@@ -2193,6 +2196,29 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     emailNotificationProperty.setDerivedChange(LM.addCProp(ActionClass.instance, true), params);
                 else
                     emailNotificationProperty.setDerivedForcedChange(LM.addCProp(ActionClass.instance, true), params);
+            }
+        }
+    }
+
+    public void setNotNullProperties() throws SQLException {
+
+        DataSession session = createSession();
+
+        LP isProperty = LM.is(LM.property);
+        Map<Object, KeyExpr> keys = isProperty.getMapKeys();
+        KeyExpr key = BaseUtils.singleValue(keys);
+        Query<Object, Object> query = new Query<Object, Object>(keys);
+        query.properties.put("SIDProperty", LM.SIDProperty.getExpr(session.modifier, key));
+        query.properties.put("isSetNotNullProperty", LM.isSetNotNullProperty.getExpr(session.modifier, key));
+        query.and(isProperty.getExpr(key).getWhere());
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+
+        for (Map<Object, Object> values : result.values()) {
+            Object isSetNotNull = values.get("isSetNotNullProperty");
+            if (isSetNotNull != null) {
+                LP prop = getLP(values.get("SIDProperty").toString().trim());
+                prop.property.setNotNull = true;
+                LM.setNotNull(prop);
             }
         }
     }
