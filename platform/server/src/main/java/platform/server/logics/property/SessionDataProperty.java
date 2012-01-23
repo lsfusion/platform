@@ -1,18 +1,12 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.base.ImmutableObject;
-import platform.base.QuickMap;
-import platform.base.SimpleMap;
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.cases.CaseExpr;
-import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.BaseMutableModifier;
-import platform.server.session.ModifyChange;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
 
@@ -24,6 +18,8 @@ public class SessionDataProperty extends DataProperty implements NoValueProperty
         super(sID, caption, classes, value);
 
         modifier.addProperty(this);
+
+        finalizeInit();
     }
 
     @Override
@@ -57,7 +53,7 @@ public class SessionDataProperty extends DataProperty implements NoValueProperty
                 Property<ClassPropertyInterface> classProperty = (Property)property;
                 Map<ClassPropertyInterface,KeyExpr> mapKeys = classProperty.getMapKeys();
                 return (PropertyChange<P>) new PropertyChange<ClassPropertyInterface>(mapKeys, ((NoValueProperty)property).getValueClass().getClassExpr(),
-                        ClassProperty.getIsClassWhere(mapKeys, PropertyChanges.EMPTY, null));
+                        IsClassProperty.getProperty(mapKeys.keySet()).mapExpr(mapKeys, PropertyChanges.EMPTY, null).getWhere());
             }
             return null;
         }

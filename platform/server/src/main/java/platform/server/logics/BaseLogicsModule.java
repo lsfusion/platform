@@ -1094,9 +1094,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             LP stringConcat = getStringConcatanationProperty(intNum);
 
-            JoinProperty<ClassPropertyInterface> joinProperty = new JoinProperty(sid, getString("logics.compound.name")+" (" + intNum + ")", intNum, false);
-            LP listJoinProperty = new LP<JoinProperty.Interface>(joinProperty);
-            joinProperty.implement = mapImplement(stringConcat, readImplements(listJoinProperty.listInterfaces, joinParams));
+            List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(intNum);
+            JoinProperty<ClassPropertyInterface> joinProperty = new JoinProperty(sid, getString("logics.compound.name")+" (" + intNum + ")",
+                    listInterfaces, false, mapImplement(stringConcat, readImplements(listInterfaces, joinParams)));
+            LP listJoinProperty = new LP<JoinProperty.Interface>(joinProperty, listInterfaces);
 
             registerProperty(listJoinProperty);
             setParent(joinProperty);

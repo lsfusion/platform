@@ -50,9 +50,9 @@ public class WrapComplexityAspect {
     public <T extends PropertyInterface> Query<T, String> getQuery(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges, Boolean changedWhere, Map<T, ? extends Expr> interfaceValues) throws Throwable {
         Query<T, String> query = (Query<T, String>) thisJoinPoint.proceed(new Object[]{property, propChanges, changedWhere, interfaceValues});
         
-        Expr expr = query.properties.get("value");
+        Expr expr = query.getExpr("value");
 
-        Where where = changedWhere ? query.properties.get("changed").getWhere() : null;
+        Where where = changedWhere ? query.getExpr("changed").getWhere() : null;
         WhereBuilder wrapWhere = changedWhere ? new WhereBuilder() : null;
         Expr wrapExpr = wrapComplexity(expr, where, property, BaseUtils.merge(interfaceValues, query.mapKeys), wrapWhere);
         

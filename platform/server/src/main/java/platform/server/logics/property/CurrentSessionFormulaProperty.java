@@ -9,5 +9,7 @@ public class CurrentSessionFormulaProperty extends CurrentEnvironmentFormulaProp
 
     public CurrentSessionFormulaProperty(String sID, ValueClass valueClass) {
         super(sID, ServerResourceBundle.getString("logics.property.current.session"), SQLSession.sessionParam, valueClass.getUpSet());
+
+        finalizeInit();
     }
 }

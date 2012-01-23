@@ -292,7 +292,9 @@ public class Settings {
     private int limitUnionAllCount = 10;
     private int limitUnionAllComplexity = 100;
 
+    private int limitIncrementCoeff = 1;
     private int limitHintIncrementComplexity = 50;
+    private int limitGrowthIncrementComplexity = 1;
     private int limitHintIncrementStat = 1000;
     private int limitHintNoUpdateComplexity = 400;
     private int limitWrapComplexity = 200;
@@ -328,7 +330,7 @@ public class Settings {
         this.limitWhereJoinPack = limitWhereJoinPack;
     }
     public int getLimitHintIncrementComplexity() {
-        return limitHintIncrementComplexity;
+        return limitHintIncrementComplexity * limitIncrementCoeff;
     }
     public void setLimitHintIncrementComplexity(int limitHintIncrementComplexity) {
         this.limitHintIncrementComplexity = limitHintIncrementComplexity;
@@ -340,13 +342,13 @@ public class Settings {
         this.limitHintIncrementStat = limitHintIncrementStat;
     }
     public int getLimitHintNoUpdateComplexity() {
-        return limitHintNoUpdateComplexity;
+        return limitHintNoUpdateComplexity * limitIncrementCoeff;
     }
     public void setLimitHintNoUpdateComplexity(int limitHintNoUpdateComplexity) {
         this.limitHintNoUpdateComplexity = limitHintNoUpdateComplexity;
     }
     public int getLimitWrapComplexity() {
-        return limitWrapComplexity;
+        return limitWrapComplexity * limitIncrementCoeff;
     }
     public void setLimitWrapComplexity(int limitWrapComplexity) {
         this.limitWrapComplexity = limitWrapComplexity;
@@ -362,5 +364,11 @@ public class Settings {
     }
     public void setLimitUnionAllComplexity(int limitUnionAllComplexity) {
         this.limitUnionAllComplexity = limitUnionAllComplexity;
+    }
+    public int getLimitGrowthIncrementComplexity() {
+        return limitGrowthIncrementComplexity;
+    }
+    public void setLimitGrowthIncrementComplexity(int limitGrowthIncrementComplexity) {
+        this.limitGrowthIncrementComplexity = limitGrowthIncrementComplexity;
     }
 }

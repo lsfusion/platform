@@ -5,12 +5,13 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
 
+import java.util.List;
 import java.util.Map;
 
 public abstract class IncrementUnionProperty extends UnionProperty {
 
-    protected IncrementUnionProperty(String sID, String caption, int intNum) {
-        super(sID, caption, intNum);
+    protected IncrementUnionProperty(String sID, String caption, List<Interface> interfaces) {
+        super(sID, caption, interfaces);
     }
 
     protected abstract Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere);

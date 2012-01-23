@@ -73,9 +73,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
         for (PropertyClassImplement impl : recognizePropImpls) {
             int paramCnt = logProperty.property.interfaces.size();
-            JoinProperty<?> jProp = new JoinProperty("LogForm_" + impl.property.getSID(), impl.property.caption, paramCnt, false);
-            jProp.inheritFixedCharWidth(impl.property);
-            LP<?> ljProp = new LP<JoinProperty.Interface>(jProp);
+            List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(paramCnt);
 
             LP lpMainProp = new LP(impl.property);
 
@@ -84,7 +82,10 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
             for (int i = 0; i < paramCnt; i++) {
                 params[i+1] = i+1;
             }
-            jProp.implement = mapImplement(lpMainProp, readImplements(ljProp.listInterfaces, params));
+            JoinProperty<?> jProp = new JoinProperty("LogForm_" + impl.property.getSID(), impl.property.caption,
+                    listInterfaces, false, mapImplement(lpMainProp, readImplements(listInterfaces, params)));
+            jProp.inheritFixedCharWidth(impl.property);
+            LP<?> ljProp = new LP<JoinProperty.Interface>(jProp, listInterfaces);
             addPropertyDraw(ljProp, entities);
         }
 

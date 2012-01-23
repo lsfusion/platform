@@ -30,14 +30,6 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         super(SID,caption,interfaces);
     }
 
-    Object dropZero(Object Value) {
-        if(Value instanceof Integer && Value.equals(0)) return null;
-        if(Value instanceof Long && ((Long)Value).intValue()==0) return null;
-        if(Value instanceof Double && ((Double)Value).intValue()==0) return null;
-        if(Value instanceof Boolean && !((Boolean)Value)) return null;
-        return Value;
-    }
-
     // проверяет аггрегацию для отладки
     @ThisMessage
     @Message("logics.info.checking.aggregated.property")

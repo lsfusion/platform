@@ -1,6 +1,10 @@
 package platform.server.logics.property;
 
 import platform.base.QuickSet;
+import platform.server.caches.IdentityLazy;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.where.CaseExprInterface;
+import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.*;
 
@@ -9,14 +13,21 @@ import java.util.*;
 // чисто для оптимизации
 public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
 
-    private Set<PropertyMapImplement<?,Interface>> operands = new HashSet<PropertyMapImplement<?, Interface>>();
-    public void addOperand(PropertyMapImplement<?,Interface> operand) {
-        operands.add(operand);
-        addCase(operand, operand);
+    private final Collection<PropertyMapImplement<?,Interface>> operands;
+
+    @IdentityLazy
+    protected Iterable<Case> getCases() {
+        Collection<Case> result = new ArrayList<Case>();
+        for(PropertyMapImplement<?, Interface> operand : operands)
+            result.add(new Case(operand, operand));
+        return result;
     }
 
-    public ExclusiveUnionProperty(String sID, String caption, int intNum) {
-        super(sID, caption, intNum);
+    public ExclusiveUnionProperty(String sID, String caption, List<Interface> interfaces, Collection<PropertyMapImplement<?, Interface>> operands) {
+        super(sID, caption, interfaces);
+        this.operands = operands;
+
+        finalizeInit();
     }
 
     @Override

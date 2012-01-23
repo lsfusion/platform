@@ -10,13 +10,15 @@ import java.util.List;
 
 public class OverrideUnionProperty extends CaseUnionProperty {
 
-    public OverrideUnionProperty(String sID, String caption, int intNum) {
-        super(sID, caption, intNum);
+    private static List<Case> getCases(List<PropertyMapImplement<?, Interface>> operands) {
+        List<Case> result = new ArrayList<Case>();
+        for(PropertyMapImplement<?, Interface> operand : operands)
+            result.add(new Case(operand, operand));
+        return BaseUtils.reverse(result);
     }
-
-    public void addOperand(PropertyMapImplement<?,Interface> operand) {
-        operands.add(operand);
-        addCase(operand, operand, true);
+    public OverrideUnionProperty(String sID, String caption, List<Interface> interfaces, List<PropertyMapImplement<?, Interface>> operands) {
+        super(sID, caption, interfaces, getCases(operands));
+        this.operands = operands;
     }
 
     private List<PropertyMapImplement<?,Interface>> operands = new ArrayList<PropertyMapImplement<?, Interface>>();

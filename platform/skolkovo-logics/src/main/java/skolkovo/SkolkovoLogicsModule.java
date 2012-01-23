@@ -1812,7 +1812,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addressClaimerProject  = addJProp(claimerInformationGroup, "addressClaimerProject", "Адрес", addressClaimer, claimerProject, 1);
         postAddressClaimerProject = addJProp(claimerInformationGroup, "postAddressClaimerProject", "Почтовый дрес", postAddressClaimer, claimerProject, 1);
         siteClaimerProject = addJProp(claimerInformationGroup, "siteClaimerProject", "Сайт заявителя", siteClaimer, claimerProject, 1);
-        emailFirmClaimerProject = addJProp(claimerInformationGroup, "siteClaimerProject", "E-mail организации", emailFirmClaimer, claimerProject, 1);
+        emailFirmClaimerProject = addJProp(claimerInformationGroup, "emailFirmClaimerProject", "E-mail организации", emailFirmClaimer, claimerProject, 1);
         OGRNClaimerProject = addJProp(claimerInformationGroup, "OGRNClaimerProject", "ОГРН заявителя", OGRNClaimer, claimerProject, 1);
         INNClaimerProject = addJProp(claimerInformationGroup, "INNClaimerProject", "ИНН заявителя", INNClaimer, claimerProject, 1);
 
@@ -2264,7 +2264,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         equalsMileStoneYearProject = addJProp("equalsMileStoneYearProject", "Вкл", baseLM.equals2, projectMileStoneYear, 1, 2);
 
         nativeMileStoneYear = addDProp("nativeMileStoneYear", "Год", StringClass.get(4), mileStoneYear);
-        nativeToMileStoneYear = addAGProp("nativeToMileStone", "Название", nativeMileStoneYear, projectMileStoneYear);
+        nativeToMileStoneYear = addAGProp("nativeToMileStoneYear", "Название", nativeMileStoneYear, projectMileStoneYear);
         nativeSIDToMileStoneYear = addJProp("nativeSIDToMileStoneYear", "Дорожная карта", nativeToMileStoneYear, 1, sidToProject, 2);
 
         nativeMileStone = addDProp("nativeMileStone", "Название", InsensitiveStringClass.get(1), mileStone);
@@ -3212,7 +3212,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateTimeSubmitFormalControl = addDProp("dateTimeSubmitFormalControl", "Дата/время отправки проекта", DateTimeClass.instance, formalControl);
         dateTimeSubmitFormalControl.setDerivedForcedChange(true, updateDateFormalControl, 1, is(formalControl), 1);
-        dateSubmitFormalControl = addJProp("dateFormalControl", "Дата отправки проекта", baseLM.dateInTime, dateTimeSubmitFormalControl, 1);
+        dateSubmitFormalControl = addJProp("dateSubmitFormalControl", "Дата отправки проекта", baseLM.dateInTime, dateTimeSubmitFormalControl, 1);
 
         dateTimeFormalControl = addTCProp(Time.DATETIME, "dateTimeFormalControl", true, "Дата/время экспертизы", resultFormalControl);
         dateFormalControl = addJProp("dateFormalControl", "Дата экспертизы", baseLM.dateInTime, dateTimeFormalControl, 1);
@@ -3246,7 +3246,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateTimeSubmitLegalCheck = addDProp("dateTimeSubmitLegalCheck", "Дата/время отправки проекта", DateTimeClass.instance, legalCheck);
         dateTimeSubmitLegalCheck.setDerivedForcedChange(true, updateDateLegalCheck, 1, is(legalCheck), 1);
-        dateSubmitLegalCheck = addJProp("dateLegalCheck", "Дата отправки проекта", baseLM.dateInTime, dateTimeSubmitLegalCheck, 1);
+        dateSubmitLegalCheck = addJProp("dateSubmitLegalCheck", "Дата отправки проекта", baseLM.dateInTime, dateTimeSubmitLegalCheck, 1);
 
         resultNoticedLegalCheck = addDProp("resultNoticedLegalCheck", "Отослано уведомление", LogicalClass.instance, legalCheck);
         dateResultNoticedLegalCheck = addDProp("dateResultNoticedLegalCheck", "Дата отсылки уведомления", DateClass.instance, legalCheck);
@@ -3942,7 +3942,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailReminderProfileExpert.setImage("email.png");
         emailReminderProfileExpert.property.askConfirm = true;
 
-//        emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
+//        emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), baseLM.userLogin, 1, baseLM.userPassword, 1);
 
         emailClaimerAcceptedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Решение о соответствии - "));
         emailClaimerRejectedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Решение о несоответствии - "));
@@ -4051,7 +4051,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeProjectApplication = addJProp(baseGroup, "nameNativeProjectApplication", "Проект", nameNativeProject, projectApplication, 1);
 
         nameNativeClaimerApplicationPreliminary = addJProp("nameNativeClaimerApplicationPreliminary", "Заявитель (предв. экспертиза)", nameNativeUnionManagerProject, projectApplicationPreliminary, 1);
-        nameNativeClaimerApplicationStatus = addJProp("nameNativeClaimerApplicationPreliminary", "Заявитель (статус участника)", nameNativeJoinClaimerProject, projectApplicationStatus, 1);
+        nameNativeClaimerApplicationStatus = addJProp("nameNativeClaimerApplicationStatus", "Заявитель (статус участника)", nameNativeJoinClaimerProject, projectApplicationStatus, 1);
 
         nameNativeClaimerApplication = addCUProp(baseGroup, "nameNativeClaimerApplication", "Заявитель", nameNativeClaimerApplicationPreliminary, nameNativeClaimerApplicationStatus);
         nameNativeClaimerApplication.setMinimumWidth(10);
@@ -4064,7 +4064,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         statusApplication = addIfElseUProp(idGroup, "statusApplication", "Статус заявки (ИД)", addCProp(projectStatus, "applyStatus", application), statusJoinApplication, isPreliminaryAfterStatusApplication, 1);
         nameStatusApplication = addJProp(baseGroup, "nameStatusApplication", "Статус заявки", baseLM.name, statusApplication, 1);
-        officialNameStatusApplication = addJProp(baseGroup, "nameStatusApplication", "Статус заявки (по регламенту)", oficialNameProjectStatus, statusApplication, 1);
+        officialNameStatusApplication = addJProp(baseGroup, "officialNameStatusApplication", "Статус заявки (по регламенту)", oficialNameProjectStatus, statusApplication, 1);
 
         langApplication = addJProp(baseGroup, "langApplication", "Язык", langProject, projectApplication, 1);
         nameNativeShortAggregateClusterApplication = addJProp(baseGroup, "nameNativeShortAggregateClusterApplication", "Кластеры", nameNativeShortAggregateClusterProject, projectApplication, 1);
@@ -4206,7 +4206,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isClaimerPreliminaryProjectDate = addSUProp("isClaimerPreliminaryProjectDate", "На стороне заявителя (предв. экспертиза)", Union.OVERRIDE,
                 isClaimerPreliminaryFormalControlProjectDate, isClaimerPreliminaryLegalCheckProjectDate);
 
-        daysClaimerStatusProject = addSUProp("daysClaimerPreliminaryProject", "Кол-во дней на стороне заявителя (статус)", Union.SUM,
+        daysClaimerStatusProject = addSUProp("daysClaimerStatusProject", "Кол-во дней на стороне заявителя (статус)", Union.SUM,
                 daysClaimerStatusFormalControlProject, daysClaimerStatusLegalCheckProject, daysClaimerOriginalDocsProject);
 
         isClaimerStatusProjectDate = addSUProp("isClaimerStatusProjectDate", "На стороне заявителя (статус)", Union.OVERRIDE,
@@ -4549,7 +4549,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     }
 
     private void addDefaultHintsIncrementTable(FormEntity form) {
-        form.addHintsIncrementTable(quantityDoneVote, quantityProjectLanguageDocumentType, notEnoughProject, acceptedVote, succeededVote, voteSucceededProjectCluster,
+/*        form.addHintsIncrementTable(quantityDoneVote, quantityProjectLanguageDocumentType, notEnoughProject, acceptedVote, succeededVote, voteSucceededProjectCluster,
                 voteInProgressRepeatProject, voteInProgressProject, needExtraVoteRepeatProject,
                 voteValuedProjectCluster, rejectedProjectCluster, clusterAcceptedProject, currentClusterProject, finalClusterProject,
                 executeFormalControlProject, dateExecuteFormalControlProject, resultExecuteFormalControlProject, overdueFormalControlProject,
@@ -4565,7 +4565,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 sentForSignatureProject, certifiedStatusProject,
                 quantityVoteProject, quantitySubDefaultVoteProject, voteStatusProject, statusProject, projectStatusProject,
                 acceptedCompetitiveAdvantagesVote, acceptedCommercePotentialVote, acceptedCanBeImplementedVote,
-                acceptedHaveExpertiseVote, acceptedInternationalExperienceVote, acceptedEnoughDocumentsVote);
+                acceptedHaveExpertiseVote, acceptedInternationalExperienceVote, acceptedEnoughDocumentsVote);*/
     }
 
     private class ConsultingCenterFormEntity extends DateIntervalFormEntity<SkolkovoBusinessLogics> {

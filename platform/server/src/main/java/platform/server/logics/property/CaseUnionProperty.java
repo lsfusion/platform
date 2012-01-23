@@ -13,23 +13,16 @@ import java.util.*;
 
 public class CaseUnionProperty extends AbstractCaseUnionProperty {
 
-    private List<Case> cases = new ArrayList<Case>();
-    public void addCase(PropertyMapImplement<?, Interface> where, PropertyMapImplement<?, Interface> property) {
-        addCase(where, property, false);
-    }
-    public void addCase(PropertyMapImplement<?, Interface> where, PropertyMapImplement<?, Interface> property, boolean begin) {
-        Case propCase = new Case(where, property);
-        if(begin)
-            cases.add(0, propCase);
-        else
-            cases.add(propCase);
-    }
+    private final List<Case> cases;
     protected Iterable<Case> getCases() {
         return cases;
     }
 
-    public CaseUnionProperty(String sID, String caption, int intNum) {
-        super(sID, caption, intNum);
+    public CaseUnionProperty(String sID, String caption, List<Interface> interfaces, List<Case> cases) {
+        super(sID, caption, interfaces);
+        this.cases = cases;
+
+        finalizeInit();
     }
 
     protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {

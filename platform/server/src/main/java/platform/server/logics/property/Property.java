@@ -1,9 +1,6 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
-import platform.base.ListPermutations;
-import platform.base.QuickSet;
-import platform.base.Result;
+import platform.base.*;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.PanelLocation;
@@ -366,7 +363,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Expr getExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if (isFull()) // !(this instanceof FormulaProperty)
+        if (isFull())
             return getQueryExpr(joinImplement, propChanges, changedWhere);
         else
             return getJoinExpr(joinImplement, propChanges, changedWhere);
@@ -654,6 +651,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return dataChanges;
         }
         return new MapDataChanges<T>();
+    }
+
+    private Set<Property> actionChangeProps = new HashSet<Property>();
+    public Set<Property> getChangeDepends() {
+        return actionChangeProps;
     }
 
     protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
@@ -961,6 +963,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return new HashSet<Property>();
     }
 
+    private boolean finalized = false;
+    public void finalizeInit() {
+        assert !finalized;
+        finalized = true;
+        for(Property property : getChangeProps())
+            property.actionChangeProps.add(this);
+    }
+
     public QuickSet<Property> getUsedDerivedChange(StructChanges propChanges) {
         return QuickSet.EMPTY();
     }
@@ -975,6 +985,23 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
     
     public void prereadCaches() {
-        isFull();
+        getClassWhere();
+        getQuery(PropertyChanges.EMPTY, false, new HashMap<T, Expr>());
+    }
+
+    private Collection<Pair<Property<?>, LinkType>> links; 
+    @ManualLazy
+    public Collection<Pair<Property<?>, LinkType>> getLinks() {
+        if(links==null) {
+            Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
+            for(Property depend : getDepends())
+                result.add(new Pair<Property<?>, LinkType>(depend, LinkType.DEPEND));
+            for(Property depend : getFollows())
+                result.add(new Pair<Property<?>, LinkType>(depend, LinkType.FOLLOW));
+            for(Property depend : getChangeDepends())
+                result.add(new Pair<Property<?>, LinkType>(depend, LinkType.CHANGE));
+            links = result;
+        }
+        return links;
     }
 }

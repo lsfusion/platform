@@ -1,6 +1,8 @@
 package platform.server.logics.property;
 
+import platform.base.QuickSet;
 import platform.server.classes.ValueClass;
+import platform.server.session.StructChanges;
 
 import java.util.Set;
 import java.util.HashSet;

@@ -15,7 +15,7 @@ import platform.server.form.instance.DataObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.view.report.ReportDrawField;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.ClassProperty;
+import platform.server.logics.property.IsClassProperty;
 import platform.server.logics.property.group.AbstractGroup;
 
 import java.io.DataInputStream;
@@ -246,7 +246,7 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
     }
 
     @IdentityLazy
-    public ClassProperty getProperty() {
+    public IsClassProperty getProperty() {
         return CustomClass.getProperty(this);
     }
 }

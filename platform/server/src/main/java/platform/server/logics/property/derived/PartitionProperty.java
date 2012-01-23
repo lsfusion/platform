@@ -14,7 +14,7 @@ import platform.server.session.PropertyChanges;
 
 import java.util.*;
 
-public class OrderProperty<T extends PropertyInterface> extends SimpleIncrementProperty<OrderProperty.Interface<T>> {
+public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrementProperty<PartitionProperty.Interface<T>> {
 
     protected final PartitionType partitionType;
 
@@ -24,11 +24,11 @@ public class OrderProperty<T extends PropertyInterface> extends SimpleIncrementP
     protected final Collection<PropertyInterfaceImplement<T>> partitions;
     protected boolean includeLast;
 
-    public OrderProperty(String sID, String caption, PartitionType partitionType, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, List<PropertyInterfaceImplement<T>> extras, boolean includeLast) {
+    public PartitionProperty(String sID, String caption, PartitionType partitionType, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, List<PropertyInterfaceImplement<T>> extras, boolean includeLast) {
         this(sID, caption, partitionType, property.interfaces, BaseUtils.mergeList(Collections.singletonList(property.getImplement()), extras), partitions, orders, includeLast);
     }
 
-    public OrderProperty(String sID, String caption, PartitionType partitionType, Collection<T> innerInterfaces, List<PropertyInterfaceImplement<T>> props, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
+    public PartitionProperty(String sID, String caption, PartitionType partitionType, Collection<T> innerInterfaces, List<PropertyInterfaceImplement<T>> props, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
         super(sID, caption, getInterfaces(innerInterfaces));
         this.innerInterfaces = innerInterfaces;
         this.props = props;
@@ -36,7 +36,9 @@ public class OrderProperty<T extends PropertyInterface> extends SimpleIncrementP
         this.partitionType = partitionType;
         this.partitions = partitions;
         this.includeLast = includeLast;
-    }
+
+        finalizeInit();
+   }
 
     @Override
     protected void fillDepends(Set<Property> depends, boolean derived) {

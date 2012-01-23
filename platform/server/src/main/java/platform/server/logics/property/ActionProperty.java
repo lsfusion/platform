@@ -11,7 +11,7 @@ import platform.server.session.StructChanges;
 
 import java.util.Map;
 
-public abstract class ActionProperty extends ExecuteProperty {
+public abstract class ActionProperty extends ExecuteClassProperty {
 
     public ActionProperty(String sID, ValueClass... classes) {
         this(sID, "sysAction", classes);
@@ -21,18 +21,8 @@ public abstract class ActionProperty extends ExecuteProperty {
         super(sID, caption, classes);
     }
 
-    @Override
-    public void prereadCaches() {
-        super.prereadCaches();
-        ClassProperty.getIsClassProperty(interfaces).property.prereadCaches();
-    }
-
-    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
-        return ClassProperty.getIsClassUsed(interfaces, propChanges);
-    }
-    
-    protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return getValueClass().getDefaultExpr().and(ClassProperty.getIsClassWhere(joinImplement, propChanges, changedWhere));
+    protected Expr getValueExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement) {
+        return getValueClass().getDefaultExpr();
     }
 
     public DataClass getValueClass() {

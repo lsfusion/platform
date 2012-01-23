@@ -1,5 +1,6 @@
 package platform.server.logics.property;
 
+import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
@@ -29,31 +30,39 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
     }
 
     public CommonClasses<ClassPropertyInterface> getCommonClasses() {
-        return new CommonClasses<ClassPropertyInterface>(ClassProperty.getMapClasses(interfaces), getValueClass());
+        return new CommonClasses<ClassPropertyInterface>(IsClassProperty.getMapClasses(interfaces), getValueClass());
     }
 
     @Override
     protected void fillDepends(Set<Property> depends, boolean derived) {
-        if(derived && derivedChange !=null) derivedChange.fillDepends(depends);
+        if(derived && derivedChange !=null) depends.addAll(derivedChange.getNewDepends());
     }
 
     public DerivedChange<?,?> derivedChange = null;
 
+    @IdentityLazy
+    private PropertyImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
+        return IsClassProperty.getProperty(interfaces);
+    }
+
+    @IdentityLazy
+    private PropertyImplement<?, String> getValueClassProperty() {
+        return IsClassProperty.getProperty(getValueClass(), "value");
+    }
+
     @Override
-    public void prereadCaches() {
-        super.prereadCaches();
-        ClassProperty.getIsClassProperty(interfaces).property.prereadCaches();
-        getValueClass().getProperty().prereadCaches();
+    public Set<Property> getChangeDepends() {
+        return BaseUtils.mergeSet(super.getChangeDepends(), BaseUtils.<Property>toSet(getInterfaceClassProperty().property, getValueClassProperty().property));
     }
 
     @Override
     protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
-        return QuickSet.add(ClassProperty.getIsClassUsed(interfaces, propChanges), ClassProperty.getIsClassUsed(getValueClass(), propChanges));
+        return propChanges.getUsedChanges(getChangeDepends());
     }
 
     @Override
     protected MapDataChanges<ClassPropertyInterface> calculateDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        change = change.and(ClassProperty.getIsClassWhere(change.mapKeys, propChanges, null).and(ClassProperty.getIsClassWhere(getValueClass(), change.expr, propChanges, null).or(change.expr.getWhere().not())));
+        change = change.and(getInterfaceClassProperty().mapExpr(change.mapKeys, propChanges, null).getWhere().and(getValueClassProperty().mapExpr(Collections.singletonMap("value", change.expr), propChanges, null).getWhere().or(change.expr.getWhere().not())));
         if(change.where.isFalse()) // чтобы не плодить пустые change'и
             return new MapDataChanges<ClassPropertyInterface>();
 

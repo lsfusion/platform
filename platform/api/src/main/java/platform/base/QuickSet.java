@@ -160,8 +160,8 @@ public class QuickSet<T> implements Iterable<T> {
         return (h ^ (h >>> 7) ^ (h >>> 4));
     }
 
-    public void add(T where) {
-        add(where,hash(where.hashCode()));
+    public boolean add(T where) {
+        return add(where,hash(where.hashCode()));
     }
 
     protected boolean add(T where,int hash) {

@@ -25,7 +25,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementProperty<JoinProperty.Interface> {
-    public PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement;
+    public final PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement;
 
     public static class Interface extends PropertyInterface<Interface> {
         Interface(int ID) {
@@ -33,16 +33,19 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         }
     }
 
-    static List<Interface> getInterfaces(int intNum) {
+    public static List<Interface> getInterfaces(int intNum) {
         List<Interface> interfaces = new ArrayList<Interface>();
         for(int i=0;i<intNum;i++)
             interfaces.add(new Interface(i));
         return interfaces;
     }
 
-    public JoinProperty(String sID, String caption, int intNum, boolean implementChange) {
-        super(sID, caption, getInterfaces(intNum));
+    public JoinProperty(String sID, String caption, List<Interface> interfaces, boolean implementChange, PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement) {
+        super(sID, caption, interfaces);
+        this.implement = implement;
         this.implementChange = implementChange;
+
+        finalizeInit();
     }
 
     private Map<T, Expr> getJoinImplements(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {

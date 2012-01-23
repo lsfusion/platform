@@ -12,6 +12,8 @@ public class NullValueProperty extends FormulaProperty<PropertyInterface>{
 
     public NullValueProperty() {
         super("nullValue", "Значение NULL", new ArrayList<PropertyInterface>());
+
+        finalizeInit();
     }
 
     @Override

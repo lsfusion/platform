@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaProperty.Interface> {
 
-    String formula;
+    final String formula;
 
     public static class Interface extends PropertyInterface {
 
@@ -43,6 +43,8 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
     public StringFormulaProperty(String sID, ConcreteValueClass iValue, String formula, int paramCount) {
         super(sID,formula,getInterfaces(paramCount),iValue);
         this.formula = formula;
+
+        finalizeInit();
     }
 
     public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {

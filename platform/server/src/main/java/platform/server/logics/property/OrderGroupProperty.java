@@ -35,6 +35,8 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         this.props = props;
         this.groupType = groupType;
         this.orders = orders;
+
+        finalizeInit();
     }
 
     public OrderGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<I>> interfaces, Property<I> property, List<PropertyInterfaceImplement<I>> extras, GroupType groupType, OrderedMap<PropertyInterfaceImplement<I>, Boolean> orders) {

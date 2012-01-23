@@ -28,7 +28,7 @@ import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.ClassProperty;
+import platform.server.logics.property.IsClassProperty;
 import platform.server.logics.property.Property;
 import platform.server.session.*;
 
@@ -305,7 +305,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return result;
     }
     private Where getClassWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
-        return ClassProperty.getIsClassWhere(getGridClasses(objects), mapKeys, modifier);
+        return IsClassProperty.getWhere(getGridClasses(objects), mapKeys, modifier);
     }
 
     public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {

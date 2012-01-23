@@ -20,6 +20,8 @@ public interface ParsedQuery<K,V> {
     Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues); // последний параметр = какой есть\какой нужно, joinImplement не translateOuter'ся
 
     QuickSet<Value> getValues();
+    
+    public Expr getExpr(V property);
 
     public Query<K,V> pullValues(Map<K, Expr> pullKeys, Map<V, Expr> pullProps);
 }

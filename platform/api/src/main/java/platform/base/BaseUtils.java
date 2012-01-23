@@ -637,6 +637,16 @@ public class BaseUtils {
         return result;
     }
 
+    public static <B, K1 extends B, K2 extends B, V> Map<K1, V> replaceValues(Map<K1, ? extends V> map1, Map<? extends V, ? extends V> map2) {
+        Map<K1, V> result = new HashMap<K1, V>(map1);
+        for (Map.Entry<K1, V> entry : result.entrySet()) {
+            V value2 = map2.get(entry.getValue());
+            if (value2 != null)
+                entry.setValue(value2);
+        }
+        return result;
+    }
+
     public static <K, V> Map<K, V> replace(Map<K, ? extends V> map, K key, V value) {
         Map<K, V> result = new HashMap<K, V>(map);
         result.put(key, value);

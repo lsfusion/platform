@@ -30,7 +30,6 @@ import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.FormEntity;
@@ -56,8 +55,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
 import static platform.server.logics.ServerResourceBundle.getString;
@@ -1363,31 +1360,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public List<DerivedChange<?, ?>> notDeterministic = new ArrayList<DerivedChange<?, ?>>();
 
-    // получает список св-в в порядке использования
-    private void fillPropertyList(Property<?> property, LinkedHashSet<Property> set) {
-        fillPropertyList(property, set, new Stack<Property>());
-    }
-
-    private List<Property> fillPropertyList(Property<?> property, LinkedHashSet<Property> set, Stack<Property> stack) {
-        if(stack.contains(property)) // цикл
-            return new ArrayList<Property>(stack);
-
-        stack.push(property);
-        for (Property depend : property.getDepends()) {
-            List<Property> cycle = fillPropertyList(depend, set, stack);
-            if(cycle!=null) {
-                stack.pop();
-                return cycle;
-            }
-        }
-        for (Property follow : property.getFollows())
-            fillPropertyList(follow, set, stack); // здесь игнорируются циклы (то есть разрез идет по следствию)
-        stack.pop();
-
-        set.add(property);
-        return null;
-    }
-
     public List<Property> getProperties() {
         return LM.rootGroup.getProperties();
     }
@@ -1400,32 +1372,105 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return getPropertyList(false);
     }
 
+
+    private static class LinksIn implements Comparable<LinksIn> {
+        private final QuickMap<LinkType, Integer> countLinks = new SimpleMap<LinkType, Integer>();
+        private final boolean usedByConstraints;
+        private final Property<?> property;
+
+        public int compareTo(LinksIn o) {
+            for(LinkType linkType : LinkType.order) {
+                int thisCount = countLinks.get(linkType);
+                int thatCount = o.countLinks.get(linkType);
+                if(thisCount>thatCount)
+                    return 1;
+                if(thisCount<thatCount)
+                    return -1;
+            }
+            if(usedByConstraints && !o.usedByConstraints)
+                return 1;
+            if(!usedByConstraints && o.usedByConstraints)
+                return -1;
+            assert (property.getSID().equals(o.property.getSID())==property.equals(o.property));
+            return property.getSID().compareTo(o.property.getSID());
+        }
+
+        private LinksIn(Property property, boolean usedByConstraints) {
+            for(LinkType linkType : LinkType.order)
+                countLinks.add(linkType, 0);
+            this.property = property;
+            this.usedByConstraints = usedByConstraints;
+        }
+
+        public void reduce(LinkType link) {
+            countLinks.add(link, countLinks.get(link) - 1);
+        }
+
+        public void add(LinkType link) {
+            countLinks.add(link, countLinks.get(link) + 1);
+        }
+    }
+
+    private static void fillLinks(Property<?> property, QuickMap<Property, LinksIn> linksMap, boolean usedByConstraints, QuickSet<Property> checked) {
+        if(linksMap.get(property)==null)
+            linksMap.add(property, new LinksIn(property, usedByConstraints));
+        fillRecLinks(property, linksMap, usedByConstraints, checked);
+    }
+    private static void fillRecLinks(Property<?> property, QuickMap<Property, LinksIn> linksMap, boolean usedByConstraints, QuickSet<Property> checked) {
+        if(checked.add(property)) // было, уходим
+            return;
+
+        // сначала строим orderMap, затем
+        for(Pair<Property<?>, LinkType> link : property.getLinks()) {
+            Property<?> linkProperty = link.first;
+            LinksIn linksIn = linksMap.get(linkProperty);
+            if(linksIn==null) {
+                linksIn = new LinksIn(linkProperty, usedByConstraints);
+                linksMap.add(linkProperty, linksIn);
+            }
+            linksIn.add(link.second);
+
+            fillLinks(linkProperty, linksMap, usedByConstraints, checked);
+        }
+    }
+
+    private static List<Property> buildList(SortedSet<LinksIn> sortedSet, QuickMap<Property, LinksIn> linksMap) {
+        List<Property> list = new ArrayList<Property>();
+        while(!sortedSet.isEmpty()) {
+            LinksIn firstKey = sortedSet.first();
+            assert firstKey.countLinks.get(LinkType.DEPEND).equals(0);
+            sortedSet.remove(firstKey);
+
+            for(Pair<Property<?>, LinkType> link : firstKey.property.getLinks()) {
+                LinksIn linkOrder = linksMap.get(link.first);
+                assert linkOrder.property.equals(link.first);
+                if(sortedSet.remove(linkOrder)) { // проверяем что еще не было
+                    linkOrder.reduce(link.second);
+                    sortedSet.add(linkOrder);
+                }
+            }
+
+            list.add(firstKey.property);
+        }
+        return BaseUtils.reverse(list);
+    }
+
     @IdentityLazy
     public Iterable<Property> getPropertyList(boolean onlyCheck) {
-        LinkedHashSet<Property> linkedSet = new LinkedHashSet<Property>();
+        QuickMap<Property, LinksIn> linksMap = new SimpleMap<Property, LinksIn>();
+        QuickSet<Property> checked = new QuickSet<Property>();
         for (Property property : getProperties())
             if(property.isFalse) // сначала чтобы constraint'ы были
-                fillPropertyList(property, linkedSet);
+                fillLinks(property, linksMap, true, checked);
         if(!onlyCheck)
             for (Property property : getProperties())
                 if(!property.isFalse)
-                    fillPropertyList(property, linkedSet);
-
-        List<Property> result = new ArrayList<Property>();
-        for (Property<?> property : linkedSet) { // переставляет execute'ы заведомо до changeProps, чтобы разрешать циклы
-            Integer minChange = null;
-            for (Property changeProp : property.getChangeProps()) {
-                int index = result.indexOf(changeProp);
-                if (index >= 0 && (minChange == null || index < minChange))
-                    minChange = index;
-            }
-            if (minChange != null)
-                result.add(minChange, property);
-            else
-                result.add(property);
-        }
-
-        return result;
+                    fillLinks(property, linksMap, false, checked);
+        
+        SortedSet<LinksIn> sortedLinks = new TreeSet<LinksIn>();
+        for(int i=0;i<linksMap.size;i++)
+            sortedLinks.add(linksMap.getValue(i));
+        return buildList(sortedLinks, linksMap);
     }
 
     @IdentityLazy
@@ -1454,7 +1499,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (property.isFalse)
                 result.add(property);
             if (property.isDerived())
-                result.addAll(((UserProperty)property).derivedChange.getDepends());
+                result.addAll(((UserProperty)property).derivedChange.getPrevDepends());
         }
         return result;
     }

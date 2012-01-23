@@ -16,11 +16,14 @@ import java.util.Map;
 public class StringAggUnionProperty extends FormulaUnionProperty {
 
     private final String delimiter;
-    public List<PropertyMapImplement<?, Interface>> operands = new ArrayList<PropertyMapImplement<?, Interface>>();
+    private final List<PropertyMapImplement<?, Interface>> operands;
 
-    public StringAggUnionProperty(String sID, String caption, int intNum, String delimiter) {
-        super(sID, caption, intNum);
+    public StringAggUnionProperty(String sID, String caption, List<Interface> interfaces, List<PropertyMapImplement<?, Interface>> operands, String delimiter) {
+        super(sID, caption, interfaces);
         this.delimiter = delimiter;
+        this.operands = operands;
+
+        finalizeInit();
     }
 
     @IdentityLazy

@@ -5,7 +5,7 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.logics.property.ClassProperty;
+import platform.server.logics.property.IsClassProperty;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -33,5 +33,5 @@ public interface ValueClass extends RemoteClass {
 
     Stat getTypeStat();
 
-    ClassProperty getProperty();
+    IsClassProperty getProperty();
 }

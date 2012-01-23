@@ -14,10 +14,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ShiftChangeProperty<P extends PropertyInterface, R extends PropertyInterface> extends ChangeProperty<ShiftChangeProperty.Interface<P>> {
 
@@ -51,6 +48,8 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
 
         this.property = property;
         this.reverse = reverse;
+
+        finalizeInit();
     }
 
     public Map<P, Interface<P>> getMapInterfaces() {
@@ -65,12 +64,21 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         return BaseUtils.crossJoin(getMapInterfaces(), property.getMapClasses());
     }
 
+    @IdentityLazy
+    private PropertyImplement<?, Interface<P>> getIsClassProperty() {
+        return IsClassProperty.getProperty(getInterfaceClasses());
+    }
+
+    protected void fillDepends(Set<Property> depends, boolean derived) {
+        depends.add(getIsClassProperty().property);
+    }
+
     protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
-        return ClassProperty.getIsClassUsed(getInterfaceClasses(), propChanges);
+        return propChanges.getUsedChanges(getDepends());
     }
 
     protected Expr calculateExpr(Map<Interface<P>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return ValueExpr.TRUE.and(ClassProperty.getIsClassWhere(getInterfaceClasses(), joinImplement, propChanges, changedWhere));
+        return ValueExpr.TRUE.and(getIsClassProperty().mapExpr(joinImplement, propChanges, changedWhere).getWhere());
 //        return ((IntegralClass) property.getType()).getActionExpr().and(classWhere);
 
 /*          слишком сложное выполнение
@@ -81,6 +89,10 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         if(changedWhere!=null)
             changedWhere.add(resultExpr.getWhere());
         return resultExpr;*/
+    }
+
+    public Set<Property> getChangeDepends() {
+        return BaseUtils.mergeSet(super.getChangeDepends(), BaseUtils.toSet((Property)property, (Property)reverse.property));
     }
 
     // без решения reverse'а и timeChanges не включишь этот механизм

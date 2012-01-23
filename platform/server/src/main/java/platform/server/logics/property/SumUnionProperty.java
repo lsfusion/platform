@@ -6,15 +6,19 @@ import platform.server.session.PropertyChanges;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SumUnionProperty extends IncrementUnionProperty {
 
-    public SumUnionProperty(String sID, String caption, int intNum) {
-        super(sID, caption, intNum);
+    public SumUnionProperty(String sID, String caption, List<Interface> interfaces, Map<PropertyMapImplement<?, Interface>, Integer> operands) {
+        super(sID, caption, interfaces);
+        this.operands = operands;
+
+        finalizeInit();
     }
 
-    public Map<PropertyMapImplement<?,Interface>,Integer> operands = new HashMap<PropertyMapImplement<?, Interface>, Integer>();
+    private final Map<PropertyMapImplement<?,Interface>,Integer> operands;
 
     protected Collection<PropertyMapImplement<?, Interface>> getOperands() {
         return operands.keySet();

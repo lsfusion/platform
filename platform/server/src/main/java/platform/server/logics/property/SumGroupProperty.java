@@ -28,24 +28,19 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
 
     public SumGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends PropertyInterfaceImplement<I>> groupInterfaces, PropertyInterfaceImplement<I> property) {
         super(sID, caption, innerInterfaces, groupInterfaces, property);
+
+        finalizeInit();
     }
 
     public SumGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<I>> interfaces, Property<I> property) {
         super(sID, caption, interfaces, property);
+
+        finalizeInit();
     }
 
     public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
         return changedExpr.sum(changedPrevExpr.scale(-1)).sum(getExpr(joinImplement));
-    }
-
-    @Override
-    public void prereadCaches() {
-        super.prereadCaches();
-        if(distribute!=null) {
-            distribute.property.prereadCaches();
-            nullImplement.property.prereadCaches();
-        }
     }
 
     private PropertyMapImplement<ClassPropertyInterface, Interface<I>> nullImplement;
@@ -61,6 +56,13 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         distribute = DerivedProperty.createUGProp(new PropertyImplement<ClassPropertyInterface, PropertyInterfaceImplement<L>>(nullImplement.property,
                 BaseUtils.join(nullImplement.mapping, DerivedProperty.mapImplements(getMapInterfaces(), BaseUtils.reverse(restriction.mapping)))),
                 orders, restriction.property).map(restriction.mapping);
+    }
+
+    public Set<Property> getChangeDepends() {
+        Set<Property> result = super.getChangeDepends();
+        if(distribute!=null)
+            result = BaseUtils.mergeSet(result, BaseUtils.<Property>toSet(distribute.property, nullImplement.property));
+        return result;
     }
 
     @Override

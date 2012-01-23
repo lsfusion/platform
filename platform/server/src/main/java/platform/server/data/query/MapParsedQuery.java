@@ -24,6 +24,10 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
     // какой есть в query -> какой нужен
     final MapValuesTranslate mapValues;
 
+    public Expr getExpr(V property) {
+        return query.getExpr(mapProps.get(property));
+    }
+
     public MapParsedQuery(ParsedQuery<MK,MV> query,Map<V,MV> mapProps,Map<K,MK> mapKeys,MapValuesTranslate mapValues) {
         this.query = query;
         this.mapProps = mapProps;

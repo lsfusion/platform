@@ -41,7 +41,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
 
     public SingleKeyPropertyUsage news = null;
 
-    public static Set<ClassProperty> getProperties(Set<CustomClass> addClasses, Set<CustomClass> removeClasses) {
+    public static Set<IsClassProperty> getProperties(Set<CustomClass> addClasses, Set<CustomClass> removeClasses) {
         return CustomClass.getProperties(BaseUtils.mergeSet(addClasses, removeClasses));
     }
 
@@ -86,8 +86,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         return null;
     }
 
-    private PropertyChange<ClassPropertyInterface> getClassChange(ClassProperty property) {
-        ValueClass isClass = property.getValueClass();
+    private PropertyChange<ClassPropertyInterface> getClassChange(IsClassProperty property) {
+        ValueClass isClass = property.getInterfaceClass();
         if(isClass instanceof CustomClass) {
             SingleKeyNoPropertyUsage addTable = add.get((CustomClass)isClass);
             SingleKeyNoPropertyUsage removeTable = remove.get((CustomClass) isClass);
@@ -134,8 +134,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         if(property instanceof ObjectClassProperty)
             return (PropertyChange<P>) getObjectClassChange((ObjectClassProperty) property);
 
-        if(property instanceof ClassProperty)
-            return (PropertyChange<P>) getClassChange((ClassProperty) property);
+        if(property instanceof IsClassProperty)
+            return (PropertyChange<P>) getClassChange((IsClassProperty) property);
 
         if(property instanceof DataProperty)
             return (PropertyChange<P>) getDataChange((DataProperty) property);

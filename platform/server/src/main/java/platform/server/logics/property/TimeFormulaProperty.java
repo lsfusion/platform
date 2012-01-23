@@ -17,6 +17,8 @@ public class TimeFormulaProperty extends ValueFormulaProperty<PropertyInterface>
         super(sID, time.toString(), new ArrayList<PropertyInterface>(), time.getConcreteValueClass());
 
         this.time = time;
+
+        finalizeInit();
     }
 
     protected Expr calculateExpr(Map<PropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {

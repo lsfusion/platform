@@ -22,14 +22,14 @@ public class DerivedProperty {
 
     // общие методы
 
-    private static void compareJoin(JoinProperty<CompareFormulaProperty.Interface> joinProperty, Compare compare, PropertyInterfaceImplement<JoinProperty.Interface> operator1, PropertyInterfaceImplement<JoinProperty.Interface> operator2) {
+    private static PropertyImplement<CompareFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>> compareJoin(Compare compare, PropertyInterfaceImplement<JoinProperty.Interface> operator1, PropertyInterfaceImplement<JoinProperty.Interface> operator2) {
         CompareFormulaProperty compareProperty = new CompareFormulaProperty(genID(),compare);
 
         Map<CompareFormulaProperty.Interface,PropertyInterfaceImplement<JoinProperty.Interface>> mapImplement = new HashMap<CompareFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>();
         mapImplement.put(compareProperty.operator1, operator1);
         mapImplement.put(compareProperty.operator2, operator2);
 
-        joinProperty.implement = new PropertyImplement<CompareFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(compareProperty,mapImplement);
+        return new PropertyImplement<CompareFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(compareProperty,mapImplement);
     }
 
     public static <L,T extends PropertyInterface,K extends PropertyInterface> Collection<PropertyInterfaceImplement<K>> mapImplements(Collection<PropertyInterfaceImplement<T>> interfaceImplements, Map<T,K> map) {
@@ -67,19 +67,18 @@ public class DerivedProperty {
             usedInterfaces.addAll(usedProperty.mapping.values());
 
         // создаем свойство - перемаппим интерфейсы
-        JoinProperty<L> joinProperty = new JoinProperty<L>(genID(),"sys",usedInterfaces.size(),false);
-        Map<T,JoinProperty.Interface> joinMap = BaseUtils.buildMap(usedInterfaces,joinProperty.interfaces); // строим карту
-
-        joinProperty.implement = new PropertyImplement<L, PropertyInterfaceImplement<JoinProperty.Interface>>(implement.property,mapImplements(implement.mapping,joinMap));
+        List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(usedInterfaces.size());
+        Map<T,JoinProperty.Interface> joinMap = BaseUtils.buildMap(usedInterfaces, listInterfaces); // строим карту
+        JoinProperty<L> joinProperty = new JoinProperty<L>(genID(),"sys", listInterfaces ,false,
+                new PropertyImplement<L, PropertyInterfaceImplement<JoinProperty.Interface>>(implement.property,mapImplements(implement.mapping,joinMap)));
         return new PropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createCompare(Collection<T> interfaces, PropertyInterfaceImplement<T> distribute, PropertyInterfaceImplement<T> previous, Compare compare) {
-        JoinProperty<CompareFormulaProperty.Interface> joinProperty = new JoinProperty<CompareFormulaProperty.Interface>(genID(),"sys",interfaces.size(),false);
-        Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(interfaces, joinProperty.interfaces);
-
-        compareJoin(joinProperty, compare, distribute.map(joinMap), previous.map(joinMap));
-
+        List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(interfaces.size());
+        Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(interfaces, listInterfaces);
+        JoinProperty<CompareFormulaProperty.Interface> joinProperty = new JoinProperty<CompareFormulaProperty.Interface>(genID(),"sys",
+                listInterfaces,false, compareJoin(compare, distribute.map(joinMap), previous.map(joinMap)));
         return new PropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
     }
 
@@ -87,8 +86,8 @@ public class DerivedProperty {
         if(ands.size()==0 && object instanceof PropertyMapImplement)
             return (PropertyMapImplement<?,T>)object;
 
-        JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<AndFormulaProperty.Interface>(name,caption,interfaces.size(),false);
-        Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(interfaces, joinProperty.interfaces);
+        List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(interfaces.size());
+        Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(interfaces, listInterfaces);
 
         AndFormulaProperty implement = new AndFormulaProperty(genID(),BaseUtils.convertArray(nots.toArray(new Boolean[nots.size()])));
         Map<AndFormulaProperty.Interface,PropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = new HashMap<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>();
@@ -97,7 +96,8 @@ public class DerivedProperty {
         for(PropertyInterfaceImplement<T> and : ands)
             joinImplement.put(andIterator.next(),and.map(joinMap));
 
-        joinProperty.implement = new PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(implement,joinImplement);
+        JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<AndFormulaProperty.Interface>(name,caption,
+                listInterfaces,false,new PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(implement,joinImplement));
         return new PropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
     }
 
@@ -124,33 +124,35 @@ public class DerivedProperty {
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createUnion(Collection<T> interfaces, PropertyMapImplement<?,T> first, PropertyMapImplement<?,T> rest) {
-        OverrideUnionProperty unionProperty = new OverrideUnionProperty(genID(),"sys",interfaces.size());
-        Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(interfaces,unionProperty.interfaces);
+        List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(interfaces.size());
+        Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(interfaces,listInterfaces);
 
-        unionProperty.addOperand(first.map(mapInterfaces));
-        unionProperty.addOperand(rest.map(mapInterfaces));
-
+        List<PropertyMapImplement<?, UnionProperty.Interface>> operands = new ArrayList<PropertyMapImplement<?, UnionProperty.Interface>>();
+        operands.add(first.map(mapInterfaces));
+        operands.add(rest.map(mapInterfaces));
+        OverrideUnionProperty unionProperty = new OverrideUnionProperty(genID(),"sys",listInterfaces,operands);
         return new PropertyMapImplement<UnionProperty.Interface,T>(unionProperty,BaseUtils.reverse(mapInterfaces));
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createDiff(Property<T> restriction, PropertyMapImplement<?,T> from) {
-        SumUnionProperty unionProperty = new SumUnionProperty(genID(),"sys",restriction.interfaces.size());
-        Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(restriction.interfaces,unionProperty.interfaces);
+        List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(restriction.interfaces.size());
+        Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(restriction.interfaces,listInterfaces);
 
-        unionProperty.operands.put(from.map(mapInterfaces),1);
-        unionProperty.operands.put(new PropertyMapImplement<T,UnionProperty.Interface>(restriction,mapInterfaces),-1);
-
+        Map<PropertyMapImplement<?, UnionProperty.Interface>, Integer> operands = new HashMap<PropertyMapImplement<?, UnionProperty.Interface>, Integer>();
+        operands.put(from.map(mapInterfaces),1);
+        operands.put(new PropertyMapImplement<T,UnionProperty.Interface>(restriction,mapInterfaces),-1);
+        SumUnionProperty unionProperty = new SumUnionProperty(genID(),"sys",listInterfaces,operands);
         return new PropertyMapImplement<UnionProperty.Interface,T>(unionProperty,BaseUtils.reverse(mapInterfaces));
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createSum(String sID, String caption, Collection<T> interfaces, PropertyMapImplement<?, T> sum1, PropertyMapImplement<?,T> sum2) {
-        SumUnionProperty unionProperty = new SumUnionProperty(sID,caption,interfaces.size());
-        Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(interfaces,unionProperty.interfaces);
+        List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(interfaces.size());
+        Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(interfaces,listInterfaces);
 
-        unionProperty.operands.put(sum1.map(mapInterfaces),1);
-        unionProperty.operands.put(sum2.map(mapInterfaces),1);
-
-        return new PropertyMapImplement<UnionProperty.Interface,T>(unionProperty,BaseUtils.reverse(mapInterfaces));
+        Map<PropertyMapImplement<?, UnionProperty.Interface>, Integer> operands = new HashMap<PropertyMapImplement<?, UnionProperty.Interface>, Integer>();
+        operands.put(sum1.map(mapInterfaces),1);
+        operands.put(sum2.map(mapInterfaces),1);
+        return new PropertyMapImplement<UnionProperty.Interface,T>(new SumUnionProperty(sID,caption,listInterfaces,operands),BaseUtils.reverse(mapInterfaces));
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createStatic(Object value, StaticClass valueClass) {
@@ -161,39 +163,42 @@ public class DerivedProperty {
         return createFormula(genID(), "sys", interfaces, formula, valueClass, params);
     }
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createFormula(String sID, String caption, Collection<T> interfaces, String formula, ConcreteValueClass valueClass, List<? extends PropertyInterfaceImplement<T>> params) {
-        JoinProperty<StringFormulaProperty.Interface> joinProperty = new JoinProperty<StringFormulaProperty.Interface>(sID,caption,interfaces.size(),false);
-        Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(interfaces, joinProperty.interfaces);
+        List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(interfaces.size());
+        Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(interfaces, listInterfaces);
 
         StringFormulaProperty implement = new StringFormulaProperty(genID(),valueClass,formula,params.size());
         Map<StringFormulaProperty.Interface,PropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = new HashMap<StringFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>();
         for(int i=0;i<params.size();i++)
             joinImplement.put(implement.findInterface("prm"+(i+1)),params.get(i).map(joinMap));
 
-        joinProperty.implement = new PropertyImplement<StringFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(implement,joinImplement);
+        JoinProperty<StringFormulaProperty.Interface> joinProperty = new JoinProperty<StringFormulaProperty.Interface>(sID,caption,
+                listInterfaces,false,new PropertyImplement<StringFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(implement,joinImplement));
         return new PropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createConcatenate(String sID, String caption, Collection<T> interfaces, List<? extends PropertyInterfaceImplement<T>> params) {
-        JoinProperty<ConcatenateProperty.Interface> joinProperty = new JoinProperty<ConcatenateProperty.Interface>(sID, caption, interfaces.size(), false);
-        Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(interfaces, joinProperty.interfaces);
+        List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(interfaces.size());
+        Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(interfaces, listInterfaces);
 
-        ConcatenateProperty implement = new ConcatenateProperty(params.size());
+        ConcatenateProperty implement = new ConcatenateProperty(genID(), params.size());
         Map<ConcatenateProperty.Interface,PropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = new HashMap<ConcatenateProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>();
         for(int i=0;i<params.size();i++)
             joinImplement.put(implement.getInterface(i),params.get(i).map(joinMap));
 
-        joinProperty.implement = new PropertyImplement<ConcatenateProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(implement,joinImplement);
+        JoinProperty<ConcatenateProperty.Interface> joinProperty = new JoinProperty<ConcatenateProperty.Interface>(sID, caption,
+                listInterfaces, false, new PropertyImplement<ConcatenateProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(implement,joinImplement));
         return new PropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createDeconcatenate(String sID, String caption, Property<T> property, int part, BaseClass baseClass) {
-        JoinProperty<DeconcatenateProperty.Interface> joinProperty = new JoinProperty<DeconcatenateProperty.Interface>(sID,caption,property.interfaces.size(),false);
-        Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(property.interfaces, joinProperty.interfaces);
+        List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(property.interfaces.size());
+        Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(property.interfaces, listInterfaces);
 
-        DeconcatenateProperty implement = new DeconcatenateProperty(part,baseClass);
+        DeconcatenateProperty implement = new DeconcatenateProperty(genID(),part,baseClass);
         Map<DeconcatenateProperty.Interface,PropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = Collections.<DeconcatenateProperty.Interface,PropertyInterfaceImplement<JoinProperty.Interface>>singletonMap(BaseUtils.single(implement.interfaces),new PropertyMapImplement<T,JoinProperty.Interface>(property,joinMap));
 
-        joinProperty.implement = new PropertyImplement<DeconcatenateProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(implement,joinImplement);
+        JoinProperty<DeconcatenateProperty.Interface> joinProperty = new JoinProperty<DeconcatenateProperty.Interface>(sID,caption,listInterfaces,false,
+                new PropertyImplement<DeconcatenateProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(implement,joinImplement));
         return new PropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
     }
 
@@ -201,21 +206,22 @@ public class DerivedProperty {
 
     // создает "раздваивающее" свойство (self join в SQL)
 
-    private static <T extends PropertyInterface,P extends PropertyInterface> JoinProperty<P> createSelfProp(Collection<T> interfaces, Map<T,JoinProperty.Interface> map1, Map<T,JoinProperty.Interface> map2, Set<T> partInterfaces) {
-        JoinProperty<P> joinProperty = new JoinProperty<P>(genID(),"sys",interfaces.size()*2-partInterfaces.size(),false);
-        Iterator<JoinProperty.Interface> joinIterator = joinProperty.interfaces.iterator();
+    private static <T extends PropertyInterface,P extends PropertyInterface> List<JoinProperty.Interface> createSelfProp(Collection<T> interfaces, Map<T,JoinProperty.Interface> map1, Map<T,JoinProperty.Interface> map2, Set<T> partInterfaces) {
+        List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(interfaces.size() * 2 - partInterfaces.size());
+        Iterator<JoinProperty.Interface> joinIterator = listInterfaces.iterator();
         for(T propertyInterface : interfaces) {
             JoinProperty.Interface joinInterface = joinIterator.next();
             map1.put(propertyInterface, joinInterface);
             map2.put(propertyInterface, (partInterfaces.contains(propertyInterface)?joinInterface:joinIterator.next()));
         }
-        return joinProperty;
+        return listInterfaces;
     }
 
     private static <P extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,JoinProperty.Interface> createCompareProp(PropertyMapImplement<P,T> implement, Map<T,JoinProperty.Interface> map1, Map<T,JoinProperty.Interface> map2, Compare compare) {
         Map<P,JoinProperty.Interface> join1 = new HashMap<P, JoinProperty.Interface>(); Map<P,JoinProperty.Interface> join2 = new HashMap<P, JoinProperty.Interface>();
-        JoinProperty<CompareFormulaProperty.Interface> joinProperty = createSelfProp(implement.property.interfaces, join1, join2, new HashSet<P>());
-        compareJoin(joinProperty, compare, new PropertyMapImplement<P,JoinProperty.Interface>(implement.property,join1), new PropertyMapImplement<P,JoinProperty.Interface>(implement.property,join2));
+        List<JoinProperty.Interface> listInterfaces = createSelfProp(implement.property.interfaces, join1, join2, new HashSet<P>());
+        JoinProperty<CompareFormulaProperty.Interface> joinProperty = new JoinProperty<CompareFormulaProperty.Interface>(genID(),"sys",listInterfaces,false,
+                compareJoin(compare, new PropertyMapImplement<P, JoinProperty.Interface>(implement.property, join1), new PropertyMapImplement<P, JoinProperty.Interface>(implement.property, join2)));
         return new PropertyMapImplement<JoinProperty.Interface,JoinProperty.Interface>(joinProperty, BaseUtils.merge(
                 BaseUtils.crossJoin(join1,BaseUtils.join(implement.mapping,map1)),
                 BaseUtils.crossJoin(join2,BaseUtils.join(implement.mapping,map2))));
@@ -246,7 +252,7 @@ public class DerivedProperty {
             partition.fill(partInterfaces, partProperties);
 
         Map<T,JoinProperty.Interface> mapDupl = new HashMap<T, JoinProperty.Interface>();
-        JoinProperty<AndFormulaProperty.Interface> joinProperty = createSelfProp(interfaces, mapMain,mapDupl,partInterfaces);
+        List<JoinProperty.Interface> listInterfaces = createSelfProp(interfaces, mapMain, mapDupl, partInterfaces);
 
         // ставим equals'ы на partitions свойства (раздвоенные), greater на предшествие order (раздвоенное)
         AndFormulaProperty andPrevious = new AndFormulaProperty(genID(),new boolean[partProperties.size()+1]);
@@ -257,8 +263,8 @@ public class DerivedProperty {
             mapImplement.put(itAnd.next(), createCompareProp(partProperty, mapMain, mapDupl, Compare.EQUALS));
         mapImplement.put(itAnd.next(),createCompareMap(expr, mapMain, mapDupl, compare));
 
-        joinProperty.implement = new PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(andPrevious, mapImplement);
-        return joinProperty;
+        return new JoinProperty<AndFormulaProperty.Interface>(genID(),"sys",listInterfaces,false,
+                new PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(andPrevious, mapImplement));
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createSOProp(Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, PropertyInterfaceImplement<T> order, boolean ascending, boolean last) {
@@ -289,23 +295,24 @@ public class DerivedProperty {
         
         if(orders.size()==1) return createSOProp(sID, caption, property, partitions, orders.singleKey(), orders.singleValue(), includeLast);
         // итеративно делаем Union, перекидывая order'ы в partition'ы
-        SumUnionProperty unionProperty = new SumUnionProperty(sID,caption,property.interfaces.size());
-        Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(property.interfaces,unionProperty.interfaces);
+        List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(property.interfaces.size());
+        Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(property.interfaces,listInterfaces);
 
+        Map<PropertyMapImplement<?, UnionProperty.Interface>, Integer> operands = new HashMap<PropertyMapImplement<?, UnionProperty.Interface>, Integer>();
         Iterator<Map.Entry<PropertyInterfaceImplement<T>,Boolean>> it = orders.entrySet().iterator();
         while(it.hasNext()) {
             Map.Entry<PropertyInterfaceImplement<T>,Boolean> order = it.next();
-            unionProperty.operands.put(createSOProp(property, partitions, order.getKey(), order.getValue(), it.hasNext() && includeLast).map(mapInterfaces),1);
+            operands.put(createSOProp(property, partitions, order.getKey(), order.getValue(), it.hasNext() && includeLast).map(mapInterfaces),1);
             partitions = new ArrayList<PropertyInterfaceImplement<T>>(partitions);
             partitions.add(order.getKey());
         }
 
-        return new PropertyMapImplement<UnionProperty.Interface,T>(unionProperty,BaseUtils.reverse(mapInterfaces));
+        return new PropertyMapImplement<UnionProperty.Interface,T>(new SumUnionProperty(sID,caption,listInterfaces,operands),BaseUtils.reverse(mapInterfaces));
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(String sID, String caption, PartitionType partitionType, Collection<T> innerInterfaces, List<PropertyInterfaceImplement<T>> props, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
-        OrderProperty<T> orderProperty = new OrderProperty<T>(sID, caption, partitionType, innerInterfaces, props, partitions, orders, includeLast);
-        return new PropertyMapImplement<OrderProperty.Interface<T>,T>(orderProperty,orderProperty.getMapInterfaces());
+        PartitionProperty<T> orderProperty = new PartitionProperty<T>(sID, caption, partitionType, innerInterfaces, props, partitions, orders, includeLast);
+        return new PropertyMapImplement<PartitionProperty.Interface<T>,T>(orderProperty,orderProperty.getMapInterfaces());
     }
 
     public static <T> PropertyImplement<?,T> createCProp(StaticClass valueClass, Object value, Map<T, ValueClass> params) {
@@ -328,7 +335,7 @@ public class DerivedProperty {
         List<PropertyInterfaceImplement<PropertyInterface>> listImplements = new ArrayList<PropertyInterfaceImplement<PropertyInterface>>();
         for(Map.Entry<T, ValueClass> param : params.entrySet()) {
             PropertyInterface propertyInterface = new PropertyInterface();
-            listImplements.add(ClassProperty.getIsClassProperty(param.getValue(), "value").mapPropertyImplement(Collections.singletonMap("value", propertyInterface)));
+            listImplements.add(IsClassProperty.getProperty(param.getValue(), "value").mapPropertyImplement(Collections.singletonMap("value", propertyInterface)));
             mapInterfaces.put(propertyInterface, param.getKey());
         }
 
@@ -379,7 +386,7 @@ public class DerivedProperty {
         }
         return createAnd(property.interfaces, property.getImplement(), compareImplements);*/
 
-        ConcatenateProperty concatenate = new ConcatenateProperty(property.interfaces.size());
+        ConcatenateProperty concatenate = new ConcatenateProperty(genID(), property.interfaces.size());
         PropertyMapImplement<ConcatenateProperty.Interface, T> concImplement = new PropertyMapImplement<ConcatenateProperty.Interface, T>(concatenate, BaseUtils.buildMap(concatenate.interfaces, property.interfaces));
 
         // concatenate property и проверяем
@@ -450,8 +457,8 @@ public class DerivedProperty {
             OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<T>, Boolean>();
             for(T propertyInterface : proportion.interfaces)
                 orders.put(propertyInterface, false);
-            OrderProperty<T> orderProperty = new OrderProperty<T>(sID, caption, PartitionType.DISTR_CUM_PROPORTION, proportion, partitions, orders, BaseUtils.<PropertyInterfaceImplement<T>>toList(distribute), false);
-            return new PropertyMapImplement<OrderProperty.Interface<T>, T>(orderProperty, orderProperty.getMapInterfaces());
+            PartitionProperty<T> orderProperty = new PartitionProperty<T>(sID, caption, PartitionType.DISTR_CUM_PROPORTION, proportion, partitions, orders, BaseUtils.<PropertyInterfaceImplement<T>>toList(distribute), false);
+            return new PropertyMapImplement<PartitionProperty.Interface<T>, T>(orderProperty, orderProperty.getMapInterfaces());
         }
 
         // общая сумма по пропорции в partition'е

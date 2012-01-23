@@ -17,6 +17,8 @@ public class ValueProperty extends NoIncrementProperty<PropertyInterface> {
         super(sID, caption, new ArrayList<PropertyInterface>());
         this.value = value;
         this.staticClass = staticClass;
+
+        finalizeInit();
     }
 
     protected Expr calculateExpr(Map<PropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {

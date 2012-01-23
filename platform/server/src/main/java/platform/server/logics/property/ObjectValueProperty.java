@@ -22,9 +22,8 @@ import platform.server.session.StructChanges;
 
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.Set;
 
-public class ObjectValueProperty extends ExecuteProperty {
+public class ObjectValueProperty extends ExecuteClassProperty {
 
     private final ValueClass typeClass;
     public final ClassPropertyInterface objectInterface;
@@ -34,6 +33,8 @@ public class ObjectValueProperty extends ExecuteProperty {
 
         this.typeClass = valueClass;
         objectInterface = BaseUtils.single(interfaces);
+
+        finalizeInit();
     }
 
     @Override
@@ -59,18 +60,8 @@ public class ObjectValueProperty extends ExecuteProperty {
             context.addActions(remoteForm.changeObject((ObjectInstance) context.getSingleObjectInstance(), context.getValue(), context.getRemoteForm()));
     }
 
-    @Override
-    public void prereadCaches() {
-        super.prereadCaches();
-        ClassProperty.getIsClassProperty(interfaces).property.prereadCaches();
-    }
-
-    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
-        return ClassProperty.getIsClassUsed(interfaces, propChanges);
-    }
-
-    protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return BaseUtils.singleValue(joinImplement).and(ClassProperty.getIsClassWhere(joinImplement, propChanges, changedWhere));
+    protected Expr getValueExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement) {
+        return BaseUtils.singleValue(joinImplement);
     }
 
     @Override

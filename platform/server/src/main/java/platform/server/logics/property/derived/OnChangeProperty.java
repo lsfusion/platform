@@ -16,10 +16,7 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // определяет не максимум изменения, а для конкретных входов
 public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends ChangeProperty<OnChangeProperty.Interface<T, P>> {
@@ -112,6 +109,14 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         super(onChange.getSID() +"_ONCH_"+ toChange.getSID(),onChange.caption+" по ("+toChange.caption+")", getInterfaces(onChange, toChange));
         this.onChange = onChange;
         this.toChange = toChange;
+
+        finalizeInit();
+    }
+
+    @Override
+    protected void fillDepends(Set<Property> depends, boolean derived) {
+        depends.add(onChange);
+        depends.add(toChange);
     }
 
     protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {

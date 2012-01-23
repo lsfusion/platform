@@ -8,5 +8,7 @@ public class CurrentUserFormulaProperty extends CurrentEnvironmentFormulaPropert
 
     public CurrentUserFormulaProperty(String sID, ValueClass paramClass) {
         super(sID, ServerResourceBundle.getString("logics.property.current.user"), SQLSession.userParam, paramClass.getUpSet());
+
+        finalizeInit();
     }
 }

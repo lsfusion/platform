@@ -34,7 +34,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.ClassProperty;
+import platform.server.logics.property.IsClassProperty;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -497,17 +497,17 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         editFormHolder.setForm(new ClassFormEntity(form, object));
     }
 
-    public static ClassProperty getProperty(ValueClass valueClass) {
-        return new ClassProperty("cp_" + valueClass.getSID(), valueClass.getCaption() + ServerResourceBundle.getString("logics.pr"), valueClass);
+    public static IsClassProperty getProperty(ValueClass valueClass) {
+        return new IsClassProperty("cp_" + valueClass.getSID(), valueClass.getCaption() + ServerResourceBundle.getString("logics.pr"), valueClass);
     }
 
     @IdentityLazy
-    public ClassProperty getProperty() {
+    public IsClassProperty getProperty() {
         return getProperty(this);
     }
 
-    public static Set<ClassProperty> getProperties(Set<? extends ValueClass> classes) {
-        Set<ClassProperty> result = new HashSet<ClassProperty>();
+    public static Set<IsClassProperty> getProperties(Set<? extends ValueClass> classes) {
+        Set<IsClassProperty> result = new HashSet<IsClassProperty>();
         for(ValueClass valueClass : classes)
             result.add(valueClass.getProperty());
         return result;

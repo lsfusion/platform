@@ -31,6 +31,8 @@ public class ObjectClassProperty extends ExecuteProperty {
         super(SID, ServerResourceBundle.getString("classes.object.class"), new ValueClass[]{baseClass});
 
         this.baseClass = baseClass;
+
+        finalizeInit();
     }
 
     public ValueClass getValueClass() {

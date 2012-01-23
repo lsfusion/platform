@@ -14,9 +14,9 @@ import java.util.Map;
 
 public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaProperty.Interface> {
 
-    Compare compare;
-    public Interface operator1;
-    public Interface operator2;
+    final Compare compare;
+    public final Interface operator1;
+    public final Interface operator2;
 
     public CompareFormulaProperty(String sID, Compare compare) {
         super(sID, compare.toString(), getInterfaces(2), LogicalClass.instance);
@@ -25,6 +25,8 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
         Iterator<Interface> i = interfaces.iterator();
         operator1 = i.next();
         operator2 = i.next();
+
+        finalizeInit();
     }
 
     public static class Interface extends PropertyInterface {

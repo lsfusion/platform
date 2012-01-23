@@ -35,6 +35,8 @@ public class StringConcatenateProperty extends FormulaProperty<StringConcatenate
         super(sID, caption, getInterfaces(intNum));
         this.separator = separator;
         this.caseSensitive = caseSensitive;
+
+        finalizeInit();
     }
 
     public Interface getInterface(int i) {

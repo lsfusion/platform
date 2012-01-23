@@ -23,12 +23,16 @@ public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         super(sID, caption, innerInterfaces, groupInterfaces, property);
 
         this.min = min;
+
+        finalizeInit();
     }
 
     public MaxGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<I>> interfaces, Property<I> property, boolean min) {
         super(sID, caption, interfaces, property);
 
         this.min = min;
+
+        finalizeInit();
     }
 
     @Override

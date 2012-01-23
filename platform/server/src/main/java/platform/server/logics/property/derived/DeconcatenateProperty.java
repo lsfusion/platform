@@ -20,14 +20,16 @@ public class DeconcatenateProperty extends FormulaProperty<DeconcatenateProperty
         }
     }
 
-    int part;
-    BaseClass baseClass;
+    final int part;
+    final BaseClass baseClass;
 
-    protected DeconcatenateProperty(int part, BaseClass baseClass) {
-        super("DECONCATENATE_"+part,"Concatenate "+part, Collections.singletonList(new Interface(0)));
+    protected DeconcatenateProperty(String sID, int part, BaseClass baseClass) {
+        super(sID,"Concatenate "+part, Collections.singletonList(new Interface(0)));
         
         this.part = part;
         this.baseClass = baseClass;
+
+        finalizeInit();
     }
 
     protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {

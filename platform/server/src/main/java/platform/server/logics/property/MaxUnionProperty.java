@@ -6,11 +6,12 @@ import platform.server.session.PropertyChanges;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class MaxUnionProperty extends IncrementUnionProperty {
 
-    public Collection<PropertyMapImplement<?,Interface>> operands = new ArrayList<PropertyMapImplement<?, Interface>>();
+    private final Collection<PropertyMapImplement<?,Interface>> operands;
 
     @Override
     protected boolean useSimpleIncrement() {
@@ -44,7 +45,10 @@ public class MaxUnionProperty extends IncrementUnionProperty {
         return operands;
     }
 
-    public MaxUnionProperty(String sID, String caption, int intNum) {
-        super(sID, caption, intNum);
+    public MaxUnionProperty(String sID, String caption, List<Interface> interfaces, Collection<PropertyMapImplement<?, Interface>> operands) {
+        super(sID, caption, interfaces);
+        this.operands = operands;
+
+        finalizeInit();
     }
 }

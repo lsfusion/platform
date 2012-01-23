@@ -27,8 +27,10 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
         return interfaces;
     }
 
-    public ConcatenateProperty(int intNum) {
-        super("CONCATENATE_"+intNum, "Concatenate " + intNum, getInterfaces(intNum));
+    public ConcatenateProperty(String sID, int intNum) {
+        super(sID, "Concatenate " + intNum, getInterfaces(intNum));
+
+        finalizeInit();
     }
 
     public Interface getInterface(int i) {

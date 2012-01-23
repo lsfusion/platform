@@ -20,6 +20,7 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
 
     public KeyEquals(Where where) {
         super(new KeyEqual(), where);
+        assert !where.isFalse();
     }
 
     public KeyEquals(KeyExpr key, BaseExpr expr) {
@@ -99,9 +100,10 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
                         extraWhere = extraWhere.and(mergeEntry.getKey().compare(mergeEntry.getValue(), Compare.EQUALS));
 
                 andWhere = andWhere.and(extraWhere);
-                if (cleanEq1.isEmpty() && cleanEq2.isEmpty() && extraWhere.isTrue()) // чтобы не уходило в бесконечный цикл
-                    result.add(new KeyEqual(andEq), andWhere);
-                else {
+                if (cleanEq1.isEmpty() && cleanEq2.isEmpty() && extraWhere.isTrue()) { // чтобы не уходило в бесконечный цикл
+                    if(!andWhere.isFalse())
+                        result.add(new KeyEqual(andEq), andWhere);
+                } else {
                     KeyEquals recEquals = andWhere.getKeyEquals();
                     for(int i=0;i<recEquals.size;i++)
                         result.add(new KeyEqual(BaseUtils.merge(andEq, recEquals.getKey(i).keyExprs)), recEquals.getValue(i));

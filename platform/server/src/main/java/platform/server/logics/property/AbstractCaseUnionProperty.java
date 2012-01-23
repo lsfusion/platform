@@ -13,18 +13,18 @@ import java.util.*;
 
 public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
 
-    protected class Case {
+    public static class Case {
         PropertyMapImplement<?, Interface> where;
         PropertyMapImplement<?, Interface> property;
 
-        protected Case(PropertyMapImplement<?, Interface> where, PropertyMapImplement<?, Interface> property) {
+        public Case(PropertyMapImplement<?, Interface> where, PropertyMapImplement<?, Interface> property) {
             this.where = where;
             this.property = property;
         }
     }
 
-    public AbstractCaseUnionProperty(String sID, String caption, int intNum) {
-        super(sID, caption, intNum);
+    protected AbstractCaseUnionProperty(String sID, String caption, List<Interface> interfaces) {
+        super(sID, caption, interfaces);
     }
 
     @Override

@@ -8,6 +8,7 @@ import platform.server.session.PropertyChanges;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class FormulaUnionProperty extends UnionProperty {
@@ -16,8 +17,8 @@ public abstract class FormulaUnionProperty extends UnionProperty {
     protected abstract DataClass getDataClass();
     protected abstract Map<String, PropertyMapImplement<?, Interface>> getParams();
 
-    public FormulaUnionProperty(String sID, String caption, int intNum) {
-        super(sID, caption, intNum);
+    protected FormulaUnionProperty(String sID, String caption, List<Interface> interfaces) {
+        super(sID, caption, interfaces);
     }
 
     protected Collection<PropertyMapImplement<?, Interface>> getOperands() {

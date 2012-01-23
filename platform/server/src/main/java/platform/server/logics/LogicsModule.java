@@ -368,17 +368,18 @@ public abstract class LogicsModule {
 
         int propsize = derivedProp.listInterfaces.size();
         int dersize = getIntNum(params);
-        JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<AndFormulaProperty.Interface>(name, caption, dersize, false);
-        LP<JoinProperty.Interface> listProperty = new LP<JoinProperty.Interface>(joinProperty);
+        List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(dersize);
 
         AndFormulaProperty andProperty = new AndFormulaProperty(genSID(), new boolean[list.size() - propsize]);
         Map<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>> mapImplement = new HashMap<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>();
-        mapImplement.put(andProperty.objectInterface, DerivedProperty.createJoin(mapImplement(derivedProp, mapLI(list.subList(0, propsize), listProperty.listInterfaces))));
+        mapImplement.put(andProperty.objectInterface, DerivedProperty.createJoin(mapImplement(derivedProp, mapLI(list.subList(0, propsize), listInterfaces))));
         Iterator<AndFormulaProperty.AndInterface> itAnd = andProperty.andInterfaces.iterator();
-        for (PropertyInterfaceImplement<JoinProperty.Interface> partProperty : mapLI(list.subList(propsize, list.size()), listProperty.listInterfaces))
+        for (PropertyInterfaceImplement<JoinProperty.Interface> partProperty : mapLI(list.subList(propsize, list.size()), listInterfaces))
             mapImplement.put(itAnd.next(), partProperty);
 
-        joinProperty.implement = new PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(andProperty, mapImplement);
+        JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<AndFormulaProperty.Interface>(name, caption, listInterfaces, false,
+                new PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(andProperty, mapImplement));
+        LP<JoinProperty.Interface> listProperty = new LP<JoinProperty.Interface>(joinProperty, listInterfaces);
 
         // получаем классы
         Result<ValueClass> value = new Result<ValueClass>();
@@ -696,7 +697,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addCCProp(int paramCount) {
-        return addProperty(null, new LP<ConcatenateProperty.Interface>(new ConcatenateProperty(paramCount)));
+        return addProperty(null, new LP<ConcatenateProperty.Interface>(new ConcatenateProperty(genSID(), paramCount)));
     }
 
     protected boolean isDefaultJoinImplementChange(Property property) {
@@ -757,14 +758,13 @@ public abstract class LogicsModule {
 
     protected LP addJProp(AbstractGroup group, boolean implementChange, String name, boolean persistent, String caption, LP mainProp, Object... params) {
 
-        JoinProperty<?> property = new JoinProperty(name, caption, getIntNum(params), implementChange);
+        List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(getIntNum(params));
+        JoinProperty<?> property = new JoinProperty(name, caption, listInterfaces, implementChange,
+                mapImplement(mainProp, readImplements(listInterfaces, params)));
         property.inheritFixedCharWidth(mainProp.property);
         property.inheritImage(mainProp.property);
 
-        LP listProperty = new LP<JoinProperty.Interface>(property);
-        property.implement = mapImplement(mainProp, readImplements(listProperty.listInterfaces, params));
-
-        return addProperty(group, persistent, listProperty);
+        return addProperty(group, persistent, new LP<JoinProperty.Interface>(property, listInterfaces));
     }
 
     protected LP[] addJProp(AbstractGroup group, boolean implementChange, String paramID, LP[] props, String caption, Object... params) {
@@ -1080,7 +1080,7 @@ public abstract class LogicsModule {
     private <T extends PropertyInterface> LP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, List<T> innerInterfaces, List<PropertyInterfaceImplement<T>> implement) {
         boolean wrapNotZero = persistent && (notZero || !Settings.instance.isDisableSumGroupNotZero());
         List<PropertyInterfaceImplement<T>> listImplements = implement.subList(1, implement.size());
-        SumGroupProperty<T> property = new SumGroupProperty<T>(name, caption, innerInterfaces, listImplements, implement.get(0));
+        SumGroupProperty<T> property = new SumGroupProperty<T>((wrapNotZero?"wr_":"") + name, caption, innerInterfaces, listImplements, implement.get(0));
 
         LP result;
         if (wrapNotZero)
@@ -1321,79 +1321,76 @@ public abstract class LogicsModule {
 
         int intNum = ((LP) params[unionType == Union.SUM ? 1 : 0]).listInterfaces.size();
 
-        UnionProperty property = null;
+        List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(intNum);
+        List<PropertyMapImplement<?, UnionProperty.Interface>> listOperands = new ArrayList<PropertyMapImplement<?, UnionProperty.Interface>>();
+        Map<PropertyMapImplement<?, UnionProperty.Interface>, Integer> mapOperands = new HashMap<PropertyMapImplement<?, UnionProperty.Interface>, Integer>();
+        String delimeter = null;
         int extra = 0;
+
         switch (unionType) {
-            case MAX:
-                property = new MaxUnionProperty(name, caption, intNum);
-                break;
             case SUM:
-                property = new SumUnionProperty(name, caption, intNum);
                 extra = 1;
                 break;
-            case OVERRIDE:
-                property = new OverrideUnionProperty(name, caption, intNum);
-                break;
-            case XOR:
-                property = new XorUnionProperty(name, caption, intNum);
-                break;
-            case EXCLUSIVE:
-                property = new ExclusiveUnionProperty(name, caption, intNum);
-                break;
             case STRING_AGG:
-                property = new StringAggUnionProperty(name, caption, intNum, (String) params[params.length-1]);
+                delimeter = (String) params[params.length-1];
                 params = Arrays.copyOfRange(params, 0, params.length-1);
                 break;
         }
-
-        LP listProperty = new LP<UnionProperty.Interface>(property);
 
         for (int i = 0; i < params.length / (intNum + 1 + extra); i++) {
             Integer offs = i * (intNum + 1 + extra);
             LP<?> opImplement = (LP) params[offs + extra];
             PropertyMapImplement operand = new PropertyMapImplement(opImplement.property);
             for (int j = 0; j < intNum; j++)
-                operand.mapping.put(opImplement.listInterfaces.get(((Integer) params[offs + 1 + extra + j]) - 1), listProperty.listInterfaces.get(j));
+                operand.mapping.put(opImplement.listInterfaces.get(((Integer) params[offs + 1 + extra + j]) - 1), listInterfaces.get(j));
 
             switch (unionType) {
-                case MAX:
-                    ((MaxUnionProperty) property).operands.add(operand);
-                    break;
                 case SUM:
-                    ((SumUnionProperty) property).operands.put(operand, (Integer) params[offs]);
-                    break;
-                case OVERRIDE:
-                    ((OverrideUnionProperty) property).addOperand(operand);
-                    break;
-                case XOR:
-                    ((XorUnionProperty) property).operands.add(operand);
-                    break;
-                case EXCLUSIVE:
-                    ((ExclusiveUnionProperty) property).addOperand(operand);
-                    break;
-                case STRING_AGG:
-                    ((StringAggUnionProperty) property).operands.add(operand);
+                    mapOperands.put(operand, (Integer) params[offs]);
                     break;
                 default:
-                    throw new RuntimeException("could not be");
+                    listOperands.add(operand);
             }
         }
 
-        return addProperty(group, persistent, listProperty);
+        UnionProperty property = null;
+        switch (unionType) {
+            case MAX:
+                property = new MaxUnionProperty(name, caption, listInterfaces, listOperands);
+                break;
+            case SUM:
+                property = new SumUnionProperty(name, caption, listInterfaces, mapOperands);
+                break;
+            case OVERRIDE:
+                property = new OverrideUnionProperty(name, caption, listInterfaces, listOperands);
+                break;
+            case XOR:
+                property = new XorUnionProperty(name, caption, listInterfaces, listOperands);
+                break;
+            case EXCLUSIVE:
+                property = new ExclusiveUnionProperty(name, caption, listInterfaces, listOperands);
+                break;
+            case STRING_AGG:
+                property = new StringAggUnionProperty(name, caption, listInterfaces, listOperands, delimeter);
+                break;
+        }
+
+        return addProperty(group, persistent, new LP<UnionProperty.Interface>(property, listInterfaces));
     }
 
     protected LP addCaseUProp(AbstractGroup group, String name, boolean persistent, String caption, Object... params) {
         List<LI> list = readLI(params);
         int intNum = ((LMI) list.get(1)).lp.listInterfaces.size(); // берем количество интерфейсов у первого case'а
 
-        CaseUnionProperty caseProp = new CaseUnionProperty(name, caption, intNum);
-        LP<UnionProperty.Interface> listProperty = new LP<UnionProperty.Interface>(caseProp);
-        List<PropertyMapImplement<?, UnionProperty.Interface>> mapImplements = (List<PropertyMapImplement<?, UnionProperty.Interface>>) (List<?>) mapLI(list, listProperty.listInterfaces);
+        List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(intNum);
+        List<AbstractCaseUnionProperty.Case> listCases = new ArrayList<AbstractCaseUnionProperty.Case>();
+        List<PropertyMapImplement<?, UnionProperty.Interface>> mapImplements = (List<PropertyMapImplement<?, UnionProperty.Interface>>) (List<?>) mapLI(list, listInterfaces);
         for (int i = 0; i < mapImplements.size() / 2; i++)
-            caseProp.addCase(mapImplements.get(2 * i), mapImplements.get(2 * i + 1));
+            listCases.add(new AbstractCaseUnionProperty.Case(mapImplements.get(2 * i), mapImplements.get(2 * i + 1)));
         if (mapImplements.size() % 2 != 0)
-            caseProp.addCase(new PropertyMapImplement<PropertyInterface, UnionProperty.Interface>(baseLM.vtrue.property), mapImplements.get(mapImplements.size() - 1));
-        return addProperty(group, persistent, listProperty);
+            listCases.add(new AbstractCaseUnionProperty.Case(new PropertyMapImplement<PropertyInterface, UnionProperty.Interface>(baseLM.vtrue.property), mapImplements.get(mapImplements.size() - 1)));
+
+        return addProperty(group, persistent, new LP<UnionProperty.Interface>(new CaseUnionProperty(name, caption, listInterfaces, listCases), listInterfaces));
     }
 
     // объединение классовое (непересекающихся) свойств
@@ -1627,6 +1624,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addAProp(AbstractGroup group, ActionProperty property) {
+        property.finalizeInit();
         return addProperty(group, new LP<ClassPropertyInterface>(property));
     }
 
@@ -1771,7 +1769,8 @@ public abstract class LogicsModule {
 
     @IdentityLazy
     public LP getAddObjectAction(ValueClass cls) {
-        return addAProp(new AddObjectActionProperty("add" + BaseUtils.capitalize(cls.getSID()), (CustomClass) cls));
+        //"add" + BaseUtils.capitalize(cls.getSID())
+        return addAProp(new AddObjectActionProperty(genSID(), (CustomClass) cls));
     }
 
     @IdentityLazy

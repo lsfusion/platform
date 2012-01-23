@@ -376,7 +376,7 @@ public class VEDLogicsModule extends LogicsModule {
 
     LP padl;
     LP val;
-    LP round1;
+    LP roundSum;
     LP round0;
     LP calcPercent;
 
@@ -629,7 +629,7 @@ public class VEDLogicsModule extends LogicsModule {
         calcPercent = addSFProp("prm1*100/prm2", DoubleClass.instance, 2);
         LP diff = addSFProp("prm1-prm2", DoubleClass.instance, 2);
 
-        round1 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),-1))", DoubleClass.instance, 1);
+        roundSum = addSFProp("((FLOOR((CAST((prm1) as NUMERIC(15,3))-25)/50)+1)*50)", DoubleClass.instance, 1);
         round0 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),0))", DoubleClass.instance, 1);
         padl = addSFProp("lpad(prm1,12,'0')", StringClass.get(12), 1);
 
@@ -977,7 +977,7 @@ public class VEDLogicsModule extends LogicsModule {
         priceOrderArticle = addCUProp(documentSumGroup, "priceOrderArticle", "Цена", priceOrderDoArticle, addMGProp(privateGroup, "priceOrderReturnArticle", "Цена возвр.", addJProp(baseLM.and1, priceOrderDoArticle, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2));
         LP priceNDSOrderArticle = addJProp(round0, addJProp(backPercent, priceOrderArticle, 1, 2, ndsOrderArticle, 1, 2), 1, 2);
         priceNoNDSOrderArticle = addDUProp("Цена без НДС", priceOrderArticle, priceNDSOrderArticle);
-        LP priceNDSRetailArticle = addJProp(round1, addJProp(backPercent, shopPrice, 1, 2, ndsOrderArticle , 1, 2), 1, 2);
+        LP priceNDSRetailArticle = addJProp(roundSum, addJProp(backPercent, shopPrice, 1, 2, ndsOrderArticle , 1, 2), 1, 2);
         priceNoNDSRetailArticle = addDUProp("Цена продажи без НДС", shopPrice, priceNDSRetailArticle);
 
         LP priceManfrOrderDeliveryArticle = addDProp("priceManfrOrderDeliveryArticle", "Цена изг.", DoubleClass.instance, orderDelivery, article);
@@ -1083,7 +1083,7 @@ public class VEDLogicsModule extends LogicsModule {
         LP discountOrderReturnArticle = addMGProp(privateGroup, "discountOrderReturnArticle", "Скидка возвр.", addJProp(baseLM.and1, orderArticleSaleDiscount, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2);
         discountOrderArticle = addCUProp(baseGroup, "discountOrderArticle", "Скидка", orderArticleSaleDiscount, discountOrderReturnArticle); // возвращаем ту же скидку при возврате
 
-        discountSumOrderArticle = addJProp(documentDiscountGroup, "discountSumOrderArticle", "Сумма скидки", round1, addJProp(baseLM.percent, sumOrderArticle, 1, 2, discountOrderArticle, 1, 2), 1, 2);
+        discountSumOrderArticle = addJProp(documentDiscountGroup, "discountSumOrderArticle", "Сумма скидки", roundSum, addJProp(baseLM.percent, sumOrderArticle, 1, 2, discountOrderArticle, 1, 2), 1, 2);
         sumWithDiscountOrderArticle = addDUProp(documentDiscountGroup, "sumWithDiscountOrderArticle", "Сумма со скидкой", sumOrderArticle, discountSumOrderArticle);
 
         LP orderSalePayGift = addSGProp(addJProp(and(false, false, false), obligationSum, 2, issueObligation, 1, 2, is(order), 1, is(giftObligation), 2), 1);
@@ -1433,7 +1433,7 @@ public class VEDLogicsModule extends LogicsModule {
         LP addDeliveryObjectArticle = addJProp("Необх. цена с нац.", addPercent, addJProp(addPercent, deliveryPriceStoreArticle, 1, 2, addvArticle, 2), 1, 2, currentNDS, 2);
         LP currentPriceObjectArticle = addSUProp("Необх. цена", Union.MAX, addDeliveryObjectArticle, currentRRPPriceObjectArticle);
         LP actionPriceObjectArticle = addJProp("Акц. цена", removePercent, currentPriceObjectArticle, 1, 2, discountPriceObjectArticle, 1, 2);
-        return addJProp(group, sID, persistent, caption, round1, addJProp(removePercent, actionPriceObjectArticle, 1, 2, currentObjectDiscount, 1), 1, 2);
+        return addJProp(group, sID, persistent, caption, roundSum, addJProp(removePercent, actionPriceObjectArticle, 1, 2, currentObjectDiscount, 1), 1, 2);
     }
 
     LP barcodeActionCheck, quantityCheckCommitInnerArticle, quantityDiffCommitArticle;

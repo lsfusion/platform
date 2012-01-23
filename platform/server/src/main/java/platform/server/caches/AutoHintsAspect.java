@@ -63,23 +63,26 @@ public class AutoHintsAspect {
 
         FormInstance catchHint = catchAutoHint.get();
         if(catchHint!=null && !catchHint.isHintIncrement(property)) { // неправильно так как может быть не changed
-            Expr expr = result.properties.get("value");
+            Expr expr = result.getExpr("value");
+            long exprComplexity = expr.getComplexity(false);
 
-            Where changed = null;
-            if(changedWhere)
-                changed = result.properties.get("changed").getWhere();
+            Where changed = null; long whereComplexity = 0;
+            if(changedWhere) {
+                changed = result.getExpr("changed").getWhere();
+                whereComplexity = changed.getComplexity(false);
+            }
 
-            long complexity = expr.getComplexity(false);
-            if(changedWhere)
-                complexity = BaseUtils.max(complexity, changed.getComplexity(false));
-            
+            long complexity = BaseUtils.max(exprComplexity, whereComplexity);
             if(complexity > Settings.instance.getLimitHintIncrementComplexity() && property.hasChanges(propChanges)) // сложность большая, если нет изменений то ничем не поможешь
                 if(interfaceValues.isEmpty() && changedWhere) {
-                    Where incrementWhere = changed.and(expr.getWhere().or(property.getExpr(result.mapKeys).getWhere()));
-                    if(incrementWhere.getStatKeys(result.getInnerKeys()).rows.less(new Stat(Settings.instance.getLimitHintIncrementStat())))
-                        throw new AutoHintException(property, true);
-                    if(complexity > Settings.instance.getLimitHintNoUpdateComplexity())
-                        throw new AutoHintException(property, false);
+                    Expr prevExpr = property.getExpr(result.mapKeys);
+                    if(whereComplexity > Settings.instance.getLimitHintIncrementComplexity() || exprComplexity > prevExpr.getComplexity(false) * Settings.instance.getLimitGrowthIncrementComplexity()) {
+                        Where incrementWhere = changed.and(expr.getWhere().or(prevExpr.getWhere()));
+                        if(incrementWhere.getStatKeys(result.getInnerKeys()).rows.less(new Stat(Settings.instance.getLimitHintIncrementStat())))
+                            throw new AutoHintException(property, true);
+                        if(complexity > Settings.instance.getLimitHintNoUpdateComplexity())
+                            throw new AutoHintException(property, false);
+                    }
                 } else // запускаем getQuery уже без interfaceValues, соответственно уже оно если надо (в смысле что статистика будет нормальной) кинет exception
                     property.getQuery(propChanges, true, new HashMap());
         }

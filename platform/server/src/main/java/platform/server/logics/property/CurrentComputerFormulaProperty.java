@@ -8,5 +8,7 @@ public class CurrentComputerFormulaProperty extends CurrentEnvironmentFormulaPro
 
     public CurrentComputerFormulaProperty(String sID, ValueClass paramClass) {
         super(sID, ServerResourceBundle.getString("logics.property.current.computer"), SQLSession.computerParam, paramClass.getUpSet());
+
+        finalizeInit();
     }
 }

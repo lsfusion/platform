@@ -8,17 +8,18 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class XorUnionProperty extends IncrementUnionProperty {
 
-    public XorUnionProperty(String sID, String caption, int intNum) {
-        super(sID, caption, intNum);
+    public XorUnionProperty(String sID, String caption, List<Interface> interfaces, List<PropertyMapImplement<?, Interface>> operands) {
+        super(sID, caption, interfaces);
+        this.operands = operands;
+
+        finalizeInit();
     }
-    public List<PropertyMapImplement<?,Interface>> operands = new ArrayList<PropertyMapImplement<?, Interface>>();
+
+    private final List<PropertyMapImplement<?,Interface>> operands; // list нужен чтобы порядок редактирования был
 
     protected Collection<PropertyMapImplement<?, Interface>> getOperands() {
         return operands;

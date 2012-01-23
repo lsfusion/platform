@@ -1,5 +1,6 @@
 package platform.server.logics.property.derived;
 
+import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.interop.Compare;
 import platform.server.Settings;
@@ -20,6 +21,7 @@ import platform.server.session.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyInterface> extends MaxGroupProperty<I> {
 
@@ -49,6 +51,14 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         constraint.caption = ServerResourceBundle.getString("logics.property.derived.violate.property.uniqueness.for.objects", groupProperty.toString());
         constraint.setConstraint(checkChange);
         return constraint;
+    }
+
+    @Override
+    public Set<Property> getChangeDepends() {
+        Set<Property> result = super.getChangeDepends();
+        if(toChange!=null)
+            result = BaseUtils.addSet(result, toChange);
+        return result;
     }
 
     @Override

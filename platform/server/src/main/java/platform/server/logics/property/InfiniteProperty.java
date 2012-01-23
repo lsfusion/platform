@@ -15,6 +15,8 @@ public class InfiniteProperty extends NoIncrementProperty<PropertyInterface> {
     public InfiniteProperty(String sID, String caption, DataClass dataClass) {
         super(sID, caption, new ArrayList<PropertyInterface>());
         this.dataClass = dataClass;
+
+        finalizeInit();
     }
 
     protected Expr calculateExpr(Map<PropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {

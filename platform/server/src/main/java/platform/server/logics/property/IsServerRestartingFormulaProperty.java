@@ -8,5 +8,7 @@ public class IsServerRestartingFormulaProperty extends CurrentEnvironmentFormula
 
     public IsServerRestartingFormulaProperty(String sID) {
         super(sID, ServerResourceBundle.getString("logics.property.server.reboots"), SQLSession.isServerRestartingParam, LogicalClass.instance);
+
+        finalizeInit();
     }
 }

@@ -15,10 +15,7 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // св-во которое дает максимальное значение при изменении DataProperty для переданных ключей и значения
 public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends ChangeProperty<MaxChangeProperty.Interface<P>> {
@@ -88,10 +85,17 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         super(onChange.getSID() +"_CH_"+ toChange.getSID(),onChange.caption+" по ("+toChange.caption+")", getInterfaces(toChange));
         this.onChange = onChange;
         this.toChange = toChange;
+
+        finalizeInit();
     }
 
     public static QuickSet<Property> getUsedChanges(Property<?> onChange, Property<?> toChange, StructChanges propChanges) {
         return QuickSet.add(toChange.getUsedDataChanges(propChanges), onChange.getUsedChanges(propChanges));
+    }
+
+    protected void fillDepends(Set<Property> depends, boolean derived) {
+        depends.add(onChange);
+        depends.add(toChange);
     }
 
     protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
