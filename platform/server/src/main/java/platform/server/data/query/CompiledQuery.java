@@ -165,7 +165,7 @@ public class CompiledQuery<K,V> {
         union = !useFJ && queryJoins.size() >= 2;
         boolean unionAll = false;
         if(union) {
-            if(!(queryJoins.size() > Settings.instance.getLimitUnionAllCount()) || GroupJoinsWhere.getComplexity(queryJoins, true) > Settings.instance.getLimitUnionAllComplexity()) {
+            if(!(queryJoins.size() > Settings.instance.getLimitUnionAllCount() || GroupJoinsWhere.getComplexity(queryJoins, true) > Settings.instance.getLimitUnionAllComplexity())) {
                 queryJoins = query.getWhereJoins(false);
                 unionAll = true;
             } else

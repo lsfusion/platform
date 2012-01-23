@@ -3748,7 +3748,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailClosedVoteEA = addEAProp(vote);
         addEARecepient(emailClosedVoteEA, emailDocuments);
-        addEARecepient(emailClosedVoteEA, MimeMessage.RecipientType.BCC, emailExperts);
 
         emailClosedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Результаты заседания - "));
         emailClosedVote = addJProp(baseGroup, true, "emailClosedVote", "Результаты заседания (e-mail)", emailClosedVoteEA, 1, emailClosedHeaderVote, 1);

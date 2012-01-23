@@ -2,6 +2,8 @@ MODULE Rublevski;
 
 IMPORT BaseLogicsModule;
 
+castToString255 = FORMULA STRING[255] 'CAST($1 AS character(255))';
+
 CLASS doubleNamed 'Объект с кратким наименованием' : named;
 
 shortName 'Краткое наименование' = DATA STRING[5] (doubleNamed) IN baseGroup;
@@ -13,8 +15,9 @@ parentItemGroup = DATA itemGroup (itemGroup);
 nameParentItemGroup 'Родительская группа' = name(parentItemGroup(itemGroup));
 
 FORM itemGroup 'Товарная группа'
-OBJECTS g=itemGroup
-PROPERTIES(g) name, nameParentItemGroup;
+OBJECTS g=itemGroup FIXED PANEL
+PROPERTIES(g) name, nameParentItemGroup
+EDIT itemGroup OBJECT g;
 
 FORM itemGroups 'Товарные группы'
 OBJECTS g=itemGroup
@@ -196,13 +199,32 @@ percentWholesaleMarkItem '% оптовой надбавки' = DATA DOUBLE (item
 
 CLASS ABSTRACT itemAttribute 'Атрибут товара' : named;
 
-CLASS stringItemAttribute 'Строковый атрибут' : itemAttribute;
-valueStringItemAttribute = DATA STRING[255] (item, stringItemAttribute);
+CLASS STATIC stringItemAttribute 'Строковый атрибут' {
+    nameItem 'Наименование',
+    article 'Артикул'
+} : itemAttribute;
 
-CLASS STATIC customStringItemAttribute 'Предопределенный строковый атрибут' {
-    caption 'Название',
-    storageConditions 'Условия хранения'
-} : stringItemAttribute;
+valueNameItemAttribute(item, attribute) = castToString255(name(item)) AND attribute == stringItemAttribute.nameItem;
+valueArticleItemAttribute(item, attribute) = castToString255(articleItem(item)) AND attribute == stringItemAttribute.article;
+
+valueStringItemAttribute(item, attribute) = UNION EXCLUSIVE  valueNameItemAttribute(item, attribute),
+                                                             valueArticleItemAttribute(item, attribute);
+
+CLASS STATIC integerItemAttribute 'Целочисленный атрибут' {
+    length 'Длина',
+    width 'Ширина',
+    height 'Высота'
+} : itemAttribute;
+
+valueLengthItemAttribute(item, attribute) = lengthItem(item) AND attribute == integerItemAttribute.length;
+valueWidthItemAttribute(item, attribute) = widthItem(item) AND attribute == integerItemAttribute.width;
+valueHeightItemAttribute(item, attribute) = heightItem(item) AND attribute == integerItemAttribute.height;
+
+valueIntegerItemAttribute(item, attribute) = UNION EXCLUSIVE valueLengthItemAttribute(item, attribute),
+                                                             valueWidthItemAttribute(item, attribute),
+                                                             valueHeightItemAttribute(item, attribute);
+
+stringIntegerItemAttribute(item, integerItemAttribute) = castToString255(valueIntegerItemAttribute(item, integerItemAttribute));
 
 CLASS STATIC objectItemAttribute 'Объектный атрибут' {
     unitOfMeasure 'Единица измерения',
@@ -223,12 +245,14 @@ valueObjectItemAttribute(item, attribute) = UNION EXCLUSIVE valueUOMItemAttribut
 nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
 
 valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(item, attribute),
+                                                      stringIntegerItemAttribute(item, attribute),
                                                       nameObjectItemAttribute(item, attribute);
 
 FORM item 'Товар'
 OBJECTS i=item FIXED PANEL, a=itemAttribute
-PROPERTIES(i) name, shortNameUnitOfMeasureItem, nameBrandItem
-PROPERTIES name(a), valueItemAttribute(i, a);
+PROPERTIES(i) name, shortNameUnitOfMeasureItem, articleItem, nameBrandItem, lengthItem, widthItem, heightItem
+PROPERTIES name(a), valueItemAttribute(i, a)
+EDIT item OBJECT i;
 
 // ----------------------------------- Штрих код ------------------------------------------ //
 GROUP barcodeGroup : baseGroup;
@@ -1083,7 +1107,7 @@ quantityUserRateRange 'Количество историй' (range) = GROUP SUM 
 CONSTRAINT CHECKED quantityUserRateRange > 1 MSG 'ошибка: Одновременно не может быть несколько действующих ставок';
 // не работает  //
 //   обязательно переделать на уникальность и по времени
-CONSTRAINT CHECKED rangeType IS rangeType AND NOT rangeTypeRange(range)  MSG 'ошибка: Не выбран тип действия для налога';
+//CONSTRAINT CHECKED rangeType IS rangeType AND NOT rangeTypeRange(rangeType)  MSG 'ошибка: Не выбран тип действия для налога';
 // не работает//
 
 dataUserRateRange 'Значение ставки' (range) = dataRate(userRateRange(range)) IN baseGroup;

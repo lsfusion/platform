@@ -972,7 +972,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         List<List<Object>> data = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
-            if (!LM.idSet.contains(property.getSID())) {
+            if (!LM.idSet.contains(property.getSID()) && !(property instanceof NullValueProperty) && property.isFull()) {
                 String commonClasses = "";
                 String returnClass = "";
                 String classProperty = "";
