@@ -62,10 +62,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.container = container;
     }
 
-    public PanelLocation getPanelLocation() {
-        return panelLocation;
-    }
-
     public void setPanelLocation(PanelLocation panelLocation) {
         this.panelLocation = panelLocation;
     }

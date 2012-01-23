@@ -110,6 +110,7 @@
       <keyword name="RIGHTBOTTOM" />
       <keyword name="SELECTION" />
       <keyword name="SET" />
+      <keyword name="SHORTCUT" />
       <keyword name="SHOWIF" />
       <keyword name="STATIC" />
       <keyword name="STRING" />

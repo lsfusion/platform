@@ -4,6 +4,9 @@ grammar LsfLogics;
 	package platform.server;
 
 	import platform.interop.ClassViewType;
+	import platform.interop.PanelLocation;
+	import platform.interop.ToolbarPanelLocation;
+	import platform.interop.ShortcutPanelLocation;
 	import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 	import platform.server.data.Union;
 	import platform.server.data.expr.query.PartitionType;
@@ -1297,6 +1300,7 @@ componentPropertyValue returns [Object value]
 	|	b=booleanLiteral { $value = $b.val; }
 	|	cons=simplexConstraintLiteral { $value = $cons.val; }
 	|	ins=insetsLiteral { $value = $ins.val; }
+	|	panLoc=panelLocationLiteral { $value = $panLoc.val; }
 	;
 
 
@@ -1481,6 +1485,11 @@ insertPositionLiteral returns [InsertPosition val]
 	|	'AFTER' { $val = InsertPosition.AFTER; }
 	;
 
+panelLocationLiteral returns [PanelLocation val]
+	:	'TOOLBAR' { $val = new ToolbarPanelLocation(); }
+	|	'SHORTCUT' { $val = new ShortcutPanelLocation(); } (sid=stringLiteral { ((ShortcutPanelLocation) $val).setOnlyPropertySID($sid.val); })?
+	;
+	
 udoubleLiteral
 	:	POSITIVE_DOUBLE_LITERAL
 	; 

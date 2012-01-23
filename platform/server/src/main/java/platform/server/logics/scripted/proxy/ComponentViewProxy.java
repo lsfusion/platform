@@ -1,5 +1,6 @@
 package platform.server.logics.scripted.proxy;
 
+import platform.interop.PanelLocation;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.server.form.view.ComponentView;
@@ -31,6 +32,10 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
 
     public void setDefaultComponent(boolean defaultComponent) {
         target.defaultComponent = defaultComponent;
+    }
+
+    public void setPanelLocation(PanelLocation panelLocation) {
+        target.setPanelLocation(panelLocation);
     }
 
     /* ========= constraints properties ========= */

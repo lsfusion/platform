@@ -438,6 +438,11 @@ DESIGN storeArticle FROM DEFAULT {
         headerFont = 'Tahoma bold italic 15';
         headerFont = 'Tahoma bold 13';
         headerFont = 'Tahoma 12';
+
+        //toolbar/shortcut. свойство предварительно нужно отправить в панель
+        panelLocation = TOOLBAR;
+        panelLocation = SHORTCUT;
+        panelLocation = SHORTCUT 'storeSizeName'; //пока SID свойства
     }
 
     ADD setupEx {
