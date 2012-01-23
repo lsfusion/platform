@@ -325,8 +325,8 @@
 					</graphicElement>
 				</line>
 			</band>
-			<band height="23">
-				<printWhenExpression><![CDATA[$F{isStatusProject}!=null ]]></printWhenExpression>
+			<band height="55">
+				<printWhenExpression><![CDATA[$F{isStatusProject}!=null]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
 					<reportElement style="BoldStyle" positionType="Float" x="378" y="0" width="170" height="18" forecolor="#0099FF"/>
 					<textElement/>
@@ -346,11 +346,23 @@
 					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/readFile?sid=statementClaimerProject&params="+$F{project}]]></hyperlinkReferenceExpression>
 				</textField>
 				<line>
-					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<reportElement positionType="Float" x="10" y="49" width="538" height="1"/>
 					<graphicElement>
 						<pen lineWidth="0.25" lineStyle="Dotted"/>
 					</graphicElement>
 				</line>
+				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="23" width="150" height="25" forecolor="#0099FF"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Ссылка на протокол заседания экспертной коллегии"]]></textFieldExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/readFile?sid=fileMinutesOfMeetingExpertCollegiumProject&params="+$F{project}]]></hyperlinkReferenceExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement style="BoldStyle" positionType="Float" x="165" y="23" width="213" height="25" forecolor="#0099FF"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Ссылка на файл письменного согласия заявителя"]]></textFieldExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/readFile?sid=fileWrittenConsentClaimerProject&params="+$F{project}]]></hyperlinkReferenceExpression>
+				</textField>
 			</band>
 			<band height="69" splitType="Prevent">
 				<textField isStretchWithOverflow="true">
