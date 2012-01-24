@@ -605,15 +605,17 @@ PROPERTIES(d) READONLY name
 FILTERS NOT NULL inStoreDepartment(s, d);
 
 FORM storeType 'Формат магазина'
-OBJECTS s=storeType FIXED PANEL, n=tradingNetwork
+OBJECTS n=tradingNetwork FIXED PANEL, s=storeType
+PROPERTIES(n) READONLY name
 PROPERTIES(s) name
-PROPERTIES(n) name, ADDOBJ, delete
+PROPERTIES(s) READONLY nameTradingNetworkStoreType
+PROPERTIES(s) ADDOBJ, delete
 FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
 EDIT storeType OBJECT s;
 
 FORM tradingNetwork 'Торговая сеть'
-OBJECTS n=tradingNetwork FIXED PANEL
-PROPERTIES(n) name
+OBJECTS n=tradingNetwork
+PROPERTIES(n) name, ADDSESSIONFORM, EDITSESSIONFORM, delete
 EDIT tradingNetwork OBJECT n;
 
 FORM qualifier 'Классификатор магазинов'
@@ -646,6 +648,8 @@ PROPERTIES(a) name, infoAssortment
 PROPERTIES(a, i) itemAssortment
 PROPERTIES(i) name
 PROPERTIES(i) ADDSESSIONFORM, EDITSESSIONFORM, delete
+FILTERGROUP assortment
+    FILTER 'Только товары ассортимента' 'F10' NOT NULL itemAssortment(a, i)
 EDIT assortment OBJECT a;
 
 FORM assortments 'Ассортименты'
