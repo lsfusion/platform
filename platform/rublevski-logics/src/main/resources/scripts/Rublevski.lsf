@@ -417,6 +417,11 @@ inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore
 inTradingSquareDepartmentStore(departmentStore, tradingSquare) = departmentStoreTradingSquare(tradingSquare) == departmentStore;
 //inDepartmentStoreDiscount(departmentStore, discount) = departmentStoreDiscount(discount) == departmentStore;
 
+// ----------------------------------- Цех ----------------------------------- //
+GROUP manufactoryGroup 'Для производства';
+
+outDepartmentManufactory 'Подразделение, куда передаются изделия (ИД)' (manufactory) = DATA departmentStore(manufactory) IN idGroup;
+nameOutDepartmentManufactory 'Подразделение, куда передаются изделия' (manufactory) = name(outDepartmentManufactory(manufactory)) IN manufactoryGroup;
 
 //----------------------------------- Для товара и подразделения -------------------
 additionPriceDepartmentStoreItem 'Торговая надбавка в рублях' = DATA DOUBLE (departmentStore, item) IN baseGroup;
@@ -438,7 +443,7 @@ PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, 
               controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
               maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
               marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, commonNameMateriallyResponsiblePersonItemReportDepartmentStore,
-              commonNameBookkeeperItemReportDepartmentStore, commonNamePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
+              commonNameBookkeeperItemReportDepartmentStore, commonNamePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore, nameOutDepartmentManufactory
 PROPERTIES(e) READONLY userFirstName, userLastName
 PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
 PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
@@ -623,7 +628,6 @@ ownershipLegalEntity 'Форма собственности (ИД)' = DATA owner
 nameOwnershipLegalEntity 'Форма собственности' = name(ownershipLegalEntity(legalEntity)) IN lawGroup;
 shortNameOwnershipLegalEntity 'Форма собственности (сокр.)' = shortNameOwnership(ownershipLegalEntity(legalEntity)) IN lawGroup;
 fullNameLegalEntity 'Наименование для накладных' = DATA STRING[200] (legalEntity) IN lawGroup;
-addressLegalEntity 'Фактический адрес' = DATA STRING[100] (legalEntity) IN lawGroup;
 lawLegalEntity 'Юридический адрес' = DATA STRING[100] (legalEntity) IN lawGroup;
 postAddressLegalEntity 'Почтовый адрес' = DATA STRING[100] (legalEntity) IN contactGroup;
 managerLegalEntity 'Руководитель' = DATA STRING[100] (legalEntity) IN contactGroup;
@@ -659,6 +663,31 @@ dataActingLicenseLegalEntity 'Действующая лицензия' (legalEnt
 //CONSTRAINT  dateFromLicense(overrideLicenseLegalEntity(legalEntity)) > currentDate() MSG 'ошибка: действие лицензии еще не началось';
 //CONSTRAINT  dateToLicense(overrideLicenseLegalEntity(legalEntity)) < currentDate() MSG 'ошибка: действие выбранной лицензии уже окончилось';
 //equalsLegalEntityLicense 'Действующая' (legalEntity, license) = userLicenseLegalEntity(legalEntity) == license IN lawGroup;
+
+// ----------------------------------- Юридическое лицо-дата ------------------------------------------ //
+
+TABLE legalEntityDate (legalEntity, DATE);
+addressLegalEntityDate 'Фактический адрес на дату' = DATA STRING[100] (legalEntity, DATE);
+dateAddressLegalEntity (legalEntity, date) = GROUP MAX dateIn AND addressLegalEntityDate(legalEntity, dateIn) AND dateIn <= (date AS DATE) BY legalEntity, date;
+addressLegalEntity 'Фактический адрес' (legalEntity) = addressLegalEntityDate (legalEntity, dateAddressLegalEntity (legalEntity, currentDate()));
+
+FORM addAddressLegalEntity 'Фактический адрес на дату'
+OBJECTS l=legalEntity FIXED PANEL, d=DATE FIXED PANEL
+PROPERTIES(l) READONLY name
+PROPERTIES(d) OBJVALUE
+PROPERTIES(l, d) addressLegalEntityDate;
+
+showFormAddAddressLegalEntity 'Добавить' (legalEntity) = ACTION FORM addAddressLegalEntity OBJECTS l NEWSESSION MODAL;
+
+FORM addressLegalEntity 'Фактический адрес на дату'
+OBJECTS l=legalEntity FIXED PANEL, d=DATE
+PROPERTIES(l) READONLY name
+PROPERTIES(l) showFormAddAddressLegalEntity
+PROPERTIES(d) OBJVALUE
+PROPERTIES(l, d) addressLegalEntityDate
+FILTERS NOT NULL addressLegalEntityDate(l, d);
+
+showFormAddressLegalEntity 'Фактический адрес на дату' (legalEntity) = ACTION FORM addressLegalEntity OBJECTS l NEWSESSION MODAL;
 
 // ----------------------------------- Договор ------------------------------------------ //
 
@@ -743,7 +772,7 @@ OBJECTS s=supplier FIXED PANEL
 OBJECTS a=account
 OBJECTS c=contractProvider
 OBJECTS l=license
-PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
+PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormAddressLegalEntity FORCE PANEL, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
               phoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
               dataOverrideAccountLegalEntity, residentLegalEntity, manufacturerLegalEntity, dataOverrideContractSupplier, sureSupplier, controlSupplier, surePercentSupplier, allowablePercentSupplier,
               afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier, dataActingLicenseLegalEntity
@@ -760,6 +789,7 @@ FILTERS NOT NULL inSupplierContract(s, c),
 EDIT supplier OBJECT s;
 
 DESIGN supplier FROM DEFAULT {
+PROPERTY (showFormAddressLegalEntity){panelLocation = SHORTCUT 'Rublevski_addressLegalEntity';}
     main{
        ADD prop.box BEFORE functions.box{
             tabbedPane = TRUE;
