@@ -382,14 +382,11 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     }
 
     public DataObject getDataObject(Object value, Type type) throws SQLException {
-        return new DataObject(value,type.getDataClass(value, sql, baseClass));
+        return baseClass.getDataObject(sql, value, type);
     }
 
     public ObjectValue getObjectValue(Object value, Type type) throws SQLException {
-        if(value==null)
-            return NullValue.instance;
-        else
-            return getDataObject(value, type);
+        return baseClass.getObjectValue(sql, value, type);
     }
 
     // узнает список изменений произошедших без него

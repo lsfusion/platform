@@ -655,6 +655,70 @@ public class SQLSession extends MutableObject {
         executeDML("DELETE FROM " + table.getName(syntax) + (deleteWhere.length() == 0 ? "" : " WHERE " + deleteWhere));
     }
 
+    private static int readInt(Object value) {
+        return ((Number)value).intValue();
+    }
+    // в явную без query так как часто выполняется
+    public void readSingleValues(SessionTable table, Map<KeyField, Object> keyValues, Map<PropertyField, Object> propValues) throws SQLException {
+        String select = "SELECT COUNT(*) AS cnt";
+        if(table.keys.size() > 1)
+            for(KeyField field : table.keys) {
+                select = select + ", " + syntax.getCountDistinct(field.name);
+                select = select + ", ANYVALUE(" + field.name + ")";
+            }
+        else 
+            if(table.properties.isEmpty())
+                return;
+        for(PropertyField field : table.properties) {
+            select = select + ", " + syntax.getCountDistinct(field.name);
+            select = select + ", " + syntax.getCount(field.name);
+            select = select + ", ANYVALUE(" + field.name + ")";
+        }
+        select = select + " FROM " + syntax.getSessionTableName(table.name);
+
+        Connection connection = getConnection();
+
+        logger.info(select);
+
+        Statement statement = connection.createStatement();
+        try {
+            ResultSet result = statement.executeQuery(select);
+            try {
+                boolean next = result.next();
+                assert next;
+                
+                int totalCnt = readInt(result.getObject(1));
+                int i=2;
+                if(table.keys.size() > 1)
+                    for(KeyField field : table.keys) {
+                        Integer cnt = readInt(result.getObject(i++));
+                        if(cnt == 1)
+                            keyValues.put(field, field.type.read(result.getObject(i)));
+                        i++;
+                    }
+                for(PropertyField field : table.properties) {
+                    Integer cntDistinct = readInt(result.getObject(i++));
+                    if(cntDistinct==0)
+                        propValues.put(field, null);
+                    if(cntDistinct==1 && totalCnt==readInt(result.getObject(i)))
+                        propValues.put(field, field.type.read(result.getObject(i+1)));
+                    i+=2;
+                }
+                assert !result.next();
+            } finally {
+                result.close();
+            }
+        } catch (SQLException e) {
+            logger.info(statement.toString());
+            throw e;
+        } finally {
+            statement.close();
+
+            returnConnection(connection);
+        }
+    }
+
+
     public int updateRecords(ModifyQuery modify) throws SQLException {
         return executeDML(modify.getUpdate(syntax));
     }

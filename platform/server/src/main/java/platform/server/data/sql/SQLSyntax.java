@@ -91,4 +91,7 @@ public interface SQLSyntax {
     String getInsensitiveLike();
 
     boolean supportGroupNumbers();
+
+    String getCountDistinct(String field);
+    String getCount(String field);
 }

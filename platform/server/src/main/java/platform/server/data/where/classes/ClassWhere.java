@@ -100,5 +100,12 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     public Stat getTypeStat(K key) {
         return wheres[0].get(key).getTypeStat();
     }
+    
+    public ClassWhere<K> remove(Collection<? extends K> keys) {
+        ClassWhere<K> result = ClassWhere.STATIC(false);
+        for(And<K> andWhere : wheres)
+            result = result.or(new ClassWhere<K>(andWhere.remove(keys)));
+        return result;
+    } 
 }
 

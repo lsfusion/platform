@@ -10,6 +10,9 @@ import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.CompileSource;
@@ -210,6 +213,18 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(andKeyClasses, andPropertyClasses);
     }
 
+    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> removeFieldsClassWheres(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Set<KeyField> keyFields, Set<PropertyField> propFields) {
+        if(keyFields.isEmpty())
+            return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(classes, BaseUtils.filterNotKeys(propertyClasses, propFields));
+        else {
+            Map<PropertyField, ClassWhere<Field>> removePropClasses = new HashMap<PropertyField, ClassWhere<Field>>();
+            for(Map.Entry<PropertyField, ClassWhere<Field>> propClass : propertyClasses.entrySet())
+                if(!propFields.contains(propClass.getKey()))
+                    removePropClasses.put(propClass.getKey(), propClass.getValue().remove(keyFields));
+            return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(classes.remove(keyFields), removePropClasses);
+        }
+    }
+
     public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> getFieldsClassWheres(Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> data) {
         ClassWhere<KeyField> keysClassWhere = new ClassWhere<KeyField>();
         Map<PropertyField, ClassWhere<Field>> propertiesClassWheres = new HashMap<PropertyField, ClassWhere<Field>>();
@@ -305,6 +320,38 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                 return null;
             }
         }, andClasses.first, andClasses.second, owner);
+    }
+
+    public SessionTable removeFields(final SQLSession session, Set<KeyField> removeKeys, Set<PropertyField> removeProps, final Object owner) throws SQLException {
+        if(removeKeys.isEmpty() && removeProps.isEmpty())
+            return this;
+
+        // assert что удаляемые ключи с одинаковыми значениями, но вообще может использоваться как слияние
+        final List<KeyField> remainKeys = BaseUtils.filterNotList(keys, removeKeys);
+        final Set<PropertyField> remainProps = BaseUtils.filterNotSet(properties, removeProps);
+        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> remainClasses = removeFieldsClassWheres(classes, propertyClasses, removeKeys, removeProps);
+        return new SessionTable(session, remainKeys, remainProps, count, new FillTemporaryTable() {
+            public Integer fill(String name) throws SQLException {
+                // записать в эту таблицу insertSessionSelect из текущей + default поля
+                Query<KeyField, PropertyField> moveData = new Query<KeyField, PropertyField>(remainKeys);
+
+                if(remainKeys.size()==keys.size()) { // для оптимизации
+                    platform.server.data.query.Join<PropertyField> prevJoin = join(moveData.mapKeys);
+                    moveData.and(prevJoin.getWhere());
+                    moveData.properties.putAll(BaseUtils.filterKeys(prevJoin.getExprs(), remainProps));
+                } else {
+                    Map<KeyField,KeyExpr> tableKeys = getMapKeys();
+                    platform.server.data.query.Join<PropertyField> prevJoin = join(tableKeys);
+                    Map<KeyField, KeyExpr> groupKeys = BaseUtils.filterKeys(tableKeys, remainKeys);
+                    moveData.and(GroupExpr.create(groupKeys, prevJoin.getWhere(), moveData.mapKeys).getWhere());
+                    for(PropertyField prop : remainProps)
+                        moveData.properties.put(prop, GroupExpr.create(groupKeys, prevJoin.getExpr(prop), GroupType.ANY, moveData.mapKeys));
+                }
+                session.insertSessionSelect(name, moveData, QueryEnvironment.empty);
+                session.returnTemporaryTable(SessionTable.this, owner);
+                return null;
+            }
+        }, remainClasses.first, remainClasses.second, owner);
     }
 
     private BaseUtils.HashComponents<Value> components = null;

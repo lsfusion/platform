@@ -8,6 +8,9 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.SingleClassExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
+import platform.server.data.type.Type;
+import platform.server.logics.NullValue;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ObjectClassProperty;
 import platform.server.logics.table.ObjectTable;
@@ -172,5 +175,30 @@ public class BaseClass extends AbstractCustomClass {
     @IdentityLazy
     public ObjectClassProperty getObjectClassProperty() {
         return new ObjectClassProperty("objectClass", this);
+    }
+
+    public DataObject getDataObject(SQLSession sql, Object value, Type type) throws SQLException {
+        return new DataObject(value,type.getDataClass(value, sql, this));
+    }
+
+    public <K> Map<K, DataObject> getDataObjects(SQLSession sql, Map<K, Object> values, Type.Getter<K> typeGetter) throws SQLException {
+        Map<K, DataObject> result = new HashMap<K, DataObject>();
+        for(Map.Entry<K, Object> value : values.entrySet())
+            result.put(value.getKey(), getDataObject(sql, value.getValue(), typeGetter.getType(value.getKey())));
+        return result;
+    }
+
+    public ObjectValue getObjectValue(SQLSession sql, Object value, Type type) throws SQLException {
+        if(value==null)
+            return NullValue.instance;
+        else
+            return getDataObject(sql, value, type);
+    }
+
+    public <K> Map<K, ObjectValue> getObjectValues(SQLSession sql, Map<K, Object> values, Type.Getter<K> typeGetter) throws SQLException {
+        Map<K, ObjectValue> result = new HashMap<K, ObjectValue>();
+        for(Map.Entry<K, Object> value : values.entrySet())
+            result.put(value.getKey(), getObjectValue(sql, value.getValue(), typeGetter.getType(value.getKey())));
+        return result;
     }
 }

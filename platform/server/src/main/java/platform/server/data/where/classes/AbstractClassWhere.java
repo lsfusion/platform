@@ -25,18 +25,21 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
     public static class And<K> extends QuickMap<K, AndClassSet> {
 
-        @Override
-        public AndClassSet get(K key) {
-            AndClassSet result = super.get(key);
-//            assert BusinessLogics.checkClasses || result!=null; // для outputClasses и других элементов настройки БЛ, где могут быть висячие ключи
-            return result;
-        }
-
         public boolean compatible(And<K> and) {
             for(int i=0;i<size;i++)
                 if(!getValue(i).getType().isCompatible(and.get(getKey(i)).getType()))
                     return false;
             return true;
+        }
+        
+        public And<K> remove(Collection<? extends K> keys) {
+            And<K> result = new And<K>();
+            for(int i=0;i<size;i++) {
+                K key = getKey(i);
+                if(!keys.contains(key))
+                    result.add(key, getValue(i));
+            }
+            return result;
         }
 
         protected AndClassSet addValue(K key, AndClassSet prevValue, AndClassSet newValue) {

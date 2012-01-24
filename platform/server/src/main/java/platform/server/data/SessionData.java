@@ -67,9 +67,14 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             }
         }, pullQuery.<KeyField>getClassWhere(new ArrayList<PropertyField>()), insertClasses, owner);
         // нужно прочитать то что записано
-        if(table.count > SessionRows.MAX_ROWS)
-            return new SessionDataTable(table, keys, keyValues, propValues);
-        else {
+        if(table.count > SessionRows.MAX_ROWS) {
+            Map<KeyField, Object> actualKeyValues = new HashMap<KeyField, Object>();
+            Map<PropertyField, Object> actualPropValues = new HashMap<PropertyField, Object>();
+            session.readSingleValues(table, actualKeyValues, actualPropValues);
+            return new SessionDataTable(table.removeFields(session, actualKeyValues.keySet(), actualPropValues.keySet(), owner), keys,
+                    BaseUtils.merge(keyValues, baseClass.getDataObjects(session, actualKeyValues, Field.<KeyField>typeGetter())),
+                    BaseUtils.merge(propValues, baseClass.getObjectValues(session, actualPropValues, Field.<PropertyField>typeGetter())));
+        } else {
             OrderedMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> readRows = table.read(session, baseClass);
 
             table.drop(session, owner); // выкидываем таблицу

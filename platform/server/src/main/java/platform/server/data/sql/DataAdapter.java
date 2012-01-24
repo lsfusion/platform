@@ -203,4 +203,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public boolean supportGroupNumbers() {
         return false;
     }
+
+    public String getCountDistinct(String field) {
+        return "COUNT(DISTINCT " + field + ")";
+    }
+    public String getCount(String field) {
+        return "COUNT(" + field + ")";
+    }
 }
