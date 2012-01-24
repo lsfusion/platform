@@ -93,6 +93,34 @@ FORM size 'Размер/калибр'
 OBJECTS s=size FIXED PANEL
 PROPERTIES(s) name, shortName;
 
+//------------------------------------ Степень охлаждения ------------------------//
+CLASS coolingDegree 'Степень охлаждения' : doubleNamed;
+
+FORM coolingDegree 'Степень охлаждения'
+OBJECTS c=coolingDegree FIXED PANEL
+PROPERTIES(c) name, shortName;
+
+//------------------------------- Ценники ------------------------------------//
+CLASS tag 'Ценник' : named;
+
+FORM tag 'Ценник'
+OBJECTS t=tag FIXED PANEL
+PROPERTIES(t) name;
+
+//------------------------------- Строки 1-торг ------------------------------------//
+CLASS rowTorg1 'Строка формы 1-торг' : named;
+
+FORM rowTorg1 'Строка формы 1-торг'
+OBJECTS r=rowTorg1 FIXED PANEL
+PROPERTIES(r) name;
+
+//------------------------------- Виды ------------------------------------//
+CLASS typeItem 'Вид' : named;
+
+FORM typeItem 'Вид'
+OBJECTS t=typeItem FIXED PANEL
+PROPERTIES(t) name;
+
 // ----------------------------------- Товар ------------------------------------------ //
 GROUP descriptionGroup 'Общее описание' : baseGroup;
 GROUP sizeGroup 'Физические характиристики' : baseGroup;
@@ -102,11 +130,22 @@ GROUP retailGroup 'Ценовые характеристики' : baseGroup;
 CLASS ABSTRACT sku 'SKU' : named;
 CLASS item 'Товар' : sku;
 CLASS dish 'Блюдо' : sku;
+CLASS ware 'Посуда' : sku;
 CLASS component 'Компонент' : sku;
 CLASS brand 'Бренд' : named;
 
+CLASS STATIC groupProduct 'Группа изделий для печати заборного листа'
+{
+   hot 'Горячее',
+   cold  'Холодное'
+};
+
+
 brandItem = DATA brand(item);
 nameBrandItem 'Бренд' (item) = name(brandItem(item)) IN descriptionGroup;
+
+typeItemItem = DATA typeItem(item) IN idGroup;
+nameTypeItemItem 'Вид' = name(typeItemItem(item)) IN descriptionGroup;
 
 unitOfMeasureItem = DATA unitOfMeasure (item) IN idGroup;
 shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortName(unitOfMeasureItem(item)) IN descriptionGroup;
@@ -151,6 +190,9 @@ articleItem 'Артикул поставщика/производителя' = D
 
 quantityPackItem 'Количество в грузовом месте' = DATA DOUBLE (item) IN descriptionGroup;
 
+coolingDegreeItem 'Степень охлаждения (ИД)' = DATA coolingDegree (item) IN idGroup;
+nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegreeItem(item)) IN descriptionGroup;
+
 minResourceItem 'Минимальный запас' = DATA INTEGER (item) IN retailGroup;
 minReserveItem 'Минимальный резерв' = DATA INTEGER (item) IN retailGroup;
 
@@ -161,22 +203,44 @@ countryItem = DATA country (item) IN idGroup;
 nameCountryItem 'Страна' = name(countryItem(item)) IN descriptionGroup;
 
 bonusReturnItem 'Уценка (бонус) по товару при возврате поставщику' = DATA DOUBLE (item) IN retailGroup;
-nameReturnItem 'Наименование для уценки, бонуса по товару в возврат' = DATA STRING[200] (item)IN retailGroup;
+nameReturnItem 'Наименование для уценки, бонуса по товару в возврат' = DATA STRING[200] (item) IN retailGroup;
+
+quantityDiscountItem 'Количество товара, при котором предост-ся скидка' = DATA INTEGER (item) IN retailGroup;
+
+fixPriceItem 'Фиксированная цена при соотв.типе скидки' = DATA INTEGER (item) IN retailGroup;
 
 isFixPriceItem 'Товар с фиксированной ценой' = DATA BOOLEAN (item) IN retailGroup;
 isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN descriptionGroup;
+
+banMarkdownItem 'Запретить уценку товара' = DATA BOOLEAN (item) IN retailGroup;
+
+oldPriceItem 'Старая цена для печати на ценник' = DATA DOUBLE (item) IN retailGroup;
+
+tagItem 'Ценник (ИД)' = DATA tag (item) IN idGroup;
+nameTagItem 'Ценник' = name(tagItem(item)) IN descriptionGroup;
+multiplierItem 'Множитель для печати ценника' = DATA DOUBLE (item) IN retailGroup;
+
+rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) IN idGroup;
 
 controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN descriptionGroup;
 daysExpiryItem 'Срок годности в днях' = DATA DOUBLE (item) IN descriptionGroup;
 
 isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN descriptionGroup;
-hintItem 'Подсказка по товару' = DATA STRING[200] (item)IN descriptionGroup;
+hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN descriptionGroup;
 
 minTradeAllowanceItem 'MIN допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
 maxTradeAllowanceItem 'MAX допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
 minAllowedRetailPriceItem 'MIN допустимая розн.цена' = DATA INTEGER (item) IN retailGroup;
 
-nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item)IN substanceGroup;
+isCrudeItem 'Товар-сырьё для калькуляции?' = DATA BOOLEAN (item) IN descriptionGroup;
+
+groupProductItem = DATA groupProduct (item) IN idGroup;
+nameGroupProductItem 'Группа изделий для печати заборного листа' = name(groupProductItem(item)) IN descriptionGroup;
+
+wareItem = DATA ware (item) IN idGroup;
+nameWareItem 'Посуда' = name(wareItem(item)) IN descriptionGroup;
+
+nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN substanceGroup;
 energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN substanceGroup;
 fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
 carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
@@ -187,8 +251,14 @@ isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGro
 daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA DOUBLE (item) IN descriptionGroup;
 hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN descriptionGroup;
 
+standartItem 'Стандарт изготовления изделия (СТБ и пр.)' = DATA STRING[100] (item) IN descriptionGroup;
+normOutItem 'Норма выхода для печати в меню и калькуляцию' = DATA STRING[100] (item) IN descriptionGroup;
+groupMenuItem 'Группа для печати в меню' = DATA STRING[100] (item) IN descriptionGroup;
+
 isCutedItem 'Товар разрубается/прорабатывается' = DATA BOOLEAN (item) IN descriptionGroup;
 isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN descriptionGroup;
+
+storageTemperatureItem 'Температура хранения' =  DATA STRING[100] (item) IN descriptionGroup;
 
 passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN descriptionGroup;
 
@@ -229,17 +299,36 @@ stringIntegerItemAttribute(item, integerItemAttribute) = castToString255(valueIn
 CLASS STATIC objectItemAttribute 'Объектный атрибут' {
     unitOfMeasure 'Единица измерения',
     brand 'Брэнд',
+    typeItem 'Вид',
+    sort 'Сорт/категория',
+    pack 'Упаковка',
+    specialty 'Особенность',
+    size 'Размер/калибр',
+    coolingDegree 'Степень охлаждения',
     color 'Цвет',
     taste 'Вкус'
+
 } : itemAttribute;
 
 valueUOMItemAttribute(item, attribute) = unitOfMeasureItem(item) AND attribute == objectItemAttribute.unitOfMeasure;
 valueBrandItemAttribute(item, attribute) = brandItem(item) AND attribute == objectItemAttribute.brand;
+valueTypeItemAttribute(item, attribute) = typeItemItem(item) AND attribute == objectItemAttribute.color;
+valueSortItemAttribute(item, attribute) = sortItem(item) AND attribute == objectItemAttribute.color;
+valuePackItemAttribute(item, attribute) = packItem(item) AND attribute == objectItemAttribute.color;
+valueSpecialtyItemAttribute(item, attribute) = specialtyItem(item) AND attribute == objectItemAttribute.color;
+valueSizeItemAttribute(item, attribute) = sizeItem(item) AND attribute == objectItemAttribute.color;
+valueCoolingDegreeItemAttribute(item, attribute) = coolingDegreeItem(item) AND attribute == objectItemAttribute.color;
 valueColorItemAttribute(item, attribute) = colorItem(item) AND attribute == objectItemAttribute.color;
 valueTasteItemAttribute(item, attribute) = tasteItem(item) AND attribute == objectItemAttribute.taste;
 
 valueObjectItemAttribute(item, attribute) = UNION EXCLUSIVE valueUOMItemAttribute(item, attribute),
                                                             valueBrandItemAttribute(item, attribute),
+                                                            valueTypeItemAttribute(item, attribute),
+                                                            valueSortItemAttribute(item, attribute),
+                                                            valuePackItemAttribute(item, attribute),
+                                                            valueSpecialtyItemAttribute(item, attribute),
+                                                            valueSizeItemAttribute(item, attribute),
+                                                            valueCoolingDegreeItemAttribute(item, attribute),
                                                             valueColorItemAttribute(item, attribute),
                                                             valueTasteItemAttribute(item, attribute);
 nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
@@ -250,9 +339,36 @@ valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(i
 
 FORM item 'Товар'
 OBJECTS i=item FIXED PANEL, a=itemAttribute
-PROPERTIES(i) name, shortNameUnitOfMeasureItem, articleItem, nameBrandItem, lengthItem, widthItem, heightItem
+PROPERTIES(i) name, nameBrandItem, shortNameUnitOfMeasureItem, nameTypeItemItem, nameSortItem, shortNamePackItem, shortNameSizeItem, shortNameSpecialtyItem,
+ isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem, nameTasteItem,
+ hallmarkItem, articleItem, quantityPackItem, nameCoolingDegreeItem, minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
+ percentFatItem, percentAlcoholItem, lengthItem, widthItem, heightItem, grossWeightItem, lengthPackItem, widthPackItem, heightPackItem, grossWeightPackItem,
+ nameCountryItem, nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
+ bonusReturnItem, nameReturnItem, quantityDiscountItem, fixPriceItem, isFixPriceItem,
+ banMarkdownItem, oldPriceItem, nameTagItem, multiplierItem, controlExpiryItem, daysExpiryItem, isMarkItem, hintItem,
+ isCrudeItem, nameGroupProductItem,
+ nameWareItem, daysExpiryPackItem, hoursExpiryPackItem, standartItem, normOutItem, groupMenuItem,
+ isCutedItem, isLoafCutItem, storageTemperatureItem, passScalesItem, bonusItem, percentWholesaleMarkItem,
+ minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem
 PROPERTIES name(a), valueItemAttribute(i, a)
 EDIT item OBJECT i;
+
+DESIGN item FROM DEFAULT {
+    main {
+       ADD item.box BEFORE functions.box {
+            tabbedPane = TRUE;
+            ADD i.Rublevski_descriptionGroup;
+            ADD i.Rublevski_retailGroup;
+            ADD i.Rublevski_sizeGroup {
+                fillVertical = 1.0;
+                fillHorizontal = 1.0;
+            }
+            ADD i.Rublevski_substanceGroup;
+            ADD a.box;
+       }
+    }
+}
+
 
 // ----------------------------------- Штрих код ------------------------------------------ //
 GROUP barcodeGroup : baseGroup;
@@ -260,7 +376,7 @@ GROUP barcodeGroup : baseGroup;
 CLASS barcode 'Штрих код' : barcodeObject;
 
 skuBarcode = DATA sku (barcode) IN idGroup;
-nameSkuBarcode = name(skuBarcode(barcode)) IN baseGroup;
+nameSkuBarcode 'Товар' = name(skuBarcode(barcode)) IN baseGroup;
 
 inBarcodeSku 'Вхождение в товар' (barcode, sku) = skuBarcode(barcode) == sku;
 
@@ -286,14 +402,10 @@ OBJECTS b=barcode
 PROPERTIES(b) barcode, nameSkuBarcode;
 
 
-
 FORM items 'Товары'
 OBJECTS i=item
 OBJECTS b=barcode
-PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem, isWeightItem, volumeItem, netWeightItem, nameColorItem, nameTasteItem,
- percentFatItem, percentAlcoholItem, lengthItem, nameCountryItem, nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem,
- isContainGMOItem, daysExpiryPackItem, hoursExpiryPackItem, isCutedItem, isLoafCutItem, passScalesItem, bonusItem, percentWholesaleMarkItem,
- minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem, barcodeBarcodeSku
+PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem, nameCountryItem, barcodeBarcodeSku
 PROPERTIES(i) ADDFORM, EDITFORM, delete
 PROPERTIES(b) READONLY barcode, nameSkuBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
 FILTERS NOT NULL inBarcodeSku(b, i)
@@ -387,6 +499,15 @@ CLASS restaurant 'Ресторан' : departmentStore;
 //CLASS stock 'Склад' : departmentStore; в дальнейшем будет распределительный центр
 CLASS manufactory 'Цех' : departmentStore;
 
+CLASS STATIC itemStatus 'Статус товара'
+{
+    notTransfer '0',
+    transfer '1',
+    delete '2',
+    requireTransfer '3',
+    requireDelete '4'
+};
+
 storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore);
 nameStoreDepartmentStore 'Магазин' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
 revaluationCommitteeDepartmentStore 'Комиссия отдела (ИД)' = DATA revaluationCommittee (departmentStore);
@@ -423,18 +544,20 @@ GROUP manufactoryGroup 'Для производства';
 outDepartmentManufactory 'Подразделение, куда передаются изделия (ИД)' (manufactory) = DATA departmentStore(manufactory) IN idGroup;
 nameOutDepartmentManufactory 'Подразделение, куда передаются изделия' (manufactory) = name(outDepartmentManufactory(manufactory)) IN manufactoryGroup;
 
-//----------------------------------- Для товара и подразделения -------------------
+//----------------------------------- Для товара и подразделения ------------------------------------------//
 additionPriceDepartmentStoreItem 'Торговая надбавка в рублях' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 boundCertificateDepartmentStoreItem 'Сертификат / удостоверение обязательны для товара?' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
 maxAllowedRetailPriceDepartmentStoreItem 'MAX допустимая розн.цена' = DATA INTEGER (departmentStore, item) IN baseGroup;
 netWeightManufacterDepartmentStoreItem 'Вес нетто продукта для производства' = DATA DOUBLE (departmentStore, item) IN baseGroup;
-//statusCashDepartmentStoreItem 'Статус товара на кассах' = DATA     (departmentStore, item) IN baseGroup;
+statusCashDepartmentStoreItem 'Статус товара на кассах (ИД)' = DATA itemStatus (departmentStore, item) IN idGroup;
+nameStatusCashDepartmentStoreItem 'Статус товара на кассах' = name(statusCashDepartmentStoreItem (departmentStore, item)) IN baseGroup;
+
 percentHumidityFlourDepartmentStoreItem '% влажности муки' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 dateManufactureDepartmentStoreItem 'Дата изготовления' = DATA DATE (departmentStore, item) IN baseGroup;
 dateFitToDepartmentStoreItem 'Годен до' = DATA DATE (departmentStore, item) IN baseGroup;
 fromDateDeliveryDepartmentStoreItem 'Дату [Годен до] рассчитывать от даты поставки?' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
-prohibitionSaleDepartmentStoreItem 'Запрет продаж товара в подразделении' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
-prohibitionMovementDepartmentStoreItem 'Запрет на внутреннее перемещение товара' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
+banSaleDepartmentStoreItem 'Запрет продаж товара в подразделении' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
+banMovementDepartmentStoreItem 'Запрет на внутреннее перемещение товара' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
 reserveDepartmentStoreItem 'Резерв по товару' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 
 FORM departmentStore 'Отдел магазина'
@@ -504,8 +627,8 @@ PROPERTIES(d) ADDFORM, EDITFORM, delete
 PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
 PROPERTIES(i) ADDFORM, EDITFORM, delete
 PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem, maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacterDepartmentStoreItem,
-                 percentHumidityFlourDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem, fromDateDeliveryDepartmentStoreItem,
-                 prohibitionSaleDepartmentStoreItem, prohibitionMovementDepartmentStoreItem, reserveDepartmentStoreItem;
+                 nameStatusCashDepartmentStoreItem, percentHumidityFlourDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem, fromDateDeliveryDepartmentStoreItem,
+                 banSaleDepartmentStoreItem, banMovementDepartmentStoreItem, reserveDepartmentStoreItem;
 
 
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
@@ -1405,12 +1528,16 @@ NAVIGATOR {
             ADD scalesModel;
             ADD checkModel;
             ADD assortment;
+            ADD typeItem;
+            ADD tag;
+            ADD rowTorg1;
             ADD color;
             ADD taste;
             ADD pack;
             ADD sort;
             ADD size;
             ADD specialty;
+            ADD coolingDegree;
             ADD cash;
             ADD scales;
             ADD check;
