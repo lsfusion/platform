@@ -604,26 +604,20 @@ PROPERTIES(s) ADDFORM, EDITFORM, delete
 PROPERTIES(d) READONLY name
 FILTERS NOT NULL inStoreDepartment(s, d);
 
-FORM storeType 'Формат магазина'
+FORM tradingNetwork 'Торговая сеть'
 OBJECTS n=tradingNetwork FIXED PANEL, s=storeType
-PROPERTIES(n) READONLY name
+PROPERTIES(n) name
 PROPERTIES(s) name
-PROPERTIES(s) READONLY nameTradingNetworkStoreType
 PROPERTIES(s) ADDOBJ, delete
 FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
-EDIT storeType OBJECT s;
-
-FORM tradingNetwork 'Торговая сеть'
-OBJECTS n=tradingNetwork
-PROPERTIES(n) name, ADDSESSIONFORM, EDITSESSIONFORM, delete
 EDIT tradingNetwork OBJECT n;
 
 FORM qualifier 'Классификатор магазинов'
 OBJECTS n=tradingNetwork, s=storeType
 PROPERTIES(n) READONLY name
-PROPERTIES(n) ADDFORM, EDITFORM, delete
-PROPERTIES(s) READONLY name, nameTradingNetworkStoreType
-PROPERTIES(s) ADDFORM, EDITFORM, delete;
+PROPERTIES(n) ADDFORM, EDITFORM
+PROPERTIES(s) READONLY name
+FILTERS NOT NULL inStoreTypeTradingNetwork(s, n);
 
 FORM itemInDepartment  'Товары в подразделениях'
 OBJECTS d=departmentStore, i=item
@@ -649,7 +643,7 @@ PROPERTIES(a, i) itemAssortment
 PROPERTIES(i) name
 PROPERTIES(i) ADDSESSIONFORM, EDITSESSIONFORM, delete
 FILTERGROUP assortment
-    FILTER 'Только товары ассортимента' 'F10' NOT NULL itemAssortment(a, i)
+    FILTER 'Только товары ассортимента' 'F10' NOT NULL itemAssortment(a, i) DEFAULT
 EDIT assortment OBJECT a;
 
 FORM assortments 'Ассортименты'
@@ -1525,7 +1519,6 @@ NAVIGATOR {
             ADD discount;
             ADD departmentStore;
             ADD store;
-            ADD storeType;
             ADD tradingNetwork;
             ADD revaluationCommittee;
             ADD bank;
