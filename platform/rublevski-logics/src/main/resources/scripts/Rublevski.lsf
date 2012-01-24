@@ -388,7 +388,7 @@ CLASS restaurant 'Ресторан' : departmentStore;
 CLASS manufactory 'Цех' : departmentStore;
 
 storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore);
-nameStoreDepartmentStore 'Магазин отдела' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
+nameStoreDepartmentStore 'Магазин' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
 revaluationCommitteeDepartmentStore 'Комиссия отдела (ИД)' = DATA revaluationCommittee (departmentStore);
 nameRevaluationCommitteeDepartmentStore 'Комиссия отдела' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore));
 controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore);
@@ -557,7 +557,7 @@ FILTERS NOT NULL inCommitteeDepartmentStore(c, e);
 
 // ----------------------------------- Банк ------------------------------------------- //
 
-GROUP banksGroup : baseGroup;
+GROUP banksGroup 'Информация' : baseGroup;
 
 CLASS bank 'Банк' : named;
 
@@ -569,8 +569,13 @@ infoBank 'Дополнительные сведения' = DATA STRING[100] (ban
 
 FORM banks 'Банки'
 OBJECTS b=bank
-PROPERTIES(b) name, addressBank, MFOBank, departmentBank, CBUBank, infoBank, ADDOBJ, delete;
+PROPERTIES(b) READONLY name, addressBank, MFOBank, departmentBank, CBUBank, infoBank
+PROPERTIES(b) ADDFORM, EDITFORM, delete;
 
+FORM bank 'Банк'
+OBJECTS b=bank FIXED PANEL
+PROPERTIES(b)  name, addressBank, MFOBank, departmentBank, CBUBank, infoBank
+EDIT bank OBJECT b;
 // ----------------------------------- Расчетный счет ------------------------------------------ //
 
 GROUP accountGroup 'Банковская информация' : baseGroup;
@@ -781,11 +786,21 @@ PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAc
 PROPERTIES(c) dataContract, nameSupplierContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, noteContract, ADDOBJ, delete
 FILTERS NOT NULL inCompanyContract(co, c),
         NOT NULL inCompanyAccount(co, a)
-EDIT company OBJECT c;
+EDIT company OBJECT co;
 
+DESIGN company FROM DEFAULT {
+    main{
+       ADD prop.box BEFORE functions.box {
+            tabbedPane = TRUE;
+            ADD a.box;
+            ADD c.box;
+
+       }
+   }
+}
 FORM companies 'Компании'
 OBJECTS co=company
-PROPERTIES(co) READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, lawLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity
+PROPERTIES(co) READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, lawLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity, dataOverrideAccountLegalEntity
 PROPERTIES(co) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Ассортимент поставщиков-------------------------------------------- //
@@ -860,15 +875,28 @@ modelCheckModel 'Модель (ИД)' = DATA modelCheck (checkModel) IN idGroup;
 nameModelCheckModel 'Модель прайс чекера' = nameModelCheck(modelCheckModel(checkModel)) IN baseGroup;
 
 FORM models 'Модели оборудования'
-OBJECTS s=scalesModel, ch=checkModel, c=cashModel
-PROPERTIES(ch) READONLY name, nameModelCheckModel, noteModel, useModel, maxProductModel
-PROPERTIES(s)  READONLY name, nameFlashScalesModel, noteModel, useModel, maxProductModel, maxTextScalesModel,
-               folderScalesModel, lettersModel, compositionScalesModel
-PROPERTIES(c)  READONLY name, nameFrontOfficeCashModel, noteModel, useModel, dateToCashModel, lettersModel
-PROPERTIES(s) ADDFORM, EDITFORM, delete
-PROPERTIES(c) ADDFORM, EDITFORM, delete
-PROPERTIES(ch) ADDFORM, EDITFORM, delete;
+OBJECTS m=model
+PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel
+PROPERTIES(m) ADDFORM, EDITFORM, delete;                // либо так как ниже//
+//OBJECTS s=scalesModel, ch=checkModel, c=cashModel
+//PROPERTIES(ch) READONLY name, nameModelCheckModel, noteModel, useModel, maxProductModel
+//PROPERTIES(s)  READONLY name, nameFlashScalesModel, noteModel, useModel, maxProductModel, maxTextScalesModel,
+//               folderScalesModel, lettersModel, compositionScalesModel
+//PROPERTIES(c)  READONLY name, nameFrontOfficeCashModel, noteModel, useModel, dateToCashModel, lettersModel
+//PROPERTIES(s) ADDFORM, EDITFORM, delete
+//PROPERTIES(c) ADDFORM, EDITFORM, delete
+//PROPERTIES(ch) ADDFORM, EDITFORM, delete;
 
+//DESIGN models FROM DEFAULT {
+//    main{
+//       ADD prop1.box BEFORE functions.box{
+//            tabbedPane = TRUE;
+//            ADD c.box;
+//            ADD s.box;
+//            ADD ch.box;
+//    }
+//   }
+//}
 
 FORM checkModel 'Модель прайс чекера'
 OBJECTS ch=checkModel FIXED PANEL
@@ -981,33 +1009,58 @@ OBJECTS ch=check FIXED PANEL
 PROPERTIES(ch) descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery
 EDIT check OBJECT ch;
 
+FORM groupScales 'Группа весов'
+OBJECTS grs=groupScales FIXED PANEL
+OBJECTS s=scales
+PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
+PROPERTIES(s)   numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
+                dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales, ADDOBJ, delete
+FILTERGROUP filters1
+    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupScalesScales(grs, s)
+EDIT groupScales OBJECT grs;
 
 FORM groupsScales 'Группы весов'
 OBJECTS grs=groupScales, s=scales
 PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
 PROPERTIES(grs) ADDFORM, EDITFORM, delete
-PROPERTIES(s)   numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
-                dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales,  ADDOBJ, delete
-FILTERGROUP filters1
-    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupScalesScales(grs, s);
+PROPERTIES(s)   READONLY numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
+                dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales
+FILTERS NOT NULL isGroupScalesScales(grs, s);
+
+FORM groupCash 'Группа касс'
+OBJECTS grc=groupCash FIXED PANEL
+OBJECTS c=cash
+PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
+PROPERTIES(c)   numberCash, descriptionMachinery, nameGroupMachineryCash, portMachinery, useMachinery, directoryCash, nameCashModelCash,
+                dateCash, nppCash, statusCash, resultCash, ADDOBJ, delete
+FILTERGROUP filters2
+    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupCashCash(grc, c)
+EDIT groupCash OBJECT grc;
+
 
 FORM groupsCash 'Группы касс'
 OBJECTS grc=groupCash, c=cash
-PROPERTIES(grc) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
-PROPERTIES(grc) ADDFORM, EDITFORM, delete
-PROPERTIES(c)    numberCash, descriptionMachinery, nameGroupMachineryCash, portMachinery, useMachinery, directoryCash, nameCashModelCash,
-                               dateCash, nppCash, statusCash, resultCash, ADDOBJ, delete
-FILTERGROUP filters2
-    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupCashCash(grc, c);
+PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
+PROPERTIES(grc)  ADDFORM, EDITFORM, delete
+PROPERTIES(c)    READONLY numberCash, descriptionMachinery, nameGroupMachineryCash, portMachinery, useMachinery, directoryCash, nameCashModelCash,
+                 dateCash, nppCash, statusCash, resultCash
+FILTERS NOT NULL isGroupCashCash(grc, c);
+
+FORM groupCheck 'Группа прайс чекеров'
+OBJECTS grch=groupCheck FIXED PANEL
+OBJECTS ch=check
+PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
+PROPERTIES(ch)   descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery, ADDOBJ, delete
+FILTERGROUP filters3
+    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupCheckCheck(grch, ch)
+EDIT groupCheck OBJECT grch;
 
 FORM groupsCheck 'Группы прайс чекеров'
 OBJECTS grch=groupCheck, ch=check
 PROPERTIES(grch) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
 PROPERTIES(grch) ADDFORM, EDITFORM, delete
-PROPERTIES(ch)   descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery, ADDOBJ, delete
-
-FILTERGROUP filters3
-    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupCheckCheck(grch, ch);
+PROPERTIES(ch)   READONLY descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery
+FILTERS NOT NULL isGroupCheckCheck(grch, ch);
 
  //---------------------------- Карты проработки (разруба) ----------------------------------------//
 GROUP cutGroup 'Разделка' : baseGroup;
@@ -1048,6 +1101,11 @@ PROPERTIES(dep, c) InDepartmentStoreCutting
 PROPERTIES(i, c)   inItemCutting
 
 FILTERS NOT NULL isCuttingDetailCutting(c, d)
+FILTERGROUP filters7
+    FILTER 'Показывать подразделения только для данной карты' 'F10' NOT NULL InDepartmentStoreCutting(dep, c)
+FILTERGROUP filters8
+    FILTER 'Показывать товар только для данной карты' 'F9' NOT NULL inItemCutting(i, c)
+
 EDIT cutting OBJECT c;
 
 DESIGN cutting FROM DEFAULT {
@@ -1129,11 +1187,11 @@ userLastNameEmployeeRate 'Кто ввел значение, фамилия' (rat
 userRate 'Действующая' (rate) = rate IF dateFromRate(rate) <= currentDate() AND dateToRate(rate) >= currentDate();
 userRateRange 'Действующая' (range) = GROUP MAX userRate(rate) BY rangeRate(rate);
 quantityUserRateRange 'Количество историй' (range) = GROUP SUM 1 IF userRate(rate) BY rangeRate(rate);
-CONSTRAINT CHECKED quantityUserRateRange > 1 MSG 'ошибка: Одновременно не может быть несколько действующих ставок';
+CONSTRAINT CHECKED quantityUserRateRange(range) > 1 MSG 'ошибка: Одновременно не может быть несколько действующих ставок';
 // не работает  //
 //   обязательно переделать на уникальность и по времени
-//CONSTRAINT CHECKED rangeType IS rangeType AND NOT rangeTypeRange(rangeType)  MSG 'ошибка: Не выбран тип действия для налога';
-// не работает//
+CONSTRAINT CHECKED range IS range AND NOT rangeTypeRange(range)  MSG 'ошибка: Не выбран тип действия для шкалы';
+// работает, но хотели мы что-то другое.....//
 
 dataUserRateRange 'Значение ставки' (range) = dataRate(userRateRange(range)) IN baseGroup;
 dateFromUserRateRange 'Действует с' (range) = dateFromRate(userRateRange(range)) IN baseGroup;
@@ -1303,11 +1361,13 @@ NAVIGATOR {
             ADD barcode;
             ADD employee;
             ADD tradingSquare;
+            ADD discount;
             ADD departmentStore;
             ADD store;
             ADD storeType;
             ADD tradingNetwork;
             ADD revaluationCommittee;
+            ADD bank;
             ADD ownership;
             ADD supplier;
             ADD company;
@@ -1327,6 +1387,9 @@ NAVIGATOR {
             ADD tax;
             ADD cutting;
             ADD recipe;
+            ADD groupCash;
+            ADD groupScales;
+            ADD groupCheck;
             ADD addTimeTable;
             ADD addDiscount;
         }
