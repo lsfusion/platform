@@ -6112,7 +6112,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote);
 
             if (!restricted)
-                addPropertyDraw(objVote, emailClosedVote, baseLM.delete);
+                addPropertyDraw(objVote, claimerEmailVote, emailClosedVote, baseLM.delete);
 
             objExpert = addSingleGroupObject(expert);
             if (!restricted)
