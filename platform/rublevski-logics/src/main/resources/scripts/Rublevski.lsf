@@ -520,7 +520,6 @@ verifyOrderArrivalDepartmentStore 'Сверять заказ и приход в 
 maxQuantityDeliveryHourDepartmentStore 'Максимальное допустимое число поставок в час' = DATA INTEGER (departmentStore);
 resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore 'Разрешить превысить количество поставок/час при ассортименте <' = DATA DOUBLE (departmentStore);
 resolveOrderItemDepartmentStore 'Разрешить заказ товара в подразделение?' = DATA BOOLEAN (departmentStore);
-marginPublicCateringDepartmentStore 'Наценка общепита по умолчанию для формирования цены в подразделении' = DATA DOUBLE (departmentStore);
 quantityCashChangeOneOperationAccountDepartmentStore ' Количество кассовых смен в одном оперативном отчете' = DATA INTEGER (departmentStore);
 materiallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (departmentStore);
 commonNameMateriallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' (departmentStore) = commonName (materiallyResponsiblePersonItemReportDepartmentStore(departmentStore));
@@ -543,6 +542,9 @@ GROUP manufactoryGroup 'Для производства';
 
 outDepartmentManufactory 'Подразделение, куда передаются изделия (ИД)' (manufactory) = DATA departmentStore(manufactory) IN idGroup;
 nameOutDepartmentManufactory 'Подразделение, куда передаются изделия' (manufactory) = name(outDepartmentManufactory(manufactory)) IN manufactoryGroup;
+inPriceDepartmentManufactory 'Подразделение, откуда брать цены (ИД)' (manufactory) = DATA departmentStore(manufactory) IN idGroup;
+nameInPriceDepartmentManufactory 'Подразделение, откуда брать цены ' (manufactory) = name(inPriceDepartmentManufactory(manufactory)) IN manufactoryGroup;
+marginPublicCateringManufactory 'Наценка общепита по умолчанию для формирования цены в подразделении' (manufactory) = DATA DOUBLE (manufactory) IN manufactoryGroup;
 
 //----------------------------------- Для товара и подразделения ------------------------------------------//
 additionPriceDepartmentStoreItem 'Торговая надбавка в рублях' = DATA DOUBLE (departmentStore, item) IN baseGroup;
@@ -565,8 +567,9 @@ OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare
 PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
               controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
               maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
-              marginPublicCateringDepartmentStore, quantityCashChangeOneOperationAccountDepartmentStore, commonNameMateriallyResponsiblePersonItemReportDepartmentStore,
-              commonNameBookkeeperItemReportDepartmentStore, commonNamePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore, nameOutDepartmentManufactory
+              quantityCashChangeOneOperationAccountDepartmentStore, commonNameMateriallyResponsiblePersonItemReportDepartmentStore,
+              commonNameBookkeeperItemReportDepartmentStore, commonNamePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore,
+              nameOutDepartmentManufactory, nameInPriceDepartmentManufactory, marginPublicCateringManufactory
 PROPERTIES(e) READONLY userFirstName, userLastName
 PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
 PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
@@ -790,6 +793,7 @@ dataActingLicenseLegalEntity 'Действующая лицензия' (legalEnt
 // ----------------------------------- Юридическое лицо-дата ------------------------------------------ //
 
 TABLE legalEntityDate (legalEntity, DATE);
+
 addressLegalEntityDate 'Фактический адрес на дату' = DATA STRING[100] (legalEntity, DATE);
 dateAddressLegalEntity (legalEntity, date) = GROUP MAX dateIn AND addressLegalEntityDate(legalEntity, dateIn) AND dateIn <= (date AS DATE) BY legalEntity, date;
 addressLegalEntity 'Фактический адрес' (legalEntity) = addressLegalEntityDate (legalEntity, dateAddressLegalEntity (legalEntity, currentDate()));
