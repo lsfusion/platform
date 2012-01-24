@@ -240,6 +240,8 @@ public final class AppManager {
 
         @Override
         public void onProcessFailed(ExecuteException e) {
+            super.onProcessFailed(e);
+
             logger.error("Error executing process: " + e.getMessage(), e.getCause());
             lifecycleListener.onError(
                     new LifecycleEvent(

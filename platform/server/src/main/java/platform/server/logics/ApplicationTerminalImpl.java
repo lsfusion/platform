@@ -13,12 +13,19 @@ public class ApplicationTerminalImpl extends UnicastRemoteObject implements Appl
 
     @Override
     public void stop() {
-        try {
-            BusinessLogicsBootstrap.stop();
-        } catch (RemoteException e) {
-            e.printStackTrace();            
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-        }
+        //в отдельном потоке, чтобы вернуть управление в точку вызова,
+        //чтобы удалённый клиент продолжил выполнение
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    BusinessLogicsBootstrap.stop();
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                } catch (NotBoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 }
