@@ -79,16 +79,21 @@ public class PanelShortcut extends JPopupMenu {
     }
 
     private void addActionMenuItem(String caption, Icon icon, String tooltip, ActionListener listener) {
+        this.addActionMenuItem(caption, icon, tooltip, listener, false);
+    }
+
+    private void addActionMenuItem(String caption, Icon icon, String tooltip, ActionListener listener, boolean defaultItem) {
         JMenuItem item = new JMenuItem(caption, icon);
         item.setOpaque(false);
         item.addActionListener(listener);
         item.setToolTipText(tooltip == null ? caption : tooltip);
+        if (defaultItem) {
+            item.setFont(item.getFont().deriveFont(Font.BOLD));
+        }
         add(item);
     }
 
-    private void addPropertiesToMenu() {
-        propertiesContainer = new JPanel(new VerticalLayout(3));
-        List<PropertyController> actionProperties = new ArrayList<PropertyController>();
+    private TreeMap<Integer, ClientPropertyDraw> sortProperties() {
         TreeMap<Integer, ClientPropertyDraw> sortedMap = new TreeMap<Integer, ClientPropertyDraw>(); //расставляем свойства в том же порядке, что и в форме
         for (PropertyController property : properties) {
             if (property.getKey().drawToShortcut()) {
@@ -98,7 +103,13 @@ public class PanelShortcut extends JPopupMenu {
                 }
             }
         }
-        for (ClientPropertyDraw property : sortedMap.values()) {
+        return sortedMap;
+    }
+
+    private void addPropertiesToMenu() {
+        propertiesContainer = new JPanel(new VerticalLayout(3));
+        List<PropertyController> actionProperties = new ArrayList<PropertyController>();
+        for (ClientPropertyDraw property : sortProperties().values()) {
             for (final PropertyController propertyController : panel.getProperties().get(property).values()) {
                 if (property.baseType instanceof ClientActionClass)
                     actionProperties.add(propertyController);
@@ -117,14 +128,21 @@ public class PanelShortcut extends JPopupMenu {
         }
 
         //затем - ActionProperties в виде пунктов меню
+        boolean defaultSet = false;
         for (PropertyController controller : actionProperties) {
             final ButtonCellView button = (ButtonCellView) controller.getView();
+
+            boolean isDefault = false;
+            if (!defaultSet)
+                isDefault = ((ShortcutPanelLocation) controller.getKey().panelLocation).isDefault();
+            defaultSet = defaultSet || isDefault;
+
             addActionMenuItem(button.getText(), button.getIcon(), button.getToolTipText(), new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     button.doClick();
                 }
-            });
+            }, isDefault);
         }
     }
 
@@ -136,6 +154,17 @@ public class PanelShortcut extends JPopupMenu {
 
         if (getComponentCount() != 0) {
             show(invoker, point.x, point.y);
+        }
+    }
+
+    public void invokeDefaultAction() {
+        for (ClientPropertyDraw property : sortProperties().values()) {
+            if (((ShortcutPanelLocation) property.panelLocation).isDefault() && property.baseType instanceof ClientActionClass) {
+                PropertyController propertyController = panel.getProperties().get(property).values().iterator().next();
+                if (propertyController != null) {
+                    ((ButtonCellView) propertyController.getView()).doClick();
+                }
+            }
         }
     }
 }

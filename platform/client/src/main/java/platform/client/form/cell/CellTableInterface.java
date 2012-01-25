@@ -19,4 +19,6 @@ public interface CellTableInterface {
     Color getHighlightColor(int row, int column);
 
     ClientFormController getForm();
+
+    void invokeDefaultAction();
 }

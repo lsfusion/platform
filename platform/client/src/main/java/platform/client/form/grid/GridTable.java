@@ -24,7 +24,6 @@ import platform.interop.Order;
 import platform.interop.Scroll;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -840,6 +839,10 @@ public abstract class GridTable extends ClientFormTable
             requestFocusInWindow();
             groupObjectController.showShortcut(invoker, point, getCurrentProperty());
         }
+    }
+
+    public void invokeDefaultAction() {
+        groupObjectController.invokeDefaultAction(getCurrentProperty());
     }
 
     private void moveToFocusableCellIfNeeded() {

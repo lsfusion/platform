@@ -623,4 +623,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             form.treeControllers.get(treeGroup).showShortcut(invoker, point, getCurrentProperty());
         }
     }
+
+    public void invokeDefaultAction() {}
 }

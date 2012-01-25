@@ -170,6 +170,8 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
             if (comp == null && propertyEditor.valueChanged()) {
                 table.setValueAt(getCellEditorValue(), row, column);
             }
+        } else {
+            ((CellTableInterface) table).invokeDefaultAction();  //вызываем default actionProperty, вынесенное в shortcut
         }
 
         if (comp == null) {

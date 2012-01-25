@@ -2,6 +2,7 @@ package platform.interop;
 
 public class ShortcutPanelLocation extends PanelLocation {
     protected String onlyPropertySID;
+    protected boolean defaultOne;
 
     public ShortcutPanelLocation() {}
 
@@ -23,5 +24,13 @@ public class ShortcutPanelLocation extends PanelLocation {
 
     public String getOnlyPropertySID() {
         return onlyPropertySID;
+    }
+
+    public void setDefault(boolean defaultOne) {
+        this.defaultOne = defaultOne;
+    }
+
+    public boolean isDefault() {
+        return defaultOne;
     }
 }

@@ -927,7 +927,7 @@ nameCompanyContract 'Контрагент' (contract) = name(companyContract(con
 FORM supplier 'Поставщик'
 OBJECTS s=supplier FIXED PANEL
 OBJECTS a=account, c=contractProvider, l=license, d=departmentStore
-PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormAddressLegalEntity FORCE PANEL, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
+PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormAddressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
               phoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
               dataOverrideAccountLegalEntity, residentLegalEntity, manufacturerLegalEntity, dataOverrideContractSupplier, nameSureSupplier, controlSupplier, surePercentSupplier, allowablePercentSupplier,
               afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier, dataActingLicenseLegalEntity
@@ -948,7 +948,7 @@ FILTERGROUP filters9
 EDIT supplier OBJECT s;
 
 DESIGN supplier FROM DEFAULT {
-PROPERTY (showFormAddressLegalEntity){panelLocation = SHORTCUT 'Rublevski_addressLegalEntity';}
+PROPERTY (showFormAddressLegalEntity){panelLocation = SHORTCUT 'Rublevski_addressLegalEntity' DEFAULT;}
     main{
        ADD prop.box BEFORE functions.box{
             tabbedPane = TRUE;

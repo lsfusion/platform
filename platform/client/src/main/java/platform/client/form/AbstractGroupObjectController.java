@@ -64,4 +64,9 @@ public abstract class AbstractGroupObjectController implements GroupObjectLogics
         panelShortcut.setCurrentProperty(currentProperty);
         panelShortcut.show(invoker, point);
     }
+
+    public void invokeDefaultAction(ClientPropertyDraw currentProperty) {
+        panelShortcut.setCurrentProperty(currentProperty);
+        panelShortcut.invokeDefaultAction();
+    }
 }

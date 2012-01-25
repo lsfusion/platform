@@ -154,4 +154,6 @@ public abstract class CellTable extends SingleCellTable
         if (ks.equals(KeyStrokes.getEnter()) && !isDataChanging()) return false;
         return super.processKeyBinding(ks, e, condition, pressed);
     }
+
+    public void invokeDefaultAction() {}
 }

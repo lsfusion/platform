@@ -1488,6 +1488,7 @@ insertPositionLiteral returns [InsertPosition val]
 panelLocationLiteral returns [PanelLocation val]
 	:	'TOOLBAR' { $val = new ToolbarPanelLocation(); }
 	|	'SHORTCUT' { $val = new ShortcutPanelLocation(); } (sid=stringLiteral { ((ShortcutPanelLocation) $val).setOnlyPropertySID($sid.val); })?
+		('DEFAULT' { ((ShortcutPanelLocation) $val).setDefault(true); })?
 	;
 	
 udoubleLiteral

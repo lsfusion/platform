@@ -99,6 +99,11 @@ public class TableCellView extends JPanel implements CellView {
             public void buildShortcut(Component invoker, Point point) {
                 form.controllers.get(key.groupObject).showShortcut(invoker, point, key);
             }
+
+            @Override
+            public void invokeDefaultAction() {
+                form.controllers.get(key.groupObject).invokeDefaultAction(key);
+            }
         };
 
         table.addMouseListener(new MouseAdapter() {
