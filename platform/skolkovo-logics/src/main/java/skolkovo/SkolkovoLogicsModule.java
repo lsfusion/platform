@@ -6112,7 +6112,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteFormEntity(NavigatorElement parent, String sID, boolean restricted) {
             super(parent, sID, (!restricted) ? "Реестр заседаний" : "Результаты заседаний");
 
-            objVote = addSingleGroupObject(vote, baseLM.objectClassName, nameNativeProjectVote, nameNativeClaimerVote,
+            objVote = addSingleGroupObject(vote, baseLM.objectClassName, nameNativeProjectVote, nameNativeClaimerVote, claimerEmailVote,
                     nameProjectActionVote, nameNativeClusterVote, dateStartVote, dateEndVote,
                     openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityExclVote,
                     quantityInClusterVote, quantityInnovativeVote, quantityForeignVote,
@@ -6120,7 +6120,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote);
 
             if (!restricted)
-                addPropertyDraw(objVote, claimerEmailVote, emailClosedVote, baseLM.delete);
+                addPropertyDraw(objVote, emailClosedVote, baseLM.delete);
 
             objExpert = addSingleGroupObject(expert);
             if (!restricted)
