@@ -12,9 +12,11 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.PartitionExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.SourceJoin;
+import platform.server.data.query.innerjoins.GroupStatType;
 import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.MeanClassWheres;
+import platform.server.logics.property.GroupProperty;
 
 import javax.mail.Part;
 
@@ -69,8 +71,15 @@ public class AfterTranslateAspect {
             return thisJoinPoint.proceed();
     }
 
-    @Around("execution(java.util.Collection platform.server.data.where.AbstractWhere.getWhereJoins(boolean, platform.base.QuickSet)) && target(where) && args(notExclusive,keepStat)")
-    public Object callGetWhereJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean notExclusive, QuickSet keepStat) throws Throwable {
+    @Around("execution(platform.base.Pair platform.server.data.where.AbstractWhere.getWhereJoins(boolean, platform.base.QuickSet)) && target(where) && args(tryExclusive,keepStat)")
+    public Object callGetWhereJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean tryExclusive, QuickSet keepStat) throws Throwable {
+        if(keepStat.equals(where.getOuterKeys()))
+            return CacheAspect.callMethod(where, thisJoinPoint);
+        return thisJoinPoint.proceed();
+    }
+
+    @Around("execution(java.util.Collection platform.server.data.where.AbstractWhere.getStatJoins(boolean, platform.base.QuickSet, platform.server.data.query.innerjoins.GroupStatType, boolean)) && target(where) && args(exclusive,keepStat,type,noWhere)")
+    public Object callGetStatJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean exclusive, QuickSet keepStat, GroupStatType type, boolean noWhere) throws Throwable {
         if(keepStat.equals(where.getOuterKeys()))
             return CacheAspect.callMethod(where, thisJoinPoint);
         return thisJoinPoint.proceed();

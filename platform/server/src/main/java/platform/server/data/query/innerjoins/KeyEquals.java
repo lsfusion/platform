@@ -1,13 +1,14 @@
 package platform.server.data.query.innerjoins;
 
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.QuickMap;
 import platform.base.QuickSet;
 import platform.interop.Compare;
+import platform.server.Settings;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.stat.WhereJoins;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.where.Where;
 
@@ -125,7 +126,7 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
         return where;
     }
 
-    private <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(QuickSet<K> keepStat) {
+    public <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(QuickSet<K> keepStat) {
         Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>();
         for(int i=0;i<size;i++) {
             KeyEqual keyEqual = getKey(i); // keyEqual закидывается в статистику так как keepStat не всегда translate'ся
@@ -135,58 +136,82 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
         return result;
     }
 
-    public <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive, QuickSet<K> keepStat) {
-        Collection<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat);
-        if(notExclusive || whereJoins.size()<=1)
-            return whereJoins;
-        else {
-            GroupJoinsWhere firstJoin = whereJoins.iterator().next();
-            return BaseUtils.add(getWhere().and(firstJoin.getFullWhere().not()).getWhereJoins(false, keepStat), firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
-        }
-    }
-
-    /* отдельной веткой сделать statJoins, но смысла иметь не будет так как придется все равно собировать WhereJoins и там запускать алгоритм статистики
-    private <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(Set<K> keys) {
-        Collection<GroupStatWhere<K>> result = new ArrayList<GroupStatWhere<K>>();
-
-        for(int i=0;i<size;i++) {
-            KeyEqual keyEqual = getKey(i);
-            Where where = getValue(i);
-
-            QueryTranslator translator = keyEqual.getTranslator();
-            Map<K, Expr> mapKeys = new HashMap<K, Expr>();
-            boolean hasCase = false;
-            for(K key : keys) {
-                Expr transKey = key.translateQuery(translator);
-                mapKeys.put(key, transKey);
-                hasCase = hasCase || !(transKey instanceof BaseExpr);
-            }
-
-            if(hasCase) {
-                // так конечно жестко делать, она по сути второй раз будет keyEqual считать, но иначе придется сливать keyEqual'ы а это удовольствие ниже среднего
-                result.addAll(GroupStatWhere.mapBack(where.and(keyEqual.getWhere()).getStatJoins(true, new HashSet<Expr>(mapKeys.values())), mapKeys));
-            } else {
-                Map<K, BaseExpr> mapBaseKeys = BaseUtils.immutableCast(mapKeys);
-                Set<BaseExpr> transKeys = new HashSet<BaseExpr>((Collection<? extends BaseExpr>) mapKeys.values());
-
-                // здесь надо сделать groupStatKeys
-                for(GroupJoinsWhere groupJoin : getWhereJoins(keyEqual, where))
-                    result.add(new GroupStatWhere<K>(groupJoin.keyEqual, groupJoin.getStatKeys(keys), groupJoin.where));
-
-                result.addAll(GroupStatWhere.mapBack(where.and(keyEqual.getWhere()).getStatJoins(true, new HashSet<Expr>(mapKeys.values())), mapKeys));
-            }
+    private static <T extends GroupWhere> long getComplexity(List<T> statJoins) {
+        long prev = 0;
+        long result = 0;
+        for(T statJoin : statJoins) {
+            prev += statJoin.where.getComplexity(true);
+            result += prev;
         }
         return result;
     }
 
-    // тоже самое что в getWhereJoins, но пока нет смысла городить огород ради 3-х строк кода
-    public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(Set<K> keys, boolean notExclusive) {
-        Collection<GroupStatWhere<K>> whereJoins = getStatJoins(keys);
-        if(notExclusive || whereJoins.size()<=1)
-            return whereJoins;
-        else {
-            GroupStatWhere<K> firstJoin = whereJoins.iterator().next();
-            return BaseUtils.add(getWhere().and(firstJoin.getFullWhere().not()).getStatJoins(keys, false), firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
+    //по аналогии с GroupStatType, сливает одинаковые
+    private Collection<GroupJoinsWhere> merge(Collection<GroupJoinsWhere> whereJoins, GroupJoinsWhere join) {
+        Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>(whereJoins);
+        for(Iterator<GroupJoinsWhere> i=result.iterator();i.hasNext();) {
+            GroupJoinsWhere where = i.next();
+            if(where.keyEqual.equals(join.keyEqual) && where.joins.equals(join.joins)) {
+                i.remove();
+                join = new GroupJoinsWhere(join.keyEqual, join.joins, join.joins.orUpWheres(join.upWheres, where.upWheres), join.where.or(where.where));
+                break;
+            }
         }
-    }*/
+        result.add(join);
+        return result;
+    }
+
+    public <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat) {
+        Collection<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat);
+        if(!tryExclusive || whereJoins.size()<=1 || whereJoins.size() > Settings.instance.getLimitExclusiveCount())
+            return new Pair<Collection<GroupJoinsWhere>, Boolean>(whereJoins, false);
+        List<GroupJoinsWhere> sortedWhereJoins = GroupWhere.sort(whereJoins);
+        long sortedComplexity = getComplexity(sortedWhereJoins);
+        if(sortedComplexity > Settings.instance.getLimitExclusiveComplexity())
+            return new Pair<Collection<GroupJoinsWhere>, Boolean>(whereJoins, false);
+
+        // если сложность превышает порог - просто andNot'им верхние
+        if(sortedWhereJoins.size() > Settings.instance.getLimitExclusiveSimpleCount() || sortedComplexity > Settings.instance.getLimitExclusiveSimpleComplexity()) {
+            Collection<GroupJoinsWhere> exclJoins = new ArrayList<GroupJoinsWhere>();
+            Where prevWhere = Where.FALSE;
+            for(GroupJoinsWhere whereJoin : sortedWhereJoins) {
+                exclJoins.add(new GroupJoinsWhere(whereJoin.keyEqual, whereJoin.joins, whereJoin.upWheres, whereJoin.where.and(prevWhere.not())));
+                prevWhere.or(whereJoin.getFullWhere());
+            }
+            return new Pair<Collection<GroupJoinsWhere>, Boolean>(exclJoins, true);
+        } else { // иначе запускаем рекурсию
+            GroupJoinsWhere firstJoin = sortedWhereJoins.iterator().next();
+            Pair<Collection<GroupJoinsWhere>, Boolean> recWhereJoins = getWhere().and(firstJoin.getFullWhere().not()).getWhereJoins(true, keepStat);
+            return new Pair<Collection<GroupJoinsWhere>, Boolean>(merge(recWhereJoins.first, firstJoin), recWhereJoins.second); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
+        }
+    }
+
+    public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keepStat) {
+        Collection<GroupStatWhere<K>> statJoins = new ArrayList<GroupStatWhere<K>>();
+        for(GroupJoinsWhere whereJoin : getWhereJoins(keepStat))
+            statJoins.add(new GroupStatWhere<K>(whereJoin.keyEqual, whereJoin.getStatKeys(keepStat), whereJoin.where));
+        return statJoins;
+    }
+
+    public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(boolean exclusive, QuickSet<K> keepStat, GroupStatType type, boolean noWhere) {
+        assert !(exclusive && noWhere); // если noWhere то не exclusive
+        // получаем GroupJoinsWhere, конвертим в GroupStatWhere, группируем по type'у (через MapWhere), упорядочиваем по complexity
+        Collection<GroupStatWhere<K>> statJoins = type.group(getStatJoins(keepStat));
+        if(!exclusive || statJoins.size()<=1) // если не нужно notExclusive || один элемент
+            return statJoins;
+
+        List<GroupStatWhere<K>> sortedStatJoins = GroupWhere.sort(statJoins);
+        if(sortedStatJoins.size() > Settings.instance.getLimitExclusiveSimpleCount() || getComplexity(sortedStatJoins) > Settings.instance.getLimitExclusiveSimpleComplexity()) { // если сложность превышает порог - просто andNot'им верхние
+            Collection<GroupStatWhere<K>> exclJoins = new ArrayList<GroupStatWhere<K>>();
+            Where prevWhere = Where.FALSE;
+            for(GroupStatWhere<K> statJoin : sortedStatJoins) {
+                exclJoins.add(new GroupStatWhere<K>(statJoin.keyEqual, statJoin.stats, statJoin.where.and(prevWhere.not())));
+                prevWhere.or(statJoin.getFullWhere());
+            }
+            return exclJoins;
+        } else { // иначе запускаем рекурсию
+            GroupStatWhere<K> firstJoin = sortedStatJoins.iterator().next();
+            return type.merge(getWhere().and(firstJoin.getFullWhere().not()).getStatJoins(keepStat, exclusive, type, noWhere), firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
+        }
+    }
 }

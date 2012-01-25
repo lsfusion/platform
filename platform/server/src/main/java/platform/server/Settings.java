@@ -58,7 +58,7 @@ public class Settings {
     // будет ли оптимизатор разбивать inner join'ы по статистике
     private boolean splitGroupStatInnerJoins = false;
 
-    // будет ли компилятор вместо UNION (когда OR'ов слишком много) использовать FULL JOIN
+    // будет ли компилятор вместо UNION (когда UNION ALL не удается построить) использовать FULL JOIN
     boolean useFJInsteadOfUnion = false;
 
     // будет ли оптимизатор разбивать группирующие выражения на максимум, так чтобы в группируемом выражении не было бы Case'ов
@@ -291,8 +291,10 @@ public class Settings {
     private int limitClassWhereCount = 40;
     private int limitClassWhereComplexity = 400;
     private int limitWhereJoinPack = 300;
-    private int limitUnionAllCount = 10;
-    private int limitUnionAllComplexity = 100;
+    private int limitExclusiveCount = 15; // когда вообще не пытаться строить exclusive (count)
+    private int limitExclusiveComplexity = 100; // когда вообще не пытаться строить exclusive (complexity)
+    private int limitExclusiveSimpleCount = 10; // когда строить exclusive без рекурсии (count)
+    private int limitExclusiveSimpleComplexity = 100; // когда строить exclusive без рекурсии (complexity)
 
     private int limitIncrementCoeff = 1;
     private int limitHintIncrementComplexity = 50;
@@ -355,22 +357,34 @@ public class Settings {
     public void setLimitWrapComplexity(int limitWrapComplexity) {
         this.limitWrapComplexity = limitWrapComplexity;
     }
-    public int getLimitUnionAllCount() {
-        return limitUnionAllCount;
-    }
-    public void setLimitUnionAllCount(int limitUnionAllCount) {
-        this.limitUnionAllCount = limitUnionAllCount;
-    }
-    public int getLimitUnionAllComplexity() {
-        return limitUnionAllComplexity;
-    }
-    public void setLimitUnionAllComplexity(int limitUnionAllComplexity) {
-        this.limitUnionAllComplexity = limitUnionAllComplexity;
-    }
     public int getLimitGrowthIncrementComplexity() {
         return limitGrowthIncrementComplexity;
     }
     public void setLimitGrowthIncrementComplexity(int limitGrowthIncrementComplexity) {
         this.limitGrowthIncrementComplexity = limitGrowthIncrementComplexity;
+    }
+    public int getLimitExclusiveCount() {
+        return limitExclusiveCount;
+    }
+    public void setLimitExclusiveCount(int limitExclusiveCount) {
+        this.limitExclusiveCount = limitExclusiveCount;
+    }
+    public int getLimitExclusiveSimpleCount() {
+        return limitExclusiveSimpleCount;
+    }
+    public void setLimitExclusiveSimpleCount(int limitExclusiveSimpleCount) {
+        this.limitExclusiveSimpleCount = limitExclusiveSimpleCount;
+    }
+    public int getLimitExclusiveSimpleComplexity() {
+        return limitExclusiveSimpleComplexity;
+    }
+    public void setLimitExclusiveSimpleComplexity(int limitExclusiveSimpleComplexity) {
+        this.limitExclusiveSimpleComplexity = limitExclusiveSimpleComplexity;
+    }
+    public int getLimitExclusiveComplexity() {
+        return limitExclusiveComplexity;
+    }
+    public void setLimitExclusiveComplexity(int limitExclusiveComplexity) {
+        this.limitExclusiveComplexity = limitExclusiveComplexity;
     }
 }

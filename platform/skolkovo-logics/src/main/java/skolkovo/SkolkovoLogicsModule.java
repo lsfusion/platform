@@ -423,7 +423,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public void initGroups() {
         initBaseGroupAliases();
 
-        Settings.instance.setLimitUnionAllCount(5);
+        Settings.instance.setLimitExclusiveCount(5);
 //        Settings.instance.setEditLogicalOnSingleClick(true);
 //        Settings.instance.setEditActionOnSingleClick(true);
 

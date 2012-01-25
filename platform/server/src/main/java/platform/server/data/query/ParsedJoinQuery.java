@@ -1,9 +1,8 @@
 package platform.server.data.query;
 
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
-import platform.base.QuickSet;
+import platform.base.*;
 import platform.server.Message;
+import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.SynchronizedLazy;
 import platform.server.data.Value;
@@ -108,6 +107,10 @@ public class ParsedJoinQuery<K,V> extends AbstractJoin<V> implements ParsedQuery
         return properties.get(property).and(where);
     }
 
+    public Map<K, KeyExpr> getMapKeys() {
+        return mapKeys;
+    }
+
     public Collection<V> getProperties() {
         return properties.keySet();
     }
@@ -120,8 +123,10 @@ public class ParsedJoinQuery<K,V> extends AbstractJoin<V> implements ParsedQuery
         return new QuickSet<KeyExpr>(mapKeys.values());
     }
 
-    public Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive) {
-        return where.getWhereJoins(notExclusive, getKeys());
+    public Collection<GroupJoinsWhere> getWhereJoins(boolean tryExclusive, Result<Boolean> isExclusive) {
+        Pair<Collection<GroupJoinsWhere>,Boolean> whereJoinsExcl = where.getWhereJoins(tryExclusive, getKeys());
+        isExclusive.set(whereJoinsExcl.second);
+        return whereJoinsExcl.first;
     }
 
     private static <K> void pullValues(Map<K, ? extends Expr> map, Where where, Map<K, Expr> result) {

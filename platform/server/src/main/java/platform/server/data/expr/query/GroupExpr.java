@@ -17,8 +17,6 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
-import platform.server.data.where.MapStatKeys;
-import platform.server.data.where.MapWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
@@ -192,7 +190,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     public GroupJoin getInnerJoin() {
         StatKeys<Expr> statKeys;
         if(query.type.hasAdd()) {
-            GroupStatWhere<Expr> innerWhere = BaseUtils.single(getSplitJoins(query, BaseUtils.reverse(group)));
+            GroupStatWhere<Expr> innerWhere = BaseUtils.single(getSplitJoins(query, BaseUtils.reverse(group), true));
             assert innerWhere.keyEqual.isEmpty();
             statKeys = innerWhere.stats;
         } else
@@ -490,44 +488,17 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     // "определяет" разбивать на innerJoins или нет
-    private static Collection<GroupStatWhere<Expr>> getSplitJoins(final Query query, Map<BaseExpr, Expr> outerInner) {
+    private static Collection<GroupStatWhere<Expr>> getSplitJoins(final Query query, Map<BaseExpr, Expr> outerInner, boolean noWhere) {
         assert query.type.hasAdd();
-        Collection<GroupStatWhere<Expr>> statJoins = query.getWhere().getStatJoins(query.type.noExclusive(), new QuickSet<Expr>(outerInner.values()));
-
-        if(query.type.splitInnerJoins()) // не группируем
-            return statJoins;
-
-        if (Settings.instance.isSplitGroupStatInnerJoins()) { // группируем по KeyEqual + статистике, or'им Where
-            Collection<GroupStatWhere<Expr>> result = new ArrayList<GroupStatWhere<Expr>>();
-            MapWhere<Pair<KeyEqual, StatKeys<Expr>>> mapWhere = new MapWhere<Pair<KeyEqual, StatKeys<Expr>>>();
-            for(GroupStatWhere<Expr> statJoin : statJoins)
-                mapWhere.add(new Pair<KeyEqual, StatKeys<Expr>>(statJoin.keyEqual,
-                        statJoin.stats), statJoin.where);
-            for(int i=0;i<mapWhere.size;i++) { // возвращаем результат
-                Pair<KeyEqual, StatKeys<Expr>> map = mapWhere.getKey(i);
-                result.add(new GroupStatWhere<Expr>(map.first, map.second, mapWhere.getValue(i)));
-            }
-            return result;
-        }
-
-        // группируем по keyEqual, or'им StatKeys и Where
-        Collection<GroupStatWhere<Expr>> result = new ArrayList<GroupStatWhere<Expr>>();
-        MapWhere<KeyEqual> mapWhere = new MapWhere<KeyEqual>(); MapStatKeys<KeyEqual, Expr> mapStats = new MapStatKeys<KeyEqual, Expr>();
-        for(GroupStatWhere<Expr> statJoin : statJoins) {
-            mapWhere.add(statJoin.keyEqual, statJoin.where); mapStats.add(statJoin.keyEqual, statJoin.stats);
-        }
-        for(int i=0;i<mapWhere.size;i++) { // возвращаем результат
-            KeyEqual keys = mapWhere.getKey(i);
-            result.add(new GroupStatWhere<Expr>(keys, mapStats.get(keys), mapWhere.getValue(i)));
-        }
-        return result;
+        return query.getWhere().getStatJoins(!noWhere && query.type.exclusive(), new QuickSet<Expr>(outerInner.values()),
+                (query.type.splitInnerJoins()?GroupStatType.NONE:(Settings.instance.isSplitGroupStatInnerJoins()?GroupStatType.STAT:GroupStatType.ALL)), noWhere);
     }
 
     private static Expr createInnerSplit(Map<BaseExpr, Expr> outerInner, Query query) {
 
         if(query.type.hasAdd()) {
             Expr result = CaseExpr.NULL;
-            for(GroupStatWhere innerWhere : getSplitJoins(query, outerInner)) {
+            for(GroupStatWhere innerWhere : getSplitJoins(query, outerInner, false)) {
                 Expr innerResult;
                 if(!innerWhere.keyEqual.isEmpty()) { // translatе'им expr
                     QueryTranslator equalTranslator = innerWhere.keyEqual.getTranslator();

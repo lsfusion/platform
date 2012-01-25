@@ -2,6 +2,7 @@ package platform.server.data.where;
 
 import org.springframework.core.Ordered;
 import platform.base.OrderedMap;
+import platform.base.Pair;
 import platform.base.QuickSet;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
@@ -82,10 +83,10 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive, QuickSet<K> keepStat);
-    <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keys, boolean notExclusive);
+    <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat);
+    <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keys, boolean exclusive, GroupStatType type, boolean noWhere);
     <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> keys);
-    <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(boolean notExclusive, QuickSet<K> exprs);
+    <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(boolean notExclusive, QuickSet<K> exprs, GroupStatType type, boolean noWhere);
     <K extends Expr> StatKeys<K> getStatExprs(QuickSet<K> keys);
 
     // группировки в ДНФ, protected по сути

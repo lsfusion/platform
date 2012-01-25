@@ -108,10 +108,6 @@ public class Query<K,V> extends AbstractInnerContext<Query<K,V>> implements MapK
         assert joinImplement.size()==mapKeys.size();
         return parse().join(joinImplement, mapValues);
     }
-    
-    public Expr getExpr(V property) {
-        return parse().getExpr(property);
-    }
 
     public static <K> String stringOrder(List<K> sources, int offset, OrderedMap<K,Boolean> orders, SQLSyntax syntax) {
         OrderedMap<String, Boolean> orderSources = new OrderedMap<String, Boolean>();

@@ -1,9 +1,7 @@
 package platform.server.data.query;
 
 import org.apache.log4j.Logger;
-import platform.base.BaseUtils;
-import platform.base.Counter;
-import platform.base.OrderedMap;
+import platform.base.*;
 import platform.server.Settings;
 import platform.server.caches.OuterContext;
 import platform.server.data.*;
@@ -26,7 +24,6 @@ import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.ServerResourceBundle;
-import platform.base.QuickSet;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -161,21 +158,9 @@ public class CompiledQuery<K,V> {
             propertyReaders.put(property.getKey(),query.where.isFalse()?NullReader.instance:property.getValue().getReader(query.where));
 
         boolean useFJ = syntax.useFJ();
-        Collection<GroupJoinsWhere> queryJoins = query.getWhereJoins(true);
-        union = !useFJ && queryJoins.size() >= 2;
-        boolean unionAll = false;
-        if(union) {
-            if(!(queryJoins.size() > Settings.instance.getLimitUnionAllCount() || GroupJoinsWhere.getComplexity(queryJoins, true) > Settings.instance.getLimitUnionAllComplexity())) {
-                queryJoins = query.getWhereJoins(false);
-                unionAll = true;
-            } else
-                if(Settings.instance.isUseFJInsteadOfUnion())
-                    union = false;
-        }
-        queryJoins = GroupJoinsWhere.pack(queryJoins);
-        if(queryJoins.size() < 2) // теоретически такое может быть
-            union = false;
-
+        Result<Boolean> unionAll = new Result<Boolean>();
+        Collection<GroupJoinsWhere> queryJoins = GroupJoinsWhere.pack(query.getWhereJoins(!useFJ, unionAll));
+        union = !useFJ && queryJoins.size() >= 2 && (unionAll.result || !Settings.instance.isUseFJInsteadOfUnion());
         if (union) { // сложный UNION запрос
             Map<V, Type> castTypes = new HashMap<V, Type>();
             for(Map.Entry<V, ClassReader> propertyReader : propertyReaders.entrySet())
@@ -185,7 +170,7 @@ public class CompiledQuery<K,V> {
             String fromString = "";
             for(GroupJoinsWhere queryJoin : queryJoins) {
                 boolean orderUnion = syntax.orderUnion(); // нужно чтобы фигачило внутрь orders а то многие SQL сервера не видят индексы внутри union all
-                fromString = (fromString.length()==0?"":fromString+" UNION " + (unionAll?"ALL ":"")) + "(" + getInnerSelect(query.mapKeys, queryJoin, queryJoin.getFullWhere().followTrue(query.properties, !queryJoin.isComplex()), params, orderUnion?orders:new OrderedMap<V, Boolean>(), orderUnion?top:0, syntax, keyNames, propertyNames, keyOrder, propertyOrder, castTypes, prefix, false) + ")";
+                fromString = (fromString.length()==0?"":fromString+" UNION " + (unionAll.result?"ALL ":"")) + "(" + getInnerSelect(query.mapKeys, queryJoin, queryJoin.getFullWhere().followTrue(query.properties, !queryJoin.isComplex()), params, orderUnion?orders:new OrderedMap<V, Boolean>(), orderUnion?top:0, syntax, keyNames, propertyNames, keyOrder, propertyOrder, castTypes, prefix, false) + ")";
                 if(!orderUnion)
                     castTypes = null;
             }

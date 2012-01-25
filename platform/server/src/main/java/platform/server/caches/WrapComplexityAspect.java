@@ -6,8 +6,10 @@ import org.aspectj.lang.annotation.Aspect;
 import platform.base.BaseUtils;
 import platform.server.Settings;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.SubQueryExpr;
+import platform.server.data.query.ParsedQuery;
 import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
@@ -48,18 +50,20 @@ public class WrapComplexityAspect {
     }
 
     public <T extends PropertyInterface> Query<T, String> getQuery(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges, Boolean changedWhere, Map<T, ? extends Expr> interfaceValues) throws Throwable {
-        Query<T, String> query = (Query<T, String>) thisJoinPoint.proceed(new Object[]{property, propChanges, changedWhere, interfaceValues});
+        Query<T, String> query = (Query<T, String>) thisJoinPoint.proceed();
+        ParsedQuery<T, String> parsedQuery = query.parse();
         
-        Expr expr = query.getExpr("value");
+        Map<T, KeyExpr> mapKeys = parsedQuery.getMapKeys();
+        Expr expr = parsedQuery.getExpr("value");
 
-        Where where = changedWhere ? query.getExpr("changed").getWhere() : null;
+        Where where = changedWhere ? parsedQuery.getExpr("changed").getWhere() : null;
         WhereBuilder wrapWhere = changedWhere ? new WhereBuilder() : null;
-        Expr wrapExpr = wrapComplexity(expr, where, property, BaseUtils.merge(interfaceValues, query.mapKeys), wrapWhere);
-        
+        Expr wrapExpr = wrapComplexity(expr, where, property, BaseUtils.merge(interfaceValues, mapKeys), wrapWhere);
+
         if(BaseUtils.hashEquals(expr, wrapExpr) && BaseUtils.nullHashEquals(where, changedWhere ? wrapWhere.toWhere() : null))
             return query;
         else {
-            Query<T, String> wrappedQuery = new Query<T, String>(query.mapKeys);
+            Query<T, String> wrappedQuery = new Query<T, String>(mapKeys);
             wrappedQuery.properties.put("value", wrapExpr);
             if(changedWhere)
                 wrappedQuery.properties.put("changed", ValueExpr.get(wrapWhere.toWhere()));

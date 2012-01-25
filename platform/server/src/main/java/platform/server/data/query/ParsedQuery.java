@@ -4,6 +4,7 @@ import platform.base.OrderedMap;
 import platform.base.QuickSet;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.classes.ClassWhere;
@@ -21,7 +22,8 @@ public interface ParsedQuery<K,V> {
 
     QuickSet<Value> getValues();
     
-    public Expr getExpr(V property);
+    Expr getExpr(V property);
+    Map<K, KeyExpr> getMapKeys();
 
     public Query<K,V> pullValues(Map<K, Expr> pullKeys, Map<V, Expr> pullProps);
 }

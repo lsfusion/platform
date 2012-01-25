@@ -85,9 +85,9 @@ public enum GroupType implements AggrType {
         return false;
     }
 
-    public boolean noExclusive() {
+    public boolean exclusive() {
         assert hasAdd();
-        return isSelect();
+        return !isSelect();
     }
 
     public String getSource(List<String> exprs, OrderedMap<String, Boolean> orders, SQLSyntax syntax) {

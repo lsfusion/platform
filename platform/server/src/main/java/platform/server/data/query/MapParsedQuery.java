@@ -5,6 +5,7 @@ import platform.base.OrderedMap;
 import platform.base.QuickSet;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.MapValuesTranslator;
@@ -25,7 +26,11 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
     final MapValuesTranslate mapValues;
 
     public Expr getExpr(V property) {
-        return query.getExpr(mapProps.get(property));
+        return query.getExpr(mapProps.get(property)).translateOuter(mapValues.mapKeys());
+    }
+
+    public Map<K, KeyExpr> getMapKeys() {
+        return BaseUtils.join(mapKeys, query.getMapKeys());
     }
 
     public MapParsedQuery(ParsedQuery<MK,MV> query,Map<V,MV> mapProps,Map<K,MK> mapKeys,MapValuesTranslate mapValues) {

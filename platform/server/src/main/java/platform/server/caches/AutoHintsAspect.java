@@ -3,12 +3,15 @@ package platform.server.caches;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.DeclarePrecedence;
 import org.aspectj.lang.reflect.MethodSignature;
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.server.Settings;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.query.ParsedQuery;
 import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.form.instance.FormInstance;
@@ -60,25 +63,27 @@ public class AutoHintsAspect {
     public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges, Boolean changedWhere, Map interfaceValues) throws Throwable {
 
         Query<?, String> result = (Query) thisJoinPoint.proceed();
+        ParsedQuery<?, String> parsedResult = result.parse();
 
         FormInstance catchHint = catchAutoHint.get();
         if(catchHint!=null && !catchHint.isHintIncrement(property)) { // неправильно так как может быть не changed
-            Expr expr = result.getExpr("value");
+            Expr expr = parsedResult.getExpr("value");
             long exprComplexity = expr.getComplexity(false);
 
             Where changed = null; long whereComplexity = 0;
             if(changedWhere) {
-                changed = result.getExpr("changed").getWhere();
+                changed = parsedResult.getExpr("changed").getWhere();
                 whereComplexity = changed.getComplexity(false);
             }
 
             long complexity = BaseUtils.max(exprComplexity, whereComplexity);
             if(complexity > Settings.instance.getLimitHintIncrementComplexity() && property.hasChanges(propChanges)) // сложность большая, если нет изменений то ничем не поможешь
                 if(interfaceValues.isEmpty() && changedWhere) {
-                    Expr prevExpr = property.getExpr(result.mapKeys);
+                    Map<?, KeyExpr> mapKeys = parsedResult.getMapKeys();
+                    Expr prevExpr = property.getExpr(mapKeys);
                     if(whereComplexity > Settings.instance.getLimitHintIncrementComplexity() || exprComplexity > prevExpr.getComplexity(false) * Settings.instance.getLimitGrowthIncrementComplexity()) {
                         Where incrementWhere = changed.and(expr.getWhere().or(prevExpr.getWhere()));
-                        if(incrementWhere.getStatKeys(result.getInnerKeys()).rows.less(new Stat(Settings.instance.getLimitHintIncrementStat())))
+                        if (incrementWhere.getStatKeys(new QuickSet<KeyExpr>(mapKeys.values())).rows.less(new Stat(Settings.instance.getLimitHintIncrementStat())))
                             throw new AutoHintException(property, true);
                         if(complexity > Settings.instance.getLimitHintNoUpdateComplexity())
                             throw new AutoHintException(property, false);

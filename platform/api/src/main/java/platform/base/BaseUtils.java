@@ -1846,4 +1846,10 @@ public class BaseUtils {
             result.add(j+1);
         return result;
     }
+    
+    public static <K> List<K> sort(Collection<K> col, Comparator<K> comparator) {
+        List<K> list = new ArrayList<K>(col);
+        Collections.sort(list, comparator);
+        return list;
+    }
 }

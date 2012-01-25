@@ -2,8 +2,8 @@ package platform.server.data.where;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.Pair;
 import platform.base.QuickSet;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.data.expr.BaseExpr;
@@ -11,6 +11,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExclPullWheres;
+import platform.server.data.query.innerjoins.GroupStatType;
 import platform.server.data.query.innerjoins.GroupStatWhere;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.expr.where.extra.CompareWhere;
@@ -199,23 +200,19 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     // 2-й параметр чисто для оптимизации пока
-    public <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive, QuickSet<K> keepStat) {
-        return getKeyEquals().getWhereJoins(notExclusive, keepStat);
+    public <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat) {
+        return getKeyEquals().getWhereJoins(tryExclusive, keepStat);
     }
 
-    public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keys, boolean notExclusive) {
-        Collection<GroupStatWhere<K>> statJoins = new ArrayList<GroupStatWhere<K>>();
-        for(GroupJoinsWhere whereJoin : getWhereJoins(notExclusive, keys))
-            statJoins.add(new GroupStatWhere<K>(whereJoin.keyEqual, whereJoin.getStatKeys(keys), whereJoin.where));
-        return statJoins;
-        // return getKeyEquals().getStatJoins(keys, notExclusive), пока убрал, все равно приходится WhereJoins считать
+    public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keys, boolean exclusive, GroupStatType type, boolean noWhere) {
+        return getKeyEquals().getStatJoins(exclusive, keys, type, noWhere);
     }
 
-    public <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(final boolean noExclusive, QuickSet<K> exprs) {
+    public <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(final boolean exclusive, QuickSet<K> exprs, final GroupStatType type, final boolean noWhere) {
         return new ExclPullWheres<Collection<GroupStatWhere<K>>, K, Where>() {
             protected Collection<GroupStatWhere<K>> proceedBase(Where data, Map<K, BaseExpr> map) {
                 return GroupStatWhere.mapBack(data.and(Expr.getWhere(map)).getStatJoins(
-                        new QuickSet<BaseExpr>(map.values()), noExclusive), map);
+                        new QuickSet<BaseExpr>(map.values()), exclusive, type, noWhere), map);
             }
 
             protected Collection<GroupStatWhere<K>> initEmpty() {
@@ -223,21 +220,21 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             }
 
             protected Collection<GroupStatWhere<K>> add(Collection<GroupStatWhere<K>> op1, Collection<GroupStatWhere<K>> op2) {
-                return BaseUtils.merge(op1, op2);
+                return type.merge(op1, op2);
             }
         }.proceed(this, exprs.toMap());
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> groups) { // assertion что where keys входят в это where
         StatKeys<K> result = new StatKeys<K>(groups);
-        for(GroupStatWhere<K> groupJoin : getStatJoins(groups, true))
+        for(GroupStatWhere<K> groupJoin : getStatJoins(groups, false, GroupStatType.ALL, true))
             result = result.or(groupJoin.stats);
         return result;
     }
 
     public <K extends Expr> StatKeys<K> getStatExprs(QuickSet<K> groups) {
         StatKeys<K> result = new StatKeys<K>(groups);
-        for(GroupStatWhere<K> groupJoin : getStatJoins(true, groups))
+        for(GroupStatWhere<K> groupJoin : getStatJoins(false, groups, GroupStatType.ALL, true))
             result = result.or(groupJoin.stats);
         return result;
     }
