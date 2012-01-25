@@ -133,10 +133,11 @@ GROUP substanceGroup 'Пищевые характеристики' : publicGroup
 GROUP retailGroup 'Ценовые характеристики' : publicGroup;
 
 CLASS ABSTRACT sku 'SKU' : named;
-CLASS item 'Товар' : sku;
+CLASS itemComponent 'itemComponent' : sku;
+CLASS item 'Товар' : itemComponent;
 CLASS dish 'Блюдо' : sku;
 CLASS ware 'Посуда' : sku;
-CLASS component 'Компонент' : sku;
+
 CLASS brand 'Бренд' : named;
 
 CLASS STATIC groupProduct 'Группа изделий для печати заборного листа'
@@ -155,7 +156,7 @@ nameTypeItemItem 'Вид' = name(typeItemItem(item)) IN descriptionGroup;
 unitOfMeasureItem = DATA unitOfMeasure (item) IN idGroup;
 shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortName(unitOfMeasureItem(item)) IN descriptionGroup;
 
-isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN descriptionGroup;
+isWeightItem 'Весовой товар' = DATA BOOLEAN (itemComponent) IN descriptionGroup;
 volumeItem 'Объём' = DATA DOUBLE (item) IN sizeGroup;
 netWeightItem 'Вес нетто' = DATA DOUBLE (item) IN sizeGroup;
 isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN descriptionGroup;
@@ -398,7 +399,21 @@ DESIGN item FROM DEFAULT {
        }
     }
 }
+// ----------------------------------- Компоненты ------------------------------------------ //
+CLASS component 'Компонент' : sku;
 
+nettoBruttoCoeffComponent 'Сезонный коэффициент пересчета сырья из нетто в брутто' (component) = DATA DOUBLE (component) IN baseGroup;
+percentHumidityFlourDepartmentStoreComponent '% влажности муки' = DATA DOUBLE (departmentStore, component) IN baseGroup;
+
+FORM component 'Компонент'
+OBJECTS c=component FIXED PANEL
+PROPERTIES(c) name, nettoBruttoCoeffComponent
+EDIT component OBJECT c;
+
+FORM components 'Компоненты'
+OBJECTS c=component
+PROPERTIES(c) READONLY name, nettoBruttoCoeffComponent
+PROPERTIES(c) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Штрих код ------------------------------------------ //
 GROUP barcodeGroup 'Общая информация' : baseGroup;
@@ -584,11 +599,10 @@ inRawDepartmentStore(manufactory, departmentStore) = storeDepartmentStore(manufa
 additionPriceDepartmentStoreItem 'Торговая надбавка в рублях' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 boundCertificateDepartmentStoreItem 'Сертификат / удостоверение обязательны для товара?' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
 maxAllowedRetailPriceDepartmentStoreItem 'MAX допустимая розн.цена' = DATA INTEGER (departmentStore, item) IN baseGroup;
-netWeightManufacterDepartmentStoreItem 'Вес нетто продукта для производства' = DATA DOUBLE (departmentStore, item) IN baseGroup;
+netWeightManufacterDepartmentStoreItem 'Вес нетто продукта для производства' = DATA DOUBLE (departmentStore, itemComponent) IN baseGroup;
 statusCashDepartmentStoreItem 'Статус товара на кассах (ИД)' = DATA itemStatus (departmentStore, item) IN idGroup;
 nameStatusCashDepartmentStoreItem 'Статус товара на кассах' = name(statusCashDepartmentStoreItem (departmentStore, item)) IN baseGroup;
 
-percentHumidityFlourDepartmentStoreItem '% влажности муки' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 dateManufactureDepartmentStoreItem 'Дата изготовления' = DATA DATE (departmentStore, item) IN baseGroup;
 dateFitToDepartmentStoreItem 'Годен до' = DATA DATE (departmentStore, item) IN baseGroup;
 fromDateDeliveryDepartmentStoreItem 'Дату [Годен до] рассчитывать от даты поставки?' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
@@ -671,7 +685,7 @@ PROPERTIES(d) ADDFORM, EDITFORM, delete
 PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
 PROPERTIES(i) ADDFORM, EDITFORM, delete
 PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem, maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacterDepartmentStoreItem,
-                 nameStatusCashDepartmentStoreItem, percentHumidityFlourDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem, fromDateDeliveryDepartmentStoreItem,
+                 nameStatusCashDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem, fromDateDeliveryDepartmentStoreItem,
                  banSaleDepartmentStoreItem, banMovementDepartmentStoreItem, reserveDepartmentStoreItem;
 
 
@@ -988,7 +1002,7 @@ FILTERGROUP filters9
 EDIT supplier OBJECT s;
 
 DESIGN supplier FROM DEFAULT {
-PROPERTY (showFormAddressLegalEntity){panelLocation = SHORTCUT 'Rublevski_addressLegalEntity' DEFAULT;}
+PROPERTY (showFormAddressLegalEntity){panelLocation = SHORTCUT 'Rublevski_addressLegalEntity';}
     main{
        ADD prop.box BEFORE functions.box{
             tabbedPane = TRUE;
@@ -1540,30 +1554,32 @@ NAVIGATOR {
 
     baseElement TO topToolbar;
 
-    NEW lists 'Справочники' TO formsToolbar {
-        NEW goods 'Товары' {
+    ADD lists 'Справочники' TO formsToolbar {
+        ADD goods 'Товары' {
             ADD items;
+            ADD components;
             ADD itemGroups;
             ADD unitsOfMeasure;
             ADD assortments;
+            ADD itemInDepartment;
         }
-        NEW shopStructure 'Магазины' {
+        ADD shopStructure 'Магазины' {
             ADD companies;
             ADD qualifier;
             ADD stores;
             ADD discount;
         }
-        NEW employeeRelations 'Сотрудники' {
+        ADD employeeRelations 'Сотрудники' {
             ADD employees;
             ADD employeesCommittees;
         }
-        NEW supplierRelation 'Поставщики'{
+        ADD supplierRelation 'Поставщики'{
             ADD suppliers;
             ADD banks;
             ADD assortmentSupplier;
             ADD timeTable;
         }
-        NEW equipment 'Оборудование' {
+        ADD equipment 'Оборудование' {
             ADD groupsCash;
             ADD groupsScales;
             ADD groupsCheck;
@@ -1571,19 +1587,19 @@ NAVIGATOR {
             ADD models;
             ADD stages;
         }
-        NEW producing 'Производство'{
+        ADD producing 'Производство'{
             ADD cuttings;
             ADD recipes;
         }
         ADD taxes;
     }
 
-    NEW documents 'Документы' TO formsToolbar {
+    ADD documents 'Документы' TO formsToolbar {
 
     }
 
     ADD adminElement TO formsTree {
-        NEW objects 'Карточки' {
+        ADD objects 'Карточки' {
             ADD itemGroup;
             ADD unitOfMeasure;
             ADD item;
@@ -1624,7 +1640,9 @@ NAVIGATOR {
             ADD groupCheck;
             ADD addTimeTable;
             ADD addDiscount;
-            ADD rawDepartmentStore;
+            ADD addAddressLegalEntity;
+            ADD addressLegalEntity;
+            ADD component;
         }
     }
 }

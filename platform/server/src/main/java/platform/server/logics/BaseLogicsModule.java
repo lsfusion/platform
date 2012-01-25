@@ -88,6 +88,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public StaticCustomClass encryptedConnectionTypeStatus;
 
+    public StaticCustomClass captionMonth;
+    public StaticCustomClass captionDOW;
+
     // groups
     public AbstractGroup rootGroup;
     public AbstractGroup publicGroup;
@@ -137,11 +140,20 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP percent2;
     public LP share2;
     public LP weekInDate;
+    public LP dayOfWeekInDate;
     public LP monthInDate;
     public LP yearInDate;
     public LP dayInDate;
     public LP dateInTime;
     public LP jumpWorkdays;
+
+    public LP numberMonthCaptionMonth;
+    public LP captionMonthNumberMonth;
+    public LP captionMonthDate;
+
+    public LP numberDayCaptionDOW;
+    public LP captionDOWNumberDay;
+    public LP captionDOWDate;
 
     public LP vtrue, actionTrue, vzero;
     public LP vnull;
@@ -478,6 +490,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         table = addConcreteClass("table", getString("logics.tables.table"), baseClass);
         tableKey = addConcreteClass("tableKey", getString("logics.tables.key"), baseClass);
         tableColumn = addConcreteClass("tableColumn", getString("logics.tables.column"), baseClass);
+
+        captionMonth = addStaticClass("captionMonth", "Месяц",
+                new String[]{"january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"},
+                new String[]{"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"});
+        captionDOW = addStaticClass("captionDOW", "Дни недели",
+                  new String[]{"monday", "tuesday", "wensdey", "thursday", "friday", "saturday", "sunday"},
+                  new String[]{"Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"});
     }
 
     @Override
@@ -611,10 +630,19 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         negative = addJProp(less2, 1, vzero);
 
         weekInDate = addSFProp("(extract(week from (prm1)))", IntegerClass.instance, 1);
-        monthInDate = addSFProp("(extract(month from (prm1)))", IntegerClass.instance, 1);
+        dayOfWeekInDate = addSFProp("dayOfWeekInDate", "(extract(dow from (prm1)))", IntegerClass.instance, 1);
+        monthInDate = addSFProp("monthInDate", "(extract(month from (prm1)))", IntegerClass.instance, 1);
         yearInDate = addSFProp("(extract(year from (prm1)))", IntegerClass.instance, 1);
         dayInDate = addSFProp("(extract(day from (prm1)))", IntegerClass.instance, 1);
         dateInTime = addSFProp("(CAST((prm1) as date))", DateClass.instance, 1);
+
+        numberMonthCaptionMonth = addDProp("numberMonthCaptionMonth", "Номер месяца", IntegerClass.instance, captionMonth);
+        captionMonthNumberMonth = addAGProp("captionMonthNumberMonth", "Месяц (ИД)", numberMonthCaptionMonth);
+        captionMonthDate = addJProp("captionMonthDate", "Месяц (ИД)", captionMonthNumberMonth, monthInDate, 1);
+
+        numberDayCaptionDOW = addDProp("numberDayCaptionDOW", "Номер дня недели", IntegerClass.instance, captionDOW);
+        captionDOWNumberDay = addAGProp("captionDOWNumberDay", "День недели (ИД)", numberDayCaptionDOW);
+        captionDOWDate = addJProp("captionDOWDate", "День недели (ИД)", captionDOWNumberDay, dayOfWeekInDate, 1);
 
         delete = addAProp(new DeleteObjectActionProperty(baseClass));
 
@@ -1201,6 +1229,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new ExceptionsFormEntity(adminElement, "exceptionsForm"));
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
+        addFormEntity(new CaptionMonthFormEntity(adminElement, "captionMonthForm"));
+        addFormEntity(new CaptionDOWFormEntity(adminElement, "captionDOWForm"));
+
 
         dictionaryForm = addFormEntity(new DictionariesFormEntity(adminElement, "dictionariesForm"));
 
@@ -2014,6 +2045,27 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
+    private class CaptionMonthFormEntity extends FormEntity {
+        ObjectEntity objMonth;
+
+        public CaptionMonthFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Месяцы");
+
+            ObjectEntity objMonth = addSingleGroupObject(1, "captionMonth", captionMonth, "Месяцы");
+            addPropertyDraw(objMonth, baseLM.name, numberMonthCaptionMonth);
+        }
+    }
+
+    private class CaptionDOWFormEntity extends FormEntity {
+        ObjectEntity objDOW;
+
+        public CaptionDOWFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Дни недели");
+
+            ObjectEntity objDOW = addSingleGroupObject(1, "captionDOW", captionDOW, "Дни недели");
+            addPropertyDraw(objDOW, baseLM.name, numberDayCaptionDOW);
+        }
+    }
     private class DictionariesFormEntity extends FormEntity {
 
         public DictionariesFormEntity(NavigatorElement parent, String sID) {
