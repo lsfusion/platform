@@ -232,29 +232,32 @@ HIDE WINDOW relevantClassForms;
 //////////////// NAVIGATOR STATEMENT /////////////////
 //настройка навигатора
 NAVIGATOR {
-    // чтобы добавить один элемент в другой элемент используется команда следующего вида
-    // ADD <имя> '<заголовок>' (IN | AFTER | BEFORE) <имя> [TO <имя окна>];
-    ADD element1 'Element 1' AFTER userPolicyForm;
-    // если элемент не существовал, то он будет создан
+    // чтобы добавить существующий элемент в другой элемент используется команда следующего вида
+    // ADD <имя> ['<новый заголовок>'] [(IN | AFTER | BEFORE) <имя>] [TO <новое окно>];
     // при этом по умолчанию он будет добавлен в элемент текущей области видимости
     // (при использовании прямо внутри NAVIGATOR - он будет добавлен в baseElement)
+    //
+    // для создания нового элемента используется команда:
+    // NEW <имя> '<заголовок>' [(IN | AFTER | BEFORE) <имя>] [TO <имя окна>];
 
-    ADD element2 'Element 2' BEFORE userPolicyForm;
+    NEW element1 'Element 1' AFTER userPolicyForm;
+
+    NEW element2 'Element 2' BEFORE userPolicyForm;
     ADD storeArticle IN element2;
 
-    ADD outer 'Outer element' IN element1 {
+    NEW outer 'Outer element' IN element1 {
         ADD dictionariesForm 'Dictionaries' {
-            ADD underForm 'under form element';
+            NEW underForm 'under form element';
         }
 
         ADD element2;
     }
 
     //при создании элемента можно указать окно для него
-    ADD testNavigators 'Тестовые навигаторы' AFTER remindPasswordLetter TO mainToolbar;
+    NEW testNavigators '-Тестовые навигаторы-' AFTER remindPasswordLetter TO mainToolbar;
 
-    // также можно просто добавлять в существующий элемент без его перемещения
-    testNavigators {
+    // также можно просто настраивать существующий элемент без его перемещения
+    testNavigators 'Тестовые навигаторы' {
         ADD element1 {
             //...
         }

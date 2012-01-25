@@ -2,6 +2,7 @@ package platform.server.logics.scripted;
 
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.LsfLogicsParser;
+import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.TreeGroupEntity;
@@ -18,17 +19,14 @@ import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPositi
 
 public class ScriptingFormView extends DefaultFormView {
 
-    private final ScriptingFormEntity entity;
     private final ScriptingLogicsModule LM;
     private final ScriptingErrorLog errLog;
     private final LsfLogicsParser parser;
 
     private final Map<String, ComponentView> sidToComponent = new HashMap<String, ComponentView>();
 
-    public ScriptingFormView(ScriptingFormEntity entity, boolean applyDefault, ScriptingLogicsModule iLM) {
+    public ScriptingFormView(FormEntity entity, boolean applyDefault, ScriptingLogicsModule iLM) {
         super(entity, applyDefault);
-
-        this.entity = entity;
 
         this.LM = iLM;
         this.errLog = LM.getErrLog();
@@ -329,7 +327,7 @@ public class ScriptingFormView extends DefaultFormView {
     }
 
     public PropertyDrawView getPropertyView(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        ScriptingFormEntity.MappedProperty mappedProp = entity.getPropertyWithMapping(name, mapping);
+        MappedProperty mappedProp = LM.getPropertyWithMapping(entity, name, mapping);
         return get(entity.getPropertyDraw(mappedProp.property, mappedProp.mapping));
     }
 }

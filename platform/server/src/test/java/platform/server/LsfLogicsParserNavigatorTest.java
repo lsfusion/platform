@@ -11,6 +11,7 @@ import platform.server.form.window.PanelNavigatorWindow;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.scripted.ScriptingBusinessLogics;
+import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingFormEntity;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 
@@ -63,21 +64,21 @@ public class LsfLogicsParserNavigatorTest {
     @Test
     public void testNavigatorsHierarchy() throws Exception {
         setupTest("NAVIGATOR {\n" +
-                  "    ADD element1 'Element 1' AFTER userPolicyForm;\n" +
+                  "    NEW element1 'Element 1' AFTER BaseLogicsModule.userPolicyForm;\n" +
                   "\n" +
-                  "    ADD element2 'Element 2' BEFORE userPolicyForm;\n" +
+                  "    NEW element2 'Element 2' BEFORE userPolicyForm;\n" +
                   "    ADD storeArticle IN element2;\n" +
                   "\n" +
-                  "    ADD outer 'Outer element' IN element1 {\n" +
+                  "    NEW outer 'Outer element' IN element1 {\n" +
                   "        ADD dictionariesForm 'Dictionaries' {\n" +
-                  "            ADD underForm 'under form element';\n" +
+                  "            NEW underForm 'under form element';\n" +
                   "        }\n" +
                   "\n" +
-                  "        ADD element2;\n" +
+                  "        ADD element2 'modif';\n" +
                   "    }\n" +
                   "\n" +
                   "    element2 {\n" +
-                  "        ADD element3;\n" +
+                  "        NEW element3 'e3';\n" +
                   "    }\n" +
                   "}"
         );
@@ -101,6 +102,7 @@ public class LsfLogicsParserNavigatorTest {
         assertEquals(dictionariesForm.caption, "Dictionaries");
 
         assertEquals(elem1.caption, "Element 1");
+        assertEquals(elem2.caption, "modif");
         assertEquals(storeArticle.getParent(), elem2);
         assertEquals(elem3.getParent(), elem2);
 
@@ -114,7 +116,7 @@ public class LsfLogicsParserNavigatorTest {
     @Test(expected = RuntimeException.class)
     public void testMoveToSubnavigatorFails() throws Exception {
         setupTest("NAVIGATOR {\n" +
-                  "    ADD element1 'Element 1' AFTER userPolicyForm;\n" +
+                  "    NEW element1 'Element 1' AFTER userPolicyForm;\n" +
                   "    ADD adminElement IN element1;\n" +
                   "}"
         );
@@ -189,7 +191,7 @@ public class LsfLogicsParserNavigatorTest {
 
     @Test(expected = RuntimeException.class)
     public void testToolbarWindowPositionConflictFails() throws Exception {
-        setupTest("WINDOW TOOLBAR tb1 'Объекты' LEFT POSITION(12, 23, 32, 45) HIDESCROLLBARS HIDETITLE;");
+        setupTest("WINDOW TOOLBAR tb1 'Объекты' VERTICAL LEFT POSITION(12, 23, 32, 45) HIDESCROLLBARS HIDETITLE;");
     }
 
     @Test
@@ -199,13 +201,15 @@ public class LsfLogicsParserNavigatorTest {
                   "WINDOW PANEL panel3 'Панель 3' HORIZONTAL HIDESCROLLBARS;\n" +
                   "\n" +
                   "NAVIGATOR {\n" +
-                  "    ADD element1 'Element 1' AFTER userPolicyForm TO panel1;\n" +
-                  "    ADD element2 'Element 2' TO panel2;\n" +
+                  "    NEW element1 'Element 1' AFTER userPolicyForm TO panel1;\n" +
+                  "    NEW element2 'Element 2' TO panel1;\n" +
                   "    ADD storeArticle IN element2;\n" +
                   "\n" +
                   "    storeArticle TO panel3 {\n" +
-                  "        ADD underForm;\n" +
+                  "        NEW underForm 'some';\n" +
                   "    };\n" +
+                  "\n" +
+                  "    element2 TO panel2;" +
                   "}"
         );
 
@@ -229,7 +233,24 @@ public class LsfLogicsParserNavigatorTest {
     @Test(expected = RuntimeException.class)
     public void testAddNavigatorToSystemWindowFails() throws Exception {
         setupTest("NAVIGATOR {\n" +
-                  "    ADD element1 'Element 1' AFTER userPolicyForm TO status;\n" +
+                  "    NEW element1 'Element 1' AFTER userPolicyForm TO status;\n" +
+                  "}"
+        );
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testDuplicateNavigatorFails() throws Exception {
+        setupTest("NAVIGATOR {\n" +
+                  "    NEW element1 'Element 1' AFTER userPolicyForm;\n" +
+                  "    NEW element1 'Some';" +
+                  "}"
+        );
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testMissingNavigatorsFails() throws Exception {
+        setupTest("NAVIGATOR {\n" +
+                  "    ADD element1 'Element 1';\n" +
                   "}"
         );
     }
@@ -244,8 +265,8 @@ public class LsfLogicsParserNavigatorTest {
         assertFalse(LM.baseLM.logWindow.visible);
     }
 
-    private NavigatorElement getElement(String sid) {
-        return bl.LM.baseElement.getNavigatorElement(sid);
+    private NavigatorElement getElement(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return LM.findNavigatorElementByName(name);
     }
 
     private void setupTest(String testCode) throws Exception {
@@ -254,15 +275,15 @@ public class LsfLogicsParserNavigatorTest {
         FileUtils.writeStringToFile(testScriptFile, fileContent, "UTF-8");
 
         bl = new ScriptingBusinessLogics("scriptedLogicsUnitTest",
-                                        new PostgreDataAdapter("scripted_logic_navigator_unittest", "localhost", "postgres", "11111", false),
-                                        1234,
-                                        testScriptFile.getAbsolutePath());
+                                         new PostgreDataAdapter("scripted_logic_navigator_unittest", "localhost", "postgres", "11111", false),
+                                         1234,
+                                         testScriptFile.getAbsolutePath());
         bl.afterPropertiesSet();
 
         LM = (ScriptingLogicsModule) bl.findModule("testNavigator");
         assertNotNull(LM);
 
-        entity = (ScriptingFormEntity) bl.LM.baseElement.getNavigatorElement("storeArticle");
+        entity = (ScriptingFormEntity) getElement("storeArticle");
         assertNotNull(entity);
 
         design = (DefaultFormView) entity.richDesign;

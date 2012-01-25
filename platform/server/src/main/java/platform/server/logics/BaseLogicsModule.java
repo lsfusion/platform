@@ -2019,9 +2019,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         public DictionariesFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.dictionary.dictionaries"));
 
-            ObjectEntity objDict = addSingleGroupObject(dictionary, getString("logics.dictionary"));
+            ObjectEntity objDict = addSingleGroupObject("dict", dictionary, getString("logics.dictionary"));
             objDict.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objDictEntry = addSingleGroupObject(dictionaryEntry, getString("logics.dictionary.entries"));
+            ObjectEntity objDictEntry = addSingleGroupObject("dictEntry", dictionaryEntry, getString("logics.dictionary.entries"));
 
             addPropertyDraw(objDict, baseGroup);
             addPropertyDraw(objDictEntry, baseGroup);

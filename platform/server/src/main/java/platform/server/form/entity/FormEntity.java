@@ -223,6 +223,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return addSingleGroupObject(genID(), (String) null, baseClass, caption, groups);
     }
 
+    protected ObjectEntity addSingleGroupObject(String sID, ValueClass baseClass, String caption, Object... groups) {
+        return addSingleGroupObject(genID(), sID, baseClass, caption, groups);
+    }
+
     protected ObjectEntity addSingleGroupObject(int ID, String sID, ValueClass baseClass, String caption, Object... groups) {
 
         GroupObjectEntity groupObject = new GroupObjectEntity(ID, sID);

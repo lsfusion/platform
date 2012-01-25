@@ -326,7 +326,7 @@ public class LsfLogicsParserPresentationTest {
         LM = (ScriptingLogicsModule) bl.findModule("testPresentation");
         assertNotNull(LM);
 
-        entity = (ScriptingFormEntity) bl.LM.baseElement.getNavigatorElement("storeArticle");
+        entity = (ScriptingFormEntity) LM.findNavigatorElementByName("storeArticle");
         assertNotNull(entity);
 
         design = (DefaultFormView) entity.richDesign;

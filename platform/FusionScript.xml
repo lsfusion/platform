@@ -82,10 +82,12 @@
       <keyword name="LIST" />
       <keyword name="LONG" />
       <keyword name="MAX" />
+      <keyword name="MIN" />
       <keyword name="MODAL" />
       <keyword name="MODULE" />
       <keyword name="MSG" />
       <keyword name="NAVIGATOR" />
+      <keyword name="NEW" />
       <keyword name="NEWSESSION" />
       <keyword name="NO" />
       <keyword name="NOT" />

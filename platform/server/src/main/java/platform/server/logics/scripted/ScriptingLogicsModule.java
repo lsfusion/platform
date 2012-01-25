@@ -134,6 +134,30 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
+    public ObjectEntity[] getMappingObjectsArray(FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        ObjectEntity[] objects = new ObjectEntity[mapping.size()];
+        for (int i = 0; i < mapping.size(); i++) {
+            objects[i] = getObjectEntityByName(form, mapping.get(i));
+        }
+        return objects;
+    }
+
+    public ObjectEntity getObjectEntityByName(FormEntity form, String name) throws ScriptingErrorLog.SemanticErrorException {
+        ObjectEntity obj = form.getObject(name);
+        if (obj == null) {
+            getErrLog().emitObjectNotFoundError(getParser(), name);
+        }
+        return obj;
+    }
+
+    public MappedProperty getPropertyWithMapping(FormEntity form, String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        LP<?> property = findLPByCompoundName(name);
+        if (property.property.interfaces.size() != mapping.size()) {
+            getErrLog().emitParamCountError(getParser(), property, mapping.size());
+        }
+        return new MappedProperty(property, getMappingObjectsArray(form, mapping));
+    }
+
     public ValueClass findClassByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
             ValueClass valueClass = getPredefinedClass(name);
             if (valueClass == null) {
@@ -215,13 +239,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return (FormEntity) navigator;
     }
 
-    public NavigatorElement getNavigatorElementBySID(String sid, boolean hasToExist) throws ScriptingErrorLog.SemanticErrorException { // todo [dale]: переименовать?
-        NavigatorElement elem = navigatorResolver.resolve(sid);
-        if (elem == null && hasToExist) {
-            errLog.emitNavigatorElementNotFoundError(parser, sid);
-        }
-
-        return elem;
+    public NavigatorElement findNavigatorElementByName(String name) throws ScriptingErrorLog.SemanticErrorException {
+        NavigatorElement element = navigatorResolver.resolve(name);
+        checkNavigatorElement(element, name);
+        return element;
     }
 
     public List<String> getNamedParamsList(String propertyName) throws ScriptingErrorLog.SemanticErrorException {
@@ -269,16 +290,15 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public ScriptingFormView createScriptedFormView(String formName, String caption, boolean applyDefault) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("createScriptedFormView(" + formName + ", " + applyDefault + ");");
-        FormEntity formEntity = findFormByCompoundName(formName);
 
-        ScriptingFormEntity scriptedEntity = (ScriptingFormEntity) formEntity; // todo [dale]: ???
+        FormEntity form = findFormByCompoundName(formName);
 
-        ScriptingFormView formView = new ScriptingFormView(scriptedEntity, applyDefault, this);
+        ScriptingFormView formView = new ScriptingFormView(form, applyDefault, this);
         if (caption != null) {
             formView.caption = caption;
         }
 
-        scriptedEntity.richDesign = formView;
+        form.richDesign = formView;
 
         return formView;
     }
@@ -814,26 +834,40 @@ public class ScriptingLogicsModule extends LogicsModule {
         findWindowByCompoundName(name).visible = false;
     }
 
-    public NavigatorElement addScriptedNavigatorElement(String name, String caption, NavigatorElement<?> element, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName) throws ScriptingErrorLog.SemanticErrorException {
-        assert name != null && anchorElement != null;
+    public NavigatorElement createScriptedNavigatorElement(String name, String caption, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("createScriptedNavigatorElement(" + name + ", " + caption + ");");
 
-        if (element == null) {
-            if (caption != null)
-                element = addNavigatorElement(name, caption);
-            else
-                errLog.emitCaptionNotSpecifiedError(parser, name);
-        } else if (caption != null) {
+        assert name != null && caption != null && anchorElement != null;
+
+        checkDuplicateNavigatorElement(name);
+
+        NavigatorElement newElement = addNavigatorElement(name, caption);
+
+        setupNavigatorElement(newElement, caption, pos, anchorElement, windowName);
+
+        return newElement;
+    }
+
+    public void setupNavigatorElement(NavigatorElement<?> element, String caption, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("setupNavigatorElement(" + element.getSID() + ", " + caption + ", " + pos + ", " + anchorElement + ", " + windowName + ");");
+
+        assert element != null;
+
+        if (caption != null) {
             element.caption = caption;
         }
 
-        setNavigatorElementWindow(element, windowName);
+        if (windowName != null) {
+            setNavigatorElementWindow(element, windowName);
+        }
 
-        moveElement(element, pos, anchorElement);
-
-        return element;
+        if (pos != null && anchorElement != null) {
+            moveElement(element, pos, anchorElement);
+        }
     }
 
     private void moveElement(NavigatorElement element, InsertPosition pos, NavigatorElement anchorElement) throws ScriptingErrorLog.SemanticErrorException {
+        assert anchorElement != null && pos != null;
         NavigatorElement parent = null;
         if (pos == IN) {
             parent = anchorElement;
@@ -862,19 +896,17 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setNavigatorElementWindow(NavigatorElement element, String windowName) throws ScriptingErrorLog.SemanticErrorException {
-        assert element != null;
+        assert element != null && windowName != null;
 
-        if (windowName != null) {
-            AbstractWindow window = findWindowByCompoundName(windowName);
-            if (window == null) {
-                errLog.emitWindowNotFoundError(parser, windowName);
-            }
+        AbstractWindow window = findWindowByCompoundName(windowName);
+        if (window == null) {
+            errLog.emitWindowNotFoundError(parser, windowName);
+        }
 
-            if (window instanceof NavigatorWindow) {
-                element.window = (NavigatorWindow) window;
-            } else {
-                errLog.emitAddToSystemWindowError(parser, windowName);
-            }
+        if (window instanceof NavigatorWindow) {
+            element.window = (NavigatorWindow) window;
+        } else {
+            errLog.emitAddToSystemWindowError(parser, windowName);
         }
     }
 
@@ -905,6 +937,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkWindow(AbstractWindow window, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (window == null) {
             errLog.emitWindowNotFoundError(parser, name);
+        }
+    }
+
+    private void checkNavigatorElement(NavigatorElement element, String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (element == null) {
+            errLog.emitNavigatorElementNotFoundError(parser, name);
         }
     }
 

@@ -52,7 +52,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     public ObjectEntity(int ID, String sID, ValueClass baseClass, String caption) {
         super(ID);
-        this.sID = sID;
+        this.sID = sID != null ? sID : "obj" + ID;
         this.caption = caption;
         this.baseClass = baseClass;
     }

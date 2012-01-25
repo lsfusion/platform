@@ -19,7 +19,7 @@ grammar LsfLogics;
 	import platform.server.logics.linear.LP;
 	import platform.server.logics.property.PropertyFollows;
 	import platform.server.logics.scripted.*;
-	import platform.server.logics.scripted.ScriptingFormEntity.MappedProperty;
+	import platform.server.logics.scripted.MappedProperty;
 	import platform.server.logics.scripted.ScriptingLogicsModule.WindowType;
 	import platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition;
 
@@ -1096,6 +1096,7 @@ navigatorStatement
 navigatorElementStatementBody[NavigatorElement parentElement]
 	:	'{'
 			(	addNavigatorElementStatement[parentElement]
+			|	newNavigatorElementStatement[parentElement]
 			|	setupNavigatorElementStatement
 			|	emptyStatement
 			)*
@@ -1106,43 +1107,54 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 addNavigatorElementStatement[NavigatorElement parentElement]
 @init {
 	boolean hasPosition = false;
-	String caption = null;
-	NavigatorElement insElem = null;
 }
-	:	'ADD' insSelector=navigatorElementSelector[false] { insElem = $insSelector.element; }
-		(capt=stringLiteral { caption = $capt.val; })?
-		(insPosition=insertPositionLiteral posSelector=navigatorElementSelector[true] {hasPosition = true; })?
-		('TO' wid=compoundID)?
+	:	'ADD' elem=navigatorElementSelector (caption=stringLiteral)? posSelector=navigatorElementInsertPositionSelector[parentElement] ('TO' wid=compoundID)?
 		{
 			if (inPropParseState()) {
-				insElem = self.addScriptedNavigatorElement($insSelector.name,
-															caption,
-															insElem,
-															hasPosition ? $insPosition.val : InsertPosition.IN,
-															hasPosition ? $posSelector.element : $parentElement,
-															$wid.sid);
+				self.setupNavigatorElement($elem.element, $caption.val, $posSelector.position, $posSelector.anchor, $wid.sid);
 			}
 		}
-		navigatorElementStatementBody[insElem]
+		navigatorElementStatementBody[$elem.element]
+	;
+
+newNavigatorElementStatement[NavigatorElement parentElement]
+@init {
+	NavigatorElement newElement = null;
+}
+	:	'NEW' id=ID caption=stringLiteral posSelector=navigatorElementInsertPositionSelector[parentElement] ('TO' wid=compoundID)?
+		{
+			if (inPropParseState()) {
+				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, $posSelector.position, $posSelector.anchor, $wid.sid);
+			}
+		}
+		navigatorElementStatementBody[newElement]
 	;
 	
+navigatorElementInsertPositionSelector[NavigatorElement parentElement] returns [InsertPosition position, NavigatorElement anchor]
+@init {
+	$position = InsertPosition.IN;
+	$anchor = parentElement;
+}
+	:	(	pos=insertPositionLiteral { $position = $pos.val; }
+			elem=navigatorElementSelector { $anchor = $elem.element; }
+		)?
+	;
+
 setupNavigatorElementStatement
-	:	e=navigatorElementSelector[true]
-		('TO' wid=compoundID)?
+	:	elem=navigatorElementSelector (caption=stringLiteral)? ('TO' wid=compoundID)?
 		{
 			if (inPropParseState()) {
-				self.setNavigatorElementWindow($e.element, $wid.sid);
+				self.setupNavigatorElement($elem.element, $caption.val, null, null, $wid.sid);
 			}
 		}
-		navigatorElementStatementBody[$e.element]
+		navigatorElementStatementBody[$elem.element]
 	;
 	
-navigatorElementSelector[boolean hasToExist] returns [String name, NavigatorElement element]
-	:	id=ID	
+navigatorElementSelector returns [NavigatorElement element]
+	:	cid=compoundID
 		{
 			if (inPropParseState()) {
-				$name = $id.text;
-				$element = self.getNavigatorElementBySID($name, hasToExist);
+				$element = self.findNavigatorElementByName($cid.sid);
 			}
 		}
 	;
@@ -1152,21 +1164,18 @@ navigatorElementSelector[boolean hasToExist] returns [String name, NavigatorElem
 ////////////////////////////////// DESIGN STATEMENT ////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-designStatement returns [ScriptingFormView formView]
+designStatement
 scope {
 	ScriptingFormView design;
 }
 @init {
+	ScriptingFormView formView = null;
 	boolean applyDefault = false;
 }
-@after {
-}
-	: 	'DESIGN'
-		nameWithCaption=simpleNameWithCaption
-		('FROM' 'DEFAULT' {applyDefault = true;} )?
+	:	'DESIGN' cid=compoundID (caption=stringLiteral)? ('FROM' 'DEFAULT' { applyDefault = true; })?
 		{
 			if (inPropParseState()) {
-				$designStatement::design = $formView = self.createScriptedFormView($nameWithCaption.name, $nameWithCaption.caption, applyDefault);
+				$designStatement::design = formView = self.createScriptedFormView($cid.sid, $caption.val, applyDefault);
 			}
 		}
 		componentStatementBody[formView, formView == null ? null : formView.mainContainer]

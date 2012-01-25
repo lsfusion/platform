@@ -1540,30 +1540,30 @@ NAVIGATOR {
 
     baseElement TO topToolbar;
 
-    ADD lists 'Справочники' TO formsToolbar {
-        ADD goods 'Товары' {
+    NEW lists 'Справочники' TO formsToolbar {
+        NEW goods 'Товары' {
             ADD items;
             ADD itemGroups;
             ADD unitsOfMeasure;
             ADD assortments;
         }
-        ADD shopStructure 'Магазины' {
+        NEW shopStructure 'Магазины' {
             ADD companies;
             ADD qualifier;
             ADD stores;
             ADD discount;
         }
-        ADD employeeRelations 'Сотрудники' {
+        NEW employeeRelations 'Сотрудники' {
             ADD employees;
             ADD employeesCommittees;
         }
-        ADD supplierRelation 'Поставщики'{
+        NEW supplierRelation 'Поставщики'{
             ADD suppliers;
             ADD banks;
             ADD assortmentSupplier;
             ADD timeTable;
         }
-        ADD equipment 'Оборудование' {
+        NEW equipment 'Оборудование' {
             ADD groupsCash;
             ADD groupsScales;
             ADD groupsCheck;
@@ -1571,19 +1571,19 @@ NAVIGATOR {
             ADD models;
             ADD stages;
         }
-        ADD producing 'Производство'{
+        NEW producing 'Производство'{
             ADD cuttings;
             ADD recipes;
         }
         ADD taxes;
     }
 
-    ADD documents 'Документы' TO formsToolbar {
+    NEW documents 'Документы' TO formsToolbar {
 
     }
 
     ADD adminElement TO formsTree {
-        ADD objects 'Карточки' {
+        NEW objects 'Карточки' {
             ADD itemGroup;
             ADD unitOfMeasure;
             ADD item;

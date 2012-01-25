@@ -14,9 +14,7 @@ import platform.server.logics.linear.LP;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static platform.base.BaseUtils.nvl;
 
@@ -27,8 +25,7 @@ import static platform.base.BaseUtils.nvl;
  */
 
 public class ScriptingFormEntity extends FormEntity {
-    private ScriptingLogicsModule LM;
-    private Map<String, ObjectEntity> objectEntities = new HashMap<String, ObjectEntity>();
+    public ScriptingLogicsModule LM;
 
     public ScriptingFormEntity(NavigatorElement parent, ScriptingLogicsModule LM, String sID, String caption) {
         super(parent, sID, caption);
@@ -58,10 +55,7 @@ public class ScriptingFormEntity extends FormEntity {
                 String objectName = nvl(groupObjectNames.get(j), className);
                 String objectCaption = nvl(groupCaptions.get(j), cls.getCaption());
 
-                ObjectEntity obj = new ObjectEntity(genID(), objectName, cls, objectCaption);
-                addObjectEntity(objectName, obj);
-
-                groupObj.add(obj);
+                addObjectEntity(objectName, new ObjectEntity(genID(), cls, objectCaption), groupObj);
             }
 
             String groupName = groupNames.get(i);
@@ -93,59 +87,38 @@ public class ScriptingFormEntity extends FormEntity {
         addGroup(group);
     }
 
-    private void addObjectEntity(String objectName, ObjectEntity obj) throws ScriptingErrorLog.SemanticErrorException {
-        if (objectEntities.containsKey(objectName)) {
-            LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "object", objectName);
+    private void addObjectEntity(String name, ObjectEntity object, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
+        if (getObject(name) != null) {
+            LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "object", name);
         }
-        objectEntities.put(objectName, obj);
-    }
-
-    public static final class MappedProperty {
-        public LP<?> property;
-        public PropertyObjectInterfaceEntity[] mapping;
-
-        public MappedProperty(LP<?> property, PropertyObjectInterfaceEntity[] mapping) {
-            this.property = property;
-            this.mapping = mapping;
-        }
+        object.setSID(name);
+        group.add(object);
     }
 
     private ObjectEntity[] getMappingObjectsArray(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        ObjectEntity[] objects = new ObjectEntity[mapping.size()];
-        for (int i = 0; i < mapping.size(); i++) {
-            objects[i] = getObjectEntity(mapping.get(i));
-        }
-        return objects;
+        return LM.getMappingObjectsArray(this, mapping);
     }
 
     private ObjectEntity getObjectEntity(String name) throws ScriptingErrorLog.SemanticErrorException {
-        ObjectEntity obj = objectEntities.get(name);
-        if (obj == null) {
-            LM.getErrLog().emitParamNotFoundError(LM.getParser(), name);
-        }
-        return obj;
+        return LM.getObjectEntityByName(this, name);
+    }
+
+    public MappedProperty getPropertyWithMapping(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        return LM.getPropertyWithMapping(this, name, mapping);
     }
 
     public List<GroupObjectEntity> getGroupObjectsList(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         List<GroupObjectEntity> groupObjects = new ArrayList<GroupObjectEntity>();
-        for (int i = 0; i < mapping.size(); i++) {
-            GroupObjectEntity groupObject = getGroupObject(mapping.get(i));
+        for (String groupName : mapping) {
+            GroupObjectEntity groupObject = getGroupObject(groupName);
             if (groupObject == null) {
-                LM.getErrLog().emitParamNotFoundError(LM.getParser(), mapping.get(i));
+                LM.getErrLog().emitParamNotFoundError(LM.getParser(), groupName);
             } else {
                 groupObjects.add(groupObject);
             }
 
         }
         return groupObjects;
-    }
-
-    public MappedProperty getPropertyWithMapping(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?> property = LM.findLPByCompoundName(name);
-        if (property.property.interfaces.size() != mapping.size()) {
-            LM.getErrLog().emitParamCountError(LM.getParser(), property, mapping.size());
-        }
-        return new MappedProperty(property, getMappingObjectsArray(mapping));
     }
 
     public void addScriptedPropertyDraws(List<String> properties, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options) throws ScriptingErrorLog.SemanticErrorException {

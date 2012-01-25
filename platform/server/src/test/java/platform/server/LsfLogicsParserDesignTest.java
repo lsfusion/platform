@@ -5,6 +5,7 @@ import org.junit.*;
 import org.junit.rules.TestName;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.data.sql.PostgreDataAdapter;
+import platform.server.form.entity.FormEntity;
 import platform.server.form.view.ComponentView;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.GroupObjectView;
@@ -300,6 +301,31 @@ public class LsfLogicsParserDesignTest {
         assertEquals(child3.constraints.intersects.get(child1), DoNotIntersectSimplexConstraint.DO_NOT_INTERSECT);
     }
 
+    @Test
+    public void testDesignForJavaForm() throws Exception {
+        setupTest("DESIGN dictionariesForm FROM DEFAULT {\n" +
+                  "    dict.panel {\n" +
+                  "        ADD some {\n" +
+                  "            caption = 'Some wrapper for the name';\n" +
+                  "            ADD PROPERTY(commonName);\n" +
+                  "        }\n" +
+                  "    }\n" +
+                  "}");
+
+        FormEntity form = (FormEntity) LM.findNavigatorElementByName("dictionariesForm");
+
+        ScriptingFormView design = (ScriptingFormView) form.richDesign;
+        assertNotNull(design);
+
+        ComponentView some = design.getComponentBySID("some");
+        PropertyDrawView nameView = design.get(form.getPropertyDraw(findLPBySID("commonName")));
+
+        assertNotNull(some);
+        assertNotNull(nameView);
+
+        assertSame(nameView.getContainer(), some);
+    }
+
     @Test(expected = RuntimeException.class)
     public void testMoveToSubcontainerFails() throws Exception {
         setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
@@ -386,7 +412,7 @@ public class LsfLogicsParserDesignTest {
         LM = (ScriptingLogicsModule) bl.findModule("testDesign");
         assertNotNull(LM);
 
-        entity = (ScriptingFormEntity) bl.LM.baseElement.getNavigatorElement("storeArticle");
+        entity = (ScriptingFormEntity) LM.findNavigatorElementByName("storeArticle");
         assertNotNull(entity);
 
         design = (ScriptingFormView) entity.richDesign;

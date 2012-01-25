@@ -11,7 +11,7 @@ import static platform.base.BaseUtils.nvl;
 public class FormPropertyOptions {
     private Boolean readOnly;
     private List<GroupObjectEntity> columns;
-    private ScriptingFormEntity.MappedProperty showIf;
+    private MappedProperty showIf;
     private PropertyObjectEntity highlightIf;
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
@@ -33,11 +33,11 @@ public class FormPropertyOptions {
         this.columns = columns;
     }
 
-    public void setShowIf(ScriptingFormEntity.MappedProperty showIf) {
+    public void setShowIf(MappedProperty showIf) {
         this.showIf = showIf;
     }
 
-    public ScriptingFormEntity.MappedProperty getShowIf() {
+    public MappedProperty getShowIf() {
         return showIf;
     }
 
