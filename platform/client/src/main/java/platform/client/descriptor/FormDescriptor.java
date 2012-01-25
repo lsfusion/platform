@@ -313,7 +313,9 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         toDrawConstraint = new IncrementPropertyConstraint() {
             public boolean updateProperty(PropertyDrawDescriptor property) {
                 GroupObjectDescriptor toDraw = property.getToDraw();
-                if (toDraw != null && property.getPropertyObject() != null && !property.getPropertyObject().getGroupObjects().contains(toDraw)) {
+                boolean isEmptyGroupObjects = property.getPropertyObject().getGroupObjects() == null;
+                if (toDraw != null && property.getPropertyObject() != null
+                        && !property.getPropertyObject().getGroupObjects().contains(toDraw) && isEmptyGroupObjects) {
                     property.setToDraw(null);
                 }
                 return true;
