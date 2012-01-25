@@ -21,16 +21,16 @@
 	<field name="quantityEnoughDocumentsVote" class="java.lang.Integer"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
-		<initialValueExpression><![CDATA[new Integer (1)]]></initialValueExpression>
+		<initialValueExpression><![CDATA[1]]></initialValueExpression>
 	</variable>
 	<detail>
-		<band height="16">
+		<band height="20">
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="50" y="0" width="528" height="16"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="50" y="0" width="528" height="16"/>
 				<textElement>
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{npp}+") "+$F{commentEnoughDocumentsExpertVote}+($V{npp}==($F{quantityDoneVote}-$F{quantityEnoughDocumentsVote})?".":";")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{npp}+") "+$F{commentEnoughDocumentsExpertVote}+($V{npp}==($F{quantityDoneVote}-platform.base.BaseUtils.nvl($F{quantityEnoughDocumentsVote},0))?".":";")]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
