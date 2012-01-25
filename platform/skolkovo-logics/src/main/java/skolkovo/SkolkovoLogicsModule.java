@@ -570,6 +570,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameNativeClusterForesight, nameForeignClusterForesight, nameNativeShortClusterForesight;
     LP quantityForesightProject;
     LP maxForesightProjectCluster, nameMaxForesightVote, maxForesightVote, nMaxForesightVote;
+    LP maxForesightProject, nameMaxForesightLegalChek, maxForesightLegalChek;
     LP isPrevVoteVote;
     LP countPrevVote;
     public LP claimerProject;
@@ -1139,7 +1140,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP editClaimerProject;
     LP translateToRussianProject, translateToEnglishProject;
     LP hideTranslateToRussianProject, hideTranslateToEnglishProject;
-    LP needTranslationProject;
+    LP needTranslationProject, needTranslationLegalChek, needsToBeTranslatedToRussianLegalChek;
+    LP needNeedTranslationProject;
 
     LP projectFormalControl, dateProjectFormalControl, clusterProjectFormalControl, nameNativeClusterProjectFormalControl;
     LP resultFormalControl;
@@ -3260,6 +3262,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameProjectActionLegalCheck.setPreferredCharWidth(20);
         projectActionLegalCheck.setDerivedChange(true, addJProp(projectActionProject, projectLegalCheck, 1), 1, is(legalCheck), 1);
 
+        maxForesightLegalChek = addJProp("maxForesightLegalChek", maxForesightProjectCluster, projectLegalCheck, 1, addJProp(firstClusterProject, projectLegalCheck, 1), 1);
+        nameMaxForesightLegalChek = addJProp("nameMaxForesightLegalChek", "Форсайт", nameNative, maxForesightLegalChek, 1);
+
         LCMinDateProjectActionProject = addMGProp("LCMinDateProjectActionProject", true, "Дата первой отсылки ЮП", true, dateResultNoticedLegalCheck, projectActionLegalCheck, 1, projectLegalCheck, 1);
         minDateLegalCheck = addJProp("minDateLegalCheck", "Дата отсылки", LCMinDateProjectActionProject, projectActionLegalCheck, 1, projectLegalCheck, 1);
         overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.addDate2,
@@ -3402,6 +3407,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 positiveResultForesightCheckProject, 1,
                 withdrawnProject, 1);
 
+        needTranslationLegalChek = addJProp("needTranslationLegalChek", "Требуется перевод", needTranslationProject, projectLegalCheck, 1);
+        needsToBeTranslatedToRussianLegalChek = addJProp("needsToBeTranslatedToRussianLegalChek", needsToBeTranslatedToRussianProject, projectLegalCheck, 1);
+        
         needVoteProject = addJProp("needVoteProject", true, "Треб. заседание", and(false, true, true, false, true),
                 is(project), 1,
                 positiveResultForesightCheckProject, 1,
@@ -6935,7 +6943,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, caption, true);
 
             objLegalCheck = addSingleGroupObject(1, "legalCheck", legalCheck, "Юридическая проверка", dateProjectLegalCheck, sidResultLegalCheck, sidStatusProjectLegalCheck, nameResultLegalCheck, nameNativeClusterProjectLegalCheck, nameProjectActionLegalCheck, commentLegalCheck,
-                    overdueDateLegalCheck, dateTimeLegalCheck, dateResultNoticedLegalCheck, isPreliminaryAndStatusProjectLegalCheck, isR1LegalCheck, changeLegalCheck, noticedChangeLegalCheck, dateChangeLegalCheck);
+                    overdueDateLegalCheck, dateTimeLegalCheck, dateResultNoticedLegalCheck, isPreliminaryAndStatusProjectLegalCheck, isR1LegalCheck, changeLegalCheck, noticedChangeLegalCheck, dateChangeLegalCheck, needTranslationLegalChek, needsToBeTranslatedToRussianLegalChek, nameMaxForesightLegalChek);
             addPropertyDraw(executiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
             addPropertyDraw(phoneExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
             addPropertyDraw(mobileExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
