@@ -98,6 +98,8 @@ public class LsfLogicsParserDesignTest {
         assertNotNull(design.getComponentBySID("a.controls"));
         assertNotNull(design.getComponentBySID("a.filters"));
 
+        assertNotNull(design.getComponentBySID("a.base"));
+
         assertNotNull(design.getComponentBySID("functions.box"));
 
         assertNotNull(design.getComponentBySID("functions.print"));

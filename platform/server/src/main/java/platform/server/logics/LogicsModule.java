@@ -60,6 +60,19 @@ public abstract class LogicsModule {
     /// Добавляется к SID объектов модуля: классам, группам, свойствам...
     public abstract String getNamePrefix();
 
+    public String transformSIDToName(String sid) {
+        String modulePrefix = getNamePrefix();
+        if (modulePrefix == null) {
+            return sid;
+        }
+
+        if (sid == null || !sid.startsWith(modulePrefix)) {
+            throw new IllegalArgumentException("SID must not be null and begin with name prefix");
+        }
+
+        return sid.substring(modulePrefix.length() + 1);
+    }
+
     public String transformNameToSID(String name) {
         return transformNameToSID(getNamePrefix(), name);
     }

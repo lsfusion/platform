@@ -76,7 +76,7 @@ public class ScriptingFormView extends DefaultFormView {
 
             for (Map.Entry<GroupObjectView, Map<AbstractGroup, ContainerView>> entry : groupPropertyContainers.entrySet()) {
                 for (Map.Entry<AbstractGroup, ContainerView> groupContainer : entry.getValue().entrySet()) {
-                    groupContainer.getValue().setSID(getPropertyGroupContainerSID(entry.getKey().entity, groupContainer.getKey()));
+                    groupContainer.getValue().setSID(getPropertyGroupContainerSID(LM, entry.getKey().entity, groupContainer.getKey()));
                 }
             }
 
@@ -165,8 +165,13 @@ public class ScriptingFormView extends DefaultFormView {
         return entity.getSID() + ".controls";
     }
 
-    private static String getPropertyGroupContainerSID(GroupObjectEntity group, AbstractGroup propertyGroup) {
-        return group.getSID() + "." + propertyGroup.getSID();
+    private static String getPropertyGroupContainerSID(ScriptingLogicsModule lm, GroupObjectEntity group, AbstractGroup propertyGroup) {
+        String propertyGroupSID = propertyGroup.getSID();
+        if (lm.getGroupBySID(propertyGroupSID) != null) {
+            //используем простое имя для групп данного модуля
+            propertyGroupSID = lm.transformSIDToName(propertyGroupSID);
+        }
+        return group.getSID() + "." + propertyGroupSID;
     }
 
     private static String getRegularFilterGroupSID(RegularFilterGroupEntity entity) {
