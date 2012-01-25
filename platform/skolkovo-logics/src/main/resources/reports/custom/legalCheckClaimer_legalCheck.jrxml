@@ -36,6 +36,9 @@
 	<field name="sidStatusProjectLegalCheck" class="java.lang.String"/>
 	<field name="isR1LegalCheck" class="java.lang.Boolean"/>
 	<field name="changeLegalCheck" class="java.lang.Boolean"/>
+	<field name="needTranslationLegalChek" class="java.lang.Boolean"/>
+	<field name="needsToBeTranslatedToRussianLegalChek" class="java.lang.Boolean"/>
+	<field name="nameMaxForesightLegalChek" class="java.lang.String"/>
 	<detail>
 		<band height="116">
 			<printWhenExpression><![CDATA["positiveLegalCheckResult".equals($F{sidResultLegalCheck})&&$F{isPreliminaryAndStatusProjectLegalCheck}==null]]></printWhenExpression>
@@ -52,9 +55,11 @@
 					<font size="14"/>
 				</textElement>
 				<textFieldExpression><![CDATA["\n"+
-"Ваша заявка успешно прошла формальную проверку и в течение ближайших 10 дней будет направлена экспертам по направлению "+$F{nameNativeClusterProjectLegalCheck}+
+($F{isR1LegalCheck}!=null?"Ваша заявка успешно прошла формальную проверку и в течение ближайших 10 дней будет направлена экспертам по направлению "+$F{nameNativeClusterProjectLegalCheck}+
 " для прохождения экспертизы по существу. \n \n"+
-"Пожалуйста, ожидайте."]]></textFieldExpression>
+"Пожалуйста, ожидайте.":
+($F{needTranslationLegalChek}!=null?"Ваша заявка успешно прошла формальную проверку, в результате которой было установлено ее соответствие следующему Инновационному приоритету: "+$F{nameMaxForesightLegalChek}+" и после окончания ее перевода на "+($F{needsToBeTranslatedToRussianLegalChek}!=null?" русский ":" английский ")+" язык будет направлена экспертам по указанному Инновационному приоритету для прохождения экспертизы по существу.":
+"Ваша заявка успешно прошла формальную проверку, в результате которой было установлено ее соответствие следующему Инновационному приоритету: "+ $F{nameMaxForesightLegalChek}+", и в течение ближайшего 1 рабочего дня Ваша заявка будет направлена экспертам по указанному Инновационному приоритету для прохождения экспертизы по существу."))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" x="22" y="5" width="525" height="17"/>
