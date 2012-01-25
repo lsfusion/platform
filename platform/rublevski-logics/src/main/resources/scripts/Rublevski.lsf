@@ -568,6 +568,7 @@ inTradingSquareDepartmentStore(departmentStore, tradingSquare) = departmentStore
 //inDepartmentStoreDiscount(departmentStore, discount) = departmentStoreDiscount(discount) == departmentStore;
 
 // ----------------------------------- Цех ----------------------------------- //
+
 GROUP manufactoryGroup 'Для производства' : publicGroup;
 
 outDepartmentManufactory 'Подразделение, куда передаются изделия (ИД)' (manufactory) = DATA departmentStore(manufactory) IN idGroup;
@@ -575,6 +576,9 @@ nameOutDepartmentManufactory 'Подразделение, куда переда�
 inPriceDepartmentManufactory 'Подразделение, откуда брать цены (ИД)' (manufactory) = DATA departmentStore(manufactory) IN idGroup;
 nameInPriceDepartmentManufactory 'Подразделение, откуда брать цены ' (manufactory) = name(inPriceDepartmentManufactory(manufactory)) IN manufactoryGroup;
 marginPublicCateringManufactory 'Наценка общепита по умолчанию для формирования цены в подразделении' (manufactory) = DATA DOUBLE (manufactory) IN manufactoryGroup;
+rawDepartmentStore 'Подразделения, из которых можно получить сырье' = DATA BOOLEAN (manufactory, departmentStore);
+
+inRawDepartmentStore(manufactory, departmentStore) = storeDepartmentStore(manufactory) == storeDepartmentStore(departmentStore);
 
 //----------------------------------- Для товара и подразделения ------------------------------------------//
 additionPriceDepartmentStoreItem 'Торговая надбавка в рублях' = DATA DOUBLE (departmentStore, item) IN baseGroup;
@@ -592,18 +596,30 @@ banSaleDepartmentStoreItem 'Запрет продаж товара в подра
 banMovementDepartmentStoreItem 'Запрет на внутреннее перемещение товара' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
 reserveDepartmentStoreItem 'Резерв по товару' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 
+FORM rawDepartmentStore 'Подразделения, из которых можно получить сырье'
+OBJECTS m=manufactory FIXED PANEL, d=departmentStore
+PROPERTIES(m) READONLY name
+PROPERTIES(d) READONLY name
+PROPERTIES(m, d) rawDepartmentStore
+FILTERS NOT NULL inRawDepartmentStore(m, d)
+FILTERGROUP rawFilter
+    FILTER 'Подразделения из которых полуется сырье' 'F10' NOT NULL rawDepartmentStore(m, d);
+
+showFormRawDepartmentStore 'Подразделения, из которых можно получить сырье' (manufactory, departmentStore) = ACTION FORM rawDepartmentStore OBJECTS m, d NEWSESSION MODAL;
+
 FORM departmentStore 'Отдел магазина'
-OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare
+OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare, m=manufactory
 PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
               controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
               maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
               quantityCashChangeOneOperationAccountDepartmentStore, commonNameMateriallyResponsiblePersonItemReportDepartmentStore,
-              commonNameBookkeeperItemReportDepartmentStore, commonNamePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore,
-              nameOutDepartmentManufactory, nameInPriceDepartmentManufactory, marginPublicCateringManufactory
+              commonNameBookkeeperItemReportDepartmentStore, commonNamePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
+              //nameOutDepartmentManufactory, nameInPriceDepartmentManufactory, marginPublicCateringManufactory
 PROPERTIES(e) READONLY userFirstName, userLastName
 PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
 PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
 PROPERTIES(t) ADDOBJ, delete
+PROPERTIES(d, d) showFormRawDepartmentStore
 FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
 FILTERS NOT NULL departmentStoreEmployee(d, e)
 EDIT departmentStore OBJECT d;
@@ -614,7 +630,6 @@ DESIGN departmentStore FROM DEFAULT {
             tabbedPane = TRUE;
             ADD e.box;
             ADD t.box;
-            ADD c.box;
     }
    }
 }
@@ -1609,6 +1624,7 @@ NAVIGATOR {
             ADD groupCheck;
             ADD addTimeTable;
             ADD addDiscount;
+            ADD rawDepartmentStore;
         }
     }
 }
