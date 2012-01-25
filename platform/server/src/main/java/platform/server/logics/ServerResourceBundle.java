@@ -6,7 +6,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class ServerResourceBundle {
-    private static ResourceBundle serverResourceBundle = ResourceBundle.getBundle("ServerResourceBundle", new Locale("ru", ""));
+    private static ResourceBundle serverResourceBundle = ResourceBundle.getBundle("ServerResourceBundle");
 
     public static String getString(String key) {
         return serverResourceBundle.getString(key);
@@ -18,7 +18,7 @@ public class ServerResourceBundle {
 
     public static void load(String locale) {
         if (locale.equals("")) {
-            serverResourceBundle = ResourceBundle.getBundle("ServerResourceBundle", Locale.getDefault());
+            serverResourceBundle = ResourceBundle.getBundle("ServerResourceBundle");
         } else {
             serverResourceBundle = ResourceBundle.getBundle("ServerResourceBundle", new Locale(locale, ""));
         }

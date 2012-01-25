@@ -4,6 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import static platform.base.ApiResourceBundle.getString;
+
 public enum Compare {
     EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, LIKE;
 
@@ -75,7 +77,7 @@ public enum Compare {
             case NOT_EQUALS :
                 return "!=";
             case START_WITH :
-                return "Начинается с";
+                return getString("interop.starts.with");
             case LIKE :
                 return "LIKE";
         }

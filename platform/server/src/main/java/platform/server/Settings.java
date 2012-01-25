@@ -1,5 +1,6 @@
 package platform.server;
 
+import platform.base.ApiResourceBundle;
 import platform.server.logics.ServerResourceBundle;
 
 public class Settings {
@@ -241,6 +242,7 @@ public class Settings {
     public void setLocale(String locale) {
         this.locale = locale;
         ServerResourceBundle.load(locale);
+        ApiResourceBundle.load(locale);
     }
 
     // максимум сколько свойств вместе будет применяться в базу

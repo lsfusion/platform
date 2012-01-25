@@ -2,6 +2,8 @@ package platform.interop.form.layout;
 
 import java.awt.*;
 
+import static platform.base.ApiResourceBundle.getString;
+
 // в этот класс вынесено автоматическое создание контейнеров при создании GroupObject
 public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> {
 
@@ -45,24 +47,24 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.groupContainer = factory.createContainer(); // контейнер всей группы
         // та же логика с Title еще есть в ContainerRemover 
         set.groupContainer.setTitle(group.getCaption());
-        set.groupContainer.setDescription("Группа объектов");
+        set.groupContainer.setDescription(getString("form.layout.group.objects"));
         set.groupContainer.setSID(GROUP_CONTAINER + group.getID());
         set.groupContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
 
         set.gridContainer = factory.createContainer(); // контейнер грида внутрь
-        set.gridContainer.setDescription("Табличная часть");
+        set.gridContainer.setDescription(getString("form.layout.grid.part"));
         set.gridContainer.setSID(GRID_CONTAINER + group.getID());
         set.gridContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.groupContainer.add((T) set.gridContainer);
 
         set.panelContainer = factory.createContainer(); // контейнер панели
-        set.panelContainer.setDescription("Панель");
+        set.panelContainer.setDescription(getString("form.layout.panel"));
         set.panelContainer.setSID(PANEL_CONTAINER + group.getID());
         set.panelContainer.setGwtVertical(false);
         set.groupContainer.add((T) set.panelContainer);
 
         set.controlsContainer = factory.createContainer(); // контейнер всех управляющих объектов
-        set.controlsContainer.setDescription("Управляющие объекты");
+        set.controlsContainer.setDescription(getString("form.layout.control.objects"));
         set.controlsContainer.setSID(MANAGER_OBJECT + group.getID());
         set.controlsContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.controlsContainer.getConstraints().insetsInside = new Insets(0, 0, 0, 0);
@@ -70,7 +72,7 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.panelContainer.add((T) set.controlsContainer);
 
         set.filterContainer = factory.createContainer(); // контейнер фильтров
-        set.filterContainer.setDescription("Контейнер фильтров");
+        set.filterContainer.setDescription(getString("form.layout.filter.container"));
         set.filterContainer.setSID(FILTER_CONTAINER + group.getID());
         set.filterContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.controlsContainer.add((T) set.filterContainer);

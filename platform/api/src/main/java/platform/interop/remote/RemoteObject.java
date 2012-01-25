@@ -5,6 +5,8 @@ import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import static platform.base.ApiResourceBundle.getString;
+
 public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
 
     final protected int exportPort;
@@ -25,9 +27,9 @@ public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
             try {
                 result = invoke(this, invocation);
             } catch (InvocationTargetException e) {
-                throw new RemoteException("Ошибка при вызове метода: " + invocation.name, e.getTargetException());
+                throw new RemoteException(getString("remote.error.calling.method", invocation.name), e.getTargetException());
             } catch (Exception e) {
-                throw new RemoteException("Ошибка при вызове метода: " + invocation.name, e);
+                throw new RemoteException(getString("remote.error.calling.method", invocation.name), e);
             }
         }
 
@@ -43,7 +45,7 @@ public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
         try {
             createdObject = invoke(this, creator);
         } catch (Exception e) {
-            throw new RemoteException("Не могу создать объект через вызов метода: " + creator.toString());
+            throw new RemoteException(getString("remote.can.not.create.object.by.calling.method", creator.toString()));
         }
 
         Object[] result = new Object[invocations.length + 1];
@@ -52,9 +54,9 @@ public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
             try {
                 result[i+1] = createdObject == null ? null : invoke(createdObject, invocations[i]);
             } catch (InvocationTargetException e) {
-                throw new RemoteException("Ошибка при вызове метода: " + invocations[i].name, e.getTargetException());
+                throw new RemoteException(getString("remote.error.calling.method", invocations[i].name), e.getTargetException());
             } catch (Exception e) {
-                throw new RemoteException("Ошибка при вызове метода: " + invocations[i].name, e);
+                throw new RemoteException(getString("remote.error.calling.method", invocations[i].name), e);
             }
         }
         

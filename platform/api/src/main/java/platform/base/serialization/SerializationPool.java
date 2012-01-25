@@ -7,6 +7,8 @@ import java.io.*;
 import java.lang.reflect.Constructor;
 import java.util.*;
 
+import static platform.base.ApiResourceBundle.getString;
+
 public abstract class SerializationPool<C> {
     private Map<Integer, Class<? extends CustomSerializable<? extends SerializationPool<C>>>> idToClass
             = new HashMap<Integer, Class<? extends CustomSerializable<? extends SerializationPool<C>>>>();
@@ -58,7 +60,7 @@ public abstract class SerializationPool<C> {
         }
 
         if (!classToId.containsKey(clazz)) {
-            throw new IllegalArgumentException("Неизвестный класс: " + clazz);
+            throw new IllegalArgumentException(getString("serialization.unknown.class", clazz));
         }
 
         return classToId.get(clazz);
@@ -66,7 +68,7 @@ public abstract class SerializationPool<C> {
 
     public Class<? extends CustomSerializable<? extends SerializationPool<C>>> getClassById(int classId) {
         if (!idToClass.containsKey(classId)) {
-            throw new IllegalArgumentException("Неизвестный идентификатор класса сериализации: " + classId);
+            throw new IllegalArgumentException(getString("serialization.unknown.class.identifier.serialization", classId));
         }
         return idToClass.get(classId);
     }
@@ -164,7 +166,7 @@ public abstract class SerializationPool<C> {
             instance.customDeserialize(this, inStream);
             return instance;
         } catch (Exception e) {
-            throw new RuntimeException("Не могу создать объект класса: " + clazz.toString(), e);
+            throw new RuntimeException(getString("serialization.can.not.create.object.of.class", clazz.toString()), e);
         }
     }
 
@@ -214,7 +216,7 @@ public abstract class SerializationPool<C> {
                 return null;
             }
         } catch (ClassNotFoundException e) {
-            throw new IOException("Не могу прочитать объект.", e);
+            throw new IOException(getString("serialization.can.not.read.object"), e);
         }
     }
 

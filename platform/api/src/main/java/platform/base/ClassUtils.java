@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
 
+import static platform.base.ApiResourceBundle.getString;
+
 public class ClassUtils {
     private final static Logger logger = Logger.getLogger(ClassUtils.class);
 
@@ -35,7 +37,7 @@ public class ClassUtils {
         if (RMISocketFactory.getSocketFactory() == null) {
             RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
                 public boolean failure(Exception ex) {
-                    logger.error("Ошибка RMI: ", ex);
+                    logger.error(getString("exceptions.rmi.error") + " ", ex);
                     return true;
                 }
             });

@@ -10,6 +10,8 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.List;
 
+import static platform.base.ApiResourceBundle.getString;
+
 public class BaseUtils {
     public static final String lineSeparator = System.getProperty("line.separator");
 
@@ -1610,7 +1612,7 @@ public class BaseUtils {
                 result[i] = (dis.readInt() ^ 248979893) / (27 * (i + 1));
             return result;
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при декодировании ссылки (" + string + ")", e);
+            throw new RuntimeException(getString("exceptions.error.decoding.link", string), e);
         }
     }
 
