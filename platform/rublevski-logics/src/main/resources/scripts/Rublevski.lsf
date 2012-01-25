@@ -128,9 +128,9 @@ PROPERTIES(t) name;
 
 // ----------------------------------- Товар ------------------------------------------ //
 GROUP descriptionGroup 'Общее описание' : baseGroup;
-GROUP sizeGroup 'Физические характиристики' : baseGroup;
-GROUP substanceGroup 'Пищевые характеристики' : baseGroup;
-GROUP retailGroup 'Ценовые характеристики' : baseGroup;
+GROUP sizeGroup 'Физические характиристики' : publicGroup;
+GROUP substanceGroup 'Пищевые характеристики' : publicGroup;
+GROUP retailGroup 'Ценовые характеристики' : publicGroup;
 
 CLASS ABSTRACT sku 'SKU' : named;
 CLASS item 'Товар' : sku;
@@ -298,8 +298,31 @@ valueHeightItemAttribute(item, attribute) = heightItem(item) AND attribute == in
 valueIntegerItemAttribute(item, attribute) = UNION EXCLUSIVE valueLengthItemAttribute(item, attribute),
                                                              valueWidthItemAttribute(item, attribute),
                                                              valueHeightItemAttribute(item, attribute);
+stringIntegerItemAttribute(item, attribute) = castToString255(valueIntegerItemAttribute(item, attribute));
 
-stringIntegerItemAttribute(item, integerItemAttribute) = castToString255(valueIntegerItemAttribute(item, integerItemAttribute));
+CLASS STATIC doubleItemAttribute 'Дробный атрибут' {
+    netWeight 'Вес нетто',
+    grossWeight 'Вес брутто'
+} : itemAttribute;
+
+valueNetWeightItemAttribute(item, attribute) = netWeightItem(item) AND attribute == doubleItemAttribute.netWeight;
+valueGrossWeightItemAttribute(item, attribute) = grossWeightItem(item) AND attribute == doubleItemAttribute.grossWeight;
+
+valueDoubleItemAttribute(item, attribute) = UNION EXCLUSIVE valueNetWeightItemAttribute(item, attribute),
+                                                            valueGrossWeightItemAttribute(item, attribute);
+stringDoubleItemAttribute(item, attribute) = castToString255(valueDoubleItemAttribute(item, attribute));
+
+CLASS STATIC booleanItemAttribute 'Логический атрибут' {
+    fixPrice 'Товар с фиксированной ценой',
+    manufactured 'Товар производится'
+} : itemAttribute;
+
+valueFixPriceWeightItemAttribute(item, attribute) = isFixPriceItem(item) AND attribute == booleanItemAttribute.fixPrice;
+valueManufacturedItemAttribute(item, attribute) = isManufacturedItem(item) AND attribute == booleanItemAttribute.manufactured;
+
+valueBooleanItemAttribute(item, attribute) = UNION EXCLUSIVE valueFixPriceWeightItemAttribute(item, attribute),
+                                                             valueManufacturedItemAttribute(item, attribute);
+stringBooleanItemAttribute(item, attribute) = castToString255(valueBooleanItemAttribute(item, attribute));
 
 CLASS STATIC objectItemAttribute 'Объектный атрибут' {
     unitOfMeasure 'Единица измерения',
@@ -340,6 +363,8 @@ nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, a
 
 valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(item, attribute),
                                                       stringIntegerItemAttribute(item, attribute),
+                                                      stringDoubleItemAttribute(item, attribute),
+                                                      stringBooleanItemAttribute(item, attribute),
                                                       nameObjectItemAttribute(item, attribute);
 
 FORM item 'Товар'
@@ -543,7 +568,7 @@ inTradingSquareDepartmentStore(departmentStore, tradingSquare) = departmentStore
 //inDepartmentStoreDiscount(departmentStore, discount) = departmentStoreDiscount(discount) == departmentStore;
 
 // ----------------------------------- Цех ----------------------------------- //
-GROUP manufactoryGroup 'Для производства';
+GROUP manufactoryGroup 'Для производства' : publicGroup;
 
 outDepartmentManufactory 'Подразделение, куда передаются изделия (ИД)' (manufactory) = DATA departmentStore(manufactory) IN idGroup;
 nameOutDepartmentManufactory 'Подразделение, куда передаются изделия' (manufactory) = name(outDepartmentManufactory(manufactory)) IN manufactoryGroup;
@@ -815,7 +840,7 @@ PROPERTIES(l) READONLY name
 PROPERTIES(d) OBJVALUE
 PROPERTIES(l, d) addressLegalEntityDate;
 
-showFormAddAddressLegalEntity 'Добавить' (legalEntity) = ACTION FORM addAddressLegalEntity OBJECTS l NEWSESSION MODAL;
+showFormAddAddressLegalEntity 'Добавить' (legalEntity) = ACTION FORM addAddressLegalEntity OBJECTS l MODAL;
 
 FORM addressLegalEntity 'Фактический адрес на дату'
 OBJECTS l=legalEntity FIXED PANEL, d=DATE
