@@ -277,6 +277,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("meta code '%s' does not end with END keyword", name));
     }
 
+    public void emitDistinctParamNamesError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "names of parameters should be distinct");
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

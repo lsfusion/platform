@@ -217,7 +217,7 @@ classStatement
 	;	  
 
 classParentsList returns [List<String> list] 
-	:	':' parentList=nonEmptyCompoundIdList { $list = $parentList.ids; }
+	:	':' parentList=nonEmptyClassIdList { $list = $parentList.ids; }
 	; 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -942,7 +942,7 @@ followsStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedFollows(mainProp, context.size(), options, props, usedParams);
+		self.addScriptedFollows(mainProp, context, options, props, usedParams);
 	}
 }
 	:	prop=propertyWithNamedParams { mainProp = $prop.name; context = $prop.params; }
@@ -980,7 +980,7 @@ writeOnChangeStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedWriteOnChange($mainProp.name, context.size(), old, anyChange, $valueExpr.property, $valueExpr.usedParams, $changeExpr.property, $changeExpr.usedParams);
+		self.addScriptedWriteOnChange($mainProp.name, context, old, anyChange, $valueExpr.property, $valueExpr.usedParams, $changeExpr.property, $changeExpr.usedParams);
 	}
 }
 	:	mainProp=propertyWithNamedParams { context = $mainProp.params; }

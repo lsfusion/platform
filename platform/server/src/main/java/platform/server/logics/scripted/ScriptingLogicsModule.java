@@ -376,8 +376,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addSettingsToProperty(" + property.property.getSID() + ", " + name + ", " + caption + ", " +
                            namedParams + ", " + groupName + ", " + isPersistent + ");");
         checkDuplicateProperty(name);
+        checkDistinctParameters(namedParams);
         checkNamedParams(property, namedParams);
         changePropertyName(property, name);
+
         AbstractGroup group = (groupName == null ? null : findGroupByCompoundName(groupName));
         property.property.caption = (caption == null ? name : transformStringLiteral(caption));
         addPropertyToGroup(property.property, group);
@@ -647,14 +649,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedMetaCodeFragment(" + name + ", " + params + ", " + metaCode + ");");
 
         checkDuplicateMetaCodeFragment(name);
+        checkDistinctParameters(params);
+
         MetaCodeFragment fragment = new MetaCodeFragment(params, metaCode);
         addMetaCodeFragment(name, fragment);
     }
 
     public void runMetaCode(String name, List<String> params) throws ScriptingErrorLog.SemanticErrorException {
         MetaCodeFragment metaCode = findMetaCodeFragmentByCompoundName(name);
-        // todo [dale]: проверка на количество параметров, на используемость параметра?
-        // todo [dale]: вставить проверки на одинаковые имена параметров
+        checkMetaCodeParamCount(metaCode, params.size());
+
         String code = metaCode.getCode(params);
         try {
             LsfLogicsLexer lexer = new LsfLogicsLexer(new ANTLRStringStream(code));
@@ -729,11 +733,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         addConstraint(property, checked);
     }
 
-    public void addScriptedFollows(String mainPropName, int namedParamsCnt, List<Integer> options, List<LP<?>> props, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedFollows(" + mainPropName + ", " + namedParamsCnt + ", " + options + ", " + props + ", " + usedParams + ");");
+    public void addScriptedFollows(String mainPropName, List<String> namedParams, List<Integer> options, List<LP<?>> props, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedFollows(" + mainPropName + ", " + namedParams + ", " + options + ", " + props + ", " + usedParams + ");");
         LP<?> mainProp = findLPByCompoundName(mainPropName);
         checkProperty(mainProp, mainPropName);
-        checkParamCount(mainProp, namedParamsCnt);
+        checkParamCount(mainProp, namedParams.size());
+        checkDistinctParameters(namedParams);
 
         for (int i = 0; i < props.size(); i++) {
             int[] params = new int[usedParams.get(i).size()];
@@ -744,13 +749,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addScriptedWriteOnChange(String mainPropName, int namedParamsCnt, boolean useOld, boolean anyChange,
+    public void addScriptedWriteOnChange(String mainPropName, List<String> namedParams, boolean useOld, boolean anyChange,
                                          LP<?> valueProp, List<Integer> valueParams, LP<?> changeProp, List<Integer> changeParams) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedWriteOnChange(" + mainPropName + ", " + namedParamsCnt + ", " + useOld + ", " +
+        scriptLogger.info("addScriptedWriteOnChange(" + mainPropName + ", " + namedParams + ", " + useOld + ", " +
                            anyChange + ", " + valueProp + ", " + valueParams + ", " + changeProp + ", " + changeParams + ");");
         LP<?> mainProp = findLPByCompoundName(mainPropName);
         checkProperty(mainProp, mainPropName);
-        checkParamCount(mainProp, namedParamsCnt);
+        checkParamCount(mainProp, namedParams.size());
+        checkDistinctParameters(namedParams);
 
         List<LP<?>> props = BaseUtils.mergeList(Arrays.asList(mainProp), Arrays.asList(changeProp));
         List<List<Integer>> usedParams = BaseUtils.mergeList(Arrays.asList(valueParams), Arrays.asList(changeParams));
@@ -1117,6 +1123,19 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkNamedParams(LP<?> property, List<String> namedParams) throws ScriptingErrorLog.SemanticErrorException {
         if (property.property.interfaces.size() != namedParams.size() && !namedParams.isEmpty()) {
             errLog.emitNamedParamsError(parser);
+        }
+    }
+
+    private void checkDistinctParameters(List<String> params) throws ScriptingErrorLog.SemanticErrorException {
+        Set<String> paramsSet = new HashSet<String>(params);
+        if (paramsSet.size() < params.size()) {
+            errLog.emitDistinctParamNamesError(parser);
+        }
+    }
+
+    private void checkMetaCodeParamCount(MetaCodeFragment code, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
+        if (code.parameters.size() != paramCnt) {
+            errLog.emitParamCountError(parser, code.parameters.size(), paramCnt);
         }
     }
 
