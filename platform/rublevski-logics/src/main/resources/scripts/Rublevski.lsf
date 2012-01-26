@@ -480,6 +480,35 @@ PROPERTIES(b) READONLY barcode, titleScalesBarcode, titleCashBarcode, shortNameU
 PROPERTIES(b) ADDFORM, EDITFORM, delete
 PROPERTIES(i, b) inSkuBarcode;
 
+// ----------------------------------- Генерация графика --------------------------------------- //
+
+CLASS genTimeTable 'Генерация графика' : named;
+
+startDateGenTimeTable 'Дата начала' = DATA DATE (genTimeTable) IN baseGroup;
+endDateGenTimeTable 'Дата оканчания' = DATA DATE (genTimeTable) IN baseGroup;
+supplierGenTimeTable 'Поставщик (ИД)' = DATA supplier (genTimeTable);
+nameSupplierGenTimeTable 'Поставщик' (genTimeTable) = name(supplierGenTimeTable(genTimeTable)) IN baseGroup;
+departmentStoreGenTimeTable 'Подразделение (ИД)' =DATA departmentStore (genTimeTable) IN baseGroup;
+nameDepartmentStoreGenTimeTable 'Подразделение' (genTimeTable) = name(departmentStoreGenTimeTable(genTimeTable)) IN baseGroup;
+
+inMonthGenTimeTable 'Включать' = DATA BOOLEAN (captionMonth);
+inDayGenTimeTable 'Включать' = DATA BOOLEAN (captionDOW);
+
+FORM genTimeTable 'Генерация графика'
+OBJECTS g=genTimeTable FIXED PANEL, m=captionMonth, d=captionDOW
+PROPERTIES(g) nameSupplierGenTimeTable, nameDepartmentStoreGenTimeTable, startDateGenTimeTable, endDateGenTimeTable
+PROPERTIES(m) READONLY name
+PROPERTIES(m)inMonthGenTimeTable
+PROPERTIES(d) READONLY name
+PROPERTIES(d) inDayGenTimeTable;
+
+FORM genTimeTables 'Графики' //служит для добавления сущности "генерации графиков" и в дальнейшем будет удалена
+OBJECTS g=genTimeTable
+PROPERTIES(g) READONLY name
+PROPERTIES(g) ADDOBJ, delete;
+
+showFormGenTimeTable 'Добавить график' (genTimeTable) = ACTION FORM genTimeTable OBJECTS g MODAL;
+
 // ----------------------------------- Склад ------------------------------------------ //
 
 CLASS ABSTRACT stock 'Склад' : named;
@@ -661,7 +690,7 @@ FILTERS NOT NULL inRawDepartmentStore(m, d)
 FILTERGROUP rawFilter
     FILTER 'Подразделения из которых полуется сырье' 'F10' NOT NULL rawDepartmentStore(m, d);
 
-showFormRawDepartmentStore 'Подразделения, из которых можно получить сырье' (manufactory, departmentStore) = ACTION FORM rawDepartmentStore OBJECTS m, d NEWSESSION MODAL;
+showFormRawDepartmentStore 'Подразделения, из которых можно получить сырье' (manufactory, departmentStore) = ACTION FORM rawDepartmentStore OBJECTS m, d MODAL;
 
 FORM departmentStore 'Отдел магазина'
 OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare, m=manufactory
