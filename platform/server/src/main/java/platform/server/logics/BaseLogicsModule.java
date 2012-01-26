@@ -688,11 +688,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentMinute = addTProp(Time.MINUTE);
         currentEpoch = addTProp(Time.EPOCH);
         currentDateTime = addTProp(Time.DATETIME);
-        currentUser = addProperty(null, new LP<PropertyInterface>(new CurrentUserFormulaProperty(genSID(), user)));
-        currentSession = addProperty(null, new LP<PropertyInterface>(new CurrentSessionFormulaProperty(genSID(), session)));
-        currentComputer = addProperty(null, new LP<PropertyInterface>(new CurrentComputerFormulaProperty(genSID(), computer)));
-        isServerRestarting = addProperty(null, new LP<PropertyInterface>(new IsServerRestartingFormulaProperty(genSID())));
-        changeUser = addProperty(null, new LP<ClassPropertyInterface>(new ChangeUserActionProperty(genSID(), customUser)));
+        currentUser = addProperty(null, new LP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
+        currentSession = addProperty(null, new LP<PropertyInterface>(new CurrentSessionFormulaProperty("currentSession", session)));
+        currentComputer = addProperty(null, new LP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));
+        isServerRestarting = addProperty(null, new LP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
+        changeUser = addProperty(null, new LP<ClassPropertyInterface>(new ChangeUserActionProperty("changeUser", customUser)));
 
         userLogin = addDProp(baseGroup, "userLogin", getString("logics.user.login"), StringClass.get(30), customUser);
         loginToUser = addAGProp("loginToUser", getString("logics.user"), userLogin);
