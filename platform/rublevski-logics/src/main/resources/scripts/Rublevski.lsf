@@ -152,6 +152,9 @@ CLASS STATIC groupProduct 'Группа изделий для печати за�
 };
 
 
+itemGroupSku = DATA itemGroup(sku) IN idGroup;
+nameItemGroupSku 'Группа товара' = name(itemGroupSku(sku)) IN baseGroup;
+
 brandItem = DATA brand(item);
 nameBrandItem 'Бренд' (item) = name(brandItem(item)) IN descriptionGroup;
 
@@ -259,7 +262,7 @@ proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
 
 isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGroup;
 
-daysExpiryPackItem 'СрmanufactoryGroupок годности в днях с момента фасовки' = DATA DOUBLE (item) IN expiryGroup;
+daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA DOUBLE (item) IN expiryGroup;
 hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
 
 standartItem 'Стандарт изготовления изделия (СТБ и пр.)' = DATA STRING[100] (item) IN manufactoryGroup;
@@ -373,9 +376,40 @@ valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(i
                                                       stringBooleanItemAttribute(item, attribute),
                                                       nameObjectItemAttribute(item, attribute);
 
+
+// ----------------------------------- Штрих код ------------------------------------------ //
+GROUP barcodeGroup : baseGroup;
+
+CLASS barcode 'Штрих код' : barcodeObject;
+
+inSkuBarcode 'Присоединение штрих-кода к товару' = DATA BOOLEAN (sku, barcode) IN baseGroup;
+
+titleScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode) IN barcodeGroup;
+titleCashBarcode 'Наименование для касс' = DATA STRING[100] (barcode) IN barcodeGroup;
+unitOfMeasureBarcode = DATA unitOfMeasure (barcode) IN idGroup;
+shortNameUnitOfMeasureBarcode 'Единица измерения' (barcode) = shortName(unitOfMeasureBarcode(barcode)) IN barcodeGroup;
+amountBarcode 'Количество (сколько списать при продаже)' = DATA INTEGER (barcode) IN barcodeGroup;
+removeBarcode 'Заблокирован (удален с оборудования)' = DATA BOOLEAN (barcode) IN barcodeGroup;
+commentRemoveBarcode 'Причина блокировки' = DATA STRING[100] (barcode) IN barcodeGroup;
+
+userBarcodeSku = DATA barcode(sku) IN idGroup;
+//barcodeUserBarcodeSku 'Установленный штрих-код' = barcode(userBarcodeSku(sku)) IN baseGroup;
+
+defaultBarcodeSku(sku) = GROUP MAX barcode IF inSkuBarcode(sku, barcode) BY sku IN idGroup;
+barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku) IN baseGroup;
+
+CONSTRAINT CHECKED sku IS sku AND NOT inSkuBarcode(sku, userBarcodeSku(sku)) MSG 'Товар основного штрих-кода должен совпадать с товаром';
+
+barcodeBarcodeSku  'Действующий штрих-код' = barcode(barcodeSku(sku)) IN baseGroup;
+
+FORM barcode 'Штрих-код'
+OBJECTS b=barcode
+PROPERTIES(b) barcode;
+
+
 FORM item 'Товар'
-OBJECTS i=item FIXED PANEL, a=itemAttribute
-PROPERTIES(i) name, nameBrandItem, shortNameUnitOfMeasureItem, nameTypeItemItem, nameSortItem, shortNamePackItem, shortNameSizeItem, shortNameSpecialtyItem,
+OBJECTS i=item FIXED PANEL, a=itemAttribute, b=barcode
+PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, nameBrandItem, shortNameUnitOfMeasureItem, nameTypeItemItem, nameSortItem, shortNamePackItem, shortNameSizeItem, shortNameSpecialtyItem,
  isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem, nameTasteItem,
  hallmarkItem, articleItem, quantityPackItem, nameCoolingDegreeItem, minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
  percentFatItem, percentAlcoholItem, lengthItem, widthItem, heightItem, grossWeightItem, lengthPackItem, widthPackItem, heightPackItem, grossWeightPackItem,
@@ -387,11 +421,16 @@ PROPERTIES(i) name, nameBrandItem, shortNameUnitOfMeasureItem, nameTypeItemItem,
  isCutedItem, isLoafCutItem, storageTemperatureItem, passScalesItem, bonusItem, percentWholesaleMarkItem,
  minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem
 PROPERTIES name(a), valueItemAttribute(i, a)
-EDIT item OBJECT i;
+PROPERTIES barcode(b)
+PROPERTIES inSkuBarcode(i, b)
+FILTERS NOT NULL inSkuBarcode(i, b)
+PROPERTIES(b) ADDOBJ, delete
+EDIT item OBJECT i
+EDIT barcode OBJECT b;
 
 DESIGN item FROM DEFAULT {
     main {
-       ADD item.box BEFORE functions.box {
+       ADD item.box BEFORE b.box {
             tabbedPane = TRUE;
             ADD i.descriptionGroup;
             ADD i.retailGroup;
@@ -430,46 +469,16 @@ OBJECTS c=component
 PROPERTIES(c) READONLY name, nettoBruttoCoeffComponent
 PROPERTIES(c) ADDFORM, EDITFORM, delete;
 
-// ----------------------------------- Штрих код ------------------------------------------ //
-GROUP barcodeGroup 'Общая информация' : baseGroup;
-
-CLASS barcode 'Штрих код' : barcodeObject;
-
-skuBarcode = DATA sku (barcode) IN idGroup;
-nameSkuBarcode 'Товар' = name(skuBarcode(barcode)) IN baseGroup;
-
-inBarcodeSku 'Вхождение в товар' (barcode, sku) = skuBarcode(barcode) == sku;
-
-titleScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode) IN barcodeGroup;
-titleCashBarcode 'Наименование для касс' = DATA STRING[100] (barcode) IN barcodeGroup;
-unitOfMeasureBarcode = DATA unitOfMeasure (barcode) IN idGroup;
-shortNameUnitOfMeasureBarcode 'Единица измерения' (barcode) = shortName(unitOfMeasureBarcode(barcode)) IN barcodeGroup;
-amountBarcode 'Количество (сколько списать при продаже)' = DATA INTEGER (barcode) IN barcodeGroup;
-removeBarcode 'Заблокирован (удален с оборудования)' = DATA BOOLEAN (barcode) IN barcodeGroup;
-commentRemoveBarcode 'Причина блокировки' = DATA STRING[100] (barcode) IN barcodeGroup;
-
-userBarcodeSku = DATA barcode(sku) IN idGroup;
-barcodeUserBarcodeSku 'Установленный штрих-код' = barcode(userBarcodeSku(sku)) IN baseGroup;
-defaultBarcodeSku(sku) = GROUP MAX barcode BY skuBarcode(barcode) IN idGroup;
-barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku);
-
-CONSTRAINT CHECKED skuBarcode(userBarcodeSku(sku)) != sku AS sku  MSG 'Товар основного штрих-кода должен совпадать с товаром';
-
-barcodeBarcodeSku  'Действующий штрих-код' = barcode(barcodeSku(sku)) IN baseGroup;
-
-FORM barcode 'Штрих-код'
-OBJECTS b=barcode
-PROPERTIES(b) barcode, nameSkuBarcode;
-
 
 FORM items 'Товары'
 OBJECTS i=item
 OBJECTS b=barcode
-PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem, nameCountryItem, barcodeBarcodeSku
+PROPERTIES(i) READONLY name, nameItemGroupSku, shortNameUnitOfMeasureItem, nameCountryItem, barcodeBarcodeSku
 PROPERTIES(i) ADDFORM, EDITFORM, delete
-PROPERTIES(b) READONLY barcode, nameSkuBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
-FILTERS NOT NULL inBarcodeSku(b, i)
-PROPERTIES(b) ADDFORM, EDITFORM, delete;
+PROPERTIES(b) READONLY barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
+//PROPERTIES(i, b) inSkuBarcode
+PROPERTIES(b) ADDFORM, EDITFORM, delete
+PROPERTIES(i, b) inSkuBarcode;
 
 // ----------------------------------- Склад ------------------------------------------ //
 
@@ -721,6 +730,17 @@ PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentSto
                  nameStatusCashDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem, fromDateDeliveryDepartmentStoreItem,
                  banSaleDepartmentStoreItem, banMovementDepartmentStoreItem, reserveDepartmentStoreItem;
 
+//------------------------------------ Товар для подразделения с историей -------------------------------------------------------------//
+maxReserveItemDepartmentDate 'Максимально допустимый товарный запас в днях' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
+minReserveItemDepartmentDate 'Минимально допустимый товарный запас в днях' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
+
+banRevaluationItemDepartmentDate 'Запрет на переоценку' = DATA BOOLEAN (item, departmentStore, DATE) IN baseGroup;
+
+inActionItemDepartmentDate 'Товар акции' = DATA BOOLEAN (item, departmentStore, DATE) IN baseGroup;
+
+marginProductionItemDepartmentDate 'Наценка производства' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
+
+discountItemDepartmentDate 'Скидка для товара' = DATA STRING[100] (item, departmentStore, DATE) IN baseGroup;
 
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
 
@@ -1666,7 +1686,7 @@ timeStageGroupMachinery 'Время истечения срока годност
 stockStageGroupMachinery 'Остаток на момент передачи' (stage, groupMachinery) = DATA DOUBLE (stage, groupMachinery) IN baseGroup;
 
 barcodeBarcodeStageGroupMachinery 'Штрих-код' (stage, groupMachinery) = barcode(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
-nameSkuBarcodeStageGroupMachinery 'Товар' (stage, groupMachinery) = nameSkuBarcode(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
+//nameSkuBarcodeStageGroupMachinery 'Товар' (stage, groupMachinery) = nameSkuBarcode(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
 //titleScalesBarcodeStageGroupMachinery 'Наименование для весов' (stage, groupMachinery) = titleScalesBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
 //titleCashBarcodeStageGroupMachinery 'Наименование для касс' (stage, groupMachinery) = titleCashBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
 //amountBarcodeStageGroupMachinery 'Количество (сколько списать при продаже)' (stage, groupMachinery) = amountBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
@@ -1678,7 +1698,7 @@ OBJECTS gr=groupMachinery
 OBJECTS st=stage
 PROPERTIES(gr) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
 PROPERTIES(st) valueStage
-PROPERTIES(st, gr)  barcodeBarcodeStageGroupMachinery, nameSkuBarcodeStageGroupMachinery, priceStageGroupMachinery, dateStageGroupMachinery,
+PROPERTIES(st, gr)  barcodeBarcodeStageGroupMachinery, priceStageGroupMachinery, dateStageGroupMachinery,
                     timeStageGroupMachinery, stockStageGroupMachinery
 FILTERS  NOT NULL barcodeStageGroupMachinery(st, gr);
 
