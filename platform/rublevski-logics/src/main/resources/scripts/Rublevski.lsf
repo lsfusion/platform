@@ -1549,6 +1549,8 @@ dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
 dateToRate 'Действует по' = DATA DATE (rate) IN baseGroup;
 dateRate 'Дата ввода' = DATA DATE (rate) IN baseGroup;
 
+dateRate(rate) <- currentDate() ON ASSIGN rate IS rate;
+
 employeeRate 'Кто ввел ИД' = DATA employee (rate) IN baseGroup;
 
 userFirstNameEmployeeRate 'Кто ввел значение, имя' (rate) = userFirstName(employeeRate(rate)) IN baseGroup;
@@ -1731,7 +1733,9 @@ NAVIGATOR {
             ADD cuttings;
             ADD recipes;
         }
-        ADD taxes;
+        NEW pricing 'Ценообразование'{
+            ADD taxes;
+        }
     }
 
     NEW documents 'Документы' TO formsToolbar {
