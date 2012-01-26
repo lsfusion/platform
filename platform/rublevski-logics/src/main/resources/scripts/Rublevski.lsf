@@ -12,6 +12,7 @@ CLASS STATIC yesNo 'Логическое' {
     yes 'ДА',
     no 'НЕТ'
 };
+CLASS language 'Язык' : doubleNamed;
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 CLASS itemGroup 'Товарная группа' : named;
@@ -494,13 +495,33 @@ inStoreTypeTradingNetwork(storeType, tradingNetwork) = tradingNetworkStoreType(s
 
 // ----------------------------------- Физические лица -------------------------------------------------- //
 
+GROUP employeeGroup 'Пользовательская информация' : baseGroup;
+
 CLASS ABSTRACT person 'Физическое лицо';
 CLASS employee 'Сотрудник' : person, customUser;
+CLASS employeeSystem 'Операционная система';
+
+
+nameEmployeeSystem 'Операционная система' = DATA STRING[100] (employeeSystem) IN employeeGroup;
+employeeSystemEmployee(employee) = DATA employeeSystem (employee) IN idGroup;
+nameEmployeeSystemEmployee 'Операционная система на рабочем месте пользователя' (employee) = nameEmployeeSystem(employeeSystemEmployee(employee)) IN employeeGroup;
+
+languageEmployee(employee) = DATA language (employee) IN idGroup;
+nameLanguageEmployee 'Язык интерфейса' = name(languageEmployee(employee)) IN employeeGroup;
+shortNameLanguageEmployee 'Язык интерфейса сокр.' = shortName(languageEmployee(employee)) IN employeeGroup;
+numberEmployee 'Номер кассира для касс' = DATA STRING[10] (employee) IN employeeGroup;
+passwordEmployee 'Пароль для касс' = DATA STRING[20] (employee) IN employeeGroup;
+dataEmployee 'Данные для регистрации на кассе (штрих-код)' = DATA STRING[20] (employee) IN employeeGroup;
+
+
 departmentStoreEmployee 'Сотрудник отдела' = DATA BOOLEAN (departmentStore, employee);
+phoneEmployee 'Телефон' = DATA STRING[50] (employee) IN employeeGroup;
+
 
 FORM employee 'Сотрудник'
 OBJECTS e=employee FIXED PANEL, d=departmentStore
-PROPERTIES(e) userFirstName, userLastName
+PROPERTIES(e) userFirstName, userLastName, phoneEmployee, nameEmployeeSystemEmployee, shortNameLanguageEmployee, numberEmployee,
+              passwordEmployee, dataEmployee
 PROPERTIES(d) name
 PROPERTIES(d, e) departmentStoreEmployee
 FILTERGROUP filterEmployeeDepartmentStore
@@ -1317,6 +1338,101 @@ PROPERTIES(grch) ADDFORM, EDITFORM, delete
 PROPERTIES(ch)   READONLY descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery
 FILTERS NOT NULL isGroupCheckCheck(grch, ch);
 
+// ----------------------------------- Группы пользователей -------------------------------------------------- //
+
+CLASS groupUser 'Группы пользователей';
+
+nameGroupUser 'Наименование группы' = DATA STRING[100] (groupUser) IN baseGroup;
+sidGroupUser 'Идентификатор' = DATA STRING[20] (groupUser) IN baseGroup;
+
+groupUserEmployee(employee) = DATA groupUser (employee)  IN idGroup;
+nameGroupUserEmployee 'Наименование группы' (employee) = nameGroupUser(groupUserEmployee(employee)) IN baseGroup;
+
+includedEmployeeCash 'Подключить'  = DATA BOOLEAN (employee, cash) IN baseGroup;
+dateFromEmployeeCash 'Дата с'  = DATA DATE (employee, cash) IN baseGroup;
+dateToEmployeeCash 'Дата по'  = DATA DATE (employee, cash) IN baseGroup;
+
+CLASS STATIC typeAction 'Тип действия'
+{
+    all 'Все подразделения',
+    notAll 'Отдельные подразделения'
+};
+actionEmployee(employee) = DATA typeAction (employee)  IN idGroup;
+nameActionEmployee 'доступ к подразделениям' (employee) = name(actionEmployee(employee)) IN baseGroup;
+
+inEmployeeDepartmentStoreDefault(employee, departmentStore) = DATA BOOLEAN (employee, departmentStore);
+inEmployeeDepartmentStore 'Подключить' (employee, departmentStore) = inEmployeeDepartmentStoreDefault(employee, departmentStore) IF actionEmployee(employee) == typeAction.notAll IN baseGroup;
+dateFromEmployeeDepartmentStore 'Начало доступа'  = DATA DATE (employee, departmentStore) IN baseGroup;
+dateToEmployeeDepartmentStore 'Окончание доступа'  = DATA DATE (employee, departmentStore) IN baseGroup;
+
+isGroupUserEmployee(groupUser, employee) =  groupUserEmployee(employee) == groupUser;
+
+departmentStoreCash(cash) = departmentStoreGroupMachinery(groupCashCash(cash)) IN idGroup;
+nameDepartmentStoreCash 'Наименование отдела' (cash) = name(departmentStoreCash(cash)) IN baseGroup;
+nameStoreDepartmentStoreCash 'Наименование магазина' (cash) = name(storeDepartmentStore(departmentStoreCash(cash)))  IN baseGroup;
+
+CONSTRAINT  groupUserEmployee(employee) AND NOT actionEmployee(employee) MSG 'Для сотрудника не выбран доступ к подразделениям';
+// todo: надо сделать проверку для сотрудника на доступ к подразделению//
+
+
+FORM groupUser 'Группa пользователей'
+OBJECTS gru=groupUser FIXED PANEL
+OBJECTS e=employee, c=cash, d=departmentStore
+PROPERTIES(gru)  nameGroupUser, sidGroupUser
+PROPERTIES(e)    nameGroupUserEmployee, userFirstName, userLastName, phoneEmployee, nameActionEmployee, nameEmployeeSystemEmployee,
+                 shortNameLanguageEmployee, numberEmployee, passwordEmployee, dataEmployee
+PROPERTIES(c)    READONLY nameStoreDepartmentStoreCash, nameDepartmentStoreCash, nameGroupMachineryCash, numberCash, nppCash
+PROPERTIES(e, c) includedEmployeeCash, dateFromEmployeeCash, dateToEmployeeCash
+PROPERTIES(d)    READONLY nameStoreDepartmentStore, name
+PROPERTIES(e, d) dateFromEmployeeDepartmentStore, dateToEmployeeDepartmentStore, inEmployeeDepartmentStore
+FILTERGROUP filters1
+    FILTER 'Показывать кассы только для данного пользователя' 'F10' NOT NULL includedEmployeeCash(e, c)
+FILTERGROUP filters2
+    FILTER 'Показывать сотрудников только для данной группы пользователей' 'F9' NOT NULL isGroupUserEmployee(gru, e)
+FILTERGROUP filters3
+    FILTER 'Показывать подразделения только для данного пользователя' 'F8' NOT NULL inEmployeeDepartmentStore(e, d)
+EDIT groupUser OBJECT gru;
+
+DESIGN groupUser FROM DEFAULT {
+    main{
+       ADD prop.box BEFORE functions.box {
+            tabbedPane = TRUE;
+            ADD e.box;
+            ADD c.box;
+            ADD d.box;
+       }
+
+    }
+}
+
+FORM groupsUser 'Группы пользователей'
+OBJECTS gru=groupUser, e=employee, c=cash, d=departmentStore
+PROPERTIES(gru)  READONLY nameGroupUser, sidGroupUser
+PROPERTIES(gru)  ADDFORM, EDITFORM, delete
+PROPERTIES(e)    READONLY userFirstName, userLastName, phoneEmployee, nameActionEmployee
+PROPERTIES(c)    READONLY nameStoreDepartmentStoreCash, nameDepartmentStoreCash, numberCash, nameGroupMachineryCash, nppCash
+PROPERTIES(e, c) includedEmployeeCash, dateFromEmployeeCash, dateToEmployeeCash
+PROPERTIES(d)    READONLY nameStoreDepartmentStore, name
+PROPERTIES(e, d) READONLY dateFromEmployeeDepartmentStore, dateToEmployeeDepartmentStore, inEmployeeDepartmentStore
+FILTERS NOT NULL includedEmployeeCash(e, c),
+        NOT NULL isGroupUserEmployee(gru, e),
+        NOT NULL inEmployeeDepartmentStore(e, d);
+
+DESIGN groupsUser FROM DEFAULT {
+    main{
+       ADD prop.box BEFORE functions.box {
+            tabbedPane = TRUE;
+            ADD c.box;
+            ADD d.box;
+       }
+       ADD case.box BEFORE prop.box {
+            ADD gru.box;
+            ADD e.box;
+            POSITION gru.box TO THE LEFT e.box;
+       }
+   }
+}
+
  //---------------------------- Карты проработки (разруба) ----------------------------------------//
 GROUP cutGroup 'Разделка' : baseGroup;
 CLASS cutting 'Карта пророботки (разделки)' : named;
@@ -1441,7 +1557,9 @@ userLastNameEmployeeRate 'Кто ввел значение, фамилия' (rat
 //rateRange 'Шкала ИД' = DATA rate (range) IN baseGroup;
 userRate 'Действующая' (rate) = rate IF dateFromRate(rate) <= currentDate() AND dateToRate(rate) >= currentDate();
 userRateRange 'Действующая' (range) = GROUP MAX userRate(rate) BY rangeRate(rate);
-quantityUserRateRange 'Количество историй' (range) = GROUP SUM 1 IF userRate(rate) BY rangeRate(rate);
+quantityUserRateRange 'Количество действующих историй' (range) = GROUP SUM 1 IF userRate(rate) BY rangeRate(rate);
+quantityRateRange 'Количество историй' (range) = GROUP SUM 1 IF rate BY rangeRate(rate);
+
 CONSTRAINT CHECKED quantityUserRateRange(range) > 1 MSG 'ошибка: Одновременно не может быть несколько действующих ставок';
 // не работает  //
 //   обязательно переделать на уникальность и по времени
@@ -1470,9 +1588,21 @@ PROPERTIES(ra, s) inRangeStore
 FILTERS NOT NULL  inRangeRate(ra, rt),
         NOT NULL  inTaxRange(t, ra)
 FILTERGROUP filters6
-    FILTER 'Показывать магазиным только для данного налога' 'F10' NOT NULL inRangeStore(ra, s)
+    FILTER 'Показывать магазины только для данного налога' 'F10' NOT NULL inRangeStore(ra, s)
 
 EDIT tax OBJECT t;
+
+DESIGN tax FROM DEFAULT {
+    main {
+       ADD pax.box BEFORE functions.box {
+            tabbedPane = TRUE;
+            ADD ra.box;
+            ADD rt.box;
+            ADD s.box;
+       }
+
+    }
+}
 
 FORM taxes 'Налоги'
 OBJECTS t=tax
@@ -1481,11 +1611,9 @@ PROPERTIES(t)      READONLY nameTax, shortNameTax
 PROPERTIES(t)      ADDFORM, EDITFORM, delete
 PROPERTIES(s)     READONLY name, addressStore
 PROPERTIES(ra, s)  READONLY inRangeStore
-PROPERTIES(ra)  READONLY dataRange, dataUserRateRange, dateFromUserRateRange, dateToUserRateRange, userFirstNameEmployeeUserRateRange, userLastNameEmployeeUserRateRange, nameRangeTypeRange, quantityUserRateRange
-FILTERGROUP filters4
-    FILTER 'Показывать ставки только для данного налога' 'F10' NOT NULL inTaxRange(t, ra)
-FILTERGROUP filters5
-    FILTER 'Показывать магазиным только для данного налога' 'F9' NOT NULL inRangeStore(ra, s);
+PROPERTIES(ra)  READONLY dataRange, dataUserRateRange, dateFromUserRateRange, dateToUserRateRange, userFirstNameEmployeeUserRateRange, userLastNameEmployeeUserRateRange, nameRangeTypeRange, quantityRateRange
+FILTERS NOT NULL inTaxRange(t, ra),
+        NOT NULL inRangeStore(ra, s);
 
 
 //---------------------------- Рецепты блюд ----------------------------------------//
