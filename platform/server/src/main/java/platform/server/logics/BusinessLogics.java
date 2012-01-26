@@ -974,7 +974,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         List<List<Object>> data = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
-            if (!LM.idSet.contains(property.getSID()) && !(property instanceof NullValueProperty) && property.isFull()) {
+            if (!LM.isGeneratedSID(property.getSID()) && !(property instanceof NullValueProperty) && property.isFull()) {
                 String commonClasses = "";
                 String returnClass = "";
                 String classProperty = "";
@@ -1015,8 +1015,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         List<List<Object>> data2 = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
-            if (!LM.idSet.contains(property.getSID()))
-            data2.add(Arrays.asList(property.getSID(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
+            if (!LM.isGeneratedSID(property.getSID()))
+                data2.add(Arrays.asList(property.getSID(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
         }
 
         ImportField parentSidField = new ImportField(LM.formSIDValueClass);

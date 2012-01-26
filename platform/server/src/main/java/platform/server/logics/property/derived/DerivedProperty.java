@@ -14,8 +14,10 @@ public class DerivedProperty {
 
     private static int ids = 0;
 
+    public static final String ID_PREFIX_GEN = "GDVID";
+    
     public static String genID() {
-        return "GDVID"+(ids++);
+        return ID_PREFIX_GEN+(ids++);
     }
 
     private static StaticClass formulaClass = DoubleClass.instance;

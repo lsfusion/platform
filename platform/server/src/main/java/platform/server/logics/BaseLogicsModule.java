@@ -30,6 +30,7 @@ import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.PropertySet;
 import platform.server.logics.table.TableFactory;
@@ -1258,6 +1259,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     Set<String> idSet = new HashSet<String>();
 
+    boolean isGeneratedSID(String sid) {
+        return idSet.contains(sid) || sid.startsWith(DerivedProperty.ID_PREFIX_GEN);
+    } 
 
     Collection<LP[]> checkCUProps = new ArrayList<LP[]>();
 

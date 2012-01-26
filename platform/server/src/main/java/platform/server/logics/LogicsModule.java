@@ -1937,7 +1937,7 @@ public abstract class LogicsModule {
     }
 
     private void addPersistent(AggregateProperty property) {
-        assert !baseLM.idSet.contains(property.getSID());
+        assert !baseLM.isGeneratedSID(property.getSID());
         property.stored = true;
 
         baseLM.logger.debug("Initializing stored property...");
