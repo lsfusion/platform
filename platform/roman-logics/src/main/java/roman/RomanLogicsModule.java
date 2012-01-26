@@ -4003,7 +4003,7 @@ public class RomanLogicsModule extends LogicsModule {
             quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
             quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
 
-            addPropertyDraw(addGCAProp(actionGroup, "nullInvoiceListArticleCompositeColor", "Сбросить", objSizeSupplier.groupTo, quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vzero, 4),
+            addPropertyDraw(addGCAProp(actionGroup, "nullOrderListArticleCompositeColor" + (edit ? "Edit" : ""), "Сбросить", objSizeSupplier.groupTo, quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vzero, 4),
                     objOrder, objArticle, objColorSupplier, objSizeSupplier);
 
             addPropertyDraw(quantityListSku, objOrder, objItem);
@@ -4245,12 +4245,14 @@ public class RomanLogicsModule extends LogicsModule {
             quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
             quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
 
-            nullArticle = addPropertyDraw(addEPAProp("nullListArticle", "Сбросить", EPA_NULL,
+            String formPostfix = (box ? "Box" : "") + (edit ? "Edit" : "");
+
+            nullArticle = addPropertyDraw(addEPAProp("nullListArticle" + formPostfix, "Сбросить", EPA_NULL,
                     quantityListArticle,
                     numberListArticle),
                     objList, objArticle);
-            nullArticleColor = addPropertyDraw(addEPAProp("nullInvoiceListArticleCompositeColor", "Сбросить", EPA_NULL,
-                                                addGCAProp(actionGroup, "nullGCAInvoiceListArticleCompositeColor", "Сбросить (количество)", objSizeSupplier.groupTo, quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vnull, 4), 1, 2, 3, 4,
+            nullArticleColor = addPropertyDraw(addEPAProp("nullInvoiceListArticleCompositeColor" + formPostfix, "Сбросить", EPA_NULL,
+                                                addGCAProp(actionGroup, "nullGCAInvoiceListArticleCompositeColor" + formPostfix, "Сбросить (количество)", objSizeSupplier.groupTo, quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vnull, 4), 1, 2, 3, 4,
                                                 inListArticleColorSupplier, 1, 2, 3),
                                                 objList, objArticle, objColorSupplier, objSizeSupplier);
 
