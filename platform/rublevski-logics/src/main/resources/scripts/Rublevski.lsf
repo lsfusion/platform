@@ -982,12 +982,8 @@ supplierContract 'Поставщик (ИД)' = DATA supplier (contract) IN idGro
 userContractSupplier 'Контракт (ИД)' = DATA contract (supplier) IN idGroup;
 companySupplier 'Организация (ИД)' = DATA company (supplier) IN idGroup;
 
-sureSupplier 'Обязателен заказ поставщику' (supplier) = DATA yesNo (supplier) IN idGroup;
-nameSureSupplier 'Обязателен заказ поставщику, ДА/НЕТ' (supplier) = name(sureSupplier(supplier)) IN supplierGroup;
-
 payerSupplier 'Плательщик НДС' = DATA BOOLEAN (supplier) IN supplierGroup;
 scheduleSupplier 'Разрешить доп.заказ товаров вне графика' = DATA BOOLEAN (supplier) IN supplierGroup;
-controlSupplier 'Контролировать ассортимент поставщика' = DATA BOOLEAN (supplier) IN supplierGroup;
 surePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = DATA INTEGER (supplier) IN supplierGroup;
 allowablePercentSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (supplier) IN supplierGroup;
 afterDaysSupplier 'Максимальное число дней до поставки после заказа' = DATA INTEGER (supplier) IN supplierGroup;
@@ -1000,8 +996,8 @@ marksSupplier 'Число знаков после зап.в сумме к опл
 emailOrderSupplierDepartmentStore 'e-mail для передачи заказа' = DATA STRING[100] (supplier, departmentStore)IN supplierGroup;
 contactSupplierDepartmentStore 'Контактная информация' = DATA STRING[500] (supplier, departmentStore)IN supplierGroup;
 controlSupplierDepartmentStore(supplier, departmentStore) = DATA yesNo (supplier, departmentStore)IN idGroup;
-nameControlSupplierDepartmentStore 'Контролировать ассортимент поставщика, ДА/НЕТ' (supplier, departmentStore) = name(controlSupplierDepartmentStore(supplier, departmentStore)) IN supplierGroup;
-
+nameControlSupplierDepartmentStore 'Контролировать ассортимент поставщика, ДА/НЕТ' (supplier, departmentStore) = name(UNION OVERRIDE yesNo.no IF supplier IS supplier AND departmentStore IS departmentStore,
+                                                                                                                                   controlSupplierDepartmentStore(supplier, departmentStore)) IN supplierGroup;
 TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 sureSupplierDepartmentStoreDate(supplier, departmentStore, date) = DATA yesNo (supplier, departmentStore, DATE) IN idGroup;
 nameSureSupplierDepartmentStoreDate 'Обязателен заказ поставщику, ДА/НЕТ' (supplier, departmentStore, date) = name(sureSupplierDepartmentStoreDate(supplier, departmentStore, date)) IN supplierGroup;
@@ -1009,6 +1005,7 @@ nameSureSupplierDepartmentStoreDate 'Обязателен заказ поста�
 dateSSDS 'Дата' (supplier, departmentStore, date) = GROUP MAX dateIn AND sureSupplierDepartmentStoreDate(supplier, departmentStore, dateIn) AND dateIn <= (date AS DATE) BY supplier, departmentStore, date IN supplierGroup;
 sureSupplierDepartmentStore(supplier, departmentStore) =  sureSupplierDepartmentStoreDate(supplier, departmentStore, dateSSDS(supplier, departmentStore, currentDate())) IN supplierGroup;
 nameSureSupplierDepartmentStore 'Обязателен заказ поставщику, текущее значение' (supplier, departmentStore) = nameSureSupplierDepartmentStoreDate(supplier, departmentStore, dateSSDS(supplier, departmentStore, currentDate())) IN supplierGroup;
+
 overrideSupplierDepartmentStore(supplier, departmentStore) = UNION OVERRIDE (TRUE IF UNION OVERRIDE emailOrderSupplierDepartmentStore(supplier, departmentStore), contactSupplierDepartmentStore(supplier, departmentStore)),
                                                                              UNION OVERRIDE controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes , sureSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes;
 
@@ -1036,7 +1033,7 @@ OBJECTS s=supplier FIXED PANEL
 OBJECTS a=account, c=contractProvider, l=license, d=departmentStore
 PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormAddressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
               phoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
-              dataOverrideAccountLegalEntity, residentLegalEntity, manufacturerLegalEntity, dataOverrideContractSupplier, nameSureSupplier, controlSupplier, surePercentSupplier, allowablePercentSupplier,
+              dataOverrideAccountLegalEntity, residentLegalEntity, manufacturerLegalEntity, dataOverrideContractSupplier, surePercentSupplier, allowablePercentSupplier,
               afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier, dataActingLicenseLegalEntity
 PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
 PROPERTIES(c) dataContract, nameCompanyContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract, delayContract,
@@ -1076,7 +1073,7 @@ FORM company 'Компания'
 OBJECTS co=company FIXED PANEL
 OBJECTS a=account
 OBJECTS c=contract
-PROPERTIES(co) nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
+PROPERTIES(co) nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormAddressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
               phoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
 PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
 PROPERTIES(c) dataContract, nameSupplierContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, noteContract, ADDOBJ, delete
@@ -1085,6 +1082,7 @@ FILTERS NOT NULL inCompanyContract(co, c),
 EDIT company OBJECT co;
 
 DESIGN company FROM DEFAULT {
+PROPERTY (showFormAddressLegalEntity){panelLocation = SHORTCUT 'Rublevski_addressLegalEntity';}
     main{
        ADD prop.box BEFORE functions.box {
             tabbedPane = TRUE;
@@ -1275,11 +1273,14 @@ numberScales 'Заводской(серийный) номер ' = DATA STRING[10
 nameScalesModelScales 'Модель весов' (scales) = name(scalesModelScales(scales)) IN baseGroup;
 dateScales 'Дата следующей обязательной поверки' = DATA DATE (scales) IN baseGroup;
 passScales 'свойство ИД' = DATA feature (scales) IN idGroup;
-namePassScales 'Свойство товара [Годен до] помещать в ингредиенты' (scales) = name(passScales(scales)) IN baseGroup;
+namePassScales 'Свойство товара [Годен до] помещать в ингредиенты' (scales) = name(UNION OVERRIDE feature.always IF scales IS scales,
+                                                                                                  passScales(scales)) IN baseGroup;
 manufactureScales 'свойство ИД' = DATA feature (scales) IN idGroup;
-nameManufactureScales 'Свойство товара [Дата изг.] помещать в ингредиенты' (scales) = name(manufactureScales(scales)) IN baseGroup;
+nameManufactureScales 'Свойство товара [Дата изг.] помещать в ингредиенты' (scales) = name(UNION OVERRIDE feature.always IF scales IS scales,
+                                                                                                  manufactureScales(scales)) IN baseGroup;
 productionScales 'свойство ИД' = DATA feature (scales) IN idGroup;
-nameProductionScales 'Св-во товара[Срок годн.в часах] поместить в ингр-ты' (scales) = name(productionScales(scales)) IN baseGroup;
+nameProductionScales 'Св-во товара[Срок годн.в часах] поместить в ингр-ты' (scales) = name(UNION OVERRIDE feature.always IF scales IS scales,
+                                                                                                  productionScales(scales)) IN baseGroup;
 sidScales 'ID весов для Set Retail' = DATA INTEGER (scales) IN baseGroup;
 
 
@@ -1378,7 +1379,8 @@ CLASS STATIC typeAction 'Тип действия'
     notAll 'Отдельные подразделения'
 };
 actionEmployee(employee) = DATA typeAction (employee)  IN idGroup;
-nameActionEmployee 'доступ к подразделениям' (employee) = name(actionEmployee(employee)) IN baseGroup;
+nameActionEmployee 'доступ к подразделениям' (employee) = name(UNION OVERRIDE typeAction.all IF employee IS employee,
+                                                                              actionEmployee(employee)) IN baseGroup;
 
 inEmployeeDepartmentStoreDefault(employee, departmentStore) = DATA BOOLEAN (employee, departmentStore);
 inEmployeeDepartmentStore 'Подключить' (employee, departmentStore) = inEmployeeDepartmentStoreDefault(employee, departmentStore) IF actionEmployee(employee) == typeAction.notAll IN baseGroup;
@@ -1416,10 +1418,12 @@ EDIT groupUser OBJECT gru;
 DESIGN groupUser FROM DEFAULT {
     main{
        ADD prop.box BEFORE functions.box {
-            tabbedPane = TRUE;
-            ADD e.box;
             ADD c.box;
             ADD d.box;
+            POSITION c.box TO THE LEFT d.box;
+       }
+       ADD xrop.box BEFORE prop.box {
+            ADD e.box;
        }
 
     }
@@ -1550,11 +1554,11 @@ shortNameTax 'Сокращение' = DATA STRING[20] (tax) IN baseGroup;
 CLASS range 'Шкала';
 dataRange 'Шкала' = DATA INTEGER (range);
 
-CLASS rate 'История изменений';
+CLASS rate 'История изменений шкалы';
 rangeRate 'Шкала ИД' = DATA range (rate) IN idGroup;
 taxRange 'Налог ИД' = DATA tax (range) IN idGroup;
 
-CLASS STATIC rangeType 'Тип действия'
+CLASS STATIC rangeType 'Для каких подразделений действует шкала'
 {
     common 'Общий',
     units 'Для подразделений'
@@ -1563,6 +1567,8 @@ rangeTypeRange 'Тип ИД' = DATA rangeType (range) IN idGroup;
 nameRangeTypeRange 'Тип действия' = name(rangeTypeRange(range)) IN baseGroup;
 inRangeStoreDefault 'Вкл.' (range, store) = DATA BOOLEAN (range, store) IN baseGroup;
 inRangeStore 'Вкл.' (range, store) = inRangeStoreDefault(range, store)  IF rangeTypeRange(range) == rangeType.units IN baseGroup;
+
+rangeTypeRange(range) <- rangeType.common ON ASSIGN range IS range;     /// потом согласовать, какое значение должно быть по-умолчанию ///
 
 dataRate 'Значение ставки' = DATA DOUBLE (rate) IN baseGroup;
 dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
@@ -1575,6 +1581,9 @@ employeeRate 'Кто ввел ИД' = DATA employee (rate) IN baseGroup;
 
 userFirstNameEmployeeRate 'Кто ввел значение, имя' (rate) = userFirstName(employeeRate(rate)) IN baseGroup;
 userLastNameEmployeeRate 'Кто ввел значение, фамилия' (rate) = userLastName(employeeRate(rate)) IN baseGroup;
+
+userFirstNameEmployeeRate(rate) <- userFirstName(currentUser()) ON ASSIGN rate IS rate;
+userLastNameEmployeeRate(rate)  <- userLastName(currentUser()) ON ASSIGN rate IS rate;
 
 //rateRange 'Шкала ИД' = DATA rate (range) IN baseGroup;
 userRate 'Действующая' (rate) = rate IF dateFromRate(rate) <= currentDate() AND dateToRate(rate) >= currentDate();
@@ -1617,10 +1626,12 @@ EDIT tax OBJECT t;
 DESIGN tax FROM DEFAULT {
     main {
        ADD pax.box BEFORE functions.box {
-            tabbedPane = TRUE;
+            ADD s.box;
+       }
+       ADD sax.box BEFORE pax.box {
             ADD ra.box;
             ADD rt.box;
-            ADD s.box;
+            POSITION ra.box TO THE LEFT rt.box;
        }
 
     }
@@ -1734,6 +1745,7 @@ NAVIGATOR {
         NEW employeeRelations 'Сотрудники' {
             ADD employees;
             ADD employeesCommittees;
+            ADD groupsUser;
         }
         NEW supplierRelation 'Поставщики'{
             ADD suppliers;
@@ -1769,6 +1781,7 @@ NAVIGATOR {
             ADD item;
             ADD barcode;
             ADD employee;
+            ADD groupUser;
             ADD tradingSquare;
             ADD discount;
             ADD departmentStore;
