@@ -643,7 +643,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addFAProp(null, genSID(), "", form, objects, propObjects, new OrderEntity[propObjects.length], cls, newSession, isModal);
     }
 
-    public void addScriptedMetaCodeFragment(String name, List<String> params, String metaCode) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedMetaCodeFragment(String name, List<String> params, List<String> metaCode) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedMetaCodeFragment(" + name + ", " + params + ", " + metaCode + ");");
 
         checkDuplicateMetaCodeFragment(name);
@@ -672,16 +672,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public String grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
-        String res = "";
+    public List<String> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
+        List<String> code = new ArrayList<String>();
         while (!parser.input.LT(1).getText().equals("END")) {
             if (parser.input.LT(1).getType() == LsfLogicsParser.EOF) {
                 errLog.emitMetaCodeNotEndedError(parser, metaCodeName);
             }
-            res = res + " " + parser.input.LT(1).getText();
+            code.add(parser.input.LT(1).getText());
             parser.input.consume();
         }
-        return res;
+        return code;
     }
 
     private LP<?> addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {

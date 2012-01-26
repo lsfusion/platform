@@ -1330,16 +1330,17 @@ componentPropertyValue returns [Object value]
 metaCodeDeclarationStatement
 @init {
 	String code;
+	List<String> tokens;
 }
 @after {
 	if (isFirstParseStep()) {
-		self.addScriptedMetaCodeFragment($id.text, $list.ids, code);
+		self.addScriptedMetaCodeFragment($id.text, $list.ids, tokens);
 	}
 }
 	
 	:	'META' id=ID '(' list=idList ')'  
 		{
-			code = self.grabMetaCode($id.text);
+			tokens = self.grabMetaCode($id.text);
 		}
 		'END'
 	;
@@ -1349,7 +1350,23 @@ metaCodeStatement
 @after {
 	self.runMetaCode($id.sid, $list.ids);
 }
-	:	'@' id=compoundID '(' list=idList ')' ';'	
+	:	'@' id=compoundID '(' list=metaCodeIdList ')' ';'	
+	;
+
+
+metaCodeIdList returns [List<String> ids]
+@init {
+	ids = new ArrayList<String>();
+}
+	:		( firstId=metaCodeId { ids.add($firstId.sid); }
+			( ',' nextId=metaCodeId { ids.add($nextId.sid); })* )?
+	;
+
+
+metaCodeId returns [String sid]
+	:	id=compoundID 			{ $sid = $id.sid; }
+	|	ptype=PRIMITIVE_TYPE	{ $sid = $ptype.text; } 
+	|	str=STRING_LITERAL 		{ $sid = $str.text; }
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

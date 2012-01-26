@@ -2151,11 +2151,11 @@ public abstract class LogicsModule {
 
     protected class MetaCodeFragment {
         public List<String> parameters;
-        public String[] tokens;
+        public List<String> tokens;
 
-        public MetaCodeFragment(List<String> params, String code) {
+        public MetaCodeFragment(List<String> params, List<String> code) {
             this.parameters = params;
-            this.tokens = code.split("\\s");
+            this.tokens = code;
         }
 
         public String getCode(List<String> params) {
