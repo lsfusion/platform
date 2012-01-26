@@ -128,9 +128,13 @@ PROPERTIES(t) name;
 
 // ----------------------------------- Товар ------------------------------------------ //
 GROUP descriptionGroup 'Общее описание' : baseGroup;
-GROUP sizeGroup 'Физические характиристики' : publicGroup;
+GROUP sizeGroup 'Физические характеристики' : publicGroup;
 GROUP substanceGroup 'Пищевые характеристики' : publicGroup;
 GROUP retailGroup 'Ценовые характеристики' : publicGroup;
+GROUP expiryGroup 'Сроки годности' : publicGroup;
+GROUP equipmentGroup 'Кассы/весы/ценники' : publicGroup;
+GROUP manufactoryGroup 'Собственное производство' : publicGroup;
+
 
 CLASS ABSTRACT sku 'SKU' : named;
 CLASS itemComponent 'itemComponent' : sku;
@@ -156,10 +160,10 @@ nameTypeItemItem 'Вид' = name(typeItemItem(item)) IN descriptionGroup;
 unitOfMeasureItem = DATA unitOfMeasure (item) IN idGroup;
 shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortName(unitOfMeasureItem(item)) IN descriptionGroup;
 
-isWeightItem 'Весовой товар' = DATA BOOLEAN (itemComponent) IN descriptionGroup;
+isWeightItem 'Весовой товар' = DATA BOOLEAN (itemComponent) IN equipmentGroup;
 volumeItem 'Объём' = DATA DOUBLE (item) IN sizeGroup;
 netWeightItem 'Вес нетто' = DATA DOUBLE (item) IN sizeGroup;
-isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN descriptionGroup;
+isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN equipmentGroup;
 
 sortItem = DATA sort(item) IN idGroup;
 nameSortItem 'Сорт/категория товара' = name(sortItem(item)) IN descriptionGroup;
@@ -178,8 +182,8 @@ nameColorItem 'Цвет' = name(colorItem(item)) IN descriptionGroup;
 tasteItem = DATA taste (item) IN idGroup;
 nameTasteItem 'Вкус' = name(tasteItem(item)) IN descriptionGroup;
 
-percentFatItem '% жирности' =  DATA DOUBLE (item) IN descriptionGroup;
-percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN descriptionGroup;
+percentFatItem '% жирности' =  DATA DOUBLE (item) IN substanceGroup;
+percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN substanceGroup;
 
 lengthItem 'Длина товара' = DATA INTEGER (item) IN sizeGroup;
 widthItem 'Ширина товара' = DATA INTEGER (item) IN sizeGroup;
@@ -194,7 +198,7 @@ hallmarkItem 'Отличительный признак (особенности)
 
 articleItem 'Артикул поставщика/производителя' = DATA STRING[100] (item) IN descriptionGroup;
 
-quantityPackItem 'Количество в грузовом месте' = DATA DOUBLE (item) IN descriptionGroup;
+quantityPackItem 'Количество в грузовом месте' = DATA DOUBLE (item) IN sizeGroup;
 
 coolingDegreeItem 'Степень охлаждения (ИД)' = DATA coolingDegree (item) IN idGroup;
 nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegreeItem(item)) IN descriptionGroup;
@@ -202,8 +206,8 @@ nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegree
 minResourceItem 'Минимальный запас' = DATA INTEGER (item) IN retailGroup;
 minReserveItem 'Минимальный резерв' = DATA INTEGER (item) IN retailGroup;
 
-compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA STRING[400] (item)IN descriptionGroup;
-compositionMenuItem 'Состав изделия для печати в меню' = DATA STRING[400] (item)IN descriptionGroup;
+compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA STRING[400] (item)IN equipmentGroup;
+compositionMenuItem 'Состав изделия для печати в меню' = DATA STRING[400] (item)IN manufactoryGroup;
 
 countryItem = DATA country (item) IN idGroup;
 nameCountryItem 'Страна' = name(countryItem(item)) IN descriptionGroup;
@@ -223,25 +227,25 @@ banMarkdownItem 'Запретить уценку товара' = DATA BOOLEAN (i
 oldPriceItem 'Старая цена для печати на ценник' = DATA DOUBLE (item) IN retailGroup;
 
 tagItem 'Ценник (ИД)' = DATA tag (item) IN idGroup;
-nameTagItem 'Ценник' = name(tagItem(item)) IN descriptionGroup;
-multiplierItem 'Множитель для печати ценника' = DATA DOUBLE (item) IN retailGroup;
+nameTagItem 'Ценник' = name(tagItem(item)) IN equipmentGroup;
+multiplierItem 'Множитель для печати ценника' = DATA DOUBLE (item) IN equipmentGroup;
 
 rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) IN idGroup;
 
-controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN descriptionGroup;
-daysExpiryItem 'Срок годности в днях' = DATA DOUBLE (item) IN descriptionGroup;
+controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN expiryGroup;
+daysExpiryItem 'Срок годности в днях' = DATA DOUBLE (item) IN expiryGroup;
 
-isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN descriptionGroup;
+isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN equipmentGroup;
 hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN descriptionGroup;
 
 minTradeAllowanceItem 'MIN допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
 maxTradeAllowanceItem 'MAX допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
 minAllowedRetailPriceItem 'MIN допустимая розн.цена' = DATA INTEGER (item) IN retailGroup;
 
-isCrudeItem 'Товар-сырьё для калькуляции?' = DATA BOOLEAN (item) IN descriptionGroup;
+isCrudeItem 'Товар-сырьё для калькуляции?' = DATA BOOLEAN (item) IN manufactoryGroup;
 
 groupProductItem = DATA groupProduct (item) IN idGroup;
-nameGroupProductItem 'Группа изделий для печати заборного листа' = name(groupProductItem(item)) IN descriptionGroup;
+nameGroupProductItem 'Группа изделий для печати заборного листа' = name(groupProductItem(item)) IN manufactoryGroup;
 
 wareItem = DATA ware (item) IN idGroup;
 nameWareItem 'Посуда' = name(wareItem(item)) IN descriptionGroup;
@@ -254,19 +258,19 @@ proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
 
 isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGroup;
 
-daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA DOUBLE (item) IN descriptionGroup;
-hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN descriptionGroup;
+daysExpiryPackItem 'СрmanufactoryGroupок годности в днях с момента фасовки' = DATA DOUBLE (item) IN expiryGroup;
+hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
 
-standartItem 'Стандарт изготовления изделия (СТБ и пр.)' = DATA STRING[100] (item) IN descriptionGroup;
-normOutItem 'Норма выхода для печати в меню и калькуляцию' = DATA STRING[100] (item) IN descriptionGroup;
-groupMenuItem 'Группа для печати в меню' = DATA STRING[100] (item) IN descriptionGroup;
+standartItem 'Стандарт изготовления изделия (СТБ и пр.)' = DATA STRING[100] (item) IN manufactoryGroup;
+normOutItem 'Норма выхода для печати в меню и калькуляцию' = DATA STRING[100] (item) IN manufactoryGroup;
+groupMenuItem 'Группа для печати в меню' = DATA STRING[100] (item) IN manufactoryGroup;
 
-isCutedItem 'Товар разрубается/прорабатывается' = DATA BOOLEAN (item) IN descriptionGroup;
-isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN descriptionGroup;
+isCutedItem 'Товар разрубается/прорабатывается' = DATA BOOLEAN (item) IN manufactoryGroup;
+isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN equipmentGroup;
 
-storageTemperatureItem 'Температура хранения' =  DATA STRING[100] (item) IN descriptionGroup;
+storageTemperatureItem 'Температура хранения' =  DATA STRING[100] (item) IN manufactoryGroup;
 
-passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN descriptionGroup;
+passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equipmentGroup;
 
 bonusItem 'Бонус получаемый по товару' = DATA DOUBLE (item) IN retailGroup;
 percentWholesaleMarkItem '% оптовой надбавки' = DATA DOUBLE (item) IN retailGroup;
@@ -390,11 +394,21 @@ DESIGN item FROM DEFAULT {
             tabbedPane = TRUE;
             ADD i.descriptionGroup;
             ADD i.retailGroup;
+            ADD i.equipmentGroup;
             ADD i.sizeGroup {
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
             }
+            ADD i.equipmentGroup;
             ADD i.substanceGroup;
+            ADD i.manufactoryGroup{
+                fillVertical = 1.0;
+                fillHorizontal = 1.0;
+            }
+            ADD i.expiryGroup{
+                fillVertical = 1.0;
+                fillHorizontal = 1.0;
+            }
             ADD a.box;
        }
     }
@@ -583,8 +597,6 @@ inTradingSquareDepartmentStore(departmentStore, tradingSquare) = departmentStore
 //inDepartmentStoreDiscount(departmentStore, discount) = departmentStoreDiscount(discount) == departmentStore;
 
 // ----------------------------------- Цех ----------------------------------- //
-
-GROUP manufactoryGroup 'Для производства' : publicGroup;
 
 outDepartmentManufactory 'Подразделение, куда передаются изделия (ИД)' (manufactory) = DATA departmentStore(manufactory) IN idGroup;
 nameOutDepartmentManufactory 'Подразделение, куда передаются изделия' (manufactory) = name(outDepartmentManufactory(manufactory)) IN manufactoryGroup;
