@@ -104,6 +104,10 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "form", name);
     }
 
+    public void emitMetaCodeFragmentNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+        emitNotFoundError(parser, "meta code", name);
+    }
+
     public void emitObjectNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "object", name);
     }
@@ -267,6 +271,10 @@ public class ScriptingErrorLog {
 
     public void emitCaptionNotSpecifiedError(LsfLogicsParser parser, String name) throws SemanticErrorException {
         emitSimpleError(parser, format("caption wasn't specified for '%s' element", name));
+    }
+
+    public void emitMetaCodeNotEndedError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+        emitSimpleError(parser, format("meta code '%s' does not end with END keyword", name));
     }
 
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {

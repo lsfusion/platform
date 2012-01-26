@@ -25,12 +25,14 @@
       <keyword name="APPLY" />
       <keyword name="AS" />
       <keyword name="ASC" />
+      <keyword name="ASSIGN" />
       <keyword name="BEFORE" />
       <keyword name="BOOLEAN" />
       <keyword name="BOTTOM" />
       <keyword name="BY" />
       <keyword name="CASCADE" />
       <keyword name="CENTER" />
+      <keyword name="CHANGE" />
       <keyword name="CHECKED" />
       <keyword name="CLASS" />
       <keyword name="COLUMNS" />
@@ -47,6 +49,7 @@
       <keyword name="EDITABLE" />
       <keyword name="EDITFORM" />
       <keyword name="EDITSESSIONFORM" />
+      <keyword name="END" />
       <keyword name="EXCEPTLAST" />
       <keyword name="EXCLUSIVE" />
       <keyword name="FALSE" />
@@ -96,6 +99,8 @@
       <keyword name="OBJECT" />
       <keyword name="OBJECTS" />
       <keyword name="OBJVALUE" />
+      <keyword name="OLD" />
+      <keyword name="ON" />
       <keyword name="ORDER" />
       <keyword name="OVERRIDE" />
       <keyword name="PANEL" />

@@ -465,6 +465,23 @@ DESIGN storeArticle FROM DEFAULT {
     REMOVE setupEx;
 }
 
+//////////////// METACODE STATEMENT /////////////
+// Syntax:
+// META codeName([param1, ..., paramN]) metacode END
+//
+// Metacode usage syntax:
+// @codeName([param1, ..., paramN]);
+//
+// concatenation operator: ##
+
+META metaCodeSample(name)
+    CLASS name##Class;
+    GROUP name ## Group;
+END
+
+@metaCodeSample(testName1);
+@metaCodeSample(testName2);
+
 
 //////////////// TABLE STATEMENT ////////////////
 // Syntax:

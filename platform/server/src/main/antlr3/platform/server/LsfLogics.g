@@ -69,6 +69,10 @@ grammar LsfLogics;
 		return this.parseState == parseState;
 	}
 
+	public boolean isFirstParseStep() {
+		return inGroupParseState(); 
+	}
+
 	public boolean inGroupParseState() {
 		return inParseState(ScriptingLogicsModule.State.GROUP);
 	}
@@ -135,13 +139,16 @@ grammar LsfLogics;
 }
 
 script	
-	:	moduleHeader importDirective* statement* EOF
+	:	moduleHeader importDirective* statements EOF
 	;
 
+statements
+	:	statement*
+	;
 
 moduleHeader
 @after {
-	if (inGroupParseState()) {
+	if (isFirstParseStep()) {
 		self.setModuleName($name.text);
 	}
 }
@@ -150,7 +157,7 @@ moduleHeader
 
 importDirective
 @after {
-	if (inGroupParseState()) {
+	if (isFirstParseStep()) {
 		self.addImportedModule($moduleName.text);
 	}
 }
@@ -171,6 +178,8 @@ statement
 		|	designStatement
 		|	windowStatement
 		|	navigatorStatement
+		|	metaCodeDeclarationStatement
+		|	metaCodeStatement 
 		|	emptyStatement
 		)
 	;
@@ -1313,6 +1322,36 @@ componentPropertyValue returns [Object value]
 	;
 
 
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// META STATEMENT //////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+metaCodeDeclarationStatement
+@init {
+	String code;
+}
+@after {
+	if (isFirstParseStep()) {
+		self.addScriptedMetaCodeFragment($id.text, $list.ids, code);
+	}
+}
+	
+	:	'META' id=ID '(' list=idList ')'  
+		{
+			code = self.grabMetaCode($id.text);
+		}
+		'END'
+	;
+
+
+metaCodeStatement
+@after {
+	self.runMetaCode($id.sid, $list.ids);
+}
+	:	'@' id=compoundID '(' list=idList ')' ';'	
+	;
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// COMMON /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -1534,3 +1573,4 @@ REL_OPERAND		: 	('<') | ('>') | ('<=') | ('>=');
 MINUS			:	'-';
 PLUS			:	'+';
 MULT_OPERAND	:	('*') | ('/');
+CONCAT_OPERAND	:	'##';

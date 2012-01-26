@@ -46,6 +46,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final CompoundNameResolver<AbstractGroup> groupResolver = new AbstractGroupNameResolver();
     private final CompoundNameResolver<NavigatorElement> navigatorResolver = new NavigatorElementNameResolver();
     private final CompoundNameResolver<AbstractWindow> windowResolver = new WindowNameResolver();
+    private final CompoundNameResolver<MetaCodeFragment> metaCodeFragmentResolver = new MetaCodeFragmentNameResolver();
 
     private String code = null;
     private String filename = null;
@@ -59,6 +60,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum InsertPosition {IN, BEFORE, AFTER}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
 
+    private State currentState = null;
 
     private Map<String, ValueClass> primitiveTypeAliases = BaseUtils.buildMap(
             Arrays.<String>asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN"),
@@ -237,6 +239,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         NavigatorElement navigator = navigatorResolver.resolve(name);
         checkForm(navigator, name);
         return (FormEntity) navigator;
+    }
+    
+    public MetaCodeFragment findMetaCodeFragmentByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+        MetaCodeFragment code = metaCodeFragmentResolver.resolve(name);
+        checkMetaCodeFragment(code, name);
+        return code;
     }
 
     public NavigatorElement findNavigatorElementByName(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -635,6 +643,46 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addFAProp(null, genSID(), "", form, objects, propObjects, new OrderEntity[propObjects.length], cls, newSession, isModal);
     }
 
+    public void addScriptedMetaCodeFragment(String name, List<String> params, String metaCode) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedMetaCodeFragment(" + name + ", " + params + ", " + metaCode + ");");
+
+        checkDuplicateMetaCodeFragment(name);
+        MetaCodeFragment fragment = new MetaCodeFragment(params, metaCode);
+        addMetaCodeFragment(name, fragment);
+    }
+
+    public void runMetaCode(String name, List<String> params) throws ScriptingErrorLog.SemanticErrorException {
+        MetaCodeFragment metaCode = findMetaCodeFragmentByCompoundName(name);
+        // todo [dale]: проверка на количество параметров, на используемость параметра?
+        // todo [dale]: вставить проверки на одинаковые имена параметров
+        String code = metaCode.getCode(params);
+        try {
+            LsfLogicsLexer lexer = new LsfLogicsLexer(new ANTLRStringStream(code));
+            LsfLogicsParser subParser = new LsfLogicsParser(new CommonTokenStream(lexer));
+
+            lexer.self = this;
+            lexer.parseState = currentState;
+
+            subParser.self = this;
+            subParser.parseState = currentState;
+
+            subParser.statements();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
+        String res = "";
+        while (!parser.input.LT(1).getText().equals("END")) {
+            if (parser.input.LT(1).getType() == LsfLogicsParser.EOF) {
+                errLog.emitMetaCodeNotEndedError(parser, metaCodeName);
+            }
+            res = res + " " + parser.input.LT(1).getText();
+            parser.input.consume();
+        }
+        return res;
+    }
 
     private LP<?> addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
         int pointPos = name.indexOf('.');
@@ -952,6 +1000,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    private void checkMetaCodeFragment(MetaCodeFragment code, String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (code == null) {
+            errLog.emitMetaCodeFragmentNotFoundError(parser, name);
+        }
+    }
+
     private void checkParamCount(LP<?> mainProp, int paramCount) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp.property.interfaces.size() != paramCount) {
             errLog.emitParamCountError(parser, mainProp, paramCount);
@@ -991,6 +1045,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkDuplicateNavigatorElement(String name) throws ScriptingErrorLog.SemanticErrorException {
         if (getNavigatorElementByName(name) != null) {
             errLog.emitAlreadyDefinedError(parser, "form or navigator", name);
+        }
+    }
+
+    private void checkDuplicateMetaCodeFragment(String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (getMetaCodeFragmentByName(name) != null) {
+            errLog.emitAlreadyDefinedError(parser, "meta code", name);
         }
     }
 
@@ -1071,7 +1131,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             lexer.self = this;
             lexer.parseState = state;
 
+            currentState = state;
             parser.script();
+            currentState = null;
+
 //            arithLexer lexer = new arithLexer(createStream());
 //            arithParser parser = new arithParser(new CommonTokenStream(lexer));
 //            parser.program();
@@ -1163,6 +1226,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         @Override
         public AbstractWindow resolveInModule(LogicsModule module, String simpleName) {
             return module.getWindowByName(simpleName);
+        }
+    }
+
+    private class MetaCodeFragmentNameResolver extends CompoundNameResolver<MetaCodeFragment> {
+        @Override
+        public MetaCodeFragment resolveInModule(LogicsModule module, String simpleName) {
+            return module.getMetaCodeFragmentByName(simpleName);
         }
     }
 }

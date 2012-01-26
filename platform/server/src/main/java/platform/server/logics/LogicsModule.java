@@ -94,6 +94,7 @@ public abstract class LogicsModule {
     private final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<String, NavigatorElement<?>>();
 
     private final Map<String, List<String>> propNamedParams = new HashMap<String, List<String>>();
+    private final Map<String, MetaCodeFragment> metaCodeFragments = new HashMap<String, MetaCodeFragment>();
 
     protected LogicsModule() {}
 
@@ -180,6 +181,19 @@ public abstract class LogicsModule {
     protected void addNamedParams(String sID, List<String> namedParams) {
         assert !propNamedParams.containsKey(sID);
         propNamedParams.put(sID, namedParams);
+    }
+
+    public MetaCodeFragment getMetaCodeFragmentByName(String name) {
+        return getMetaCodeFragmentBySID(transformNameToSID(name));
+    }
+
+    protected MetaCodeFragment getMetaCodeFragmentBySID(String sid) {
+        return metaCodeFragments.get(sid);
+    }
+
+    protected void addMetaCodeFragment(String name, MetaCodeFragment fragment) {
+        assert !metaCodeFragments.containsKey(transformNameToSID(name));
+        metaCodeFragments.put(transformNameToSID(name), fragment);
     }
 
     // aliases для использования внутри иерархии логических модулей
@@ -2133,5 +2147,34 @@ public abstract class LogicsModule {
     
     public PropertyDrawEntity addEditFormAction(FormEntity form, ObjectEntity object, boolean session) {
         return form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass, session), object);
+    }
+
+    protected class MetaCodeFragment {
+        public List<String> parameters;
+        public String[] tokens;
+
+        public MetaCodeFragment(List<String> params, String code) {
+            this.parameters = params;
+            this.tokens = code.split("\\s");
+        }
+
+        public String getCode(List<String> params) {
+            assert params.size() == parameters.size();
+            String resultCode = "";
+            String separator = " ";
+            for (String token : tokens) {
+                int index = parameters.indexOf(token);
+                if (index >= 0) {
+                    resultCode = resultCode + separator + params.get(index);
+                    separator = " ";
+                } else if (token.equals("##")) {
+                    separator = "";
+                } else {
+                    resultCode = resultCode + separator + token;
+                    separator = " ";
+                }
+            }
+            return resultCode;
+        }
     }
 }
