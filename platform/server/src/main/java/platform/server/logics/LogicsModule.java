@@ -1781,13 +1781,13 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
-    public LP getAddObjectAction(ValueClass cls) {
+    public LP getAddObjectAction(CustomClass cls) {
         //"add" + BaseUtils.capitalize(cls.getSID())
-        return addAProp(new AddObjectActionProperty(genSID(), (CustomClass) cls));
+        return addAProp(new AddObjectActionProperty(genSID(), cls));
     }
 
     @IdentityLazy
-    protected LP getAddObjectActionWithClassCheck(ValueClass baseClass, ValueClass checkClass) {
+    protected LP getAddObjectActionWithClassCheck(CustomClass baseClass, ValueClass checkClass) {
         LP addObjectAction = getAddObjectAction(baseClass);
         return addJProp(addObjectAction.property.caption, baseLM.and1, addObjectAction, is(checkClass), 1);
     }
@@ -1832,8 +1832,8 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
-    protected LP getImportObjectAction(ValueClass cls) {
-        return addAProp(new ImportFromExcelActionProperty(genSID(), (CustomClass) cls));
+    protected LP getImportObjectAction(CustomClass cls) {
+        return addAProp(new ImportFromExcelActionProperty(genSID(), cls));
     }
 
 
@@ -2092,15 +2092,16 @@ public abstract class LogicsModule {
     }
 
     protected void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport, boolean shouldBeLast, ObjectEntity checkObject, ValueClass checkObjectClass) {
+        CustomClass objectClass = (CustomClass) object.baseClass;
         if (actionImport)
-            form.addPropertyDraw(getImportObjectAction(object.baseClass)).toDraw = object.groupTo;
+            form.addPropertyDraw(getImportObjectAction(objectClass)).toDraw = object.groupTo;
 
         PropertyDrawEntity actionAddPropertyDraw;
         if (checkObject == null) {
-            actionAddPropertyDraw = form.addPropertyDraw(getAddObjectAction(object.baseClass));
+            actionAddPropertyDraw = form.addPropertyDraw(getAddObjectAction(objectClass));
         } else {
             actionAddPropertyDraw = form.addPropertyDraw(
-                    getAddObjectActionWithClassCheck(object.baseClass, checkObjectClass != null ? checkObjectClass : checkObject.baseClass),
+                    getAddObjectActionWithClassCheck(objectClass, checkObjectClass != null ? checkObjectClass : checkObject.baseClass),
                     checkObject);
 
             actionAddPropertyDraw.forceViewType = ClassViewType.PANEL;
