@@ -6,7 +6,6 @@ import jxl.Workbook;
 import org.apache.log4j.Logger;
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
-import platform.interop.ToolbarPanelLocation;
 import platform.server.classes.*;
 import platform.server.data.type.ParseException;
 import platform.server.data.type.Type;
@@ -16,6 +15,7 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
+import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -100,7 +100,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
         propertyView.editKey = KeyStrokes.getImportActionPropertyKeyStroke();
         propertyView.design.setIconPath("import.png");
         propertyView.showEditKey = false;
-        propertyView.setPanelLocation(new ToolbarPanelLocation());
+        propertyView.setPanelLocation(new ToolbarPanelLocationView());
     }
 
 }

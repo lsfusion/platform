@@ -1,10 +1,10 @@
 package platform.server.form.view;
 
 import platform.base.OrderedMap;
-import platform.interop.ToolbarPanelLocation;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
+import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
@@ -29,7 +29,7 @@ public class RegularFilterGroupView extends ComponentView {
     
     public RegularFilterGroupView(RegularFilterGroupEntity entity) {
         super(entity.ID);
-        setPanelLocation(new ToolbarPanelLocation());
+        setPanelLocation(new ToolbarPanelLocationView());
         this.entity = entity;
 
         for (RegularFilterEntity filterEntity : entity.filters) {

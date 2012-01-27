@@ -5,9 +5,9 @@ import platform.client.form.ClientFormController;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.ButtonCellView;
 import platform.client.form.cell.PropertyController;
+import platform.client.form.panel.location.ClientShortcutPanelLocation;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientActionClass;
-import platform.interop.ShortcutPanelLocation;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -97,8 +97,8 @@ public class PanelShortcut extends JPopupMenu {
         TreeMap<Integer, ClientPropertyDraw> sortedMap = new TreeMap<Integer, ClientPropertyDraw>(); //расставляем свойства в том же порядке, что и в форме
         for (PropertyController property : properties) {
             if (property.getKey().drawToShortcut()) {
-                String onlyPropertySID = ((ShortcutPanelLocation) property.getKey().panelLocation).getOnlyPropertySID();
-                if (onlyPropertySID == null || onlyPropertySID.equals(currentProperty.getSID())) {
+                ClientPropertyDraw onlyProperty = ((ClientShortcutPanelLocation) property.getKey().panelLocation).getOnlyProperty();
+                if (onlyProperty == null || onlyProperty.equals(currentProperty)) {
                     sortedMap.put(form.getPropertyDraws().indexOf(property.getKey()), property.getKey());
                 }
             }
@@ -134,7 +134,7 @@ public class PanelShortcut extends JPopupMenu {
 
             boolean isDefault = false;
             if (!defaultSet)
-                isDefault = ((ShortcutPanelLocation) controller.getKey().panelLocation).isDefault();
+                isDefault = ((ClientShortcutPanelLocation) controller.getKey().panelLocation).isDefault();
             defaultSet = defaultSet || isDefault;
 
             addActionMenuItem(button.getText(), button.getIcon(), button.getToolTipText(), new ActionListener() {
@@ -159,7 +159,7 @@ public class PanelShortcut extends JPopupMenu {
 
     public void invokeDefaultAction() {
         for (ClientPropertyDraw property : sortProperties().values()) {
-            if (((ShortcutPanelLocation) property.panelLocation).isDefault() && property.baseType instanceof ClientActionClass) {
+            if (((ClientShortcutPanelLocation) property.panelLocation).isDefault() && property.baseType instanceof ClientActionClass) {
                 PropertyController propertyController = panel.getProperties().get(property).values().iterator().next();
                 if (propertyController != null) {
                     ((ButtonCellView) propertyController.getView()).doClick();

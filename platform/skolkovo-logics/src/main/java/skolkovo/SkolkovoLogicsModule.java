@@ -12,11 +12,9 @@ import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
-import platform.interop.ToolbarPanelLocation;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.OpenFileClientAction;
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.Settings;
 import platform.server.classes.*;
@@ -32,10 +30,8 @@ import platform.server.form.entity.filter.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.view.ContainerView;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.FormView;
-import platform.server.form.view.PropertyDrawView;
+import platform.server.form.view.*;
+import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.BaseLogicsModule;
@@ -5780,13 +5776,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //                    design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup),
 //                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.get(getPropertyDraw(importProjectsAction)).setPanelLocation(new ToolbarPanelLocation());
-            design.get(getPropertyDraw(copyProjectAction)).setPanelLocation(new ToolbarPanelLocation());
-            //design.get(getPropertyDraw(openApplicationProjectAction)).setPanelLocation(new ToolbarPanelLocation());
-            design.get(getPropertyDraw(editR1Project)).setPanelLocation(new ToolbarPanelLocation());
-            design.get(getPropertyDraw(editR2Project)).setPanelLocation(new ToolbarPanelLocation());
-            design.get(getPropertyDraw(editClaimerProject)).setPanelLocation(new ToolbarPanelLocation());
-            design.get(getPropertyDraw(nameNativeShortCurrentCluster)).setPanelLocation(new ToolbarPanelLocation());
+            design.get(getPropertyDraw(importProjectsAction)).setPanelLocation(new ToolbarPanelLocationView());
+            design.get(getPropertyDraw(copyProjectAction)).setPanelLocation(new ToolbarPanelLocationView());
+            //design.get(getPropertyDraw(openApplicationProjectAction)).setPanelLocation(new ToolbarPanelLocationView());
+            design.get(getPropertyDraw(editR1Project)).setPanelLocation(new ToolbarPanelLocationView());
+            design.get(getPropertyDraw(editR2Project)).setPanelLocation(new ToolbarPanelLocationView());
+            design.get(getPropertyDraw(editClaimerProject)).setPanelLocation(new ToolbarPanelLocationView());
+            design.get(getPropertyDraw(nameNativeShortCurrentCluster)).setPanelLocation(new ToolbarPanelLocationView());
 //            design.getPanelContainer(objProject.groupTo).add(design.getGroupPropertyContainer((GroupObjectEntity)null, importGroup));
 
             ContainerView specContainer = design.createContainer();

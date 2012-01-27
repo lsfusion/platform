@@ -447,7 +447,9 @@ DESIGN storeArticle FROM DEFAULT {
         //toolbar/shortcut. свойство предварительно нужно отправить в панель
         panelLocation = TOOLBAR;
         panelLocation = SHORTCUT;
-        panelLocation = SHORTCUT 'storeSizeName'; //пока SID свойства
+        panelLocation = SHORTCUT storeSizeName; // единственное свойство, для которого отображается name(a) в shortcut
+        panelLocation = SHORTCUT DEFAULT;   // DEFAULT используется при помещении в shortcut какого-нибудь actionProperty
+        panelLocation = SHORTCUT storeSizeName DEFAULT;
     }
 
     ADD setupEx {

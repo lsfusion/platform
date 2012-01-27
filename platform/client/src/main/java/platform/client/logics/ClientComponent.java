@@ -5,11 +5,11 @@ import platform.base.context.ContextIdentityObject;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.descriptor.nodes.ComponentNode;
+import platform.client.form.panel.location.ClientPanelLocation;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.gwt.view.GComponent;
 import platform.interop.ComponentDesign;
-import platform.interop.PanelLocation;
 import platform.interop.form.layout.AbstractComponent;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
@@ -41,7 +41,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
     public boolean defaultComponent = false;
 
-    public PanelLocation panelLocation;
+    public ClientPanelLocation panelLocation;
 
     public ClientComponent() {
     }
@@ -80,7 +80,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         }
 
         outStream.writeBoolean(defaultComponent);
-        pool.writeObject(outStream, panelLocation);
+        pool.serializeObject(outStream, panelLocation, serializationType);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -104,7 +104,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         }
 
         defaultComponent = inStream.readBoolean();
-        panelLocation = pool.readObject(inStream);
+        panelLocation = pool.deserializeObject(inStream);
     }
 
     public ComponentNode getNode() {

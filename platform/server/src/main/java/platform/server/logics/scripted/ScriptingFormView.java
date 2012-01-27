@@ -8,6 +8,9 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.TreeGroupEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.view.*;
+import platform.server.form.view.panellocation.PanelLocationView;
+import platform.server.form.view.panellocation.ShortcutPanelLocationView;
+import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.scripted.proxy.ViewProxyUtil;
 
@@ -229,6 +232,16 @@ public class ScriptingFormView extends DefaultFormView {
         }
 
         super.addIntersection(comp2, comp1, cons);
+    }
+
+    public PanelLocationView createPanelLocation(boolean toolbar, PropertyDrawView property, boolean defaultProperty) {
+        PanelLocationView panelLocation;
+        if (toolbar) {
+            panelLocation = new ToolbarPanelLocationView();
+        } else {
+            panelLocation = new ShortcutPanelLocationView(property, defaultProperty);
+        }
+        return panelLocation;
     }
 
     public ComponentView addComponent(String sid, ComponentView component, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {

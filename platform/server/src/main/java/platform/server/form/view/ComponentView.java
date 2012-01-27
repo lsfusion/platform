@@ -2,10 +2,10 @@ package platform.server.form.view;
 
 import platform.base.identity.IdentityObject;
 import platform.interop.ComponentDesign;
-import platform.interop.PanelLocation;
 import platform.interop.form.layout.AbstractComponent;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
+import platform.server.form.view.panellocation.PanelLocationView;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -34,7 +34,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public SimplexConstraints<ComponentView> constraints = getDefaultConstraints();
 
-    protected PanelLocation panelLocation;
+    protected PanelLocationView panelLocation;
 
     public SimplexConstraints<ComponentView> getDefaultConstraints() {
         return new SimplexConstraints<ComponentView>();
@@ -62,7 +62,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.container = container;
     }
 
-    public void setPanelLocation(PanelLocation panelLocation) {
+    public void setPanelLocation(PanelLocationView panelLocation) {
         this.panelLocation = panelLocation;
     }
 
@@ -83,7 +83,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
             pool.writeObject(outStream, intersect.getValue());
         }
         outStream.writeBoolean(defaultComponent);
-        pool.writeObject(outStream, panelLocation);
+        pool.serializeObject(outStream, panelLocation, serializationType);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -107,6 +107,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         }
 
         defaultComponent = inStream.readBoolean();
-        panelLocation = pool.readObject(inStream);
+        panelLocation = pool.deserializeObject(inStream);
     }
 }

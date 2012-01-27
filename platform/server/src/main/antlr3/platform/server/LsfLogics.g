@@ -4,9 +4,6 @@ grammar LsfLogics;
 	package platform.server;
 
 	import platform.interop.ClassViewType;
-	import platform.interop.PanelLocation;
-	import platform.interop.ToolbarPanelLocation;
-	import platform.interop.ShortcutPanelLocation;
 	import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 	import platform.server.data.Union;
 	import platform.server.data.expr.query.PartitionType;
@@ -16,6 +13,7 @@ grammar LsfLogics;
 	import platform.server.form.view.ComponentView;
 	import platform.server.form.view.GroupObjectView;
 	import platform.server.form.view.PropertyDrawView;
+	import platform.server.form.view.panellocation.PanelLocationView;
 	import platform.server.logics.linear.LP;
 	import platform.server.logics.property.PropertyFollows;
 	import platform.server.logics.scripted.*;
@@ -93,6 +91,13 @@ grammar LsfLogics;
 		if (inPropParseState()) {
 			$designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue);
 		}
+    }
+
+    public PanelLocationView createPanelLocation(boolean toolbar, PropertyDrawView property, boolean defaultProperty) throws ScriptingErrorLog.SemanticErrorException {
+    	if (inPropParseState()) {
+    		return $designStatement::design.createPanelLocation(toolbar, property, defaultProperty);
+    	}
+    	return null;
     }
 
 	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids) throws ScriptingErrorLog.SemanticErrorException {
@@ -905,8 +910,23 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 } 
 	: 	('IN' name=compoundID { groupName = $name.sid; })?
 		('PERSISTENT' { isPersistent = true; })?
+		(location = panelLocationSetting [property])?
 	;
 
+panelLocationSetting [LP property]
+@init {
+	boolean toolbar = false;
+	String sid = null;
+	boolean defaultProperty = false;
+}
+@after {
+	if (inPropParseState()) {
+		self.setPanelLocation($property, toolbar, sid, defaultProperty);				
+	}
+}
+	:	'TOOLBAR' { toolbar = true; }
+	|	'SHORTCUT' { toolbar = false; } (name = compoundID { sid = $name.sid; })? ('DEFAULT' { defaultProperty = true; })?
+	;
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// CONSTRAINT STATEMENT //////////////////////////
@@ -1550,10 +1570,17 @@ insertPositionLiteral returns [InsertPosition val]
 	|	'AFTER' { $val = InsertPosition.AFTER; }
 	;
 
-panelLocationLiteral returns [PanelLocation val]
-	:	'TOOLBAR' { $val = new ToolbarPanelLocation(); }
-	|	'SHORTCUT' { $val = new ShortcutPanelLocation(); } (sid=stringLiteral { ((ShortcutPanelLocation) $val).setOnlyPropertySID($sid.val); })?
-		('DEFAULT' { ((ShortcutPanelLocation) $val).setDefault(true); })?
+panelLocationLiteral returns [PanelLocationView val]
+@init {
+	boolean toolbar = false;
+	PropertyDrawView property = null;
+	boolean defaultProperty = false;
+} 
+@after {
+	$val = createPanelLocation(toolbar, property, defaultProperty);
+}
+	:	'TOOLBAR' { toolbar = true; }
+	|	'SHORTCUT' { toolbar = false; } (onlyProp=propertySelector { property = $onlyProp.propertyView; })? ('DEFAULT' { defaultProperty = true; })?
 	;
 	
 udoubleLiteral

@@ -19,6 +19,9 @@ import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
+import platform.server.logics.panellocation.PanelLocation;
+import platform.server.logics.panellocation.ShortcutPanelLocation;
+import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.StoredDataProperty;
 import platform.server.logics.property.group.AbstractGroup;
@@ -390,6 +393,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         checkPropertyValue(property, name);
         addNamedParams(property.property.getSID(), namedParams);
+    }
+
+    public void setPanelLocation(LP<?> property, boolean toolbar, String onlyPropertySID, boolean defaultProperty) throws ScriptingErrorLog.SemanticErrorException {
+        PanelLocation panelLocation;
+        if (toolbar) {
+            panelLocation = new ToolbarPanelLocation();
+        } else {
+            panelLocation = new ShortcutPanelLocation(defaultProperty);
+            if (onlyPropertySID != null)
+                ((ShortcutPanelLocation) panelLocation).setOnlyProperty(findLPByCompoundName(onlyPropertySID));
+        }
+        property.setPanelLocation(panelLocation);
     }
 
     private <T extends LP<?>> void changePropertyName(T lp, String name) {

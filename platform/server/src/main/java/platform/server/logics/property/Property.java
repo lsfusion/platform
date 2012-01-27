@@ -3,8 +3,6 @@ package platform.server.logics.property;
 import platform.base.*;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
-import platform.interop.PanelLocation;
-import platform.interop.ShortcutPanelLocation;
 import platform.interop.action.ClientAction;
 import platform.server.Message;
 import platform.server.Settings;
@@ -31,9 +29,12 @@ import platform.server.form.entity.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.panellocation.*;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.*;
 import platform.server.logics.linear.LP;
+import platform.server.logics.panellocation.PanelLocation;
+import platform.server.logics.panellocation.ShortcutPanelLocation;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.derived.OnChangeProperty;
@@ -778,8 +779,27 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         if (echoSymbols != null)
             propertyView.echoSymbols = echoSymbols;
 
-        if (panelLocation != null)
-            propertyView.setPanelLocation(panelLocation);
+        if (panelLocation != null) {
+            PanelLocationView panelLocationView = panelLocation.convertToView();
+            if (panelLocationView.isShortcutLocation()) {
+                Property onlyProperty = ((ShortcutPanelLocation) panelLocation).getOnlyProperty();
+                if (onlyProperty != null) {
+                    for (PropertyDrawView prop : view.properties) {
+                        if (prop.entity.propertyObject.property.equals(onlyProperty) &&
+                                (view.get(propertyView.entity.toDraw) == null || view.get(propertyView.entity.toDraw).equals(view.get(prop.entity.toDraw)))) {
+                            ((ShortcutPanelLocationView) panelLocationView).setOnlyProperty(prop);
+                            break;
+                        }
+                    }
+                    if (((ShortcutPanelLocationView) panelLocationView).getOnlyProperty() == null)
+                        panelLocationView = null;
+                }
+            }
+            if (panelLocationView != null) {
+                propertyView.entity.forceViewType = ClassViewType.PANEL;
+                propertyView.setPanelLocation(panelLocationView);
+            }
+        }
         
         if(propertyView.getType() instanceof LogicalClass)
             propertyView.editOnSingleClick = Settings.instance.getEditLogicalOnSingleClick();
@@ -794,7 +814,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             }
             if (logPropertyView != null) {
                 logPropertyView.entity.readOnly = false; //бывает, что проставляют true для всего groupObject'а
-                logPropertyView.setPanelLocation(new ShortcutPanelLocation(getSID()));
+                logPropertyView.setPanelLocation(new ShortcutPanelLocationView(propertyView));
             }
         }
     }

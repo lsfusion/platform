@@ -4,6 +4,8 @@ import platform.base.serialization.SerializationPool;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.view.*;
+import platform.server.form.view.panellocation.ShortcutPanelLocationView;
+import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
@@ -56,6 +58,8 @@ public class ServerSerializationPool extends SerializationPool<ServerContext> {
         addMapping2(RegularFilterView.class);
         addMapping2(RegularFilterGroupView.class);
         addMapping2(FunctionView.class);
+        addMapping2(ToolbarPanelLocationView.class);
+        addMapping2(ShortcutPanelLocationView.class);
     }
 
     // IDEA даёт ошибку при добавлении генериков,

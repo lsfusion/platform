@@ -1121,7 +1121,7 @@ FILTERGROUP filters9
 EDIT supplier OBJECT s;
 
 DESIGN supplier FROM DEFAULT {
-PROPERTY (showFormaddressLegalEntity){panelLocation = SHORTCUT 'Rublevski_addressLegalEntity' DEFAULT;}
+PROPERTY (showFormaddressLegalEntity){panelLocation = SHORTCUT addressLegalEntity DEFAULT;}
     main{
        ADD prop.box BEFORE functions.box{
             tabbedPane = TRUE;
@@ -1151,7 +1151,7 @@ FILTERS NOT NULL inCompanyContract(co, c),
 EDIT company OBJECT co;
 
 DESIGN company FROM DEFAULT {
-PROPERTY (showFormaddressLegalEntity){panelLocation = SHORTCUT 'Rublevski_addressLegalEntity';}
+PROPERTY (showFormaddressLegalEntity){panelLocation = SHORTCUT addressLegalEntity DEFAULT;}
     main{
        ADD prop.box BEFORE functions.box {
             tabbedPane = TRUE;
