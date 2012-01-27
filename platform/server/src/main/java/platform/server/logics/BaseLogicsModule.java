@@ -69,6 +69,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass country;
     public ConcreteCustomClass navigatorElement;
     public ConcreteCustomClass form;
+    public ConcreteCustomClass propertyDraw;
+    public StaticCustomClass propertyDrawShowStatus;
     public ConcreteCustomClass abstractGroup;
     public ConcreteCustomClass property;
     public ConcreteCustomClass notification;
@@ -273,6 +275,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP navigatorElementSID;
     public LP numberNavigatorElement;
     public LP navigatorElementCaption;
+
+    public LP formSID;
+    public LP captionForm;
+    public LP SIDToForm;
+
+    public LP propertyDrawSID;
+    public LP captionPropertyDraw;
+    public LP SIDToPropertyDraw;
+    public LP formPropertyDraw;
+    public LP SIDFormSIDPropertyDrawToPropertyDraw;
+    public LP showPropertyDraw;
 
     public LP messageException;
     public LP dateException;
@@ -479,6 +492,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         navigatorElement = addConcreteClass("navigatorElement", getString("logics.navigator.element"), baseClass);
         form = addConcreteClass("form", getString("logics.forms.form"), navigatorElement);
+        propertyDraw = addConcreteClass("propertyDraw", getString("logics.property.draw"), baseClass);
+        propertyDrawShowStatus = addStaticClass("propertyDrawShowStatus", getString("logics.forms.property.draw.show"),
+                new String[]{"Show", "Hide"},
+                new String[]{"Показать", "Спрятать"});
         abstractGroup = addConcreteClass("abstractGroup", getString("logics.property.group"), baseClass);
         property = addConcreteClass("property", getString("logics.property"), baseClass);
         notification = addConcreteClass("notification", getString("logics.notification"), baseClass);
@@ -792,6 +809,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", getString("logics.forms.name"), formCaptionValueClass, navigatorElement);
         SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", getString("logics.forms.form"), navigatorElementSID);
         parentNavigatorElement = addDProp("parentNavigatorElement", getString("logics.forms.parent.form"), navigatorElement, navigatorElement);
+
+        formSID = addDProp(baseGroup, "formSID", getString("logics.forms.code"), formSIDValueClass, form);
+        captionForm = addDProp(baseGroup, "captionForm", getString("logics.forms.name"), formCaptionValueClass, form);
+        SIDToForm = addAGProp("SIDToForm", getString("logics.forms.form"), formSID);
+
+        propertyDrawSID = addDProp(baseGroup, "propertyDrawSID", getString("logics.forms.property.draw.code"), formSIDValueClass, propertyDraw);
+        captionPropertyDraw = addDProp(baseGroup, "captionPropertyDraw", getString("logics.forms.property.draw.caption"), formCaptionValueClass, propertyDraw);
+        formPropertyDraw = addDProp(baseGroup, "formPropertyDraw", getString("logics.forms.form"), form, propertyDraw);
+        SIDToPropertyDraw = addAGProp(baseGroup, "SIDToPropertyDraw", getString("logics.property.draw"), formPropertyDraw, propertyDrawSID);
+        SIDFormSIDPropertyDrawToPropertyDraw = addJProp(baseGroup, "SIDFormSIDPropertyDrawToPropertyDraw", getString("logics.forms.code"), SIDToPropertyDraw, SIDToForm, 1, 2);
+        //showPropertyDraw = addDProp(baseGroup, "showPropertyDraw", getString("logics.forms.property.draw.show"), propertyDrawShowStatus, propertyDraw, customUser);
 
         messageException = addDProp(baseGroup, "messageException", getString("logics.exception.message"), propertyCaptionValueClass, exception);
         dateException = addDProp(baseGroup, "dateException", getString("logics.exception.date"), DateTimeClass.instance, exception);
@@ -1226,6 +1254,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new ConnectionsFormEntity(adminElement, "connectionsForm"));
         addFormEntity(new PhysicalModelFormEntity(adminElement, "physicalModelForm"));
         addFormEntity(new PropertiesFormEntity(adminElement, "propertiesForm"));
+        addFormEntity(new FormsFormEntity(adminElement, "formsForm"));
         addFormEntity(new NotificationFormEntity(adminElement, "notification"));
         addFormEntity(new ExceptionsFormEntity(adminElement, "exceptionsForm"));
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
@@ -1912,6 +1941,27 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             return design;
         }
     }
+
+    class FormsFormEntity extends FormEntity{
+        protected FormsFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.tables.forms"));
+
+            ObjectEntity objUsers = addSingleGroupObject(customUser, getString("logics.user.users"),userLogin);
+            ObjectEntity objForms = addSingleGroupObject(form, getString("logics.tables.forms"), formSID, captionForm);
+            ObjectEntity objPropertyDraws = addSingleGroupObject(propertyDraw, getString("logics.property.draw"), baseGroup);
+
+            setForceViewType(userLogin, ClassViewType.PANEL);
+
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new CompareFilterEntity(addPropertyObject(formPropertyDraw, objPropertyDraws), Compare.EQUALS, objForms),
+                    "фильтр",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+            addRegularFilterGroup(filterGroup);
+
+        }
+    }
+
 
     class ExceptionsFormEntity extends FormEntity {
         ObjectEntity objExceptions;

@@ -34,6 +34,7 @@ import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.*;
@@ -793,6 +794,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         initModules();
 
         synchronizeForms();
+        synchronizeFormEntities();
         synchronizeGroupProperties();
         synchronizeProperties();
         synchronizeTables();
@@ -961,6 +963,69 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             throw new RuntimeException(e);
         }
     }
+
+    protected void synchronizeFormEntities() {
+        ImportField sidField = new ImportField(LM.formSIDValueClass);
+        ImportField captionField = new ImportField(LM.formCaptionValueClass);
+
+        ImportKey<?> key = new ImportKey(LM.form, LM.SIDToForm.getMapping(sidField));
+
+        List<List<Object>> data = new ArrayList<List<Object>>();
+        for (NavigatorElement<T> formElement : LM.baseElement.getChildren(true)) {   //objectForm
+            data.add(Arrays.asList((Object) formElement.getSID(), formElement.caption));
+        }
+
+        List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+        props.add(new ImportProperty(sidField, LM.formSID.getMapping(key)));
+        props.add(new ImportProperty(captionField, LM.captionForm.getMapping(key)));
+
+        List<ImportDelete> deletes = new ArrayList<ImportDelete>();
+        deletes.add(new ImportDelete(key, LM.is(LM.form).getMapping(key), false));
+
+        ImportTable table = new ImportTable(Arrays.asList(sidField, captionField), data);
+
+        List<List<Object>> data2 = new ArrayList<List<Object>>();
+        for (NavigatorElement<T> formElement : LM.baseElement.getChildren(true)) {
+            if (formElement instanceof FormEntity) {
+                for (Object drawEntity : ((FormEntity) formElement).propertyDraws) {
+                    data2.add(Arrays.asList(((PropertyDrawEntity) drawEntity).propertyObject.toString(), ((PropertyDrawEntity) drawEntity).getSID(), (Object) formElement.getSID()));
+                }
+            }
+        }
+
+        ImportField formPropertyDrawField = new ImportField(LM.formSIDValueClass);
+        //ImportField showPropertyDrawField = new ImportField(LM.showPropertyDraw);
+
+        ImportKey<?> key2 = new ImportKey(LM.propertyDraw, LM.SIDFormSIDPropertyDrawToPropertyDraw.getMapping(formPropertyDrawField, sidField));
+        List<ImportProperty<?>> props2 = new ArrayList<ImportProperty<?>>();
+        props2.add(new ImportProperty(captionField, LM.captionPropertyDraw.getMapping(key2)));
+        props2.add(new ImportProperty(sidField, LM.propertyDrawSID.getMapping(key2)));
+        //props2.add(new ImportProperty(sidField, LM.showPropertyDraw.getMapping(key2)));
+        props2.add(new ImportProperty(formPropertyDrawField, LM.formPropertyDraw.getMapping(key2), LM.object(LM.form).getMapping(key)));
+        ImportTable table2 = new ImportTable(Arrays.asList(captionField, sidField, formPropertyDrawField), data2);
+
+       /* try {
+            DataSession session = createSession();
+
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(key), props, deletes);
+            service.synchronize(true, false);
+
+            if (session.hasChanges())
+                session.apply(this);
+
+            service = new IntegrationService(session, table2, Arrays.asList(key, key2), props2);
+            service.synchronize(true, false);
+
+
+            if (session.hasChanges())
+                session.apply(this);
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }*/
+    }
+
+
 
     private void synchronizeProperties() {
         ImportField sidPropertyField = new ImportField(LM.propertySIDValueClass);
