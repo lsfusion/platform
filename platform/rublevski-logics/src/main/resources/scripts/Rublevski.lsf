@@ -488,7 +488,7 @@ startDateGenTimeTable 'Дата начала' = DATA DATE (genTimeTable) IN base
 endDateGenTimeTable 'Дата оканчания' = DATA DATE (genTimeTable) IN baseGroup;
 supplierGenTimeTable 'Поставщик (ИД)' = DATA supplier (genTimeTable);
 nameSupplierGenTimeTable 'Поставщик' (genTimeTable) = name(supplierGenTimeTable(genTimeTable)) IN baseGroup;
-departmentStoreGenTimeTable 'Подразделение (ИД)' =DATA departmentStore (genTimeTable) IN baseGroup;
+departmentStoreGenTimeTable 'Подразделение (ИД)' =DATA departmentStore (genTimeTable);
 nameDepartmentStoreGenTimeTable 'Подразделение' (genTimeTable) = name(departmentStoreGenTimeTable(genTimeTable)) IN baseGroup;
 
 inMonthGenTimeTable 'Включать' = DATA BOOLEAN (captionMonth);
@@ -505,7 +505,7 @@ PROPERTIES(d) inDayGenTimeTable;
 FORM genTimeTables 'Графики' //служит для добавления сущности "генерации графиков" и в дальнейшем будет удалена
 OBJECTS g=genTimeTable
 PROPERTIES(g) READONLY name
-PROPERTIES(g) ADDOBJ, delete;
+PROPERTIES(g) ADDFORM, EDITFORM, delete;
 
 showFormGenTimeTable 'Добавить график' (genTimeTable) = ACTION FORM genTimeTable OBJECTS g MODAL;
 
@@ -1787,6 +1787,7 @@ NAVIGATOR {
             ADD banks;
             ADD assortmentSupplier;
             ADD timeTable;
+            ADD genTimeTables;
         }
         NEW equipment 'Оборудование' {
             ADD groupsCash;
@@ -1856,6 +1857,7 @@ NAVIGATOR {
             ADD component;
             ADD addaddressLegalEntity;
             ADD addressLegalEntity;
+            ADD genTimeTable;
         }
     }
 }
