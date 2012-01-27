@@ -66,7 +66,7 @@ public class AutoHintsAspect {
         ParsedQuery<?, String> parsedResult = result.parse();
 
         FormInstance catchHint = catchAutoHint.get();
-        if(catchHint!=null && !catchHint.isHintIncrement(property)) { // неправильно так как может быть не changed
+        if(catchHint!=null && !catchHint.isHintIncrement(property) && catchHint.allowHintIncrement(property)) { // неправильно так как может быть не changed
             Expr expr = parsedResult.getExpr("value");
             long exprComplexity = expr.getComplexity(false);
 

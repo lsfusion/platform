@@ -3,20 +3,14 @@ package platform.server.form.instance.filter;
 import platform.base.BaseUtils;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.where.Where;
-import platform.server.form.entity.ClassFormEntity;
-import platform.server.form.entity.filter.FilterEntity;
-import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyValueImplement;
-import platform.server.logics.property.derived.OnChangeProperty;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -47,17 +41,11 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
         return property.getExpr(mapKeys, modifier).getWhere();
     }
 
-    public <X extends PropertyInterface> Set<? extends FilterEntity> getResolveChangeFilters(ClassFormEntity<?> formEntity, PropertyValueImplement<X> implement) {
-        if(checkChange && Property.depends(property.property, implement.property)) {
-            PropertyValueImplement<P> filterImplement = property.getValueImplement();
-            OnChangeProperty<P, X> onChangeProperty = filterImplement.property.getOnChangeProperty(implement.property);
-            return Collections.singleton(
-                            new NotNullFilterEntity<OnChangeProperty.Interface<P, X>>(
-                                    onChangeProperty.getPropertyObjectEntity(filterImplement.mapping, implement.mapping, formEntity.object)
-                            )
-            );
-        }
-        return super.getResolveChangeFilters(formEntity, implement);
+    @Override
+    public <X extends PropertyInterface> Set<PropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
+        if(checkChange && Property.depends(property.property, toChange))
+            return BaseUtils.immutableCast(Collections.singleton(property.getValueImplement()));
+        return super.getResolveChangeProperties(toChange);
     }
 
     @Override

@@ -13,13 +13,14 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.ChangeProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.PullChangeProperty;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
 
 import java.util.*;
 
 // определяет не максимум изменения, а для конкретных входов
-public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends ChangeProperty<OnChangeProperty.Interface<T, P>> {
+public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends PullChangeProperty<T, P, OnChangeProperty.Interface<T, P>> {
 
     public abstract static class Interface<T extends PropertyInterface, P extends PropertyInterface> extends PropertyInterface<Interface<T, P>> {
 
@@ -91,10 +92,6 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         }
     }
 
-    // assert что constraint.isFalse
-    final Property<T> onChange;
-    final Property<P> toChange;
-
     public static <T extends PropertyInterface, P extends PropertyInterface> List<Interface<T, P>> getInterfaces(Property<T> onChange, Property<P> toChange) {
         List<Interface<T, P>> result = new ArrayList<Interface<T, P>>();
         for(T propertyInterface : onChange.interfaces)
@@ -106,9 +103,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
     }
 
     public OnChangeProperty(Property<T> onChange, Property<P> toChange) {
-        super(onChange.getSID() +"_ONCH_"+ toChange.getSID(),onChange.caption+" по ("+toChange.caption+")", getInterfaces(onChange, toChange));
-        this.onChange = onChange;
-        this.toChange = toChange;
+        super(onChange.getSID() +"_ONCH_"+ toChange.getSID(),onChange.caption+" по ("+toChange.caption+")", getInterfaces(onChange, toChange), onChange, toChange);
 
         finalizeInit();
     }

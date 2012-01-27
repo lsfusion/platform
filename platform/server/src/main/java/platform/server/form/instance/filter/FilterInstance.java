@@ -8,8 +8,10 @@ import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
+import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyValueImplement;
+import platform.server.logics.property.derived.OnChangeProperty;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
@@ -65,7 +67,9 @@ public abstract class FilterInstance implements Updated {
 
     public void resolveAdd(DataSession session, Modifier modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
     }
-    public <X extends PropertyInterface> Set<? extends FilterEntity> getResolveChangeFilters(ClassFormEntity<?> formEntity, PropertyValueImplement<X> implement) {
-        return new HashSet<FilterEntity>();
+
+    public <X extends PropertyInterface> Set<PropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
+        return new HashSet<PropertyValueImplement<?>>();
     }
+
 }

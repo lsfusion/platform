@@ -11,6 +11,8 @@ import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PullChangeProperty;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -34,9 +36,10 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           ObjectEntity dialogEntity,
                           Object dialogValue,
                           PropertyObjectInterfaceInstance computer) throws SQLException {
-        this(entity, BL, session, securityPolicy, tFocusView, classListener, dialogEntity, dialogValue, computer, null);
+        this(entity, BL, session, securityPolicy, tFocusView, classListener, dialogEntity, dialogValue, computer, null, null);
     }
 
+    private final Set<PullChangeProperty> pullProps;
     public DialogInstance(FormEntity<T> entity,
                           T BL,
                           DataSession session,
@@ -46,7 +49,8 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           ObjectEntity dialogEntity,
                           Object dialogValue,
                           PropertyObjectInterfaceInstance computer,
-                          Set<FilterEntity> additionalFilters) throws SQLException {
+                          Set<FilterEntity> additionalFilters,
+                          Set<PullChangeProperty> pullProps) throws SQLException {
         super(entity,
               BL,
               session,
@@ -60,7 +64,16 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
         );
         // все равно нашли объекты или нет
 
+        this.pullProps = pullProps;
         dialogObject = instanceFactory.getInstance(dialogEntity);
+    }
+
+    @Override
+    public boolean allowHintIncrement(Property property) {
+        for(PullChangeProperty pullProp : pullProps)
+            if(pullProp.isChangeBetween(property))
+                return false;
+        return super.allowHintIncrement(property);
     }
 
     public Object getDialogValue() {

@@ -41,6 +41,7 @@ import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.MaxChangeProperty;
+import platform.server.logics.property.derived.OnChangeProperty;
 import platform.server.session.*;
 
 import java.io.DataOutputStream;
@@ -100,6 +101,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public boolean isHintIncrement(Property property) {
         return hintsIncrementTable.contains(property);
+    }
+    public boolean allowHintIncrement(Property property) {
+        return true;
     }
     public void addHintIncrement(Property property) {
         hintsIncrementList = null;
@@ -1172,19 +1176,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return result;
     }
 
-    public <P extends PropertyInterface> Set<FilterEntity> getEditFixedFilters(ClassFormEntity<T> editForm, PropertyObjectInstance<P> changeProperty, GroupObjectInstance selectionGroupObject) {
+    // pullProps чтобы запретить hint'ить
+    public <P extends PropertyInterface, F extends PropertyInterface> Set<FilterEntity> getEditFixedFilters(ClassFormEntity<T> editForm, PropertyObjectInstance<P> changeProperty, GroupObjectInstance selectionGroupObject, Collection<PullChangeProperty> pullProps) {
         Set<FilterEntity> fixedFilters = new HashSet<FilterEntity>();
 
         PropertyValueImplement<P> implement = changeProperty.getValueImplement();
 
         for (MaxChangeProperty<?, P> constrainedProperty : implement.property.getMaxChangeProperties(BL.getCheckConstrainedProperties())) {
-            fixedFilters.add(
-                    new NotFilterEntity(
-                            new NotNullFilterEntity<MaxChangeProperty.Interface<P>>(
-                                    constrainedProperty.getPropertyObjectEntity(implement.mapping, editForm.object)
-                            )
-                    )
-            );
+            pullProps.add(constrainedProperty);
+            fixedFilters.add(new NotFilterEntity(new NotNullFilterEntity<MaxChangeProperty.Interface<P>>(
+                            constrainedProperty.getPropertyObjectEntity(implement.mapping, editForm.object))));
         }
 
         ObjectEntity object = editForm.object;
@@ -1198,7 +1199,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                         break;
                     }
                 }
-                fixedFilters.addAll(filter.getResolveChangeFilters(editForm, implement));
+                for(PropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implement.property)) {
+                    OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) filterImplement.property.getOnChangeProperty(implement.property);
+                    pullProps.add(onChangeProperty);
+                    fixedFilters.add(new NotNullFilterEntity<OnChangeProperty.Interface<F, P>>(
+                                    onChangeProperty.getPropertyObjectEntity((Map<F,DataObject>) filterImplement.mapping, implement.mapping, editForm.object)));
+                }
             }
         }
         return fixedFilters;
@@ -1237,10 +1243,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(aggProp, BL, this);
 
         ClassFormEntity<T> formEntity = changeProperty.getDialogClass().getDialogForm(BL.LM);
-        Set<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, changeProperty, propertyDraw.toDraw);
+        Set<PullChangeProperty> pullProps = new HashSet<PullChangeProperty>();
+        Set<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, changeProperty, propertyDraw.toDraw, pullProps);
 
         ObjectEntity dialogObject = formEntity.object;
-        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, read(changeProperty), instanceFactory.computer, additionalFilters);
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, read(changeProperty), instanceFactory.computer, additionalFilters, pullProps);
 
         Property<PropertyInterface> filterProperty = aggProp.result;
         if (filterProperty != null) {

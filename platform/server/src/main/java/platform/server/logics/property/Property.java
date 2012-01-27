@@ -619,13 +619,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 result.add(property.getMaxChangeProperty(this));
         return result;
     }
-    public Collection<OnChangeProperty<?, T>> getOnChangeProperties(Collection<Property> properties) {
-        Collection<OnChangeProperty<?, T>> result = new ArrayList<OnChangeProperty<?, T>>();
-        for (Property<?> property : properties)
-            if (depends(property, this))
-                result.add(property.getOnChangeProperty(this));
-        return result;
-    }
 
     public QuickSet<Property> getUsedDataChanges(StructChanges propChanges) {
         QuickSet<Property> result = new QuickSet<Property>(calculateUsedDataChanges(propChanges));

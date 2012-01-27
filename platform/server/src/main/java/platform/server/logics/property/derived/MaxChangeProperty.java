@@ -12,13 +12,14 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.ChangeProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.PullChangeProperty;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
 
 import java.util.*;
 
 // св-во которое дает максимальное значение при изменении DataProperty для переданных ключей и значения
-public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends ChangeProperty<MaxChangeProperty.Interface<P>> {
+public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends PullChangeProperty<T, P, MaxChangeProperty.Interface<P>> {
 
     public abstract static class Interface<P extends PropertyInterface> extends PropertyInterface<Interface<P>> {
 
@@ -69,10 +70,6 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         }
     }
 
-    // assert что constraint.isFalse
-    final Property<T> onChange;
-    final Property<P> toChange;
-
     public static <P extends PropertyInterface> List<Interface<P>> getInterfaces(Property<P> property) {
         List<Interface<P>> result = new ArrayList<Interface<P>>();
         for(P propertyInterface : property.interfaces)
@@ -82,9 +79,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
     }
 
     public MaxChangeProperty(Property<T> onChange, Property<P> toChange) {
-        super(onChange.getSID() +"_CH_"+ toChange.getSID(),onChange.caption+" по ("+toChange.caption+")", getInterfaces(toChange));
-        this.onChange = onChange;
-        this.toChange = toChange;
+        super(onChange.getSID() +"_CH_"+ toChange.getSID(),onChange.caption+" по ("+toChange.caption+")", getInterfaces(toChange), onChange, toChange);
 
         finalizeInit();
     }
