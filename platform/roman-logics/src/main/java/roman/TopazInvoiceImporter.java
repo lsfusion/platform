@@ -31,7 +31,10 @@ public class TopazInvoiceImporter extends SingleSheetImporter {
     @Override
     protected String transformValue(int row, int column, int part, String value) {
         value = value.trim();
-
+        if(row == B)   {
+            String[] splitValue = value.split("\\."); 
+            value = splitValue[0];
+        }
         return value;
     }
 }
