@@ -2,6 +2,9 @@ package platform.server.logics.property;
 
 import platform.base.QuickSet;
 import platform.server.classes.ValueClass;
+import platform.server.session.IncrementApply;
+import platform.server.session.Modifier;
+import platform.server.session.PropertyChange;
 import platform.server.session.StructChanges;
 
 import java.util.Set;

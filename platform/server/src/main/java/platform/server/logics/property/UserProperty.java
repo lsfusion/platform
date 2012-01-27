@@ -8,6 +8,8 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.type.Type;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
@@ -91,4 +93,16 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
     }
 
     public abstract void execute(ExecutionContext context) throws SQLException;
+
+    public PropertyChange<ClassPropertyInterface> getDerivedChange(Modifier newModifier, Modifier prevModifier) {
+        return getDerivedChange(newModifier.getPropertyChanges(), prevModifier.getPropertyChanges());
+    }
+
+    public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges newChanges, PropertyChanges prevChanges) {
+        if(derivedChange!=null && derivedChange.hasUsedDataChanges(newChanges, prevChanges)) {
+            PropertyChange<ClassPropertyInterface> propertyChange = derivedChange.getDataChanges(newChanges, prevChanges).get(this);
+            return propertyChange != null ? propertyChange : getNoChange(); // noChange для прикола с stored в aspectgetexpr (там hasChanges стоит, а с null'ом его не будет)
+        }
+        return null;
+    }
 }

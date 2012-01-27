@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.base.QuickSet;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.*;
 
@@ -45,22 +46,42 @@ public abstract class DataProperty extends UserProperty {
     }
 
     @Override
+    public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges newChanges, PropertyChanges prevChanges) {
+        PropertyChange<ClassPropertyInterface> result = null;
+
+        Map<ClassPropertyInterface, KeyExpr> mapKeys = getMapKeys();
+        Expr prevExpr = null;
+        for(ClassPropertyInterface remove : interfaces) {
+            IsClassProperty classProperty = remove.interfaceClass.getProperty();
+            if(classProperty.hasChanges(newChanges) || classProperty.hasChanges(prevChanges)) {
+                if(prevExpr==null) // оптимизация
+                    prevExpr = getExpr(mapKeys);
+                result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, classProperty.getRemoveWhere(mapKeys.get(remove), newChanges, prevChanges).and(prevExpr.getWhere())));
+            }
+        }
+        IsClassProperty classProperty = value.getProperty();
+        if(classProperty.hasChanges(newChanges) || classProperty.hasChanges(prevChanges)) {
+            if(prevExpr==null) // оптимизация
+                prevExpr = getExpr(mapKeys);
+            result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, classProperty.getRemoveWhere(prevExpr, newChanges, prevChanges)));
+        }
+        
+        return PropertyChange.addNull(result, super.getDerivedChange(newChanges, prevChanges));
+    }
+
+    @Override
     public QuickSet<Property> getUsedDerivedChange(StructChanges propChanges) {
+        QuickSet<Property> result = super.getUsedDerivedChange(propChanges).merge(value.getProperty().getUsedChanges(propChanges));
+        for(ClassPropertyInterface remove : interfaces)
+            result = result.merge(remove.interfaceClass.getProperty().getUsedChanges(propChanges));
         if(derivedChange!=null)
-            return derivedChange.getUsedDataChanges(propChanges);
-        return super.getUsedDerivedChange(propChanges);
+            result = result.merge(derivedChange.getUsedDataChanges(propChanges, true));
+        return result;
     }
 
     @Override
     public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges propChanges) {
-        if(derivedChange!=null && derivedChange.hasUsedDataChanges(propChanges)) {
-            PropertyChange<ClassPropertyInterface> propertyChange = derivedChange.getDataChanges(propChanges).get(this);
-            if(propertyChange!=null)
-                return propertyChange;
-            else
-                return getNoChange();
-        }
-        return super.getDerivedChange(propChanges);
+        return PropertyChange.addNull(getDerivedChange(propChanges, PropertyChanges.EMPTY), super.getDerivedChange(propChanges));
     }
     
     // не сильно структурно поэтому вынесено в метод

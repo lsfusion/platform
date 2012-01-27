@@ -257,9 +257,6 @@ public class Query<K,V> extends AbstractInnerContext<Query<K,V>> implements MapK
     public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException {
         compile(session.syntax).outSelect(session, env);
     }
-    public void outSelect(SQLSession session, QueryEnvironment env, OrderedMap<V,Boolean> orders,int selectTop) throws SQLException {
-        compile(session.syntax,orders,selectTop).outSelect(session, env);
-    }
 
     public String toString() {
         return "JQ";

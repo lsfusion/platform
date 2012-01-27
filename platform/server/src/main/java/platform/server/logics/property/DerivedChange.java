@@ -47,17 +47,8 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
         return getDepends(false);
     }
 
-    public boolean hasDerivedChange(Modifier modifier, Modifier prevModifier) {
-        return hasDerivedChange(modifier.getPropertyChanges()) || hasDerivedChange(prevModifier.getPropertyChanges());
-    }
-
-    public boolean hasDerivedChange(PropertyChanges propChanges) {
-        StructChanges struct = propChanges.getStruct();
-        return struct.hasChanges(getUsedDerivedChange(struct));
-    }
-
-    public QuickSet<Property> getUsedDerivedChange(StructChanges changes) {
-        return changes.getUsedChanges(getNewDepends());
+    public boolean hasUsedDataChanges(PropertyChanges propChanges, PropertyChanges prevChanges) {
+        return hasUsedDataChanges(propChanges, true) || hasUsedDataChanges(prevChanges, false);
     }
 
     private PropertyChange<C> getDerivedChange(PropertyChanges newChanges, PropertyChanges prevChanges) {
@@ -71,7 +62,7 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
 
         Where andWhere = Where.TRUE; // докинем дополнительные условия
         for(PropertyMapImplement<?,C> propChange : onChange)
-            andWhere = andWhere.and(propChange.mapIncrementExpr(mapKeys, newChanges, prevChanges, onChangeWhere, forceChanged ? IncrementType.SET : IncrementType.CHANGE).getWhere());
+            andWhere = andWhere.and(propChange.mapIncrementExpr(mapKeys, newChanges, prevChanges, onChangeWhere, forceChanged ? IncrementType.CHANGESET : IncrementType.CHANGE).getWhere());
 
         andWhere = andWhere.and(onChangeWhere.toWhere());
 
@@ -96,13 +87,17 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
         return getDataChanges(modifier.getPropertyChanges(), prevModifier.getPropertyChanges());
     }
 
-    public boolean hasUsedDataChanges(PropertyChanges propChanges) {
+    public boolean hasUsedDataChanges(PropertyChanges propChanges, boolean newDepends) {
         StructChanges struct = propChanges.getStruct();
-        return struct.hasChanges(getUsedDataChanges(struct));
+        return struct.hasChanges(getUsedDataChanges(struct, newDepends));
     }
 
-    public QuickSet<Property> getUsedDataChanges(StructChanges changes) {
-        return QuickSet.add(property.getUsedDataChanges(changes),getUsedDerivedChange(changes));
+    public QuickSet<Property> getUsedDerivedChange(StructChanges changes, boolean newDepends) {
+        return changes.getUsedChanges(newDepends?getNewDepends():getPrevDepends());
+    }
+
+    public QuickSet<Property> getUsedDataChanges(StructChanges changes, boolean newModifier) {
+        return QuickSet.add(property.getUsedDataChanges(changes),getUsedDerivedChange(changes, newModifier));
     }
     
     public DataChanges getDataChanges(PropertyChanges changes) {

@@ -759,6 +759,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private void prereadCaches() {
+        getAppliedProperties(true);
+        getAppliedProperties(false);
+        getMapAppliedDepends();
         for(Property property : getPropertyList()) // сделалем чтобы
             property.prereadCaches();
     }

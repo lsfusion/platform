@@ -11,7 +11,6 @@ import platform.server.Settings;
 import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
-import platform.server.caches.ParamLazy;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.*;
@@ -282,7 +281,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder resultChanged) {
-        return getIncrementExpr(joinImplement, propChanges, PropertyChanges.EMPTY, resultChanged, IncrementType.SUSPICION);
+        return getIncrementExpr(joinImplement, propChanges, resultChanged, IncrementType.SUSPICION);
+    }
+
+    public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder resultChanged, IncrementType incrementType) {
+        return getIncrementExpr(joinImplement, propChanges, PropertyChanges.EMPTY, resultChanged, incrementType);
     }
 
     public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges newChanges, PropertyChanges prevChanges, WhereBuilder resultChanged, IncrementType incrementType) {
@@ -290,20 +293,27 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         Expr newExpr = getExpr(joinImplement, newChanges, incrementWhere);
         Expr prevExpr = getExpr(joinImplement, prevChanges, incrementWhere);
 
-        Where notNullWhere = newExpr.getWhere().or(prevExpr.getWhere());
-
-        Where forceWhere = Where.FALSE;
+        Where forceWhere;
         switch(incrementType) {
+            case CHANGESET:
+                forceWhere = newExpr.getWhere().or(prevExpr.getWhere()).and(newExpr.getWhere().and(prevExpr.getWhere()).not());
+                break;
             case SET:
-                forceWhere = newExpr.getWhere().and(prevExpr.getWhere());
+                forceWhere = newExpr.getWhere().and(prevExpr.getWhere().not());
+                break;
+            case DROP:
+                forceWhere = newExpr.getWhere().not().and(prevExpr.getWhere());
                 break;
             case CHANGE:
-                forceWhere = newExpr.compare(prevExpr, Compare.EQUALS);
+                forceWhere = newExpr.getWhere().or(prevExpr.getWhere()).and(newExpr.compare(prevExpr, Compare.EQUALS).not());
                 break;
+            case SUSPICION:
+                forceWhere = newExpr.getWhere().or(prevExpr.getWhere());
+                break;
+            default:
+                throw new RuntimeException("should not be");
         }
-        notNullWhere = notNullWhere.and(forceWhere.not());
-
-        resultChanged.add(incrementWhere.toWhere().and(notNullWhere));
+        resultChanged.add(incrementWhere.toWhere().and(forceWhere));
         return newExpr;
     }
 
@@ -987,7 +997,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     
     public void prereadCaches() {
         getClassWhere();
-        getQuery(PropertyChanges.EMPTY, false, new HashMap<T, Expr>());
+        if(isFull())
+            getQuery(PropertyChanges.EMPTY, false, new HashMap<T, Expr>());
     }
 
     private Collection<Pair<Property<?>, LinkType>> links; 

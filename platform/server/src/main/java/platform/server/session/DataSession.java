@@ -113,21 +113,10 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     }
 
     public PropertyChange<ClassPropertyInterface> getDataChange(DataProperty property) {
-        PropertyChange<ClassPropertyInterface> result = null;
-        // ручные изменения
         SinglePropertyTableUsage<ClassPropertyInterface> dataChange = data.get(property);
         if(dataChange!=null)
-            result = PropertyChange.addNull(result, SinglePropertyTableUsage.getChange(dataChange));
-
-        SingleKeyNoPropertyUsage removeTable;
-        Map<ClassPropertyInterface, KeyExpr> mapKeys = property.getMapKeys();
-        Expr prevExpr = property.getExpr(mapKeys);
-        for(ClassPropertyInterface remove : property.interfaces)
-            if((removeTable = getRemoveTable(remove.interfaceClass))!=null)
-                result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, removeTable.getWhere(mapKeys.get(remove)).and(prevExpr.getWhere())));
-        if((removeTable = getRemoveTable(property.value))!=null)
-            result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, removeTable.getWhere(prevExpr)));
-        return result;
+            return SinglePropertyTableUsage.getChange(dataChange);
+        return null;
     }
 
     public <P extends PropertyInterface> PropertyChange<P> getPropertyChange(Property<P> property) {
@@ -522,20 +511,10 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
                 executePending(pendingExecute.getKey(), context);
 
         return null;
-
-    }
-
-    private <P extends PropertyInterface> PropertyChange<P> getDerivedChange(Property<P> property, IncrementApply incrementApply) {
-        if(property.isDerived()) {
-            UserProperty userProperty = (UserProperty)property;
-            if(userProperty.derivedChange.hasDerivedChange(incrementApply, incrementApply.applyStart))
-                return (PropertyChange<P>) userProperty.derivedChange.getDataChanges(incrementApply, incrementApply.applyStart).get(userProperty);
-        }
-        return null;
     }
 
     private PropertyChange<ClassPropertyInterface> getStoreChange(DataProperty property, IncrementApply incrementApply) {
-        PropertyChange<ClassPropertyInterface> change = PropertyChange.addNull(getDataChange(property), getDerivedChange(property, incrementApply));
+        PropertyChange<ClassPropertyInterface> change = PropertyChange.addNull(getDataChange(property), property.getDerivedChange(incrementApply, incrementApply.applyStart));
         if(change!=null)
             return change.correctIncrement(property);
         return null;
@@ -563,8 +542,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     }
 
     public void executeDerived(@ParamMessage ExecuteProperty property, IncrementApply incrementApply, List<ClientAction> actions, Map<ExecuteProperty, List<ExecutionContext>> pendingExecute) throws SQLException {
-        PropertyChange<ClassPropertyInterface> propertyChange = getDerivedChange(property, incrementApply);
-        if(propertyChange!=null) {
+        PropertyChange<ClassPropertyInterface> propertyChange = property.getDerivedChange(incrementApply, incrementApply.applyStart);
+        if(propertyChange!=null && !propertyChange.isEmpty()) {
             List<ExecutionContext> pendingPropExecute = null;
             if(property.pendingDerivedExecute()) {
                 pendingPropExecute = new ArrayList<ExecutionContext>();
@@ -591,7 +570,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
             Query<T,String> changed = new Query<T,String>(property);
 
             WhereBuilder changedWhere = new WhereBuilder();
-            changed.and(property.getIncrementExpr(changed.mapKeys, incrementApply, incrementApply.applyStart, changedWhere, IncrementType.SET).getWhere().and(changedWhere.toWhere())); // только на измененные смотрим
+            property.getIncrementExpr(changed.mapKeys, incrementApply, incrementApply.applyStart, changedWhere, IncrementType.SET);
+            changed.and(changedWhere.toWhere()); // только на измененные смотрим
 
             // сюда надо name'ы вставить
             List<List<String>> propCaptions = new ArrayList<List<String>>();

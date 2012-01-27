@@ -14,10 +14,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.derived.DerivedProperty;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChanges;
-import platform.server.session.StructChanges;
+import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -95,5 +92,11 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         if(valueClass instanceof ConcreteObjectClass)
             for(Map<ClassPropertyInterface, DataObject> row : new Query<ClassPropertyInterface, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet())
                 session.changeClass(BaseUtils.singleValue(row), session.baseClass.unknown);
+    }
+
+    public Where getRemoveWhere(Expr joinExpr, PropertyChanges newChanges, PropertyChanges prevChanges) {
+        WhereBuilder changedWhere = new WhereBuilder();
+        getIncrementExpr(Collections.singletonMap(BaseUtils.single(interfaces), joinExpr), newChanges, prevChanges, changedWhere, IncrementType.DROP);
+        return changedWhere.toWhere();
     }
 }

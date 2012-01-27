@@ -39,6 +39,8 @@ public class WrapComplexityAspect {
     }
 
     public <T extends PropertyInterface> Expr getJoinExpr(ProceedingJoinPoint thisJoinPoint, Property<T> property, Map<T, ? extends Expr> joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
+        if(!property.isFull()) // если ключей не хватает wrapp'ить нельзя
+            return (Expr) thisJoinPoint.proceed();
         WhereBuilder cascadeWhere = Property.cascadeWhere(changedWhere);
         return wrapComplexity((Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, propChanges, cascadeWhere}),
                 changedWhere!=null?cascadeWhere.toWhere():null, property, joinExprs, changedWhere);
@@ -50,6 +52,7 @@ public class WrapComplexityAspect {
     }
 
     public <T extends PropertyInterface> Query<T, String> getQuery(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges, Boolean changedWhere, Map<T, ? extends Expr> interfaceValues) throws Throwable {
+        assert property.isFull();
         Query<T, String> query = (Query<T, String>) thisJoinPoint.proceed();
         ParsedQuery<T, String> parsedQuery = query.parse();
         
