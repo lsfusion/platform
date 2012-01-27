@@ -29,7 +29,7 @@ public class Stat {
     }
 
     public Stat(double count, int countDeg) {
-        deg = (int) (countDeg * Math.round((Math.log10(count) / Math.log10(Settings.instance.getStatDegree()))));
+        deg = (int) Math.round((double)countDeg * (Math.log10(count) / Math.log10(Settings.instance.getStatDegree())));
     }
 
     private Stat(int count, boolean isDeg) {
@@ -68,7 +68,10 @@ public class Stat {
     }
 
     public Stat div(Stat stat) {
-        return new Stat(deg - stat.deg, true);
+        int divDeg = deg - stat.deg;
+        if(divDeg<0) // по сути учитываем дисперсию
+            divDeg = 0;
+        return new Stat(divDeg, true);
     }
 
     public boolean equals(Object o) {

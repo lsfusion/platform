@@ -76,8 +76,10 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     private Expr packed = null;
     @ManualLazy
     public Expr pack() {
-        if(packed==null)
+        if(packed==null) {
             packed = followFalse(Where.FALSE, true);
+            packed.packed = packed; // оптимизация чтобы не паковать себя
+        }
         return packed;
     }
     public static List<Expr> pack(List<Expr> exprs) {
