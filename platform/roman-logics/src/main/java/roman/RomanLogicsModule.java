@@ -93,6 +93,10 @@ public class RomanLogicsModule extends LogicsModule {
     private LP priceProxyImporterFreightSku;
     public LP contractInProxyImporterStockSku, sidContractInProxyImporterStockSku, dateContractInProxyImporterStockSku;
     private LP priceDirectImporterFreightSku;
+    private LP RRPDirectImporterFreightSku;
+    private LP RRPProxyImporterFreightSku;
+    private LP RRPImporterFreightSku;
+
 
     public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> baseLM, RomanBusinessLogics BL) {
         super("RomanLogicsModule");
@@ -161,6 +165,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP dateToOrderArticleSku;
     LP priceDocumentArticle;
     LP RRPDocumentArticle;
+    LP RRPRateDocumentSku;
     private LP sumDocumentArticle;
     private LP sumSimpleInvoiceArticle;
     LP colorSupplierItem;
@@ -512,6 +517,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP priceDocumentSku;
     private LP priceRateDocumentArticle;
     private LP priceRateDocumentSku;
+    private LP RRPRateDocumentArticle;
     private LP sumDocumentSku;
     private LP inOrderShipment;
     private LP inInvoiceShipment;
@@ -589,6 +595,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP diffShipmentRouteSku;
     private LP sumShipmentRouteSku;
     private LP sumShipmentRoute;
+    private LP sumShipmentSku;
+    private LP sumShipmentArticleColor;
     private LP sumShipment;
     private LP invoicedShipmentRoute;
 
@@ -644,6 +652,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP oneShipmentArticleSizeSku;
     private LP quantityShipmentArticleSize;
     private LP quantityShipmentArticleColor;
+    private LP quantityShipmentArticleColorSize;
+    private LP quantityShipmentSize;
     private LP oneShipmentArticleSize;
     private LP oneShipmentArticleColor;
 
@@ -842,13 +852,17 @@ public class RomanLogicsModule extends LogicsModule {
     private LP grossWeightImporterFreightUnitTypeInvoice;
     private LP grossWeightImporterFreightUnit;
     private LP priceInInvoiceStockSku;
+    private LP RRPInInvoiceStockSku;
     private LP contractInInvoiceStockSku;
     private LP priceInInvoiceShipmentStockSku;
+    private LP RRPInInvoiceShipmentStockSku;
     private LP contractInInvoiceShipmentStockSku;
     private LP priceInShipmentStockSku;
+    private LP RRPInShipmentStockSku;
     private LP priceInShipmentDetail;
     private LP contractInShipmentStockSku;
     public LP priceInImporterFreightSku;
+    public LP RRPInImporterFreightSku;
     private LP netWeightImporterFreightSku;
     private LP netWeightImporterFreightArticle;
     private LP netWeightProxyImporterFreightSku;
@@ -1097,6 +1111,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP freightSupplierBox;
     private LP freightFreightUnit;
     private LP priceRateSupplierBoxSku;
+    private LP RRPRateSupplierBoxSku;
     private LP priceInInvoiceFreightUnitSku;
     ConcreteCustomClass boxSupplier;
     ConcreteCustomClass simpleSupplier;
@@ -1854,6 +1869,7 @@ public class RomanLogicsModule extends LogicsModule {
         //Category
         typeInvoiceCategory = addDProp(idGroup, "typeInvoiceCategory", "Тип инвойса номенклатурной группы (ИД)", typeInvoice, category);
         nameTypeInvoiceCategory = addJProp(baseGroup, "nameTypeInvoiceCategory", "Тип инвойса номенклатурной группы", baseLM.name, typeInvoiceCategory, 1);
+        setNotNull(typeInvoiceCategory);
         
         categoryArticle = addDProp(idGroup, "categoryArticle", "Номенклатурная группа товара (ИД)", category, article);
         nameOriginCategoryArticle = addJProp(intraAttributeGroup, "nameOriginCategoryArticle", "Номенклатурная группа товара (ориг.)", nameOrigin, categoryArticle, 1);
@@ -2373,6 +2389,8 @@ public class RomanLogicsModule extends LogicsModule {
         priceRateDocumentSku = addJProp(baseGroup, "priceRateDocumentSku", true, "Цена (конверт.)", round2, addJProp(baseLM.multiplyDouble2, priceDocumentSku, 1, 2, addJProp(nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
 
         RRPDocumentArticle = addDProp(baseGroup, "RRPDocumentArticle", "Рекомендованная цена", DoubleClass.instance, priceDocument, article);
+        RRPRateDocumentArticle = addJProp(baseGroup, "RRPRateDocumentArticle", true, "Рекомендованная цена (конверт.)", round2, addJProp(baseLM.multiplyDouble2, RRPDocumentArticle, 1, 2, addJProp(nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
+        RRPRateDocumentSku = addJProp(baseGroup, "RRPRateDocumentSku", "Рекомендованная цена (конверт.)", RRPRateDocumentArticle, 1, articleSku, 2);
 
         priceSupplierBoxSku = addJProp(baseGroup, "priceSupplierBoxSku", "Цена", priceDocumentSku, boxInvoiceSupplierBox, 1, 2);
 
@@ -2637,13 +2655,17 @@ public class RomanLogicsModule extends LogicsModule {
 
         priceInInvoiceStockSku = addJProp(baseGroup, "priceInInvoiceStockSku", false, "Цена входная", baseLM.and1,
                 priceRateDocumentSku, 1, 3, quantityInvoiceStockSku, 1, 2, 3);
+        RRPInInvoiceStockSku = addJProp(baseGroup, "RRPInInvoiceStockSku", false, "Цена рекомендованная", baseLM.and1,
+                RRPRateDocumentSku, 1, 3, quantityInvoiceStockSku, 1, 2, 3);
         contractInInvoiceStockSku = addJProp(baseGroup, "contractInInvoiceStockSku", false, "Контракт (ИД)", baseLM.and1,
                 contractInvoice, 1, quantityInvoiceStockSku, 1, 2, 3);
 
         priceInInvoiceShipmentStockSku = addJProp("priceInInvoiceShipmentStockSku", "Цена входная", baseLM.and1, priceInInvoiceStockSku, 1, 3, 4, inInvoiceShipment, 1, 2);
+        RRPInInvoiceShipmentStockSku = addJProp("RRPInInvoiceShipmentStockSku", "Цена рекомендованная", baseLM.and1, RRPInInvoiceStockSku, 1, 3, 4, inInvoiceShipment, 1, 2);
         contractInInvoiceShipmentStockSku = addJProp("contractInInvoiceShipmentStockSku", "Контракт (ИД)", baseLM.and1, contractInInvoiceStockSku, 1, 3, 4, inInvoiceShipment, 1, 2);
 
         priceInShipmentStockSku = addMGProp(baseGroup, "priceShipmentStockSku", true, "Цена входная", priceInInvoiceShipmentStockSku, 2, 3, 4);
+        RRPInShipmentStockSku = addMGProp(baseGroup, "RRPShipmentStockSku", true, "Цена рекомендованная", RRPInInvoiceShipmentStockSku, 2, 3, 4);
         priceInShipmentDetail = addJProp(baseGroup, "priceInShipmentDetail", "Цена входная", priceInShipmentStockSku, shipmentShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
 
         contractInShipmentStockSku = addMGProp(baseGroup, "contractInShipmentStockSku", true, "Контракт (ИД)", contractInInvoiceShipmentStockSku, 2, 3, 4);
@@ -2727,6 +2749,8 @@ public class RomanLogicsModule extends LogicsModule {
         quantityShipmentArticle = addSGProp(baseGroup, "quantityShipmentArticle", "Всего оприход. (артикул)", quantityShipmentSku, 1, articleSku, 2);
         quantityShipmentArticleSize = addSGProp(baseGroup, "quantityShipmentArticleSize", "Всего оприход. (артикул-размер)", quantityShipmentSku, 1, articleSku, 2, sizeSupplierItem, 2);
         quantityShipmentArticleColor = addSGProp(baseGroup, "quantityShipmentArticleColor", "Всего оприход. (артикул-цвет)", quantityShipmentSku, 1, articleSku, 2, colorSupplierItem, 2);
+        quantityShipmentArticleColorSize = addSGProp(baseGroup, "quantityShipmentArticleColorSize", "Всего оприход. (артикул-цвет-размер)", quantityShipmentSku, 1, articleSku, 2, colorSupplierItem, 2, sizeSupplierItem, 2);
+        quantityShipmentSize = addSGProp(baseGroup, "quantityShipmentSize", "Всего оприход. (размер)", quantityShipmentArticleSize, 1, 3);
 
         oneShipmentArticle = addJProp(baseGroup, "oneShipmentArticle", "Первый артикул", baseLM.equals2, quantityShipmentArticle, 1, 2, addCProp(DoubleClass.instance, 1));
         oneShipmentArticleColor = addJProp(baseGroup, "oneShipmentArticleColor", "Первый артикул-цвет", baseLM.equals2, quantityShipmentArticleColor, 1, 2, 3, addCProp(DoubleClass.instance, 1));
@@ -2797,6 +2821,10 @@ public class RomanLogicsModule extends LogicsModule {
 
         sumShipmentRouteSku = addJProp("sumShipmentRouteSku", "Сумма", baseLM.multiplyDouble2, invoicedShipmentRouteSku, 1, 2, 3, priceShipmentSku, 1, 3);
         sumShipmentRoute = addSGProp("sumShipmentRoute", "Сумма (ожид.)", sumShipmentRouteSku, 1, 2);
+
+        sumShipmentSku = addJProp("sumShipmentSku", "Сумма (оприход.)", baseLM.multiplyDouble2, priceShipmentSku, 1, 2, quantityShipmentSku, 1, 2);
+
+        sumShipmentArticleColor = addSGProp("sumShipmentArticleColor", "Сумма (оприход.)", sumShipmentSku, 1, articleSku, 2, colorSupplierItem, 2);
         sumShipment = addSGProp("sumShipment", "Сумма (ожид.)", sumShipmentRoute, 1);
 
         invoicedShipmentRoute = addSGProp(baseGroup, "invoicedShipmentRoute", "Кол-во", invoicedShipmentRouteSku, 1, 2);
@@ -2911,6 +2939,7 @@ public class RomanLogicsModule extends LogicsModule {
                 addJProp(baseLM.and1, quantityListSku, 2, 3, addJProp(baseLM.equals2, 1, boxInvoiceSupplierBox, 2), 1, 2));
 
         priceRateSupplierBoxSku = addJProp("priceRateSupplierBoxSku", "Цена входная", priceRateDocumentSku, boxInvoiceSupplierBox, 1, 2);
+        RRPRateSupplierBoxSku = addJProp("RRPRateSupplierBoxSku", "Цена рекомендованная", RRPRateDocumentSku, boxInvoiceSupplierBox, 1, 2);
 
         priceInInvoiceFreightUnitSku = addCUProp(baseGroup, "priceInInvoiceFreightUnitSku", "Цена входная",
                 priceInInvoiceStockSku,
@@ -3107,6 +3136,11 @@ public class RomanLogicsModule extends LogicsModule {
         priceProxyImporterFreightSku = addMGProp(baseGroup, "priceProxyImporterFreightSku", true, "Цена входная", priceInShipmentStockSku, importerShipmentFreightBox, 1, 2, freightFreightUnit, 2, 3);
         priceDirectImporterFreightSku = addMGProp(baseGroup, "priceDirectImporterFreightSku", true, "Цена входная", priceRateSupplierBoxSku, importerSupplierBox, 1, freightFreightUnit, 1, 2);
         priceInImporterFreightSku = addSUProp(baseGroup, "priceInImporterFreightSku", "Цена входная", Union.OVERRIDE, priceDirectImporterFreightSku, priceProxyImporterFreightSku, priceImporterFreightSku);
+
+        RRPImporterFreightSku = addDProp(baseGroup, "RRPImporterFreightSku", "Цена рекомендованная", DoubleClass.instance, importer, freight, sku);
+        RRPProxyImporterFreightSku = addMGProp(baseGroup, "RRPProxyImporterFreightSku", true, "Цена рекомендованная", RRPInShipmentStockSku, importerShipmentFreightBox, 1, 2, freightFreightUnit, 2, 3);
+        RRPDirectImporterFreightSku = addMGProp(baseGroup, "RRPDirectImporterFreightSku", true, "Цена рекомендованная", RRPRateSupplierBoxSku, importerSupplierBox, 1, freightFreightUnit, 1, 2);
+        RRPInImporterFreightSku = addSUProp(baseGroup, "RRPInImporterFreightSku", "Цена рекомендованная", Union.OVERRIDE, RRPDirectImporterFreightSku, RRPProxyImporterFreightSku, RRPImporterFreightSku);
 
         addConstraint(addJProp("Для SKU должна быть задана входная цена", and(true, false), is(freightPriced), 2, priceInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), false);
 
@@ -3520,7 +3554,8 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
         addFormEntity(new ShipmentListFormEntity(purchase, "boxShipmentListForm", "Поставки по коробам", true));
         addFormEntity(new ShipmentListFormEntity(purchase, "simpleShipmentListForm", "Поставки без коробов", false));
-        addFormEntity(new InvoiceShipmentFormEntity(purchase, "invoiceShipmentForm", "Сравнение по инвойсам"));                                                                                                                       
+        addFormEntity(new ShipmentExportFormEntity(purchase, "shipmentExportForm", "Экспорт поставки"));
+        addFormEntity(new InvoiceShipmentFormEntity(purchase, "invoiceShipmentForm", "Сравнение по инвойсам"));
 
         NavigatorElement distribution = addNavigatorElement(baseLM.baseElement, "distribution", "Управление складом");
         distribution.window = leftToolbar;
@@ -5019,6 +5054,70 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
+    /************/
+
+    private class ShipmentExportFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objSupplier;
+        private ObjectEntity objShipment;
+        private ObjectEntity objArticle;
+        private ObjectEntity objSizeSupplier;
+        private ObjectEntity objColorSupplier;
+
+        private ShipmentExportFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
+
+            objShipment = addSingleGroupObject(shipment, "Поставка", baseLM.date, sidDocument);
+
+            //objArticle = addSingleGroupObject(article, "Артикул", sidArticle);
+
+            //objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", baseLM.selection, sidColorSupplier, baseLM.name);
+
+            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", sidSizeSupplier);
+
+            GroupObjectEntity gobjArticleColor= new GroupObjectEntity(genID());
+            objArticle = new ObjectEntity(genID(), articleComposite, "Артикул");
+            objColorSupplier = new ObjectEntity(genID(), colorSupplier, "Цвет");
+            gobjArticleColor.add(objArticle);
+            gobjArticleColor.add(objColorSupplier);
+            addGroup(gobjArticleColor);
+
+            addPropertyDraw(objArticle, sidArticle);
+            addPropertyDraw(objColorSupplier, sidColorSupplier, baseLM.name);
+            addPropertyDraw(objArticle, objColorSupplier, mainCompositionOriginArticleColor, additionalCompositionOriginArticleColor);
+            addPropertyDraw(objShipment, objArticle, objColorSupplier, sumShipmentArticleColor);
+
+            PropertyDrawEntity quantityColumn = addPropertyDraw(quantityShipmentArticleColorSize, objShipment, objArticle, objColorSupplier, objSizeSupplier);
+            quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
+            quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objShipment), Compare.EQUALS, objSupplier));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityShipmentArticleColor, objShipment, objArticle, objColorSupplier)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityShipmentSize, objShipment, objSizeSupplier)));
+
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            //design.get(getPropertyDraw(sidDocument, objDirectInvoice)).caption = "Номер инвойса";
+            //design.get(getPropertyDraw(baseLM.date, objDirectInvoice)).caption = "Дата инвойса";
+
+            //design.get(objShipment.groupTo).grid.constraints.fillVertical = 1;
+            //design.get(objSku.groupTo).grid.constraints.fillVertical = 4;
+
+            design.addIntersection(design.getGroupObjectContainer(objSupplier.groupTo),
+                    design.getGroupObjectContainer(objShipment.groupTo),
+                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            return design;
+        }
+    }
+
+
     private class FreightShipmentStoreFormEntity extends BarcodeFormEntity {
 
         private ObjectEntity objFreight;
@@ -6455,6 +6554,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(priceInvoiceImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(sumInvoiceImporterStockSku, objImporter, objFreightBox, objSku);
             addPropertyDraw(priceInImporterFreightSku, objImporter, objFreight, objSku);
+            addPropertyDraw(RRPInImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(sumInImporterStockSku, objImporter, objFreightBox, objSku);
 
             gobjFreightBoxSku.initClassView = ClassViewType.GRID;
@@ -7229,6 +7329,7 @@ public class RomanLogicsModule extends LogicsModule {
             //addPropertyDraw(nameSubCategoryFreightSku, objFreight, objSku);
             //addPropertyDraw(nameTypeInvoiceFreightArticleSku, objFreight, objSku);
             addPropertyDraw(quantityImporterFreightSku, objImporter, objFreight, objSku);
+            addPropertyDraw(RRPInImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(markupPercentImporterFreightSku, objImporter, objFreight, objSku);
             //addPropertyDraw(markupInImporterFreightSku, objImporter, objFreight, objSku);

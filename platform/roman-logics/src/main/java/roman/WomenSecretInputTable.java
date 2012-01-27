@@ -27,8 +27,8 @@ import static platform.server.integration.SingleSheetImporter.*;
 public class WomenSecretInputTable implements ImportInputTable {
     private List<List<String>> data = new ArrayList<List<String>>();
 
-    public final static int lastMainColumn = H;
-    public final static int lastInvoiceColumn = M;
+    public final static int lastMainColumn = I;
+    public final static int lastInvoiceColumn = L;
     public final static int resultBarcodeColumn = lastInvoiceColumn + 3 + lastMainColumn;
 
     public WomenSecretInputTable(InputStream stream) throws BiffException, IOException {
@@ -39,14 +39,18 @@ public class WomenSecretInputTable implements ImportInputTable {
             ExcelInputTable mainTable = new ExcelInputTable(book.getSheet(i * 2 + 1));
 
 
-            String invoiceID = invoiceTable.getCellString(6, E);
-            String invoiceDate = invoiceTable.getCellString(7, E);
+            String invoiceID = invoiceTable.getCellString(6, B);
+            String invoiceDate = invoiceTable.getCellString(7, B);
 
             Map<String, List<String>> invoiceData = new HashMap<String, List<String>>();
+            boolean startReading = false;
             for (int row = 0; row < invoiceTable.rowsCnt(); row++) {
                 final int ARTICLE_ID_COL = A;
                 String articleID = invoiceTable.getCellString(row, ARTICLE_ID_COL).trim();
-                if (articleID.length() > 0 && !articleID.equals("STYLE")) {
+                if (articleID.equals("STYLE")) {
+                    startReading = true;
+                }
+                if (articleID.length() > 0 && !articleID.equals("STYLE") && startReading) {
                     List<String> rowData = new ArrayList<String>();
                     for (int column = 0; column <= lastInvoiceColumn; column++) {
                         rowData.add(invoiceTable.getCellString(row, column));
@@ -56,7 +60,7 @@ public class WomenSecretInputTable implements ImportInputTable {
             }
 
             for (int row = 0; row < mainTable.rowsCnt(); row++) {
-                final int BARCODE_COL = H;
+                final int BARCODE_COL = I;
                 final int ARTICLE_ID_COL = B;
                 if (mainTable.getCellString(row, BARCODE_COL).trim().matches("^(\\d{13}|\\d{12}|\\d{8})$")) {
                     String articleID = mainTable.getCellString(row, ARTICLE_ID_COL).trim();
