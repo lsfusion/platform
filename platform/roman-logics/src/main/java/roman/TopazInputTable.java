@@ -34,7 +34,11 @@ public class TopazInputTable implements ImportInputTable {
             if (articleID.length() > 0) {
                 List<String> rowData = new ArrayList<String>();
                 for (int column = 0; column <= lastColumn; column++) {
-                    rowData.add(invoiceTable.getCellString(row, column));
+                    String cellValue = invoiceTable.getCellString(row, column);
+                    if (column == 0)
+                        rowData.add(transformValue(cellValue));
+                    else
+                        rowData.add(cellValue);
                 }
                 rowData.add(invoiceSID);
                 rowData.add(invoiceSID);
@@ -63,5 +67,10 @@ public class TopazInputTable implements ImportInputTable {
     public int columnsCnt() {
         if (data.size() == 0) return 0;
         return data.get(0).size();
+    }
+    
+    public String transformValue(String value) {
+        String [] splitValue = value.split("\\.");
+        return splitValue[0];
     }
 }
