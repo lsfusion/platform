@@ -553,16 +553,19 @@ nameSupplierGenTimeTable 'Поставщик' (genTimeTable) = name(supplierGenT
 departmentStoreGenTimeTable 'Подразделение (ИД)' =DATA departmentStore (genTimeTable);
 nameDepartmentStoreGenTimeTable 'Подразделение' (genTimeTable) = name(departmentStoreGenTimeTable(genTimeTable)) IN baseGroup;
 
-inMonthGenTimeTable 'Включать' = DATA BOOLEAN (captionMonth);
-inDayGenTimeTable 'Включать' = DATA BOOLEAN (captionDOW);
+inMonthGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, captionMonth);
+inDayGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, captionDOW);
+inAllMonthGenTable 'Включить все месяцы' = DATA BOOLEAN (genTimeTable);
+inMonthGenTimeTable(genTimeTable, captionMonth) <- inAllMonthGenTable(genTimeTable) ON ASSIGN inAllMonthGenTable(genTimeTable) AND captionMonth IS captionMonth;
+//inMonthGenTimeTable(genTimeTable, captionMonth) <- inAllMonthGenTable(genTimeTable) ON ASSIGN inAllMonthGenTable(genTimeTable);
 
 FORM genTimeTable 'Генерация графика'
 OBJECTS g=genTimeTable FIXED PANEL, m=captionMonth, d=captionDOW
-PROPERTIES(g) nameSupplierGenTimeTable, nameDepartmentStoreGenTimeTable, startDateGenTimeTable, endDateGenTimeTable
+PROPERTIES(g) nameSupplierGenTimeTable, nameDepartmentStoreGenTimeTable, startDateGenTimeTable, endDateGenTimeTable, inAllMonthGenTable
 PROPERTIES(m) READONLY name
-PROPERTIES(m)inMonthGenTimeTable
-PROPERTIES(d) READONLY name
-PROPERTIES(d) inDayGenTimeTable;
+PROPERTIES(g, m)inMonthGenTimeTable
+PROPERTIES(g, d) inDayGenTimeTable
+EDIT genTimeTable OBJECT g;
 
 FORM genTimeTables 'Графики' //служит для добавления сущности "генерации графиков" и в дальнейшем будет удалена
 OBJECTS g=genTimeTable
@@ -650,23 +653,27 @@ EDIT tradingSquare OBJECT s;
 
 // ------------------------------------- Скидки ---------------------------------------------------------- //
 
-TABLE dt (departmentStore, DATE);
-discount 'Скидка' = DATA BOOLEAN (departmentStore, DATE) IN baseGroup;
+//TABLE dt (departmentStore, DATE);
+//discount 'Скидка (ИД)' = DATA yesNo (departmentStore, DATE);
+//nameDiscount 'Скидка (ДА/НЕТ)' (departmentStore, date) = name(discount(departmentStore, date)) IN baseGroup;
 
-FORM addDiscount 'Скидка (новая)'
-OBJECTS d=departmentStore FIXED PANEL, t=DATE FIXED PANEL
-PROPERTIES(d) READONLY name
-PROPERTIES(t) OBJVALUE
-PROPERTIES(d, t) discount;
+//FORM addDiscount 'Скидка (новая)'
+//OBJECTS d=departmentStore FIXED PANEL, t=DATE FIXED PANEL
+//PROPERTIES(d) READONLY name
+//PROPERTIES(t) OBJVALUE
+//PROPERTIES(d, t) nameDiscount;
 
-showFormDiscount 'Добавить' (departmentStore) = ACTION FORM addDiscount OBJECTS d NEWSESSION MODAL;
+//showFormDiscount 'Добавить' (departmentStore) = ACTION FORM addDiscount OBJECTS d NEWSESSION MODAL;
 
-FORM discount 'Скидки'
-OBJECTS d=departmentStore, t=DATE
-PROPERTIES(d) READONLY name
-PROPERTIES(d) showFormDiscount
-PROPERTIES(t) OBJVALUE
-FILTERS NOT NULL discount(d, t);
+//FORM discount 'Скидки'
+//OBJECTS d=departmentStore, t=DATE
+//PROPERTIES(d) READONLY name
+//PROPERTIES(d) showFormDiscount
+//PROPERTIES(t) READONLY OBJVALUE
+//PROPERTIES(d, t) READONLY nameDiscount
+//FILTERS NOT NULL discount(d, t);
+
+@metaCodeObjectDateProperty(discount, departmentStore, 'Скидки', yesNo);
 
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
 
@@ -1887,7 +1894,7 @@ NAVIGATOR {
             ADD groupScales;
             ADD groupCheck;
             ADD addTimeTable;
-            ADD addDiscount;
+            ADD adddiscount;
             ADD rawDepartmentStore;
             ADD component;
             ADD addaddressLegalEntity;
