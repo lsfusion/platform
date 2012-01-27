@@ -14,6 +14,68 @@ CLASS STATIC yesNo 'Логическое' {
 };
 CLASS language 'Язык' : doubleNamed;
 
+// ----------------------------------- Шаблоны ------------------------------------------ //
+
+// ----------------------------------- Свойство объект-дата------------------------------------------ //
+META metaCodeObjectDateProperty(prop, object, caption, type)
+
+    TABLE object##Date (object, DATE);
+
+    prop##Date caption = DATA type (object, DATE);
+    date##prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
+    prop caption (object) = prop##Date(object, date##prop(object, currentDate()));
+
+    FORM add##prop caption
+    OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
+    PROPERTIES(a) READONLY name
+    PROPERTIES(d) OBJVALUE
+    PROPERTIES(a, d) prop##Date;
+
+    showFormAdd##prop 'Добавить' (object) = ACTION FORM add##prop OBJECTS a MODAL;
+
+    FORM prop caption
+    OBJECTS a=object FIXED PANEL, d=DATE
+    PROPERTIES(a) READONLY name
+    PROPERTIES(a) showFormAdd##prop
+    PROPERTIES(d) OBJVALUE
+    PROPERTIES(a, d) prop##Date
+    FILTERS NOT NULL prop##Date(a, d);
+
+    showForm##prop caption (object) = ACTION FORM prop OBJECTS a NEWSESSION MODAL;
+
+END
+
+// ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
+META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type)
+
+    TABLE object##Date (object1, object2, DATE);
+
+    prop##Date caption = DATA type (object1, object1, DATE);
+    date##prop (object1, object2, date) = GROUP MAX dateIn AND prop##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
+    prop caption (object1, object2) = prop##Date(object1, object2, date##prop(object1, object2, currentDate()));
+
+    FORM add##prop caption
+    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE FIXED PANEL
+    PROPERTIES(a) READONLY name
+    PROPERTIES(b) READONLY name
+    PROPERTIES(d) OBJVALUE
+    PROPERTIES(a, b, d) prop##Date;
+
+    showFormAdd##prop 'Добавить' (object1, object2) = ACTION FORM add##prop OBJECTS a, b MODAL;
+
+    FORM prop caption
+    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
+    PROPERTIES(a) READONLY name
+    PROPERTIES(b) READONLY name
+    PROPERTIES(a, b) showFormAdd##prop
+    PROPERTIES(d) OBJVALUE
+    PROPERTIES(a, b, d) prop##Date
+    FILTERS NOT NULL prop##Date(a, b, d);
+
+    showForm##prop caption (object1, object2) = ACTION FORM prop OBJECTS a, b NEWSESSION MODAL;
+
+END
+
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 CLASS itemGroup 'Товарная группа' : named;
 
@@ -938,33 +1000,6 @@ dataActingLicenseLegalEntity 'Действующая лицензия' (legalEnt
 //equalsLegalEntityLicense 'Действующая' (legalEntity, license) = userLicenseLegalEntity(legalEntity) == license IN lawGroup;
 
 // ----------------------------------- Юридическое лицо-дата ------------------------------------------ //
-META metaCodeObjectDateProperty(prop, object, caption, type)
-
-    TABLE object##Date (object, DATE);
-
-    prop##Date caption = DATA type (object, DATE);
-    date##prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
-    prop caption (object) = prop##Date(object, date##prop(object, currentDate()));
-
-    FORM add##prop caption
-    OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES(a) READONLY name
-    PROPERTIES(d) OBJVALUE
-    PROPERTIES(a, d) prop##Date;
-
-    showFormAdd##prop 'Добавить' (object) = ACTION FORM add##prop OBJECTS a MODAL;
-
-    FORM prop caption
-    OBJECTS a=object FIXED PANEL, d=DATE
-    PROPERTIES(a) READONLY name
-    PROPERTIES(a) showFormAdd##prop
-    PROPERTIES(d) OBJVALUE
-    PROPERTIES(a, d) prop##Date
-    FILTERS NOT NULL prop##Date(a, d);
-
-    showForm##prop caption (object) = ACTION FORM prop OBJECTS a NEWSESSION MODAL;
-
-END
 
 @metaCodeObjectDateProperty(addressLegalEntity, legalEntity, 'Фактический адрес', STRING[100]);
 
