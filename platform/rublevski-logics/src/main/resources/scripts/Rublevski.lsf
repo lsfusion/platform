@@ -938,30 +938,35 @@ dataActingLicenseLegalEntity 'Действующая лицензия' (legalEnt
 //equalsLegalEntityLicense 'Действующая' (legalEntity, license) = userLicenseLegalEntity(legalEntity) == license IN lawGroup;
 
 // ----------------------------------- Юридическое лицо-дата ------------------------------------------ //
+META metaCodeObjectDateProperty(prop, object, caption, type)
 
-TABLE legalEntityDate (legalEntity, DATE);
+    TABLE object##Date (object, DATE);
 
-addressLegalEntityDate 'Фактический адрес на дату' = DATA STRING[100] (legalEntity, DATE);
-dateAddressLegalEntity (legalEntity, date) = GROUP MAX dateIn AND addressLegalEntityDate(legalEntity, dateIn) AND dateIn <= (date AS DATE) BY legalEntity, date;
-addressLegalEntity 'Фактический адрес' (legalEntity) = addressLegalEntityDate (legalEntity, dateAddressLegalEntity (legalEntity, currentDate()));
+    prop##Date caption = DATA type (object, DATE);
+    date##prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
+    prop caption (object) = prop##Date(object, date##prop(object, currentDate()));
 
-FORM addAddressLegalEntity 'Фактический адрес на дату'
-OBJECTS l=legalEntity FIXED PANEL, d=DATE FIXED PANEL
-PROPERTIES(l) READONLY name
-PROPERTIES(d) OBJVALUE
-PROPERTIES(l, d) addressLegalEntityDate;
+    FORM add##prop caption
+    OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
+    PROPERTIES(a) READONLY name
+    PROPERTIES(d) OBJVALUE
+    PROPERTIES(a, d) prop##Date;
 
-showFormAddAddressLegalEntity 'Добавить' (legalEntity) = ACTION FORM addAddressLegalEntity OBJECTS l MODAL;
+    showFormAdd##prop 'Добавить' (object) = ACTION FORM add##prop OBJECTS a MODAL;
 
-FORM addressLegalEntity 'Фактический адрес на дату'
-OBJECTS l=legalEntity FIXED PANEL, d=DATE
-PROPERTIES(l) READONLY name
-PROPERTIES(l) showFormAddAddressLegalEntity
-PROPERTIES(d) OBJVALUE
-PROPERTIES(l, d) addressLegalEntityDate
-FILTERS NOT NULL addressLegalEntityDate(l, d);
+    FORM prop caption
+    OBJECTS a=object FIXED PANEL, d=DATE
+    PROPERTIES(a) READONLY name
+    PROPERTIES(a) showFormAdd##prop
+    PROPERTIES(d) OBJVALUE
+    PROPERTIES(a, d) prop##Date
+    FILTERS NOT NULL prop##Date(a, d);
 
-showFormAddressLegalEntity 'Фактический адрес на дату' (legalEntity) = ACTION FORM addressLegalEntity OBJECTS l NEWSESSION MODAL;
+    showForm##prop caption (object) = ACTION FORM prop OBJECTS a NEWSESSION MODAL;
+
+END
+
+@metaCodeObjectDateProperty(addressLegalEntity, legalEntity, 'Фактический адрес', STRING[100]);
 
 // ----------------------------------- Договор ------------------------------------------ //
 
@@ -1060,7 +1065,7 @@ nameCompanyContract 'Контрагент' (contract) = name(companyContract(con
 FORM supplier 'Поставщик'
 OBJECTS s=supplier FIXED PANEL
 OBJECTS a=account, c=contractProvider, l=license, d=departmentStore
-PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormAddressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
+PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormaddressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
               phoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
               dataOverrideAccountLegalEntity, residentLegalEntity, manufacturerLegalEntity, dataOverrideContractSupplier, surePercentSupplier, allowablePercentSupplier,
               afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier, dataActingLicenseLegalEntity
@@ -1081,7 +1086,7 @@ FILTERGROUP filters9
 EDIT supplier OBJECT s;
 
 DESIGN supplier FROM DEFAULT {
-PROPERTY (showFormAddressLegalEntity){panelLocation = SHORTCUT 'Rublevski_addressLegalEntity';}
+PROPERTY (showFormaddressLegalEntity){panelLocation = SHORTCUT 'Rublevski_addressLegalEntity' DEFAULT;}
     main{
        ADD prop.box BEFORE functions.box{
             tabbedPane = TRUE;
@@ -1102,7 +1107,7 @@ FORM company 'Компания'
 OBJECTS co=company FIXED PANEL
 OBJECTS a=account
 OBJECTS c=contract
-PROPERTIES(co) nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormAddressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
+PROPERTIES(co) nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormaddressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
               phoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
 PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
 PROPERTIES(c) dataContract, nameSupplierContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, noteContract, ADDOBJ, delete
@@ -1111,7 +1116,7 @@ FILTERS NOT NULL inCompanyContract(co, c),
 EDIT company OBJECT co;
 
 DESIGN company FROM DEFAULT {
-PROPERTY (showFormAddressLegalEntity){panelLocation = SHORTCUT 'Rublevski_addressLegalEntity';}
+PROPERTY (showFormaddressLegalEntity){panelLocation = SHORTCUT 'Rublevski_addressLegalEntity';}
     main{
        ADD prop.box BEFORE functions.box {
             tabbedPane = TRUE;
@@ -1715,6 +1720,7 @@ PROPERTIES(r) ADDFORM, EDITFORM, delete
 PROPERTIES(rd) READONLY nameComponentRecipeDetail, normQuantityRecipeDetail
 FILTERS NOT NULL inRecipeRecipeDetail(r, rd);
 
+
 //---------------------------- Товар на оборудовании ----------------------------------------//
 
 CLASS stage 'Ячейка';
@@ -1848,7 +1854,7 @@ NAVIGATOR {
             ADD addDiscount;
             ADD rawDepartmentStore;
             ADD component;
-            ADD addAddressLegalEntity;
+            ADD addaddressLegalEntity;
             ADD addressLegalEntity;
         }
     }
