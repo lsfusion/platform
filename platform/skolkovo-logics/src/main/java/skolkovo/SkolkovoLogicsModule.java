@@ -3780,7 +3780,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailForesightClaimerProject = addJProp(baseGroup, true, "emailForesightClaimerProject", "Уведомление о результатах проверки на форсайты (e-mail)", emailForesightClaimerProjectEA, 1, emailForesightClaimerHeaderProject, 1);
         emailForesightClaimerProject.setImage("email.png");
         emailForesightClaimerProject.property.askConfirm = true;
-        emailForesightClaimerProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), negativeResultForesightCheckProject, 1);
+//        emailForesightClaimerProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), negativeResultForesightCheckProject, 1);
 
         emailBureauTrProjectEA = addEAProp(emailIO, project);
         addEARecepient(emailBureauTrProjectEA, emailBureauTranslation);

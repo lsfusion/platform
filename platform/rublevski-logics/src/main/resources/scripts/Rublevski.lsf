@@ -27,21 +27,22 @@ META metaCodeObjectDateProperty(prop, object, caption, type)
 
     FORM add##prop caption
     OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES(a) READONLY name
-    PROPERTIES(d) OBJVALUE
-    PROPERTIES(a, d) prop##Date;
+    PROPERTIES name(a) READONLY, OBJVALUE(d), prop##Date(a, d);
+    DESIGN add##prop FROM DEFAULT {
+        PROPERTY(name(a)) { focusable = FALSE; }
+    }
 
     showFormAdd##prop 'Добавить' (object) = ACTION FORM add##prop OBJECTS a MODAL;
 
     FORM prop caption
     OBJECTS a=object FIXED PANEL, d=DATE
-    PROPERTIES(a) READONLY name
-    PROPERTIES(a) showFormAdd##prop
-    PROPERTIES(d) OBJVALUE
-    PROPERTIES(a, d) prop##Date
+    PROPERTIES name(a) READONLY, showFormAdd##prop(a), OBJVALUE(d), prop##Date(a, d)
     FILTERS NOT NULL prop##Date(a, d);
+    DESIGN prop FROM DEFAULT {
+        PROPERTY(name(a)) { focusable = FALSE; }
+    }
 
-    showForm##prop caption (object) = ACTION FORM prop OBJECTS a NEWSESSION MODAL;
+    showForm##prop caption (object) = ACTION FORM prop OBJECTS a MODAL SHORTCUT prop DEFAULT;
 
 END
 
@@ -56,23 +57,24 @@ META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type)
 
     FORM add##prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES(a) READONLY name
-    PROPERTIES(b) READONLY name
-    PROPERTIES(d) OBJVALUE
-    PROPERTIES(a, b, d) prop##Date;
+    PROPERTIES name(a) READONLY, name(b) READONLY, OBJVALUE(d), prop##Date(a, b, d);
+    DESIGN add##prop FROM DEFAULT {
+        PROPERTY(name(a)) { focusable = FALSE; }
+        PROPERTY(name(b)) { focusable = FALSE; }
+    }
 
     showFormAdd##prop 'Добавить' (object1, object2) = ACTION FORM add##prop OBJECTS a, b MODAL;
 
     FORM prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
-    PROPERTIES(a) READONLY name
-    PROPERTIES(b) READONLY name
-    PROPERTIES(a, b) showFormAdd##prop
-    PROPERTIES(d) OBJVALUE
-    PROPERTIES(a, b, d) prop##Date
-    FILTERS NOT NULL prop##Date(a, b, d);
+    PROPERTIES name(a) READONLY, name(b) READONLY, showFormAdd##prop(a, b), OBJVALUE(d), prop##Date(a, b, d)
+    FILTERS NOT NULL prop##Date(a, d);
+    DESIGN prop FROM DEFAULT {
+        PROPERTY(name(a)) { focusable = FALSE; }
+        PROPERTY(name(b)) { focusable = FALSE; }
+    }
 
-    showForm##prop caption (object1, object2) = ACTION FORM prop OBJECTS a, b NEWSESSION MODAL;
+    showForm##prop caption (object1, object2) = ACTION FORM prop OBJECTS a, b MODAL;
 
 END
 
@@ -1128,7 +1130,7 @@ FILTERGROUP filters9
 EDIT supplier OBJECT s;
 
 DESIGN supplier FROM DEFAULT {
-PROPERTY (showFormaddressLegalEntity){panelLocation = SHORTCUT addressLegalEntity DEFAULT;}
+//PROPERTY (showFormaddressLegalEntity){panelLocation = SHORTCUT addressLegalEntity DEFAULT;}
     main{
        ADD prop.box BEFORE functions.box{
             tabbedPane = TRUE;
