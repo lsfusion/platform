@@ -1122,6 +1122,7 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass hugoBossSupplier;
     ConcreteCustomClass gerryWeberSupplier;
     ConcreteCustomClass topazSupplier;
+    ConcreteCustomClass aprioriSupplier;
     ConcreteCustomClass mexxSupplier;
     ConcreteCustomClass bestsellerSupplier;
     ConcreteCustomClass sOliverSupplier;
@@ -1145,6 +1146,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP sOliverImportInvoice;
     private LP womenSecretImportInvoice;
     private LP topazImportInvoice;
+    private LP aprioriImportInvoice;
 
     private AbstractGroup importInvoiceActionGroup;
     private LP skuPrintFA;
@@ -1321,7 +1323,8 @@ public class RomanLogicsModule extends LogicsModule {
         babyPhatSupplier = addConcreteClass("babyPhatSupplier", "Baby Phat", simpleSupplier);
         gerryWeberSupplier = addConcreteClass("gerryWeberSupplier", "Gerry Weber", simpleSupplier);
         topazSupplier = addConcreteClass("topazSupplier", "Topaz", simpleSupplier);
-             
+        aprioriSupplier = addConcreteClass("aprioriSupplier", "Apriori", simpleSupplier);
+
         secondNameClass = addAbstractClass("secondNameClass", "Класс со вторым именем", baseClass);
 
         subject = addAbstractClass("subject", "Субъект", baseClass.named, secondNameClass);
@@ -1649,6 +1652,7 @@ public class RomanLogicsModule extends LogicsModule {
         sOliverImportInvoice = addAProp(importInvoiceActionGroup, new SOliverImportInvoiceActionProperty(BL));
         womenSecretImportInvoice = addAProp(importInvoiceActionGroup, new WomenSecretImportInvoiceActionProperty(this));
         topazImportInvoice = addAProp(importInvoiceActionGroup, new TopazImportInvoiceActionProperty(BL));
+        aprioriImportInvoice = addAProp(importInvoiceActionGroup, new AprioriImportInvoiceActionProperty(this));
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
