@@ -68,7 +68,7 @@ META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type)
     FORM prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
     PROPERTIES name(a) READONLY, name(b) READONLY, showFormAdd##prop(a, b), OBJVALUE(d), prop##Date(a, b, d)
-    FILTERS NOT NULL prop##Date(a, d);
+    FILTERS NOT NULL prop##Date(a, b, d);
     DESIGN prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
         PROPERTY(name(b)) { focusable = FALSE; }
@@ -965,11 +965,6 @@ ownershipLegalEntity 'Форма собственности (ИД)' = DATA owner
 nameOwnershipLegalEntity 'Форма собственности' = name(ownershipLegalEntity(legalEntity)) IN lawGroup;
 shortNameOwnershipLegalEntity 'Форма собственности (сокр.)' = shortNameOwnership(ownershipLegalEntity(legalEntity)) IN lawGroup;
 fullNameLegalEntity 'Наименование для накладных' = DATA STRING[200] (legalEntity) IN lawGroup;
-lawLegalEntity 'Юридический адрес' = DATA STRING[100] (legalEntity) IN lawGroup;
-postAddressLegalEntity 'Почтовый адрес' = DATA STRING[100] (legalEntity) IN contactGroup;
-managerLegalEntity 'Руководитель' = DATA STRING[100] (legalEntity) IN contactGroup;
-accountantLegalEntity 'Главный бухгалтер' = DATA STRING[100] (legalEntity) IN contactGroup;
-phoneLegalEntity 'Телефон/факс' = DATA STRING[100] (legalEntity) IN contactGroup;
 UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN docGroup;
 OKPOLegalEntity 'Код по ОКПО' = DATA STRING[20] (legalEntity) IN docGroup;
 OKYLPLegalEntity 'Код ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup;
@@ -978,12 +973,6 @@ siteLegalEntity 'Сайт' = DATA STRING[100] (legalEntity) IN contactGroup;
 contactsLegalEntity 'Дополнительная информация' = DATA STRING[300] (legalEntity) IN contactGroup;
 residentLegalEntity 'Резидент РБ' = DATA BOOLEAN (legalEntity) IN lawGroup;
 manufacturerLegalEntity 'Производитель' = DATA BOOLEAN (legalEntity) IN lawGroup;
-
-//managerLegalEntityDate 'Руководитель' = DATA STRING[100] (legalEntity, DATE)IN contactGroup;
-//accountantLegalEntityDate 'Главный бухгалтер' = DATA STRING[100] (legalEntity, DATE) IN contactGroup;
-//postAddressLegalEntityDate 'Почтовый адрес' = DATA STRING[100] (legalEntity, DATE) IN contactGroup;
-//lawLegalEntityDate 'Юридический адрес' = DATA STRING[100] (legalEntity, DATE) IN lawGroup;
-//phoneLegalEntityDate 'Телефон/факс' = DATA STRING[100] (legalEntity, DATE) IN contactGroup;
 
 legalEntityAccount 'Ю.Л. (ИД)' = DATA legalEntity (account) IN idGroup;
 userAccountLegalEntity 'Р/сч. (ИД)' = DATA account (legalEntity) IN idGroup;
@@ -1010,7 +999,12 @@ dataActingLicenseLegalEntity 'Действующая лицензия' (legalEnt
 
 // ----------------------------------- Юридическое лицо-дата ------------------------------------------ //
 
-@metaCodeObjectDateProperty(addressLegalEntity, legalEntity, 'Фактический адрес', STRING[100]);
+@metaCodeObjectDateProperty(addressLegalEntity, legalEntity, 'Юридический адрес', STRING[150]);
+@metaCodeObjectDateProperty(managerLegalEntity, legalEntity, 'Руководитель', STRING[100]);
+@metaCodeObjectDateProperty(accountantLegalEntity, legalEntity, 'Главный бухгалтер', STRING[100]);
+@metaCodeObjectDateProperty(postAddressLegalEntity, legalEntity, 'Почтовый адрес', STRING[150]);
+@metaCodeObjectDateProperty(phoneLegalEntity, legalEntity, 'Телефон/факс', STRING[100]);
+
 
 // ----------------------------------- Договор ------------------------------------------ //
 
@@ -1034,9 +1028,9 @@ CLASS STATIC contractForm 'Порядок оплаты'
 };
 
 dataContract 'Номер договора' = DATA STRING[30] (contract) IN contractGroup;
-formContract 'Порядок оплаты договора' (contract) = DATA contractForm (contract) IN contractGroup;
-typeContract 'Тип договора' (contract) = DATA contractType (contract) IN contractGroup;
+formContract(contract) = DATA contractForm (contract) IN contractGroup;
 nameFormContract 'Порядок оплаты по договору' (contract) = name(formContract(contract)) IN contractGroup;
+typeContract(contract) = DATA contractType (contract) IN contractGroup;
 nameTypeContract 'Тип договора' (contract) = name(typeContract(contract)) IN contractGroup;
 dateFromContract 'Дата начала договора' = DATA DATE (contract) IN contractGroup;
 dateToContract 'Дата окончания договора' = DATA DATE (contract) IN contractGroup;
@@ -1076,13 +1070,16 @@ contactSupplierDepartmentStore 'Контактная информация' = DAT
 controlSupplierDepartmentStore(supplier, departmentStore) = DATA yesNo (supplier, departmentStore)IN idGroup;
 nameControlSupplierDepartmentStore 'Контролировать ассортимент поставщика, ДА/НЕТ' (supplier, departmentStore) = name(UNION OVERRIDE yesNo.no IF supplier IS supplier AND departmentStore IS departmentStore,
                                                                                                                                    controlSupplierDepartmentStore(supplier, departmentStore)) IN supplierGroup;
-TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
-sureSupplierDepartmentStoreDate(supplier, departmentStore, date) = DATA yesNo (supplier, departmentStore, DATE) IN idGroup;
-nameSureSupplierDepartmentStoreDate 'Обязателен заказ поставщику, ДА/НЕТ' (supplier, departmentStore, date) = name(sureSupplierDepartmentStoreDate(supplier, departmentStore, date)) IN supplierGroup;
+//TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
+//sureSupplierDepartmentStoreDate(supplier, departmentStore, date) = DATA yesNo (supplier, departmentStore, DATE) IN idGroup;
+//nameSureSupplierDepartmentStoreDate 'Обязателен заказ поставщику, ДА/НЕТ' (supplier, departmentStore, date) = name(sureSupplierDepartmentStoreDate(supplier, departmentStore, date)) IN supplierGroup;
 
-dateSSDS 'Дата' (supplier, departmentStore, date) = GROUP MAX dateIn AND sureSupplierDepartmentStoreDate(supplier, departmentStore, dateIn) AND dateIn <= (date AS DATE) BY supplier, departmentStore, date IN supplierGroup;
-sureSupplierDepartmentStore(supplier, departmentStore) =  sureSupplierDepartmentStoreDate(supplier, departmentStore, dateSSDS(supplier, departmentStore, currentDate())) IN supplierGroup;
-nameSureSupplierDepartmentStore 'Обязателен заказ поставщику, текущее значение' (supplier, departmentStore) = nameSureSupplierDepartmentStoreDate(supplier, departmentStore, dateSSDS(supplier, departmentStore, currentDate())) IN supplierGroup;
+//dateSSDS 'Дата' (supplier, departmentStore, date) = GROUP MAX dateIn AND sureSupplierDepartmentStoreDate(supplier, departmentStore, dateIn) AND dateIn <= (date AS DATE) BY supplier, departmentStore, date IN supplierGroup;
+//sureSupplierDepartmentStore(supplier, departmentStore) =  sureSupplierDepartmentStoreDate(supplier, departmentStore, dateSSDS(supplier, departmentStore, currentDate())) IN supplierGroup;
+//nameSureSupplierDepartmentStore 'Обязателен заказ поставщику, текущее значение' (supplier, departmentStore) = nameSureSupplierDepartmentStoreDate(supplier, departmentStore, dateSSDS(supplier, departmentStore, currentDate())) IN supplierGroup;
+
+@metaCodeDoubleObjectDateProperty(sureSupplierDepartmentStore, supplier, departmentStore, 'Обязателен заказ поставщику, ДА/НЕТ', yesNo);
+nameSureSupplierDepartmentStore 'Обязателен заказ поставщику, ДА/НЕТ' (supplier, departmentStore) = name(sureSupplierDepartmentStore(supplier, departmentStore)) IN supplierGroup;
 
 overrideSupplierDepartmentStore(supplier, departmentStore) = UNION OVERRIDE (TRUE IF UNION OVERRIDE emailOrderSupplierDepartmentStore(supplier, departmentStore), contactSupplierDepartmentStore(supplier, departmentStore)),
                                                                              UNION OVERRIDE controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes , sureSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes;
@@ -1109,8 +1106,9 @@ nameCompanyContract 'Контрагент' (contract) = name(companyContract(con
 FORM supplier 'Поставщик'
 OBJECTS s=supplier FIXED PANEL
 OBJECTS a=account, c=contractProvider, l=license, d=departmentStore
-PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormaddressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
-              phoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
+PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormaddressLegalEntity, postAddressLegalEntity, showFormpostAddressLegalEntity,
+              managerLegalEntity, showFormmanagerLegalEntity, accountantLegalEntity, showFormaccountantLegalEntity,
+              phoneLegalEntity, showFormphoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
               dataOverrideAccountLegalEntity, residentLegalEntity, manufacturerLegalEntity, dataOverrideContractSupplier, surePercentSupplier, allowablePercentSupplier,
               afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier, dataActingLicenseLegalEntity
 PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
@@ -1118,7 +1116,7 @@ PROPERTIES(c) dataContract, nameCompanyContract, nameFormContract, nameTypeContr
               requestContract, noteContract, ADDOBJ, delete
 PROPERTIES(l) dataLicense, dateFromLicense, dateToLicense, ADDOBJ, delete   //        tabaccoLicense
 PROPERTIES(d) nameStoreDepartmentStore, name
-PROPERTIES(s,d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore, nameSureSupplierDepartmentStore
+PROPERTIES(s,d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore, nameSureSupplierDepartmentStore, sureSupplierDepartmentStore, showFormsureSupplierDepartmentStore
 PROPERTIES(s,c) equalsSupplierContract
 PROPERTIES(s,a) equalsLegalEntityAccount
 //PROPERTIES(s,l) equalsLegalEntityLicense
@@ -1144,15 +1142,15 @@ DESIGN supplier FROM DEFAULT {
 
 FORM suppliers 'Поставщики'
 OBJECTS s=supplier
-PROPERTIES(s) READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, lawLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity
+PROPERTIES(s) READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity
 PROPERTIES(s) ADDFORM, EDITFORM, delete;
 
 FORM company 'Компания'
 OBJECTS co=company FIXED PANEL
 OBJECTS a=account
 OBJECTS c=contract
-PROPERTIES(co) nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormaddressLegalEntity, lawLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity,
-              phoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
+PROPERTIES(co) nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormaddressLegalEntity, postAddressLegalEntity, showFormpostAddressLegalEntity,
+               managerLegalEntity, showFormmanagerLegalEntity, accountantLegalEntity, showFormaccountantLegalEntity, phoneLegalEntity, showFormphoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
 PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
 PROPERTIES(c) dataContract, nameSupplierContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, noteContract, ADDOBJ, delete
 FILTERS NOT NULL inCompanyContract(co, c),
@@ -1160,7 +1158,6 @@ FILTERS NOT NULL inCompanyContract(co, c),
 EDIT company OBJECT co;
 
 DESIGN company FROM DEFAULT {
-PROPERTY (showFormaddressLegalEntity){panelLocation = SHORTCUT addressLegalEntity DEFAULT;}
     main{
        ADD prop.box BEFORE functions.box {
             tabbedPane = TRUE;
@@ -1172,7 +1169,7 @@ PROPERTY (showFormaddressLegalEntity){panelLocation = SHORTCUT addressLegalEntit
 }
 FORM companies 'Компании'
 OBJECTS co=company
-PROPERTIES(co) READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, lawLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity, dataOverrideAccountLegalEntity
+PROPERTIES(co) READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity, dataOverrideAccountLegalEntity
 PROPERTIES(co) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Ассортимент поставщиков-------------------------------------------- //
@@ -1674,6 +1671,7 @@ CONSTRAINT CHECKED quantityUserRateRange(range) > 1 MSG 'ошибка: Одно�
 //   обязательно переделать на уникальность и по времени
 CONSTRAINT CHECKED range IS range AND NOT rangeTypeRange(range)  MSG 'ошибка: Не выбран тип действия для шкалы';
 // работает, но хотели мы что-то другое.....//
+CONSTRAINT CHECKED rate IS rate AND NOT userLastNameEmployeeRate(rate)  MSG 'ошибка: Не указано - кто ввел';
 
 dataUserRateRange 'Значение ставки' (range) = dataRate(userRateRange(range)) IN baseGroup;
 dateFromUserRateRange 'Действует с' (range) = dateFromRate(userRateRange(range)) IN baseGroup;
@@ -1901,6 +1899,16 @@ NAVIGATOR {
             ADD component;
             ADD addaddressLegalEntity;
             ADD addressLegalEntity;
+            ADD addpostAddressLegalEntity;
+            ADD postAddressLegalEntity;
+            ADD addmanagerLegalEntity;
+            ADD managerLegalEntity;
+            ADD addaccountantLegalEntity;
+            ADD accountantLegalEntity;
+            ADD addphoneLegalEntity;
+            ADD phoneLegalEntity;
+            ADD addsureSupplierDepartmentStore;
+            ADD sureSupplierDepartmentStore;
             ADD genTimeTable;
         }
     }
