@@ -1172,6 +1172,14 @@ PROPERTIES(d, s, i)  itemAssortmentSupplier;
 
 @metaCodeDoubleObjectDateProperty(timeTable, supplier ,departmentStore, 'Поставка', BOOLEAN);
 
+FORM timeTableDate 'График поставок'
+OBJECTS t=DATE FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier
+PROPERTIES(t) OBJVALUE
+PROPERTIES(d) READONLY name
+PROPERTIES(s) READONLY name
+PROPERTIES(s, d, t) timeTableDate
+FILTERS NOT NULL timeTableDate(s, d, t);
+
 //---------------------------- Модели оборудования ----------------------------------------//
 CLASS ABSTRACT model 'Модель' : named;
 CLASS cashModel 'Модель касс' : model;
@@ -1793,6 +1801,7 @@ NAVIGATOR {
             ADD assortmentSupplier;
             ADD timeTable;
             ADD genTimeTables;
+            ADD timeTableDate;
         }
         NEW equipment 'Оборудование' {
             ADD groupsCash;
@@ -1870,6 +1879,8 @@ NAVIGATOR {
             ADD addsureSupplierDepartmentStore;
             ADD sureSupplierDepartmentStore;
             ADD genTimeTable;
+            ADD adddiscount;
+            ADD addtimeTable;
         }
     }
 }
