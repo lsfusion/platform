@@ -655,27 +655,10 @@ EDIT tradingSquare OBJECT s;
 
 // ------------------------------------- Скидки ---------------------------------------------------------- //
 
-//TABLE dt (departmentStore, DATE);
 //discount 'Скидка (ИД)' = DATA yesNo (departmentStore, DATE);
 //nameDiscount 'Скидка (ДА/НЕТ)' (departmentStore, date) = name(discount(departmentStore, date)) IN baseGroup;
 
-//FORM addDiscount 'Скидка (новая)'
-//OBJECTS d=departmentStore FIXED PANEL, t=DATE FIXED PANEL
-//PROPERTIES(d) READONLY name
-//PROPERTIES(t) OBJVALUE
-//PROPERTIES(d, t) nameDiscount;
-
-//showFormDiscount 'Добавить' (departmentStore) = ACTION FORM addDiscount OBJECTS d NEWSESSION MODAL;
-
-//FORM discount 'Скидки'
-//OBJECTS d=departmentStore, t=DATE
-//PROPERTIES(d) READONLY name
-//PROPERTIES(d) showFormDiscount
-//PROPERTIES(t) READONLY OBJVALUE
-//PROPERTIES(d, t) READONLY nameDiscount
-//FILTERS NOT NULL discount(d, t);
-
-@metaCodeObjectDateProperty(discount, departmentStore, 'Скидки', yesNo);
+@metaCodeObjectDateProperty(discount, departmentStore, 'Разрешать скидки', yesNo);   //добавить name для static class
 
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
 
@@ -718,13 +701,10 @@ personCheckReportDepartmentStore 'Кто проверяет товарный о�
 commonNamePersonCheckReportDepartmentStore 'Кто проверяет товарный отчет' (departmentStore) = commonName(personCheckReportDepartmentStore(departmentStore));
 idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (departmentStore) = GROUP MAX tradingSquare BY departmentStoreTradingSquare(tradingSquare);   //максимизирует только по ID, переделать после расширения функционала
 defaultTradingSquareDepartmentStore 'Торговая площадь отдела магазина, кв.м.' (departmentStore) = squareTradingSquare(idTradingSquareDepartmentStore(departmentStore));
-//idResolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = GROUP MAX discount AS discount BY departmentStoreDiscount(discount);  //максимизирует только по ID, переделать после расширения функционала
-//resolveDiscountDepartmentStore 'Разрешать скидку в подразделении?' (discount) = agreeDiscount(idResolveDiscountDepartmentStore(discount));
 tradingSquareStore 'Торговая площадь магазина' = GROUP SUM defaultTradingSquareDepartmentStore(departmentStore) BY storeDepartmentStore(departmentStore);
 
 inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
 inTradingSquareDepartmentStore(departmentStore, tradingSquare) = departmentStoreTradingSquare(tradingSquare) == departmentStore;
-//inDepartmentStoreDiscount(departmentStore, discount) = departmentStoreDiscount(discount) == departmentStore;
 
 // ----------------------------------- Цех ----------------------------------- //
 
@@ -776,6 +756,7 @@ PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
 PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
 PROPERTIES(t) ADDOBJ, delete
 PROPERTIES(d, d) showFormRawDepartmentStore
+PROPERTIES(d) showFormdiscount
 FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
 FILTERS NOT NULL departmentStoreEmployee(d, e)
 EDIT departmentStore OBJECT d;
@@ -1187,27 +1168,9 @@ PROPERTIES(d, s, i)  itemAssortmentSupplier;
 
 //---------------------------- по поставщикам и товарам ----------------------------------------
 
-// ----------------------------------- График поставок ------------------------------------------- //
+// ----------------------------------- Разрешать поставки ------------------------------------------- //
 
-TABLE sdd (supplier ,departmentStore, DATE);
-timeTable 'Поставка' = DATA BOOLEAN (supplier ,departmentStore, DATE) IN baseGroup;
-
-FORM addTimeTable 'Поставка (новая)'
-OBJECTS s=supplier FIXED PANEL, d=departmentStore FIXED PANEL, t=DATE FIXED PANEL
-PROPERTIES(s) READONLY name
-PROPERTIES(d) READONLY name
-PROPERTIES(t) OBJVALUE
-PROPERTIES(s, d, t) timeTable;
-
-showFormTimeTable 'Добавить' (supplier, departmentStore) = ACTION FORM addTimeTable OBJECTS s, d NEWSESSION MODAL;
-
-FORM timeTable 'График поставки'
-OBJECTS s=supplier, d=departmentStore , t=DATE
-PROPERTIES(t) OBJVALUE
-PROPERTIES(s) READONLY name
-PROPERTIES(d) READONLY name
-PROPERTIES(s, d) showFormTimeTable
-FILTERS NOT NULL timeTable(s, d, t);
+@metaCodeDoubleObjectDateProperty(timeTable, supplier ,departmentStore, 'Поставка', BOOLEAN);
 
 //---------------------------- Модели оборудования ----------------------------------------//
 CLASS ABSTRACT model 'Модель' : named;
@@ -1861,7 +1824,6 @@ NAVIGATOR {
             ADD employee;
             ADD groupUser;
             ADD tradingSquare;
-            ADD discount;
             ADD departmentStore;
             ADD store;
             ADD tradingNetwork;
@@ -1893,8 +1855,6 @@ NAVIGATOR {
             ADD groupCash;
             ADD groupScales;
             ADD groupCheck;
-            ADD addTimeTable;
-            ADD adddiscount;
             ADD rawDepartmentStore;
             ADD component;
             ADD addaddressLegalEntity;
