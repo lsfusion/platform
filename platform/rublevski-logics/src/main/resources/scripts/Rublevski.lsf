@@ -51,7 +51,7 @@ META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type)
 
     TABLE object##Date (object1, object2, DATE);
 
-    prop##Date caption = DATA type (object1, object1, DATE);
+    prop##Date caption = DATA type (object1, object2, DATE);
     date##prop (object1, object2, date) = GROUP MAX dateIn AND prop##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
     prop caption (object1, object2) = prop##Date(object1, object2, date##prop(object1, object2, currentDate()));
 
@@ -74,7 +74,7 @@ META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type)
         PROPERTY(name(b)) { focusable = FALSE; }
     }
 
-    showForm##prop caption (object1, object2) = ACTION FORM prop OBJECTS a, b MODAL;
+    showForm##prop caption (object1, object2) = ACTION FORM prop OBJECTS a, b MODAL SHORTCUT prop DEFAULT;
 
 END
 
