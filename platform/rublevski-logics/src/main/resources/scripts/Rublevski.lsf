@@ -77,6 +77,41 @@ META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type)
     showForm##prop caption (object1, object2) = ACTION FORM prop OBJECTS a, b MODAL SHORTCUT prop DEFAULT;
 
 END
+// ----------------------------------- Свойство объект1-объект2-дата для yesNo со значением по-умолчанию НЕТ------------------------------------------ //
+
+META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type)
+
+    TABLE object##Date (object1, object2, DATE);
+
+    prop##Date caption = DATA type (object1, object2, DATE);
+    name##prop##Date caption (object1, object2, date) = name(prop##Date(object1, object2, date));
+    date##prop (object1, object2, date) = GROUP MAX dateIn AND prop##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
+    prop caption (object1, object2) = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2,
+                                                     prop##Date(object1, object2, date##prop(object1, object2, currentDate()));
+    name##prop caption (object1, object2) = name(prop(object1, object2));
+
+    FORM addName##prop caption
+    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE FIXED PANEL
+    PROPERTIES name(a) READONLY, name(b) READONLY, OBJVALUE(d), name##prop##Date(a, b, d);
+    DESIGN addName##prop FROM DEFAULT {
+        PROPERTY(name(a)) { focusable = FALSE; }
+        PROPERTY(name(b)) { focusable = FALSE; }
+    }
+
+    showFormAddName##prop 'Добавить' (object1, object2) = ACTION FORM addName##prop OBJECTS a, b MODAL;
+
+    FORM name##prop caption
+    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
+    PROPERTIES name(a) READONLY, name(b) READONLY,  showFormAddName##prop(a, b), OBJVALUE(d), name##prop##Date(a, b, d)
+    FILTERS NOT NULL prop##Date(a, b, d);
+    DESIGN name##prop FROM DEFAULT {
+        PROPERTY(name(a)) { focusable = FALSE; }
+        PROPERTY(name(b)) { focusable = FALSE; }
+    }
+
+    showFormName##prop caption (object1, object2) = ACTION FORM name##prop OBJECTS a, b MODAL SHORTCUT name##prop DEFAULT;
+
+END
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 CLASS itemGroup 'Товарная группа' : named;
@@ -1051,16 +1086,9 @@ contactSupplierDepartmentStore 'Контактная информация' = DAT
 controlSupplierDepartmentStore(supplier, departmentStore) = DATA yesNo (supplier, departmentStore)IN idGroup;
 nameControlSupplierDepartmentStore 'Контролировать ассортимент поставщика, ДА/НЕТ' (supplier, departmentStore) = name(UNION OVERRIDE yesNo.no IF supplier IS supplier AND departmentStore IS departmentStore,
                                                                                                                                    controlSupplierDepartmentStore(supplier, departmentStore)) IN supplierGroup;
-//TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
-//sureSupplierDepartmentStoreDate(supplier, departmentStore, date) = DATA yesNo (supplier, departmentStore, DATE) IN idGroup;
-//nameSureSupplierDepartmentStoreDate 'Обязателен заказ поставщику, ДА/НЕТ' (supplier, departmentStore, date) = name(sureSupplierDepartmentStoreDate(supplier, departmentStore, date)) IN supplierGroup;
 
-//dateSSDS 'Дата' (supplier, departmentStore, date) = GROUP MAX dateIn AND sureSupplierDepartmentStoreDate(supplier, departmentStore, dateIn) AND dateIn <= (date AS DATE) BY supplier, departmentStore, date IN supplierGroup;
-//sureSupplierDepartmentStore(supplier, departmentStore) =  sureSupplierDepartmentStoreDate(supplier, departmentStore, dateSSDS(supplier, departmentStore, currentDate())) IN supplierGroup;
-//nameSureSupplierDepartmentStore 'Обязателен заказ поставщику, текущее значение' (supplier, departmentStore) = nameSureSupplierDepartmentStoreDate(supplier, departmentStore, dateSSDS(supplier, departmentStore, currentDate())) IN supplierGroup;
-
-@metaCodeDoubleObjectDateProperty(sureSupplierDepartmentStore, supplier, departmentStore, 'Обязателен заказ поставщику, ДА/НЕТ', yesNo);
-nameSureSupplierDepartmentStore 'Обязателен заказ поставщику, ДА/НЕТ' (supplier, departmentStore) = name(sureSupplierDepartmentStore(supplier, departmentStore)) IN supplierGroup;
+//@metaCodeDoubleObjectDateProperty(sureSupplierDepartmentStore, supplier, departmentStore, 'Обязателен заказ поставщику, ДА/НЕТ', yesNo);
+@metaCodeNameDoubleObjectDateProperty(sureSupplierDepartmentStore, supplier, departmentStore, 'Обязателен заказ поставщику, ДА/НЕТ', yesNo);
 
 overrideSupplierDepartmentStore(supplier, departmentStore) = UNION OVERRIDE (TRUE IF UNION OVERRIDE emailOrderSupplierDepartmentStore(supplier, departmentStore), contactSupplierDepartmentStore(supplier, departmentStore)),
                                                                              UNION OVERRIDE controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes , sureSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes;
@@ -1097,7 +1125,7 @@ PROPERTIES(c) dataContract, nameCompanyContract, nameFormContract, nameTypeContr
               requestContract, noteContract, ADDOBJ, delete
 PROPERTIES(l) dataLicense, dateFromLicense, dateToLicense, ADDOBJ, delete   //        tabaccoLicense
 PROPERTIES(d) nameStoreDepartmentStore, name
-PROPERTIES(s,d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore, nameSureSupplierDepartmentStore, sureSupplierDepartmentStore, showFormsureSupplierDepartmentStore
+PROPERTIES(s,d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore, namesureSupplierDepartmentStore, showFormNamesureSupplierDepartmentStore//nameSureSupplierDepartmentStore, sureSupplierDepartmentStore, showFormsureSupplierDepartmentStore
 PROPERTIES(s,c) equalsSupplierContract
 PROPERTIES(s,a) equalsLegalEntityAccount
 //PROPERTIES(s,l) equalsLegalEntityLicense
@@ -1643,6 +1671,7 @@ CONSTRAINT CHECKED quantityUserRateRange(range) > 1 MSG 'ошибка: Одно�
 CONSTRAINT CHECKED range IS range AND NOT rangeTypeRange(range)  MSG 'ошибка: Не выбран тип действия для шкалы';
 // работает, но хотели мы что-то другое.....//
 CONSTRAINT CHECKED rate IS rate AND NOT userLastNameEmployeeRate(rate)  MSG 'ошибка: Не указано - кто ввел';
+CONSTRAINT CHECKED rate IS rate AND NOT dataRate(rate)  MSG 'ошибка: Не указано значение ставки';
 
 dataUserRateRange 'Значение ставки' (range) = dataRate(userRateRange(range)) IN baseGroup;
 dateFromUserRateRange 'Действует с' (range) = dateFromRate(userRateRange(range)) IN baseGroup;
@@ -1876,8 +1905,8 @@ NAVIGATOR {
             ADD accountantLegalEntity;
             ADD addphoneLegalEntity;
             ADD phoneLegalEntity;
-            ADD addsureSupplierDepartmentStore;
-            ADD sureSupplierDepartmentStore;
+            ADD addNamesureSupplierDepartmentStore;
+            ADD namesureSupplierDepartmentStore;
             ADD genTimeTable;
             ADD adddiscount;
             ADD addtimeTable;
