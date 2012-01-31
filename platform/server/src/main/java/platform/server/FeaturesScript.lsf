@@ -43,7 +43,7 @@ CLASS STATIC storeSize 'Размер склада'
 
 //////////// PROPERTY STATEMENT///////////
 // Common syntax:
-// name ['caption'] [(namedParam1, ..., namedParamN)] = propertyExpression [IN group] [PERSISTENT];
+// name ['caption'] [(namedParam1, ..., namedParamN)] = propertyExpression [IN group] [PERSISTENT] [TOOLBAR | (SHORTCUT [propertyExpression] [DEFAULT])];
 // Если именованные параметры не указываются, то они выводятся из propertyExpression
 
 // Data property

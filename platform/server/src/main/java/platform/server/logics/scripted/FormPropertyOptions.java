@@ -16,6 +16,7 @@ public class FormPropertyOptions {
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
     private ClassViewType forceViewType;
+    private GroupObjectEntity toDraw;
 
     public Boolean getReadOnly() {
         return readOnly;
@@ -73,6 +74,14 @@ public class FormPropertyOptions {
         return forceViewType;
     }
 
+    public void setToDraw(GroupObjectEntity toDraw) {
+        this.toDraw = toDraw;
+    }
+
+    public GroupObjectEntity getToDraw() {
+        return toDraw;
+    }
+
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
@@ -83,6 +92,7 @@ public class FormPropertyOptions {
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));
         merged.setForceViewType(nvl(overrides.getForceViewType(), forceViewType));
+        merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
 
         return merged;
     }

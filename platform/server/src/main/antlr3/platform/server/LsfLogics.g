@@ -93,13 +93,6 @@ grammar LsfLogics;
 		}
     }
 
-    public PanelLocationView createPanelLocation(boolean toolbar, PropertyDrawView property, boolean defaultProperty) throws ScriptingErrorLog.SemanticErrorException {
-    	if (inPropParseState()) {
-    		return $designStatement::design.createPanelLocation(toolbar, property, defaultProperty);
-    	}
-    	return null;
-    }
-
 	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids) throws ScriptingErrorLog.SemanticErrorException {
 		if (inPropParseState()) {
 			return $formStatement::form.getGroupObjectsList(ids);
@@ -422,6 +415,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	'FORCE' viewType=classViewType { $options.setForceViewType($viewType.type); }
+		|	'TODRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		)*
 	;
 
@@ -442,6 +436,14 @@ formPropertyObject returns [PropertyObjectEntity property = null]
 			if (inPropParseState()) {
 				$property = $formStatement::form.addPropertyObject(mappedProperty.name, mappedProperty.mapping);
 			}
+		}
+	;
+
+formGroupObjectEntity returns [GroupObjectEntity groupObject]
+	:	id = ID { 
+			if (inPropParseState()) {
+				$groupObject = $formStatement::form.getGroupObjectEntity($ID.text);
+			} 
 		}
 	;
 
@@ -1577,7 +1579,9 @@ panelLocationLiteral returns [PanelLocationView val]
 	boolean defaultProperty = false;
 } 
 @after {
-	$val = createPanelLocation(toolbar, property, defaultProperty);
+	if (inPropParseState()) {
+		$val = $designStatement::design.createPanelLocation(toolbar, property, defaultProperty);
+	}
 }
 	:	'TOOLBAR' { toolbar = true; }
 	|	'SHORTCUT' { toolbar = false; } (onlyProp=propertySelector { property = $onlyProp.propertyView; })? ('DEFAULT' { defaultProperty = true; })?

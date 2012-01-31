@@ -842,7 +842,11 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public void invokeDefaultAction() {
-        groupObjectController.invokeDefaultAction(getCurrentProperty());
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                groupObjectController.invokeDefaultAction(getCurrentProperty());
+            }
+        });
     }
 
     private void moveToFocusableCellIfNeeded() {

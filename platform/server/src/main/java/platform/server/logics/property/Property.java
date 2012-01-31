@@ -760,6 +760,16 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
         if (forceViewType != null)
             entity.forceViewType = forceViewType;
+
+        //перемещаем свойство в контекстном меню в тот же groupObject, что и свойство, к которому оно привязано
+        if (panelLocation != null && panelLocation.isShortcutLocation() && ((ShortcutPanelLocation) panelLocation).getOnlyProperty() != null) {
+            Property onlyProperty = ((ShortcutPanelLocation) panelLocation).getOnlyProperty();
+            for (Object drawEntity : form.getProperties(onlyProperty)) {
+                if (((PropertyDrawEntity) drawEntity).toDraw != null) {
+                    entity.toDraw = ((PropertyDrawEntity) drawEntity).toDraw;
+                }
+            }
+        }
     }
 
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
@@ -786,7 +796,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 if (onlyProperty != null) {
                     for (PropertyDrawView prop : view.properties) {
                         if (prop.entity.propertyObject.property.equals(onlyProperty) &&
-                                (view.get(propertyView.entity.toDraw) == null || view.get(propertyView.entity.toDraw).equals(view.get(prop.entity.toDraw)))) {
+                        (view.getGroupObject(propertyView.entity.toDraw) == null || view.getGroupObject(propertyView.entity.toDraw).equals(view.getGroupObject(prop.entity.toDraw)))) {
                             ((ShortcutPanelLocationView) panelLocationView).setOnlyProperty(prop);
                             break;
                         }

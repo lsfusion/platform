@@ -121,6 +121,17 @@ public class ScriptingFormEntity extends FormEntity {
         return groupObjects;
     }
 
+    public GroupObjectEntity getGroupObjectEntity(String objectSID) throws ScriptingErrorLog.SemanticErrorException {
+        ObjectEntity objectEntity = getObject(objectSID);
+        GroupObjectEntity groupObjectEntity = null;
+        if (objectEntity == null) {
+            LM.getErrLog().emitComponentNotFoundError(LM.getParser(), objectSID);
+        } else {
+            groupObjectEntity = objectEntity.groupTo;
+        }
+        return groupObjectEntity;
+    }
+
     public void addScriptedPropertyDraws(List<String> properties, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
@@ -184,6 +195,9 @@ public class ScriptingFormEntity extends FormEntity {
         property.propertyHighlight = options.getHighlightIf();
         if (options.getForceViewType() != null) {
             property.forceViewType = options.getForceViewType();
+        }
+        if (options.getToDraw() != null) {
+            property.toDraw = options.getToDraw();
         }
         MappedProperty showIf = options.getShowIf();
         if (showIf != null) {

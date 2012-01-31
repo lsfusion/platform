@@ -20,7 +20,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "NULL OBJECT OBJECTS OBJVALUE OLD ON ORDER OVERRIDE PANEL PARENT " +
                            "PARTITION PERSISTENT POSITION PROPERTIES PROPERTY READONLY " + 
                            "REMOVE RESOLVE RIGHT RIGHTBOTTOM SELECTION SET SHORTCUT " + 
-                           "SHOWIF STATIC SUM TABLE TEXTHALIGN TEXTVALIGN THE TO TOOLBAR " + 
+                           "SHOWIF STATIC SUM TABLE TEXTHALIGN TEXTVALIGN THE TO TODRAW TOOLBAR " +
                            "TOP TREE TRUE UNION UPDATE VALIGN VERTICAL WINDOW XOR");
 
     var isOperatorChar = /[+\-*&%=<>!?|]/;
