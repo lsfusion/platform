@@ -54,25 +54,26 @@ META metaCodeNameObjectDateProperty(prop, object, caption, type)
     name##prop##Date caption (object, date) = name(prop##Date(object, date));
     date##prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
     prop caption (object) = prop##Date(object, date##prop(object, currentDate()));
+    name##prop caption (object) = name(prop(object));
 
-    FORM add##prop caption
+    FORM addName##prop caption
     OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
     PROPERTIES name(a) READONLY, OBJVALUE(d), name##prop##Date(a, d);
-    DESIGN add##prop FROM DEFAULT {
+    DESIGN addName##prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
     }
 
-    showFormAdd##prop 'Добавить' (object) = ACTION FORM add##prop OBJECTS a MODAL;
+    showFormAddName##prop 'Добавить' (object) = ACTION FORM addName##prop OBJECTS a MODAL;
 
-    FORM prop caption
+    FORM name##prop caption
     OBJECTS a=object FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, showFormAdd##prop(a), OBJVALUE(d), name##prop##Date(a, d)
+    PROPERTIES name(a) READONLY, showFormAddName##prop(a), OBJVALUE(d), name##prop##Date(a, d)
     FILTERS NOT NULL prop##Date(a, d);
-    DESIGN prop FROM DEFAULT {
+    DESIGN name##prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
     }
 
-    showForm##prop caption (object) = ACTION FORM prop OBJECTS a MODAL SHORTCUT prop DEFAULT;
+    showFormName##prop caption (object) = ACTION FORM name##prop OBJECTS a MODAL SHORTCUT name##prop DEFAULT;
 
 END
 
@@ -720,10 +721,7 @@ EDIT tradingSquare OBJECT s;
 
 // ------------------------------------- Скидки ---------------------------------------------------------- //
 
-//discount 'Скидка (ИД)' = DATA yesNo (departmentStore, DATE);
-//nameDiscount 'Скидка (ДА/НЕТ)' (departmentStore, date) = name(discount(departmentStore, date)) IN baseGroup;
-
-@metaCodeNameObjectDateProperty(discount, departmentStore, 'Разрешать скидки', yesNo);   //добавить name для static class
+@metaCodeNameObjectDateProperty(discount, departmentStore, 'Разрешать скидки', yesNo);
 
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
 
@@ -821,7 +819,7 @@ PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
 PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
 PROPERTIES(t) ADDOBJ, delete
 PROPERTIES(d, d) showFormRawDepartmentStore
-PROPERTIES(d) showFormdiscount
+PROPERTIES(d) namediscount, showFormNamediscount
 FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
 FILTERS NOT NULL departmentStoreEmployee(d, e)
 EDIT departmentStore OBJECT d;
@@ -1847,7 +1845,7 @@ NAVIGATOR {
             ADD companies;
             ADD qualifier;
             ADD stores;
-            ADD discount;
+            ADD namediscount;
         }
         NEW employeeRelations 'Сотрудники' {
             ADD employees;
@@ -1938,7 +1936,7 @@ NAVIGATOR {
             ADD addNamesureSupplierDepartmentStore;
             ADD namesureSupplierDepartmentStore;
             ADD genTimeTable;
-            ADD adddiscount;
+            ADD addNamediscount;
             ADD addtimeTable;
         }
     }
