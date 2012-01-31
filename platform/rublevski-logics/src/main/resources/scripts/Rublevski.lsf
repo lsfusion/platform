@@ -46,6 +46,36 @@ META metaCodeObjectDateProperty(prop, object, caption, type)
 
 END
 
+META metaCodeNameObjectDateProperty(prop, object, caption, type)
+
+    TABLE object##Date (object, DATE);
+
+    prop##Date caption = DATA type (object, DATE);
+    name##prop##Date caption (object, date) = name(prop##Date(object, date));
+    date##prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
+    prop caption (object) = prop##Date(object, date##prop(object, currentDate()));
+
+    FORM add##prop caption
+    OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
+    PROPERTIES name(a) READONLY, OBJVALUE(d), name##prop##Date(a, d);
+    DESIGN add##prop FROM DEFAULT {
+        PROPERTY(name(a)) { focusable = FALSE; }
+    }
+
+    showFormAdd##prop 'Добавить' (object) = ACTION FORM add##prop OBJECTS a MODAL;
+
+    FORM prop caption
+    OBJECTS a=object FIXED PANEL, d=DATE
+    PROPERTIES name(a) READONLY, showFormAdd##prop(a), OBJVALUE(d), name##prop##Date(a, d)
+    FILTERS NOT NULL prop##Date(a, d);
+    DESIGN prop FROM DEFAULT {
+        PROPERTY(name(a)) { focusable = FALSE; }
+    }
+
+    showForm##prop caption (object) = ACTION FORM prop OBJECTS a MODAL SHORTCUT prop DEFAULT;
+
+END
+
 // ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
 META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type)
 
@@ -693,7 +723,7 @@ EDIT tradingSquare OBJECT s;
 //discount 'Скидка (ИД)' = DATA yesNo (departmentStore, DATE);
 //nameDiscount 'Скидка (ДА/НЕТ)' (departmentStore, date) = name(discount(departmentStore, date)) IN baseGroup;
 
-@metaCodeObjectDateProperty(discount, departmentStore, 'Разрешать скидки', yesNo);   //добавить name для static class
+@metaCodeNameObjectDateProperty(discount, departmentStore, 'Разрешать скидки', yesNo);   //добавить name для static class
 
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
 
