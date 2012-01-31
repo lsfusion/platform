@@ -16,7 +16,7 @@ import java.io.IOException;
 
 public class WomenSecretImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
     public WomenSecretImportInvoiceActionProperty(RomanLogicsModule LM) {
-        super(LM, LM.womenSecretSupplier, "xls");
+        super(LM, LM.womenSecretSupplier, "xls xlsx");
     }
 
     @Override
