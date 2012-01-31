@@ -42,6 +42,7 @@ public class TopazInputTable implements ImportInputTable {
                 }
                 rowData.add(invoiceSID);
                 rowData.add(invoiceSID);
+                rowData.add("" + (row - 3));
                 data.add(rowData);
             }
         }

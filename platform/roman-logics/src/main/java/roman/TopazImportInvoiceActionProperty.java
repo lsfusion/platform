@@ -31,7 +31,7 @@ public class TopazImportInvoiceActionProperty extends ImportBoxInvoiceActionProp
         TopazInputTable invoiceTable = new TopazInputTable(inFile);
         return new InvoicePricatMergeInputTable(BL, invoiceTable,
                 ResultField.ARTICLE, ResultField.BARCODE, ResultField.QUANTITY, ResultField.COMPOSITION,
-                ResultField.SIZE, ResultField.COLORCODE, ResultField.COLOR, ResultField.INVOICE, ResultField.BOXNUMBER
+                ResultField.SIZE, ResultField.COLORCODE, ResultField.COLOR, ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.NUMBERSKU
         );
     }
 
@@ -41,7 +41,7 @@ public class TopazImportInvoiceActionProperty extends ImportBoxInvoiceActionProp
         return new TopazInvoiceImporter(inputTable,
                 barCodeField, sidField, invoiceSIDField, boxNumberField, colorCodeField, colorNameField,
                 sizeField, originalNameField, countryField, unitNetWeightField, compositionField,
-                RRPField, dateInvoiceField, unitPriceField, unitQuantityField, numberSkuField, customCodeField, customCode6Field,
+                unitPriceField, dateInvoiceField, RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field,
                 genderField, seasonField, themeCodeField, themeNameField, sidDestinationDataSupplierBoxField
         );
 

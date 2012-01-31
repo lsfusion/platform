@@ -17,16 +17,16 @@ public class AprioriImportInvoiceActionProperty extends ImportBoxInvoiceActionPr
 
     @Override
     protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
-        return new AprioriInvoiceImporter(inputTable, new Object[] {null, /*бренд*/ null, null, invoiceSIDField,
+        return new AprioriInvoiceImporter(inputTable, new Object[] {null, null, null, invoiceSIDField,
                 null, dateInvoiceField, sidField, null, colorCodeField,
                 compositionField, null, null, null, //состав
                 null, null, new ImportField[] {customCodeField, customCode6Field}, null,
                 countryField, unitQuantityField, null, null, null, null,
                 unitPriceField, null, unitNetWeightField, null,
-                sizeField, barCodeField, null,
+                sizeField, barCodeField, numberSkuField,
 
-                compositionField, colorNameField, seasonField, boxNumberField, originalNameField, RRPField,
-                numberSkuField, themeCodeField, themeNameField, genderField, sidDestinationDataSupplierBoxField
+                colorNameField, seasonField, boxNumberField, originalNameField, RRPField,
+                themeCodeField, themeNameField, genderField, sidDestinationDataSupplierBoxField
 
         });
     }

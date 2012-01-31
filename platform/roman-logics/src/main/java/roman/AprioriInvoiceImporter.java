@@ -26,9 +26,9 @@ public class AprioriInvoiceImporter extends SingleSheetImporter {
         } else
         if (column == LAST_COLUMN + 1) {
             return String.valueOf(currentRow + 1);
-        } else if (column == AE) { //временная заглушка, почему-то для состава он определяет column=30, а надо 9
-            String value = super.getCellString(field, row, J);
-            return value.substring(0, value.length()-1);
+//        } else if (column == AE) { //временная заглушка, почему-то для состава он определяет column=30, а надо 9
+//            String value = super.getCellString(field, row, J);
+//            return value.substring(0, value.length()-1);
         }
         else
             return "";
@@ -41,11 +41,9 @@ public class AprioriInvoiceImporter extends SingleSheetImporter {
         switch (column) {
             case I :
                  return value.substring(0, value.length()-1);
-            case J : 
-                value = value + "*";
+
+            default:
                 return value;
-                default:
-                    return value;
         }
     }
 }
