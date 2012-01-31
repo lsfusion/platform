@@ -1161,19 +1161,10 @@ FILTERS NOT NULL timeTableDate(s, d, t);
 
 //--------------------------------------Формы--------------------------------------------------------------------------//
 
-FORM rawDepartmentStore 'Подразделения, из которых можно получить сырье'
-OBJECTS m=manufactory FIXED PANEL, d=departmentStore
-PROPERTIES(m) READONLY name
-PROPERTIES(d) READONLY name
-PROPERTIES(m, d) rawDepartmentStore
-FILTERS NOT NULL inRawDepartmentStore(m, d)
-FILTERGROUP rawFilter
-    FILTER 'Подразделения из которых полуется сырье' 'F10' NOT NULL rawDepartmentStore(m, d);
-
-showFormRawDepartmentStore 'Подразделения, из которых можно получить сырье' (manufactory, departmentStore) = ACTION FORM rawDepartmentStore OBJECTS m, d MODAL;
+isManufactory (departmentStore) = departmentStore IS manufactory;
 
 FORM departmentStore 'Отдел магазина'
-OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare, m=manufactory, s=supplier, tm=DATE
+OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare, s=supplier, tm=DATE, d2=departmentStore
 PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
               controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
               maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
@@ -1184,11 +1175,15 @@ PROPERTIES(e) READONLY userFirstName, userLastName
 PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
 PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
 PROPERTIES(t) ADDOBJ, delete
-PROPERTIES(d, d) showFormRawDepartmentStore
+PROPERTIES(d2) READONLY name //SHOWIF isManufactory(d2)
+PROPERTIES(d, d2) rawDepartmentStore //SHOWIF isManufactory(d2)
+FILTERS NOT NULL inRawDepartmentStore(d, d2)
+FILTERGROUP rawFilter
+    FILTER 'Подразделения из которых полуется сырье' 'F10' NOT NULL rawDepartmentStore(d, d2)
 PROPERTIES(d) namediscount, showFormNamediscount
 PROPERTIES(s) READONLY name
-PROPERTIES(tm) OBJVALUE
 //PROPERTIES(s, d) timeTable
+PROPERTIES(tm) OBJVALUE
 PROPERTIES(s, d, tm) timeTableDate
 FILTERS NOT NULL timeTableDate(s, d, tm)
 FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
@@ -1202,6 +1197,7 @@ DESIGN departmentStore FROM DEFAULT {
             ADD e.box;
             ADD t.box;
             ADD s.box;
+            ADD d2.box;
     }
    }
 }
@@ -1932,7 +1928,6 @@ NAVIGATOR {
             ADD groupCash;
             ADD groupScales;
             ADD groupCheck;
-            ADD rawDepartmentStore;
             ADD component;
             ADD addaddressLegalEntity;
             ADD addressLegalEntity;
