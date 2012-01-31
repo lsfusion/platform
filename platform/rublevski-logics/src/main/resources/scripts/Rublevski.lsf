@@ -1068,7 +1068,7 @@ OBJECTS s=supplier FIXED PANEL
 OBJECTS a=account, c=contractProvider, l=license, d=departmentStore
 PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormaddressLegalEntity, postAddressLegalEntity, showFormpostAddressLegalEntity,
               managerLegalEntity, showFormmanagerLegalEntity, accountantLegalEntity, showFormaccountantLegalEntity,
-              phoneLegalEntity TODRAW d, showFormphoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
+              phoneLegalEntity, showFormphoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
               dataOverrideAccountLegalEntity, residentLegalEntity, manufacturerLegalEntity, dataOverrideContractSupplier, surePercentSupplier, allowablePercentSupplier,
               afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier, dataActingLicenseLegalEntity
 PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
