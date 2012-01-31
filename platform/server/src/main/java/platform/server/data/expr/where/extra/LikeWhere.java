@@ -1,5 +1,6 @@
 package platform.server.data.expr.where.extra;
 
+import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.InsensitiveStringClass;
@@ -28,7 +29,12 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
         return true;
     }
     public int hash(HashContext hashContext) {
-        return 1 + operator1.hashOuter(hashContext)*31 + operator2.hashOuter(hashContext)*31*31;
+        return (operator1.hashOuter(hashContext) * 31 + operator2.hashOuter(hashContext)) * 31 + (isStartWith?1:0);
+    }
+
+    @Override
+    public boolean twins(TwinImmutableInterface obj) {
+        return super.twins(obj) && isStartWith == ((LikeWhere)obj).isStartWith;
     }
 
     protected String getCompareSource(CompileSource compile) {
