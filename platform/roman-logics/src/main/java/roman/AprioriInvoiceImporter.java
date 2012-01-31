@@ -41,7 +41,8 @@ public class AprioriInvoiceImporter extends SingleSheetImporter {
         switch (column) {
             case I :
                  return value.substring(0, value.length()-1);
-
+            case J :
+                return value.substring(0, value.length()-1);
             default:
                 return value;
         }
