@@ -46,6 +46,8 @@ META metaCodeObjectDateProperty(prop, object, caption, type)
 
 END
 
+// ---------------------------------- Свойство объект-дата для yesNo со значением по-умолчанию НЕТ------------------------------------------ //
+
 META metaCodeNameObjectDateProperty(prop, object, caption, type)
 
     TABLE object##Date (object, DATE);
@@ -795,85 +797,6 @@ banSaleDepartmentStoreItem 'Запрет продаж товара в подра
 banMovementDepartmentStoreItem 'Запрет на внутреннее перемещение товара' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
 reserveDepartmentStoreItem 'Резерв по товару' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 
-FORM rawDepartmentStore 'Подразделения, из которых можно получить сырье'
-OBJECTS m=manufactory FIXED PANEL, d=departmentStore
-PROPERTIES(m) READONLY name
-PROPERTIES(d) READONLY name
-PROPERTIES(m, d) rawDepartmentStore
-FILTERS NOT NULL inRawDepartmentStore(m, d)
-FILTERGROUP rawFilter
-    FILTER 'Подразделения из которых полуется сырье' 'F10' NOT NULL rawDepartmentStore(m, d);
-
-showFormRawDepartmentStore 'Подразделения, из которых можно получить сырье' (manufactory, departmentStore) = ACTION FORM rawDepartmentStore OBJECTS m, d MODAL;
-
-FORM departmentStore 'Отдел магазина'
-OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare, m=manufactory
-PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
-              controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
-              maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
-              quantityCashChangeOneOperationAccountDepartmentStore, commonNameMateriallyResponsiblePersonItemReportDepartmentStore,
-              commonNameBookkeeperItemReportDepartmentStore, commonNamePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
-              //nameOutDepartmentManufactory, nameInPriceDepartmentManufactory, marginPublicCateringManufactory
-PROPERTIES(e) READONLY userFirstName, userLastName
-PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
-PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
-PROPERTIES(t) ADDOBJ, delete
-PROPERTIES(d, d) showFormRawDepartmentStore
-PROPERTIES(d) namediscount, showFormNamediscount
-FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
-FILTERS NOT NULL departmentStoreEmployee(d, e)
-EDIT departmentStore OBJECT d;
-
-DESIGN departmentStore FROM DEFAULT {
-    main{
-       ADD prop.box BEFORE functions.box{
-            tabbedPane = TRUE;
-            ADD e.box;
-            ADD t.box;
-    }
-   }
-}
-
-FORM store 'Магазин'
-OBJECTS s=store FIXED PANEL, d=departmentStore, t=tradingSquare
-PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameCompanyStore
-PROPERTIES(d) READONLY name, defaultTradingSquareDepartmentStore
-PROPERTIES(d) ADDSESSIONFORM, EDITSESSIONFORM, delete
-FILTERS NOT NULL inStoreDepartment(s, d)
-EDIT store OBJECT s;
-
-FORM stores 'Магазины'
-OBJECTS s=store, d=departmentStore
-PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore
-PROPERTIES(s) ADDFORM, EDITFORM, delete
-PROPERTIES(d) READONLY name
-FILTERS NOT NULL inStoreDepartment(s, d);
-
-FORM tradingNetwork 'Торговая сеть'
-OBJECTS n=tradingNetwork FIXED PANEL, s=storeType
-PROPERTIES(n) name
-PROPERTIES(s) name
-PROPERTIES(s) ADDOBJ, delete
-FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
-EDIT tradingNetwork OBJECT n;
-
-FORM qualifier 'Классификатор магазинов'
-OBJECTS n=tradingNetwork, s=storeType
-PROPERTIES(n) READONLY name
-PROPERTIES(n) ADDFORM, EDITFORM
-PROPERTIES(s) READONLY name
-FILTERS NOT NULL inStoreTypeTradingNetwork(s, n);
-
-FORM itemInDepartment  'Товары в подразделениях'
-OBJECTS d=departmentStore, i=item
-PROPERTIES(d) READONLY name, nameStoreDepartmentStore
-PROPERTIES(d) ADDFORM, EDITFORM, delete
-PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
-PROPERTIES(i) ADDFORM, EDITFORM, delete
-PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem, maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacterDepartmentStoreItem,
-                 nameStatusCashDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem, fromDateDeliveryDepartmentStoreItem,
-                 banSaleDepartmentStoreItem, banMovementDepartmentStoreItem, reserveDepartmentStoreItem;
-
 //------------------------------------ Товар для подразделения с историей -------------------------------------------------------------//
 maxReserveItemDepartmentDate 'Максимально допустимый товарный запас в днях' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
 minReserveItemDepartmentDate 'Минимально допустимый товарный запас в днях' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
@@ -1235,6 +1158,94 @@ PROPERTIES(d) READONLY name
 PROPERTIES(s) READONLY name
 PROPERTIES(s, d, t) timeTableDate
 FILTERS NOT NULL timeTableDate(s, d, t);
+
+//--------------------------------------Формы--------------------------------------------------------------------------//
+
+FORM rawDepartmentStore 'Подразделения, из которых можно получить сырье'
+OBJECTS m=manufactory FIXED PANEL, d=departmentStore
+PROPERTIES(m) READONLY name
+PROPERTIES(d) READONLY name
+PROPERTIES(m, d) rawDepartmentStore
+FILTERS NOT NULL inRawDepartmentStore(m, d)
+FILTERGROUP rawFilter
+    FILTER 'Подразделения из которых полуется сырье' 'F10' NOT NULL rawDepartmentStore(m, d);
+
+showFormRawDepartmentStore 'Подразделения, из которых можно получить сырье' (manufactory, departmentStore) = ACTION FORM rawDepartmentStore OBJECTS m, d MODAL;
+
+FORM departmentStore 'Отдел магазина'
+OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare, m=manufactory, s=supplier, tm=DATE
+PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
+              controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
+              maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
+              quantityCashChangeOneOperationAccountDepartmentStore, commonNameMateriallyResponsiblePersonItemReportDepartmentStore,
+              commonNameBookkeeperItemReportDepartmentStore, commonNamePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
+              //nameOutDepartmentManufactory, nameInPriceDepartmentManufactory, marginPublicCateringManufactory
+PROPERTIES(e) READONLY userFirstName, userLastName
+PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
+PROPERTIES(t) READONLY squareTradingSquare, dateTradingSquare
+PROPERTIES(t) ADDOBJ, delete
+PROPERTIES(d, d) showFormRawDepartmentStore
+PROPERTIES(d) namediscount, showFormNamediscount
+PROPERTIES(s) READONLY name
+PROPERTIES(tm) OBJVALUE
+//PROPERTIES(s, d) timeTable
+PROPERTIES(s, d, tm) timeTableDate
+FILTERS NOT NULL timeTableDate(s, d, tm)
+FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
+FILTERS NOT NULL departmentStoreEmployee(d, e)
+EDIT departmentStore OBJECT d;
+
+DESIGN departmentStore FROM DEFAULT {
+    main{
+       ADD prop.box BEFORE functions.box{
+            tabbedPane = TRUE;
+            ADD e.box;
+            ADD t.box;
+            ADD s.box;
+    }
+   }
+}
+
+FORM store 'Магазин'
+OBJECTS s=store FIXED PANEL, d=departmentStore, t=tradingSquare
+PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameCompanyStore
+PROPERTIES(d) READONLY name, defaultTradingSquareDepartmentStore
+PROPERTIES(d) ADDSESSIONFORM, EDITSESSIONFORM, delete
+FILTERS NOT NULL inStoreDepartment(s, d)
+EDIT store OBJECT s;
+
+FORM stores 'Магазины'
+OBJECTS s=store, d=departmentStore
+PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore
+PROPERTIES(s) ADDFORM, EDITFORM, delete
+PROPERTIES(d) READONLY name
+FILTERS NOT NULL inStoreDepartment(s, d);
+
+FORM tradingNetwork 'Торговая сеть'
+OBJECTS n=tradingNetwork FIXED PANEL, s=storeType
+PROPERTIES(n) name
+PROPERTIES(s) name
+PROPERTIES(s) ADDOBJ, delete
+FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
+EDIT tradingNetwork OBJECT n;
+
+FORM qualifier 'Классификатор магазинов'
+OBJECTS n=tradingNetwork, s=storeType
+PROPERTIES(n) READONLY name
+PROPERTIES(n) ADDFORM, EDITFORM
+PROPERTIES(s) READONLY name
+FILTERS NOT NULL inStoreTypeTradingNetwork(s, n);
+
+FORM itemInDepartment  'Товары в подразделениях'
+OBJECTS d=departmentStore, i=item
+PROPERTIES(d) READONLY name, nameStoreDepartmentStore
+PROPERTIES(d) ADDFORM, EDITFORM, delete
+PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
+PROPERTIES(i) ADDFORM, EDITFORM, delete
+PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem, maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacterDepartmentStoreItem,
+                 nameStatusCashDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem, fromDateDeliveryDepartmentStoreItem,
+                 banSaleDepartmentStoreItem, banMovementDepartmentStoreItem, reserveDepartmentStoreItem;
+
 
 //---------------------------- Модели оборудования ----------------------------------------//
 CLASS ABSTRACT model 'Модель' : named;
