@@ -912,7 +912,9 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 } 
 	: 	('IN' name=compoundID { groupName = $name.sid; })?
 		('PERSISTENT' { isPersistent = true; })?
-		(location = panelLocationSetting [property])?
+		(panelLocationSetting [property])?
+		(fixedCharWidthSetting [property])?
+		(imageSetting [property])?
 	;
 
 panelLocationSetting [LP property]
@@ -929,6 +931,24 @@ panelLocationSetting [LP property]
 	:	'TOOLBAR' { toolbar = true; }
 	|	'SHORTCUT' { toolbar = false; } (name = compoundID { sid = $name.sid; })? ('DEFAULT' { defaultProperty = true; })?
 	;
+	
+fixedCharWidthSetting [LP property]
+@after {
+	if (inPropParseState()) {
+		self.setFixedCharWidth(property, $width.val);
+	}
+}
+	:	'FIXEDCHARWIDTH' width = intLiteral
+	;
+	
+imageSetting [LP property]
+@after {
+	if (inPropParseState()) {
+		self.setImage(property, $path.val);
+	}
+}
+		:	'IMAGE' path = stringLiteral
+		;
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// CONSTRAINT STATEMENT //////////////////////////

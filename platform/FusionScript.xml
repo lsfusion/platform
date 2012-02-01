@@ -57,6 +57,7 @@
       <keyword name="FILTERGROUP" />
       <keyword name="FILTERS" />
       <keyword name="FIXED" />
+      <keyword name="FIXEDCHARWIDTH" />
       <keyword name="FOOTER" />
       <keyword name="FORCE" />
       <keyword name="FORM" />
@@ -73,6 +74,7 @@
       <keyword name="HINT" />
       <keyword name="HORIZONTAL" />
       <keyword name="IF" />
+      <keyword name="IMAGE" />
       <keyword name="IMPORT" />
       <keyword name="IN" />
       <keyword name="INCREMENT" />

@@ -407,6 +407,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setPanelLocation(panelLocation);
     }
 
+    public void setFixedCharWidth(LP<?> property, Integer fixedCharWidth) {
+        if (fixedCharWidth != null)
+            property.setFixedCharWidth(fixedCharWidth);
+    }
+
+    public void setImage(LP<?> property, String path) {
+        property.setImage(path);
+    }
+
     private <T extends LP<?>> void changePropertyName(T lp, String name) {
         removeModuleLP(lp);
         lp.property.setSID(transformNameToSID(name));
