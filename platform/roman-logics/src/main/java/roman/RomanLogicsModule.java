@@ -4599,7 +4599,7 @@ public class RomanLogicsModule extends LogicsModule {
         private PrintSkuFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption, true);
 
-            objSku = addSingleGroupObject(sku, "Товар", baseLM.barcode);
+            objSku = addSingleGroupObject(1, "sku", sku, "Товар", baseLM.barcode);
             objSku.groupTo.setSingleClassView(ClassViewType.PANEL);
             setReadOnly(objSku, true);
 
@@ -5362,7 +5362,7 @@ public class RomanLogicsModule extends LogicsModule {
         private CreateFreightBoxFormEntity(NavigatorElement parent, String sID, String caption, FormType type) {
             super(parent, sID, caption, type.equals(FormType.PRINT));
 
-            objCreate = addSingleGroupObject(creationFreightBox, "Документ генерации коробов");
+            objCreate = addSingleGroupObject(1, "creationFreightBox", creationFreightBox, "Документ генерации коробов");
 
             if (!type.equals(FormType.ADD))
                 addPropertyDraw(objCreate, baseLM.objectValue);
@@ -5381,7 +5381,7 @@ public class RomanLogicsModule extends LogicsModule {
             if (type.equals(FormType.ADD))
                 objCreate.setAddOnTransaction();
 
-            objFreightBox = addSingleGroupObject(freightBox, "Короба для транспортировки", baseLM.barcode);
+            objFreightBox = addSingleGroupObject(2, "freightBox", freightBox, "Короба для транспортировки", baseLM.barcode);
             setReadOnly(objFreightBox, true);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationFreightBoxFreightBox, objFreightBox), Compare.EQUALS, objCreate));
@@ -5399,7 +5399,7 @@ public class RomanLogicsModule extends LogicsModule {
         private CreatePalletFormEntity(NavigatorElement parent, String sID, String caption, FormType type) {
             super(parent, sID, caption, type.equals(FormType.PRINT));
 
-            objCreate = addSingleGroupObject(creationPallet, "Документ генерации паллет");
+            objCreate = addSingleGroupObject(1, "creationPallet", creationPallet, "Документ генерации паллет");
             if (!type.equals(FormType.ADD))
                 addPropertyDraw(objCreate, baseLM.objectValue);
 
@@ -5417,7 +5417,7 @@ public class RomanLogicsModule extends LogicsModule {
             if (type.equals(FormType.ADD))
                 objCreate.setAddOnTransaction();
 
-            objPallet = addSingleGroupObject(pallet, "Паллеты для транспортировки", baseLM.barcode);
+            objPallet = addSingleGroupObject(2, "pallet", pallet, "Паллеты для транспортировки", baseLM.barcode);
             setReadOnly(objPallet, true);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationPalletPallet, objPallet), Compare.EQUALS, objCreate));

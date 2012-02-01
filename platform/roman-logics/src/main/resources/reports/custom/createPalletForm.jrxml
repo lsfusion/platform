@@ -4,16 +4,16 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
-	<parameter name="obj1_report" class="net.sf.jasperreports.engine.JasperReport"/>
-	<parameter name="obj1_source" class="net.sf.jasperreports.engine.JRDataSource"/>
-	<parameter name="obj1_params" class="java.util.Map"/>
+	<parameter name="creationPallet_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="creationPallet_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="creationPallet_params" class="java.util.Map"/>
 	<detail>
 		<band>
 			<subreport>
 				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
-				<parametersMapExpression><![CDATA[$P{obj1_params}]]></parametersMapExpression>
-				<dataSourceExpression><![CDATA[$P{obj1_source}]]></dataSourceExpression>
-				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{obj1_report}]]></subreportExpression>
+				<parametersMapExpression><![CDATA[$P{creationPallet_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{creationPallet_source}]]></dataSourceExpression>
+				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{creationPallet_report}]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
