@@ -19,8 +19,6 @@ CLASS language 'Язык' : doubleNamed;
 // ----------------------------------- Свойство объект-дата------------------------------------------ //
 META metaCodeObjectDateProperty(prop, object, caption, type)
 
-    TABLE object##Date (object, DATE);
-
     prop##Date caption = DATA type (object, DATE);
     date##prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
     prop caption (object) = prop##Date(object, date##prop(object, currentDate()));
@@ -49,8 +47,6 @@ END
 // ---------------------------------- Свойство объект-дата для yesNo со значением по-умолчанию НЕТ------------------------------------------ //
 
 META metaCodeNameObjectDateProperty(prop, object, caption, type)
-
-    TABLE object##Date (object, DATE);
 
     prop##Date caption = DATA type (object, DATE);
     name##prop##Date caption (object, date) = name(prop##Date(object, date));
@@ -82,8 +78,6 @@ END
 // ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
 META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type)
 
-    TABLE object##Date (object1, object2, DATE);
-
     prop##Date caption = DATA type (object1, object2, DATE);
     date##prop (object1, object2, date) = GROUP MAX dateIn AND prop##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
     prop caption (object1, object2) = prop##Date(object1, object2, date##prop(object1, object2, currentDate()));
@@ -113,8 +107,6 @@ END
 // ----------------------------------- Свойство объект1-объект2-дата для yesNo со значением по-умолчанию НЕТ------------------------------------------ //
 
 META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type)
-
-    TABLE object##Date (object1, object2, DATE);
 
     prop##Date caption = DATA type (object1, object2, DATE);
     name##prop##Date caption (object1, object2, date) = name(prop##Date(object1, object2, date));
@@ -667,6 +659,8 @@ EDIT tradingSquare OBJECT s;
 
 // ------------------------------------- Скидки ---------------------------------------------------------- //
 
+TABLE departmentStoreDate (object, DATE);
+
 @metaCodeNameObjectDateProperty(discount, departmentStore, 'Разрешать скидки', yesNo);
 
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
@@ -817,6 +811,8 @@ FILTERS NOT NULL inStoreTypeTradingNetwork(s, n);
 //inActionItemDepartmentDate 'Товар акции' = DATA BOOLEAN (item, departmentStore, DATE) IN baseGroup;
 //marginProductionItemDepartmentDate 'Наценка производства' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
 //discountItemDepartmentDate 'Скидка для товара' = DATA STRING[100] (item, departmentStore, DATE) IN baseGroup;
+
+TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
 @metaCodeDoubleObjectDateProperty(maxReserveItemDepartment, item, departmentStore, 'Максимально допустимый товарный запас в днях', DOUBLE);
 @metaCodeDoubleObjectDateProperty(minReserveItemDepartment, item, departmentStore, 'Минимально допустимый товарный запас в днях', DOUBLE);
@@ -1068,6 +1064,8 @@ dataActingLicenseLegalEntity 'Действующая лицензия' (legalEnt
 
 // ----------------------------------- Юридическое лицо-дата ------------------------------------------ //
 
+TABLE legalEntityDate (legalEntity, DATE);
+
 @metaCodeObjectDateProperty(addressLegalEntity, legalEntity, 'Юридический адрес', STRING[150]);
 @metaCodeObjectDateProperty(managerLegalEntity, legalEntity, 'Руководитель', STRING[100]);
 @metaCodeObjectDateProperty(accountantLegalEntity, legalEntity, 'Главный бухгалтер', STRING[100]);
@@ -1250,6 +1248,8 @@ PROPERTIES(d, s, i)  itemAssortmentSupplier;
 //---------------------------- по поставщикам и товарам ----------------------------------------
 
 // ----------------------------------- Разрешать поставки ------------------------------------------- //
+
+TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
 @metaCodeDoubleObjectDateProperty(timeTable, supplier, departmentStore, 'Поставка', BOOLEAN);
 
