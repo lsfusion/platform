@@ -243,7 +243,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkForm(navigator, name);
         return (FormEntity) navigator;
     }
-    
+
     public MetaCodeFragment findMetaCodeFragmentByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
         MetaCodeFragment code = metaCodeFragmentResolver.resolve(name);
         checkMetaCodeFragment(code, name);
@@ -356,7 +356,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return index;
     }
 
-    public class LPWithParams {
+    public static class LPWithParams {
         public LP<?> property;
         public List<Integer> usedParams;
 
@@ -838,7 +838,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         MenuNavigatorWindow window = new MenuNavigatorWindow(null, caption, dp.x, dp.y, dp.width, dp.height);
         window.orientation = orientation.asMenuOrientation();
-        
+
         return window;
     }
 

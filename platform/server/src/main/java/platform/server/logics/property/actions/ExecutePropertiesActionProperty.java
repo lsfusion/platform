@@ -1,21 +1,20 @@
 package platform.server.logics.property.actions;
 
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.ValueClass;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
-import platform.server.logics.LogicsModule;
-import platform.server.logics.NullValue;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.base.BaseUtils.join;
 import static platform.server.logics.PropertyUtils.getValueClasses;
 
 public class ExecutePropertiesActionProperty extends ActionProperty {
+    public final static int EPA_INTERFACE = 0; // значение идет доп. интерфейсом
+    public final static int EPA_DEFAULT = 1; // писать из getDefaultValue
+    public final static int EPA_NULL = 2; // писать null
 
     private final int writeType;
 
@@ -30,12 +29,12 @@ public class ExecutePropertiesActionProperty extends ActionProperty {
      * @param imapInterfaces должны быть 0-based
      */
     public ExecutePropertiesActionProperty(String sID, String caption, int writeType, LP[] dataProperties, int[][] imapInterfaces) {
-        super(sID, caption, getValueClasses(writeType == LogicsModule.EPA_INTERFACE, dataProperties, imapInterfaces));
+        super(sID, caption, getValueClasses(writeType == EPA_INTERFACE, dataProperties, imapInterfaces));
 
         this.dataProperties = dataProperties;
         this.writeType = writeType;
         this.mapInterfaces = new Map[dataProperties.length];
-        this.mapResults = writeType == LogicsModule.EPA_INTERFACE ? new ClassPropertyInterface[dataProperties.length] : null;
+        this.mapResults = writeType == EPA_INTERFACE ? new ClassPropertyInterface[dataProperties.length] : null;
 
         List<ClassPropertyInterface> listInterfaces = (List<ClassPropertyInterface>)interfaces;
 
@@ -48,7 +47,7 @@ public class ExecutePropertiesActionProperty extends ActionProperty {
             for (int j = 0; j < imapPropInterfaces.length; ++j) {
                 ClassPropertyInterface mapInterface = listInterfaces.get(imapPropInterfaces[j]);
 
-                if (writeType == LogicsModule.EPA_INTERFACE && j == imapPropInterfaces.length - 1) {
+                if (writeType == EPA_INTERFACE && j == imapPropInterfaces.length - 1) {
                     mapResults[i] = mapInterface;
                 } else {
                     mapPropInterfaces.put(propInterfaces.get(j), mapInterface);
@@ -73,41 +72,38 @@ public class ExecutePropertiesActionProperty extends ActionProperty {
     public void execute(ExecutionContext context) throws SQLException {
         for (int i = 0; i < dataProperties.length; ++i) {
             LP dataProperty = dataProperties[i];
-            Map<?, ClassPropertyInterface> mapPropInterfaces = mapInterfaces[i];
-            List<? extends PropertyInterface> propInterfaces = dataProperty.listInterfaces;
+            Map<PropertyInterface, ClassPropertyInterface> mapPropInterfaces = mapInterfaces[i];
 
-            ObjectValue execValue;
+            Object execValue;
             switch (writeType) {
-                case LogicsModule.EPA_INTERFACE :
-                    execValue = context.getKeyValue(mapResults[i]);
+                case EPA_INTERFACE :
+                    execValue = context.getKeyValue(mapResults[i]).getValue();
                     break;
-                case LogicsModule.EPA_DEFAULT :
-                    ValueClass valueClass = dataProperty.property.getCommonClasses().value;
-                    execValue = ObjectValue.getValue(valueClass.getDefaultValue(), (ConcreteClass)valueClass);
+                case EPA_DEFAULT :
+                    execValue = dataProperty.property.getCommonClasses().value.getDefaultValue();
                     break;
-                case LogicsModule.EPA_NULL :
-                    execValue = NullValue.instance;
+                case EPA_NULL :
+                    execValue = null;
                     break;
                 default :
                     throw new RuntimeException("Unknown writeType");
             }
 
+            Map<PropertyInterface, DataObject> mapKeys = join(mapPropInterfaces, context.getKeys());
+
             boolean inForm = context.getRemoteForm() != null && dataProperty.property instanceof UserProperty;
-
-            DataObject[] execInterfaces = new DataObject[propInterfaces.size()];
-            Map<PropertyInterface, PropertyObjectInterfaceInstance> execMapObjects = new HashMap<PropertyInterface, PropertyObjectInterfaceInstance>();
-            for (int j = 0; j < propInterfaces.size(); j++) {
-                PropertyInterface dataInterface = propInterfaces.get(j);
-                ClassPropertyInterface execInterface = mapPropInterfaces.get(dataInterface);
-                execInterfaces[j] = context.getKeyValue(execInterface);
-                if (inForm)
-                    execMapObjects.put(dataInterface, context.getObjectInstance(execInterface));
-            }
-
             if (inForm) {
-                context.addActions(dataProperty.property.execute(dataProperty.getMapValues(execInterfaces), context.getSession(), execValue.getValue(), context.getModifier(), context.getRemoteForm(), execMapObjects));
+                Map<PropertyInterface, PropertyObjectInterfaceInstance> mapObjects = join(mapPropInterfaces, context.getObjectInstances());
+                context.addActions(
+                        dataProperty.property.execute(
+                                mapKeys,
+                                context.getSession(),
+                                execValue,
+                                context.getModifier(),
+                                context.getRemoteForm(),
+                                mapObjects));
             } else {
-                context.addActions(dataProperty.execute(execValue.getValue(), context, execInterfaces));
+                context.addActions(dataProperty.execute(execValue, context, mapKeys));
             }
         }
     }

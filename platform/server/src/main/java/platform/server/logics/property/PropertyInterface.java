@@ -48,6 +48,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return mapExpr(joinImplement);
     }
 
+    public Expr mapExpr(Map<P, ? extends Expr> joinImplement, Modifier modifier) {
+        return mapExpr(joinImplement);
+    }
+
     public Expr mapExpr(Map<P, ? extends Expr> joinImplement) {
         return joinImplement.get((P) this);
     }

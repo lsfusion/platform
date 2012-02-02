@@ -30,11 +30,14 @@ public class PropertyUtils {
 
             Result<ValueClass> result = new Result<ValueClass>();
             ValueClass[] propClasses = dataProperty.getCommonClasses(result);
-            for (int j = 0; j < mapPropInterfaces.length; ++j) {
-                ValueClass valueClass = (mapReturns && j == mapPropInterfaces.length - 1)
-                                        ? result.result
-                                        : propClasses[j];
+            if (mapReturns) {
+                propClasses = BaseUtils.addElement(propClasses, result.result, ValueClass.class);
+            }
 
+            assert propClasses.length == mapPropInterfaces.length;
+
+            for (int j = 0; j < mapPropInterfaces.length; ++j) {
+                ValueClass valueClass = propClasses[j];
 
                 int thisIndex = mapPropInterfaces[j];
 

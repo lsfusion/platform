@@ -37,6 +37,7 @@ import java.util.*;
 
 import static platform.base.BaseUtils.consecutiveInts;
 import static platform.server.logics.PropertyUtils.*;
+import static platform.server.logics.property.actions.ExecutePropertiesActionProperty.EPA_INTERFACE;
 
 /**
  * User: DAle
@@ -885,7 +886,7 @@ public abstract class LogicsModule {
         return addGCAProp(group, name, caption, groupObject, mainProperty, mainInts, getterProperty, getterInts, groupInts);
     }
 
-    protected LP addGCAProp(AbstractGroup group, String name, String caption, GroupObjectEntity groupObject, LP mainProperty, int[] mainInts, LP getterProperty, int[] getterInts, int[] groupInts) {
+    private LP addGCAProp(AbstractGroup group, String name, String caption, GroupObjectEntity groupObject, LP mainProperty, int[] mainInts, LP getterProperty, int[] getterInts, int[] groupInts) {
         return addProperty(group, new LP<ClassPropertyInterface>(
                 new GroupChangeActionProperty(name, caption, groupObject,
                         mainProperty, mainInts, getterProperty, getterInts, groupInts)));
@@ -1682,20 +1683,18 @@ public abstract class LogicsModule {
         return addEPAProp(EPA_INTERFACE, lps);
     }
 
-    public final static int EPA_INTERFACE = 0; // значение идет доп. интерфейсом
-    public final static int EPA_DEFAULT = 1; // писать из getDefaultValue
-    public final static int EPA_NULL = 2; // писать null
-
     /**
      * Добавляет action для запуска свойств с мэппингом по порядку, т.е. на входы и выход каждого свойства мэппятся интерфейсы результирующего по порядку
      *
      * @param writeType Если != INTERFACE, то мэппятся только входы, без выхода
      */
-
     protected LP addEPAProp(int writeType, LP... lps) {
         return addEPAProp(genSID(), "sysEPA", writeType, lps);
     }
 
+    /**
+     * @see platform.server.logics.LogicsModule#addEPAProp(int, platform.server.logics.linear.LP...)
+     */
     protected LP addEPAProp(String sID, String caption, int writeType, LP... lps) {
         int[][] mapInterfaces = new int[lps.length][];
         for (int i = 0; i < lps.length; ++i) {
@@ -1709,19 +1708,23 @@ public abstract class LogicsModule {
     /**
      * Добавляет action для запуска других свойств.
      * <p/>
-     * Мэппиг задаётся перечислением свойств с указанием после каждого номеров интерфейсов результирующего свойства,
-     * которые пойдут на входы и выход данных свойств
-     * Пример 1: addEPAProp(true, userLogin, 1, inUserRole, 1, 2)
-     * Пример 2: addEPAProp(false, userLogin, 1, 3, inUserRole, 1, 2, 4)
+     * Мэппиг задаётся перечислением свойств с указанием после каждого номеров интерфейсов результирующего свойства, <p/>
+     * которые пойдут на входы и выход данных свойств<p/>
+     * Пример 1: addEPAProp(EPA_DEFAULT, userLogin, 1, inUserRole, 1, 2)<p/>
+     * Пример 2: addEPAProp(EPA_INTERFACE, userLogin, 1, 3, inUserRole, 1, 2, 4)<p/>
      *
-     * @param writeType использовать ли значения по умолчанию для записи в свойства.
-     *                           Если значение этого параметра false, то мэпиться должны не только выходы, но и вход, номер интерфейса, который пойдёт на вход, должен быть указан последним
+     * @param writeType как мэпить возвращаемые значения.<p/>
+     *                  Если значение этого параметра равно EPA_INTERFACE, то мэпиться должны не только выходы, <p/>
+     *                  но и вход, при этом номер интерфейса, который пойдёт на вход, должен быть указан последним. <p/>
+     *                  Если значение равно EPA_DEFAULT или EPA_NULL, то буду записаны значения по умолчанию или NULL соотв-но
      */
-
     protected LP addEPAProp(int writeType, Object... params) {
         return addEPAProp(genSID(), "sysEPA", writeType, params);
     }
 
+    /**
+     * @see platform.server.logics.LogicsModule#addEPAProp(int, java.lang.Object...)
+     */
     protected LP addEPAProp(String sID, String caption, int writeType, Object... params) {
         List<LP> lps = new ArrayList<LP>();
         List<int[]> mapInterfaces = new ArrayList<int[]>();
@@ -1732,7 +1735,7 @@ public abstract class LogicsModule {
 
             LP lp = (LP) params[pi++];
 
-            int[] propMapInterfaces = new int[lp.listInterfaces.size() + (writeType == LogicsModule.EPA_INTERFACE ? 1 : 0)];
+            int[] propMapInterfaces = new int[lp.listInterfaces.size() + (writeType == EPA_INTERFACE ? 1 : 0)];
             for (int j = 0; j < propMapInterfaces.length; ++j) {
                 propMapInterfaces[j] = (Integer) params[pi++] - 1;
             }
@@ -1768,8 +1771,8 @@ public abstract class LogicsModule {
     // params - по каким входам группировать
     protected LP addIAProp(LP dataProperty, Integer... params) {
         return addAProp(new BaseLogicsModule.IncrementActionProperty(genSID(), "sys", dataProperty,
-                addMGProp(dataProperty, params),
-                params));
+                                                                     addMGProp(dataProperty, params),
+                                                                     params));
     }
 
     protected LP addAAProp(CustomClass customClass, LP... properties) {
@@ -2040,6 +2043,10 @@ public abstract class LogicsModule {
 
     public LP object(ValueClass valueClass) {
         return baseLM.object(valueClass);
+    }
+
+    public LP vdefault(ConcreteValueClass valueClass) {
+        return baseLM.vdefault(valueClass);
     }
 
     protected LP and(boolean... nots) {

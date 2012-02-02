@@ -40,7 +40,6 @@
             <arg value="mvn"/>
             <arg value="-Dmaven.test.skip=false"/>
             <arg value="test-compile" />
-            <arg value="-Dquickbuild" />
         </exec>
     </target>
 

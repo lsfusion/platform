@@ -193,13 +193,20 @@ public class LP<T extends PropertyInterface> {
         return execute(value, context.getSession(), context.getModifier(), objects);
     }
 
+    public List<ClientAction> execute(Object value, ExecutionContext context, Map<T, DataObject> keys) throws SQLException {
+        return execute(value, context.getSession(), context.getModifier(), keys);
+    }
+
     public List<ClientAction> execute(Object value, DataSession session, Modifier modifier, DataObject... objects) throws SQLException {
+        return execute(value, session, modifier, getMapValues(objects));
+    }
+
+    public List<ClientAction> execute(Object value, DataSession session, Modifier modifier, Map<T, DataObject> keys) throws SQLException {
         //отдельно обрабатываем false-значения: используем null вместо false
         if (value instanceof Boolean && !(Boolean)value) {
             value = null;
         }
-        Map<T, DataObject> mapKeys = getMapValues(objects);
-        return property.execute(mapKeys, session, value, modifier);
+        return property.execute(keys, session, value, modifier);
     }
 
     public static List<Property> toPropertyArray(LP[] properties) {

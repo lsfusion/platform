@@ -1309,6 +1309,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP object(ValueClass valueClass) {
         return addJProp(valueClass.toString(), baseLM.and1, 1, is(valueClass), 1);
     }
+    @Override
+    @IdentityLazy
+    public LP vdefault(ConcreteValueClass valueClass) {
+        return addProperty(null, new LP<PropertyInterface>(new DefaultValueProperty("default" + valueClass.getSID(), valueClass)));
+    }
 
     protected LP addRestartActionProp() {
         return BL.addRestartActionProp();

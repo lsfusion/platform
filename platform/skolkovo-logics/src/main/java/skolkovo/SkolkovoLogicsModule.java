@@ -62,6 +62,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static platform.base.BaseUtils.nvl;
+import static platform.server.logics.property.actions.ExecutePropertiesActionProperty.EPA_DEFAULT;
+import static platform.server.logics.property.actions.ExecutePropertiesActionProperty.EPA_INTERFACE;
 
 /**
  * User: DAle
@@ -4103,7 +4105,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 overdueLegalCheckProject, 1,
                 withdrawnProject, 1);
 
-        addPositiveLCResultProject = addJProp(legalCheckResultGroup, true, "Прошла юридическую проверку", addAAProp(legalCheck, projectLegalCheck, resultLegalCheck), 1, addCProp(legalCheckResult, "positiveLegalCheckResult"));
+        addPositiveLCResultProject = addJProp(legalCheckResultGroup, true, "Прошла юридическую проверку",
+                                              addAAProp(legalCheck, projectLegalCheck, resultLegalCheck), 1, addCProp(legalCheckResult, "positiveLegalCheckResult"));
         setPositiveLCResultApplyProject = addJProp(actionGroup, true, "setPositiveLCResultApplyProject", "Прошла юридическую проверку", baseLM.and1,
                 addEPAProp(EPA_DEFAULT, addPositiveLCResultProject, 1, baseLM.apply, baseLM.cancel), 1,
                 needLegalCheckStatusProject, 1);

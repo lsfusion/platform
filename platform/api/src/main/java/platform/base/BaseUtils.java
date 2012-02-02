@@ -1186,6 +1186,15 @@ public class BaseUtils {
         return result;
     }
 
+    public static int[] addInt(int[] array, int element) {
+        int newArr[] = new int[array.length + 1];
+
+        System.arraycopy(array, 0, newArr, 0, array.length);
+        newArr[array.length] = element;
+
+        return newArr;
+    }
+
     public static <T> T[] removeElement(T[] array, T element, ArrayInstancer<T> instancer) {
         if (array == null || array.length == 0) {
             return array;
