@@ -275,10 +275,11 @@ CLASS STATIC groupProduct 'Группа изделий для печати за�
    cold  'Холодное'
 };
 
-
+//baseGroup
 itemGroupSku = DATA itemGroup(sku) IN idGroup;
 nameItemGroupSku 'Группа товара' = name(itemGroupSku(sku)) IN baseGroup;
 
+//descriptionGroup
 brandItem = DATA brand(item);
 nameBrandItem 'Бренд' (item) = name(brandItem(item)) IN descriptionGroup;
 
@@ -287,11 +288,6 @@ nameTypeItemItem 'Вид' = name(typeItemItem(item)) IN descriptionGroup;
 
 unitOfMeasureItem = DATA unitOfMeasure (item) IN idGroup;
 shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortName(unitOfMeasureItem(item)) IN descriptionGroup;
-
-isWeightItem 'Весовой товар' = DATA BOOLEAN (itemComponent) IN equipmentGroup;
-volumeItem 'Объём' = DATA DOUBLE (item) IN sizeGroup;
-netWeightItem 'Вес нетто' = DATA DOUBLE (item) IN sizeGroup;
-isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN equipmentGroup;
 
 sortItem = DATA sort(item) IN idGroup;
 nameSortItem 'Сорт/категория товара' = name(sortItem(item)) IN descriptionGroup;
@@ -302,7 +298,6 @@ shortNamePackItem 'Упаковка' = shortName(packItem(item)) IN descriptionG
 specialtyItem = DATA specialty(item) IN idGroup;
 shortNameSpecialtyItem 'Особенности' = shortName(specialtyItem(item)) IN descriptionGroup;
 
-sizeItem = DATA size(item) IN idGroup;
 shortNameSizeItem 'Размер/калибр' = shortName(sizeItem(item)) IN descriptionGroup;
 
 colorItem = DATA color (item) IN idGroup;
@@ -310,9 +305,44 @@ nameColorItem 'Цвет' = name(colorItem(item)) IN descriptionGroup;
 tasteItem = DATA taste (item) IN idGroup;
 nameTasteItem 'Вкус' = name(tasteItem(item)) IN descriptionGroup;
 
+hallmarkItem 'Отличительный признак (особенности)' = DATA STRING[100] (item) IN descriptionGroup;
+
+articleItem 'Артикул поставщика/производителя' = DATA STRING[100] (item) IN descriptionGroup;
+
+coolingDegreeItem 'Степень охлаждения (ИД)' = DATA coolingDegree (item) IN idGroup;
+nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegreeItem(item)) IN descriptionGroup;
+
+countryItem = DATA country (item) IN idGroup;
+nameCountryItem 'Страна' = name(countryItem(item)) IN descriptionGroup;
+
+isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN descriptionGroup;
+hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN descriptionGroup;
+
+wareItem = DATA ware (item) IN idGroup;
+nameWareItem 'Посуда' = name(wareItem(item)) IN descriptionGroup;
+
+//equipmentGroup
+isWeightItem 'Весовой товар' = DATA BOOLEAN (itemComponent) IN equipmentGroup;
+isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN equipmentGroup;
+compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA STRING[400] (item)IN equipmentGroup;
+tagItem 'Ценник (ИД)' = DATA tag (item) IN idGroup;
+nameTagItem 'Ценник' = name(tagItem(item)) IN equipmentGroup;
+multiplierItem 'Множитель для печати ценника' = DATA DOUBLE (item) IN equipmentGroup;
+isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN equipmentGroup;
+isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN equipmentGroup;
+passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equipmentGroup;
+
+//substanceGroup
 percentFatItem '% жирности' =  DATA DOUBLE (item) IN substanceGroup;
 percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN substanceGroup;
+nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN substanceGroup;
+energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN substanceGroup;
+fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
+carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
+proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
+isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGroup;
 
+//sizeGroup
 lengthItem 'Длина товара' = DATA INTEGER (item) IN sizeGroup;
 widthItem 'Ширина товара' = DATA INTEGER (item) IN sizeGroup;
 heightItem 'Высота товара' = DATA INTEGER (item) IN sizeGroup;
@@ -321,87 +351,47 @@ lengthPackItem 'Длина упаковки' = DATA INTEGER (item) IN sizeGroup;
 widthPackItem 'Ширина упаковки' = DATA INTEGER (item) IN sizeGroup;
 heightPackItem 'Высота упаковки' = DATA DOUBLE (item) IN sizeGroup;
 grossWeightPackItem 'Вес брутто упаковки' = DATA DOUBLE (item) IN sizeGroup;
-
-hallmarkItem 'Отличительный признак (особенности)' = DATA STRING[100] (item) IN descriptionGroup;
-
-articleItem 'Артикул поставщика/производителя' = DATA STRING[100] (item) IN descriptionGroup;
-
+volumeItem 'Объём' = DATA DOUBLE (item) IN sizeGroup;
+netWeightItem 'Вес нетто' = DATA DOUBLE (item) IN sizeGroup;
 quantityPackItem 'Количество в грузовом месте' = DATA DOUBLE (item) IN sizeGroup;
 
-coolingDegreeItem 'Степень охлаждения (ИД)' = DATA coolingDegree (item) IN idGroup;
-nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegreeItem(item)) IN descriptionGroup;
-
+//retailGroup
 minResourceItem 'Минимальный запас' = DATA INTEGER (item) IN retailGroup;
 minReserveItem 'Минимальный резерв' = DATA INTEGER (item) IN retailGroup;
-
-compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA STRING[400] (item)IN equipmentGroup;
-compositionMenuItem 'Состав изделия для печати в меню' = DATA STRING[400] (item)IN manufactoryGroup;
-
-countryItem = DATA country (item) IN idGroup;
-nameCountryItem 'Страна' = name(countryItem(item)) IN descriptionGroup;
-
 bonusReturnItem 'Уценка (бонус) по товару при возврате поставщику' = DATA DOUBLE (item) IN retailGroup;
 nameReturnItem 'Наименование для уценки, бонуса по товару в возврат' = DATA STRING[200] (item) IN retailGroup;
-
 quantityDiscountItem 'Количество товара, при котором предост-ся скидка' = DATA INTEGER (item) IN retailGroup;
-
 fixPriceItem 'Фиксированная цена при соотв.типе скидки' = DATA INTEGER (item) IN retailGroup;
-
 isFixPriceItem 'Товар с фиксированной ценой' = DATA BOOLEAN (item) IN retailGroup;
-isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN descriptionGroup;
-
 banMarkdownItem 'Запретить уценку товара' = DATA BOOLEAN (item) IN retailGroup;
-
 oldPriceItem 'Старая цена для печати на ценник' = DATA DOUBLE (item) IN retailGroup;
-
-tagItem 'Ценник (ИД)' = DATA tag (item) IN idGroup;
-nameTagItem 'Ценник' = name(tagItem(item)) IN equipmentGroup;
-multiplierItem 'Множитель для печати ценника' = DATA DOUBLE (item) IN equipmentGroup;
-
-rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) IN idGroup;
-
-controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN expiryGroup;
-daysExpiryItem 'Срок годности в днях' = DATA DOUBLE (item) IN expiryGroup;
-
-isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN equipmentGroup;
-hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN descriptionGroup;
-
 minTradeAllowanceItem 'MIN допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
 maxTradeAllowanceItem 'MAX допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
 minAllowedRetailPriceItem 'MIN допустимая розн.цена' = DATA INTEGER (item) IN retailGroup;
+bonusItem 'Бонус получаемый по товару' = DATA DOUBLE (item) IN retailGroup;
+percentWholesaleMarkItem '% оптовой надбавки' = DATA DOUBLE (item) IN retailGroup;
 
+//expiryGroup
+
+controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN expiryGroup;
+daysExpiryItem 'Срок годности в днях' = DATA DOUBLE (item) IN expiryGroup;
+daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA DOUBLE (item) IN expiryGroup;
+hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
+
+//manufactoryGroup
 isCrudeItem 'Товар-сырьё для калькуляции?' = DATA BOOLEAN (item) IN manufactoryGroup;
 
 groupProductItem = DATA groupProduct (item) IN idGroup;
 nameGroupProductItem 'Группа изделий для печати заборного листа' = name(groupProductItem(item)) IN manufactoryGroup;
 
-wareItem = DATA ware (item) IN idGroup;
-nameWareItem 'Посуда' = name(wareItem(item)) IN descriptionGroup;
-
-nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN substanceGroup;
-energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN substanceGroup;
-fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
-carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
-proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
-
-isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGroup;
-
-daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA DOUBLE (item) IN expiryGroup;
-hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
-
+compositionMenuItem 'Состав изделия для печати в меню' = DATA STRING[400] (item)IN manufactoryGroup;
 standartItem 'Стандарт изготовления изделия (СТБ и пр.)' = DATA STRING[100] (item) IN manufactoryGroup;
 normOutItem 'Норма выхода для печати в меню и калькуляцию' = DATA STRING[100] (item) IN manufactoryGroup;
 groupMenuItem 'Группа для печати в меню' = DATA STRING[100] (item) IN manufactoryGroup;
-
 isCutedItem 'Товар разрубается/прорабатывается' = DATA BOOLEAN (item) IN manufactoryGroup;
-isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN equipmentGroup;
-
 storageTemperatureItem 'Температура хранения' =  DATA STRING[100] (item) IN manufactoryGroup;
 
-passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equipmentGroup;
-
-bonusItem 'Бонус получаемый по товару' = DATA DOUBLE (item) IN retailGroup;
-percentWholesaleMarkItem '% оптовой надбавки' = DATA DOUBLE (item) IN retailGroup;
+rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) IN idGroup;
 
 // ----------------------------------- Атрибуты ------------------------------------------ //
 
@@ -1883,6 +1873,41 @@ PROPERTIES(st, gr)  barcodeBarcodeStageGroupMachinery, priceStageGroupMachinery,
                     timeStageGroupMachinery, stockStageGroupMachinery
 FILTERS  NOT NULL barcodeStageGroupMachinery(st, gr);
 
+//---------------------------- Кассовые отчеты ----------------------------------------//
+CLASS cashReport 'Кассовый отчет' : transaction;
+CLASS cashDocument 'Кассовый документ';
+CLASS incomeCashOrder 'ПКО': cashDocument;
+CLASS outcomeCashOrder 'РКО': cashDocument;
+CLASS bankCardsReport 'Отчет по банковским карточкам': cashDocument;
+
+numberCashReport 'Номер кассового отчета' (cashReport) = DATA INTEGER (cashReport) IN baseGroup;
+startDateCashReport 'Дата начала' (cashReport) = DATA DATE (cashReport) IN baseGroup;
+endDateCashReport 'Дата окончания' (cashReport) = DATA DATE (cashReport) IN baseGroup;
+
+reportCashDocument 'Отчет документа (ИД)' (cashDocument) = DATA cashReport (cashDocument) IN idGroup;
+numberCashDocument 'Номер документа' (cashDocument) = DATA INTEGER (cashDocument) IN baseGroup;
+sumCashDocument 'Сумма документа' (cashDocument) = DATA DOUBLE (cashDocument) IN baseGroup;
+cashIncomeCashOrder 'Выручка кассы (ИД)' (incomeCashOrder) = DATA cash(incomeCashOrder) IN idGroup;
+numberCashIncomeCashOrder 'Выручка кассы' (incomeCashOrder) = numberCash(cashIncomeCashOrder(incomeCashOrder)) IN baseGroup;
+dopInfoCashDocument 'Описание' (cashDocument) = DATA STRING[10] (cashDocument) IN baseGroup;
+infoCashDocument 'Основание документа' (cashDocument) = UNION EXCLUSIVE numberCashIncomeCashOrder(cashDocument) IF cashDocument IS incomeCashOrder, dopInfoCashDocument (cashDocument);
+
+inCashReportDocument 'Документ в текущем кассовом отчете' (cashReport, cashDocument) = reportCashDocument(cashDocument)==cashReport;
+
+FORM cashReport 'Кассовый отчет'
+OBJECTS r=cashReport FIXED PANEL
+OBJECTS d=cashDocument
+PROPERTIES (r) numberCashReport, startDateCashReport, endDateCashReport
+PROPERTIES (d) objectClassName, numberCashDocument, infoCashDocument, sumCashDocument, ADDOBJ, delete
+FILTERS NOT NULL inCashReportDocument(r,d)
+EDIT cashReport OBJECT r;
+
+FORM cashReports 'Кассовые отчеты'
+OBJECTS r=cashReport, d=cashDocument
+PROPERTIES (r) startDateCashReport, endDateCashReport
+PROPERTIES (r) ADDFORM, EDITFORM, delete
+PROPERTIES (d) READONLY numberCashDocument, sumCashDocument
+FILTERS NOT NULL inCashReportDocument(r,d);
 
 //---------------------------- Настройка навигатора ----------------------------------------//
 
@@ -1932,6 +1957,7 @@ NAVIGATOR {
             ADD machineries;
             ADD models;
             ADD stages;
+            ADD cashReports;
         }
         NEW producing 'Производство'{
             ADD cuttings;
@@ -2016,6 +2042,7 @@ NAVIGATOR {
             ADD addtimeTable;
             ADD orderSupplier;
             ADD timeTable;
+            ADD cashReport;
         }
     }
 }
