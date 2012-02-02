@@ -19,8 +19,6 @@ CLASS language 'Язык' : doubleNamed;
 // ----------------------------------- Свойство объект-дата------------------------------------------ //
 META metaCodeObjectDateProperty(prop, object, caption, type)
 
-    TABLE object##Date (object, DATE);
-
     prop##Date caption = DATA type (object, DATE);
     date##prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
     prop caption (object) = prop##Date(object, date##prop(object, currentDate()));
@@ -49,8 +47,6 @@ END
 // ---------------------------------- Свойство объект-дата для yesNo со значением по-умолчанию НЕТ------------------------------------------ //
 
 META metaCodeNameObjectDateProperty(prop, object, caption, type)
-
-    TABLE object##Date (object, DATE);
 
     prop##Date caption = DATA type (object, DATE);
     name##prop##Date caption (object, date) = name(prop##Date(object, date));
@@ -82,8 +78,6 @@ END
 // ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
 META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type)
 
-    TABLE object##Date (object1, object2, DATE);
-
     prop##Date caption = DATA type (object1, object2, DATE);
     date##prop (object1, object2, date) = GROUP MAX dateIn AND prop##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
     prop caption (object1, object2) = prop##Date(object1, object2, date##prop(object1, object2, currentDate()));
@@ -113,8 +107,6 @@ END
 // ----------------------------------- Свойство объект1-объект2-дата для yesNo со значением по-умолчанию НЕТ------------------------------------------ //
 
 META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type)
-
-    TABLE object##Date (object1, object2, DATE);
 
     prop##Date caption = DATA type (object1, object2, DATE);
     name##prop##Date caption (object1, object2, date) = name(prop##Date(object1, object2, date));
@@ -530,7 +522,7 @@ userBarcodeSku = DATA barcode(sku) IN idGroup;
 defaultBarcodeSku(sku) = GROUP MAX barcode IF inSkuBarcode(sku, barcode) BY sku IN idGroup;
 barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku) IN baseGroup;
 
-CONSTRAINT CHECKED sku IS sku AND NOT inSkuBarcode(sku, userBarcodeSku(sku)) MSG 'Товар основного штрих-кода должен совпадать с товаром';
+CONSTRAINT CHECKED sku IS sku AND NOT inSkuBarcode(sku, barcodeSku(sku)) MSG 'Товар основного штрих-кода должен совпадать с товаром';
 
 barcodeBarcodeSku  'Действующий штрих-код' = barcode(barcodeSku(sku)) IN baseGroup;
 
@@ -539,52 +531,6 @@ OBJECTS b=barcode
 PROPERTIES(b) barcode;
 
 
-FORM item 'Товар'
-OBJECTS i=item FIXED PANEL, a=itemAttribute, b=barcode
-PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, nameBrandItem, shortNameUnitOfMeasureItem, nameTypeItemItem, nameSortItem, shortNamePackItem, shortNameSizeItem, shortNameSpecialtyItem,
- isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem, nameTasteItem,
- hallmarkItem, articleItem, quantityPackItem, nameCoolingDegreeItem, minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
- percentFatItem, percentAlcoholItem, lengthItem, widthItem, heightItem, grossWeightItem, lengthPackItem, widthPackItem, heightPackItem, grossWeightPackItem,
- nameCountryItem, nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
- bonusReturnItem, nameReturnItem, quantityDiscountItem, fixPriceItem, isFixPriceItem,
- banMarkdownItem, oldPriceItem, nameTagItem, multiplierItem, controlExpiryItem, daysExpiryItem, isMarkItem, hintItem,
- isCrudeItem, nameGroupProductItem,
- nameWareItem, daysExpiryPackItem, hoursExpiryPackItem, standartItem, normOutItem, groupMenuItem,
- isCutedItem, isLoafCutItem, storageTemperatureItem, passScalesItem, bonusItem, percentWholesaleMarkItem,
- minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem
-PROPERTIES name(a), valueItemAttribute(i, a)
-PROPERTIES barcode(b)
-PROPERTIES inSkuBarcode(i, b)
-FILTERS NOT NULL inSkuBarcode(i, b)
-PROPERTIES(b) ADDOBJ, delete
-EDIT item OBJECT i
-EDIT barcode OBJECT b;
-
-DESIGN item FROM DEFAULT {
-    main {
-       ADD item.box BEFORE b.box {
-            tabbedPane = TRUE;
-            ADD i.descriptionGroup;
-            ADD i.retailGroup;
-            ADD i.equipmentGroup;
-            ADD i.sizeGroup {
-                fillVertical = 1.0;
-                fillHorizontal = 1.0;
-            }
-            ADD i.equipmentGroup;
-            ADD i.substanceGroup;
-            ADD i.manufactoryGroup{
-                fillVertical = 1.0;
-                fillHorizontal = 1.0;
-            }
-            ADD i.expiryGroup{
-                fillVertical = 1.0;
-                fillHorizontal = 1.0;
-            }
-            ADD a.box;
-       }
-    }
-}
 // ----------------------------------- Компоненты ------------------------------------------ //
 CLASS component 'Компонент' : sku;
 
@@ -601,16 +547,6 @@ OBJECTS c=component
 PROPERTIES(c) READONLY name, nettoBruttoCoeffComponent
 PROPERTIES(c) ADDFORM, EDITFORM, delete;
 
-
-FORM items 'Товары'
-OBJECTS i=item
-OBJECTS b=barcode
-PROPERTIES(i) READONLY name, nameItemGroupSku, shortNameUnitOfMeasureItem, nameCountryItem, barcodeBarcodeSku
-PROPERTIES(i) ADDFORM, EDITFORM, delete
-PROPERTIES(b) READONLY barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
-//PROPERTIES(i, b) inSkuBarcode
-PROPERTIES(b) ADDFORM, EDITFORM, delete
-PROPERTIES(i, b) inSkuBarcode;
 
 // ----------------------------------- Генерация графика --------------------------------------- //
 
@@ -723,6 +659,8 @@ EDIT tradingSquare OBJECT s;
 
 // ------------------------------------- Скидки ---------------------------------------------------------- //
 
+TABLE departmentStoreDate (object, DATE);
+
 @metaCodeNameObjectDateProperty(discount, departmentStore, 'Разрешать скидки', yesNo);
 
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
@@ -798,16 +736,107 @@ banMovementDepartmentStoreItem 'Запрет на внутреннее пере�
 reserveDepartmentStoreItem 'Резерв по товару' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 
 //------------------------------------ Товар для подразделения с историей -------------------------------------------------------------//
-maxReserveItemDepartmentDate 'Максимально допустимый товарный запас в днях' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
-minReserveItemDepartmentDate 'Минимально допустимый товарный запас в днях' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
+//maxReserveItemDepartmentDate 'Максимально допустимый товарный запас в днях' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
+//minReserveItemDepartmentDate 'Минимально допустимый товарный запас в днях' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
+//banRevaluationItemDepartmentDate 'Запрет на переоценку' = DATA BOOLEAN (item, departmentStore, DATE) IN baseGroup;
+//inActionItemDepartmentDate 'Товар акции' = DATA BOOLEAN (item, departmentStore, DATE) IN baseGroup;
+//marginProductionItemDepartmentDate 'Наценка производства' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
+//discountItemDepartmentDate 'Скидка для товара' = DATA STRING[100] (item, departmentStore, DATE) IN baseGroup;
 
-banRevaluationItemDepartmentDate 'Запрет на переоценку' = DATA BOOLEAN (item, departmentStore, DATE) IN baseGroup;
+TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
-inActionItemDepartmentDate 'Товар акции' = DATA BOOLEAN (item, departmentStore, DATE) IN baseGroup;
+@metaCodeDoubleObjectDateProperty(maxReserveItemDepartment, item, departmentStore, 'Максимально допустимый товарный запас в днях', DOUBLE);
+@metaCodeDoubleObjectDateProperty(minReserveItemDepartment, item, departmentStore, 'Минимально допустимый товарный запас в днях', DOUBLE);
 
-marginProductionItemDepartmentDate 'Наценка производства' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
+@metaCodeNameDoubleObjectDateProperty(banRevaluationItemDepartment, item, departmentStore, 'Запрет на переоценку', yesNo);
 
-discountItemDepartmentDate 'Скидка для товара' = DATA STRING[100] (item, departmentStore, DATE) IN baseGroup;
+@metaCodeNameDoubleObjectDateProperty(inActionItemDepartment, item, departmentStore, 'Товар акции', yesNo);
+
+@metaCodeDoubleObjectDateProperty(marginProductionItemDepartment, item, departmentStore, 'Наценка производства', DOUBLE);
+
+@metaCodeDoubleObjectDateProperty(discountItemDepartment, item, departmentStore, 'Скидка для товара', STRING[100]);
+
+
+FORM item 'Товар'
+OBJECTS i=item FIXED PANEL, a=itemAttribute, b=barcode, d=departmentStore
+PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, nameBrandItem, shortNameUnitOfMeasureItem, nameTypeItemItem, nameSortItem, shortNamePackItem, shortNameSizeItem, shortNameSpecialtyItem,
+ isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem, nameTasteItem,
+ hallmarkItem, articleItem, quantityPackItem, nameCoolingDegreeItem, minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
+ percentFatItem, percentAlcoholItem, lengthItem, widthItem, heightItem, grossWeightItem, lengthPackItem, widthPackItem, heightPackItem, grossWeightPackItem,
+ nameCountryItem, nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
+ bonusReturnItem, nameReturnItem, quantityDiscountItem, fixPriceItem, isFixPriceItem,
+ banMarkdownItem, oldPriceItem, nameTagItem, multiplierItem, controlExpiryItem, daysExpiryItem, isMarkItem, hintItem,
+ isCrudeItem, nameGroupProductItem,
+ nameWareItem, daysExpiryPackItem, hoursExpiryPackItem, standartItem, normOutItem, groupMenuItem,
+ isCutedItem, isLoafCutItem, storageTemperatureItem, passScalesItem, bonusItem, percentWholesaleMarkItem,
+ minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem
+PROPERTIES name(a), valueItemAttribute(i, a)
+PROPERTIES barcode(b)
+PROPERTIES inSkuBarcode(i, b)
+PROPERTIES (i, d) maxReserveItemDepartment, showFormmaxReserveItemDepartment,
+                  minReserveItemDepartment, showFormminReserveItemDepartment,
+                  namebanRevaluationItemDepartment, showFormNamebanRevaluationItemDepartment,
+                  nameinActionItemDepartment, showFormNameinActionItemDepartment,
+                  marginProductionItemDepartment, showFormmarginProductionItemDepartment,
+                  discountItemDepartment, showFormdiscountItemDepartment
+FILTERS NOT NULL inSkuBarcode(i, b)
+PROPERTIES(b) ADDOBJ, delete
+EDIT item OBJECT i
+EDIT barcode OBJECT b;
+
+DESIGN item FROM DEFAULT {
+    main {
+       ADD item.box BEFORE b.box {
+            tabbedPane = TRUE;
+            ADD i.descriptionGroup;
+            ADD i.retailGroup;
+            ADD i.equipmentGroup;
+            ADD i.sizeGroup {
+                fillVertical = 1.0;
+                fillHorizontal = 1.0;
+            }
+            ADD i.equipmentGroup;
+            ADD i.substanceGroup;
+            ADD i.manufactoryGroup{
+                fillVertical = 1.0;
+                fillHorizontal = 1.0;
+            }
+            ADD i.expiryGroup{
+                fillVertical = 1.0;
+                fillHorizontal = 1.0;
+            }
+            ADD a.box;
+            ADD d.box;
+       }
+    }
+}
+
+FORM items 'Товары'
+OBJECTS i=item
+OBJECTS b=barcode
+PROPERTIES(i) READONLY name, nameItemGroupSku, shortNameUnitOfMeasureItem, nameCountryItem, barcodeBarcodeSku
+PROPERTIES(i) ADDFORM, EDITFORM, delete
+PROPERTIES(b) READONLY barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
+PROPERTIES(b) ADDFORM, EDITFORM, delete
+PROPERTIES(i, b) inSkuBarcode;
+
+
+
+FORM itemInDepartment  'Товары в подразделениях'
+OBJECTS d=departmentStore, i=item
+PROPERTIES(d) READONLY name, nameStoreDepartmentStore
+PROPERTIES(d) ADDFORM, EDITFORM, delete
+PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
+PROPERTIES(i) ADDFORM, EDITFORM, delete
+PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem, maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacterDepartmentStoreItem,
+                 nameStatusCashDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem, fromDateDeliveryDepartmentStoreItem,
+                 banSaleDepartmentStoreItem, banMovementDepartmentStoreItem, reserveDepartmentStoreItem,
+                 maxReserveItemDepartment, showFormmaxReserveItemDepartment,
+                 minReserveItemDepartment, showFormminReserveItemDepartment,
+                 namebanRevaluationItemDepartment, showFormNamebanRevaluationItemDepartment,
+                 nameinActionItemDepartment, showFormNameinActionItemDepartment,
+                 marginProductionItemDepartment, showFormmarginProductionItemDepartment,
+                 discountItemDepartment, showFormdiscountItemDepartment;
 
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
 
@@ -965,6 +994,8 @@ dataActingLicenseLegalEntity 'Действующая лицензия' (legalEnt
 //equalsLegalEntityLicense 'Действующая' (legalEntity, license) = userLicenseLegalEntity(legalEntity) == license IN lawGroup;
 
 // ----------------------------------- Юридическое лицо-дата ------------------------------------------ //
+
+TABLE legalEntityDate (legalEntity, DATE);
 
 @metaCodeObjectDateProperty(addressLegalEntity, legalEntity, 'Юридический адрес', STRING[150]);
 @metaCodeObjectDateProperty(managerLegalEntity, legalEntity, 'Руководитель', STRING[100]);
@@ -1149,7 +1180,9 @@ PROPERTIES(d, s, i)  itemAssortmentSupplier;
 
 // ----------------------------------- Разрешать поставки ------------------------------------------- //
 
-@metaCodeDoubleObjectDateProperty(timeTable, supplier ,departmentStore, 'Поставка', BOOLEAN);
+TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
+
+@metaCodeDoubleObjectDateProperty(timeTable, supplier, departmentStore, 'Поставка', BOOLEAN);
 
 FORM timeTableDate 'График поставок'
 OBJECTS t=DATE FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier
@@ -1263,17 +1296,6 @@ PROPERTIES(n) READONLY name
 PROPERTIES(n) ADDFORM, EDITFORM
 PROPERTIES(s) READONLY name
 FILTERS NOT NULL inStoreTypeTradingNetwork(s, n);
-
-FORM itemInDepartment  'Товары в подразделениях'
-OBJECTS d=departmentStore, i=item
-PROPERTIES(d) READONLY name, nameStoreDepartmentStore
-PROPERTIES(d) ADDFORM, EDITFORM, delete
-PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
-PROPERTIES(i) ADDFORM, EDITFORM, delete
-PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem, maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacterDepartmentStoreItem,
-                 nameStatusCashDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem, fromDateDeliveryDepartmentStoreItem,
-                 banSaleDepartmentStoreItem, banMovementDepartmentStoreItem, reserveDepartmentStoreItem;
-
 
 //---------------------------- Модели оборудования ----------------------------------------//
 CLASS ABSTRACT model 'Модель' : named;
@@ -1952,6 +1974,18 @@ NAVIGATOR {
             ADD size;
             ADD specialty;
             ADD coolingDegree;
+            ADD addmaxReserveItemDepartment;
+            ADD maxReserveItemDepartment;
+            ADD addminReserveItemDepartment;
+            ADD minReserveItemDepartment;
+            ADD addNamebanRevaluationItemDepartment;
+            ADD namebanRevaluationItemDepartment;
+            ADD addNameinActionItemDepartment;
+            ADD nameinActionItemDepartment;
+            ADD addmarginProductionItemDepartment;
+            ADD marginProductionItemDepartment;
+            ADD adddiscountItemDepartment;
+            ADD discountItemDepartment;
             ADD cash;
             ADD scales;
             ADD check;
