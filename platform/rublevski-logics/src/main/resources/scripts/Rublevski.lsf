@@ -1917,7 +1917,7 @@ NAVIGATOR {
             ADD suppliers;
             ADD banks;
             ADD assortmentSupplier;
-            ADD orderSupplier;
+            ADD orderSuppliers;
             ADD timeTable;
             ADD genTimeTables;
             ADD timeTableDate;
@@ -2011,7 +2011,7 @@ NAVIGATOR {
             ADD genTimeTable;
             ADD addNamediscount;
             ADD addtimeTable;
-            ADD orderSuppliers;
+            ADD orderSupplier;
         }
     }
 }
