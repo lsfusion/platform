@@ -298,6 +298,7 @@ shortNamePackItem 'Упаковка' = shortName(packItem(item)) IN descriptionG
 specialtyItem = DATA specialty(item) IN idGroup;
 shortNameSpecialtyItem 'Особенности' = shortName(specialtyItem(item)) IN descriptionGroup;
 
+sizeItem = DATA size(item) IN idGroup;
 shortNameSizeItem 'Размер/калибр' = shortName(sizeItem(item)) IN descriptionGroup;
 
 colorItem = DATA color (item) IN idGroup;
