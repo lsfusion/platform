@@ -574,6 +574,7 @@ FORM genTimeTable 'Генерация графика'
 OBJECTS g=genTimeTable FIXED PANEL, m=captionMonth, d=captionDOW
 PROPERTIES(g) nameSupplierGenTimeTable, nameDepartmentStoreGenTimeTable, startDateGenTimeTable, endDateGenTimeTable, inAllMonthGenTable
 PROPERTIES(m) READONLY name
+PROPERTIES(d) READONLY name
 PROPERTIES(g, m)inMonthGenTimeTable
 PROPERTIES(g, d) inDayGenTimeTable
 EDIT genTimeTable OBJECT g;
@@ -1409,7 +1410,7 @@ nameDepartmentStoreGroupMachinery 'Подразделение' (groupMachinery) 
 
 //---------------------------- типы оборудования  ----------------------------------------//
 CLASS ABSTRACT machinery 'Оборудование';
-CLASS cash 'Кассы' : machinery;
+CLASS cash 'Касса' : machinery;
 CLASS scales 'Весы' : machinery;
 CLASS check 'Прайс чекер' : machinery;
 
@@ -1467,7 +1468,7 @@ sidScales 'ID весов для Set Retail' = DATA INTEGER (scales) IN baseGroup
 
 FORM machineries 'Оборудование'
 OBJECTS m=machinery
-PROPERTIES(m) READONLY descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery
+PROPERTIES(m) READONLY objectClassName, descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery
 PROPERTIES(m) ADDFORM, EDITFORM, delete;
 
 FORM cash 'Касса'
@@ -1959,7 +1960,6 @@ NAVIGATOR {
             ADD companies;
             ADD qualifier;
             ADD stores;
-            ADD namediscount;
         }
         NEW employeeRelations 'Сотрудники' {
             ADD employees;
@@ -2067,6 +2067,7 @@ NAVIGATOR {
             ADD orderSupplier;
             ADD timeTable;
             ADD cashReport;
+            ADD namediscount;
         }
     }
 }
