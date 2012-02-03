@@ -701,6 +701,14 @@ public class BaseUtils {
         return result;
     }
 
+    public static <B> List<B> mergeLists(List<B>... lists) {
+        List<B> result = new ArrayList<B>();
+        for (List<B> list : lists) {
+            result.addAll(list);
+        }
+        return result;
+    }
+
     public static <V, MV, EV> Map<Object, EV> mergeMaps(Map<V, EV> map, Map<MV, EV> toMerge, Map<MV, Object> mergedMap) {
         Map<Object, EV> merged = new HashMap<Object, EV>(map);
         Map<EV, Object> reversed = BaseUtils.reverse(merged);

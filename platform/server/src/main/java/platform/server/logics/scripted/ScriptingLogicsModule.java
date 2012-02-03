@@ -62,6 +62,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM }
     public enum InsertPosition {IN, BEFORE, AFTER}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
+    public enum GroupingType {SUM, MAX, MIN, CONCAT, UNIQUE}
 
     private State currentState = null;
 
@@ -530,6 +531,25 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ArrayList<Integer>(s);
     }
 
+    private List<Object> getParamsPlainList(List<LPWithParams>... mappedPropLists) throws ScriptingErrorLog.SemanticErrorException {
+        List<LP<?>> props = new ArrayList<LP<?>>();
+        List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
+        for (List<LPWithParams> mappedPropList : mappedPropLists) {
+
+        }
+        return getParamsPlainList(props, usedParams);
+    }
+
+    private List<Object> getParamsPlainList(List<LPWithParams> mappedProps) throws ScriptingErrorLog.SemanticErrorException {
+        List<LP<?>> props = new ArrayList<LP<?>>();
+        List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
+        for (LPWithParams mappedProp : mappedProps) {
+            props.add(mappedProp.property);
+            usedParams.add(mappedProp.usedParams);
+        }
+        return getParamsPlainList(props, usedParams);
+    }
+
     private List<Object> getParamsPlainList(List<LP<?>> paramProps, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
         List<Integer> allUsedParams = mergeLists(usedParams);
         List<Object> resultParams = new ArrayList<Object>();
@@ -552,17 +572,30 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultParams;
     }
 
-    public LP<?> addScriptedGProp(boolean isSGProp, boolean isMax, List<LP<?>> paramProps, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedGProp(" + isSGProp + ", " + paramProps + ", " + usedParams + ");");
+    public LP<?> addScriptedGProp(GroupingType type,
+                                  List<LP<?>> mainProps, List<List<Integer>> mainUsedParams,
+                                  List<LP<?>> groupProps, List<List<Integer>> groupUsedParams,
+                                  List<LP<?>> orderProps, List<List<Integer>> orderUsedParams, boolean ascending,
+                                  LP<?> whereProp, List<Integer> whereUsedParams) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedGProp(" + type + ", " + mainProps + ", " + mainUsedParams + ", " + groupProps + ", " +
+                groupUsedParams + ", " + orderProps + ", " + orderUsedParams + ", " + ascending + ", " + whereProp + ", " + whereUsedParams + ");");
 
+        checkGPropOrderConsistence(type, orderProps.size());
+        checkGPropAggregateConsistence(type, mainProps.size());
+        checkGPropUniqueConstraints(type, mainProps, mainUsedParams, groupProps, groupUsedParams);
+
+        List<LP<?>> paramProps = BaseUtils.mergeList(mainProps, groupProps);
+        List<List<Integer>> usedParams = BaseUtils.mergeList(mainUsedParams, groupUsedParams);
         List<Object> resultParams = getParamsPlainList(paramProps, usedParams);
+
         int groupPropParamCount = mergeLists(usedParams).size();
-        LP<?> resultProp;
-        if (isSGProp) {
+        LP<?> resultProp = null;
+        if (type == GroupingType.SUM) {
             resultProp = addSGProp(null, genSID(), false, false, "", groupPropParamCount, resultParams.toArray());
-        } else {
-            resultProp = addMGProp(null, genSID(), false, "", !isMax, groupPropParamCount, resultParams.toArray());
-        }
+        } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
+            resultProp = addMGProp(null, genSID(), false, "", type == GroupingType.MIN, groupPropParamCount, resultParams.toArray());
+        } else
+            assert false;
         return resultProp;
     }
 
@@ -1160,6 +1193,27 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkMetaCodeParamCount(MetaCodeFragment code, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
         if (code.parameters.size() != paramCnt) {
             errLog.emitParamCountError(parser, code.parameters.size(), paramCnt);
+        }
+    }
+
+    private void checkGPropOrderConsistence(GroupingType type, int orderParamsCnt) throws ScriptingErrorLog.SemanticErrorException {
+        if (type != GroupingType.CONCAT && orderParamsCnt > 0) {
+            errLog.emitRedundantOrderInGPropError(parser, type);
+        }
+    }
+
+    private void checkGPropAggregateConsistence(GroupingType type, int aggrParamsCnt) throws ScriptingErrorLog.SemanticErrorException {
+        if (type != GroupingType.CONCAT && aggrParamsCnt > 1) {
+            errLog.emitRedundantAggrInGPropError(parser, type);
+        }
+    }
+
+    private void checkGPropUniqueConstraints(GroupingType type, List<LP<?>> mainProps, List<List<Integer>> mainUsedParams, List<LP<?>> groupProps, List<List<Integer>> groupUsedParams) throws ScriptingErrorLog.SemanticErrorException {
+        if (type == GroupingType.UNIQUE) {
+            if (mainProps.get(0) != null) {
+                errLog.emitNonObjectAggrInGPropError(parser);
+            }
+            //todo [dale]: добавить ошибку для группировочных свойств
         }
     }
 

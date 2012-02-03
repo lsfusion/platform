@@ -281,6 +281,18 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "names of parameters should be distinct");
     }
 
+    public void emitRedundantOrderInGPropError(LsfLogicsParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
+        emitSimpleError(parser, format("ORDER properties are forbidden with '%s' grouping type", groupType));
+    }
+
+    public void emitRedundantAggrInGPropError(LsfLogicsParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
+        emitSimpleError(parser, format("multiple aggregate properties are forbidden with '%s' grouping type", groupType));
+    }
+
+    public void emitNonObjectAggrInGPropError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "GROUP UNIQUE should have simple parameter as aggregate function");
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

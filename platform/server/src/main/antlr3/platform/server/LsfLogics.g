@@ -20,6 +20,7 @@ grammar LsfLogics;
 	import platform.server.logics.scripted.MappedProperty;
 	import platform.server.logics.scripted.ScriptingLogicsModule.WindowType;
 	import platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition;
+	import platform.server.logics.scripted.ScriptingLogicsModule.GroupingType;
 
 	import java.awt.*;
 	import java.util.ArrayList;
@@ -760,25 +761,33 @@ joinPropertyDefinition[List<String> context, boolean dynamic] returns [LP proper
 
 groupPropertyDefinition returns [LP property]
 @init {
-	List<LP<?>> paramProps = new ArrayList<LP<?>>();
-	List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
-	boolean isSGProp = false;
-	boolean isMax = false;
+	List<LP<?>> orderProps = new ArrayList<LP<?>>();
+	List<List<Integer>> orderUsedParams = new ArrayList<List<Integer>>();
 	List<String> groupContext = new ArrayList<String>();
+	boolean ascending = true;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedGProp(isSGProp, isMax, paramProps, usedParams);
+		$property = self.addScriptedGProp($type.type, $groupList.props, $groupList.usedParams, $exprList.props, $exprList.usedParams, orderProps, orderUsedParams, ascending, $whereExpr.prop, $whereExpr.usedParams);
 	}
 }
-	:	'GROUP' (('SUM') { isSGProp = true; } | ('MAX') { isMax = true; } | 'MIN')
-		prop=propertyExpression[groupContext, true] { paramProps.add($prop.property); usedParams.add($prop.usedParams); }
-		'BY'
+	:	'GROUP' 
+		type=groupingType 
+		groupList=nonEmptyPropertyExpressionList[groupContext, true]
+		'BY' 
 		exprList=nonEmptyPropertyExpressionList[groupContext, true] 
-		{ paramProps.addAll($exprList.props); usedParams.addAll($exprList.usedParams); }
+		('ORDER' ('DESC' { ascending = false; } )?				
+		orderList=nonEmptyPropertyExpressionList[groupContext, true] { orderProps.addAll($orderList.props); orderUsedParams.addAll($orderList.usedParams); })?
+		('WHERE' whereExpr=propertyExpression[groupContext, true])?		
 	;
 
-
+groupingType returns [GroupingType type]
+	:	'SUM' 	{ $type = GroupingType.SUM; }
+	|	'MAX' 	{ $type = GroupingType.MAX; }
+	|	'MIN' 	{ $type = GroupingType.MIN; }
+	|	'CONCAT' { $type = GroupingType.CONCAT; }
+	|	'AGGR' 	{ $type = GroupingType.AGGR; }
+	;
 
 partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
 @init {
