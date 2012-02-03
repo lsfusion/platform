@@ -138,21 +138,21 @@ META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type)
 
 END
 
+// ----------------------------------- Отображение атрибутов товаров по свойству товарной группы ------------------------------------------ //
+META metaCodeShowItemAttribute (attribute, caption)
+
+show##attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN baseGroup;
+toShow##attribute caption (item) = show##attribute##ItemGroup(itemGroupSku(item));
+
+END
+
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 CLASS itemGroup 'Товарная группа' : named;
 
 parentItemGroup = DATA itemGroup (itemGroup);
 nameParentItemGroup 'Родительская группа' = name(parentItemGroup(itemGroup));
 
-FORM itemGroup 'Товарная группа'
-OBJECTS g=itemGroup FIXED PANEL
-PROPERTIES(g) name, nameParentItemGroup
-EDIT itemGroup OBJECT g;
-
-FORM itemGroups 'Товарные группы'
-OBJECTS g=itemGroup
-PROPERTIES(g) READONLY name, nameParentItemGroup
-PROPERTIES(g) ADDFORM, EDITFORM, delete;
+// формы за формами товара
 
 // ----------------------------------- Единицы измерения ------------------------------------------ //
 CLASS unitOfMeasure 'Единица измерения' : doubleNamed;
@@ -282,45 +282,59 @@ nameItemGroupSku 'Группа товара' = name(itemGroupSku(sku)) IN baseGr
 //descriptionGroup
 brandItem = DATA brand(item);
 nameBrandItem 'Бренд' (item) = name(brandItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(Brand, 'Показывать бренд');
 
 typeItemItem = DATA typeItem(item) IN idGroup;
 nameTypeItemItem 'Вид' = name(typeItemItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(Type, 'Показывать тип');
 
 unitOfMeasureItem = DATA unitOfMeasure (item) IN idGroup;
 shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortName(unitOfMeasureItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(UnitOfMeasure, 'Показывать ед.измерения');
 
 sortItem = DATA sort(item) IN idGroup;
 nameSortItem 'Сорт/категория товара' = name(sortItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(Sort, 'Показывать сорт');
 
 packItem = DATA pack(item) IN idGroup;
 shortNamePackItem 'Упаковка' = shortName(packItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(Pack, 'Показывать упаковку');
 
 specialtyItem = DATA specialty(item) IN idGroup;
 shortNameSpecialtyItem 'Особенности' = shortName(specialtyItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(Specialty, 'Показывать особенности');
 
 sizeItem = DATA size(item) IN idGroup;
 shortNameSizeItem 'Размер/калибр' = shortName(sizeItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(Size, 'Показывать размер');
 
 colorItem = DATA color (item) IN idGroup;
 nameColorItem 'Цвет' = name(colorItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(Color, 'Показывать цвет');
+
 tasteItem = DATA taste (item) IN idGroup;
 nameTasteItem 'Вкус' = name(tasteItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(Taste, 'Показывать вкус');
 
 hallmarkItem 'Отличительный признак (особенности)' = DATA STRING[100] (item) IN descriptionGroup;
+@metaCodeShowItemAttribute(Hallmark, 'Показывать отличительный признак');
 
 articleItem 'Артикул поставщика/производителя' = DATA STRING[100] (item) IN descriptionGroup;
 
 coolingDegreeItem 'Степень охлаждения (ИД)' = DATA coolingDegree (item) IN idGroup;
 nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegreeItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(CoolingDegree, 'Показывать степень охлаждения');
 
 countryItem = DATA country (item) IN idGroup;
 nameCountryItem 'Страна' = name(countryItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(Country, 'Показывать страну');
 
 isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN descriptionGroup;
 hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN descriptionGroup;
 
 wareItem = DATA ware (item) IN idGroup;
 nameWareItem 'Посуда' = name(wareItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(Ware, 'Показывать посуду');
 
 //equipmentGroup
 isWeightItem 'Весовой товар' = DATA BOOLEAN (itemComponent) IN equipmentGroup;
@@ -750,15 +764,16 @@ TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
 FORM item 'Товар'
 OBJECTS i=item FIXED PANEL, a=itemAttribute, b=barcode, d=departmentStore
-PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, nameBrandItem, shortNameUnitOfMeasureItem, nameTypeItemItem, nameSortItem, shortNamePackItem, shortNameSizeItem, shortNameSpecialtyItem,
- isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem, nameTasteItem,
- hallmarkItem, articleItem, quantityPackItem, nameCoolingDegreeItem, minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
+PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
+ nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
+ isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
+ hallmarkItem SHOWIF toShowHallmark(i), articleItem, quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
  percentFatItem, percentAlcoholItem, lengthItem, widthItem, heightItem, grossWeightItem, lengthPackItem, widthPackItem, heightPackItem, grossWeightPackItem,
- nameCountryItem, nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
+ nameCountryItem SHOWIF toShowCountry(i), nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
  bonusReturnItem, nameReturnItem, quantityDiscountItem, fixPriceItem, isFixPriceItem,
  banMarkdownItem, oldPriceItem, nameTagItem, multiplierItem, controlExpiryItem, daysExpiryItem, isMarkItem, hintItem,
  isCrudeItem, nameGroupProductItem,
- nameWareItem, daysExpiryPackItem, hoursExpiryPackItem, standartItem, normOutItem, groupMenuItem,
+ nameWareItem SHOWIF toShowWare(i), daysExpiryPackItem, hoursExpiryPackItem, standartItem, normOutItem, groupMenuItem,
  isCutedItem, isLoafCutItem, storageTemperatureItem, passScalesItem, bonusItem, percentWholesaleMarkItem,
  minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem
 PROPERTIES name(a), valueItemAttribute(i, a)
@@ -828,6 +843,16 @@ PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentSto
                  nameinActionItemDepartment, showFormNameinActionItemDepartment,
                  marginProductionItemDepartment, showFormmarginProductionItemDepartment,
                  discountItemDepartment, showFormdiscountItemDepartment;
+
+FORM itemGroup 'Товарная группа'
+OBJECTS g=itemGroup FIXED PANEL
+PROPERTIES(g) name, nameParentItemGroup
+EDIT itemGroup OBJECT g;
+
+FORM itemGroups 'Товарные группы'
+OBJECTS g=itemGroup
+PROPERTIES(g) READONLY name, nameParentItemGroup
+PROPERTIES(g) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
 
