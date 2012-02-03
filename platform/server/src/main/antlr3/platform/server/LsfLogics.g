@@ -768,17 +768,17 @@ groupPropertyDefinition returns [LP property]
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedGProp($type.type, $groupList.props, $groupList.usedParams, $exprList.props, $exprList.usedParams, orderProps, orderUsedParams, ascending, $whereExpr.prop, $whereExpr.usedParams);
+		$property = self.addScriptedGProp($type.type, $groupList.props, $groupList.usedParams, $exprList.props, $exprList.usedParams, orderProps, orderUsedParams, ascending, $whereExpr.property, $whereExpr.usedParams);
 	}
 }
-	:	'GROUP' 
-		type=groupingType 
+	:	'GROUP'
+		type=groupingType
 		groupList=nonEmptyPropertyExpressionList[groupContext, true]
-		'BY' 
-		exprList=nonEmptyPropertyExpressionList[groupContext, true] 
-		('ORDER' ('DESC' { ascending = false; } )?				
+		'BY'
+		exprList=nonEmptyPropertyExpressionList[groupContext, true]
+		('ORDER' ('DESC' { ascending = false; } )?
 		orderList=nonEmptyPropertyExpressionList[groupContext, true] { orderProps.addAll($orderList.props); orderUsedParams.addAll($orderList.usedParams); })?
-		('WHERE' whereExpr=propertyExpression[groupContext, true])?		
+		('WHERE' whereExpr=propertyExpression[groupContext, true])?
 	;
 
 groupingType returns [GroupingType type]
@@ -786,7 +786,7 @@ groupingType returns [GroupingType type]
 	|	'MAX' 	{ $type = GroupingType.MAX; }
 	|	'MIN' 	{ $type = GroupingType.MIN; }
 	|	'CONCAT' { $type = GroupingType.CONCAT; }
-	|	'AGGR' 	{ $type = GroupingType.AGGR; }
+	|	'UNIQUE' 	{ $type = GroupingType.UNIQUE; }
 	;
 
 partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
