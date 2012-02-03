@@ -529,7 +529,7 @@ barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku) IN 
 
 CONSTRAINT CHECKED sku IS sku AND NOT inSkuBarcode(sku, barcodeSku(sku)) MSG 'Товар основного штрих-кода должен совпадать с товаром';
 
-barcodeBarcodeSku  'Действующий штрих-код' = barcode(barcodeSku(sku)) IN baseGroup;
+barcodeBarcodeSku  'Основной штрих-код' = barcode(barcodeSku(sku)) IN baseGroup;
 
 FORM barcode 'Штрих-код'
 OBJECTS b=barcode
@@ -763,7 +763,7 @@ TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
 
 FORM item 'Товар'
-OBJECTS i=item FIXED PANEL, a=itemAttribute, b=barcode, d=departmentStore
+OBJECTS i=item FIXED PANEL,b=barcode, d=departmentStore
 PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
@@ -776,9 +776,8 @@ PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, nameBrandItem SHOWIF to
  nameWareItem SHOWIF toShowWare(i), daysExpiryPackItem, hoursExpiryPackItem, standartItem, normOutItem, groupMenuItem,
  isCutedItem, isLoafCutItem, storageTemperatureItem, passScalesItem, bonusItem, percentWholesaleMarkItem,
  minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem
-PROPERTIES name(a), valueItemAttribute(i, a)
-PROPERTIES barcode(b)
-PROPERTIES inSkuBarcode(i, b)
+PROPERTIES (b) barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
+//PROPERTIES inSkuBarcode(i, b)
 PROPERTIES (i, d) maxReserveItemDepartment, showFormmaxReserveItemDepartment,
                   minReserveItemDepartment, showFormminReserveItemDepartment,
                   namebanRevaluationItemDepartment, showFormNamebanRevaluationItemDepartment,
@@ -811,7 +810,6 @@ DESIGN item FROM DEFAULT {
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
             }
-            ADD a.box;
             ADD d.box;
        }
     }
@@ -823,10 +821,7 @@ OBJECTS b=barcode
 PROPERTIES(i) READONLY name, nameItemGroupSku, shortNameUnitOfMeasureItem, nameCountryItem, barcodeBarcodeSku
 PROPERTIES(i) ADDFORM, EDITFORM, delete
 PROPERTIES(b) READONLY barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
-PROPERTIES(b) ADDFORM, EDITFORM, delete
-PROPERTIES(i, b) inSkuBarcode;
-
-
+FILTERS NOT NULL inSkuBarcode (i, b);
 
 FORM itemInDepartment  'Товары в подразделениях'
 OBJECTS d=departmentStore, i=item
