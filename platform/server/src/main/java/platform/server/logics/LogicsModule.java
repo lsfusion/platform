@@ -549,7 +549,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addFlowAProp(AbstractGroup group, String name, String caption, LP[] actions, int[][] mapActions, int resultInterfacesCount) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new FlowActionProperty(name, caption, baseClass, actions, mapActions, resultInterfacesCount)));
+        return addProperty(group, new LP<ClassPropertyInterface>(new FlowActionProperty(name, caption, baseLM.baseClass, actions, mapActions, resultInterfacesCount)));
     }
 
     protected LP addEAProp(ValueClass... params) {
