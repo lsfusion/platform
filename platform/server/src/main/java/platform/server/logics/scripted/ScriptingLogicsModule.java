@@ -32,7 +32,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static platform.base.BaseUtils.nvl;
+import static platform.base.BaseUtils.*;
 import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
 
 /**
@@ -529,6 +529,60 @@ public class ScriptingLogicsModule extends LogicsModule {
             s.addAll(list);
         }
         return new ArrayList<Integer>(s);
+    }
+
+
+    public LP addScriptedFlowAProp(List<String> innerContext, List<LP> properties, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
+        int mapActions[][] = new int[usedParams.size()][];
+        for (int i = 0; i < usedParams.size(); i++) {
+            mapActions[i] = toPrimitive(usedParams.get(i));
+        }
+
+        return addFlowAProp(null, genSID(), "", properties.toArray(new LP[0]), mapActions, innerContext.size());
+    }
+
+    public LPWithParams addScriptedSetPropertyAProp(LP toProperty, List<Integer> toParams, LP fromProperty, List<Integer> fromParams, boolean isDefault, List<String> oldContext) throws ScriptingErrorLog.SemanticErrorException {
+        if (toProperty == null) {
+            if (fromParams != null || isDefault) {
+                errLog.emitLeftSideMustBeAProperty(parser);
+            } else {
+                errLog.emitMustBeAnActionCall(parser);
+            }
+        }
+
+        if (fromProperty == null && fromParams == null) {
+            //значит либо вызов action, либо запись дефолта.. в обоих случаях используем дефолт свойство для записи
+            fromParams = new ArrayList<Integer>();
+            fromProperty = baseLM.vdefault((ConcreteValueClass) toProperty.property.getCommonClasses().value);
+        }
+
+        List<Integer> allParams = mergeLists(Arrays.asList(toParams, fromParams));
+
+        //все использованные параметры, которые были в старом контексте, идут на вход результирующего свойства
+        ArrayList<Integer> mapThisInterfacesList = new ArrayList<Integer>();
+        for (int paramIndex : allParams) {
+            if (paramIndex >= oldContext.size()) {
+                break;
+            }
+            mapThisInterfacesList.add(paramIndex);
+        }
+        int mapThisInterfaces[] = toPrimitive(mapThisInterfacesList);
+
+        int mapToInterfaces[] = relativeIndexes(allParams, toParams);
+
+        LP result;
+        if (fromProperty != null) {
+            int mapFromInterfaces[] = relativeIndexes(allParams, fromParams);
+            result = addSetPropertyAProp(null, genSID(), "", toProperty, mapToInterfaces, fromProperty, mapFromInterfaces, mapThisInterfaces);
+        } else {
+            // значит для записи используется параметр
+            assert fromParams != null;
+
+            int mapResultInterace = single(fromParams);
+            result = addSetPropertyAProp(null, genSID(), "", toProperty, mapToInterfaces, mapResultInterace, mapThisInterfaces);
+        }
+
+        return new LPWithParams(result, mapThisInterfacesList);
     }
 
     private List<Object> getParamsPlainList(List<LPWithParams>... mappedPropLists) throws ScriptingErrorLog.SemanticErrorException {

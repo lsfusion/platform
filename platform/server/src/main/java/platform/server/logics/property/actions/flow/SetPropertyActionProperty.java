@@ -171,7 +171,8 @@ public class SetPropertyActionProperty<P extends PropertyInterface, T extends Pr
         for (int usedFromInterface : rightUsedInterfaces) {
             Interface fromInterface = allInterfaces.get(usedFromInterface);
             if (!mapThisToAll.containsValue(fromInterface) && !mapWriteToAll.containsValue(fromInterface)) {
-                throw new IllegalArgumentException("right side of assignment ( X <- Y ) should map all interfaces to either left side, or result action property");
+                throw new IllegalArgumentException("right side of set property action ( X <- Y ) " +
+                                                   "should map all interfaces to either left side, or result action property");
             }
         }
 

@@ -16,6 +16,10 @@ import java.util.Map;
 
 public class PropertyUtils {
     public static ValueClass[] getValueClasses(boolean mapReturns, LP[] dataProperties, int[][] mapInterfaces) {
+        return getValueClasses(mapReturns, dataProperties, mapInterfaces, true);
+    }
+
+    public static ValueClass[] getValueClasses(boolean mapReturns, LP[] dataProperties, int[][] mapInterfaces, boolean allowMissingInterfaces) {
         Map<Integer, ValueClass> mapClasses = new HashMap<Integer, ValueClass>();
         for (int i = 0; i < dataProperties.length; ++i) {
             LP dataProperty = dataProperties[i];
@@ -54,12 +58,10 @@ public class PropertyUtils {
             }
         }
 
-
         ValueClass classes[] = new ValueClass[mapClasses.size()];
         for (int i = 0; i < mapClasses.size(); ++i) {
-            assert mapClasses.containsKey(i);
             classes[i] = mapClasses.get(i);
-            assert classes[i] != null;
+            assert allowMissingInterfaces || classes[i] != null;
         }
 
         return classes;

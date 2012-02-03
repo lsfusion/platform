@@ -1,27 +1,32 @@
 package platform.server.logics.property.actions.flow;
 
+import platform.server.classes.BaseClass;
+import platform.server.classes.ValueClass;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
+import platform.server.logics.PropertyUtils;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.*;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static platform.base.BaseUtils.join;
 import static platform.base.BaseUtils.nullJoin;
-import static platform.server.logics.PropertyUtils.getValueClasses;
 
 public class FlowActionProperty extends ActionProperty {
     private final LP[] actions;
 
     private final Map<PropertyInterface, ClassPropertyInterface>[] mapActions;
-    private final PropertyMapImplement<PropertyInterface, ClassPropertyInterface>[] mapActionImplements = null;
 
-    public FlowActionProperty(String sID, String caption, LP[] actions, int[][] imapActions) {
-        super(sID, caption, getValueClasses(false, actions, imapActions));
+    public FlowActionProperty(String sID, String caption, BaseClass baseClass, LP[] actions, int[][] imapActions, int resultInterfacesCount) {
+        super(sID, caption, getValueClasses(baseClass, actions, imapActions, resultInterfacesCount));
 
         assert actions.length == imapActions.length;
 
@@ -66,5 +71,22 @@ public class FlowActionProperty extends ActionProperty {
                             mapObjects
                     ));
         }
+    }
+
+    private static ValueClass[] getValueClasses(BaseClass baseClass, LP[] actions, int[][] imapActions, int resultInterfacesCount) {
+        ValueClass[] valueClasses = PropertyUtils.getValueClasses(false, actions, imapActions, true);
+
+        assert resultInterfacesCount >= valueClasses.length;
+
+        if (resultInterfacesCount > valueClasses.length) {
+            valueClasses = Arrays.copyOf(valueClasses, resultInterfacesCount);
+        }
+
+        for (int i = 0; i < valueClasses.length; i++) {
+            if (valueClasses[i] == null) {
+                valueClasses[i] = baseClass;
+            }
+        }
+        return valueClasses;
     }
 }

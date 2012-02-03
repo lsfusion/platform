@@ -23,6 +23,8 @@ import platform.server.form.window.AbstractWindow;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
+import platform.server.logics.property.actions.flow.FlowActionProperty;
+import platform.server.logics.property.actions.flow.SetPropertyActionProperty;
 import platform.server.logics.property.derived.AggregateGroupProperty;
 import platform.server.logics.property.derived.ConcatenateProperty;
 import platform.server.logics.property.derived.CycleGroupProperty;
@@ -530,6 +532,24 @@ public abstract class LogicsModule {
 
     protected LP addStopActionProp(String caption, String header) {
         return addAProp(new StopActionProperty(genSID(), caption, header));
+    }
+
+    protected LP addSetPropertyAProp(AbstractGroup group, String name, String caption, LP toProperty, int[] mapToInterfaces, int mapResultInterface, int[] mapThisInterfaces) {
+        return addProperty(group, new LP<ClassPropertyInterface>(
+                SetPropertyActionProperty.create(name, caption, toProperty, mapToInterfaces, mapResultInterface, mapThisInterfaces)));
+    }
+
+    protected LP addSetPropertyAProp(AbstractGroup group, String name, String caption, LP toProperty, int[] mapToInterfaces, LP fromProperty, int[] mapFromInterfaces, int[] mapThisInterfaces) {
+        return addProperty(group, new LP<ClassPropertyInterface>(
+                SetPropertyActionProperty.create(name, caption, toProperty, mapToInterfaces, fromProperty, mapFromInterfaces, mapThisInterfaces)));
+    }
+
+    protected LP addFlowAProp(AbstractGroup group, String name, String caption, LP[] actions, int[][] mapActions) {
+        return addFlowAProp(group, name, caption, actions, mapActions, -1);
+    }
+
+    protected LP addFlowAProp(AbstractGroup group, String name, String caption, LP[] actions, int[][] mapActions, int resultInterfacesCount) {
+        return addProperty(group, new LP<ClassPropertyInterface>(new FlowActionProperty(name, caption, baseClass, actions, mapActions, resultInterfacesCount)));
     }
 
     protected LP addEAProp(ValueClass... params) {

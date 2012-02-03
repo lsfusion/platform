@@ -241,6 +241,14 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "constrained property is always NULL");
     }
 
+    public void emitLeftSideMustBeAProperty(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "left side of set property action must be a property ");
+    }
+
+    public void emitMustBeAnActionCall(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "can't use parameter here, must be an action call");
+    }
+
     public void emitPropertyAlwaysNullError(LsfLogicsParser parser, String propertyName) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText("property '" + propertyName +  "' is always NULL\n", parser, e);

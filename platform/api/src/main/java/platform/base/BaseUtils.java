@@ -1476,6 +1476,16 @@ public class BaseUtils {
         return ins;
     }
 
+    public static <T> int[] relativeIndexes(List<T> all, List<T> list) {
+        int result[] = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            int index = all.indexOf(list.get(i));
+            assert index >= 0;
+            result[i] = index;
+        }
+        return result;
+    }
+
     public static <K> List<K> copyTreeChildren(List children) {
         List<K> result = new ArrayList<K>();
         if (children != null)

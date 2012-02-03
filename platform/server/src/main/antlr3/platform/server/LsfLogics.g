@@ -651,9 +651,10 @@ relationalPE[List<String> context, boolean dynamic] returns [LP property, List<I
 }
 	:	lhs=additivePE[context, dynamic] { leftProp = $lhs.property; lUsedParams = $lhs.usedParams; }
 		(
-			(operand=REL_OPERAND { op = $operand.text; }
-			rhs=additivePE[context, dynamic] { rightProp = $rhs.property; rUsedParams = $rhs.usedParams; }) 
-		|	def=typePropertyDefinition { mainProp = $def.property; }
+			(	operand=REL_OPERAND { op = $operand.text; }
+				rhs=additivePE[context, dynamic] { rightProp = $rhs.property; rUsedParams = $rhs.usedParams; }
+			) 
+			|	def=typePropertyDefinition { mainProp = $def.property; }
 		)?
 	;
 
@@ -715,11 +716,13 @@ unaryMinusPE[List<String> context, boolean dynamic] returns [LP property, List<I
 	
 
 expressionPrimitive[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
-	:	(paramName=parameter {
-			if (inPropParseState())
+	:	paramName=parameter
+		{
+			if (inPropParseState()) {
 				$usedParams = Collections.singletonList(self.getParamIndex($paramName.text, $context, $dynamic));
-		 })
-	|	(expr=contextDependentPD[context, dynamic] { $property = $expr.property; $usedParams = $expr.usedParams; })
+			}
+		}
+	|	expr=contextDependentPD[context, dynamic] { $property = $expr.property; $usedParams = $expr.usedParams; }
 	;
 
 propertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
@@ -734,12 +737,13 @@ contextDependentPD[List<String> context, boolean dynamic] returns [LP property, 
 	|	constDef=literal { $property = $constDef.property; $usedParams = new ArrayList<Integer>(); }
 	;
 
-contextIndependentPD[boolean innerPD] returns [LP property, boolean isData]
+contextIndependentPD[boolean innerPD] returns [LP property, boolean isData = false]
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $isData = true; } 
-	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $isData = false; }
-	|	groupDef=groupPropertyDefinition { $property = $groupDef.property; $isData = false; } 
-	|	typeDef=typePropertyDefinition { $property = $typeDef.property; $isData = false; }
-	|	formDef=formActionPropertyDefinition { $property = $formDef.property; $isData = false; }	
+	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; }
+	|	groupDef=groupPropertyDefinition { $property = $groupDef.property; } 
+	|	typeDef=typePropertyDefinition { $property = $typeDef.property; }
+	|	formDef=formActionPropertyDefinition { $property = $formDef.property; }	
+	|	flowDef=flowActionPropertyDefinition { $property = $flowDef.property; }
 	;
 
 joinPropertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
@@ -899,26 +903,30 @@ propertyObject returns [LP property, String propName, List<String> innerContext]
 @init {
 	List<String> newContext = new ArrayList<String>(); 
 }
-	:	name=compoundID	{ if (inPropParseState())
-							{$property = self.findLPByCompoundName($name.sid); $propName = $name.sid;}
-						}
-	|	'[' 
-			(expr=propertyExpression[newContext, true] { $property = $expr.property; $innerContext = newContext; } 
-		|	def=contextIndependentPD[true] { $property = $def.property; })
+	:	name=compoundID
+		{
+			if (inPropParseState()) {
+				$property = self.findLPByCompoundName($name.sid);
+				$propName = $name.sid;
+			}
+		}
+	|	'['	(	expr=propertyExpression[newContext, true] { $property = $expr.property; $innerContext = newContext; } 
+			|	def=contextIndependentPD[true] { $property = $def.property; }
+			)
 		']' 
 	;
 
 
-commonPropertySettings[LP property, String propertyName, String caption, List<String> namedParams, boolean isData] 
+commonPropertySettings[LP property, String propertyName, String caption, List<String> namedParams, boolean isData]
 @init {
 	String groupName = null;
-	boolean isPersistent = false;	
+	boolean isPersistent = false;
 }
 @after {
 	if (inPropParseState()) {
-		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, isData);	
+		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, isData);
 	}
-} 
+}
 	: 	('IN' name=compoundID { groupName = $name.sid; })?
 		('PERSISTENT' { isPersistent = true; })?
 		(panelLocationSetting [property])?
@@ -934,13 +942,13 @@ panelLocationSetting [LP property]
 }
 @after {
 	if (inPropParseState()) {
-		self.setPanelLocation($property, toolbar, sid, defaultProperty);				
+		self.setPanelLocation($property, toolbar, sid, defaultProperty);
 	}
 }
 	:	'TOOLBAR' { toolbar = true; }
 	|	'SHORTCUT' { toolbar = false; } (name = compoundID { sid = $name.sid; })? ('DEFAULT' { defaultProperty = true; })?
 	;
-	
+
 fixedCharWidthSetting [LP property]
 @after {
 	if (inPropParseState()) {
@@ -949,7 +957,7 @@ fixedCharWidthSetting [LP property]
 }
 	:	'FIXEDCHARWIDTH' width = intLiteral
 	;
-	
+
 imageSetting [LP property]
 @after {
 	if (inPropParseState()) {
@@ -959,6 +967,62 @@ imageSetting [LP property]
 		:	'IMAGE' path = stringLiteral
 		;
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// FLOW ACTION STATEMENT ////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+flowActionPropertyDefinition returns [LP property]
+@init{
+	List<LP> props = new ArrayList<LP>();
+	List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
+	List<String> innerContext = null;
+}
+@after{
+	if (inPropParseState()) {
+		$property = self.addScriptedFlowAProp(innerContext, props, usedParams);
+	}
+}
+
+	:	'ACTION' '(' idl=idList { innerContext = $idl.ids; } ')'
+		'{'
+			(	s=flowActionSetPropertyStatement[innerContext]
+				{
+					props.add($s.property);
+					usedParams.add($s.usedParams);
+				}
+		    |   emptyStatement
+		    )*
+		'}'
+	;
+
+flowActionSetPropertyStatement[List<String> context] returns [LP property, List<Integer> usedParams]
+@init {
+	boolean isDefault = false;
+	LP fromProperty = null;
+	List<Integer> fromParams = null;
+}
+@after {
+	if (inPropParseState()) {
+		ScriptingLogicsModule.LPWithParams result = self.addScriptedSetPropertyAProp(p1.property, p1.usedParams, fromProperty, fromParams, isDefault, context);
+		$property = result.property;
+		$usedParams = result.usedParams;
+	}
+}
+	:	{ List<String> newContext = new ArrayList<String>(context); }
+		p1=propertyExpression[newContext, true]
+		(	'<-'
+			(	p2=propertyExpression[newContext, false] //no need to use dynamic context, because params should be either on global context or used in the left expression
+				{
+					fromProperty = p2.property;
+					fromParams = p2.usedParams;
+				}
+			|	'NULL' { fromProperty = self.baseLM.vnull; fromParams = new ArrayList<Integer>(); }
+			|	'DEFAULT' { isDefault = true; }
+			)
+		)?
+		';'
+	;
+	
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// CONSTRAINT STATEMENT //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
