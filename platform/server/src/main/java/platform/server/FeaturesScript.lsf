@@ -164,9 +164,17 @@ FORM documentArticle 'По документам'
 //         [alias=] className ['<caption>'] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [INIT | FIXED] [PANEL | HIDE | GRID]
 OBJECTS document, article
 
+// TreeGroup syntax:
+// TREE [alias=] className ['<caption>'] [PARENT <property>] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [PARENT <properties separated with space>],
+//      ...
+//      [alias=] className ['<caption>'] [PARENT <property>] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [PARENT <properties separated with space>]
+
 // Property list syntax:
 // PROPERTIES propName1(param1, ..., paramN1), ..., propNameK(param1, ..., paramNK)
 // Special properties: SELECTION, OBJVALUE, ADDOBJ
+// Property options:    [READONLY] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [HIGHLIGHTIF <mappedProperty>]
+//                      [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
+
 PROPERTIES store(document), name(article), storeName(document)
 PROPERTIES quantity(document, article)
 PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article)

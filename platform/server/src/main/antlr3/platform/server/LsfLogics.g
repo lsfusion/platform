@@ -253,6 +253,7 @@ scope {
 }
 	:	declaration=formDeclaration { $formStatement::form = $declaration.form; }
 		(	formGroupObjectsList
+		|	formTreeGroupObject
 		|	formFiltersList
 		|	formPropertiesList
 		|	filterGroupDeclaration
@@ -301,47 +302,60 @@ formDeclaration returns [ScriptingFormEntity form]
 		formNameCaption=simpleNameWithCaption
 	;
 
-
 formGroupObjectsList // needs refactoring
 @init {
-	List<String> groupNames = new ArrayList<String>();
-	List<List<String>> names = new ArrayList<List<String>>();
-	List<List<String>> classNames = new ArrayList<List<String>>(); 
-	List<List<String>> captions = new ArrayList<List<String>>(); 
-	List<ClassViewType> groupViewType = new ArrayList<ClassViewType>();
-	List<Boolean> isInitType = new ArrayList<Boolean>();
+	List<ScriptingGroupObject> groups = new ArrayList<ScriptingGroupObject>();
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedGroupObjects(groupNames, names, classNames, captions, groupViewType, isInitType);
+		$formStatement::form.addScriptingGroupObjects(groups);
 	}
 }
 	:	'OBJECTS'
-		groupElement=formGroupObjectDeclaration { groupNames.add($groupElement.groupName); names.add($groupElement.objectNames); classNames.add($groupElement.classNames);
-												  captions.add($groupElement.captions); groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType); }
-		(',' groupElement=formGroupObjectDeclaration { groupNames.add($groupElement.groupName); names.add($groupElement.objectNames); classNames.add($groupElement.classNames);
-													   captions.add($groupElement.captions); groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType); })*
+		groupElement=formGroupObjectDeclaration { groups.add($groupElement.groupObject); }
+		(',' groupElement=formGroupObjectDeclaration { groups.add($groupElement.groupObject); })*
 	;
 
+formTreeGroupObject
+@init {
+	List<ScriptingGroupObject> groups = new ArrayList<ScriptingGroupObject>();
+	List<List<String>> properties = new ArrayList<List<String>>();
+}
+@after {
+	if (inPropParseState()) {
+		$formStatement::form.addScriptingTreeGroupObject(groups, properties);
+	}
+}
+	:	'TREE'
+		groupElement=formTreeGroupObjectDeclaration { groups.add($groupElement.groupObject); properties.add($groupElement.properties); }
+		(',' groupElement=formTreeGroupObjectDeclaration { groups.add($groupElement.groupObject); properties.add($groupElement.properties); })*
+	;
 
-formGroupObjectDeclaration returns [String groupName, List<String> objectNames, List<String> classNames, List<String> captions, ClassViewType type, boolean isInitType]
-	:	(	sdecl=formSingleGroupObjectDeclaration
-			{
-				$objectNames = asList($sdecl.name);
-				$classNames = asList($sdecl.className);
-				$captions = asList($sdecl.caption);
-			}
-		|	mdecl=formMultiGroupObjectDeclaration
-			{
-				$groupName = $mdecl.groupName;
-				$objectNames = $mdecl.objectNames;
-				$classNames = $mdecl.classNames;
-				$captions = $mdecl.captions;
-			}
-		)
-		(	viewType=formGroupObjectViewType { $type = $viewType.type; $isInitType = $viewType.isInitType; } )?
+formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
+	:	(object = formCommonGroupObject { $groupObject = $object.groupObject; })	
+		(viewType = formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.isInitType); } )?
 	; 
 
+formTreeGroupObjectDeclaration returns [ScriptingGroupObject groupObject, List<String> properties]
+	:	(object = formCommonGroupObject { $groupObject = $object.groupObject; })
+		(parent = treeGroupParentDeclaration { $properties = $parent.properties; })?
+	; 
+
+treeGroupParentDeclaration returns [List<String> properties = new ArrayList<String>()]
+	:	'PARENT'
+		(id = compoundID { $properties.add($id.sid); })+
+	;
+
+formCommonGroupObject returns [ScriptingGroupObject groupObject]
+	:	sdecl=formSingleGroupObjectDeclaration
+		{
+			$groupObject = new ScriptingGroupObject(null, asList($sdecl.name), asList($sdecl.className), asList($sdecl.caption));
+		}
+	|	mdecl=formMultiGroupObjectDeclaration
+		{
+			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions);
+		}
+	;
 
 formGroupObjectViewType returns [ClassViewType type, boolean isInitType]
 	: 	('INIT' {$isInitType = true;} | 'FIXED' {$isInitType = false;})

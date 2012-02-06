@@ -37,28 +37,21 @@ public class ScriptingFormEntity extends FormEntity {
         return new ScriptingFormView(this, true, LM);
     }
 
-    public void addScriptedGroupObjects(List<String> groupNames, List<List<String>> names, List<List<String>> classNames,
-                                        List<List<String>> captions, List<ClassViewType> viewTypes, List<Boolean> isInitType) throws ScriptingErrorLog.SemanticErrorException {
-        assert names.size() == groupNames.size() && names.size() == classNames.size() && names.size() == captions.size();
-        for (int i = 0; i < names.size();  i++) {
-            List<String> groupObjectNames = names.get(i);
-            List<String> groupClassNames = classNames.get(i);
-            List<String> groupCaptions = captions.get(i);
-
-            assert groupObjectNames.size() == groupClassNames.size() && groupCaptions.size() == groupObjectNames.size();
-
+    public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects) throws ScriptingErrorLog.SemanticErrorException {
+        List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
+        for (ScriptingGroupObject groupObject : groupObjects) {
             GroupObjectEntity groupObj = new GroupObjectEntity(genID());
 
-            for (int j = 0; j < groupObjectNames.size(); j++) {
-                String className = groupClassNames.get(j);
-                ValueClass cls = LM.findClassByCompoundName(groupClassNames.get(j));
-                String objectName = nvl(groupObjectNames.get(j), className);
-                String objectCaption = nvl(groupCaptions.get(j), cls.getCaption());
+            for (int j = 0; j < groupObject.objects.size(); j++) {
+                String className = groupObject.classes.get(j);
+                ValueClass cls = LM.findClassByCompoundName(groupObject.classes.get(j));
+                String objectName = nvl(groupObject.objects.get(j), className);
+                String objectCaption = nvl(groupObject.captions.get(j), cls.getCaption());
 
                 addObjectEntity(objectName, new ObjectEntity(genID(), cls, objectCaption), groupObj);
             }
 
-            String groupName = groupNames.get(i);
+            String groupName = groupObject.groupName;
             if (groupName == null) {
                 groupName = "";
                 for (ObjectEntity obj : groupObj.objects) {
@@ -66,9 +59,9 @@ public class ScriptingFormEntity extends FormEntity {
                 }
             }
 
-            ClassViewType viewType = viewTypes.get(i);
+            ClassViewType viewType = groupObject.viewType;
             if (viewType != null) {
-                if (isInitType.get(i)) {
+                if (groupObject.isInitType) {
                     groupObj.setInitClassView(viewType);
                 } else {
                     groupObj.setSingleClassView(viewType);
@@ -76,7 +69,32 @@ public class ScriptingFormEntity extends FormEntity {
             }
 
             addGroupObjectEntity(groupName, groupObj);
+            groups.add(groupObj);
         }
+        return groups;
+    }
+
+    public void addScriptingTreeGroupObject(List<ScriptingGroupObject> groupObjects,
+                                            List<List<String>> parentProperties) throws ScriptingErrorLog.SemanticErrorException {
+        List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects);
+        for (ScriptingGroupObject groupObject : groupObjects) {
+            List<String> properties = parentProperties.get(groupObjects.indexOf(groupObject));
+
+            if (properties != null) {
+                assert groupObject.objects.size() == properties.size();
+                GroupObjectEntity groupObj = groups.get(groupObjects.indexOf(groupObject));
+
+                List<PropertyObjectEntity> propertyObjects = new ArrayList<PropertyObjectEntity>();
+                for (String sid : properties) {
+                    if (sid != null)
+                        propertyObjects.add(addPropertyObject(LM.findLPByCompoundName(sid), groupObj.objects.toArray(new ObjectEntity[groupObj.objects.size()])));
+                }
+
+                if (!propertyObjects.isEmpty())
+                    groupObj.setIsParents(propertyObjects.toArray(new PropertyObjectEntity[propertyObjects.size()]));
+            }
+        }
+        addTreeGroupObject(groups.toArray(new GroupObjectEntity[groups.size()]));
     }
 
     private void addGroupObjectEntity(String groupName, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
@@ -122,6 +140,9 @@ public class ScriptingFormEntity extends FormEntity {
     }
 
     public GroupObjectEntity getGroupObjectEntity(String objectSID) throws ScriptingErrorLog.SemanticErrorException {
+        GroupObjectEntity groupObject = getGroupObject(objectSID);
+        if (groupObject != null)
+            return groupObject;
         ObjectEntity objectEntity = getObject(objectSID);
         GroupObjectEntity groupObjectEntity = null;
         if (objectEntity == null) {
