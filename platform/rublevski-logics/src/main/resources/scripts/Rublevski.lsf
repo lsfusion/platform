@@ -760,11 +760,15 @@ TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
 @metaCodeDoubleObjectDateProperty(marginProductionItemDepartment, item, departmentStore, 'Наценка производства', DOUBLE);
 
+@metaCodeDoubleObjectDateProperty(retailPriceItemDepartment, item, departmentStore, 'Розничная цена', DOUBLE);
+
 @metaCodeDoubleObjectDateProperty(discountItemDepartment, item, departmentStore, 'Скидка для товара', STRING[100]);
+
+@metaCodeNameDoubleObjectDateProperty(isSupplierItemDepartment, item, departmentStore, 'Поставщик', yesNo);
 
 
 FORM item 'Товар'
-OBJECTS i=item FIXED PANEL,b=barcode, d=departmentStore
+OBJECTS i=item FIXED PANEL, b=barcode, d=departmentStore
 PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
@@ -779,12 +783,16 @@ PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, isManufacturedItem, nam
  minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem
 PROPERTIES (b) barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
 //PROPERTIES inSkuBarcode(i, b)
-PROPERTIES (i, d) maxReserveItemDepartment, showFormmaxReserveItemDepartment,
+PROPERTIES (d) name
+PROPERTIES (i, d) FORCE PANEL maxReserveItemDepartment, showFormmaxReserveItemDepartment,
                   minReserveItemDepartment, showFormminReserveItemDepartment,
                   namebanRevaluationItemDepartment, showFormNamebanRevaluationItemDepartment,
                   nameinActionItemDepartment, showFormNameinActionItemDepartment,
                   marginProductionItemDepartment, showFormmarginProductionItemDepartment,
-                  discountItemDepartment, showFormdiscountItemDepartment
+                  retailPriceItemDepartment, showFormretailPriceItemDepartment,
+                  discountItemDepartment, showFormdiscountItemDepartment,
+                  nameisSupplierItemDepartment, showFormNameisSupplierItemDepartment
+
 FILTERS NOT NULL inSkuBarcode(i, b)
 PROPERTIES(b) ADDOBJ, delete
 EDIT item OBJECT i
@@ -811,7 +819,9 @@ DESIGN item FROM DEFAULT {
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
             }
-            ADD d.box;
+            ADD d.box{
+                POSITION d.grid.box TO THE LEFT d.panel;
+            }
        }
     }
 }
@@ -2050,8 +2060,12 @@ NAVIGATOR {
             ADD nameinActionItemDepartment;
             ADD addmarginProductionItemDepartment;
             ADD marginProductionItemDepartment;
+            ADD addretailPriceItemDepartment;
+            ADD retailPriceItemDepartment;
             ADD adddiscountItemDepartment;
             ADD discountItemDepartment;
+            ADD addNameisSupplierItemDepartment;
+            ADD nameisSupplierItemDepartment;
             ADD cash;
             ADD scales;
             ADD check;
