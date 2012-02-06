@@ -147,7 +147,7 @@ toShow##attribute caption (item) = show##attribute##ItemGroup(itemGroupSku(item)
 END
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
-CLASS itemGroup 'Товарная группа' : named;
+CLASS itemGroup 'Товарная группа' : named, externalObject;
 
 parentItemGroup = DATA itemGroup (itemGroup);
 nameParentItemGroup 'Родительская группа' = name(parentItemGroup(itemGroup));
@@ -842,12 +842,12 @@ PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentSto
 
 FORM itemGroup 'Товарная группа'
 OBJECTS g=itemGroup FIXED PANEL
-PROPERTIES(g) name, nameParentItemGroup
+PROPERTIES(g) name, nameParentItemGroup, extSID
 EDIT itemGroup OBJECT g;
 
 FORM itemGroups 'Товарные группы'
 OBJECTS g=itemGroup
-PROPERTIES(g) READONLY name, nameParentItemGroup
+PROPERTIES(g) READONLY name, nameParentItemGroup, extSID
 PROPERTIES(g) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
@@ -1933,6 +1933,12 @@ PROPERTIES (r) startDateCashReport, endDateCashReport
 PROPERTIES (r) ADDFORM, EDITFORM, delete
 PROPERTIES (d) READONLY numberCashDocument, sumCashDocument
 FILTERS NOT NULL inCashReportDocument(r,d);
+
+//---------------------------- Импорт данных ----------------------------------------//
+
+importUrl 'URL' = DATA STRING[200] ();
+importLogin 'Логин' = DATA STRING[200] ();
+importPassword 'Пароль' = DATA STRING[200] ();
 
 //---------------------------- Настройка навигатора ----------------------------------------//
 

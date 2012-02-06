@@ -12,7 +12,7 @@ public class ApplyActionProperty extends ActionProperty {
     BusinessLogics BL;
 
     public ApplyActionProperty(BusinessLogics BL) {
-        super("applyChanges", "Применить изменения", new ValueClass[] {} );
+        super("apply", "Применить изменения", new ValueClass[] {} );
 
         this.BL = BL;
     }

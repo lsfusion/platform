@@ -85,7 +85,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass tableKey;
     public ConcreteCustomClass tableColumn;
 
-    public AbstractCustomClass transaction, barcodeObject;
+    public AbstractCustomClass transaction, barcodeObject, externalObject;
 
     public AbstractCustomClass emailObject;
 
@@ -204,6 +204,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP barcodePrefix;
     public LP seekBarcodeAction;
     public LP barcodeNotFoundMessage;
+    public LP extSID, extSIDToObject;
     public LP restartServerAction;
     public LP runGarbageCollector;
     public LP cancelRestartServerAction;
@@ -469,6 +470,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         transaction = addAbstractClass("transaction", getString("logics.transaction"), baseClass);
         barcodeObject = addAbstractClass("barcodeObject", getString("logics.object.barcoded.object"), baseClass);
 
+        externalObject = addAbstractClass("externalObject", getString("logics.object.external.object"), baseClass);
+        
         emailObject = addAbstractClass("emailObject", getString("logics.object.with.email"), baseClass);
 
         encryptedConnectionTypeStatus = addStaticClass("encryptedConnectionTypeStatus", getString("logics.connection.type.status"),
@@ -787,6 +790,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         seekBarcodeAction = addJProp(true, getString("logics.barcode.search"), addSAProp(null), barcodeToObject, 1);
         barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp(getString("logics.barcode.not.found"), getString("logics.error")), is(StringClass.get(13)), 1, barcodeToObject, 1);
+
+        extSID = addDProp(baseGroup, "extSID", getString("logics.extsid"), StringClass.get(50), externalObject);
+        extSIDToObject = addAGProp("extSIDToObject", getString("logics.object"), extSID);
 
         restartServerAction = addJProp(getString("logics.server.stop"), andNot1, addRestartActionProp(), isServerRestarting);
         runGarbageCollector = addGarbageCollectorActionProp();
