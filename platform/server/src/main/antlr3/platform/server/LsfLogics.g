@@ -21,6 +21,7 @@ grammar LsfLogics;
 	import platform.server.logics.scripted.ScriptingLogicsModule.WindowType;
 	import platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition;
 	import platform.server.logics.scripted.ScriptingLogicsModule.GroupingType;
+	import platform.server.logics.scripted.ScriptingLogicsModule.LPWithParams;
 
 	import java.awt.*;
 	import java.util.ArrayList;
@@ -562,7 +563,7 @@ propertyStatement
 	:	declaration=propertyDeclaration { if ($declaration.paramNames != null) { context = $declaration.paramNames; dynamic = false; }}
 		'=' 
 		(	def=contextIndependentPD[false] { property = $def.property; isData = $def.isData; }  
-		|	expr=propertyExpression[context, dynamic] { property = $expr.property; }
+		|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) {property = $expr.property.property;} }
 		)
 		settings=commonPropertySettings[property, $declaration.name, $declaration.caption, context, isData]
 		';'
@@ -575,183 +576,160 @@ propertyDeclaration returns [String name, String caption, List<String> paramName
 	;
 
 
-propertyExpression[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
-	:	pe=andPE[context, dynamic] { $property = $pe.property; $usedParams = $pe.usedParams; }
+propertyExpression[List<String> context, boolean dynamic] returns [LPWithParams property]
+	:	pe=andPE[context, dynamic] { $property = $pe.property; }
 	;
 
 
-andPE[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
+andPE[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	List<LP<?>> props = new ArrayList<LP<?>>();
-	List<List<Integer>> allUsedParams = new ArrayList<List<Integer>>();
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	List<Boolean> nots = new ArrayList<Boolean>();
 }
 @after {
 	if (inPropParseState()) {
-		ScriptingLogicsModule.LPWithParams result = self.addScriptedAndProp(nots, props, allUsedParams);				
-		$property = result.property;
-		$usedParams = result.usedParams;
+		$property = self.addScriptedAndProp(nots, props);				
 	}
 }
-	:	firstExpr=equalityPE[context, dynamic] { props.add($firstExpr.property); allUsedParams.add($firstExpr.usedParams); }
+	:	firstExpr=equalityPE[context, dynamic] { props.add($firstExpr.property); }
 		((('AND') | ('IF')) { nots.add(false); }
 		('NOT' { nots.set(nots.size()-1, true); })?
-		nextExpr=equalityPE[context, dynamic] { props.add($nextExpr.property); allUsedParams.add($nextExpr.usedParams); })*
+		nextExpr=equalityPE[context, dynamic] { props.add($nextExpr.property); })*
 	;
 		
 
-equalityPE[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
+equalityPE[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	LP<?> leftProp = null;
-	LP<?> rightProp = null;
-	List<Integer> lUsedParams = null, rUsedParams = null;
+	LPWithParams leftProp = null, rightProp = null;
 	String op = null;
 }
 @after {
 	if (inPropParseState() && op != null) {
-		ScriptingLogicsModule.LPWithParams result =
-			self.addScriptedEqualityProp(op, leftProp, lUsedParams, rightProp, rUsedParams);
-		$property = result.property;
-		$usedParams = result.usedParams;
+		$property = self.addScriptedEqualityProp(op, leftProp, rightProp);
 	} else {
 		$property = leftProp;
-		$usedParams = lUsedParams;
 	}
 }
-	:	lhs=relationalPE[context, dynamic] { leftProp = $lhs.property; lUsedParams = $lhs.usedParams; }
+	:	lhs=relationalPE[context, dynamic] { leftProp = $lhs.property; }
 		(operand=EQ_OPERAND { op = $operand.text; }
-		rhs=relationalPE[context, dynamic] { rightProp = $rhs.property; rUsedParams = $rhs.usedParams; })?
+		rhs=relationalPE[context, dynamic] { rightProp = $rhs.property; })?
 	;
 
 
-relationalPE[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
+relationalPE[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	LP<?> leftProp = null;
-	LP<?> rightProp = null;
+	LPWithParams leftProp = null, rightProp = null;
 	LP<?> mainProp = null;
-	List<Integer> lUsedParams = null, rUsedParams = null;
 	String op = null;
 }
 @after {
 	if (inPropParseState())
 	{
 		if (op != null) {
-			ScriptingLogicsModule.LPWithParams result =
-				self.addScriptedRelationalProp(op, leftProp, lUsedParams, rightProp, rUsedParams);
-			$property = result.property;
-			$usedParams = result.usedParams;
+			$property = self.addScriptedRelationalProp(op, leftProp, rightProp);
 		} else if (mainProp != null) {
-			$property = self.addScriptedTypeExprProp(mainProp, leftProp, lUsedParams);
-			$usedParams = lUsedParams;
+			$property = leftProp;
+			$property.property = self.addScriptedTypeExprProp(mainProp, leftProp);
 		} else {
 			$property = leftProp;
-			$usedParams = lUsedParams;
 		}
 	}	
 }
-	:	lhs=additivePE[context, dynamic] { leftProp = $lhs.property; lUsedParams = $lhs.usedParams; }
+	:	lhs=additivePE[context, dynamic] { leftProp = $lhs.property; }
 		(
-			(	operand=REL_OPERAND { op = $operand.text; }
-				rhs=additivePE[context, dynamic] { rightProp = $rhs.property; rUsedParams = $rhs.usedParams; }
-			) 
-			|	def=typePropertyDefinition { mainProp = $def.property; }
+			(   operand=REL_OPERAND { op = $operand.text; }
+			    rhs=additivePE[context, dynamic] { rightProp = $rhs.property; }
+			)
+		|	def=typePropertyDefinition { mainProp = $def.property; }
 		)?
 	;
 
 
-additivePE[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
+additivePE[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	List<LP<?>> props = new ArrayList<LP<?>>();
-	List<List<Integer>> allUsedParams = new ArrayList<List<Integer>>();
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	List<String> ops = new ArrayList<String>();
 }
 @after {
 	if (inPropParseState()) {
-		ScriptingLogicsModule.LPWithParams result = self.addScriptedAdditiveProp(ops, props, allUsedParams);				
-		$property = result.property;
-		$usedParams = result.usedParams;
+		$property = self.addScriptedAdditiveProp(ops, props);				
 	}
 }
-	:	firstExpr=multiplicativePE[context, dynamic] { props.add($firstExpr.property); allUsedParams.add($firstExpr.usedParams); }
+	:	firstExpr=multiplicativePE[context, dynamic] { props.add($firstExpr.property); }
 		( (operand=PLUS | operand=MINUS) { ops.add($operand.text); }
-		nextExpr=multiplicativePE[context, dynamic] { props.add($nextExpr.property); allUsedParams.add($nextExpr.usedParams); })*
+		nextExpr=multiplicativePE[context, dynamic] { props.add($nextExpr.property); })*
 	;
 		
 	
-multiplicativePE[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
+multiplicativePE[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	List<LP<?>> props = new ArrayList<LP<?>>();
-	List<List<Integer>> allUsedParams = new ArrayList<List<Integer>>();
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	List<String> ops = new ArrayList<String>();
 }
 @after {
 	if (inPropParseState()) {
-		ScriptingLogicsModule.LPWithParams result = self.addScriptedMultiplicativeProp(ops, props, allUsedParams);				
-		$property = result.property;
-		$usedParams = result.usedParams;
+		$property = self.addScriptedMultiplicativeProp(ops, props);				
 	}
 }
-	:	firstExpr=simplePE[context, dynamic] { props.add($firstExpr.property); allUsedParams.add($firstExpr.usedParams); }
+	:	firstExpr=simplePE[context, dynamic] { props.add($firstExpr.property); }
 		(operand=MULT_OPERAND { ops.add($operand.text); }
-		nextExpr=simplePE[context, dynamic] { props.add($nextExpr.property); allUsedParams.add($nextExpr.usedParams); })*
+		nextExpr=simplePE[context, dynamic] { props.add($nextExpr.property); })*
 	;
 	
 		 
 	 
-simplePE[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
-	:	'(' expr=propertyExpression[context, dynamic] ')' { $property = $expr.property; $usedParams = $expr.usedParams; } 
-	|	primitive=expressionPrimitive[context, dynamic] { $property = $primitive.property; $usedParams = $primitive.usedParams; } 
-	|	uexpr=unaryMinusPE[context, dynamic] { $property = $uexpr.property; $usedParams = $uexpr.usedParams; }
+simplePE[List<String> context, boolean dynamic] returns [LPWithParams property]
+	:	'(' expr=propertyExpression[context, dynamic] ')' { $property = $expr.property; } 
+	|	primitive=expressionPrimitive[context, dynamic] { $property = $primitive.property; } 
+	|	uexpr=unaryMinusPE[context, dynamic] { $property = $uexpr.property; }
 	;
 
 	
-unaryMinusPE[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams] 	
+unaryMinusPE[List<String> context, boolean dynamic] returns [LPWithParams property] 	
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedUnaryMinusProp($property, $usedParams);
+		$property = self.addScriptedUnaryMinusProp($property);
 	}
 }
-	:	MINUS expr=simplePE[context, dynamic] { $property = $expr.property; $usedParams = $expr.usedParams; }
+	:	MINUS expr=simplePE[context, dynamic] { $property = $expr.property; }
 	;		 
 	
 
-expressionPrimitive[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
+expressionPrimitive[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	paramName=parameter
-		{
+        {
 			if (inPropParseState()) {
-				$usedParams = Collections.singletonList(self.getParamIndex($paramName.text, $context, $dynamic));
+				$property = new LPWithParams(null, Collections.singletonList(self.getParamIndex($paramName.text, $context, $dynamic)));
 			}
 		}
-	|	expr=contextDependentPD[context, dynamic] { $property = $expr.property; $usedParams = $expr.usedParams; }
+	|	expr=contextDependentPD[context, dynamic] { $property = $expr.property; }
 	;
 
-propertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
-	:	propertyExpr=contextDependentPD[context, dynamic] { $property = $propertyExpr.property; $usedParams = $propertyExpr.usedParams; } 
-	|	propertyExprI=contextIndependentPD[true] { $property = $propertyExprI.property; $usedParams = new ArrayList<Integer>(); }
+propertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
+	:	propertyExpr=contextDependentPD[context, dynamic] { $property = $propertyExpr.property; } 
+	|	propertyExprI=contextIndependentPD[true] { $property = new LPWithParams($propertyExprI.property, new ArrayList<Integer>()); }
 	;
 
-contextDependentPD[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
-	:	joinDef=joinPropertyDefinition[context, dynamic] { $property = $joinDef.property; $usedParams = $joinDef.usedParams; } 
-	|	unionDef=unionPropertyDefinition[context, dynamic] { $property = $unionDef.property; $usedParams = $unionDef.usedParams; } 
-	|	partDef=partitionPropertyDefinition[context, dynamic] { $property = $partDef.property; $usedParams = $partDef.usedParams; }
-	|	constDef=literal { $property = $constDef.property; $usedParams = new ArrayList<Integer>(); }
+contextDependentPD[List<String> context, boolean dynamic] returns [LPWithParams property]
+	:	joinDef=joinPropertyDefinition[context, dynamic] { $property = $joinDef.property; } 
+	|	unionDef=unionPropertyDefinition[context, dynamic] { $property = $unionDef.property;} 
+	|	partDef=partitionPropertyDefinition[context, dynamic] { $property = $partDef.property; }
+	|	constDef=literal { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
 contextIndependentPD[boolean innerPD] returns [LP property, boolean isData = false]
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $isData = true; } 
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; }
-	|	groupDef=groupPropertyDefinition { $property = $groupDef.property; } 
+	|	groupDef=groupPropertyDefinition { $property = $groupDef.property; }
 	|	typeDef=typePropertyDefinition { $property = $typeDef.property; }
-	|	formDef=formActionPropertyDefinition { $property = $formDef.property; }	
+	|	formDef=formActionPropertyDefinition { $property = $formDef.property; }
 	|	flowDef=flowActionPropertyDefinition { $property = $flowDef.property; }
 	;
 
-joinPropertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
+joinPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
-		ScriptingLogicsModule.LPWithParams result = self.addScriptedJProp($mainPropObj.property, $exprList.props, $exprList.usedParams);
-		$property = result.property;
-		$usedParams = result.usedParams;
+		$property = self.addScriptedJProp($mainPropObj.property, $exprList.props);
 	}
 }
 	:	mainPropObj=propertyObject
@@ -761,18 +739,15 @@ joinPropertyDefinition[List<String> context, boolean dynamic] returns [LP proper
 	;
 
 
-
-
 groupPropertyDefinition returns [LP property]
 @init {
-	List<LP<?>> orderProps = new ArrayList<LP<?>>();
-	List<List<Integer>> orderUsedParams = new ArrayList<List<Integer>>();
+	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
 	List<String> groupContext = new ArrayList<String>();
 	boolean ascending = true;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedGProp($type.type, $groupList.props, $groupList.usedParams, $exprList.props, $exprList.usedParams, orderProps, orderUsedParams, ascending, $whereExpr.property, $whereExpr.usedParams);
+		$property = self.addScriptedGProp($type.type, $groupList.props, $exprList.props, orderProps, ascending, $whereExpr.property);
 	}
 }
 	:	'GROUP'
@@ -781,9 +756,10 @@ groupPropertyDefinition returns [LP property]
 		'BY'
 		exprList=nonEmptyPropertyExpressionList[groupContext, true]
 		('ORDER' ('DESC' { ascending = false; } )?
-		orderList=nonEmptyPropertyExpressionList[groupContext, true] { orderProps.addAll($orderList.props); orderUsedParams.addAll($orderList.usedParams); })?
+		orderList=nonEmptyPropertyExpressionList[groupContext, true] { orderProps.addAll($orderList.props); })?
 		('WHERE' whereExpr=propertyExpression[groupContext, true])?
 	;
+
 
 groupingType returns [GroupingType type]
 	:	'SUM' 	{ $type = GroupingType.SUM; }
@@ -793,10 +769,10 @@ groupingType returns [GroupingType type]
 	|	'UNIQUE' 	{ $type = GroupingType.UNIQUE; }
 	;
 
-partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
+
+partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	List<List<Integer>> usedSubParams = new ArrayList<List<Integer>>();
-	List<LP<?>> paramProps = new ArrayList<LP<?>>();
+	List<LPWithParams> paramProps = new ArrayList<LPWithParams>();
 	PartitionType type = null;
 	int groupExprCnt;
 	boolean ascending = true;
@@ -804,20 +780,17 @@ partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LP p
 }
 @after {
 	if (inPropParseState()) {
-		ScriptingLogicsModule.LPWithParams result = 
-			self.addScriptedOProp(type, ascending, useLast, groupExprCnt, paramProps, usedSubParams);
-		$property = result.property;
-		$usedParams = result.usedParams;	
+		$property = self.addScriptedOProp(type, ascending, useLast, groupExprCnt, paramProps);
 	}
 }
 	:	'PARTITION' ('SUM' {type = PartitionType.SUM;} | 'PREV' {type = PartitionType.PREVIOUS;})
-		expr=propertyExpression[context, dynamic] { paramProps.add($expr.property); usedSubParams.add($expr.usedParams); }
+		expr=propertyExpression[context, dynamic] { paramProps.add($expr.property); }
 		(	'BY'
-			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($exprList.props); usedSubParams.addAll($exprList.usedParams); }
+			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($exprList.props); }
 		)?
 		{ groupExprCnt = paramProps.size() - 1; }
 		(	'ORDER' ('DESC' { ascending = false; } )?				
-			orderList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($orderList.props); usedSubParams.addAll($orderList.usedParams); }
+			orderList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($orderList.props); }
 		)? 
 		('WINDOW' 'EXCEPTLAST' { useLast = false; })?
 	;
@@ -838,15 +811,13 @@ dataPropertyDefinition[boolean innerPD] returns [LP property]
 
 
 
-unionPropertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
+unionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	Union type = null;
 }
 @after {
 	if (inPropParseState()) {
-		ScriptingLogicsModule.LPWithParams result = self.addScriptedUProp(type, $exprList.props, $exprList.usedParams);
-		$property = result.property;
-		$usedParams = result.usedParams;	
+		$property = self.addScriptedUProp(type, $exprList.props);
 	}
 }
 	:	'UNION'
@@ -887,7 +858,7 @@ formActionPropertyDefinition returns [LP property]
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, $exprList.props, $exprList.usedParams, $className.sid, newSession, isModal);	
+		$property = self.addScriptedFAProp($formName.sid, objects, $exprList.props, $className.sid, newSession, isModal);	
 	}
 }
 	:	'ACTION' 'FORM' formName=compoundID 
@@ -910,10 +881,10 @@ propertyObject returns [LP property, String propName, List<String> innerContext]
 				$propName = $name.sid;
 			}
 		}
-	|	'['	(	expr=propertyExpression[newContext, true] { $property = $expr.property; $innerContext = newContext; } 
+	|	'['	(	expr=propertyExpression[newContext, true] { if (inPropParseState()) {$property = $expr.property.property; $innerContext = newContext;} }
 			|	def=contextIndependentPD[true] { $property = $def.property; }
 			)
-		']' 
+		']'
 	;
 
 
@@ -934,6 +905,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		(imageSetting [property])?
 	;
 
+
 panelLocationSetting [LP property]
 @init {
 	boolean toolbar = false;
@@ -949,6 +921,7 @@ panelLocationSetting [LP property]
 	|	'SHORTCUT' { toolbar = false; } (name = compoundID { sid = $name.sid; })? ('DEFAULT' { defaultProperty = true; })?
 	;
 
+
 fixedCharWidthSetting [LP property]
 @after {
 	if (inPropParseState()) {
@@ -958,14 +931,15 @@ fixedCharWidthSetting [LP property]
 	:	'FIXEDCHARWIDTH' width = intLiteral
 	;
 
+
 imageSetting [LP property]
 @after {
 	if (inPropParseState()) {
 		self.setImage(property, $path.val);
 	}
 }
-		:	'IMAGE' path = stringLiteral
-		;
+	:	'IMAGE' path = stringLiteral
+	;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// FLOW ACTION STATEMENT ////////////////////////////
@@ -973,13 +947,12 @@ imageSetting [LP property]
 
 flowActionPropertyDefinition returns [LP property]
 @init{
-	List<LP> props = new ArrayList<LP>();
-	List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	List<String> innerContext = null;
 }
 @after{
 	if (inPropParseState()) {
-		$property = self.addScriptedFlowAProp(innerContext, props, usedParams);
+		$property = self.addScriptedFlowAProp(innerContext, props);
 	}
 }
 
@@ -988,24 +961,20 @@ flowActionPropertyDefinition returns [LP property]
 			(	s=flowActionSetPropertyStatement[innerContext]
 				{
 					props.add($s.property);
-					usedParams.add($s.usedParams);
 				}
 		    |   emptyStatement
 		    )*
 		'}'
 	;
 
-flowActionSetPropertyStatement[List<String> context] returns [LP property, List<Integer> usedParams]
+flowActionSetPropertyStatement[List<String> context] returns [LPWithParams property]
 @init {
 	boolean isDefault = false;
-	LP fromProperty = null;
-	List<Integer> fromParams = null;
+	LPWithParams fromProperty = null;
 }
 @after {
 	if (inPropParseState()) {
-		ScriptingLogicsModule.LPWithParams result = self.addScriptedSetPropertyAProp(p1.property, p1.usedParams, fromProperty, fromParams, isDefault, context);
-		$property = result.property;
-		$usedParams = result.usedParams;
+		$property = self.addScriptedSetPropertyAProp($p1.property, fromProperty, isDefault, context);
 	}
 }
 	:	{ List<String> newContext = new ArrayList<String>(context); }
@@ -1013,16 +982,15 @@ flowActionSetPropertyStatement[List<String> context] returns [LP property, List<
 		(	'<-'
 			(	p2=propertyExpression[newContext, false] //no need to use dynamic context, because params should be either on global context or used in the left expression
 				{
-					fromProperty = p2.property;
-					fromParams = p2.usedParams;
+					fromProperty = $p2.property;
 				}
-			|	'NULL' { fromProperty = self.baseLM.vnull; fromParams = new ArrayList<Integer>(); }
+			|	'NULL' { fromProperty = new LPWithParams(self.baseLM.vnull, new ArrayList<Integer>()); }
 			|	'DEFAULT' { isDefault = true; }
 			)
 		)?
 		';'
 	;
-	
+
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// CONSTRAINT STATEMENT //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -1033,7 +1001,7 @@ constraintStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedConstraint($expr.property, checked, $message.text);
+		self.addScriptedConstraint($expr.property.property, checked, $message.text);
 	}
 }
 	:	'CONSTRAINT' ('CHECKED' { checked = true; })?
@@ -1051,25 +1019,24 @@ followsStatement
 @init {
 	List<String> context;
 	String mainProp;
-	List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
-	List<LP<?>> props = new ArrayList<LP<?>>();
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	List<Integer> options = new ArrayList<Integer>();
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedFollows(mainProp, context, options, props, usedParams);
+		self.addScriptedFollows(mainProp, context, options, props);
 	}
 }
 	:	prop=propertyWithNamedParams { mainProp = $prop.name; context = $prop.params; }
 		'=>'
 		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)?
 		{
-			props.add($firstExpr.property); usedParams.add($firstExpr.usedParams);
+			props.add($firstExpr.property); 
 			options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
 		}
 		(',' nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)?
 			{
-		     	props.add($nextExpr.property); usedParams.add($nextExpr.usedParams);
+		     	props.add($nextExpr.property); 
 		     	options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
 			}
 		)*
@@ -1095,7 +1062,7 @@ writeOnChangeStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedWriteOnChange($mainProp.name, context, old, anyChange, $valueExpr.property, $valueExpr.usedParams, $changeExpr.property, $changeExpr.usedParams);
+		self.addScriptedWriteOnChange($mainProp.name, context, old, anyChange, $valueExpr.property, $changeExpr.property);
 	}
 }
 	:	mainProp=propertyWithNamedParams { context = $mainProp.params; }
@@ -1563,22 +1530,20 @@ parameterList returns [List<String> ids]
 	;
 
 
-propertyExpressionList[List<String> context, boolean dynamic] returns [List<LP<?>> props, List<List<Integer>> usedParams] 
+propertyExpressionList[List<String> context, boolean dynamic] returns [List<LPWithParams> props] 
 @init {
-	$props = new ArrayList<LP<?>>();
-	$usedParams = new ArrayList<List<Integer>>(); 
+	$props = new ArrayList<LPWithParams>();
 }
-	:	(neList=nonEmptyPropertyExpressionList[context, dynamic] { $props = $neList.props; $usedParams = $neList.usedParams; })?
+	:	(neList=nonEmptyPropertyExpressionList[context, dynamic] { $props = $neList.props; })?
 	;
 	
 
-nonEmptyPropertyExpressionList[List<String> context, boolean dynamic] returns [List<LP<?>> props, List<List<Integer>> usedParams]
+nonEmptyPropertyExpressionList[List<String> context, boolean dynamic] returns [List<LPWithParams> props]
 @init {
-	$props = new ArrayList<LP<?>>();
-	$usedParams = new ArrayList<List<Integer>>(); 
+	$props = new ArrayList<LPWithParams>();
 }
-	:	first=propertyExpression[context, dynamic] { $props.add($first.property); $usedParams.add($first.usedParams); }
-		(',' next=propertyExpression[context, dynamic] { $props.add($next.property); $usedParams.add($next.usedParams);})* 
+	:	first=propertyExpression[context, dynamic] { $props.add($first.property); }
+		(',' next=propertyExpression[context, dynamic] { $props.add($next.property); })* 
 	; 
 
 literal returns [LP property]
