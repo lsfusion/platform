@@ -301,6 +301,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "GROUP UNIQUE should have simple parameter as aggregate function");
     }
 
+    public void emitDifferentObjsNPropsQuantity(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "Number of properties specified after PARENT should correspond to objects number");
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

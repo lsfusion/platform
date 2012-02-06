@@ -856,8 +856,8 @@ PROPERTIES(g) name, nameParentItemGroup, extSID
 EDIT itemGroup OBJECT g;
 
 FORM itemGroups 'Товарные группы'
-OBJECTS g=itemGroup
-PROPERTIES(g) READONLY name, nameParentItemGroup, extSID
+TREE g=itemGroup PARENT parentItemGroup
+PROPERTIES(g) READONLY name, extSID
 PROPERTIES(g) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
