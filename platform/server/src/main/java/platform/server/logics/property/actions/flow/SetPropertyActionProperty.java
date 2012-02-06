@@ -63,9 +63,15 @@ public class SetPropertyActionProperty<P extends PropertyInterface, T extends Pr
             fromKeys.put(entry.getValue(), context.getKeyValue(entry.getKey()).getExpr());
         }
 
+        Expr writeExpr = writeFrom.mapExpr(fromKeys, context.getModifier());
         Where changeWhere = CompareWhere.compareValues(filterKeys(toKeys, toValues.keySet()), toValues);
+        changeWhere = changeWhere.and(
+                writeExpr.getWhere().or(
+                        mapWriteToAll.property.getExpr(toKeys, context.getModifier()).getWhere()
+                )
+        );
 
-        PropertyChange<P> change = new PropertyChange<P>(toKeys, writeFrom.mapExpr(fromKeys, context.getModifier()), changeWhere);
+        PropertyChange<P> change = new PropertyChange<P>(toKeys, writeExpr, changeWhere);
         context.addActions(
                 context.getSession().execute(mapWriteToAll.property, change, context.getModifier(), context.getRemoteForm(), toObjects)
         );
