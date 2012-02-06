@@ -558,7 +558,7 @@ PROPERTIES(c) ADDFORM, EDITFORM, delete;
 CLASS genTimeTable 'Генерация графика' : named;
 
 startDateGenTimeTable 'Дата начала' = DATA DATE (genTimeTable) IN baseGroup;
-endDateGenTimeTable 'Дата оканчания' = DATA DATE (genTimeTable) IN baseGroup;
+endDateGenTimeTable 'Дата окончания' = DATA DATE (genTimeTable) IN baseGroup;
 supplierGenTimeTable 'Поставщик (ИД)' = DATA supplier (genTimeTable);
 nameSupplierGenTimeTable 'Поставщик' (genTimeTable) = name(supplierGenTimeTable(genTimeTable)) IN baseGroup;
 departmentStoreGenTimeTable 'Подразделение (ИД)' =DATA departmentStore (genTimeTable);
@@ -1219,27 +1219,34 @@ departmentStoreOrderSupplier 'Отдел заказа (ИД)' = DATA departmentS
 nameDepartmentStoreOrderSupplier 'Отдел заказа' (orderSupplier) = name(departmentStoreOrderSupplier(orderSupplier));
 supplierOrderSupplier 'Поставщик заказа (ИД)' = DATA supplier (orderSupplier);
 nameSupplierOrderSupplier 'Поставщик заказ' (orderSupplier) = name(supplierOrderSupplier(orderSupplier));
+completePercentageOrderSupplier 'Процент выполнения' (orderSupplier) = DATA DOUBLE (orderSupplier) IN baseGroup;
+
 itemAssortmentOrderSupplier 'Ассортимен заказа' (orderSupplier, item) = itemAssortmentSupplier(departmentStoreOrderSupplier(orderSupplier), supplierOrderSupplier(orderSupplier), item);
-itemQuantityOrderSupplier 'Количество мест' = DATA INTEGER (orderSupplier, item);
-itemSumQuantityOrderSupplier 'Сумарное количество товара' (orderSupplier, item) = quantityPackItem(item) * itemQuantityOrderSupplier(orderSupplier, item);
+packQuantityItemOrderSupplier 'Количество мест' = DATA INTEGER (orderSupplier, item);
+sumQuantityItemOrderSupplier 'Сумарное количество товара' (orderSupplier, item) = quantityPackItem(item) * packQuantityItemOrderSupplier(orderSupplier, item);
+fullPriceItemOrderSupplier 'Цена с НДС' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item) IN baseGroup;
+fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) =  sumQuantityItemOrderSupplier(orderSupplier, item) * fullPriceItemOrderSupplier(orderSupplier, item) IN baseGroup;
+fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier;
 
 FORM orderSupplier 'Заказ поставщику'
 OBJECTS o=orderSupplier FIXED PANEL, i=item
 PROPERTIES(o) name, curDateOrderSupplier, namePersonOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
-              nameSupplierOrderSupplier
-PROPERTIES(i) READONLY name, quantityPackItem
-PROPERTIES(o, i) itemQuantityOrderSupplier, itemSumQuantityOrderSupplier
+              nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier
+PROPERTIES(i) name, quantityPackItem
+PROPERTIES(o, i) packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
 FILTERS NOT NULL itemAssortmentOrderSupplier(o, i)
+FILTERGROUP filters1
+    FILTER 'Показывать только заказанные позиции' 'F10' NOT NULL sumQuantityItemOrderSupplier(o, i)
 EDIT orderSupplier OBJECT o;
 
 FORM orderSuppliers 'Заказы поставшику'
 OBJECTS o=orderSupplier, i=item
 PROPERTIES(o) READONLY name, curDateOrderSupplier, namePersonOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
-                       nameSupplierOrderSupplier
+                       nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier
 PROPERTIES(o) ADDFORM, EDITFORM, delete
 PROPERTIES(i) READONLY name
-PROPERTIES(o, i) READONLY itemSumQuantityOrderSupplier
-FILTERS NOT NULL itemSumQuantityOrderSupplier(o, i);
+PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
+FILTERS NOT NULL sumQuantityItemOrderSupplier(o, i);
 
 //--------------------------------------Формы--------------------------------------------------------------------------//
 
