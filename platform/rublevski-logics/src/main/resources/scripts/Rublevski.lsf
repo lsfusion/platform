@@ -141,7 +141,7 @@ END
 // ----------------------------------- Отображение атрибутов товаров по свойству товарной группы ------------------------------------------ //
 META metaCodeShowItemAttribute (attribute, caption)
 
-show##attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup);
+show##attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN baseGroup;
 toShow##attribute caption (item) = show##attribute##ItemGroup(itemGroupSku(item));
 
 END
@@ -1207,9 +1207,9 @@ FILTERGROUP filters
     FILTER 'Показывать с поставкой на дату' 'F10' NOT NULL timeTableDate(s, d, t);
 //--------------------------------------Заказ------------------------------------------------------------------//
 
-CLASS ABSTRACT order 'Заказы' : named;
-CLASS orderSupplier 'Заказы поставщику' : order;
-CLASS orderStock 'Заказы складу' :order;
+CLASS ABSTRACT order 'Заказ' : named;
+CLASS orderSupplier 'Заказ поставщику' : order;
+//CLASS orderStock 'Заказ складу' :order;
 
 curDateOrderSupplier 'Дата создания заказа' = DATA DATE (orderSupplier);
 personOrderSupplier 'ФИО, кем создан документ (ИД)' = DATA employee (orderSupplier);
