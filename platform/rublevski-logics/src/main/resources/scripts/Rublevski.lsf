@@ -44,7 +44,7 @@ META metaCodeObjectDateProperty(prop, object, caption, type)
 
 END
 
-// ---------------------------------- Свойство объект-дата для yesNo со значением по-умолчанию НЕТ------------------------------------------ //
+// ---------------------------------- Свойство объект-дата для (пример, стат.класса)------------------------------------------ //
 
 META metaCodeNameObjectDateProperty(prop, object, caption, type)
 
@@ -698,7 +698,7 @@ nameRevaluationCommitteeDepartmentStore 'Комиссия отдела' (departm
 controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore);
 deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore);
 controlMinusRestsContainerDepartmentStore 'Контроль за минусовыми остатками тары' = DATA BOOLEAN (departmentStore);
-controlAssortmentProviderDepartmentStore 'Контролировать ассортимент поставщиков в подразделении?' = DATA BOOLEAN (departmentStore);
+// controlAssortmentProviderDepartmentStore 'Контролировать ассортимент поставщиков в подразделении?' = DATA BOOLEAN (departmentStore);
 verifyOrderArrivalDepartmentStore 'Сверять заказ и приход в подразделении?' = DATA BOOLEAN (departmentStore);
 maxQuantityDeliveryHourDepartmentStore 'Максимальное допустимое число поставок в час' = DATA INTEGER (departmentStore);
 resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore 'Разрешить превысить количество поставок/час при ассортименте <' = DATA DOUBLE (departmentStore);
@@ -929,22 +929,24 @@ GROUP banksGroup 'Информация о банке' : baseGroup;
 
 CLASS bank 'Банк' : named;
 
-addressBank 'Адрес банка' = DATA STRING[100] (bank) IN banksGroup;
+//addressBank 'Адрес банка' = DATA STRING[100] (bank) IN banksGroup;
 MFOBank 'Код МФО' = DATA STRING[9] (bank) IN banksGroup;
 departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN banksGroup;
 CBUBank 'ЦБУ' = DATA STRING[3] (bank) IN banksGroup;
 infoBank 'Дополнительные сведения' = DATA STRING[100] (bank) IN banksGroup;
-//addressBankDate 'Адрес банка' = DATA STRING[100] (bank, DATE) IN banksGroup;
+
+@metaCodeObjectDateProperty(addressBank, bank, 'Адрес банка', STRING[150]);
+
+FORM bank 'Банк'
+OBJECTS b=bank FIXED PANEL
+PROPERTIES(b)  name, addressBank, showFormaddressBank, MFOBank, departmentBank, CBUBank, infoBank
+EDIT bank OBJECT b;
 
 FORM banks 'Банки'
 OBJECTS b=bank
 PROPERTIES(b) READONLY name, addressBank, MFOBank, departmentBank, CBUBank, infoBank
 PROPERTIES(b) ADDFORM, EDITFORM, delete;
 
-FORM bank 'Банк'
-OBJECTS b=bank FIXED PANEL
-PROPERTIES(b)  name, addressBank, MFOBank, departmentBank, CBUBank, infoBank
-EDIT bank OBJECT b;
 // ----------------------------------- Расчетный счет ------------------------------------------ //
 
 GROUP accountGroup 'Банковская информация' : baseGroup;
@@ -1057,20 +1059,24 @@ CLASS STATIC contractForm 'Порядок оплаты'
 };
 
 dataContract 'Номер договора' = DATA STRING[30] (contract) IN contractGroup;
-formContract(contract) = DATA contractForm (contract) IN contractGroup;
-nameFormContract 'Порядок оплаты по договору' (contract) = name(formContract(contract)) IN contractGroup;
+//formContract(contract) = DATA contractForm (contract) IN contractGroup;
+//nameFormContract 'Порядок оплаты по договору' (contract) = name(formContract(contract)) IN contractGroup;
 typeContract(contract) = DATA contractType (contract) IN contractGroup;
-nameTypeContract 'Тип договора' (contract) = name(typeContract(contract)) IN contractGroup;
+nameTypeContract 'Тип договора' (contract) = name(UNION OVERRIDE contractType.sale IF contract IS contract,
+                                                                 typeContract(contract)) IN contractGroup;
 dateFromContract 'Дата начала договора' = DATA DATE (contract) IN contractGroup;
 dateToContract 'Дата окончания договора' = DATA DATE (contract) IN contractGroup;
 currencyContract 'Валюта взаиморасчетов' = DATA STRING[20] (contract) IN contractGroup; // может и не надо   или справочником
 warnContract 'За сколько дней предупредить об окончании' = DATA INTEGER (contract) IN contractGroup;
 banContract 'За сколько дней запретить закупку товара' = DATA INTEGER (contract) IN contractGroup;
-delayContract 'Отсрочка платежа, дней' = DATA INTEGER (contract) IN contractGroup;
+//delayContract 'Отсрочка платежа, дней' = DATA INTEGER (contract) IN contractGroup;
 requestContract 'Форма оплаты: Платежное требование' = DATA BOOLEAN (contract) IN contractGroup;
 noteContract 'Примечание' = DATA STRING[100] (contract) IN contractGroup;
-//formContractDate 'Порядок оплаты договора' (contract, DATE) = DATA contractForm (contract, DATE) IN contractGroup;
-//delayContractDate 'Отсрочка платежа(кален. дней),при "-" предоплата' = DATA DOUBLE (contract, DATE) IN contractGroup;
+
+@metaCodeNameObjectDateProperty(formContract, contract, 'Порядок оплаты по договору', contractForm);
+CONSTRAINT contract IS contract AND NOT formContract(contract)  MSG 'ошибка: Не выбран порядок оплаты по договору';
+@metaCodeObjectDateProperty(delayContract, contract, 'Отсрочка платежа(кален. дней),при "-" предоплата', DOUBLE);
+
 
 // ----------------------------------- Поставщик ------------------------------------------ //
 
@@ -1081,7 +1087,7 @@ CLASS company 'Компания' : legalEntity;
 companyContract 'Организация (ИД)' = DATA company (contract) IN idGroup;
 supplierContract 'Поставщик (ИД)' = DATA supplier (contract) IN idGroup;
 userContractSupplier 'Контракт (ИД)' = DATA contract (supplier) IN idGroup;
-companySupplier 'Организация (ИД)' = DATA company (supplier) IN idGroup;
+//companySupplier 'Организация (ИД)' = DATA company (supplier) IN idGroup;
 
 payerSupplier 'Плательщик НДС' = DATA BOOLEAN (supplier) IN supplierGroup;
 scheduleSupplier 'Разрешить доп.заказ товаров вне графика' = DATA BOOLEAN (supplier) IN supplierGroup;
@@ -1098,17 +1104,16 @@ emailOrderSupplierDepartmentStore 'e-mail для передачи заказа' 
 contactSupplierDepartmentStore 'Контактная информация' = DATA STRING[500] (supplier, departmentStore)IN supplierGroup;
 controlSupplierDepartmentStore(supplier, departmentStore) = DATA yesNo (supplier, departmentStore)IN idGroup;
 nameControlSupplierDepartmentStore 'Контролировать ассортимент поставщика, ДА/НЕТ' (supplier, departmentStore) = name(UNION OVERRIDE yesNo.no IF supplier IS supplier AND departmentStore IS departmentStore,
-                                                                                                                                   controlSupplierDepartmentStore(supplier, departmentStore)) IN supplierGroup;
+                                                                                                                                controlSupplierDepartmentStore(supplier, departmentStore)) IN supplierGroup;
 
-//@metaCodeDoubleObjectDateProperty(sureSupplierDepartmentStore, supplier, departmentStore, 'Обязателен заказ поставщику, ДА/НЕТ', yesNo);
 @metaCodeNameDoubleObjectDateProperty(sureSupplierDepartmentStore, supplier, departmentStore, 'Обязателен заказ поставщику, ДА/НЕТ', yesNo);
 
 overrideSupplierDepartmentStore(supplier, departmentStore) = UNION OVERRIDE (TRUE IF UNION OVERRIDE emailOrderSupplierDepartmentStore(supplier, departmentStore), contactSupplierDepartmentStore(supplier, departmentStore)),
                                                                              UNION OVERRIDE controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes , sureSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes;
 
-dataContractSupplier 'Договор по умолчанию' (supplier) = dataContract(userContractSupplier(supplier));
+//dataContractSupplier 'Договор по умолчанию' (supplier) = dataContract(userContractSupplier(supplier));
 defaultContractSupplier(supplier) = GROUP MAX contract AS contract BY supplierContract(contract);
-dataDefaultContractSupplier(supplier) = dataContract(defaultContractSupplier(supplier));
+//dataDefaultContractSupplier(supplier) = dataContract(defaultContractSupplier(supplier));
 
 overrideContractSupplier 'Основной договор' (supplier) = UNION OVERRIDE defaultContractSupplier(supplier), userContractSupplier(supplier);
 dataOverrideContractSupplier 'Основной договор' (supplier) = dataContract(overrideContractSupplier(supplier)) IN lawGroup;
@@ -1125,6 +1130,16 @@ inCompanyAccount(company, account) = legalEntityAccount(account) == company;
 nameSupplierContract 'Контрагент' (contract) = name(supplierContract(contract));
 nameCompanyContract 'Контрагент' (contract) = name(companyContract(contract));
 
+userContractCompanySupplier 'Контракт (ИД)' = DATA contract (company, supplier) IN idGroup;
+//dataContractCompanySupplier 'Договор по умолчанию' (company, supplier) = dataContract(userContractCompany(company));
+defaultContractCompanySupplier(company, supplier) = GROUP MAX contract AS contract BY companyContract(contract), supplierContract(contract);
+
+overrideContractCompanySupplier 'Основной договор' (company, supplier) = UNION OVERRIDE defaultContractCompanySupplier(company, supplier), userContractCompanySupplier(company, supplier);
+dataOverrideContractCompanySupplier 'Основной договор' (company, supplier) = dataContract(overrideContractCompanySupplier(company, supplier)) IN lawGroup;
+CONSTRAINT CHECKED supplier != supplierContract(userContractCompanySupplier(company, supplier)) MSG 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
+equalsCompanySupplierContract 'Действующий договор' (company, supplier, contract) = userContractCompanySupplier(company, supplier) == contract;
+
+
 FORM supplier 'Поставщик'
 OBJECTS s=supplier FIXED PANEL
 OBJECTS a=account, c=contractProvider, l=license, d=departmentStore
@@ -1134,8 +1149,8 @@ PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalE
               dataOverrideAccountLegalEntity, residentLegalEntity, manufacturerLegalEntity, dataOverrideContractSupplier, surePercentSupplier, allowablePercentSupplier,
               afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier, dataActingLicenseLegalEntity
 PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
-PROPERTIES(c) dataContract, nameCompanyContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract, delayContract,
-              requestContract, noteContract, ADDOBJ, delete
+PROPERTIES(c) dataContract, nameCompanyContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract,   // nameFormContract
+              delayContract, showFormdelayContract, requestContract, noteContract, ADDOBJ, delete
 PROPERTIES(l) dataLicense, dateFromLicense, dateToLicense, ADDOBJ, delete   //        tabaccoLicense
 PROPERTIES(d) nameStoreDepartmentStore, name
 PROPERTIES(s,d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore, namesureSupplierDepartmentStore, showFormNamesureSupplierDepartmentStore//nameSureSupplierDepartmentStore, sureSupplierDepartmentStore, showFormsureSupplierDepartmentStore
@@ -1170,13 +1185,18 @@ PROPERTIES(s) ADDFORM, EDITFORM, delete;
 FORM company 'Компания'
 OBJECTS co=company FIXED PANEL
 OBJECTS a=account
-OBJECTS c=contract
+OBJECTS s=supplier
+OBJECTS c=contractProvider
 PROPERTIES(co) nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormaddressLegalEntity, postAddressLegalEntity, showFormpostAddressLegalEntity,
                managerLegalEntity, showFormmanagerLegalEntity, accountantLegalEntity, showFormaccountantLegalEntity, phoneLegalEntity, showFormphoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
 PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
-PROPERTIES(c) dataContract, nameSupplierContract, nameFormContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, noteContract, ADDOBJ, delete
+PROPERTIES(c) dataContract, nameSupplierContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, noteContract, delayContract, showFormdelayContract, ADDOBJ, delete
+PROPERTIES(s) name, fullNameLegalEntity
+PROPERTIES(co, s) dataOverrideContractCompanySupplier
 FILTERS NOT NULL inCompanyContract(co, c),
-        NOT NULL inCompanyAccount(co, a)
+        NOT NULL inCompanyAccount(co, a),
+        NOT NULL inSupplierContract(s, c)
+
 EDIT company OBJECT co;
 
 DESIGN company FROM DEFAULT {
@@ -1184,8 +1204,10 @@ DESIGN company FROM DEFAULT {
        ADD prop.box BEFORE functions.box {
             tabbedPane = TRUE;
             ADD a.box;
-            ADD c.box;
-
+            ADD v.box { title = 'Поставщик-договор'; }
+            ADD s.box IN v.box;
+            ADD c.box IN v.box;
+            POSITION s.box TO THE LEFT c.box;
        }
    }
 }
@@ -1274,7 +1296,7 @@ isManufactory (departmentStore) = departmentStore IS manufactory;
 FORM departmentStore 'Отдел магазина'
 OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare, s=supplier, tm=DATE, d2=departmentStore
 PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
-              controlAssortmentProviderDepartmentStore, verifyOrderArrivalDepartmentStore,
+              verifyOrderArrivalDepartmentStore, // controlAssortmentProviderDepartmentStore это св-во для пересечения поставщ. и отдела, создано ниже
               maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
               quantityCashChangeOneOperationAccountDepartmentStore, commonNameMateriallyResponsiblePersonItemReportDepartmentStore,
               commonNameBookkeeperItemReportDepartmentStore, commonNamePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
@@ -1787,11 +1809,13 @@ dateRate(rate) <- currentDate() ON ASSIGN rate IS rate;
 
 employeeRate 'Кто ввел ИД' = DATA employee (rate) IN baseGroup;
 
-userFirstNameEmployeeRate 'Кто ввел значение, имя' (rate) = userFirstName(employeeRate(rate)) IN baseGroup;
-userLastNameEmployeeRate 'Кто ввел значение, фамилия' (rate) = userLastName(employeeRate(rate)) IN baseGroup;
+//userFirstNameEmployeeRate 'Кто ввел значение, имя' (rate) = userFirstName(employeeRate(rate)) IN baseGroup;
+//userLastNameEmployeeRate 'Кто ввел значение, фамилия' (rate) = userLastName(employeeRate(rate)) IN baseGroup;
+commonNameEmployeeRate 'Кто ввел значение' (rate) = commonName(employeeRate(rate)) IN baseGroup;
 
-userFirstNameEmployeeRate(rate) <- userFirstName(currentUser()) ON ASSIGN rate IS rate;
-userLastNameEmployeeRate(rate)  <- userLastName(currentUser()) ON ASSIGN rate IS rate;
+//userFirstNameEmployeeRate(rate) <- userFirstName(currentUser()) ON ASSIGN rate IS rate;
+//userLastNameEmployeeRate(rate)  <- userLastName(currentUser()) ON ASSIGN rate IS rate;
+commonNameEmployeeRate(rate)  <- commonName(currentUser()) ON ASSIGN rate IS rate;
 
 //rateRange 'Шкала ИД' = DATA rate (range) IN baseGroup;
 userRate 'Действующая' (rate) = rate IF dateFromRate(rate) <= currentDate() AND dateToRate(rate) >= currentDate();
@@ -1804,15 +1828,17 @@ CONSTRAINT CHECKED quantityUserRateRange(range) > 1 MSG 'ошибка: Одно�
 //   обязательно переделать на уникальность и по времени
 CONSTRAINT CHECKED range IS range AND NOT rangeTypeRange(range)  MSG 'ошибка: Не выбран тип действия для шкалы';
 // работает, но хотели мы что-то другое.....//
-CONSTRAINT CHECKED rate IS rate AND NOT userLastNameEmployeeRate(rate)  MSG 'ошибка: Не указано - кто ввел';
+//CONSTRAINT CHECKED rate IS rate AND NOT userLastNameEmployeeRate(rate)  MSG 'ошибка: Не указано - кто ввел';
 CONSTRAINT CHECKED rate IS rate AND NOT dataRate(rate)  MSG 'ошибка: Не указано значение ставки';
+CONSTRAINT CHECKED rate IS rate AND NOT commonNameEmployeeRate(rate)  MSG 'ошибка: Не указано - кто ввел';
 
 dataUserRateRange 'Значение ставки' (range) = dataRate(userRateRange(range)) IN baseGroup;
 dateFromUserRateRange 'Действует с' (range) = dateFromRate(userRateRange(range)) IN baseGroup;
 dateToUserRateRange 'Действует по' (range) = dateToRate(userRateRange(range)) IN baseGroup;
 
-userFirstNameEmployeeUserRateRange 'Кто ввел значение, имя' (range) = userFirstNameEmployeeRate(userRateRange(range)) IN baseGroup;
-userLastNameEmployeeUserRateRange 'Кто ввел значение, фамилия' (range) = userLastNameEmployeeRate(userRateRange(range)) IN baseGroup;
+//userFirstNameEmployeeUserRateRange 'Кто ввел значение, имя' (range) = userFirstNameEmployeeRate(userRateRange(range)) IN baseGroup;
+//userLastNameEmployeeUserRateRange 'Кто ввел значение, фамилия' (range) = userLastNameEmployeeRate(userRateRange(range)) IN baseGroup;
+commonNameEmployeeRateRange 'Кто ввел значение' (range) = commonNameEmployeeRate(userRateRange(range)) IN baseGroup;
 
 inRangeRate(range, rate) = rangeRate(rate) == range;
 inTaxRange(tax, range) = taxRange(range) == tax;
@@ -1823,7 +1849,7 @@ OBJECTS t=tax FIXED PANEL
 OBJECTS ra=range, rt=rate, s=store
 PROPERTIES(t)     nameTax, shortNameTax
 PROPERTIES(ra)    dataRange, nameRangeTypeRange, ADDOBJ, delete
-PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, dateRate, userFirstNameEmployeeRate, userLastNameEmployeeRate, ADDOBJ, delete
+PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, dateRate, commonNameEmployeeRate, ADDOBJ, delete
 PROPERTIES(s)     name, addressStore//, ADDOBJ, delete
 PROPERTIES(ra, s) inRangeStore
 FILTERS NOT NULL  inRangeRate(ra, rt),
@@ -1854,7 +1880,7 @@ PROPERTIES(t)      READONLY nameTax, shortNameTax
 PROPERTIES(t)      ADDFORM, EDITFORM, delete
 PROPERTIES(s)     READONLY name, addressStore
 PROPERTIES(ra, s)  READONLY inRangeStore
-PROPERTIES(ra)  READONLY dataRange, dataUserRateRange, dateFromUserRateRange, dateToUserRateRange, userFirstNameEmployeeUserRateRange, userLastNameEmployeeUserRateRange, nameRangeTypeRange, quantityRateRange
+PROPERTIES(ra)  READONLY dataRange, dataUserRateRange, dateFromUserRateRange, dateToUserRateRange, commonNameEmployeeRateRange, nameRangeTypeRange, quantityRateRange
 FILTERS NOT NULL inTaxRange(t, ra),
         NOT NULL inRangeStore(ra, s);
 
@@ -2097,6 +2123,12 @@ NAVIGATOR {
             ADD phoneLegalEntity;
             ADD addNamesureSupplierDepartmentStore;
             ADD namesureSupplierDepartmentStore;
+            ADD addressBank;
+            ADD addaddressBank;
+            ADD nameformContract;
+            ADD addNameformContract;
+            ADD delayContract;
+            ADD adddelayContract;
             ADD genTimeTable;
             ADD addNamediscount;
             ADD addtimeTable;
