@@ -858,7 +858,8 @@ EDIT itemGroup OBJECT g;
 FORM itemGroups 'Товарные группы'
 TREE g=itemGroup PARENT parentItemGroup
 PROPERTIES(g) READONLY name, extSID
-PROPERTIES(g) ADDFORM, EDITFORM, delete;
+PROPERTIES(g) ADDFORM, EDITFORM, delete
+DIALOG itemGroup OBJECT g;
 
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
 

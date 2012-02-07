@@ -263,7 +263,8 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
 
     public int removeProperty(ClientGroupObject group, ClientPropertyDraw property) {
         properties.remove(property);
-        groupPropsMap.get(group).remove(property);
+        if (groupPropsMap.containsKey(group))
+            groupPropsMap.get(group).remove(property);
 
         int ind = columnProperties.indexOf(property);
         if (ind != -1) {
