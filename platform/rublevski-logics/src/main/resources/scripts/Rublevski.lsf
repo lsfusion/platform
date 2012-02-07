@@ -1262,9 +1262,10 @@ supplierOrderSupplier 'Поставщик заказа (ИД)' = DATA supplier (
 nameSupplierOrderSupplier 'Поставщик заказ' (orderSupplier) = name(supplierOrderSupplier(orderSupplier));
 completePercentageOrderSupplier 'Процент выполнения' (orderSupplier) = DATA DOUBLE (orderSupplier) IN baseGroup;
 
+quantityPackItem2 'Количество в грузовом месте' (item) = UNION OVERRIDE 1 IF item IS item, quantityPackItem(item);
 itemAssortmentOrderSupplier 'Ассортимен заказа' (orderSupplier, item) = itemAssortmentSupplier(departmentStoreOrderSupplier(orderSupplier), supplierOrderSupplier(orderSupplier), item);
 packQuantityItemOrderSupplier 'Количество мест' = DATA INTEGER (orderSupplier, item);
-sumQuantityItemOrderSupplier 'Сумарное количество товара' (orderSupplier, item) = quantityPackItem(item) * packQuantityItemOrderSupplier(orderSupplier, item);
+sumQuantityItemOrderSupplier 'Сумарное количество товара' (orderSupplier, item) = quantityPackItem2(item) * packQuantityItemOrderSupplier(orderSupplier, item);
 fullPriceItemOrderSupplier 'Цена с НДС' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item) IN baseGroup;
 fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) =  sumQuantityItemOrderSupplier(orderSupplier, item) * fullPriceItemOrderSupplier(orderSupplier, item) IN baseGroup;
 fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier;
@@ -1273,7 +1274,7 @@ FORM orderSupplier 'Заказ поставщику'
 OBJECTS o=orderSupplier FIXED PANEL, i=item
 PROPERTIES(o) name, curDateOrderSupplier, namePersonOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
               nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier
-PROPERTIES(i) name, quantityPackItem
+PROPERTIES(i) name, quantityPackItem2
 PROPERTIES(o, i) packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
 FILTERS NOT NULL itemAssortmentOrderSupplier(o, i)
 FILTERGROUP filters1
