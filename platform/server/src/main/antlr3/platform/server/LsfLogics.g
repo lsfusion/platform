@@ -318,15 +318,17 @@ formGroupObjectsList // needs refactoring
 
 formTreeGroupObject
 @init {
+	String treeSID = null;
 	List<ScriptingGroupObject> groups = new ArrayList<ScriptingGroupObject>();
 	List<List<String>> properties = new ArrayList<List<String>>();
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptingTreeGroupObject(groups, properties);
+		$formStatement::form.addScriptingTreeGroupObject(treeSID, groups, properties);
 	}
 }
 	:	'TREE'
+		(id = ID { treeSID = $id.text; })?
 		groupElement=formTreeGroupObjectDeclaration { groups.add($groupElement.groupObject); properties.add($groupElement.properties); }
 		(',' groupElement=formTreeGroupObjectDeclaration { groups.add($groupElement.groupObject); properties.add($groupElement.properties); })*
 	;

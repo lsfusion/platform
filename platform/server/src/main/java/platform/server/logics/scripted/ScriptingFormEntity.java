@@ -74,7 +74,7 @@ public class ScriptingFormEntity extends FormEntity {
         return groups;
     }
 
-    public void addScriptingTreeGroupObject(List<ScriptingGroupObject> groupObjects,
+    public void addScriptingTreeGroupObject(String treeSID, List<ScriptingGroupObject> groupObjects,
                                             List<List<String>> parentProperties) throws ScriptingErrorLog.SemanticErrorException {
         List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects);
         for (ScriptingGroupObject groupObject : groupObjects) {
@@ -97,7 +97,9 @@ public class ScriptingFormEntity extends FormEntity {
                     groupObj.setIsParents(propertyObjects.toArray(new PropertyObjectEntity[propertyObjects.size()]));
             }
         }
-        addTreeGroupObject(groups.toArray(new GroupObjectEntity[groups.size()]));
+        TreeGroupEntity tree = addTreeGroupObject(groups.toArray(new GroupObjectEntity[groups.size()]));
+        if (treeSID != null)
+            tree.setSID(treeSID);
     }
 
     private void addGroupObjectEntity(String groupName, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
