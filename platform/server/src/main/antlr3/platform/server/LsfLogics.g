@@ -740,6 +740,7 @@ contextIndependentPD[boolean innerPD] returns [LP property, boolean isData = fal
 	|	typeDef=typePropertyDefinition { $property = $typeDef.property; }
 	|	formDef=formActionPropertyDefinition { $property = $formDef.property; }
 	|	flowDef=flowActionPropertyDefinition { $property = $flowDef.property; }
+	|	addDef=addObjectActionPropertyDefinition { $property = $addDef.property; }
 	;
 
 joinPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -958,8 +959,23 @@ imageSetting [LP property]
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////// FLOW ACTION STATEMENT ////////////////////////////
+////////////////////////////////// ADD OBJECT ACTION STATEMENT /////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
+
+addObjectActionPropertyDefinition returns [LP property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedAddObjProp($cid.sid);
+	}
+}
+	:	'ADDOBJ' cid=classId
+	;
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// FLOW ACTION STATEMENT ///////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 
 flowActionPropertyDefinition returns [LP property]
 @init{

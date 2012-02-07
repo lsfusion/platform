@@ -553,6 +553,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addFlowAProp(null, genSID(), "", props, mapActions, innerContext.size());
     }
 
+    public LP addScriptedAddObjProp(String className) throws ScriptingErrorLog.SemanticErrorException {
+        return getSimpleAddObjectAction((CustomClass) findClassByCompoundName(className));
+    }
+
     public LPWithParams addScriptedSetPropertyAProp(LPWithParams toProperty, LPWithParams fromProperty, boolean isDefault, List<String> oldContext) throws ScriptingErrorLog.SemanticErrorException {
         if (toProperty == null) {
             if (fromProperty.usedParams != null || isDefault) {

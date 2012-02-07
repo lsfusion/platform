@@ -25,6 +25,7 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
 import platform.server.logics.property.actions.flow.FlowActionProperty;
 import platform.server.logics.property.actions.flow.SetPropertyActionProperty;
+import platform.server.logics.property.actions.flow.SimpleAddObjectActionProperty;
 import platform.server.logics.property.derived.AggregateGroupProperty;
 import platform.server.logics.property.derived.ConcatenateProperty;
 import platform.server.logics.property.derived.CycleGroupProperty;
@@ -1827,6 +1828,16 @@ public abstract class LogicsModule {
     public LP getAddObjectAction(CustomClass cls) {
         //"add" + BaseUtils.capitalize(cls.getSID())
         return addAProp(new AddObjectActionProperty(genSID(), cls));
+    }
+
+    @IdentityLazy
+    private LP getAddedObjectProperty() {
+        return addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("addedObject", "Added Object", new ValueClass[0], baseLM.baseClass)));
+    }
+
+    @IdentityLazy
+    public LP getSimpleAddObjectAction(CustomClass cls) {
+        return addAProp(new SimpleAddObjectActionProperty(genSID(), cls, getAddedObjectProperty()));
     }
 
     @IdentityLazy
