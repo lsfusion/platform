@@ -557,8 +557,18 @@ PROPERTIES(c) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Генерация графика --------------------------------------- //
 
+CLASS STATIC genType 'Тип генерации' {
+    genWeek 'Генерация каждые N недель',
+    genDay 'Генерация через N дней',
+    genNumber 'Генерация по числам',
+    genDayMonth 'Генерация по дням недели и месяца'
+
+};
+
 CLASS genTimeTable 'Генерация графика' : named;
 
+genTimeTableType 'Тип генерации графика (ИД)' = DATA genType (genTimeTable);
+nameGenTimeTableType 'Тип генерации графика' (genTimeTable) = name(genTimeTableType(genTimeTable)) IN baseGroup;
 startDateGenTimeTable 'Дата начала' = DATA DATE (genTimeTable) IN baseGroup;
 endDateGenTimeTable 'Дата окончания' = DATA DATE (genTimeTable) IN baseGroup;
 supplierGenTimeTable 'Поставщик (ИД)' = DATA supplier (genTimeTable);
@@ -570,15 +580,15 @@ inMonthGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, captionMont
 inDayGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, captionDOW);
 inAllMonthGenTable 'Включить все месяцы' = DATA BOOLEAN (genTimeTable);
 inMonthGenTimeTable(genTimeTable, captionMonth) <- inAllMonthGenTable(genTimeTable) ON ASSIGN inAllMonthGenTable(genTimeTable) AND captionMonth IS captionMonth;
-//inMonthGenTimeTable(genTimeTable, captionMonth) <- inAllMonthGenTable(genTimeTable) ON ASSIGN inAllMonthGenTable(genTimeTable);
+toShowGenDayMonth (genTimeTable) = genTimeTableType(genTimeTable) == genType.genDayMonth;
 
 FORM genTimeTable 'Генерация графика'
 OBJECTS g=genTimeTable FIXED PANEL, m=captionMonth, d=captionDOW
-PROPERTIES(g) nameSupplierGenTimeTable, nameDepartmentStoreGenTimeTable, startDateGenTimeTable, endDateGenTimeTable, inAllMonthGenTable
-PROPERTIES(m) READONLY name
-PROPERTIES(d) READONLY name
-PROPERTIES(g, m)inMonthGenTimeTable
-PROPERTIES(g, d) inDayGenTimeTable
+PROPERTIES(g) nameGenTimeTableType, nameSupplierGenTimeTable, nameDepartmentStoreGenTimeTable, startDateGenTimeTable, endDateGenTimeTable, inAllMonthGenTable SHOWIF toShowGenDayMonth(g)
+PROPERTIES(m) READONLY name// SHOWIF toShowGenDayMonth(g)
+PROPERTIES(d) READONLY name// SHOWIF toShowGenDayMonth(g)
+PROPERTIES(g, m) inMonthGenTimeTable SHOWIF toShowGenDayMonth(g)
+PROPERTIES(g, d) inDayGenTimeTable SHOWIF toShowGenDayMonth(g)
 EDIT genTimeTable OBJECT g;
 
 FORM genTimeTables 'Графики' //служит для добавления сущности "генерации графиков" и в дальнейшем будет удалена
