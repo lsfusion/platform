@@ -1149,16 +1149,22 @@ public abstract class LogicsModule {
         return addOGProp(null, name, persist, caption, type, numOrders, ascending, groupProp, params);
     }
     public <T extends PropertyInterface> LP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean ascending, LP<T> groupProp, Object... params) {
-        List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
-        int numExtras = type.numExprs() - 1;
-
-        List<PropertyInterfaceImplement<T>> extras = listImplements.subList(0, numExtras);
-        OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<T>, Boolean>(listImplements.subList(numExtras, numExtras + numOrders), ascending);
-        List<PropertyInterfaceImplement<T>> groups = listImplements.subList(numExtras + numOrders, listImplements.size());
-        OrderGroupProperty<T> property = new OrderGroupProperty<T>(name, caption, groups, groupProp.property, extras, type, orders);
+        return addOGProp(group, name, persist, caption, type, numOrders, ascending, groupProp.listInterfaces, BaseUtils.add(groupProp.property.getImplement(), readImplements(groupProp.listInterfaces, params)));
+    }
+    public <T extends PropertyInterface> LP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean ascending, int interfaces, Object... params) {
+        List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
+        return addOGProp(group, name, persist, caption, type, numOrders, ascending, innerInterfaces, readImplements(innerInterfaces, params));
+    }
+    public <T extends PropertyInterface> LP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean ascending, Collection<T> innerInterfaces, List<PropertyInterfaceImplement<T>> listImplements) {
+        int numExprs = type.numExprs();
+        List<PropertyInterfaceImplement<T>> props = listImplements.subList(0, numExprs);
+        OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<T>, Boolean>(listImplements.subList(numExprs, numExprs + numOrders), ascending);
+        List<PropertyInterfaceImplement<T>> groups = listImplements.subList(numExprs + numOrders, listImplements.size());
+        OrderGroupProperty<T> property = new OrderGroupProperty<T>(name, caption, innerInterfaces, groups, props, type, orders);
 
         return mapLGProp(group, persist, property, groups);
     }
+
 
     protected LP addMGProp(LP groupProp, Object... params) {
         return addMGProp("sys", groupProp, params);
