@@ -1341,15 +1341,15 @@ public abstract class LogicsModule {
     }
 
     protected <T extends PropertyInterface<T>, I extends PropertyInterface> LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, List<T> innerInterfaces, int aggrInterface, List<PropertyInterfaceImplement<T>> listImplements) {
-        PropertyMapImplement<I, T> whereProp = (PropertyMapImplement<I, T>) listImplements.get(0);
+        PropertyInterfaceImplement<T> whereProp = listImplements.get(0);
         List<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(1, listImplements.size());
 
-        AggregateGroupProperty<T, I> aggProp = AggregateGroupProperty.create(name, caption, innerInterfaces, whereProp, innerInterfaces.get(aggrInterface - 1), groupImplements);
+        AggregateGroupProperty<T> aggProp = AggregateGroupProperty.create(name, caption, innerInterfaces, whereProp, innerInterfaces.get(aggrInterface - 1), groupImplements);
         return addAGProp(group, checkChange, persistent, noConstraint, aggProp, groupImplements);
     }
 
     // чисто для generics
-    private <T extends PropertyInterface<T>, J extends PropertyInterface> LP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, boolean noConstraint, AggregateGroupProperty<T, J> property, List<PropertyInterfaceImplement<T>> listImplements) {
+    private <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, boolean noConstraint, AggregateGroupProperty<T> property, List<PropertyInterfaceImplement<T>> listImplements) {
         // нужно добавить ограничение на уникальность
         if(!noConstraint)
             addProperty(null, new LP(property.getConstrainedProperty(checkChange)));

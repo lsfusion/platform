@@ -3,11 +3,9 @@ package platform.server.logics.property.derived;
 import platform.base.BaseUtils;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.session.DataSession;
@@ -17,14 +15,14 @@ import java.sql.SQLException;
 import java.util.*;
 
 // связь один к одному
-public class AggregateGroupProperty<T extends PropertyInterface, I extends PropertyInterface> extends CycleGroupProperty<T ,PropertyInterface> {
+public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGroupProperty<T ,PropertyInterface> {
 
-    private final PropertyMapImplement<I, T> whereProp;
+    private final PropertyInterfaceImplement<T> whereProp;
     private final T aggrInterface;
     private final Collection<PropertyInterfaceImplement<T>> groupProps;
 
     // чисто из-за ограничения конструктора
-    public static <T extends PropertyInterface<T>, I extends PropertyInterface> AggregateGroupProperty<T, I> create(String sID, String caption, Collection<T> innerInterfaces, PropertyMapImplement<I, T> property, T aggrInterface, Collection<PropertyInterfaceImplement<T>> groupProps) {
+    public static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(String sID, String caption, Collection<T> innerInterfaces, PropertyInterfaceImplement<T> property, T aggrInterface, Collection<PropertyInterfaceImplement<T>> groupProps) {
         PropertyMapImplement<?, T> and = DerivedProperty.createAnd(innerInterfaces, aggrInterface, property);
         and.property.caption = caption + "(аггр.)";
         assert groupProps.containsAll(BaseUtils.remove(innerInterfaces, aggrInterface));
@@ -32,11 +30,11 @@ public class AggregateGroupProperty<T extends PropertyInterface, I extends Prope
     }
 
     // чисто для generics
-    private static <T extends PropertyInterface<T>, I extends PropertyInterface> AggregateGroupProperty<T, I> create(String sID, String caption, PropertyMapImplement<?, T> and, Collection<PropertyInterfaceImplement<T>> groupInterfaces, Collection<T> innerInterfaces, PropertyMapImplement<I, T> property, T aggrInterface, Collection<PropertyInterfaceImplement<T>> groupProps) {
-        return new AggregateGroupProperty<T, I>(sID, caption, and, groupInterfaces, innerInterfaces, property, aggrInterface, groupProps);
+    private static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(String sID, String caption, PropertyInterfaceImplement<T> and, Collection<PropertyInterfaceImplement<T>> groupInterfaces, Collection<T> innerInterfaces, PropertyInterfaceImplement<T> whereProp, T aggrInterface, Collection<PropertyInterfaceImplement<T>> groupProps) {
+        return new AggregateGroupProperty<T>(sID, caption, and, groupInterfaces, innerInterfaces, whereProp, aggrInterface, groupProps);
     }
 
-    private AggregateGroupProperty(String sID, String caption, PropertyMapImplement<?, T> and, Collection<PropertyInterfaceImplement<T>> groupInterfaces, Collection<T> innerInterfaces, PropertyMapImplement<I, T> whereProp, T aggrInterface, Collection<PropertyInterfaceImplement<T>> groupProps) {
+    private AggregateGroupProperty(String sID, String caption, PropertyInterfaceImplement<T> and, Collection<PropertyInterfaceImplement<T>> groupInterfaces, Collection<T> innerInterfaces, PropertyInterfaceImplement<T> whereProp, T aggrInterface, Collection<PropertyInterfaceImplement<T>> groupProps) {
         super(sID, caption, innerInterfaces, groupInterfaces, and, null);
 
         this.whereProp = whereProp;
@@ -67,7 +65,8 @@ public class AggregateGroupProperty<T extends PropertyInterface, I extends Prope
             Map<T, DataObject> propValues = BaseUtils.merge(Collections.singletonMap(aggrInterface, aggrObject), // aggrInterface = aggrObject, остальные из row'а читаем
                     BaseUtils.filterKeys(interfaceValues, BaseUtils.remove(innerInterfaces, aggrInterface)));
 
-            whereProp.mapNotNull(propValues, session);
+            if(whereProp instanceof PropertyMapImplement)
+                ((PropertyMapImplement<?,T>)whereProp).mapNotNull(propValues, session);
             for(Map.Entry<PropertyInterfaceImplement<T>, DataObject> propertyInterface : BaseUtils.filterKeys(interfaceValues, groupProps).entrySet())
                 if(propertyInterface.getKey() instanceof PropertyMapImplement)
                     ((PropertyMapImplement<?,T>)propertyInterface.getKey()).execute(propValues, session, propertyInterface.getValue().object, session.modifier);
