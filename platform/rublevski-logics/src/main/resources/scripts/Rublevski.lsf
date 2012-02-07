@@ -831,7 +831,7 @@ DESIGN item FROM DEFAULT {
 inItemGroupSku(itemGroup, sku) = itemGroupSku(sku) == itemGroup;
 
 FORM items 'Товары'
-TREE g=itemGroup PARENT parentItemGroup
+TREE treeGroup g=itemGroup PARENT parentItemGroup
 OBJECTS i=item
 PROPERTIES(g) READONLY name
 PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem, barcodeBarcodeSku
@@ -839,7 +839,7 @@ PROPERTIES(i) ADDFORM, EDITFORM, delete
 FILTERS NOT NULL inItemGroupSku(g, i);
 
 DESIGN items FROM DEFAULT {
-    POSITION obj4.box TO THE LEFT i.box;
+    POSITION treeGroup.box TO THE LEFT i.box;
 }
 
 FORM itemInDepartment  'Товары в подразделениях'
@@ -1784,7 +1784,7 @@ shortNameTax 'Сокращение' = DATA STRING[20] (tax) IN baseGroup;
 CLASS range 'Шкала';
 dataRange 'Шкала' = DATA INTEGER (range);
 
-CLASS rate 'История изменений шкалы';
+CLASS rate 'История изменений шкалы' : historyObject;
 rangeRate 'Шкала ИД' = DATA range (rate) IN idGroup;
 taxRange 'Налог ИД' = DATA tax (range) IN idGroup;
 
@@ -1809,14 +1809,6 @@ dateRate(rate) <- currentDate() ON ASSIGN rate IS rate;
 
 employeeRate 'Кто ввел ИД' = DATA employee (rate) IN baseGroup;
 
-//userFirstNameEmployeeRate 'Кто ввел значение, имя' (rate) = userFirstName(employeeRate(rate)) IN baseGroup;
-//userLastNameEmployeeRate 'Кто ввел значение, фамилия' (rate) = userLastName(employeeRate(rate)) IN baseGroup;
-commonNameEmployeeRate 'Кто ввел значение' (rate) = commonName(employeeRate(rate)) IN baseGroup;
-
-//userFirstNameEmployeeRate(rate) <- userFirstName(currentUser()) ON ASSIGN rate IS rate;
-//userLastNameEmployeeRate(rate)  <- userLastName(currentUser()) ON ASSIGN rate IS rate;
-commonNameEmployeeRate(rate)  <- commonName(currentUser()) ON ASSIGN rate IS rate;
-
 //rateRange 'Шкала ИД' = DATA rate (range) IN baseGroup;
 userRate 'Действующая' (rate) = rate IF dateFromRate(rate) <= currentDate() AND dateToRate(rate) >= currentDate();
 userRateRange 'Действующая' (range) = GROUP MAX userRate(rate) BY rangeRate(rate);
@@ -1830,7 +1822,6 @@ CONSTRAINT CHECKED range IS range AND NOT rangeTypeRange(range)  MSG 'ошибк
 // работает, но хотели мы что-то другое.....//
 //CONSTRAINT CHECKED rate IS rate AND NOT userLastNameEmployeeRate(rate)  MSG 'ошибка: Не указано - кто ввел';
 CONSTRAINT CHECKED rate IS rate AND NOT dataRate(rate)  MSG 'ошибка: Не указано значение ставки';
-CONSTRAINT CHECKED rate IS rate AND NOT commonNameEmployeeRate(rate)  MSG 'ошибка: Не указано - кто ввел';
 
 dataUserRateRange 'Значение ставки' (range) = dataRate(userRateRange(range)) IN baseGroup;
 dateFromUserRateRange 'Действует с' (range) = dateFromRate(userRateRange(range)) IN baseGroup;
@@ -1838,7 +1829,8 @@ dateToUserRateRange 'Действует по' (range) = dateToRate(userRateRange
 
 //userFirstNameEmployeeUserRateRange 'Кто ввел значение, имя' (range) = userFirstNameEmployeeRate(userRateRange(range)) IN baseGroup;
 //userLastNameEmployeeUserRateRange 'Кто ввел значение, фамилия' (range) = userLastNameEmployeeRate(userRateRange(range)) IN baseGroup;
-commonNameEmployeeRateRange 'Кто ввел значение' (range) = commonNameEmployeeRate(userRateRange(range)) IN baseGroup;
+nameUserCreatedRange 'Создан пользователем' (range) = nameUserCreated(userRateRange(range)) IN baseGroup;
+timeCreatedRange 'Время ввода' (range) = timeCreated(userRateRange(range)) IN baseGroup;
 
 inRangeRate(range, rate) = rangeRate(rate) == range;
 inTaxRange(tax, range) = taxRange(range) == tax;
@@ -1849,7 +1841,7 @@ OBJECTS t=tax FIXED PANEL
 OBJECTS ra=range, rt=rate, s=store
 PROPERTIES(t)     nameTax, shortNameTax
 PROPERTIES(ra)    dataRange, nameRangeTypeRange, ADDOBJ, delete
-PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, dateRate, commonNameEmployeeRate, ADDOBJ, delete
+PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, dateRate, nameUserCreated, timeCreated, ADDOBJ, delete
 PROPERTIES(s)     name, addressStore//, ADDOBJ, delete
 PROPERTIES(ra, s) inRangeStore
 FILTERS NOT NULL  inRangeRate(ra, rt),
@@ -1880,7 +1872,7 @@ PROPERTIES(t)      READONLY nameTax, shortNameTax
 PROPERTIES(t)      ADDFORM, EDITFORM, delete
 PROPERTIES(s)     READONLY name, addressStore
 PROPERTIES(ra, s)  READONLY inRangeStore
-PROPERTIES(ra)  READONLY dataRange, dataUserRateRange, dateFromUserRateRange, dateToUserRateRange, commonNameEmployeeRateRange, nameRangeTypeRange, quantityRateRange
+PROPERTIES(ra)  READONLY dataRange, dataUserRateRange, dateFromUserRateRange, dateToUserRateRange, nameUserCreatedRange, nameRangeTypeRange, quantityRateRange
 FILTERS NOT NULL inTaxRange(t, ra),
         NOT NULL inRangeStore(ra, s);
 

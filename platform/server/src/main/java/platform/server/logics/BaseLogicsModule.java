@@ -85,7 +85,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass tableKey;
     public ConcreteCustomClass tableColumn;
 
-    public AbstractCustomClass transaction, barcodeObject, externalObject;
+    public AbstractCustomClass transaction, transactionTime, barcodeObject, externalObject, historyObject;
 
     public AbstractCustomClass emailObject;
 
@@ -205,6 +205,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP seekBarcodeAction;
     public LP barcodeNotFoundMessage;
     public LP extSID, extSIDToObject;
+    public LP timeCreated, userCreated, nameUserCreated;
     public LP restartServerAction;
     public LP runGarbageCollector;
     public LP cancelRestartServerAction;
@@ -471,6 +472,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         barcodeObject = addAbstractClass("barcodeObject", getString("logics.object.barcoded.object"), baseClass);
 
         externalObject = addAbstractClass("externalObject", getString("logics.object.external.object"), baseClass);
+
+        historyObject = addAbstractClass("historyObject", getString("logics.object.history.object"), baseClass);
         
         emailObject = addAbstractClass("emailObject", getString("logics.object.with.email"), baseClass);
 
@@ -485,7 +488,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         userRole = addConcreteClass("userRole", getString("logics.role"), baseClass.named);
 
         policy = addConcreteClass("policy", getString("logics.policy.security.policy"), baseClass.named);
-        session = addConcreteClass("session", getString("logics.transaction"), baseClass);
+        session = addConcreteClass("session", getString("logics.session"), baseClass);
 
         connection = addConcreteClass("connection", getString("logics.connection"), baseClass);
         connectionStatus = addStaticClass("connectionStatus", getString("logics.connection.status"),
@@ -793,6 +796,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         extSID = addDProp(baseGroup, "extSID", getString("logics.extsid"), StringClass.get(50), externalObject);
         extSIDToObject = addAGProp("extSIDToObject", getString("logics.object"), extSID);
+        
+        timeCreated = addDProp(baseGroup, "timeCreated", getString("logics.timecreated"), DateTimeClass.instance, historyObject);
+        userCreated = addDProp(idGroup, "userCreated", getString("logics.usercreated"), customUser, historyObject);
+        nameUserCreated = addJProp(baseGroup, "nameUserCreated", getString("logics.usercreated"), name, userCreated, 1);
+        
+        timeCreated.setDerivedChange(true, currentDateTime, is(historyObject), 1);
+        userCreated.setDerivedChange(true, currentUser, is(historyObject), 1);
 
         restartServerAction = addJProp(getString("logics.server.stop"), andNot1, addRestartActionProp(), isServerRestarting);
         runGarbageCollector = addGarbageCollectorActionProp();
