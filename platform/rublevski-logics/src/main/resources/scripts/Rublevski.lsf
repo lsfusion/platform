@@ -151,6 +151,8 @@ CLASS itemGroup 'Товарная группа' : named, externalObject;
 
 parentItemGroup = DATA itemGroup (itemGroup);
 nameParentItemGroup 'Родительская группа' = name(parentItemGroup(itemGroup));
+maxTurnoverItemGroup 'Максимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
+minTurnoverItemGroup 'Минимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 
 // формы за формами товара
 
@@ -858,7 +860,7 @@ PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentSto
 
 FORM itemGroup 'Товарная группа'
 OBJECTS g=itemGroup FIXED PANEL
-PROPERTIES(g) name, nameParentItemGroup, extSID
+PROPERTIES(g) name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, extSID
 EDIT itemGroup OBJECT g;
 
 FORM itemGroups 'Товарные группы'
