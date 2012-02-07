@@ -302,7 +302,7 @@ formDeclaration returns [ScriptingFormEntity form]
 		formNameCaption=simpleNameWithCaption
 	;
 
-formGroupObjectsList // needs refactoring
+formGroupObjectsList 
 @init {
 	List<ScriptingGroupObject> groups = new ArrayList<ScriptingGroupObject>();
 }
@@ -759,19 +759,20 @@ joinPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPar
 groupPropertyDefinition returns [LP property]
 @init {
 	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
+	List<LPWithParams> groupProps = new ArrayList<LPWithParams>();
 	List<String> groupContext = new ArrayList<String>();
 	boolean ascending = true;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedGProp($type.type, $groupList.props, $exprList.props, orderProps, ascending, $whereExpr.property);
+		$property = self.addScriptedGProp($type.type, $mainList.props, groupProps, orderProps, ascending, $whereExpr.property);
 	}
 }
 	:	'GROUP'
 		type=groupingType
-		groupList=nonEmptyPropertyExpressionList[groupContext, true]
-		'BY'
-		exprList=nonEmptyPropertyExpressionList[groupContext, true]
+		mainList=nonEmptyPropertyExpressionList[groupContext, true]
+		('BY'
+		exprList=nonEmptyPropertyExpressionList[groupContext, true] { groupProps.addAll($exprList.props); })?
 		('ORDER' ('DESC' { ascending = false; } )?
 		orderList=nonEmptyPropertyExpressionList[groupContext, true] { orderProps.addAll($orderList.props); })?
 		('WHERE' whereExpr=propertyExpression[groupContext, true])?
@@ -783,7 +784,7 @@ groupingType returns [GroupingType type]
 	|	'MAX' 	{ $type = GroupingType.MAX; }
 	|	'MIN' 	{ $type = GroupingType.MIN; }
 	|	'CONCAT' { $type = GroupingType.CONCAT; }
-	|	'UNIQUE' 	{ $type = GroupingType.UNIQUE; }
+	|	'UNIQUE' { $type = GroupingType.UNIQUE; }
 	;
 
 

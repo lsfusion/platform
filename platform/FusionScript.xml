@@ -36,6 +36,7 @@
       <keyword name="CHECKED" />
       <keyword name="CLASS" />
       <keyword name="COLUMNS" />
+      <keyword name="CONCAT" />
       <keyword name="CONSTRAINT" />
       <keyword name="DATA" />
       <keyword name="DATE" />
@@ -136,9 +137,11 @@
       <keyword name="TREE" />
       <keyword name="TRUE" />
       <keyword name="UNION" />
+      <keyword name="UNIQUE" />
       <keyword name="UPDATE" />
       <keyword name="VALIGN" />
       <keyword name="VERTICAL" />
+      <keyword name="WHERE" />
       <keyword name="WINDOW" />
       <keyword name="XOR" />
     </keywords>

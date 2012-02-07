@@ -10,7 +10,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
     var types = words("INTEGER DOUBLE LONG BOOLEAN DATE STRING ISTRING");
     var keywords = words("ABSTRACT ACTION ADD ADDFORM ADDOBJ ADDSESSIONFORM AFTER " + 
                            "ALL AND APPLY AS ASC ASSIGN BEFORE BOTTOM BY CASCADE CENTER CHANGE " +
-                           "CHECKED CLASS COLUMNS CONSTRAINT DATA DEFAULT DESC DESIGN DIALOG " +
+                           "CHECKED CLASS COLUMNS CONCAT CONSTRAINT DATA DEFAULT DESC DESIGN DIALOG " +
                            "DRAWROOT EDIT EDITABLE EDITFORM EDITSESSIONFORM END EXCEPTLAST " +
                            "EXCLUSIVE FALSE FILTER FILTERGROUP FILTERS FIXED FIXEDCHARWIDTH FOOTER " +
                            "FORCE FORM FORMULA FROM GRID GROUP HALIGN HEADER HIDE " + 
@@ -21,7 +21,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "PARTITION PERSISTENT POSITION PROPERTIES PROPERTY READONLY " + 
                            "REMOVE RESOLVE RIGHT RIGHTBOTTOM SELECTION SET SHORTCUT " + 
                            "SHOWIF STATIC SUM TABLE TEXTHALIGN TEXTVALIGN THE TO TODRAW TOOLBAR " +
-                           "TOP TREE TRUE UNION UPDATE VALIGN VERTICAL WINDOW XOR");
+                           "TOP TREE TRUE UNION UNIQUE UPDATE VALIGN VERTICAL WHERE WINDOW XOR");
 
     var isOperatorChar = /[+\-*&%=<>!?|]/;
 

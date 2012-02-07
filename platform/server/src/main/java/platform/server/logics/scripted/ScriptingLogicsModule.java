@@ -11,6 +11,7 @@ import platform.server.LsfLogicsLexer;
 import platform.server.LsfLogicsParser;
 import platform.server.classes.*;
 import platform.server.data.Union;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.form.entity.*;
 import platform.server.form.navigator.NavigatorElement;
@@ -439,7 +440,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             scriptLogger.info("addScriptedJProp(" + mainProp.property.getSID() + ", " + resultParams + ");");
             prop = addJProp("", mainProp, resultParams.toArray());
         }
-        return new LPWithParams(prop, mergeLists(paramProps));
+        return new LPWithParams(prop, mergeAllParams(paramProps));
     }
 
     private LP<?> getRelationProp(String op) {
@@ -523,7 +524,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(baseLM.minusDouble, Arrays.<LPWithParams>asList(prop));
     }
 
-    private List<Integer> mergeLists(List<LPWithParams> lpList) {
+    private List<Integer> mergeAllParams(List<LPWithParams> lpList) {
         Set<Integer> s = new TreeSet<Integer>();
         for (LPWithParams mappedLP : lpList) {
             s.addAll(mappedLP.usedParams);
@@ -571,7 +572,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             fromProperty = new LPWithParams(baseLM.vdefault((ConcreteValueClass) toProperty.property.property.getCommonClasses().value), new ArrayList<Integer>());
         }
 
-        List<Integer> allParams = mergeLists(Arrays.asList(toProperty, fromProperty));
+        List<Integer> allParams = mergeAllParams(Arrays.asList(toProperty, fromProperty));
 
         //все использованные параметры, которые были в старом контексте, идут на вход результирующего свойства
         ArrayList<Integer> mapThisInterfacesList = new ArrayList<Integer>();
@@ -643,14 +644,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkGPropAggregateConsistence(type, mainProps.size());
         checkGPropUniqueConstraints(type, mainProps, groupProps);
 
-        List<Object> resultParams = getParamsPlainList(mainProps, groupProps);
+        List<Object> resultParams = getParamsPlainList(mainProps, groupProps, orderProps);
 
-        int groupPropParamCount = mergeLists(BaseUtils.mergeList(mainProps, groupProps)).size();
-        LP<?> resultProp = null;
+        int groupPropParamCount = mergeAllParams(BaseUtils.mergeLists(mainProps, groupProps, orderProps)).size();
+        LP resultProp = null;
         if (type == GroupingType.SUM) {
             resultProp = addSGProp(null, genSID(), false, false, "", groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
             resultProp = addMGProp(null, genSID(), false, "", type == GroupingType.MIN, groupPropParamCount, resultParams.toArray());
+        } else if (type == GroupingType.CONCAT) {
+            resultProp = addOGProp(null, genSID(), false, "", GroupType.STRING_AGG, orderProps.size(), !ascending /* todo [dale]: wtf? */, groupPropParamCount, resultParams.toArray());
         } else
             assert false;
         return resultProp;
@@ -675,7 +678,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             resultParams = transformSumUnionParams(resultParams);
         }
         LP<?> prop = addUProp(null, "", unionType, resultParams.toArray());
-        return new LPWithParams(prop, mergeLists(paramProps));
+        return new LPWithParams(prop, mergeAllParams(paramProps));
     }
 
     public LPWithParams addScriptedOProp(PartitionType partitionType, boolean isAscending, boolean useLast, int groupPropsCnt,
@@ -684,7 +687,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<Object> resultParams = getParamsPlainList(paramProps);
         LP prop = addOProp(null, genSID(), false, "", partitionType, isAscending, useLast, groupPropsCnt, resultParams.toArray());
-        return new LPWithParams(prop, mergeLists(paramProps));
+        return new LPWithParams(prop, mergeAllParams(paramProps));
     }
 
     public LP<?> addScriptedSFProp(String typeName, String formulaLiteral) throws ScriptingErrorLog.SemanticErrorException {
