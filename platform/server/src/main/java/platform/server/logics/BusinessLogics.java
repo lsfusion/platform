@@ -707,7 +707,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 module.initClasses();
             }
 
-            checkClasses(); //проверка на то, что у каждого абстрактного класса есть конкретный потомок
             LM.baseClass.initObjectClass();
             LM.storeCustomClass(LM.baseClass.objectClass);
 
@@ -1404,17 +1403,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         session.close();
-    }
-
-    private void checkClasses() {
-        checkClass(LM.baseClass);
-    }
-
-    private void checkClass(CustomClass c) {
-        assert (!(c instanceof AbstractCustomClass) || c.hasChildren() || c.equals(LM.baseClass.sidClass) || c.equals(LM.transaction) || c.equals(LM.barcodeObject)) : "Doesn't exist concrete class";
-        for (CustomClass children : c.children) {
-            checkClass(children);
-        }
     }
 
     public int systemUserObject;
