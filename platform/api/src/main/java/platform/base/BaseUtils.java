@@ -539,7 +539,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K> List<K> add(K add, List<K> col) {
+    public static <K> List<K> add(K add, List<? extends K> col) {
         ArrayList<K> result = new ArrayList<K>();
         result.add(add);
         result.addAll(col);

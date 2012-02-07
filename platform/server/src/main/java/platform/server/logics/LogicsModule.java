@@ -40,6 +40,7 @@ import java.util.*;
 
 import static platform.base.BaseUtils.consecutiveInts;
 import static platform.server.logics.PropertyUtils.*;
+import static platform.server.logics.property.UserProperty.getInterfaces;
 import static platform.server.logics.property.actions.ExecutePropertiesActionProperty.EPA_INTERFACE;
 
 /**
@@ -1330,9 +1331,21 @@ public abstract class LogicsModule {
     }
 
     protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, LP<T> lp, int aggrInterface, Object... props) {
-        List<PropertyInterfaceImplement<T>> listImplements = readImplements(lp.listInterfaces, props);
+        List<PropertyInterfaceImplement<T>> fullInterfaces = BaseUtils.mergeList(readImplements(lp.listInterfaces, props), BaseUtils.removeList(lp.listInterfaces, aggrInterface - 1));
+        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, lp.listInterfaces, aggrInterface, BaseUtils.add(lp.property.getImplement(), fullInterfaces));
+    }
 
-        return addAGProp(group, checkChange, persistent, noConstraint, AggregateGroupProperty.create(name, caption, lp.property, lp.listInterfaces.get(aggrInterface - 1), (List<PropertyMapImplement<?, T>>) (List<?>) listImplements), BaseUtils.mergeList(listImplements, BaseUtils.removeList(lp.listInterfaces, aggrInterface - 1)));
+    protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, int interfaces, int aggrInterface, Object... props) {
+        List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
+        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, innerInterfaces, aggrInterface, readImplements(innerInterfaces, props));
+    }
+
+    protected <T extends PropertyInterface<T>, I extends PropertyInterface> LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, List<T> innerInterfaces, int aggrInterface, List<PropertyInterfaceImplement<T>> listImplements) {
+        PropertyMapImplement<I, T> whereProp = (PropertyMapImplement<I, T>) listImplements.get(0);
+        List<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(1, listImplements.size());
+
+        AggregateGroupProperty<T, I> aggProp = AggregateGroupProperty.create(name, caption, innerInterfaces, whereProp, innerInterfaces.get(aggrInterface - 1), groupImplements);
+        return addAGProp(group, checkChange, persistent, noConstraint, aggProp, groupImplements);
     }
 
     // чисто для generics
@@ -1341,7 +1354,7 @@ public abstract class LogicsModule {
         if(!noConstraint)
             addProperty(null, new LP(property.getConstrainedProperty(checkChange)));
 
-        return mapLGProp(group, persistent, property, DerivedProperty.mapImplements(listImplements, property.getMapping()));
+        return mapLGProp(group, persistent, property, listImplements);
     }
 
     protected <T extends PropertyInterface, P extends PropertyInterface> LP addDGProp(int orders, boolean ascending, LP<T> groupProp, Object... params) {

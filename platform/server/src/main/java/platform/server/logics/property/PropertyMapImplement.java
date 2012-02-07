@@ -65,8 +65,11 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return property.getJoinDataChanges(BaseUtils.join(mapping, joinImplement), expr, where, propChanges, changedWhere).map(mapping);
     }
 
-    public void mapNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
+    public void mapJoinNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
         property.setJoinNotNull(BaseUtils.join(mapping, mapKeys), where, session);
+    }
+    public void mapNotNull(Map<T, DataObject> values, DataSession session) throws SQLException {
+        property.setNotNull(BaseUtils.join(mapping, values), session);
     }
 
     public PropertyMapImplement<?, T> mapChangeImplement(Map<T, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {

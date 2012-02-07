@@ -18,6 +18,7 @@ import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
+import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
 import platform.server.data.query.MapKeysInterface;
@@ -239,10 +240,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     @IdentityLazy
     public Map<T, KeyExpr> getMapKeys() {
-        Map<T, KeyExpr> result = new HashMap<T, KeyExpr>();
-        for (T propertyInterface : interfaces)
-            result.put(propertyInterface, new KeyExpr(propertyInterface.toString()));
-        return result;
+        return KeyExpr.getMapKeys(interfaces);
     }
 
     public static Modifier defaultModifier = new Modifier() {
@@ -972,6 +970,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return ((DataClass) type).getDefaultExpr();
         else
             return null;
+    }
+
+    public void setNotNull(Map<T, DataObject> values, DataSession session) throws SQLException {
+        Map<T, KeyExpr> mapKeys = getMapKeys();
+        setNotNull(mapKeys, EqualsWhere.compareValues(mapKeys, values), session);
     }
 
     public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {

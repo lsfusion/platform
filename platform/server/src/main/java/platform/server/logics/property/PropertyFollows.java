@@ -2,7 +2,6 @@ package platform.server.logics.property;
 
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
-import platform.server.logics.BusinessLogics;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -37,8 +36,8 @@ public class PropertyFollows<T extends PropertyInterface, L extends PropertyInte
 
 //      f' and !f and !g(')	: g -> NotNull
         Map<T,KeyExpr> mapKeys = property.getMapKeys();
-        implement.mapNotNull(mapKeys, property.getExpr(mapKeys, session.modifier).getWhere().
-                and(recalculate?Where.TRUE:property.getExpr(mapKeys).getWhere().not()), session);
+        implement.mapJoinNotNull(mapKeys, property.getExpr(mapKeys, session.modifier).getWhere().
+                and(recalculate ? Where.TRUE : property.getExpr(mapKeys).getWhere().not()), session);
     }
 
     public void resolveFalse(DataSession session, boolean recalculate) throws SQLException {
