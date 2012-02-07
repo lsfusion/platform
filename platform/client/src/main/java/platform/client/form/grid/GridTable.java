@@ -754,7 +754,7 @@ public abstract class GridTable extends ClientFormTable
     @Override
     public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
         if (isInternalNavigating || isCellFocusable(rowIndex, columnIndex)) {
-            if (!properties.isEmpty()) {
+            if (!properties.isEmpty() && model.getColumnCount() > 0) {
                 selectionController.changeSelection(rowIndex, columnIndex, toggle, extend);
             }
             super.changeSelection(rowIndex, columnIndex, toggle, extend);

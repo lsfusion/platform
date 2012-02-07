@@ -585,8 +585,8 @@ toShowGenDayMonth (genTimeTable) = genTimeTableType(genTimeTable) == genType.gen
 FORM genTimeTable 'Генерация графика'
 OBJECTS g=genTimeTable FIXED PANEL, m=captionMonth, d=captionDOW
 PROPERTIES(g) nameGenTimeTableType, nameSupplierGenTimeTable, nameDepartmentStoreGenTimeTable, startDateGenTimeTable, endDateGenTimeTable, inAllMonthGenTable SHOWIF toShowGenDayMonth(g)
-PROPERTIES(m) READONLY name// SHOWIF toShowGenDayMonth(g)
-PROPERTIES(d) READONLY name// SHOWIF toShowGenDayMonth(g)
+PROPERTIES(m) READONLY name SHOWIF toShowGenDayMonth(g)
+PROPERTIES(d) READONLY name SHOWIF toShowGenDayMonth(g)
 PROPERTIES(g, m) inMonthGenTimeTable SHOWIF toShowGenDayMonth(g)
 PROPERTIES(g, d) inDayGenTimeTable SHOWIF toShowGenDayMonth(g)
 EDIT genTimeTable OBJECT g;
