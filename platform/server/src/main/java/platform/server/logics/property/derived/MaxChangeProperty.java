@@ -1,5 +1,6 @@
 package platform.server.logics.property.derived;
 
+import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
@@ -84,17 +85,9 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         finalizeInit();
     }
 
-    public static QuickSet<Property> getUsedChanges(Property<?> onChange, Property<?> toChange, StructChanges propChanges) {
-        return QuickSet.add(toChange.getUsedDataChanges(propChanges), onChange.getUsedChanges(propChanges));
-    }
-
     protected void fillDepends(Set<Property> depends, boolean derived) {
         depends.add(onChange);
         depends.add(toChange);
-    }
-
-    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
-        return getUsedChanges(onChange,toChange, propChanges);
     }
 
     protected Expr calculateExpr(Map<Interface<P>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {

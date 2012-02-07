@@ -5,8 +5,11 @@ import platform.base.OrderedMap;
 import platform.server.caches.AbstractValuesContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.query.AbstractJoin;
+import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -46,7 +49,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
         Map<KeyField, Expr> keyExprValues = new HashMap<KeyField, Expr>();
         Map<PropertyField, Expr> propExprValues = new HashMap<PropertyField, Expr>();
-        final Query<KeyField, PropertyField> pullQuery = query.pullValues(keyExprValues, propExprValues);
+        final IQuery<KeyField, PropertyField> pullQuery = query.pullValues(keyExprValues, propExprValues);
 
         Map<KeyField, DataObject> keyValues = new HashMap<KeyField, DataObject>();
         for(Map.Entry<KeyField, ObjectValue> keyValue : Expr.readValues(session, baseClass, keyExprValues, env).entrySet())
@@ -58,10 +61,10 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
         // читаем классы не считывая данные
         Map<PropertyField,ClassWhere<Field>> insertClasses = new HashMap<PropertyField, ClassWhere<Field>>();
-        for(PropertyField field : pullQuery.properties.keySet())
+        for(PropertyField field : pullQuery.getProperties())
             insertClasses.put(field,pullQuery.<Field>getClassWhere(Collections.singleton(field)));
 
-        SessionTable table = new SessionTable(session, BaseUtils.filterList(keys, pullQuery.mapKeys.keySet()), pullQuery.properties.keySet(), null, new FillTemporaryTable() {
+        SessionTable table = new SessionTable(session, BaseUtils.filterList(keys, pullQuery.getMapKeys().keySet()), pullQuery.getProperties(), null, new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
                 return session.insertSessionSelect(name, pullQuery, env);
             }
@@ -114,4 +117,19 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             return new SessionRows(getKeys(), new HashSet<PropertyField>(), data);
     }
 
+    protected abstract class SessionJoin extends AbstractJoin<PropertyField> {
+
+        protected final Map<KeyField, ? extends Expr> joinImplement;
+        protected SessionJoin(Map<KeyField, ? extends Expr> joinImplement) {
+            this.joinImplement = joinImplement;
+        }
+
+        public Collection<PropertyField> getProperties() {
+            return SessionData.this.getProperties();
+        }
+
+        public Join<PropertyField> translateRemoveValues(MapValuesTranslate translate) {
+            return SessionData.this.translateRemoveValues(translate).join(translate.mapKeys().translate(joinImplement));
+        }
+    }
 }

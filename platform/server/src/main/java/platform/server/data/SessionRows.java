@@ -51,9 +51,8 @@ public class SessionRows extends SessionData<SessionRows> {
         return KeyExpr.getMapKeys(keys);
     }
 
-    public Join<PropertyField> join(final Map<KeyField, ? extends Expr> joinImplement) {
-        return new AbstractJoin<PropertyField>() {
-
+    public Join<PropertyField> join(Map<KeyField, ? extends Expr> joinImplement) {
+        return new SessionJoin(joinImplement) {
             public Expr getExpr(PropertyField property) {
                 CaseExprInterface cases = Expr.newCases();
                 for(Map.Entry<Map<KeyField, DataObject>,Map<PropertyField, ObjectValue>> row : rows.entrySet())
@@ -66,10 +65,6 @@ public class SessionRows extends SessionData<SessionRows> {
                 for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
                     result = result.or(CompareWhere.compareValues(joinImplement,row.getKey()));
                 return result;
-            }
-
-            public Collection<PropertyField> getProperties() {
-                return properties;
             }
         };
     }

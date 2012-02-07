@@ -7,9 +7,6 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public abstract class AbstractInnerContext<I extends InnerContext<I>> extends AbstractKeysValuesContext<I> implements InnerContext<I>, TwinImmutableInterface {
 
     public I translateInner(MapTranslate translate) {
@@ -69,42 +66,15 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
         return calculateInnerComponents(values);
     }
     private BaseUtils.HashComponents<KeyExpr> calculateInnerComponents(boolean values) {
-        return getComponents(values ? new HashMapValues(getValuesMap()) : HashCodeValues.instance);
-    }
-
-    public int hashInner(boolean values) {
-        return getInnerComponents(values).hash;
-    }
-    public QuickMap<KeyExpr, GlobalObject> getInnerMap(boolean values) {
-        return getInnerComponents(values).map;
-    }
-
-    public static Map<Value, Value> getBigValues(QuickSet<Value> values) {
-        QuickSet<Value> usedValues = new QuickSet<Value>(values);
-
-        Map<Value, Value> result = new HashMap<Value, Value>();
-        for(Value value : values) {
-            Value removeValue = value.removeBig(usedValues);
-            if(removeValue!=null) {
-                result.put(value, removeValue);
-                usedValues.add(removeValue);
-            }
-        }
-        if(result.isEmpty())
-            return null;
-
-        for(Value value : values)
-            if(!result.containsKey(value))
-                result.put(value, value);
-        return result;
-    }
-
-    public Map<Value, Value> getBigValues() {
-        return getBigValues(getInnerValues());
+        return getComponents(values ? new HashMapValues(getValueComponents().map) : HashCodeValues.instance);
     }
 
     public I translateValues(MapValuesTranslate mapValues) {
         return translateInner(mapValues.mapKeys());
+    }
+
+    public I translateRemoveValues(MapValuesTranslate translate) {
+        return translateValues(translate);
     }
 
     public MapTranslate mapInner(I object, boolean values) {
@@ -157,19 +127,13 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
             }
         });
     }
-    public int hashValues() {
-        return AbstractValuesContext.hash(this);
-    }
-    public QuickMap<Value, GlobalObject> getValuesMap() {
-        return AbstractValuesContext.getMap(this);
-    }
 
     public boolean twins(TwinImmutableInterface o) {
         return mapInner((I) o,false)!=null;
     }
 
     public int immutableHashCode() {
-        return hashInner(false);
+        return getInnerComponents(false).hash;
     }
 
     public QuickSet<Value> getContextValues() {

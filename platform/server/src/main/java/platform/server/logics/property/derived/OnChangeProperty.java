@@ -114,10 +114,6 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         depends.add(toChange);
     }
 
-    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
-        return MaxChangeProperty.getUsedChanges(onChange,toChange, propChanges);
-    }
-
     protected Expr calculateExpr(Map<Interface<T, P>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Map<Interface<T, P>, Expr> mapExprs = new HashMap<Interface<T, P>, Expr>();
         Map<T, Expr> onChangeExprs = new HashMap<T, Expr>();

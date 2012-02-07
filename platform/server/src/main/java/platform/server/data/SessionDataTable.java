@@ -41,10 +41,10 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         this.propertyValues = propertyValues;
     }
 
-    public Join<PropertyField> join(final Map<KeyField, ? extends Expr> joinImplement) {
+    public Join<PropertyField> join(Map<KeyField, ? extends Expr> joinImplement) {
 
         final Join<PropertyField> tableJoin = table.join(filterKeys(joinImplement, table.keys));
-        return new AbstractJoin<PropertyField>() {
+        return new SessionJoin(joinImplement) {
             public Expr getExpr(PropertyField property) {
                 ObjectValue propertyValue = propertyValues.get(property);
                 if(propertyValue!=null)
@@ -52,13 +52,8 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
                 else
                     return tableJoin.getExpr(property);
             }
-
             public Where getWhere() {
                 return tableJoin.getWhere();
-            }
-
-            public Collection<PropertyField> getProperties() {
-                return SessionDataTable.this.getProperties();
             }
         }.and(CompareWhere.compareValues(filterKeys(joinImplement, keyValues.keySet()), keyValues));
     }

@@ -156,21 +156,6 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
         return getComplexity(this, outer);
     }
 
-    private Long outerComplexity;
-    private Long complexity;
-    @ManualLazy
-    public long getComplexity(boolean outer) {
-        if(outer) {
-            if(outerComplexity == null)
-                outerComplexity = calculateComplexity(outer);
-            return outerComplexity;
-        } else {
-            if(complexity == null)
-                complexity = calculateComplexity(outer);
-            return complexity;
-        }
-    }
-
     protected abstract QuickSet<OuterContext> calculateOuterDepends();
     private QuickSet<OuterContext> outerDepends;
     @Override

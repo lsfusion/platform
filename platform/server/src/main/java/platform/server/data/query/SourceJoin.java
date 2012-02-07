@@ -2,6 +2,7 @@ package platform.server.data.query;
 
 import platform.base.QuickSet;
 import platform.server.caches.OuterContext;
+import platform.server.caches.PackInterface;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.QueryTranslator;

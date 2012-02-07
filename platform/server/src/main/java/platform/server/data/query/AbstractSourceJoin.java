@@ -1,10 +1,8 @@
 package platform.server.data.query;
 
 import platform.base.ArrayInstancer;
-import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.server.caches.AbstractOuterContext;
-import platform.server.caches.OuterContext;
 import platform.server.data.Table;
 import platform.server.data.Value;
 import platform.server.data.expr.IsClassExpr;
@@ -13,12 +11,10 @@ import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.PartitionExpr;
 import platform.server.data.expr.query.SubQueryExpr;
-import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
+import platform.server.data.where.Where;
 import platform.server.logics.BusinessLogics;
-
-import java.util.Collection;
 
 abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends AbstractOuterContext<T> implements SourceJoin<T> {
 
@@ -71,4 +67,11 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
             return new SourceJoin[size];
         }
     };
+
+    // упрощаем зная where == false
+    public abstract T followFalse(Where falseWhere, boolean pack);
+
+    public T calculatePack() {
+        return followFalse(Where.FALSE, true);
+    }
 }

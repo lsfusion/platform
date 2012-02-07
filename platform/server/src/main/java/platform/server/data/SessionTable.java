@@ -2,7 +2,6 @@ package platform.server.data;
 
 import platform.base.*;
 import platform.interop.Compare;
-import platform.server.caches.AbstractInnerContext;
 import platform.server.caches.AbstractValuesContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.ValuesContext;
@@ -105,6 +104,10 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     public SessionTable translateValues(MapValuesTranslate mapValues) {
         return mapValues.translate(this);
+    }
+
+    public SessionTable translateRemoveValues(MapValuesTranslate translate) {
+        return translateValues(translate);
     }
 
     public int hashValues(HashValues hashValues) {
@@ -360,15 +363,6 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         if (components == null)
             components = AbstractValuesContext.getComponents(this);
         return components;
-    }
-    public int hashValues() {
-        return AbstractValuesContext.hash(this);
-    }
-    public QuickMap<Value, GlobalObject> getValuesMap() {
-        return AbstractValuesContext.getMap(this);
-    }
-    public Map<Value, Value> getBigValues() {
-        return AbstractInnerContext.getBigValues(getContextValues());
     }
 
     public void drop(SQLSession session, Object owner) throws SQLException {

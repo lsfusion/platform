@@ -165,6 +165,15 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K, V> Map<K, V> filterNotValues(Map<K, V> map, Collection<? extends V> values) {
+        Map<K, V> result = new HashMap<K, V>();
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            if (!values.contains(entry.getValue()))
+                result.put(entry.getKey(), entry.getValue());
+        }
+        return result;
+    }
+
     public static <K> List<K> filterList(List<K> list, Collection<K> filter) {
         List<K> result = new ArrayList<K>();
         for (K element : list)
@@ -1129,6 +1138,10 @@ public class BaseUtils {
         for (K element : col)
             result.put(element, element.toString());
         return result;
+    }
+
+    public static Object[] add(Object element, Object[] array1) {
+        return add(new Object[]{element}, array1);
     }
 
     public static Object[] add(Object[] array1, Object element) {

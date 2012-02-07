@@ -2,6 +2,7 @@ package platform.server.data.query;
 
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.Where;
 
@@ -31,4 +32,7 @@ public class QueryTranslateJoin<U> extends AbstractJoin<U> {
         return join.getProperties();
     }
 
+    public Join<U> translateRemoveValues(MapValuesTranslate translate) {
+        return new QueryTranslateJoin<U>(translator.translateRemoveValues(translate), join.translateRemoveValues(translate));
+    }
 }

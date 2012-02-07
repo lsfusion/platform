@@ -8,6 +8,7 @@ import platform.base.Result;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.data.expr.Expr;
+import platform.server.data.query.IQuery;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.SQLExecute;
@@ -16,7 +17,6 @@ import platform.server.data.type.ParseInterface;
 import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
-import platform.server.form.instance.FormInstance;
 import platform.server.logics.*;
 
 import java.lang.ref.WeakReference;
@@ -726,7 +726,7 @@ public class SQLSession extends MutableObject {
     public int insertSelect(ModifyQuery modify) throws SQLException {
         return executeDML(modify.getInsertSelect(syntax));
     }
-    public int insertSessionSelect(String name, Query<KeyField, PropertyField> query, QueryEnvironment env) throws SQLException {
+    public int insertSessionSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env) throws SQLException {
         return executeDML(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, syntax));
     }
 

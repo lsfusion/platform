@@ -126,7 +126,7 @@ public class CompiledQuery<K,V> {
         }
     }
 
-    public CompiledQuery(ParsedJoinQuery<K,V> query, SQLSyntax syntax, OrderedMap<V,Boolean> orders, int top, String prefix) {
+    public CompiledQuery(Query<K,V> query, SQLSyntax syntax, OrderedMap<V,Boolean> orders, int top, String prefix) {
 
         keySelect = new HashMap<K, String>();
         propertySelect = new HashMap<V, String>();
@@ -147,7 +147,7 @@ public class CompiledQuery<K,V> {
 
         int paramCount = 0;
         params = new HashMap<Value, String>();
-        for(Value mapValue : query.values)
+        for(Value mapValue : query.getInnerValues())
             params.put(mapValue, "qwer" + (paramCount++) + "ffd");
 
         keyReaders = new HashMap<K, ClassReader>();

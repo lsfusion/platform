@@ -1,6 +1,6 @@
 package platform.server.caches;
 
-import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.base.QuickSet;
 import platform.base.TwinImmutableObject;
 import platform.server.caches.hash.HashCodeKeys;
@@ -8,16 +8,13 @@ import platform.server.caches.hash.HashCodeValues;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashObject;
 import platform.server.data.Value;
-import platform.server.data.expr.Expr;
 import platform.server.data.translator.MapObject;
-import platform.server.data.translator.MapTranslate;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 // assert что T instanceof AbstractTranslateContext но заколебешься его протаскивать
-public abstract class AbstractTranslateContext<T, M extends MapObject, H extends HashObject> extends TwinImmutableObject {
+public abstract class AbstractTranslateContext<T, M extends MapObject, H extends HashObject> extends TwinImmutableObject implements PackInterface<T> {
 
     // аспекты транслирования
     private WeakReference<T> from;
@@ -110,4 +107,57 @@ public abstract class AbstractTranslateContext<T, M extends MapObject, H extends
         return values;
     }
     public abstract QuickSet<Value> getValues(); // по сути protected
+
+    public T calculatePack() {
+        throw new RuntimeException("not supported yet");
+    }
+    public T packed;
+    @ManualLazy
+    public T pack() {
+        if(packed==null) {
+            packed = calculatePack();
+            ((AbstractTranslateContext)packed).packed = packed;
+        }
+        return packed;
+    }
+
+    private Long outerComplexity;
+    private Long complexity;
+    @ManualLazy
+    public long getComplexity(boolean outer) {
+        if(outer) {
+            if(outerComplexity == null)
+                outerComplexity = calculateComplexity(outer);
+            return outerComplexity;
+        } else {
+            if(complexity == null)
+                complexity = calculateComplexity(outer);
+            return complexity;
+        }
+    }
+    
+    protected long calculateComplexity(boolean outer) {
+        throw new RuntimeException("not supported yet");
+    }
+    
+    public static <T extends PackInterface<T>> List<T> pack(List<T> exprs) {
+        List<T> result = new ArrayList<T>();
+        for(T expr : exprs)
+            result.add(expr.pack());
+        return result;
+    }
+
+    public static <T extends PackInterface<T>> Set<T> pack(Set<T> exprs) {
+        Set<T> result = new HashSet<T>();
+        for(T expr : exprs)
+            result.add(expr.pack());
+        return result;
+    }
+
+    public static <T extends PackInterface<T>> OrderedMap<T, Boolean> pack(OrderedMap<T, Boolean> map) {
+        OrderedMap<T, Boolean> result = new OrderedMap<T, Boolean>();
+        for(Map.Entry<T, Boolean> entry : map.entrySet())
+            result.put(entry.getKey().pack(), entry.getValue());
+        return result;
+    }
 }

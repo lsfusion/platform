@@ -304,4 +304,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     public ClassExprWhere translateOuter(MapTranslate translator) {
         return getOuter().translateOuter(translator).getThis();
     }
+    public ClassExprWhere pack() {
+        throw new RuntimeException("not supported yet");
+    }
 }

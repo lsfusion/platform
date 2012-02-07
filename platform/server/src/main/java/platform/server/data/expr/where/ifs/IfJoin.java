@@ -1,6 +1,7 @@
 package platform.server.data.expr.where.ifs;
 
 import platform.server.data.query.AbstractJoin;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 import platform.server.data.query.Join;
 import platform.server.data.expr.Expr;
@@ -33,5 +34,9 @@ public class IfJoin<U> extends AbstractJoin<U> {
 
     public Collection<U> getProperties() {
         return trueJoin.getProperties(); // assert что совпадает с falseJoin
+    }
+
+    public Join<U> translateRemoveValues(MapValuesTranslate translate) {
+        return new IfJoin<U>(ifWhere.translateOuter(translate.mapKeys()), trueJoin.translateRemoveValues(translate), falseJoin.translateRemoveValues(translate));
     }
 }

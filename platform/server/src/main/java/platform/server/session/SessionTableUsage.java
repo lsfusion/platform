@@ -8,7 +8,7 @@ import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Join;
-import platform.server.data.query.MapJoin;
+import platform.server.data.query.RemapJoin;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
@@ -62,7 +62,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {
-        return new MapJoin<V, PropertyField>(table.join(BaseUtils.join(mapKeys, joinImplement)), BaseUtils.reverse(mapProps));
+        return new RemapJoin<V, PropertyField>(table.join(BaseUtils.join(mapKeys, joinImplement)), BaseUtils.reverse(mapProps));
     }
 
     public Where getWhere(Map<K, ? extends Expr> mapExprs) {

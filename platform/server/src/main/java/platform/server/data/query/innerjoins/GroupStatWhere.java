@@ -37,4 +37,8 @@ public class GroupStatWhere<K> extends GroupWhere {
     public int immutableHashCode() {
         return 31 * super.immutableHashCode() + stats.hashCode();
     }
+
+    public Object pack() {
+        throw new RuntimeException("not supported yet");
+    }
 }

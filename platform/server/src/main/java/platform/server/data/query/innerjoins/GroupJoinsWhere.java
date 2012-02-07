@@ -4,6 +4,7 @@ import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.Settings;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.PackInterface;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.stat.StatKeys;
@@ -13,7 +14,7 @@ import platform.server.data.where.Where;
 
 import java.util.*;
 
-public class GroupJoinsWhere extends GroupWhere {
+public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
 
     public final WhereJoins joins;
 
@@ -55,8 +56,7 @@ public class GroupJoinsWhere extends GroupWhere {
     }
 
     public boolean isComplex() {
-        return where.getComplexity(false) > Settings.instance.getLimitWhereJoinPack();
-
+        return getComplexity(false) > Settings.instance.getLimitWhereJoinPack();
     }
     public GroupJoinsWhere pack() { // upWheres особого смысла паковать нет, все равно
         return new GroupJoinsWhere(keyEqual, joins, upWheres, where.pack());

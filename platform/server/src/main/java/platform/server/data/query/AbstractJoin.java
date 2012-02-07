@@ -1,18 +1,13 @@
 package platform.server.data.query;
 
 import platform.base.ImmutableObject;
-import platform.base.TwinImmutableInterface;
-import platform.base.TwinImmutableObject;
 import platform.server.caches.IdentityLazy;
-import platform.server.caches.TranslateValues;
-import platform.server.caches.TwinLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.cases.CaseJoin;
 import platform.server.data.expr.where.ifs.IfJoin;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,9 +37,19 @@ public abstract class AbstractJoin<U> extends ImmutableObject implements Join<U>
     }
 
     public static <U> Join<U> translateValues(Join<U> join, MapValuesTranslate translate) {
-        return new DirectTranslateJoin<U>(translate.mapKeys(), join);
+        return new MapJoin<U>(translate, join);
     }
     public Join<U> translateValues(MapValuesTranslate translate) {
         return translateValues(this, translate);
+    }
+
+    @Override
+    public int hashCode() {
+        throw new RuntimeException("should not be");
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        throw new RuntimeException("should not be");
     }
 }

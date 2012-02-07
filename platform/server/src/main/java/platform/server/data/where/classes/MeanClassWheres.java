@@ -122,4 +122,7 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
     public MeanClassWheres translateOuter(MapTranslate translator) {
         return getOuter().translateOuter(translator).getThis();
     }
+    public MeanClassWheres pack() {
+        throw new RuntimeException("not supported yet");
+    }
 }

@@ -20,7 +20,7 @@ import java.util.Set;
 
 // query именно Outer а не Inner, потому как его контекст "связан" с group, и его нельзя прозрачно подменять
 public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T extends QueryJoin<K, I, T, OC>,
-        OC extends QueryJoin.QueryOuterContext<K,I,T,OC>> extends AbstractInnerContext<T> implements InnerJoin<K> {
+        OC extends QueryJoin.QueryOuterContext<K,I,T,OC>> extends AbstractInnerContext<T> implements InnerJoin<K, T> {
 
     protected final I query;
     public final Map<K, BaseExpr> group; // вообще гря не reverseable
@@ -102,7 +102,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
     public void enumerate(ExprEnumerator enumerator) {
         getOuter().enumerate(enumerator);
     }
-    public long getComplexity(boolean outer) {
+    protected long calculateComplexity(boolean outer) {
         return getOuter().getComplexity(outer);
     }
     public T translateOuter(MapTranslate translator) {
@@ -127,7 +127,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
     }
 
     // множественное наследование
-    public static InnerExpr getInnerExpr(InnerJoin<?> join, WhereJoin whereJoin) {
+    public static InnerExpr getInnerExpr(InnerJoin<?, ?> join, WhereJoin whereJoin) {
         InnerExprSet set = whereJoin.getExprFollows(true);
         for(int i=0;i<set.size;i++) {
             InnerExpr expr = set.get(i);

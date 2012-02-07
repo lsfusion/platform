@@ -3,6 +3,7 @@ package platform.server.classes;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import platform.interop.Data;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.ManualLazy;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
 import platform.server.data.SQLSession;
@@ -245,8 +246,11 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
         return getTypeStat().min(Stat.DEFAULT);
     }
 
-    @IdentityLazy
+    private IsClassProperty property;
+    @ManualLazy
     public IsClassProperty getProperty() {
-        return CustomClass.getProperty(this);
+        if(property == null)
+            property = CustomClass.getProperty(this);
+        return property;
     }
 }

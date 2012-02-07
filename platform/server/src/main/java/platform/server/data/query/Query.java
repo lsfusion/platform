@@ -1,26 +1,21 @@
 package platform.server.data.query;
 
-import org.apache.xpath.operations.Mult;
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.*;
 import platform.interop.Compare;
 import platform.server.Message;
-import platform.server.caches.AbstractInnerContext;
-import platform.server.caches.AbstractOuterContext;
-import platform.server.caches.IdentityLazy;
+import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
 import platform.server.data.Value;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.where.pull.ExclPullWheres;
+import platform.server.data.query.innerjoins.GroupJoinsWhere;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.MapValuesTranslate;
-import platform.server.data.translator.MapValuesTranslator;
+import platform.server.data.translator.*;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
@@ -32,7 +27,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 // запрос JoinSelect
-public class Query<K,V> extends AbstractInnerContext<Query<K,V>> implements MapKeysInterface<K> {
+public class Query<K,V> extends IQuery<K,V> {
 
     public final Map<K,KeyExpr> mapKeys;
     public Map<V, Expr> properties;
@@ -80,6 +75,10 @@ public class Query<K,V> extends AbstractInnerContext<Query<K,V>> implements MapK
         return mapKeys;
     }
 
+    public Expr getExpr(V property) {
+        return properties.get(property);
+    }
+
     public boolean isEmpty() {
         return where.isFalse();
     }
@@ -100,14 +99,65 @@ public class Query<K,V> extends AbstractInnerContext<Query<K,V>> implements MapK
         return AbstractOuterContext.getOuterValues(properties.values()).merge(where.getOuterValues());
     }
 
-    public Join<V> join(Map<K, ? extends Expr> joinImplement) {
-        return join(joinImplement, MapValuesTranslator.noTranslate);
+    public Where getWhere() {
+        return where;
+    }
+
+    public Set<V> getProperties() {
+        return properties.keySet(); 
+    }
+
+    private Join<V> join;
+    private Join<V> getJoin() {
+        if(join==null) {
+            join = new AbstractJoin<V>() {
+                public Expr getExpr(V property) {
+                    return properties.get(property).and(where);
+                }
+                public Where getWhere() {
+                    return where;
+                }
+                public Collection<V> getProperties() {
+                    return properties.keySet();
+                }
+                public Join<V> translateRemoveValues(MapValuesTranslate translate) {
+                    return ((Query<K,V>)Query.this.translateRemoveValues(translate)).getJoin();
+                }
+            };
+        }
+        return join;
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues) {
         assert joinImplement.size()==mapKeys.size();
-        return parse().join(joinImplement, mapValues);
+        assert mapValues.assertValuesEquals(getInnerValues().getSet()); // все должны быть параметры
+        Map<K,KeyExpr> joinKeys = new HashMap<K, KeyExpr>();
+        for(Map.Entry<K,? extends Expr> joinExpr : joinImplement.entrySet()) {
+            if(!(joinExpr.getValue() instanceof KeyExpr) || joinKeys.values().contains((KeyExpr)joinExpr.getValue()))
+                return joinExprs(joinImplement, mapValues);
+            joinKeys.put(joinExpr.getKey(), (KeyExpr) joinExpr.getValue());
+        }
+        return new MapJoin<V>(new MapTranslator(BaseUtils.crossJoin(mapKeys, joinKeys), mapValues), getJoin());
     }
+
+    @ContextTwin
+    public Join<V> joinExprs(Map<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues) { // последний параметр = какой есть\какой нужно, joinImplement не translateOuter'ся
+        assert joinImplement.size()==mapKeys.size();
+
+        Join<V> join = getJoin();
+
+        // сначала map'им значения
+        join = new MapJoin<V>(mapValues, join);
+
+        // затем делаем подстановку
+        join = new QueryTranslateJoin<V>(new QueryTranslator(BaseUtils.crossJoin(mapKeys, joinImplement)), join);
+
+        // затем закидываем Where что все implement не null
+        join = join.and(Expr.getWhere(joinImplement));
+
+        return join;
+    }
+
 
     public static <K> String stringOrder(List<K> sources, int offset, OrderedMap<K,Boolean> orders, SQLSyntax syntax) {
         OrderedMap<String, Boolean> orderSources = new OrderedMap<String, Boolean>();
@@ -129,25 +179,73 @@ public class Query<K,V> extends AbstractInnerContext<Query<K,V>> implements MapK
 
     public void putKeyWhere(Map<K, DataObject> keyValues) {
         for(Map.Entry<K,DataObject> mapKey : keyValues.entrySet())
-            and(mapKeys.get(mapKey.getKey()).compare(mapKey.getValue(),Compare.EQUALS));
+            and(mapKeys.get(mapKey.getKey()).compare(mapKey.getValue(), Compare.EQUALS));
     }
 
-    @Message("message.core.query.parse")
-    public ParsedQuery<K,V> parse() { // именно ParsedQuery потому как aspect'ами корректируется
-        return new ParsedJoinQuery<K,V>(this);
+    public Query(Query<K,V> query, boolean pack) {
+        mapKeys = query.mapKeys;
+
+        where = query.where.pack();
+        properties = where.followTrue(query.properties, true);
+    }
+
+    @ContextTwin
+    public IQuery<K,V> calculatePack() {
+        return new Query<K,V>(this, true);
+    }
+
+    protected long calculateComplexity(boolean outer) {
+        return AbstractOuterContext.getComplexity(properties.values(), outer) + where.getComplexity(outer);
     }
 
     @IdentityLazy
-    public <B> ClassWhere<B> getClassWhere(Collection<? extends V> properties) {
-        return parse().getClassWhere(properties);
+    @Pack
+    public <B> ClassWhere<B> getClassWhere(Collection<? extends V> classProps) {
+        return (ClassWhere<B>) getClassWhere(where, mapKeys, BaseUtils.filterKeys(properties, classProps));
     }
 
-    public Query<K,V> pullValues(Map<K, Expr> pullKeys, Map<V, Expr> pullProps) throws SQLException {
-        Query<K, V> result = parse().pullValues(pullKeys, pullProps);
+    private static <B, K extends B, V extends B> ClassWhere<B> getClassWhere(Where where, final Map<K, KeyExpr> mapKeys, Map<V, Expr> mapProps) {
+        return new ExclPullWheres<ClassWhere<B>, V, Where>() {
+            protected ClassWhere<B> initEmpty() {
+                return ClassWhere.STATIC(false);
+            }
+            protected ClassWhere<B> proceedBase(Where data, Map<V, BaseExpr> map) {
+                return (ClassWhere<B>)(ClassWhere<?>)getClassWhereBase(data, mapKeys, map);
+            }
+            protected ClassWhere<B> add(ClassWhere<B> op1, ClassWhere<B> op2) {
+                return op1.or(op2);
+            }
+        }.proceed(where, mapProps);
+    }
+
+    private static <B, K extends B, V extends B> ClassWhere<B> getClassWhereBase(Where where, Map<K, KeyExpr> mapKeys, Map<V, BaseExpr> mapProps) {
+        return where.and(Expr.getWhere(mapProps.values())).
+                getClassWhere().get(BaseUtils.<B, BaseExpr>forceMerge(mapProps, mapKeys));
+    }
+
+
+    private static <K> void pullValues(Map<K, ? extends Expr> map, Where where, Map<K, Expr> result) {
+        Map<BaseExpr, BaseExpr> exprValues = where.getExprValues();
+        for(Map.Entry<K, ? extends Expr> entry : map.entrySet()) {
+            Expr exprValue = exprValues.get(entry.getValue());
+            if(exprValue==null && entry.getValue().isValue())
+                exprValue = entry.getValue();
+            if(exprValue!=null)
+                result.put(entry.getKey(), exprValue);
+        }
+    }
+
+    // жестковатая эвристика, но не страшно
+    @Pack
+    public IQuery<K,V> pullValues(Map<K, Expr> pullKeys, Map<V, Expr> pullProps) throws SQLException {
+        pullValues(mapKeys, where, pullKeys);
+        QueryTranslator keyTranslator = new PartialQueryTranslator(BaseUtils.rightCrossJoin(mapKeys, pullKeys));
+        Where transWhere = where.translateQuery(keyTranslator);
+        Map<V, Expr> transProps = keyTranslator.translate(properties);
+        pullValues(transProps, transWhere, pullProps);
         if(pullKeys.isEmpty() && pullProps.isEmpty())
             return this;
-        else
-            return result;
+        return new Query<K,V>(BaseUtils.filterNotKeys(mapKeys, pullKeys.keySet()), BaseUtils.filterNotKeys(transProps, pullProps.keySet()), transWhere);
     }
 
     public CompiledQuery<K,V> compile(SQLSyntax syntax) {
@@ -159,8 +257,17 @@ public class Query<K,V> extends AbstractInnerContext<Query<K,V>> implements MapK
     public CompiledQuery<K,V> compile(SQLSyntax syntax, String prefix) {
         return compile(syntax, new OrderedMap<V, Boolean>(), 0, prefix);
     }
-    public CompiledQuery<K,V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, int selectTop, String prefix) {
-        return parse().compileSelect(syntax,orders,selectTop,prefix);
+    @SynchronizedLazy
+    @Pack
+    @Message("message.core.query.compile")
+    public CompiledQuery<K,V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, Integer selectTop, String prefix) {
+        return new CompiledQuery<K,V>(this, syntax, orders, selectTop, prefix);
+    }
+
+    public Collection<GroupJoinsWhere> getWhereJoins(boolean tryExclusive, Result<Boolean> isExclusive) {
+        Pair<Collection<GroupJoinsWhere>,Boolean> whereJoinsExcl = where.getWhereJoins(tryExclusive, getKeys());
+        isExclusive.set(whereJoinsExcl.second);
+        return whereJoinsExcl.first;
     }
 
     public static <V> OrderedMap<V,Boolean> reverseOrder(OrderedMap<V,Boolean> orders) {
@@ -267,13 +374,6 @@ public class Query<K,V> extends AbstractInnerContext<Query<K,V>> implements MapK
         this(query.mapKeys, new HashMap<V, Expr>(query.properties), query.where);
     }
 
-    protected Query<K, V> translate(MapTranslate translate) {
-        return new Query<K,V>(translate.translateKey(mapKeys), translate.translate(properties), where.translateOuter(translate));
-    }
-    public Query<K, V> translateInner(MapTranslate translate) {
-        return (Query<K, V>) aspectTranslate(translate);
-    }
-
     protected boolean isComplex() {
         return true;
     }
@@ -291,8 +391,13 @@ public class Query<K,V> extends AbstractInnerContext<Query<K,V>> implements MapK
             return thisObj.getInnerValues();
         }
         protected MultiParamsContext translate(MapTranslate translator) {
-            return thisObj.translateInner(translator).getMultiParamsContext();
+            return thisObj.translateInner(translator).getQuery().getMultiParamsContext();
         }
+        @Override
+        public MultiParamsContext<?, ?> translateRemoveValues(MapValuesTranslate translate) {
+            return thisObj.translateRemoveValues(translate).getQuery().getMultiParamsContext();
+        }
+
         public Query<K,V> getQuery() {
             return thisObj;
         }
@@ -318,8 +423,27 @@ public class Query<K,V> extends AbstractInnerContext<Query<K,V>> implements MapK
         return 31 * (where.hashOuter(hashContext) * 31 + AbstractSourceJoin.hashOuter(properties, hashContext)) + AbstractSourceJoin.hashOuter(mapKeys, hashContext);
     }
 
+    public MapQuery<K, V, ?, ?> translateMap(MapValuesTranslate translate) {
+        return new MapQuery<K,V,K,V>(this, BaseUtils.toMap(properties.keySet()), BaseUtils.toMap(mapKeys.keySet()), translate);
+    }
+    public Query<K, V> translateQuery(MapTranslate translate) {
+        return new Query<K,V>(translate.translateKey(mapKeys), translate.translate(properties), where.translateOuter(translate));
+    }
+
     public boolean equalsInner(Query<K, V> object) { // нужно проверить что совпадут
         return BaseUtils.hashEquals(where, object.where) && BaseUtils.hashEquals(properties, object.properties) && BaseUtils.hashEquals(mapKeys, object.mapKeys);
+    }
+
+    public boolean equalsInner(IQuery<K, V> object) { // нужно проверить что совпадут
+        return equalsInner(object.getQuery());
+    }
+
+    public Query<K, V> getQuery() {
+        return this;
+    }
+
+    public <RMK, RMV> IQuery<RMK, RMV> map(Map<RMK, K> remapKeys, Map<RMV, V> remapProps, MapValuesTranslate translate) {
+        return new MapQuery<RMK, RMV, K, V>(this, remapProps, remapKeys, translate);
     }
 }
 

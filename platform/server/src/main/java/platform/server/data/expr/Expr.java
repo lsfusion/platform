@@ -5,6 +5,7 @@ import platform.base.QuickSet;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.PackInterface;
 import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
@@ -69,25 +70,6 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     // получает список ExprCase'ов
     public abstract ExprCaseList getCases();
-
-    // упрощаем зная where == false
-    public abstract Expr followFalse(Where where, boolean pack);
-
-    private Expr packed = null;
-    @ManualLazy
-    public Expr pack() {
-        if(packed==null) {
-            packed = followFalse(Where.FALSE, true);
-            packed.packed = packed; // оптимизация чтобы не паковать себя
-        }
-        return packed;
-    }
-    public static List<Expr> pack(List<Expr> exprs) {
-        List<Expr> result = new ArrayList<Expr>();
-        for(Expr expr : exprs)
-            result.add(expr);
-        return result;
-    }
 
     public abstract Expr classExpr(BaseClass baseClass);
 

@@ -2,6 +2,7 @@ package platform.server.session;
 
 import platform.base.*;
 import platform.server.caches.AbstractValuesContext;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
@@ -77,6 +78,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
             return this;
     }
 
+    @IdentityLazy
     public PropertyChanges filter(Collection<? extends Property> properties) {
         PropertyChanges result = new PropertyChanges();
         for(Property property : properties) {
@@ -87,6 +89,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return result;
     }
 
+    @IdentityLazy
     public PropertyChanges filter(QuickSet<? extends Property> properties) {
         PropertyChanges result = new PropertyChanges();
         for(int i=0;i<properties.size;i++) {

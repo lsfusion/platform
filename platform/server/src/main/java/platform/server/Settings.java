@@ -17,7 +17,7 @@ public class Settings {
         this.innerGroupExprs = innerGroupExprs;
     }
 
-    public int packOnCacheComplexity = 1200;
+    public int packOnCacheComplexity = 300;
 
     public int getPackOnCacheComplexity() {
         return packOnCacheComplexity;

@@ -29,8 +29,11 @@ public class MapValuesIterable extends MapIterable<MapValuesTranslate, MapValues
             return null;
     }
 
+    public static Iterator<MapValuesTranslate> mapIterator(ValuesContext<?> from, ValuesContext<?> to) {
+        return new ValuePairs(from.getValueComponents().map, to.getValueComponents().map).iterator();
+    }
     protected Iterator<MapValuesTranslate> mapIterator() {
-        return new ValuePairs(from.getValuesMap(), to.getValuesMap()).iterator();
+        return mapIterator(from, to);
     }
 
     public static <K> int hash(Map<K,? extends ValuesContext> map, HashValues hashValues) {

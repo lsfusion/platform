@@ -9,12 +9,13 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.SubQueryExpr;
-import platform.server.data.query.ParsedQuery;
+import platform.server.data.query.IQuery;
 import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.PropertyQueryType;
 import platform.server.session.PropertyChanges;
 
 import java.util.Map;
@@ -51,15 +52,15 @@ public class WrapComplexityAspect {
         return getJoinExpr(thisJoinPoint, property, joinExprs, propChanges, changedWhere);
     }
 
-    public <T extends PropertyInterface> Query<T, String> getQuery(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges, Boolean changedWhere, Map<T, ? extends Expr> interfaceValues) throws Throwable {
+    public <T extends PropertyInterface> IQuery<T, String> getQuery(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges, PropertyQueryType queryType, Map<T, ? extends Expr> interfaceValues) throws Throwable {
         assert property.isFull();
-        Query<T, String> query = (Query<T, String>) thisJoinPoint.proceed();
-        ParsedQuery<T, String> parsedQuery = query.parse();
-        
-        Map<T, KeyExpr> mapKeys = parsedQuery.getMapKeys();
-        Expr expr = parsedQuery.getExpr("value");
+        IQuery<T, String> query = (IQuery<T, String>) thisJoinPoint.proceed();
 
-        Where where = changedWhere ? parsedQuery.getExpr("changed").getWhere() : null;
+        Map<T, KeyExpr> mapKeys = query.getMapKeys();
+        Expr expr = query.getExpr("value");
+
+        boolean changedWhere = queryType.needChange();
+        Where where = changedWhere ? query.getExpr("changed").getWhere() : null;
         WhereBuilder wrapWhere = changedWhere ? new WhereBuilder() : null;
         Expr wrapExpr = wrapComplexity(expr, where, property, BaseUtils.merge(interfaceValues, mapKeys), wrapWhere);
 
@@ -73,8 +74,8 @@ public class WrapComplexityAspect {
             return wrappedQuery;
         }
     }
-    @Around("execution(* platform.server.logics.property.Property.getQuery(platform.server.session.PropertyChanges,java.lang.Boolean,java.util.Map)) && target(property) && args(propChanges, changedWhere, interfaceValues)")
-    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges, Boolean changedWhere, Map interfaceValues) throws Throwable {
-        return getQuery(thisJoinPoint, property, propChanges, changedWhere, interfaceValues);
+    @Around("execution(* platform.server.logics.property.Property.getQuery(platform.server.session.PropertyChanges,platform.server.logics.property.PropertyQueryType,java.util.Map)) && target(property) && args(propChanges, queryType, interfaceValues)")
+    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges, PropertyQueryType queryType, Map interfaceValues) throws Throwable {
+        return getQuery(thisJoinPoint, property, propChanges, queryType, interfaceValues);
     }
 }

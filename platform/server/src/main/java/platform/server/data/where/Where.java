@@ -57,9 +57,6 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
         }
     }
 
-    
-    Where pack();
-
     <K> Map<K, Expr> followTrue(Map<K, ? extends Expr> map, boolean pack);
     List<Expr> followFalse(List<Expr> list);
     <K> OrderedMap<Expr, K> followFalse(OrderedMap<Expr, K> map);

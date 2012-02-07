@@ -60,9 +60,9 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
             return "INNER(" + exprs + "," + orders + "," + partitions + "," + type + ")";
         }
 
-        @IdentityLazy
-        public Query pack() { // пока так
-            return new Query(Expr.pack(exprs), orders, partitions, type);
+        @Override
+        public Query calculatePack() {
+            return new Query(Expr.pack(exprs), Expr.pack(orders), Expr.pack(partitions), type);
         }
 
         public Set<Expr> getExprs() {

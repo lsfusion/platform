@@ -3,6 +3,7 @@ package platform.server.data.expr.where.ifs;
 import platform.server.data.query.AbstractJoin;
 import platform.server.data.query.Join;
 import platform.server.data.expr.Expr;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 
 import java.util.Collection;
@@ -24,5 +25,9 @@ public class NullJoin<U> extends AbstractJoin<U> {
 
     public Collection<U> getProperties() {
         return properties;
+    }
+
+    public Join<U> translateRemoveValues(MapValuesTranslate translate) {
+        return this;
     }
 }

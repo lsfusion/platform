@@ -41,7 +41,7 @@ public class MapContextIterable implements Iterable<MapTranslate> {
         public MapIterator() {
             mapValues = null;
             if(values) {
-                valueIterator = new ValuePairs(from.getValuesMap(), to.getValuesMap()).iterator();
+                valueIterator = MapValuesIterable.mapIterator(from, to);
                 if(valueIterator.hasNext())
                     mapValues = valueIterator.next();
             } else {
@@ -55,7 +55,7 @@ public class MapContextIterable implements Iterable<MapTranslate> {
                 return;
             }
 
-            keyPairs = new KeyPairs(from.getInnerMap(values),to.getInnerMap(values));
+            keyPairs = new KeyPairs(from.getInnerComponents(values).map,to.getInnerComponents(values).map);
             keysIterator = keyPairs.iterator();
             if(!keysIterator.hasNext())
                 valueIterator = new EmptyIterator<MapValuesTranslate>();

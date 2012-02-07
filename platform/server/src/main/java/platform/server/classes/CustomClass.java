@@ -501,9 +501,12 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return new IsClassProperty("cp_" + valueClass.getSID(), valueClass.getCaption() + ServerResourceBundle.getString("logics.pr"), valueClass);
     }
 
-    @IdentityLazy
+    private IsClassProperty property;
+    @ManualLazy
     public IsClassProperty getProperty() {
-        return getProperty(this);
+        if(property==null)
+            property = getProperty(this);
+        return property;
     }
 
     public static Set<IsClassProperty> getProperties(Set<? extends ValueClass> classes) {

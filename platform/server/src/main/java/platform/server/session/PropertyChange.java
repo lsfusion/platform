@@ -4,11 +4,9 @@ import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
-import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
 import platform.server.data.query.Join;
 import platform.server.data.query.stat.StatKeys;
@@ -18,7 +16,6 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 
-import java.util.HashSet;
 import java.util.Map;
 
 public class PropertyChange<T extends PropertyInterface> extends AbstractInnerContext<PropertyChange<T>> {
@@ -105,10 +102,11 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return new PropertyChange<T>(translator.translateKey(mapKeys),expr.translateOuter(translator),where.translateOuter(translator));
     }
 
-    public long getComplexity(boolean outer) {
+    protected long calculateComplexity(boolean outer) {
         return where.getComplexity(outer) + expr.getComplexity(outer);
     }
-    public PropertyChange<T> pack() {
+    @Override
+    public PropertyChange<T> calculatePack() {
         Where packWhere = where.pack();
         return new PropertyChange<T>(mapKeys, expr.followFalse(packWhere.not(), true), packWhere);
     }

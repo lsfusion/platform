@@ -2,6 +2,7 @@ package platform.server.data;
 
 import platform.base.BaseUtils;
 import platform.server.data.query.CompiledQuery;
+import platform.server.data.query.IQuery;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
@@ -138,7 +139,7 @@ public class ModifyQuery {
         return changeCompile.select;
     }
 
-    public static SQLExecute getInsertSelect(String name, Query<KeyField, PropertyField> query, QueryEnvironment env, SQLSyntax syntax) {
+    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, SQLSyntax syntax) {
         CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(syntax);
 
         String insertString = "";

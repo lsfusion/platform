@@ -7,15 +7,15 @@ import org.aspectj.lang.reflect.MethodSignature;
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.server.Settings;
-import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.query.ParsedQuery;
+import platform.server.data.query.IQuery;
 import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyQueryType;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
 
@@ -59,37 +59,37 @@ public class AutoHintsAspect {
         return callAutoHint(thisJoinPoint, property, modifier);
     }
 
-    @Around("execution(* platform.server.logics.property.Property.getQuery(platform.server.session.PropertyChanges,java.lang.Boolean,java.util.Map)) && target(property) && args(propChanges, changedWhere, interfaceValues)")
-    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges, Boolean changedWhere, Map interfaceValues) throws Throwable {
+    @Around("execution(* platform.server.logics.property.Property.getQuery(platform.server.session.PropertyChanges,platform.server.logics.property.PropertyQueryType,java.util.Map)) && target(property) && args(propChanges, queryType, interfaceValues)")
+    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges, PropertyQueryType queryType, Map interfaceValues) throws Throwable {
 
-        Query<?, String> result = (Query) thisJoinPoint.proceed();
-        ParsedQuery<?, String> parsedResult = result.parse();
+        IQuery<?, String> result = (IQuery) thisJoinPoint.proceed();
+        if(queryType == PropertyQueryType.RECURSIVE)
+            return result;
 
         FormInstance catchHint = catchAutoHint.get();
         if(catchHint!=null && !catchHint.isHintIncrement(property) && catchHint.allowHintIncrement(property)) { // неправильно так как может быть не changed
-            Expr expr = parsedResult.getExpr("value");
+            Expr expr = result.getExpr("value");
             long exprComplexity = expr.getComplexity(false);
 
             Where changed = null; long whereComplexity = 0;
-            if(changedWhere) {
-                changed = parsedResult.getExpr("changed").getWhere();
+            if(queryType.needChange()) {
+                changed = result.getExpr("changed").getWhere();
                 whereComplexity = changed.getComplexity(false);
             }
 
             long complexity = BaseUtils.max(exprComplexity, whereComplexity);
             if(complexity > Settings.instance.getLimitHintIncrementComplexity() && property.hasChanges(propChanges)) // сложность большая, если нет изменений то ничем не поможешь
-                if(interfaceValues.isEmpty() && changedWhere) {
-                    Map<?, KeyExpr> mapKeys = parsedResult.getMapKeys();
+                if(interfaceValues.isEmpty() && queryType == PropertyQueryType.FULLCHANGED) {
+                    Map<?, KeyExpr> mapKeys = result.getMapKeys();
                     Expr prevExpr = property.getExpr(mapKeys);
                     if(whereComplexity > Settings.instance.getLimitHintIncrementComplexity() || exprComplexity > prevExpr.getComplexity(false) * Settings.instance.getLimitGrowthIncrementComplexity()) {
-                        Where incrementWhere = changed.and(expr.getWhere().or(prevExpr.getWhere()));
-                        if (incrementWhere.getStatKeys(new QuickSet<KeyExpr>(mapKeys.values())).rows.less(new Stat(Settings.instance.getLimitHintIncrementStat())))
+                        if (changed.getStatKeys(new QuickSet<KeyExpr>(mapKeys.values())).rows.less(new Stat(Settings.instance.getLimitHintIncrementStat())))
                             throw new AutoHintException(property, true);
                         if(complexity > Settings.instance.getLimitHintNoUpdateComplexity())
                             throw new AutoHintException(property, false);
                     }
                 } else // запускаем getQuery уже без interfaceValues, соответственно уже оно если надо (в смысле что статистика будет нормальной) кинет exception
-                    property.getQuery(propChanges, true, new HashMap());
+                    property.getQuery(propChanges, PropertyQueryType.FULLCHANGED, new HashMap());
         }
         return result;
     }

@@ -7,8 +7,8 @@ import platform.server.data.query.Join;
 public class JoinCase<U> extends Case<Join<U>> {
 
     // дублируем чтобы различать
-    public JoinCase(Where iWhere, Join<U> iJoin) {
-        super(iWhere,iJoin);
+    public JoinCase(Where where, Join<U> join) {
+        super(where, join);
     }
 
 }

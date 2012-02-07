@@ -83,7 +83,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     public Stat getStatValue(KeyStat keyStat) {
         return new Stat(getStaticClass().getCount());
     }
-    public InnerJoin<?> getInnerJoin() {
+    public InnerJoin<?, ?> getInnerJoin() {
         return getJoinExpr().getInnerJoin();
     }
     public QuickSet<OuterContext> calculateOuterDepends() {

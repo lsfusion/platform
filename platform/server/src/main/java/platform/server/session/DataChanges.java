@@ -4,7 +4,6 @@ import platform.base.BaseUtils;
 import platform.base.QuickMap;
 import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
-import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.AbstractValuesContext;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
@@ -132,11 +131,12 @@ public class DataChanges extends AbstractValuesContext<DataChanges> {
     private DataChanges(DataChanges dataChanges, boolean pack) {
         changes = new Changes(dataChanges.changes, pack);
     }
-    public DataChanges pack() {
+    @Override
+    public DataChanges calculatePack() {
         return new DataChanges(this, true);
     }
 
-    public long getComplexity(boolean outer) {
+    protected long calculateComplexity(boolean outer) {
         long result = 0;
         for(int i=0;i<changes.size;i++)
             result += changes.getValue(i).getComplexity(outer);

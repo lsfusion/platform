@@ -10,7 +10,7 @@ import platform.server.data.translator.MapTranslate;
 
 import java.util.Set;
 
-public interface OuterContext<T extends OuterContext> {
+public interface OuterContext<T extends OuterContext> extends PackInterface<T> {
 
     QuickSet<KeyExpr> getOuterKeys();
 
@@ -23,5 +23,4 @@ public interface OuterContext<T extends OuterContext> {
     QuickSet<OuterContext> getOuterDepends();
 
     void enumerate(ExprEnumerator enumerator);
-    long getComplexity(boolean outer);
 }

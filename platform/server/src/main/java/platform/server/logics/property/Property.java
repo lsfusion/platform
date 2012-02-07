@@ -9,6 +9,7 @@ import platform.server.Settings;
 import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.PackComplex;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.*;
@@ -17,6 +18,7 @@ import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
+import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
@@ -269,8 +271,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public PropertyChange<T> getIncrementChange(PropertyChanges propChanges) {
-        Map<T, KeyExpr> mapKeys = getMapKeys(); WhereBuilder changedWhere = new WhereBuilder();
-        return new PropertyChange<T>(mapKeys, getIncrementExpr(mapKeys, propChanges, changedWhere), changedWhere.toWhere());
+        IQuery<T, String> incrementQuery = getQuery(propChanges, PropertyQueryType.FULLCHANGED, new HashMap<T, Expr>());
+        return new PropertyChange<T>(incrementQuery.getMapKeys(), incrementQuery.getExpr("value"), incrementQuery.getExpr("changed").getWhere());
     }
 
     public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier, WhereBuilder resultChanged) {
@@ -339,14 +341,24 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return calculateExpr(joinImplement, propChanges, changedWhere);
     }
 
+    @PackComplex
     @Message("message.core.property.get.expr")
     @ThisMessage
-    public Query<T, String> getQuery(PropertyChanges propChanges, Boolean changedWhere, Map<T, ? extends Expr> interfaceValues) {
+    public IQuery<T, String> getQuery(PropertyChanges propChanges, PropertyQueryType queryType, Map<T, ? extends Expr> interfaceValues) {
+        if(queryType==PropertyQueryType.FULLCHANGED) {
+            IQuery<T, String> query = getQuery(propChanges, PropertyQueryType.RECURSIVE, interfaceValues);
+            Query<T, String> fullQuery = new Query<T, String>(query.getMapKeys());
+            Expr newExpr = query.getExpr("value");
+            fullQuery.properties.put("value", newExpr);
+            fullQuery.properties.put("changed", query.getExpr("changed").and(newExpr.getWhere().or(getExpr(fullQuery.mapKeys).getWhere())));
+            return fullQuery;
+        }
+            
         Query<T, String> query = new Query<T,String>(BaseUtils.filterNotKeys(getMapKeys(), interfaceValues.keySet()));
         Map<T, Expr> allKeys = BaseUtils.merge(interfaceValues, query.mapKeys);
-        WhereBuilder queryWheres = changedWhere?new WhereBuilder():null;
+        WhereBuilder queryWheres = queryType.needChange() ? new WhereBuilder():null;
         query.properties.put("value", aspectGetExpr(allKeys, propChanges, queryWheres));
-        if(changedWhere)
+        if(queryType.needChange())
             query.properties.put("changed", ValueExpr.get(queryWheres.toWhere()));
         return query;
     }
@@ -360,7 +372,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             else
                 interfaceExprs.put(entry.getKey(), entry.getValue());
 
-        Query<T, String> query = getQuery(propChanges, changedWheres!=null, interfaceValues);
+        IQuery<T, String> query = getQuery(propChanges, changedWheres!=null?PropertyQueryType.CHANGED:PropertyQueryType.NOCHANGE, interfaceValues);
 
         Join<String> queryJoin = query.join(interfaceExprs);
         if(changedWheres!=null)
@@ -369,6 +381,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     @Message("message.core.property.get.expr")
+    @PackComplex
     @ThisMessage
     public Expr getJoinExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return aspectGetExpr(joinImplement, propChanges, changedWhere);
@@ -632,6 +645,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return getDataChanges(change, modifier.getPropertyChanges(), changedWhere);
     }
     @Message("message.core.property.data.changes")
+    @PackComplex
     @ThisMessage
     public MapDataChanges<T> getDataChanges(PropertyChange<T> change, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if (!change.where.isFalse()) {
@@ -1021,7 +1035,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void prereadCaches() {
         getClassWhere();
         if(isFull())
-            getQuery(PropertyChanges.EMPTY, false, new HashMap<T, Expr>());
+            getQuery(PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, new HashMap<T, Expr>());
     }
 
     private Collection<Pair<Property<?>, LinkType>> links; 

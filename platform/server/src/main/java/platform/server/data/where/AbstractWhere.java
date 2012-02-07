@@ -61,13 +61,6 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
 //        assert BaseUtils.hashEquals(oldff(falseWhere, false, packExprs, new FollowChange()),result);
         return result;
     }
-    private Where packed = null;
-    @ManualLazy
-    public Where pack() {
-        if(packed==null)
-            packed = followFalse(Where.FALSE, true);
-        return packed;
-    }
 
     public <K> Map<K, Expr> followTrue(Map<K, ? extends Expr> map, boolean pack) {
         Map<K, Expr> result = new HashMap<K, Expr>();

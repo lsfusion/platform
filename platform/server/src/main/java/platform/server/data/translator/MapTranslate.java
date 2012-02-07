@@ -21,6 +21,8 @@ public interface MapTranslate extends MapObject {
 
     // аналог mapKeys в HashValues - оставляет только трансляцию выражений
     MapValuesTranslate mapValues();
+    MapTranslate onlyKeys();
+    MapTranslate mapValues(MapValuesTranslate translate);
 
     // для кэша classWhere на самом деле надо
     <K> Map<K, VariableClassExpr> translateVariable(Map<K, ? extends VariableClassExpr> map);

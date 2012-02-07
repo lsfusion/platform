@@ -226,7 +226,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return QuickSet.EMPTY();
     }
 
-    public class Join extends AbstractOuterContext<InnerJoin<KeyField>> implements InnerJoin<KeyField>, platform.server.data.query.Join<PropertyField>, TwinImmutableInterface {
+    public class Join extends AbstractOuterContext<Join> implements InnerJoin<KeyField, Join>, platform.server.data.query.Join<PropertyField>, TwinImmutableInterface {
 
         public final Map<KeyField, BaseExpr> joins;
 
@@ -294,6 +294,9 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
         public platform.server.data.query.Join<PropertyField> translateValues(MapValuesTranslate translate) {
             return AbstractJoin.translateValues(this, translate);
+        }
+        public platform.server.data.query.Join<PropertyField> translateRemoveValues(MapValuesTranslate translate) {
+            return translateOuter(translate.mapKeys());
         }
 
         protected boolean isComplex() {

@@ -33,7 +33,7 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
     private MapValuesTranslator() {
         this.mapValues = new HashMap<Value, Value>();
     }
-    public final static MapValuesTranslate noTranslate = new MapValuesTranslator();
+    public final static MapValuesTranslator noTranslate = new MapValuesTranslator();
 
     public MapValuesTranslator(Map<Value, Value> mapValues) {
         this.mapValues = mapValues;
@@ -117,6 +117,10 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         return this;
     }
 
+    public MapTranslate onlyKeys() {
+        return MapValuesTranslator.noTranslate;
+    }
+
     public boolean identityKeys(QuickSet<KeyExpr> keys) {
         return true;
     }
@@ -145,5 +149,9 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         if(this==noTranslate || mapValues.isEmpty()) return HashCodeValues.instance;
 
         return new HashTranslateValues(this);
+    }
+
+    public MapTranslate mapValues(MapValuesTranslate translate) {
+        return map(translate).mapKeys();
     }
 }

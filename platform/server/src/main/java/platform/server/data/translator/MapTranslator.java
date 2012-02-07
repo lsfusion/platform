@@ -49,6 +49,10 @@ public class MapTranslator extends AbstractMapTranslator {
         return values;
     }
 
+    public MapTranslate onlyKeys() {
+        return new MapTranslator(keys, MapValuesTranslator.noTranslate);
+    }
+
     public MapTranslate reverseMap() {
         return new MapTranslator(BaseUtils.reverse(keys), values.reverse());
     }
@@ -61,5 +65,9 @@ public class MapTranslator extends AbstractMapTranslator {
     }
     public boolean identityKeysValues(QuickSet<KeyExpr> keys, QuickSet<? extends Value> values) {
         return identityKeys(keys) && identityValues(values);
+    }
+
+    public MapTranslate mapValues(MapValuesTranslate translate) {
+        return new MapTranslator(keys, values.map(translate));
     }
 }

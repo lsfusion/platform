@@ -17,9 +17,5 @@ public interface ValuesContext<T extends ValuesContext<T>> extends TranslateValu
 
     QuickSet<Value> getContextValues();
 
-    Map<Value, Value> getBigValues();
-
     BaseUtils.HashComponents<Value> getValueComponents(); // по сути protected
-    int hashValues();
-    QuickMap<Value,GlobalObject> getValuesMap();
 }

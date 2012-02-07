@@ -2,6 +2,7 @@ package platform.server.data.query.innerjoins;
 
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
+import platform.server.caches.PackInterface;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.WhereJoin;
@@ -14,7 +15,7 @@ import platform.server.Settings;
 import java.util.*;
 
 // используется только в groupJoinWheres, по сути protected класс
-public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Value, GroupJoinsWheres> {
+public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Value, GroupJoinsWheres> implements PackInterface<GroupJoinsWheres> {
 
     public static class Value {
         public final Map<WhereJoin, Where> upWheres; // впоследствии только для проталкивания
@@ -131,7 +132,11 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         this(new WhereJoins(join), new Value(join, where));
     }
 
-    public int getComplexity(boolean outer) {
+    public GroupJoinsWheres pack() {
+        throw new RuntimeException("not supported yet");
+    }
+
+    public long getComplexity(boolean outer) {
         int result = 0;
         for(int i=0;i<size;i++)
             result += getValue(i).where.getComplexity(outer);

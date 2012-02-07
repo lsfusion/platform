@@ -17,6 +17,10 @@ public class QueryTranslator extends TwinImmutableObject {
 
     private final boolean allKeys;
 
+    public QueryTranslator translateRemoveValues(MapValuesTranslate translate) {
+        return new QueryTranslator(translate.mapKeys().translate(keys), allKeys);
+    }
+
     protected QueryTranslator(Map<KeyExpr, ? extends Expr> keys, boolean allKeys) {
         this.keys = keys;
 

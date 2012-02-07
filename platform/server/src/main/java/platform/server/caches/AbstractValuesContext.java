@@ -8,9 +8,30 @@ import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends AbstractTranslateContext<U, MapValuesTranslate, HashValues> implements ValuesContext<U> {
+
+    public static Map<Value, Value> getBigValues(QuickSet<Value> values) {
+        QuickSet<Value> usedValues = new QuickSet<Value>(values);
+
+        Map<Value, Value> result = new HashMap<Value, Value>();
+        for(Value value : values) {
+            Value removeValue = value.removeBig(usedValues);
+            if(removeValue!=null) {
+                result.put(value, removeValue);
+                usedValues.add(removeValue);
+            }
+        }
+        if(result.isEmpty())
+            return null;
+
+        for(Value value : values)
+            if(!result.containsKey(value))
+                result.put(value, value);
+        return result;
+    }
 
     protected U aspectContextTranslate(MapValuesTranslate translator) {
         QuickSet<Value> values = aspectGetValues();
@@ -33,6 +54,10 @@ public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends 
         return aspectTranslate(translate);
     }
 
+    public U translateRemoveValues(MapValuesTranslate translate) {
+        return translateValues(translate);
+    }
+
     public int hashValues(HashValues hashValues) {
         return aspectHash(hashValues);
     }
@@ -43,10 +68,6 @@ public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends 
 
     public int immutableHashCode() {
         return hashValues(HashCodeValues.instance);
-    }
-
-    public Map<Value, Value> getBigValues() {
-        return AbstractInnerContext.getBigValues(getContextValues());
     }
 
     public static QuickMap<Value, GlobalObject> getParamClasses(QuickSet<Value> values) {
@@ -67,12 +88,6 @@ public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends 
                 return valuesContext.hashValues(map.size>0?new HashMapValues(map): HashCodeValues.instance);
             }
         });
-    }
-    public static int hash(ValuesContext<?> valuesContext) {
-        return valuesContext.getValueComponents().hash;
-    }
-    public static QuickMap<Value, GlobalObject> getMap(ValuesContext<?> valuesContext) {
-        return valuesContext.getValueComponents().map;
     }
 
     private BaseUtils.HashComponents<Value> valueComponents;
@@ -95,12 +110,6 @@ public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends 
     }
     public BaseUtils.HashComponents<Value> calculateValueComponents() {
         return getComponents(this);
-    }
-    public int hashValues() {
-        return hash(this);
-    }
-    public QuickMap<Value, GlobalObject> getValuesMap() {
-        return getMap(this);
     }
 
     public static int hashValues(Collection<? extends Value> set, HashValues hashValues) {

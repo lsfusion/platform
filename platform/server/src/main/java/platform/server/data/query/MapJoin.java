@@ -1,30 +1,44 @@
 package platform.server.data.query;
 
+import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.MapTranslator;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 
 import java.util.Collection;
-import java.util.Map;
 
-public class MapJoin<V,MV> extends AbstractJoin<V> {
-    private Join<MV> join;
-    protected Map<V,MV> mapProps;
+public class MapJoin<U> extends AbstractJoin<U>  {
 
-    public MapJoin(Join<MV> iJoin, Map<V, MV> iMapProps) {
-        join = iJoin;
-        mapProps = iMapProps;
+    private final MapTranslate translator;
+    private final Join<U> join;
+
+    public MapJoin(MapValuesTranslate translator, Join<U> join) {
+        this(translator.mapKeys(), join);
     }
 
-    public Expr getExpr(V property) {
-        return join.getExpr(mapProps.get(property));
+    public MapJoin(MapTranslate translator, Join<U> join) {
+        this.translator = translator;
+        this.join = join;
     }
 
-    public Collection<V> getProperties() {
-        return mapProps.keySet();
-    }
-
+    @IdentityLazy
     public Where getWhere() {
-        return join.getWhere();
+        return join.getWhere().translateOuter(translator);
     }
 
+    @IdentityLazy
+    public Expr getExpr(U property) {
+        return join.getExpr(property).translateOuter(translator);
+    }
+
+    public Collection<U> getProperties() {
+        return join.getProperties();
+    }
+
+    public Join<U> translateRemoveValues(MapValuesTranslate translate) {
+        return new MapJoin<U>(translator.mapValues(translate), join);
+    }
 }
+

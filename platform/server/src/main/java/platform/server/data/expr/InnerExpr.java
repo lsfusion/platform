@@ -24,7 +24,7 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
         joins.add(this, andWhere);
     }
 
-    public InnerJoin<?> getFJGroup() {
+    public InnerJoin<?, ?> getFJGroup() {
         return getInnerJoin();
     }
 
@@ -88,8 +88,8 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
         return result;
     }
 
-    public abstract InnerJoin<?> getInnerJoin();
-    public InnerJoin<?> getBaseJoin() {
+    public abstract InnerJoin<?, ?> getInnerJoin();
+    public InnerJoin<?, ?> getBaseJoin() {
         return getInnerJoin();
     }
 

@@ -1,9 +1,14 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.base.TwinImmutableObject;
+import platform.server.caches.AbstractValuesContext;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.PackInterface;
+import platform.server.caches.hash.HashValues;
+import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.PropertyInterface;
@@ -12,7 +17,7 @@ import platform.server.logics.property.UserProperty;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapDataChanges<P extends PropertyInterface> extends TwinImmutableObject {
+public class MapDataChanges<P extends PropertyInterface> extends AbstractValuesContext<MapDataChanges<P>> {
 
     public final DataChanges changes;
     public final Map<UserProperty, Map<ClassPropertyInterface, P>> map;
@@ -36,12 +41,8 @@ public class MapDataChanges<P extends PropertyInterface> extends TwinImmutableOb
         this.map = mapChanges.map;
     }
 
-    private Long complexity;
-    @ManualLazy
-    public long getComplexity() {
-        if(complexity==null)
-            complexity = changes.getComplexity(false);
-        return complexity;
+    protected long calculateComplexity(boolean outer) {
+        return changes.getComplexity(outer);
     }
 
     public MapDataChanges<P> pack() {
@@ -75,15 +76,19 @@ public class MapDataChanges<P extends PropertyInterface> extends TwinImmutableOb
         changes = trans.changes.translateValues(mapValues);
         map = trans.map;
     }
-    public MapDataChanges<P> translateValues(MapValuesTranslate mapValues) {
-        return new MapDataChanges<P>(this, mapValues);
+    protected MapDataChanges<P> translate(MapValuesTranslate translator) {
+        return new MapDataChanges<P>(this, translator);
     }
 
     public boolean twins(TwinImmutableInterface o) {
-        return changes.equals(((MapDataChanges<P>)o).changes) && map.equals(((MapDataChanges<P>)o).map);
+        return changes.equals(((MapDataChanges<P>)o).changes) && map.equals(((MapDataChanges<P>) o).map);
     }
 
-    public int immutableHashCode() {
-        return changes.hashCode() * 31 + map.hashCode();
+    protected int hash(HashValues hash) {
+        return changes.hash(hash) * 31 + map.hashCode();
+    }
+
+    public QuickSet<Value> getValues() {
+        return changes.getContextValues();
     }
 }
