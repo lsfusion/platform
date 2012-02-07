@@ -826,13 +826,19 @@ DESIGN item FROM DEFAULT {
     }
 }
 
+inItemGroupSku(itemGroup, sku) = itemGroupSku(sku) == itemGroup;
+
 FORM items 'Товары'
+TREE g=itemGroup PARENT parentItemGroup
 OBJECTS i=item
-OBJECTS b=barcode
-PROPERTIES(i) READONLY name, nameItemGroupSku, shortNameUnitOfMeasureItem, nameCountryItem, barcodeBarcodeSku
+PROPERTIES(g) READONLY name
+PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem, barcodeBarcodeSku
 PROPERTIES(i) ADDFORM, EDITFORM, delete
-PROPERTIES(b) READONLY barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
-FILTERS NOT NULL inSkuBarcode (i, b);
+FILTERS NOT NULL inItemGroupSku(g, i);
+
+DESIGN items FROM DEFAULT {
+    POSITION obj4.box TO THE LEFT i.box;
+}
 
 FORM itemInDepartment  'Товары в подразделениях'
 OBJECTS d=departmentStore, i=item
