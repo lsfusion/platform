@@ -40,6 +40,7 @@
       <keyword name="CONSTRAINT" />
       <keyword name="DATA" />
       <keyword name="DATE" />
+      <keyword name="DATETIME" />
       <keyword name="DEFAULT" />
       <keyword name="DESC" />
       <keyword name="DESIGN" />
@@ -127,6 +128,7 @@
       <keyword name="STRING" />
       <keyword name="SUM" />
       <keyword name="TABLE" />
+      <keyword name="TEXT" />
       <keyword name="TEXTHALIGN" />
       <keyword name="TEXTVALIGN" />
       <keyword name="THE" />
