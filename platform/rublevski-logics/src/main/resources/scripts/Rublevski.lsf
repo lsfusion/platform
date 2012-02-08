@@ -1900,6 +1900,12 @@ CLASS rate 'История изменений шкалы' : historyObject;
 rangeRate 'Шкала ИД' = DATA range (rate) IN idGroup;
 taxRange 'Налог ИД' = DATA tax (range) IN idGroup;
 
+maxDataRangeTax(tax) = GROUP MAX dataRange(range) BY taxRange(range);
+overrideMaxRangeTax(tax) = UNION OVERRIDE 0 IF tax IS tax, maxDataRangeTax(tax);
+dataMaxOneRangeTax(tax) = overrideMaxRangeTax(tax) + 1;
+dataOneRange '+1' (range)  = dataMaxOneRangeTax(taxRange(range));
+//dataRange(range) <- dataOneRange(range) ON ASSIGN range IS range;
+
 CLASS STATIC rangeType 'Для каких подразделений действует шкала'
 {
     common 'Общий',
