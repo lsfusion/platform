@@ -646,15 +646,15 @@ dayBeforeGenTimeTable 'За сколько дней формировать за�
 dayAfterGenTimeTable 'Через сколько дней после последней поставки делать заказ' = DATA INTEGER (genTimeTable);
 periodGenTimeTable 'По прошествии скольки недель будет осуществится следующая поставка' = DATA INTEGER (genTimeTable);
 stringNumberGenTimeTable 'Числа месяца поставок (указывать через запятую)' = DATA STRING[100] (genTimeTable);
-transferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья (ИД)' = DATA captionDOW (genTimeTable);
+transferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья (ИД)' = DATA DOW (genTimeTable);
 nameTransferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья' (genTimeTable) = name(transferDayGenTimeTable(genTimeTable));
-CONSTRAINT CHECKED numberDayCaptionDOW(transferDayGenTimeTable(genTimeTable))>5 AND numberDayCaptionDOW(transferDayGenTimeTable(genTimeTable))<1 MSG 'Выберите день с ПН по ПТ';
+CONSTRAINT CHECKED numberDOW(transferDayGenTimeTable(genTimeTable))>5 AND numberDOW(transferDayGenTimeTable(genTimeTable))<1 MSG 'Выберите день с ПН по ПТ';
 dayLastOrderGenTimeTable 'Дата последнего заказа' = DATA DATE (genTimeTable);
 
-inMonthGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, captionMonth);
-inDayGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, captionDOW);
+inMonthGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, month);
+inDayGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, DOW);
 inAllMonthGenTable 'Включить все месяцы' = DATA BOOLEAN (genTimeTable);
-inMonthGenTimeTable(genTimeTable, captionMonth) <- inAllMonthGenTable(genTimeTable) ON ASSIGN inAllMonthGenTable(genTimeTable) AND captionMonth IS captionMonth;
+inMonthGenTimeTable(genTimeTable, month) <- inAllMonthGenTable(genTimeTable) ON ASSIGN inAllMonthGenTable(genTimeTable) AND month IS month;
 
 toShowGenWeek (genTimeTable) = genTimeTableType(genTimeTable) == genType.genWeek;
 toShowGenDay (genTimeTable) = genTimeTableType(genTimeTable) == genType.genDay;
@@ -663,7 +663,7 @@ toShowGenDayMonth (genTimeTable) = genTimeTableType(genTimeTable) == genType.gen
 toShowGenWeekOrDayMonth (genTimeTable) = UNION OVERRIDE toShowGenWeek(genTimeTable), toShowGenDayMonth(genTimeTable);
 
 FORM genTimeTable 'Генерация графика'
-OBJECTS g=genTimeTable FIXED PANEL, m=captionMonth, d=captionDOW
+OBJECTS g=genTimeTable FIXED PANEL, m=month, d=DOW
 PROPERTIES(g) nameGenTimeTableType, nameSupplierGenTimeTable, nameDepartmentStoreGenTimeTable, startDateGenTimeTable,
               endDateGenTimeTable, dayBeforeGenTimeTable,inAllMonthGenTable SHOWIF toShowGenDayMonth(g),
               dayAfterGenTimeTable SHOWIF toShowGenDay(g), periodGenTimeTable SHOWIF toShowGenWeek(g),
