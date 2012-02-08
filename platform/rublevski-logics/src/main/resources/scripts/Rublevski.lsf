@@ -1912,21 +1912,11 @@ rangeTypeRange(range) <- rangeType.common ON ASSIGN range IS range;     /// по
 dataRate 'Значение ставки' = DATA DOUBLE (rate) IN baseGroup;
 dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
 dateToRate 'Действует по' = DATA DATE (rate) IN baseGroup;
-dateRate 'Дата ввода' = DATA DATE (rate) IN baseGroup;
-
-dateRate(rate) <- currentDate() ON ASSIGN rate IS rate;
-
-employeeRate 'Кто ввел ИД' = DATA employee (rate) IN baseGroup;
-commonNameEmployeeRate 'Кто ввел значение' (rate) = commonName(employeeRate(rate)) IN baseGroup;
-
-commonNameEmployeeRate(rate)  <- commonName(currentUser()) ON ASSIGN rate IS rate;
 
 quantityRateRange 'Количество историй' (range) = GROUP SUM 1 IF rate BY rangeRate(rate);
-// не работает  //
 CONSTRAINT CHECKED range IS range AND NOT rangeTypeRange(range)  MSG 'ошибка: Не выбран тип действия для шкалы';
-// работает, но хотели мы что-то другое.....//
 CONSTRAINT CHECKED rate IS rate AND NOT dataRate(rate)  MSG 'ошибка: Не указано значение ставки';
-CONSTRAINT CHECKED rate IS rate AND NOT commonNameEmployeeRate(rate)  MSG 'ошибка: Не указано - кто ввел';
+
 
 inRangeRate(range, rate) = rangeRate(rate) == range;
 inTaxRange(tax, range) = taxRange(range) == tax;
@@ -1938,7 +1928,7 @@ actingRateRange 'Действующая ИД' (range) = actingRateRangeDate(rang
 dataActingRateRange 'Действующая ставка' (range) = dataRate(actingRateRange(range)) IN baseGroup;
 dateFromActingRateRange 'Действует с' (range) = dateFromRate(actingRateRange(range)) IN baseGroup;
 dateToActingRateRange 'Действует по' (range) = dateToRate(actingRateRange(range)) IN baseGroup;
-commonNameEmployeeActingRateRange 'Кто ввел значение' (range) = commonNameEmployeeRate(actingRateRange(range)) IN baseGroup;
+nameUserRateRange 'Создан пользователем' (range) = nameUserCreated(actingRateRange(range)) IN baseGroup;
 
 quantityActingRateRangeDate(range, date) = GROUP SUM 1 IF actingRateDate(rate, date) BY rangeRate(rate), date;
 quantityActingRateRange 'Количество действующих историй' (range) = quantityActingRateRangeDate(range, currentDate());
@@ -1949,7 +1939,7 @@ OBJECTS t=tax FIXED PANEL
 OBJECTS ra=range, rt=rate, s=store
 PROPERTIES(t)     nameTax, shortNameTax
 PROPERTIES(ra)    dataRange, nameRangeTypeRange, ADDOBJ, delete
-PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, dateRate, commonNameEmployeeRate, ADDOBJ, delete
+PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
 PROPERTIES(s)     name, addressStore//, ADDOBJ, delete
 PROPERTIES(ra, s) inRangeStore
 FILTERS NOT NULL  inRangeRate(ra, rt),
@@ -1980,7 +1970,7 @@ PROPERTIES(t)     READONLY nameTax, shortNameTax
 PROPERTIES(t)     ADDFORM, EDITFORM, delete
 PROPERTIES(s)     READONLY name, addressStore
 PROPERTIES(ra, s) READONLY inRangeStore
-PROPERTIES(ra)  READONLY dataRange, dataActingRateRange, dateFromActingRateRange, dateToActingRateRange, commonNameEmployeeActingRateRange, nameRangeTypeRange, quantityRateRange
+PROPERTIES(ra)  READONLY dataRange, dataActingRateRange, dateFromActingRateRange, dateToActingRateRange, nameUserRateRange, nameRangeTypeRange, quantityRateRange
 FILTERS NOT NULL inTaxRange(t, ra),
         NOT NULL inRangeStore(ra, s);
 
