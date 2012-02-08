@@ -580,7 +580,6 @@ propertyStatement
 		'=' 
 		(	def=contextIndependentPD[false] { property = $def.property; isData = $def.isData; }  
 		|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) {property = $expr.property.property;} }
-		|	act = customActionProperty { if (inPropParseState()) {property = $act.property;} }
 		)
 		settings=commonPropertySettings[property, $declaration.name, $declaration.caption, context, isData]
 		';'
@@ -612,19 +611,6 @@ andPE[List<String> context, boolean dynamic] returns [LPWithParams property]
 		('NOT' { nots.set(nots.size()-1, true); })?
 		nextExpr=equalityPE[context, dynamic] { props.add($nextExpr.property); })*
 	;
-
-customActionProperty returns [LP property]
-@init {
-	String className = null;
-}
-@after {
-	if (inPropParseState()) {
-		$property = self.addScriptedActionProp(className);	
-	}
-}
-	:	'ACTION'
-		classN = stringLiteral { className = $classN.val; }
-	;	
 
 equalityPE[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
@@ -753,6 +739,7 @@ contextIndependentPD[boolean innerPD] returns [LP property, boolean isData = fal
 	|	formDef=formActionPropertyDefinition { $property = $formDef.property; }
 	|	flowDef=flowActionPropertyDefinition { $property = $flowDef.property; }
 	|	addDef=addObjectActionPropertyDefinition { $property = $addDef.property; }
+	|	actDef = customActionProperty { $property = $actDef.property; }
 	;
 
 joinPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -899,6 +886,18 @@ formActionPropertyDefinition returns [LP property]
 		('MODAL' { isModal = true; })?  	
 	;
 
+customActionProperty returns [LP property]
+@init {
+	String className = null;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedActionProp(className);	
+	}
+}
+	:	'ACTION'
+		classN = stringLiteral { className = $classN.val; }
+	;
 
 propertyObject returns [LP property, String propName, List<String> innerContext]
 @init {

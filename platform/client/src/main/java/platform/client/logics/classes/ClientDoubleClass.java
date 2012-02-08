@@ -45,13 +45,18 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
         DecimalFormat format = (DecimalFormat) super.getDefaultFormat();
         format.setMaximumFractionDigits(10);
         DecimalFormatSymbols dfs = format.getDecimalFormatSymbols();
-        dfs.setDecimalSeparator('.');
+        if (dfs.getGroupingSeparator() != '.')
+            dfs.setDecimalSeparator('.');
         format.setDecimalFormatSymbols(dfs);
         return format;
     }
 
     public String reformatString(String string) {
-        return string.replaceAll(",", ".");
+        DecimalFormat format = (DecimalFormat) getDefaultFormat();
+        if (format.getDecimalFormatSymbols().getGroupingSeparator() != '.')
+            return string.replaceAll(",", ".");
+        else
+            return string;
     }
 
     public Object parseString(String s) throws ParseException {

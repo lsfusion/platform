@@ -12,8 +12,9 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
     public DoublePropertyEditor(Object value, NumberFormat format, ComponentDesign design, Class<?> valueClass) {
         super(design);
         final DecimalFormat df = (DecimalFormat) format;
+        final boolean isGroupSeparatorDot = df.getDecimalFormatSymbols().getGroupingSeparator() == '.';
 
-        NumberFormatter formatter = new NullNumberFormatter(format, 0.0) {
+        NumberFormatter formatter = new NullNumberFormatter(format, isGroupSeparatorDot ? 0 : 0.0) {
             private final char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
 
             public boolean lastTextEndsWithSeparator;
@@ -35,7 +36,8 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
             public Object stringToValue(String text) throws ParseException {
                 lastZero = 0;
                 if (text != null && text.length() > 0) {
-                    text = text.replace(',', separator).replace('.', separator);
+                    if (!isGroupSeparatorDot)
+                        text = text.replace(',', separator).replace('.', separator);
                     if (text.indexOf(separator) != -1) {
                         while (lastZero < text.length() - 1 && text.charAt(text.length() - 1 - lastZero) == '0') {
                             lastZero++;
