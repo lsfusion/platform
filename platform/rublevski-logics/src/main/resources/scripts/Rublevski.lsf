@@ -1376,13 +1376,11 @@ FILTERGROUP filters
     FILTER 'Показывать с поставкой на дату' 'F10' NOT NULL timeTableDate(s, d, t);
 //--------------------------------------Заказ------------------------------------------------------------------//
 
-CLASS ABSTRACT order 'Заказ' : named;
+CLASS ABSTRACT order 'Заказ' : named, historyObject;
 CLASS orderSupplier 'Заказ поставщику' : order;
 //CLASS orderStock 'Заказ складу' :order;
 
-curDateOrderSupplier 'Дата создания заказа' = DATA DATE (orderSupplier);
-personOrderSupplier 'ФИО, кем создан документ (ИД)' = DATA employee (orderSupplier);
-namePersonOrderSupplier 'ФИО, кем создан документ' (orderSupplier) = commonName(personOrderSupplier(orderSupplier));
+curDateOrderSupplier 'Дата заказа' = DATA DATE (orderSupplier);
 dateOrderSupplier 'Дата поставки' = DATA DATE (orderSupplier);
 departmentStoreOrderSupplier 'Отдел заказа (ИД)' = DATA departmentStore (orderSupplier);
 nameDepartmentStoreOrderSupplier 'Отдел заказа' (orderSupplier) = name(departmentStoreOrderSupplier(orderSupplier));
@@ -1407,8 +1405,8 @@ createOrderSupplier = ACTION (sup, dep) {
 
 FORM orderSupplier 'Заказ поставщику'
 OBJECTS o=orderSupplier FIXED PANEL, i=item
-PROPERTIES(o) name, curDateOrderSupplier, namePersonOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
-              nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier
+PROPERTIES(o) name, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
+              nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
 PROPERTIES(i) name, quantityPackItem2
 PROPERTIES(o, i) packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
 FILTERS NOT NULL itemAssortmentOrderSupplier(o, i)
@@ -1418,8 +1416,8 @@ EDIT orderSupplier OBJECT o;
 
 FORM orderSuppliers 'Заказы поставщику'
 OBJECTS o=orderSupplier, i=item
-PROPERTIES(o) READONLY name, curDateOrderSupplier, namePersonOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
-                       nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier
+PROPERTIES(o) READONLY name, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
+                       nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
 PROPERTIES(o) ADDFORM, EDITFORM, delete
 PROPERTIES(i) READONLY name
 PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
@@ -1924,11 +1922,13 @@ CLASS rate 'История изменений шкалы' : historyObject;
 rangeRate 'Шкала ИД' = DATA range (rate) IN idGroup;
 taxRange 'Налог ИД' = DATA tax (range) IN idGroup;
 
-maxDataRangeTax(tax) = GROUP MAX dataRange(range) BY taxRange(range);
-overrideMaxRangeTax(tax) = UNION OVERRIDE 0 IF tax IS tax, maxDataRangeTax(tax);
-dataMaxOneRangeTax(tax) = overrideMaxRangeTax(tax) + 1;
-dataOneRange '+1' (range)  = dataMaxOneRangeTax(taxRange(range));
-//dataRange(range) <- dataOneRange(range) ON ASSIGN range IS range;
+maxDataRangeTax(tax) = UNION OVERRIDE 0 IF tax IS tax, [GROUP MAX dataRange(range) BY taxRange(range)](tax);
+nextDataRangeTax(tax) = maxDataRangeTax(tax) + 1;
+
+addNewRange 'Добавить шкалу' = ACTION (tax) {
+    [ADDOBJ range]();
+    dataRange(r) IF r == addedObject() <- nextDataRangeTax(tax);
+} TOOLBAR IMAGE 'add.png';
 
 CLASS STATIC rangeType 'Для каких подразделений действует шкала'
 {
@@ -1970,8 +1970,8 @@ CONSTRAINT CHECKED quantityActingRateRange(range) > 1 MSG 'ошибка: Одн�
 FORM tax 'Налог'
 OBJECTS t=tax FIXED PANEL
 OBJECTS ra=range, rt=rate, s=store
-PROPERTIES(t)     nameTax, shortNameTax
-PROPERTIES(ra)    dataRange, nameRangeTypeRange, ADDOBJ, delete
+PROPERTIES(t)     nameTax, shortNameTax, addNewRange TODRAW ra
+PROPERTIES(ra)    dataRange, nameRangeTypeRange, delete
 PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
 PROPERTIES(s)     name, addressStore//, ADDOBJ, delete
 PROPERTIES(ra, s) inRangeStore
