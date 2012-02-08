@@ -486,7 +486,7 @@ CLASS STATIC stringItemAttribute 'Строковый атрибут' {
     article 'Артикул'
 } : itemAttribute;
 
-valueNameItemAttribute(item, attribute) = castToString255(name(item)) AND attribute == stringItemAttribute.nameItem;
+valueNameItemAttribute(item, attribute) = castToString255(name(item)) AND item IS item AND attribute == stringItemAttribute.nameItem;
 valueArticleItemAttribute(item, attribute) = castToString255(articleItem(item)) AND attribute == stringItemAttribute.article;
 
 valueStringItemAttribute(item, attribute) = UNION EXCLUSIVE  valueNameItemAttribute(item, attribute),
@@ -572,8 +572,11 @@ valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(i
                                                       stringIntegerItemAttribute(item, attribute),
                                                       stringDoubleItemAttribute(item, attribute),
                                                       stringBooleanItemAttribute(item, attribute),
-                                                      nameObjectItemAttribute(item, attribute);
+                                                      nameObjectItemAttribute(item, attribute) PERSISTENT;
 
+numberInNameItemAttribute = DATA INTEGER (itemAttribute) IN baseGroup;
+
+nameAttributeItem 'Имя из атрибутов' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameItemAttribute(attribute);
 
 // ----------------------------------- Штрих код ------------------------------------------ //
 GROUP barcodeGroup : baseGroup;
@@ -881,7 +884,7 @@ TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
 FORM item 'Товар'
 OBJECTS i=item FIXED PANEL, b=barcode, d=departmentStore, s=supplier
-PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
+PROPERTIES(i) name, nameAttributeItem, nameItemGroupSku, barcodeBarcodeSku, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
  hallmarkItem SHOWIF toShowHallmark(i), articleItem, quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
@@ -961,6 +964,10 @@ FILTERS NOT NULL inItemGroupSku(g, i);
 
 DESIGN items FROM DEFAULT {
     POSITION treeGroup.box TO THE LEFT i.box;
+
+    i.box {
+        fillHorizontal = 2.0;
+    }
 }
 
 FORM itemInDepartment  'Товары в подразделениях'
@@ -1085,7 +1092,7 @@ noteAccount 'Примечание'  = DATA STRING[50] (account) IN accountGroup;
 
 // ----------------------------------- Форма собственности ------------------------------------------ //
 CLASS ownership 'Форма собственности' : named;
-shortNameOwnership 'Cокращенное название' = DATA STRING[10] (ownership) IN baseGroup;
+shortNameOwnership 'Cокращенное название' = DATA STRING[10] (ownership) IN baseGroup FIXEDCHARWIDTH 6;
 
 FORM ownership 'Форма собственности'
 OBJECTS o=ownership FIXED PANEL
@@ -1114,7 +1121,7 @@ ownershipLegalEntity 'Форма собственности (ИД)' = DATA owner
 nameOwnershipLegalEntity 'Форма собственности' = name(ownershipLegalEntity(legalEntity)) IN lawGroup;
 shortNameOwnershipLegalEntity 'Форма собственности (сокр.)' = shortNameOwnership(ownershipLegalEntity(legalEntity)) IN lawGroup;
 fullNameLegalEntity 'Наименование для накладных' = DATA STRING[200] (legalEntity) IN lawGroup;
-UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN docGroup;
+UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN docGroup FIXEDCHARWIDTH 9;
 OKPOLegalEntity 'Код по ОКПО' = DATA STRING[20] (legalEntity) IN docGroup;
 OKYLPLegalEntity 'Код ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup;
 emailLegalEntity 'e-mail' = DATA STRING[100] (legalEntity) IN contactGroup;
