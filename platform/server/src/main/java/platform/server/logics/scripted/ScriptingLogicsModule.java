@@ -23,6 +23,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.panellocation.ShortcutPanelLocation;
 import platform.server.logics.panellocation.ToolbarPanelLocation;
+import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.StoredDataProperty;
 import platform.server.logics.property.group.AbstractGroup;
@@ -495,6 +496,17 @@ public class ScriptingLogicsModule extends LogicsModule {
             curLP = addScriptedJProp(and(notsArray), properties);
         }
         return curLP;
+    }
+
+    public LP addScriptedActionProp(String className) throws ScriptingErrorLog.SemanticErrorException {
+        try {
+            return baseLM.addAProp(null, (ActionProperty) Class.forName(className).getConstructor(BL.getClass()).newInstance(BL));
+        } catch (ClassNotFoundException e) {
+            errLog.emitClassNotFoundError(parser, className);
+        } catch (Exception e) {
+            errLog.emitCreatingClassInstanceError(parser, className);
+        }
+        return null;
     }
 
     public LPWithParams addScriptedAdditiveProp(List<String> operands, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {

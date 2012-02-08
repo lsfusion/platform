@@ -580,6 +580,7 @@ propertyStatement
 		'=' 
 		(	def=contextIndependentPD[false] { property = $def.property; isData = $def.isData; }  
 		|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) {property = $expr.property.property;} }
+		|	act = customActionProperty { if (inPropParseState()) {property = $act.property;} }
 		)
 		settings=commonPropertySettings[property, $declaration.name, $declaration.caption, context, isData]
 		';'
@@ -596,7 +597,6 @@ propertyExpression[List<String> context, boolean dynamic] returns [LPWithParams 
 	:	pe=andPE[context, dynamic] { $property = $pe.property; }
 	;
 
-
 andPE[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
@@ -612,7 +612,19 @@ andPE[List<String> context, boolean dynamic] returns [LPWithParams property]
 		('NOT' { nots.set(nots.size()-1, true); })?
 		nextExpr=equalityPE[context, dynamic] { props.add($nextExpr.property); })*
 	;
-		
+
+customActionProperty returns [LP property]
+@init {
+	String className = null;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedActionProp(className);	
+	}
+}
+	:	'ACTION'
+		classN = stringLiteral { className = $classN.val; }
+	;	
 
 equalityPE[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {

@@ -37,6 +37,10 @@ public class RublevskiBusinessLogics extends BusinessLogics<RublevskiBusinessLog
         super(adapter, exportPort);
     }
 
+    public ScriptingLogicsModule getLM() {
+        return rublevskiLM;
+    }
+
     @Override
     protected void createModules() throws IOException {
         super.createModules();
@@ -52,105 +56,6 @@ public class RublevskiBusinessLogics extends BusinessLogics<RublevskiBusinessLog
     @Override
     public BusinessLogics getBL() {
         return this;
-    }
-
-    LP importData;
-
-    @Override
-    protected void initModules() throws ClassNotFoundException, IOException, SQLException, InstantiationException, IllegalAccessException, JRException {
-        super.initModules();
-
-        importData = rublevskiLM.addAProp(new ImportDataActionProperty());
-        rublevskiLM.addFormEntity(new ImportDataFormEntity(LM.adminElement, "importData", "Импорт данных"));
-    }
-
-    private class ImportDataActionProperty extends ActionProperty {
-        
-        private ImportDataActionProperty() {
-            super("importData", "Импортировать данные", new ValueClass[] {});
-
-            try {
-                Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void execute(ExecutionContext context) throws SQLException {
-
-            Connection conn = null;
-            
-            try {
-                // Get a connection to the database
-                conn = DriverManager.getConnection(((String)rublevskiLM.getLPByName("importUrl").read(context)).trim(),
-                                                   ((String)rublevskiLM.getLPByName("importLogin").read(context)).trim(),
-                                                   ((String)rublevskiLM.getLPByName("importPassword").read(context)).trim());
-
-                importItemGroup(context, conn);
-
-                // Close the result set, statement and the connection
-            } catch (SQLException e) {
-                context.addAction(new MessageClientAction("Ошибка при подключении к базе данных : " + e.getLocalizedMessage(), "Импорт данных"));
-            } finally {
-                if (conn != null)
-                    conn.close() ;
-            }
-        }
-
-        private void importItemGroup(ExecutionContext context, Connection conn) throws SQLException {
-
-            ResultSet rs = conn.createStatement().executeQuery(
-                    "SELECT num_class AS ext_id, name_u AS name, par AS par_id FROM klass") ;
-
-            ImportField itemGroupID = new ImportField(LM.extSID);
-            ImportField itemGroupName = new ImportField(LM.name);
-            ImportField parentGroupID = new ImportField(LM.extSID);
-
-            ImportKey<?> itemGroupKey = new ImportKey((ConcreteCustomClass)rublevskiLM.getClassByName("itemGroup"),
-                                                   LM.extSIDToObject.getMapping(itemGroupID));
-            ImportProperty<?> itemGroupIDProperty = new ImportProperty(itemGroupID, LM.extSID.getMapping(itemGroupKey));
-            ImportProperty<?> itemGroupNameProperty = new ImportProperty(itemGroupName, LM.name.getMapping(itemGroupKey));
-
-            ImportKey<?> parentGroupKey = new ImportKey((ConcreteCustomClass)rublevskiLM.getClassByName("itemGroup"),
-                                                   LM.extSIDToObject.getMapping(parentGroupID));
-
-            ImportProperty<?> parentGroupProperty = new ImportProperty(parentGroupID, rublevskiLM.getLPByName("parentItemGroup").getMapping(itemGroupKey),
-                                                   LM.object((ConcreteCustomClass)rublevskiLM.getClassByName("itemGroup")).getMapping(parentGroupKey));
-
-            Collection<? extends ImportKey<?>> keys = Arrays.asList(itemGroupKey, parentGroupKey);
-            Collection<ImportProperty<?>> properties = Arrays.asList(itemGroupIDProperty, itemGroupNameProperty, parentGroupProperty);
-
-            new IntegrationService(context.getSession(),
-                    new ImportTable(Arrays.asList(itemGroupID, itemGroupName, parentGroupID), createData(rs)),
-                    keys,
-                    properties).synchronize();
-        }
-        
-        private List<List<Object>> createData(ResultSet rs) throws SQLException {
-
-            ResultSetMetaData rsmd = rs.getMetaData();
-
-            int columnCount = rsmd.getColumnCount();
-
-            List<List<Object>> data = new ArrayList<List<Object>>();
-            while (rs.next()) {
-                List<Object> row = new ArrayList<Object>();
-                for (int i = 0; i < columnCount; i++)
-                    row.add(rs.getObject(i));
-                data.add(row);
-            }
-
-            return data;
-        }
-    }
-    
-    private class ImportDataFormEntity extends FormEntity {
-        private ImportDataFormEntity(NavigatorElement parent, String sID, String caption) {
-            super(parent, sID, caption);
-            
-            addPropertyDraw(new LP[] {importData, rublevskiLM.getLPByName("importUrl"), rublevskiLM.getLPByName("importLogin"), rublevskiLM.getLPByName("importPassword")});
-        }
     }
 }
 

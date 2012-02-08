@@ -305,6 +305,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "Number of properties specified after PARENT should correspond to objects number");
     }
 
+    public void emitCreatingClassInstanceError(LsfLogicsParser parser, String className) throws SemanticErrorException {
+        emitSimpleError(parser, "Error occurred during creating instance of " + className + "class");
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

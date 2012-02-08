@@ -1691,7 +1691,7 @@ public abstract class LogicsModule {
         return addAProp(baseLM.actionGroup, property);
     }
 
-    protected LP addAProp(AbstractGroup group, ActionProperty property) {
+    public LP addAProp(AbstractGroup group, ActionProperty property) {
         property.finalizeInit();
         return addProperty(group, new LP<ClassPropertyInterface>(property));
     }
