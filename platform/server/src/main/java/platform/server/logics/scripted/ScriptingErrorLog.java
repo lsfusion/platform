@@ -233,7 +233,7 @@ public class ScriptingErrorLog {
     public void emitParamCountError(LsfLogicsParser parser, int interfacesCount, int paramCount) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(String.valueOf(interfacesCount) + " parameter(s) expected, " +
-                                                     String.valueOf(paramCount) + " provided\n", parser, e);
+                String.valueOf(paramCount) + " provided\n", parser, e);
         emitSemanticError(msg, e);
     }
 
@@ -289,24 +289,28 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "names of parameters should be distinct");
     }
 
-    public void emitRedundantOrderInGPropError(LsfLogicsParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
+    public void emitRedundantOrderGPropError(LsfLogicsParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
         emitSimpleError(parser, format("ORDER properties are forbidden with '%s' grouping type", groupType));
     }
 
-    public void emitRedundantAggrInGPropError(LsfLogicsParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
+    public void emitMultipleAggrGPropError(LsfLogicsParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
         emitSimpleError(parser, format("multiple aggregate properties are forbidden with '%s' grouping type", groupType));
     }
 
-    public void emitNonObjectAggrInGPropError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitConcatAggrGPropError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "GROUP CONCAT property should have two aggregate properties exactly (second is a separator)");
+    }
+
+    public void emitNonObjectAggrUniqueGPropError(LsfLogicsParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "GROUP UNIQUE should have simple parameter as aggregate function");
     }
 
     public void emitDifferentObjsNPropsQuantity(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "Number of properties specified after PARENT should correspond to objects number");
+        emitSimpleError(parser, "number of properties specified after PARENT should be equal to number of objects");
     }
 
     public void emitCreatingClassInstanceError(LsfLogicsParser parser, String className) throws SemanticErrorException {
-        emitSimpleError(parser, "Error occurred during creating instance of " + className + "class");
+        emitSimpleError(parser, "error occurred during creation of " + className + " instance");
     }
 
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {

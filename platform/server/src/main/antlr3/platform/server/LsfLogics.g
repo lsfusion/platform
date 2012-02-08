@@ -739,7 +739,7 @@ contextIndependentPD[boolean innerPD] returns [LP property, boolean isData = fal
 	|	formDef=formActionPropertyDefinition { $property = $formDef.property; }
 	|	flowDef=flowActionPropertyDefinition { $property = $flowDef.property; }
 	|	addDef=addObjectActionPropertyDefinition { $property = $addDef.property; }
-	|	actDef = customActionProperty { $property = $actDef.property; }
+	|	actDef=customActionProperty { $property = $actDef.property; }
 	;
 
 joinPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -774,7 +774,7 @@ groupPropertyDefinition returns [LP property]
 		exprList=nonEmptyPropertyExpressionList[groupContext, true] { groupProps.addAll($exprList.props); })?
 		('ORDER' ('DESC' { ascending = false; } )?
 		orderList=nonEmptyPropertyExpressionList[groupContext, true] { orderProps.addAll($orderList.props); })?
-		('WHERE' whereExpr=propertyExpression[groupContext, true])?
+		('WHERE' whereExpr=propertyExpression[groupContext, false])?
 	;
 
 
@@ -887,16 +887,13 @@ formActionPropertyDefinition returns [LP property]
 	;
 
 customActionProperty returns [LP property]
-@init {
-	String className = null;
-}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedActionProp(className);	
+		$property = self.addScriptedActionProp($classN.val);	
 	}
 }
 	:	'ACTION'
-		classN = stringLiteral { className = $classN.val; }
+		classN = stringLiteral 
 	;
 
 propertyObject returns [LP property, String propName, List<String> innerContext]

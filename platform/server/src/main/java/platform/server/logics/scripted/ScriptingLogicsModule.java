@@ -505,13 +505,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return curLP;
     }
 
-    public LP addScriptedActionProp(String className) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedActionProp(String javaClassName) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            return baseLM.addAProp(null, (ActionProperty) Class.forName(className).getConstructor(BL.getClass()).newInstance(BL));
+            return baseLM.addAProp(null, (ActionProperty) Class.forName(javaClassName).getConstructor(BL.getClass()).newInstance(BL));
         } catch (ClassNotFoundException e) {
-            errLog.emitClassNotFoundError(parser, className);
+            errLog.emitClassNotFoundError(parser, javaClassName);
         } catch (Exception e) {
-            errLog.emitCreatingClassInstanceError(parser, className);
+            errLog.emitCreatingClassInstanceError(parser, javaClassName);
         }
         return null;
     }
@@ -1279,20 +1279,23 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private void checkGPropOrderConsistence(GroupingType type, int orderParamsCnt) throws ScriptingErrorLog.SemanticErrorException {
         if (type != GroupingType.CONCAT && orderParamsCnt > 0) {
-            errLog.emitRedundantOrderInGPropError(parser, type);
+            errLog.emitRedundantOrderGPropError(parser, type);
         }
     }
 
     private void checkGPropAggregateConsistence(GroupingType type, int aggrParamsCnt) throws ScriptingErrorLog.SemanticErrorException {
         if (type != GroupingType.CONCAT && aggrParamsCnt > 1) {
-            errLog.emitRedundantAggrInGPropError(parser, type);
+            errLog.emitMultipleAggrGPropError(parser, type);
+        }
+        if (type == GroupingType.CONCAT && aggrParamsCnt != 2) {
+            errLog.emitConcatAggrGPropError(parser);
         }
     }
 
     private void checkGPropUniqueConstraints(GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> groupProps) throws ScriptingErrorLog.SemanticErrorException {
         if (type == GroupingType.UNIQUE) {
             if (mainProps.get(0).property != null) {
-                errLog.emitNonObjectAggrInGPropError(parser);
+                errLog.emitNonObjectAggrUniqueGPropError(parser);
             }
             //todo [dale]: добавить ошибку для группировочных свойств
         }
