@@ -594,7 +594,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
             mapThisInterfacesList.add(paramIndex);
         }
-        int mapThisInterfaces[] = toPrimitive(mapThisInterfacesList);
+        int mapThisInterfaces[] = relativeIndexes(allParams, mapThisInterfacesList);
 
         int mapToInterfaces[] = relativeIndexes(allParams, toProperty.usedParams);
 
