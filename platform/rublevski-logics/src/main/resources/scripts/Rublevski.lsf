@@ -1142,12 +1142,15 @@ nameCompanyContract 'Контрагент' (contract) = name(companyContract(con
 
 userContractCompanySupplier 'Контракт (ИД)' = DATA contract (company, supplier) IN idGroup;
 //dataContractCompanySupplier 'Договор по умолчанию' (company, supplier) = dataContract(userContractCompany(company));
-defaultContractCompanySupplier(company, supplier) = GROUP MAX contract AS contract BY companyContract(contract), supplierContract(contract);
+actingContract(contract) = contract IF dateFromContract(contract) <= currentDate() AND dateToContract(contract) >= currentDate();
+actingContractCompanySupplier(company, supplier) = GROUP MAX actingContract(contract) BY companyContract(contract), supplierContract(contract);
 
-overrideContractCompanySupplier 'Основной договор' (company, supplier) = UNION OVERRIDE defaultContractCompanySupplier(company, supplier), userContractCompanySupplier(company, supplier);
+overrideContractCompanySupplier 'Основной договор' (company, supplier) = UNION OVERRIDE actingContractCompanySupplier(company, supplier), userContractCompanySupplier(company, supplier);
 dataOverrideContractCompanySupplier 'Основной договор' (company, supplier) = dataContract(overrideContractCompanySupplier(company, supplier)) IN lawGroup;
 CONSTRAINT CHECKED supplier != supplierContract(userContractCompanySupplier(company, supplier)) MSG 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
-equalsCompanySupplierContract 'Действующий договор' (company, supplier, contract) = userContractCompanySupplier(company, supplier) == contract;
+CONSTRAINT CHECKED company != companyContract(userContractCompanySupplier(company, supplier)) MSG 'ошибка: Договор по умолчанию для компании должен соответствовать договорам компании';
+// более глубокая прроверка нужна
+equalsCompanySupplierContract 'Основной договор' (company, supplier, contract) = userContractCompanySupplier(company, supplier) == contract;
 
 
 FORM supplier 'Поставщик'
@@ -1202,7 +1205,8 @@ PROPERTIES(co) nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, name, fu
 PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
 PROPERTIES(c) dataContract, nameSupplierContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, noteContract, delayContract, showFormdelayContract, ADDOBJ, delete
 PROPERTIES(s) name, fullNameLegalEntity
-PROPERTIES(co, s) dataOverrideContractCompanySupplier
+PROPERTIES(co, s)    dataOverrideContractCompanySupplier
+PROPERTIES(co, s, c) equalsCompanySupplierContract
 FILTERS NOT NULL inCompanyContract(co, c),
         NOT NULL inCompanyAccount(co, a),
         NOT NULL inSupplierContract(s, c)
@@ -1819,40 +1823,39 @@ dateRate 'Дата ввода' = DATA DATE (rate) IN baseGroup;
 dateRate(rate) <- currentDate() ON ASSIGN rate IS rate;
 
 employeeRate 'Кто ввел ИД' = DATA employee (rate) IN baseGroup;
+commonNameEmployeeRate 'Кто ввел значение' (rate) = commonName(employeeRate(rate)) IN baseGroup;
 
-//rateRange 'Шкала ИД' = DATA rate (range) IN baseGroup;
-userRate 'Действующая' (rate) = rate IF dateFromRate(rate) <= currentDate() AND dateToRate(rate) >= currentDate();
-userRateRange 'Действующая' (range) = GROUP MAX userRate(rate) BY rangeRate(rate);
-quantityUserRateRange 'Количество действующих историй' (range) = GROUP SUM 1 IF userRate(rate) BY rangeRate(rate);
+commonNameEmployeeRate(rate)  <- commonName(currentUser()) ON ASSIGN rate IS rate;
+
 quantityRateRange 'Количество историй' (range) = GROUP SUM 1 IF rate BY rangeRate(rate);
-
-CONSTRAINT CHECKED quantityUserRateRange(range) > 1 MSG 'ошибка: Одновременно не может быть несколько действующих ставок';
 // не работает  //
-//   обязательно переделать на уникальность и по времени
 CONSTRAINT CHECKED range IS range AND NOT rangeTypeRange(range)  MSG 'ошибка: Не выбран тип действия для шкалы';
 // работает, но хотели мы что-то другое.....//
-//CONSTRAINT CHECKED rate IS rate AND NOT userLastNameEmployeeRate(rate)  MSG 'ошибка: Не указано - кто ввел';
 CONSTRAINT CHECKED rate IS rate AND NOT dataRate(rate)  MSG 'ошибка: Не указано значение ставки';
-
-dataUserRateRange 'Значение ставки' (range) = dataRate(userRateRange(range)) IN baseGroup;
-dateFromUserRateRange 'Действует с' (range) = dateFromRate(userRateRange(range)) IN baseGroup;
-dateToUserRateRange 'Действует по' (range) = dateToRate(userRateRange(range)) IN baseGroup;
-
-//userFirstNameEmployeeUserRateRange 'Кто ввел значение, имя' (range) = userFirstNameEmployeeRate(userRateRange(range)) IN baseGroup;
-//userLastNameEmployeeUserRateRange 'Кто ввел значение, фамилия' (range) = userLastNameEmployeeRate(userRateRange(range)) IN baseGroup;
-nameUserCreatedRange 'Создан пользователем' (range) = nameUserCreated(userRateRange(range)) IN baseGroup;
-timeCreatedRange 'Время ввода' (range) = timeCreated(userRateRange(range)) IN baseGroup;
+CONSTRAINT CHECKED rate IS rate AND NOT commonNameEmployeeRate(rate)  MSG 'ошибка: Не указано - кто ввел';
 
 inRangeRate(range, rate) = rangeRate(rate) == range;
 inTaxRange(tax, range) = taxRange(range) == tax;
 
+actingRateDate(rate, date) = rate IF dateFromRate(rate) <= date AND NOT dateToRate(rate) < date AND date AS DATE;
+actingRateRangeDate(range, date) = GROUP MAX actingRateDate(rate, date) BY rangeRate(rate), date;
+dataActingRateRangeDate 'На дату' (range, date) = dataRate(actingRateRangeDate(range, date));  // в последствии, если надо можно сделать проверку на одну ставку на дату
+actingRateRange 'Действующая ИД' (range) = actingRateRangeDate(range, currentDate()) IN idGroup;
+dataActingRateRange 'Действующая ставка' (range) = dataRate(actingRateRange(range)) IN baseGroup;
+dateFromActingRateRange 'Действует с' (range) = dateFromRate(actingRateRange(range)) IN baseGroup;
+dateToActingRateRange 'Действует по' (range) = dateToRate(actingRateRange(range)) IN baseGroup;
+commonNameEmployeeActingRateRange 'Кто ввел значение' (range) = commonNameEmployeeRate(actingRateRange(range)) IN baseGroup;
+
+quantityActingRateRangeDate(range, date) = GROUP SUM 1 IF actingRateDate(rate, date) BY rangeRate(rate), date;
+quantityActingRateRange 'Количество действующих историй' (range) = quantityActingRateRangeDate(range, currentDate());
+CONSTRAINT CHECKED quantityActingRateRange(range) > 1 MSG 'ошибка: Одновременно не может быть несколько действующих ставок';
 
 FORM tax 'Налог'
 OBJECTS t=tax FIXED PANEL
 OBJECTS ra=range, rt=rate, s=store
 PROPERTIES(t)     nameTax, shortNameTax
 PROPERTIES(ra)    dataRange, nameRangeTypeRange, ADDOBJ, delete
-PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, dateRate, nameUserCreated, timeCreated, ADDOBJ, delete
+PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, dateRate, commonNameEmployeeRate, ADDOBJ, delete
 PROPERTIES(s)     name, addressStore//, ADDOBJ, delete
 PROPERTIES(ra, s) inRangeStore
 FILTERS NOT NULL  inRangeRate(ra, rt),
@@ -1879,11 +1882,11 @@ DESIGN tax FROM DEFAULT {
 FORM taxes 'Налоги'
 OBJECTS t=tax
 OBJECTS ra=range, s=store
-PROPERTIES(t)      READONLY nameTax, shortNameTax
-PROPERTIES(t)      ADDFORM, EDITFORM, delete
+PROPERTIES(t)     READONLY nameTax, shortNameTax
+PROPERTIES(t)     ADDFORM, EDITFORM, delete
 PROPERTIES(s)     READONLY name, addressStore
-PROPERTIES(ra, s)  READONLY inRangeStore
-PROPERTIES(ra)  READONLY dataRange, dataUserRateRange, dateFromUserRateRange, dateToUserRateRange, nameUserCreatedRange, nameRangeTypeRange, quantityRateRange
+PROPERTIES(ra, s) READONLY inRangeStore
+PROPERTIES(ra)  READONLY dataRange, dataActingRateRange, dateFromActingRateRange, dateToActingRateRange, commonNameEmployeeActingRateRange, nameRangeTypeRange, quantityRateRange
 FILTERS NOT NULL inTaxRange(t, ra),
         NOT NULL inRangeStore(ra, s);
 
