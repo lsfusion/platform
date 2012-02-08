@@ -1335,7 +1335,7 @@ public abstract class LogicsModule {
         return addAGProp(group, checkChange, name, persistent, caption, noConstraint, lp.listInterfaces, aggrInterface, BaseUtils.add(lp.property.getImplement(), fullInterfaces));
     }
 
-    protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, int interfaces, int aggrInterface, Object... props) {
+    protected LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, int interfaces, int aggrInterface, Object... props) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         return addAGProp(group, checkChange, name, persistent, caption, noConstraint, innerInterfaces, aggrInterface, readImplements(innerInterfaces, props));
     }

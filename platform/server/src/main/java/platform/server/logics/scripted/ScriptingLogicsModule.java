@@ -656,7 +656,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkGPropAggregateConsistence(type, mainProps.size());
         checkGPropUniqueConstraints(type, mainProps, groupProps);
 
-        List<Object> resultParams = getParamsPlainList(mainProps, groupProps, orderProps);
+        List<LPWithParams> whereProps = new ArrayList<LPWithParams>();
+        if (whereProp != null) {
+            whereProps.add(whereProp);
+        }
+        List<Object> resultParams = getParamsPlainList(whereProps, mainProps, groupProps, orderProps);
 
         int groupPropParamCount = mergeAllParams(BaseUtils.mergeLists(mainProps, groupProps, orderProps)).size();
         LP resultProp = null;
@@ -666,8 +670,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             resultProp = addMGProp(null, genSID(), false, "", type == GroupingType.MIN, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.CONCAT) {
             resultProp = addOGProp(null, genSID(), false, "", GroupType.STRING_AGG, orderProps.size(), !ascending /* todo [dale]: wtf? */, groupPropParamCount, resultParams.toArray());
-        } else
-            assert false;
+        } else if (type == GroupingType.UNIQUE) {
+            resultProp = addAGProp(null, false, getSID(), false, "", false, groupPropParamCount, mainProps.get(0).usedParams.get(0) + 1, resultParams.toArray());
+        }
         return resultProp;
     }
 
