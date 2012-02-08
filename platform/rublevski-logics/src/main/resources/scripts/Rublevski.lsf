@@ -1033,13 +1033,12 @@ GROUP banksGroup 'Информация о банке' : baseGroup;
 
 CLASS bank 'Банк' : named;
 
-//addressBank 'Адрес банка' = DATA STRING[100] (bank) IN banksGroup;
 MFOBank 'Код МФО' = DATA STRING[9] (bank) IN banksGroup;
 departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN banksGroup;
 CBUBank 'ЦБУ' = DATA STRING[3] (bank) IN banksGroup;
 infoBank 'Дополнительные сведения' = DATA STRING[100] (bank) IN banksGroup;
 
-@metaCodeObjectDateProperty(addressBank, bank, 'Адрес банка', STRING[150]);
+@metaCodeObjectDateProperty(addressBank, bank, 'Адрес банка', STRING[150], banksGroup);
 
 FORM bank 'Банк'
 OBJECTS b=bank FIXED PANEL
@@ -1119,11 +1118,15 @@ equalsLegalEntityAccount 'Основной р/сч.' (legalEntity, account) = us
 legalEntityLicense 'ЮЛ (ИД)' = DATA legalEntity (license) IN idGroup;
 
 //userLicenseLegalEntity 'ЮЛ (ИД)' = DATA license (legalEntity) IN idGroup;
-actingLicense 'Действующая, м/у датами' (license) = license AS license IF dateFromLicense(license) <= currentDate() AND dateToLicense(license) >= currentDate();
-actingLicenseLegalEntity (legalEntity) = GROUP MAX actingLicense(license) BY legalEntityLicense(license);        // сгруппировали по ID
+//actingLicense 'Действующая, м/у датами' (license) = license AS license IF dateFromLicense(license) <= currentDate() AND NOT dateToLicense(license) < currentDate();
+actingLicenseDate 'Действующая между датами' (license, date) = license AS license IF dateFromLicense(license) <= date AND NOT dateToLicense(license) < date AND date AS DATE;
+actingLicenseLegalEntityDate 'Действующая на дату' (legalEntity, date) = GROUP MAX actingLicenseDate(license, date) BY legalEntityLicense(license), date;
+actingLicenseLegalEntity 'Действующая' (legalEntity) = actingLicenseLegalEntityDate(legalEntity, currentDate());
+dataActingLicenseLegalEntity 'Действующая лицензия' (legalEntity) = dataLicense(actingLicenseLegalEntity(legalEntity)) IN lawGroup;
+
+//actingLicenseLegalEntity (legalEntity) = GROUP MAX actingLicense(license) BY legalEntityLicense(license);        // сгруппировали по ID
 //overrideLicenseLegalEntity 'Действующая' (legalEntity) = UNION OVERRIDE defaultLicenseLegalEntity(legalEntity) IF dateFromLicense(defaultLicenseLegalEntity(legalEntity)) < currentDate() AND dateToLicense(defaultLicenseLegalEntity(legalEntity)) > currentDate(),
 //                                                                        userLicenseLegalEntity(legalEntity) IF dateFromLicense(userLicenseLegalEntity(legalEntity)) < currentDate() AND dateToLicense(userLicenseLegalEntity(legalEntity)) > currentDate();
-dataActingLicenseLegalEntity 'Действующая лицензия' (legalEntity) = dataLicense(actingLicenseLegalEntity(legalEntity)) IN lawGroup;
                         // работает как то не так, надо проверить //
 //CONSTRAINT CHECKED legalEntity != legalEntityLicense(userLicenseLegalEntity(legalEntity)) MSG 'ошибка: Лицензия по умолчанию должен соответствовать лицензии Ю.Л.';
 //CONSTRAINT  dateFromLicense(overrideLicenseLegalEntity(legalEntity)) > currentDate() MSG 'ошибка: действие лицензии еще не началось';
@@ -1177,9 +1180,9 @@ banContract 'За сколько дней запретить закупку то
 requestContract 'Форма оплаты: Платежное требование' = DATA BOOLEAN (contract) IN contractGroup;
 noteContract 'Примечание' = DATA STRING[100] (contract) IN contractGroup;
 
-@metaCodeNameObjectDateProperty(formContract, contract, 'Порядок оплаты по договору', contractForm);
+@metaCodeNameObjectDateProperty(formContract, contract, 'Порядок оплаты по договору', contractForm, contractGroup);
 CONSTRAINT contract IS contract AND NOT formContract(contract)  MSG 'ошибка: Не выбран порядок оплаты по договору';
-@metaCodeObjectDateProperty(delayContract, contract, 'Отсрочка платежа(кален. дней),при "-" предоплата', DOUBLE);
+@metaCodeObjectDateProperty(delayContract, contract, 'Отсрочка платежа(кален. дней),при "-" предоплата', DOUBLE, baseGroup);
 
 
 // ----------------------------------- Поставщик ------------------------------------------ //
