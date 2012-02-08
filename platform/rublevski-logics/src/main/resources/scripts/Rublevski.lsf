@@ -1381,6 +1381,13 @@ fullPriceItemOrderSupplier 'Цена с НДС' (orderSupplier, item) = DATA DOU
 fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) =  sumQuantityItemOrderSupplier(orderSupplier, item) * fullPriceItemOrderSupplier(orderSupplier, item) IN baseGroup;
 fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier;
 
+createOrderSupplier = ACTION (sup, dep) {
+    [ADDOBJ orderSupplier]();
+ //   (dateOrderSupplier(o) IF o == addedObject()) <- (dt AS DATE);
+    departmentStoreOrderSupplier(o) IF o == addedObject() <- dep AS departmentStore;
+    supplierOrderSupplier(o) IF o == addedObject() <- sup AS supplier;
+};// TOOLBAR IMAGE 'add.png';
+
 FORM orderSupplier 'Заказ поставщику'
 OBJECTS o=orderSupplier FIXED PANEL, i=item
 PROPERTIES(o) name, curDateOrderSupplier, namePersonOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
@@ -1389,10 +1396,10 @@ PROPERTIES(i) name, quantityPackItem2
 PROPERTIES(o, i) packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
 FILTERS NOT NULL itemAssortmentOrderSupplier(o, i)
 FILTERGROUP filters1
-    FILTER 'Показывать только заказанные позиции' 'F10' NOT NULL sumQuantityItemOrderSupplier(o, i)
+    FILTER 'Показывать только заказанные позиции' 'F10' NOT NULL sumQuantityItemOrderSupplier(o, i) DEFAULT
 EDIT orderSupplier OBJECT o;
 
-FORM orderSuppliers 'Заказы поставшику'
+FORM orderSuppliers 'Заказы поставщику'
 OBJECTS o=orderSupplier, i=item
 PROPERTIES(o) READONLY name, curDateOrderSupplier, namePersonOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
                        nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier
