@@ -17,11 +17,11 @@ CLASS language 'Язык' : doubleNamed;
 // ----------------------------------- Шаблоны ------------------------------------------ //
 
 // ----------------------------------- Свойство объект-дата------------------------------------------ //
-META metaCodeObjectDateProperty(prop, object, caption, type)
+META metaCodeObjectDateProperty(prop, object, caption, type, group)
 
-    prop##Date caption = DATA type (object, DATE);
+    prop##Date caption = DATA type (object, DATE) IN group;
     date##prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
-    prop caption (object) = prop##Date(object, date##prop(object, currentDate()));
+    prop caption (object) = prop##Date(object, date##prop(object, currentDate())) IN group;
 
     FORM add##prop caption
     OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
@@ -46,13 +46,13 @@ END
 
 // ---------------------------------- Свойство объект-дата для (пример, стат.класса)------------------------------------------ //
 
-META metaCodeNameObjectDateProperty(prop, object, caption, type)
+META metaCodeNameObjectDateProperty(prop, object, caption, type, group)
 
-    prop##Date caption = DATA type (object, DATE);
+    prop##Date caption = DATA type (object, DATE) IN group;
     name##prop##Date caption (object, date) = name(prop##Date(object, date));
     date##prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
     prop caption (object) = prop##Date(object, date##prop(object, currentDate()));
-    name##prop caption (object) = name(prop(object));
+    name##prop caption (object) = name(prop(object)) IN group;
 
     FORM addName##prop caption
     OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
@@ -135,6 +135,73 @@ META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type)
     }
 
     showFormName##prop caption (object1, object2) = ACTION FORM name##prop OBJECTS a, b MODAL SHORTCUT name##prop DEFAULT;
+
+END
+
+// ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
+META metaCodeTripleObjectDateProperty(prop, object1, object2, object3, caption, type)
+
+    prop##Date caption = DATA type (object1, object2, object3, DATE);
+    date##prop (object1, object2, object3, date) = GROUP MAX dateIn AND prop##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
+    prop caption (object1, object2) = prop##Date(object1, object2, date##prop(object1, object2, object3, currentDate()));
+
+    FORM add##prop caption
+    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3  FIXED PANEL, d=DATE FIXED PANEL
+    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, OBJVALUE(d), prop##Date(a, b, c, d);
+    DESIGN add##prop FROM DEFAULT {
+        PROPERTY(name(a)) { focusable = FALSE; }
+        PROPERTY(name(b)) { focusable = FALSE; }
+        PROPERTY(name(c)) { focusable = FALSE; }
+    }
+
+    showFormAdd##prop 'Добавить' (object1, object2, object3) = ACTION FORM add##prop OBJECTS a, b, c MODAL;
+
+    FORM prop caption
+    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
+    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAdd##prop(a, b, c), OBJVALUE(d), prop##Date(a, b, c, d)
+    FILTERS NOT NULL prop##Date(a, b, c, d);
+    DESIGN prop FROM DEFAULT {
+        PROPERTY(name(a)) { focusable = FALSE; }
+        PROPERTY(name(b)) { focusable = FALSE; }
+        PROPERTY(name(c)) { focusable = FALSE; }
+    }
+
+    showForm##prop caption (object1, object2, object3) = ACTION FORM prop OBJECTS a, b, c MODAL SHORTCUT prop DEFAULT;
+
+END
+// -------------------- Свойство объект1-объект2-объект3-дата для yesNo со значением по-умолчанию НЕТ---------------------------- //
+
+META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, caption, type)
+
+    prop##Date caption = DATA type (object1, object2, object3, DATE);
+    name##prop##Date caption (object1, object2, object3, date) = name(prop##Date(object1, object2, object3, date));
+    date##prop (object1, object2, object3, date) = GROUP MAX dateIn AND prop##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
+    prop caption (object1, object2, object3) = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2 AND  object3 IS object3,
+                                                     prop##Date(object1, object2, object3, date##prop(object1, object2, object3, currentDate()));
+    name##prop caption (object1, object2, object3) = name(prop(object1, object2, object3));
+
+    FORM addName##prop caption
+    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL,  c=object3 FIXED PANEL, d=DATE FIXED PANEL
+    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, OBJVALUE(d), name##prop##Date(a, b, c, d);
+    DESIGN addName##prop FROM DEFAULT {
+        PROPERTY(name(a)) { focusable = FALSE; }
+        PROPERTY(name(b)) { focusable = FALSE; }
+        PROPERTY(name(c)) { focusable = FALSE; }
+    }
+
+    showFormAddName##prop 'Добавить' (object1, object2, object3) = ACTION FORM addName##prop OBJECTS a, b, c MODAL;
+
+    FORM name##prop caption
+    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
+    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAddName##prop(a, b, c), OBJVALUE(d), name##prop##Date(a, b, c, d)
+    FILTERS NOT NULL prop##Date(a, b, c, d);
+    DESIGN name##prop FROM DEFAULT {
+        PROPERTY(name(a)) { focusable = FALSE; }
+        PROPERTY(name(b)) { focusable = FALSE; }
+        PROPERTY(name(c)) { focusable = FALSE; }
+    }
+
+    showFormName##prop caption (object1, object2, object3) = ACTION FORM name##prop OBJECTS a, b, c MODAL SHORTCUT name##prop DEFAULT;
 
 END
 
@@ -679,7 +746,7 @@ EDIT tradingSquare OBJECT s;
 
 TABLE departmentStoreDate (object, DATE);
 
-@metaCodeNameObjectDateProperty(discount, departmentStore, 'Разрешать скидки', yesNo);
+@metaCodeNameObjectDateProperty(discount, departmentStore, 'Разрешать скидки', yesNo, baseGroup);
 
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
 
@@ -753,7 +820,23 @@ banSaleDepartmentStoreItem 'Запрет продаж товара в подра
 banMovementDepartmentStoreItem 'Запрет на внутреннее перемещение товара' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
 reserveDepartmentStoreItem 'Резерв по товару' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 
-//------------------------------------ Товар для подразделения с историей -------------------------------------------------------------//
+//------------------------------------ Товар с историей -------------------------------------------------------------//
+GROUP historyGroup 'Изменяемые характеристики' : baseGroup;
+
+@metaCodeNameObjectDateProperty(isPortionBarItem, item, 'Порционный товар для бара', yesNo, historyGroup);
+
+@metaCodeNameObjectDateProperty(banDiscountItem, item, 'Запретить скидки по товару', yesNo, historyGroup);
+
+@metaCodeObjectDateProperty(coefficientNetGrossItem, item, 'Сезонный коэффициент пересчета сырья из нетто в брутто', DOUBLE, historyGroup);
+
+@metaCodeObjectDateProperty(rateNaturalLossItem, item, 'Норма естественной убыли,%', DOUBLE, historyGroup);
+
+@metaCodeObjectDateProperty(NDSSupplierItem, item, 'НДС поставщика,%', DOUBLE, historyGroup);
+
+@metaCodeObjectDateProperty(importerPriceItem, item, 'Цена импортёра', DOUBLE, historyGroup);
+
+
+//------------------------------------ Товар для подразделения с историей -------------------------------------------//
 //maxReserveItemDepartmentDate 'Максимально допустимый товарный запас в днях' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
 //minReserveItemDepartmentDate 'Минимально допустимый товарный запас в днях' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
 //banRevaluationItemDepartmentDate 'Запрет на переоценку' = DATA BOOLEAN (item, departmentStore, DATE) IN baseGroup;
@@ -776,11 +859,11 @@ TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
 @metaCodeDoubleObjectDateProperty(discountItemDepartment, item, departmentStore, 'Скидка для товара', STRING[100]);
 
-@metaCodeNameDoubleObjectDateProperty(isSupplierItemDepartment, item, departmentStore, 'Поставщик', yesNo);
+//@metaCodeNameTripleObjectDateProperty(isSupplierItemDepartment, supplier, item, departmentStore, 'Поставщик', yesNo);
 
 
 FORM item 'Товар'
-OBJECTS i=item FIXED PANEL, b=barcode, d=departmentStore
+OBJECTS i=item FIXED PANEL, b=barcode, d=departmentStore, s=supplier
 PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
@@ -793,6 +876,13 @@ PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, isManufacturedItem, nam
  nameWareItem SHOWIF toShowWare(i), daysExpiryPackItem, hoursExpiryPackItem, standartItem, normOutItem, groupMenuItem,
  isCutedItem, isLoafCutItem, storageTemperatureItem, passScalesItem, bonusItem, percentWholesaleMarkItem,
  minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem
+PROPERTIES(i) nameisPortionBarItem, showFormNameisPortionBarItem,
+              namebanDiscountItem, showFormNamebanDiscountItem,
+              coefficientNetGrossItem, showFormcoefficientNetGrossItem,
+              rateNaturalLossItem, showFormrateNaturalLossItem,
+              NDSSupplierItem, showFormNDSSupplierItem,
+              importerPriceItem, showFormimporterPriceItem
+
 PROPERTIES (b) barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
 //PROPERTIES inSkuBarcode(i, b)
 PROPERTIES (d) name
@@ -802,8 +892,8 @@ PROPERTIES (i, d) FORCE PANEL maxReserveItemDepartment, showFormmaxReserveItemDe
                   nameinActionItemDepartment, showFormNameinActionItemDepartment,
                   marginProductionItemDepartment, showFormmarginProductionItemDepartment,
                   retailPriceItemDepartment, showFormretailPriceItemDepartment,
-                  discountItemDepartment, showFormdiscountItemDepartment,
-                  nameisSupplierItemDepartment, showFormNameisSupplierItemDepartment
+                  discountItemDepartment, showFormdiscountItemDepartment
+//PROPERTIES (s, i, d) nameisSupplierItemDepartment, showFormNameisSupplierItemDepartment
 
 FILTERS NOT NULL inSkuBarcode(i, b)
 PROPERTIES(b) ADDOBJ, delete
@@ -828,6 +918,10 @@ DESIGN item FROM DEFAULT {
                 fillHorizontal = 1.0;
             }
             ADD i.expiryGroup{
+                fillVertical = 1.0;
+                fillHorizontal = 1.0;
+            }
+            ADD i.historyGroup{
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
             }
@@ -1040,11 +1134,11 @@ dataActingLicenseLegalEntity 'Действующая лицензия' (legalEnt
 
 TABLE legalEntityDate (legalEntity, DATE);
 
-@metaCodeObjectDateProperty(addressLegalEntity, legalEntity, 'Юридический адрес', STRING[150]);
-@metaCodeObjectDateProperty(managerLegalEntity, legalEntity, 'Руководитель', STRING[100]);
-@metaCodeObjectDateProperty(accountantLegalEntity, legalEntity, 'Главный бухгалтер', STRING[100]);
-@metaCodeObjectDateProperty(postAddressLegalEntity, legalEntity, 'Почтовый адрес', STRING[150]);
-@metaCodeObjectDateProperty(phoneLegalEntity, legalEntity, 'Телефон/факс', STRING[100]);
+@metaCodeObjectDateProperty(addressLegalEntity, legalEntity, 'Юридический адрес', STRING[150], baseGroup);
+@metaCodeObjectDateProperty(managerLegalEntity, legalEntity, 'Руководитель', STRING[100], baseGroup);
+@metaCodeObjectDateProperty(accountantLegalEntity, legalEntity, 'Главный бухгалтер', STRING[100], baseGroup);
+@metaCodeObjectDateProperty(postAddressLegalEntity, legalEntity, 'Почтовый адрес', STRING[150], baseGroup);
+@metaCodeObjectDateProperty(phoneLegalEntity, legalEntity, 'Телефон/факс', STRING[100], baseGroup);
 
 
 // ----------------------------------- Договор ------------------------------------------ //
@@ -2091,6 +2185,18 @@ NAVIGATOR {
             ADD size;
             ADD specialty;
             ADD coolingDegree;
+            ADD addNameisPortionBarItem;
+            ADD nameisPortionBarItem;
+            ADD addNamebanDiscountItem;
+            ADD namebanDiscountItem;
+            ADD addcoefficientNetGrossItem;
+            ADD coefficientNetGrossItem;
+            ADD addrateNaturalLossItem;
+            ADD rateNaturalLossItem;
+            ADD addNDSSupplierItem;
+            ADD NDSSupplierItem;
+            ADD addimporterPriceItem;
+            ADD importerPriceItem;
             ADD addmaxReserveItemDepartment;
             ADD maxReserveItemDepartment;
             ADD addminReserveItemDepartment;
@@ -2105,8 +2211,8 @@ NAVIGATOR {
             ADD retailPriceItemDepartment;
             ADD adddiscountItemDepartment;
             ADD discountItemDepartment;
-            ADD addNameisSupplierItemDepartment;
-            ADD nameisSupplierItemDepartment;
+            //ADD addNameisSupplierItemDepartment;
+            //ADD nameisSupplierItemDepartment;
             ADD cash;
             ADD scales;
             ADD check;
