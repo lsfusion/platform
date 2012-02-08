@@ -932,6 +932,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		(panelLocationSetting [property])?
 		(fixedCharWidthSetting [property])?
 		(imageSetting [property])?
+		(editKeySetting [property])?
 	;
 
 
@@ -968,6 +969,21 @@ imageSetting [LP property]
 	}
 }
 	:	'IMAGE' path = stringLiteral
+	;
+
+editKeySetting [LP property]
+@init {
+	Boolean show = null;
+}
+@after {
+	if (inPropParseState()) {
+		self.setEditKey(property, $key.val, show);
+	}
+}
+	:	'EDITKEY' key = stringLiteral
+		(	('SHOW' { show = true; })
+		|	('HIDE' { show = false; })
+		)?
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

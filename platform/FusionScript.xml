@@ -50,6 +50,7 @@
       <keyword name="EDIT" />
       <keyword name="EDITABLE" />
       <keyword name="EDITFORM" />
+      <keyword name="EDITKEY" />
       <keyword name="EDITSESSIONFORM" />
       <keyword name="END" />
       <keyword name="EXCEPTLAST" />
@@ -123,6 +124,7 @@
       <keyword name="SELECTION" />
       <keyword name="SET" />
       <keyword name="SHORTCUT" />
+      <keyword name="SHOW" />
       <keyword name="SHOWIF" />
       <keyword name="STATIC" />
       <keyword name="STRING" />

@@ -28,6 +28,7 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.StoredDataProperty;
 import platform.server.logics.property.group.AbstractGroup;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -422,6 +423,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setImage(LP<?> property, String path) {
         property.setImage(path);
+    }
+
+    public void setEditKey(LP<?> property, String code, Boolean showEditKey) {
+        property.setEditKey(KeyStroke.getKeyStroke(code));
+        if (showEditKey != null)
+            property.setShowEditKey(showEditKey);
     }
 
     private <T extends LP<?>> void changePropertyName(T lp, String name) {
