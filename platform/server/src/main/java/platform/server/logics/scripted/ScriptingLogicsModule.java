@@ -667,7 +667,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (whereProp != null) {
             whereProps.add(whereProp);
         }
-        List<Object> resultParams = getParamsPlainList(whereProps, mainProps, groupProps, orderProps);
+        List<Object> resultParams = getParamsPlainList(whereProps, mainProps, orderProps, groupProps);
 
         int groupPropParamCount = mergeAllParams(BaseUtils.mergeLists(mainProps, groupProps, orderProps)).size();
         LP resultProp = null;
