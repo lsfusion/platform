@@ -598,6 +598,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                         expandParents.add(BaseUtils.filterClass(resultRow.getValue(), DataObject.class));
                     }
                     result.parentObjects.put(this, expandParents);
+                    activeRow = keys.size() == 0 ? -1 : 0;
                 } else {
                     if (!orders.starts(orderSeeks.values.keySet())) // если не "хватает" спереди ключей, дочитываем
                         orderSeeks = orderSeeks.readValues(sql, env, modifier, baseClass);
