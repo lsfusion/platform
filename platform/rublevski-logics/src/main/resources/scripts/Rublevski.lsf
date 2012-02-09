@@ -138,12 +138,12 @@ META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type)
 
 END
 
-// ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
+// ----------------------------------- Свойство объект1-объект2-объект3-дата------------------------------------------ //
 META metaCodeTripleObjectDateProperty(prop, object1, object2, object3, caption, type)
 
     prop##Date caption = DATA type (object1, object2, object3, DATE);
     date##prop (object1, object2, object3, date) = GROUP MAX dateIn AND prop##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
-    prop caption (object1, object2) = prop##Date(object1, object2, date##prop(object1, object2, object3, currentDate()));
+    prop caption (object1, object2, object3) = prop##Date(object1, object2, object3, date##prop(object1, object2, object3, currentDate()));
 
     FORM add##prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3  FIXED PANEL, d=DATE FIXED PANEL
@@ -175,7 +175,7 @@ META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, capti
 
     prop##Date caption = DATA type (object1, object2, object3, DATE);
     name##prop##Date caption (object1, object2, object3, date) = name(prop##Date(object1, object2, object3, date));
-    date##prop (object1, object2, object3, date) = GROUP MAX dateIn AND prop##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
+    date##prop (object1, object2, object3, date) = GROUP MAX dateIn AND prop##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
     prop caption (object1, object2, object3) = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2 AND  object3 IS object3,
                                                      prop##Date(object1, object2, object3, date##prop(object1, object2, object3, currentDate()));
     name##prop caption (object1, object2, object3) = name(prop(object1, object2, object3));
@@ -879,12 +879,32 @@ TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
 @metaCodeDoubleObjectDateProperty(discountItemDepartment, item, departmentStore, 'Скидка для товара', STRING[100]);
 
-//@metaCodeNameTripleObjectDateProperty(isSupplierItemDepartment, supplier, item, departmentStore, 'Поставщик', yesNo);
+TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 
+@metaCodeNameTripleObjectDateProperty(isSupplierItemDepartment, supplier, item, departmentStore, 'Поставщик', yesNo);
+
+@metaCodeTripleObjectDateProperty(priceSupplierItemDepartment, supplier, item, departmentStore, 'Цена поставщика', DOUBLE);
+
+@metaCodeTripleObjectDateProperty(markupSupplierItemDepartment, supplier, item, departmentStore, 'Торговая надбавка', DOUBLE);
+
+@metaCodeNameTripleObjectDateProperty(banSupplierItemDepartment, supplier, item, departmentStore, 'Запретить закупку', yesNo);
+
+FORM supplierItemDepartment 'Товар поставщика для подразделения'
+OBJECTS i=item FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier
+PROPERTIES(d) READONLY name, nameStoreDepartmentStore
+PROPERTIES(i) READONLY name
+PROPERTIES(s) READONLY name
+PROPERTIES(s) ADDFORM, EDITFORM, delete
+PROPERTIES(s, i, d) nameisSupplierItemDepartment, showFormNameisSupplierItemDepartment,
+                    priceSupplierItemDepartment, showFormpriceSupplierItemDepartment,
+                    markupSupplierItemDepartment, showFormmarkupSupplierItemDepartment,
+                    namebanSupplierItemDepartment, showFormNamebanSupplierItemDepartment;
+
+showFormSupplierItemDepartment 'Свойства по поставщикам' (item) = ACTION FORM supplierItemDepartment OBJECTS i MODAL;
 
 FORM item 'Товар'
-OBJECTS i=item FIXED PANEL, b=barcode, d=departmentStore, s=supplier
-PROPERTIES(i) name, nameAttributeItem, nameItemGroupSku, barcodeBarcodeSku, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
+OBJECTS i=item FIXED PANEL, b=barcode, d=departmentStore
+PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDepartment, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
  hallmarkItem SHOWIF toShowHallmark(i), articleItem, quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
@@ -904,7 +924,6 @@ PROPERTIES(i) nameisPortionBarItem, showFormNameisPortionBarItem,
               importerPriceItem, showFormimporterPriceItem
 
 PROPERTIES (b) barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
-//PROPERTIES inSkuBarcode(i, b)
 PROPERTIES (d) name
 PROPERTIES (i, d) FORCE PANEL maxReserveItemDepartment, showFormmaxReserveItemDepartment,
                   minReserveItemDepartment, showFormminReserveItemDepartment,
@@ -913,7 +932,6 @@ PROPERTIES (i, d) FORCE PANEL maxReserveItemDepartment, showFormmaxReserveItemDe
                   marginProductionItemDepartment, showFormmarginProductionItemDepartment,
                   retailPriceItemDepartment, showFormretailPriceItemDepartment,
                   discountItemDepartment, showFormdiscountItemDepartment
-//PROPERTIES (s, i, d) nameisSupplierItemDepartment, showFormNameisSupplierItemDepartment
 
 FILTERS NOT NULL inSkuBarcode(i, b)
 PROPERTIES(b) ADDOBJ, delete
@@ -2248,8 +2266,15 @@ NAVIGATOR {
             ADD retailPriceItemDepartment;
             ADD adddiscountItemDepartment;
             ADD discountItemDepartment;
-            //ADD addNameisSupplierItemDepartment;
-            //ADD nameisSupplierItemDepartment;
+            ADD addNameisSupplierItemDepartment;
+            ADD nameisSupplierItemDepartment;
+            ADD addpriceSupplierItemDepartment;
+            ADD priceSupplierItemDepartment;
+            ADD addmarkupSupplierItemDepartment;
+            ADD markupSupplierItemDepartment;
+            ADD addNamebanSupplierItemDepartment;
+            ADD namebanSupplierItemDepartment;
+
             ADD cash;
             ADD scales;
             ADD check;
