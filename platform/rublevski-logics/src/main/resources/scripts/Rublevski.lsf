@@ -331,10 +331,9 @@ GROUP manufactoryGroup 'Собственное производство' : publi
 
 
 CLASS ABSTRACT sku 'SKU' : named;
-CLASS itemComponent 'itemComponent' : sku;
-CLASS item 'Товар' : itemComponent;
-CLASS dish 'Блюдо' : sku;
-CLASS ware 'Посуда' : sku;
+CLASS item 'Товар' : sku;
+CLASS dish 'Блюдо' : sku, named;
+CLASS ware 'Посуда' : sku, named;
 
 CLASS brand 'Бренд' : named;
 
@@ -406,7 +405,7 @@ nameWareItem 'Посуда' = name(wareItem(item)) IN descriptionGroup;
 @metaCodeShowItemAttribute(Ware, 'Показывать посуду');
 
 //equipmentGroup
-isWeightItem 'Весовой товар' = DATA BOOLEAN (itemComponent) IN equipmentGroup;
+isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN equipmentGroup;
 isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN equipmentGroup;
 compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
 tagItem 'Ценник (ИД)' = DATA tag (item) IN idGroup;
@@ -574,9 +573,9 @@ valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(i
                                                       stringBooleanItemAttribute(item, attribute),
                                                       nameObjectItemAttribute(item, attribute) PERSISTENT;
 
-numberInNameItemAttribute = DATA INTEGER (itemAttribute) IN baseGroup;
+numberInNameItemAttribute 'Порядковый номер в наименовании' = DATA INTEGER (itemAttribute) IN baseGroup;
 
-nameAttributeItem 'Имя из атрибутов' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameItemAttribute(attribute);
+nameAttributeItem 'Имя' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameItemAttribute(attribute) PERSISTENT FIXEDCHARWIDTH 50;
 
 // ----------------------------------- Штрих код ------------------------------------------ //
 GROUP barcodeGroup : baseGroup;
@@ -829,7 +828,7 @@ inRawDepartmentStore(manufactory, departmentStore) = storeDepartmentStore(manufa
 additionPriceDepartmentStoreItem 'Торговая надбавка в рублях' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 boundCertificateDepartmentStoreItem 'Сертификат / удостоверение обязательны для товара?' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
 maxAllowedRetailPriceDepartmentStoreItem 'MAX допустимая розн.цена' = DATA INTEGER (departmentStore, item) IN baseGroup;
-netWeightManufacterDepartmentStoreItem 'Вес нетто продукта для производства' = DATA DOUBLE (departmentStore, itemComponent) IN baseGroup;
+netWeightManufacturerDepartmentStoreItem 'Вес нетто продукта для производства' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 statusCashDepartmentStoreItem 'Статус товара на кассах (ИД)' = DATA itemStatus (departmentStore, item) IN idGroup;
 nameStatusCashDepartmentStoreItem 'Статус товара на кассах' = name(statusCashDepartmentStoreItem (departmentStore, item)) IN baseGroup;
 
@@ -904,7 +903,7 @@ showFormSupplierItemDepartment 'Свойства по поставщикам' (i
 
 FORM item 'Товар'
 OBJECTS i=item FIXED PANEL, b=barcode, d=departmentStore
-PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDepartment, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
+PROPERTIES(i) nameAttributeItem, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDepartment, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
  hallmarkItem SHOWIF toShowHallmark(i), articleItem, quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
@@ -976,7 +975,7 @@ FORM items 'Товары'
 TREE treeGroup g=itemGroup PARENT parentItemGroup
 OBJECTS i=item
 PROPERTIES(g) READONLY name
-PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem, barcodeBarcodeSku
+PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem, barcodeBarcodeSku
 PROPERTIES(i) ADDFORM, EDITFORM, delete
 FILTERS NOT NULL inItemGroupSku(g, i);
 
@@ -994,7 +993,7 @@ PROPERTIES(d) READONLY name, nameStoreDepartmentStore
 PROPERTIES(d) ADDFORM, EDITFORM, delete
 PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
 PROPERTIES(i) ADDFORM, EDITFORM, delete
-PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem, maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacterDepartmentStoreItem,
+PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem, maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacturerDepartmentStoreItem,
                  nameStatusCashDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem, fromDateDeliveryDepartmentStoreItem,
                  banSaleDepartmentStoreItem, banMovementDepartmentStoreItem, reserveDepartmentStoreItem,
                  maxReserveItemDepartment, showFormmaxReserveItemDepartment,
