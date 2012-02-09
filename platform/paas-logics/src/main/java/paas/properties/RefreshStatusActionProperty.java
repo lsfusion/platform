@@ -7,10 +7,11 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.CustomActionProperty;
 
 import java.sql.SQLException;
 
-public class RefreshStatusActionProperty extends ActionProperty {
+public class RefreshStatusActionProperty extends CustomActionProperty {
 
     private PaasBusinessLogics paas;
 

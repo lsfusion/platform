@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-public class TranslateActionProperty extends ActionProperty {
+public class TranslateActionProperty extends CustomActionProperty {
     private LP sourceProperty;
     private LP targetProperty;
     private LP translationDictionaryTerm;

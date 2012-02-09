@@ -16,6 +16,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.CustomActionProperty;
 import skolkovo.SkolkovoLogicsModule;
 
 import java.io.*;
@@ -28,7 +29,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.Date;
 
-public class CopyProjectActionProperty extends ActionProperty {
+public class CopyProjectActionProperty extends CustomActionProperty {
 
     private SkolkovoLogicsModule LM;
     private final ClassPropertyInterface projectInterface;

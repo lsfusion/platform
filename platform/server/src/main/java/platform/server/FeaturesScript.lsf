@@ -149,7 +149,7 @@ CONSTRAINT CHECKED foo(store, article) > 1000 MSG 'ошибка: >1000';
 //      propertyExpression1 [RESOLVE (TRUE | FALSE | ALL | NOTHING)],
 //      ...
 //      propertyExpressionK [RESOLVE (TRUE | FALSE | ALL | NOTHING)];
-foo(store, article) => foo2(store, article) RESOLVE NOTHING, bar2(store, article);
+//foo(store, article) => foo2(store, article) RESOLVE NOTHING;
 
 ////////////////ACTION STATEMENT////////////////
 // Syntax:

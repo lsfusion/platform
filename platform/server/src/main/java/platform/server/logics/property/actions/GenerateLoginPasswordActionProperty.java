@@ -13,7 +13,7 @@ import platform.server.logics.property.Property;
 import java.sql.SQLException;
 import java.util.*;
 
-public class GenerateLoginPasswordActionProperty extends ActionProperty {
+public class GenerateLoginPasswordActionProperty extends CustomActionProperty {
 
     private LP email;
     private LP userLogin;

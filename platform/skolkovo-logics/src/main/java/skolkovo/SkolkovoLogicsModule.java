@@ -43,6 +43,7 @@ import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.Property;
+import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.EmailActionProperty;
 import platform.server.session.DataSession;
@@ -5401,7 +5402,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    public class FillLangProjectActionProperty extends ActionProperty {
+    public class FillLangProjectActionProperty extends CustomActionProperty {
 
         private final ClassPropertyInterface projectInterface;
 
@@ -5436,7 +5437,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    public class IncludeProjectClusterForesightActionProperty extends ActionProperty {
+    public class IncludeProjectClusterForesightActionProperty extends CustomActionProperty {
 
         private final ClassPropertyInterface projectInterface;
         private final ClassPropertyInterface clusterInterface;
@@ -7457,7 +7458,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
          }
     }
 
-    public class GenerateDocumentsActionProperty extends ActionProperty {
+    public class GenerateDocumentsActionProperty extends CustomActionProperty {
 
         private final ClassPropertyInterface projectInterface;
         private final ClassPropertyInterface documentTemplateInterface;
@@ -7488,7 +7489,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    public class OpenApplicationProjectActionProperty extends ActionProperty {
+    public class OpenApplicationProjectActionProperty extends CustomActionProperty {
 
         private final ClassPropertyInterface projectInterface;
 
@@ -7532,7 +7533,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    public class AttachProtocolDecisionVoteActionProperty extends ActionProperty {
+    public class AttachProtocolDecisionVoteActionProperty extends CustomActionProperty {
 
         private final ClassPropertyInterface voteInterface;
 
@@ -7556,7 +7557,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    public class GenerateExpertSIDsActionProperty extends ActionProperty {
+    public class GenerateExpertSIDsActionProperty extends CustomActionProperty {
 
         private final ClassPropertyInterface expertInterface;
 
@@ -7629,7 +7630,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         return prefix + nextRand;
     }
 
-    public class IncludeDocumentsActionProperty extends ActionProperty {
+    public class IncludeDocumentsActionProperty extends CustomActionProperty {
 
         private final ClassPropertyInterface projectInterface;
 
@@ -7869,7 +7870,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     }
 
 
-    public class ImportIPsExpertVoteActionProperty extends ActionProperty {
+    public class ImportIPsExpertVoteActionProperty extends CustomActionProperty {
 
         protected FileActionClass valueClass;
 
@@ -7967,7 +7968,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         return IOUtils.getFileBytes(tempFile);
     }
 
-    public class GenerateVoteActionProperty extends ActionProperty {
+    public class GenerateVoteActionProperty extends CustomActionProperty {
 
         private final ClassPropertyInterface projectInterface;
 
@@ -8142,7 +8143,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    public class CopyResultsActionProperty extends ActionProperty {
+    public class CopyResultsActionProperty extends CustomActionProperty {
 
         private final ClassPropertyInterface voteInterface;
 

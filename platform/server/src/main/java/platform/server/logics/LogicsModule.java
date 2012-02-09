@@ -23,9 +23,7 @@ import platform.server.form.window.AbstractWindow;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
-import platform.server.logics.property.actions.flow.FlowActionProperty;
-import platform.server.logics.property.actions.flow.SetPropertyActionProperty;
-import platform.server.logics.property.actions.flow.SimpleAddObjectActionProperty;
+import platform.server.logics.property.actions.flow.*;
 import platform.server.logics.property.derived.AggregateGroupProperty;
 import platform.server.logics.property.derived.ConcatenateProperty;
 import platform.server.logics.property.derived.CycleGroupProperty;
@@ -38,9 +36,8 @@ import javax.mail.internet.MimeMessage;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-import static platform.base.BaseUtils.consecutiveInts;
+import static platform.base.BaseUtils.*;
 import static platform.server.logics.PropertyUtils.*;
-import static platform.server.logics.property.UserProperty.getInterfaces;
 import static platform.server.logics.property.actions.ExecutePropertiesActionProperty.EPA_INTERFACE;
 
 /**
@@ -537,21 +534,51 @@ public abstract class LogicsModule {
     }
 
     protected LP addSetPropertyAProp(AbstractGroup group, String name, String caption, LP toProperty, int[] mapToInterfaces, int mapResultInterface, int[] mapThisInterfaces) {
-        return addProperty(group, new LP<ClassPropertyInterface>(
-                SetPropertyActionProperty.create(name, caption, toProperty, mapToInterfaces, mapResultInterface, mapThisInterfaces)));
+        Object[] leftParams = add(toOneBasedArray(mapThisInterfaces), add(toProperty, toOneBasedArray(mapToInterfaces)));
+        return addSetPropertyAProp(group, name, caption, getIntNum(leftParams), mapThisInterfaces.length, add(leftParams, mapResultInterface));
     }
 
     protected LP addSetPropertyAProp(AbstractGroup group, String name, String caption, LP toProperty, int[] mapToInterfaces, LP fromProperty, int[] mapFromInterfaces, int[] mapThisInterfaces) {
-        return addProperty(group, new LP<ClassPropertyInterface>(
-                SetPropertyActionProperty.create(name, caption, toProperty, mapToInterfaces, fromProperty, mapFromInterfaces, mapThisInterfaces)));
+        Object[] leftParams = add(toOneBasedArray(mapThisInterfaces), add(toProperty, toOneBasedArray(mapToInterfaces)));
+        return addSetPropertyAProp(group, name, caption, getIntNum(leftParams), mapThisInterfaces.length, add(leftParams, add(fromProperty, toOneBasedArray(mapFromInterfaces))));
     }
 
-    protected LP addFlowAProp(AbstractGroup group, String name, String caption, LP[] actions, int[][] mapActions) {
-        return addFlowAProp(group, name, caption, actions, mapActions, -1);
+    protected <C extends PropertyInterface> LP addSetPropertyAProp(AbstractGroup group, String name, String caption, int interfaces, int resInterfaces, Object... params) {
+        List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
+        List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
+        return addProperty(group, new LP<ClassPropertyInterface>(new SetActionProperty<C, PropertyInterface>(name, caption,
+                innerInterfaces, (List)readImplements.subList(0, resInterfaces),
+                (PropertyMapImplement<C, PropertyInterface>)readImplements.get(resInterfaces), readImplements.get(resInterfaces+1))));
     }
 
-    protected LP addFlowAProp(AbstractGroup group, String name, String caption, LP[] actions, int[][] mapActions, int resultInterfacesCount) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new FlowActionProperty(name, caption, baseLM.baseClass, actions, mapActions, resultInterfacesCount)));
+    protected LP addListAProp(AbstractGroup group, String name, String caption, int interfaces, LP[] actions, int[][] mapActions) {
+        Object[] params = new Object[]{};
+        for(int i=0;i<actions.length;i++)
+            params = add(params, add(actions[i], toOneBasedArray(mapActions[i])));
+        return addListAProp(group, name, caption, interfaces, params);
+    }
+    protected LP addListAProp(AbstractGroup group, String name, String caption, int interfaces, Object... params) {
+        List<PropertyInterface> listInterfaces = genInterfaces(interfaces);
+        return addProperty(group, new LP<ClassPropertyInterface>(new ListActionProperty(name, caption, listInterfaces,
+                (List) readImplements(listInterfaces, params))));
+    }
+    protected LP addIfAProp(AbstractGroup group, String name, String caption, int interfaces, Object... params) {
+        List<PropertyInterface> listInterfaces = genInterfaces(interfaces);
+        List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+        return addProperty(group, new LP<ClassPropertyInterface>(new IfActionProperty(name, caption, listInterfaces, readImplements.get(0),
+                (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(1), (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(2))));
+    }
+    protected LP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean recursive, int interfaces, int resInterfaces, Object... params) {
+        List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
+        List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
+        return addProperty(group, new LP<ClassPropertyInterface>(new ForActionProperty<PropertyInterface>(name, caption, 
+                innerInterfaces, (List) readImplements.subList(0, resInterfaces), (PropertyMapImplement<?, PropertyInterface>)readImplements.get(resInterfaces),
+                toOrderedMap(readImplements.subList(resInterfaces+1, readImplements.size()-1), ascending), (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(readImplements.size()-1), recursive)));
+    }
+    protected LP addJoinAProp(AbstractGroup group, String name, String caption, int interfaces, LP action, Object... params) {
+        List<PropertyInterface> listInterfaces = genInterfaces(interfaces);
+        List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+        return addProperty(group, new LP<ClassPropertyInterface>(new JoinActionProperty(name, caption, listInterfaces, mapImplement(action, readImplements))));
     }
 
     protected LP addEAProp(ValueClass... params) {
@@ -1112,7 +1139,7 @@ public abstract class LogicsModule {
     }
 
     private <T extends PropertyInterface> LP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, LP<T> groupProp, List<PropertyInterfaceImplement<T>> listImplements) {
-        return addSGProp(group, name, persistent, notZero, caption, groupProp.listInterfaces, BaseUtils.add(groupProp.property.getImplement(), listImplements));
+        return addSGProp(group, name, persistent, notZero, caption, groupProp.listInterfaces, add(groupProp.property.getImplement(), listImplements));
     }
 
     private List<PropertyInterface> genInterfaces(int interfaces) {
@@ -1151,7 +1178,7 @@ public abstract class LogicsModule {
         return addOGProp(null, name, persist, caption, type, numOrders, ascending, groupProp, params);
     }
     public <T extends PropertyInterface> LP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean ascending, LP<T> groupProp, Object... params) {
-        return addOGProp(group, name, persist, caption, type, numOrders, ascending, groupProp.listInterfaces, BaseUtils.add(groupProp.property.getImplement(), readImplements(groupProp.listInterfaces, params)));
+        return addOGProp(group, name, persist, caption, type, numOrders, ascending, groupProp.listInterfaces, add(groupProp.property.getImplement(), readImplements(groupProp.listInterfaces, params)));
     }
     public <T extends PropertyInterface> LP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean ascending, int interfaces, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
@@ -1201,7 +1228,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addMGProp(AbstractGroup group, String name, boolean persist, String caption, boolean min, LP groupProp, Object... params) {
-        return addMGProp(group, name, persist, caption, min, groupProp.listInterfaces.size(), BaseUtils.add(directLI(groupProp), params));
+        return addMGProp(group, name, persist, caption, min, groupProp.listInterfaces.size(), add(directLI(groupProp), params));
     }
 
     protected LP addMGProp(AbstractGroup group, String name, boolean persist, String caption, boolean min, int interfaces, Object... params) {
@@ -1213,7 +1240,7 @@ public abstract class LogicsModule {
     }
 
     protected <T extends PropertyInterface> LP[] addMGProp(AbstractGroup group, boolean persist, String[] names, String[] captions, int extra, LP<T> groupProp, Object... params) {
-        return addMGProp(group, persist, names, captions, extra + 1, false, groupProp.listInterfaces.size(), BaseUtils.add(directLI(groupProp), params));
+        return addMGProp(group, persist, names, captions, extra + 1, false, groupProp.listInterfaces.size(), add(directLI(groupProp), params));
     }
 
     protected LP[] addMGProp(AbstractGroup group, boolean persist, String[] names, String[] captions, int exprs, boolean min, int interfaces, Object... params) {
@@ -1332,7 +1359,7 @@ public abstract class LogicsModule {
 
     protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, LP<T> lp, int aggrInterface, Object... props) {
         List<PropertyInterfaceImplement<T>> fullInterfaces = BaseUtils.mergeList(readImplements(lp.listInterfaces, props), BaseUtils.removeList(lp.listInterfaces, aggrInterface - 1));
-        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, lp.listInterfaces, aggrInterface, BaseUtils.add(lp.property.getImplement(), fullInterfaces));
+        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, lp.listInterfaces, aggrInterface, add(lp.property.getImplement(), fullInterfaces));
     }
 
     protected LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, int interfaces, int aggrInterface, Object... props) {
@@ -1551,8 +1578,8 @@ public abstract class LogicsModule {
     }
 
     public LP addLProp(LP lp, ValueClass... classes) {
-        LP writeProp = addJProp(baseLM.and1, BaseUtils.add(directLI(lp), new Object[]{addJProp(baseLM.equals2, 1, baseLM.currentSession), lp.listInterfaces.size() + 1}));
-        return addDCProp("LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log")+" " + lp.property, writeProp, BaseUtils.add(new Object[]{true},BaseUtils.add(getParams(writeProp), BaseUtils.add(directLI(lp), classes))));
+        LP writeProp = addJProp(baseLM.and1, add(directLI(lp), new Object[]{addJProp(baseLM.equals2, 1, baseLM.currentSession), lp.listInterfaces.size() + 1}));
+        return addDCProp("LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log")+" " + lp.property, writeProp, add(new Object[]{true}, add(getParams(writeProp), add(directLI(lp), classes))));
     }
 
     // XOR
@@ -1589,7 +1616,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addIfProp(AbstractGroup group, String name, boolean persistent, String caption, LP prop, boolean not, LP ifProp, Object... params) {
-        return addJProp(group, name, persistent, caption, and(not), BaseUtils.add(getUParams(new LP[]{prop}, 0), BaseUtils.add(new LP[]{ifProp}, params)));
+        return addJProp(group, name, persistent, caption, and(not), add(getUParams(new LP[]{prop}, 0), add(new LP[]{ifProp}, params)));
     }
 
     protected LP addIfElseUProp(LP prop1, LP prop2, LP ifProp, Object... params) {
@@ -1654,7 +1681,7 @@ public abstract class LogicsModule {
         return addSFUProp(group, name, false, caption, delimiter, props);
     }
     protected LP addSFUProp(AbstractGroup group, String name, boolean persistent, String caption, String delimiter, LP... props) {
-        return addUProp(group, name, persistent, caption, Union.STRING_AGG, BaseUtils.add(getUParams(props, 0), delimiter));
+        return addUProp(group, name, persistent, caption, Union.STRING_AGG, add(getUParams(props, 0), delimiter));
     }
     protected LP addXSUProp(AbstractGroup group, String caption, LP... props) {
         return addXSUProp(group, genSID(), caption, props);
@@ -1680,8 +1707,8 @@ public abstract class LogicsModule {
             result[i] = addUProp(group, names[i], captions[i], Union.MAX, getUParams(maxProps, 0));
             if (i < extra) { // если не последняя
                 for (int j = 0; j < propNum; j++)
-                    maxProps[j] = addJProp(baseLM.and1, BaseUtils.add(directLI(props[(i + 1) * propNum + j]), directLI( // само свойство
-                            addJProp(baseLM.equals2, BaseUtils.add(directLI(maxProps[j]), directLI(result[i])))))); // только те кто дает предыдущий максимум
+                    maxProps[j] = addJProp(baseLM.and1, add(directLI(props[(i + 1) * propNum + j]), directLI( // само свойство
+                            addJProp(baseLM.equals2, add(directLI(maxProps[j]), directLI(result[i])))))); // только те кто дает предыдущий максимум
             }
         } while (i++ < extra);
         return result;
@@ -1946,7 +1973,7 @@ public abstract class LogicsModule {
 
     protected LP addHideCaptionProp(AbstractGroup group, String caption, Property original, LP hideProperty) {
         LP originalCaption = addCProp(StringClass.get(100), original.caption);
-        LP result = addJProp(group, caption, baseLM.and1, BaseUtils.add(new Object[]{originalCaption}, directLI(hideProperty)));
+        LP result = addJProp(group, caption, baseLM.and1, add(new Object[]{originalCaption}, directLI(hideProperty)));
         return result;
     }
 

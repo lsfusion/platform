@@ -24,6 +24,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.CustomActionProperty;
 
 import javax.mail.Message;
 import javax.mail.internet.MimeMessage;
@@ -37,7 +38,7 @@ import java.util.*;
  * Time: 11:53
  */
 
-public class EmailActionProperty extends ActionProperty {
+public class EmailActionProperty extends CustomActionProperty {
     public static enum Format {PDF, DOCX, HTML, RTF}
     private static Map<Format, String> extensions = new HashMap<Format, String>();
     static {

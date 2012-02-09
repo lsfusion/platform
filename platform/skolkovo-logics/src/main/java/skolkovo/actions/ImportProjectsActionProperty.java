@@ -26,6 +26,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.session.DataSession;
 import platform.server.session.SessionTableUsage;
 import skolkovo.SkolkovoBusinessLogics;
@@ -40,7 +41,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
-public class ImportProjectsActionProperty extends ActionProperty {
+public class ImportProjectsActionProperty extends CustomActionProperty {
 
     private SkolkovoLogicsModule LM;
     private SkolkovoBusinessLogics BL;

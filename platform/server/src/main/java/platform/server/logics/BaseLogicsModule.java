@@ -1347,7 +1347,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         return BL.addGarbageCollectorActionProp();
     }
 
-    public static class SeekActionProperty extends ActionProperty {
+    public static class SeekActionProperty extends CustomActionProperty {
 
         Property property;
 
@@ -1376,7 +1376,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    public static class LoadActionProperty extends ActionProperty {
+    public static class LoadActionProperty extends CustomActionProperty {
 
         LP fileProperty;
 
@@ -1407,7 +1407,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    public static class OpenActionProperty extends ActionProperty {
+    public static class OpenActionProperty extends CustomActionProperty {
 
         LP fileProperty;
 
@@ -1440,7 +1440,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    public static class IncrementActionProperty extends ActionProperty {
+    public static class IncrementActionProperty extends CustomActionProperty {
 
         LP dataProperty;
         LP maxProperty;
@@ -1478,7 +1478,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private static class ChangeUserActionProperty extends ActionProperty {
+    private static class ChangeUserActionProperty extends CustomActionProperty {
 
         private ChangeUserActionProperty(String sID, ConcreteValueClass userClass) {
             super(sID, getString("logics.user.change.user"), new ValueClass[]{userClass});
@@ -1500,7 +1500,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class CheckAggregationsActionProperty extends ActionProperty {
+    private class CheckAggregationsActionProperty extends CustomActionProperty {
         private CheckAggregationsActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -1517,7 +1517,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class RecalculateActionProperty extends ActionProperty {
+    private class RecalculateActionProperty extends CustomActionProperty {
         private RecalculateActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -1534,7 +1534,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class RecalculateTableColumnActionProperty extends ActionProperty {
+    private class RecalculateTableColumnActionProperty extends CustomActionProperty {
 
         private final ClassPropertyInterface tableColumnInterface;
 
@@ -1559,7 +1559,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class PackActionProperty extends ActionProperty {
+    private class PackActionProperty extends CustomActionProperty {
         private PackActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -1576,7 +1576,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class RecalculateFollowsActionProperty extends ActionProperty {
+    private class RecalculateFollowsActionProperty extends CustomActionProperty {
         private RecalculateFollowsActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -1592,7 +1592,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class RecalculateStatsActionProperty extends ActionProperty {
+    private class RecalculateStatsActionProperty extends CustomActionProperty {
         private RecalculateStatsActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -1603,7 +1603,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    public static class MessageActionProperty extends ActionProperty {
+    public static class MessageActionProperty extends CustomActionProperty {
         private String message;
 
         MessageActionProperty(String message, String sID, String caption) {
@@ -1616,7 +1616,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    class AddBarcodeActionProperty extends ActionProperty {
+    class AddBarcodeActionProperty extends CustomActionProperty {
 
         ConcreteCustomClass customClass;
         Property<?> addProperty;

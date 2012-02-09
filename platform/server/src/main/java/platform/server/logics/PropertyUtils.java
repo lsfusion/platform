@@ -133,6 +133,13 @@ public class PropertyUtils {
         return mapLI(readLI(params), listInterfaces);
     }
 
+    public static <T extends PropertyInterface> List<T> readInterfaces(List<T> listInterfaces, int... params) {
+        List<T> result = new ArrayList<T>();
+        for(int param : params)
+            result.add(listInterfaces.get(param));
+        return result;
+    }
+
     protected static int getIntNum(Object[] params) {
         int intNum = 0;
         for (Object param : params)

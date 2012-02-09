@@ -17,7 +17,7 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class DeleteObjectActionProperty extends ActionProperty {
+public class DeleteObjectActionProperty extends CustomActionProperty {
 
     public DeleteObjectActionProperty(BaseClass baseClass) {
         super("delete", ServerResourceBundle.getString("logics.property.actions.delete"), new ValueClass[]{baseClass});

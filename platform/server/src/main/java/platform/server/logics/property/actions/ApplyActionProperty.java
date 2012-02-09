@@ -7,7 +7,7 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class ApplyActionProperty extends ActionProperty {
+public class ApplyActionProperty extends CustomActionProperty {
 
     BusinessLogics BL;
 

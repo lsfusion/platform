@@ -328,6 +328,9 @@ public class Query<K,V> extends IQuery<K,V> {
             result.put(orderRow.getKey(), BaseUtils.filterKeys(orderRow.getValue(), properties.keySet()));
         return result;
     }
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(DataSession session, OrderedMap<? extends V, Boolean> orders) throws SQLException {
+        return executeClasses(session.sql, orders, 0, session.baseClass, session.env);
+    }
 
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, OrderedMap<? extends V, Boolean> orders, int selectTop, BaseClass baseClass, QueryEnvironment env) throws SQLException {
         OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> result = new OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>>();

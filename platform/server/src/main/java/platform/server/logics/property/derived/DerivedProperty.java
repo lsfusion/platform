@@ -48,6 +48,13 @@ public class DerivedProperty {
         return mapImplement;
     }
 
+    public static <L,T extends PropertyInterface,K extends PropertyInterface, C extends PropertyInterface> List<PropertyMapImplement<C, K>> mapImplements(Map<T,K> map, List<PropertyMapImplement<C, T>> propertyImplements) {
+        List<PropertyMapImplement<C, K>> mapImplement = new ArrayList<PropertyMapImplement<C, K>>();
+        for(PropertyMapImplement<C, T> interfaceImplementEntry : propertyImplements)
+            mapImplement.add(interfaceImplementEntry.map(map));
+        return mapImplement;
+    }
+
     public static <L,T extends PropertyInterface,K extends PropertyInterface> Map<L,PropertyInterfaceImplement<K>> mapImplements(Map<L,PropertyInterfaceImplement<T>> interfaceImplements, Map<T,K> map) {
         Map<L,PropertyInterfaceImplement<K>> mapImplement = new HashMap<L, PropertyInterfaceImplement<K>>();
         for(Map.Entry<L,PropertyInterfaceImplement<T>> interfaceImplementEntry : interfaceImplements.entrySet())

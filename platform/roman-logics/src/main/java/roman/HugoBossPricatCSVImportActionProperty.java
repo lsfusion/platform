@@ -8,13 +8,14 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.CustomActionProperty;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.*;
 
-public class HugoBossPricatCSVImportActionProperty extends ActionProperty {
+public class HugoBossPricatCSVImportActionProperty extends CustomActionProperty {
     private RomanLogicsModule LM;
 
     private final FileActionClass valueClass = FileActionClass.getDefinedInstance(true, "Файлы данных (*.csv)", "csv");

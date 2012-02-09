@@ -18,7 +18,7 @@ import java.util.*;
 
 import static platform.base.BaseUtils.*;
 
-public class GroupChangeActionProperty extends ActionProperty {
+public class GroupChangeActionProperty extends CustomActionProperty {
 
     private final GroupObjectEntity filterGroupObject;
     private final Property getterProperty;

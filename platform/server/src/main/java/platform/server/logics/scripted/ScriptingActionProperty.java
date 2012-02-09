@@ -3,8 +3,9 @@ package platform.server.logics.scripted;
 import platform.server.classes.ValueClass;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.actions.CustomActionProperty;
 
-public abstract class ScriptingActionProperty extends ActionProperty {
+public abstract class ScriptingActionProperty extends CustomActionProperty {
     protected BusinessLogics<?> BL;
 
     public ScriptingActionProperty(BusinessLogics<?> BL) {

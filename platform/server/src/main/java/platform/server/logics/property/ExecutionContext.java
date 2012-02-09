@@ -18,6 +18,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import static platform.base.BaseUtils.join;
+
 public class ExecutionContext {
     private final Map<ClassPropertyInterface, DataObject> keys;
     private final ObjectValue value;
@@ -155,5 +157,13 @@ public class ExecutionContext {
             form.cancelChanges();
         else
             getSession().restart(true);
+    }
+
+    public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys) {
+        return new ExecutionContext(keys, value, session, modifier, actions, form, mapObjects, groupLast);
+    }
+
+    public ExecutionContext map(Map<ClassPropertyInterface, ClassPropertyInterface> map) {
+        return new ExecutionContext(join(map, keys), value, session, modifier, actions, form, mapObjects, groupLast);
     }
 }

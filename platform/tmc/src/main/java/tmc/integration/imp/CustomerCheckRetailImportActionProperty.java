@@ -8,12 +8,13 @@ import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.CustomActionProperty;
 import tmc.VEDBusinessLogics;
 
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class CustomerCheckRetailImportActionProperty extends ActionProperty {
+public class CustomerCheckRetailImportActionProperty extends CustomActionProperty {
 
     VEDBusinessLogics BL;
 

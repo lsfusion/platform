@@ -22,6 +22,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.session.DataSession;
 
 import javax.mail.Message;
@@ -35,7 +36,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class NotificationActionProperty extends ActionProperty {
+public class NotificationActionProperty extends CustomActionProperty {
 
     private final LinkedHashMap<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipients = new LinkedHashMap<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType>();
 

@@ -32,6 +32,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import tmc.integration.exp.AbstractSaleExportTask;
 import tmc.integration.exp.CashRegController;
@@ -4125,7 +4126,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }*/
 
-    private class PayWithCardActionProperty extends ActionProperty {
+    private class PayWithCardActionProperty extends CustomActionProperty {
 
         private PayWithCardActionProperty() {
             super(genSID(), "Опл. карт.", new ValueClass[]{orderSaleRetail});
@@ -4152,7 +4153,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }
 
-    private class PrintOrderCheckActionProperty extends ActionProperty {
+    private class PrintOrderCheckActionProperty extends CustomActionProperty {
 
         private PrintOrderCheckActionProperty() {
             super(genSID(), "Печать", new ValueClass[]{orderSaleRetail});
@@ -4171,7 +4172,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }
 
-    public class SaleExportActionProperty extends ActionProperty {
+    public class SaleExportActionProperty extends CustomActionProperty {
 
         private final ClassPropertyInterface shopInterface;
         private final ClassPropertyInterface dateFrom;
@@ -4211,7 +4212,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }
 
-    public abstract class ImportActionProperty extends ActionProperty {
+    public abstract class ImportActionProperty extends CustomActionProperty {
 
         protected ImportActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
@@ -4511,7 +4512,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }
 
-    public class DownToZeroActionProperty extends ActionProperty {
+    public class DownToZeroActionProperty extends CustomActionProperty {
 
         public DownToZeroActionProperty() {
             super(genSID(), "Обнулить остатки", new ValueClass[]{order});

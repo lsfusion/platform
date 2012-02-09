@@ -16,6 +16,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.CustomActionProperty;
 import tmc.VEDLogicsModule;
 import tmc.integration.exp.FiscalRegister.*;
 
@@ -368,7 +369,7 @@ public class CashRegController {
         LM.addProp(LM.cashRegAdminGroup, new MessageActionProperty(LM.baseLM.genSID(), "Запрос серийного номера регистратора", MessageAction.SERIAL_NUM));
     }
 
-    private class ReportActionProperty extends ActionProperty {
+    private class ReportActionProperty extends CustomActionProperty {
         int type;
 
         public ReportActionProperty(String sID, String caption, int type) {
@@ -386,7 +387,7 @@ public class CashRegController {
         }
     }
 
-    private class MessageActionProperty extends ActionProperty {
+    private class MessageActionProperty extends CustomActionProperty {
         int type;
 
         public MessageActionProperty(String sID, String caption, int type) {
@@ -404,7 +405,7 @@ public class CashRegController {
         }
     }
 
-    private class SimpleCashRegActionProperty extends ActionProperty {
+    private class SimpleCashRegActionProperty extends CustomActionProperty {
 
         String command, outputFile;
         int multiplier;
@@ -445,7 +446,7 @@ public class CashRegController {
         }
     }
 
-    private class IntegerCashRegActionProperty extends ActionProperty {
+    private class IntegerCashRegActionProperty extends CustomActionProperty {
 
         int type;
 

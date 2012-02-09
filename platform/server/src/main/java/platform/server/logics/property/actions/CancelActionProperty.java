@@ -6,7 +6,7 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class CancelActionProperty extends ActionProperty {
+public class CancelActionProperty extends CustomActionProperty {
 
     public CancelActionProperty() {
         super("cancelChanges", "Отменить изменения", new ValueClass[] {} );

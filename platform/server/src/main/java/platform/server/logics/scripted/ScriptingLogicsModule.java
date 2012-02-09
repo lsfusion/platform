@@ -585,7 +585,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (int i = 0; i < properties.size(); i++) {
             props[i] = properties.get(i).property;
         }
-        return addFlowAProp(null, genSID(), "", props, mapActions, innerContext.size());
+        return addListAProp(null, genSID(), "", innerContext.size(), props, mapActions);
     }
 
     public LP addScriptedAddObjProp(String className) throws ScriptingErrorLog.SemanticErrorException {

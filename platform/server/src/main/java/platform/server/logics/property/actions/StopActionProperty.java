@@ -8,7 +8,7 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class StopActionProperty extends ActionProperty {
+public class StopActionProperty extends CustomActionProperty {
 
     private String header;
 

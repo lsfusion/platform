@@ -105,4 +105,13 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         }
         return null;
     }
+
+    // не сильно структурно поэтому вынесено в метод
+    public <V> Map<ClassPropertyInterface, V> getMapInterfaces(List<V> list) {
+        int i=0;
+        Map<ClassPropertyInterface, V> result = new HashMap<ClassPropertyInterface, V>();
+        for(ClassPropertyInterface propertyInterface : interfaces)
+            result.put(propertyInterface, list.get(i++));
+        return result;
+    }
 }

@@ -1,4 +1,4 @@
-package platform.server.logics.property.actions.flow;
+package platform.server.logics.property.actions;
 
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
@@ -21,7 +21,7 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class SimpleAddObjectActionProperty extends ActionProperty {
+public class SimpleAddObjectActionProperty extends CustomActionProperty {
     // обозначает класс объекта, который нужно добавить
     private CustomClass valueClass;
 

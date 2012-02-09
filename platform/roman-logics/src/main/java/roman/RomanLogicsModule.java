@@ -32,6 +32,7 @@ import platform.server.logics.LogicsModule;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
@@ -8092,7 +8093,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    public class AddNewArticleActionProperty extends ActionProperty {
+    public class AddNewArticleActionProperty extends CustomActionProperty {
 
         ObjectEntity objArticle;
 
@@ -8125,7 +8126,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    public class CreateStampActionProperty extends ActionProperty {
+    public class CreateStampActionProperty extends CustomActionProperty {
         private ClassPropertyInterface createStampInterface;
 
         public CreateStampActionProperty() {
@@ -8166,7 +8167,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    public class CloneItemActionProperty extends ActionProperty {
+    public class CloneItemActionProperty extends CustomActionProperty {
         private ClassPropertyInterface itemInterface;
 
         public CloneItemActionProperty() {
@@ -8186,7 +8187,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    public class SeekRouteActionProperty extends ActionProperty {
+    public class SeekRouteActionProperty extends CustomActionProperty {
 
         private ClassPropertyInterface shipmentInterface;
         private ClassPropertyInterface skuInterface;

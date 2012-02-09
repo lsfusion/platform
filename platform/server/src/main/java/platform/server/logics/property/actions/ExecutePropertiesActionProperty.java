@@ -11,7 +11,7 @@ import java.util.*;
 import static platform.base.BaseUtils.join;
 import static platform.server.logics.PropertyUtils.getValueClasses;
 
-public class ExecutePropertiesActionProperty extends ActionProperty {
+public class ExecutePropertiesActionProperty extends CustomActionProperty {
     public final static int EPA_INTERFACE = 0; // значение идет доп. интерфейсом
     public final static int EPA_DEFAULT = 1; // писать из getDefaultValue
     public final static int EPA_NULL = 2; // писать null

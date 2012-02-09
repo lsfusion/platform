@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class AddObjectActionProperty extends ActionProperty {
+public class AddObjectActionProperty extends CustomActionProperty {
 
     // barcode != null, автоматически заполнять поле barcode значением префикс + 0000 + id
     private Property barcode;

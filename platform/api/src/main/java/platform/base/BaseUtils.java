@@ -1139,6 +1139,19 @@ public class BaseUtils {
             result.put(element, element.toString());
         return result;
     }
+    
+    public static Integer[] toObjectArray(int[] a) {
+        Integer[] result = new Integer[a.length];
+        for(int i=0;i<a.length;i++)
+            result[i] = a[i];
+        return result;
+    }
+    public static Integer[] toOneBasedArray(int[] a) {
+        Integer[] result = new Integer[a.length];
+        for(int i=0;i<a.length;i++)
+            result[i] = a[i] + 1;
+        return result;
+    }
 
     public static Object[] add(Object element, Object[] array1) {
         return add(new Object[]{element}, array1);

@@ -8,12 +8,13 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.CustomActionProperty;
 
 import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.util.*;
 
-public class PricatEDIImportActionProperty extends ActionProperty {
+public class PricatEDIImportActionProperty extends CustomActionProperty {
     private RomanLogicsModule LM;
 
     private final FileActionClass valueClass = FileActionClass.getDefinedInstance(true, "Файлы данных (*.edi, *.txt)", "edi txt *.*");

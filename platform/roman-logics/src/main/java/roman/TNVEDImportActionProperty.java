@@ -5,8 +5,9 @@ import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.CustomActionProperty;
 
-public class TNVEDImportActionProperty extends ActionProperty {
+public class TNVEDImportActionProperty extends CustomActionProperty {
     public static final int CLASSIFIER_IMPORT = 1;
     public static final int MIN_PRICES_IMPORT = 2;
     public static final int DUTIES_IMPORT = 3;

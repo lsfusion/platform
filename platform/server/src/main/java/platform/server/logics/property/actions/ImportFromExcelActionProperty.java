@@ -25,7 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.util.*;
 
-public class ImportFromExcelActionProperty extends ActionProperty {
+public class ImportFromExcelActionProperty extends CustomActionProperty {
     private static Logger logger = Logger.getLogger(ImportFromExcelActionProperty.class);
 
     private CustomClass valueClass;

@@ -41,6 +41,7 @@ import platform.server.form.navigator.*;
 import platform.server.integration.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.scheduler.Scheduler;
@@ -2075,7 +2076,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public class RestartActionProperty extends ActionProperty {
+    public class RestartActionProperty extends CustomActionProperty {
         private RestartActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -2086,7 +2087,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public class CancelRestartActionProperty extends ActionProperty {
+    public class CancelRestartActionProperty extends CustomActionProperty {
         private CancelRestartActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -2097,7 +2098,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public class GarbageCollectorActionProperty extends ActionProperty {
+    public class GarbageCollectorActionProperty extends CustomActionProperty {
         private GarbageCollectorActionProperty(String sid, String caption) {
             super(sid, caption, new ValueClass[]{});
         }

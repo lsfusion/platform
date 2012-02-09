@@ -18,7 +18,7 @@ import java.util.List;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
-public class DisconnectActionProperty extends ActionProperty {
+public class DisconnectActionProperty extends CustomActionProperty {
     BaseLogicsModule LM;
     BusinessLogics BL;
 

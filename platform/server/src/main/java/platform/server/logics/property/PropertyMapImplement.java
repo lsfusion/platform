@@ -3,10 +3,12 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.base.Result;
 import platform.interop.action.ClientAction;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.PropertyObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
@@ -19,6 +21,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static platform.base.BaseUtils.crossJoin;
 
 public class PropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> extends PropertyImplement<P, T> implements PropertyInterfaceImplement<T> {
 
@@ -110,4 +114,13 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     public Expr mapIncrementExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges newChanges, PropertyChanges prevChanges, WhereBuilder changedWhere, IncrementType incrementType) {
         return property.getIncrementExpr(BaseUtils.join(mapping, joinImplement), newChanges, prevChanges, changedWhere, incrementType);
     }
+    
+    public ClassWhere<T> mapClassWhere() {
+        return new ClassWhere<T>(property.getClassWhere(),mapping);
+    }
+
+    public Map<T,ValueClass> mapCommonInterfaces() {
+        return crossJoin(mapping, property.getCommonClasses().interfaces);
+    }
+
 }

@@ -83,13 +83,4 @@ public abstract class DataProperty extends UserProperty {
     public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges propChanges) {
         return PropertyChange.addNull(getDerivedChange(propChanges, PropertyChanges.EMPTY), super.getDerivedChange(propChanges));
     }
-    
-    // не сильно структурно поэтому вынесено в метод
-    public <V> Map<ClassPropertyInterface, V> getMapInterfaces(List<V> list) {
-        int i=0;
-        Map<ClassPropertyInterface, V> result = new HashMap<ClassPropertyInterface, V>();
-        for(ClassPropertyInterface propertyInterface : interfaces)
-            result.put(propertyInterface, list.get(i++));
-        return result;
-    }
 }

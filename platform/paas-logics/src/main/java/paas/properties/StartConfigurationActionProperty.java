@@ -10,10 +10,11 @@ import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.CustomActionProperty;
 
 import java.sql.SQLException;
 
-public class StartConfigurationActionProperty extends ActionProperty {
+public class StartConfigurationActionProperty extends CustomActionProperty {
     private final static Logger logger = Logger.getLogger(StartConfigurationActionProperty.class);
 
     private PaasBusinessLogics paas;

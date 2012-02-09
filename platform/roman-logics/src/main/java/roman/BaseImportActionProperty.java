@@ -8,6 +8,7 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.actions.CustomActionProperty;
 
 import java.util.Iterator;
 
@@ -17,7 +18,7 @@ import java.util.Iterator;
  * Time: 15:40
  */
 
-public abstract class BaseImportActionProperty extends ActionProperty {
+public abstract class BaseImportActionProperty extends CustomActionProperty {
     protected final ClassPropertyInterface supplierInterface;
     protected RomanLogicsModule LM;
     protected FileActionClass valueClass;

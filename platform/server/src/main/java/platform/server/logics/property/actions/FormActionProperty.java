@@ -25,7 +25,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
-public class FormActionProperty extends ActionProperty {
+public class FormActionProperty extends CustomActionProperty {
 
     public final FormEntity form;
     public final Map<ObjectEntity, ClassPropertyInterface> mapObjects;
