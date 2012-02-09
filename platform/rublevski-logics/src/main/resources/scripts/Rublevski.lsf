@@ -891,7 +891,7 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 FORM supplierItemDepartment 'Товар поставщика для подразделения'
 OBJECTS i=item FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier
 PROPERTIES(d) READONLY name, nameStoreDepartmentStore
-PROPERTIES(i) READONLY name
+PROPERTIES(i) READONLY nameAttributeItem
 PROPERTIES(s) READONLY name
 PROPERTIES(s) ADDFORM, EDITFORM, delete
 PROPERTIES(s, i, d) nameisSupplierItemDepartment, showFormNameisSupplierItemDepartment,
@@ -991,7 +991,7 @@ FORM itemInDepartment  'Товары в подразделениях'
 OBJECTS d=departmentStore, i=item
 PROPERTIES(d) READONLY name, nameStoreDepartmentStore
 PROPERTIES(d) ADDFORM, EDITFORM, delete
-PROPERTIES(i) READONLY name, shortNameUnitOfMeasureItem
+PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem
 PROPERTIES(i) ADDFORM, EDITFORM, delete
 PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem, maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacturerDepartmentStoreItem,
                  nameStatusCashDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem, fromDateDeliveryDepartmentStoreItem,
@@ -1024,7 +1024,7 @@ FORM assortment 'Ассортимент'
 OBJECTS a=assortment FIXED PANEL, i=item
 PROPERTIES(a) name, infoAssortment
 PROPERTIES(a, i) itemAssortment
-PROPERTIES(i) name
+PROPERTIES(i) nameAttributeItem
 PROPERTIES(i) ADDSESSIONFORM, EDITSESSIONFORM, delete
 FILTERGROUP assortment
     FILTER 'Только товары ассортимента' 'F10' NOT NULL itemAssortment(a, i) DEFAULT
@@ -1034,7 +1034,7 @@ FORM assortments 'Ассортименты'
 OBJECTS a=assortment, i=item
 PROPERTIES(a) READONLY name, infoAssortment
 PROPERTIES(a) ADDFORM, EDITFORM, delete
-PROPERTIES(i) READONLY name
+PROPERTIES(i) READONLY nameAttributeItem
 FILTERS NOT NULL itemAssortment(a, i);
 
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
@@ -1376,7 +1376,7 @@ OBJECTS d=departmentStore FIXED PANEL, s=supplier, i=item
 PROPERTIES(d) READONLY name
 PROPERTIES(s) name
 PROPERTIES(s) ADDFORM, EDITFORM, delete
-PROPERTIES(i) name
+PROPERTIES(i) nameAttributeItem
 PROPERTIES(i) ADDFORM, EDITFORM, delete
 PROPERTIES(d, s, i)  itemAssortmentSupplier;
 
@@ -1417,7 +1417,7 @@ FORM orderSupplier 'Заказ поставщику'
 OBJECTS o=orderSupplier FIXED PANEL, i=item
 PROPERTIES(o) name, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
               nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
-PROPERTIES(i) name, quantityPackItem2
+PROPERTIES(i) nameAttributeItem, quantityPackItem2
 PROPERTIES(o, i) packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
 FILTERS NOT NULL itemAssortmentOrderSupplier(o, i)
 FILTERGROUP filters1
@@ -1429,7 +1429,7 @@ OBJECTS o=orderSupplier, i=item
 PROPERTIES(o) READONLY name, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
                        nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
 PROPERTIES(o) ADDFORM, EDITFORM, delete
-PROPERTIES(i) READONLY name
+PROPERTIES(i) READONLY nameAttributeItem
 PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
 FILTERS NOT NULL sumQuantityItemOrderSupplier(o, i);
 
@@ -1881,7 +1881,7 @@ OBJECTS d=detailCutting, dep=departmentStore, i=item
 PROPERTIES(c)      sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting, percSweepsCutting
 PROPERTIES(d)      nameItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting, ADDOBJ, delete
 PROPERTIES(dep)    nameStoreDepartmentStore, name
-PROPERTIES(i)      name, shortNameUnitOfMeasureItem, nameBrandItem
+PROPERTIES(i)      nameAttributeItem, shortNameUnitOfMeasureItem, nameBrandItem
 PROPERTIES(dep, c) InDepartmentStoreCutting
 PROPERTIES(i, c)   inItemCutting
 
@@ -1910,7 +1910,7 @@ PROPERTIES(c)      READONLY sidCutting, descriptionCutting, dateCutting, useCutt
 PROPERTIES(c)      ADDFORM, EDITFORM, delete
 PROPERTIES(d)      READONLY nameItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting
 PROPERTIES(dep)    READONLY nameStoreDepartmentStore, name
-PROPERTIES(i)      READONLY name, shortNameUnitOfMeasureItem, nameBrandItem
+PROPERTIES(i)      READONLY nameAttributeItem, shortNameUnitOfMeasureItem, nameBrandItem
 PROPERTIES(dep, c) READONLY InDepartmentStoreCutting
 PROPERTIES(i, c) READONLY inItemCutting
 FILTERS NOT NULL   isCuttingDetailCutting(c, d),
