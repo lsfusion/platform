@@ -348,6 +348,9 @@ itemGroupSku = DATA itemGroup(sku) IN idGroup;
 nameItemGroupSku 'Группа товара' = name(itemGroupSku(sku)) IN baseGroup;
 
 //descriptionGroup
+captionItem 'Наименование' = DATA STRING[100](item) IN descriptionGroup;
+@metaCodeShowItemAttribute(Caption, 'Показывать наименование');
+
 brandItem = DATA brand(item);
 nameBrandItem 'Бренд' (item) = name(brandItem(item)) IN descriptionGroup;
 @metaCodeShowItemAttribute(Brand, 'Показывать бренд');
@@ -481,14 +484,14 @@ rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) I
 CLASS ABSTRACT itemAttribute 'Атрибут товара' : named;
 
 CLASS STATIC stringItemAttribute 'Строковый атрибут' {
-    nameItem 'Наименование',
+    captionItem 'Наименование',
     article 'Артикул'
 } : itemAttribute;
 
-valueNameItemAttribute(item, attribute) = castToString255(name(item)) AND item IS item AND attribute == stringItemAttribute.nameItem;
+valueCaptionItemAttribute(item, attribute) = castToString255(captionItem(item)) AND attribute == stringItemAttribute.captionItem;
 valueArticleItemAttribute(item, attribute) = castToString255(articleItem(item)) AND attribute == stringItemAttribute.article;
 
-valueStringItemAttribute(item, attribute) = UNION EXCLUSIVE  valueNameItemAttribute(item, attribute),
+valueStringItemAttribute(item, attribute) = UNION EXCLUSIVE  valueCaptionItemAttribute(item, attribute),
                                                              valueArticleItemAttribute(item, attribute);
 
 CLASS STATIC integerItemAttribute 'Целочисленный атрибут' {
@@ -575,7 +578,7 @@ valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(i
 
 numberInNameItemAttribute 'Порядковый номер в наименовании' = DATA INTEGER (itemAttribute) IN baseGroup;
 
-nameAttributeItem 'Имя' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameItemAttribute(attribute) PERSISTENT FIXEDCHARWIDTH 50;
+nameAttributeItem 'Имя' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameItemAttribute(attribute) PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
 
 // ----------------------------------- Штрих код ------------------------------------------ //
 GROUP barcodeGroup : baseGroup;
@@ -903,7 +906,8 @@ showFormSupplierItemDepartment 'Свойства по поставщикам' (i
 
 FORM item 'Товар'
 OBJECTS i=item FIXED PANEL, b=barcode, d=departmentStore
-PROPERTIES(i) nameAttributeItem, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDepartment, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
+PROPERTIES(i) nameAttributeItem, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDepartment, isManufacturedItem,
+ captionItem SHOWIF toShowCaption(i), nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
  hallmarkItem SHOWIF toShowHallmark(i), articleItem, quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
