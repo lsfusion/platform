@@ -1334,7 +1334,7 @@ public abstract class LogicsModule {
     protected LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, CustomClass customClass, LP... props) {
         if(props.length==1)
             props[0].property.aggProp = true;
-        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, is(customClass), 1, getUParams(props, 0));
+        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, is(customClass), add(1, getUParams(props, 0)));
     }
 
     protected <T extends PropertyInterface<T>> LP addAGProp(String name, String caption, LP<T> lp, int aggrInterface, Object... props) {
@@ -1354,24 +1354,28 @@ public abstract class LogicsModule {
     }
 
     protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, LP<T> lp, int aggrInterface, Object... props) {
-        return addAGProp(group, checkChange, name, persistent, caption, false, lp, aggrInterface, props);
+        return addAGProp(group, checkChange, name, persistent, caption, false, lp, add(aggrInterface, props));
     }
 
-    protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, LP<T> lp, int aggrInterface, Object... props) {
-        List<PropertyInterfaceImplement<T>> fullInterfaces = BaseUtils.mergeList(readImplements(lp.listInterfaces, props), BaseUtils.removeList(lp.listInterfaces, aggrInterface - 1));
-        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, lp.listInterfaces, aggrInterface, add(lp.property.getImplement(), fullInterfaces));
+    protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, LP<T> lp, Object... props) {
+        List<PropertyInterfaceImplement<T>> readImplements = readImplements(lp.listInterfaces, props);
+        T aggrInterface = (T) readImplements.get(0);
+        List<PropertyInterfaceImplement<T>> groupImplements = readImplements.subList(1, readImplements.size());
+        List<PropertyInterfaceImplement<T>> fullInterfaces = BaseUtils.mergeList(groupImplements, BaseUtils.removeList(lp.listInterfaces, aggrInterface));
+        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, lp.listInterfaces, mergeList(toList(aggrInterface, lp.property.getImplement()), fullInterfaces));
     }
 
-    protected LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, int interfaces, int aggrInterface, Object... props) {
+    protected LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, int interfaces, Object... props) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, innerInterfaces, aggrInterface, readImplements(innerInterfaces, props));
+        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, innerInterfaces, readImplements(innerInterfaces, props));
     }
 
-    protected <T extends PropertyInterface<T>, I extends PropertyInterface> LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, List<T> innerInterfaces, int aggrInterface, List<PropertyInterfaceImplement<T>> listImplements) {
-        PropertyInterfaceImplement<T> whereProp = listImplements.get(0);
-        List<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(1, listImplements.size());
+    protected <T extends PropertyInterface<T>, I extends PropertyInterface> LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, List<T> innerInterfaces, List<PropertyInterfaceImplement<T>> listImplements) {
+        T aggrInterface = (T) listImplements.get(0);
+        PropertyInterfaceImplement<T> whereProp = listImplements.get(1);
+        List<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(2, listImplements.size());
 
-        AggregateGroupProperty<T> aggProp = AggregateGroupProperty.create(name, caption, innerInterfaces, whereProp, innerInterfaces.get(aggrInterface - 1), groupImplements);
+        AggregateGroupProperty<T> aggProp = AggregateGroupProperty.create(name, caption, innerInterfaces, whereProp, aggrInterface, groupImplements);
         return addAGProp(group, checkChange, persistent, noConstraint, aggProp, groupImplements);
     }
 
