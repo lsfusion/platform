@@ -1521,9 +1521,14 @@ FILTERS NOT NULL inStoreDepartment(s, d);
 
 DESIGN stores FROM DEFAULT {
     POSITION treeStore.box TO THE LEFT s.box;
+    POSITION treeStore.box TO THE LEFT d.box;
 
     s.box {
-        fillHorizontal = 2.0;
+        fillHorizontal = 3.0;
+    }
+
+    d.box {
+        fillHorizontal = 3.0;
     }
 }
 
