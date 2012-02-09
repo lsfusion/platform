@@ -90,8 +90,10 @@
       <keyword name="LIST" />
       <keyword name="LONG" />
       <keyword name="MAX" />
+      <keyword name="MAXCHARWIDTH" />
       <keyword name="META" />
       <keyword name="MIN" />
+      <keyword name="MINCHARWIDTH" />
       <keyword name="MODAL" />
       <keyword name="MODULE" />
       <keyword name="MSG" />
@@ -114,6 +116,7 @@
       <keyword name="PARTITION" />
       <keyword name="PERSISTENT" />
       <keyword name="POSITION" />
+      <keyword name="PREFCHARWIDTH" />
       <keyword name="PROPERTIES" />
       <keyword name="PROPERTY" />
       <keyword name="READONLY" />

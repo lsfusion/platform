@@ -928,6 +928,9 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		('PERSISTENT' { isPersistent = true; })?
 		(panelLocationSetting [property])?
 		(fixedCharWidthSetting [property])?
+		(minCharWidthSetting [property])?
+		(maxCharWidthSetting [property])?
+		(prefCharWidthSetting [property])?
 		(imageSetting [property])?
 		(editKeySetting [property])?
 	;
@@ -958,6 +961,32 @@ fixedCharWidthSetting [LP property]
 	:	'FIXEDCHARWIDTH' width = intLiteral
 	;
 
+minCharWidthSetting [LP property]
+@after {
+	if (inPropParseState()) {
+		self.setMinCharWidth(property, $width.val);
+	}
+}
+	:	'MINCHARWIDTH' width = intLiteral
+	;
+
+maxCharWidthSetting [LP property]
+@after {
+	if (inPropParseState()) {
+		self.setMaxCharWidth(property, $width.val);
+	}
+}
+	:	'MAXCHARWIDTH' width = intLiteral
+	;
+
+prefCharWidthSetting [LP property]
+@after {
+	if (inPropParseState()) {
+		self.setPrefCharWidth(property, $width.val);
+	}
+}
+	:	'PREFCHARWIDTH' width = intLiteral
+	;
 
 imageSetting [LP property]
 @after {
