@@ -408,7 +408,7 @@ nameWareItem 'Посуда' = name(wareItem(item)) IN descriptionGroup;
 //equipmentGroup
 isWeightItem 'Весовой товар' = DATA BOOLEAN (itemComponent) IN equipmentGroup;
 isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN equipmentGroup;
-compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA STRING[400] (item)IN equipmentGroup;
+compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
 tagItem 'Ценник (ИД)' = DATA tag (item) IN idGroup;
 nameTagItem 'Ценник' = name(tagItem(item)) IN equipmentGroup;
 multiplierItem 'Множитель для печати ценника' = DATA DOUBLE (item) IN equipmentGroup;
@@ -1366,21 +1366,6 @@ PROPERTIES(d, s, i)  itemAssortmentSupplier;
 
 //---------------------------- по поставщикам и товарам ----------------------------------------
 
-// ----------------------------------- Разрешать поставки ------------------------------------------- //
-
-TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
-
-@metaCodeDoubleObjectDateProperty(timeTable, supplier, departmentStore, 'Поставка', BOOLEAN);
-
-FORM timeTableDate 'График поставок'
-OBJECTS t=DATE FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier
-PROPERTIES(t) OBJVALUE
-PROPERTIES(d) READONLY name
-PROPERTIES(s) READONLY name
-PROPERTIES(s, d, t) timeTableDate
-//FILTERS NOT NULL timeTableDate(s, d, t);
-FILTERGROUP filters
-    FILTER 'Показывать с поставкой на дату' 'F10' NOT NULL timeTableDate(s, d, t);
 //--------------------------------------Заказ------------------------------------------------------------------//
 
 CLASS ABSTRACT order 'Заказ' : named, historyObject;
@@ -1403,12 +1388,14 @@ fullPriceItemOrderSupplier 'Цена с НДС' (orderSupplier, item) = DATA DOU
 fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) =  sumQuantityItemOrderSupplier(orderSupplier, item) * fullPriceItemOrderSupplier(orderSupplier, item) IN baseGroup;
 fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier;
 
-createOrderSupplier = ACTION (sup, dep) {
+createOrderSupplier 'Создать заказ' = ACTION (sup, dep, dt) {
     [ADDOBJ orderSupplier]();
- //   (dateOrderSupplier(o) IF o == addedObject()) <- (dt AS DATE);
+    (dateOrderSupplier(o) IF o == addedObject()) <- (dt AS DATE);
     departmentStoreOrderSupplier(o) IF o == addedObject() <- dep AS departmentStore;
     supplierOrderSupplier(o) IF o == addedObject() <- sup AS supplier;
-};// TOOLBAR IMAGE 'add.png';
+    curDateOrderSupplier(o) IF o == addedObject() <- currentDate();
+    apply();
+};
 
 FORM orderSupplier 'Заказ поставщику'
 OBJECTS o=orderSupplier FIXED PANEL, i=item
@@ -1429,6 +1416,22 @@ PROPERTIES(o) ADDFORM, EDITFORM, delete
 PROPERTIES(i) READONLY name
 PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
 FILTERS NOT NULL sumQuantityItemOrderSupplier(o, i);
+
+// ----------------------------------- Разрешать поставки ------------------------------------------- //
+
+TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
+
+@metaCodeDoubleObjectDateProperty(timeTable, supplier, departmentStore, 'Поставка', BOOLEAN);
+
+FORM timeTableDate 'График поставок'
+OBJECTS t=DATE FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier
+PROPERTIES(t) OBJVALUE
+PROPERTIES(d) READONLY name
+PROPERTIES(s) READONLY name
+PROPERTIES(s, d, t) timeTableDate, createOrderSupplier
+//FILTERS NOT NULL timeTableDate(s, d, t);
+FILTERGROUP filters
+    FILTER 'Показывать с поставкой на дату' 'F10' NOT NULL timeTableDate(s, d, t);
 
 //--------------------------------------Формы--------------------------------------------------------------------------//
 
