@@ -1281,14 +1281,13 @@ nameCompanyContract 'Контрагент' (contract) = name(companyContract(con
 
 userContractCompanySupplier 'Контракт (ИД)' = DATA contract (company, supplier) IN idGroup;
 //dataContractCompanySupplier 'Договор по умолчанию' (company, supplier) = dataContract(userContractCompany(company));
-actingContract(contract) = contract IF dateFromContract(contract) <= currentDate() AND dateToContract(contract) >= currentDate();
+actingContract(contract) = contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate();
 actingContractCompanySupplier(company, supplier) = GROUP MAX actingContract(contract) BY companyContract(contract), supplierContract(contract);
 
 overrideContractCompanySupplier 'Основной договор' (company, supplier) = UNION OVERRIDE actingContractCompanySupplier(company, supplier), userContractCompanySupplier(company, supplier);
 dataOverrideContractCompanySupplier 'Основной договор' (company, supplier) = dataContract(overrideContractCompanySupplier(company, supplier)) IN lawGroup;
 CONSTRAINT CHECKED supplier != supplierContract(userContractCompanySupplier(company, supplier)) MSG 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
 CONSTRAINT CHECKED company != companyContract(userContractCompanySupplier(company, supplier)) MSG 'ошибка: Договор по умолчанию для компании должен соответствовать договорам компании';
-// более глубокая прроверка нужна
 equalsCompanySupplierContract 'Основной договор' (company, supplier, contract) = userContractCompanySupplier(company, supplier) == contract;
 
 
@@ -1313,7 +1312,7 @@ FILTERS NOT NULL inSupplierContract(s, c),
         NOT NULL inSupplierAccount(s, a),
         NOT NULL inSupplierLicense(s, l)
 FILTERGROUP filters9
-    FILTER 'Показывать только с заполненными полями' 'F10' NOT NULL overrideSupplierDepartmentStore(s, d)
+    FILTER 'Показывать только с заполненными полями' 'F10' NOT NULL overrideSupplierDepartmentStore(s, d) DEFAULT
 EDIT supplier OBJECT s;
 
 DESIGN supplier FROM DEFAULT {
@@ -1705,7 +1704,7 @@ PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferG
 PROPERTIES(s)   numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
                 dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales, ADDOBJ, delete
 FILTERGROUP filters1
-    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupScalesScales(grs, s)
+    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupScalesScales(grs, s) DEFAULT
 EDIT groupScales OBJECT grs;
 
 FORM groupsScales 'Группы весов'
@@ -1723,7 +1722,7 @@ PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferG
 PROPERTIES(c)   numberCash, descriptionMachinery, nameGroupMachineryCash, portMachinery, useMachinery, directoryCash, nameCashModelCash,
                 dateCash, nppCash, statusCash, resultCash, ADDOBJ, delete
 FILTERGROUP filters2
-    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupCashCash(grc, c)
+    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupCashCash(grc, c) DEFAULT
 EDIT groupCash OBJECT grc;
 
 
@@ -1741,7 +1740,7 @@ OBJECTS ch=check
 PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
 PROPERTIES(ch)   descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery, ADDOBJ, delete
 FILTERGROUP filters3
-    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupCheckCheck(grch, ch)
+    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupCheckCheck(grch, ch) DEFAULT
 EDIT groupCheck OBJECT grch;
 
 FORM groupsCheck 'Группы прайс чекеров'
@@ -1771,7 +1770,7 @@ CLASS STATIC typeAction 'Тип действия'
     notAll 'Отдельные подразделения'
 };
 actionEmployee(employee) = DATA typeAction (employee)  IN idGroup;
-nameActionEmployee 'доступ к подразделениям' (employee) = name(UNION OVERRIDE typeAction.all IF employee IS employee,
+nameActionEmployee 'доступ к подразделениям' (employee) = name(UNION OVERRIDE typeAction.all IF employee IS employee,       // по-умолчанию все подразделения
                                                                               actionEmployee(employee)) IN baseGroup;
 
 inEmployeeDepartmentStoreDefault(employee, departmentStore) = DATA BOOLEAN (employee, departmentStore);
@@ -1785,7 +1784,7 @@ departmentStoreCash(cash) = departmentStoreGroupMachinery(groupCashCash(cash)) I
 nameDepartmentStoreCash 'Наименование отдела' (cash) = name(departmentStoreCash(cash)) IN baseGroup;
 nameStoreDepartmentStoreCash 'Наименование магазина' (cash) = name(storeDepartmentStore(departmentStoreCash(cash)))  IN baseGroup;
 
-CONSTRAINT  groupUserEmployee(employee) AND NOT actionEmployee(employee) MSG 'Для сотрудника не выбран доступ к подразделениям';
+CONSTRAINT  groupUserEmployee(employee) AND NOT nameActionEmployee(employee) MSG 'Для сотрудника не выбран доступ к подразделениям';
 // todo: надо сделать проверку для сотрудника на доступ к подразделению//
 
 
@@ -1800,11 +1799,11 @@ PROPERTIES(e, c) includedEmployeeCash, dateFromEmployeeCash, dateToEmployeeCash
 PROPERTIES(d)    READONLY nameStoreDepartmentStore, name
 PROPERTIES(e, d) dateFromEmployeeDepartmentStore, dateToEmployeeDepartmentStore, inEmployeeDepartmentStore
 FILTERGROUP filters1
-    FILTER 'Показывать кассы только для данного пользователя' 'F10' NOT NULL includedEmployeeCash(e, c)
+    FILTER 'Показывать кассы только для данного пользователя' 'F10' NOT NULL includedEmployeeCash(e, c) DEFAULT
 FILTERGROUP filters2
-    FILTER 'Показывать сотрудников только для данной группы пользователей' 'F9' NOT NULL isGroupUserEmployee(gru, e)
+    FILTER 'Показывать сотрудников только для данной группы пользователей' 'F9' NOT NULL isGroupUserEmployee(gru, e) DEFAULT
 FILTERGROUP filters3
-    FILTER 'Показывать подразделения только для данного пользователя' 'F8' NOT NULL inEmployeeDepartmentStore(e, d)
+    FILTER 'Показывать подразделения только для данного пользователя' 'F8' NOT NULL inEmployeeDepartmentStore(e, d) DEFAULT
 EDIT groupUser OBJECT gru;
 
 DESIGN groupUser FROM DEFAULT {
@@ -1889,9 +1888,9 @@ PROPERTIES(i, c)   inItemCutting
 
 FILTERS NOT NULL isCuttingDetailCutting(c, d)
 FILTERGROUP filters7
-    FILTER 'Показывать подразделения только для данной карты' 'F10' NOT NULL InDepartmentStoreCutting(dep, c)
+    FILTER 'Показывать подразделения только для данной карты' 'F10' NOT NULL InDepartmentStoreCutting(dep, c) DEFAULT
 FILTERGROUP filters8
-    FILTER 'Показывать товар только для данной карты' 'F9' NOT NULL inItemCutting(i, c)
+    FILTER 'Показывать товар только для данной карты' 'F9' NOT NULL inItemCutting(i, c) DEFAULT
 
 EDIT cutting OBJECT c;
 
@@ -2006,7 +2005,7 @@ PROPERTIES(ra, s) inRangeStore
 FILTERS NOT NULL  inRangeRate(ra, rt),
         NOT NULL  inTaxRange(t, ra)
 FILTERGROUP filters6
-    FILTER 'Показывать магазины только для данного налога' 'F10' NOT NULL inRangeStore(ra, s)
+    FILTER 'Показывать магазины только для данного налога' 'F10' NOT NULL inRangeStore(ra, s) DEFAULT
 
 EDIT tax OBJECT t;
 
@@ -2025,8 +2024,7 @@ DESIGN tax FROM DEFAULT {
 }
 
 FORM taxes 'Налоги'
-OBJECTS t=tax
-OBJECTS ra=range, s=store
+OBJECTS t=tax, ra=range, s=store
 PROPERTIES(t)     READONLY nameTax, shortNameTax
 PROPERTIES(t)     ADDFORM, EDITFORM, delete
 PROPERTIES(s)     READONLY name, addressStore
