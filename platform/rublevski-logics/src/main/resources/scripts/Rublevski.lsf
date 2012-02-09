@@ -549,12 +549,12 @@ CLASS STATIC objectItemAttribute 'Объектный атрибут' {
 
 valueUOMItemAttribute(item, attribute) = unitOfMeasureItem(item) AND attribute == objectItemAttribute.unitOfMeasure;
 valueBrandItemAttribute(item, attribute) = brandItem(item) AND attribute == objectItemAttribute.brand;
-valueTypeItemAttribute(item, attribute) = typeItemItem(item) AND attribute == objectItemAttribute.color;
-valueSortItemAttribute(item, attribute) = sortItem(item) AND attribute == objectItemAttribute.color;
-valuePackItemAttribute(item, attribute) = packItem(item) AND attribute == objectItemAttribute.color;
-valueSpecialtyItemAttribute(item, attribute) = specialtyItem(item) AND attribute == objectItemAttribute.color;
-valueSizeItemAttribute(item, attribute) = sizeItem(item) AND attribute == objectItemAttribute.color;
-valueCoolingDegreeItemAttribute(item, attribute) = coolingDegreeItem(item) AND attribute == objectItemAttribute.color;
+valueTypeItemAttribute(item, attribute) = typeItemItem(item) AND attribute == objectItemAttribute.typeItem;
+valueSortItemAttribute(item, attribute) = sortItem(item) AND attribute == objectItemAttribute.sort;
+valuePackItemAttribute(item, attribute) = packItem(item) AND attribute == objectItemAttribute.pack;
+valueSpecialtyItemAttribute(item, attribute) = specialtyItem(item) AND attribute == objectItemAttribute.specialty;
+valueSizeItemAttribute(item, attribute) = sizeItem(item) AND attribute == objectItemAttribute.size;
+valueCoolingDegreeItemAttribute(item, attribute) = coolingDegreeItem(item) AND attribute == objectItemAttribute.coolingDegree;
 valueColorItemAttribute(item, attribute) = colorItem(item) AND attribute == objectItemAttribute.color;
 valueTasteItemAttribute(item, attribute) = tasteItem(item) AND attribute == objectItemAttribute.taste;
 
