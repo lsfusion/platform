@@ -80,7 +80,7 @@ public class ScriptingFormEntity extends FormEntity {
         for (ScriptingGroupObject groupObject : groupObjects) {
             List<String> properties = parentProperties.get(groupObjects.indexOf(groupObject));
 
-            if (properties == null || groupObject.objects.size() != properties.size()) {
+            if (properties != null && groupObject.objects.size() != properties.size()) {
                 LM.getErrLog().emitDifferentObjsNPropsQuantity(LM.getParser());
             }
             if (properties != null) {
