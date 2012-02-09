@@ -962,7 +962,7 @@ public abstract class LogicsModule {
         return addOProp(group, name, false, caption, sum, partitionType, ascending, includeLast, partNum, params);
     }
 
-    private <P extends PropertyInterface> LP addOProp(AbstractGroup group, String name, boolean persistent, String caption, LP<P> sum, PartitionType partitionType, boolean ascending, boolean includeLast, int partNum, Object... params) {
+    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String name, boolean persistent, String caption, LP<P> sum, PartitionType partitionType, boolean ascending, boolean includeLast, int partNum, Object... params) {
         List<LI> li = readLI(params);
 
         Collection<PropertyInterfaceImplement<P>> partitions = mapLI(li.subList(0, partNum), sum.listInterfaces);

@@ -519,8 +519,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 new String[]{"january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"},
                 new String[]{"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"});
         DOW = addStaticClass("DOW", "День недели",
-                  new String[]{"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"},
-                  new String[]{"Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"});
+                  new String[]{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"},
+                  new String[]{"Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"});
     }
 
     @Override
@@ -574,6 +574,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         tableFactory.include("customUserRole", customUser, userRole);
         tableFactory.include("userRolePolicy", userRole, policy);
         tableFactory.include("userRoleProperty", userRole, property);
+
+        tableFactory.include("month", month);
+        tableFactory.include("dow", DOW);
     }
 
     @Override
@@ -660,11 +663,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         dayInDate = addSFProp("(extract(day from (prm1)))", IntegerClass.instance, 1);
         dateInTime = addSFProp("(CAST((prm1) as date))", DateClass.instance, 1);
 
-        numberMonth = addDProp("numberMonth", "Номер месяца", IntegerClass.instance, month);
+        numberMonth = addOProp(baseGroup, "numberMonth", true, "Номер месяца", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(month), 1), PartitionType.SUM, true, true, 0, 1);
         numberToMonth = addAGProp("numberToMonth", "Месяц (ИД)", numberMonth);
         monthInDate = addJProp("monthInDate", "Месяц (ИД)", numberToMonth, numberMonthInDate, 1);
 
-        numberDOW = addDProp("numberDOW", "Номер дня недели", IntegerClass.instance, DOW);
+        numberDOW = addJProp(baseGroup, "numberDOW", true, "Номер дня недели", subtractInteger2,
+                addOProp("numberDOWP1", "Номер дня недели (+1)", PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(DOW), 1), true, false, 0, 1), 1,
+                addCProp(IntegerClass.instance, 1));
         numberToDOW = addAGProp("numberToDOW", "День недели (ИД)", numberDOW);
         DOWInDate = addJProp("DOWInDate", "День недели (ИД)", numberToDOW, numberDOWInDate, 1);
 
@@ -1275,9 +1280,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new ExceptionsFormEntity(adminElement, "exceptionsForm"));
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
-        addFormEntity(new MonthFormEntity(adminElement, "monthForm"));
-        addFormEntity(new DOWFormEntity(adminElement, "DOWForm"));
-
 
         dictionaryForm = addFormEntity(new DictionariesFormEntity(adminElement, "dictionariesForm"));
 
@@ -2120,27 +2122,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class MonthFormEntity extends FormEntity {
-        ObjectEntity objMonth;
-
-        public MonthFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Месяцы");
-
-            ObjectEntity objMonth = addSingleGroupObject(1, "month", month, "Месяцы");
-            addPropertyDraw(objMonth, baseLM.name, numberMonth);
-        }
-    }
-
-    private class DOWFormEntity extends FormEntity {
-        ObjectEntity objDOW;
-
-        public DOWFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Дни недели");
-
-            ObjectEntity objDOW = addSingleGroupObject(1, "DOW", DOW, "Дни недели");
-            addPropertyDraw(objDOW, baseLM.name, numberDOW);
-        }
-    }
     private class DictionariesFormEntity extends FormEntity {
 
         public DictionariesFormEntity(NavigatorElement parent, String sID) {
