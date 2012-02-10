@@ -654,6 +654,8 @@ CONSTRAINT CHECKED item IS item AND NOT inSkuBarcode(item, barcodeSku(item)) MSG
 
 barcodeBarcodeSku  'Основной штрих-код' = barcode(barcodeSku(sku)) IN baseGroup;
 
+barcodeToBarcode (barcode) = GROUP UNIQUE barcode BY barcode(barcode);
+
 FORM barcode 'Штрих-код'
 OBJECTS b=barcode
 PROPERTIES(b) barcode;
@@ -1175,6 +1177,7 @@ DESIGN item FROM DEFAULT {
                 fillHorizontal = 1.0;
             }
             ADD d.box {
+                fillVertical = 3.0;
                 ADD dt.box BEFORE d.grid.box;
                 ADD treeStore.box BEFORE d.grid.box;
                 POSITION treeStore.box TO THE LEFT d.grid.box;
@@ -1366,6 +1369,7 @@ nameOwnershipLegalEntity 'Форма собственности' = name(ownershi
 shortNameOwnershipLegalEntity 'Форма собственности (сокр.)' = shortNameOwnership(ownershipLegalEntity(legalEntity)) IN lawGroup;
 fullNameLegalEntity 'Наименование для накладных' = DATA STRING[200] (legalEntity) IN lawGroup;
 UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN docGroup FIXEDCHARWIDTH 9;
+UNPLegalEntityToLegalEntity (UNPLegalEntity) = GROUP UNIQUE legalEntity BY UNPLegalEntity(legalEntity);
 OKPOLegalEntity 'Код по ОКПО' = DATA STRING[20] (legalEntity) IN docGroup;
 OKYLPLegalEntity 'Код ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup;
 emailLegalEntity 'e-mail' = DATA STRING[100] (legalEntity) IN contactGroup;
