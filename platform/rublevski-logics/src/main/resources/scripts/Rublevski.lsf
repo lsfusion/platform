@@ -320,6 +320,29 @@ FORM typeItem 'Вид'
 OBJECTS t=typeItem FIXED PANEL
 PROPERTIES(t) name;
 
+//--------------------------------- Форма товара (особенности нарезки/разделки)  --------------------------//
+CLASS formItem 'Форма товара' : named;
+
+FORM formItem 'Форма товара'
+OBJECTS f=formItem FIXED PANEL
+PROPERTIES(f) name;
+
+//--------------------------------- Кол-во в упаковке --------------------------//
+CLASS numberInPack 'Кол-во в упаковке' : named;
+
+FORM numberInPack 'Кол-во в упаковке'
+OBJECTS n=numberInPack FIXED PANEL
+PROPERTIES(n) name;
+
+//---------------------------------- Норма отходов ------------------------------------//
+CLASS rateWaste 'Норма отходов' : named;
+
+percentRateWaste 'Норма,%' = DATA DOUBLE (rateWaste) IN baseGroup;
+
+FORM rateWaste 'Норма отходов'
+OBJECTS r=rateWaste FIXED PANEL
+PROPERTIES(r) name, percentRateWaste;
+
 // ----------------------------------- Товар ------------------------------------------ //
 GROUP descriptionGroup 'Общее описание' : baseGroup;
 GROUP sizeGroup 'Физические характеристики' : publicGroup;
@@ -403,20 +426,33 @@ nameCountryItem 'Страна' = name(countryItem(item)) IN descriptionGroup;
 isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN descriptionGroup;
 hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN descriptionGroup;
 
+formItemItem = DATA formItem (item) IN idGroup;
+nameFormItemItem 'Форма товара (особенности нарезки/разделки)' = name(formItemItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(FormItem, 'Показывать форму');
+
+numberInPackItem = DATA numberInPack (item) IN idGroup;
+nameNumberInPackItem 'Кол-во в упаковке' = name(numberInPackItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(NumberInPack, 'Показывать кол-во в упаковке');
+
+rateWasteItem = DATA rateWaste(item) IN idGroup;
+nameRateWasteItem 'Норма отходов' = name(rateWasteItem(item)) IN descriptionGroup;
+percentRateWasteItem 'Норма отходов,%' = percentRateWaste(rateWasteItem(item)) IN descriptionGroup;
+@metaCodeShowItemAttribute(rateWaste, 'Показывать норму отходов');
+
 wareItem = DATA ware (item) IN idGroup;
 nameWareItem 'Посуда' = name(wareItem(item)) IN descriptionGroup;
 @metaCodeShowItemAttribute(Ware, 'Показывать посуду');
 
 //equipmentGroup
-isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN equipmentGroup;
-isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN equipmentGroup;
-compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
+isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN descriptionGroup;
+isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN descriptionGroup;
+compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN descriptionGroup;
 tagItem 'Ценник (ИД)' = DATA tag (item) IN idGroup;
-nameTagItem 'Ценник' = name(tagItem(item)) IN equipmentGroup;
-multiplierItem 'Множитель для печати ценника' = DATA DOUBLE (item) IN equipmentGroup;
-isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN equipmentGroup;
-isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN equipmentGroup;
-passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equipmentGroup;
+nameTagItem 'Ценник' = name(tagItem(item)) IN retailGroup;
+multiplierItem 'Множитель для печати ценника' = DATA DOUBLE (item) IN retailGroup;
+isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN descriptionGroup;
+isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN descriptionGroup;
+passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN descriptionGroup;
 
 //substanceGroup
 percentFatItem '% жирности' =  DATA DOUBLE (item) IN substanceGroup;
@@ -456,13 +492,8 @@ maxTradeAllowanceItem 'MAX допустимая торговая надбавк�
 minAllowedRetailPriceItem 'MIN допустимая розн.цена' = DATA INTEGER (item) IN retailGroup;
 bonusItem 'Бонус получаемый по товару' = DATA DOUBLE (item) IN retailGroup;
 percentWholesaleMarkItem '% оптовой надбавки' = DATA DOUBLE (item) IN retailGroup;
+banSailItem 'Запрет продаж товара в указанное время' = DATA STRING[200] (item) IN retailGroup;
 
-//expiryGroup
-
-controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN expiryGroup;
-daysExpiryItem 'Срок годности в днях' = DATA DOUBLE (item) IN expiryGroup;
-daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA DOUBLE (item) IN expiryGroup;
-hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
 
 //manufactoryGroup
 isCrudeItem 'Товар-сырьё для калькуляции?' = DATA BOOLEAN (item) IN manufactoryGroup;
@@ -476,6 +507,12 @@ normOutItem 'Норма выхода для печати в меню и каль
 groupMenuItem 'Группа для печати в меню' = DATA STRING[100] (item) IN manufactoryGroup;
 isCutedItem 'Товар разрубается/прорабатывается' = DATA BOOLEAN (item) IN manufactoryGroup;
 storageTemperatureItem 'Температура хранения' =  DATA STRING[100] (item) IN manufactoryGroup;
+
+//expiryGroup
+controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN manufactoryGroup;
+daysExpiryItem 'Срок годности в днях' = DATA DOUBLE (item) IN manufactoryGroup;
+daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA DOUBLE (item) IN manufactoryGroup;
+hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN manufactoryGroup;
 
 rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) IN idGroup;
 
@@ -843,6 +880,10 @@ banSaleDepartmentStoreItem 'Запрет продаж товара в подра
 banMovementDepartmentStoreItem 'Запрет на внутреннее перемещение товара' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
 reserveDepartmentStoreItem 'Резерв по товару' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 
+topDepartmentStoreItem 'Топ' = DATA DOUBLE (departmentStore, item) IN baseGroup;
+quantityRealizationDepartmentStoreItem 'Продаж в день' = DATA DOUBLE (departmentStore, item) IN baseGroup;
+balanceDepartmentStoreItem 'Текущий остаток' = DATA DOUBLE (departmentStore, item) IN baseGroup;
+
 //------------------------------------ Товар с историей -------------------------------------------------------------//
 GROUP historyGroup 'Изменяемые характеристики' : baseGroup;
 
@@ -851,6 +892,8 @@ GROUP historyGroup 'Изменяемые характеристики' : baseGro
 @metaCodeNameObjectDateProperty(banDiscountItem, item, 'Запретить скидки по товару', yesNo, historyGroup);
 
 @metaCodeObjectDateProperty(coefficientNetGrossItem, item, 'Сезонный коэффициент пересчета сырья из нетто в брутто', DOUBLE, historyGroup);
+
+//defaultCoefficientNetGrossItem(item) = GROUP MAX coefficientNetGrossItem BY item;
 
 @metaCodeObjectDateProperty(rateNaturalLossItem, item, 'Норма естественной убыли,%', DOUBLE, historyGroup);
 
@@ -895,7 +938,7 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 FORM supplierItemDepartment 'Товар поставщика для подразделения'
 OBJECTS i=item FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier
 PROPERTIES(d) READONLY name, nameStoreDepartmentStore
-PROPERTIES(i) READONLY nameAttributeItem
+PROPERTIES(i) READONLY name
 PROPERTIES(s) READONLY name
 PROPERTIES(s) ADDFORM, EDITFORM, delete
 PROPERTIES(s, i, d) nameisSupplierItemDepartment, showFormNameisSupplierItemDepartment,
@@ -907,19 +950,19 @@ showFormSupplierItemDepartment 'Свойства по поставщикам' (i
 
 FORM item 'Товар'
 OBJECTS i=item FIXED PANEL, b=barcode, d=departmentStore
-PROPERTIES(i) nameAttributeItem, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDepartment, isManufacturedItem,
- captionItem SHOWIF toShowCaption(i), nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
+PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDepartment, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
  hallmarkItem SHOWIF toShowHallmark(i), articleItem, quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
  percentFatItem, percentAlcoholItem, lengthItem, widthItem, heightItem, grossWeightItem, lengthPackItem, widthPackItem, heightPackItem, grossWeightPackItem,
  nameCountryItem SHOWIF toShowCountry(i), nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
  bonusReturnItem, nameReturnItem, quantityDiscountItem, fixPriceItem, isFixPriceItem,
- banMarkdownItem, oldPriceItem, nameTagItem, multiplierItem, controlExpiryItem, daysExpiryItem, isMarkItem, hintItem,
- isCrudeItem, nameGroupProductItem,
- nameWareItem SHOWIF toShowWare(i), daysExpiryPackItem, hoursExpiryPackItem, standartItem, normOutItem, groupMenuItem,
- isCutedItem, isLoafCutItem, storageTemperatureItem, passScalesItem, bonusItem, percentWholesaleMarkItem,
- minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem
+ banMarkdownItem, oldPriceItem, nameTagItem, multiplierItem, isMarkItem, hintItem,
+ isCrudeItem, nameGroupProductItem, nameNumberInPackItem, nameFormItemItem, nameRateWasteItem, percentRateWasteItem,
+ nameWareItem SHOWIF toShowWare(i), standartItem, normOutItem, groupMenuItem,
+ isCutedItem, isLoafCutItem, storageTemperatureItem, controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem,
+ passScalesItem, bonusItem, percentWholesaleMarkItem,
+ minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem, banSailItem
 PROPERTIES(i) nameisPortionBarItem, showFormNameisPortionBarItem,
               namebanDiscountItem, showFormNamebanDiscountItem,
               coefficientNetGrossItem, showFormcoefficientNetGrossItem,
@@ -948,21 +991,21 @@ DESIGN item FROM DEFAULT {
             tabbedPane = TRUE;
             ADD i.descriptionGroup;
             ADD i.retailGroup;
-            ADD i.equipmentGroup;
             ADD i.sizeGroup {
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
             }
-            ADD i.equipmentGroup;
+            //ADD i.equipmentGroup;
             ADD i.substanceGroup;
             ADD i.manufactoryGroup{
+                title = 'Производство и сроки годности';
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
             }
-            ADD i.expiryGroup{
-                fillVertical = 1.0;
-                fillHorizontal = 1.0;
-            }
+            //ADD i.expiryGroup{
+            //    fillVertical = 1.0;
+            //    fillHorizontal = 1.0;
+            //}
             ADD i.historyGroup{
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
@@ -2261,6 +2304,8 @@ NAVIGATOR {
             ADD size;
             ADD specialty;
             ADD coolingDegree;
+            ADD formItem;
+            ADD numberInPack;
             ADD addNameisPortionBarItem;
             ADD nameisPortionBarItem;
             ADD addNamebanDiscountItem;
