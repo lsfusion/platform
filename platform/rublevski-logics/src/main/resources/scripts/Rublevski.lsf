@@ -212,6 +212,7 @@ META metaCodeShowItemAttribute (attribute, caption)
 
 show##attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN baseGroup;
 toShow##attribute caption (item) = show##attribute##ItemGroup(itemGroupSku(item));
+show##attribute##ItemGroup(itemGroup) <- TRUE ON ASSIGN itemGroup IS itemGroup;
 
 END
 
@@ -357,7 +358,6 @@ GROUP manufactoryGroup 'Собственное производство' : publi
 
 CLASS ABSTRACT sku 'SKU' : named;
 CLASS item 'Товар' : sku;
-CLASS dish 'Блюдо' : sku, named;
 CLASS ware 'Посуда' : sku, named;
 
 CLASS brand 'Бренд' : named;
@@ -907,9 +907,126 @@ GROUP historyGroup 'Изменяемые характеристики' : baseGro
 
 @metaCodeObjectDateProperty(rateNaturalLossItem, item, 'Норма естественной убыли,%', DOUBLE, historyGroup);
 
-@metaCodeObjectDateProperty(NDSSupplierItem, item, 'НДС поставщика,%', DOUBLE, historyGroup);
+//@metaCodeObjectDateProperty(NDSSupplierItem, item, 'НДС поставщика,%', DOUBLE, historyGroup);
 
 @metaCodeObjectDateProperty(importerPriceItem, item, 'Цена импортёра', DOUBLE, historyGroup);
+
+//---------------------------- Налоги ----------------------------------------//
+
+CLASS STATIC tax 'Налоги'
+{
+    taxNDS 'НДС'
+};
+
+nameTax 'Наименование налога' = DATA STRING[200] (tax) IN baseGroup;
+
+CLASS range 'Шкала';
+dataRange 'Шкала' = DATA INTEGER (range);
+
+CLASS rate 'История изменений шкалы' : historyObject;
+rangeRate 'Шкала ИД' = DATA range (rate) IN idGroup;
+taxRange 'Налог ИД' = DATA tax (range) IN idGroup;
+nameTaxRange 'Налог' (range) = name(taxRange(range)) IN baseGroup;
+
+maxDataRangeTax(tax) = UNION OVERRIDE 0 IF tax IS tax, [GROUP MAX dataRange(range) BY taxRange(range)](tax);
+nextDataRangeTax(tax) = maxDataRangeTax(tax) + 1;
+
+addNewRange 'Добавить шкалу' = ACTION (tax) {
+    [ADDOBJ range]();
+    dataRange(r) IF r == addedObject() <- nextDataRangeTax(tax);
+} TOOLBAR IMAGE 'add.png';
+
+CLASS STATIC rangeType 'Для каких подразделений действует шкала'
+{
+    common 'Общий',
+    units 'Для подразделений'
+};
+rangeTypeRange 'Тип ИД' = DATA rangeType (range) IN idGroup;
+nameRangeTypeRange 'Тип действия' = name(rangeTypeRange(range)) IN baseGroup;
+inRangeStoreDefault 'Вкл.' (range, store) = DATA BOOLEAN (range, store) IN baseGroup;
+inRangeStore 'Вкл.' (range, store) = inRangeStoreDefault(range, store)  IF rangeTypeRange(range) == rangeType.units IN baseGroup;
+
+rangeTypeRange(range) <- rangeType.common ON ASSIGN range IS range;     /// потом согласовать, какое значение должно быть по-умолчанию ///
+
+dataRate 'Значение ставки' = DATA DOUBLE (rate) IN baseGroup;
+dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
+dateToRate 'Действует по' = DATA DATE (rate) IN baseGroup;
+
+quantityRateRange 'Количество историй' (range) = GROUP SUM 1 IF rate BY rangeRate(rate);
+CONSTRAINT CHECKED range IS range AND NOT rangeTypeRange(range)  MSG 'ошибка: Не выбран тип действия для шкалы';
+CONSTRAINT CHECKED rate IS rate AND NOT dataRate(rate)  MSG 'ошибка: Не указано значение ставки';
+
+
+inRangeRate(range, rate) = rangeRate(rate) == range;
+inTaxRange(tax, range) = taxRange(range) == tax;
+
+actingRateDate(rate, date) = rate IF dateFromRate(rate) <= date AND NOT dateToRate(rate) < date AND date AS DATE;
+actingRateRangeDate(range, date) = GROUP MAX actingRateDate(rate, date) BY rangeRate(rate), date;
+dataActingRateRangeDate 'На дату' (range, date) = dataRate(actingRateRangeDate(range, date));  // в последствии, если надо можно сделать проверку на одну ставку на дату
+actingRateRange 'Действующая ИД' (range) = actingRateRangeDate(range, currentDate()) IN idGroup;
+dataActingRateRange 'Действующая ставка' (range) = dataRate(actingRateRange(range)) IN baseGroup;
+dateFromActingRateRange 'Действует с' (range) = dateFromRate(actingRateRange(range)) IN baseGroup;
+dateToActingRateRange 'Действует по' (range) = dateToRate(actingRateRange(range)) IN baseGroup;
+nameUserRateRange 'Создан пользователем' (range) = nameUserCreated(actingRateRange(range)) IN baseGroup;
+
+quantityActingRateRangeDate(range, date) = GROUP SUM 1 IF actingRateDate(rate, date) BY rangeRate(rate), date;
+quantityActingRateRange 'Количество действующих историй' (range) = quantityActingRateRangeDate(range, currentDate());
+CONSTRAINT CHECKED quantityActingRateRange(range) > 1 MSG 'ошибка: Одновременно не может быть несколько действующих ставок';
+
+suppliersTaxNDSItem(item) = tax.taxNDS IF item IS item IN idGroup;
+nameSuppliersTaxNDSItem(item) = name(suppliersTaxNDSItem(item));
+suppliersRangeItem(item) = DATA range (item) IN idGroup;
+dataSuppliersRateRangeItem 'НДС поставщика,%' (item) = dataActingRateRange(suppliersRangeItem(item)) IN retailGroup;
+CONSTRAINT CHECKED suppliersTaxNDSItem(item) != taxRange(suppliersRangeItem(item))  MSG 'ошибка: Шкала должна соответствовать шкале НДС';
+
+
+retailTaxNDSItem(item) = tax.taxNDS IF item IS item IN idGroup;
+nameRetailTaxNDSItem(item) = name(retailTaxNDSItem(item));
+retailRangeItem(item) = DATA range (item) IN idGroup;
+dataRetailRateRangeItem 'Розничный НДС' (item) = dataActingRateRange(retailRangeItem(item)) IN retailGroup;
+CONSTRAINT CHECKED retailTaxNDSItem(item) != taxRange(retailRangeItem(item))  MSG 'ошибка: Шкала должна соответствовать шкале НДС';
+dataOverrideRateRangeItem 'Значение НДС' (item) = UNION OVERRIDE dataRetailRateRangeItem(item), dataSuppliersRateRangeItem(item) IN retailGroup;
+toShowDataRangeItem(item) = TRUE IF item IS item AND dataSuppliersRateRangeItem(item);
+
+FORM tax 'Налог'
+OBJECTS t=tax FIXED PANEL
+OBJECTS ra=range, rt=rate, s=store
+PROPERTIES(t)     name, nameTax, addNewRange TODRAW ra
+PROPERTIES(ra)    dataRange, nameRangeTypeRange, delete
+PROPERTIES(ra)    READONLY dataActingRateRange, dateFromActingRateRange, dateToActingRateRange
+PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
+PROPERTIES(s)     name, addressStore//, ADDOBJ, delete
+PROPERTIES(ra, s) inRangeStore
+FILTERS NOT NULL  inRangeRate(ra, rt),
+        NOT NULL  inTaxRange(t, ra)
+FILTERGROUP filters6
+    FILTER 'Показывать магазины только для данного налога' 'F10' NOT NULL inRangeStore(ra, s) DEFAULT
+
+EDIT tax OBJECT t;
+
+DESIGN tax FROM DEFAULT {
+    main {
+       ADD pax.box BEFORE functions.box {
+            ADD s.box;
+       }
+       ADD sax.box BEFORE pax.box {
+            ADD ra.box;
+            ADD rt.box;
+            POSITION ra.box TO THE LEFT rt.box;
+       }
+
+    }
+}
+
+FORM taxes 'Налоги'
+OBJECTS t=tax, ra=range, s=store
+PROPERTIES(t)     READONLY name, nameTax
+PROPERTIES(t)     EDITFORM, delete
+PROPERTIES(s)     READONLY name, addressStore
+PROPERTIES(ra, s) READONLY inRangeStore
+PROPERTIES(ra)  READONLY dataRange, dataActingRateRange, dateFromActingRateRange, dateToActingRateRange, nameUserRateRange, nameRangeTypeRange, quantityRateRange
+FILTERS NOT NULL inTaxRange(t, ra),
+        NOT NULL inRangeStore(ra, s);
 
 
 //------------------------------------ Товар для подразделения с историей -------------------------------------------//
@@ -950,7 +1067,6 @@ OBJECTS i=item FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier
 PROPERTIES(d) READONLY name, nameStoreDepartmentStore
 PROPERTIES(i) READONLY name
 PROPERTIES(s) READONLY name
-PROPERTIES(s) ADDFORM, EDITFORM, delete
 PROPERTIES(s, i, d) nameisSupplierItemDepartment, showFormNameisSupplierItemDepartment,
                     priceSupplierItemDepartment, showFormpriceSupplierItemDepartment,
                     markupSupplierItemDepartment, showFormmarkupSupplierItemDepartment,
@@ -972,12 +1088,12 @@ PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDep
  nameWareItem SHOWIF toShowWare(i), standartItem, normOutItem, groupMenuItem,
  isCutedItem, isLoafCutItem, storageTemperatureItem, controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem,
  passScalesItem, bonusItem, percentWholesaleMarkItem,
- minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem, banSailItem
+ minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem, banSailItem,
+ dataRetailRateRangeItem, dataSuppliersRateRangeItem
 PROPERTIES(i) nameisPortionBarItem, showFormNameisPortionBarItem,
               namebanDiscountItem, showFormNamebanDiscountItem,
               coefficientNetGrossItem, showFormcoefficientNetGrossItem,
-              rateNaturalLossItem, showFormrateNaturalLossItem,
-              NDSSupplierItem, showFormNDSSupplierItem,
+              rateNaturalLossItem, showFormrateNaturalLossItem,          //     NDSSupplierItem, showFormNDSSupplierItem,
               importerPriceItem, showFormimporterPriceItem
 
 PROPERTIES (b) barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
@@ -1063,7 +1179,7 @@ PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentSto
 
 FORM itemGroup 'Товарная группа'
 OBJECTS g=itemGroup FIXED PANEL
-PROPERTIES(g) name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, extSID
+PROPERTIES(g) name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, extSID//, ShowBrandItemGroup
 EDIT itemGroup OBJECT g;
 
 FORM itemGroups 'Товарные группы'
@@ -2010,104 +2126,6 @@ DESIGN cuttings FROM DEFAULT {
        }
    }
 }
-//---------------------------- Налоги ----------------------------------------//
-CLASS tax 'Налог';
-CLASS taxNDS 'НДС' : tax;
-
-nameTax 'Наименование налога' = DATA STRING[200] (tax) IN baseGroup;
-shortNameTax 'Сокращение' = DATA STRING[20] (tax) IN baseGroup;
-
-CLASS range 'Шкала';
-dataRange 'Шкала' = DATA INTEGER (range);
-
-CLASS rate 'История изменений шкалы' : historyObject;
-rangeRate 'Шкала ИД' = DATA range (rate) IN idGroup;
-taxRange 'Налог ИД' = DATA tax (range) IN idGroup;
-
-maxDataRangeTax(tax) = UNION OVERRIDE 0 IF tax IS tax, [GROUP MAX dataRange(range) BY taxRange(range)](tax);
-nextDataRangeTax(tax) = maxDataRangeTax(tax) + 1;
-
-addNewRange 'Добавить шкалу' = ACTION (tax) {
-    [ADDOBJ range]();
-    dataRange(r) IF r == addedObject() <- nextDataRangeTax(tax);
-} TOOLBAR IMAGE 'add.png';
-
-CLASS STATIC rangeType 'Для каких подразделений действует шкала'
-{
-    common 'Общий',
-    units 'Для подразделений'
-};
-rangeTypeRange 'Тип ИД' = DATA rangeType (range) IN idGroup;
-nameRangeTypeRange 'Тип действия' = name(rangeTypeRange(range)) IN baseGroup;
-inRangeStoreDefault 'Вкл.' (range, store) = DATA BOOLEAN (range, store) IN baseGroup;
-inRangeStore 'Вкл.' (range, store) = inRangeStoreDefault(range, store)  IF rangeTypeRange(range) == rangeType.units IN baseGroup;
-
-rangeTypeRange(range) <- rangeType.common ON ASSIGN range IS range;     /// потом согласовать, какое значение должно быть по-умолчанию ///
-
-dataRate 'Значение ставки' = DATA DOUBLE (rate) IN baseGroup;
-dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
-dateToRate 'Действует по' = DATA DATE (rate) IN baseGroup;
-
-quantityRateRange 'Количество историй' (range) = GROUP SUM 1 IF rate BY rangeRate(rate);
-CONSTRAINT CHECKED range IS range AND NOT rangeTypeRange(range)  MSG 'ошибка: Не выбран тип действия для шкалы';
-CONSTRAINT CHECKED rate IS rate AND NOT dataRate(rate)  MSG 'ошибка: Не указано значение ставки';
-
-
-inRangeRate(range, rate) = rangeRate(rate) == range;
-inTaxRange(tax, range) = taxRange(range) == tax;
-
-actingRateDate(rate, date) = rate IF dateFromRate(rate) <= date AND NOT dateToRate(rate) < date AND date AS DATE;
-actingRateRangeDate(range, date) = GROUP MAX actingRateDate(rate, date) BY rangeRate(rate), date;
-dataActingRateRangeDate 'На дату' (range, date) = dataRate(actingRateRangeDate(range, date));  // в последствии, если надо можно сделать проверку на одну ставку на дату
-actingRateRange 'Действующая ИД' (range) = actingRateRangeDate(range, currentDate()) IN idGroup;
-dataActingRateRange 'Действующая ставка' (range) = dataRate(actingRateRange(range)) IN baseGroup;
-dateFromActingRateRange 'Действует с' (range) = dateFromRate(actingRateRange(range)) IN baseGroup;
-dateToActingRateRange 'Действует по' (range) = dateToRate(actingRateRange(range)) IN baseGroup;
-nameUserRateRange 'Создан пользователем' (range) = nameUserCreated(actingRateRange(range)) IN baseGroup;
-
-quantityActingRateRangeDate(range, date) = GROUP SUM 1 IF actingRateDate(rate, date) BY rangeRate(rate), date;
-quantityActingRateRange 'Количество действующих историй' (range) = quantityActingRateRangeDate(range, currentDate());
-CONSTRAINT CHECKED quantityActingRateRange(range) > 1 MSG 'ошибка: Одновременно не может быть несколько действующих ставок';
-
-FORM tax 'Налог'
-OBJECTS t=tax FIXED PANEL
-OBJECTS ra=range, rt=rate, s=store
-PROPERTIES(t)     nameTax, shortNameTax, addNewRange TODRAW ra
-PROPERTIES(ra)    dataRange, nameRangeTypeRange, delete
-PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
-PROPERTIES(s)     name, addressStore//, ADDOBJ, delete
-PROPERTIES(ra, s) inRangeStore
-FILTERS NOT NULL  inRangeRate(ra, rt),
-        NOT NULL  inTaxRange(t, ra)
-FILTERGROUP filters6
-    FILTER 'Показывать магазины только для данного налога' 'F10' NOT NULL inRangeStore(ra, s) DEFAULT
-
-EDIT tax OBJECT t;
-
-DESIGN tax FROM DEFAULT {
-    main {
-       ADD pax.box BEFORE functions.box {
-            ADD s.box;
-       }
-       ADD sax.box BEFORE pax.box {
-            ADD ra.box;
-            ADD rt.box;
-            POSITION ra.box TO THE LEFT rt.box;
-       }
-
-    }
-}
-
-FORM taxes 'Налоги'
-OBJECTS t=tax, ra=range, s=store
-PROPERTIES(t)     READONLY nameTax, shortNameTax
-PROPERTIES(t)     ADDFORM, EDITFORM, delete
-PROPERTIES(s)     READONLY name, addressStore
-PROPERTIES(ra, s) READONLY inRangeStore
-PROPERTIES(ra)  READONLY dataRange, dataActingRateRange, dateFromActingRateRange, dateToActingRateRange, nameUserRateRange, nameRangeTypeRange, quantityRateRange
-FILTERS NOT NULL inTaxRange(t, ra),
-        NOT NULL inRangeStore(ra, s);
-
 
 //---------------------------- Рецепты блюд ----------------------------------------//
 CLASS recipe 'Рецепт' : named;
@@ -2324,8 +2342,8 @@ NAVIGATOR {
             ADD coefficientNetGrossItem;
             ADD addrateNaturalLossItem;
             ADD rateNaturalLossItem;
-            ADD addNDSSupplierItem;
-            ADD NDSSupplierItem;
+//            ADD addNDSSupplierItem;
+//            ADD NDSSupplierItem;
             ADD addimporterPriceItem;
             ADD importerPriceItem;
             ADD addmaxReserveItemDepartment;
