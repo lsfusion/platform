@@ -15,6 +15,7 @@ CLASS STATIC yesNo 'Логическое' {
 CLASS language 'Язык' : doubleNamed;
 
 stringEqualsAll(string) = string == 'Все';
+dateDiffersCurrent(date) = date != currentDate();
 
 // ----------------------------------- Шаблоны ------------------------------------------ //
 
@@ -760,9 +761,10 @@ tradingNetworkStore 'Торговая сеть магазина (ИД)' (store) 
 nameTradingNetworkStore 'Торговая сеть магазина' (store) = name(tradingNetworkStore(store)) IN baseGroup;
 inTradingNetworkStore (tradingNetwork, store) = tradingNetworkStore(store) == tradingNetwork;
 
-inTradingNetworkStoreTypeStore (tradingNetwork, storeType, store) = UNION OVERRIDE storeTypeStore(store) == storeType AND tradingNetwork,
-                                                                                   tradingNetworkStore(store) == tradingNetwork AND NOT storeType,
-                                                                                   store IS store AND NOT storeType AND NOT tradingNetwork;
+inTradingNetworkStoreTypeStore (tradingNetwork, storeType, store) = UNION OVERRIDE
+    storeTypeStore(store) == storeType AND tradingNetwork,
+    tradingNetworkStore(store) == tradingNetwork AND NOT storeType,
+    store IS store AND NOT storeType AND NOT tradingNetwork;
 
 inStoreTypeTradingNetwork(storeType, tradingNetwork) = tradingNetworkStoreType(storeType) == tradingNetwork;
 
@@ -872,6 +874,16 @@ tradingSquareStore 'Торговая площадь магазина' = GROUP SU
 
 inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
 inTradingSquareDepartmentStore(departmentStore, tradingSquare) = departmentStoreTradingSquare(tradingSquare) == departmentStore;
+
+storeTypeDepartmentStore(departmentStore) = storeTypeStore(storeDepartmentStore(departmentStore)) PERSISTENT;
+tradingNetworkDepartmentStore(departmentStore) = tradingNetworkStoreType(storeTypeDepartmentStore(departmentStore)) PERSISTENT;
+
+inTradingNetworkStoreTypeStoreDepartment (tradingNetwork, storeType, store, department) = UNION OVERRIDE
+    storeDepartmentStore(department) == store AND storeType AND tradingNetwork,
+    storeTypeDepartmentStore(department) == storeType AND tradingNetwork AND NOT store,
+    tradingNetworkDepartmentStore(department) == tradingNetwork AND NOT store AND NOT storeType,
+    department IS departmentStore AND NOT store AND NOT storeType AND NOT tradingNetwork;
+
 
 // ----------------------------------- Цех ----------------------------------- //
 
@@ -1084,11 +1096,14 @@ PROPERTIES(s, i, d) nameisSupplierItemDepartment, showFormNameisSupplierItemDepa
 showFormSupplierItemDepartment 'Свойства по поставщикам' (item) = ACTION FORM supplierItemDepartment OBJECTS i MODAL;
 
 FORM item 'Товар'
-TREE treeDepartmentStore t=tradingNetwork PARENT tradingNetworkStoreType, st=storeType PARENT storeTypeStore, s=store PARENT storeDepartmentStore
-OBJECTS i=item FIXED PANEL, b=barcode, dt=DATE FIXED PANEL, d=departmentStore
-PROPERTIES(t) READONLY name
-PROPERTIES(st) READONLY name
-PROPERTIES(s) READONLY name
+OBJECTS i=item FIXED PANEL, b=barcode
+TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+OBJECTS dt=DATE FIXED PANEL, d=departmentStore
+PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
+FILTERS NOT NULL stringEqualsAll(a)
+FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
+FILTERS NOT NULL inStoreTypeStore (st, s)
+FILTERS NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
 PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDepartment, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
@@ -1111,14 +1126,14 @@ PROPERTIES(i) nameisPortionBarItem, showFormNameisPortionBarItem,
 
 PROPERTIES (b) barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
 PROPERTIES (d) name
-PROPERTIES (dt) OBJVALUE
-PROPERTIES (i, d, dt) maxReserveItemDepartmentOver,
-                  minReserveItemDepartmentOver,
-                  namebanRevaluationItemDepartmentOver,
-                  nameinActionItemDepartmentOver,
-                  marginProductionItemDepartmentOver,
-                  retailPriceItemDepartmentOver,
-                  discountItemDepartmentOver
+PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
+PROPERTIES (i, d, dt) maxReserveItemDepartmentOver HIGHLIGHTIF maxReserveItemDepartmentDate(i, d, dt),
+                  minReserveItemDepartmentOver HIGHLIGHTIF minReserveItemDepartmentDate(i, d, dt),
+                  namebanRevaluationItemDepartmentOver HIGHLIGHTIF namebanRevaluationItemDepartmentDate(i, d, dt),
+                  nameinActionItemDepartmentOver HIGHLIGHTIF nameinActionItemDepartmentDate(i, d, dt),
+                  marginProductionItemDepartmentOver HIGHLIGHTIF marginProductionItemDepartmentDate(i, d, dt),
+                  retailPriceItemDepartmentOver HIGHLIGHTIF retailPriceItemDepartmentDate(i, d, dt),
+                  discountItemDepartmentOver HIGHLIGHTIF discountItemDepartmentDate(i, d, dt)
 PROPERTIES (i, d) showFormmaxReserveItemDepartmentOver,
                   showFormminReserveItemDepartmentOver,
                   showFormNamebanRevaluationItemDepartmentOver,
@@ -1161,9 +1176,12 @@ DESIGN item FROM DEFAULT {
             }
             ADD d.box {
                 ADD dt.box BEFORE d.grid.box;
+                ADD treeStore.box BEFORE d.grid.box;
+                POSITION treeStore.box TO THE LEFT d.grid.box;
                 POSITION d.grid.box TO THE LEFT d.panel;
-                ADD treeDepartmentStore.box;
-                POSITION treeDepartmentStore.box TO THE LEFT d.grid.box;
+                d.grid.box {
+                    fillHorizontal = 3;
+                };
             }
        }
     }
