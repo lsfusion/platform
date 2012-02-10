@@ -1083,7 +1083,11 @@ PROPERTIES(s, i, d) nameisSupplierItemDepartment, showFormNameisSupplierItemDepa
 showFormSupplierItemDepartment 'Свойства по поставщикам' (item) = ACTION FORM supplierItemDepartment OBJECTS i MODAL;
 
 FORM item 'Товар'
+TREE treeDepartmentStore t=tradingNetwork PARENT tradingNetworkStoreType, st=storeType PARENT storeTypeStore, s=store PARENT storeDepartmentStore
 OBJECTS i=item FIXED PANEL, b=barcode, dt=DATE FIXED PANEL, d=departmentStore
+PROPERTIES(t) READONLY name
+PROPERTIES(st) READONLY name
+PROPERTIES(s) READONLY name
 PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDepartment, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
@@ -1122,6 +1126,8 @@ PROPERTIES (i, d) showFormmaxReserveItemDepartmentOver,
                   showFormretailPriceItemDepartmentOver,
                   showFormdiscountItemDepartmentOver
 
+FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
+FILTERS NOT NULL inStoreTypeStore (st, s)
 FILTERS NOT NULL inSkuBarcode(i, b)
 PROPERTIES(b) ADDOBJ, delete
 EDIT item OBJECT i
@@ -1129,7 +1135,7 @@ EDIT barcode OBJECT b;
 
 DESIGN item FROM DEFAULT {
     main {
-       ADD item.box BEFORE b.box {
+     ADD item.box BEFORE b.box {
             tabbedPane = TRUE;
             ADD i.descriptionGroup;
             ADD i.retailGroup;
@@ -1155,6 +1161,7 @@ DESIGN item FROM DEFAULT {
             ADD d.box {
                 ADD dt.box BEFORE d.grid.box;
                 POSITION d.grid.box TO THE LEFT d.panel;
+                POSITION treeDepartmentStore.box TO THE LEFT d.panel;
             }
        }
     }
