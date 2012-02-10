@@ -286,6 +286,16 @@ public class Settings {
         return useUniPass;
     }
     
+    private boolean useQueryExpr = true;
+
+    public boolean isUseQueryExpr() {
+        return useQueryExpr;
+    }
+
+    public void setUseQueryExpr(boolean useQueryExpr) {
+        this.useQueryExpr = useQueryExpr;
+    }
+
     private int limitWhereJoinsCount = 20;
     private int limitWhereJoinsComplexity = 200;
     private int limitClassWhereCount = 40;
@@ -300,7 +310,7 @@ public class Settings {
     private int limitHintIncrementComplexity = 50;
     private int limitGrowthIncrementComplexity = 1;
     private int limitHintIncrementStat = 1000;
-    private int limitHintNoUpdateComplexity = 400;
+    private int limitHintNoUpdateComplexity = 2000;
     private int limitWrapComplexity = 200;
 
     public int getLimitWhereJoinsCount() {

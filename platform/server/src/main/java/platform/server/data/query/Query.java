@@ -26,6 +26,8 @@ import platform.server.session.DataSession;
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.base.BaseUtils.immutableCast;
+
 // запрос JoinSelect
 public class Query<K,V> extends IQuery<K,V> {
 
@@ -128,16 +130,24 @@ public class Query<K,V> extends IQuery<K,V> {
         return join;
     }
 
+    public static <K> Map<K, KeyExpr> getMapKeys(Map<K, ? extends Expr> joinImplement) {
+        QuickSet<KeyExpr> checked = new QuickSet<KeyExpr>();
+        for(Expr joinExpr : joinImplement.values()) {
+            if(!(joinExpr instanceof KeyExpr) || checked.contains((KeyExpr) joinExpr))
+                return null;
+            checked.add((KeyExpr) joinExpr);
+        }
+        return BaseUtils.<Map<K, KeyExpr>>immutableCast(joinImplement);
+    }
+    
     public Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues) {
         assert joinImplement.size()==mapKeys.size();
         assert mapValues.assertValuesEquals(getInnerValues().getSet()); // все должны быть параметры
-        Map<K,KeyExpr> joinKeys = new HashMap<K, KeyExpr>();
-        for(Map.Entry<K,? extends Expr> joinExpr : joinImplement.entrySet()) {
-            if(!(joinExpr.getValue() instanceof KeyExpr) || joinKeys.values().contains((KeyExpr)joinExpr.getValue()))
-                return joinExprs(joinImplement, mapValues);
-            joinKeys.put(joinExpr.getKey(), (KeyExpr) joinExpr.getValue());
-        }
-        return new MapJoin<V>(new MapTranslator(BaseUtils.crossJoin(mapKeys, joinKeys), mapValues), getJoin());
+        Map<K, KeyExpr> joinKeys = getMapKeys(joinImplement);
+        if(joinKeys==null)
+            return joinExprs(joinImplement, mapValues);
+        else
+            return new MapJoin<V>(new MapTranslator(BaseUtils.crossJoin(mapKeys, joinKeys), mapValues), getJoin());
     }
 
     @ContextTwin

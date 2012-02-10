@@ -386,7 +386,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Expr getExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if (isFull())
+        if (isFull() && (Settings.instance.isUseQueryExpr() || Query.getMapKeys(joinImplement)!=null))
             return getQueryExpr(joinImplement, propChanges, changedWhere);
         else
             return getJoinExpr(joinImplement, propChanges, changedWhere);
@@ -1038,7 +1038,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void prereadCaches() {
         getClassWhere();
         if(isFull())
-            getQuery(PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, new HashMap<T, Expr>());
+            getQuery(PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, new HashMap<T, Expr>()).pack();
     }
 
     private Collection<Pair<Property<?>, LinkType>> links; 

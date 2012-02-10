@@ -150,6 +150,12 @@ public class MapCacheAspect {
     }
 
     @Around("execution(* platform.server.logics.property.Property.getUsedChanges(platform.server.session.StructChanges)) " +
+            "&& target(property) && args(changes)")
+    public Object callGetUsedChanges(ProceedingJoinPoint thisJoinPoint, Property property, StructChanges changes) throws Throwable {
+        return getUsedChanges(property, changes, thisJoinPoint);
+    }
+
+/*    @Around("execution(* platform.server.logics.property.Property.getUsedChanges(platform.server.session.StructChanges)) " +
             "&& target(property) && args(changes) " +
             "&& !cflowbelow(execution(* platform.server.logics.property.Property.getUsedChanges(platform.server.session.StructChanges))|| execution(* platform.server.logics.property.Property.calculateExpr(java.util.Map,platform.server.session.PropertyChanges,platform.server.data.where.WhereBuilder)))")
     public Object callGetUsedChanges(ProceedingJoinPoint thisJoinPoint, Property property, StructChanges changes) throws Throwable {
@@ -164,7 +170,7 @@ public class MapCacheAspect {
             return thisJoinPoint.proceed();
         else
             return getUsedChanges(property, changes, thisJoinPoint);
-    }
+    }*/
 
     // все равно надо делать класс в котором будет :
     // propertyChange и getUsedDataChanges
