@@ -82,7 +82,9 @@ META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type)
 
     prop##Date caption = DATA type (object1, object2, DATE);
     date##prop (object1, object2, date) = GROUP MAX dateIn AND prop##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
-    prop caption (object1, object2) = prop##Date(object1, object2, date##prop(object1, object2, currentDate()));
+    prop##Val caption (object1, object2, date) = prop##Date(object1, object2, date##prop(object1, object2, date));
+    prop caption (object1, object2) = prop##Val(object1, object2, currentDate());
+    prop##Over caption = UNION OVERRIDE prop##Val(object1, object2, date), prop##Date(object1, object2, date);
 
     FORM add##prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE FIXED PANEL
@@ -104,6 +106,7 @@ META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type)
     }
 
     showForm##prop caption (object1, object2) = ACTION FORM prop OBJECTS a, b MODAL SHORTCUT prop DEFAULT;
+    showForm##prop##Over caption (object1, object2) = ACTION FORM prop OBJECTS a, b MODAL SHORTCUT prop##Over;
 
 END
 // ----------------------------------- Свойство объект1-объект2-дата для yesNo со значением по-умолчанию НЕТ------------------------------------------ //
@@ -113,9 +116,13 @@ META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type)
     prop##Date caption = DATA type (object1, object2, DATE);
     name##prop##Date caption (object1, object2, date) = name(prop##Date(object1, object2, date));
     date##prop (object1, object2, date) = GROUP MAX dateIn AND prop##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
+    prop##Val caption (object1, object2, date) = prop##Date(object1, object2, date##prop(object1, object2, date));
     prop caption (object1, object2) = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2,
                                                      prop##Date(object1, object2, date##prop(object1, object2, currentDate()));
     name##prop caption (object1, object2) = name(prop(object1, object2));
+
+    prop##Over caption = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2 AND date IS DATE, prop##Val(object1, object2, date), prop##Date(object1, object2, date);
+    name##prop##Over caption (object1, object2, date) = name(prop##Over(object1, object2, date));
 
     FORM addName##prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE FIXED PANEL
@@ -137,6 +144,7 @@ META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type)
     }
 
     showFormName##prop caption (object1, object2) = ACTION FORM name##prop OBJECTS a, b MODAL SHORTCUT name##prop DEFAULT;
+    showFormName##prop##Over caption (object1, object2) = ACTION FORM name##prop OBJECTS a, b MODAL SHORTCUT name##prop##Over;
 
 END
 
@@ -606,7 +614,7 @@ valueObjectItemAttribute(item, attribute) = UNION EXCLUSIVE valueUOMItemAttribut
                                                             valueSizeItemAttribute(item, attribute),
                                                             valueCoolingDegreeItemAttribute(item, attribute),
                                                             valueColorItemAttribute(item, attribute),
-                                                            valueTasteItemAttribute(item, attribute);
+                                                            valueTasteItemAttribute(item, attribute) PERSISTENT;
 nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
 
 valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(item, attribute),
@@ -1075,7 +1083,7 @@ PROPERTIES(s, i, d) nameisSupplierItemDepartment, showFormNameisSupplierItemDepa
 showFormSupplierItemDepartment 'Свойства по поставщикам' (item) = ACTION FORM supplierItemDepartment OBJECTS i MODAL;
 
 FORM item 'Товар'
-OBJECTS i=item FIXED PANEL, b=barcode, d=departmentStore
+OBJECTS i=item FIXED PANEL, b=barcode, dt=DATE FIXED PANEL, d=departmentStore
 PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDepartment, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
@@ -1098,13 +1106,21 @@ PROPERTIES(i) nameisPortionBarItem, showFormNameisPortionBarItem,
 
 PROPERTIES (b) barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
 PROPERTIES (d) name
-PROPERTIES (i, d) FORCE PANEL maxReserveItemDepartment, showFormmaxReserveItemDepartment,
-                  minReserveItemDepartment, showFormminReserveItemDepartment,
-                  namebanRevaluationItemDepartment, showFormNamebanRevaluationItemDepartment,
-                  nameinActionItemDepartment, showFormNameinActionItemDepartment,
-                  marginProductionItemDepartment, showFormmarginProductionItemDepartment,
-                  retailPriceItemDepartment, showFormretailPriceItemDepartment,
-                  discountItemDepartment, showFormdiscountItemDepartment
+PROPERTIES (dt) OBJVALUE
+PROPERTIES (i, d, dt) maxReserveItemDepartmentOver,
+                  minReserveItemDepartmentOver,
+                  namebanRevaluationItemDepartmentOver,
+                  nameinActionItemDepartmentOver,
+                  marginProductionItemDepartmentOver,
+                  retailPriceItemDepartmentOver,
+                  discountItemDepartmentOver
+PROPERTIES (i, d) showFormmaxReserveItemDepartmentOver,
+                  showFormminReserveItemDepartmentOver,
+                  showFormNamebanRevaluationItemDepartmentOver,
+                  showFormNameinActionItemDepartmentOver,
+                  showFormmarginProductionItemDepartmentOver,
+                  showFormretailPriceItemDepartmentOver,
+                  showFormdiscountItemDepartmentOver
 
 FILTERS NOT NULL inSkuBarcode(i, b)
 PROPERTIES(b) ADDOBJ, delete
@@ -1136,7 +1152,8 @@ DESIGN item FROM DEFAULT {
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
             }
-            ADD d.box{
+            ADD d.box {
+                ADD dt.box BEFORE d.grid.box;
                 POSITION d.grid.box TO THE LEFT d.panel;
             }
        }
