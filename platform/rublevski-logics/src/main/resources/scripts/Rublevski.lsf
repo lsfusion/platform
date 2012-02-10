@@ -1162,7 +1162,8 @@ DESIGN item FROM DEFAULT {
             ADD d.box {
                 ADD dt.box BEFORE d.grid.box;
                 POSITION d.grid.box TO THE LEFT d.panel;
-                POSITION treeDepartmentStore.box TO THE LEFT d.panel;
+                ADD treeDepartmentStore.box;
+                POSITION treeDepartmentStore.box TO THE LEFT d.grid.box;
             }
        }
     }
