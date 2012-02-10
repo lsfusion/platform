@@ -14,6 +14,8 @@ CLASS STATIC yesNo 'Логическое' {
 };
 CLASS language 'Язык' : doubleNamed;
 
+stringEqualsAll(string) = string == 'Все';
+
 // ----------------------------------- Шаблоны ------------------------------------------ //
 
 // ----------------------------------- Свойство объект-дата------------------------------------------ //
@@ -744,6 +746,14 @@ inStoreTypeStore (storeType, store) = storeTypeStore (store) == storeType;
 
 tradingNetworkStoreType 'Торговая сеть формата магазина (ИД)' = DATA tradingNetwork (storeType);
 nameTradingNetworkStoreType 'Торговая сеть формата магазина' (storeType) = name(tradingNetworkStoreType(storeType)) IN baseGroup;
+
+tradingNetworkStore 'Торговая сеть магазина (ИД)' (store) = tradingNetworkStoreType(storeTypeStore(store));
+nameTradingNetworkStore 'Торговая сеть магазина' (store) = name(tradingNetworkStore(store)) IN baseGroup;
+inTradingNetworkStore (tradingNetwork, store) = tradingNetworkStore(store) == tradingNetwork;
+
+inTradingNetworkStoreTypeStore (tradingNetwork, storeType, store) = UNION OVERRIDE storeTypeStore(store) == storeType AND tradingNetwork,
+                                                                                   tradingNetworkStore(store) == tradingNetwork AND NOT storeType,
+                                                                                   store IS store AND NOT storeType AND NOT tradingNetwork;
 
 inStoreTypeTradingNetwork(storeType, tradingNetwork) = tradingNetworkStoreType(storeType) == tradingNetwork;
 
@@ -1551,13 +1561,13 @@ FILTERS NOT NULL inStoreDepartment(s, d)
 EDIT store OBJECT s;
 
 FORM stores 'Магазины'
-TREE treeStore t=tradingNetwork PARENT tradingNetworkStoreType, st=storeType PARENT storeTypeStore
+TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType
 OBJECTS s=store, d=departmentStore
-PROPERTIES(t) READONLY name
-PROPERTIES(st) READONLY name
+PROPERTIES READONLY OBJVALUE(a), name(t), name(st)
+FILTERS NOT NULL stringEqualsAll(a)
 FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
-FILTERS NOT NULL inStoreTypeStore (st, s)
-PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore
+FILTERS NOT NULL inTradingNetworkStoreTypeStore(t, st, s)
+PROPERTIES(s) name, addressStore, nameStoreTypeStore, nameCompanyStore
 PROPERTIES(s) ADDFORM, EDITFORM, delete
 PROPERTIES(d) READONLY name
 FILTERS NOT NULL inStoreDepartment(s, d);
