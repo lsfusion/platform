@@ -700,7 +700,7 @@ periodGenTimeTable 'По прошествии скольки недель буд
 stringNumberGenTimeTable 'Числа месяца поставок (указывать через запятую)' = DATA STRING[100] (genTimeTable);
 transferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья (ИД)' = DATA DOW (genTimeTable);
 nameTransferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья' (genTimeTable) = name(transferDayGenTimeTable(genTimeTable));
-CONSTRAINT CHECKED numberDOW(transferDayGenTimeTable(genTimeTable))>5 AND numberDOW(transferDayGenTimeTable(genTimeTable))<1 MSG 'Выберите день с ПН по ПТ';
+CONSTRAINT CHECKED numberDOW(transferDayGenTimeTable(genTimeTable))!=5 AND numberDOW(transferDayGenTimeTable(genTimeTable))!=1 MSG 'Выберите день с ПН по ПТ';
 dayLastOrderGenTimeTable 'Дата последнего заказа' = DATA DATE (genTimeTable);
 
 inMonthGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, month);
