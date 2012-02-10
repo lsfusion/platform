@@ -28,6 +28,7 @@
 	<field name="quantityStockArticle" class="java.lang.Double"/>
 	<field name="netWeightStockArticle" class="java.lang.Double"/>
 	<field name="nameDestinationFreightBox" class="java.lang.String"/>
+	<field name="quantityStock" class="java.lang.Double"/>
 	<title>
 		<band height="48">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -109,15 +110,15 @@
 	</detail>
 	<lastPageFooter>
 		<band height="36">
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="363" y="18" width="103" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Вес нетто"]]></textFieldExpression>
-			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="466" y="18" width="86" height="18"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{netWeightStock}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="363" y="18" width="103" height="18"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityStock}]]></textFieldExpression>
 			</textField>
 		</band>
 	</lastPageFooter>

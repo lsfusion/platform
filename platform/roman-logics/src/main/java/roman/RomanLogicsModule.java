@@ -568,6 +568,7 @@ public class RomanLogicsModule extends LogicsModule {
     public LP coefficientArticleSku;
     private LP inSupplierBoxShipment;
     private LP quantityArticle;
+    private LP quantityShipSku;
     private LP quantitySupplierBoxBoxShipmentStockSku;
     private LP quantitySupplierBoxBoxShipmentSku;
     private LP quantitySimpleShipmentStockSku;
@@ -2605,9 +2606,15 @@ public class RomanLogicsModule extends LogicsModule {
                 1, 2, skuBarcodeObject, 3);
 
         quantityArticle = addSGProp(baseGroup, "quantityArticle", true, "Оприходовано", quantityShipmentDetail, articleShipmentDetail, 1);
+        quantityShipSku = addSGProp(baseGroup, "quantityShipSku", true, "Оприходовано", quantityShipmentDetail, skuShipmentDetail, 1);
+
         addConstraint(addJProp("Для артикула должна быть задана номенклатурная группа", baseLM.andNot1, quantityArticle, 1, categoryArticle, 1), false);
         addConstraint(addJProp("Для артикула должен быть задан пол", baseLM.andNot1, quantityArticle, 1, genderArticle, 1), false);
         addConstraint(addJProp("Для артикула должен быть задан тип одежды", baseLM.andNot1, quantityArticle, 1, typeFabricArticle, 1), false);
+
+        addConstraint(addJProp("Для товара должен быть задан вес", baseLM.andNot1, quantityShipSku, 1, netWeightSku, 1), false);
+        addConstraint(addJProp("Для товара должен быть задан страна", baseLM.andNot1, quantityShipSku, 1, countryOfOriginSku, 1), false);
+        addConstraint(addJProp("Для товара должен быть задан состав", baseLM.andNot1, quantityShipSku, 1, mainCompositionOriginSku, 1), false);
 
         quantitySupplierBoxBoxShipmentStockSku = addSGProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", true, "Кол-во оприход.", quantityShipmentDetail,
                 supplierBoxShipmentDetail, 1, boxShipmentBoxShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
@@ -3955,7 +3962,7 @@ public class RomanLogicsModule extends LogicsModule {
         private PackingListBoxFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption, true);
 
-            objBox = addSingleGroupObject(1, "box", freightBox, "Короб", nameDestinationFreightBox, baseLM.barcode, netWeightStock);
+            objBox = addSingleGroupObject(1, "box", freightBox, "Короб", nameDestinationFreightBox, baseLM.barcode, netWeightStock, quantityStock);
             objBox.groupTo.initClassView = ClassViewType.PANEL;
 
             objArticle = addSingleGroupObject(2, "article", article, "Артикул", sidArticle, nameBrandSupplierArticle, nameCategoryArticle);
@@ -7375,6 +7382,13 @@ public class RomanLogicsModule extends LogicsModule {
                     "Без цены",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroup);
+
+            RegularFilterGroupEntity filterPriceGroup = new RegularFilterGroupEntity(genID());
+            filterPriceGroup.addFilter(new RegularFilterEntity(genID(),
+                    new CompareFilterEntity(addPropertyObject(priceInImporterFreightSku, objImporter, objFreight, objSku), Compare.EQUALS, addPropertyObject(baseLM.vzero)),
+                    "С нулевой ценой",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            addRegularFilterGroup(filterPriceGroup);
 
             addHintsIncrementTable(priceFullKgImporterFreightArticle, minPriceRateImporterFreightArticle,
                     sumInOutImporterFreightArticle, sumInOutImporterFreightBrandSupplier, sumPercentImporterFreightBrandSupplier, sumInOutFreightArticle,
