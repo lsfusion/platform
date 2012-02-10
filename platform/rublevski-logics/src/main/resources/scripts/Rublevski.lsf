@@ -216,9 +216,9 @@ META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, capti
 END
 
 // ----------------------------------- Отображение атрибутов товаров по свойству товарной группы ------------------------------------------ //
-META metaCodeShowItemAttribute (attribute, caption)
+META metaCodeShowItemAttribute (attribute, caption, group)
 
-show##attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN baseGroup;
+show##attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN group;
 toShow##attribute caption (item) = show##attribute##ItemGroup(itemGroupSku(item));
 show##attribute##ItemGroup(itemGroup) <- TRUE ON ASSIGN itemGroup IS itemGroup;
 
@@ -362,6 +362,7 @@ GROUP retailGroup 'Ценовые характеристики' : publicGroup;
 GROUP expiryGroup 'Сроки годности' : publicGroup;
 GROUP equipmentGroup 'Кассы/весы/ценники' : publicGroup;
 GROUP manufactoryGroup 'Собственное производство' : publicGroup;
+GROUP displayGroup 'Свойства для отображения' : baseGroup;
 
 
 CLASS ABSTRACT sku 'SKU' : named;
@@ -382,76 +383,76 @@ nameItemGroupSku 'Группа товара' = name(itemGroupSku(sku)) IN baseGr
 
 //descriptionGroup
 captionItem 'Наименование' = DATA STRING[100](item) IN descriptionGroup;
-@metaCodeShowItemAttribute(Caption, 'Показывать наименование');
+@metaCodeShowItemAttribute(Caption, 'Показывать наименование', displayGroup);
 
 brandItem = DATA brand(item);
 nameBrandItem 'Бренд' (item) = name(brandItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(Brand, 'Показывать бренд');
+@metaCodeShowItemAttribute(Brand, 'Показывать бренд', displayGroup);
 
 typeItemItem = DATA typeItem(item) IN idGroup;
 nameTypeItemItem 'Вид' = name(typeItemItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(Type, 'Показывать тип');
+@metaCodeShowItemAttribute(Type, 'Показывать тип', displayGroup);
 
 unitOfMeasureItem = DATA unitOfMeasure (item) IN idGroup;
 shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortName(unitOfMeasureItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(UnitOfMeasure, 'Показывать ед.измерения');
+@metaCodeShowItemAttribute(UnitOfMeasure, 'Показывать ед.измерения', displayGroup);
 
 sortItem = DATA sort(item) IN idGroup;
 nameSortItem 'Сорт/категория товара' = name(sortItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(Sort, 'Показывать сорт');
+@metaCodeShowItemAttribute(Sort, 'Показывать сорт', displayGroup);
 
 packItem = DATA pack(item) IN idGroup;
 shortNamePackItem 'Упаковка' = shortName(packItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(Pack, 'Показывать упаковку');
+@metaCodeShowItemAttribute(Pack, 'Показывать упаковку', displayGroup);
 
 specialtyItem = DATA specialty(item) IN idGroup;
 shortNameSpecialtyItem 'Особенности' = shortName(specialtyItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(Specialty, 'Показывать особенности');
+@metaCodeShowItemAttribute(Specialty, 'Показывать особенности', displayGroup);
 
 sizeItem = DATA size(item) IN idGroup;
 shortNameSizeItem 'Размер/калибр' = shortName(sizeItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(Size, 'Показывать размер');
+@metaCodeShowItemAttribute(Size, 'Показывать размер', displayGroup);
 
 colorItem = DATA color (item) IN idGroup;
 nameColorItem 'Цвет' = name(colorItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(Color, 'Показывать цвет');
+@metaCodeShowItemAttribute(Color, 'Показывать цвет', displayGroup);
 
 tasteItem = DATA taste (item) IN idGroup;
 nameTasteItem 'Вкус' = name(tasteItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(Taste, 'Показывать вкус');
+@metaCodeShowItemAttribute(Taste, 'Показывать вкус', displayGroup);
 
 hallmarkItem 'Отличительный признак (особенности)' = DATA STRING[100] (item) IN descriptionGroup;
-@metaCodeShowItemAttribute(Hallmark, 'Показывать отличительный признак');
+@metaCodeShowItemAttribute(Hallmark, 'Показывать отличительный признак', displayGroup);
 
 articleItem 'Артикул поставщика/производителя' = DATA STRING[100] (item) IN descriptionGroup;
 
 coolingDegreeItem 'Степень охлаждения (ИД)' = DATA coolingDegree (item) IN idGroup;
 nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegreeItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(CoolingDegree, 'Показывать степень охлаждения');
+@metaCodeShowItemAttribute(CoolingDegree, 'Показывать степень охлаждения', displayGroup);
 
 countryItem = DATA country (item) IN idGroup;
 nameCountryItem 'Страна' = name(countryItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(Country, 'Показывать страну');
+@metaCodeShowItemAttribute(Country, 'Показывать страну', displayGroup);
 
 isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN descriptionGroup;
 hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN descriptionGroup;
 
 formItemItem = DATA formItem (item) IN idGroup;
 nameFormItemItem 'Форма товара (особенности нарезки/разделки)' = name(formItemItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(FormItem, 'Показывать форму');
+@metaCodeShowItemAttribute(FormItem, 'Показывать форму', displayGroup);
 
 numberInPackItem = DATA numberInPack (item) IN idGroup;
 nameNumberInPackItem 'Кол-во в упаковке' = name(numberInPackItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(NumberInPack, 'Показывать кол-во в упаковке');
+@metaCodeShowItemAttribute(NumberInPack, 'Показывать кол-во в упаковке', displayGroup);
 
 rateWasteItem = DATA rateWaste(item) IN idGroup;
 nameRateWasteItem 'Норма отходов' = name(rateWasteItem(item)) IN descriptionGroup;
 percentRateWasteItem 'Норма отходов,%' = percentRateWaste(rateWasteItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(rateWaste, 'Показывать норму отходов');
+@metaCodeShowItemAttribute(RateWaste, 'Показывать норму отходов', displayGroup);
 
 wareItem = DATA ware (item) IN idGroup;
 nameWareItem 'Посуда' = name(wareItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(Ware, 'Показывать посуду');
+@metaCodeShowItemAttribute(Ware, 'Показывать посуду', displayGroup);
 
 //equipmentGroup
 isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN descriptionGroup;
@@ -1182,6 +1183,7 @@ DESIGN items FROM DEFAULT {
 
     i.box {
         fillHorizontal = 2.0;
+
     }
 }
 
@@ -1203,8 +1205,16 @@ PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentSto
 
 FORM itemGroup 'Товарная группа'
 OBJECTS g=itemGroup FIXED PANEL
-PROPERTIES(g) name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, extSID//, ShowBrandItemGroup
+PROPERTIES(g) name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, extSID
+PROPERTIES(g) showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
+showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup, showCoolingDegreeItemGroup, showCountryItemGroup,
+showFormItemItemGroup, showNumberInPackItemGroup, showRateWasteItemGroup, showWareItemGroup
 EDIT itemGroup OBJECT g;
+
+DESIGN itemGroup FROM DEFAULT {
+     g.displayGroup {
+    }
+}
 
 FORM itemGroups 'Товарные группы'
 TREE g=itemGroup PARENT parentItemGroup
