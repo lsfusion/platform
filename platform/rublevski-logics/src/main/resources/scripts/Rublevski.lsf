@@ -1487,8 +1487,9 @@ nameControlSupplierDepartmentStore 'Контролировать ассорти�
 
 @metaCodeNameDoubleObjectDateProperty(sureSupplierDepartmentStore, supplier, departmentStore, 'Обязателен заказ поставщику, ДА/НЕТ', yesNo);
 
-overrideSupplierDepartmentStore(supplier, departmentStore) = UNION OVERRIDE (TRUE IF UNION OVERRIDE emailOrderSupplierDepartmentStore(supplier, departmentStore), contactSupplierDepartmentStore(supplier, departmentStore)),
-                                                                             UNION OVERRIDE controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes , sureSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes;
+overrideSupplierDepartmentStoreDate(supplier, departmentStore, date) = UNION OVERRIDE (TRUE IF UNION OVERRIDE emailOrderSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE, contactSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE),
+                                                                                  controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes AND date IS DATE,
+                                                                                  sureSupplierDepartmentStoreOver(supplier, departmentStore, date) == yesNo.yes;
 
 //dataContractSupplier 'Договор по умолчанию' (supplier) = dataContract(userContractSupplier(supplier));
 defaultContractSupplier(supplier) = GROUP MAX contract AS contract BY supplierContract(contract);
@@ -1523,7 +1524,13 @@ equalsCompanySupplierContract 'Основной договор' (company, suppli
 
 FORM supplier 'Поставщик'
 OBJECTS s=supplier FIXED PANEL
-OBJECTS a=account, c=contractProvider, l=license, d=departmentStore
+TREE treeStore y=STRING[3], t=tradingNetwork, st=storeType, so=store
+OBJECTS a=account, c=contractProvider, l=license, dt=DATE FIXED PANEL, d=departmentStore
+PROPERTIES READONLY OBJVALUE(y), name(t), name(st), name(so)
+FILTERS NOT NULL stringEqualsAll(y)
+FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
+FILTERS NOT NULL inStoreTypeStore (st, so)
+FILTERS NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, so, d)
 PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormaddressLegalEntity, postAddressLegalEntity, showFormpostAddressLegalEntity,
               managerLegalEntity, showFormmanagerLegalEntity, accountantLegalEntity, showFormaccountantLegalEntity,
               phoneLegalEntity, showFormphoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
@@ -1534,7 +1541,10 @@ PROPERTIES(c) dataContract, nameCompanyContract, nameformContract, showFormNamef
               delayContract, showFormdelayContract, requestContract, noteContract, ADDOBJ, delete
 PROPERTIES(l) dataLicense, dateFromLicense, dateToLicense, ADDOBJ, delete   //        tabaccoLicense
 PROPERTIES(d) nameStoreDepartmentStore, name
-PROPERTIES(s,d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore, namesureSupplierDepartmentStore, showFormNamesureSupplierDepartmentStore//nameSureSupplierDepartmentStore, sureSupplierDepartmentStore, showFormsureSupplierDepartmentStore
+PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
+PROPERTIES (s, d, dt) namesureSupplierDepartmentStoreOver HIGHLIGHTIF namesureSupplierDepartmentStoreDate(s, d, dt)
+//PROPERTIES (s, d) showFormNamesureSupplierDepartmentStoreOver
+PROPERTIES(s,d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore, showFormNamesureSupplierDepartmentStoreOver //namesureSupplierDepartmentStore, showFormNamesureSupplierDepartmentStore
 PROPERTIES(s,c) equalsSupplierContract
 PROPERTIES(s,a) equalsLegalEntityAccount
 //PROPERTIES(s,l) equalsLegalEntityLicense
@@ -1542,7 +1552,7 @@ FILTERS NOT NULL inSupplierContract(s, c),
         NOT NULL inSupplierAccount(s, a),
         NOT NULL inSupplierLicense(s, l)
 FILTERGROUP filters9
-    FILTER 'Показывать только с заполненными полями' 'F10' NOT NULL overrideSupplierDepartmentStore(s, d) DEFAULT
+    FILTER 'Показывать только с заполненными полями' 'F10' NOT NULL overrideSupplierDepartmentStoreDate(s, d, dt) DEFAULT
 EDIT supplier OBJECT s;
 
 DESIGN supplier FROM DEFAULT {
@@ -1553,7 +1563,14 @@ DESIGN supplier FROM DEFAULT {
             ADD a.box;
             ADD c.box;
             ADD l.box;
-            ADD d.box;
+            ADD d.box {
+               ADD dt.box BEFORE d.grid.box;
+                   ADD treeStore.box BEFORE d.grid.box;
+                   POSITION treeStore.box TO THE LEFT d.grid.box;
+                   d.grid.box {
+                   fillHorizontal = 3;
+                   };
+            }
     }
    }
 }
