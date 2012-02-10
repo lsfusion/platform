@@ -123,7 +123,7 @@ META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type)
     name##prop caption (object1, object2) = name(prop(object1, object2));
 
     prop##Over caption = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2 AND date IS DATE, prop##Val(object1, object2, date), prop##Date(object1, object2, date);
-    name##prop##Over caption (object1, object2, date) = name(prop##Over(object1, object2, date));
+    name##prop##Over caption (object1, object2, date) = name(prop##Over(object1, object2, date)) FIXEDCHARWIDTH 7;
 
     FORM addName##prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE FIXED PANEL
@@ -154,7 +154,9 @@ META metaCodeTripleObjectDateProperty(prop, object1, object2, object3, caption, 
 
     prop##Date caption = DATA type (object1, object2, object3, DATE);
     date##prop (object1, object2, object3, date) = GROUP MAX dateIn AND prop##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
-    prop caption (object1, object2, object3) = prop##Date(object1, object2, object3, date##prop(object1, object2, object3, currentDate()));
+    prop##Val caption (object1, object2, object3, date) = prop##Date(object1, object2, object3, date##prop(object1, object2, object3, date));
+    prop caption (object1, object2, object3) = prop##Val(object1, object2, object3, currentDate());
+    prop##Over caption = UNION OVERRIDE prop##Val(object1, object2, object3, date), prop##Date(object1, object2, object3, date);
 
     FORM add##prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3  FIXED PANEL, d=DATE FIXED PANEL
@@ -178,6 +180,7 @@ META metaCodeTripleObjectDateProperty(prop, object1, object2, object3, caption, 
     }
 
     showForm##prop caption (object1, object2, object3) = ACTION FORM prop OBJECTS a, b, c MODAL SHORTCUT prop DEFAULT;
+    showForm##prop##Over caption (object1, object2, object3) = ACTION FORM prop OBJECTS a, b, c MODAL SHORTCUT prop##Over;
 
 END
 // -------------------- Свойство объект1-объект2-объект3-дата для yesNo со значением по-умолчанию НЕТ---------------------------- //
@@ -187,9 +190,14 @@ META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, capti
     prop##Date caption = DATA type (object1, object2, object3, DATE);
     name##prop##Date caption (object1, object2, object3, date) = name(prop##Date(object1, object2, object3, date));
     date##prop (object1, object2, object3, date) = GROUP MAX dateIn AND prop##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
+    prop##Val caption (object1, object2, object3, date) = prop##Date(object1, object2, object3, date##prop(object1, object2, object3, date));
     prop caption (object1, object2, object3) = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2 AND  object3 IS object3,
-                                                     prop##Date(object1, object2, object3, date##prop(object1, object2, object3, currentDate()));
+                                                     prop##Val(object1, object2, object3, currentDate());
     name##prop caption (object1, object2, object3) = name(prop(object1, object2, object3));
+
+    prop##Over caption = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2 AND object3 IS object3 AND date IS DATE,
+                                        prop##Val(object1, object2, object3, date), prop##Date(object1, object2, object3, date);
+    name##prop##Over caption (object1, object2, object3, date) = name(prop##Over(object1, object2, object3, date)) FIXEDCHARWIDTH 7;
 
     FORM addName##prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL,  c=object3 FIXED PANEL, d=DATE FIXED PANEL
@@ -213,6 +221,7 @@ META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, capti
     }
 
     showFormName##prop caption (object1, object2, object3) = ACTION FORM name##prop OBJECTS a, b, c MODAL SHORTCUT name##prop DEFAULT;
+    showFormName##prop##Over caption (object1, object2, object3) = ACTION FORM name##prop OBJECTS a, b, c MODAL SHORTCUT name##prop##Over;
 
 END
 
@@ -627,7 +636,7 @@ valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(i
 
 numberInNameItemAttribute 'Порядковый номер в наименовании' = DATA INTEGER (itemAttribute) IN baseGroup;
 
-nameAttributeItem 'Имя' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameItemAttribute(attribute) PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
+nameAttributeItem 'Имя' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameItemAttribute(attribute) IN recognizeGroup PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
 
 // ----------------------------------- Штрих код ------------------------------------------ //
 GROUP barcodeGroup : baseGroup;
@@ -1077,7 +1086,7 @@ TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
 TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 
-@metaCodeNameTripleObjectDateProperty(isSupplierItemDepartment, supplier, item, departmentStore, 'Поставщик', yesNo);
+@metaCodeNameTripleObjectDateProperty(isSupplierItemDepartment, supplier, item, departmentStore, 'Поставляется', yesNo);
 
 @metaCodeTripleObjectDateProperty(priceSupplierItemDepartment, supplier, item, departmentStore, 'Цена поставщика', DOUBLE);
 
@@ -1088,7 +1097,7 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 FORM supplierItemDepartment 'Товар поставщика для подразделения'
 OBJECTS i=item FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier
 PROPERTIES(d) READONLY name, nameStoreDepartmentStore
-PROPERTIES(i) READONLY name
+PROPERTIES(i) READONLY nameAttributeItem
 PROPERTIES(s) READONLY name
 PROPERTIES(s, i, d) nameisSupplierItemDepartment, showFormNameisSupplierItemDepartment,
                     priceSupplierItemDepartment, showFormpriceSupplierItemDepartment,
@@ -1100,13 +1109,13 @@ showFormSupplierItemDepartment 'Свойства по поставщикам' (i
 FORM item 'Товар'
 OBJECTS i=item FIXED PANEL, b=barcode
 TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
-OBJECTS dt=DATE FIXED PANEL, d=departmentStore
+OBJECTS dt=DATE FIXED PANEL, sp=supplier FIXED PANEL, d=departmentStore
 PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
 FILTERS NOT NULL stringEqualsAll(a)
 FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
 FILTERS NOT NULL inStoreTypeStore (st, s)
 FILTERS NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
-PROPERTIES(i) name, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDepartment, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
+PROPERTIES(i) nameAttributeItem, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDepartment, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
  hallmarkItem SHOWIF toShowHallmark(i), articleItem, quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
@@ -1129,20 +1138,18 @@ PROPERTIES(i) nameisPortionBarItem, showFormNameisPortionBarItem,
 PROPERTIES (b) barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
 PROPERTIES (d) name
 PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
-PROPERTIES (i, d, dt) maxReserveItemDepartmentOver HIGHLIGHTIF maxReserveItemDepartmentDate(i, d, dt),
-                  minReserveItemDepartmentOver HIGHLIGHTIF minReserveItemDepartmentDate(i, d, dt),
-                  namebanRevaluationItemDepartmentOver HIGHLIGHTIF namebanRevaluationItemDepartmentDate(i, d, dt),
-                  nameinActionItemDepartmentOver HIGHLIGHTIF nameinActionItemDepartmentDate(i, d, dt),
-                  marginProductionItemDepartmentOver HIGHLIGHTIF marginProductionItemDepartmentDate(i, d, dt),
-                  retailPriceItemDepartmentOver HIGHLIGHTIF retailPriceItemDepartmentDate(i, d, dt),
-                  discountItemDepartmentOver HIGHLIGHTIF discountItemDepartmentDate(i, d, dt)
-PROPERTIES (i, d) showFormmaxReserveItemDepartmentOver,
-                  showFormminReserveItemDepartmentOver,
-                  showFormNamebanRevaluationItemDepartmentOver,
-                  showFormNameinActionItemDepartmentOver,
-                  showFormmarginProductionItemDepartmentOver,
-                  showFormretailPriceItemDepartmentOver,
-                  showFormdiscountItemDepartmentOver
+PROPERTIES (sp) READONLY name
+PROPERTIES nameisSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF nameisSupplierItemDepartmentDate(sp, i, d, dt), showFormNameisSupplierItemDepartmentOver(sp, i, d),
+           namebanSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF namebanSupplierItemDepartmentDate(sp, i, d, dt), showFormNamebanSupplierItemDepartmentOver(sp, i, d),
+           priceSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF priceSupplierItemDepartmentDate(sp, i, d, dt), showFormpriceSupplierItemDepartmentOver(sp, i, d),
+           markupSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF markupSupplierItemDepartmentDate(sp, i, d, dt), showFormmarkupSupplierItemDepartmentOver(sp, i, d)
+PROPERTIES retailPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF retailPriceItemDepartmentDate(i, d, dt), showFormretailPriceItemDepartmentOver(i, d),
+           maxReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF maxReserveItemDepartmentDate(i, d, dt), showFormmaxReserveItemDepartmentOver(i, d),
+           minReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF minReserveItemDepartmentDate(i, d, dt), showFormminReserveItemDepartmentOver(i, d),
+           namebanRevaluationItemDepartmentOver(i, d, dt) HIGHLIGHTIF namebanRevaluationItemDepartmentDate(i, d, dt), showFormNamebanRevaluationItemDepartmentOver(i, d),
+           nameinActionItemDepartmentOver(i, d, dt) HIGHLIGHTIF nameinActionItemDepartmentDate(i, d, dt), showFormNameinActionItemDepartmentOver(i, d),
+           marginProductionItemDepartmentOver(i, d, dt) HIGHLIGHTIF marginProductionItemDepartmentDate(i, d, dt), showFormmarginProductionItemDepartmentOver(i, d),
+           discountItemDepartmentOver(i, d, dt) HIGHLIGHTIF discountItemDepartmentDate(i, d, dt), showFormdiscountItemDepartmentOver(i, d)
 
 FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
 FILTERS NOT NULL inStoreTypeStore (st, s)
@@ -1179,6 +1186,7 @@ DESIGN item FROM DEFAULT {
             ADD d.box {
                 fillVertical = 3.0;
                 ADD dt.box BEFORE d.grid.box;
+                ADD sp.box BEFORE d.grid.box;
                 ADD treeStore.box BEFORE d.grid.box;
                 POSITION treeStore.box TO THE LEFT d.grid.box;
                 POSITION d.grid.box TO THE LEFT d.panel;
