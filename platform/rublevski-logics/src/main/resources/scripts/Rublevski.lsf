@@ -79,12 +79,12 @@ META metaCodeNameObjectDateProperty(prop, object, caption, type, group)
 END
 
 // ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
-META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type)
+META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type, group)
 
-    prop##Date caption = DATA type (object1, object2, DATE);
+    prop##Date caption = DATA type (object1, object2, DATE) IN group;
     date##prop (object1, object2, date) = GROUP MAX dateIn AND prop##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
     prop##Val caption (object1, object2, date) = prop##Date(object1, object2, date##prop(object1, object2, date));
-    prop caption (object1, object2) = prop##Val(object1, object2, currentDate());
+    prop caption (object1, object2) = prop##Val(object1, object2, currentDate()) IN group;
     prop##Over caption = UNION OVERRIDE prop##Val(object1, object2, date), prop##Date(object1, object2, date);
 
     FORM add##prop caption
@@ -112,15 +112,15 @@ META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type)
 END
 // ----------------------------------- Свойство объект1-объект2-дата для yesNo со значением по-умолчанию НЕТ------------------------------------------ //
 
-META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type)
+META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type, group)
 
-    prop##Date caption = DATA type (object1, object2, DATE);
+    prop##Date caption = DATA type (object1, object2, DATE) IN group;
     name##prop##Date caption (object1, object2, date) = name(prop##Date(object1, object2, date));
     date##prop (object1, object2, date) = GROUP MAX dateIn AND prop##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
     prop##Val caption (object1, object2, date) = prop##Date(object1, object2, date##prop(object1, object2, date));
     prop caption (object1, object2) = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2,
                                                      prop##Date(object1, object2, date##prop(object1, object2, currentDate()));
-    name##prop caption (object1, object2) = name(prop(object1, object2));
+    name##prop caption (object1, object2) = name(prop(object1, object2)) IN group;
 
     prop##Over caption = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2 AND date IS DATE, prop##Val(object1, object2, date), prop##Date(object1, object2, date);
     name##prop##Over caption (object1, object2, date) = name(prop##Over(object1, object2, date)) FIXEDCHARWIDTH 7;
@@ -150,12 +150,12 @@ META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type)
 END
 
 // ----------------------------------- Свойство объект1-объект2-объект3-дата------------------------------------------ //
-META metaCodeTripleObjectDateProperty(prop, object1, object2, object3, caption, type)
+META metaCodeTripleObjectDateProperty(prop, object1, object2, object3, caption, type, group)
 
-    prop##Date caption = DATA type (object1, object2, object3, DATE);
+    prop##Date caption = DATA type (object1, object2, object3, DATE) IN group;
     date##prop (object1, object2, object3, date) = GROUP MAX dateIn AND prop##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
     prop##Val caption (object1, object2, object3, date) = prop##Date(object1, object2, object3, date##prop(object1, object2, object3, date));
-    prop caption (object1, object2, object3) = prop##Val(object1, object2, object3, currentDate());
+    prop caption (object1, object2, object3) = prop##Val(object1, object2, object3, currentDate()) IN group;
     prop##Over caption = UNION OVERRIDE prop##Val(object1, object2, object3, date), prop##Date(object1, object2, object3, date);
 
     FORM add##prop caption
@@ -185,15 +185,15 @@ META metaCodeTripleObjectDateProperty(prop, object1, object2, object3, caption, 
 END
 // -------------------- Свойство объект1-объект2-объект3-дата для yesNo со значением по-умолчанию НЕТ---------------------------- //
 
-META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, caption, type)
+META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, caption, type, group)
 
-    prop##Date caption = DATA type (object1, object2, object3, DATE);
+    prop##Date caption = DATA type (object1, object2, object3, DATE) IN group;
     name##prop##Date caption (object1, object2, object3, date) = name(prop##Date(object1, object2, object3, date));
     date##prop (object1, object2, object3, date) = GROUP MAX dateIn AND prop##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
     prop##Val caption (object1, object2, object3, date) = prop##Date(object1, object2, object3, date##prop(object1, object2, object3, date));
     prop caption (object1, object2, object3) = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2 AND  object3 IS object3,
                                                      prop##Val(object1, object2, object3, currentDate());
-    name##prop caption (object1, object2, object3) = name(prop(object1, object2, object3));
+    name##prop caption (object1, object2, object3) = name(prop(object1, object2, object3)) IN group;
 
     prop##Over caption = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2 AND object3 IS object3 AND date IS DATE,
                                         prop##Val(object1, object2, object3, date), prop##Date(object1, object2, object3, date);
@@ -366,14 +366,16 @@ PROPERTIES(r) name, percentRateWaste;
 
 // ----------------------------------- Товар ------------------------------------------ //
 GROUP descriptionGroup 'Общее описание' : baseGroup;
-GROUP sizeGroup 'Физические характеристики' : publicGroup;
+GROUP sizeGroup 'Ячеестое хранение' : publicGroup;
 GROUP substanceGroup 'Пищевые характеристики' : publicGroup;
-GROUP retailGroup 'Ценовые характеристики' : publicGroup;
-GROUP expiryGroup 'Сроки годности' : publicGroup;
-GROUP equipmentGroup 'Кассы/весы/ценники' : publicGroup;
-GROUP manufactoryGroup 'Собственное производство' : publicGroup;
+GROUP retailGroup 'Ценообразование' : publicGroup;
+GROUP expiryGroup 'Контроль сроков годности' : publicGroup;
+GROUP equipmentGroup 'Внешние устройства' : publicGroup;
+GROUP manufactoryGroup 'Производство' : publicGroup;
+GROUP orderGroup 'Заказ' : publicGroup;
+GROUP barGroup 'Бар' : publicGroup;
+GROUP documentGroup 'Для документов' : publicGroup;
 GROUP displayGroup 'Свойства для отображения' : baseGroup;
-
 
 CLASS ABSTRACT sku 'SKU' : named;
 CLASS item 'Товар' : sku;
@@ -444,8 +446,8 @@ countryItem = DATA country (item) IN idGroup;
 nameCountryItem 'Страна' = name(countryItem(item)) IN descriptionGroup;
 @metaCodeShowItemAttribute(Country, 'Показывать страну', displayGroup);
 
-isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN descriptionGroup;
-hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN descriptionGroup;
+isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN manufactoryGroup;
+hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN documentGroup;
 
 formItemItem = DATA formItem (item) IN idGroup;
 nameFormItemItem 'Форма товара (особенности нарезки/разделки)' = name(formItemItem(item)) IN descriptionGroup;
@@ -461,48 +463,48 @@ percentRateWasteItem 'Норма отходов,%' = percentRateWaste(rateWasteI
 @metaCodeShowItemAttribute(RateWaste, 'Показывать норму отходов', displayGroup);
 
 wareItem = DATA ware (item) IN idGroup;
-nameWareItem 'Посуда' = name(wareItem(item)) IN descriptionGroup;
+nameWareItem 'Посуда' = name(wareItem(item)) IN retailGroup;
 @metaCodeShowItemAttribute(Ware, 'Показывать посуду', displayGroup);
 
 //equipmentGroup
-isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN descriptionGroup;
-isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN descriptionGroup;
-compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN descriptionGroup;
+isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN equipmentGroup;
+isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN equipmentGroup;
+compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
 tagItem 'Ценник (ИД)' = DATA tag (item) IN idGroup;
-nameTagItem 'Ценник' = name(tagItem(item)) IN retailGroup;
-multiplierItem 'Множитель для печати ценника' = DATA DOUBLE (item) IN retailGroup;
-isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN descriptionGroup;
-isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN descriptionGroup;
-passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN descriptionGroup;
+nameTagItem 'Ценник' = name(tagItem(item)) IN equipmentGroup;
+multiplierItem 'Множитель для печати ценника' = DATA DOUBLE (item) IN equipmentGroup;
+isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN equipmentGroup;
+isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN equipmentGroup;
+passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equipmentGroup;
 
 //substanceGroup
-percentFatItem '% жирности' =  DATA DOUBLE (item) IN substanceGroup;
-percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN substanceGroup;
-nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN substanceGroup;
-energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN substanceGroup;
-fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
-carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
-proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
-isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGroup;
+percentFatItem '% жирности' =  DATA DOUBLE (item) IN descriptionGroup;
+percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN descriptionGroup;
+nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN equipmentGroup;
+energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN equipmentGroup;
+fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN equipmentGroup;
+carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN equipmentGroup;
+proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN equipmentGroup;
+isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN equipmentGroup;
 
 //sizeGroup
 lengthItem 'Длина товара' = DATA INTEGER (item) IN sizeGroup;
 widthItem 'Ширина товара' = DATA INTEGER (item) IN sizeGroup;
 heightItem 'Высота товара' = DATA INTEGER (item) IN sizeGroup;
-grossWeightItem 'Вес брутто товара' = DATA DOUBLE (item) IN sizeGroup;
+grossWeightItem 'Вес брутто товара' = DATA DOUBLE (item) IN manufactoryGroup;
 lengthPackItem 'Длина упаковки' = DATA INTEGER (item) IN sizeGroup;
 widthPackItem 'Ширина упаковки' = DATA INTEGER (item) IN sizeGroup;
 heightPackItem 'Высота упаковки' = DATA DOUBLE (item) IN sizeGroup;
-grossWeightPackItem 'Вес брутто упаковки' = DATA DOUBLE (item) IN sizeGroup;
+grossWeightPackItem 'Вес брутто упаковки' = DATA DOUBLE (item) IN manufactoryGroup;
 volumeItem 'Объём' = DATA DOUBLE (item) IN sizeGroup;
-netWeightItem 'Вес нетто' = DATA DOUBLE (item) IN sizeGroup;
-quantityPackItem 'Количество в грузовом месте' = DATA DOUBLE (item) IN sizeGroup;
+netWeightItem 'Вес нетто' = DATA DOUBLE (item) IN orderGroup;
+quantityPackItem 'Количество в грузовом месте' = DATA DOUBLE (item) IN orderGroup;
 
 //retailGroup
-minResourceItem 'Минимальный запас' = DATA INTEGER (item) IN retailGroup;
-minReserveItem 'Минимальный резерв' = DATA INTEGER (item) IN retailGroup;
-bonusReturnItem 'Уценка (бонус) по товару при возврате поставщику' = DATA DOUBLE (item) IN retailGroup;
-nameReturnItem 'Наименование для уценки, бонуса по товару в возврат' = DATA STRING[200] (item) IN retailGroup;
+minResourceItem 'Минимальный запас' = DATA INTEGER (item) IN orderGroup;
+minReserveItem 'Минимальный резерв' = DATA INTEGER (item) IN orderGroup;
+bonusReturnItem 'Уценка (бонус) по товару при возврате поставщику' = DATA DOUBLE (item) IN documentGroup;
+nameReturnItem 'Наименование для уценки, бонуса по товару в возврат' = DATA STRING[200] (item) IN documentGroup;
 quantityDiscountItem 'Количество товара, при котором предост-ся скидка' = DATA INTEGER (item) IN retailGroup;
 fixPriceItem 'Фиксированная цена при соотв.типе скидки' = DATA INTEGER (item) IN retailGroup;
 isFixPriceItem 'Товар с фиксированной ценой' = DATA BOOLEAN (item) IN retailGroup;
@@ -511,9 +513,9 @@ oldPriceItem 'Старая цена для печати на ценник' = DAT
 minTradeAllowanceItem 'MIN допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
 maxTradeAllowanceItem 'MAX допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
 minAllowedRetailPriceItem 'MIN допустимая розн.цена' = DATA INTEGER (item) IN retailGroup;
-bonusItem 'Бонус получаемый по товару' = DATA DOUBLE (item) IN retailGroup;
+bonusItem 'Бонус получаемый по товару' = DATA DOUBLE (item) IN documentGroup;
 percentWholesaleMarkItem '% оптовой надбавки' = DATA DOUBLE (item) IN retailGroup;
-banSailItem 'Запрет продаж товара в указанное время' = DATA STRING[200] (item) IN retailGroup;
+banSailItem 'Запрет продаж товара в указанное время' = DATA STRING[200] (item) IN equipmentGroup;
 
 
 //manufactoryGroup
@@ -527,13 +529,13 @@ standartItem 'Стандарт изготовления изделия (СТБ �
 normOutItem 'Норма выхода для печати в меню и калькуляцию' = DATA STRING[100] (item) IN manufactoryGroup;
 groupMenuItem 'Группа для печати в меню' = DATA STRING[100] (item) IN manufactoryGroup;
 isCutedItem 'Товар разрубается/прорабатывается' = DATA BOOLEAN (item) IN manufactoryGroup;
-storageTemperatureItem 'Температура хранения' =  DATA STRING[100] (item) IN manufactoryGroup;
+storageTemperatureItem 'Температура хранения' =  DATA STRING[100] (item) IN equipmentGroup;
 
 //expiryGroup
-controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN manufactoryGroup;
-daysExpiryItem 'Срок годности в днях' = DATA DOUBLE (item) IN manufactoryGroup;
-daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA DOUBLE (item) IN manufactoryGroup;
-hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN manufactoryGroup;
+controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN expiryGroup;
+daysExpiryItem 'Срок годности в днях' = DATA DOUBLE (item) IN expiryGroup;
+daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA DOUBLE (item) IN expiryGroup;
+hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
 
 rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) IN idGroup;
 
@@ -673,8 +675,8 @@ PROPERTIES(b) barcode;
 // ----------------------------------- Компоненты ------------------------------------------ //
 CLASS component 'Компонент' : sku;
 
-nettoBruttoCoeffComponent 'Сезонный коэффициент пересчета сырья из нетто в брутто' (component) = DATA DOUBLE (component) IN baseGroup;
-percentHumidityFlourDepartmentStoreComponent '% влажности муки' = DATA DOUBLE (departmentStore, component) IN baseGroup;
+nettoBruttoCoeffComponent 'Сезонный коэффициент пересчета сырья из нетто в брутто' (component) = DATA DOUBLE (component) IN manufactoryGroup;
+percentHumidityFlourDepartmentStoreComponent '% влажности муки' = DATA DOUBLE (departmentStore, component) IN manufactoryGroup;
 
 FORM component 'Компонент'
 OBJECTS c=component FIXED PANEL
@@ -910,38 +912,38 @@ inRawDepartmentStore(manufactory, departmentStore) = storeDepartmentStore(manufa
 //----------------------------------- Для товара и подразделения ------------------------------------------//
 additionPriceDepartmentStoreItem 'Торговая надбавка в рублях' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 boundCertificateDepartmentStoreItem 'Сертификат / удостоверение обязательны для товара?' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
-maxAllowedRetailPriceDepartmentStoreItem 'MAX допустимая розн.цена' = DATA INTEGER (departmentStore, item) IN baseGroup;
-netWeightManufacturerDepartmentStoreItem 'Вес нетто продукта для производства' = DATA DOUBLE (departmentStore, item) IN baseGroup;
+maxAllowedRetailPriceDepartmentStoreItem 'MAX допустимая розн.цена' = DATA INTEGER (departmentStore, item) IN retailGroup;
+netWeightManufacturerDepartmentStoreItem 'Вес нетто продукта для производства' = DATA DOUBLE (departmentStore, item) IN manufactoryGroup;
 statusCashDepartmentStoreItem 'Статус товара на кассах (ИД)' = DATA itemStatus (departmentStore, item) IN idGroup;
-nameStatusCashDepartmentStoreItem 'Статус товара на кассах' = name(statusCashDepartmentStoreItem (departmentStore, item)) IN baseGroup;
+nameStatusCashDepartmentStoreItem 'Статус товара на кассах' = name(statusCashDepartmentStoreItem (departmentStore, item)) IN equipmentGroup;
 
 dateManufactureDepartmentStoreItem 'Дата изготовления' = DATA DATE (departmentStore, item) IN baseGroup;
 dateFitToDepartmentStoreItem 'Годен до' = DATA DATE (departmentStore, item) IN baseGroup;
 fromDateDeliveryDepartmentStoreItem 'Дату [Годен до] рассчитывать от даты поставки?' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
-banSaleDepartmentStoreItem 'Запрет продаж товара в подразделении' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
+banSaleDepartmentStoreItem 'Запрет продаж товара в подразделении' = DATA BOOLEAN (departmentStore, item) IN equipmentGroup;
 banMovementDepartmentStoreItem 'Запрет на внутреннее перемещение товара' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
 reserveDepartmentStoreItem 'Резерв по товару' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 
-topDepartmentStoreItem 'Топ' = DATA DOUBLE (departmentStore, item) IN baseGroup;
-quantityRealizationDepartmentStoreItem 'Продаж в день' = DATA DOUBLE (departmentStore, item) IN baseGroup;
-balanceDepartmentStoreItem 'Текущий остаток' = DATA DOUBLE (departmentStore, item) IN baseGroup;
+topDepartmentStoreItem 'Топ' = DATA DOUBLE (departmentStore, item) IN orderGroup;
+quantityRealizationDepartmentStoreItem 'Продаж в день' = DATA DOUBLE (departmentStore, item) IN orderGroup;
+balanceDepartmentStoreItem 'Текущий остаток' = DATA DOUBLE (departmentStore, item) IN orderGroup;
 
 //------------------------------------ Товар с историей -------------------------------------------------------------//
 GROUP historyGroup 'Изменяемые характеристики' : baseGroup;
 
-@metaCodeNameObjectDateProperty(isPortionBarItem, item, 'Порционный товар для бара', yesNo, historyGroup);
+@metaCodeNameObjectDateProperty(isPortionBarItem, item, 'Порционный товар для бара', yesNo, barGroup);
 
-@metaCodeNameObjectDateProperty(banDiscountItem, item, 'Запретить скидки по товару', yesNo, historyGroup);
+@metaCodeNameObjectDateProperty(banDiscountItem, item, 'Запретить скидки по товару', yesNo, retailGroup);
 
-@metaCodeObjectDateProperty(coefficientNetGrossItem, item, 'Сезонный коэффициент пересчета сырья из нетто в брутто', DOUBLE, historyGroup);
+@metaCodeObjectDateProperty(coefficientNetGrossItem, item, 'Сезонный коэффициент пересчета сырья из нетто в брутто', DOUBLE, manufactoryGroup);
 
 //defaultCoefficientNetGrossItem(item) = GROUP MAX coefficientNetGrossItem BY item;
 
-@metaCodeObjectDateProperty(rateNaturalLossItem, item, 'Норма естественной убыли,%', DOUBLE, historyGroup);
+@metaCodeObjectDateProperty(rateNaturalLossItem, item, 'Норма естественной убыли,%', DOUBLE, descriptionGroup);
 
 //@metaCodeObjectDateProperty(NDSSupplierItem, item, 'НДС поставщика,%', DOUBLE, historyGroup);
 
-@metaCodeObjectDateProperty(importerPriceItem, item, 'Цена импортёра', DOUBLE, historyGroup);
+@metaCodeObjectDateProperty(importerPriceItem, item, 'Цена импортёра', DOUBLE, retailGroup);
 
 //---------------------------- Налоги ----------------------------------------//
 
@@ -1071,28 +1073,28 @@ FILTERS NOT NULL inTaxRange(t, ra),
 
 TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
-@metaCodeDoubleObjectDateProperty(maxReserveItemDepartment, item, departmentStore, 'Максимально допустимый товарный запас в днях', DOUBLE);
-@metaCodeDoubleObjectDateProperty(minReserveItemDepartment, item, departmentStore, 'Минимально допустимый товарный запас в днях', DOUBLE);
+@metaCodeDoubleObjectDateProperty(maxReserveItemDepartment, item, departmentStore, 'Максимально допустимый товарный запас в днях', DOUBLE, orderGroup);
+@metaCodeDoubleObjectDateProperty(minReserveItemDepartment, item, departmentStore, 'Минимально допустимый товарный запас в днях', DOUBLE, orderGroup);
 
-@metaCodeNameDoubleObjectDateProperty(banRevaluationItemDepartment, item, departmentStore, 'Запрет на переоценку', yesNo);
+@metaCodeNameDoubleObjectDateProperty(banRevaluationItemDepartment, item, departmentStore, 'Запрет на переоценку', yesNo, retailGroup);
 
-@metaCodeNameDoubleObjectDateProperty(inActionItemDepartment, item, departmentStore, 'Товар акции', yesNo);
+@metaCodeNameDoubleObjectDateProperty(inActionItemDepartment, item, departmentStore, 'Товар акции', yesNo, retailGroup);
 
-@metaCodeDoubleObjectDateProperty(marginProductionItemDepartment, item, departmentStore, 'Наценка производства', DOUBLE);
+@metaCodeDoubleObjectDateProperty(marginProductionItemDepartment, item, departmentStore, 'Наценка производства', DOUBLE, retailGroup);
 
-@metaCodeDoubleObjectDateProperty(retailPriceItemDepartment, item, departmentStore, 'Розничная цена', DOUBLE);
+@metaCodeDoubleObjectDateProperty(retailPriceItemDepartment, item, departmentStore, 'Розничная цена', DOUBLE, retailGroup);
 
-@metaCodeDoubleObjectDateProperty(discountItemDepartment, item, departmentStore, 'Скидка для товара', STRING[100]);
+@metaCodeDoubleObjectDateProperty(discountItemDepartment, item, departmentStore, 'Скидка для товара', STRING[100], retailGroup);
 
 TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 
-@metaCodeNameTripleObjectDateProperty(isSupplierItemDepartment, supplier, item, departmentStore, 'Поставляется', yesNo);
+@metaCodeNameTripleObjectDateProperty(isSupplierItemDepartment, supplier, item, departmentStore, 'Поставщик', yesNo, orderGroup);
 
-@metaCodeTripleObjectDateProperty(priceSupplierItemDepartment, supplier, item, departmentStore, 'Цена поставщика', DOUBLE);
+@metaCodeTripleObjectDateProperty(priceSupplierItemDepartment, supplier, item, departmentStore, 'Цена поставщика', DOUBLE, retailGroup);
 
-@metaCodeTripleObjectDateProperty(markupSupplierItemDepartment, supplier, item, departmentStore, 'Торговая надбавка', DOUBLE);
+@metaCodeTripleObjectDateProperty(markupSupplierItemDepartment, supplier, item, departmentStore, 'Торговая надбавка', DOUBLE, retailGroup);
 
-@metaCodeNameTripleObjectDateProperty(banSupplierItemDepartment, supplier, item, departmentStore, 'Запретить закупку', yesNo);
+@metaCodeNameTripleObjectDateProperty(banSupplierItemDepartment, supplier, item, departmentStore, 'Запретить закупку', yesNo, orderGroup);
 
 FORM supplierItemDepartment 'Товар поставщика для подразделения'
 OBJECTS i=item FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier
@@ -1168,21 +1170,21 @@ DESIGN item FROM DEFAULT {
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
             }
-            //ADD i.equipmentGroup;
-            ADD i.substanceGroup;
-            ADD i.manufactoryGroup{
-                title = 'Производство и сроки годности';
+            ADD i.equipmentGroup;
+            ADD manufactory.box{
+                title = 'Для производства и бара';
+                ADD i.manufactoryGroup;
+                ADD i.barGroup;
+                ADD i.expiryGroup;
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
             }
-            //ADD i.expiryGroup{
-            //    fillVertical = 1.0;
-            //    fillHorizontal = 1.0;
-            //}
-            ADD i.historyGroup{
-                fillVertical = 1.0;
-                fillHorizontal = 1.0;
+            ADD order.box{
+                title = 'Для заказов и документов';
+                ADD i.orderGroup;
+                ADD i.documentGroup;
             }
+
             ADD d.box {
                 fillVertical = 3.0;
                 ADD dt.box BEFORE d.grid.box;
@@ -1493,7 +1495,7 @@ controlSupplierDepartmentStore(supplier, departmentStore) = DATA yesNo (supplier
 nameControlSupplierDepartmentStore 'Контролировать ассортимент поставщика, ДА/НЕТ' (supplier, departmentStore) = name(UNION OVERRIDE yesNo.no IF supplier IS supplier AND departmentStore IS departmentStore,
                                                                                                                                 controlSupplierDepartmentStore(supplier, departmentStore)) IN supplierGroup;
 
-@metaCodeNameDoubleObjectDateProperty(sureSupplierDepartmentStore, supplier, departmentStore, 'Обязателен заказ поставщику, ДА/НЕТ', yesNo);
+@metaCodeNameDoubleObjectDateProperty(sureSupplierDepartmentStore, supplier, departmentStore, 'Обязателен заказ поставщику, ДА/НЕТ', yesNo, orderGroup);
 
 overrideSupplierDepartmentStoreDate(supplier, departmentStore, date) = UNION OVERRIDE (TRUE IF UNION OVERRIDE emailOrderSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE, contactSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE),
                                                                                   controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes AND date IS DATE,
@@ -1693,7 +1695,7 @@ FILTERS NOT NULL sumQuantityItemOrderSupplier(o, i);
 
 TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
-@metaCodeDoubleObjectDateProperty(timeTable, supplier, departmentStore, 'Поставка', BOOLEAN);
+@metaCodeDoubleObjectDateProperty(timeTable, supplier, departmentStore, 'Поставка', BOOLEAN, baseGroup);
 
 FORM timeTableDate 'График поставок'
 OBJECTS t=DATE FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier
@@ -2421,6 +2423,7 @@ NAVIGATOR {
             ADD coolingDegree;
             ADD formItem;
             ADD numberInPack;
+            ADD rateWaste;
             ADD addNameisPortionBarItem;
             ADD nameisPortionBarItem;
             ADD addNamebanDiscountItem;
