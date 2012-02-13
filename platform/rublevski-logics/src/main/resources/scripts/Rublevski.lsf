@@ -2357,9 +2357,6 @@ NAVIGATOR {
             ADD suppliers;
             ADD banks;
             ADD assortmentSupplier;
-            ADD orderSuppliers;
-            ADD genTimeTables;
-            ADD timeTableDate;
         }
         NEW equipment 'Оборудование' {
             ADD groupsCash;
@@ -2376,6 +2373,14 @@ NAVIGATOR {
         }
         NEW pricing 'Ценообразование'{
             ADD taxes;
+        }
+    }
+
+    NEW processes 'Бизнес-процессы' TO formsToolbar{
+        NEW orders 'Заказы' {
+            ADD orderSuppliers;
+            ADD genTimeTables;
+            ADD timeTableDate;
         }
     }
 
@@ -2486,6 +2491,7 @@ NAVIGATOR {
             ADD timeTable;
             ADD cashReport;
             ADD namediscount;
+            ADD rateWaste;
         }
         ADD importData;
     }
