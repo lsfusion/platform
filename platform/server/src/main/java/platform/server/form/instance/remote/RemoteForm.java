@@ -26,8 +26,6 @@ import platform.interop.form.RemoteFormInterface;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
-import platform.server.classes.StringClass;
-import platform.server.data.type.ObjectType;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
 import platform.server.form.entity.ObjectEntity;
@@ -43,7 +41,6 @@ import platform.server.logics.property.Property;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.DataSession;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -498,96 +495,108 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private List<ClientAction> actions = new ArrayList<ClientAction>();
     private ObjectInstance updateCurrentClass = null;
 
-    @Pausable
     public RemoteChanges changePropertyDraw(final int propertyID, final byte[] columnKey, final byte[] object, final boolean all, final boolean aggValue) throws RemoteException {
-        try {
-            PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-            Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
-            actions.addAll(form.changeProperty(propertyDraw, keys, deserializeObject(object), this, all, aggValue));
+        return executePausableInvocation(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
+                    Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
+                    actions.addAll(form.changeProperty(propertyDraw, keys, deserializeObject(object), RemoteForm.this, all, aggValue));
 
-            if (logger.isInfoEnabled()) {
-                logger.info(String.format("changePropertyDraw: [ID: %1$d, SID: %2$s, all?: %3$s] = %4$s", propertyDraw.getID(), propertyDraw.getsID(), all, deserializeObject(object)));
-                if (keys.size() > 0) {
-                    logger.info("   columnKeys: ");
-                    for (Map.Entry<ObjectInstance, DataObject> entry : keys.entrySet()) {
-                        logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
-                    }
-                }
+                    if (logger.isInfoEnabled()) {
+                        logger.info(String.format("changePropertyDraw: [ID: %1$d, SID: %2$s, all?: %3$s] = %4$s", propertyDraw.getID(), propertyDraw.getsID(), all, deserializeObject(object)));
+                        if (keys.size() > 0) {
+                            logger.info("   columnKeys: ");
+                            for (Map.Entry<ObjectInstance, DataObject> entry : keys.entrySet()) {
+                                logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                            }
+                        }
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("   current object's values: ");
-                    for (ObjectInstance obj : form.getObjects()) {
-                        logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("   current object's values: ");
+                            for (ObjectInstance obj : form.getObjects()) {
+                                logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                            }
+                        }
                     }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return getRemoteChanges();
+        });
     }
 
-    @Pausable
     public RemoteChanges groupChangePropertyDraw(final int mainID, final byte[] mainColumnKey, final int getterID, final byte[] getterColumnKey) throws RemoteException {
-        try {
-            PropertyDrawInstance mainProperty = form.getPropertyDraw(mainID);
-            PropertyDrawInstance getterProperty = form.getPropertyDraw(getterID);
+        return executePausableInvocation(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    PropertyDrawInstance mainProperty = form.getPropertyDraw(mainID);
+                    PropertyDrawInstance getterProperty = form.getPropertyDraw(getterID);
 
-            Map<ObjectInstance, DataObject> mainKeys = deserializePropertyKeys(mainProperty, mainColumnKey);
-            Map<ObjectInstance, DataObject> getterKeys = deserializePropertyKeys(getterProperty, getterColumnKey);
-            actions.addAll(
-                    form.changeProperty(mainProperty, mainKeys, getterProperty, getterKeys, this, true, false)
-            );
+                    Map<ObjectInstance, DataObject> mainKeys = deserializePropertyKeys(mainProperty, mainColumnKey);
+                    Map<ObjectInstance, DataObject> getterKeys = deserializePropertyKeys(getterProperty, getterColumnKey);
+                    actions.addAll(
+                            form.changeProperty(mainProperty, mainKeys, getterProperty, getterKeys, RemoteForm.this, true, false)
+                    );
 
-            if (logger.isInfoEnabled()) {
-                logger.info(String.format("groupChangePropertyDraw: [mainID: %1$d, mainSID: %2$s, getterID: %3$d, getterSID: %4$s]",
-                                          mainProperty.getID(), mainProperty.getsID(),
-                                          getterProperty.getID(), getterProperty.getsID()));
-                if (mainKeys.size() > 0) {
-                    logger.info("   mainColumnKeys: ");
-                    for (Map.Entry<ObjectInstance, DataObject> entry : mainKeys.entrySet()) {
-                        logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                    if (logger.isInfoEnabled()) {
+                        logger.info(String.format("groupChangePropertyDraw: [mainID: %1$d, mainSID: %2$s, getterID: %3$d, getterSID: %4$s]",
+                                                  mainProperty.getID(), mainProperty.getsID(),
+                                                  getterProperty.getID(), getterProperty.getsID()));
+                        if (mainKeys.size() > 0) {
+                            logger.info("   mainColumnKeys: ");
+                            for (Map.Entry<ObjectInstance, DataObject> entry : mainKeys.entrySet()) {
+                                logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                            }
+                        }
+
+                        if (getterKeys.size() > 0) {
+                            logger.info("   getterColumnKeys: ");
+                            for (Map.Entry<ObjectInstance, DataObject> entry : getterKeys.entrySet()) {
+                                logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                            }
+                        }
+
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("   current object's values: ");
+                            for (ObjectInstance obj : form.getObjects()) {
+                                logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                            }
+                        }
                     }
-                }
-
-                if (getterKeys.size() > 0) {
-                    logger.info("   getterColumnKeys: ");
-                    for (Map.Entry<ObjectInstance, DataObject> entry : getterKeys.entrySet()) {
-                        logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
-                    }
-                }
-
-                if (logger.isDebugEnabled()) {
-                    logger.debug("   current object's values: ");
-                    for (ObjectInstance obj : form.getObjects()) {
-                        logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
-                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return getRemoteChanges();
+        });
     }
 
-    @Pausable
     public RemoteChanges pasteExternalTable(final List<Integer> propertyIDs, final List<List<Object>> table) throws RemoteException {
-        try {
-            form.pasteExternalTable(propertyIDs, table);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return getRemoteChanges();
+        return executePausableInvocation(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    form.pasteExternalTable(propertyIDs, table);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
-    @Pausable
     public RemoteChanges pasteMulticellValue(final Map<Integer, List<Map<Integer, Object>>> cells, final Object value) throws RemoteException {
-        try {
-            form.pasteMulticellValue(cells, value);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return getRemoteChanges();
+        return executePausableInvocation(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    form.pasteMulticellValue(cells, value);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     public boolean[] getCompatibleProperties(int mainID, int[] propertiesIDs) throws RemoteException {
@@ -768,10 +777,13 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    @Pausable
     public RemoteChanges applyChanges(final Object clientResult) throws RemoteException {
-        applyChanges(clientResult, actions);
-        return getRemoteChanges();
+        return executePausableInvocation(new Runnable() {
+            @Override
+            public void run() {
+                applyChanges(clientResult, actions);
+            }
+        });
     }
 
     public void applyChanges(Object clientResult, List<ClientAction> actions) {
@@ -783,24 +795,30 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    @Pausable
     public RemoteChanges okPressed() throws RemoteException {
-        try {
-            actions.addAll(form.fireOnOk(this));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return getRemoteChanges();
+        return executePausableInvocation(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    actions.addAll(form.fireOnOk(RemoteForm.this));
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
-    @Pausable
     public RemoteChanges closedPressed() throws RemoteException {
-        try {
-            actions.addAll(form.fireOnClose(this));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return getRemoteChanges();
+        return executePausableInvocation(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    actions.addAll(form.fireOnClose(RemoteForm.this));
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     //todo: remove later
@@ -1057,25 +1075,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             return getRemoteChanges();
         } finally {
             userInteractionLock.unlock();
-        }
-    }
-
-    @Aspect
-    private static class RemoteFormPausableAspect {
-        @Around("execution(@platform.server.form.instance.remote.Pausable " +
-                "platform.interop.form.RemoteChanges " +
-                "platform.server.form.instance.remote.RemoteForm.*(..)) && target(remoteForm)")
-        public Object executeRemoteMethod(final ProceedingJoinPoint thisJoinPoint, RemoteForm remoteForm) throws Throwable {
-            return remoteForm.executePausableInvocation(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        thisJoinPoint.proceed();
-                    } catch (Throwable t) {
-                        throw new RuntimeException(t);
-                    }
-                }
-            });
         }
     }
 }
