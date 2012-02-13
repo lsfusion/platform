@@ -262,6 +262,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     public Map<String, FormUserPreferences> loadUserPreferences() {
         Map<String, FormUserPreferences> preferences = new HashMap<String, FormUserPreferences>();
         try {
+
+            ObjectValue formValue = BL.LM.SIDToForm.readClasses(session, new DataObject(entity.getSID(), StringClass.get(50)));
+            if (formValue.isNull())
+                return null;
+            
+            DataObject formObject = (DataObject) formValue;
+
             KeyExpr propertyDrawExpr = new KeyExpr("propertyDraw");
 
             Integer userId = (Integer) BL.LM.currentUser.read(session);
@@ -276,10 +283,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             query.properties.put("propertyDrawSID", BL.LM.propertyDrawSID.getExpr(propertyDrawExpr));
             query.properties.put("nameShowPropertyDrawCustomUser", BL.LM.nameShowPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.properties.put("columnWidthOverridePropertyDrawCustomUser", BL.LM.columnWidthOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
-            
-            DataObject formObject = (DataObject) BL.LM.SIDToForm.readClasses(session, new DataObject(entity.getSID(), StringClass.get(50)));
-            if (formObject != null)
-                query.and(BL.LM.formPropertyDraw.getExpr(propertyDrawExpr).compare(formObject.getExpr(), Compare.EQUALS));
+            query.and(BL.LM.formPropertyDraw.getExpr(propertyDrawExpr).compare(formObject.getExpr(), Compare.EQUALS));
 
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 

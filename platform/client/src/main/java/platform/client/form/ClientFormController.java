@@ -418,14 +418,15 @@ public class ClientFormController {
     private void applyUserProperties() throws RemoteException {
         Map<String, FormUserPreferences> preferences = remoteForm.loadUserPreferences();
 
-        for (ClientPropertyDraw property : form.getPropertyDraws()) {
-            String propertySID = property.getSID();
-            if (preferences.containsKey(propertySID)) {
-                property.hideUser = preferences.get(propertySID).isNeedToHide();
-                if (preferences.get(propertySID).getWidthUser() != null)
-                    property.width = preferences.get(propertySID).getWidthUser();
+        if (preferences != null)
+            for (ClientPropertyDraw property : form.getPropertyDraws()) {
+                String propertySID = property.getSID();
+                if (preferences.containsKey(propertySID)) {
+                    property.hideUser = preferences.get(propertySID).isNeedToHide();
+                    if (preferences.get(propertySID).getWidthUser() != null)
+                        property.width = preferences.get(propertySID).getWidthUser();
+                }
             }
-        }
     }
 
     private JButton addClientFunction(ClientFunction function, final KeyStroke keyStroke, final AbstractAction functionAction) {
