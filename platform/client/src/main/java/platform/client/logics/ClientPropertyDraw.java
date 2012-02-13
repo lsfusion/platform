@@ -98,7 +98,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean hide;
 
     public Boolean hideUser;
-    public Integer width;
+    public Integer widthUser;
 
     public ClientPropertyDraw() {
     }

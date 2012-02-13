@@ -195,7 +195,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
             for (int i = 0; i < groupChecks.size(); i++) {
                 Boolean needToHideSet = changedCheckBoxes.contains(groupChecks.get(i).getText())? true : false;
                 preferences.put(initialTable.getProperty(i).getSID(),
-                            new FormUserPreferences(!needToHideSet ? null : groupChecks.get(i).isSelected(), initialTable.getProperty(i).width));
+                            new FormUserPreferences(!needToHideSet ? null : groupChecks.get(i).isSelected(), initialTable.getProperty(i).widthUser));
             }
             form.remoteForm.saveUserPreferences(preferences, forAllUsers);
         }

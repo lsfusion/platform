@@ -343,11 +343,10 @@ public abstract class GridTable extends ClientFormTable
         refreshColumnModel();
 
         for (int i = 0; i < model.getColumnCount(); ++i) {
-           if (model.getColumnProperty(i).width != null)
-                getColumnModel().getColumn(i).setPreferredWidth(model.getColumnProperty(i).width);
-            else
-                getColumnModel().getColumn(i).setPreferredWidth(0);
+           if (model.getColumnProperty(i).widthUser != null)
+                getColumnModel().getColumn(i).setPreferredWidth(model.getColumnProperty(i).widthUser);
         }
+
         if (viewMoveInterval != 0) {
             selectionController.keysChanged(viewMoveInterval < 0);
         }
@@ -593,7 +592,7 @@ public abstract class GridTable extends ClientFormTable
 
         for (int i = 0; i < model.getColumnCount(); ++i) {
             //getModel().getColumnProperty(i).widthUser = getColumnModel().getColumn(i).getWidthUser();
-            getModel().getColumnProperty(i).width = getColumnModel().getColumn(i).getWidth();
+            getModel().getColumnProperty(i).widthUser = getColumnModel().getColumn(i).getWidth();
         }
     }
 

@@ -424,7 +424,7 @@ public class ClientFormController {
                 if (preferences.containsKey(propertySID)) {
                     property.hideUser = preferences.get(propertySID).isNeedToHide();
                     if (preferences.get(propertySID).getWidthUser() != null)
-                        property.width = preferences.get(propertySID).getWidthUser();
+                        property.widthUser = preferences.get(propertySID).getWidthUser();
                 }
             }
     }
