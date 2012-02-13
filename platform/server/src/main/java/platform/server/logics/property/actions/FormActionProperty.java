@@ -2,7 +2,6 @@ package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
 import platform.interop.FormEventType;
-import platform.interop.action.ContinueAutoActionsClientAction;
 import platform.interop.action.FormClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.DataClass;
@@ -17,7 +16,6 @@ import platform.server.form.instance.listener.FormEventListener;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -69,64 +67,61 @@ public class FormActionProperty extends CustomActionProperty {
         this.form = form;
     }
 
-    public void execute(ExecutionContext context) {
-        try {
-            final FormInstance thisFormInstance = context.getFormInstance();
-            final FormInstance newFormInstance = thisFormInstance.createForm(form, BaseUtils.join(mapObjects, context.getKeys()), newSession, !form.isPrintForm);
-            if(form.isPrintForm && !newFormInstance.areObjectsFounded()) {
-                context.addAction(new MessageClientAction(ServerResourceBundle.getString("form.navigator.form.do.not.fit.for.specified.parameters"), form.caption));
-            } else {
-                for (Map.Entry<ObjectEntity, ClassPropertyInterface> entry : mapObjects.entrySet()) {
-                    newFormInstance.forceChangeObject(newFormInstance.instanceFactory.getInstance(entry.getKey()), context.getKeyValue(entry.getValue()));
-                }
+    public void execute(ExecutionContext context) throws SQLException {
+        final FormInstance thisFormInstance = context.getFormInstance();
+        final FormInstance newFormInstance = thisFormInstance.createForm(form, BaseUtils.join(mapObjects, context.getKeys()), newSession, !form.isPrintForm);
+        if(form.isPrintForm && !newFormInstance.areObjectsFounded()) {
+            context.getRemoteForm().requestUserInteraction(
+                    new MessageClientAction(ServerResourceBundle.getString("form.navigator.form.do.not.fit.for.specified.parameters"), form.caption));
+//            context.addAction(new MessageClientAction(ServerResourceBundle.getString("form.navigator.form.do.not.fit.for.specified.parameters"), form.caption));
+        } else {
+            for (Map.Entry<ObjectEntity, ClassPropertyInterface> entry : mapObjects.entrySet()) {
+                newFormInstance.forceChangeObject(newFormInstance.instanceFactory.getInstance(entry.getKey()), context.getKeyValue(entry.getValue()));
+            }
 
-                if (form instanceof SelfInstancePostProcessor) {
-                    ((SelfInstancePostProcessor) form).postProcessSelfInstance(context.getKeys(), context.getRemoteForm(), newFormInstance);
-                }
+            if (form instanceof SelfInstancePostProcessor) {
+                ((SelfInstancePostProcessor) form).postProcessSelfInstance(context.getKeys(), context.getRemoteForm(), newFormInstance);
+            }
 
-                final RemoteForm newRemoteForm = context.getRemoteForm().createForm(newFormInstance);
+            final RemoteForm newRemoteForm = context.getRemoteForm().createForm(newFormInstance);
 
-                for (int i = 0; i < setProperties.length; i++) {
-                    newFormInstance.changeProperty(newFormInstance.instanceFactory.getInstance(setProperties[i]),
-                                                   getProperties[i] != null ? getProperties[i].getValue(thisFormInstance.instanceFactory, context.getSession(), context.getModifier()) : context.getValueObject(),
-                                                   newRemoteForm, null);
-                }
+            for (int i = 0; i < setProperties.length; i++) {
+                newFormInstance.changeProperty(newFormInstance.instanceFactory.getInstance(setProperties[i]),
+                                               getProperties[i] != null ? getProperties[i].getValue(thisFormInstance.instanceFactory, context.getSession(), context.getModifier()) : context.getValueObject(),
+                                               newRemoteForm, null);
+            }
 
-                if (!seekOnOk.isEmpty() || !closeProperties.isEmpty()) {
-                    newFormInstance.addEventListener(new FormEventListener() {
-                        @Override
-                        public void handleEvent(Object event) {
-                            if (event.equals(FormEventType.OK)) {
-                                for (ObjectEntity object : seekOnOk) {
-                                    try {
-                                        ObjectInstance objectInstance = newFormInstance.instanceFactory.getInstance(object);
-                                        if (objectInstance != null) // в принципе пока FormActionProperty может ссылаться на ObjectEntity из разных FormEntity
-                                        thisFormInstance.seekObject(object.baseClass, objectInstance.getObjectValue());
-                                    } catch (SQLException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                }
-                            }
-                            if (event.equals(FormEventType.CLOSE)) {
-                                for (PropertyObjectEntity property : closeProperties) {
-                                    try {
-                                        newFormInstance.changeProperty(newFormInstance.instanceFactory.getInstance(property),
-                                                                       true,
-                                                                       newRemoteForm, null);
-                                    } catch (SQLException e) {
-                                        throw new RuntimeException(e);
-                                    }
+            if (!seekOnOk.isEmpty() || !closeProperties.isEmpty()) {
+                newFormInstance.addEventListener(new FormEventListener() {
+                    @Override
+                    public void handleEvent(Object event) {
+                        if (event.equals(FormEventType.OK)) {
+                            for (ObjectEntity object : seekOnOk) {
+                                try {
+                                    ObjectInstance objectInstance = newFormInstance.instanceFactory.getInstance(object);
+                                    if (objectInstance != null) // в принципе пока FormActionProperty может ссылаться на ObjectEntity из разных FormEntity
+                                    thisFormInstance.seekObject(object.baseClass, objectInstance.getObjectValue());
+                                } catch (SQLException e) {
+                                    throw new RuntimeException(e);
                                 }
                             }
                         }
-                    });
-                }
-
-                context.addAction(new FormClientAction(form.isPrintForm, newSession, isModal, newRemoteForm));
+                        if (event.equals(FormEventType.CLOSE)) {
+                            for (PropertyObjectEntity property : closeProperties) {
+                                try {
+                                    newFormInstance.changeProperty(newFormInstance.instanceFactory.getInstance(property),
+                                                                   true,
+                                                                   newRemoteForm, null);
+                                } catch (SQLException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        }
+                    }
+                });
             }
-            context.addAction(new ContinueAutoActionsClientAction());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+
+            context.getRemoteForm().requestUserInteraction(new FormClientAction(form.isPrintForm, newSession, isModal, newRemoteForm));
         }
     }
 

@@ -6,9 +6,8 @@ import platform.interop.Compare;
 import platform.interop.FormEventType;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
-import platform.interop.action.ContinueAutoActionsClientAction;
 import platform.interop.action.ResultClientAction;
-import platform.interop.action.StopAutoActionsClientAction;
+import platform.interop.action.DenyCloseFormClientAction;
 import platform.interop.form.FormUserPreferences;
 import platform.server.Message;
 import platform.server.ParamMessage;
@@ -56,9 +55,7 @@ import java.util.Map.Entry;
 
 import static platform.base.BaseUtils.mergeSet;
 import static platform.interop.ClassViewType.*;
-import static platform.interop.Order.ADD;
-import static platform.interop.Order.DIR;
-import static platform.interop.Order.REPLACE;
+import static platform.interop.Order.*;
 import static platform.server.form.instance.GroupObjectInstance.*;
 import static platform.server.logics.ServerResourceBundle.getString;
 
@@ -829,7 +826,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         if (checkResult != null) {
             actions.add(new ResultClientAction(checkResult, true));
-            actions.add(new StopAutoActionsClientAction());
+            actions.add(new DenyCloseFormClientAction());
             return;
         }
 
@@ -1335,65 +1332,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     // ---------------------------------------- Events ----------------------------------------
 
-    private class AutoActionsRunner {
-        private final RemoteForm form;
-        private Iterator<PropertyObjectEntity> autoActionsIt;
-        private Iterator<ClientAction> actionsIt;
-
-        public AutoActionsRunner(RemoteForm form, List<PropertyObjectEntity> autoActions) {
-            this.form = form;
-            autoActionsIt = autoActions.iterator();
-            actionsIt = new EmptyIterator<ClientAction>();
-        }
-
-        private void prepareNext() throws SQLException {
-            while (autoActionsIt.hasNext() && !actionsIt.hasNext()) {
-                PropertyObjectEntity autoAction = autoActionsIt.next();
-                PropertyObjectInstance action = instanceFactory.getInstance(autoAction);
-                if (action.isInInterface(null)) {
-                    List<ClientAction> change
-                            = changeProperty(action,
-                                             read(action) == null ? true : null,
-                                             form, null);
-                    actionsIt = change.iterator();
-                }
-            }
-        }
-
-        private boolean hasNext() throws SQLException {
-            prepareNext();
-            return actionsIt.hasNext();
-        }
-
-        private ClientAction next() throws SQLException {
-            if (hasNext()) {
-                return actionsIt.next();
-            }
-            return null;
-        }
-
-        public List<ClientAction> run() throws SQLException {
-            List<ClientAction> actions = new ArrayList<ClientAction>();
-            while (hasNext()) {
-                ClientAction action = next();
-                actions.add(action);
-                if (action instanceof ContinueAutoActionsClientAction || action instanceof StopAutoActionsClientAction) {
-                    break;
-                }
-            }
-
-            return actions;
-        }
-    }
-
-    private AutoActionsRunner autoActionsRunner;
-    public List<ClientAction> continueAutoActions() throws SQLException {
-        if (autoActionsRunner != null) {
-            return autoActionsRunner.run();
-        }
-
-        return new ArrayList<ClientAction>();
-    }
+    //todo: remove later
+//    private AutoActionsRunner autoActionsRunner;
+//    public List<ClientAction> continueAutoActions() throws SQLException {
+//        if (autoActionsRunner != null) {
+//            return autoActionsRunner.run();
+//        }
+//
+//        return new ArrayList<ClientAction>();
+//    }
 
     private List<ClientAction> fireObjectChanged(ObjectInstance object, RemoteForm form) throws SQLException {
         return fireEvent(form, object.entity);
@@ -1411,17 +1358,24 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return fireEvent(form, FormEventType.CLOSE);
     }
 
-    public List<ClientAction> fireEvent(RemoteForm form, Object eventObject) throws SQLException {
-        List<ClientAction> clientActions;
+    private List<ClientAction> fireEvent(RemoteForm form, Object eventObject) throws SQLException {
         List<PropertyObjectEntity> actionsOnEvent = entity.getActionsOnEvent(eventObject);
+        List<ClientAction> clientActions = new ArrayList<ClientAction>();
         if (actionsOnEvent != null) {
-            autoActionsRunner = new AutoActionsRunner(form, actionsOnEvent);
-            clientActions = autoActionsRunner.run();
-        } else
-            clientActions = new ArrayList<ClientAction>();
+//            clientActions = new AutoActionsRunner(form, actionsOnEvent).run();
+            for (PropertyObjectEntity autoAction : actionsOnEvent) {
+                PropertyObjectInstance action = instanceFactory.getInstance(autoAction);
+                if (action.isInInterface(null)) {
+                    clientActions.addAll(
+                            changeProperty(action, read(action) == null ? true : null, form, null)
+                    );
+                }
+            }
+        }
 
-        for (FormEventListener listener : eventListeners)
+        for (FormEventListener listener : eventListeners) {
             listener.handleEvent(eventObject);
+        }
 
         return clientActions;
     }

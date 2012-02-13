@@ -82,12 +82,12 @@ public class ClientModalForm extends JDialog {
             }
 
             @Override
-            public boolean okPressed() {
-                if (super.okPressed()) {
+            public void okPressed() {
+                setCanClose(true);
+                super.okPressed();
+                if (isCanClose()) {
                     hideDialog();
-                    return true;
-                } else
-                    return false;
+                }
             }
 
             @Override
@@ -109,11 +109,7 @@ public class ClientModalForm extends JDialog {
                     }
                 }
 
-                try {
-                    remoteForm.closedPressed();
-                } catch (IOException e) {
-                    throw new RuntimeException(ClientResourceBundle.getString("form.error.closing.dialog"), e);
-                }
+                notifyClosePressed();
 
                 hideDialog();
                 return true;

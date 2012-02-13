@@ -25,6 +25,10 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         this.form = form;
     }
 
+    public void execute(DenyCloseFormClientAction action) {
+        form.setCanClose(false);
+    }
+
     public void execute(FormClientAction action) {
         try {
             RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm);

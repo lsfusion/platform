@@ -3,6 +3,8 @@ package platform.interop.action;
 // такая дебильная схема с Dispatcher'ом чтобы модульность не нарушать
 public interface ClientActionDispatcher {
 
+    public void execute(DenyCloseFormClientAction action);
+
     public void execute(FormClientAction action);
 
     public Object execute(RuntimeClientAction action);

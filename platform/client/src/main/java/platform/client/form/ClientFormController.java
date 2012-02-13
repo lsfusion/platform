@@ -56,6 +56,8 @@ public class ClientFormController {
 
     public boolean dataChanged;
 
+    private boolean canClose = true;
+
     public final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
 
     public boolean isDialog() {
@@ -478,30 +480,31 @@ public class ClientFormController {
         }
     }
 
-    private boolean applyRemoteChanges() throws IOException {
-        RemoteChanges remoteChanges = remoteForm.getRemoteChanges();
-        List<ClientAction> remoteActions = remoteChanges.actions;
+    private void processRemoteChanges(RemoteChanges remoteChanges) throws IOException {
+        do {
+            List<ClientAction> remoteActions = remoteChanges.actions;
 
-        applyActions(remoteActions, true);
+            applyActions(remoteActions, true);
 
-        applyFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.form)), form, controllers));
+            applyFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.form)), form, controllers));
 
-        applyActions(remoteActions, false);
+            applyActions(remoteActions, false);
 
-        if (clientNavigator != null) {
-            clientNavigator.changeCurrentClass(remoteChanges.classID);
-        }
+            if (clientNavigator != null) {
+                clientNavigator.changeCurrentClass(remoteChanges.classID);
+            }
 
-        if (BaseUtils.last(remoteActions) instanceof ContinueAutoActionsClientAction) {
-            remoteForm.continueAutoActions();
-            refreshData();
-        }
+            if (!remoteChanges.continueInteraction) {
+                break;
+            }
 
-        for (ClientAction action : remoteActions)
-            if (action instanceof StopAutoActionsClientAction)
-                return false;
+            remoteChanges = remoteForm.continuePausedInvocation();
+            remoteForm.refreshData();
+        } while (true);
+    }
 
-        return true;
+    private void applyRemoteChanges() throws IOException {
+        processRemoteChanges(remoteForm.getRemoteChanges());
     }
 
     private void applyFormChanges(ClientFormChanges formChanges) {
@@ -591,8 +594,9 @@ public class ClientFormController {
             SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
         }
 
-        remoteForm.changePropertyDraw(property.getID(), columnKey.serialize(), BaseUtils.serializeObject(value), all, aggValue);
-        applyRemoteChanges();
+        processRemoteChanges(
+                remoteForm.changePropertyDraw(property.getID(), columnKey.serialize(), BaseUtils.serializeObject(value), all, aggValue)
+        );
     }
 
     public void pasteExternalTable(List<ClientPropertyDraw> propertyList, List<List<Object>> table) throws IOException {
@@ -600,8 +604,7 @@ public class ClientFormController {
         for (ClientPropertyDraw propertyDraw : propertyList) {
             propertyIdList.add(propertyDraw.getID());
         }
-        remoteForm.pasteExternalTable(propertyIdList, table);
-        applyRemoteChanges();
+        processRemoteChanges(remoteForm.pasteExternalTable(propertyIdList, table));
     }
 
     public void pasteMulticellValue(Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells, Object value) throws IOException {
@@ -617,8 +620,7 @@ public class ClientFormController {
             }
             reCells.put(property.getID(), keys);
         }
-        remoteForm.pasteMulticellValue(reCells, value);
-        applyRemoteChanges();
+        processRemoteChanges(remoteForm.pasteMulticellValue(reCells, value));
     }
 
     public void groupChangePropertyDraw(ClientPropertyDraw mainProperty, ClientGroupObjectValue mainColumnKey,
@@ -628,7 +630,9 @@ public class ClientFormController {
             SwingUtils.stopSingleAction(mainProperty.getGroupObject().getActionID(), true);
         }
 
-        remoteForm.groupChangePropertyDraw(mainProperty.getID(), mainColumnKey.serialize(), getterProperty.getID(), getterColumnKey.serialize());
+        processRemoteChanges(
+                remoteForm.groupChangePropertyDraw(mainProperty.getID(), mainColumnKey.serialize(), getterProperty.getID(), getterColumnKey.serialize())
+        );
         refreshData();
     }
 
@@ -809,7 +813,7 @@ public class ClientFormController {
         }
     }
 
-    boolean applyChanges(boolean sureApply) {
+    void applyChanges(boolean sureApply) {
 
         try {
 
@@ -825,7 +829,7 @@ public class ClientFormController {
 
                     if (!okMessage.isEmpty()) {
                         if (!(SwingUtils.showConfirmDialog(getComponent(), okMessage, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
-                            return false;
+                            return;
                         }
                     }
                 }
@@ -835,7 +839,7 @@ public class ClientFormController {
                     ClientApply clientApply = remoteForm.checkClientChanges();
                     if (clientApply instanceof CheckFailed) { // чтобы не делать лишний RMI вызов
                         Log.error(((CheckFailed) clientApply).message);
-                        return false;
+                        return;
                     } else {
                         try {
                             clientResult = ((ClientResultAction) clientApply).dispatchResult(actionDispatcher);
@@ -845,12 +849,8 @@ public class ClientFormController {
                     }
                 }
 
-                remoteForm.applyChanges(clientResult);
-
-                return applyRemoteChanges();
-            } else
-                return true;
-
+                processRemoteChanges(remoteForm.applyChanges(clientResult));
+            }
         } catch (IOException e) {
             throw new RuntimeException(ClientResourceBundle.getString("form.error.applying.changes"), e);
         }
@@ -873,18 +873,24 @@ public class ClientFormController {
         return true;
     }
 
-    public boolean okPressed() {
+    public void okPressed() {
         try {
-            remoteForm.okPressed();
+            processRemoteChanges(remoteForm.okPressed());
 
             if (isNewSession()) {
-                return applyChanges(false);
+                applyChanges(false);
             }
         } catch (IOException e) {
             throw new RuntimeException(ClientResourceBundle.getString("form.error.closing.dialog"), e);
         }
+    }
 
-        return true;
+    void notifyClosePressed() {
+        try {
+            processRemoteChanges(remoteForm.closedPressed());
+        } catch (IOException e) {
+            throw new RuntimeException(ClientResourceBundle.getString("form.error.closing.dialog"), e);
+        }
     }
 
     boolean closePressed() {
@@ -915,5 +921,13 @@ public class ClientFormController {
         remoteForm.moveGroupObject(parentGroup.getID(), parentKey.serialize(), childGroup.getID(), childKey.serialize(), index);
 
         applyRemoteChanges();
+    }
+
+    public boolean isCanClose() {
+        return canClose;
+    }
+
+    public void setCanClose(boolean canClose) {
+        this.canClose = canClose;
     }
 }

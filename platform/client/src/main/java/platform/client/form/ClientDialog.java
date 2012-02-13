@@ -96,7 +96,7 @@ public class ClientDialog extends ClientModalForm {
             }
 
             @Override
-            public boolean okPressed() {
+            public void okPressed() {
 
                 objectChosen = CHOSEN_VALUE;
                 try {
@@ -107,8 +107,6 @@ public class ClientDialog extends ClientModalForm {
                     throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.value.of.dialogue"), e);
                 }
                 ClientDialog.this.setVisible(false);
-
-                return true;
             }
 
             @Override

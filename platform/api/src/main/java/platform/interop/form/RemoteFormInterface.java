@@ -49,13 +49,15 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     void changeGroupObject(int groupID, byte changeType) throws RemoteException;
 
-    void changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException;
+    RemoteChanges changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException;
 
-    void groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException;
+    RemoteChanges continuePausedInvocation() throws RemoteException;
 
-    void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException;
+    RemoteChanges groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException;
 
-    void pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException;
+    RemoteChanges pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException;
+
+    RemoteChanges pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException;
 
     boolean[] getCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException;
 
@@ -94,12 +96,13 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     ClientApply checkClientChanges() throws RemoteException;
 
-    void okPressed() throws RemoteException;
-    void closedPressed() throws RemoteException;
+    RemoteChanges okPressed() throws RemoteException;
+    RemoteChanges closedPressed() throws RemoteException;
 
-    void applyChanges(Object clientResult) throws RemoteException;
+    RemoteChanges applyChanges(Object clientResult) throws RemoteException;
 
-    void continueAutoActions() throws RemoteException;
+    //todo: remove later
+//    void continueAutoActions() throws RemoteException;
 
     void saveUserPreferences(Map<String, FormUserPreferences> preferences, Boolean forAllUsers) throws RemoteException;
 

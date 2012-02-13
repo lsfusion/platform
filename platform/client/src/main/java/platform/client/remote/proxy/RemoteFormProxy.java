@@ -115,32 +115,39 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodEndVoidCall("changeGroupObject");
     }
 
-    @PendingRemoteMethod
-    public void changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException {
+    public RemoteChanges changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException {
         logRemoteMethodStartCall("changePropertyDraw");
-        target.changePropertyDraw(propertyID, columnKey, object, all, aggValue);
+        RemoteChanges result = target.changePropertyDraw(propertyID, columnKey, object, all, aggValue);
         logRemoteMethodEndVoidCall("changePropertyDraw");
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException {
+    public RemoteChanges continuePausedInvocation() throws RemoteException {
+        logRemoteMethodStartCall("continuePausedInvocation");
+        RemoteChanges result = target.continuePausedInvocation();
+        logRemoteMethodEndCall("continuePausedInvocation", result);
+        return result;
+    }
+
+    public RemoteChanges groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException {
         logRemoteMethodStartCall("groupChangePropertyDraw");
-        target.groupChangePropertyDraw(mainID, mainColumnKey, getterID, getterColumnKey);
-        logRemoteMethodEndVoidCall("groupChangePropertyDraw");
+        RemoteChanges result = target.groupChangePropertyDraw(mainID, mainColumnKey, getterID, getterColumnKey);
+        logRemoteMethodEndCall("groupChangePropertyDraw", result);
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException {
+    public RemoteChanges pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException {
         logRemoteMethodStartCall("pasteExternalTable");
-        target.pasteExternalTable(propertyIDs, table);
-        logRemoteMethodEndVoidCall("pasteExternalTable");
+        RemoteChanges result = target.pasteExternalTable(propertyIDs, table);
+        logRemoteMethodEndCall("pasteExternalTable", result);
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException {
+    public RemoteChanges pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException {
         logRemoteMethodStartCall("pasteMulticellValue");
-        target.pasteMulticellValue(cells, value);
-        logRemoteMethodEndVoidCall("pasteMulticellValue");
+        RemoteChanges result = target.pasteMulticellValue(cells, value);
+        logRemoteMethodEndCall("pasteMulticellValue", result);
+        return result;
     }
 
     public boolean[] getCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException {
@@ -267,33 +274,34 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return target.checkClientChanges();
     }
 
-    @PendingRemoteMethod
-    public void applyChanges(Object clientResult) throws RemoteException {
-        logRemoteMethodStartVoidCall("applyChanges");
-        target.applyChanges(clientResult);
-        logRemoteMethodEndVoidCall("applyChanges");
+    public RemoteChanges applyChanges(Object clientResult) throws RemoteException {
+        logRemoteMethodStartCall("applyChanges");
+        RemoteChanges result = target.applyChanges(clientResult);
+        logRemoteMethodEndCall("applyChanges", result);
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void okPressed() throws RemoteException {
-        logRemoteMethodStartVoidCall("okPressed");
-        target.okPressed();
-        logRemoteMethodEndVoidCall("okPressed");
+    public RemoteChanges okPressed() throws RemoteException {
+        logRemoteMethodStartCall("okPressed");
+        RemoteChanges result = target.okPressed();
+        logRemoteMethodEndCall("okPressed", result);
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void closedPressed() throws RemoteException {
-        logRemoteMethodStartVoidCall("closedPressed");
-        target.closedPressed();
-        logRemoteMethodEndVoidCall("closedPressed");
+    public RemoteChanges closedPressed() throws RemoteException {
+        logRemoteMethodStartCall("closedPressed");
+        RemoteChanges result = target.closedPressed();
+        logRemoteMethodEndCall("closedPressed", result);
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void continueAutoActions() throws RemoteException {
-        logRemoteMethodStartVoidCall("continueAutoActions");
-        target.continueAutoActions();
-        logRemoteMethodEndVoidCall("continueAutoActions");
-    }
+    //todo: remove later
+//    @PendingRemoteMethod
+//    public void continueAutoActions() throws RemoteException {
+//        logRemoteMethodStartVoidCall("continueAutoActions");
+//        target.continueAutoActions();
+//        logRemoteMethodEndVoidCall("continueAutoActions");
+//    }
 
     public void saveUserPreferences(Map<String, FormUserPreferences> preferences, Boolean forAllUsers) throws RemoteException {
         target.saveUserPreferences(preferences, forAllUsers);

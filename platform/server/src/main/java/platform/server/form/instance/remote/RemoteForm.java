@@ -7,7 +7,11 @@ import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import org.apache.log4j.Logger;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import platform.base.BaseUtils;
+import platform.base.ExceptionUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
@@ -46,10 +50,14 @@ import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static platform.base.BaseUtils.deserializeObject;
-import static platform.base.BaseUtils.intToFeminine;
-import static platform.server.logics.ServerResourceBundle.getString;
+import static platform.server.form.instance.remote.RemoteForm.ServerInvocationStatus.*;
 
 // фасад для работы с клиентом
 public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends RemoteContextObject implements RemoteFormInterface {
@@ -381,9 +389,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     public RemoteChanges getRemoteChanges() {
         byte[] formChanges = getFormChangesByteArray();
 
-        List<ClientAction> remoteActions = actions;
-        actions = new ArrayList<ClientAction>();
-
         int objectClassID = 0;
         if (updateCurrentClass != null) {
             ConcreteCustomClass currentClass = form.getObjectClass(updateCurrentClass);
@@ -394,7 +399,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
             updateCurrentClass = null;
         }
-        return new RemoteChanges(formChanges, remoteActions, objectClassID);
+        RemoteChanges result = new RemoteChanges(formChanges, actions, objectClassID, serverInvocationStatus == PAUSED);
+        actions = new ArrayList<ClientAction>();
+        return result;
     }
 
 
@@ -491,7 +498,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private List<ClientAction> actions = new ArrayList<ClientAction>();
     private ObjectInstance updateCurrentClass = null;
 
-    public void changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) {
+    @Pausable
+    public RemoteChanges changePropertyDraw(final int propertyID, final byte[] columnKey, final byte[] object, final boolean all, final boolean aggValue) throws RemoteException {
         try {
             PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
             Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
@@ -516,9 +524,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        return getRemoteChanges();
     }
 
-    public void groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) {
+    @Pausable
+    public RemoteChanges groupChangePropertyDraw(final int mainID, final byte[] mainColumnKey, final int getterID, final byte[] getterColumnKey) throws RemoteException {
         try {
             PropertyDrawInstance mainProperty = form.getPropertyDraw(mainID);
             PropertyDrawInstance getterProperty = form.getPropertyDraw(getterID);
@@ -557,22 +567,27 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        return getRemoteChanges();
     }
 
-    public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) {
+    @Pausable
+    public RemoteChanges pasteExternalTable(final List<Integer> propertyIDs, final List<List<Object>> table) throws RemoteException {
         try {
             form.pasteExternalTable(propertyIDs, table);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        return getRemoteChanges();
     }
 
-    public void pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) {
+    @Pausable
+    public RemoteChanges pasteMulticellValue(final Map<Integer, List<Map<Integer, Object>>> cells, final Object value) throws RemoteException {
         try {
             form.pasteMulticellValue(cells, value);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        return getRemoteChanges();
     }
 
     public boolean[] getCompatibleProperties(int mainID, int[] propertiesIDs) throws RemoteException {
@@ -753,8 +768,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public void applyChanges(Object clientResult) throws RemoteException {
+    @Pausable
+    public RemoteChanges applyChanges(final Object clientResult) throws RemoteException {
         applyChanges(clientResult, actions);
+        return getRemoteChanges();
     }
 
     public void applyChanges(Object clientResult, List<ClientAction> actions) {
@@ -766,29 +783,34 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public void okPressed() throws RemoteException {
+    @Pausable
+    public RemoteChanges okPressed() throws RemoteException {
         try {
             actions.addAll(form.fireOnOk(this));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return getRemoteChanges();
     }
 
-    public void closedPressed() throws RemoteException {
+    @Pausable
+    public RemoteChanges closedPressed() throws RemoteException {
         try {
             actions.addAll(form.fireOnClose(this));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return getRemoteChanges();
     }
 
-    public void continueAutoActions() throws RemoteException {
-        try {
-            actions.addAll(form.continueAutoActions());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    //todo: remove later
+//    public void continueAutoActions() throws RemoteException {
+//        try {
+//            actions.addAll(form.continueAutoActions());
+//        } catch (SQLException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     @Override
     public void saveUserPreferences(Map<String, FormUserPreferences> preferences, Boolean forAllUsers) throws RemoteException {
@@ -902,5 +924,158 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     @Override
     public BusinessLogics getBL() {
         return form.BL;
+    }
+
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
+
+    public enum ServerInvocationStatus {RUNNING, PAUSED, EXCEPTION_THROWN, FINISHED}
+
+    private final Lock userInteractionLock = new ReentrantLock();
+
+    private final Condition serverInvocationFinished = userInteractionLock.newCondition();
+    private final Condition userInteractionFinished = userInteractionLock.newCondition();
+
+    private volatile ServerInvocationStatus serverInvocationStatus = FINISHED;
+    private Throwable serverInvocationThrowable = null;
+    private boolean bUserInteractionFinished = false;
+
+    private RemoteChanges executePausableInvocation(final Runnable runnable) throws RemoteException {
+        userInteractionLock.lock();
+        try {
+            bUserInteractionFinished = false;
+            serverInvocationStatus = PAUSED;
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    //регистрируем новые потоки, чтобы они убивались, если клиент упадёт
+                    threads.add(Thread.currentThread());
+                    try {
+                        waitWhileUserInteractionFinished();
+                        try {
+                            runnable.run();
+                            signalServerInvocationFinished(FINISHED, null);
+                        } catch (Throwable t) {
+                            signalServerInvocationFinished(EXCEPTION_THROWN, t);
+                        }
+                    } finally {
+                        threads.remove(Thread.currentThread());
+                    }
+                }
+            });
+            return continuePausedInvocation();
+        } finally {
+            userInteractionLock.unlock();
+        }
+    }
+
+    private void signalServerInvocationFinished(ServerInvocationStatus status, Throwable t) {
+        userInteractionLock.lock();
+        try {
+            serverInvocationStatus = status;
+            serverInvocationThrowable = t;
+            serverInvocationFinished.signal();
+        } finally {
+            userInteractionLock.unlock();
+        }
+    }
+
+    private void signalUserInteractionFinished() {
+        try {
+            userInteractionLock.lock();
+            bUserInteractionFinished = true;
+            userInteractionFinished.signal();
+        } finally {
+            userInteractionLock.unlock();
+        }
+    }
+
+    private void waitWhileServerInvocationFinished() {
+        userInteractionLock.lock();
+        try {
+            while(serverInvocationStatus == RUNNING) {
+                serverInvocationFinished.await();
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            userInteractionLock.unlock();
+        }
+    }
+
+    private void waitWhileUserInteractionFinished() {
+        userInteractionLock.lock();
+        try {
+            while (!bUserInteractionFinished) {
+                userInteractionFinished.await();
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            userInteractionLock.unlock();
+        }
+    }
+
+    public void requestUserInteraction(ClientAction... acts) {
+        userInteractionLock.lock();
+
+        bUserInteractionFinished = false;
+
+        //todo: assert, что этот метод вызывается только из server-invocation потока
+        if (serverInvocationStatus != RUNNING) {
+            throw new IllegalStateException("Illegal call to requestUserInteraction(). Server invocation isn't running.");
+        }
+
+        try {
+            //мы не синхронизируем actions, потому что реализация предполагает, что с remoteForm будут работать только два потока:
+            //текущий rmi-поток и рабочий поток выполнения вызова, которые работают по порядку и никогда вместе
+            Collections.addAll(actions, acts);
+
+            signalServerInvocationFinished(PAUSED, null);
+
+            waitWhileUserInteractionFinished();
+        } finally {
+            userInteractionLock.unlock();
+        }
+    }
+
+    public RemoteChanges continuePausedInvocation() throws RemoteException {
+        userInteractionLock.lock();
+
+        if (serverInvocationStatus != PAUSED) {
+            throw new IllegalStateException("Illegal call to continuePausedInvocation(). Server invocation isn't paused.");
+        }
+
+        serverInvocationStatus = RUNNING;
+        try {
+            signalUserInteractionFinished();
+            waitWhileServerInvocationFinished();
+
+            if (serverInvocationStatus == EXCEPTION_THROWN) {
+                ExceptionUtils.emitRemoteException(serverInvocationThrowable);
+            }
+
+            return getRemoteChanges();
+        } finally {
+            userInteractionLock.unlock();
+        }
+    }
+
+    @Aspect
+    private static class RemoteFormPausableAspect {
+        @Around("execution(@platform.server.form.instance.remote.Pausable " +
+                "platform.interop.form.RemoteChanges " +
+                "platform.server.form.instance.remote.RemoteForm.*(..)) && target(remoteForm)")
+        public Object executeRemoteMethod(final ProceedingJoinPoint thisJoinPoint, RemoteForm remoteForm) throws Throwable {
+            return remoteForm.executePausableInvocation(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        thisJoinPoint.proceed();
+                    } catch (Throwable t) {
+                        throw new RuntimeException(t);
+                    }
+                }
+            });
+        }
     }
 }

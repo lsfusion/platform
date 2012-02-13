@@ -218,7 +218,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public void removeNavigator(Pair<String, Integer> key) {
+    private void removeNavigator(Pair<String, Integer> key) {
         try {
             DataSession session = createSession();
             synchronized (navigators) {
