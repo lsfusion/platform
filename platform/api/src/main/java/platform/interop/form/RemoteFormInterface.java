@@ -100,4 +100,8 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     void applyChanges(Object clientResult) throws RemoteException;
 
     void continueAutoActions() throws RemoteException;
+
+    void saveUserPreferences(Map<String, FormUserPreferences> preferences, Boolean forAllUsers) throws RemoteException;
+
+    Map<String, FormUserPreferences> loadUserPreferences() throws RemoteException;
 }

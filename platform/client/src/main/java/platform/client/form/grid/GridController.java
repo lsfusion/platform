@@ -236,7 +236,7 @@ public class GridController {
                     addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             try {
-                                dialog = new HideSettingsButton.HideSettingsDialog(Main.frame, table);
+                                dialog = new HideSettingsButton.HideSettingsDialog(Main.frame, table, form);
                             } catch (IOException ex) {
                                 throw new RuntimeException(ex);
                             }

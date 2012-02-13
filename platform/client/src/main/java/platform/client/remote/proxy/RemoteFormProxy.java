@@ -2,6 +2,7 @@ package platform.client.remote.proxy;
 
 import platform.interop.ClassViewType;
 import platform.interop.action.ClientApply;
+import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
@@ -292,6 +293,15 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodStartVoidCall("continueAutoActions");
         target.continueAutoActions();
         logRemoteMethodEndVoidCall("continueAutoActions");
+    }
+
+    public void saveUserPreferences(Map<String, FormUserPreferences> preferences, Boolean forAllUsers) throws RemoteException {
+        target.saveUserPreferences(preferences, forAllUsers);
+    }
+
+    @ImmutableMethod
+    public Map<String, FormUserPreferences> loadUserPreferences() throws RemoteException {
+        return target.loadUserPreferences();
     }
 
     @PendingRemoteMethod

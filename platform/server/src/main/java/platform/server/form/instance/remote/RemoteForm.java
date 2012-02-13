@@ -8,7 +8,6 @@ import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
-import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
@@ -16,12 +15,15 @@ import platform.interop.Scroll;
 import platform.interop.action.CheckFailed;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ClientApply;
+import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
+import platform.server.classes.StringClass;
+import platform.server.data.type.ObjectType;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
 import platform.server.form.entity.ObjectEntity;
@@ -33,21 +35,21 @@ import platform.server.form.view.report.ReportDesignGenerator;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.linear.LP;
-import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.Property;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
+import platform.server.session.DataSession;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 import static platform.base.BaseUtils.deserializeObject;
+import static platform.base.BaseUtils.intToFeminine;
+import static platform.server.logics.ServerResourceBundle.getString;
 
 // фасад для работы с клиентом
 public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends RemoteContextObject implements RemoteFormInterface {
@@ -786,6 +788,16 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void saveUserPreferences(Map<String, FormUserPreferences> preferences, Boolean forAllUsers) throws RemoteException {
+        form.saveUserPreferences(preferences, forAllUsers);
+    }
+
+    @Override
+    public Map<String, FormUserPreferences> loadUserPreferences() throws RemoteException {
+        return form.loadUserPreferences();
     }
 
     public void cancelChanges() {

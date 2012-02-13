@@ -1,30 +1,18 @@
 package platform.client.form.queries;
 
-import jxl.CellView;
-import jxl.Workbook;
-import jxl.write.*;
-import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.treetable.*;
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.client.ClientResourceBundle;
+import platform.client.Main;
 import platform.client.descriptor.editor.base.TitledPanel;
+import platform.client.form.ClientFormController;
 import platform.client.form.grid.GridTable;
-import platform.client.form.grid.GridTableModel;
 import platform.client.logics.ClientPropertyDraw;
-import platform.client.logics.classes.ClientIntegralClass;
+import platform.interop.form.FormUserPreferences;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
-import javax.swing.event.*;
-import javax.swing.table.*;
-import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
 import java.io.IOException;
 import java.lang.Boolean;
-import java.lang.Number;
 import java.util.*;
 import java.util.List;
 
@@ -33,21 +21,24 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
     public HideSettingsDialog dialog;
 
     public HideSettingsButton() {
-        super("/images/hideSettings.png", ClientResourceBundle.getString("Form.grid.hidesettings"));
+        super("/images/hideSettings.png", ClientResourceBundle.getString("form.grid.hidesettings"));
     }
 
     public abstract void addListener();
 
     public class HideSettingsDialog extends JDialog {
         private GridTable initialTable;
+        private ClientFormController form;
         private List<JCheckBox> groupChecks = new ArrayList<JCheckBox>();
+        private List<String> changedCheckBoxes = new ArrayList<String>();
 
 
-        public HideSettingsDialog(Frame owner, final GridTable initialTable) throws IOException {
-            super(owner, ClientResourceBundle.getString("Form.grid.hidesettings"), true);
+        public HideSettingsDialog(Frame owner, final GridTable initialTable, ClientFormController form) throws IOException {
+            super(owner, ClientResourceBundle.getString("form.grid.hidesettings"), true);
             this.initialTable = initialTable;
+            this.form = form;
 
-            setMinimumSize(new Dimension(300, 400));
+            setMinimumSize(new Dimension(300, 500));
             Rectangle bounds = new Rectangle();
             bounds.x = 100;
             bounds.y = 100;
@@ -57,16 +48,63 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
             setLocationRelativeTo(owner);
             setLayout(new BorderLayout());
 
-            TitledPanel groupByPanel = new TitledPanel("Отображаемые колонки");
+            TitledPanel groupByPanel = new TitledPanel(ClientResourceBundle.getString("form.grid.displayed.columns"));
 
             JPanel allFieldsPanel = new JPanel();
             allFieldsPanel.setLayout(new BoxLayout(allFieldsPanel, BoxLayout.Y_AXIS));
 
+            final JButton applyButton = new JButton(ClientResourceBundle.getString("form.grid.hide.apply"));
+            applyButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        applyButtonPressed(false);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    if (dialog != null) {
+                        dialog.firePropertyChange("buttonPressed", null, null);
+                    }
+                    initialTable.updateTable();
+                }
+            });
+
+            final JButton applyForAllButton = new JButton(ClientResourceBundle.getString("form.grid.hide.apply.for.all"));
+            applyForAllButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        Boolean permission = Main.frame.remoteNavigator.getConfiguratorSecurityPolicy();
+                        if ((permission != null) && (permission == true))
+                            applyButtonPressed(true);
+                        else
+                            JOptionPane.showMessageDialog(null, ClientResourceBundle.getString("form.grid.hide.not.enough.rights"), ClientResourceBundle.getString("form.grid.hide.error"), JOptionPane.ERROR_MESSAGE);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    if (dialog != null) {
+                        dialog.firePropertyChange("buttonPressed", null, null);
+                    }
+                    initialTable.updateTable();
+                }
+            });
+
             for (int i = 0; i < initialTable.getPropertyCount(); i++) {
                 final JCheckBox checkBox = new JCheckBox(initialTable.getPropertyName(i).trim());
-                if (!initialTable.getProperty(i).hide) {
+                ClientPropertyDraw property = initialTable.getProperty(i);
+                Boolean needToHide = property.hideUser == null ? property.hide : property.hideUser;
+                if (!needToHide) {
                     checkBox.setSelected(true);
+                    if (property.hideUser == null)
+                        checkBox.setForeground(Color.gray);
                 }
+                checkBox.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (!changedCheckBoxes.contains(checkBox.getText())) {
+                            changedCheckBoxes.add(checkBox.getText());
+                            checkBox.setForeground(Color.black);
+                        }
+                    }
+                });
                 groupChecks.add(checkBox);
 
                 JPanel fieldPanel = new JPanel();
@@ -91,11 +129,11 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
                 }
             });
 
-            JButton executeButton = new JButton("OK");
-            executeButton.addActionListener(new ActionListener() {
+            JButton OKButton = new JButton("OK");
+            OKButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        buttonPressed();
+                        OKButtonPressed();
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
@@ -106,7 +144,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
                 }
             });
 
-            JButton cancelButton = new JButton("Отмена");
+            JButton cancelButton = new JButton(ClientResourceBundle.getString("form.grid.hide.cancel"));
             cancelButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     dialog.setVisible(false);
@@ -114,29 +152,52 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
             });
 
             JPanel buttonsPanel = new JPanel();
-            buttonsPanel.add(checkAllButton);
-            buttonsPanel.add(executeButton);
+            buttonsPanel.add(OKButton);
             buttonsPanel.add(cancelButton);
+
+            JPanel checkAllPanel = new JPanel();
+            checkAllPanel.add(checkAllButton);
+
+            TitledPanel applyButtonsPanel = new TitledPanel(ClientResourceBundle.getString("form.grid.hide.save.settings"));
+            applyButtonsPanel.add(applyButton, BorderLayout.NORTH);
+            applyButtonsPanel.add(applyForAllButton, BorderLayout.SOUTH);
 
             JPanel bottomPanel = new JPanel();
             bottomPanel.setLayout(new BorderLayout());
-            bottomPanel.add(buttonsPanel, BorderLayout.WEST);
+            bottomPanel.add(applyButtonsPanel, BorderLayout.NORTH);
+            bottomPanel.add(checkAllPanel, BorderLayout.WEST);
+            bottomPanel.add(buttonsPanel, BorderLayout.EAST);
 
             add(bottomPanel, BorderLayout.SOUTH);
             add(groupScrollPane, BorderLayout.CENTER);
         }
 
-        private void buttonPressed() throws IOException {
+        private void OKButtonPressed() throws IOException {
 
             for (int i = 0; i < groupChecks.size(); i++) {
-                if (groupChecks.get(i).isSelected()) {
-                    initialTable.getProperty(i).hide = false;
-                } else {
-                    initialTable.getProperty(i).hide = true;
+                if (changedCheckBoxes.contains(groupChecks.get(i).getText())) {
+                    if (groupChecks.get(i).isSelected()) {
+                        initialTable.getProperty(i).hideUser = false;
+                    } else {
+                        initialTable.getProperty(i).hideUser = true;
+                    }
                 }
             }
+            changedCheckBoxes.clear();
             dialog.setVisible(false);
             dispose();
+        }
+
+        private void applyButtonPressed(Boolean forAllUsers) throws IOException {
+
+            Map<String, FormUserPreferences> preferences = new HashMap<String, FormUserPreferences>();
+
+            for (int i = 0; i < groupChecks.size(); i++) {
+                Boolean needToHideSet = changedCheckBoxes.contains(groupChecks.get(i).getText())? true : false;
+                preferences.put(initialTable.getProperty(i).getSID(),
+                            new FormUserPreferences(!needToHideSet ? null : groupChecks.get(i).isSelected(), initialTable.getProperty(i).width));
+            }
+            form.remoteForm.saveUserPreferences(preferences, forAllUsers);
         }
     }
 }

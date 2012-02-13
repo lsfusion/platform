@@ -341,6 +341,13 @@ public abstract class GridTable extends ClientFormTable
         model.update(groupObject, properties, rowKeys, columnKeys, captions, values, rowHighlights, cellHighlights);
 
         refreshColumnModel();
+
+        for (int i = 0; i < model.getColumnCount(); ++i) {
+           if (model.getColumnProperty(i).width != null)
+                getColumnModel().getColumn(i).setPreferredWidth(model.getColumnProperty(i).width);
+            else
+                getColumnModel().getColumn(i).setPreferredWidth(0);
+        }
         if (viewMoveInterval != 0) {
             selectionController.keysChanged(viewMoveInterval < 0);
         }
@@ -349,7 +356,7 @@ public abstract class GridTable extends ClientFormTable
         setPreferredScrollableViewportSize(getPreferredSize());
         // так делается, потому что почему-то сам JTable ну ни в какую не хочет изменять свою высоту (getHeight())
         // приходится это делать за него, а то JViewPort смотрит именно на getHeight()
-//        setSize(getWidth(), getRowHeight() * getRowCount());
+//        setSize(getWidthUser(), getRowHeight() * getRowCount());
         if (groupObject.tableRowsCount >= 0) {
             int count = groupObject.tableRowsCount == 0 ? getRowCount() : groupObject.tableRowsCount;
             int height = count * (getRowHeight() + 1) + getTableHeader().getPreferredSize().height;
@@ -583,6 +590,11 @@ public abstract class GridTable extends ClientFormTable
             setOrResetPreferredColumnWidths();
         }
         super.doLayout();
+
+        for (int i = 0; i < model.getColumnCount(); ++i) {
+            //getModel().getColumnProperty(i).widthUser = getColumnModel().getColumn(i).getWidthUser();
+            getModel().getColumnProperty(i).width = getColumnModel().getColumn(i).getWidth();
+        }
     }
 
     public void setOrResetPreferredColumnWidths() {

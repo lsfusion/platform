@@ -14,6 +14,7 @@ import platform.client.remote.proxy.RemoteObjectProxy;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.*;
 import platform.interop.action.*;
+import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteFormInterface;
 
@@ -150,6 +151,8 @@ public class ClientFormController {
                 }
             }
         };
+
+        applyUserProperties();
 
         initializeControllers();
 
@@ -407,6 +410,19 @@ public class ClientFormController {
                     closePressed();
                 }
             });
+        }
+    }
+
+    private void applyUserProperties() throws RemoteException {
+        Map<String, FormUserPreferences> preferences = remoteForm.loadUserPreferences();
+
+        for (ClientPropertyDraw property : form.getPropertyDraws()) {
+            String propertySID = property.getSID();
+            if (preferences.containsKey(propertySID)) {
+                property.hideUser = preferences.get(propertySID).isNeedToHide();
+                if (preferences.get(propertySID).getWidthUser() != null)
+                    property.width = preferences.get(propertySID).getWidthUser();
+            }
         }
     }
 

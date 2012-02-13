@@ -287,7 +287,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP SIDToPropertyDraw;
     public LP formPropertyDraw;
     public LP SIDFormSIDPropertyDrawToPropertyDraw;
-    public LP showPropertyDraw;
+    public LP showPropertyDrawCustomUser;
+    public LP nameShowPropertyDrawCustomUser;
+    public LP columnWidthPropertyDrawCustomUser;
+    public LP columnWidthPropertyDraw;
+    public LP columnWidthOverridePropertyDrawCustomUser;
 
     public LP messageException;
     public LP dateException;
@@ -501,7 +505,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         propertyDraw = addConcreteClass("propertyDraw", getString("logics.property.draw"), baseClass);
         propertyDrawShowStatus = addStaticClass("propertyDrawShowStatus", getString("logics.forms.property.draw.show"),
                 new String[]{"Show", "Hide"},
-                new String[]{"Показать", "Спрятать"});
+                new String[]{getString("logics.property.draw.show"), getString("logics.property.draw.hide")});
         abstractGroup = addConcreteClass("abstractGroup", getString("logics.property.group"), baseClass);
         property = addConcreteClass("property", getString("logics.property"), baseClass);
         notification = addConcreteClass("notification", getString("logics.notification"), baseClass);
@@ -840,7 +844,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         formPropertyDraw = addDProp(baseGroup, "formPropertyDraw", getString("logics.forms.form"), form, propertyDraw);
         SIDToPropertyDraw = addAGProp(baseGroup, "SIDToPropertyDraw", getString("logics.property.draw"), formPropertyDraw, propertyDrawSID);
         SIDFormSIDPropertyDrawToPropertyDraw = addJProp(baseGroup, "SIDFormSIDPropertyDrawToPropertyDraw", getString("logics.forms.code"), SIDToPropertyDraw, SIDToForm, 1, 2);
-        //showPropertyDraw = addDProp(baseGroup, "showPropertyDraw", getString("logics.forms.property.draw.show"), propertyDrawShowStatus, propertyDraw, customUser);
+        showPropertyDrawCustomUser = addDProp(baseGroup, "showPropertyDrawCustomUser", getString("logics.forms.property.draw.show"), propertyDrawShowStatus, propertyDraw, customUser);
+        nameShowPropertyDrawCustomUser = addJProp(baseGroup, "nameShowPropertyDrawCustomUser", getString("logics.forms.property.draw.show"), name, showPropertyDrawCustomUser, 1, 2);
+        nameShowPropertyDrawCustomUser.setPreferredWidth(50);
+        columnWidthPropertyDrawCustomUser = addDProp(baseGroup, "columnWidthPropertyDrawCustomUser", getString("logics.forms.property.draw.width"), IntegerClass.instance, propertyDraw, customUser);
+        columnWidthPropertyDraw = addDProp(baseGroup, "columnWidthPropertyDraw", getString("logics.forms.property.draw.default.width"), IntegerClass.instance, propertyDraw);
+        columnWidthOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnWidthOverridePropertyDrawCustomUser", getString("logics.forms.property.draw.width"), Union.OVERRIDE, addJProp(and1, columnWidthPropertyDraw, 1, is(customUser), 2), columnWidthPropertyDrawCustomUser);
 
         messageException = addDProp(baseGroup, "messageException", getString("logics.exception.message"), propertyCaptionValueClass, exception);
         dateException = addDProp(baseGroup, "dateException", getString("logics.exception.date"), DateTimeClass.instance, exception);
@@ -1966,22 +1975,30 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     }
 
     class FormsFormEntity extends FormEntity{
+        
+        ObjectEntity objUser;
+        ObjectEntity objForm;
+        ObjectEntity objPropertyDraw;
         protected FormsFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.tables.forms"));
 
-            ObjectEntity objUsers = addSingleGroupObject(customUser, getString("logics.user.users"),userLogin);
-            ObjectEntity objForms = addSingleGroupObject(form, getString("logics.tables.forms"), formSID, captionForm);
-            ObjectEntity objPropertyDraws = addSingleGroupObject(propertyDraw, getString("logics.property.draw"), baseGroup);
+            objUser = addSingleGroupObject(customUser, getString("logics.user"), userFirstName, userLastName, userLogin);
+            objForm = addSingleGroupObject(form, getString("logics.tables.forms"), formSID, captionForm);
+            objPropertyDraw = addSingleGroupObject(propertyDraw, getString("logics.property.draw"), propertyDrawSID, captionPropertyDraw);
 
-            setForceViewType(userLogin, ClassViewType.PANEL);
+            addPropertyDraw(nameShowPropertyDrawCustomUser, objPropertyDraw, objUser);
+            addPropertyDraw(columnWidthPropertyDrawCustomUser, objPropertyDraw, objUser);
+            addPropertyDraw(columnWidthPropertyDraw, objPropertyDraw);
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
-            filterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new CompareFilterEntity(addPropertyObject(formPropertyDraw, objPropertyDraws), Compare.EQUALS, objForms),
-                    "фильтр",
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
-            addRegularFilterGroup(filterGroup);
+            objUser.groupTo.initClassView = ClassViewType.PANEL;
 
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(formPropertyDraw, objPropertyDraw), Compare.EQUALS, objForm));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(currentUser), Compare.EQUALS, objUser));
+
+            setReadOnly(true);
+            setReadOnly(nameShowPropertyDrawCustomUser, false);
+            setReadOnly(columnWidthPropertyDrawCustomUser, false);
+            setReadOnly(columnWidthPropertyDraw, false);
         }
     }
 

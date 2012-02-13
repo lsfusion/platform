@@ -2,12 +2,14 @@ package platform.server.form.instance;
 
 import platform.base.*;
 import platform.interop.ClassViewType;
+import platform.interop.Compare;
 import platform.interop.FormEventType;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ContinueAutoActionsClientAction;
 import platform.interop.action.ResultClientAction;
 import platform.interop.action.StopAutoActionsClientAction;
+import platform.interop.form.FormUserPreferences;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.auth.SecurityPolicy;
@@ -58,6 +60,7 @@ import static platform.interop.Order.ADD;
 import static platform.interop.Order.DIR;
 import static platform.interop.Order.REPLACE;
 import static platform.server.form.instance.GroupObjectInstance.*;
+import static platform.server.logics.ServerResourceBundle.getString;
 
 // класс в котором лежит какие изменения произошли
 
@@ -257,6 +260,73 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             this.mapObjects = mapObjects;
         }
         this.interactive = interactive;
+    }
+
+    public Map<String, FormUserPreferences> loadUserPreferences() {
+        Map<String, FormUserPreferences> preferences = new HashMap<String, FormUserPreferences>();
+        try {
+            KeyExpr propertyDrawExpr = new KeyExpr("propertyDraw");
+
+            Integer userId = (Integer) BL.LM.currentUser.read(session);
+            DataObject currentUser = session.getDataObject(userId, ObjectType.instance);
+
+            Expr customUserExpr = currentUser.getExpr();
+
+            Map<Object, KeyExpr> newKeys = new HashMap<Object, KeyExpr>();
+            newKeys.put("propertyDraw", propertyDrawExpr);
+
+            Query<Object, Object> query = new Query<Object, Object>(newKeys);
+            query.properties.put("propertyDrawSID", BL.LM.propertyDrawSID.getExpr(propertyDrawExpr));
+            query.properties.put("nameShowPropertyDrawCustomUser", BL.LM.nameShowPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            query.properties.put("columnWidthOverridePropertyDrawCustomUser", BL.LM.columnWidthOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            
+            DataObject formObject = (DataObject) BL.LM.SIDToForm.readClasses(session, new DataObject(entity.getSID(), StringClass.get(50)));
+            if (formObject != null)
+                query.and(BL.LM.formPropertyDraw.getExpr(propertyDrawExpr).compare(formObject.getExpr(), Compare.EQUALS));
+
+            OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+
+            for (Map<Object, Object> values : result.values()) {
+                String propertyDrawSID = values.get("propertyDrawSID").toString().trim();
+                Boolean needToHide = null;
+                Object hide = values.get("nameShowPropertyDrawCustomUser");
+                if (hide != null) {
+                    if (getString("logics.property.draw.hide").equals(hide.toString().trim()))
+                        needToHide = true;
+                    else if (getString("logics.property.draw.show").equals(hide.toString().trim()))
+                        needToHide = false;
+                }
+                Integer width = (Integer) values.get("columnWidthOverridePropertyDrawCustomUser");
+                preferences.put(propertyDrawSID, new FormUserPreferences(needToHide, width));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        return preferences;
+    }
+
+    public void saveUserPreferences(Map<String, FormUserPreferences> preferences, Boolean forAllUsers) {
+        try {
+            DataSession dataSession = session.createSession();
+            for (Map.Entry<String, FormUserPreferences> entry : preferences.entrySet()) {
+                DataObject userObject = dataSession.getDataObject(BL.LM.currentUser.read(dataSession), ObjectType.instance);
+                Integer id = (Integer) BL.LM.SIDFormSIDPropertyDrawToPropertyDraw.read(dataSession, new DataObject(entity.getSID(), StringClass.get(50)), new DataObject(entry.getKey(), StringClass.get(50)));
+                DataObject propertyDrawObject = dataSession.getDataObject(id, ObjectType.instance);
+                if (entry.getValue().isNeedToHide()!=null) {
+                    if (!entry.getValue().isNeedToHide())
+                        BL.LM.showPropertyDrawCustomUser.execute(BL.LM.propertyDrawShowStatus.getID("Hide"), dataSession, propertyDrawObject, userObject);
+                    else
+                        BL.LM.showPropertyDrawCustomUser.execute(BL.LM.propertyDrawShowStatus.getID("Show"), dataSession, propertyDrawObject, userObject);
+                }
+                if (forAllUsers)
+                    BL.LM.columnWidthPropertyDraw.execute(entry.getValue().getWidthUser(), dataSession, propertyDrawObject);
+                else
+                    BL.LM.columnWidthPropertyDrawCustomUser.execute(entry.getValue().getWidthUser(), dataSession, propertyDrawObject, userObject);
+            }
+            dataSession.apply(BL);
+        } catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
 
     private Map<ObjectEntity, ? extends ObjectValue> mapObjects = null;
