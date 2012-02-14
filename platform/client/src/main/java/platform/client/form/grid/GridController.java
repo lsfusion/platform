@@ -15,9 +15,12 @@ import platform.interop.Order;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
+import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
@@ -252,6 +255,15 @@ public class GridController {
                 }
             });
             groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
+
+            table.getTableHeader().addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    for (int i = 0; i < table.getTableModel().getColumnCount(); ++i) {
+                        table.getTableModel().getColumnProperty(i).widthUser = table.getColumnModel().getColumn(i).getWidth();
+                    }
+                }
+            });
         }
 
         if (this.key.minRowCount > 0) { // вообще говоря, так делать неправильно, посколько и HeaderHeight и RowHeight могут изменяться во времени

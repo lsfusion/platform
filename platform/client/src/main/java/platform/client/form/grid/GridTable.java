@@ -342,11 +342,6 @@ public abstract class GridTable extends ClientFormTable
 
         refreshColumnModel();
 
-        for (int i = 0; i < model.getColumnCount(); ++i) {
-           if (model.getColumnProperty(i).widthUser != null)
-                getColumnModel().getColumn(i).setPreferredWidth(model.getColumnProperty(i).widthUser);
-        }
-
         if (viewMoveInterval != 0) {
             selectionController.keysChanged(viewMoveInterval < 0);
         }
@@ -425,6 +420,11 @@ public abstract class GridTable extends ClientFormTable
             while (newColumnCount < columnModel.getColumnCount()) {
                 removeColumn(columnModel.getColumn(columnModel.getColumnCount() - 1));
             }
+        }
+
+        for (int i = 0; i < model.getColumnCount(); ++i) {
+            if (model.getColumnProperty(i).widthUser != null)
+                getColumnModel().getColumn(i).setPreferredWidth(model.getColumnProperty(i).widthUser);
         }
 
         int rowHeight = 0;
@@ -589,11 +589,6 @@ public abstract class GridTable extends ClientFormTable
             setOrResetPreferredColumnWidths();
         }
         super.doLayout();
-
-        for (int i = 0; i < model.getColumnCount(); ++i) {
-            //getModel().getColumnProperty(i).widthUser = getColumnModel().getColumn(i).getWidthUser();
-            getModel().getColumnProperty(i).widthUser = getColumnModel().getColumn(i).getWidth();
-        }
     }
 
     public void setOrResetPreferredColumnWidths() {

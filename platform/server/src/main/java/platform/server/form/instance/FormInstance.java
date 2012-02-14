@@ -281,7 +281,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
             Query<Object, Object> query = new Query<Object, Object>(newKeys);
             query.properties.put("propertyDrawSID", BL.LM.propertyDrawSID.getExpr(propertyDrawExpr));
-            query.properties.put("nameShowPropertyDrawCustomUser", BL.LM.nameShowPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            query.properties.put("nameShowOverridePropertyDrawCustomUser", BL.LM.nameShowOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.properties.put("columnWidthOverridePropertyDrawCustomUser", BL.LM.columnWidthOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.and(BL.LM.formPropertyDraw.getExpr(propertyDrawExpr).compare(formObject.getExpr(), Compare.EQUALS));
 
@@ -290,7 +290,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             for (Map<Object, Object> values : result.values()) {
                 String propertyDrawSID = values.get("propertyDrawSID").toString().trim();
                 Boolean needToHide = null;
-                Object hide = values.get("nameShowPropertyDrawCustomUser");
+                Object hide = values.get("nameShowOverridePropertyDrawCustomUser");
                 if (hide != null) {
                     if (getString("logics.property.draw.hide").equals(hide.toString().trim()))
                         needToHide = true;
@@ -313,16 +313,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 DataObject userObject = dataSession.getDataObject(BL.LM.currentUser.read(dataSession), ObjectType.instance);
                 Integer id = (Integer) BL.LM.SIDFormSIDPropertyDrawToPropertyDraw.read(dataSession, new DataObject(entity.getSID(), StringClass.get(50)), new DataObject(entry.getKey(), StringClass.get(50)));
                 DataObject propertyDrawObject = dataSession.getDataObject(id, ObjectType.instance);
-                if (entry.getValue().isNeedToHide()!=null) {
-                    if (!entry.getValue().isNeedToHide())
-                        BL.LM.showPropertyDrawCustomUser.execute(BL.LM.propertyDrawShowStatus.getID("Hide"), dataSession, propertyDrawObject, userObject);
-                    else
-                        BL.LM.showPropertyDrawCustomUser.execute(BL.LM.propertyDrawShowStatus.getID("Show"), dataSession, propertyDrawObject, userObject);
+                if (entry.getValue().isNeedToHide() != null) {
+                    int idShow = !entry.getValue().isNeedToHide() ? BL.LM.propertyDrawShowStatus.getID("Hide") : BL.LM.propertyDrawShowStatus.getID("Show");
+                    BL.LM.showPropertyDrawCustomUser.execute(idShow, dataSession, propertyDrawObject, userObject);
+                    if (forAllUsers)
+                        BL.LM.showPropertyDraw.execute(idShow, dataSession, propertyDrawObject, userObject);
                 }
+                BL.LM.columnWidthPropertyDrawCustomUser.execute(entry.getValue().getWidthUser(), dataSession, propertyDrawObject, userObject);
                 if (forAllUsers)
                     BL.LM.columnWidthPropertyDraw.execute(entry.getValue().getWidthUser(), dataSession, propertyDrawObject);
-                else
-                    BL.LM.columnWidthPropertyDrawCustomUser.execute(entry.getValue().getWidthUser(), dataSession, propertyDrawObject, userObject);
             }
             dataSession.apply(BL);
         } catch (SQLException e) {
