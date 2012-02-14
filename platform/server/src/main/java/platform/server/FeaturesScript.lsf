@@ -200,7 +200,7 @@ OBJECTS document, article
 // PROPERTIES propName1(param1, ..., paramN1), ..., propNameK(param1, ..., paramNK)
 // Special properties: SELECTION, OBJVALUE, ADDOBJ
 // Property options:    [READONLY] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [HIGHLIGHTIF <mappedProperty>]
-//                      [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
+//                      [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
 
 PROPERTIES store(document), name(article), storeName(document)
 PROPERTIES quantity(document, article)
@@ -211,7 +211,7 @@ PROPERTIES ADDOBJ(document), ADDOBJ(article)
 // FILTERS NOT NULL property1(param1, ..., paramN1),
 //         ...
 //         NOT NULL propertyK(param1, ..., paramNK)
-FILTERS NOT NULL name(article);
+FILTERS NOT NULL name(article);                                                                                                           +
 
 
 FORM storeArticle 'По складам'

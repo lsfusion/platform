@@ -12,6 +12,7 @@ public class FormPropertyOptions {
     private Boolean readOnly;
     private List<GroupObjectEntity> columns;
     private MappedProperty showIf;
+    private PropertyObjectEntity readOnlyIf;
     private PropertyObjectEntity highlightIf;
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
@@ -40,6 +41,14 @@ public class FormPropertyOptions {
 
     public MappedProperty getShowIf() {
         return showIf;
+    }
+
+    public PropertyObjectEntity getReadOnlyIf() {
+        return readOnlyIf;
+    }
+
+    public void setReadOnlyIf(PropertyObjectEntity readOnlyIf) {
+        this.readOnlyIf = readOnlyIf;
     }
 
     public PropertyObjectEntity getHighlightIf() {
@@ -88,6 +97,7 @@ public class FormPropertyOptions {
         merged.setReadOnly(nvl(overrides.getReadOnly(), readOnly));
         merged.setColumns(nvl(overrides.getColumns(), columns));
         merged.setShowIf(nvl(overrides.getShowIf(), showIf));
+        merged.setReadOnlyIf(nvl(overrides.getReadOnlyIf(), readOnlyIf));
         merged.setHighlightIf(nvl(overrides.getHighlightIf(), highlightIf));
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));

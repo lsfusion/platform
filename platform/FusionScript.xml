@@ -121,6 +121,7 @@
       <keyword name="PROPERTIES" />
       <keyword name="PROPERTY" />
       <keyword name="READONLY" />
+      <keyword name="READONLYIF" />
       <keyword name="REMOVE" />
       <keyword name="RESOLVE" />
       <keyword name="RIGHT" />
