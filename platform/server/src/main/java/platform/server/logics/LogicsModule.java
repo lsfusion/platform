@@ -690,7 +690,11 @@ public abstract class LogicsModule {
 
 
     protected LP addTProp(Time time) {
-        return addProperty(null, new LP<PropertyInterface>(new TimeFormulaProperty(genSID(), time)));
+        return addTProp(genSID(), time);
+    }
+    
+    protected LP addTProp(String sID, Time time) {
+        return addProperty(null, new LP<PropertyInterface>(new TimeFormulaProperty(sID, time)));
     }
 
     protected <P extends PropertyInterface> LP addTCProp(Time time, String name, String caption, LP<P> changeProp, ValueClass... classes) {

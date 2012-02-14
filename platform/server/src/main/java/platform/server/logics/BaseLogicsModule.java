@@ -721,10 +721,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentDate = addDProp(baseGroup, "currentDate", getString("logics.date.current.date"), DateClass.instance);
         currentMonth = addJProp(baseGroup, "currentMonth", getString("logics.date.current.month"), numberMonthInDate, currentDate);
         currentYear = addJProp(baseGroup, "currentYear", getString("logics.date.current.year"), yearInDate, currentDate);
-        currentHour = addTProp(Time.HOUR);
-        currentMinute = addTProp(Time.MINUTE);
-        currentEpoch = addTProp(Time.EPOCH);
-        currentDateTime = addTProp(Time.DATETIME);
+        currentHour = addTProp("currentHour", Time.HOUR);
+        currentMinute = addTProp("currentMinute", Time.MINUTE);
+        currentEpoch = addTProp("currentEpoch", Time.EPOCH);
+        currentDateTime = addTProp("currentDateTime", Time.DATETIME);
         currentUser = addProperty(null, new LP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
         currentSession = addProperty(null, new LP<PropertyInterface>(new CurrentSessionFormulaProperty("currentSession", session)));
         currentComputer = addProperty(null, new LP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));

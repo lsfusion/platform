@@ -17,6 +17,14 @@ CLASS language 'Язык' : doubleNamed;
 stringEqualsAll(string) = string == 'Все';
 dateDiffersCurrent(date) = date != currentDate();
 
+CLASS ABSTRACT postedObject 'Закрытие';
+
+timeClosed 'Время закрытия' = DATA DATETIME (postedObject);
+userClosed 'Закрыт пользователем' = DATA customUser (postedObject) IN idGroup;
+commonNameUserClosed 'Закрыт пользователем' (postedObject) = commonName(userClosed(postedObject));
+timeClosed(postedObject) <- currentDateTime() ON ASSIGN postedObject IS postedObject;
+userClosed(postedObject) <- currentUser() ON ASSIGN postedObject IS postedObject;
+
 // ----------------------------------- Шаблоны ------------------------------------------ //
 
 // ----------------------------------- Свойство объект-дата------------------------------------------ //
@@ -1281,32 +1289,33 @@ FILTERS NOT NULL itemAssortment(a, i);
 
 CLASS ABSTRACT committee 'Комиссия' : named;
 CLASS revaluationCommittee 'Комиссия переоценки' : committee;
+CLASS inventoryCommittee 'Комиссия для инвентаризации' : committee;
 
-chairmanRevaluationCommittee 'Председатель комиссии (ИД)' = DATA employee (revaluationCommittee);
-commonNameChairmanRevaluationCommittee 'Председатель комиссии' (revaluationCommittee) = commonName(chairmanRevaluationCommittee(revaluationCommittee)) IN baseGroup;
-departmentStoreRevaluationCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (revaluationCommittee);
-nameDepartmentStoreRevaluationCommittee 'Отдел комиссии' (revaluationCommittee) = commonName(departmentStoreRevaluationCommittee(revaluationCommittee)) IN baseGroup;
-CONSTRAINT CHECKED chairmanRevaluationCommittee(revaluationCommittee) AND NOT departmentStoreEmployee(departmentStoreRevaluationCommittee(revaluationCommittee), chairmanRevaluationCommittee(revaluationCommittee)) MSG 'Отдел комиссии должен соответствовать отделу председателя комиссии';
-CONSTRAINT CHECKED departmentStoreRevaluationCommittee(revaluationCommitteeDepartmentStore(departmentStore)) != departmentStore MSG 'Отдел комиссии должен соответствовать текущему отделу';
+chairmanCommittee 'Председатель комиссии (ИД)' = DATA employee (committee);
+commonNameChairmanCommittee 'Председатель комиссии' (committee) = commonName(chairmanCommittee(committee)) IN baseGroup;
+departmentStoreCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (committee);
+nameDepartmentStoreCommittee 'Отдел комиссии' (committee) = commonName(departmentStoreCommittee(committee)) IN baseGroup;
+CONSTRAINT CHECKED chairmanCommittee(revaluationCommittee) AND NOT departmentStoreEmployee(departmentStoreCommittee(revaluationCommittee), chairmanCommittee(revaluationCommittee)) MSG 'Отдел комиссии должен соответствовать отделу председателя комиссии';
+CONSTRAINT CHECKED departmentStoreCommittee(revaluationCommitteeDepartmentStore(departmentStore)) != departmentStore MSG 'Отдел комиссии должен соответствовать текущему отделу';
 
-inDepartmentStoreEmployeeRevaluationCommittee (revaluationCommittee, employee) = departmentStoreEmployee(departmentStoreRevaluationCommittee(revaluationCommittee), employee);
-inCommitteeDepartmentStore 'Является членом комиссии' (revaluationCommittee, employee) = DATA BOOLEAN (revaluationCommittee, employee);
+inDepartmentStoreEmployeeRevaluationCommittee (revaluationCommittee, employee) = departmentStoreEmployee(departmentStoreCommittee(revaluationCommittee), employee);
+inCommitteeEmployee 'Является членом комиссии' (committee, employee) = DATA BOOLEAN (committee, employee);
 
-FORM revaluationCommittee 'Комиссия переоценки'
-OBJECTS c=revaluationCommittee FIXED PANEL, e=employee
-PROPERTIES(c) name, nameDepartmentStoreRevaluationCommittee, commonNameChairmanRevaluationCommittee
+FORM committee 'Комиссия'
+OBJECTS c=committee FIXED PANEL, e=employee
+PROPERTIES(c) name, nameDepartmentStoreCommittee, commonNameChairmanCommittee
 PROPERTIES(e) READONLY name
 PROPERTIES(e) userFirstName, userLastName, ADDSESSIONFORM, EDITSESSIONFORM, delete
-PROPERTIES(c, e) inCommitteeDepartmentStore
+PROPERTIES(c, e) inCommitteeEmployee
 FILTERS NOT NULL inDepartmentStoreEmployeeRevaluationCommittee(c, e)
-EDIT revaluationCommittee OBJECT c;
+EDIT committee OBJECT c;
 
 FORM employeesCommittees 'Сотрудники и комиссии '
-OBJECTS c=revaluationCommittee, e=employee
-PROPERTIES(c) READONLY name, nameDepartmentStoreRevaluationCommittee, commonNameChairmanRevaluationCommittee
+OBJECTS c=committee, e=employee
+PROPERTIES(c) READONLY name, nameDepartmentStoreCommittee, commonNameChairmanCommittee
 PROPERTIES(c) ADDFORM, EDITFORM, delete
 PROPERTIES(e) READONLY userFirstName, userLastName
-FILTERS NOT NULL inCommitteeDepartmentStore(c, e);
+FILTERS NOT NULL inCommitteeEmployee(c, e);
 
 // ----------------------------------- Банк ------------------------------------------- //
 
@@ -1544,8 +1553,8 @@ FILTERS NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, so, d)
 PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormaddressLegalEntity, postAddressLegalEntity, showFormpostAddressLegalEntity,
               managerLegalEntity, showFormmanagerLegalEntity, accountantLegalEntity, showFormaccountantLegalEntity,
               phoneLegalEntity, showFormphoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
-              dataOverrideAccountLegalEntity, residentLegalEntity, manufacturerLegalEntity, dataOverrideContractSupplier, surePercentSupplier, allowablePercentSupplier,
-              afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier, dataActingLicenseLegalEntity
+              residentLegalEntity, manufacturerLegalEntity, surePercentSupplier, allowablePercentSupplier,
+              afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier //dataActingLicenseLegalEntity, dataOverrideContractSupplier, dataOverrideAccountLegalEntity
 PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
 PROPERTIES(c) dataContract, nameCompanyContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract,   // nameFormContract
               delayContract, showFormdelayContract, requestContract, noteContract, ADDOBJ, delete
@@ -1553,7 +1562,6 @@ PROPERTIES(l) dataLicense, dateFromLicense, dateToLicense, ADDOBJ, delete   //  
 PROPERTIES(d) nameStoreDepartmentStore, name
 PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
 PROPERTIES (s, d, dt) namesureSupplierDepartmentStoreOver HIGHLIGHTIF namesureSupplierDepartmentStoreDate(s, d, dt)
-//PROPERTIES (s, d) showFormNamesureSupplierDepartmentStoreOver
 PROPERTIES(s,d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore, showFormNamesureSupplierDepartmentStoreOver //namesureSupplierDepartmentStore, showFormNamesureSupplierDepartmentStore
 PROPERTIES(s,c) equalsSupplierContract
 PROPERTIES(s,a) equalsLegalEntityAccount
@@ -1655,7 +1663,7 @@ nameSupplierOrderSupplier 'Поставщик заказ' (orderSupplier) = name
 completePercentageOrderSupplier 'Процент выполнения' (orderSupplier) = DATA DOUBLE (orderSupplier) IN baseGroup;
 
 quantityPackItem2 'Количество в грузовом месте' (item) = UNION OVERRIDE 1 IF item IS item, quantityPackItem(item);
-itemAssortmentOrderSupplier 'Ассортимен заказа' (orderSupplier, item) = itemAssortmentSupplier(departmentStoreOrderSupplier(orderSupplier), supplierOrderSupplier(orderSupplier), item);
+itemAssortmentOrderSupplier 'Ассортимент заказа' (orderSupplier, item) = itemAssortmentSupplier(departmentStoreOrderSupplier(orderSupplier), supplierOrderSupplier(orderSupplier), item);
 packQuantityItemOrderSupplier 'Количество мест' = DATA INTEGER (orderSupplier, item);
 sumQuantityItemOrderSupplier 'Сумарное количество товара' (orderSupplier, item) = quantityPackItem2(item) * packQuantityItemOrderSupplier(orderSupplier, item);
 fullPriceItemOrderSupplier 'Цена с НДС' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item) IN baseGroup;
@@ -2146,8 +2154,8 @@ nameItemDetailCutting 'Наименование товара' (detailCutting) = 
 factorDetailCutting 'Рассчетный коэффициент цены' = DATA DOUBLE (detailCutting) IN cutGroup;
 percGoodsDetailCutting '% выхода товара' = DATA DOUBLE (detailCutting) IN cutGroup;
 
+uniqueDetailCuttingCutting(cutting, item) = GROUP UNIQUE detailCutting BY cuttingDetailCutting(detailCutting), itemDetailCutting(detailCutting);
 isCuttingDetailCutting(cutting, detailCutting) = cuttingDetailCutting(detailCutting) == cutting;
-    // todo :  надо сделать свойство на уникальность товара в карте разруба
 
 inItemCutting 'Вкл.' = DATA BOOLEAN (item, cutting) IN cutGroup;
 
@@ -2276,6 +2284,91 @@ PROPERTIES(st, gr)  barcodeBarcodeStageGroupMachinery, priceStageGroupMachinery,
                     timeStageGroupMachinery, stockStageGroupMachinery
 FILTERS  NOT NULL barcodeStageGroupMachinery(st, gr);
 
+//---------------------------- Проведение инвентаризации ----------------------------------------//
+
+CLASS inventory 'Ивнентаризация' : historyObject, postedObject;
+CLASS ABSTRACT listInventory 'Опись';
+CLASS listInventoryPosted 'Закрытая опись' : listInventory;
+CLASS collationSheet 'Сличительная ведомость';
+CLASS pageList 'Страница описи';
+CLASS detailPage 'Строка';
+
+dateToInventory 'Остатки выставить на (утро) дату' = DATA DATE (inventory) IN baseGroup;
+timeToInventory 'Выставить остатки на время' = DATA STRING[10] (inventory) IN baseGroup;        // переделать: должен быть класс - время
+noteInventory 'Примечание (основание)' = DATA STRING[500] (inventory) IN baseGroup;
+dateClosedInventory 'Дата закрытия инвенторизации' = DATA DATE (inventory) IN baseGroup;
+timeClosedInventory 'Время закрытия инвенторизации' = DATA STRING[10] (inventory) IN baseGroup;// переделать: должен быть класс - время
+// userCreated кто создал
+//  timeClosed, commonNameUserClosed     кто закрыл
+infoInventory 'Дополнительная информация по инвенторизации' = DATA STRING[500] (inventory) IN baseGroup;
+IPInventory 'IP адрес, с которого закрыта инвенторизация' = DATA STRING[100] (inventory) IN baseGroup;
+
+storeInventory 'Магазин ИД' = DATA store (inventory) IN idGroup;
+nameStoreInventory 'Магазин' = name(storeInventory(inventory)) IN baseGroup;
+
+nameCollationSheet 'Номер (название сличит. ведомости)' = DATA STRING[50] (collationSheet) IN baseGroup;
+inventoryCollationSheet(collationSheet) = DATA inventory (collationSheet) IN idGroup;
+inInventoryCollationSheet(inventory, collationSheet) = inventoryCollationSheet(collationSheet) == inventory;
+departmentStoreCollationSheet(collationSheet) = DATA departmentStore (collationSheet) IN idGroup;
+nameDepartmentStoreCollationSheet 'Отдел' (collationSheet) = name(departmentStoreCollationSheet(collationSheet)) IN baseGroup;
+//inDepartmentStoreCollationSheet(departmentStore, collationSheet) = departmentStoreCollationSheet(collationSheet) == departmentStore;
+//storeInventoryCollationSheet(collationSheet) = storeInventory(inventoryCollationSheet(collationSheet)) IN idGroup;
+CONSTRAINT CHECKED  storeInventory(inventoryCollationSheet(collationSheet)) != storeDepartmentStore(departmentStoreCollationSheet(collationSheet))  MSG 'Отдел для слич. ведомости не соответствует магазину по инвентаризации';
+
+collationSheetListInventory(listInventory) = DATA collationSheet (listInventory) IN idGroup;
+inCollationSheetListInventory(collationSheet, listInventory) = collationSheetListInventory(listInventory) == collationSheet;
+//departmentStoreCollationSheetListInventory(listInventory) = departmentStoreCollationSheet(collationSheetListInventory(listInventory)) IN idGroup;
+
+sidListInventory 'Номер описи' = DATA INTEGER (listInventory) IN baseGroup;
+noteListInventory 'Примечание (наименование описи)' = DATA STRING[100] (listInventory) IN baseGroup;
+committeeListInventory(listInventory) = DATA inventoryCommittee (listInventory) IN idGroup;
+inInventoryCommitteeEmployee(listInventory, employee) = inCommitteeEmployee(committeeListInventory(listInventory), employee);
+
+nameCommitteeListInventory 'Название комиссии' (listInventory) = name(committeeListInventory(listInventory)) IN baseGroup;
+commonNameChairmanCommitteeListInventory 'Председатель комиссии' (listInventory) = commonNameChairmanCommittee(committeeListInventory(listInventory)) IN baseGroup;
+nameDepartmentStoreListInventory 'Подразделение' (listInventory) = name(departmentStoreCollationSheet(collationSheetListInventory(listInventory))) IN baseGroup;
+closeListInventory 'Закрыть' = DATA BOOLEAN (listInventory) IN baseGroup;
+
+listInventoryPageList(pageList) = DATA listInventory (pageList) IN baseGroup;
+inListInventoryPageList(listInventory, pageList) = listInventoryPageList(pageList) == listInventory;
+sidPageList 'Номер страницы' = DATA INTEGER (pageList) IN baseGroup;
+notePageList 'Примечание к странице' = DATA STRING[100] (pageList) IN baseGroup;
+
+pageListDetailPage(detailPage) = DATA pageList (detailPage) IN idGroup;
+inPageListDetailPage(pageList, detailPage) = pageListDetailPage(detailPage) == pageList;
+barcodeDetailPage(detailPage) = DATA barcode (detailPage) IN idGroup;
+sidDetailPage 'Номер строки' = DATA INTEGER (detailPage) IN baseGroup;
+nameBarcodeDetailPage 'Штрих-код' (detailPage) = barcode(barcodeDetailPage(detailPage)) IN baseGroup;
+// по Ш-К выбрать товар
+itemDetailPage(detailPage) = DATA item (detailPage) IN idGroup;       // потом переделаеть от Ш-К
+nameAttributeItemDetailPage 'Товар' (detailPage) = nameAttributeItem(itemDetailPage(detailPage)) IN baseGroup;
+
+quantityCountedDetailPage 'Количество посчитано' = DATA DOUBLE (detailPage) IN baseGroup;
+priceDetailPage 'Цена за ед.' = DATA INTEGER (detailPage) IN baseGroup;
+totalDetailPage 'Сумма' (detailPage) = priceDetailPage(detailPage) * quantityCountedDetailPage(detailPage) IN baseGroup;
+
+quantityDetailPageList 'Количество строк' (pageList) = GROUP SUM 1 IF detailPage IS detailPage BY pageListDetailPage(detailPage) IN baseGroup;
+quantityCountedPageList 'Количество посчитано' (pageList) = GROUP SUM quantityCountedDetailPage(detailPage) BY pageListDetailPage(detailPage) IN baseGroup;
+totalPageList 'Сумма посчитанного' (pageList) = GROUP SUM totalDetailPage(detailPage) BY pageListDetailPage(detailPage) IN baseGroup;
+
+quantityDetailListInventory 'Количество строк' (listInventory) = GROUP SUM quantityDetailPageList(pageList) BY listInventoryPageList(pageList) IN baseGroup;
+quantityCountedListInventory 'Количество посчитано' (listInventory) = GROUP SUM quantityCountedPageList(pageList) BY listInventoryPageList(pageList) IN baseGroup;
+totalDetailListInventory 'Сумма посчитанного' (listInventory) = GROUP SUM totalPageList(pageList) BY listInventoryPageList(pageList) IN baseGroup;
+
+quantityDetailCollationSheet 'Количество строк' (collationSheet) = GROUP SUM quantityDetailListInventory(listInventory) BY collationSheetListInventory(listInventory) IN baseGroup;
+quantityCountedCollationSheet 'Количество посчитано' (collationSheet) = GROUP SUM quantityCountedListInventory(listInventory) BY collationSheetListInventory(listInventory) IN baseGroup;
+totalDetailCollationSheet 'Сумма посчитанного' (collationSheet) = GROUP SUM totalDetailListInventory(listInventory) BY collationSheetListInventory(listInventory) IN baseGroup;
+
+includeCollationSheetItem 'Вкл в ведомость' = DATA BOOLEAN (collationSheet, item) IN baseGroup;
+
+quantityCountedCollationSheetItem 'Количество посчитано' (collationSheet, item) = GROUP SUM quantityCountedDetailPage(detailPage) IF includeCollationSheetItem(collationSheet, item) BY itemDetailPage(detailPage), collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage)));
+totalCollationSheetItem 'Сумма посчитанного' (collationSheet, item) = GROUP SUM totalDetailPage(detailPage) IF includeCollationSheetItem(collationSheet, item) BY itemDetailPage(detailPage), collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage)));
+
+//inCollationSheetItem (collationSheet, item) =  TRUE IF quantityCountedCollationSheetItem(collationSheet, item) AND includeCollationSheetItem(collationSheet, item);
+//priceCollationSheetItem 'Цена за ед.'  (collationSheet, item) =  GROUP MAX priceDetailPage(detailPage) BY itemDetailPage(detailPage), collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage)));
+//totalCollationSheetItem 'Сумма посчитанного' (collationSheet, item) = quantityCountedCollationSheetItem(collationSheet, item) * priceCollationSheetItem(collationSheet, item);   наверное не правильно
+
+
 //---------------------------- Кассовые отчеты ----------------------------------------//
 CLASS cashReport 'Кассовый отчет' : transaction;
 CLASS cashDocument 'Кассовый документ';
@@ -2402,7 +2495,7 @@ NAVIGATOR {
             ADD departmentStore;
             ADD store;
             ADD tradingNetwork;
-            ADD revaluationCommittee;
+            ADD committee;
             ADD bank;
             ADD ownership;
             ADD supplier;
