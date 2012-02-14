@@ -1654,6 +1654,10 @@ CLASS ABSTRACT order 'Заказ' : named, historyObject;
 CLASS orderSupplier 'Заказ поставщику' : order;
 //CLASS orderStock 'Заказ складу' :order;
 
+dataOrderSupplier 'Номер заказа' (orderSupplier) = DATA INTEGER (orderSupplier) IN baseGroup;
+maxDataOrderSupplier = UNION OVERRIDE 0, [GROUP MAX dataOrderSupplier(orderSupplier)]();
+nextDataOrderSupplier = maxDataOrderSupplier() + 1;
+dataOrderSupplier (orderSupplier) <- OLD nextDataOrderSupplier() ON ASSIGN orderSupplier IS orderSupplier;
 curDateOrderSupplier 'Дата заказа' = DATA DATE (orderSupplier);
 dateOrderSupplier 'Дата поставки' = DATA DATE (orderSupplier);
 departmentStoreOrderSupplier 'Отдел заказа (ИД)' = DATA departmentStore (orderSupplier);
@@ -1681,7 +1685,7 @@ createOrderSupplier 'Создать заказ' = ACTION (sup, dep, dt) {
 
 FORM orderSupplier 'Заказ поставщику'
 OBJECTS o=orderSupplier FIXED PANEL, i=item
-PROPERTIES(o) name, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
+PROPERTIES(o) dataOrderSupplier READONLY, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
               nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
 PROPERTIES(i) nameAttributeItem, quantityPackItem2
 PROPERTIES(o, i) packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
@@ -1692,7 +1696,7 @@ EDIT orderSupplier OBJECT o;
 
 FORM orderSuppliers 'Заказы поставщику'
 OBJECTS o=orderSupplier, i=item
-PROPERTIES(o) READONLY name, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
+PROPERTIES(o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
                        nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
 PROPERTIES(o) ADDFORM, EDITFORM, delete
 PROPERTIES(i) READONLY nameAttributeItem
@@ -1713,7 +1717,7 @@ PROPERTIES(s) READONLY name
 PROPERTIES(s, d, t) timeTableDate, createOrderSupplier
 //FILTERS NOT NULL timeTableDate(s, d, t);
 FILTERGROUP filters
-    FILTER 'Показывать с поставкой на дату' 'F10' NOT NULL timeTableDate(s, d, t);
+    FILTER 'Показывать с поставкой на дату' 'F10' NOT NULL timeTableDate(s, d, t) DEFAULT;
 
 //--------------------------------------Формы--------------------------------------------------------------------------//
 
@@ -2405,6 +2409,29 @@ PROPERTIES (r) ADDFORM, EDITFORM, delete
 PROPERTIES (d) READONLY numberCashDocument, sumCashDocument
 FILTERS NOT NULL inCashReportDocument(r,d);
 
+//---------------------------- Приход товара от поставщика ----------------------------------------//
+CLASS shipment 'Поставка': historyObject;
+CLASS batch 'Партия';
+CLASS shipmentDetail 'Строка документа поставки': batch;
+
+waybillShipment 'Номер накладной' (shipment) = DATA STRING[7] (shipment) IN baseGroup;
+dateWaybillShipment 'Дата поставки' (shipment) = DATA DATE (shipment) IN baseGroup;
+supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipment) IN idGroup;
+nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN baseGroup;
+noteShipment 'Примечание' (shipment) = DATA STRING[100] (shipment) IN baseGroup;
+carryingChargesShipment 'Транспортные расходы' (shipment) = DATA DOUBLE (shipment) IN baseGroup;
+inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) = DATA BOOLEAN (shipment, orderSupplier) IN idGroup;
+ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(dataOrderSupplier(orderSupplier)) IF inShipmentOrder(shipment, orderSupplier), ', ' BY shipment;
+
+itemShipmentDetail 'Товар строки документа поставки (ИД)' (shipmentDetail) = DATA item (shipmentDetail) IN idGroup;
+nameAttributeItemShipmentDetail 'Товар строки документа поставки' (shipmentDetail) =  nameAttributeItem(itemShipmentDetail(shipmentDetail)) IN baseGroup;
+
+
+FORM shipments 'Поставки'
+OBJECTS s=shipment, o=orderSupplier
+PROPERTIES (s) waybillShipment, dateWaybillShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment, ADDOBJ
+PROPERTIES (s, o) inShipmentOrder;
+
 //---------------------------- Импорт данных ----------------------------------------//
 
 importDataAction 'Импортировать данные' = ACTION 'rublevski.actions.ImportDataActionProperty';
@@ -2476,6 +2503,9 @@ NAVIGATOR {
             ADD orderSuppliers;
             ADD genTimeTables;
             ADD timeTableDate;
+        }
+        NEW incomeShipments 'Поставки' {
+            ADD shipments;
         }
     }
 
