@@ -94,6 +94,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         if (!componentsChanged) {
             componentsChanged = true;
             if (e.getComponent() != null && e.getComponent().getParent() instanceof JTabbedPane)
+                // приходится вставлять такую затычку, поскольку если быстро переключаться между вкладками, то componentHidden приходит после layoutContainer и invalidate почему-то его повторно не вызывает
                 layoutContainer(mainContainer);
             else
                 mainContainer.invalidate();

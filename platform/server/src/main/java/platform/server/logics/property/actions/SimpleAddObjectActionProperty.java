@@ -38,10 +38,12 @@ public class SimpleAddObjectActionProperty extends CustomActionProperty {
 
         DataObject object;
         if (valueClass.hasChildren()) {
+            // нужен такой чит, поскольку в FlowAction может вызываться ADDOBJ с конкретным классом, у которого есть потомки, но при этом не будет передан context.getValueObject()
+            boolean valueProvided = !getValueClass().getDefaultValue().equals(context.getValueObject());
             if (form != null) {
-                object = form.addObject((ConcreteCustomClass) form.getCustomClass((Integer) context.getValueObject()));
+                object = form.addObject((ConcreteCustomClass) (valueProvided ? form.getCustomClass((Integer) context.getValueObject()) : valueClass));
             } else {
-                object = context.getSession().addObject((ConcreteCustomClass) valueClass.findClassID((Integer) context.getValueObject()), context.getModifier());
+                object = context.getSession().addObject((ConcreteCustomClass) (valueProvided ? valueClass.findClassID((Integer) context.getValueObject()) : valueClass), context.getModifier());
             }
         } else {
             if (form != null) {
