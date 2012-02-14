@@ -519,12 +519,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         tableKey = addConcreteClass("tableKey", getString("logics.tables.key"), baseClass);
         tableColumn = addConcreteClass("tableColumn", getString("logics.tables.column"), baseClass);
 
-        month = addStaticClass("month", "Месяц",
+        month = addStaticClass("month", getString("logics.month"),
                 new String[]{"january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"},
-                new String[]{"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"});
-        DOW = addStaticClass("DOW", "День недели",
+                new String[]{getString("logics.month.january"), getString("logics.month.february"), getString("logics.month.march"), getString("logics.month.april"), getString("logics.month.may"), getString("logics.month.june"), getString("logics.month.july"), getString("logics.month.august"), getString("logics.month.september"), getString("logics.month.october"), getString("logics.month.november"), getString("logics.month.december")});
+        DOW = addStaticClass("DOW", getString("logics.week.day"),
                   new String[]{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"},
-                  new String[]{"Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"});
+                  new String[]{getString("logics.days.sunday"), getString("logics.days.monday"), getString("logics.days.tuesday"), getString("logics.days.wednesday"), getString("logics.days.thursday"), getString("logics.days.friday"), getString("logics.days.saturday")});
     }
 
     @Override
@@ -667,15 +667,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         dayInDate = addSFProp("(extract(day from (prm1)))", IntegerClass.instance, 1);
         dateInTime = addSFProp("(CAST((prm1) as date))", DateClass.instance, 1);
 
-        numberMonth = addOProp(baseGroup, "numberMonth", true, "Номер месяца", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(month), 1), PartitionType.SUM, true, true, 0, 1);
-        numberToMonth = addAGProp("numberToMonth", "Месяц (ИД)", numberMonth);
-        monthInDate = addJProp("monthInDate", "Месяц (ИД)", numberToMonth, numberMonthInDate, 1);
+        numberMonth = addOProp(baseGroup, "numberMonth", true, getString("logics.month.number"), addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(month), 1), PartitionType.SUM, true, true, 0, 1);
+        numberToMonth = addAGProp("numberToMonth", getString("logics.month.id"), numberMonth);
+        monthInDate = addJProp("monthInDate", getString("logics.month.id"), numberToMonth, numberMonthInDate, 1);
 
-        numberDOW = addJProp(baseGroup, "numberDOW", true, "Номер дня недели", subtractInteger2,
-                addOProp("numberDOWP1", "Номер дня недели (+1)", PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(DOW), 1), true, false, 0, 1), 1,
+        numberDOW = addJProp(baseGroup, "numberDOW", true, getString("logics.week.day.number"), subtractInteger2,
+                addOProp("numberDOWP1", getString("logics.week.day.number.plus.one"), PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(DOW), 1), true, false, 0, 1), 1,
                 addCProp(IntegerClass.instance, 1));
-        numberToDOW = addAGProp("numberToDOW", "День недели (ИД)", numberDOW);
-        DOWInDate = addJProp("DOWInDate", "День недели (ИД)", numberToDOW, numberDOWInDate, 1);
+        numberToDOW = addAGProp("numberToDOW", getString("logics.week.day.id"), numberDOW);
+        DOWInDate = addJProp("DOWInDate", getString("logics.week.day.id"), numberToDOW, numberDOWInDate, 1);
 
         delete = addAProp(new DeleteObjectActionProperty(baseClass));
 
@@ -687,12 +687,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
         onlyNotZero.property.isOnlyNotZero = true;
 
-        daysInclBetweenDates = addJProp("daysInclBetweenDates", "Кол-во дней", and(false, false), addJProp(subtractInclInteger2, 2, 1), 1, 2, is(DateClass.instance), 1, is(DateClass.instance), 2);
-        weeksInclBetweenDates = addJProp("weeksInclBetweenDates", "Кол-во недель", divideInteger, daysInclBetweenDates, 1, 2, addCProp(IntegerClass.instance, 7));
-        weeksNullInclBetweenDates = addJProp("weeksNullInclBetweenDates", "Кол-во недель", onlyNotZero, weeksInclBetweenDates, 1, 2);
+        daysInclBetweenDates = addJProp("daysInclBetweenDates", getString("logics.date.quantity.days"), and(false, false), addJProp(subtractInclInteger2, 2, 1), 1, 2, is(DateClass.instance), 1, is(DateClass.instance), 2);
+        weeksInclBetweenDates = addJProp("weeksInclBetweenDates", getString("logics.date.quantity.weeks"), divideInteger, daysInclBetweenDates, 1, 2, addCProp(IntegerClass.instance, 7));
+        weeksNullInclBetweenDates = addJProp("weeksNullInclBetweenDates", getString("logics.date.quantity.weeks"), onlyNotZero, weeksInclBetweenDates, 1, 2);
 
-        sumDateWeekFrom = addJProp("sumDateWeekFrom", "Дата (с)", and(false, false), addSFProp("((prm1)+(prm2)*7)", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
-        sumDateWeekTo = addJProp("sumDateWeekTo", "Дата (по)", and(false, false), addSFProp("((prm1)+((prm2)*7+6))", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
+        sumDateWeekFrom = addJProp("sumDateWeekFrom", getString("logics.date.from"), and(false, false), addSFProp("((prm1)+(prm2)*7)", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
+        sumDateWeekTo = addJProp("sumDateWeekTo", getString("logics.date.to"), and(false, false), addSFProp("((prm1)+((prm2)*7+6))", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
 
         betweenDates = addJProp(getString("logics.date.of.doc.between"), between, object(DateClass.instance), 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
         betweenDate = addJProp(getString("logics.date.of.doc.between"), betweenDates, date, 1, 2, 3);
@@ -878,14 +878,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         captionProperty = addDProp(baseGroup, "captionProperty", getString("logics.property.caption"), propertyCaptionValueClass, property);
         SIDToProperty = addAGProp("SIDToProperty", getString("logics.property"), SIDProperty);
 
-        isDerivedChangeNotification = addDProp(baseGroup, "isDerivedChangeNotification", "При любом изменении", LogicalClass.instance, notification);
-        emailFromNotification = addDProp(baseGroup, "emailFromNotification", "Адрес отправителя", StringClass.get(50), notification);
-        emailToNotification = addDProp(baseGroup, "emailToNotification", "Адрес получателя", StringClass.get(50), notification);
-        emailToCCNotification = addDProp(baseGroup, "emailToCCNotification", "Копия", StringClass.get(50), notification);
-        emailToBCNotification = addDProp(baseGroup, "emailToBCNotification", "Скрытая копия", StringClass.get(50), notification);
-        textNotification = addDProp(baseGroup, "textNotification", "Текст письма", TextClass.instance, notification);
-        subjectNotification = addDProp(baseGroup, "subjectNotification", "Тема письма", StringClass.get(100), notification);
-        inNotificationProperty = addDProp(baseGroup, "inNotificationProperty", "Вкл", LogicalClass.instance, notification, baseLM.property);
+        isDerivedChangeNotification = addDProp(baseGroup, "isDerivedChangeNotification", getString("logics.notification.for.any.change"), LogicalClass.instance, notification);
+        emailFromNotification = addDProp(baseGroup, "emailFromNotification", getString("logics.notification.sender.address"), StringClass.get(50), notification);
+        emailToNotification = addDProp(baseGroup, "emailToNotification", getString("logics.notification.recipient.address"), StringClass.get(50), notification);
+        emailToCCNotification = addDProp(baseGroup, "emailToCCNotification", getString("logics.notification.copy"), StringClass.get(50), notification);
+        emailToBCNotification = addDProp(baseGroup, "emailToBCNotification", getString("logics.notification.blind.copy"), StringClass.get(50), notification);
+        textNotification = addDProp(baseGroup, "textNotification", getString("logics.notification.text"), TextClass.instance, notification);
+        subjectNotification = addDProp(baseGroup, "subjectNotification", getString("logics.notification.topic"), StringClass.get(100), notification);
+        inNotificationProperty = addDProp(baseGroup, "inNotificationProperty", getString("logics.notification.enable"), LogicalClass.instance, notification, baseLM.property);
 
         permitViewUserRoleProperty = addDProp(baseGroup, "permitViewUserRoleProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, userRole, property);
         permitViewUserProperty = addJProp(baseGroup, "permitViewUserProperty", getString("logics.policy.permit.property.view"), permitViewUserRoleProperty, userMainRole, 1, 2);

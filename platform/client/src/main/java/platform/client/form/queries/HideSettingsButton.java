@@ -129,11 +129,11 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
                 }
             });
 
-            JButton OKButton = new JButton("OK");
-            OKButton.addActionListener(new ActionListener() {
+            JButton okButton = new JButton("OK");
+            okButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        OKButtonPressed();
+                        okButtonPressed();
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
@@ -152,7 +152,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
             });
 
             JPanel buttonsPanel = new JPanel();
-            buttonsPanel.add(OKButton);
+            buttonsPanel.add(okButton);
             buttonsPanel.add(cancelButton);
 
             JPanel checkAllPanel = new JPanel();
@@ -172,7 +172,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
             add(groupScrollPane, BorderLayout.CENTER);
         }
 
-        private void OKButtonPressed() throws IOException {
+        private void okButtonPressed() throws IOException {
 
             for (int i = 0; i < groupChecks.size(); i++) {
                 if (changedCheckBoxes.contains(groupChecks.get(i).getText())) {
@@ -193,7 +193,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
             Map<String, FormUserPreferences> preferences = new HashMap<String, FormUserPreferences>();
 
             for (int i = 0; i < groupChecks.size(); i++) {
-                Boolean needToHideSet = changedCheckBoxes.contains(groupChecks.get(i).getText())? true : false;
+                Boolean needToHideSet = changedCheckBoxes.contains(groupChecks.get(i).getText());
                 preferences.put(initialTable.getProperty(i).getSID(),
                             new FormUserPreferences(!needToHideSet ? null : groupChecks.get(i).isSelected(), initialTable.getProperty(i).widthUser));
             }
