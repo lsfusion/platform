@@ -373,12 +373,16 @@ OBJECTS r=rateWaste FIXED PANEL
 PROPERTIES(r) name, percentRateWaste;
 
 // ----------------------------------- Товар ------------------------------------------ //
-GROUP descriptionGroup 'Общее описание' : baseGroup;
-GROUP sizeGroup 'Ячеестое хранение' : publicGroup;
-GROUP substanceGroup 'Пищевые характеристики' : publicGroup;
+GROUP descriptionGroup 'Общее описание' : publicGroup;
+GROUP headGroup 'Базовые свойства' : baseGroup;
+GROUP sizeGroup 'Ячеистое хранение' : publicGroup;
 GROUP retailGroup 'Ценообразование' : publicGroup;
+GROUP discountGroup 'Скидки' : retailGroup;
 GROUP expiryGroup 'Контроль сроков годности' : publicGroup;
 GROUP equipmentGroup 'Внешние устройства' : publicGroup;
+GROUP substanceGroup 'Пищевые характеристики' : equipmentGroup;
+GROUP tagGroup 'Для ценника' : equipmentGroup;
+
 GROUP manufactoryGroup 'Производство' : publicGroup;
 GROUP orderGroup 'Заказ' : publicGroup;
 GROUP barGroup 'Бар' : publicGroup;
@@ -414,7 +418,7 @@ nameTypeItemItem 'Вид' = name(typeItemItem(item)) IN descriptionGroup;
 @metaCodeShowItemAttribute(Type, 'Показывать тип', displayGroup);
 
 unitOfMeasureItem = DATA unitOfMeasure (item) IN idGroup;
-shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortName(unitOfMeasureItem(item)) IN descriptionGroup;
+shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortName(unitOfMeasureItem(item)) IN headGroup;
 @metaCodeShowItemAttribute(UnitOfMeasure, 'Показывать ед.измерения', displayGroup);
 
 sortItem = DATA sort(item) IN idGroup;
@@ -451,7 +455,7 @@ nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegree
 @metaCodeShowItemAttribute(CoolingDegree, 'Показывать степень охлаждения', displayGroup);
 
 countryItem = DATA country (item) IN idGroup;
-nameCountryItem 'Страна' = name(countryItem(item)) IN descriptionGroup;
+nameCountryItem 'Страна' = name(countryItem(item)) IN headGroup;
 @metaCodeShowItemAttribute(Country, 'Показывать страну', displayGroup);
 
 isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN manufactoryGroup;
@@ -462,7 +466,7 @@ nameFormItemItem 'Форма товара (особенности нарезки
 @metaCodeShowItemAttribute(FormItem, 'Показывать форму', displayGroup);
 
 numberInPackItem = DATA numberInPack (item) IN idGroup;
-nameNumberInPackItem 'Кол-во в упаковке' = name(numberInPackItem(item)) IN descriptionGroup;
+nameNumberInPackItem 'Кол-во в упаковке' = name(numberInPackItem(item)) IN orderGroup;
 @metaCodeShowItemAttribute(NumberInPack, 'Показывать кол-во в упаковке', displayGroup);
 
 rateWasteItem = DATA rateWaste(item) IN idGroup;
@@ -478,22 +482,24 @@ nameWareItem 'Посуда' = name(wareItem(item)) IN retailGroup;
 isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN equipmentGroup;
 isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN equipmentGroup;
 compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
-tagItem 'Ценник (ИД)' = DATA tag (item) IN idGroup;
-nameTagItem 'Ценник' = name(tagItem(item)) IN equipmentGroup;
-multiplierItem 'Множитель для печати ценника' = DATA DOUBLE (item) IN equipmentGroup;
 isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN equipmentGroup;
 isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN equipmentGroup;
 passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equipmentGroup;
 
 //substanceGroup
-percentFatItem '% жирности' =  DATA DOUBLE (item) IN descriptionGroup;
-percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN descriptionGroup;
-nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN equipmentGroup;
-energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN equipmentGroup;
-fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN equipmentGroup;
-carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN equipmentGroup;
-proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN equipmentGroup;
-isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN equipmentGroup;
+percentFatItem '% жирности' =  DATA DOUBLE (item) IN substanceGroup;
+percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN substanceGroup;
+nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN substanceGroup;
+energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN substanceGroup;
+fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
+carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
+proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
+isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGroup;
+
+//tagGroup
+tagItem 'Ценник (ИД)' = DATA tag (item) IN idGroup;
+nameTagItem 'Ценник' = name(tagItem(item)) IN tagGroup;
+multiplierItem 'Множитель для печати ценника' = DATA DOUBLE (item) IN tagGroup;
 
 //sizeGroup
 lengthItem 'Длина товара' = DATA INTEGER (item) IN sizeGroup;
@@ -513,8 +519,8 @@ minResourceItem 'Минимальный запас' = DATA INTEGER (item) IN ord
 minReserveItem 'Минимальный резерв' = DATA INTEGER (item) IN orderGroup;
 bonusReturnItem 'Уценка (бонус) по товару при возврате поставщику' = DATA DOUBLE (item) IN documentGroup;
 nameReturnItem 'Наименование для уценки, бонуса по товару в возврат' = DATA STRING[200] (item) IN documentGroup;
-quantityDiscountItem 'Количество товара, при котором предост-ся скидка' = DATA INTEGER (item) IN retailGroup;
-fixPriceItem 'Фиксированная цена при соотв.типе скидки' = DATA INTEGER (item) IN retailGroup;
+quantityDiscountItem 'Количество товара, при котором предост-ся скидка' = DATA INTEGER (item) IN discountGroup;
+fixPriceItem 'Фиксированная цена при соотв.типе скидки' = DATA INTEGER (item) IN discountGroup;
 isFixPriceItem 'Товар с фиксированной ценой' = DATA BOOLEAN (item) IN retailGroup;
 banMarkdownItem 'Запретить уценку товара' = DATA BOOLEAN (item) IN retailGroup;
 oldPriceItem 'Старая цена для печати на ценник' = DATA DOUBLE (item) IN retailGroup;
@@ -941,7 +947,7 @@ GROUP historyGroup 'Изменяемые характеристики' : baseGro
 
 @metaCodeNameObjectDateProperty(isPortionBarItem, item, 'Порционный товар для бара', yesNo, barGroup);
 
-@metaCodeNameObjectDateProperty(banDiscountItem, item, 'Запретить скидки по товару', yesNo, retailGroup);
+@metaCodeNameObjectDateProperty(banDiscountItem, item, 'Запретить скидки по товару', yesNo, discountGroup);
 
 @metaCodeObjectDateProperty(coefficientNetGrossItem, item, 'Сезонный коэффициент пересчета сырья из нетто в брутто', DOUBLE, manufactoryGroup);
 
@@ -952,6 +958,7 @@ GROUP historyGroup 'Изменяемые характеристики' : baseGro
 //@metaCodeObjectDateProperty(NDSSupplierItem, item, 'НДС поставщика,%', DOUBLE, historyGroup);
 
 @metaCodeObjectDateProperty(importerPriceItem, item, 'Цена импортёра', DOUBLE, retailGroup);
+
 
 //---------------------------- Налоги ----------------------------------------//
 
@@ -1086,13 +1093,13 @@ TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
 @metaCodeNameDoubleObjectDateProperty(banRevaluationItemDepartment, item, departmentStore, 'Запрет на переоценку', yesNo, retailGroup);
 
-@metaCodeNameDoubleObjectDateProperty(inActionItemDepartment, item, departmentStore, 'Товар акции', yesNo, retailGroup);
+@metaCodeNameDoubleObjectDateProperty(inActionItemDepartment, item, departmentStore, 'Товар акции', yesNo, discountGroup);
 
 @metaCodeDoubleObjectDateProperty(marginProductionItemDepartment, item, departmentStore, 'Наценка производства', DOUBLE, retailGroup);
 
 @metaCodeDoubleObjectDateProperty(retailPriceItemDepartment, item, departmentStore, 'Розничная цена', DOUBLE, retailGroup);
 
-@metaCodeDoubleObjectDateProperty(discountItemDepartment, item, departmentStore, 'Скидка для товара', STRING[100], retailGroup);
+@metaCodeDoubleObjectDateProperty(discountItemDepartment, item, departmentStore, 'Скидка для товара', STRING[100], discountGroup);
 
 TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 
@@ -1125,25 +1132,24 @@ FILTERS NOT NULL stringEqualsAll(a)
 FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
 FILTERS NOT NULL inStoreTypeStore (st, s)
 FILTERS NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
-PROPERTIES(i) nameAttributeItem, nameItemGroupSku, barcodeBarcodeSku, showFormSupplierItemDepartment, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
+PROPERTIES(i) nameAttributeItem, nameItemGroupSku, barcodeBarcodeSku, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
- isWeightedItem, isWeightItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
+ isWeightedItem, isWeightItem, passScalesItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
  hallmarkItem SHOWIF toShowHallmark(i), articleItem, quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
  percentFatItem, percentAlcoholItem, lengthItem, widthItem, heightItem, grossWeightItem, lengthPackItem, widthPackItem, heightPackItem, grossWeightPackItem,
- nameCountryItem SHOWIF toShowCountry(i), nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
- bonusReturnItem, nameReturnItem, quantityDiscountItem, fixPriceItem, isFixPriceItem,
- banMarkdownItem, oldPriceItem, nameTagItem, multiplierItem, isMarkItem, hintItem,
+ nameCountryItem SHOWIF toShowCountry(i),
+ bonusReturnItem, nameReturnItem, quantityDiscountItem, fixPriceItem, isFixPriceItem, banMarkdownItem, oldPriceItem, isMarkItem, hintItem,
  isCrudeItem, nameGroupProductItem, nameNumberInPackItem, nameFormItemItem, nameRateWasteItem, percentRateWasteItem,
  nameWareItem SHOWIF toShowWare(i), standartItem, normOutItem, groupMenuItem,
  isCutedItem, isLoafCutItem, storageTemperatureItem, controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem,
- passScalesItem, bonusItem, percentWholesaleMarkItem,
- minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem, banSailItem,
+ bonusItem, percentWholesaleMarkItem, minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem, banSailItem,
  dataRetailRateRangeItem, dataSuppliersRateRangeItem
 PROPERTIES(i) nameisPortionBarItem, showFormNameisPortionBarItem,
+              importerPriceItem, showFormimporterPriceItem,
               namebanDiscountItem, showFormNamebanDiscountItem,
               coefficientNetGrossItem, showFormcoefficientNetGrossItem,
-              rateNaturalLossItem, showFormrateNaturalLossItem,          //     NDSSupplierItem, showFormNDSSupplierItem,
-              importerPriceItem, showFormimporterPriceItem
+              rateNaturalLossItem, showFormrateNaturalLossItem,         //     NDSSupplierItem, showFormNDSSupplierItem,
+              nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem, nameTagItem, multiplierItem
 
 PROPERTIES (b) barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
 PROPERTIES (d) name
@@ -1172,29 +1178,47 @@ DESIGN item FROM DEFAULT {
     main {
      ADD item.box BEFORE b.box {
             tabbedPane = TRUE;
-            ADD i.descriptionGroup;
-            ADD i.retailGroup;
-            ADD i.sizeGroup {
-                fillVertical = 1.0;
-                fillHorizontal = 1.0;
-            }
-            ADD i.equipmentGroup;
-            ADD manufactory.box{
-                title = 'Для производства и бара';
+            ADD primary.box{
+                title = 'Основные данные';
+                ADD i.headGroup;
+                ADD i.descriptionGroup {
+                    fillVertical = 0.4;
+                    ADD small.box {
+                        ADD PROPERTY(shortNamePackItem(i));
+                        ADD PROPERTY(shortNameSizeItem(i));
+                        ADD PROPERTY(shortNameSpecialtyItem(i));
+                        POSITION PROPERTY(shortNamePackItem(i)) TO THE LEFT PROPERTY(shortNameSizeItem(i));
+                        POSITION PROPERTY(shortNameSizeItem(i)) TO THE LEFT PROPERTY(shortNameSpecialtyItem(i));
+                    };
+                    //POSITION small.box BEFORE i.substanceGroup;
+                }
+                ADD i.sizeGroup;
                 ADD i.manufactoryGroup;
                 ADD i.barGroup;
-                ADD i.expiryGroup;
+                ADD b.box;
+                POSITION i.sizeGroup TO THE RIGHT i.manufactoryGroup;
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
             }
-            ADD order.box{
-                title = 'Для заказов и документов';
+
+            ADD manufactory.box{
+                title = 'Дополнительные';
+                ADD i.equipmentGroup;
+                ADD i.retailGroup;
+                ADD i.expiryGroup;
                 ADD i.orderGroup;
                 ADD i.documentGroup;
+                POSITION i.expiryGroup TO THE RIGHT i.retailGroup;
+                POSITION i.orderGroup TO THE RIGHT i.retailGroup;
+                POSITION i.documentGroup TO THE RIGHT i.retailGroup;
+                fillVertical = 1.0;
+                fillHorizontal = 1.0;
             }
 
             ADD d.box {
-                fillVertical = 3.0;
+                //fillVertical = 3.0;
+                fillVertical = 1.0;
+                fillHorizontal = 1.0;
                 ADD dt.box BEFORE d.grid.box;
                 ADD sp.box BEFORE d.grid.box;
                 ADD treeStore.box BEFORE d.grid.box;
