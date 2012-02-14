@@ -211,7 +211,7 @@ PROPERTIES ADDOBJ(document), ADDOBJ(article)
 // FILTERS NOT NULL property1(param1, ..., paramN1),
 //         ...
 //         NOT NULL propertyK(param1, ..., paramNK)
-FILTERS NOT NULL name(article);                                                                                                           +
+FILTERS NOT NULL name(article);
 
 
 FORM storeArticle 'По складам'
