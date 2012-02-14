@@ -2645,6 +2645,8 @@ NAVIGATOR {
             ADD cashReport;
             ADD namediscount;
             ADD rateWaste;
+            ADD ordersShipment;
+            ADD shipment;
         }
         ADD importData;
     }
