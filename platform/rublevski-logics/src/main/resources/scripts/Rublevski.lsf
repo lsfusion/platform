@@ -1096,7 +1096,7 @@ TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
 TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 
-@metaCodeNameTripleObjectDateProperty(isSupplierItemDepartment, supplier, item, departmentStore, 'Поставщик', yesNo, orderGroup);
+@metaCodeNameTripleObjectDateProperty(isSupplierItemDepartment, supplier, item, departmentStore, 'Поставляется', yesNo, orderGroup);
 
 @metaCodeTripleObjectDateProperty(priceSupplierItemDepartment, supplier, item, departmentStore, 'Цена поставщика', DOUBLE, retailGroup);
 

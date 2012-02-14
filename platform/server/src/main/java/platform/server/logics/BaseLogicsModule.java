@@ -1991,8 +1991,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         protected FormsFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.tables.forms"));
 
+            objForm = addSingleGroupObject(form, getString("logics.tables.forms"), objectValue, formSID, captionForm);
             objUser = addSingleGroupObject(customUser, getString("logics.user"), userFirstName, userLastName, userLogin);
-            objForm = addSingleGroupObject(form, getString("logics.tables.forms"), formSID, captionForm);
             objPropertyDraw = addSingleGroupObject(propertyDraw, getString("logics.property.draw"), propertyDrawSID, captionPropertyDraw);
 
             addPropertyDraw(nameShowPropertyDraw, objPropertyDraw);

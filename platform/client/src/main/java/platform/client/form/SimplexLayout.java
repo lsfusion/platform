@@ -93,7 +93,10 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     public void componentHidden(ComponentEvent e) {
         if (!componentsChanged) {
             componentsChanged = true;
-            mainContainer.invalidate();
+            if (e.getComponent() != null && e.getComponent().getParent() instanceof JTabbedPane)
+                layoutContainer(mainContainer);
+            else
+                mainContainer.invalidate();
         }
     }
 
