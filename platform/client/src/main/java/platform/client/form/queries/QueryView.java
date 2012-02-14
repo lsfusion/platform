@@ -269,4 +269,10 @@ public abstract class QueryView extends JPanel {
             view.startEditing();
         }
     }
+
+    public void stopEditing() {
+        for (QueryConditionView view : condViews.values()) {
+            view.stopEditing();
+        }
+    }
 }

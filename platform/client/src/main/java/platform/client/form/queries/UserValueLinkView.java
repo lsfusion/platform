@@ -7,8 +7,8 @@ import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientUserValueLink;
 
-import javax.swing.*;
 import java.awt.*;
+import java.util.EventObject;
 
 public class UserValueLinkView extends ValueLinkView {
 
@@ -63,6 +63,13 @@ public class UserValueLinkView extends ValueLinkView {
                 return logicsSupplier.getForm();
             }
 
+            @Override
+            public boolean editCellAt(int row, int column, EventObject e) {
+                boolean edition = super.editCellAt(row, column, e);
+                if (edition)
+                    listener.valueChanged();
+                return edition;
+            }
         };
 
         // приходится в явную указывать RowHeight, поскольку это JTable и он сам не растянется

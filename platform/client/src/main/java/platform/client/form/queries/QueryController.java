@@ -34,6 +34,7 @@ abstract class QueryController implements QueryListener {
 
     // Здесь слушаем наш View
     public void applyPressed() {
+        view.stopEditing();
         if (queryChanged()) {
             view.queryApplied();
         }
