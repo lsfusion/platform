@@ -2421,16 +2421,43 @@ nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shi
 noteShipment 'Примечание' (shipment) = DATA STRING[100] (shipment) IN baseGroup;
 carryingChargesShipment 'Транспортные расходы' (shipment) = DATA DOUBLE (shipment) IN baseGroup;
 inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) = DATA BOOLEAN (shipment, orderSupplier) IN idGroup;
-ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(dataOrderSupplier(orderSupplier)) IF inShipmentOrder(shipment, orderSupplier), ', ' BY shipment;
+ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(dataOrderSupplier(orderSupplier)) IF inShipmentOrder(shipment, orderSupplier), ', ' BY shipment MINCHARWIDTH 10 PREFCHARWIDTH 10;
+isSupplierShipmentOrder 'Заявка поставщика поставки' (shipment, orderSupplier) = supplierShipment(shipment)== supplierOrderSupplier(orderSupplier);
 
+shipmentShipmentDetail 'Строка в поставке' (shipmentDetail) = DATA shipment(shipmentDetail) IN idGroup;
+inShipmentShipmentDetail(shipment, shipmentDetail) = shipmentShipmentDetail(shipmentDetail) == shipment;
 itemShipmentDetail 'Товар строки документа поставки (ИД)' (shipmentDetail) = DATA item (shipmentDetail) IN idGroup;
 nameAttributeItemShipmentDetail 'Товар строки документа поставки' (shipmentDetail) =  nameAttributeItem(itemShipmentDetail(shipmentDetail)) IN baseGroup;
+quantityShipmentDetail 'Количество товара' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+priceShipmentDetail 'Цена товара'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+supplierMarkupShipmentDetail 'Оптовая надбавка/торговая скидка, %' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+dateFitToShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
 
+FORM ordersShipment 'Заказы'
+OBJECTS s=shipment FIXED PANEL, o=orderSupplier
+PROPERTIES (s) READONLY waybillShipment, dateWaybillShipment
+PROPERTIES (s, o) inShipmentOrder
+PROPERTIES (o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
+               nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
+FILTERS NOT NULL isSupplierShipmentOrder (s, o);
+
+showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OBJECTS s MODAL SHORTCUT ordersShipment DEFAULT;
+
+FORM shipment 'Поставка'
+OBJECTS s=shipment FIXED PANEL
+OBJECTS d=shipmentDetail
+PROPERTIES (s) waybillShipment, dateWaybillShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment, showFormOrdersShipment
+PROPERTIES (d) nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, ADDOBJ, delete
+FILTERS NOT NULL inShipmentShipmentDetail(s, d)
+EDIT shipment OBJECT s;
 
 FORM shipments 'Поставки'
-OBJECTS s=shipment, o=orderSupplier
-PROPERTIES (s) waybillShipment, dateWaybillShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment, ADDOBJ
-PROPERTIES (s, o) inShipmentOrder;
+OBJECTS s=shipment, d=shipmentDetail
+PROPERTIES (s) READONLY waybillShipment, dateWaybillShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment
+PROPERTIES (s) ADDFORM, EDITFORM, delete
+//PROPERTIES (s, o) inShipmentOrder
+PROPERTIES (d) READONLY nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail
+FILTERS NOT NULL inShipmentShipmentDetail(s, d);
 
 //---------------------------- Импорт данных ----------------------------------------//
 
