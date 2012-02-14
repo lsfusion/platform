@@ -707,10 +707,9 @@ PROPERTIES(c) ADDFORM, EDITFORM, delete;
 
 CLASS STATIC genType 'Тип генерации' {
     genWeek 'Генерация каждые N недель',
-    genDay 'Генерация через N дней',
+    genDays 'Генерация через N дней',
     genNumber 'Генерация по числам',
     genDayMonth 'Генерация по дням недели и месяца'
-
 };
 
 CLASS genTimeTable 'Генерация графика' : named;
@@ -738,7 +737,7 @@ inAllMonthGenTable 'Включить все месяцы' = DATA BOOLEAN (genTim
 inMonthGenTimeTable(genTimeTable, month) <- inAllMonthGenTable(genTimeTable) ON ASSIGN inAllMonthGenTable(genTimeTable) AND month IS month;
 
 toShowGenWeek (genTimeTable) = genTimeTableType(genTimeTable) == genType.genWeek;
-toShowGenDay (genTimeTable) = genTimeTableType(genTimeTable) == genType.genDay;
+toShowGenDay (genTimeTable) = genTimeTableType(genTimeTable) == genType.genDays;
 toShowGenNumber (genTimeTable) = genTimeTableType(genTimeTable) == genType.genNumber;
 toShowGenDayMonth (genTimeTable) = genTimeTableType(genTimeTable) == genType.genDayMonth;
 toShowGenWeekOrDayMonth (genTimeTable) = UNION OVERRIDE toShowGenWeek(genTimeTable), toShowGenDayMonth(genTimeTable);
@@ -1660,6 +1659,7 @@ PROPERTIES(co) ADDFORM, EDITFORM, delete;
 // ----------------------------------- Ассортимент поставщиков-------------------------------------------- //
 
 itemAssortmentSupplier 'Товар в ассортименте поставщика' = DATA BOOLEAN (departmentStore, supplier, item);
+minCountItemAssortment 'Минимальный заказ' = DATA INTEGER (departmentStore, supplier, item);
 
 FORM assortmentSupplier 'Ассортимент поставщика'
 OBJECTS d=departmentStore FIXED PANEL, s=supplier, i=item
@@ -1668,14 +1668,19 @@ PROPERTIES(s) name
 PROPERTIES(s) ADDFORM, EDITFORM, delete
 PROPERTIES(i) nameAttributeItem
 PROPERTIES(i) ADDFORM, EDITFORM, delete
-PROPERTIES(d, s, i)  itemAssortmentSupplier;
+PROPERTIES(d, s, i)  itemAssortmentSupplier, minCountItemAssortment;
 
 //---------------------------- по поставщикам и товарам ----------------------------------------
 
 //--------------------------------------Заказ------------------------------------------------------------------//
 
+TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
+
+@metaCodeDoubleObjectDateProperty(timeTable, supplier, departmentStore, 'Поставка', BOOLEAN, baseGroup);
+
 CLASS ABSTRACT order 'Заказ' : named, historyObject;
 CLASS orderSupplier 'Заказ поставщику' : order;
+//CLASS orderPost 'Одобренный заказ поставщику' :orderSupplier;
 //CLASS orderStock 'Заказ складу' :order;
 
 dataOrderSupplier 'Номер заказа' (orderSupplier) = DATA INTEGER (orderSupplier) IN baseGroup;
@@ -1697,6 +1702,13 @@ sumQuantityItemOrderSupplier 'Сумарное количество товара
 fullPriceItemOrderSupplier 'Цена с НДС' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item) IN baseGroup;
 fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) =  sumQuantityItemOrderSupplier(orderSupplier, item) * fullPriceItemOrderSupplier(orderSupplier, item) IN baseGroup;
 fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier;
+minQuantityOrderSupplier 'Минимальный заказ' (orderSupplier, item) = minCountItemAssortment(departmentStoreOrderSupplier(orderSupplier), supplierOrderSupplier(orderSupplier), item);
+CONSTRAINT packQuantityItemOrderSupplier(orderSupplier, item) < minQuantityOrderSupplier(orderSupplier, item) AND packQuantityItemOrderSupplier(orderSupplier, item) != 0  MSG 'Заказ должен быть больше минимального';
+quantityDaysNextOrder 'Количество дней до поставки' (orderSupplier) = UNION MAX 0 IF orderSupplier IS orderSupplier, daysInclBetweenDates(currentDate(), dateOrderSupplier(orderSupplier));
+quantityOrderSupplier 'Количество заказов для поставщика' (supplier, departmentStore, dateOrderSupplier) = GROUP SUM 1 IF orderSupplier BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier);
+nextDateOrder 'Следующая дата поставки' (supplier, departmentStore, date) = GROUP MIN dateIN IF timeTableDate(supplier, departmentStore, dateIN) AND dateIN > (date AS DATE) BY supplier, departmentStore, date;
+nextDateOrderSupplier 'Следующая дата поставки' = DATA DATE (orderSupplier);
+recommendCountOrderSupplier 'Рекомендцемое количество товара для заказа' (orderSupplier, item) = UNION MAX minQuantityOrderSupplier(orderSupplier, item), (daysInclBetweenDates(currentDate(), nextDateOrderSupplier(orderSupplier)) * quantityRealizationDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item) - balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item) + minReserveItem(item)) IF balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item) / daysInclBetweenDates(currentDate(), nextDateOrderSupplier(orderSupplier)) < quantityRealizationDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
 
 createOrderSupplier 'Создать заказ' = ACTION (sup, dep, dt) {
     [ADDOBJ orderSupplier]();
@@ -1704,6 +1716,7 @@ createOrderSupplier 'Создать заказ' = ACTION (sup, dep, dt) {
     departmentStoreOrderSupplier(o) IF o == addedObject() <- dep AS departmentStore;
     supplierOrderSupplier(o) IF o == addedObject() <- sup AS supplier;
     curDateOrderSupplier(o) IF o == addedObject() <- currentDate();
+    nextDateOrderSupplier(o) IF o == addedObject() <- nextDateOrder(sup, dep, dt);
     apply();
 };
 
@@ -1712,7 +1725,7 @@ OBJECTS o=orderSupplier FIXED PANEL, i=item
 PROPERTIES(o) dataOrderSupplier READONLY, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
               nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
 PROPERTIES(i) nameAttributeItem, quantityPackItem2
-PROPERTIES(o, i) packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
+PROPERTIES(o, i) minQuantityOrderSupplier, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier, recommendCountOrderSupplier
 FILTERS NOT NULL itemAssortmentOrderSupplier(o, i)
 FILTERGROUP filters1
     FILTER 'Показывать только заказанные позиции' 'F10' NOT NULL sumQuantityItemOrderSupplier(o, i) DEFAULT
@@ -1720,8 +1733,9 @@ EDIT orderSupplier OBJECT o;
 
 FORM orderSuppliers 'Заказы поставщику'
 OBJECTS o=orderSupplier, i=item
-PROPERTIES(o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
-                       nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
+PROPERTIES(o) READONLY name, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier, quantityDaysNextOrder,
+                       nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated,
+                       nextDateOrderSupplier
 PROPERTIES(o) ADDFORM, EDITFORM, delete
 PROPERTIES(i) READONLY nameAttributeItem
 PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
@@ -1729,19 +1743,21 @@ FILTERS NOT NULL sumQuantityItemOrderSupplier(o, i);
 
 // ----------------------------------- Разрешать поставки ------------------------------------------- //
 
-TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
-
-@metaCodeDoubleObjectDateProperty(timeTable, supplier, departmentStore, 'Поставка', BOOLEAN, baseGroup);
-
 FORM timeTableDate 'График поставок'
-OBJECTS t=DATE FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier
+OBJECTS t=DATE FIXED PANEL, d=departmentStore FIXED PANEL, g=genTimeTable FIXED PANEL, s=supplier
 PROPERTIES(t) OBJVALUE
+PROPERTIES(g) showFormGenTimeTable
 PROPERTIES(d) READONLY name
 PROPERTIES(s) READONLY name
-PROPERTIES(s, d, t) timeTableDate, createOrderSupplier
-//FILTERS NOT NULL timeTableDate(s, d, t);
+PROPERTIES(s, d, t) timeTableDate
+PROPERTIES(s, d, t) READONLY quantityOrderSupplier, nextDateOrder
+PROPERTIES(s, d, t) createOrderSupplier
 FILTERGROUP filters
     FILTER 'Показывать с поставкой на дату' 'F10' NOT NULL timeTableDate(s, d, t) DEFAULT;
+
+DESIGN timeTableDate FROM DEFAULT {
+    POSITION g.box TO THE RIGHT d.box;
+}
 
 //--------------------------------------Формы--------------------------------------------------------------------------//
 
