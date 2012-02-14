@@ -94,6 +94,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public StaticCustomClass month;
     public StaticCustomClass DOW;
 
+    public StaticCustomClass formResult;
+
     // groups
     public AbstractGroup rootGroup;
     public AbstractGroup publicGroup;
@@ -529,6 +531,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         DOW = addStaticClass("DOW", getString("logics.week.day"),
                   new String[]{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"},
                   new String[]{getString("logics.days.sunday"), getString("logics.days.monday"), getString("logics.days.tuesday"), getString("logics.days.wednesday"), getString("logics.days.thursday"), getString("logics.days.friday"), getString("logics.days.saturday")});
+        formResult = addStaticClass("formResult", "Результат вызова формы",
+                new String[]{"null", "ok", "close"},
+                new String[]{"Неизвестно", "Принять", "Закрыть"});
     }
 
     @Override

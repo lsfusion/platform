@@ -1,13 +1,15 @@
 package platform.server.form.instance;
 
-import platform.base.*;
+import platform.base.BaseUtils;
+import platform.base.OrderedMap;
+import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.FormEventType;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
-import platform.interop.action.ResultClientAction;
 import platform.interop.action.DenyCloseFormClientAction;
+import platform.interop.action.ResultClientAction;
 import platform.interop.form.FormUserPreferences;
 import platform.server.Message;
 import platform.server.ParamMessage;
@@ -33,7 +35,6 @@ import platform.server.form.instance.filter.RegularFilterGroupInstance;
 import platform.server.form.instance.filter.RegularFilterInstance;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
-import platform.server.form.instance.listener.FormEventListener;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -1364,10 +1365,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     public List<ClientAction> fireOnOk(RemoteForm form) throws SQLException {
+        formResult = "ok";
         return fireEvent(form, FormEventType.OK);
     }
 
     public List<ClientAction> fireOnClose(RemoteForm form) throws SQLException {
+        formResult = "close";
         return fireEvent(form, FormEventType.CLOSE);
     }
 
@@ -1375,6 +1378,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         List<PropertyObjectEntity> actionsOnEvent = entity.getActionsOnEvent(eventObject);
         List<ClientAction> clientActions = new ArrayList<ClientAction>();
         if (actionsOnEvent != null) {
+            //todo: remove later
 //            clientActions = new AutoActionsRunner(form, actionsOnEvent).run();
             for (PropertyObjectEntity autoAction : actionsOnEvent) {
                 PropertyObjectInstance action = instanceFactory.getInstance(autoAction);
@@ -1386,19 +1390,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             }
         }
 
-        for (FormEventListener listener : eventListeners) {
-            listener.handleEvent(eventObject);
-        }
-
         return clientActions;
-    }
-
-    private final WeakLinkedHashSet<FormEventListener> eventListeners = new WeakLinkedHashSet<FormEventListener>();
-    public void addEventListener(FormEventListener listener) {
-        eventListeners.add(listener);
     }
 
     public <P extends PropertyInterface> void fireChange(Property<P> property, PropertyChange<P> change) throws SQLException {
         entity.onChange(property, change, session, this);
+    }
+
+    private String formResult = "null";
+
+    public String getFormResult() {
+        return formResult;
     }
 }

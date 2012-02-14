@@ -1,21 +1,18 @@
 package platform.client.form;
 
 import platform.client.ClientResourceBundle;
-import platform.client.SwingUtils;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.remote.SelectedObject;
 
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
 public class ClientDialog extends ClientModalForm {
     public final static int NOT_CHOSEN = 0;
-    public final static int CHOSEN_VALUE = 1;
+    public final static int VALUE_CHOSEN = 1;
 
-    public int objectChosen = NOT_CHOSEN;
+    public int result = NOT_CHOSEN;
     public Object dialogValue;
     public Object displayValue;
 
@@ -23,8 +20,12 @@ public class ClientDialog extends ClientModalForm {
 
     private RemoteDialogInterface remoteDialog;
 
-    public ClientDialog(Component owner, final RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
+    public ClientDialog(Component owner, final RemoteDialogInterface dialog, boolean showQuickFilterOnStartup) throws IOException, ClassNotFoundException {
         super(owner, dialog, false); // обозначаем parent'а и модальность
+
+        this.showQuickFilterOnStartup = showQuickFilterOnStartup;
+
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         Boolean undecorated = dialog.isUndecorated();
         if (undecorated == null || undecorated) {
@@ -35,70 +36,43 @@ public class ClientDialog extends ClientModalForm {
     }
 
     @Override
-    protected void createListeners() {
-        addWindowListener(new WindowAdapter() {
-            public void windowActivated(WindowEvent e) {
-                int initialFilterPropertyDrawID = -1;
-                try {
-                    Integer filterPropertyDraw = remoteDialog.getInitFilterPropertyDraw();
-                    if (filterPropertyDraw != null) {
-                        initialFilterPropertyDrawID = filterPropertyDraw;
-                    }
-                } catch (RemoteException ignored) {
-                }
-
-                if (initialFilterPropertyDrawID > 0) {
-                    currentForm.selectProperty(initialFilterPropertyDrawID);
-                }
-
-                if (showQuickFilterOnStartup && initialFilterPropertyDrawID > 0) {
-                    currentForm.quickEditFilter(initialFilterPropertyDrawID);
-                } else {
-                    KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm.getComponent());
-                }
-
-                //чтобы только 1й активации...
-                ClientDialog.this.removeWindowListener(this);
+    public void windowActivatedFirstTime() {
+        int initialFilterPropertyDrawID = -1;
+        try {
+            Integer filterPropertyDraw = remoteDialog.getInitFilterPropertyDraw();
+            if (filterPropertyDraw != null) {
+                initialFilterPropertyDrawID = filterPropertyDraw;
             }
-        });
-    }
+        } catch (RemoteException ignored) {
+        }
 
+        if (initialFilterPropertyDrawID > 0) {
+            form.selectProperty(initialFilterPropertyDrawID);
+        }
+
+        if (showQuickFilterOnStartup && initialFilterPropertyDrawID > 0) {
+            form.quickEditFilter(initialFilterPropertyDrawID);
+        } else {
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(form.getComponent());
+        }
+    }
 
     // необходим чтобы в диалоге менять формы (панели)
     protected ClientFormController createFormController() throws IOException, ClassNotFoundException {
         remoteDialog = (RemoteDialogInterface) remoteForm;
 
-        return new ClientFormController(remoteDialog, null) {
-
+        return new ClientFormController(remoteDialog, null, true, true, false) {
             @Override
-            public boolean isModal() {
-                return true;
-            }
-
-            @Override
-            public boolean isDialog() {
-                return true;
-            }
-
-            @Override
-            public boolean isNewSession() {
-                return false;
-            }
-
-            @Override
-            boolean nullPressed() {
-
-                objectChosen = CHOSEN_VALUE;
+            void nullPressed() {
+                result = VALUE_CHOSEN;
                 dialogValue = null;
                 displayValue = null;
-                ClientDialog.this.setVisible(false);
-                return true;
+                hideDialog();
             }
 
             @Override
             public void okPressed() {
-
-                objectChosen = CHOSEN_VALUE;
+                result = VALUE_CHOSEN;
                 try {
                     SelectedObject selectedObject = remoteDialog.getSelectedObject();
                     dialogValue = selectedObject.value;
@@ -106,21 +80,13 @@ public class ClientDialog extends ClientModalForm {
                 } catch (RemoteException e) {
                     throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.value.of.dialogue"), e);
                 }
-                ClientDialog.this.setVisible(false);
+                hideDialog();
             }
 
             @Override
-            boolean closePressed() {
-
-                ClientDialog.this.setVisible(false);
-                return true;
+            void closePressed() {
+                hideDialog();
             }
         };
-    }
-
-    public void setDefaultSize() {
-        setSize(SwingUtils.clipDimension(calculatePreferredSize(isUndecorated()),
-                                         new Dimension(200, 100),
-                                         new Dimension(1000, 700)));
     }
 }

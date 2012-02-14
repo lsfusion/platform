@@ -513,7 +513,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal)));
+        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal, baseLM.formResult, getFormResultProperty())));
     }
 
     protected LP addSelectFromListAction(AbstractGroup group, String caption, LP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
@@ -1881,6 +1881,11 @@ public abstract class LogicsModule {
     @IdentityLazy
     private LP getAddedObjectProperty() {
         return addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("addedObject", "Added Object", new ValueClass[0], baseLM.baseClass)));
+    }
+
+    @IdentityLazy
+    private LP getFormResultProperty() {
+        return addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("formResult", "Form Result", new ValueClass[0], baseLM.formResult)));
     }
 
     @IdentityLazy

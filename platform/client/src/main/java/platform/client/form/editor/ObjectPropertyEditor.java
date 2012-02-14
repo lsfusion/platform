@@ -1,6 +1,5 @@
 package platform.client.form.editor;
 
-import platform.client.SwingUtils;
 import platform.client.form.ClientDialog;
 import platform.client.form.ClientNavigatorDialog;
 import platform.client.form.PropertyEditorComponent;
@@ -12,8 +11,9 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.text.ParseException;
 import java.util.EventObject;
+
+import static platform.client.SwingUtils.translate;
 
 public class ObjectPropertyEditor extends JDialog implements PropertyEditorComponent {
 
@@ -31,24 +31,14 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject event) throws IOException, ClassNotFoundException {
         if (KeyStrokes.isSpaceEvent(event) || KeyStrokes.isObjectEditorDialogEvent(event)) {
             clientDialog = new ClientNavigatorDialog(owner, dialog);
-            clientDialog.showQuickFilterOnStartup = false;
         } else {
-            clientDialog = new ClientDialog(owner, dialog);
-            if (!(event instanceof KeyEvent)) {
-                clientDialog.showQuickFilterOnStartup = false;
-            }
+            clientDialog = new ClientDialog(owner, dialog, event instanceof KeyEvent);
         }
 
-        clientDialog.setDefaultSize(false);
-        clientDialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
-        SwingUtils.requestLocation(clientDialog, new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
+        clientDialog.showDialog(false, translate(tableLocation, (int) cellRectangle.getX(), (int) cellRectangle.getMaxY()));
 
         dialog = null; // лучше сбрасывать ссылку, чтобы раньше начал отрабатывать сборщик мусора
 
-        clientDialog.setVisible(true);
-        clientDialog.dispose(); // приходится в явную делать dispose, поскольку dialog может закрываться через setVisible
-        clientDialog.closed();
         return null;
     }
 
@@ -61,7 +51,7 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
     }
 
     public boolean valueChanged() {
-        return clientDialog.objectChosen != ClientDialog.NOT_CHOSEN;
+        return clientDialog.result == ClientDialog.VALUE_CHOSEN;
     }
 
     @Override

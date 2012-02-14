@@ -15,7 +15,6 @@ import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -54,7 +53,7 @@ public class SimpleAddObjectActionProperty extends CustomActionProperty {
 
         if (storeNewObjectProperty != null && object != null) {
             context.addActions(
-                    storeNewObjectProperty.execute(object.getValue(), context.getSession(), context.getModifier())
+                    storeNewObjectProperty.execute(object.getValue(), context)
             );
         }
     }

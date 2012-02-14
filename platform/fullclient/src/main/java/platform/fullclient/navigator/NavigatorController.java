@@ -82,7 +82,11 @@ public class NavigatorController implements INavigatorController {
         ClientNavigatorWindow nextWindow = currentElement.window == null ? currentWindow : currentElement.window;
 
         // считаем, что если currentWindow == null, то это baseElement и он всегда выделен, но не рисуется никуда
-        if ((currentElement.window == null) || (currentWindow == null ? true : currentElement == views.get(currentWindow).getSelectedElement()) || (currentElement.window == currentWindow) || (currentElement.window.drawRoot)) {
+        if (currentElement.window == null
+                || currentWindow == null
+                || currentElement == views.get(currentWindow).getSelectedElement()
+                || currentElement.window == currentWindow
+                || currentElement.window.drawRoot) {
             for (ClientNavigatorElement element : currentElement.children) {
                 if (!result.get(nextWindow).contains(element)) {
                     dfsAddElements(element, nextWindow, result);

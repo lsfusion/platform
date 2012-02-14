@@ -87,6 +87,12 @@ public class SwingUtils {
         return result;
     }
 
+    public static Point translate(Point p, int dx, int dy) {
+        Point np = new Point(p);
+        np.translate(dx, dy);
+        return np;
+    }
+
     private final static WeakHashMap<String, Timer> timers = new WeakHashMap<String, Timer>();
 
     public static void invokeLaterSingleAction(final String actionID, final ActionListener actionListener, int delay) {
