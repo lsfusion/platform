@@ -933,6 +933,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		(prefCharWidthSetting [property])?
 		(imageSetting [property])?
 		(editKeySetting [property])?
+		(autosetSetting [property])?
 	;
 
 
@@ -1010,6 +1011,18 @@ editKeySetting [LP property]
 		(	('SHOW' { show = true; })
 		|	('HIDE' { show = false; })
 		)?
+	;
+
+autosetSetting [LP property]
+@init {
+	boolean autoset = false;
+}
+@after {
+	if (inPropParseState()) {
+		self.setAutoset(property, autoset);
+	}
+}
+	:	'AUTOSET' { autoset = true; }
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

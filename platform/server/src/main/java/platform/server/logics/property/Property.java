@@ -116,6 +116,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public boolean askConfirm = false;
 
+    public boolean autoset;
+
     public String toString() {
         return caption;
     }

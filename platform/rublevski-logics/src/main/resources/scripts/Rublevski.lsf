@@ -237,7 +237,7 @@ END
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 CLASS itemGroup 'Товарная группа' : named, externalObject;
 
-parentItemGroup = DATA itemGroup (itemGroup);
+parentItemGroup = DATA itemGroup (itemGroup) AUTOSET;
 nameParentItemGroup 'Родительская группа' = name(parentItemGroup(itemGroup));
 maxTurnoverItemGroup 'Максимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 minTurnoverItemGroup 'Минимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
@@ -390,7 +390,7 @@ CLASS STATIC groupProduct 'Группа изделий для печати за�
 };
 
 //baseGroup
-itemGroupSku = DATA itemGroup(sku) IN idGroup;
+itemGroupSku = DATA itemGroup(sku) IN idGroup AUTOSET;
 nameItemGroupSku 'Группа товара' = name(itemGroupSku(sku)) IN baseGroup;
 
 //descriptionGroup
@@ -763,7 +763,7 @@ companyStore 'Юридическое лицо магазина (ИД)' = DATA co
 nameCompanyStore 'Юридическое лицо магазина' (store) = name(companyStore(store)) IN baseGroup;
 addressStore 'Адрес магазина' = DATA STRING[100] (store);
 
-storeTypeStore 'Формат магазина (ИД)' = DATA storeType (store);
+storeTypeStore 'Формат магазина (ИД)' = DATA storeType (store) AUTOSET;
 nameStoreTypeStore 'Формат магазина' (store) = name(storeTypeStore(store)) IN baseGroup;
 inStoreTypeStore (storeType, store) = storeTypeStore (store) == storeType;
 

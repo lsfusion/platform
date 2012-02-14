@@ -446,6 +446,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             property.setShowEditKey(showEditKey);
     }
 
+    public void setAutoset(LP<?> property, boolean autoset) {
+        property.setAutoset(autoset);
+    }
+
     private <T extends LP<?>> void changePropertyName(T lp, String name) {
         removeModuleLP(lp);
         lp.property.setSID(transformNameToSID(name));

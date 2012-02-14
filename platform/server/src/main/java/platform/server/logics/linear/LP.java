@@ -343,4 +343,8 @@ public class LP<T extends PropertyInterface> {
     public void setForceViewType(ClassViewType forceViewType) {
         property.forceViewType = forceViewType;
     }
+
+    public void setAutoset(boolean autoset) {
+        property.autoset = autoset;
+    }
 }

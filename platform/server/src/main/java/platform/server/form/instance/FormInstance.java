@@ -513,6 +513,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             if (!FilterInstance.ignoreInInterface || filter.isInInterface(object.groupTo)) // если ignoreInInterface проверить что в интерфейсе
                 filter.resolveAdd(session, this, object, addObject);
 
+        for (LP lp : BL.LM.lproperties) {
+            Property property = lp.property;
+            if (property.autoset && property.getCommonClasses().interfaces.size() == 1 &&
+                    ((ValueClass) property.getCommonClasses().interfaces.values().iterator().next()).getType().equals(cls.getType()) &&
+                    property.getCommonClasses().value instanceof CustomClass) {
+                Integer obj = getClassListener().getObject((CustomClass) property.getCommonClasses().value);
+                lp.execute(obj, session, this, addObject);
+            }
+        }
+
         // todo : теоретически надо переделывать
         // нужно менять текущий объект, иначе не будет работать ImportFromExcelActionProperty
         object.changeValue(session, addObject);

@@ -26,6 +26,7 @@
       <keyword name="AS" />
       <keyword name="ASC" />
       <keyword name="ASSIGN" />
+      <keyword name="AUTOSET" />
       <keyword name="BEFORE" />
       <keyword name="BOOLEAN" />
       <keyword name="BOTTOM" />
