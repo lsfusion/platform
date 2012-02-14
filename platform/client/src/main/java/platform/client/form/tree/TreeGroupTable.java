@@ -16,6 +16,7 @@ import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientTreeGroup;
+import platform.interop.KeyStrokes;
 import platform.interop.Order;
 
 import javax.swing.*;
@@ -24,9 +25,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.tree.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
@@ -163,6 +162,22 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         });
 
         addKeyListener(new TreeGroupQuickSearchHandler(this));
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (form.isDialog() && e.getClickCount() > 1)
+                    form.okPressed();
+            }
+        });
+
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (form.isDialog() && e.getKeyCode() == KeyStrokes.getEnter().getKeyCode())
+                    form.okPressed();
+            }
+        });
 
         initializeActionMap();
         currentTreePath = new TreePath(rootNode);
