@@ -264,7 +264,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         Map<String, FormUserPreferences> preferences = new HashMap<String, FormUserPreferences>();
         try {
 
-            ObjectValue formValue = BL.LM.SIDToForm.readClasses(session, new DataObject(entity.getSID(), StringClass.get(50)));
+            ObjectValue formValue = BL.LM.SIDToNavigatorElement.readClasses(session, new DataObject(entity.getSID(), StringClass.get(50)));
             if (formValue.isNull())
                 return null;
             
@@ -312,7 +312,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             DataSession dataSession = session.createSession();
             for (Map.Entry<String, FormUserPreferences> entry : preferences.entrySet()) {
                 DataObject userObject = dataSession.getDataObject(BL.LM.currentUser.read(dataSession), ObjectType.instance);
-                Integer id = (Integer) BL.LM.SIDFormSIDPropertyDrawToPropertyDraw.read(dataSession, new DataObject(entity.getSID(), StringClass.get(50)), new DataObject(entry.getKey(), StringClass.get(50)));
+                Integer id = (Integer) BL.LM.SIDNavigatorElementSIDPropertyDrawToPropertyDraw.read(dataSession, new DataObject(entity.getSID(), StringClass.get(50)), new DataObject(entry.getKey(), StringClass.get(50)));
                 DataObject propertyDrawObject = dataSession.getDataObject(id, ObjectType.instance);
                 if (entry.getValue().isNeedToHide() != null) {
                     int idShow = !entry.getValue().isNeedToHide() ? BL.LM.propertyDrawShowStatus.getID("Hide") : BL.LM.propertyDrawShowStatus.getID("Show");

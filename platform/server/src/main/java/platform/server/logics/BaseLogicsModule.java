@@ -280,15 +280,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP numberNavigatorElement;
     public LP navigatorElementCaption;
 
-    public LP formSID;
-    public LP captionForm;
-    public LP SIDToForm;
-
     public LP propertyDrawSID;
     public LP captionPropertyDraw;
     public LP SIDToPropertyDraw;
     public LP formPropertyDraw;
-    public LP SIDFormSIDPropertyDrawToPropertyDraw;
+    public LP SIDNavigatorElementSIDPropertyDrawToPropertyDraw;
     public LP showPropertyDraw;
     public LP nameShowPropertyDraw;
     public LP showPropertyDrawCustomUser;
@@ -345,6 +341,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LP SIDToNavigatorElement;
     public LP parentNavigatorElement;
+    public LP isNavigatorElementNotForm;
     public LP permitUserRoleForm;
     public LP forbidUserRoleForm;
     public LP permitUserForm;
@@ -843,16 +840,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", getString("logics.forms.name"), formCaptionValueClass, navigatorElement);
         SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", getString("logics.forms.form"), navigatorElementSID);
         parentNavigatorElement = addDProp("parentNavigatorElement", getString("logics.forms.parent.form"), navigatorElement, navigatorElement);
+        isNavigatorElementNotForm = addJProp("isNavigatorElementNotForm", and(true), is(navigatorElement), 1, is(form), 1);
 
-        formSID = addDProp(baseGroup, "formSID", getString("logics.forms.code"), formSIDValueClass, form);
-        captionForm = addDProp(baseGroup, "captionForm", getString("logics.forms.name"), formCaptionValueClass, form);
-        SIDToForm = addAGProp("SIDToForm", getString("logics.forms.form"), formSID);
-
-        propertyDrawSID = addDProp(baseGroup, "propertyDrawSID", getString("logics.forms.property.draw.code"), formSIDValueClass, propertyDraw);
-        captionPropertyDraw = addDProp(baseGroup, "captionPropertyDraw", getString("logics.forms.property.draw.caption"), formCaptionValueClass, propertyDraw);
+        propertyDrawSID = addDProp(baseGroup, "propertyDrawSID", getString("logics.forms.property.draw.code"), propertySIDValueClass, propertyDraw);
+        captionPropertyDraw = addDProp(baseGroup, "captionPropertyDraw", getString("logics.forms.property.draw.caption"), propertyCaptionValueClass, propertyDraw);
         formPropertyDraw = addDProp(baseGroup, "formPropertyDraw", getString("logics.forms.form"), form, propertyDraw);
         SIDToPropertyDraw = addAGProp(baseGroup, "SIDToPropertyDraw", getString("logics.property.draw"), formPropertyDraw, propertyDrawSID);
-        SIDFormSIDPropertyDrawToPropertyDraw = addJProp(baseGroup, "SIDFormSIDPropertyDrawToPropertyDraw", getString("logics.forms.code"), SIDToPropertyDraw, SIDToForm, 1, 2);
+        SIDNavigatorElementSIDPropertyDrawToPropertyDraw = addJProp(baseGroup, "SIDNavigatorElementSIDPropertyDrawToPropertyDraw", getString("logics.forms.code"), SIDToPropertyDraw, SIDToNavigatorElement, 1, 2);
         showPropertyDraw = addDProp(baseGroup, "showPropertyDraw", getString("logics.forms.property.show"), propertyDrawShowStatus, propertyDraw);
         nameShowPropertyDraw = addJProp(baseGroup, "nameShowPropertyDraw", getString("logics.forms.property.show"), name, showPropertyDraw, 1);
         nameShowPropertyDraw.setPreferredWidth(50);
@@ -1996,7 +1990,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         protected FormsFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.tables.forms"));
 
-            objForm = addSingleGroupObject(form, getString("logics.tables.forms"), objectValue, formSID, captionForm);
+            objForm = addSingleGroupObject(form, getString("logics.tables.forms"), objectValue, navigatorElementSID, navigatorElementCaption);
             objUser = addSingleGroupObject(customUser, getString("logics.user"), userFirstName, userLastName, userLogin);
             objPropertyDraw = addSingleGroupObject(propertyDraw, getString("logics.property.draw"), propertyDrawSID, captionPropertyDraw);
 
