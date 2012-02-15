@@ -30,7 +30,6 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
         private GridTable initialTable;
         private ClientFormController form;
         private List<JCheckBox> groupChecks = new ArrayList<JCheckBox>();
-        private List<String> changedCheckBoxes = new ArrayList<String>();
 
 
         public HideSettingsDialog(Frame owner, final GridTable initialTable, ClientFormController form) throws IOException {
@@ -99,10 +98,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
                 checkBox.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        if (!changedCheckBoxes.contains(checkBox.getText())) {
-                            changedCheckBoxes.add(checkBox.getText());
-                            checkBox.setForeground(Color.black);
-                        }
+                        checkBox.setForeground(Color.black);
                     }
                 });
                 groupChecks.add(checkBox);
@@ -175,7 +171,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
         private void okButtonPressed() throws IOException {
 
             for (int i = 0; i < groupChecks.size(); i++) {
-                if (changedCheckBoxes.contains(groupChecks.get(i).getText())) {
+                if (groupChecks.get(i).getForeground().equals(Color.black)) {
                     if (groupChecks.get(i).isSelected()) {
                         initialTable.getProperty(i).hideUser = false;
                     } else {
@@ -183,7 +179,6 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
                     }
                 }
             }
-            changedCheckBoxes.clear();
             dialog.setVisible(false);
             dispose();
         }
@@ -193,9 +188,15 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
             Map<String, FormUserPreferences> preferences = new HashMap<String, FormUserPreferences>();
 
             for (int i = 0; i < groupChecks.size(); i++) {
-                Boolean needToHideSet = changedCheckBoxes.contains(groupChecks.get(i).getText());
+                Boolean needToHideSet = groupChecks.get(i).getForeground().equals(Color.black);
                 preferences.put(initialTable.getProperty(i).getSID(),
-                            new FormUserPreferences(!needToHideSet ? null : groupChecks.get(i).isSelected(), initialTable.getProperty(i).widthUser));
+                        new FormUserPreferences(!needToHideSet ? null : groupChecks.get(i).isSelected(), initialTable.getProperty(i).widthUser));
+                if (needToHideSet)
+                    if (groupChecks.get(i).isSelected()) {
+                        initialTable.getProperty(i).hideUser = false;
+                    } else {
+                        initialTable.getProperty(i).hideUser = true;
+                    }
             }
             form.remoteForm.saveUserPreferences(preferences, forAllUsers);
         }
