@@ -515,7 +515,7 @@ netWeightItem 'Вес нетто' = DATA DOUBLE (item) IN orderGroup;
 quantityPackItem 'Количество в грузовом месте' = DATA DOUBLE (item) IN orderGroup;
 
 //retailGroup
-minResourceItem 'Минимальный запас' = DATA INTEGER (item) IN orderGroup;
+minQuantityOrderItem 'Минимальный заказ' = DATA INTEGER (item) IN orderGroup;
 minReserveItem 'Минимальный резерв' = DATA INTEGER (item) IN orderGroup;
 bonusReturnItem 'Уценка (бонус) по товару при возврате поставщику' = DATA DOUBLE (item) IN documentGroup;
 nameReturnItem 'Наименование для уценки, бонуса по товару в возврат' = DATA STRING[200] (item) IN documentGroup;
@@ -1122,7 +1122,7 @@ FILTERS NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
 PROPERTIES(i) nameAttributeItem, nameItemGroupSku, barcodeBarcodeSku, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, passScalesItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
- hallmarkItem SHOWIF toShowHallmark(i), articleItem, quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minResourceItem, minReserveItem, compositionScalesItem, compositionMenuItem,
+ hallmarkItem SHOWIF toShowHallmark(i), articleItem, quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minQuantityOrderItem, minReserveItem, compositionScalesItem, compositionMenuItem,
  percentFatItem, percentAlcoholItem, lengthItem, widthItem, heightItem, grossWeightItem, lengthPackItem, widthPackItem, heightPackItem, grossWeightPackItem,
  nameCountryItem SHOWIF toShowCountry(i),
  bonusReturnItem, nameReturnItem, quantityDiscountItem, fixPriceItem, isFixPriceItem, banMarkdownItem, oldPriceItem, isMarkItem, hintItem,
@@ -1652,7 +1652,7 @@ TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
 CLASS ABSTRACT order 'Заказ' : named, historyObject;
 CLASS orderSupplier 'Заказ поставщику' : order;
-//CLASS orderPost 'Одобренный заказ поставщику' :orderSupplier;
+CLASS orderPost 'Одобренный заказ поставщику' :orderSupplier;
 //CLASS orderStock 'Заказ складу' :order;
 
 dataOrderSupplier 'Номер заказа' (orderSupplier) = DATA INTEGER (orderSupplier) IN baseGroup;
@@ -1674,20 +1674,24 @@ sumQuantityItemOrderSupplier 'Сумарное количество товара
 fullPriceItemOrderSupplier 'Цена с НДС' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item) IN baseGroup;
 fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) =  sumQuantityItemOrderSupplier(orderSupplier, item) * fullPriceItemOrderSupplier(orderSupplier, item) IN baseGroup;
 fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier;
-minQuantityOrderSupplier 'Минимальный заказ' (orderSupplier, item) = minCountItemAssortment(departmentStoreOrderSupplier(orderSupplier), supplierOrderSupplier(orderSupplier), item);
-CONSTRAINT packQuantityItemOrderSupplier(orderSupplier, item) < minQuantityOrderSupplier(orderSupplier, item) AND packQuantityItemOrderSupplier(orderSupplier, item) != 0  MSG 'Заказ должен быть больше минимального';
-quantityDaysNextOrder 'Количество дней до поставки' (orderSupplier) = UNION MAX 0 IF orderSupplier IS orderSupplier, daysInclBetweenDates(currentDate(), dateOrderSupplier(orderSupplier));
+//minQuantityOrderSupplier 'Минимальный заказ' (orderSupplier, item) = minCountItemAssortment(departmentStoreOrderSupplier(orderSupplier), supplierOrderSupplier(orderSupplier), item);
+//CONSTRAINT packQuantityItemOrderSupplier(orderSupplier, item) < minQuantityOrderSupplier(orderSupplier, item) AND packQuantityItemOrderSupplier(orderSupplier, item) != 0  MSG 'Заказ должен быть больше минимального';
+quantityDaysNextOrder 'Количество дней до поставки' (orderSupplier) = UNION MAX 0 IF orderSupplier IS orderSupplier, daysInclBetweenDates(curDateOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
 quantityOrderSupplier 'Количество заказов для поставщика' (supplier, departmentStore, dateOrderSupplier) = GROUP SUM 1 IF orderSupplier BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier);
 nextDateOrder 'Следующая дата поставки' (supplier, departmentStore, date) = GROUP MIN dateIN IF timeTableDate(supplier, departmentStore, dateIN) AND dateIN > (date AS DATE) BY supplier, departmentStore, date;
 nextDateOrderSupplier 'Следующая дата поставки' = DATA DATE (orderSupplier);
-recommendCountOrderSupplier 'Рекомендцемое количество товара для заказа' (orderSupplier, item) = UNION MAX minQuantityOrderSupplier(orderSupplier, item), (daysInclBetweenDates(currentDate(), nextDateOrderSupplier(orderSupplier)) * quantityRealizationDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item) - balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item) + minReserveItem(item)) IF balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item) / daysInclBetweenDates(currentDate(), nextDateOrderSupplier(orderSupplier)) < quantityRealizationDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
+quantityDaysNext2Order 'Количество дней до следующей поставки' (orderSupplier) = daysInclBetweenDates(curDateOrderSupplier(orderSupplier), nextDateOrderSupplier(orderSupplier));
+quantityRealizationItemNextOrder 'Предполагаемое количество реализации товара до следующей поставки' (orderSupplier, item) = quantityDaysNext2Order(orderSupplier)*quantityRealizationDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
+balance2DepartmentStoreItem 'Величина остатков товара и минимального резерва' (orderSupplier, item) = balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)+minReserveItem(item);
+isEnoughItem 'Достаточно ли остатков товара' (orderSupplier, item) = balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)-quantityRealizationItemNextOrder(orderSupplier, item)<minReserveItem(item);
+recommendCountOrderSupplier 'Рекомендцемое количество товара для заказа' (orderSupplier, item) = UNION MAX (quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item)), minQuantityOrderItem(item) AND orderSupplier IS orderSupplier IF isEnoughItem(orderSupplier, item);
 
-createOrderSupplier 'Создать заказ' = ACTION (sup, dep, dt) {
+createOrderSupplier 'Создать заказ' = ACTION (sup, dep, dt, dt2) {
     [ADDOBJ orderSupplier]();
     (dateOrderSupplier(o) IF o == addedObject()) <- (dt AS DATE);
     departmentStoreOrderSupplier(o) IF o == addedObject() <- dep AS departmentStore;
     supplierOrderSupplier(o) IF o == addedObject() <- sup AS supplier;
-    curDateOrderSupplier(o) IF o == addedObject() <- currentDate();
+    curDateOrderSupplier(o) IF o == addedObject() <- (dt2 AS DATE);
     nextDateOrderSupplier(o) IF o == addedObject() <- nextDateOrder(sup, dep, dt);
     apply();
 };
@@ -1696,8 +1700,8 @@ FORM orderSupplier 'Заказ поставщику'
 OBJECTS o=orderSupplier FIXED PANEL, i=item
 PROPERTIES(o) dataOrderSupplier READONLY, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
               nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
-PROPERTIES(i) nameAttributeItem, quantityPackItem2
-PROPERTIES(o, i) minQuantityOrderSupplier, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier, recommendCountOrderSupplier
+PROPERTIES(i) nameAttributeItem, quantityPackItem2, minQuantityOrderItem READONLY
+PROPERTIES(o, i) packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier, recommendCountOrderSupplier
 FILTERS NOT NULL itemAssortmentOrderSupplier(o, i)
 FILTERGROUP filters1
     FILTER 'Показывать только заказанные позиции' 'F10' NOT NULL sumQuantityItemOrderSupplier(o, i) DEFAULT
@@ -1716,19 +1720,23 @@ FILTERS NOT NULL sumQuantityItemOrderSupplier(o, i);
 // ----------------------------------- Разрешать поставки ------------------------------------------- //
 
 FORM timeTableDate 'График поставок'
-OBJECTS t=DATE FIXED PANEL, d=departmentStore FIXED PANEL, g=genTimeTable FIXED PANEL, s=supplier
+OBJECTS t=DATE FIXED PANEL, t2=DATE FIXED PANEL,d=departmentStore FIXED PANEL, g=genTimeTable FIXED PANEL, s=supplier
 PROPERTIES(t) OBJVALUE
+PROPERTIES(t2) OBJVALUE
 PROPERTIES(g) showFormGenTimeTable
 PROPERTIES(d) READONLY name
 PROPERTIES(s) READONLY name
 PROPERTIES(s, d, t) timeTableDate
 PROPERTIES(s, d, t) READONLY quantityOrderSupplier, nextDateOrder
-PROPERTIES(s, d, t) createOrderSupplier
+PROPERTIES(s, d, t, t2) createOrderSupplier
 FILTERGROUP filters
     FILTER 'Показывать с поставкой на дату' 'F10' NOT NULL timeTableDate(s, d, t) DEFAULT;
 
 DESIGN timeTableDate FROM DEFAULT {
-    POSITION g.box TO THE RIGHT d.box;
+        t2.box {title = 'Дата заказа';}
+        t.box {title = 'Дата поставки';}
+        POSITION t2.box TO THE LEFT t.box;
+        POSITION g.box TO THE RIGHT d.box;
 }
 
 //--------------------------------------Формы--------------------------------------------------------------------------//
