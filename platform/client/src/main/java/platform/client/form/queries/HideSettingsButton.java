@@ -189,10 +189,11 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
 
             for (int i = 0; i < groupChecks.size(); i++) {
                 Boolean needToHideSet = groupChecks.get(i).getForeground().equals(Color.black);
+                Boolean isSelected = groupChecks.get(i).isSelected();
                 preferences.put(initialTable.getProperty(i).getSID(),
-                        new FormUserPreferences(!needToHideSet ? null : groupChecks.get(i).isSelected(), initialTable.getProperty(i).widthUser));
+                        new FormUserPreferences(!needToHideSet ? null : isSelected, initialTable.getProperty(i).widthUser));
                 if (needToHideSet)
-                    if (groupChecks.get(i).isSelected()) {
+                    if (isSelected) {
                         initialTable.getProperty(i).hideUser = false;
                     } else {
                         initialTable.getProperty(i).hideUser = true;
