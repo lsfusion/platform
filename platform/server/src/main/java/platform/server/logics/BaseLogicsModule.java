@@ -422,6 +422,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public NavigatorElement<T> objectElement;
     public NavigatorElement<T> adminElement;
 
+    public NavigatorElement<T> accessElement;
+    public NavigatorElement<T> eventsElement;
+    public NavigatorElement<T> configElement;
+    public NavigatorElement<T> catalogElement;
+
     public FormEntity<T> dictionaryForm;
     public FormEntity<T> objectForm;
 
@@ -1287,20 +1292,27 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         objectElement = addNavigatorElement(adminElement, "objectElement", getString("logics.object"));
         adminElement.add(objectElement);
 
-        addFormEntity(new UserPolicyFormEntity(adminElement, "userPolicyForm"));
-        addFormEntity(new SecurityPolicyFormEntity(adminElement, "securityPolicyForm"));
-        addFormEntity(new ConnectionsFormEntity(adminElement, "connectionsForm"));
-        addFormEntity(new PhysicalModelFormEntity(adminElement, "physicalModelForm"));
-        addFormEntity(new PropertiesFormEntity(adminElement, "propertiesForm"));
-        addFormEntity(new FormsFormEntity(adminElement, "formsForm"));
-        addFormEntity(new NotificationFormEntity(adminElement, "notification"));
-        addFormEntity(new ExceptionsFormEntity(adminElement, "exceptionsForm"));
+        accessElement = addNavigatorElement(adminElement, "accessElement", getString("logics.administration.access"));
+        addFormEntity(new UserPolicyFormEntity(accessElement, "userPolicyForm"));
+        addFormEntity(new SecurityPolicyFormEntity(accessElement, "securityPolicyForm"));
+
+        eventsElement = addNavigatorElement(adminElement, "eventsElement", getString("logics.administration.events"));
+        addFormEntity(new ConnectionsFormEntity(eventsElement, "connectionsForm"));
+        addFormEntity(new ExceptionsFormEntity(eventsElement, "exceptionsForm"));
+
+        configElement = addNavigatorElement(adminElement, "configElement", getString("logics.administration.config"));
+        addFormEntity(new PropertiesFormEntity(configElement, "propertiesForm"));
+        addFormEntity(new PhysicalModelFormEntity(configElement, "physicalModelForm"));
+        addFormEntity(new FormsFormEntity(configElement, "formsForm"));
+        addFormEntity(new NotificationFormEntity(configElement, "notification"));
+
+        catalogElement = addNavigatorElement(adminElement, "catalogElement", getString("logics.administration.catalogs"));
+        addFormEntity(new DaysOffFormEntity(catalogElement, "daysOffForm"));
+        dictionaryForm = addFormEntity(new DictionariesFormEntity(catalogElement, "dictionariesForm"));
+
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
-        addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
 
-        dictionaryForm = addFormEntity(new DictionariesFormEntity(adminElement, "dictionariesForm"));
-
-        addFormEntity(new RemindUserPassFormEntity(adminElement, "remindPasswordLetter"));
+        addFormEntity(new RemindUserPassFormEntity(null, "remindPasswordLetter"));
     }
 
     public void initClassForms() {
