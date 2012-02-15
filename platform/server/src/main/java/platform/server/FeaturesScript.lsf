@@ -213,10 +213,15 @@ PROPERTIES ADDOBJ(document), ADDOBJ(article)
 //         NOT NULL propertyK(param1, ..., paramNK)
 FILTERS NOT NULL name(article);
 
+showDocumentArticleModalForm 'Показать форму "По документам"' = ACTION() {
+    [ACTION FORM documentArticle NEWSESSION MODAL]();
+    [MESSAGE 'You pressed "ok"']() IF (formResult() == formResult.ok);
+    [MESSAGE 'You pressed "close"']() IF (formResult() == formResult.close);
+};
 
 FORM storeArticle 'По складам'
 OBJECTS s=store '-Склад-', a=article
-PROPERTIES SELECTION(s), name(s) READONLY, OBJVALUE(a), name(a), copyStoreNameToArticles(s) FORCE PANEL, createNewStore() TODRAW s FORCE PANEL
+PROPERTIES SELECTION(s), name(s) READONLY, OBJVALUE(a), name(a), copyStoreNameToArticles(s) FORCE PANEL, createNewStore() TODRAW s FORCE PANEL, showDocumentArticleModalForm()  TODRAW s FORCE PANEL
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity, incomeQuantity2, outcomeQuantity, outcomeQuantity2
 PROPERTIES(s) storeSizeName, storeIsHuge, storeIsHuge2
 PROPERTIES(s, a) foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
@@ -242,7 +247,6 @@ EDIT store OBJECT s
 // [CLASS className]
 // [NEWSESSION] [MODAL]
 showForm(document) = ACTION FORM documentArticle OBJECTS document NEWSESSION MODAL;
-
 
 //////////////// WINDOW STATEMENT /////////////////
 // Add new window statement

@@ -128,6 +128,10 @@ public class FormActionProperty extends CustomActionProperty {
                     }
                 }
             }
+
+            if (newSession) {
+                thisFormInstance.refreshData();
+            }
         }
     }
 

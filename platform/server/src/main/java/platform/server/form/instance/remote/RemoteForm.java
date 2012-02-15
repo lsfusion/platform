@@ -7,9 +7,6 @@ import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import org.apache.log4j.Logger;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
 import platform.base.BaseUtils;
 import platform.base.ExceptionUtils;
 import platform.base.OrderedMap;
@@ -396,8 +393,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
             updateCurrentClass = null;
         }
-        RemoteChanges result = new RemoteChanges(formChanges, actions, objectClassID, serverInvocationStatus == PAUSED);
-        actions = new ArrayList<ClientAction>();
+        RemoteChanges result = new RemoteChanges(formChanges, new ArrayList<ClientAction>(actions), objectClassID, serverInvocationStatus == PAUSED);
+        actions.clear();
         return result;
     }
 
@@ -492,7 +489,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    private List<ClientAction> actions = new ArrayList<ClientAction>();
+    private List<ClientAction> actions = Collections.synchronizedList(new ArrayList<ClientAction>());
     private ObjectInstance updateCurrentClass = null;
 
     public RemoteChanges changePropertyDraw(final int propertyID, final byte[] columnKey, final byte[] object, final boolean all, final boolean aggValue) throws RemoteException {

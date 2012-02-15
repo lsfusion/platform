@@ -740,6 +740,7 @@ contextIndependentPD[boolean innerPD] returns [LP property, boolean isData = fal
 	|	formDef=formActionPropertyDefinition { $property = $formDef.property; }
 	|	flowDef=flowActionPropertyDefinition { $property = $flowDef.property; }
 	|	addDef=addObjectActionPropertyDefinition { $property = $addDef.property; }
+	|	msgDef=messageActionPropertyDefinition { $property = $msgDef.property; }
 	|	actDef=customActionProperty { $property = $actDef.property; }
 	;
 
@@ -1038,6 +1039,20 @@ addObjectActionPropertyDefinition returns [LP property]
 	}
 }
 	:	'ADDOBJ' cid=classId
+	;
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// MESSAGE ACTION STATEMENT /////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+
+messageActionPropertyDefinition returns [LP property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedMessageProp($s.val);
+	}
+}
+	:	'MESSAGE' s=stringLiteral
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

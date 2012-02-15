@@ -92,6 +92,7 @@
       <keyword name="LONG" />
       <keyword name="MAX" />
       <keyword name="MAXCHARWIDTH" />
+      <keyword name="MESSAGE" />
       <keyword name="META" />
       <keyword name="MIN" />
       <keyword name="MINCHARWIDTH" />

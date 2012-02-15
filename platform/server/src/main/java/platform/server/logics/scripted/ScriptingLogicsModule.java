@@ -596,6 +596,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getSimpleAddObjectAction((CustomClass) findClassByCompoundName(className));
     }
 
+    public LP addScriptedMessageProp(String message) throws ScriptingErrorLog.SemanticErrorException {
+        return addMAProp(message, "");
+    }
+
     public LPWithParams addScriptedSetPropertyAProp(LPWithParams toProperty, LPWithParams fromProperty, boolean isDefault, List<String> oldContext) throws ScriptingErrorLog.SemanticErrorException {
         if (toProperty == null) {
             if (fromProperty.usedParams != null || isDefault) {

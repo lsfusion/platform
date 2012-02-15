@@ -513,7 +513,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal, baseLM.formResult, getFormResultProperty())));
+        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal, baseLM.formResult, baseLM.getFormResultProperty())));
     }
 
     protected LP addSelectFromListAction(AbstractGroup group, String caption, LP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
@@ -1879,18 +1879,18 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
-    private LP getAddedObjectProperty() {
+    public LP getAddedObjectProperty() {
         return addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("addedObject", "Added Object", new ValueClass[0], baseLM.baseClass)));
     }
 
     @IdentityLazy
-    private LP getFormResultProperty() {
+    public LP getFormResultProperty() {
         return addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("formResult", "Form Result", new ValueClass[0], baseLM.formResult)));
     }
 
     @IdentityLazy
     public LP getSimpleAddObjectAction(CustomClass cls) {
-        return addAProp(new SimpleAddObjectActionProperty(genSID(), cls, getAddedObjectProperty()));
+        return addAProp(new SimpleAddObjectActionProperty(genSID(), cls, baseLM.getAddedObjectProperty()));
     }
 
     @IdentityLazy
