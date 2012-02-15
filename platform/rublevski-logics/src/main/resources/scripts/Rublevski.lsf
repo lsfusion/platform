@@ -373,15 +373,16 @@ OBJECTS r=rateWaste FIXED PANEL
 PROPERTIES(r) name, percentRateWaste;
 
 // ----------------------------------- Товар ------------------------------------------ //
-GROUP descriptionGroup 'Общее описание' : publicGroup;
+GROUP descriptionGroup 'Для наименования' : publicGroup;
+GROUP rateGroup 'Нормы' : publicGroup;
 GROUP headGroup 'Базовые свойства' : baseGroup;
 GROUP sizeGroup 'Ячеистое хранение' : publicGroup;
 GROUP retailGroup 'Ценообразование' : publicGroup;
 GROUP discountGroup 'Скидки' : retailGroup;
 GROUP expiryGroup 'Контроль сроков годности' : publicGroup;
 GROUP equipmentGroup 'Внешние устройства' : publicGroup;
-GROUP substanceGroup 'Пищевые характеристики' : equipmentGroup;
-GROUP tagGroup 'Для ценника' : equipmentGroup;
+GROUP substanceGroup 'Пищевые характеристики' : publicGroup;
+GROUP tagGroup 'Ценник' : publicGroup;
 
 GROUP manufactoryGroup 'Производство' : publicGroup;
 GROUP orderGroup 'Заказ' : publicGroup;
@@ -470,8 +471,8 @@ nameNumberInPackItem 'Кол-во в упаковке' = name(numberInPackItem(i
 @metaCodeShowItemAttribute(NumberInPack, 'Показывать кол-во в упаковке', displayGroup);
 
 rateWasteItem = DATA rateWaste(item) IN idGroup;
-nameRateWasteItem 'Норма отходов' = name(rateWasteItem(item)) IN descriptionGroup;
-percentRateWasteItem 'Норма отходов,%' = percentRateWaste(rateWasteItem(item)) IN descriptionGroup;
+nameRateWasteItem 'Норма отходов' = name(rateWasteItem(item)) IN rateGroup;
+percentRateWasteItem 'Норма отходов,%' = percentRateWaste(rateWasteItem(item)) IN rateGroup;
 @metaCodeShowItemAttribute(RateWaste, 'Показывать норму отходов', displayGroup);
 
 wareItem = DATA ware (item) IN idGroup;
@@ -489,7 +490,7 @@ passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equ
 //substanceGroup
 percentFatItem '% жирности' =  DATA DOUBLE (item) IN substanceGroup;
 percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN substanceGroup;
-nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN substanceGroup;
+nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN substanceGroup MINCHARWIDTH 50;
 energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN substanceGroup;
 fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
 carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
@@ -538,12 +539,12 @@ isCrudeItem 'Товар-сырьё для калькуляции?' = DATA BOOLEA
 groupProductItem = DATA groupProduct (item) IN idGroup;
 nameGroupProductItem 'Группа изделий для печати заборного листа' = name(groupProductItem(item)) IN manufactoryGroup;
 
-compositionMenuItem 'Состав изделия для печати в меню' = DATA STRING[400] (item)IN manufactoryGroup;
-standartItem 'Стандарт изготовления изделия (СТБ и пр.)' = DATA STRING[100] (item) IN manufactoryGroup;
-normOutItem 'Норма выхода для печати в меню и калькуляцию' = DATA STRING[100] (item) IN manufactoryGroup;
-groupMenuItem 'Группа для печати в меню' = DATA STRING[100] (item) IN manufactoryGroup;
+compositionMenuItem 'Состав изделия для печати в меню' = DATA STRING[400] (item)IN manufactoryGroup MINCHARWIDTH 50;
+standartItem 'Стандарт изготовления изделия (СТБ и пр.)' = DATA STRING[100] (item) IN manufactoryGroup MINCHARWIDTH 50;
+normOutItem 'Норма выхода для печати в меню и калькуляцию' = DATA STRING[100] (item) IN manufactoryGroup MINCHARWIDTH 50;
+groupMenuItem 'Группа для печати в меню' = DATA STRING[100] (item) IN manufactoryGroup MINCHARWIDTH 50;
 isCutedItem 'Товар разрубается/прорабатывается' = DATA BOOLEAN (item) IN manufactoryGroup;
-storageTemperatureItem 'Температура хранения' =  DATA STRING[100] (item) IN equipmentGroup;
+storageTemperatureItem 'Температура хранения' =  DATA STRING[100] (item) IN equipmentGroup MINCHARWIDTH 50;
 
 //expiryGroup
 controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN expiryGroup;
@@ -952,7 +953,7 @@ GROUP historyGroup 'Изменяемые характеристики' : baseGro
 
 //defaultCoefficientNetGrossItem(item) = GROUP MAX coefficientNetGrossItem BY item;
 
-@metaCodeObjectDateProperty(rateNaturalLossItem, item, 'Норма естественной убыли,%', DOUBLE, descriptionGroup);
+@metaCodeObjectDateProperty(rateNaturalLossItem, item, 'Норма естественной убыли,%', DOUBLE, rateGroup);
 
 //@metaCodeObjectDateProperty(NDSSupplierItem, item, 'НДС поставщика,%', DOUBLE, historyGroup);
 
@@ -1167,43 +1168,60 @@ DESIGN item FROM DEFAULT {
             tabbedPane = TRUE;
             ADD primary.box{
                 title = 'Основные данные';
-                ADD i.headGroup;
-                ADD i.descriptionGroup {
-                    fillVertical = 0.4;
-                    ADD small.box {
-                        ADD PROPERTY(shortNamePackItem(i));
-                        ADD PROPERTY(shortNameSizeItem(i));
-                        ADD PROPERTY(shortNameSpecialtyItem(i));
-                        POSITION PROPERTY(shortNamePackItem(i)) TO THE LEFT PROPERTY(shortNameSizeItem(i));
-                        POSITION PROPERTY(shortNameSizeItem(i)) TO THE LEFT PROPERTY(shortNameSpecialtyItem(i));
-                    };
-                    //POSITION small.box BEFORE i.substanceGroup;
-                }
-                ADD i.sizeGroup;
-                ADD i.manufactoryGroup;
-                ADD i.barGroup;
-                ADD b.box;
-                POSITION i.sizeGroup TO THE RIGHT i.manufactoryGroup;
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
+                ADD containerLeft {
+                    childConstraints = TO THE BOTTOM;
+                    ADD i.descriptionGroup {
+                        fillVertical = 0.4;
+                        ADD small.box {
+                            ADD PROPERTY(shortNamePackItem(i));
+                            ADD PROPERTY(shortNameSizeItem(i));
+                            ADD PROPERTY(shortNameSpecialtyItem(i));
+                            POSITION PROPERTY(shortNamePackItem(i)) TO THE LEFT PROPERTY(shortNameSizeItem(i));
+                            POSITION PROPERTY(shortNameSizeItem(i)) TO THE LEFT PROPERTY(shortNameSpecialtyItem(i));
+                        };
+                    }
+                    ADD i.manufactoryGroup;
+                }
+
+                ADD containerRight {
+                    childConstraints = TO THE BOTTOM;
+                    ADD i.headGroup;
+                    ADD i.rateGroup;
+                    ADD i.sizeGroup;
+                    ADD i.barGroup;
+                }
+                POSITION containerLeft TO THE LEFT containerRight;
+                ADD b.box;
             }
 
-            ADD manufactory.box{
+            ADD additional.box {
+
                 title = 'Дополнительные';
-                ADD i.equipmentGroup;
-                ADD i.retailGroup;
-                ADD i.expiryGroup;
-                ADD i.orderGroup;
-                ADD i.documentGroup;
-                POSITION i.expiryGroup TO THE RIGHT i.retailGroup;
-                POSITION i.orderGroup TO THE RIGHT i.retailGroup;
-                POSITION i.documentGroup TO THE RIGHT i.retailGroup;
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
+
+                ADD containerALeft {
+                    childConstraints = TO THE BOTTOM;
+                    ADD i.equipmentGroup;
+                    ADD i.retailGroup;
+                };
+
+                ADD containerARight {
+                    childConstraints = TO THE BOTTOM;
+                    ADD i.substanceGroup;
+                    ADD i.tagGroup;
+                    ADD i.expiryGroup;
+                    ADD i.orderGroup;
+                    ADD i.documentGroup;
+                };
+
+                POSITION containerALeft TO THE LEFT containerARight;
             }
 
             ADD d.box {
-                //fillVertical = 3.0;
+
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
                 ADD dt.box BEFORE d.grid.box;
