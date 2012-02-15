@@ -1110,18 +1110,6 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 
 @metaCodeNameTripleObjectDateProperty(banSupplierItemDepartment, supplier, item, departmentStore, 'Запретить закупку', yesNo, orderGroup);
 
-FORM supplierItemDepartment 'Товар поставщика для подразделения'
-OBJECTS i=item FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier
-PROPERTIES(d) READONLY name, nameStoreDepartmentStore
-PROPERTIES(i) READONLY nameAttributeItem
-PROPERTIES(s) READONLY name
-PROPERTIES(s, i, d) nameisSupplierItemDepartment, showFormNameisSupplierItemDepartment,
-                    priceSupplierItemDepartment, showFormpriceSupplierItemDepartment,
-                    markupSupplierItemDepartment, showFormmarkupSupplierItemDepartment,
-                    namebanSupplierItemDepartment, showFormNamebanSupplierItemDepartment;
-
-showFormSupplierItemDepartment 'Свойства по поставщикам' (item) = ACTION FORM supplierItemDepartment OBJECTS i MODAL;
-
 FORM item 'Товар'
 OBJECTS i=item FIXED PANEL, b=barcode
 TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
@@ -1250,22 +1238,6 @@ DESIGN items FROM DEFAULT {
     }
 }
 
-FORM itemInDepartment  'Товары в подразделениях'
-OBJECTS d=departmentStore, i=item
-PROPERTIES(d) READONLY name, nameStoreDepartmentStore
-PROPERTIES(d) ADDFORM, EDITFORM, delete
-PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem
-PROPERTIES(i) ADDFORM, EDITFORM, delete
-PROPERTIES(d, i) additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem, maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacturerDepartmentStoreItem,
-                 nameStatusCashDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem, fromDateDeliveryDepartmentStoreItem,
-                 banSaleDepartmentStoreItem, banMovementDepartmentStoreItem, reserveDepartmentStoreItem,
-                 maxReserveItemDepartment, showFormmaxReserveItemDepartment,
-                 minReserveItemDepartment, showFormminReserveItemDepartment,
-                 namebanRevaluationItemDepartment, showFormNamebanRevaluationItemDepartment,
-                 nameinActionItemDepartment, showFormNameinActionItemDepartment,
-                 marginProductionItemDepartment, showFormmarginProductionItemDepartment,
-                 discountItemDepartment, showFormdiscountItemDepartment;
-
 FORM itemGroup 'Товарная группа'
 OBJECTS g=itemGroup FIXED PANEL
 PROPERTIES(g) name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, extSID
@@ -1333,7 +1305,7 @@ PROPERTIES(c, e) inCommitteeEmployee
 FILTERS NOT NULL inDepartmentStoreEmployeeRevaluationCommittee(c, e)
 EDIT committee OBJECT c;
 
-FORM employeesCommittees 'Сотрудники и комиссии '
+FORM employeesCommittees 'Комиссии'
 OBJECTS c=committee, e=employee
 PROPERTIES(c) READONLY name, nameDepartmentStoreCommittee, commonNameChairmanCommittee
 PROPERTIES(c) ADDFORM, EDITFORM, delete
@@ -2529,8 +2501,6 @@ NAVIGATOR {
             ADD itemGroups;
             ADD unitsOfMeasure;
             ADD assortments;
-            ADD itemInDepartment;
-            ADD supplierItemDepartment;
         }
         NEW shopStructure 'Магазины' {
             ADD companies;
