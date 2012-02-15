@@ -18,9 +18,9 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.navigator.NavigatorElement;
-import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.form.window.AbstractWindow;
 import platform.server.logics.linear.LP;
+import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
 import platform.server.logics.property.actions.flow.*;
@@ -513,7 +513,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal, baseLM.formResult, baseLM.getFormResultProperty())));
+        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenObjectProperty())));
     }
 
     protected LP addSelectFromListAction(AbstractGroup group, String caption, LP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
@@ -1881,6 +1881,11 @@ public abstract class LogicsModule {
     @IdentityLazy
     public LP getAddedObjectProperty() {
         return addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("addedObject", "Added Object", new ValueClass[0], baseLM.baseClass)));
+    }
+
+    @IdentityLazy
+    public LP getChosenObjectProperty() {
+        return addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenObject", "Chosen Object", new ValueClass[]{StringClass.get(100)}, baseLM.baseClass)));
     }
 
     @IdentityLazy

@@ -215,8 +215,12 @@ FILTERS NOT NULL name(article);
 
 showDocumentArticleModalForm 'Показать форму "По документам"' = ACTION() {
     [ACTION FORM documentArticle NEWSESSION MODAL]();
+
     [MESSAGE 'You pressed "ok"']() IF (formResult() == formResult.ok);
     [MESSAGE 'You pressed "close"']() IF (formResult() == formResult.close);
+
+    name(k) IF k == chosenObject('article') IF (formResult() == formResult.ok) <- 'THIS article was chosen in modal form';
+    name(k) IF k == store(chosenObject('document')) IF (formResult() == formResult.ok) <- 'Document for THIS store was chosen in modal form';
 };
 
 FORM storeArticle 'По складам'

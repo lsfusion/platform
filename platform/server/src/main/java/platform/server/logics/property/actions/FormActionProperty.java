@@ -6,14 +6,12 @@ import platform.interop.action.MessageClientAction;
 import platform.server.classes.DataClass;
 import platform.server.classes.StaticCustomClass;
 import platform.server.classes.ValueClass;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.OrderEntity;
-import platform.server.form.entity.PropertyObjectEntity;
+import platform.server.form.entity.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -25,7 +23,7 @@ import java.util.*;
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
 public class FormActionProperty extends CustomActionProperty {
 
-    public final FormEntity form;
+    public final FormEntity<?> form;
     public final Map<ObjectEntity, ClassPropertyInterface> mapObjects;
     private final PropertyObjectEntity[] setProperties;
     private final OrderEntity[] getProperties;
@@ -37,6 +35,7 @@ public class FormActionProperty extends CustomActionProperty {
 
     private final StaticCustomClass formResultClass;
     private final LP formResultProperty;
+    private final LP chosenObjectProperty;
 
     public static ValueClass[] getValueClasses(ObjectEntity[] objects) {
         ValueClass[] valueClasses = new ValueClass[objects.length];
@@ -50,12 +49,13 @@ public class FormActionProperty extends CustomActionProperty {
     //assert getProperties и setProperties одинаковой длины
     //setProperties привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal, StaticCustomClass formResultClass, LP formResultProperty) {
+    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal, StaticCustomClass formResultClass, LP formResultProperty, LP chosenObjectProperty) {
         super(sID, caption, getValueClasses(objectsToSet));
 
         this.valueClass = valueClass;
         this.formResultClass = formResultClass;
         this.formResultProperty = formResultProperty;
+        this.chosenObjectProperty = chosenObjectProperty;
 
         assert setProperties.length == getProperties.length;
 
@@ -104,6 +104,15 @@ public class FormActionProperty extends CustomActionProperty {
                 formResultProperty.execute(formResultClass.getID(formResult), context);
             }
 
+            if (chosenObjectProperty != null) {
+                for (GroupObjectEntity group : form.groups) {
+                    for (ObjectEntity object : group.objects) {
+                        ObjectValue val = newFormInstance.instanceFactory.getInstance(object).getObjectValue();
+                        chosenObjectProperty.execute(val.getValue(), context, new DataObject(object.getSID()));
+                    }
+                }
+            }
+
             if (!seekOnOk.isEmpty() && "ok".equals(formResult)) {
                 for (ObjectEntity object : seekOnOk) {
                     try {
@@ -129,9 +138,8 @@ public class FormActionProperty extends CustomActionProperty {
                 }
             }
 
-            if (newSession) {
-                thisFormInstance.refreshData();
-            }
+            //обновляем текущую форму, чтобы подхватить изменения из вызываемой формы
+            thisFormInstance.refreshData();
         }
     }
 
