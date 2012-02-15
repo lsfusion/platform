@@ -1034,7 +1034,8 @@ nameRetailTaxNDSItem(item) = name(retailTaxNDSItem(item));
 retailRangeItem(item) = DATA range (item) IN idGroup;
 dataRetailRateRangeItem 'Розничный НДС' (item) = dataActingRateRange(retailRangeItem(item)) IN retailGroup;
 CONSTRAINT CHECKED retailTaxNDSItem(item) != taxRange(retailRangeItem(item))  MSG 'ошибка: Шкала должна соответствовать шкале НДС';
-dataOverrideRateRangeItem 'Значение НДС' (item) = UNION OVERRIDE dataRetailRateRangeItem(item), dataSuppliersRateRangeItem(item) IN retailGroup;
+overrideRateRangeItem 'НДС (ИД)' (item) = UNION OVERRIDE retailRangeItem(item), suppliersRangeItem(item) IN idGroup;
+dataOverrideRateRangeItem 'Значение НДС' (item) = dataActingRateRange(overrideRateRangeItem(item)) IN retailGroup;
 toShowDataRangeItem(item) = TRUE IF item IS item AND dataSuppliersRateRangeItem(item);
 
 FORM tax 'Налог'
@@ -2554,11 +2555,14 @@ FILTERS NOT NULL inCashReportDocument(r,d);
 
 //---------------------------- Приход товара от поставщика ----------------------------------------//
 CLASS shipment 'Поставка': historyObject;
+CLASS shipmentPosted 'Поставка (закрытая)': shipment;
 CLASS batch 'Партия';
 CLASS shipmentDetail 'Строка документа поставки': batch;
 
 waybillShipment 'Номер накладной' (shipment) = DATA STRING[7] (shipment) IN baseGroup;
 dateWaybillShipment 'Дата поставки' (shipment) = DATA DATE (shipment) IN baseGroup;
+departmentStoreShipment 'Отдел поставки (ИД)' (shipment) = DATA departmentStore(shipment) IN idGroup;
+nameDepartmentStoreShipment 'Отдел поставки' (shipment) = name(departmentStoreShipment(shipment)) IN baseGroup;
 supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipment) IN idGroup;
 nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN baseGroup;
 noteShipment 'Примечание' (shipment) = DATA STRING[100] (shipment) IN baseGroup;
@@ -2566,6 +2570,7 @@ carryingChargesShipment 'Транспортные расходы' (shipment) = D
 inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) = DATA BOOLEAN (shipment, orderSupplier) IN idGroup;
 ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(dataOrderSupplier(orderSupplier)) IF inShipmentOrder(shipment, orderSupplier), ', ' BY shipment MINCHARWIDTH 10 PREFCHARWIDTH 10;
 isSupplierShipmentOrder 'Заявка поставщика поставки' (shipment, orderSupplier) = supplierShipment(shipment)== supplierOrderSupplier(orderSupplier);
+isDepartmentStoreShipmentOrder 'Заявка отдела поставки' (shipment, orderSupplier) = departmentStoreShipment(shipment)== departmentStoreOrderSupplier(orderSupplier);
 
 shipmentShipmentDetail 'Строка в поставке' (shipmentDetail) = DATA shipment(shipmentDetail) IN idGroup;
 inShipmentShipmentDetail(shipment, shipmentDetail) = shipmentShipmentDetail(shipmentDetail) == shipment;
@@ -2576,30 +2581,57 @@ priceShipmentDetail 'Цена товара'(shipmentDetail) = DATA DOUBLE (shipm
 supplierMarkupShipmentDetail 'Оптовая надбавка/торговая скидка, %' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 dateFitToShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
 
+suppliersRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
+dataSuppliersRangeShipmentDetail 'НДС поставщика,%' (shipmentDetail) = dataActingRateRange(suppliersRangeShipmentDetail(shipmentDetail)) IN baseGroup;
+suppliersRangeShipmentDetail(shipmentDetail) <- suppliersRangeItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+retailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
+dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = dataActingRateRange(retailRangeShipmentDetail(shipmentDetail)) IN baseGroup;
+retailRangeShipmentDetail(shipmentDetail) <- overrideRateRangeItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+wareShipmentDetail 'Посуда (ИД)' (shipmentDetail) = DATA ware(shipmentDetail) IN baseGroup;
+nameWareShipmentDetail 'Посуда' (shipmentDetail) = name(wareShipmentDetail(shipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
+wareShipmentDetail(shipmentDetail) <- wareItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+retailMarkupShipmentDetail(shipmentDetail) <- markupSupplierItemDepartmentOver (supplierShipment(shipmentShipmentDetail(shipmentDetail)), itemShipmentDetail(shipmentDetail),
+                                                                                departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateWaybillShipment(shipmentShipmentDetail(shipmentDetail))) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+oldRetailPriceShipmentDetail 'Старая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+oldRetailPriceShipmentDetail (shipmentDetail) <- retailPriceItemDepartmentDate(itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
+                                                              dateWaybillShipment(shipmentShipmentDetail(shipmentDetail))-1) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = priceShipmentDetail(shipmentDetail)*(100 + retailMarkupShipmentDetail(shipmentDetail))/100*(100+dataRetailRangeShipmentDetail(shipmentDetail))/100  IN baseGroup;
+
+
 FORM ordersShipment 'Заказы'
 OBJECTS s=shipment FIXED PANEL, o=orderSupplier
 PROPERTIES (s) READONLY waybillShipment, dateWaybillShipment
 PROPERTIES (s, o) inShipmentOrder
 PROPERTIES (o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
                nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
-FILTERS NOT NULL isSupplierShipmentOrder (s, o);
+FILTERS NOT NULL isSupplierShipmentOrder (s, o),
+        NOT NULL isDepartmentStoreShipmentOrder (s, o);
 
 showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OBJECTS s MODAL SHORTCUT ordersShipment DEFAULT;
 
 FORM shipment 'Поставка'
 OBJECTS s=shipment FIXED PANEL
 OBJECTS d=shipmentDetail
-PROPERTIES (s) waybillShipment, dateWaybillShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment, showFormOrdersShipment
-PROPERTIES (d) nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, ADDOBJ, delete
+PROPERTIES (s) waybillShipment, dateWaybillShipment, nameDepartmentStoreShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment, showFormOrdersShipment
+PROPERTIES (d) nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail,
+                dateFitToShipmentDetail, nameWareShipmentDetail READONLY, dataSuppliersRangeShipmentDetail READONLY, dataRetailRangeShipmentDetail READONLY,
+                retailMarkupShipmentDetail READONLY, oldRetailPriceShipmentDetail READONLY, retailPriceShipmentDetail READONLY, ADDOBJ, delete
 FILTERS NOT NULL inShipmentShipmentDetail(s, d)
 EDIT shipment OBJECT s;
 
 FORM shipments 'Поставки'
 OBJECTS s=shipment, d=shipmentDetail
-PROPERTIES (s) READONLY waybillShipment, dateWaybillShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment
+PROPERTIES (s) READONLY waybillShipment, dateWaybillShipment, nameDepartmentStoreShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment
 PROPERTIES (s) ADDFORM, EDITFORM, delete
 //PROPERTIES (s, o) inShipmentOrder
-PROPERTIES (d) READONLY nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail
+PROPERTIES (d) READONLY nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail,
+                        nameWareShipmentDetail, dataSuppliersRangeShipmentDetail, dataRetailRangeShipmentDetail, retailMarkupShipmentDetail, oldRetailPriceShipmentDetail, retailPriceShipmentDetail
 FILTERS NOT NULL inShipmentShipmentDetail(s, d);
 
 //---------------------------- Импорт данных ----------------------------------------//
