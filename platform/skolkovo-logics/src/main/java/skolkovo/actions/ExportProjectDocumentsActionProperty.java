@@ -62,22 +62,22 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
                     newRegulation = true;
             }
 
-            if ((!putFileIfNotNull(files, LM.fileNativeApplicationFormProject.read(context, projectObject), "Анкета заявителя"))
+            if ((!putFileIfNotNull(files, LM.fileNativeApplicationFormProject.read(context, projectObject), "Анкета заявителя" ,true))
                     && LM.needsToBeTranslatedToRussianProject.read(context, projectObject) == null)
-                putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, false, newRegulation, true), "Анкета заявителя");
-            if ((!putFileIfNotNull(files, LM.fileForeignApplicationFormProject.read(context, projectObject), "Анкета заявителя (иностр.)"))
+                putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, false, newRegulation, true), "Анкета заявителя" ,false);
+            if ((!putFileIfNotNull(files, LM.fileForeignApplicationFormProject.read(context, projectObject), "Анкета заявителя (иностр.)" ,true))
                     && LM.needsToBeTranslatedToEnglishProject.read(context, projectObject) == null)
-                putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, true, newRegulation, true), "Анкета заявителя (иностр.)");
+                putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, true, newRegulation, true), "Анкета заявителя (иностр.)", false);
 
 
             if (!newRegulation) {
-                putFileIfNotNull(files, LM.fileNativeSummaryProject.read(context, projectObject), "Файл резюме проекта");
-                putFileIfNotNull(files, LM.fileForeignSummaryProject.read(context, projectObject), "Файл резюме проекта (иностр.)");
-                putFileIfNotNull(files, LM.fileNativeRoadMapProject.read(context, projectObject), "Файл дорожной карты");
-                putFileIfNotNull(files, LM.fileForeignRoadMapProject.read(context, projectObject), "Файл дорожной карты (иностр.)");
-                putFileIfNotNull(files, LM.fileResolutionIPProject.read(context, projectObject), "Заявление IP");
-                putFileIfNotNull(files, LM.fileNativeTechnicalDescriptionProject.read(context, projectObject), "Файл технического описания");
-                putFileIfNotNull(files, LM.fileForeignTechnicalDescriptionProject.read(context, projectObject), "Файл технического описания (иностр.)");
+                putFileIfNotNull(files, LM.fileNativeSummaryProject.read(context, projectObject), "Файл резюме проекта" ,true);
+                putFileIfNotNull(files, LM.fileForeignSummaryProject.read(context, projectObject), "Файл резюме проекта (иностр.)" ,true);
+                putFileIfNotNull(files, LM.fileNativeRoadMapProject.read(context, projectObject), "Файл дорожной карты" ,true);
+                putFileIfNotNull(files, LM.fileForeignRoadMapProject.read(context, projectObject), "Файл дорожной карты (иностр.)" ,true);
+                putFileIfNotNull(files, LM.fileResolutionIPProject.read(context, projectObject), "Заявление IP" ,true);
+                putFileIfNotNull(files, LM.fileNativeTechnicalDescriptionProject.read(context, projectObject), "Файл технического описания" ,true);
+                putFileIfNotNull(files, LM.fileForeignTechnicalDescriptionProject.read(context, projectObject), "Файл технического описания (иностр.)" ,true);
 
                 LP isNonRussianSpecialist = LM.is(LM.nonRussianSpecialist);
                 Map<Object, KeyExpr> keys = isNonRussianSpecialist.getMapKeys();
@@ -94,10 +94,10 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
 
                 for (Map<Object, Object> values : result.values()) {
                     String fullName = values.get("fullNameNonRussianSpecialist").toString().trim().replace("/", "-").replace("\\", "-");
-                    putFileIfNotNull(files, values.get("fileForeignResumeNonRussianSpecialist"), fullName + " resume foreign");
-                    putFileIfNotNull(files, values.get("fileNativeResumeNonRussianSpecialist"), fullName + " resume native");
-                    putFileIfNotNull(files, values.get("filePassportNonRussianSpecialist"), fullName + " passport");
-                    putFileIfNotNull(files, values.get("fileStatementNonRussianSpecialist"), fullName + " statement");
+                    putFileIfNotNull(files, values.get("fileForeignResumeNonRussianSpecialist"), fullName + " resume foreign" ,true);
+                    putFileIfNotNull(files, values.get("fileNativeResumeNonRussianSpecialist"), fullName + " resume native" ,true);
+                    putFileIfNotNull(files, values.get("filePassportNonRussianSpecialist"), fullName + " passport" ,true);
+                    putFileIfNotNull(files, values.get("fileStatementNonRussianSpecialist"), fullName + " statement" ,true);
                 }
 
                 LP isAcademic = LM.is(LM.academic);
@@ -112,8 +112,8 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
                 result = query.execute(session.sql);
 
                 for (Map<Object, Object> values : result.values()) {
-                    putFileIfNotNull(files, values.get("fileDocumentConfirmingAcademic"), values.get("fullNameAcademic").toString().trim() + " Файл трудового договора");
-                    putFileIfNotNull(files, values.get("fileDocumentEmploymentAcademic"), values.get("fullNameAcademic").toString().trim() + " Файл заявления специалиста");
+                    putFileIfNotNull(files, values.get("fileDocumentConfirmingAcademic"), values.get("fullNameAcademic").toString().trim() + " Файл трудового договора" ,true);
+                    putFileIfNotNull(files, values.get("fileDocumentEmploymentAcademic"), values.get("fullNameAcademic").toString().trim() + " Файл заявления специалиста" ,true);
                 }
             } else {
 
@@ -129,18 +129,18 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
                 for (Map<Object, Object> values : result.values()) {
-                    putFileIfNotNull(files, values.get("filePassportSpecialist"), values.get("nameNativeSpecialist").toString().trim() + " Файл документа, удостоверяющего личность");
-                    putFileIfNotNull(files, values.get("fileStatementSpecialist"), values.get("nameNativeSpecialist").toString().trim() + " Файл заявления участника команды");
+                    putFileIfNotNull(files, values.get("filePassportSpecialist"), values.get("nameNativeSpecialist").toString().trim() + " Файл документа, удостоверяющего личность" ,true);
+                    putFileIfNotNull(files, values.get("fileStatementSpecialist"), values.get("nameNativeSpecialist").toString().trim() + " Файл заявления участника команды" ,true);
                 }
             }
 
             // юридические документы
-            putFileIfNotNull(files, LM.statementClaimerProject.read(context, projectObject), "Заявление");
-            putFileIfNotNull(files, LM.constituentClaimerProject.read(context, projectObject), "Учредительные документы");
-            putFileIfNotNull(files, LM.extractClaimerProject.read(context, projectObject), "Выписка из реестра");
+            putFileIfNotNull(files, LM.statementClaimerProject.read(context, projectObject), "Заявление", true);
+            putFileIfNotNull(files, LM.constituentClaimerProject.read(context, projectObject), "Учредительные документы", true);
+            putFileIfNotNull(files, LM.extractClaimerProject.read(context, projectObject), "Выписка из реестра", true);
 
-            putFileIfNotNull(files, LM.fileMinutesOfMeetingExpertCollegiumProject.read(context, projectObject), "Протокол заседания экспертной коллегии");
-            putFileIfNotNull(files, LM.fileWrittenConsentClaimerProject.read(context, projectObject), "Письменное согласие заявителя");
+            putFileIfNotNull(files, LM.fileMinutesOfMeetingExpertCollegiumProject.read(context, projectObject), "Протокол заседания экспертной коллегии", true);
+            putFileIfNotNull(files, LM.fileWrittenConsentClaimerProject.read(context, projectObject), "Письменное согласие заявителя", true);
 
             context.addAction(new ExportFileClientAction(files));
 
@@ -155,9 +155,12 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
         }
     }
 
-    private boolean putFileIfNotNull(Map<String, byte[]> files, Object file, String name) {
+    private boolean putFileIfNotNull(Map<String, byte[]> files, Object file, String name, Boolean isCustomFileClass) {
         if (file != null) {
-            files.put(name + ".pdf", (byte[]) file);
+            if (isCustomFileClass)
+                files.put(name + "." + BaseUtils.getExtension((byte[]) file).substring(0, 3).toLowerCase(), BaseUtils.getFile((byte[]) file));
+            else
+                files.put(name + ".pdf", (byte[]) file);
             return true;
         } else {
             return false;
