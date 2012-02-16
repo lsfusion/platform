@@ -17,9 +17,9 @@ public class AnyValuePropertyHolder {
     private final LP yearProperty;
     private final LP dateTimeProperty;
     private final LP logicalProperty;
+    private final LP dateProperty;
 
-    public AnyValuePropertyHolder(LP objectProperty, LP textProperty, LP stringProperty, LP intProperty, LP longProperty, LP doubleProperty, LP yearProperty, LP dateTimeProperty, LP logicalProperty) {
-
+    public AnyValuePropertyHolder(LP objectProperty, LP textProperty, LP stringProperty, LP intProperty, LP longProperty, LP doubleProperty, LP yearProperty, LP dateTimeProperty, LP logicalProperty, LP dateProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && textProperty.property.getType() == TextClass.instance
                 && stringProperty.property.getType().isCompatible(StringClass.get(0))
@@ -29,6 +29,7 @@ public class AnyValuePropertyHolder {
                 && yearProperty.property.getType() == YearClass.instance
                 && dateTimeProperty.property.getType() == DateTimeClass.instance
                 && logicalProperty.property.getType() == LogicalClass.instance
+                && dateProperty.property.getType() == DateClass.instance
                 ;
 
         this.objectProperty = objectProperty;
@@ -40,6 +41,7 @@ public class AnyValuePropertyHolder {
         this.yearProperty = yearProperty;
         this.dateTimeProperty = dateTimeProperty;
         this.logicalProperty = logicalProperty;
+        this.dateProperty = dateProperty;
     }
 
     public void write(ValueClass valueClass, Object value, ExecutionContext context, DataObject... keys) throws SQLException {
@@ -69,6 +71,9 @@ public class AnyValuePropertyHolder {
 
         } else if (valueClass instanceof LogicalClass) {
             logicalProperty.execute(value, context, keys);
+
+        } else if (valueClass instanceof DateClass) {
+            dateProperty.execute(value, context, keys);
 
         } else {
             assert false:valueClass + " is not supported by AnyValueProperty";
