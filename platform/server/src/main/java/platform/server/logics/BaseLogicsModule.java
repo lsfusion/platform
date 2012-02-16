@@ -1995,14 +1995,19 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     }
 
     class FormsFormEntity extends FormEntity{
-        
+
+        ObjectEntity objTreeForm;
+        TreeGroupEntity treeFormObject;
         ObjectEntity objUser;
-        ObjectEntity objForm;
         ObjectEntity objPropertyDraw;
         protected FormsFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.tables.forms"));
 
-            objForm = addSingleGroupObject(form, getString("logics.tables.forms"), objectValue, navigatorElementSID, navigatorElementCaption);
+            objTreeForm = addSingleGroupObject(navigatorElement, true);
+            objTreeForm.groupTo.setIsParents(addPropertyObject(parentNavigatorElement, objTreeForm));
+
+            treeFormObject = addTreeGroupObject(objTreeForm.groupTo);
+            addPropertyDraw(new LP[]{navigatorElementSID, navigatorElementCaption, parentNavigatorElement}, objTreeForm);
             objUser = addSingleGroupObject(customUser, getString("logics.user"), userFirstName, userLastName, userLogin);
             objPropertyDraw = addSingleGroupObject(propertyDraw, getString("logics.property.draw"), propertyDrawSID, captionPropertyDraw);
 
@@ -2013,7 +2018,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             objUser.groupTo.initClassView = ClassViewType.PANEL;
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(formPropertyDraw, objPropertyDraw), Compare.EQUALS, objForm));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(formPropertyDraw, objPropertyDraw), Compare.EQUALS, objTreeForm));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(currentUser), Compare.EQUALS, objUser));
 
             setReadOnly(true);

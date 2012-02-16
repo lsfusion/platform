@@ -200,6 +200,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
                     }
             }
             form.remoteForm.saveUserPreferences(preferences, forAllUsers);
+            JOptionPane.showMessageDialog(this, ClientResourceBundle.getString("form.grid.hide.save.settings.successfully.complete"), ClientResourceBundle.getString("form.grid.hide.save.complete"), JOptionPane.INFORMATION_MESSAGE);
         }
     }
 }
