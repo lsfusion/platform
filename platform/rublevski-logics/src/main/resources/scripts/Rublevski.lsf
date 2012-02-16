@@ -373,7 +373,7 @@ OBJECTS r=rateWaste FIXED PANEL
 PROPERTIES(r) name, percentRateWaste;
 
 // ----------------------------------- Товар ------------------------------------------ //
-GROUP descriptionGroup 'Для наименования' : publicGroup;
+GROUP descriptionGroup 'Наименование' : publicGroup;
 GROUP rateGroup 'Нормы' : publicGroup;
 GROUP headGroup 'Базовые свойства' : baseGroup;
 GROUP sizeGroup 'Ячеистое хранение' : publicGroup;
@@ -560,14 +560,17 @@ CLASS ABSTRACT itemAttribute 'Атрибут товара' : named;
 
 CLASS STATIC stringItemAttribute 'Строковый атрибут' {
     captionItem 'Наименование',
-    article 'Артикул'
+    article 'Артикул',
+    hallmark 'Отличительный признак'
 } : itemAttribute;
 
 valueCaptionItemAttribute(item, attribute) = castToString255(captionItem(item)) AND attribute == stringItemAttribute.captionItem;
 valueArticleItemAttribute(item, attribute) = castToString255(articleItem(item)) AND attribute == stringItemAttribute.article;
+valueHallmarkItemAttribute(item, attribute) = castToString255(hallmarkItem(item)) AND attribute == stringItemAttribute.hallmark;
 
 valueStringItemAttribute(item, attribute) = UNION EXCLUSIVE  valueCaptionItemAttribute(item, attribute),
-                                                             valueArticleItemAttribute(item, attribute);
+                                                             valueArticleItemAttribute(item, attribute),
+                                                             valueHallmarkItemAttribute(item, attribute);
 
 CLASS STATIC integerItemAttribute 'Целочисленный атрибут' {
     length 'Длина',
@@ -586,14 +589,24 @@ stringIntegerItemAttribute(item, attribute) = castToString255(valueIntegerItemAt
 
 CLASS STATIC doubleItemAttribute 'Дробный атрибут' {
     netWeight 'Вес нетто',
-    grossWeight 'Вес брутто'
+    grossWeight 'Вес брутто',
+    volume 'Объём',
+    percentFat '% жирности',
+    percentAlcohol '% алкоголя'
 } : itemAttribute;
 
 valueNetWeightItemAttribute(item, attribute) = netWeightItem(item) AND attribute == doubleItemAttribute.netWeight;
 valueGrossWeightItemAttribute(item, attribute) = grossWeightItem(item) AND attribute == doubleItemAttribute.grossWeight;
+valueVolumeItemAttribute(item, attribute) = volumeItem(item) AND attribute == doubleItemAttribute.volume;
+valuePercentFatItemAttribute(item, attribute) = percentFatItem(item) AND attribute == doubleItemAttribute.percentFat;
+valuePercentAlcoholItemAttribute(item, attribute) = percentAlcoholItem(item) AND attribute == doubleItemAttribute.percentAlcohol;
 
 valueDoubleItemAttribute(item, attribute) = UNION EXCLUSIVE valueNetWeightItemAttribute(item, attribute),
-                                                            valueGrossWeightItemAttribute(item, attribute);
+                                                            valueGrossWeightItemAttribute(item, attribute),
+                                                            valueVolumeItemAttribute(item, attribute),
+                                                            valuePercentFatItemAttribute(item, attribute),
+                                                            valuePercentAlcoholItemAttribute(item, attribute);
+
 stringDoubleItemAttribute(item, attribute) = castToString255(valueDoubleItemAttribute(item, attribute));
 
 CLASS STATIC booleanItemAttribute 'Логический атрибут' {
@@ -609,40 +622,52 @@ valueBooleanItemAttribute(item, attribute) = UNION EXCLUSIVE valueFixPriceWeight
 stringBooleanItemAttribute(item, attribute) = castToString255(valueBooleanItemAttribute(item, attribute));
 
 CLASS STATIC objectItemAttribute 'Объектный атрибут' {
+    itemGroup 'Группа',
     unitOfMeasure 'Единица измерения',
     brand 'Брэнд',
     typeItem 'Вид',
+    formItem 'Форма',
     sort 'Сорт/категория',
     pack 'Упаковка',
     specialty 'Особенность',
+    numberInPack 'Число в упаковке',
     size 'Размер/калибр',
     coolingDegree 'Степень охлаждения',
     color 'Цвет',
-    taste 'Вкус'
+    taste 'Вкус',
+    countryOrigin 'Страна происхождения/производства'
 
 } : itemAttribute;
 
+valueItemGroupItemAttribute(item, attribute) = itemGroupSku(item) AND attribute == objectItemAttribute.itemGroup;
 valueUOMItemAttribute(item, attribute) = unitOfMeasureItem(item) AND attribute == objectItemAttribute.unitOfMeasure;
 valueBrandItemAttribute(item, attribute) = brandItem(item) AND attribute == objectItemAttribute.brand;
 valueTypeItemAttribute(item, attribute) = typeItemItem(item) AND attribute == objectItemAttribute.typeItem;
+valueFormItemAttribute(item, attribute) = formItemItem(item) AND attribute == objectItemAttribute.formItem;
 valueSortItemAttribute(item, attribute) = sortItem(item) AND attribute == objectItemAttribute.sort;
 valuePackItemAttribute(item, attribute) = packItem(item) AND attribute == objectItemAttribute.pack;
+valueNumberInPackItemAttribute(item, attribute) = numberInPackItem(item) AND attribute == objectItemAttribute.numberInPack;
 valueSpecialtyItemAttribute(item, attribute) = specialtyItem(item) AND attribute == objectItemAttribute.specialty;
 valueSizeItemAttribute(item, attribute) = sizeItem(item) AND attribute == objectItemAttribute.size;
 valueCoolingDegreeItemAttribute(item, attribute) = coolingDegreeItem(item) AND attribute == objectItemAttribute.coolingDegree;
 valueColorItemAttribute(item, attribute) = colorItem(item) AND attribute == objectItemAttribute.color;
 valueTasteItemAttribute(item, attribute) = tasteItem(item) AND attribute == objectItemAttribute.taste;
+valueCountryItemAttribute(item, attribute) = countryItem(item) AND attribute == objectItemAttribute.countryOrigin;
 
-valueObjectItemAttribute(item, attribute) = UNION EXCLUSIVE valueUOMItemAttribute(item, attribute),
+valueObjectItemAttribute(item, attribute) = UNION EXCLUSIVE valueItemGroupItemAttribute(item, attribute),
+                                                            valueUOMItemAttribute(item, attribute),
                                                             valueBrandItemAttribute(item, attribute),
                                                             valueTypeItemAttribute(item, attribute),
+                                                            valueFormItemAttribute(item, attribute),
                                                             valueSortItemAttribute(item, attribute),
                                                             valuePackItemAttribute(item, attribute),
+                                                            valueNumberInPackItemAttribute(item, attribute),
                                                             valueSpecialtyItemAttribute(item, attribute),
                                                             valueSizeItemAttribute(item, attribute),
                                                             valueCoolingDegreeItemAttribute(item, attribute),
                                                             valueColorItemAttribute(item, attribute),
-                                                            valueTasteItemAttribute(item, attribute) PERSISTENT;
+                                                            valueTasteItemAttribute(item, attribute),
+                                                            valueCountryItemAttribute(item, attribute) PERSISTENT;
 nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
 
 valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(item, attribute),
@@ -1205,8 +1230,12 @@ DESIGN item FROM DEFAULT {
 
                 ADD containerALeft {
                     childConstraints = TO THE BOTTOM;
-                    ADD i.equipmentGroup;
-                    ADD i.retailGroup;
+                    ADD i.equipmentGroup {
+                        childConstraints = TO THE BOTTOM;
+                    };
+                    ADD i.retailGroup {
+                        childConstraints = TO THE BOTTOM;
+                    };
                 };
 
                 ADD containerARight {
