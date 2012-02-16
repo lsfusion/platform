@@ -3,17 +3,15 @@ package platform.server.logics.property.actions;
 import platform.base.BaseUtils;
 import platform.interop.action.FormClientAction;
 import platform.interop.action.MessageClientAction;
-import platform.server.classes.DataClass;
-import platform.server.classes.StaticCustomClass;
-import platform.server.classes.ValueClass;
+import platform.server.classes.*;
 import platform.server.form.entity.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.AnyValuePropertyHolder;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -35,7 +33,8 @@ public class FormActionProperty extends CustomActionProperty {
 
     private final StaticCustomClass formResultClass;
     private final LP formResultProperty;
-    private final LP chosenObjectProperty;
+
+    private final AnyValuePropertyHolder chosenValueProperty;
 
     public static ValueClass[] getValueClasses(ObjectEntity[] objects) {
         ValueClass[] valueClasses = new ValueClass[objects.length];
@@ -49,13 +48,13 @@ public class FormActionProperty extends CustomActionProperty {
     //assert getProperties и setProperties одинаковой длины
     //setProperties привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal, StaticCustomClass formResultClass, LP formResultProperty, LP chosenObjectProperty) {
+    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal, StaticCustomClass formResultClass, LP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
         super(sID, caption, getValueClasses(objectsToSet));
 
         this.valueClass = valueClass;
         this.formResultClass = formResultClass;
         this.formResultProperty = formResultProperty;
-        this.chosenObjectProperty = chosenObjectProperty;
+        this.chosenValueProperty = chosenValueProperty;
 
         assert setProperties.length == getProperties.length;
 
@@ -104,11 +103,12 @@ public class FormActionProperty extends CustomActionProperty {
                 formResultProperty.execute(formResultClass.getID(formResult), context);
             }
 
-            if (chosenObjectProperty != null) {
+            if (chosenValueProperty != null) {
                 for (GroupObjectEntity group : form.groups) {
                     for (ObjectEntity object : group.objects) {
-                        ObjectValue val = newFormInstance.instanceFactory.getInstance(object).getObjectValue();
-                        chosenObjectProperty.execute(val.getValue(), context, new DataObject(object.getSID()));
+                        chosenValueProperty.write(
+                                object.baseClass, newFormInstance.instanceFactory.getInstance(object).getObjectValue().getValue(), context, new DataObject(object.getSID())
+                        );
                     }
                 }
             }

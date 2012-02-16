@@ -1884,8 +1884,18 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
-    public LP getChosenObjectProperty() {
-        return addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenObject", "Chosen Object", new ValueClass[]{StringClass.get(100)}, baseLM.baseClass)));
+    public AnyValuePropertyHolder getChosenObjectProperty() {
+        return new AnyValuePropertyHolder(
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenObject", "Chosen Object", new ValueClass[]{StringClass.get(100)}, baseLM.baseClass))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenText", "Chosen Text", new ValueClass[]{StringClass.get(100)}, TextClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenString", "Chosen String", new ValueClass[]{StringClass.get(100)}, StringClass.get(2000)))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenInt", "Chosen Int", new ValueClass[]{StringClass.get(100)}, IntegerClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenLong", "Chosen Long", new ValueClass[]{StringClass.get(100)}, LongClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenDouble", "Chosen Double", new ValueClass[]{StringClass.get(100)}, DoubleClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenYear", "Chosen Year", new ValueClass[]{StringClass.get(100)}, YearClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenDateTime", "Chosen DateTime", new ValueClass[]{StringClass.get(100)}, DateTimeClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenLogical", "Chosen Logical", new ValueClass[]{StringClass.get(100)}, LogicalClass.instance)))
+        );
     }
 
     @IdentityLazy

@@ -223,9 +223,20 @@ showDocumentArticleModalForm 'Показать форму "По документ
     name(k) IF k == store(chosenObject('document')) IF (formResult() == formResult.ok) <- 'Document for THIS store was chosen in modal form';
 };
 
+FORM testModalForm 'Показать тестовую модальную форму'
+OBJECTS article, i=INTEGER 'Новое имя товара ("Товар %N%"):' FIXED PANEL, store, s=STRING[50] 'Новое имя склада:' FIXED PANEL
+PROPERTIES name(article), name(store), OBJVALUE(s), OBJVALUE(i)
+;
+
+showTestModalForm 'Показать тестовую форму' = ACTION() {
+    [ACTION FORM testModalForm NEWSESSION MODAL]();
+    name(k) IF k == chosenObject('store') IF (formResult() == formResult.ok) <- chosenString('s');
+    name(k) IF k == chosenObject('article') IF (formResult() == formResult.ok) <- [FORMULA STRING[30] '$1 || CAST($2 as char(20))']('Товар ', chosenInt('i'));
+};
+
 FORM storeArticle 'По складам'
 OBJECTS s=store '-Склад-', a=article
-PROPERTIES SELECTION(s), name(s) READONLY, OBJVALUE(a), name(a), copyStoreNameToArticles(s) FORCE PANEL, createNewStore() TODRAW s FORCE PANEL, showDocumentArticleModalForm()  TODRAW s FORCE PANEL
+PROPERTIES SELECTION(s), name(s) READONLY, OBJVALUE(a), name(a), copyStoreNameToArticles(s) FORCE PANEL, createNewStore() TODRAW s FORCE PANEL, showDocumentArticleModalForm()  TODRAW s FORCE PANEL, showTestModalForm()  TODRAW s FORCE PANEL
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity, incomeQuantity2, outcomeQuantity, outcomeQuantity2
 PROPERTIES(s) storeSizeName, storeIsHuge, storeIsHuge2
 PROPERTIES(s, a) foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
@@ -300,7 +311,7 @@ NAVIGATOR {
     }
 
     //при создании элемента можно указать окно для него
-    NEW testNavigators '-Тестовые навигаторы-' AFTER remindPasswordLetter TO mainToolbar;
+    NEW testNavigators '-Тестовые навигаторы-' AFTER adminForm TO mainToolbar;
 
     // также можно просто настраивать существующий элемент без его перемещения
     testNavigators 'Тестовые навигаторы' {
