@@ -766,6 +766,7 @@ public class ClientFormController {
 
                     if (!okMessage.isEmpty()) {
                         if (!(SwingUtils.showConfirmDialog(getComponent(), okMessage, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
+                            setCanClose(false);
                             return;
                         }
                     }
@@ -776,6 +777,7 @@ public class ClientFormController {
                     ClientApply clientApply = remoteForm.checkClientChanges();
                     if (clientApply instanceof CheckFailed) { // чтобы не делать лишний RMI вызов
                         Log.error(((CheckFailed) clientApply).message);
+                        setCanClose(false);
                         return;
                     } else {
                         try {
