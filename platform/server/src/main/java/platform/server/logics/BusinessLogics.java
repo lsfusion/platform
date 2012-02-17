@@ -1034,20 +1034,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    private void synchronizeProperties() {
+    private void synchronizeProperties(){
+        synchronizePropertyEntities();
+        synchronizePropertyParents();
+    }
+
+    private void synchronizePropertyEntities() {
         ImportField sidPropertyField = new ImportField(LM.propertySIDValueClass);
         ImportField captionPropertyField = new ImportField(LM.propertyCaptionValueClass);
-        ImportField numberPropertyField = new ImportField(LM.numberProperty);
         ImportField loggablePropertyField = new ImportField(LM.propertyLoggableValueClass);
         ImportField storedPropertyField = new ImportField(LM.propertyStoredValueClass);
         ImportField isSetNotNullPropertyField = new ImportField(LM.propertyIsSetNotNullValueClass);
         ImportField signaturePropertyField = new ImportField(LM.propertySignatureValueClass);
         ImportField returnPropertyField = new ImportField(LM.propertySignatureValueClass);
         ImportField classPropertyField = new ImportField(LM.propertySignatureValueClass);
-        
-        ImportKey<?> key = new ImportKey(LM.property, LM.SIDToProperty.getMapping(sidPropertyField));
 
-        List<List<Object>> data = new ArrayList<List<Object>>();
+        ImportKey<?> keyProperty = new ImportKey(LM.property, LM.SIDToProperty.getMapping(sidPropertyField));
+
+        List<List<Object>> dataProperty = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
             if (!LM.isGeneratedSID(property.getSID()) && !(property instanceof NullValueProperty) && property.isFull()) {
                 String commonClasses = "";
@@ -1069,44 +1073,60 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 } catch (ArrayIndexOutOfBoundsException e) {
                     commonClasses = "";
                 }
-                data.add(Arrays.asList((Object) property.getSID(), property.caption, property.loggable ? true : null, property.isStored() ? true : null, property.setNotNull ? true : null, commonClasses, returnClass, classProperty));
+                dataProperty.add(Arrays.asList((Object) property.getSID(), property.caption, property.loggable ? true : null, property.isStored() ? true : null, property.setNotNull ? true : null, commonClasses, returnClass, classProperty));
             }
         }
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
-        properties.add(new ImportProperty(sidPropertyField, LM.SIDProperty.getMapping(key)));
-        properties.add(new ImportProperty(captionPropertyField, LM.captionProperty.getMapping(key)));
-        properties.add(new ImportProperty(loggablePropertyField, LM.loggableProperty.getMapping(key)));
-        properties.add(new ImportProperty(storedPropertyField, LM.storedProperty.getMapping(key)));
-        properties.add(new ImportProperty(isSetNotNullPropertyField, LM.isSetNotNullProperty.getMapping(key)));
-        properties.add(new ImportProperty(signaturePropertyField, LM.signatureProperty.getMapping(key)));
-        properties.add(new ImportProperty(returnPropertyField, LM.returnProperty.getMapping(key)));
-        properties.add(new ImportProperty(classPropertyField, LM.classProperty.getMapping(key)));
+        properties.add(new ImportProperty(sidPropertyField, LM.SIDProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(captionPropertyField, LM.captionProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(loggablePropertyField, LM.loggableProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(storedPropertyField, LM.storedProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(isSetNotNullPropertyField, LM.isSetNotNullProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(signaturePropertyField, LM.signatureProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(returnPropertyField, LM.returnProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(classPropertyField, LM.classProperty.getMapping(keyProperty)));
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        deletes.add(new ImportDelete(key, LM.is(LM.property).getMapping(key), false));
+        deletes.add(new ImportDelete(keyProperty, LM.is(LM.property).getMapping(keyProperty), false));
 
-        ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, captionPropertyField, loggablePropertyField, storedPropertyField, isSetNotNullPropertyField, signaturePropertyField, returnPropertyField, classPropertyField), data);
-
-        List<List<Object>> data2 = new ArrayList<List<Object>>();
-        for (Property property : getProperties()) {
-            if (!LM.isGeneratedSID(property.getSID()))
-                data2.add(Arrays.asList(property.getSID(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
-        }
-
-        ImportField parentSidField = new ImportField(LM.formSIDValueClass);
-        ImportKey<?> key2 = new ImportKey(LM.abstractGroup, LM.SIDToAbstractGroup.getMapping(parentSidField));
-        List<ImportProperty<?>> props2 = new ArrayList<ImportProperty<?>>();
-        props2.add(new ImportProperty(parentSidField, LM.parentProperty.getMapping(key), LM.object(LM.abstractGroup).getMapping(key2)));
-        props2.add(new ImportProperty(numberPropertyField, LM.numberProperty.getMapping(key)));
-        ImportTable table2 = new ImportTable(Arrays.asList(sidPropertyField, parentSidField, numberPropertyField), data2);
+        ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, captionPropertyField, loggablePropertyField, storedPropertyField, isSetNotNullPropertyField, signaturePropertyField, returnPropertyField, classPropertyField), dataProperty);
 
         try {
             DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(key), properties, deletes);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(keyProperty), properties, deletes);
             service.synchronize(true, false);
 
-            service = new IntegrationService(session, table2, Arrays.asList(key, key2), props2);
+            if (session.hasChanges()) {
+                session.apply(this);
+            }
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void synchronizePropertyParents() {
+        ImportField sidPropertyField = new ImportField(LM.propertySIDValueClass);
+        ImportField numberPropertyField = new ImportField(LM.numberProperty);
+        ImportField parentSidField = new ImportField(LM.formSIDValueClass);
+
+        List<List<Object>> dataParent = new ArrayList<List<Object>>();
+        for (Property property : getProperties()) {
+            if (!LM.isGeneratedSID(property.getSID())&& property.isFull())
+                dataParent.add(Arrays.asList(property.getSID(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
+        }
+
+        ImportKey<?> keyProperty = new ImportKey(LM.property, LM.SIDToProperty.getMapping(sidPropertyField));
+        ImportKey<?> keyParent = new ImportKey(LM.abstractGroup, LM.SIDToAbstractGroup.getMapping(parentSidField));
+        List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+        properties.add(new ImportProperty(parentSidField, LM.parentProperty.getMapping(keyProperty), LM.object(LM.abstractGroup).getMapping(keyParent)));
+        properties.add(new ImportProperty(numberPropertyField, LM.numberProperty.getMapping(keyProperty)));
+        ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, parentSidField, numberPropertyField), dataParent);
+
+        try {
+            DataSession session = createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(keyProperty, keyParent), properties);
             service.synchronize(true, false);
 
             if (session.hasChanges()) {
