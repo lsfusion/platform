@@ -631,7 +631,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LPWithParams> paramsList = new ArrayList<LPWithParams>();
         for (int i = 0; i < resultInterfaces.size(); i++) {
-            paramsList.add(new LPWithParams(null, Arrays.asList(i+1)));
+            paramsList.add(new LPWithParams(null, Arrays.asList(i)));
         }
         paramsList.add(toProperty);
         paramsList.add(fromProperty);
