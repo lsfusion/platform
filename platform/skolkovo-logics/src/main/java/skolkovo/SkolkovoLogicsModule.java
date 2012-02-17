@@ -48,6 +48,7 @@ import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.EmailActionProperty;
 import platform.server.session.DataSession;
 import skolkovo.actions.CopyProjectActionProperty;
+import skolkovo.actions.ExportExpertsActionProperty;
 import skolkovo.actions.ExportProjectDocumentsActionProperty;
 import skolkovo.actions.ImportProjectsActionProperty;
 
@@ -537,21 +538,21 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP quantitySubDefaultVoteProject;
     LP quantityVoteProjectCluster;
     LP quantityClusterVotedProject;
-    LP dataDocumentNameExpert, documentNameExpert;
+    public LP dataDocumentNameExpert, documentNameExpert;
     public LP emailExpert;
     public LP generateSIDExpert;
     public LP clusterClusterUser, nameClusterClusterUser, clusterCurrentUser;
     public LP inClusterCurrentUserProject;
     LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
-    LP inExpertForesight, commentExpertForesight, quantityInForesightExpert, quantityInExpertForesight;
+    public LP inExpertForesight, commentExpertForesight, quantityInForesightExpert, quantityInExpertForesight;
     public LP inProjectForesightExpert, quantityForesightProjectExpert;
     public LP clusterInExpertForesight;
-    LP isScientificExpert, isTechnicalExpert, isBusinessExpert;
-    LP commentScientificExpert, commentTechnicalExpert, commentBusinessExpert;
-    LP expertiseExpert, grantExpert;
+    public LP isScientificExpert, isTechnicalExpert, isBusinessExpert;
+    public LP commentScientificExpert, commentTechnicalExpert, commentBusinessExpert;
+    public LP expertiseExpert, grantExpert;
     LP profileUpdateDateExpert;
     LP profileBlockedExpert;
-    LP primClusterExpert, extraClusterExpert, inClusterExpert;
+    public LP primClusterExpert, extraClusterExpert, inClusterExpert;
     LP quantityInClusterExpert;
     LP clusterInExpertVote;
     public LP inProjectCluster;
@@ -564,7 +565,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP projectCluster;
     LP inTestCluster;
     LP quantityClusterProject;
-    LP clusterForesight, sidForesight;
+    public LP clusterForesight, sidForesight;
     LP foresightSID;
     LP nameNativeClusterForesight, nameForeignClusterForesight, nameNativeShortClusterForesight;
     LP quantityForesightProject;
@@ -591,7 +592,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP emailForesightLC;
     LP emailFondTransferred;
     public LP emailToExpert;
-    LP sidExpert, sidCluster, sidToExpert;
+    public LP sidExpert, sidCluster, sidToExpert;
 
     LP nameNativeJoinClaimerVote, nameForeignJoinClaimerVote;
     LP nameNativeClaimerVote, nameForeignClaimerVote;
@@ -843,7 +844,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP includeDocumentsProject, hideIncludeDocumentsProject;
     LP importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction;
     LP openApplicationProjectAction, openCompleteApplicationProjectAction;
-    LP exportProjectDocumentsAction;
+    LP exportExpertsAction, exportExpertsEscapeAction, exportProjectDocumentsAction;
     LP copyProjectAction;
     LP generateVoteProject, needNameExtraVoteProject, hideGenerateVoteProject;
     LP copyResultsVote;
@@ -900,7 +901,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nativeSubstantiationFinalClusterProject, foreignSubstantiationFinalClusterProject;
 
     LP languageExpert;
-    LP nameLanguageExpert;
+    public LP nameLanguageExpert;
     LP languageDocument;
     LP nameLanguageDocument;
     LP englishDocument;
@@ -1131,7 +1132,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP isForeignExpert;
     LP localeExpert;
-    LP disableExpert;
+    public LP disableExpert;
 
     LP editClaimer;
     public LP addProject;
@@ -1232,16 +1233,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP needVoteProject;
     LP changeLegalCheck, noticedChangeLegalCheck, dateChangeLegalCheck;
 
-    LP dateAgreementExpert;
+    public LP dateAgreementExpert;
     LP vone;
     LP claimerProjectVote;
     LP nameNativeJoinClaimerProjectVote;
     LP countryExpert;
-    LP nameCountryExpert;
+    public LP nameCountryExpert;
     LP caseCountry;
     LP caseCountryExpert;
     LP currencyExpert;
-    LP nameCurrencyExpert;
+    public LP nameCurrencyExpert;
     LP residency;
     LP residencyCountryExpert;
     LP rateExpert;
@@ -3122,6 +3123,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         copyProjectAction = addAProp(actionGroup, new CopyProjectActionProperty("Копировать", this, project));
         openApplicationProjectAction = addAProp(actionGroup, new OpenApplicationProjectActionProperty(false));
         openCompleteApplicationProjectAction = addAProp(actionGroup, new OpenApplicationProjectActionProperty(true));
+        exportExpertsAction = addAProp(actionGroup, new ExportExpertsActionProperty(this, false));
+        exportExpertsEscapeAction = addAProp(actionGroup, new ExportExpertsActionProperty(this, true));
         exportProjectDocumentsAction = addAProp(actionGroup, new ExportProjectDocumentsActionProperty("Экспортировать документы", this, project));
         importIPsExpertVoteAction = addAProp(actionGroup, new ImportIPsExpertVoteActionProperty());
         importProjectSidsAction = addAProp(importGroup, new ImportProjectsActionProperty("Импортировать идентификаторы проектов", this, BL, false, false, true));
@@ -6241,6 +6244,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //            setReadOnly(allowedEmailLetterExpertVote, false);
 
 //            setPageSize(0);
+
+            addPropertyDraw(new LP[] {exportExpertsAction, exportExpertsEscapeAction});
         }
 
         @Override

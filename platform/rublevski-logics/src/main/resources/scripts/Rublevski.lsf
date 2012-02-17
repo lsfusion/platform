@@ -1250,10 +1250,13 @@ DESIGN item FROM DEFAULT {
 
             ADD d.box {
 
+                title = 'Управленческие параметры';
+
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
                 ADD dt.box BEFORE d.grid.box;
                 ADD sp.box BEFORE d.grid.box;
+                POSITION dt.box TO THE LEFT sp.box;
                 ADD treeStore.box BEFORE d.grid.box;
                 POSITION treeStore.box TO THE LEFT d.grid.box;
                 POSITION d.grid.box TO THE LEFT d.panel;
@@ -2653,11 +2656,11 @@ nameWareShipmentDetail 'Посуда' (shipmentDetail) = name(wareShipmentDetail
 wareShipmentDetail(shipmentDetail) <- wareItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-retailMarkupShipmentDetail(shipmentDetail) <- markupSupplierItemDepartmentOver (supplierShipment(shipmentShipmentDetail(shipmentDetail)), itemShipmentDetail(shipmentDetail),
+retailMarkupShipmentDetail(shipmentDetail) <- markupSupplierItemDepartmentVal (supplierShipment(shipmentShipmentDetail(shipmentDetail)), itemShipmentDetail(shipmentDetail),
                                                                                 departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateWaybillShipment(shipmentShipmentDetail(shipmentDetail))) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 oldRetailPriceShipmentDetail 'Старая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-oldRetailPriceShipmentDetail (shipmentDetail) <- retailPriceItemDepartmentDate(itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
+oldRetailPriceShipmentDetail (shipmentDetail) <- retailPriceItemDepartmentVal (itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
                                                               dateWaybillShipment(shipmentShipmentDetail(shipmentDetail))-1) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = priceShipmentDetail(shipmentDetail)*(100 + retailMarkupShipmentDetail(shipmentDetail))/100*(100+dataRetailRangeShipmentDetail(shipmentDetail))/100  IN baseGroup;

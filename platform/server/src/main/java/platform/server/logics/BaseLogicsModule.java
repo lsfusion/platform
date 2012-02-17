@@ -1309,6 +1309,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         catalogElement = addNavigatorElement(adminElement, "catalogElement", getString("logics.administration.catalogs"));
         addFormEntity(new DaysOffFormEntity(catalogElement, "daysOffForm"));
         dictionaryForm = addFormEntity(new DictionariesFormEntity(catalogElement, "dictionariesForm"));
+        catalogElement.add(country.getListForm(this).form);
 
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
 
