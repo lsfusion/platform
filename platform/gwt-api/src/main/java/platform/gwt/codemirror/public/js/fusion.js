@@ -12,7 +12,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "ALL AND APPLY AS ASC ASSIGN AUTOSET BEFORE BOTTOM BY CASCADE " + 
                            "CENTER CHANGE CHECKED CLASS COLUMNS CONCAT CONSTRAINT " + 
                            "DATA DEFAULT DESC DESIGN DIALOG DRAWROOT EDIT EDITABLE " + 
-                           "EDITFORM EDITKEY EDITSESSIONFORM END EXCEPTLAST EXCLUSIVE " + 
+                           "EDITFORM EDITKEY EDITSESSIONFORM ELSE END EXCEPTLAST EXCLUSIVE " + 
                            "FALSE FILTER FILTERGROUP FILTERS FIXED FIXEDCHARWIDTH " + 
                            "FOOTER FORCE FORM FORMULA FROM GRID GROUP HALIGN HEADER " + 
                            "HIDE HIDESCROLLBARS HIDETITLE HIGHLIGHTIF HINT HORIZONTAL " + 
@@ -23,8 +23,8 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "PERSISTENT POSITION PREFCHARWIDTH PROPERTIES PROPERTY " + 
                            "READONLY READONLYIF REMOVE RESOLVE RIGHT RIGHTBOTTOM SELECTION " + 
                            "SET SHORTCUT SHOW SHOWIF STATIC SUM TABLE TEXTHALIGN TEXTVALIGN " + 
-                           "THE TO TODRAW TOOLBAR TOP TREE TRUE UNION UNIQUE UPDATE " + 
-                           "VALIGN VERTICAL WHERE WINDOW XOR");
+                           "THE THEN TO TODRAW TOOLBAR TOP TREE TRUE UNION UNIQUE " + 
+                           "UPDATE VALIGN VERTICAL WHERE WINDOW XOR");
 
     var isOperatorChar = /[+\-*&%=<>!?|@#]/;
 

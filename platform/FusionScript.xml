@@ -53,6 +53,7 @@
       <keyword name="EDITFORM" />
       <keyword name="EDITKEY" />
       <keyword name="EDITSESSIONFORM" />
+      <keyword name="ELSE" />
       <keyword name="END" />
       <keyword name="EXCEPTLAST" />
       <keyword name="EXCLUSIVE" />
@@ -140,6 +141,7 @@
       <keyword name="TEXTHALIGN" />
       <keyword name="TEXTVALIGN" />
       <keyword name="THE" />
+      <keyword name="THEN" />
       <keyword name="TO" />
       <keyword name="TODRAW" />
       <keyword name="TOOLBAR" />

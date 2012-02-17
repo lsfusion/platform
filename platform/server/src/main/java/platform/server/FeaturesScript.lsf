@@ -19,7 +19,7 @@ CLASS ABSTRACT namedClass : named;
 CLASS emptyClass;
 CLASS article 'Товар' : namedClass;
 CLASS store 'Склад' : namedClass;
-CLASS document 'Документ' : transaction;
+CLASS ABSTRACT document 'Документ' : transaction;
 CLASS incomeDocument 'Приход' : document, emptyClass;
 CLASS outcomeDocument 'Расход' : document, emptyClass;
 
@@ -97,6 +97,12 @@ nameToCountry(name) = GROUP UNIQUE country BY name(country);
 // Expression syntax:
 // UNION (SUM | MAX | OVERRIDE | XOR | EXCLUSIVE) propertyExpression1, ..., propertyExpressionN
 testUnion(store, article) = UNION SUM incomeQuantity(store, article), outcomeQuantity(store, article);
+
+
+// IF THEN ELSE property
+// Expression syntax:
+// IF propertyExpression0 THEN propertyExpression1 ELSE propertyExpression2
+documentTypeString 'Тип документа' (doc) = IF (doc IS incomeDocument) THEN ('Приход' IF doc IS incomeDocument) ELSE ('Расход' IF doc IS outcomeDocument);
 
 // Partition property
 // Expression syntax:
@@ -202,7 +208,7 @@ OBJECTS document, article
 // Property options:    [READONLY] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [HIGHLIGHTIF <mappedProperty>]
 //                      [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
 
-PROPERTIES store(document), name(article), storeName(document)
+PROPERTIES store(document), name(article), storeName(document), documentTypeString(document)
 PROPERTIES quantity(document, article)
 PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article)
 PROPERTIES ADDOBJ(document), ADDOBJ(article)
@@ -237,9 +243,9 @@ showTestModalForm 'Показать тестовую форму' = ACTION() {
 FORM storeArticle 'По складам'
 OBJECTS s=store '-Склад-', a=article
 PROPERTIES SELECTION(s), name(s) READONLY, OBJVALUE(a), name(a), copyStoreNameToArticles(s) FORCE PANEL, createNewStore() TODRAW s FORCE PANEL, showDocumentArticleModalForm()  TODRAW s FORCE PANEL, showTestModalForm()  TODRAW s FORCE PANEL
-PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity, incomeQuantity2, outcomeQuantity, outcomeQuantity2
+PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
 PROPERTIES(s) storeSizeName, storeIsHuge, storeIsHuge2
-PROPERTIES(s, a) foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
+PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
 FILTERGROUP filters1
     FILTER 'Показывать только огромные склады' 'F10' NOT NULL storeIsHuge(s)
 ORDER BY name, foo

@@ -728,6 +728,7 @@ propertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams 
 contextDependentPD[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	joinDef=joinPropertyDefinition[context, dynamic] { $property = $joinDef.property; } 
 	|	unionDef=unionPropertyDefinition[context, dynamic] { $property = $unionDef.property;} 
+	|	ifElseDef=ifElsePropertyDefinition[context, dynamic] { $property = $ifElseDef.property; }
 	|	partDef=partitionPropertyDefinition[context, dynamic] { $property = $partDef.property; }
 	|	constDef=literal { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
@@ -829,7 +830,6 @@ dataPropertyDefinition[boolean innerPD] returns [LP property]
 	;
 
 
-
 unionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	Union type = null;
@@ -842,6 +842,18 @@ unionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPa
 	:	'UNION'
 		(('MAX' {type = Union.MAX;}) | ('SUM' {type = Union.SUM;}) | ('OVERRIDE' {type = Union.OVERRIDE;}) | ('XOR' { type = Union.XOR;}) | ('EXCLUSIVE' {type = Union.EXCLUSIVE;}))
 		exprList=nonEmptyPropertyExpressionList[context, dynamic]
+	;
+
+
+ifElsePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedIfElseUProp($ifExpr.property, $thenExpr.property, $elseExpr.property);
+	}
+}
+	:	'IF' ifExpr=propertyExpression[context, dynamic]
+		'THEN' thenExpr=propertyExpression[context, dynamic]
+		'ELSE' elseExpr=propertyExpression[context, dynamic]
 	;
 
 

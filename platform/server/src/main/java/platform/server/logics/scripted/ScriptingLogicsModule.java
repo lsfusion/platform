@@ -35,7 +35,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Arrays.asList;
 import static platform.base.BaseUtils.*;
+import static platform.base.BaseUtils.mergeLists;
 import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
 
 /**
@@ -503,11 +505,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedEqualityProp(String op, LPWithParams leftProp, LPWithParams rightProp) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(getRelationProp(op), Arrays.asList(leftProp, rightProp));
+        return addScriptedJProp(getRelationProp(op), asList(leftProp, rightProp));
     }
 
     public LPWithParams addScriptedRelationalProp(String op, LPWithParams leftProp, LPWithParams rightProp) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(getRelationProp(op), Arrays.asList(leftProp, rightProp));
+        return addScriptedJProp(getRelationProp(op), asList(leftProp, rightProp));
     }
 
     public LPWithParams addScriptedAndProp(List<Boolean> nots, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
@@ -522,6 +524,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             curLP = addScriptedJProp(and(notsArray), properties);
         }
         return curLP;
+    }
+
+    public LPWithParams addScriptedIfElseUProp(LPWithParams ifProp, LPWithParams thenProp, LPWithParams elseProp) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedIfElseProp(" + ifProp + ", " + thenProp + ", " + elseProp + ");");
+        return addScriptedUProp(Union.EXCLUSIVE,
+                                asList(addScriptedJProp(and(false), asList(thenProp, ifProp)),
+                                       addScriptedJProp(and(true), asList(elseProp, ifProp))));
     }
 
     public LP addScriptedActionProp(String javaClassName) throws ScriptingErrorLog.SemanticErrorException {
@@ -541,7 +550,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LPWithParams curLP = properties.get(0);
         for (int i = 1; i < properties.size(); i++) {
             String op = operands.get(i-1);
-            curLP = addScriptedJProp(getArithProp(op), Arrays.asList(curLP, properties.get(i)));
+            curLP = addScriptedJProp(getArithProp(op), asList(curLP, properties.get(i)));
         }
         return curLP;
     }
@@ -553,7 +562,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LPWithParams curLP = properties.get(0);
         for (int i = 1; i < properties.size(); i++) {
             String op = operands.get(i-1);
-            curLP = addScriptedJProp(getArithProp(op), Arrays.asList(curLP, properties.get(i)));
+            curLP = addScriptedJProp(getArithProp(op), asList(curLP, properties.get(i)));
         }
         return curLP;
     }
@@ -614,7 +623,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             fromProperty = new LPWithParams(baseLM.vdefault((ConcreteValueClass) toProperty.property.property.getCommonClasses().value), new ArrayList<Integer>());
         }
 
-        List<Integer> allParams = mergeAllParams(Arrays.asList(toProperty, fromProperty));
+        List<Integer> allParams = mergeAllParams(asList(toProperty, fromProperty));
 
         //все использованные параметры, которые были в старом контексте, идут на вход результирующего свойства
         ArrayList<Integer> mapThisInterfacesList = new ArrayList<Integer>();
@@ -691,12 +700,12 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (whereProp != null) {
                 whereProps.add(whereProp);
             } else {
-                whereProps.add(new LPWithParams(null, Arrays.asList(mainProps.get(0).usedParams.get(0))));
+                whereProps.add(new LPWithParams(null, asList(mainProps.get(0).usedParams.get(0))));
             }
         }
         List<Object> resultParams = getParamsPlainList(mainProps, whereProps, orderProps, groupProps);
 
-        int groupPropParamCount = mergeAllParams(BaseUtils.mergeLists(mainProps, groupProps, orderProps)).size();
+        int groupPropParamCount = mergeAllParams(mergeLists(mainProps, groupProps, orderProps)).size();
         LP resultProp = null;
         if (type == GroupingType.SUM) {
             resultProp = addSGProp(null, genSID(), false, false, "", groupPropParamCount, resultParams.toArray());
@@ -925,7 +934,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkParamCount(mainProp, namedParams.size());
         checkDistinctParameters(namedParams);
 
-        List<Object> params = getParamsPlainList(Arrays.asList(valueProp, changeProp));
+        List<Object> params = getParamsPlainList(asList(valueProp, changeProp));
 
         mainProp.setDerivedChange(!useOld, !anyChange, valueProp.property, BL, params.subList(1, params.size()).toArray());
     }
