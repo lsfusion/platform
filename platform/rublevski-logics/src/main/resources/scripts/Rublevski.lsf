@@ -701,15 +701,28 @@ valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(i
                                                       shortNameObjectItemAttribute(item, attribute) PERSISTENT;
 
 numberInNameItemAttribute 'Порядковый номер в наименовании' = DATA INTEGER (itemAttribute) IN baseGroup;
+numberInNameCashItemAttribute 'Порядковый номер в наименовании для касс' = DATA INTEGER (itemAttribute) IN baseGroup;
+numberInNameScalesItemAttribute 'Порядковый номер в наименовании для весов' = DATA INTEGER (itemAttribute) IN baseGroup;
 
-nameAttributeItem 'Имя' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameItemAttribute(attribute) IN recognizeGroup PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
+nameAttributeItem 'Наименование' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameItemAttribute(attribute) IN recognizeGroup PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
+nameCashAttributeItem 'Наименование для касс' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameCashItemAttribute(attribute) IN recognizeGroup PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
+nameScalesAttributeItem 'Наименование для весов' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameScalesItemAttribute(attribute) IN recognizeGroup PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
+
+// ---------------------------------------------------------------------------------------- //
+
+TABLE departmentStoreDate (object, DATE);
 
 // ----------------------------------- Штрих код ------------------------------------------ //
+
 GROUP barcodeGroup : baseGroup;
 
-CLASS barcode 'Штрих код' : barcodeObject;
+CLASS barcode 'Штрих код';
+
+barcodeEx 'Штрих код' = DATA STRING[14] (barcode) IN baseGroup;
 
 inSkuBarcode 'Присоединение штрих-кода к товару' = DATA BOOLEAN (sku, barcode) IN baseGroup;
+
+@metaCodeNameObjectDateProperty(skuBarcode, barcode, 'Товар для штрих кода', sku, baseGroup);
 
 titleScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode) IN barcodeGroup;
 titleCashBarcode 'Наименование для касс' = DATA STRING[100] (barcode) IN barcodeGroup;
@@ -720,20 +733,25 @@ removeBarcode 'Заблокирован (удален с оборудовани�
 commentRemoveBarcode 'Причина блокировки' = DATA STRING[100] (barcode) IN barcodeGroup;
 
 userBarcodeSku = DATA barcode(sku) IN idGroup;
-//barcodeUserBarcodeSku 'Установленный штрих-код' = barcode(userBarcodeSku(sku)) IN baseGroup;
+barcodeUserBarcodeSku 'Установленный штрих-код' = barcodeEx(userBarcodeSku(sku)) IN baseGroup;
 
 defaultBarcodeSku(sku) = GROUP MAX barcode IF inSkuBarcode(sku, barcode) BY sku IN idGroup;
 barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku) IN baseGroup;
 
 CONSTRAINT CHECKED item IS item AND NOT inSkuBarcode(item, barcodeSku(item)) MSG 'Товар основного штрих-кода должен совпадать с товаром';
 
-barcodeBarcodeSku  'Основной штрих-код' = barcode(barcodeSku(sku)) IN baseGroup;
+barcodeBarcodeSku  'Основной штрих-код' = barcodeEx(barcodeSku(sku)) IN baseGroup;
 
 barcodeToBarcode (barcode) = GROUP UNIQUE barcode BY barcode(barcode);
 
 FORM barcode 'Штрих-код'
 OBJECTS b=barcode
-PROPERTIES(b) barcode;
+PROPERTIES(b) barcodeEx;
+
+FORM testform 'Тестовая'
+OBJECTS b=barcode
+PROPERTIES(b) READONLY barcodeEx, nameskuBarcode, showFormNameskuBarcode
+PROPERTIES(b) ADDFORM, EDITFORM, delete;
 
 
 // ----------------------------------- Компоненты ------------------------------------------ //
@@ -899,8 +917,6 @@ EDIT tradingSquare OBJECT s;
 
 // ------------------------------------- Скидки ---------------------------------------------------------- //
 
-TABLE departmentStoreDate (object, DATE);
-
 @metaCodeNameObjectDateProperty(discount, departmentStore, 'Разрешать скидки', yesNo, baseGroup);
 
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
@@ -997,8 +1013,6 @@ GROUP historyGroup 'Изменяемые характеристики' : baseGro
 @metaCodeNameObjectDateProperty(banDiscountItem, item, 'Запретить скидки по товару', yesNo, discountGroup);
 
 @metaCodeObjectDateProperty(coefficientNetGrossItem, item, 'Сезонный коэффициент пересчета сырья из нетто в брутто', DOUBLE, manufactoryGroup);
-
-//defaultCoefficientNetGrossItem(item) = GROUP MAX coefficientNetGrossItem BY item;
 
 @metaCodeObjectDateProperty(rateNaturalLossItem, item, 'Норма естественной убыли,%', DOUBLE, rateGroup);
 
@@ -1168,7 +1182,7 @@ FILTERS NOT NULL stringEqualsAll(a)
 FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
 FILTERS NOT NULL inStoreTypeStore (st, s)
 FILTERS NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
-PROPERTIES(i) nameAttributeItem, nameItemGroupSku, barcodeBarcodeSku, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
+PROPERTIES(i) nameAttributeItem, nameCashAttributeItem, nameScalesAttributeItem, nameItemGroupSku, barcodeBarcodeSku, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, passScalesItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
  hallmarkItem SHOWIF toShowHallmark(i), articleItem, quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minQuantityOrderItem, minReserveItem, compositionScalesItem, compositionMenuItem,
@@ -1184,7 +1198,7 @@ PROPERTIES(i) nameisPortionBarItem, showFormNameisPortionBarItem,
               rateNaturalLossItem, showFormrateNaturalLossItem,         //     NDSSupplierItem, showFormNDSSupplierItem,
               nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem, nameTagItem, multiplierItem
 
-PROPERTIES (b) barcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
+PROPERTIES (b) barcodeEx, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
 PROPERTIES (d) name
 PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
 PROPERTIES (sp) READONLY name
@@ -1297,7 +1311,7 @@ FORM items 'Товары'
 TREE treeGroup g=itemGroup PARENT parentItemGroup
 OBJECTS i=item
 PROPERTIES(g) READONLY name
-PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem, barcodeBarcodeSku
+PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem
 PROPERTIES(i) ADDFORM, EDITFORM, delete
 FILTERS NOT NULL inItemGroupSku(g, i);
 
@@ -1656,8 +1670,8 @@ DESIGN supplier FROM DEFAULT {
                    fillHorizontal = 3;
                    };
             }
+       }
     }
-   }
 }
 
 FORM suppliers 'Поставщики'
@@ -2383,7 +2397,7 @@ dateStageGroupMachinery 'Дата истечения срока годности
 timeStageGroupMachinery 'Время истечения срока годности' (stage, groupMachinery) = DATA INTEGER (stage, groupMachinery) IN baseGroup;
 stockStageGroupMachinery 'Остаток на момент передачи' (stage, groupMachinery) = DATA DOUBLE (stage, groupMachinery) IN baseGroup;
 
-barcodeBarcodeStageGroupMachinery 'Штрих-код' (stage, groupMachinery) = barcode(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
+barcodeBarcodeStageGroupMachinery 'Штрих-код' (stage, groupMachinery) = barcodeEx(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
 //nameSkuBarcodeStageGroupMachinery 'Товар' (stage, groupMachinery) = nameSkuBarcode(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
 //titleScalesBarcodeStageGroupMachinery 'Наименование для весов' (stage, groupMachinery) = titleScalesBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
 //titleCashBarcodeStageGroupMachinery 'Наименование для касс' (stage, groupMachinery) = titleCashBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
@@ -2478,7 +2492,7 @@ addNewDetailPage 'Добавить строку' = ACTION (listInventory) {
     SET sidDetailPage(dp) IF dp == addedObject() <- nextSidDetailListInventory(listInventory);
 } TOOLBAR IMAGE 'add.png';
 
-nameBarcodeDetailPage 'Штрих-код' (detailPage) = barcode(barcodeDetailPage(detailPage)) IN baseGroup;
+nameBarcodeDetailPage 'Штрих-код' (detailPage) = barcodeEx(barcodeDetailPage(detailPage)) IN baseGroup;
 // по Ш-К выбрать товар
 itemDetailPage(detailPage) = DATA item (detailPage) IN idGroup;       // потом переделаеть от Ш-К
 nameAttributeItemDetailPage 'Товар' (detailPage) = nameAttributeItem(itemDetailPage(detailPage)) IN baseGroup;
@@ -2879,6 +2893,8 @@ NAVIGATOR {
             ADD markupSupplierItemDepartment;
             ADD addNamebanSupplierItemDepartment;
             ADD namebanSupplierItemDepartment;
+            ADD addNameskuBarcode;
+            ADD nameskuBarcode;
 
             ADD cash;
             ADD scales;
