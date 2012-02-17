@@ -2638,7 +2638,11 @@ shipmentShipmentDetail 'Строка в поставке' (shipmentDetail) = DAT
 inShipmentShipmentDetail(shipment, shipmentDetail) = shipmentShipmentDetail(shipmentDetail) == shipment;
 itemShipmentDetail 'Товар строки документа поставки (ИД)' (shipmentDetail) = DATA item (shipmentDetail) IN idGroup;
 nameAttributeItemShipmentDetail 'Товар строки документа поставки' (shipmentDetail) =  nameAttributeItem(itemShipmentDetail(shipmentDetail)) IN baseGroup;
-quantityShipmentDetail 'Количество товара' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+
+quantityShipmentDetail 'Количество' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+totalQuantityShipment 'Общее количество' (shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
+quantityItemShipment 'Количество по товару в поставке' (item, shipment) = GROUP SUM quantityShipmentDetail (shipmentDetail) BY shipmentShipmentDetail(shipmentDetail), itemShipmentDetail(shipmentDetail);
+
 priceShipmentDetail 'Цена товара'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 supplierMarkupShipmentDetail 'Оптовая надбавка/торговая скидка, %' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 dateFitToShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
@@ -2646,6 +2650,15 @@ dateFitToShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentD
 suppliersRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
 dataSuppliersRangeShipmentDetail 'НДС поставщика,%' (shipmentDetail) = dataActingRateRange(suppliersRangeShipmentDetail(shipmentDetail)) IN baseGroup;
 suppliersRangeShipmentDetail(shipmentDetail) <- suppliersRangeItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+sumPriceShipmentDetail 'Сумма без НДС' (shipmentDetail) = priceShipmentDetail(shipmentDetail) * quantityShipmentDetail(shipmentDetail);
+calcSumSupplierVATShipmentDetail 'Сумма НДС (расчетная)' (shipmentDetail) = sumPriceShipmentDetail(shipmentDetail) * dataSuppliersRangeShipmentDetail(shipmentDetail)/100;
+sumSupplierVATShipmentDetail 'Сумма НДС' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+totalSumSupplierVATShipmentDetail 'Общая сумма НДС' (shipment) = GROUP SUM sumSupplierVATShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
+sumSupplierVATShipmentDetail(shipmentDetail) <- calcSumSupplierVATShipmentDetail(shipmentDetail) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+sumSupplierShipmentDetail 'Сумма с НДС' (shipmentDetail) = sumPriceShipmentDetail(shipmentDetail) + sumSupplierVATShipmentDetail(shipmentDetail);
+totalSumSupplierShipmentDetail 'Общая сумма с НДС' (shipment) = GROUP SUM sumSupplierShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 
 retailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
 dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = dataActingRateRange(retailRangeShipmentDetail(shipmentDetail)) IN baseGroup;
@@ -2663,12 +2676,20 @@ oldRetailPriceShipmentDetail 'Старая розничная цена' (shipmen
 oldRetailPriceShipmentDetail (shipmentDetail) <- retailPriceItemDepartmentVal (itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
                                                               subtractDate2(dateWaybillShipment(shipmentShipmentDetail(shipmentDetail)),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
-retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = priceShipmentDetail(shipmentDetail)*(100 + retailMarkupShipmentDetail(shipmentDetail))/100*(100+dataRetailRangeShipmentDetail(shipmentDetail))/100  IN baseGroup;
+sumMarkupShipmentDetail 'Сумма торговой надбавки (за ед.)' (shipmentDetail) =  priceShipmentDetail(shipmentDetail)*retailMarkupShipmentDetail(shipmentDetail)/100;
+sumRetailVATShipmentDetail 'Сумма розничного НДС (за ед.)' (shipmentDetail) =  (priceShipmentDetail(shipmentDetail) + sumMarkupShipmentDetail(shipmentDetail))*dataRetailRangeShipmentDetail(shipmentDetail)/100;
+nonRoundRetailPriceShipmentDetail 'Цена розничная (неокруглен.)'(shipmentDetail) = priceShipmentDetail(shipmentDetail) + sumMarkupShipmentDetail(shipmentDetail) + sumRetailVATShipmentDetail(shipmentDetail);
+
+retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail)) IN baseGroup;
+diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentDetail) = retailPriceShipmentDetail(shipmentDetail) - nonRoundRetailPriceShipmentDetail(shipmentDetail);
+
+quantityShipmentOrderItem 'Поставленное количество' (orderSupplier, item) = GROUP SUM quantityShipmentDetail (shipmentDetail) IF inShipmentOrder (shipmentShipmentDetail (shipmentDetail), orderSupplier) BY orderSupplier, itemShipmentDetail(shipmentDetail);
 
 priceOrderItemShipment (item, shipment) = GROUP MAX fullPriceItemOrderSupplier(orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
 maxAllowPriceItemShipment 'Максимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 + [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
 minAllowPriceItemShipment 'Минимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 - [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
-CONSTRAINT priceShipmentDetail > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipment) MSG 'Некорректная цена';
+CONSTRAINT priceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MSG 'Цена поставки больше цены заказа';
+CONSTRAINT priceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MSG 'Цена поставки меньше цены заказа';
 
 FORM ordersShipment 'Заказы'
 OBJECTS s=shipment FIXED PANEL, o=orderSupplier
@@ -2684,9 +2705,10 @@ showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OB
 FORM shipment 'Поставка'
 OBJECTS s=shipment FIXED PANEL
 OBJECTS d=shipmentDetail
-PROPERTIES (s) waybillShipment, dateWaybillShipment, nameDepartmentStoreShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment, showFormOrdersShipment
+PROPERTIES (s) waybillShipment, dateWaybillShipment, nameDepartmentStoreShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment, totalQuantityShipment,
+                totalSumSupplierVATShipmentDetail, totalSumSupplierShipmentDetail, showFormOrdersShipment
 PROPERTIES (d) nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail,
-                dateFitToShipmentDetail, nameWareShipmentDetail READONLY, dataSuppliersRangeShipmentDetail READONLY, dataRetailRangeShipmentDetail READONLY,
+                dateFitToShipmentDetail, dataSuppliersRangeShipmentDetail READONLY, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail READONLY, nameWareShipmentDetail READONLY, dataRetailRangeShipmentDetail READONLY,
                 retailMarkupShipmentDetail READONLY, oldRetailPriceShipmentDetail READONLY, retailPriceShipmentDetail READONLY, ADDOBJ, delete
 FILTERS NOT NULL inShipmentShipmentDetail(s, d)
 EDIT shipment OBJECT s;
