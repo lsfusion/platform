@@ -166,6 +166,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP positive, negative;
 
     public LP round0;
+    public LP roundMinus1;
 
     public LP minusInteger;
     public LP minusDouble;
@@ -654,6 +655,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         vnull = addProperty(privateGroup, new LP<PropertyInterface>(new NullValueProperty()));
 
         round0 = addSFProp("round(CAST(prm1 as numeric), 0)", DoubleClass.instance, 1);
+        roundMinus1 = addSFProp("roundMinus1", "round(CAST(prm1 as numeric), -1)", DoubleClass.instance, 1);
 
         minusInteger = addSFProp("(-(prm1))", IntegerClass.instance, 1);
         minusDouble = addSFProp("(-(prm1))", DoubleClass.instance, 1);
