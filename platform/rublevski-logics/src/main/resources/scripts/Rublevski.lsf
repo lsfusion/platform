@@ -2665,6 +2665,10 @@ oldRetailPriceShipmentDetail (shipmentDetail) <- retailPriceItemDepartmentDate (
 
 retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = priceShipmentDetail(shipmentDetail)*(100 + retailMarkupShipmentDetail(shipmentDetail))/100*(100+dataRetailRangeShipmentDetail(shipmentDetail))/100  IN baseGroup;
 
+priceOrderItemShipment (item, shipment) = GROUP MAX fullPriceItemOrderSupplier(orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
+maxAllowPriceItemShipment 'Максимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 + [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
+minAllowPriceItemShipment 'Минимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 - [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
+CONSTRAINT priceShipmentDetail > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipment) MSG 'Некорректная цена';
 
 FORM ordersShipment 'Заказы'
 OBJECTS s=shipment FIXED PANEL, o=orderSupplier
