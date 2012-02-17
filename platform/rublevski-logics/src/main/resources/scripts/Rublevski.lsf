@@ -1733,6 +1733,7 @@ nameDepartmentStoreOrderSupplier 'Отдел заказа' (orderSupplier) = nam
 supplierOrderSupplier 'Поставщик заказа (ИД)' = DATA supplier (orderSupplier);
 nameSupplierOrderSupplier 'Поставщик заказ' (orderSupplier) = name(supplierOrderSupplier(orderSupplier));
 completePercentageOrderSupplier 'Процент выполнения' (orderSupplier) = DATA DOUBLE (orderSupplier) IN baseGroup;
+allowablePercentOrderSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (orderSupplier) IN supplierGroup;
 
 quantityPackItem2 'Количество в грузовом месте' (item) = UNION OVERRIDE 1 IF item IS item, quantityPackItem(item);
 packQuantityItemOrderSupplier 'Количество мест' = DATA INTEGER (orderSupplier, item);
@@ -1773,13 +1774,14 @@ createOrderSupplier 'Создать заказ' = ACTION (preliminaryOrder) {
     supplierOrderSupplier(o) IF o == addedObject() <- supplierPreliminaryOrder(preliminaryOrder);
     curDateOrderSupplier(o) IF o == addedObject() <- dateOrderPreliminaryOrder(preliminaryOrder);
     nextDateOrderSupplier(o) IF o == addedObject() <- nextDateOrder(preliminaryOrder);
+    allowablePercentOrderSupplier(o) IF o == addedObject() <- allowablePercentSupplier(supplierPreliminaryOrder(preliminaryOrder));
     apply();
 };
 
 FORM orderSupplier 'Заказ поставщику'
 OBJECTS o=orderSupplier FIXED PANEL, i=item
 PROPERTIES(o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
-                       nameSupplierOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
+                       nameSupplierOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated, allowablePercentOrderSupplier
 PROPERTIES(o) completePercentageOrderSupplier
 PROPERTIES(i) nameAttributeItem, quantityPackItem2, minQuantityOrderItem READONLY
 PROPERTIES(o, i) packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier, recommendCountOrderSupplier
@@ -1793,7 +1795,7 @@ FORM orderSuppliers 'Заказы поставщику'
 OBJECTS o=orderSupplier, i=item
 PROPERTIES(o) READONLY name, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier, quantityDaysNextOrder,
                        nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated,
-                       nextDateOrderSupplier
+                       nextDateOrderSupplier, allowablePercentOrderSupplier
 PROPERTIES(o) ADDFORM, EDITFORM, delete
 PROPERTIES(i) READONLY nameAttributeItem
 PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
