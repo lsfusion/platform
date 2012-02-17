@@ -148,7 +148,7 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("can't move component '%s' to it's subcomponent '%s'", movingComponent, movedToComponent));
     }
 
-    public void emitRemoveMainContinaerError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitRemoveMainContainerError(LsfLogicsParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "can't remove main container");
     }
 
@@ -242,7 +242,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitLeftSideMustBeAProperty(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "left side of set property action must be a property ");
+        emitSimpleError(parser, "left side of set property action must be a property");
     }
 
     public void emitMustBeAnActionCall(LsfLogicsParser parser) throws SemanticErrorException {
@@ -311,6 +311,14 @@ public class ScriptingErrorLog {
 
     public void emitCreatingClassInstanceError(LsfLogicsParser parser, String className) throws SemanticErrorException {
         emitSimpleError(parser, "error occurred during creation of " + className + " instance");
+    }
+
+    public void emitNotActionExecutedPropertyError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "executed property should be an action");
+    }
+
+    public void emitExtendActionContextError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "action parameters must be defined explicitly");
     }
 
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {

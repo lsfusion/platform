@@ -315,7 +315,7 @@ public class ScriptingFormView extends DefaultFormView {
         }
 
         if (component == mainContainer) {
-            errLog.emitRemoveMainContinaerError(parser);
+            errLog.emitRemoveMainContainerError(parser);
         }
 
         component.getContainer().remove(component);

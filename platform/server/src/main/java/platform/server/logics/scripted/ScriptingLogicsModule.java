@@ -588,17 +588,20 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
 
-    public LP addScriptedFlowAProp(List<String> innerContext, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
-        int mapActions[][] = new int[properties.size()][];
-        for (int i = 0; i < properties.size(); i++) {
-            mapActions[i] = toPrimitive(properties.get(i).usedParams);
-        }
+    public LPWithParams addScriptedListAProp(List<String> context, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedListAProp(" + context + ");");
+        List<Object> resultParams = getParamsPlainList(properties);
+        List<Integer> usedParams = mergeAllParams(properties);
+        LP prop = addListAProp(null, genSID(), "", usedParams.size(), resultParams.toArray());
+        return new LPWithParams(prop, usedParams);
+    }
 
-        LP[] props = new LP[properties.size()];
-        for (int i = 0; i < properties.size(); i++) {
-            props[i] = properties.get(i).property;
-        }
-        return addListAProp(null, genSID(), "", innerContext.size(), props, mapActions);
+    public LPWithParams addScriptedJoinAProp(List<String> context, LP mainProp, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedJoinAProp(" + context + ", " + mainProp + ", " + properties + ", " + ");");
+        List<Object> resultParams = getParamsPlainList(properties);
+        List<Integer> usedParams = mergeAllParams(properties);
+        LP prop = addJoinAProp(null, genSID(), "", usedParams.size(), mainProp, resultParams.toArray());
+        return new LPWithParams(prop, usedParams);
     }
 
     public LP addScriptedAddObjProp(String className) throws ScriptingErrorLog.SemanticErrorException {
@@ -609,47 +612,32 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addMAProp(message, "");
     }
 
-    public LPWithParams addScriptedSetPropertyAProp(LPWithParams toProperty, LPWithParams fromProperty, boolean isDefault, List<String> oldContext) throws ScriptingErrorLog.SemanticErrorException {
-        if (toProperty == null) {
-            if (fromProperty.usedParams != null || isDefault) {
-                errLog.emitLeftSideMustBeAProperty(parser);
-            } else {
-                errLog.emitMustBeAnActionCall(parser);
-            }
-        }
-
-        if (fromProperty == null) {
-            //значит либо вызов action, либо запись дефолта.. в обоих случаях используем дефолт свойство для записи
-            fromProperty = new LPWithParams(baseLM.vdefault((ConcreteValueClass) toProperty.property.property.getCommonClasses().value), new ArrayList<Integer>());
+    public LPWithParams addScriptedSetPropertyAProp(List<String> context, LPWithParams toProperty, LPWithParams fromProperty) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedSetPropertyAProp(" + context + ", " + toProperty + ", " + fromProperty + ");");
+        if (toProperty.property == null) {
+            errLog.emitLeftSideMustBeAProperty(parser);
         }
 
         List<Integer> allParams = mergeAllParams(asList(toProperty, fromProperty));
 
         //все использованные параметры, которые были в старом контексте, идут на вход результирующего свойства
-        ArrayList<Integer> mapThisInterfacesList = new ArrayList<Integer>();
+        List<Integer> resultInterfaces = new ArrayList<Integer>();
         for (int paramIndex : allParams) {
-            if (paramIndex >= oldContext.size()) {
+            if (paramIndex >= context.size()) {
                 break;
             }
-            mapThisInterfacesList.add(paramIndex);
-        }
-        int mapThisInterfaces[] = relativeIndexes(allParams, mapThisInterfacesList);
-
-        int mapToInterfaces[] = relativeIndexes(allParams, toProperty.usedParams);
-
-        LP result;
-        if (fromProperty.property != null) {
-            int mapFromInterfaces[] = relativeIndexes(allParams, fromProperty.usedParams);
-            result = addSetPropertyAProp(null, genSID(), "", toProperty.property, mapToInterfaces, fromProperty.property, mapFromInterfaces, mapThisInterfaces);
-        } else {
-            // значит для записи используется параметр
-            assert fromProperty.usedParams != null;
-
-            int mapResultInterace = single(fromProperty.usedParams);
-            result = addSetPropertyAProp(null, genSID(), "", toProperty.property, mapToInterfaces, mapResultInterace, mapThisInterfaces);
+            resultInterfaces.add(paramIndex);
         }
 
-        return new LPWithParams(result, mapThisInterfacesList);
+        List<LPWithParams> paramsList = new ArrayList<LPWithParams>();
+        for (int i = 0; i < resultInterfaces.size(); i++) {
+            paramsList.add(new LPWithParams(null, Arrays.asList(i+1)));
+        }
+        paramsList.add(toProperty);
+        paramsList.add(fromProperty);
+        List<Object> resultParams = getParamsPlainList(paramsList);
+        LP result = addSetPropertyAProp(null, genSID(), "", allParams.size(), resultInterfaces.size(), resultParams.toArray());
+        return new LPWithParams(result, resultInterfaces);
     }
 
     private List<Object> getParamsPlainList(List<LPWithParams>... mappedPropLists) throws ScriptingErrorLog.SemanticErrorException {
@@ -1334,6 +1322,24 @@ public class ScriptingLogicsModule extends LogicsModule {
                 errLog.emitNonObjectAggrUniqueGPropError(parser);
             }
             //todo [dale]: добавить ошибку для группировочных свойств
+        }
+    }
+
+    public void checkActionAllParamsUsed(List<String> context, LP property, boolean ownContext) throws ScriptingErrorLog.SemanticErrorException {
+        if (ownContext && context.size() > property.property.interfaces.size()) {
+            errLog.emitNamedParamsError(parser);
+        }
+    }
+
+    public void checkActionProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(property.property instanceof ActionProperty)) {
+            errLog.emitNotActionExecutedPropertyError(parser);
+        }
+    }
+
+    public void checkActionLocalContext(List<String> oldContext, List<String> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        if (oldContext.size() != newContext.size()) {
+            errLog.emitNamedParamsError(parser);
         }
     }
 

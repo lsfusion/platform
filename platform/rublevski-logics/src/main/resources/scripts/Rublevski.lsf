@@ -1028,8 +1028,8 @@ maxDataRangeTax(tax) = UNION OVERRIDE 0 IF tax IS tax, [GROUP MAX dataRange(rang
 nextDataRangeTax(tax) = maxDataRangeTax(tax) + 1;
 
 addNewRange 'Добавить шкалу' = ACTION (tax) {
-    [ADDOBJ range]();
-    dataRange(r) IF r == addedObject() <- nextDataRangeTax(tax);
+    ADDOBJ range;
+    SET dataRange(r) IF r == addedObject() <- nextDataRangeTax(tax);
 } TOOLBAR IMAGE 'add.png';
 
 CLASS STATIC rangeType 'Для каких подразделений действует шкала'
@@ -1762,20 +1762,20 @@ isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItem
 isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) == yesNo.yes;
 
 createGenTimeTable 'Создать график поставок' = ACTION (dep) {
-  [ADDOBJ genTimeTable]();
-  (departmentStoreGenTimeTable(g) IF g ==addedObject()) <- (dep AS departmentStore);
-  apply();
+  ADDOBJ genTimeTable;
+  SET (departmentStoreGenTimeTable(g) IF g ==addedObject()) <- (dep AS departmentStore);
+  EXEC apply();
 };
 
 createOrderSupplier 'Создать заказ' = ACTION (preliminaryOrder) {
-    [ADDOBJ orderSupplier]();
-    (dateOrderSupplier(o) IF o == addedObject()) <- dateSupplyPreliminaryOrder(preliminaryOrder);
-    departmentStoreOrderSupplier(o) IF o == addedObject() <- departmentStorePreliminaryOrder(preliminaryOrder);
-    supplierOrderSupplier(o) IF o == addedObject() <- supplierPreliminaryOrder(preliminaryOrder);
-    curDateOrderSupplier(o) IF o == addedObject() <- dateOrderPreliminaryOrder(preliminaryOrder);
-    nextDateOrderSupplier(o) IF o == addedObject() <- nextDateOrder(preliminaryOrder);
-    allowablePercentOrderSupplier(o) IF o == addedObject() <- allowablePercentSupplier(supplierPreliminaryOrder(preliminaryOrder));
-    apply();
+    ADDOBJ orderSupplier;
+    SET (dateOrderSupplier(o) IF o == addedObject()) <- dateSupplyPreliminaryOrder(preliminaryOrder);
+    SET departmentStoreOrderSupplier(o) IF o == addedObject() <- departmentStorePreliminaryOrder(preliminaryOrder);
+    SET supplierOrderSupplier(o) IF o == addedObject() <- supplierPreliminaryOrder(preliminaryOrder);
+    SET curDateOrderSupplier(o) IF o == addedObject() <- dateOrderPreliminaryOrder(preliminaryOrder);
+    SET nextDateOrderSupplier(o) IF o == addedObject() <- nextDateOrder(preliminaryOrder);
+    SET allowablePercentOrderSupplier(o) IF o == addedObject() <- allowablePercentSupplier(supplierPreliminaryOrder(preliminaryOrder));
+    EXEC apply();
 };
 
 FORM orderSupplier 'Заказ поставщику'
@@ -2440,8 +2440,8 @@ sidListInventory 'Номер описи' = DATA INTEGER (listInventory) IN baseG
 maxSidCollationSheet(collationSheet) = UNION OVERRIDE 0 IF collationSheet IS collationSheet, [GROUP MAX sidListInventory(listInventory) BY collationSheetListInventory(listInventory)](collationSheet);
 nextSidCollationSheet(collationSheet) = maxSidCollationSheet(collationSheet) + 1;
 addNewListInventory 'Добавить опись' = ACTION (collationSheet) {       //  listInventoryPosted  заменить на listInventory
-    [ADDOBJ listInventoryPosted]();
-    sidListInventory(li) IF li == addedObject() <- nextSidCollationSheet(collationSheet);
+    ADDOBJ listInventoryPosted;
+    SET sidListInventory(li) IF li == addedObject() <- nextSidCollationSheet(collationSheet);
 } TOOLBAR IMAGE 'add.png';
 
 noteListInventory 'Примечание (наименование описи)' = DATA STRING[100] (listInventory) IN baseGroup;
@@ -2460,8 +2460,8 @@ sidPageList 'Номер страницы' = DATA INTEGER (pageList) IN baseGroup
 maxSidListInventory(listInventory) = UNION OVERRIDE 0 IF listInventory IS listInventory, [GROUP MAX sidPageList(pageList) BY listInventoryPageList(pageList)](listInventory);
 nextSidListInventory(listInventory) = maxSidListInventory(listInventory) + 1;
 addNewPageList 'Добавить страницу' = ACTION (listInventory) {
-    [ADDOBJ pageList]();
-    sidPageList(pl) IF pl == addedObject() <- nextSidListInventory(listInventory);
+    ADDOBJ pageList;
+    SET sidPageList(pl) IF pl == addedObject() <- nextSidListInventory(listInventory);
 } TOOLBAR IMAGE 'add.png';
 
 notePageList 'Примечание к странице' = DATA STRING[100] (pageList) IN baseGroup;
@@ -2474,8 +2474,8 @@ sidDetailPage 'Номер строки' = DATA INTEGER (detailPage) IN baseGroup
 maxSidDetailListInventory(listInventory) = UNION OVERRIDE 0 IF listInventory IS listInventory, [GROUP MAX sidDetailPage(detailPage) BY listInventoryPageList(pageListDetailPage(detailPage))](listInventory);
 nextSidDetailListInventory(listInventory) = maxSidDetailListInventory(listInventory) + 1;
 addNewDetailPage 'Добавить строку' = ACTION (listInventory) {
-    [ADDOBJ detailPage]();
-    sidDetailPage(dp) IF dp == addedObject() <- nextSidDetailListInventory(listInventory);
+    ADDOBJ detailPage;
+    SET sidDetailPage(dp) IF dp == addedObject() <- nextSidDetailListInventory(listInventory);
 } TOOLBAR IMAGE 'add.png';
 
 nameBarcodeDetailPage 'Штрих-код' (detailPage) = barcode(barcodeDetailPage(detailPage)) IN baseGroup;
@@ -2735,7 +2735,7 @@ FILTERS NOT NULL inShipmentShipmentDetail(s, d);
 
 //---------------------------- Импорт данных ----------------------------------------//
 
-importDataAction 'Импортировать данные' = ACTION 'rublevski.actions.ImportDataActionProperty';
+importDataAction 'Импортировать данные' = ACTION CUSTOM 'rublevski.actions.ImportDataActionProperty';
 importUrl 'URL' = DATA STRING[200] ();
 importLogin 'Логин' = DATA STRING[200] ();
 importPassword 'Пароль' = DATA STRING[200] ();
