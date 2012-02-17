@@ -524,7 +524,7 @@ quantityDiscountItem 'Количество товара, при котором �
 fixPriceItem 'Фиксированная цена при соотв.типе скидки' = DATA INTEGER (item) IN discountGroup;
 isFixPriceItem 'Товар с фиксированной ценой' = DATA BOOLEAN (item) IN retailGroup;
 banMarkdownItem 'Запретить уценку товара' = DATA BOOLEAN (item) IN retailGroup;
-oldPriceItem 'Старая цена для печати на ценник' = DATA DOUBLE (item) IN retailGroup;
+oldPriceItem 'Старая цена для печати на ценник' = DATA DOUBLE (item) IN tagGroup;
 minTradeAllowanceItem 'MIN допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
 maxTradeAllowanceItem 'MAX допустимая торговая надбавка, %' = DATA DOUBLE (item) IN retailGroup;
 minAllowedRetailPriceItem 'MIN допустимая розн.цена' = DATA INTEGER (item) IN retailGroup;
@@ -670,11 +670,35 @@ valueObjectItemAttribute(item, attribute) = UNION EXCLUSIVE valueItemGroupItemAt
                                                             valueCountryItemAttribute(item, attribute) PERSISTENT;
 nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
 
+CLASS STATIC objectItemShortAttribute 'Объектный краткий атрибут' {
+    shortUnitOfMeasure 'Единица измерения (сокр.)',
+    shortPack 'Упаковка (сокр.)',
+    shortSpecialty 'Особенность (сокр.)',
+    shortSize 'Размер/калибр (сокр.)',
+    shortCoolingDegree 'Степень охлаждения (сокр.)'
+
+} : itemAttribute;
+
+valueUOMItemShortAttribute(item, attribute) = unitOfMeasureItem(item) AND attribute == objectItemShortAttribute.shortUnitOfMeasure;
+valuePackItemShortAttribute(item, attribute) = packItem(item) AND attribute == objectItemShortAttribute.shortPack;
+valueSpecialtyItemShortAttribute(item, attribute) = specialtyItem(item) AND attribute == objectItemShortAttribute.shortSpecialty;
+valueSizeItemShortAttribute(item, attribute) = sizeItem(item) AND attribute == objectItemShortAttribute.shortSize;
+valueCoolingDegreeItemShortAttribute(item, attribute) = coolingDegreeItem(item) AND attribute == objectItemShortAttribute.shortCoolingDegree;
+
+valueObjectItemShortAttribute(item, attribute) = UNION EXCLUSIVE valueUOMItemShortAttribute(item, attribute),
+                                                            valuePackItemShortAttribute(item, attribute),
+                                                            valueSpecialtyItemShortAttribute(item, attribute),
+                                                            valueSizeItemShortAttribute(item, attribute),
+                                                            valueCoolingDegreeItemShortAttribute(item, attribute) PERSISTENT;
+
+shortNameObjectItemAttribute(item, attribute) = shortName(valueObjectItemShortAttribute(item, attribute));
+
 valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(item, attribute),
                                                       stringIntegerItemAttribute(item, attribute),
                                                       stringDoubleItemAttribute(item, attribute),
                                                       stringBooleanItemAttribute(item, attribute),
-                                                      nameObjectItemAttribute(item, attribute) PERSISTENT;
+                                                      nameObjectItemAttribute(item, attribute),
+                                                      shortNameObjectItemAttribute(item, attribute) PERSISTENT;
 
 numberInNameItemAttribute 'Порядковый номер в наименовании' = DATA INTEGER (itemAttribute) IN baseGroup;
 
@@ -1150,15 +1174,12 @@ PROPERTIES(i) nameAttributeItem, nameItemGroupSku, barcodeBarcodeSku, isManufact
  hallmarkItem SHOWIF toShowHallmark(i), articleItem, quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minQuantityOrderItem, minReserveItem, compositionScalesItem, compositionMenuItem,
  percentFatItem, percentAlcoholItem, lengthItem, widthItem, heightItem, grossWeightItem, lengthPackItem, widthPackItem, heightPackItem, grossWeightPackItem,
  nameCountryItem SHOWIF toShowCountry(i),
- bonusReturnItem, nameReturnItem, quantityDiscountItem, fixPriceItem, isFixPriceItem, banMarkdownItem, oldPriceItem, isMarkItem, hintItem,
+ bonusReturnItem, nameReturnItem, oldPriceItem, isMarkItem, hintItem,
  isCrudeItem, nameGroupProductItem, nameNumberInPackItem, nameFormItemItem, nameRateWasteItem, percentRateWasteItem,
- nameWareItem SHOWIF toShowWare(i), standartItem, normOutItem, groupMenuItem,
- isCutedItem, isLoafCutItem, storageTemperatureItem, controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem,
- bonusItem, percentWholesaleMarkItem, minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem, banSailItem,
- dataRetailRateRangeItem, dataSuppliersRateRangeItem
+ standartItem, normOutItem, groupMenuItem,
+ isCutedItem, isLoafCutItem, storageTemperatureItem, controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem, bonusItem,
+ importerPriceItem, showFormimporterPriceItem, dataSuppliersRateRangeItem, dataRetailRateRangeItem, percentWholesaleMarkItem, minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem, banSailItem
 PROPERTIES(i) nameisPortionBarItem, showFormNameisPortionBarItem,
-              importerPriceItem, showFormimporterPriceItem,
-              namebanDiscountItem, showFormNamebanDiscountItem,
               coefficientNetGrossItem, showFormcoefficientNetGrossItem,
               rateNaturalLossItem, showFormrateNaturalLossItem,         //     NDSSupplierItem, showFormNDSSupplierItem,
               nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem, nameTagItem, multiplierItem
@@ -1178,6 +1199,8 @@ PROPERTIES retailPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF retailPriceItemDe
            nameinActionItemDepartmentOver(i, d, dt) HIGHLIGHTIF nameinActionItemDepartmentDate(i, d, dt), showFormNameinActionItemDepartmentOver(i, d),
            marginProductionItemDepartmentOver(i, d, dt) HIGHLIGHTIF marginProductionItemDepartmentDate(i, d, dt), showFormmarginProductionItemDepartmentOver(i, d),
            discountItemDepartmentOver(i, d, dt) HIGHLIGHTIF discountItemDepartmentDate(i, d, dt), showFormdiscountItemDepartmentOver(i, d)
+
+PROPERTIES(i) isFixPriceItem, banMarkdownItem, nameWareItem SHOWIF toShowWare(i), quantityDiscountItem, fixPriceItem, namebanDiscountItem, showFormNamebanDiscountItem
 
 FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
 FILTERS NOT NULL inStoreTypeStore (st, s)
