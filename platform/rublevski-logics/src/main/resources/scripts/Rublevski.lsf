@@ -1700,20 +1700,6 @@ OBJECTS co=company
 PROPERTIES(co) READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity, dataOverrideAccountLegalEntity
 PROPERTIES(co) ADDFORM, EDITFORM, delete;
 
-// ----------------------------------- Ассортимент поставщиков-------------------------------------------- //
-
-itemAssortmentSupplier 'Товар в ассортименте поставщика' = DATA BOOLEAN (departmentStore, supplier, item);
-minCountItemAssortment 'Минимальный заказ' = DATA INTEGER (departmentStore, supplier, item);
-
-FORM assortmentSupplier 'Ассортимент поставщика'
-OBJECTS d=departmentStore FIXED PANEL, s=supplier, i=item
-PROPERTIES(d) READONLY name
-PROPERTIES(s) name
-PROPERTIES(s) ADDFORM, EDITFORM, delete
-PROPERTIES(i) nameAttributeItem
-PROPERTIES(i) ADDFORM, EDITFORM, delete
-PROPERTIES(d, s, i)  itemAssortmentSupplier, minCountItemAssortment;
-
 //---------------------------- по поставщикам и товарам ----------------------------------------
 
 //--------------------------------------Заказ------------------------------------------------------------------//
@@ -1749,7 +1735,6 @@ nameSupplierOrderSupplier 'Поставщик заказ' (orderSupplier) = name
 completePercentageOrderSupplier 'Процент выполнения' (orderSupplier) = DATA DOUBLE (orderSupplier) IN baseGroup;
 
 quantityPackItem2 'Количество в грузовом месте' (item) = UNION OVERRIDE 1 IF item IS item, quantityPackItem(item);
-itemAssortmentOrderSupplier 'Ассортимент заказа' (orderSupplier, item) = itemAssortmentSupplier(departmentStoreOrderSupplier(orderSupplier), supplierOrderSupplier(orderSupplier), item);
 packQuantityItemOrderSupplier 'Количество мест' = DATA INTEGER (orderSupplier, item);
 sumQuantityItemOrderSupplier 'Сумарное количество товара' (orderSupplier, item) = quantityPackItem2(item) * packQuantityItemOrderSupplier(orderSupplier, item);
 fullPriceItemOrderSupplier 'Цена с НДС' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item) IN baseGroup;
@@ -1772,7 +1757,8 @@ balance2DepartmentStoreItem 'Величина остатков товара и �
 isEnoughItem 'Достаточно ли остатков товара' (orderSupplier, item) = balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)-quantityRealizationItemNextOrder(orderSupplier, item)<minReserveItem(item);
 recommendCountOrderSupplier 'Рекомендцемое количество товара для заказа' (orderSupplier, item) = UNION MAX (quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item)), minQuantityOrderItem(item) AND orderSupplier IS orderSupplier IF isEnoughItem(orderSupplier, item);
 
-//isBanSupplierItemDepartment (orderSupplier, item) = banSupplierItemDepartmentOver(departmentStoreOrderSupplier(orderSupplier), supplierOrderSupplier(orderSupplier), item, dateOrderSupplier(orderSupplier)) != yesNo.yes;
+isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
+isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) == yesNo.yes;
 
 createGenTimeTable 'Создать график поставок' = ACTION (dep) {
   [ADDOBJ genTimeTable]();
@@ -1797,8 +1783,8 @@ PROPERTIES(o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplie
 PROPERTIES(o) completePercentageOrderSupplier
 PROPERTIES(i) nameAttributeItem, quantityPackItem2, minQuantityOrderItem READONLY
 PROPERTIES(o, i) packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier, recommendCountOrderSupplier
-FILTERS NOT NULL itemAssortmentOrderSupplier(o, i)
-//FILTERS NOT NULL isBanSupplierItemDepartment(o, i)
+FILTERS NOT NULL isSupplierItemDepartmentOrderSupplier(o, i)
+FILTERS NOT NULL isBanSupplierItemDepartmentOrderSupplier(o, i)
 FILTERGROUP filters1
     FILTER 'Показывать только заказанные позиции' 'F10' NOT NULL sumQuantityItemOrderSupplier(o, i) DEFAULT
 EDIT orderSupplier OBJECT o;
@@ -2789,7 +2775,6 @@ NAVIGATOR {
         NEW supplierRelation 'Поставщики'{
             ADD suppliers;
             ADD banks;
-            ADD assortmentSupplier;
         }
         NEW equipment 'Оборудование' {
             ADD groupsCash;
