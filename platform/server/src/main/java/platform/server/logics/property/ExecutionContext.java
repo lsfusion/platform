@@ -163,7 +163,7 @@ public class ExecutionContext {
         return new ExecutionContext(keys, value, session, modifier, actions, form, mapObjects, groupLast);
     }
 
-    public ExecutionContext map(Map<ClassPropertyInterface, ClassPropertyInterface> map) {
+    public ExecutionContext map(Map<ClassPropertyInterface, ClassPropertyInterface> map, ObjectValue value) {
         return new ExecutionContext(join(map, keys), value, session, modifier, actions, form, mapObjects, groupLast);
     }
 }

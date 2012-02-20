@@ -13,6 +13,6 @@ public abstract class KeepContextActionProperty extends FlowActionProperty {
     }
 
     protected static void execute(PropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> implement, ExecutionContext context) throws SQLException {
-        ((ActionProperty) implement.property).execute(context.map(implement.mapping));
+        ((ActionProperty) implement.property).execute(context.map(implement.mapping, ((ActionProperty) implement.property).getValueClass().getDefaultObjectValue()));
     }
 }
