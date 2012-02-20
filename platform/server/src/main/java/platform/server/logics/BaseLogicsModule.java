@@ -651,7 +651,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         divideInteger = addSFProp("CAST(((prm1)/(prm2)) as integer)", IntegerClass.instance, 2);
         divideNegativeInteger = addSFProp("CASE WHEN (prm1)<0 THEN -CAST(((-(prm1)-1)/(prm2)) as integer) ELSE CAST(((prm1)/(prm2)) as integer) END", IntegerClass.instance, 2);
         divideInteger0 = addSFProp("CAST(round((prm1)/(prm2),0) as integer)", IntegerClass.instance, 2);
-        addDate2 = addSFProp("((prm1)+(prm2))", DateClass.instance, 2);
+        addDate2 = addSFProp("addDate2", "((prm1)+(prm2))", DateClass.instance, 2);
         subtractDate2 = addSFProp("subtractDate2", "((prm1)-(prm2))", DateClass.instance, 2);
         toDateTime = addSFProp("toDateTime", "to_timestamp(CAST(prm1 as char(10)) || CAST(prm2 as char(8)), \'YYYY-MM-DDHH24:MI:SS\')", DateTimeClass.instance, 2);
         percent = addSFProp("((prm1)*(prm2)/100)", DoubleClass.instance, 2);

@@ -2803,6 +2803,7 @@ shipmentShipmentDetail 'Строка в поставке' (shipmentDetail) = DAT
 inShipmentShipmentDetail(shipment, shipmentDetail) = shipmentShipmentDetail(shipmentDetail) == shipment;
 itemShipmentDetail 'Товар строки документа поставки (ИД)' (shipmentDetail) = DATA item (shipmentDetail) IN idGroup;
 nameAttributeItemShipmentDetail 'Товар строки документа поставки' (shipmentDetail) =  nameAttributeItem(itemShipmentDetail(shipmentDetail)) IN baseGroup;
+quantityShipmentDetailsShipment 'Количество строк в поставке' (shipment) = GROUP SUM 1 IF inShipmentShipmentDetail(shipment, shipmentDetail) BY shipment;
 
 quantityShipmentDetail 'Количество' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 totalQuantityShipment 'Общее количество' (shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
@@ -2850,11 +2851,28 @@ diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentD
 
 quantityShipmentOrderItem 'Поставленное количество' (orderSupplier, item) = GROUP SUM quantityShipmentDetail (shipmentDetail) IF inShipmentOrder (shipmentShipmentDetail (shipmentDetail), orderSupplier) BY orderSupplier, itemShipmentDetail(shipmentDetail);
 
+//контроль цен поставки по заказам с учетом допустимых отклонений по поставщику
 priceOrderItemShipment (item, shipment) = GROUP MAX fullPriceItemOrderSupplier(orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
 maxAllowPriceItemShipment 'Максимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 + [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
 minAllowPriceItemShipment 'Минимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 - [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
 CONSTRAINT priceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MSG 'Цена поставки больше цены заказа';
 CONSTRAINT priceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MSG 'Цена поставки меньше цены заказа';
+
+//контроль ассортимента поставки по заказам с учетом ограничений по поставщику
+packQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM packQuantityItemOrderSupplier (orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
+isOrderedItemShipment 'Товар есть в заказах поставки' (item, shipment) =  packQuantityOrderedItemShipment(item, shipment) > 0;
+isOrderedShipmentDetail 'Товар поставки есть в заказах поставки' (shipmentDetail) = isOrderedItemShipment(itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail));
+quantityOrderedShipmentDetailsShipment 'Количество позиций, для которых есть заказ' (shipment) = GROUP SUM 1 IF isOrderedShipmentDetail(shipmentDetail) AND shipmentShipmentDetail(shipmentDetail)==shipment BY shipment;
+percentOrderedShipmentDetailsShipment 'Процент позиций поставки, для которых есть заказ' (shipment) = [X*100/Y](quantityOrderedShipmentDetailsShipment(shipment), quantityShipmentDetailsShipment(shipment));
+surePercentSupplierShipment 'Обязательный % заказанных товаров в прих. накладной' (shipment) = DATA INTEGER (shipment);
+surePercentSupplierShipment (shipment) <- surePercentSupplier(supplierShipment (shipment)) ON CHANGE supplierShipment(shipment);
+controlSupplierDepartmentStoreShipment 'Контролировать ассортимент поставщика' (shipment) = DATA yesNo(shipment);
+controlSupplierDepartmentStoreShipment(shipment) <- controlSupplierDepartmentStore (supplierShipment(shipment), departmentStoreShipment(shipment)) ON CHANGE supplierShipment(shipment); //неполный случай, нужно доделывать
+
+CONSTRAINT controlSupplierDepartmentStoreShipment (shipment) AND percentOrderedShipmentDetailsShipment(shipment)<surePercentSupplierShipment (shipment)
+            MSG 'Процент заказанных позиций для поставки меньше допустимого для данного поставщика';
+
+isAvailableOrderShipment 'Заявка допустимая для заказа' (shipment, orderSupplier) = dateWaybillShipment (shipment) <= addDate2(dateOrderSupplier (orderSupplier), UNION OVERRIDE 0 IF shipment IS shipment, afterDaysSupplier (supplierShipment(shipment)));
 
 FORM ordersShipment 'Заказы'
 OBJECTS s=shipment FIXED PANEL, o=orderSupplier
@@ -2863,7 +2881,8 @@ PROPERTIES (s, o) inShipmentOrder
 PROPERTIES (o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
                nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
 FILTERS NOT NULL isSupplierShipmentOrder (s, o),
-        NOT NULL isDepartmentStoreShipmentOrder (s, o);
+        NOT NULL isDepartmentStoreShipmentOrder (s, o),
+        NOT NULL isAvailableOrderShipment (s, o);
 
 showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OBJECTS s MODAL SHORTCUT ordersShipment DEFAULT;
 
@@ -2871,7 +2890,7 @@ FORM shipment 'Поставка'
 OBJECTS s=shipment FIXED PANEL
 OBJECTS d=shipmentDetail
 PROPERTIES (s) waybillShipment, dateWaybillShipment, nameDepartmentStoreShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment, totalQuantityShipment,
-                totalSumSupplierVATShipmentDetail, totalSumSupplierShipmentDetail, showFormOrdersShipment
+                totalSumSupplierVATShipmentDetail, totalSumSupplierShipmentDetail, percentOrderedShipmentDetailsShipment, showFormOrdersShipment
 PROPERTIES (d) nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail,
                 dateFitToShipmentDetail, dataSuppliersRangeShipmentDetail READONLY, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail READONLY, nameWareShipmentDetail READONLY, dataRetailRangeShipmentDetail READONLY,
                 retailMarkupShipmentDetail READONLY, oldRetailPriceShipmentDetail READONLY, retailPriceShipmentDetail READONLY, ADDOBJ, delete
@@ -2880,7 +2899,7 @@ EDIT shipment OBJECT s;
 
 FORM shipments 'Поставки'
 OBJECTS s=shipment, d=shipmentDetail
-PROPERTIES (s) READONLY waybillShipment, dateWaybillShipment, nameDepartmentStoreShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment
+PROPERTIES (s) READONLY waybillShipment, dateWaybillShipment, nameDepartmentStoreShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment, percentOrderedShipmentDetailsShipment
 PROPERTIES (s) ADDFORM, EDITFORM, delete
 //PROPERTIES (s, o) inShipmentOrder
 PROPERTIES (d) READONLY nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail,
