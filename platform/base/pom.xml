@@ -70,6 +70,33 @@
                 </includes>
             </resource>
         </resources>
+        <plugins>
+            <plugin>
+                <groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
+                <artifactId>maven-svn-revision-number-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <entries>
+                        <entry>
+                            <prefix>platform</prefix>
+                            <path>${project.basedir}</path>
+                            <depth>empty</depth>
+                            <reportUnversioned>false</reportUnversioned>
+                            <reportIgnored>false</reportIgnored>
+                            <reportOutOfDate>false</reportOutOfDate>
+                        </entry>
+                    </entries>
+                </configuration>
+            </plugin>
+        </plugins>
 
         <pluginManagement>
             <plugins>

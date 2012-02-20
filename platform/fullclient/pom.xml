@@ -23,6 +23,7 @@
                         </manifest>
                         <manifestEntries>
                             <SplashScreen-Image>platform/images/lsfusion.jpg</SplashScreen-Image>
+                            <SCM-Version>${platform.revision}</SCM-Version>
                         </manifestEntries>
                     </archive>
                     <descriptors>
