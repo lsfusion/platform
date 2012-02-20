@@ -784,12 +784,16 @@ CLASS genTimeTable 'Генерация графика' : named;
 
 genTimeTableType 'Тип генерации графика (ИД)' = DATA genType (genTimeTable);
 nameGenTimeTableType 'Тип генерации графика' (genTimeTable) = name(genTimeTableType(genTimeTable)) IN baseGroup;
+
 startDateGenTimeTable 'Дата начала' = DATA DATE (genTimeTable) IN baseGroup;
 endDateGenTimeTable 'Дата окончания' = DATA DATE (genTimeTable) IN baseGroup;
+
 supplierGenTimeTable 'Поставщик (ИД)' = DATA supplier (genTimeTable);
 nameSupplierGenTimeTable 'Поставщик' (genTimeTable) = name(supplierGenTimeTable(genTimeTable)) IN baseGroup;
-departmentStoreGenTimeTable 'Подразделение (ИД)' =DATA departmentStore (genTimeTable);
+
+departmentStoreGenTimeTable 'Подразделение (ИД)' = DATA departmentStore (genTimeTable) AUTOSET;
 nameDepartmentStoreGenTimeTable 'Подразделение' (genTimeTable) = name(departmentStoreGenTimeTable(genTimeTable)) IN baseGroup;
+
 dayBeforeGenTimeTable 'За сколько дней формировать заказ' = DATA INTEGER (genTimeTable);
 dayAfterGenTimeTable 'Через сколько дней после последней поставки делать заказ' = DATA INTEGER (genTimeTable);
 periodGenTimeTable 'По прошествии скольки недель будет осуществится следующая поставка' = DATA INTEGER (genTimeTable);
@@ -822,6 +826,13 @@ PROPERTIES(d) READONLY name SHOWIF toShowGenWeekOrDayMonth(g)
 PROPERTIES(g, m) inMonthGenTimeTable SHOWIF toShowGenDayMonth(g)
 PROPERTIES(g, d) inDayGenTimeTable SHOWIF toShowGenWeekOrDayMonth(g)
 EDIT genTimeTable OBJECT g;
+
+DESIGN genTimeTable FROM DEFAULT {
+    g.panel {
+        fillVertical = 0.5;
+        preferredSize = (1280, 1024);
+    }
+}
 
 FORM genTimeTables 'Графики' //служит для добавления сущности "генерации графиков" и в дальнейшем будет удалена
 OBJECTS g=genTimeTable
@@ -1786,7 +1797,7 @@ isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepa
 //  EXEC apply();
 //};
 
-createGenTimeTable 'Создать график поставок' (genTimeTable) = ACTION FORM genTimeTable OBJECTS g NEWSESSION MODAL;
+createGenTimeTable 'Создать график поставок' () = ACTION FORM genTimeTable SET [ACTION ADDOBJ genTimeTable]() NEWSESSION MODAL;
 
   createOrderSupplier 'Создать заказ' = ACTION (preliminaryOrder) {
       ADDOBJ orderSupplier;
@@ -1831,10 +1842,10 @@ isSupplierDepartmentStore (departmentStore, supplier, preliminaryOrder) = depart
 
 
 FORM timeTableDate 'График поставок'
-OBJECTS t=DATE FIXED PANEL, g=genTimeTable FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier, p=preliminaryOrder
+OBJECTS t=DATE FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier, p=preliminaryOrder
 PROPERTIES(t) OBJVALUE
 PROPERTIES(d) READONLY name
-PROPERTIES(g) createGenTimeTable
+PROPERTIES createGenTimeTable()
 PROPERTIES(s) READONLY name
 PROPERTIES(p) READONLY name, dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder
 PROPERTIES(p) nextDateOrder, createOrderSupplier
@@ -1851,11 +1862,12 @@ FILTERGROUP filters
 //    FILTER 'Показывать на дату заказа' 'F10' NOT NULL isOrderDate(t, p);
 
 DESIGN timeTableDate FROM DEFAULT {
-        POSITION g.box TO THE RIGHT d.box;
         POSITION s.box TO THE LEFT p.box;
         s.box {fillHorizontal = 2;}
         p.box {fillHorizontal = 3;}
-        }
+
+        ADD PROPERTY(createGenTimeTable) IN d.panel;
+}
 
 //--------------------------------------Формы--------------------------------------------------------------------------//
 

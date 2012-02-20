@@ -458,7 +458,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private <T extends LP<?>> void changePropertyName(T lp, String name) {
         removeModuleLP(lp);
-        lp.property.setSID(transformNameToSID(name));
+        setPropertySID(lp, transformNameToSID(name), false);
         lp.property.freezeSID();
         addModuleLP(lp);
     }

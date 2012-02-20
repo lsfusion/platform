@@ -1025,8 +1025,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         List<List<Object>> dataPropertyDraws = new ArrayList<List<Object>>();
         for (NavigatorElement<T> formElement : LM.baseElement.getChildren(true)) {
             if (formElement instanceof FormEntity) {
-                for (Object drawEntity : ((FormEntity) formElement).propertyDraws) {
-                    dataPropertyDraws.add(Arrays.asList(((PropertyDrawEntity) drawEntity).propertyObject.toString(), ((PropertyDrawEntity) drawEntity).getSID(), (Object) formElement.getSID()));
+                List<PropertyDrawEntity> propertyDraws = ((FormEntity<T>) formElement).propertyDraws;
+                for (PropertyDrawEntity drawEntity : propertyDraws) {
+                    dataPropertyDraws.add(Arrays.asList(drawEntity.propertyObject.toString(), drawEntity.getSID(), (Object) formElement.getSID()));
                 }
             }
         }
@@ -1062,6 +1063,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    private boolean needsToBeSynchronized(Property property) {
+        return !LM.isGeneratedSID(property.getSID()) && !(property instanceof NullValueProperty) && property.isFull();
+    }
+
     private void synchronizeProperties(){
         synchronizePropertyEntities();
         synchronizePropertyParents();
@@ -1081,7 +1086,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         List<List<Object>> dataProperty = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
-            if (!LM.isGeneratedSID(property.getSID()) && !(property instanceof NullValueProperty) && property.isFull()) {
+            if (needsToBeSynchronized(property)) {
                 String commonClasses = "";
                 String returnClass = "";
                 String classProperty = "";
@@ -1141,13 +1146,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         List<List<Object>> dataParent = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
-            if (!LM.isGeneratedSID(property.getSID())&& property.isFull())
+            if (needsToBeSynchronized(property))
                 dataParent.add(Arrays.asList(property.getSID(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
         }
 
         ImportKey<?> keyProperty = new ImportKey(LM.property, LM.SIDToProperty.getMapping(sidPropertyField));
         ImportKey<?> keyParent = new ImportKey(LM.abstractGroup, LM.SIDToAbstractGroup.getMapping(parentSidField));
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+
         properties.add(new ImportProperty(parentSidField, LM.parentProperty.getMapping(keyProperty), LM.object(LM.abstractGroup).getMapping(keyParent)));
         properties.add(new ImportProperty(numberPropertyField, LM.numberProperty.getMapping(keyProperty)));
         ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, parentSidField, numberPropertyField), dataParent);
