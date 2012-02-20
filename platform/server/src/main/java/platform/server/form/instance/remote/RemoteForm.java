@@ -20,6 +20,7 @@ import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
+import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
@@ -941,7 +942,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return form.BL;
     }
 
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final ExecutorService executorService = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this));
 
     public enum ServerInvocationStatus {RUNNING, PAUSED, EXCEPTION_THROWN, FINISHED}
 
