@@ -139,6 +139,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP divideInteger0;
     public LP addDate2;
     public LP subtractDate2;
+    public LP toDateTime;
     public LP string2;
     public LP insensitiveString2;
     protected LP concat2;
@@ -652,6 +653,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         divideInteger0 = addSFProp("CAST(round((prm1)/(prm2),0) as integer)", IntegerClass.instance, 2);
         addDate2 = addSFProp("((prm1)+(prm2))", DateClass.instance, 2);
         subtractDate2 = addSFProp("subtractDate2", "((prm1)-(prm2))", DateClass.instance, 2);
+        toDateTime = addSFProp("toDateTime", "to_timestamp(CAST(prm1 as char(10)) || CAST(prm2 as char(8)), \'YYYY-MM-DDHH24:MI:SS\')", DateTimeClass.instance, 2);
         percent = addSFProp("((prm1)*(prm2)/100)", DoubleClass.instance, 2);
         percent2 = addSFProp("round(CAST(((prm1)*(prm2)/100) as numeric), 2)", DoubleClass.instance, 2);
         share2 = addSFProp("round(CAST(((prm1)*100/(prm2)) as numeric), 2)", DoubleClass.instance, 2);
