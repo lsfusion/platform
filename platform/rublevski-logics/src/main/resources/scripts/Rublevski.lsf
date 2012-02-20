@@ -1376,11 +1376,14 @@ chairmanCommittee 'Председатель комиссии (ИД)' = DATA empl
 commonNameChairmanCommittee 'Председатель комиссии' (committee) = commonName(chairmanCommittee(committee)) IN baseGroup;
 departmentStoreCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (committee);
 nameDepartmentStoreCommittee 'Отдел комиссии' (committee) = commonName(departmentStoreCommittee(committee)) IN baseGroup;
-CONSTRAINT CHECKED chairmanCommittee(revaluationCommittee) AND NOT departmentStoreEmployee(departmentStoreCommittee(revaluationCommittee), chairmanCommittee(revaluationCommittee)) MSG 'Отдел комиссии должен соответствовать отделу председателя комиссии';
+CONSTRAINT CHECKED chairmanCommittee(committee) IF committee IS revaluationCommittee AND NOT departmentStoreEmployee(departmentStoreCommittee(committee), chairmanCommittee(committee))  MSG 'Отдел комиссии должен соответствовать отделу председателя комиссии';
 CONSTRAINT CHECKED departmentStoreCommittee(revaluationCommitteeDepartmentStore(departmentStore)) != departmentStore MSG 'Отдел комиссии должен соответствовать текущему отделу';
 
-inDepartmentStoreEmployeeRevaluationCommittee (revaluationCommittee, employee) = departmentStoreEmployee(departmentStoreCommittee(revaluationCommittee), employee);
+//inDepartmentStoreEmployeeCommittee (committee, employee) = departmentStoreEmployee(departmentStoreCommittee(committee), employee);
 inCommitteeEmployee 'Является членом комиссии' (committee, employee) = DATA BOOLEAN (committee, employee);
+
+inDepartmentStoreEmployeeCommittee(employee, committee) = UNION EXCLUSIVE departmentStoreEmployee(departmentStoreCommittee(committee), employee) AND committee IS revaluationCommittee,
+                    TRUE IF employee IS employee AND committee IS inventoryCommittee;
 
 FORM committee 'Комиссия'
 OBJECTS c=committee FIXED PANEL, e=employee
@@ -1388,7 +1391,9 @@ PROPERTIES(c) name, nameDepartmentStoreCommittee, commonNameChairmanCommittee
 PROPERTIES(e) READONLY name
 PROPERTIES(e) userFirstName, userLastName, ADDSESSIONFORM, EDITSESSIONFORM, delete
 PROPERTIES(c, e) inCommitteeEmployee
-FILTERS NOT NULL inDepartmentStoreEmployeeRevaluationCommittee(c, e)
+FILTERS NOT NULL inDepartmentStoreEmployeeCommittee(e, c)
+FILTERGROUP filters6
+    FILTER 'Показывать только членов комиссии' 'F10' NOT NULL inCommitteeEmployee(c, e)
 EDIT committee OBJECT c;
 
 FORM employeesCommittees 'Комиссии'
@@ -2470,9 +2475,15 @@ includeTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory) = type
 nameTypeOfAdditionDepartmentStoreInventory 'Тип сличительной ведомости' (departmentStore, inventory) = name(includeTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory)) IN baseGroup;
 concatNameDepartmentByInventory 'Подразделения для инвентаризации' (inventory) = GROUP CONCAT name(departmentStore) IF includeDepartmentStoreInventory(departmentStore, inventory), ', ' BY inventory MINCHARWIDTH 150 PREFCHARWIDTH 150;
 
+quantityStoreInventory(store, inventory) = GROUP SUM 1 IF includeDepartmentStoreInventory(departmentStore, inventory)  BY storeDepartmentStore(departmentStore), inventory;
+quantityStoreByInventory(inventory) = GROUP SUM 1 IF quantityStoreInventory(store, inventory) BY inventory;
+
+CONSTRAINT quantityStoreByInventory(inventory) > 1  MSG 'Ошибка: для инвентаризации могут задаваться отделы только в рамках одного магазина';
+
+
 CONSTRAINT includeDepartmentStoreInventory(departmentStore, inventory) AND NOT nameTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory)  MSG 'Ошибка: обязательно задавать тип сличительной ведомости для выбранного отдела';
 
-inInventoryDepartmentStore(inventory, departmentStore) = storeInventory(inventory) == storeDepartmentStore(departmentStore);
+//inInventoryDepartmentStore(inventory, departmentStore) = storeInventory(inventory) == storeDepartmentStore(departmentStore);
 
 inventoryListInventory(listInventory) = DATA inventory (listInventory) IN idGroup AUTOSET;
 nameInventoryListInventory 'Название инвентаризации' (listInventory) = nameInventory(inventoryListInventory(listInventory)) IN baseGroup;
@@ -2532,6 +2543,8 @@ totalDetailListInventory 'Сумма посчитанного' (listInventory) =
 
 collationSheetListInventory(listInventory) = uniqueCollationSheetDepartmentStoreInventory(departmentStoreListInventory(listInventory), inventoryListInventory(listInventory)) IN baseGroup;
 nameCollationSheetListInventory 'Название сл. ведомости' (listInventory) = nameCollationSheet(collationSheetListInventory(listInventory));
+inCollationSheetListInventory(collationSheet, listInventory) = collationSheetListInventory(listInventory) ==  collationSheet;
+
 quantityDetailCollationSheet 'Количество строк' (collationSheet) = GROUP SUM quantityDetailListInventory(listInventory) BY collationSheetListInventory(listInventory) IN baseGroup;
 quantityCountedCollationSheet 'Количество посчитано' (collationSheet) = GROUP SUM quantityCountedListInventory(listInventory) BY collationSheetListInventory(listInventory) IN baseGroup;
 totalDetailCollationSheet 'Сумма посчитанного' (collationSheet) = GROUP SUM totalDetailListInventory(listInventory) BY collationSheetListInventory(listInventory) IN baseGroup;
@@ -2549,12 +2562,12 @@ balanceCollationSheetItem 'Остаток' (collationSheet, item) = balanceDepar
 retailPriceCollationSheetItem 'Учетная цена' (collationSheet, item) = retailPriceItemDepartmentVal(item, departmentStoreCollationSheet(collationSheet), dateToInventory(inventoryCollationSheet(collationSheet)));
 totalBalansCollationSheetItem 'Сумма по учетным данным ' (collationSheet, item) = retailPriceCollationSheetItem(collationSheet, item) * balanceCollationSheetItem(collationSheet, item);
 
-quantityCountedCollationSheetItem 'Количество посчитано' (collationSheet, item) = GROUP SUM quantityCountedDetailPage(detailPage) IF balanceCollationSheetItem(collationSheet, item) BY collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage))), itemDetailPage(detailPage);
-totalCollationSheetItem 'Сумма посчитанного' (collationSheet, item) = GROUP SUM totalDetailPage(detailPage) IF balanceCollationSheetItem(collationSheet, item) BY collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage))), itemDetailPage(detailPage);
+quantityCountedCollationSheetItem 'Количество посчитано' (collationSheet, item) = GROUP SUM quantityCountedDetailPage(detailPage) BY collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage))), itemDetailPage(detailPage);
+totalCollationSheetItem 'Сумма посчитанного' (collationSheet, item) = GROUP SUM totalDetailPage(detailPage) BY collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage))), itemDetailPage(detailPage);
 shortageQuantityCountedCollationSheetItem 'Недостача/избыток (к-во)' (collationSheet, item) = quantityCountedCollationSheetItem(collationSheet, item) - balanceCollationSheetItem(collationSheet, item);
 shortageTotalCollationSheetItem 'Недостача/избыток (сумма)' (collationSheet, item) = totalCollationSheetItem(collationSheet, item) - totalBalansCollationSheetItem(collationSheet, item);
 
-quantityCountedItemByCollationSheet 'Количество посчитано по ведомости' (collationSheet) = GROUP SUM quantityCountedCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;  // IF item IS item
+quantityCountedItemByCollationSheet 'Количество товаров по ведомости' (collationSheet) = GROUP SUM quantityCountedCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;  // IF item IS item
 totalItemByCollationSheet 'Сумма посчитанного по ведомости' (collationSheet) = GROUP SUM totalCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
 shortageQuantityCountedItemByCollationSheet 'Недостача/избыток (к-во) по ведомости' (collationSheet) = GROUP SUM shortageQuantityCountedCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
 shortageTotalItemByCollationSheet 'Недостача/избыток (сумма)' (collationSheet) = GROUP SUM shortageTotalCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
@@ -2568,12 +2581,20 @@ includeRemainsCollationSheetItem(remainsCollationSheet, item) = remainsCollation
                                                                                    quantityCountedCollationSheetItem(remainsCollationSheet, item);
 
 inManyCollationSheetItem 'Вкл в ведомость' = DATA BOOLEAN (manyCollationSheet, item) IN baseGroup;
+inCollationSheetItem 'Вкл в ведомость' = DATA BOOLEAN (collationSheet, item) IN baseGroup;
+
 includeManyCollationSheetItem(manyCollationSheet, item) = UNION OVERRIDE TRUE IF quantityCountedCollationSheetItem(manyCollationSheet, item),
                                                                          TRUE IF inManyCollationSheetItem(manyCollationSheet, item);
 
-includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE  includeRegisterCollationSheetItem(collationSheet, item),
-                                                                           includeRemainsCollationSheetItem(collationSheet, item),
-                                                                           includeManyCollationSheetItem(collationSheet, item);
+//includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE  includeRegisterCollationSheetItem(collationSheet, item),
+//                                                                           includeRemainsCollationSheetItem(collationSheet, item),
+//                                                                           includeManyCollationSheetItem(collationSheet, item);
+
+includeCollationSheetItem(collationSheet, item) =
+    UNION EXCLUSIVE  TRUE IF quantityCountedCollationSheetItem(collationSheet, item) AND collationSheet IS registerCollationSheet,
+                     UNION OVERRIDE inCollationSheetItem(collationSheet, item), TRUE IF quantityCountedCollationSheetItem(collationSheet, item) AND collationSheet IS manyCollationSheet,
+                     TRUE IF UNION OVERRIDE balanceCollationSheetItem(collationSheet, item),  quantityCountedCollationSheetItem(collationSheet, item) AND collationSheet IS remainsCollationSheet;
+
 
 // автоматическое создание сличительной ведомости (товары из описей)
 uniqueRegisterCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
@@ -2582,6 +2603,21 @@ uniqueRegisterCollationSheetDepartmentStoreInventory (departmentStore, inventory
 includeRegisterDepartmentStoreInventory(departmentStore, inventory) =
     includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.register;
 includeRegisterDepartmentStoreInventory(departmentStore, inventory) => uniqueRegisterCollationSheetDepartmentStoreInventory (departmentStore, inventory) RESOLVE ALL;
+// автоматическое создание сличительной ведомости (по остаткам)
+uniqueRemainsCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
+    GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)
+    WHERE collationSheet IS remainsCollationSheet;
+includeRemainsDepartmentStoreInventory(departmentStore, inventory) =
+    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.remains;
+includeRemainsDepartmentStoreInventory(departmentStore, inventory) => uniqueRemainsCollationSheetDepartmentStoreInventory (departmentStore, inventory) RESOLVE ALL;
+
+// автоматическое создание сличительной ведомости (по множеству товаров)
+uniqueManyCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
+    GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)
+    WHERE collationSheet IS manyCollationSheet;
+includeManyDepartmentStoreInventory(departmentStore, inventory) =
+    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.many;
+includeManyDepartmentStoreInventory(departmentStore, inventory) => uniqueManyCollationSheetDepartmentStoreInventory (departmentStore, inventory) RESOLVE ALL;
 
 //inCollationSheetItem (collationSheet, item) =  TRUE IF quantityCountedCollationSheetItem(collationSheet, item) AND includeCollationSheetItem(collationSheet, item);
 //priceCollationSheetItem 'Цена за ед.'  (collationSheet, item) =  GROUP MAX priceDetailPage(detailPage) BY itemDetailPage(detailPage), collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage)));
@@ -2605,14 +2641,31 @@ TREE treeStoreDepartmentStore s=store, ds=departmentStore
 PROPERTIES READONLY name(s), name(ds)
 PROPERTIES (ds, in) includeDepartmentStoreInventory, nameTypeOfAdditionDepartmentStoreInventory
 PROPERTIES (ds) READONLY name
-FILTERS NOT NULL inStoreDepartment (s, ds)
-FILTERS NOT NULL inInventoryDepartmentStore(in, ds);
+FILTERS NOT NULL inStoreDepartment (s, ds);
+//FILTERS NOT NULL inInventoryDepartmentStore(in, ds);
 
 
 showFormConcatNameDepartmentByInventory 'Подразделения для инвентаризации' (inventory) = ACTION FORM concatNameDepartmentByInventory OBJECTS in MODAL SHORTCUT concatNameDepartmentByInventory DEFAULT;
 
+FORM collationSheetItem 'Товары для включения в слич.ведомость'
+OBJECTS cs=collationSheet FIXED PANEL
+PROPERTIES (cs) READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet
+TREE treeGroup g=itemGroup PARENT parentItemGroup
+OBJECTS i=item
+PROPERTIES(g) READONLY name
+PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem
+PROPERTIES(cs, i) inCollationSheetItem
+FILTERS NOT NULL  inItemGroupSku(g, i);
+
+
+DESIGN collationSheetItem FROM DEFAULT {
+    POSITION treeGroup.box TO THE LEFT i.box;
+}
+
+showFormItemByCollationSheet 'Добавить товар' (collationSheet) = [ACTION FORM collationSheetItem OBJECTS cs MODAL](collationSheet) AND collationSheet IS manyCollationSheet;
+
 FORM listInventory 'Опись'
-OBJECTS     li=listInventory FIXED PANEL         // заменить на listInventory
+OBJECTS     li=listInventory FIXED PANEL
 OBJECTS     pl=pageList, dp=detailPage, e=employee
 PROPERTIES (li) nameListInventory, nameDepartmentStoreListInventory, nameInventoryListInventory, noteListInventory, nameCommitteeListInventory, commonNameChairmanCommitteeListInventory, closeListInventory,
                 quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory//, addNewPageList TODRAW pl, addNewDetailPage TODRAW dp
@@ -2648,24 +2701,22 @@ FILTERS NOT NULL inInventoryListInventory(in, li)
 FILTERS NOT NULL inDepartmentStoreListInventory(ds, li)
 FILTERS NOT NULL inListInventoryPageList(li, pl)
 FILTERS NOT NULL inPageListDetailPage(pl, dp)
-FILTERS NOT NULL inInventoryDepartmentStore(in, ds)
+//FILTERS NOT NULL inInventoryDepartmentStore(in, ds)
 FILTERS NOT NULL includeDepartmentStoreInventory(ds, in)
 PROPERTIES (li)  ADDFORM, EDITFORM, delete
 PROPERTIES (dp)  READONLY nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage, priceDetailPage, totalDetailPage
-PROPERTIES (in)  nameInventory, nameStoreInventory, dateToInventory, timeToInventory, nameUserCreated, timeClosed, commonNameUserClosed, noteInventory, infoInventory, IPInventory, concatNameDepartmentByInventory, showFormConcatNameDepartmentByInventory
+PROPERTIES (in)  nameInventory, dateToInventory, timeToInventory, nameUserCreated, timeClosed, commonNameUserClosed, noteInventory, infoInventory, IPInventory, concatNameDepartmentByInventory, showFormConcatNameDepartmentByInventory
 PROPERTIES (cs)  nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,  quantityCountedItemByCollationSheet, totalItemByCollationSheet,
-                 shortageQuantityCountedItemByCollationSheet, shortageTotalItemByCollationSheet, delete
+                 shortageQuantityCountedItemByCollationSheet, shortageTotalItemByCollationSheet, showFormItemByCollationSheet, delete
 PROPERTIES (i)   nameAttributeItem
-PROPERTIES (cs, i) quantityCountedCollationSheetItem, totalCollationSheetItem, shortageQuantityCountedCollationSheetItem, shortageTotalCollationSheetItem
+PROPERTIES (cs, i) quantityCountedCollationSheetItem, balanceCollationSheetItem, shortageQuantityCountedCollationSheetItem, totalCollationSheetItem, totalBalansCollationSheetItem, shortageTotalCollationSheetItem
 
 FILTERS NOT NULL inInventoryCollationSheet(in,cs)
 FILTERS NOT NULL includeCollationSheetItem(cs, i)
+//FILTERS NOT NULL inCollationSheetListInventory(cs, li)
 //FILTERS NOT NULL includeTypeOfAdditionCollationSheetInventory(cs, in)
-//        NOT NULL inCollationSheetListInventory(cs, li)
 //        NOT NULL inDepartmentStoreCollationSheet(ds, cs)
-//FILTERGROUP filterInventory
-//    FILTER 'Показывать только посчитанные товары' 'F10' NOT NULL quantityCountedCollationSheetItem(cs, i)
-//    FILTER 'Показывать только товары с остатком' 'F9' NOT NULL balanceCollationSheetItem(cs, i)
+
 EDIT inventory OBJECT in;
 
 DESIGN inventory FROM DEFAULT {
@@ -2690,7 +2741,7 @@ DESIGN inventory FROM DEFAULT {
 
 FORM inventories 'Инвентаризации'
 OBJECTS in=inventory
-PROPERTIES (in) READONLY nameInventory, nameStoreInventory, dateToInventory
+PROPERTIES (in) READONLY nameInventory, dateToInventory
 PROPERTIES (in) ADDFORM, EDITFORM, delete;
 
 //---------------------------- Кассовые отчеты ----------------------------------------//
