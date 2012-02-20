@@ -1589,7 +1589,7 @@ nameControlSupplierDepartmentStore 'Контролировать ассорти�
 
 overrideSupplierDepartmentStoreDate(supplier, departmentStore, date) = UNION OVERRIDE (TRUE IF UNION OVERRIDE emailOrderSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE, contactSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE),
                                                                                   controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes AND date IS DATE,
-                                                                                  sureSupplierDepartmentStoreOver(supplier, departmentStore, date) == yesNo.yes;
+                                                                                  sureSupplierDepartmentStoreVal(supplier, departmentStore, date) == yesNo.yes;
 
 //dataContractSupplier 'Договор по умолчанию' (supplier) = dataContract(userContractSupplier(supplier));
 defaultContractSupplier(supplier) = GROUP MAX contract AS contract BY supplierContract(contract);
@@ -1772,8 +1772,8 @@ balance2DepartmentStoreItem 'Величина остатков товара и �
 isEnoughItem 'Достаточно ли остатков товара' (orderSupplier, item) = balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)-quantityRealizationItemNextOrder(orderSupplier, item)<minReserveItem(item);
 recommendCountOrderSupplier 'Рекомендцемое количество товара для заказа' (orderSupplier, item) = UNION MAX (quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item)), minQuantityOrderItem(item) AND orderSupplier IS orderSupplier IF isEnoughItem(orderSupplier, item);
 
-isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
-isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) == yesNo.yes;
+isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentVal(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
+isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepartmentVal(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) == yesNo.yes;
 
 createGenTimeTable 'Создать график поставок' = ACTION (dep) {
   ADDOBJ genTimeTable;
