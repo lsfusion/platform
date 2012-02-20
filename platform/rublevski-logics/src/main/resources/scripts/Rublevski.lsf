@@ -1733,7 +1733,7 @@ TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
 CLASS ABSTRACT order 'Заказ' : named, historyObject;
 CLASS orderSupplier 'Заказ поставщику' : order;
-CLASS orderPost 'Одобренный заказ поставщику' :orderSupplier;
+CLASS orderSupplierPost 'Одобренный заказ поставщику' :orderSupplier;
 //CLASS orderStock 'Заказ складу' :order;
 
 dataOrderSupplier 'Номер заказа' (orderSupplier) = DATA INTEGER (orderSupplier) IN baseGroup;
@@ -1775,20 +1775,22 @@ recommendCountOrderSupplier 'Рекомендцемое количество т�
 isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentVal(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
 isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepartmentVal(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) == yesNo.yes;
 
-createGenTimeTable 'Создать график поставок' = ACTION (dep) {
-  ADDOBJ genTimeTable;
-  SET (departmentStoreGenTimeTable(g) IF g ==addedObject()) <- (dep AS departmentStore);
-  EXEC apply();
-};
+//createGenTimeTable 'Создать график поставок' = ACTION (dep) {
+//  ADDOBJ genTimeTable;
+//  SET (departmentStoreGenTimeTable(g) IF g ==addedObject()) <- (dep AS departmentStore);
+//  EXEC apply();
+//};
+
+createGenTimeTable 'Создать график поставок' (genTimeTable) = ACTION FORM genTimeTable OBJECTS g NEWSESSION MODAL;
 
 createOrderSupplier 'Создать заказ' = ACTION (preliminaryOrder) {
-    ADDOBJ orderSupplier;
+    ADDOBJ orderSupplierPost;
     SET (dateOrderSupplier(o) IF o == addedObject()) <- dateSupplyPreliminaryOrder(preliminaryOrder);
-    SET departmentStoreOrderSupplier(o) IF o == addedObject() <- departmentStorePreliminaryOrder(preliminaryOrder);
-    SET supplierOrderSupplier(o) IF o == addedObject() <- supplierPreliminaryOrder(preliminaryOrder);
-    SET curDateOrderSupplier(o) IF o == addedObject() <- dateOrderPreliminaryOrder(preliminaryOrder);
-    SET nextDateOrderSupplier(o) IF o == addedObject() <- nextDateOrder(preliminaryOrder);
-    SET allowablePercentOrderSupplier(o) IF o == addedObject() <- allowablePercentSupplier(supplierPreliminaryOrder(preliminaryOrder));
+    SET (departmentStoreOrderSupplier(o) IF o == addedObject()) <- departmentStorePreliminaryOrder(preliminaryOrder);
+    SET (supplierOrderSupplier(o) IF o == addedObject()) <- supplierPreliminaryOrder(preliminaryOrder);
+    SET (curDateOrderSupplier(o) IF o == addedObject()) <- dateOrderPreliminaryOrder(preliminaryOrder);
+    SET (nextDateOrderSupplier(o) IF o == addedObject()) <- nextDateOrder(preliminaryOrder);
+    SET (allowablePercentOrderSupplier(o) IF o == addedObject()) <- allowablePercentSupplier(supplierPreliminaryOrder(preliminaryOrder));
     EXEC apply();
 };
 
@@ -1824,10 +1826,10 @@ isSupplierDepartmentStore (departmentStore, supplier, preliminaryOrder) = depart
 
 
 FORM timeTableDate 'График поставок'
-OBJECTS t=DATE FIXED PANEL,d=departmentStore FIXED PANEL, s=supplier, p=preliminaryOrder
+OBJECTS t=DATE FIXED PANEL, g=genTimeTable FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier, p=preliminaryOrder
 PROPERTIES(t) OBJVALUE
 PROPERTIES(d) READONLY name
-PROPERTIES(d) createGenTimeTable
+PROPERTIES(g) createGenTimeTable
 PROPERTIES(s) READONLY name
 PROPERTIES(p) READONLY name, dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder
 PROPERTIES(p) nextDateOrder, createOrderSupplier
@@ -1840,6 +1842,7 @@ FILTERGROUP filters
     FILTER 'Показывать на дату заказа' 'F10' NOT NULL isOrderDate(t, p);
 
 DESIGN timeTableDate FROM DEFAULT {
+        POSITION g.box TO THE RIGHT d.box;
         POSITION s.box TO THE LEFT p.box;
         s.box {fillHorizontal = 2;}
         p.box {fillHorizontal = 3;}
