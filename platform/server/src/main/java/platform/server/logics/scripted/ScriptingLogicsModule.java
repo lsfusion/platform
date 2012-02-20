@@ -452,6 +452,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setAutoset(autoset);
     }
 
+    public void setAskConfirm(LP<?> property, boolean askConfirm) {
+        property.setAskConfirm(askConfirm);
+    }
+
     private <T extends LP<?>> void changePropertyName(T lp, String name) {
         removeModuleLP(lp);
         lp.property.setSID(transformNameToSID(name));

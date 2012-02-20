@@ -936,6 +936,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		(imageSetting [property])?
 		(editKeySetting [property])?
 		(autosetSetting [property])?
+		(confirmSetting [property])?
 	;
 
 
@@ -1025,6 +1026,18 @@ autosetSetting [LP property]
 	}
 }
 	:	'AUTOSET' { autoset = true; }
+	;
+
+confirmSetting [LP property]
+@init {
+	boolean askConfirm = false;
+}
+@after {
+	if (inPropParseState()) {
+		self.setAskConfirm(property, askConfirm);
+	}
+}
+	:	'CONFIRM' { askConfirm = true; }
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -39,6 +39,7 @@
       <keyword name="CLASS" />
       <keyword name="COLUMNS" />
       <keyword name="CONCAT" />
+      <keyword name="CONFIRM" />
       <keyword name="CONSTRAINT" />
       <keyword name="CUSTOM" />
       <keyword name="DATA" />

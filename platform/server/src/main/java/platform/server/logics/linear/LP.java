@@ -347,4 +347,8 @@ public class LP<T extends PropertyInterface> {
     public void setAutoset(boolean autoset) {
         property.autoset = autoset;
     }
+
+    public void setAskConfirm(boolean askConfirm) {
+        property.askConfirm = askConfirm;
+    }
 }
