@@ -57,6 +57,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import static java.util.Arrays.asList;
 import static platform.server.logics.ServerResourceBundle.getString;
@@ -802,6 +804,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         initAuthentication();
 
         resetConnectionStatus();
+        logLaunch();
 
         // считаем системного пользователя
         try {
@@ -890,6 +893,31 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         reloadNavigatorTree();
     }
+
+    private void logLaunch() throws SQLException {
+
+        DataSession session = createSession();
+
+        DataObject newLaunch = session.addObject(LM.launch, session.modifier);
+        LM.launchComputer.execute(getComputer(OSUtils.getLocalHostName()), session, newLaunch);
+        LM.launchTime.execute(LM.currentDateTime.read(session), session, newLaunch);
+
+        InputStream manifestStream = getClass().getResourceAsStream("/platform/server/../../META-INF/MANIFEST.MF");
+        try {
+            if (manifestStream != null) {
+                Manifest manifest = new Manifest(manifestStream);
+                Attributes attributes = manifest.getMainAttributes();
+                String revision = attributes.getValue("SCM-Revision");
+                LM.launchRevision.execute(revision, session, newLaunch);
+            }
+        } catch (IOException ex) {
+        }
+
+
+        session.apply(this);
+        session.close();
+    }
+
 
     public SQLSession getThreadLocalSql() {
         return sqlRef.get();

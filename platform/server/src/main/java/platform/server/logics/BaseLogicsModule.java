@@ -78,6 +78,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass clientException;
     public ConcreteCustomClass serverException;
     public ConcreteCustomClass connection;
+    public ConcreteCustomClass launch;
     public StaticCustomClass connectionStatus;
     public ConcreteCustomClass dictionary;
     public ConcreteCustomClass dictionaryEntry;
@@ -259,6 +260,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP connectionConnectTime;
     public LP connectionDisconnectTime;
     public LP disconnectConnection;
+
+    public LP launchComputer;
+    public LP computerNameLaunch;
+    public LP launchTime;
+    public LP launchRevision;
 
     public LP policyDescription;
     protected LP<?> nameToPolicy;
@@ -507,6 +513,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         connectionStatus = addStaticClass("connectionStatus", getString("logics.connection.status"),
                 new String[]{"connectedConnection", "disconnectedConnection"},
                 new String[]{getString("logics.connection.connected"), getString("logics.connection.disconnected")});
+        launch = addConcreteClass("launch", getString("logics.launch"), baseClass);
         country = addConcreteClass("country", getString("logics.country"), baseClass.named);
 
         navigatorElement = addConcreteClass("navigatorElement", getString("logics.navigator.element"), baseClass);
@@ -786,6 +793,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addJProp(baseGroup, getString("logics.connection.disconnect"), andNot1, getUParams(new LP[]{disconnectConnection, connectionDisconnectTime}, 0));
 
         connectionFormCount = addDProp(baseGroup, "connectionFormCount", getString("logics.forms.number.of.opened.forms"), IntegerClass.instance, connection, navigatorElement);
+
+        launchComputer = addDProp("launchComputer", getString("logics.computer"), computer, launch);
+        computerNameLaunch = addJProp(baseGroup, getString("logics.computer"), hostname, launchComputer, 1);
+        launchTime = addDProp(baseGroup, "launchConnectTime", getString("logics.launch.time"), DateTimeClass.instance, launch);
+        launchRevision = addDProp(baseGroup, "launchRevision", getString("logics.launch.revision"), StringClass.get(10), launch);
 
         userMainRole = addDProp(idGroup, "userMainRole", getString("logics.user.role.main.role.id"), userRole, user);
         customUserMainRole = addJProp(idGroup, "customUserMainRole", getString("logics.user.role.main.role.id"), and1, userMainRole, 1, is(customUser), 1);
@@ -1299,6 +1311,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new SecurityPolicyFormEntity(accessElement, "securityPolicyForm"));
 
         eventsElement = addNavigatorElement(adminElement, "eventsElement", getString("logics.administration.events"));
+        addFormEntity(new LaunchesFormEntity(eventsElement, "launchesForm"));
         addFormEntity(new ConnectionsFormEntity(eventsElement, "connectionsForm"));
         addFormEntity(new ExceptionsFormEntity(eventsElement, "exceptionsForm"));
 
@@ -1866,6 +1879,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                     getString("logics.connection.active.connections"),
                     KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             addRegularFilterGroup(filterGroup);
+        }
+    }
+
+    private class LaunchesFormEntity extends FormEntity {
+        protected LaunchesFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.launch.log"));
+
+            ObjectEntity objLaunch = addSingleGroupObject(launch, baseGroup, true);
+            setReadOnly(true);
         }
     }
 
