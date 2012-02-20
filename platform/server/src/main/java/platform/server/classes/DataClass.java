@@ -149,6 +149,7 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
         if (type == Data.PDF) return PDFClass.instance;
         if (type == Data.DATETIME) return DateTimeClass.instance;
         if (type == Data.CUSTOMFILECLASS) return CustomFileClass.instance;
+        if (type == Data.TIME) return TimeClass.instance;
 
         throw new IOException();
     }

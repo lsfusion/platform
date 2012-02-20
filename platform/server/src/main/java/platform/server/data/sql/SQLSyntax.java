@@ -50,6 +50,9 @@ public interface SQLSyntax {
     String getDateTimeType();
     int getDateTimeSQL();
 
+    String getTimeType();
+    int getTimeSQL();
+
     String getLongType();
     int getLongSQL();
 

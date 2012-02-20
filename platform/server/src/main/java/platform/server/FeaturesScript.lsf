@@ -50,7 +50,7 @@ CLASS STATIC storeSize 'Размер склада'
 // Data property
 // Expression syntax:
 // DATA returnClass ( [paramClass1, ..., paramClassN] )
-// Built-in types: INTEGER, LONG, DOUBLE, BOOLEAN, DATE, DATETIME, TEXT, STRING, ISTRING
+// Built-in types: INTEGER, LONG, DOUBLE, BOOLEAN, DATE, DATETIME, TEXT, STRING, ISTRING, TIME
 store = DATA store (document) IN base;
 quantity = DATA DOUBLE (document, article) IN base;
 storeSize = DATA storeSize (store) IN base;

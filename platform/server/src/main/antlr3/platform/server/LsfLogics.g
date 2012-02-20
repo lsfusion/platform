@@ -1830,7 +1830,7 @@ fragment STR_LITERAL_CHAR	: '\\\'' | ~('\r'|'\n'|'\'');	 // overcomplicated due 
 fragment DIGITS		:	('0'..'9')+;
 fragment HEX_DIGIT	: 	'0'..'9' | 'a'..'f' | 'A'..'F';
 
-PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'TEXT' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']';
+PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'TEXT' | 'TIME' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';		
 ID          	:	('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };

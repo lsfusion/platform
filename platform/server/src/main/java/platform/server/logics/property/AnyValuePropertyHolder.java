@@ -18,8 +18,9 @@ public class AnyValuePropertyHolder {
     private final LP dateTimeProperty;
     private final LP logicalProperty;
     private final LP dateProperty;
+    private final LP timeProperty;
 
-    public AnyValuePropertyHolder(LP objectProperty, LP textProperty, LP stringProperty, LP intProperty, LP longProperty, LP doubleProperty, LP yearProperty, LP dateTimeProperty, LP logicalProperty, LP dateProperty) {
+    public AnyValuePropertyHolder(LP objectProperty, LP textProperty, LP stringProperty, LP intProperty, LP longProperty, LP doubleProperty, LP yearProperty, LP dateTimeProperty, LP logicalProperty, LP dateProperty, LP timeProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && textProperty.property.getType() == TextClass.instance
                 && stringProperty.property.getType().isCompatible(StringClass.get(0))
@@ -30,6 +31,7 @@ public class AnyValuePropertyHolder {
                 && dateTimeProperty.property.getType() == DateTimeClass.instance
                 && logicalProperty.property.getType() == LogicalClass.instance
                 && dateProperty.property.getType() == DateClass.instance
+                && timeProperty.property.getType() == TimeClass.instance
                 ;
 
         this.objectProperty = objectProperty;
@@ -42,6 +44,7 @@ public class AnyValuePropertyHolder {
         this.dateTimeProperty = dateTimeProperty;
         this.logicalProperty = logicalProperty;
         this.dateProperty = dateProperty;
+        this.timeProperty = timeProperty;
     }
 
     public void write(ValueClass valueClass, Object value, ExecutionContext context, DataObject... keys) throws SQLException {
@@ -74,6 +77,9 @@ public class AnyValuePropertyHolder {
 
         } else if (valueClass instanceof DateClass) {
             dateProperty.execute(value, context, keys);
+
+        } else if (valueClass instanceof TimeClass) {
+            timeProperty.execute(value, context, keys);
 
         } else {
             assert false:valueClass + " is not supported by AnyValueProperty";

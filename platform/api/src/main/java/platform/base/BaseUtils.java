@@ -6,6 +6,7 @@ import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.List;
@@ -417,6 +418,10 @@ public class BaseUtils {
             return new Timestamp(inStream.readLong());
         }
 
+        if (objectType == 9) {
+            return new Time(inStream.readLong());
+        }
+
         throw new IOException();
     }
 
@@ -481,6 +486,12 @@ public class BaseUtils {
         if (object instanceof Timestamp) {
             outStream.writeByte(8);
             outStream.writeLong(((Timestamp) object).getTime());
+            return;
+        }
+
+        if (object instanceof Time) {
+            outStream.writeByte(9);
+            outStream.writeLong(((Time) object).getTime());
             return;
         }
 

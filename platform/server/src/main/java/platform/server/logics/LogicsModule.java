@@ -1895,7 +1895,8 @@ public abstract class LogicsModule {
                 addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenYear", "Chosen Year", new ValueClass[]{StringClass.get(100)}, YearClass.instance))),
                 addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenDateTime", "Chosen DateTime", new ValueClass[]{StringClass.get(100)}, DateTimeClass.instance))),
                 addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenLogical", "Chosen Logical", new ValueClass[]{StringClass.get(100)}, LogicalClass.instance))),
-                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenDate", "Chosen Date", new ValueClass[]{StringClass.get(100)}, DateClass.instance)))
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenDate", "Chosen Date", new ValueClass[]{StringClass.get(100)}, DateClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenTime", "Chosen Time", new ValueClass[]{StringClass.get(100)}, TimeClass.instance)))
         );
     }
 

@@ -68,6 +68,13 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return Types.TIMESTAMP;
     }
 
+    public String getTimeType() {
+        return "time";
+    }
+    public int getTimeSQL() {
+        return Types.TIME;
+    }
+
     public String getLongType() {
         return "long";
     }

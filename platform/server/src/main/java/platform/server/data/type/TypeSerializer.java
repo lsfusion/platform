@@ -55,6 +55,7 @@ public class TypeSerializer {
         if (type == Data.PDF) return PDFClass.instance;
         if (type == Data.DATETIME) return DateTimeClass.instance;
         if (type == Data.CUSTOMFILECLASS) return CustomFileClass.instance;
+        if (type == Data.TIME) return TimeClass.instance;
 
         //todo:!!
         if (type == Data.FILEACTION) return FileActionClass.getDefinedInstance(false, "", "");

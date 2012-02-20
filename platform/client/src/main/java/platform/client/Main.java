@@ -39,8 +39,10 @@ import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
+import java.sql.*;
 import java.text.DateFormat;
 import java.util.*;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 
@@ -389,7 +391,14 @@ public class Main {
     }
 
     public static String formatDate(Object date) {
-        DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
+        DateFormat df;
+        if (date instanceof java.sql.Date) {
+            df = DateFormat.getDateInstance(DateFormat.SHORT);
+        } else if (date instanceof Timestamp) {
+            df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
+        } else
+            return String.valueOf(date);
+
         if (timeZone != null) {
             df.setTimeZone(Main.timeZone);
         }

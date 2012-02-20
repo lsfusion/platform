@@ -636,7 +636,7 @@ public abstract class GridTable extends ClientFormTable
         return super.processKeyBinding(ks, e, condition, pressed);
     }
 
-    private boolean commitEditing() {
+    public boolean commitEditing() {
         if (this.isEditing())
             return SwingUtils.commitEditing(this);
         else
