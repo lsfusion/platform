@@ -2458,7 +2458,9 @@ inInventoryCollationSheet(inventory, collationSheet) = inventoryCollationSheet(c
 inDepartmentStoreCollationSheet(departmentStore, collationSheet) = departmentStoreCollationSheet(collationSheet) == departmentStore;
 
 includeDepartmentStoreInventory 'Включить в инвентаризацию' = DATA BOOLEAN (departmentStore, inventory) IN baseGroup;
-uniqueCollationSheetDepartmentStoreInventory (departmentStore, inventory) = GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet);
+uniqueCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
+    GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet);
+
 typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) = DATA typeOfAddition (departmentStore, inventory) IN baseGroup;
 includeTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory) = typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) IF includeDepartmentStoreInventory(departmentStore, inventory) IN baseGroup;
 nameTypeOfAdditionDepartmentStoreInventory 'Тип сличительной ведомости' (departmentStore, inventory) = name(includeTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory)) IN baseGroup;
@@ -2569,7 +2571,14 @@ includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE  includeRegist
                                                                            includeRemainsCollationSheetItem(collationSheet, item),
                                                                            includeManyCollationSheetItem(collationSheet, item);
 
-includeDepartmentStoreInventory(departmentStore, inventory) => uniqueCollationSheetDepartmentStoreInventory (departmentStore, inventory) RESOLVE ALL;
+// автоматическое создание сличительной ведомости (товары из описей)
+uniqueRegisterCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
+    GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)
+    WHERE collationSheet IS registerCollationSheet;
+includeRegisterDepartmentStoreInventory(departmentStore, inventory) =
+    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.register;
+includeRegisterDepartmentStoreInventory(departmentStore, inventory) => uniqueRegisterCollationSheetDepartmentStoreInventory (departmentStore, inventory) RESOLVE ALL;
+
 //inCollationSheetItem (collationSheet, item) =  TRUE IF quantityCountedCollationSheetItem(collationSheet, item) AND includeCollationSheetItem(collationSheet, item);
 //priceCollationSheetItem 'Цена за ед.'  (collationSheet, item) =  GROUP MAX priceDetailPage(detailPage) BY itemDetailPage(detailPage), collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage)));
 //totalCollationSheetItem 'Сумма посчитанного' (collationSheet, item) = quantityCountedCollationSheetItem(collationSheet, item) * priceCollationSheetItem(collationSheet, item);   наверное не правильно
