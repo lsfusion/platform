@@ -10,11 +10,11 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
     var types = words("INTEGER DOUBLE LONG BOOLEAN DATE DATETIME TEXT STRING ISTRING TIME");
     var keywords = words("ABSTRACT ACTION ADD ADDFORM ADDOBJ ADDSESSIONFORM AFTER " + 
                            "ALL AND APPLY AS ASC ASSIGN AUTOSET BEFORE BOTTOM BY CASCADE " + 
-                           "CENTER CHANGE CHECKED CLASS COLUMNS CONCAT CONSTRAINT CUSTOM " +
-                           "DATA DEFAULT DESC DESIGN DIALOG DRAWROOT EDIT EDITABLE " + 
+                           "CASE CENTER CHANGE CHECKED CLASS COLUMNS CONCAT CONSTRAINT " + 
+                           "CUSTOM DATA DEFAULT DESC DESIGN DIALOG DRAWROOT EDIT EDITABLE " + 
                            "EDITFORM EDITKEY EDITSESSIONFORM ELSE END EXCEPTLAST EXCLUSIVE " + 
-                           "EXEC FALSE FILTER FILTERGROUP FILTERS FIXED FIXEDCHARWIDTH " +
-                           "FOOTER FOR FORCE FORM FORMULA FROM GRID GROUP HALIGN HEADER " +
+                           "EXEC FALSE FILTER FILTERGROUP FILTERS FIXED FIXEDCHARWIDTH " + 
+                           "FOOTER FOR FORCE FORM FORMULA FROM GRID GROUP HALIGN HEADER " + 
                            "HIDE HIDESCROLLBARS HIDETITLE HIGHLIGHTIF HINT HORIZONTAL " + 
                            "IF IMAGE IMPORT IN INCREMENT INIT INTERSECT IS LEFT LIST " + 
                            "MAX MAXCHARWIDTH MESSAGE META MIN MINCHARWIDTH MODAL MODULE " + 
@@ -24,7 +24,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "READONLY READONLYIF REMOVE RESOLVE RIGHT RIGHTBOTTOM SELECTION " + 
                            "SET SHORTCUT SHOW SHOWIF STATIC SUM TABLE TEXTHALIGN TEXTVALIGN " + 
                            "THE THEN TO TODRAW TOOLBAR TOP TREE TRUE UNION UNIQUE " + 
-                           "UPDATE VALIGN VERTICAL WHERE WINDOW XOR");
+                           "UPDATE VALIGN VERTICAL WHEN WHERE WINDOW XOR");
 
     var isOperatorChar = /[+\-*&%=<>!?|@#]/;
 

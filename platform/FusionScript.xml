@@ -32,6 +32,7 @@
       <keyword name="BOTTOM" />
       <keyword name="BY" />
       <keyword name="CASCADE" />
+      <keyword name="CASE" />
       <keyword name="CENTER" />
       <keyword name="CHANGE" />
       <keyword name="CHECKED" />
@@ -156,6 +157,7 @@
       <keyword name="UPDATE" />
       <keyword name="VALIGN" />
       <keyword name="VERTICAL" />
+      <keyword name="WHEN" />
       <keyword name="WHERE" />
       <keyword name="WINDOW" />
       <keyword name="XOR" />

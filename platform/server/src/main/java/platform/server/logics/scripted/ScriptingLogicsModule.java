@@ -533,6 +533,24 @@ public class ScriptingLogicsModule extends LogicsModule {
                                        addScriptedJProp(and(true), asList(elseProp, ifProp))));
     }
 
+    public LPWithParams addScriptedCaseUProp(List<LPWithParams> whenProps, List<LPWithParams> thenProps) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedCaseProp(" + whenProps  + "->" + thenProps + ");");
+
+        assert whenProps.size() == thenProps.size();
+
+        checkCasePropertyParams(whenProps, thenProps);
+
+        List<LPWithParams> caseParamProps = new ArrayList<LPWithParams>();
+        for (int i = 0; i < whenProps.size(); i++) {
+            caseParamProps.add(whenProps.get(i));
+            caseParamProps.add(thenProps.get(i));
+        }
+
+        LP caseProp = addCaseUProp(null, genSID(), false, "", getParamsPlainList(caseParamProps).toArray());
+        return new LPWithParams(caseProp, mergeAllParams(caseParamProps));
+    }
+
+
     public LP addScriptedActionProp(String javaClassName) throws ScriptingErrorLog.SemanticErrorException {
         try {
             return baseLM.addAProp(null, (ActionProperty) Class.forName(javaClassName).getConstructor(BL.getClass()).newInstance(BL));
@@ -1227,6 +1245,25 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (LPWithParams lp : uPropParams) {
             if (lp.property.property.interfaces.size() != paramCnt) {
                 errLog.emitUnionPropParamsError(parser);
+            }
+        }
+    }
+
+    private void checkCasePropertyParams(List<LPWithParams> whenProps, List<LPWithParams> thenProps) throws ScriptingErrorLog.SemanticErrorException {
+        int paramCnt = whenProps.get(0).property.property.interfaces.size();
+        for (LPWithParams whenProp : whenProps) {
+            if (whenProp.property.property.interfaces.size() != paramCnt) {
+                errLog.emitCasePropDiffWhenParamsCountError(parser);
+            }
+        }
+
+        List<Integer> thenParams = mergeAllParams(thenProps);
+
+        for (LPWithParams whenProp : whenProps) {
+            for (int whenParam : whenProp.usedParams) {
+                if (!thenParams.contains(whenParam)) {
+                    errLog.emitCasePropWhenParamMissingInThenParams(parser);
+                }
             }
         }
     }

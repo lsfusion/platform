@@ -103,6 +103,12 @@ testUnion(store, article) = UNION SUM incomeQuantity(store, article), outcomeQua
 // Expression syntax:
 // IF propertyExpression0 THEN propertyExpression1 ELSE propertyExpression2
 documentTypeString 'Тип документа' (doc) = IF (doc IS incomeDocument) THEN ('Приход' IF doc IS incomeDocument) ELSE ('Расход' IF doc IS outcomeDocument);
+storeSizeCode 'Размер склада (код)' (s) = CASE
+                                              WHEN storeSize(s) == storeSize.huge THEN ('HUGE' IF s IS store)
+                                              WHEN storeSize(s) == storeSize.big THEN ('BIG' IF s IS store)
+                                              WHEN storeSize(s) == storeSize.medium THEN ('MEDIUM' IF s IS store)
+                                              WHEN storeSize(s) == storeSize.small THEN ('SMALL' IF s IS store)
+                                          END;
 
 // Partition property
 // Expression syntax:
@@ -277,9 +283,10 @@ showTestModalForm 'Показать тестовую форму' = ACTION() {
 
 FORM storeArticle 'По складам'
 OBJECTS s=store '-Склад-', a=article
-PROPERTIES SELECTION(s), name(s) READONLY, OBJVALUE(a), name(a), copyStoreNameToArticles(s) FORCE PANEL, createNewStore() TODRAW s FORCE PANEL, showDocumentArticleModalForm()  TODRAW s FORCE PANEL, showTestModalForm()  TODRAW s FORCE PANEL
+PROPERTIES SELECTION(s), name(s) READONLY, OBJVALUE(a), name(a)
+PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), createNewStore(), showDocumentArticleModalForm(), showTestModalForm()
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
-PROPERTIES(s) storeSizeName, storeIsHuge, storeIsHuge2
+PROPERTIES(s) storeSizeName, storeSizeCode, storeIsHuge, storeIsHuge2
 PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
 FILTERGROUP filters1
     FILTER 'Показывать только огромные склады' 'F10' NOT NULL storeIsHuge(s)

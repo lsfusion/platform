@@ -269,6 +269,14 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "parameters of union property should all have same number of arguments");
     }
 
+    public void emitCasePropWhenParamMissingInThenParams(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "THEN expressions should only have parameters used in WHEN expressions");
+    }
+
+    public void emitCasePropDiffWhenParamsCountError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "all WHEN expressions in case property should have same number of arguments");
+    }
+
     public void emitFormulaReturnClassError(LsfLogicsParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "formula return class must be a built-in class");
     }

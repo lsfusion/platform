@@ -724,6 +724,7 @@ expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParam
 	:	joinDef=joinPropertyDefinition[context, dynamic] { $property = $joinDef.property; } 
 	|	unionDef=unionPropertyDefinition[context, dynamic] { $property = $unionDef.property;} 
 	|	ifElseDef=ifElsePropertyDefinition[context, dynamic] { $property = $ifElseDef.property; }
+	|	caseDef=casePropertyDefinition[context, dynamic] { $property = $caseDef.property; }
 	|	partDef=partitionPropertyDefinition[context, dynamic] { $property = $partDef.property; }
 	|	constDef=literal { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
@@ -849,6 +850,28 @@ ifElsePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithP
 	:	'IF' ifExpr=propertyExpression[context, dynamic]
 		'THEN' thenExpr=propertyExpression[context, dynamic]
 		'ELSE' elseExpr=propertyExpression[context, dynamic]
+	;
+
+
+casePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<LPWithParams> whenProps = new ArrayList<LPWithParams>();
+	List<LPWithParams> thenProps = new ArrayList<LPWithParams>();
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedCaseUProp(whenProps, thenProps);
+	}
+}
+	:	'CASE'
+			( branch=caseBranchBody[context, dynamic] { whenProps.add($branch.whenProperty); thenProps.add($branch.thenProperty); } )+
+		'END'
+	;
+	
+	
+caseBranchBody[List<String> context, boolean dynamic] returns [LPWithParams whenProperty, LPWithParams thenProperty]
+	:	'WHEN' whenExpr=propertyExpression[context, dynamic] { $whenProperty = $whenExpr.property; }
+		'THEN' thenExpr=propertyExpression[context, dynamic] { $thenProperty = $thenExpr.property; }
 	;
 
 
