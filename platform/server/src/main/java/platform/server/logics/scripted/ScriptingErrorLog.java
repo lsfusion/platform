@@ -329,6 +329,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "action parameters must be defined explicitly");
     }
 
+    public void emitForActionSameContestError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "FOR action statement must introduce new parameters, use IF or WHILE instead");
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

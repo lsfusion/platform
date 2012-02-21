@@ -11,7 +11,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
     var keywords = words("ABSTRACT ACTION ADD ADDFORM ADDOBJ ADDSESSIONFORM AFTER " + 
                            "ALL AND APPLY AS ASC ASSIGN AUTOSET BEFORE BOTTOM BY CASCADE " + 
                            "CASE CENTER CHANGE CHECKED CLASS COLUMNS CONCAT CONFIRM " + 
-                           "CONSTRAINT CUSTOM DATA DEFAULT DESC DESIGN DIALOG DRAWROOT " + 
+                           "CONSTRAINT CUSTOM DATA DEFAULT DESC DESIGN DIALOG DO DRAWROOT " +
                            "EDIT EDITABLE EDITFORM EDITKEY EDITSESSIONFORM ELSE END " + 
                            "EXCEPTLAST EXCLUSIVE EXEC FALSE FILTER FILTERGROUP FILTERS " + 
                            "FIXED FIXEDCHARWIDTH FOOTER FOR FORCE FORM FORMULA FROM " + 
@@ -25,7 +25,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "REGEXP REMOVE RESOLVE RIGHT RIGHTBOTTOM SELECTION SET " + 
                            "SHORTCUT SHOW SHOWIF STATIC SUM TABLE TEXTHALIGN TEXTVALIGN " + 
                            "THE THEN TO TODRAW TOOLBAR TOP TREE TRUE UNION UNIQUE " + 
-                           "UPDATE VALIGN VERTICAL WHEN WHERE WINDOW XOR");
+                           "UPDATE VALIGN VERTICAL WHEN WHERE WHILE WINDOW XOR");
 
     var isOperatorChar = /[+\-*&%=<>!?|@#]/;
 

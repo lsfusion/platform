@@ -1095,7 +1095,7 @@ extendContextActionPDB[List<String> context, boolean dynamic] returns [LPWithPar
 	}
 }
 	:	setPDB=setActionPropertyDefinitionBody[context] { $property = $setPDB.property; }
-//	|	forPDB=forActionPropertyDefinitionBody[context] { $property = $forPDB.property; }
+	|	forPDB=forActionPropertyDefinitionBody[context] { $property = $forPDB.property; }
 	;
 	
 keepContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -1226,9 +1226,28 @@ ifActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [L
 		('ELSE' elsePDB=actionPropertyDefinitionBody[context, dynamic] { elseProp = $elsePDB.property; })?
 	;
 
-//forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams property]
-//	:	('FOR'|'WHILE')
-//	;
+forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams property]
+@init {
+	boolean recursive = false;
+	boolean descending = false;
+	List<String> newContext = new ArrayList<String>(context);
+	List<LPWithParams> orders = new ArrayList<LPWithParams>();
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, recursive, descending);
+	}	
+}
+	:	(	'FOR' 
+		| 	'WHILE' { recursive = true; }
+		)
+		expr=propertyExpression[newContext, true]
+		('ORDER' 
+			('DESC' { descending = true; } )? 
+			ordExprs=nonEmptyPropertyExpressionList[newContext, false] { orders = $ordExprs.props; }
+		)?	
+		'DO' actPDB=actionPropertyDefinitionBody[newContext, false]
+	;
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// CONSTRAINT STATEMENT //////////////////////////

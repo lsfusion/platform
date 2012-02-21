@@ -49,6 +49,7 @@
       <keyword name="DESC" />
       <keyword name="DESIGN" />
       <keyword name="DIALOG" />
+      <keyword name="DO" />
       <keyword name="DOUBLE" />
       <keyword name="DRAWROOT" />
       <keyword name="EDIT" />
@@ -162,6 +163,7 @@
       <keyword name="VERTICAL" />
       <keyword name="WHEN" />
       <keyword name="WHERE" />
+      <keyword name="WHILE" />
       <keyword name="WINDOW" />
       <keyword name="XOR" />
     </keywords>

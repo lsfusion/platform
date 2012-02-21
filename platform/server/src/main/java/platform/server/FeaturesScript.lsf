@@ -164,7 +164,7 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 
 // List action
 // statement syntax:
-// (NEWSESSION (NOAPPLY)? )? {
+// [NEWSESSION [NOAPPLY]]  {
 //      actionStatement1;
 //      ...
 //      actionStatementN;
@@ -183,6 +183,16 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // Set action
 // statement syntax:
 // SET propertyExpressionTo <- propertyExpressionFrom
+
+// If action
+// statement syntax:
+// IF propertyExpresson
+//      THEN actionStatement1
+//     [ELSE actionStatement2]
+
+// For/While action
+// statement syntax:
+// (FOR | WHILE) propertyExpression [ORDER [DESC] orderExpression1, ..., orderExpressionN] DO actionStatement
 
 // Form action
 // statement syntax:

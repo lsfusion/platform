@@ -681,6 +681,28 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(result, allParams);
     }
 
+    public LPWithParams addScriptedForAProp(List<String> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams actionProp, boolean recursive, boolean descending) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedForAProp(" + oldContext + ", " + condition + ", " + orders + ", " + actionProp + ", " + recursive + ");");
+
+        List<LPWithParams> allForParams = new ArrayList<LPWithParams>();
+        allForParams.add(condition);
+        allForParams.addAll(orders);
+        allForParams.add(actionProp);
+        List<Integer> allParams = mergeAllParams(allForParams);
+
+        List<Integer> usedParams = new ArrayList<Integer>();
+        for (int paramIndex : allParams) {
+            if (paramIndex < oldContext.size()) {
+                usedParams.add(paramIndex);
+            }
+        }
+
+        checkForActionPropertyConstraints(recursive, usedParams, allParams);
+
+        LP result = addForAProp(null, genSID(), "", !descending, recursive, allParams.size(), usedParams.size(), getParamsPlainList(allForParams).toArray());
+        return new LPWithParams(result, usedParams);
+    }
+
     private List<Object> getParamsPlainList(List<LPWithParams>... mappedPropLists) throws ScriptingErrorLog.SemanticErrorException {
         List<LP<?>> props = new ArrayList<LP<?>>();
         List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
@@ -1402,6 +1424,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void checkActionLocalContext(List<String> oldContext, List<String> newContext) throws ScriptingErrorLog.SemanticErrorException {
         if (oldContext.size() != newContext.size()) {
             errLog.emitNamedParamsError(parser);
+        }
+    }
+
+    private void checkForActionPropertyConstraints(boolean isRecursive, List<Integer> oldContext, List<Integer> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        if (!isRecursive && oldContext.size() == newContext.size()) {
+            errLog.emitForActionSameContestError(parser);
         }
     }
 
