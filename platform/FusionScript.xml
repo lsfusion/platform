@@ -129,6 +129,7 @@
       <keyword name="PROPERTY" />
       <keyword name="READONLY" />
       <keyword name="READONLYIF" />
+      <keyword name="REGEXP" />
       <keyword name="REMOVE" />
       <keyword name="RESOLVE" />
       <keyword name="RIGHT" />

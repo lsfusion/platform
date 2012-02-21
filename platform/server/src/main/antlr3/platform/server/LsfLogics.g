@@ -937,6 +937,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		(editKeySetting [property])?
 		(autosetSetting [property])?
 		(confirmSetting [property])?
+		(regexpSetting [property])?
 	;
 
 
@@ -1038,6 +1039,19 @@ confirmSetting [LP property]
 	}
 }
 	:	'CONFIRM' { askConfirm = true; }
+	;
+
+regexpSetting [LP property]
+@init {
+	String message = null;
+}
+@after {
+	if (inPropParseState()) {
+		self.setRegexp(property, $exp.val, message);
+	}
+}
+	:	'REGEXP' exp = stringLiteral
+		(mess = stringLiteral { message = $mess.val; })?
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -456,6 +456,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setAskConfirm(askConfirm);
     }
 
+    public void setRegexp(LP<?> property, String regexp, String regexpMessage) {
+        property.setRegexp(regexp);
+        if (regexpMessage != null) {
+            property.setRegexpMessage(regexpMessage);
+        }
+    }
+
     private <T extends LP<?>> void changePropertyName(T lp, String name) {
         removeModuleLP(lp);
         setPropertySID(lp, transformNameToSID(name), false);
