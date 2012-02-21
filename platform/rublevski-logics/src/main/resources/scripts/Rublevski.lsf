@@ -780,7 +780,7 @@ barcodeBarcodeSku 'Основной штрих-код' = barcodeEx(barcodeSku(sk
 
 inSkuBarcode(sku, barcode) = skuBarcode(barcode)==sku;
 
-concatBarcodeBySku 'Штрих-кода товара' (sku) = GROUP CONCAT barcodeEx(barcode), ', ' BY skuBarcode(barcode) IN baseGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+concatBarcodeBySkuDate 'Штрих-кода товара' (sku, date) = GROUP CONCAT barcodeEx(barcode) IF dateBarcode(barcode) < date AND date AS DATE, ', ' BY skuBarcode(barcode), date IN baseGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 FORM barcode 'Штрих-код'
 OBJECTS b=barcode
@@ -1217,14 +1217,24 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 
 @metaCodeNameTripleObjectDateProperty(banSupplierItemDepartment, supplier, item, departmentStore, 'Запретить закупку', yesNo, orderGroup);
 
+
+// Посуда
+@metaCodeObjectDateProperty(priceWare, ware, 'Цена', DOUBLE, baseGroup);
+
+retailRangeWare(ware) = DATA range (ware) IN idGroup;
+dataRetailRateRangeWare 'Розничный НДС' (ware) = dataActingRateRange(retailRangeWare(ware)) IN baseGroup;
+
+suppliersRangeWare(ware) = DATA range (ware) IN idGroup;
+dataSuppliersRateRangeWare 'НДС поставщика,%' (ware) = dataActingRateRange(suppliersRangeWare(ware)) IN baseGroup;
+
 FORM ware 'Посуда'
 OBJECTS w=ware
-PROPERTIES(w) name
+PROPERTIES(w) name, priceWare, showFormpriceWare, dataRetailRateRangeWare, dataSuppliersRateRangeWare
 EDIT ware OBJECT w;
 
 FORM wares 'Посуда'
 OBJECTS w=ware
-PROPERTIES(w) READONLY name
+PROPERTIES(w) READONLY name, priceWare, dataRetailRateRangeWare, dataSuppliersRateRangeWare
 PROPERTIES(w) ADDFORM, EDITFORM, delete;
 
 
@@ -1256,7 +1266,7 @@ PROPERTIES (i) nameisPortionBarItem, showFormNameisPortionBarItem,
               coefficientNetGrossItem, showFormcoefficientNetGrossItem,
               rateNaturalLossItem, showFormrateNaturalLossItem,         //     NDSSupplierItem, showFormNDSSupplierItem,
               nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem, nameTagItem, multiplierItem
-PROPERTIES (i) READONLY barcodeBarcodeSku, concatBarcodeBySku
+PROPERTIES (i) READONLY barcodeBarcodeSku
 
 PROPERTIES (b) barcodeEx, dateBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode,
                amountBarcode, removeBarcode, commentRemoveBarcode, actionBarcode
@@ -3151,6 +3161,8 @@ NAVIGATOR {
             ADD rateNaturalLossItem;
 //            ADD addNDSSupplierItem;
 //            ADD NDSSupplierItem;
+            ADD addpriceWare;
+            ADD priceWare;
             ADD addimporterPriceItem;
             ADD importerPriceItem;
             ADD addmaxReserveItemDepartment;
