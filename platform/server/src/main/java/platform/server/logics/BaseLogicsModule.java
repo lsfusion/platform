@@ -663,7 +663,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         vzero = addCProp("0", DoubleClass.instance, 0);
         vnull = addProperty(privateGroup, new LP<PropertyInterface>(new NullValueProperty()));
 
-        round0 = addSFProp("round(CAST(prm1 as numeric), 0)", DoubleClass.instance, 1);
+        round0 = addSFProp("round0", "round(CAST(prm1 as numeric), 0)", DoubleClass.instance, 1);
         roundMinus1 = addSFProp("roundMinus1", "round(CAST(prm1 as numeric), -1)", DoubleClass.instance, 1);
 
         minusInteger = addSFProp("(-(prm1))", IntegerClass.instance, 1);
