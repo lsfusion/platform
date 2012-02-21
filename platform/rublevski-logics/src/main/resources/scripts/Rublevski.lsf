@@ -730,11 +730,14 @@ barcodeToDate(barcode, date) = GROUP UNIQUE barcode BY barcodeEx(barcode), dateB
 barcodeStringDate 'Дата действия' (string, date) = GROUP MAX dateBarcode(barcode) IF barcodeEx(barcode) == string AND dateBarcode(barcode) <= date AND
                                                                                    date AS DATE AND string AS STRING[14] BY string, date IN baseGroup;
 
-skuBarcodeStringDate 'Товар (ИД)' (string, date) = skuBarcode(barcodeToDate(string, barcodeStringDate(string, date)));
+valueBarcodeToDate 'Штрих-код на дату' (string, date) = barcodeToDate(string, barcodeStringDate(string, date));
+valueBarcodeToCurrentDate 'Штрих-код на тек. дату' (string) = valueBarcodeToDate(string, currentDate());
 
-nameSkuStringDate 'Товар' = nameAttributeItem(skuBarcodeStringDate(string, date));
+skuBarcodeStringDate 'Товар (ИД)' (string, date) = skuBarcode(valueBarcodeToDate(string, date));
 
-actionBarcode 'Активный' = barcode==barcodeToDate(barcodeEx(barcode), barcodeStringDate(barcodeEx(barcode), currentDate()));
+nameSkuStringDate 'Товар' (string, date) = nameAttributeItem(skuBarcodeStringDate(string, date));
+
+actionBarcode 'Активный' (barcode) = valueBarcodeToCurrentDate(barcodeEx(barcode))==barcode;
 
 titleOriginScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode);
 titleOriginCashBarcode 'Наименование для касс' = DATA STRING[100] (barcode);
@@ -745,9 +748,13 @@ titleCashSkuBarcode 'Наименование для касс' = nameCashAttribu
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) IN barcodeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 titleCashBarcode 'Наименование для касс' = UNION OVERRIDE titleCashSkuBarcode(barcode), titleOriginCashBarcode(barcode) IN barcodeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
-unitOfMeasureBarcode = DATA unitOfMeasure (barcode) IN idGroup;
+unitOfMeasureSkuBarcode (barcode) = unitOfMeasureItem(skuBarcode(barcode)) IN idGroup;
+unitOfMeasureOriginBarcode = DATA unitOfMeasure (barcode) IN idGroup;
+unitOfMeasureBarcode = UNION OVERRIDE unitOfMeasureSkuBarcode (barcode), unitOfMeasureOriginBarcode(barcode) IN idGroup;
 shortNameUnitOfMeasureBarcode 'Единица измерения' (barcode) = shortName(unitOfMeasureBarcode(barcode)) IN barcodeGroup;
-amountBarcode 'Количество (сколько списать при продаже)' = DATA INTEGER (barcode) IN barcodeGroup;
+
+amountUserBarcode 'Количество (сколько списать при продаже)' = DATA INTEGER (barcode) IN barcodeGroup;
+amountBarcode 'Количество (сколько списать при продаже)' = UNION OVERRIDE 1 IF barcode IS barcode, amountUserBarcode (barcode) IN barcodeGroup;
 removeBarcode 'Заблокирован (удален с оборудования)' = DATA BOOLEAN (barcode) IN barcodeGroup;
 commentRemoveBarcode 'Причина блокировки' = DATA STRING[100] (barcode) IN barcodeGroup;
 
