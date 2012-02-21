@@ -3,6 +3,8 @@ package platform.server.form.view;
 import platform.interop.form.layout.AbstractFunction;
 import platform.server.serialization.ServerSerializationPool;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -10,7 +12,7 @@ import java.io.IOException;
 public class FunctionView extends ComponentView implements AbstractFunction<ContainerView, ComponentView> {
 
     String caption;
-    
+    String iconPath;
     String type;
 
     boolean visible = true;
@@ -29,6 +31,7 @@ public class FunctionView extends ComponentView implements AbstractFunction<Cont
         super.customSerialize(pool, outStream, serializationType);
 
         pool.writeString(outStream, caption);
+        pool.writeString(outStream, iconPath);
         pool.writeString(outStream, type);
         outStream.writeBoolean(visible);
     }
@@ -38,6 +41,7 @@ public class FunctionView extends ComponentView implements AbstractFunction<Cont
         super.customDeserialize(pool, inStream);
 
         setCaption(pool.readString(inStream));
+        setIconPath(pool.readString(inStream));
         setType(pool.readString(inStream));
         setVisible(inStream.readBoolean());
     }
@@ -48,6 +52,10 @@ public class FunctionView extends ComponentView implements AbstractFunction<Cont
 
     public void setType(String type) {
         this.type = type;
+    }
+    
+    public void setIconPath(String iconPath){
+        this.iconPath = iconPath;
     }
 
     public void setVisible(boolean visible) {

@@ -5,6 +5,7 @@ import platform.base.OrderedMap;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.client.*;
+import platform.client.form.queries.ToolbarGridButton;
 import platform.client.form.tree.TreeGroupController;
 import platform.client.logics.*;
 import platform.client.logics.classes.ClientObjectClass;
@@ -434,9 +435,23 @@ public class ClientFormController {
 
     private JButton addClientFunction(ClientFunction function, final KeyStroke keyStroke, final AbstractAction functionAction) {
         if (function.visible) {
-            functionAction.putValue(Action.NAME, function.caption + " (" + SwingUtils.getKeyStrokeCaption(keyStroke) + ")");
-
-            JButton actionButton = new ClientButton(functionAction);
+            JButton actionButton;
+            String caption = function.caption + " (" + SwingUtils.getKeyStrokeCaption(keyStroke) + ")";
+            if (function.iconPath == null) {
+                functionAction.putValue(Action.NAME, caption);
+                actionButton = new ClientButton(functionAction);
+            }
+            else {
+                actionButton = new ToolbarGridButton(function.iconPath, caption) {
+                    @Override
+                    public void addListener() {
+                        addActionListener(functionAction);
+                    }
+                };
+                Dimension buttonSize = new Dimension(28, 28);
+                actionButton.setMaximumSize(buttonSize);
+                actionButton.setPreferredSize(buttonSize);
+            }
             actionButton.setFocusable(false);
 
             formLayout.add(function, actionButton);

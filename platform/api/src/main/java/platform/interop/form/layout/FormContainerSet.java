@@ -35,20 +35,23 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
         F printFunction = form.getPrintFunction();
         printFunction.setCaption(getString("form.layout.print"));
         printFunction.setType("Print");
+        printFunction.setIconPath("/images/print.png");
         printFunction.getConstraints().directions = new SimplexComponentDirections(0,0.01,0.01,0);
         set.formButtonContainer.add((T)printFunction);
+
+        F xlsFunction = form.getXlsFunction();
+        xlsFunction.setCaption(getString("form.layout.xls"));
+        xlsFunction.setType("Xls");
+        xlsFunction.setIconPath("/images/xls.png");
+        xlsFunction.getConstraints().directions = new SimplexComponentDirections(0,0.01,0.01,0);
+        set.formButtonContainer.add((T)xlsFunction);
 
         F editFunction = form.getEditFunction();
         editFunction.setCaption(getString("form.layout.edit"));
         editFunction.setType("Edit");
         editFunction.getConstraints().directions = new SimplexComponentDirections(0,0.01,0.01,0);
+        editFunction.setIconPath("/images/edit.png");
         set.formButtonContainer.add((T) editFunction);
-
-        F xlsFunction = form.getXlsFunction();
-        xlsFunction.setCaption(getString("form.layout.xls"));
-        xlsFunction.setType("Xls");
-        xlsFunction.getConstraints().directions = new SimplexComponentDirections(0,0.01,0.01,0);
-        set.formButtonContainer.add((T)xlsFunction);
 
         F nullFunction = form.getNullFunction();
         nullFunction.setCaption(getString("form.layout.reset"));
@@ -59,6 +62,7 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
         F refreshFunction = form.getRefreshFunction();
         refreshFunction.setCaption(getString("form.layout.refresh"));
         refreshFunction.setType("Refresh");
+        refreshFunction.setIconPath("/images/refresh.png");
         refreshFunction.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
         set.formButtonContainer.add((T)refreshFunction);
 

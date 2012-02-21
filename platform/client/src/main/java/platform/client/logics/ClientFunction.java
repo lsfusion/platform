@@ -8,6 +8,7 @@ import platform.interop.form.layout.AbstractFunction;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.io.IOException;
 public class ClientFunction extends ClientComponent implements AbstractFunction<ClientContainer, ClientComponent> {
 
     public String caption;
+    public String iconPath;
     public String type;
     public boolean visible = true;
 
@@ -24,6 +26,10 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
 
     public void setType(String type) {
         this.type = type;
+    }
+    
+    public void setIconPath(String iconPath) {
+        this.iconPath = iconPath;
     }
 
     @SuppressWarnings({"UnusedDeclaration"})
@@ -39,6 +45,7 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
         super.customSerialize(pool, outStream, serializationType);
 
         pool.writeString(outStream, caption);
+        pool.writeString(outStream, iconPath);
         pool.writeString(outStream, type);
         outStream.writeBoolean(visible);
     }
@@ -48,6 +55,7 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
         super.customDeserialize(pool, inStream);
 
         caption = pool.readString(inStream);
+        iconPath = pool.readString(inStream);
         type = pool.readString(inStream);
         visible = inStream.readBoolean();
     }
