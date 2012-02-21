@@ -15,10 +15,13 @@ import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static platform.base.BaseUtils.join;
+import static platform.base.BaseUtils.nullJoin;
 
 public class ExecutionContext {
     private final Map<ClassPropertyInterface, DataObject> keys;
@@ -145,11 +148,13 @@ public class ExecutionContext {
             return getSession().addObject(cls, getModifier());
     }
 
-    public void applyChanges(BusinessLogics BL) throws SQLException {
-        if (form != null)
+    public String applyChanges(BusinessLogics BL) throws SQLException {
+        if (form != null) {
             form.applyChanges(null, getActions());
-        else
-            getSession().apply(BL);
+            return null;
+        } else {
+            return getSession().apply(BL, getActions());
+        }
     }
 
     public void cancelChanges() throws SQLException {
@@ -159,11 +164,17 @@ public class ExecutionContext {
             getSession().restart(true);
     }
 
+    public ExecutionContext override(DataSession newSession) {
+        return new ExecutionContext(keys, value, newSession, newSession.modifier,
+                                    new ArrayList<ClientAction>(), null,
+                                    new HashMap<ClassPropertyInterface, PropertyObjectInterfaceInstance>(), groupLast);
+    }
+
     public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys) {
         return new ExecutionContext(keys, value, session, modifier, actions, form, mapObjects, groupLast);
     }
 
     public ExecutionContext map(Map<ClassPropertyInterface, ClassPropertyInterface> map, ObjectValue value) {
-        return new ExecutionContext(join(map, keys), value, session, modifier, actions, form, mapObjects, groupLast);
+        return new ExecutionContext(join(map, keys), value, session, modifier, actions, form, nullJoin(map, mapObjects), groupLast);
     }
 }

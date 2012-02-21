@@ -109,6 +109,7 @@
       <keyword name="NEW" />
       <keyword name="NEWSESSION" />
       <keyword name="NO" />
+      <keyword name="NOAPPLY" />
       <keyword name="NOT" />
       <keyword name="NOTHING" />
       <keyword name="NULL" />

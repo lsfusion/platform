@@ -164,11 +164,15 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 
 // List action
 // statement syntax:
-// {
+// (NEWSESSION (NOAPPLY)? )? {
 //      actionStatement1;
 //      ...
 //      actionStatementN;
 // }
+//
+// If NEWSESSION is specified than action will be performed in new session.
+// If NOAPPLY is specified - this new session will not be applied by default,
+// and to apply it, one should do 'EXEC apply();' explicitly.
 
 // Exec action
 // statement syntax:
@@ -179,10 +183,6 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // Set action
 // statement syntax:
 // SET propertyExpressionTo <- propertyExpressionFrom
-
-copyStoreNameToArticles(s) = ACTION(s) {
-    SET (name(a) AND a IS article) <- (name(s) AND s IS store);
-};
 
 // Form action
 // statement syntax:
@@ -196,11 +196,6 @@ copyStoreNameToArticles(s) = ACTION(s) {
 // Add object action
 // statement syntax:
 // ADDOBJ className
-createNewStore 'Добавить большой склад' = ACTION () {
-    ADDOBJ store;
-    SET name(k) IF k == addedObject() <- [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('New store ', addedObject());
-    SET storeSize(k) IF k == addedObject() <- storeSize.big;
-} TOOLBAR IMAGE 'add.png';
 
 // Custom action
 // statement syntax:
@@ -210,6 +205,24 @@ createNewStore 'Добавить большой склад' = ACTION () {
 // statement syntax:
 // MESSAGE 'message'
 
+copyStoreNameToArticles 'Скопировать имя склада в имена артиклей' (s) = ACTION(s) {
+    SET (name(a) AND a IS article) <- (name(s) AND s IS store);
+};
+
+copyStoreNameToArticle 'Добавить имя склада к имени артикля' (s, a) = ACTION(s, a) NEWSESSION {
+    SET name(a) <- [FORMULA STRING[20] '$1 || $2'](name(a), name(s));
+};
+
+copyStoreNameToArticleError 'Скопировать имя склада в имя артикля (с ошибкой)' (s, a) = ACTION(s, a) NEWSESSION NOAPPLY {
+    SET name(a) <- name(s);
+    EXEC apply();
+};
+
+createNewStore 'Добавить большой склад' = ACTION () {
+    ADDOBJ store;
+    SET name(k) IF k == addedObject() <- [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('New store ', addedObject());
+    SET storeSize(k) IF k == addedObject() <- storeSize.big;
+} TOOLBAR IMAGE 'add.png';
 
 ///////////////CONSTRAINT STATEMENT//////////////
 // Syntax:
@@ -293,7 +306,7 @@ showTestModalForm 'Показать тестовую форму' = ACTION() {
 FORM storeArticle 'По складам'
 OBJECTS s=store '-Склад-', a=article
 PROPERTIES SELECTION(s), name(s) READONLY, OBJVALUE(a), name(a)
-PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), createNewStore(), showDocumentArticleModalForm(), showTestModalForm()
+PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm()
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
 PROPERTIES(s) storeSizeName, storeSizeCode, storeIsHuge, storeIsHuge2
 PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula

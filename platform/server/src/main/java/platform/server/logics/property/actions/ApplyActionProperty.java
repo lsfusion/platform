@@ -1,8 +1,8 @@
 package platform.server.logics.property.actions;
 
+import platform.interop.action.ResultClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
@@ -19,6 +19,9 @@ public class ApplyActionProperty extends CustomActionProperty {
 
     @Override
     public void execute(ExecutionContext context) throws SQLException {
-        context.applyChanges(BL);
+        String result = context.applyChanges(BL);
+        if (result != null) {
+            context.addAction(new ResultClientAction(result, true));
+        }
     }
 }

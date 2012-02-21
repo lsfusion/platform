@@ -1069,7 +1069,7 @@ actionPropertyDefinition[List<String> context, boolean dynamic] returns [LP prop
 		self.checkActionAllParamsUsed(context, $property, ownContext);
 	}
 }
-	:	'ACTION' 
+	:	'ACTION'
 		( '(' list=idList ')' 
 			{ 
 				localContext = $list.ids; localDynamic = false; ownContext = true; 
@@ -1082,12 +1082,12 @@ actionPropertyDefinition[List<String> context, boolean dynamic] returns [LP prop
 		pdb=actionPropertyDefinitionBody[localContext, localDynamic] { if (inPropParseState()) $property = $pdb.property.property; }
 	;
 	
-actionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]	
+actionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	extPDB=extendContextActionPDB[context, dynamic] { $property = $extPDB.property; }
 	|	keepPDB=keepContextActionPDB[context, dynamic] { $property = $keepPDB.property; }
 	|	trivPDB=trivialActionPDB { $property = $trivPDB.property; }
 	;
-	
+
 extendContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	if (inPropParseState() && dynamic) {
@@ -1165,13 +1165,16 @@ messageActionPropertyDefinitionBody returns [LP property]
 listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
+	boolean newSession = false;
+	boolean doApply = true;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedListAProp(context, props);
+		$property = self.addScriptedListAProp(newSession, doApply, context, props);
 	}
 }
-	:	'{'
+	:	('NEWSESSION' { newSession = true; } ('NOAPPLY' {doApply = false; } )? )?
+		'{'
 			(	PDB=actionPropertyDefinitionBody[context, dynamic] ';' { props.add($PDB.property); }
 		    |   emptyStatement
 		    )*

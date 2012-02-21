@@ -270,11 +270,11 @@ public class ScriptingErrorLog {
     }
 
     public void emitCasePropWhenParamMissingInThenParams(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "THEN expressions should only have parameters used in WHEN expressions");
+        emitSimpleError(parser, "WHEN expressions should only have parameters used in THEN expressions");
     }
 
-    public void emitCasePropDiffWhenParamsCountError(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "all WHEN expressions in case property should have same number of arguments");
+    public void emitCasePropDiffThenParamsCountError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "all THEN expressions in case property should have same number of arguments");
     }
 
     public void emitFormulaReturnClassError(LsfLogicsParser parser) throws SemanticErrorException {

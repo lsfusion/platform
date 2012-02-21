@@ -557,10 +557,15 @@ public abstract class LogicsModule {
             params = add(params, add(actions[i], toOneBasedArray(mapActions[i])));
         return addListAProp(group, name, caption, interfaces, params);
     }
+
     protected LP addListAProp(AbstractGroup group, String name, String caption, int interfaces, Object... params) {
+        return addListAProp(group, name, caption, interfaces, true, true, params);
+    }
+
+    protected LP addListAProp(AbstractGroup group, String name, String caption, int interfaces, boolean newSession, boolean doApply, Object... params) {
         List<PropertyInterface> listInterfaces = genInterfaces(interfaces);
         return addProperty(group, new LP<ClassPropertyInterface>(new ListActionProperty(name, caption, listInterfaces,
-                (List) readImplements(listInterfaces, params))));
+                (List) readImplements(listInterfaces, params), newSession, doApply, baseLM.BL)));
     }
     protected LP addIfAProp(AbstractGroup group, String name, String caption, int interfaces, Object... params) {
         List<PropertyInterface> listInterfaces = genInterfaces(interfaces);
@@ -1149,7 +1154,7 @@ public abstract class LogicsModule {
     private List<PropertyInterface> genInterfaces(int interfaces) {
         List<PropertyInterface> innerInterfaces = new ArrayList<PropertyInterface>();
         for(int i=0;i<interfaces;i++)
-            innerInterfaces.add(new PropertyInterface());
+            innerInterfaces.add(new PropertyInterface(i));
         return innerInterfaces;
     }
 

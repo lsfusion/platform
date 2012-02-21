@@ -547,7 +547,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedCaseUProp(List<LPWithParams> whenProps, List<LPWithParams> thenProps) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedCaseUProp(" + whenProps  + "->" + thenProps + ");");
 
-        assert whenProps.size() == thenProps.size();
+        assert whenProps.size() > 0 && whenProps.size() == thenProps.size();
 
         checkCasePropertyParams(whenProps, thenProps);
 
@@ -617,11 +617,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
 
-    public LPWithParams addScriptedListAProp(List<String> context, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedListAProp(boolean newSession, boolean doApply, List<String> context, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedListAProp(" + context + ");");
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
-        LP prop = addListAProp(null, genSID(), "", usedParams.size(), resultParams.toArray());
+        LP prop = addListAProp(null, genSID(), "", usedParams.size(), newSession, doApply, resultParams.toArray());
         return new LPWithParams(prop, usedParams);
     }
 
@@ -1262,10 +1262,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void checkCasePropertyParams(List<LPWithParams> whenProps, List<LPWithParams> thenProps) throws ScriptingErrorLog.SemanticErrorException {
-        int paramCnt = whenProps.get(0).property.property.interfaces.size();
-        for (LPWithParams whenProp : whenProps) {
-            if (whenProp.property.property.interfaces.size() != paramCnt) {
-                errLog.emitCasePropDiffWhenParamsCountError(parser);
+        int paramCnt = thenProps.get(0).property.property.interfaces.size();
+        for (int i = 1; i < thenProps.size(); i++) {
+            LPWithParams thenProp = thenProps.get(i);
+            if (thenProp.property.property.interfaces.size() != paramCnt) {
+                errLog.emitCasePropDiffThenParamsCountError(parser);
             }
         }
 
