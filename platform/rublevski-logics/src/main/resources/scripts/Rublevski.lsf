@@ -390,7 +390,7 @@ GROUP barGroup 'Бар' : publicGroup;
 GROUP documentGroup 'Для документов' : publicGroup;
 GROUP displayGroup 'Свойства для отображения' : baseGroup;
 
-CLASS ABSTRACT sku 'SKU' : named;
+CLASS ABSTRACT sku 'SKU';
 CLASS item 'Товар' : sku;
 CLASS ware 'Посуда' : sku, named;
 
