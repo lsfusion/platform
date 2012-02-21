@@ -538,7 +538,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedIfElseUProp(LPWithParams ifProp, LPWithParams thenProp, LPWithParams elseProp) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedIfElseProp(" + ifProp + ", " + thenProp + ", " + elseProp + ");");
+        scriptLogger.info("addScriptedIfElseUProp(" + ifProp + ", " + thenProp + ", " + elseProp + ");");
         return addScriptedUProp(Union.EXCLUSIVE,
                                 asList(addScriptedJProp(and(false), asList(thenProp, ifProp)),
                                        addScriptedJProp(and(true), asList(elseProp, ifProp))));
@@ -562,7 +562,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
 
-    public LP addScriptedActionProp(String javaClassName) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedCustomActionProp(String javaClassName) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedCustomActionProp(" + javaClassName + ");");
         try {
             return baseLM.addAProp(null, (ActionProperty) Class.forName(javaClassName).getConstructor(BL.getClass()).newInstance(BL));
         } catch (ClassNotFoundException e) {
@@ -667,6 +668,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> resultParams = getParamsPlainList(paramsList);
         LP result = addSetPropertyAProp(null, genSID(), "", allParams.size(), resultInterfaces.size(), resultParams.toArray());
         return new LPWithParams(result, resultInterfaces);
+    }
+
+    public LPWithParams addScriptedIfAProp(LPWithParams condition, LPWithParams trueAction, LPWithParams falseAction) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedIfAProp(" + condition + ", " + trueAction + ", " + falseAction + ");");
+        List<LPWithParams> propParams = Arrays.asList(condition, trueAction);
+        if (falseAction != null) {
+            propParams.add(falseAction);
+        }
+        List<Integer> allParams = mergeAllParams(propParams);
+        LP result = addIfAProp(null, genSID(), "", allParams.size(), getParamsPlainList(propParams).toArray());
+        return new LPWithParams(result, allParams);
     }
 
     private List<Object> getParamsPlainList(List<LPWithParams>... mappedPropLists) throws ScriptingErrorLog.SemanticErrorException {

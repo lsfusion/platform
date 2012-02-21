@@ -567,12 +567,21 @@ public abstract class LogicsModule {
         return addProperty(group, new LP<ClassPropertyInterface>(new ListActionProperty(name, caption, listInterfaces,
                 (List) readImplements(listInterfaces, params), newSession, doApply, baseLM.BL)));
     }
+
     protected LP addIfAProp(AbstractGroup group, String name, String caption, int interfaces, Object... params) {
         List<PropertyInterface> listInterfaces = genInterfaces(interfaces);
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
-        return addProperty(group, new LP<ClassPropertyInterface>(new IfActionProperty(name, caption, listInterfaces, readImplements.get(0),
-                (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(1), (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(2))));
+        assert readImplements.size() >= 2 && readImplements.size() <= 3;
+
+        if (readImplements.size() == 3) {
+            return addProperty(group, new LP<ClassPropertyInterface>(new IfActionProperty(name, caption, listInterfaces, readImplements.get(0),
+                        (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(1), (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(2))));
+        } else {
+            return addProperty(group, new LP<ClassPropertyInterface>(new IfActionProperty(name, caption, listInterfaces, readImplements.get(0),
+                        (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(1))));
+        }
     }
+
     protected LP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean recursive, int interfaces, int resInterfaces, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
@@ -580,6 +589,7 @@ public abstract class LogicsModule {
                 innerInterfaces, (List) readImplements.subList(0, resInterfaces), (PropertyMapImplement<?, PropertyInterface>)readImplements.get(resInterfaces),
                 toOrderedMap(readImplements.subList(resInterfaces+1, readImplements.size()-1), ascending), (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(readImplements.size()-1), recursive)));
     }
+
     protected LP addJoinAProp(AbstractGroup group, String name, String caption, int interfaces, LP action, Object... params) {
         List<PropertyInterface> listInterfaces = genInterfaces(interfaces);
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);

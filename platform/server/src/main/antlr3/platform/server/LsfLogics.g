@@ -1095,11 +1095,13 @@ extendContextActionPDB[List<String> context, boolean dynamic] returns [LPWithPar
 	}
 }
 	:	setPDB=setActionPropertyDefinitionBody[context] { $property = $setPDB.property; }
+//	|	forPDB=forActionPropertyDefinitionBody[context] { $property = $forPDB.property; }
 	;
 	
 keepContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	listPDB=listActionPropertyDefinitionBody[context, dynamic] { $property = $listPDB.property; }
 	|	execPDB=execActionPropertyDefinitionBody[context, dynamic] { $property = $execPDB.property; }	
+	|	ifPDB=ifActionPropertyDefinitionBody[context, dynamic] { $property = $ifPDB.property; }
 	;
 
 trivialActionPDB returns [LPWithParams property]
@@ -1135,7 +1137,7 @@ formActionPropertyDefinitionBody returns [LP property]
 customActionPropertyDefinitionBody returns [LP property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedActionProp($classN.val);	
+		$property = self.addScriptedCustomActionProp($classN.val);	
 	}
 }
 	:	'CUSTOM' classN = stringLiteral 
@@ -1209,6 +1211,24 @@ setActionPropertyDefinitionBody[List<String> context] returns [LPWithParams prop
 		'<-'
 		p2=propertyExpression[newContext, false] //no need to use dynamic context, because params should be either on global context or used in the left expression
 	;
+
+ifActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	LPWithParams elseProp = null;	
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedIfAProp($expr.property, $thenPDB.property, elseProp);
+	}
+}
+	:	'IF' expr=propertyExpression[context, dynamic] 
+		'THEN' thenPDB=actionPropertyDefinitionBody[context, dynamic]
+		('ELSE' elsePDB=actionPropertyDefinitionBody[context, dynamic] { elseProp = $elsePDB.property; })?
+	;
+
+//forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams property]
+//	:	('FOR'|'WHILE')
+//	;
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// CONSTRAINT STATEMENT //////////////////////////
