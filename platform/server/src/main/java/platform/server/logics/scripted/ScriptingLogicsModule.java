@@ -672,7 +672,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedIfAProp(LPWithParams condition, LPWithParams trueAction, LPWithParams falseAction) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedIfAProp(" + condition + ", " + trueAction + ", " + falseAction + ");");
-        List<LPWithParams> propParams = Arrays.asList(condition, trueAction);
+        List<LPWithParams> propParams = toList(condition, trueAction);
         if (falseAction != null) {
             propParams.add(falseAction);
         }
