@@ -783,7 +783,7 @@ PROPERTIES(b) barcodeEx, dateBarcode;
 
 
 // ----------------------------------- Компоненты ------------------------------------------ //
-CLASS component 'Компонент' : sku;
+CLASS component 'Компонент' : sku, named;
 
 nettoBruttoCoeffComponent 'Сезонный коэффициент пересчета сырья из нетто в брутто' (component) = DATA DOUBLE (component) IN manufactoryGroup;
 percentHumidityFlourDepartmentStoreComponent '% влажности муки' = DATA DOUBLE (departmentStore, component) IN manufactoryGroup;
@@ -2334,7 +2334,7 @@ DESIGN groupsUser FROM DEFAULT {
  //---------------------------- Карты проработки (разруба) ----------------------------------------//
 GROUP cutGroup 'Разделка' : baseGroup;
 CLASS cutting 'Карта пророботки (разделки)' : named;
-CLASS detailCutting 'Компоненты';
+CLASS detailCutting 'Компонента';
 
 sidCutting 'Номер карты (из сборника и прочее)' = DATA INTEGER (cutting) IN cutGroup;
 dateCutting 'Дата создания' = DATA DATE (cutting) IN cutGroup;
@@ -2350,7 +2350,7 @@ cuttingDetailCutting 'Строка ИД' = DATA cutting (detailCutting) IN idGro
 sidCuttingDetailCutting 'Номер карты' (detailCutting) =  sidCutting(cuttingDetailCutting(detailCutting)) IN cutGroup;
 itemDetailCutting 'Товар ИД' = DATA item (detailCutting) IN idGroup;
 shortNameUnitOfMeasureItemDetailCutting 'Ед.изм.' (detailCutting) = shortNameUnitOfMeasureItem(itemDetailCutting(detailCutting)) IN cutGroup;
-nameItemDetailCutting 'Наименование товара' (detailCutting) = name(itemDetailCutting(detailCutting)) IN cutGroup;
+captionItemDetailCutting 'Наименование товара' (detailCutting) = captionItem (itemDetailCutting(detailCutting)) IN cutGroup;
 factorDetailCutting 'Рассчетный коэффициент цены' = DATA DOUBLE (detailCutting) IN cutGroup;
 percGoodsDetailCutting '% выхода товара' = DATA DOUBLE (detailCutting) IN cutGroup;
 
@@ -2363,7 +2363,7 @@ FORM cutting 'Карта проработки'
 OBJECTS c=cutting FIXED PANEL
 OBJECTS d=detailCutting, dep=departmentStore, i=item
 PROPERTIES(c)      sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting, percSweepsCutting
-PROPERTIES(d)      nameItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting, ADDOBJ, delete
+PROPERTIES(d)      captionItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting, ADDOBJ, delete
 PROPERTIES(dep)    nameStoreDepartmentStore, name
 PROPERTIES(i)      nameAttributeItem, shortNameUnitOfMeasureItem, nameBrandItem
 PROPERTIES(dep, c) InDepartmentStoreCutting
@@ -2389,18 +2389,28 @@ DESIGN cutting FROM DEFAULT {
 }
 
 FORM cuttings 'Карты проработки'
-OBJECTS c=cutting, d=detailCutting, dep=departmentStore, i=item
-PROPERTIES(c)      READONLY sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting, percSweepsCutting
-PROPERTIES(c)      ADDFORM, EDITFORM, delete
-PROPERTIES(d)      READONLY nameItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting
-PROPERTIES(dep)    READONLY nameStoreDepartmentStore, name
-PROPERTIES(i)      READONLY nameAttributeItem, shortNameUnitOfMeasureItem, nameBrandItem
-PROPERTIES(dep, c) READONLY InDepartmentStoreCutting
-PROPERTIES(i, c) READONLY inItemCutting
-FILTERS NOT NULL   isCuttingDetailCutting(c, d),
-        NOT NULL   InDepartmentStoreCutting(dep, c),
-        NOT NULL   inItemCutting(i, c)
-ORDER BY           nameStoreDepartmentStore, sidCutting, nameItemDetailCutting, name;
+    OBJECTS c=cutting
+    PROPERTIES(c)      READONLY sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting, percSweepsCutting
+    PROPERTIES(c)      ADDFORM, EDITFORM, delete
+
+    OBJECTS d=detailCutting
+    PROPERTIES(d)      READONLY captionItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting
+
+    OBJECTS dep=departmentStore
+    PROPERTIES(dep)    READONLY nameStoreDepartmentStore, name
+
+    OBJECTS i=item
+    PROPERTIES(i)      READONLY nameAttributeItem, shortNameUnitOfMeasureItem, nameBrandItem
+
+    PROPERTIES(dep, c) READONLY InDepartmentStoreCutting
+
+    PROPERTIES(i, c) READONLY inItemCutting
+
+    FILTERS NOT NULL   isCuttingDetailCutting(c, d),
+            NOT NULL   InDepartmentStoreCutting(dep, c),
+            NOT NULL   inItemCutting(i, c)
+    ORDER BY           nameStoreDepartmentStore, sidCutting, captionItemDetailCutting, name
+;
 
 
 DESIGN cuttings FROM DEFAULT {
@@ -2425,7 +2435,7 @@ CLASS recipeDetail 'Сырье рецепта';
 
 dishRecipe  'Блюдо (ИД)' = DATA item (recipe) IN idGroup;
 CONSTRAINT CHECKED dishRecipe (recipe) AND NOT isManufacturedItem(dishRecipe(recipe)) MSG 'Блюдо должно производиться';
-nameDishRecipe 'Блюдо' = name(dishRecipe(recipe)) IN baseGroup;
+captionDishRecipe 'Блюдо' = captionItem (dishRecipe(recipe)) IN baseGroup;
 
 beginDateRecipe 'Используется с' = DATA DATE (recipe) IN baseGroup;
 isUsedRecipe 'Используется' = DATA BOOLEAN (recipe) IN baseGroup;
@@ -2441,17 +2451,21 @@ normQuantityRecipeDetail 'Норма закладки (брутто)' = DATA DOU
 inRecipeRecipeDetail(recipe, recipeDetail) = recipeRecipeDetail(recipeDetail) == recipe;
 
 FORM recipe 'Рецепт блюда'
-OBJECTS r=recipe FIXED PANEL
-OBJECTS rd=recipeDetail
-PROPERTIES(r) nameDishRecipe, numberRecipe, beginDateRecipe, isUsedRecipe, notesRecipe, outWeightRecipe
-PROPERTIES(rd) nameComponentRecipeDetail, normQuantityRecipeDetail, ADDOBJ, delete
-FILTERS NOT NULL inRecipeRecipeDetail(r, rd)
-EDIT recipe OBJECT r;
+    OBJECTS r=recipe FIXED PANEL
+    PROPERTIES(r) captionDishRecipe, numberRecipe, beginDateRecipe, isUsedRecipe, notesRecipe, outWeightRecipe
+
+    OBJECTS rd=recipeDetail
+    PROPERTIES(rd) nameComponentRecipeDetail, normQuantityRecipeDetail, ADDOBJ, delete
+
+    FILTERS NOT NULL inRecipeRecipeDetail(r, rd)
+
+    EDIT recipe OBJECT r
+;
 
 FORM recipes 'Рецепты блюд'
 OBJECTS r=recipe
 OBJECTS rd=recipeDetail
-PROPERTIES(r) READONLY nameDishRecipe, numberRecipe, isUsedRecipe
+PROPERTIES(r) READONLY captionDishRecipe, numberRecipe, isUsedRecipe
 PROPERTIES(r) ADDFORM, EDITFORM, delete
 PROPERTIES(rd) READONLY nameComponentRecipeDetail, normQuantityRecipeDetail
 FILTERS NOT NULL inRecipeRecipeDetail(r, rd);
