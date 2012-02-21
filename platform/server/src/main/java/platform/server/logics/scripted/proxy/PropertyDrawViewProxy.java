@@ -78,4 +78,8 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     public void setClearText(boolean clearText) {
         target.clearText = clearText;
     }
+
+    public void setAskConfirm(boolean askConfirm) {
+        target.askConfirm = askConfirm;
+    }
 }

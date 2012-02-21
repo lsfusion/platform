@@ -114,7 +114,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public ClassViewType forceViewType;
 
-    public boolean askConfirm = false;
+    public Boolean askConfirm;
 
     public boolean autoset;
 
@@ -802,6 +802,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             propertyView.regexpMessage = regexpMessage;
         if (echoSymbols != null)
             propertyView.echoSymbols = echoSymbols;
+        if (askConfirm != null)
+            propertyView.askConfirm = askConfirm;
 
         if (panelLocation != null) {
             PanelLocationView panelLocationView = panelLocation.convertToView();
