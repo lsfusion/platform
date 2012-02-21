@@ -712,6 +712,8 @@ nameScalesAttributeItem 'Наименование для весов' (item) = GR
 
 TABLE departmentStoreDate (object, DATE);
 
+TABLE stringDate (STRING[14], DATE);
+
 // ----------------------------------- Штрих код ------------------------------------------ //
 
 GROUP barcodeGroup : baseGroup;
@@ -719,13 +721,30 @@ GROUP barcodeGroup : baseGroup;
 CLASS barcode 'Штрих код';
 
 barcodeEx 'Штрих код' = DATA STRING[14] (barcode) IN baseGroup;
+dateBarcode 'Дата действия' = DATA DATE (barcode) IN baseGroup;
 
-inSkuBarcode 'Присоединение штрих-кода к товару' = DATA BOOLEAN (sku, barcode) IN baseGroup;
+skuBarcode 'Товар штрих-кода' = DATA sku(barcode) IN baseGroup;
 
-@metaCodeNameObjectDateProperty(skuBarcode, barcode, 'Товар для штрих кода', sku, baseGroup);
+barcodeToDate(barcode, date) = GROUP UNIQUE barcode BY barcodeEx(barcode), dateBarcode(barcode);
 
-titleScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode) IN barcodeGroup;
-titleCashBarcode 'Наименование для касс' = DATA STRING[100] (barcode) IN barcodeGroup;
+barcodeStringDate 'Дата действия' (string, date) = GROUP MAX dateBarcode(barcode) IF barcodeEx(barcode) == string AND dateBarcode(barcode) <= date AND
+                                                                                   date AS DATE AND string AS STRING[14] BY string, date IN baseGroup;
+
+skuBarcodeStringDate 'Товар (ИД)' (string, date) = skuBarcode(barcodeToDate(string, barcodeStringDate(string, date)));
+
+nameSkuStringDate 'Товар' = nameAttributeItem(skuBarcodeStringDate(string, date));
+
+actionBarcode 'Активный' = barcode==barcodeToDate(barcodeEx(barcode), barcodeStringDate(barcodeEx(barcode), currentDate()));
+
+titleOriginScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode);
+titleOriginCashBarcode 'Наименование для касс' = DATA STRING[100] (barcode);
+
+titleScalesSkuBarcode 'Наименование для весов' = nameScalesAttributeItem(skuBarcode(barcode));
+titleCashSkuBarcode 'Наименование для касс' = nameCashAttributeItem(skuBarcode(barcode));
+
+titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) IN barcodeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+titleCashBarcode 'Наименование для касс' = UNION OVERRIDE titleCashSkuBarcode(barcode), titleOriginCashBarcode(barcode) IN barcodeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+
 unitOfMeasureBarcode = DATA unitOfMeasure (barcode) IN idGroup;
 shortNameUnitOfMeasureBarcode 'Единица измерения' (barcode) = shortName(unitOfMeasureBarcode(barcode)) IN barcodeGroup;
 amountBarcode 'Количество (сколько списать при продаже)' = DATA INTEGER (barcode) IN barcodeGroup;
@@ -733,25 +752,28 @@ removeBarcode 'Заблокирован (удален с оборудовани�
 commentRemoveBarcode 'Причина блокировки' = DATA STRING[100] (barcode) IN barcodeGroup;
 
 userBarcodeSku = DATA barcode(sku) IN idGroup;
+equalsSkuBarcode 'Установленный штрих-код' (sku, barcode) = userBarcodeSku(sku) == barcode;
 barcodeUserBarcodeSku 'Установленный штрих-код' = barcodeEx(userBarcodeSku(sku)) IN baseGroup;
 
-defaultBarcodeSku(sku) = GROUP MAX barcode IF inSkuBarcode(sku, barcode) BY sku IN idGroup;
+defaultBarcodeSku(sku) = GROUP MAX barcode BY skuBarcode(barcode) IN idGroup;
 barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku) IN baseGroup;
 
-CONSTRAINT CHECKED item IS item AND NOT inSkuBarcode(item, barcodeSku(item)) MSG 'Товар основного штрих-кода должен совпадать с товаром';
+CONSTRAINT CHECKED skuBarcode(barcodeSku(item)) != item MSG 'Товар основного штрих-кода должен совпадать с товаром';
 
-barcodeBarcodeSku  'Основной штрих-код' = barcodeEx(barcodeSku(sku)) IN baseGroup;
+barcodeBarcodeSku 'Основной штрих-код' = barcodeEx(barcodeSku(sku)) IN baseGroup;
 
-barcodeToBarcode (barcode) = GROUP UNIQUE barcode BY barcode(barcode);
+//barcodeToBarcode (barcode) = GROUP UNIQUE barcode BY barcodeEx(barcode);
+
+inSkuBarcode(sku, barcode) = skuBarcode(barcode)==sku;
 
 FORM barcode 'Штрих-код'
 OBJECTS b=barcode
-PROPERTIES(b) barcodeEx;
+PROPERTIES(b) barcodeEx, dateBarcode;
 
-FORM testform 'Тестовая'
-OBJECTS b=barcode
-PROPERTIES(b) READONLY barcodeEx, nameskuBarcode, showFormNameskuBarcode
-PROPERTIES(b) ADDFORM, EDITFORM, delete;
+//FORM testform 'Тестовая'
+//OBJECTS s=STRING[14] FIXED PANEL, d=DATE FIXED PANEL
+//PROPERTIES OBJVALUE(s), OBJVALUE(d)
+//PROPERTIES(s, d) READONLY nameSkuStringDate;
 
 
 // ----------------------------------- Компоненты ------------------------------------------ //
@@ -1184,6 +1206,17 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 
 @metaCodeNameTripleObjectDateProperty(banSupplierItemDepartment, supplier, item, departmentStore, 'Запретить закупку', yesNo, orderGroup);
 
+FORM ware 'Посуда'
+OBJECTS w=ware
+PROPERTIES(w) name
+EDIT ware OBJECT w;
+
+FORM wares 'Посуда'
+OBJECTS w=ware
+PROPERTIES(w) READONLY name
+PROPERTIES(w) ADDFORM, EDITFORM, delete;
+
+
 FORM item 'Товар'
 OBJECTS i=item FIXED PANEL, b=barcode
 TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
@@ -1193,7 +1226,7 @@ FILTERS NOT NULL stringEqualsAll(a)
 FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
 FILTERS NOT NULL inStoreTypeStore (st, s)
 FILTERS NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
-PROPERTIES(i) nameAttributeItem, nameCashAttributeItem, nameScalesAttributeItem, nameItemGroupSku, barcodeBarcodeSku, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
+PROPERTIES(i) nameAttributeItem, nameCashAttributeItem, nameScalesAttributeItem, nameItemGroupSku, isManufacturedItem, nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i), shortNameSpecialtyItem SHOWIF toShowSpecialty(i),
  isWeightedItem, isWeightItem, passScalesItem, volumeItem, netWeightItem, nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i),
  hallmarkItem SHOWIF toShowHallmark(i), articleItem, quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minQuantityOrderItem, minReserveItem, compositionScalesItem, compositionMenuItem,
@@ -1208,8 +1241,10 @@ PROPERTIES(i) nameisPortionBarItem, showFormNameisPortionBarItem,
               coefficientNetGrossItem, showFormcoefficientNetGrossItem,
               rateNaturalLossItem, showFormrateNaturalLossItem,         //     NDSSupplierItem, showFormNDSSupplierItem,
               nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem, nameTagItem, multiplierItem
+PROPERTIES(i) READONLY barcodeBarcodeSku
 
-PROPERTIES (b) barcodeEx, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode
+PROPERTIES (b) barcodeEx, dateBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode, amountBarcode, removeBarcode, commentRemoveBarcode, actionBarcode
+PROPERTIES (i, b) equalsSkuBarcode
 PROPERTIES (d) name
 PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
 PROPERTIES (sp) READONLY name
@@ -2944,6 +2979,7 @@ NAVIGATOR {
     NEW lists 'Справочники' TO formsToolbar {
         NEW goods 'Товары' {
             ADD items;
+            ADD wares;
             ADD components;
             ADD itemGroups;
             ADD unitsOfMeasure;
@@ -3004,6 +3040,7 @@ NAVIGATOR {
             ADD itemGroup;
             ADD unitOfMeasure;
             ADD item;
+            ADD ware;
             ADD barcode;
             ADD employee;
             ADD groupUser;
@@ -3067,8 +3104,8 @@ NAVIGATOR {
             ADD markupSupplierItemDepartment;
             ADD addNamebanSupplierItemDepartment;
             ADD namebanSupplierItemDepartment;
-            ADD addNameskuBarcode;
-            ADD nameskuBarcode;
+            //ADD addNameskuBarcode;
+            //ADD nameskuBarcode;
 
             ADD cash;
             ADD scales;
