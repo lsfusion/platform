@@ -1777,6 +1777,7 @@ literal returns [LP property]
 	|	str=STRING_LITERAL	{ cls = ScriptingLogicsModule.ConstType.STRING; text = $str.text; }  
 	|	str=LOGICAL_LITERAL	{ cls = ScriptingLogicsModule.ConstType.LOGICAL; text = $str.text; }
 	|	strEnum=strictCompoundID { cls = ScriptingLogicsModule.ConstType.ENUM; text = $strEnum.sid; } 
+	|	strNull=NULL_LITERAL { cls = ScriptingLogicsModule.ConstType.NULL; }
 	;
 	
 classId returns [String sid]
@@ -1881,7 +1882,8 @@ fragment DIGITS		:	('0'..'9')+;
 fragment HEX_DIGIT	: 	'0'..'9' | 'a'..'f' | 'A'..'F';
 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'TEXT' | 'TIME' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']';
-LOGICAL_LITERAL :	'TRUE' | 'FALSE';		
+LOGICAL_LITERAL :	'TRUE' | 'FALSE';	
+NULL_LITERAL	:	'NULL';	
 ID          	:	('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };
 STRING_LITERAL	:	'\'' STR_LITERAL_CHAR* '\'';

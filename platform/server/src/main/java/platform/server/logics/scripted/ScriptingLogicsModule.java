@@ -64,7 +64,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private LsfLogicsParser parser;
 
     public enum State {GROUP, CLASS, PROP, TABLE}
-    public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM }
+    public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, UNIQUE}
@@ -545,7 +545,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedCaseUProp(List<LPWithParams> whenProps, List<LPWithParams> thenProps) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedCaseProp(" + whenProps  + "->" + thenProps + ");");
+        scriptLogger.info("addScriptedCaseUProp(" + whenProps  + "->" + thenProps + ");");
 
         assert whenProps.size() == thenProps.size();
 
@@ -802,6 +802,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             case STRING: text = transformStringLiteral(text); return addCProp(StringClass.get(text.length()), text);
             case LOGICAL: return addCProp(LogicalClass.instance, text.equals("TRUE"));
             case ENUM: return addStaticClassConst(text);
+            case NULL: return baseLM.vnull;
         }
         return null;
     }

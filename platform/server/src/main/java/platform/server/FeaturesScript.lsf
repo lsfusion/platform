@@ -94,16 +94,24 @@ allNames() = GROUP CONCAT name(obj) IF obj IS named, ', ' ORDER DESC name(obj);
 // GROUP UNIQUE propertyExpression [BY propertyExpression1, ..., propertyExpressionN] [WHERE propertyExpression]
 nameToCountry(name) = GROUP UNIQUE country BY name(country);
 
+
 // Union property
 // Expression syntax:
 // UNION (SUM | MAX | OVERRIDE | XOR | EXCLUSIVE) propertyExpression1, ..., propertyExpressionN
 testUnion(store, article) = UNION SUM incomeQuantity(store, article), outcomeQuantity(store, article);
 
-
 // IF THEN ELSE property
 // Expression syntax:
 // IF propertyExpression0 THEN propertyExpression1 ELSE propertyExpression2
 documentTypeString 'Тип документа' (doc) = IF (doc IS incomeDocument) THEN ('Приход' IF doc IS incomeDocument) ELSE ('Расход' IF doc IS outcomeDocument);
+
+// Case property
+// Expression syntax:
+// CASE
+//      WHEN whenPropertyExpression1 THEN thenPropertyExpression1
+//      ...
+//      WHEN whenPropertyExpressionN THEN thenPropertyExpressionN
+// END
 storeSizeCode 'Размер склада (код)' (s) = CASE
                                               WHEN storeSize(s) == storeSize.huge THEN ('HUGE' IF s IS store)
                                               WHEN storeSize(s) == storeSize.big THEN ('BIG' IF s IS store)
@@ -134,7 +142,7 @@ testFormula(store, article) = sum12(incomeQuantity(store, article), outcomeQuant
 // *  /
 // - (unary)
 //
-// Instances: 5, 6.35, TRUE, 'some string', staticClass.object
+// Instances: 5, 6.35, TRUE, 'some string', staticClass.object, NULL
 balanceQuantity(store, article) = incomeQuantity(store, article) - outcomeQuantity(store, article);
 
 foo(store, article) = 5 * incomeQuantity($1, $2) - outcomeQuantity($1, $2);
