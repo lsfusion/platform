@@ -720,7 +720,7 @@ GROUP barcodeGroup : baseGroup;
 
 CLASS barcode 'Штрих код';
 
-barcodeEx 'Штрих код' = DATA STRING[14] (barcode) IN baseGroup;
+barcodeEx 'Штрих код' = DATA STRING[14] (barcode) IN baseGroup FIXEDCHARWIDTH 14;
 dateBarcode 'Дата действия' = DATA DATE (barcode) IN baseGroup;
 
 skuBarcode 'Товар штрих-кода' = DATA sku(barcode) IN baseGroup;
@@ -972,7 +972,7 @@ CLASS STATIC itemStatus 'Статус товара'
     requireDelete '4'
 };
 
-storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore);
+storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) AUTOSET;
 nameStoreDepartmentStore 'Магазин' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
 revaluationCommitteeDepartmentStore 'Комиссия отдела (ИД)' = DATA revaluationCommittee (departmentStore);
 nameRevaluationCommitteeDepartmentStore 'Комиссия отдела' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore));
@@ -2747,8 +2747,6 @@ FILTERS NOT NULL inInventoryDepartmentStoreListInventoryPageListDetailPage(in, d
 FILTERS NOT NULL inInventoryListInventory(in, li)
 FILTERS NOT NULL inDepartmentStoreListInventory(ds, li)
 FILTERS NOT NULL inListInventoryPageList(li, pl)
-FILTERS NOT NULL inPageListDetailPage(pl, dp)
-//FILTERS NOT NULL inInventoryDepartmentStore(in, ds)
 FILTERS NOT NULL includeDepartmentStoreInventory(ds, in)
 PROPERTIES (li)  ADDFORM, EDITFORM, delete
 PROPERTIES (dp)  READONLY nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage, priceDetailPage, totalDetailPage
