@@ -573,16 +573,15 @@ formPropertyWithOrder returns [String id, boolean order = true]
 propertyStatement
 @init {
 	LP<?> property = null;
-	boolean isData = false;
 	List<String> context = new ArrayList<String>();
 	boolean dynamic = true;
 }
 	:	declaration=propertyDeclaration { if ($declaration.paramNames != null) { context = $declaration.paramNames; dynamic = false; }}
 		'=' 
-		(	def=expressionUnfriendlyPD[context, dynamic, false] { property = $def.property; isData = $def.isData; }  
+		(	def=expressionUnfriendlyPD[context, dynamic, false] { property = $def.property; }
 		|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) {property = $expr.property.property;} }
 		)
-		settings=commonPropertySettings[property, $declaration.name, $declaration.caption, context, isData]
+		settings=commonPropertySettings[property, $declaration.name, $declaration.caption, context]
 		';'
 	;
 
@@ -729,13 +728,13 @@ expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParam
 	|	constDef=literal { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
-expressionUnfriendlyPD[List<String> context, boolean dynamic, boolean innerPD] returns [LP property, boolean isData = false]
-	:	ciPD=contextIndependentPD[innerPD] { $property = $ciPD.property; $isData = $ciPD.isData; }
+expressionUnfriendlyPD[List<String> context, boolean dynamic, boolean innerPD] returns [LP property]
+	:	ciPD=contextIndependentPD[innerPD] { $property = $ciPD.property; }
 	|	actPD=actionPropertyDefinition[context, dynamic] { $property = $actPD.property; }	
 	;
 
-contextIndependentPD[boolean innerPD] returns [LP property, boolean isData = false]
-	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $isData = true; } 
+contextIndependentPD[boolean innerPD] returns [LP property]
+	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; }
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; }
 	|	groupDef=groupPropertyDefinition { $property = $groupDef.property; }
 	|	typeDef=typePropertyDefinition { $property = $typeDef.property; }
@@ -813,12 +812,16 @@ partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWi
 
 
 dataPropertyDefinition[boolean innerPD] returns [LP property]
+@init {
+	boolean sessionProp = false;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, innerPD);
+		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, sessionProp, innerPD);
 	}
 }
-	:	'DATA'
+	:	('SESSION' { sessionProp = true; } )?
+		'DATA'
 		returnClass=classId
 		'('
 			paramClassNames=classIdList
@@ -916,14 +919,14 @@ propertyObject returns [LP property]
 	;
 
 
-commonPropertySettings[LP property, String propertyName, String caption, List<String> namedParams, boolean isData]
+commonPropertySettings[LP property, String propertyName, String caption, List<String> namedParams]
 @init {
 	String groupName = null;
 	boolean isPersistent = false;
 }
 @after {
 	if (inPropParseState()) {
-		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, isData);
+		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent);
 	}
 }
 	: 	('IN' name=compoundID { groupName = $name.sid; })?

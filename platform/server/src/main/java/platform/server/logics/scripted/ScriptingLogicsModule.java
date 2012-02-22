@@ -23,9 +23,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.panellocation.ShortcutPanelLocation;
 import platform.server.logics.panellocation.ToolbarPanelLocation;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.StoredDataProperty;
+import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
 
 import javax.swing.*;
@@ -37,7 +35,6 @@ import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
 import static platform.base.BaseUtils.*;
-import static platform.base.BaseUtils.mergeLists;
 import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
 
 /**
@@ -325,7 +322,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         addFormEntity(form);
     }
 
-    public LP<?> addScriptedDProp(String returnClass, List<String> paramClasses, boolean innerProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?> addScriptedDProp(String returnClass, List<String> paramClasses, boolean sessionProp, boolean innerProp) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedDProp(" + returnClass + ", " + paramClasses + ", " + innerProp + ");");
 
         ValueClass value = findClassByCompoundName(returnClass);
@@ -333,11 +330,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClassByCompoundName(paramClasses.get(i));
         }
-        if (innerProp) {
-            return addDProp(genSID(), "", value, params);
+
+        if (sessionProp) {
+            return addSDProp(genSID(), "", value, params);
         } else {
-            StoredDataProperty dataProperty = new StoredDataProperty(genSID(), "", params, value);
-            return addProperty(null, new LP<ClassPropertyInterface>(dataProperty));
+            if (innerProp) {
+                return addDProp(genSID(), "", value, params);
+            } else {
+                StoredDataProperty storedProperty = new StoredDataProperty(genSID(), "", params, value);
+                return addProperty(null, new LP<ClassPropertyInterface>(storedProperty));
+            }
         }
     }
 
@@ -386,7 +388,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return true;
     }
 
-    public void addSettingsToProperty(LP<?> property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent, boolean isData) throws ScriptingErrorLog.SemanticErrorException {
+    public void addSettingsToProperty(LP<?> property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addSettingsToProperty(" + property.property.getSID() + ", " + name + ", " + caption + ", " +
                            namedParams + ", " + groupName + ", " + isPersistent + ");");
         checkDuplicateProperty(name);
@@ -397,11 +399,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         AbstractGroup group = (groupName == null ? null : findGroupByCompoundName(groupName));
         property.property.caption = (caption == null ? name : transformStringLiteral(caption));
         addPropertyToGroup(property.property, group);
-        if (isData) {
+
+        if (property.property instanceof StoredDataProperty) {
             property.property.markStored(baseLM.tableFactory);
-        } else if (isPersistent) {
+        } else if (isPersistent && (property.property instanceof AggregateProperty)) {
             addPersistent(property);
         }
+
         checkPropertyValue(property, name);
         addNamedParams(property.property.getSID(), namedParams);
     }

@@ -50,11 +50,14 @@ CLASS STATIC storeSize 'Размер склада'
 
 // Data property
 // Expression syntax:
-// DATA returnClass ( [paramClass1, ..., paramClassN] )
+// [SESSION] DATA returnClass ( [paramClass1, ..., paramClassN] )
+// If SESSION modifier is spesified, than session data property will be created.
 // Built-in types: INTEGER, LONG, DOUBLE, BOOLEAN, DATE, DATETIME, TEXT, STRING, ISTRING, TIME
-store = DATA store (document) IN base;
-quantity = DATA DOUBLE (document, article) IN base;
-storeSize = DATA storeSize (store) IN base;
+store(document) = DATA store (document) IN base;
+quantity(document, article) = DATA DOUBLE (document, article) IN base;
+storeSize(store) = DATA storeSize (store) IN base;
+
+sessionObj() = SESSION DATA object ();
 
 // Join property
 // Expression syntax:
@@ -230,8 +233,11 @@ copyStoreNameToArticleError 'Скопировать имя склада в им�
 
 createNewStore 'Добавить большой склад' = ACTION () {
     ADDOBJ store;
-    SET name(k) IF k == addedObject() <- [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('New store ', addedObject());
-    SET storeSize(k) IF k == addedObject() <- storeSize.big;
+
+    SET sessionObj() <- addedObject();
+
+    SET name(k) IF k == sessionObj() <- [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('New store ', sessionObj());
+    SET storeSize(k) IF k == sessionObj() <- storeSize.big;
 } TOOLBAR IMAGE 'add.png';
 
 ///////////////CONSTRAINT STATEMENT//////////////
