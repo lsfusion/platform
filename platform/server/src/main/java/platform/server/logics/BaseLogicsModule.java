@@ -107,7 +107,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public AbstractGroup sessionGroup;
     public AbstractGroup recognizeGroup;
     public AbstractGroup emailGroup;
-
+    public AbstractGroup historyGroup;
 
     // properties
     public LP groeq2;
@@ -210,7 +210,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP seekBarcodeAction;
     public LP barcodeNotFoundMessage;
     public LP extSID, extSIDToObject;
-    public LP timeCreated, userCreated, nameUserCreated;
+    public LP timeCreated, userCreated, nameUserCreated, computerCreated, hostnameComputerCreated;
     public LP restartServerAction;
     public LP runGarbageCollector;
     public LP cancelRestartServerAction;
@@ -558,6 +558,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         idGroup = addAbstractGroup("idGroup", getString("logics.groups.idgroup"), publicGroup, false);
         recognizeGroup = addAbstractGroup("recognizeGroup", getString("logics.groups.recognizegroup"), baseGroup, false);
         emailGroup = addAbstractGroup("emailGroup", getString("logics.groups.emailgroup"), rootGroup, true);
+        historyGroup = addAbstractGroup("historyGroup", getString("logics.groups.historygroup"), rootGroup, true);
     }
 
     @Override
@@ -833,9 +834,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         extSID = addDProp(baseGroup, "extSID", getString("logics.extsid"), StringClass.get(50), externalObject);
         extSIDToObject = addAGProp("extSIDToObject", getString("logics.object"), extSID);
         
-        timeCreated = addDProp(baseGroup, "timeCreated", getString("logics.timecreated"), DateTimeClass.instance, historyObject);
+        timeCreated = addDProp(historyGroup, "timeCreated", getString("logics.timecreated"), DateTimeClass.instance, historyObject);
         userCreated = addDProp(idGroup, "userCreated", getString("logics.usercreated"), customUser, historyObject);
-        nameUserCreated = addJProp(baseGroup, "nameUserCreated", getString("logics.usercreated"), name, userCreated, 1);
+        nameUserCreated = addJProp(historyGroup, "nameUserCreated", getString("logics.usercreated"), name, userCreated, 1);
+        computerCreated = addDProp(idGroup, "computerCreated", getString("logics.computercreated"), computer, historyObject);
+        hostnameComputerCreated = addJProp(historyGroup, "hostnameComputerCreated", getString("logics.computercreated"), hostname, computerCreated, 1);
         
         timeCreated.setDerivedChange(true, currentDateTime, is(historyObject), 1);
         userCreated.setDerivedChange(true, currentUser, is(historyObject), 1);

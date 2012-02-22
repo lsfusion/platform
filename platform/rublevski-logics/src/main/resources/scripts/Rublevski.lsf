@@ -406,6 +406,8 @@ CLASS STATIC groupProduct 'Группа изделий для печати за�
    cold  'Холодное'
 };
 
+tmpSku() = SESSION DATA sku ();
+
 //baseGroup
 itemGroupSku = DATA itemGroup(sku) IN idGroup AUTOSET;
 nameItemGroupSku 'Группа товара' = name(itemGroupSku(sku)) IN baseGroup;
@@ -3126,10 +3128,11 @@ addShipmentDetailBarcode 'Добавить строку по штрих-коду
     FORM barcodeInput MODAL;
 
     IF formResult() == formResult.ok THEN {
-        IF skuBarcodeStringDate(chosenString('barcode'), dateWaybillShipment(shipment)) IS item THEN {
+        SET tmpSku() <- skuBarcodeStringDate(chosenString('barcode'), dateWaybillShipment(shipment));
+        IF tmpSku() IS item THEN {
             ADDOBJ shipmentDetail;
             SET shipmentShipmentDetail(o) IF o == addedObject() <- shipment AS shipment;
-            SET itemShipmentDetail(o) IF o == addedObject() <- skuBarcodeStringDate(chosenString('barcode'), dateWaybillShipment(shipment));
+            SET itemShipmentDetail(o) IF o == addedObject() <- tmpSku();
             SET quantityShipmentDetail(o) IF o == addedObject() <- amountBarcode(valueBarcodeToDate(chosenString('barcode'), dateWaybillShipment(shipment)));
         } ELSE
             MESSAGE 'Не найден штрих-код';
