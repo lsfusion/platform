@@ -927,24 +927,6 @@ dataEmployee 'Данные для регистрации на кассе (штр
 departmentStoreEmployee 'Сотрудник отдела' = DATA BOOLEAN (departmentStore, employee);
 phoneEmployee 'Телефон' = DATA STRING[50] (employee) IN employeeGroup;
 
-
-FORM employee 'Сотрудник'
-OBJECTS e=employee FIXED PANEL, d=departmentStore
-PROPERTIES(e) userFirstName, userLastName, phoneEmployee, nameEmployeeSystemEmployee, shortNameLanguageEmployee, numberEmployee,
-              passwordEmployee, dataEmployee
-PROPERTIES(d) name
-PROPERTIES(d, e) departmentStoreEmployee
-FILTERGROUP filterEmployeeDepartmentStore
-    FILTER 'Показывать только отделы данного сотрудника' 'F10' NOT NULL departmentStoreEmployee(d, e)
-EDIT employee OBJECT e;
-
-FORM employees 'Сотрудники'
-OBJECTS e=employee, d=departmentStore
-PROPERTIES(e) READONLY userFirstName, userLastName
-PROPERTIES(e) ADDFORM, EDITFORM, delete
-PROPERTIES(d) READONLY name
-FILTERS NOT NULL departmentStoreEmployee(d, e);
-
 // ----------------------------------- Торговая площадь -------------------------------------------------- //
 
 CLASS tradingSquare 'Торговая площадь' : named;
@@ -1017,6 +999,31 @@ inTradingNetworkStoreTypeStoreDepartment (tradingNetwork, storeType, store, depa
     tradingNetworkDepartmentStore(department) == tradingNetwork AND NOT store AND NOT storeType,
     department IS departmentStore AND NOT store AND NOT storeType AND NOT tradingNetwork;
 
+
+FORM employee 'Сотрудник'
+    OBJECTS e=employee FIXED PANEL
+    PROPERTIES(e)      userFirstName, userLastName, phoneEmployee, nameEmployeeSystemEmployee, shortNameLanguageEmployee, numberEmployee,
+                       passwordEmployee, dataEmployee
+
+    TREE treeStore t=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    PROPERTIES READONLY name(t), name(st), name(s), name(ds)
+    FILTERS NOT NULL   inStoreTypeTradingNetwork (st, t),
+            NOT NULL   inStoreTypeStore (st, s),
+            NOT NULL   inStoreDepartment (s, ds)
+
+    PROPERTIES(ds, e)  departmentStoreEmployee
+EDIT employee OBJECT e
+;
+
+FORM employees 'Сотрудники'
+    OBJECTS e=employee
+    PROPERTIES(e) READONLY userFirstName, userLastName
+    PROPERTIES(e) ADDFORM, EDITFORM, delete
+
+    OBJECTS ds=departmentStore
+    PROPERTIES(ds) READONLY name, nameStoreDepartmentStore
+    FILTERS NOT NULL departmentStoreEmployee(ds, e)
+;
 
 // ----------------------------------- Цех ----------------------------------- //
 
