@@ -1818,12 +1818,20 @@ dataOrderSupplier 'Номер заказа' (orderSupplier) = DATA INTEGER (orde
 maxDataOrderSupplier = UNION OVERRIDE 0, [GROUP MAX dataOrderSupplier(orderSupplier)]();
 nextDataOrderSupplier = maxDataOrderSupplier() + 1;
 dataOrderSupplier (orderSupplier) <- OLD nextDataOrderSupplier() ON ASSIGN orderSupplier IS orderSupplier;
+
 curDateOrderSupplier 'Дата заказа' = DATA DATE (orderSupplier);
 dateOrderSupplier 'Дата поставки' = DATA DATE (orderSupplier);
+
 departmentStoreOrderSupplier 'Отдел заказа (ИД)' = DATA departmentStore (orderSupplier);
 nameDepartmentStoreOrderSupplier 'Отдел заказа' (orderSupplier) = name(departmentStoreOrderSupplier(orderSupplier));
+
 supplierOrderSupplier 'Поставщик заказа (ИД)' = DATA supplier (orderSupplier);
 nameSupplierOrderSupplier 'Поставщик заказ' (orderSupplier) = name(supplierOrderSupplier(orderSupplier));
+
+preliminaryOrderOrderSupplier 'Предварительный заказ заказа' = DATA preliminaryOrder (orderSupplier);
+//dataOrderPreliminaryOrder 'Номер заказа для предварительного заказа' (preliminaryOrder) = dataOrderSupplier(orderSupplier)
+//    IF preliminaryOrder == preliminaryOrderOrderSupplier(orderSupplier);
+
 completePercentageOrderSupplier 'Процент выполнения' (orderSupplier) = DATA DOUBLE (orderSupplier) IN baseGroup;
 allowablePercentOrderSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (orderSupplier) IN supplierGroup;
 
@@ -1831,33 +1839,48 @@ quantityPackItem2 'Количество в грузовом месте' (item) =
 packQuantityItemOrderSupplier 'Количество мест' = DATA INTEGER (orderSupplier, item);
 sumQuantityItemOrderSupplier 'Сумарное количество товара' (orderSupplier, item) = quantityPackItem2(item) * packQuantityItemOrderSupplier(orderSupplier, item);
 fullPriceItemOrderSupplier 'Цена с НДС' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item) IN baseGroup;
-fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) =  sumQuantityItemOrderSupplier(orderSupplier, item) * fullPriceItemOrderSupplier(orderSupplier, item) IN baseGroup;
+fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) = sumQuantityItemOrderSupplier(orderSupplier, item) * fullPriceItemOrderSupplier(orderSupplier, item) IN baseGroup;
 fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier;
 //minQuantityOrderSupplier 'Минимальный заказ' (orderSupplier, item) = minCountItemAssortment(departmentStoreOrderSupplier(orderSupplier), supplierOrderSupplier(orderSupplier), item);
 //CONSTRAINT packQuantityItemOrderSupplier(orderSupplier, item) < minQuantityOrderSupplier(orderSupplier, item) AND packQuantityItemOrderSupplier(orderSupplier, item) != 0  MSG 'Заказ должен быть больше минимального';
-quantityDaysNextOrder 'Количество дней до поставки' (orderSupplier) = UNION MAX 0 IF orderSupplier IS orderSupplier, daysInclBetweenDates(curDateOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
-quantityOrderOrderSupplier 'Количество заказов на дату поставки' (supplier, departmentStore, date) = GROUP SUM 1 IF orderSupplier BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier), curDateOrderSupplier(orderSupplier);
-quantitySupplyOrderSupplier 'Количество заказов на дату поставки' (supplier, departmentStore, date) = GROUP SUM 1 IF orderSupplier BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier);
-quantityOrderPreliminaryOrder 'Количество предварительных заказов на дату заказа' (supplier, departmentStore, date) = GROUP SUM 1 IF preliminaryOrder BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder), dateOrderPreliminaryOrder(preliminaryOrder);
-quantitySupplyPreliminaryOrder 'Количество предварительных заказов на дату поставки' (supplier, departmentStore, date) = GROUP SUM 1 IF preliminaryOrder BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder), dateSupplyPreliminaryOrder(preliminaryOrder);
-nextDateOrder 'Следующая дата поставки' (preliminaryOrder) = PARTITION PREV dateSupplyPreliminaryOrder(preliminaryOrder)
-                                                                BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder)
-                                                                ORDER DESC dateSupplyPreliminaryOrder(preliminaryOrder);
+
+quantityDaysNextOrder 'Количество дней до поставки' (orderSupplier) =
+    UNION MAX 0 IF orderSupplier IS orderSupplier,
+              daysInclBetweenDates(curDateOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
+
+quantityOrderOrderSupplier 'Количество заказов на дату поставки' (supplier, departmentStore, date) =
+    GROUP SUM 1 IF orderSupplier
+    BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier), curDateOrderSupplier(orderSupplier);
+
+quantitySupplyOrderSupplier 'Количество заказов на дату поставки' (supplier, departmentStore, date) =
+    GROUP SUM 1 IF orderSupplier BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier),
+                                    dateOrderSupplier(orderSupplier);
+quantityOrderPreliminaryOrder 'Количество предварительных заказов на дату заказа' (supplier, departmentStore, date) =
+    GROUP SUM 1 IF preliminaryOrder BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder),
+                                       dateOrderPreliminaryOrder(preliminaryOrder);
+quantitySupplyPreliminaryOrder 'Количество предварительных заказов на дату поставки' (supplier, departmentStore, date) =
+    GROUP SUM 1 IF preliminaryOrder BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder),
+                                       dateSupplyPreliminaryOrder(preliminaryOrder);
+nextDateOrder 'Следующая дата поставки' (preliminaryOrder) =
+    PARTITION PREV dateSupplyPreliminaryOrder(preliminaryOrder)
+    BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder)
+    ORDER DESC dateSupplyPreliminaryOrder(preliminaryOrder);
 nextDateOrderSupplier 'Следующая дата поставки' = DATA DATE (orderSupplier);
-quantityDaysNext2Order 'Количество дней до следующей поставки' (orderSupplier) = daysInclBetweenDates(curDateOrderSupplier(orderSupplier), nextDateOrderSupplier(orderSupplier));
-quantityRealizationItemNextOrder 'Предполагаемое количество реализации товара до следующей поставки' (orderSupplier, item) = quantityDaysNext2Order(orderSupplier)*quantityRealizationDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
-balance2DepartmentStoreItem 'Величина остатков товара и минимального резерва' (orderSupplier, item) = balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)+minReserveItem(item);
-isEnoughItem 'Достаточно ли остатков товара' (orderSupplier, item) = balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)-quantityRealizationItemNextOrder(orderSupplier, item)<minReserveItem(item);
-recommendCountOrderSupplier 'Рекомендцемое количество товара для заказа' (orderSupplier, item) = UNION MAX (quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item)), minQuantityOrderItem(item) AND orderSupplier IS orderSupplier IF isEnoughItem(orderSupplier, item);
+quantityDaysNext2Order 'Количество дней до следующей поставки' (orderSupplier) =
+    daysInclBetweenDates(curDateOrderSupplier(orderSupplier), nextDateOrderSupplier(orderSupplier));
+quantityRealizationItemNextOrder 'Предполагаемое количество реализации товара до следующей поставки' (orderSupplier, item) =
+    quantityDaysNext2Order(orderSupplier)*quantityRealizationDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
+balance2DepartmentStoreItem 'Величина остатков товара и минимального резерва' (orderSupplier, item) =
+    balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)+minReserveItem(item);
+isEnoughItem 'Достаточно ли остатков товара' (orderSupplier, item) =
+    balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)-quantityRealizationItemNextOrder(orderSupplier, item)<minReserveItem(item);
+recommendCountOrderSupplier 'Рекомендцемое количество товара для заказа' (orderSupplier, item) =
+    UNION MAX (quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item)), minQuantityOrderItem(item)
+    AND orderSupplier IS orderSupplier IF isEnoughItem(orderSupplier, item);
 
-isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentVal(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
-isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepartmentVal(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) == yesNo.yes;
-
-//createGenTimeTable 'Создать график поставок' = ACTION (dep) {
-//  ADDOBJ genTimeTable;
-//  SET (departmentStoreGenTimeTable(g) IF g ==addedObject()) <- (dep AS departmentStore);
-//  EXEC apply();
-//};
+isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
+isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) == yesNo.yes;
+isSupplyDatePreliminaryOrder (preliminaryOrder, date) = dateSupplyPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
 
 createGenTimeTable 'Создать график поставок' () = ACTION FORM genTimeTable SET [ACTION ADDOBJ genTimeTable]() NEWSESSION MODAL;
 
@@ -1869,59 +1892,77 @@ createGenTimeTable 'Создать график поставок' () = ACTION FO
       SET (curDateOrderSupplier(o) IF o == addedObject()) <- dateOrderPreliminaryOrder(preliminaryOrder);
       SET (nextDateOrderSupplier(o) IF o == addedObject()) <- nextDateOrder(preliminaryOrder);
       SET (allowablePercentOrderSupplier(o) IF o == addedObject()) <- allowablePercentSupplier(supplierPreliminaryOrder(preliminaryOrder));
+      SET (preliminaryOrderOrderSupplier(o) IF o == addedObject()) <- preliminaryOrder AS preliminaryOrder;
       EXEC apply();
-  };
+  }
+//    AND preliminaryOrder IS preliminaryOrder
+  ;
 
 FORM orderSupplier 'Заказ поставщику'
-OBJECTS o=orderSupplier FIXED PANEL, i=item
-PROPERTIES(o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
-                       nameSupplierOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated, allowablePercentOrderSupplier
-PROPERTIES(o) completePercentageOrderSupplier
-PROPERTIES(i) nameAttributeItem, quantityPackItem2, minQuantityOrderItem READONLY
-PROPERTIES(o, i) packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier, recommendCountOrderSupplier
-FILTERS NOT NULL isSupplierItemDepartmentOrderSupplier(o, i)
-FILTERS NOT NULL isBanSupplierItemDepartmentOrderSupplier(o, i)
-FILTERGROUP filters1
-    FILTER 'Показывать только заказанные позиции' 'F10' NOT NULL sumQuantityItemOrderSupplier(o, i) DEFAULT
-EDIT orderSupplier OBJECT o;
+
+    OBJECTS o=orderSupplier FIXED PANEL
+    PROPERTIES(o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
+                           nameSupplierOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated,
+                           allowablePercentOrderSupplier
+    PROPERTIES(o)          completePercentageOrderSupplier
+
+    OBJECTS i=item
+    PROPERTIES(i)          nameAttributeItem, quantityPackItem2, minQuantityOrderItem READONLY
+
+    PROPERTIES(o, i)       packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier,
+                           fullSumItemOrderSupplier, recommendCountOrderSupplier
+
+    FILTERS NOT NULL isSupplierItemDepartmentOrderSupplier(o, i),
+            NOT NULL isBanSupplierItemDepartmentOrderSupplier(o, i)
+
+    FILTERGROUP filters1
+        FILTER 'Показывать только заказанные позиции' 'F10' NOT NULL sumQuantityItemOrderSupplier(o, i) DEFAULT
+
+    EDIT orderSupplier OBJECT o
+;
 
 FORM orderSuppliers 'Заказы поставщику'
-OBJECTS o=orderSupplier, i=item
-PROPERTIES(o) READONLY name, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier, quantityDaysNextOrder,
-                       nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated,
-                       nextDateOrderSupplier, allowablePercentOrderSupplier
-PROPERTIES(o) ADDFORM, EDITFORM, delete
-PROPERTIES(i) READONLY nameAttributeItem
-PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier, fullSumItemOrderSupplier
-FILTERS NOT NULL sumQuantityItemOrderSupplier(o, i);
+
+    OBJECTS o=orderSupplier
+    PROPERTIES(o) READONLY name, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier, quantityDaysNextOrder,
+                           nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated,
+                           nameUserCreated, nextDateOrderSupplier, allowablePercentOrderSupplier
+    PROPERTIES(o) ADDFORM, EDITFORM, delete
+
+    OBJECTS i=item
+    PROPERTIES(i) READONLY nameAttributeItem
+
+    PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier,
+                               fullSumItemOrderSupplier
+
+    FILTERS NOT NULL sumQuantityItemOrderSupplier(o, i)
+;
 
 // ----------------------------------- Разрешать поставки ------------------------------------------- //
 
 isOrderDate (date, preliminaryOrder) = dateOrderPreliminaryOrder(preliminaryOrder) == date AS DATE;
 isSupplyDate (date, preliminaryOrder) = dateSupplyPreliminaryOrder(preliminaryOrder) == date AS DATE;
-isSupplierDepartmentStore (departmentStore, supplier, preliminaryOrder) = departmentStorePreliminaryOrder(preliminaryOrder) == departmentStore
-                                                                          AND supplierPreliminaryOrder(preliminaryOrder) ==supplier;
+isSupplierDepartmentStore (departmentStore, supplier, preliminaryOrder) =
+    departmentStorePreliminaryOrder(preliminaryOrder) == departmentStore AND supplierPreliminaryOrder(preliminaryOrder) ==supplier;
 
 
 FORM timeTableDate 'График поставок'
-OBJECTS t=DATE FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier, p=preliminaryOrder
-PROPERTIES(t) OBJVALUE
-PROPERTIES(d) READONLY name
-PROPERTIES createGenTimeTable()
-PROPERTIES(s) READONLY name
-PROPERTIES(p) READONLY name, dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder
-PROPERTIES(p) nextDateOrder, createOrderSupplier
-PROPERTIES(s, d, t) READONLY quantityOrderOrderSupplier, quantitySupplyOrderSupplier, quantityOrderPreliminaryOrder, quantitySupplyPreliminaryOrder
-PROPERTIES(p) ADDFORM, EDITFORM, delete  //убрать как только будет сделана генерация предварительных заказов
-FILTERS NOT NULL isSupplierDepartmentStore(d, s, p)
-FILTERGROUP filters
-    FILTER 'Показывать поставщиков с предварительным заказом на дату заказа' 'F10' NOT NULL quantityOrderPreliminaryOrder(s, d, t)
-    FILTER 'Показывать поставщиков с предварительным заказом на дату поставки' 'F10' NOT NULL quantitySupplyPreliminaryOrder(s, d, t)
-    FILTER 'Показывать поставщиков с заказом на дату заказа' 'F10' NOT NULL quantityOrderOrderSupplier(s, d, t)
-    FILTER 'Показывать поставщиков с заказом на дату поставки' 'F10' NOT NULL quantitySupplyOrderSupplier(s, d, t);
-//FILTERGROUP filters2
-//    FILTER 'Показывать на дату поставки' 'F10' NOT NULL isSupplyDate(t, p) DEFAULT
-//    FILTER 'Показывать на дату заказа' 'F10' NOT NULL isOrderDate(t, p);
+    OBJECTS t=DATE FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier, p=preliminaryOrder
+    PROPERTIES(t) OBJVALUE
+    PROPERTIES(d) READONLY name
+    PROPERTIES createGenTimeTable()
+    PROPERTIES(s) READONLY name
+    PROPERTIES(p) READONLY name, dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder//, dataOrderPreliminaryOrder
+    PROPERTIES(p) nextDateOrder, createOrderSupplier
+    PROPERTIES(s, d, t) READONLY quantityOrderOrderSupplier, quantitySupplyOrderSupplier, quantityOrderPreliminaryOrder, quantitySupplyPreliminaryOrder
+    PROPERTIES(p) ADDFORM, EDITFORM, delete  //убрать как только будет сделана генерация предварительных заказов
+    FILTERS NOT NULL isSupplierDepartmentStore(d, s, p)
+    FILTERS NOT NULL isSupplyDatePreliminaryOrder(p, t)
+    FILTERGROUP filters
+        FILTER 'С предварительным заказом на дату заказа' 'F10' NOT NULL quantityOrderPreliminaryOrder(s, d, t)
+        FILTER 'С предварительным заказом на дату поставки' 'F10' NOT NULL quantitySupplyPreliminaryOrder(s, d, t)
+        FILTER 'С заказом на дату заказа' 'F10' NOT NULL quantityOrderOrderSupplier(s, d, t)
+        FILTER 'С заказом на дату поставки' 'F10' NOT NULL quantitySupplyOrderSupplier(s, d, t)
 
 DESIGN timeTableDate FROM DEFAULT {
         POSITION s.box TO THE LEFT p.box;
