@@ -842,6 +842,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         
         timeCreated.setDerivedChange(true, currentDateTime, is(historyObject), 1);
         userCreated.setDerivedChange(true, currentUser, is(historyObject), 1);
+        computerCreated.setDerivedChange(true, currentComputer, is(historyObject), 1);
 
         restartServerAction = addJProp(getString("logics.server.stop"), andNot1, addRestartActionProp(), isServerRestarting);
         runGarbageCollector = addGarbageCollectorActionProp();
