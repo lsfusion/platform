@@ -1046,6 +1046,8 @@ rawDepartmentStore 'Подразделения, из которых можно �
 inRawDepartmentStore(manufactory, departmentStore) = storeDepartmentStore(manufactory) == storeDepartmentStore(departmentStore);
 
 //----------------------------------- Для товара и подразделения ------------------------------------------//
+percentDiscountDepartmentItem 'Скидка на количество, % от розн.цены' = DATA DOUBLE (departmentStore, item) IN discountGroup;
+
 additionPriceDepartmentStoreItem 'Торговая надбавка в рублях' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 boundCertificateDepartmentStoreItem 'Сертификат / удостоверение обязательны для товара?' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
 maxAllowedRetailPriceDepartmentStoreItem 'MAX допустимая розн.цена' = DATA INTEGER (departmentStore, item) IN retailGroup;
@@ -1250,6 +1252,8 @@ PROPERTIES(w) READONLY name, priceWare, dataRateRangeWare
 PROPERTIES(w) ADDFORM, EDITFORM, delete;
 
 
+//toShowManufactured(item) =
+
 FORM item 'Товар'
 OBJECTS i=item FIXED PANEL, b=barcode
 TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
@@ -1265,17 +1269,18 @@ PROPERTIES (i) captionItem, nameAttributeItem, nameCashAttributeItem, nameScales
  shortNameSpecialtyItem SHOWIF toShowSpecialty(i), isWeightedItem, isWeightItem, passScalesItem, volumeItem, netWeightItem,
  nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i), hallmarkItem SHOWIF toShowHallmark(i), articleItem,
  quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minQuantityOrderItem, minReserveItem,
- compositionScalesItem, compositionMenuItem, percentFatItem, percentAlcoholItem,
- lengthItem, widthItem, heightItem, grossWeightItem, lengthPackItem, widthPackItem, heightPackItem, grossWeightPackItem,
- nameCountryItem SHOWIF toShowCountry(i),
- bonusReturnItem, nameReturnItem, oldPriceItem, isMarkItem, hintItem,
- isCrudeItem, nameGroupProductItem, nameNumberInPackItem, nameFormItemItem, nameRateWasteItem, percentRateWasteItem,
- standartItem, normOutItem, groupMenuItem, isCutedItem, isLoafCutItem, storageTemperatureItem,
+ compositionScalesItem, compositionMenuItem SHOWIF isManufacturedItem(i), percentFatItem, percentAlcoholItem,
+ lengthItem, widthItem, heightItem, grossWeightItem SHOWIF isManufacturedItem(i), lengthPackItem, widthPackItem, heightPackItem,
+ grossWeightPackItem SHOWIF isManufacturedItem(i),
+ nameCountryItem SHOWIF toShowCountry(i), bonusReturnItem, nameReturnItem, oldPriceItem, isMarkItem, hintItem,
+ isCrudeItem SHOWIF isManufacturedItem(i), nameGroupProductItem SHOWIF isManufacturedItem(i), nameNumberInPackItem, nameFormItemItem,
+ nameRateWasteItem, percentRateWasteItem, standartItem SHOWIF isManufacturedItem(i), normOutItem SHOWIF isManufacturedItem(i),
+ groupMenuItem SHOWIF isManufacturedItem(i), isCutedItem SHOWIF isManufacturedItem(i), isLoafCutItem, storageTemperatureItem,
  controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem, bonusItem,
  importerPriceItem, showFormimporterPriceItem, dataSuppliersRateRangeItem, dataRetailRateRangeItem, percentWholesaleMarkItem,
  minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem, banSailItem
 PROPERTIES (i) nameisPortionBarItem, showFormNameisPortionBarItem,
-              coefficientNetGrossItem, showFormcoefficientNetGrossItem,
+              coefficientNetGrossItem SHOWIF isManufacturedItem(i), showFormcoefficientNetGrossItem,
               rateNaturalLossItem, showFormrateNaturalLossItem,         //     NDSSupplierItem, showFormNDSSupplierItem,
               nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem, nameTagItem, multiplierItem
 PROPERTIES (i) READONLY barcodeBarcodeSku
@@ -1284,6 +1289,12 @@ PROPERTIES (b) barcodeEx, dateBarcode, titleScalesBarcode, titleCashBarcode, sho
                amountBarcode, removeBarcode, commentRemoveBarcode, actionBarcode
 PROPERTIES (i, b) equalsSkuBarcode
 PROPERTIES (d) name
+PROPERTIES (d, i) percentDiscountDepartmentItem, additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem,
+                  maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacturerDepartmentStoreItem, statusCashDepartmentStoreItem,
+                  nameStatusCashDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem,
+                  fromDateDeliveryDepartmentStoreItem, banSaleDepartmentStoreItem, banMovementDepartmentStoreItem, reserveDepartmentStoreItem,
+                  topDepartmentStoreItem, quantityRealizationDepartmentStoreItem, balanceDepartmentStoreItem
+
 PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
 PROPERTIES (sp) READONLY name
 PROPERTIES nameisSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF nameisSupplierItemDepartmentDate(sp, i, d, dt), showFormNameisSupplierItemDepartmentOver(sp, i, d),
