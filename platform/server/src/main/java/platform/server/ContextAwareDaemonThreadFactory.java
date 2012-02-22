@@ -2,21 +2,15 @@ package platform.server;
 
 import platform.interop.DaemonThreadFactory;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class ContextAwareDaemonThreadFactory extends DaemonThreadFactory {
-    private static final AtomicInteger poolNumber = new AtomicInteger(1);
-
     private final Context context;
-    private final String namePrefix;
 
     public ContextAwareDaemonThreadFactory(Context context) {
+        super("-context-aware-daemon-");
         this.context = context;
-        namePrefix = "pool-" + poolNumber.getAndIncrement() + "-context-aware-thread-";
     }
 
-    protected Thread newThreadInstance(Runnable r) {
-        return new ContextAwareThread(context, group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+    protected Thread newThreadInstance(ThreadGroup group, Runnable r, String name, int stackSize) {
+        return new ContextAwareThread(context, group, r, name, stackSize);
     }
-
 }

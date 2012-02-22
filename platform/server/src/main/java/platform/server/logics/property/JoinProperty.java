@@ -200,7 +200,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<Interface> entity, FormEntity form) {
+    public void proceedDefaultDraw(PropertyDrawEntity<Interface> entity, FormEntity<?> form) {
         super.proceedDefaultDraw(entity, form);
         if (implement.mapping.size() == 1 && ((PropertyMapImplement<?, Interface>) BaseUtils.singleValue(implement.mapping)).property instanceof ObjectClassProperty) {
             PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(entity.propertyObject.mapping);

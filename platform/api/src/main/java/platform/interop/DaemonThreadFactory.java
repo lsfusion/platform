@@ -5,20 +5,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DaemonThreadFactory implements ThreadFactory {
     private static final AtomicInteger poolNumber = new AtomicInteger(1);
-    protected final ThreadGroup group;
-    protected final AtomicInteger threadNumber = new AtomicInteger(1);
-    protected final String namePrefix;
+    private final ThreadGroup group;
+    private final AtomicInteger threadNumber = new AtomicInteger(1);
+    private final String namePrefix;
 
     public DaemonThreadFactory() {
+        this("-daemon-");
+    }
+
+    public DaemonThreadFactory(String threadNamePrefix) {
         SecurityManager s = System.getSecurityManager();
         group = s != null
                 ? s.getThreadGroup()
                 : Thread.currentThread().getThreadGroup();
-        namePrefix = "pool-" + poolNumber.getAndIncrement() + "-thread-";
+        this.namePrefix = "pool-" + poolNumber.getAndIncrement() + threadNamePrefix;
     }
 
     public Thread newThread(Runnable r) {
-        Thread t = newThreadInstance(r);
+        Thread t = newThreadInstance(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
         if (!t.isDaemon()) {
             t.setDaemon(true);
         }
@@ -28,7 +32,7 @@ public class DaemonThreadFactory implements ThreadFactory {
         return t;
     }
 
-    protected Thread newThreadInstance(Runnable r) {
-        return new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+    protected Thread newThreadInstance(ThreadGroup group, Runnable r, String name, int stackSize) {
+        return new Thread(group, r, name, stackSize);
     }
 }

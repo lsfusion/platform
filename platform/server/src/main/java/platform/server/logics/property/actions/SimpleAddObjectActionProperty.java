@@ -70,7 +70,7 @@ public class SimpleAddObjectActionProperty extends CustomActionProperty {
 
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form) {
         super.proceedDefaultDraw(entity, form);
         entity.shouldBeLast = true;
         entity.forceViewType = ClassViewType.PANEL;

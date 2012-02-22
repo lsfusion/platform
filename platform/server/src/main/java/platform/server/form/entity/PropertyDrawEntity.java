@@ -46,6 +46,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public PropertyDrawEntity(int ID, PropertyObjectEntity<P> propertyObject, GroupObjectEntity toDraw) {
         super(ID);
+        setSID("propertyDraw" + ID);
         this.propertyObject = propertyObject;
         this.toDraw = toDraw;
     }

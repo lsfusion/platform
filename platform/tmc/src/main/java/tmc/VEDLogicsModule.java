@@ -29,7 +29,6 @@ import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
@@ -4315,7 +4314,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+        public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form) {
             super.proceedDefaultDraw(entity, form);
             entity.shouldBeLast = true;
             entity.forceViewType = ClassViewType.PANEL;

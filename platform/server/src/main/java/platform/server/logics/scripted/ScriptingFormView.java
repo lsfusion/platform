@@ -2,10 +2,7 @@ package platform.server.logics.scripted;
 
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.LsfLogicsParser;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.GroupObjectEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.TreeGroupEntity;
+import platform.server.form.entity.*;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.view.*;
 import platform.server.form.view.panellocation.PanelLocationView;
@@ -341,7 +338,12 @@ public class ScriptingFormView extends DefaultFormView {
     }
 
     public PropertyDrawView getPropertyView(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return get(entity.getPropertyDraw(LM.findLPByCompoundName(name)));
+        PropertyDrawEntity drawEntity = entity.getPropertyDraw(name);
+        if (drawEntity == null) {
+            drawEntity = entity.getPropertyDraw(LM.findLPByCompoundName(name));
+        }
+
+        return get(drawEntity);
     }
 
     public PropertyDrawView getPropertyView(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {

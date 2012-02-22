@@ -17,7 +17,6 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -88,7 +87,7 @@ public class ImportFromExcelActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form) {
         super.proceedDefaultDraw(entity, form);
         entity.shouldBeLast = true;
         entity.forceViewType = ClassViewType.PANEL;

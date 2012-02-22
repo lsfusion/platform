@@ -6,7 +6,6 @@ import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.actions.CustomActionProperty;
 
@@ -46,7 +45,7 @@ public abstract class BaseImportActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form) {
         super.proceedDefaultDraw(entity, form);
         entity.shouldBeLast = true;
         entity.forceViewType = ClassViewType.PANEL;

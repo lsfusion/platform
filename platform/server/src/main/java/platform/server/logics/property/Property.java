@@ -763,9 +763,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     // по умолчанию заполняет свойства
     // assert что entity этого свойства
-    public void proceedDefaultDraw(PropertyDrawEntity<T> entity, FormEntity form) {
+    public void proceedDefaultDraw(PropertyDrawEntity<T> entity, FormEntity<?> form) {
         if (loggable && logFormProperty != null) {
-            form.addPropertyDraw(logFormProperty, BaseUtils.orderMap(entity.propertyObject.mapping, interfaces).values().toArray(new ObjectEntity[]{}));
+            form.addPropertyDraw(logFormProperty, BaseUtils.orderMap(entity.propertyObject.mapping, interfaces).values().toArray(new PropertyObjectInterfaceEntity[0]));
             form.setForceViewType(logFormProperty, ClassViewType.PANEL);
         }
 
@@ -778,9 +778,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         //перемещаем свойство в контекстном меню в тот же groupObject, что и свойство, к которому оно привязано
         if (panelLocation != null && panelLocation.isShortcutLocation() && ((ShortcutPanelLocation) panelLocation).getOnlyProperty() != null) {
             Property onlyProperty = ((ShortcutPanelLocation) panelLocation).getOnlyProperty();
-            for (Object drawEntity : form.getProperties(onlyProperty)) {
-                if (((PropertyDrawEntity) drawEntity).toDraw != null) {
-                    entity.toDraw = ((PropertyDrawEntity) drawEntity).toDraw;
+            for (PropertyDrawEntity drawEntity : form.getProperties(onlyProperty)) {
+                if (drawEntity.toDraw != null) {
+                    entity.toDraw = drawEntity.toDraw;
                 }
             }
         }

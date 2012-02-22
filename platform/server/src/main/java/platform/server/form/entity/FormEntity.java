@@ -426,49 +426,48 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return addPropertyDraw(null, new PropertyObjectEntity<P>(property, mapping));
     }
 
-    private Map<String, Integer> propertySIDCount = new HashMap<String, Integer>();
-
     private <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P> propertyImplement) {
-        PropertyDrawEntity<P> propertyDraw = new PropertyDrawEntity<P>(genID(), propertyImplement, groupObject);
+        PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<P>(genID(), propertyImplement, groupObject);
         if (shouldProceedDefaultDraw()) {
-            propertyImplement.property.proceedDefaultDraw(propertyDraw, this);
+            propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this);
         }
 
         if (propertyImplement.property.getSID() != null) {
-            String propertyDrawSID = propertyImplement.property.getSID();
-            Integer cnt = propertySIDCount.get(propertyDrawSID);
-            if (cnt == null) {
-                propertySIDCount.put(propertyDrawSID, 1);
-            } else {
-                ++cnt;
-                propertySIDCount.put(propertyDrawSID, cnt);
-                propertyDrawSID = propertyDrawSID + cnt;
-            }
-            propertyDraw.setSID(propertyDrawSID);
+            String propertySID = propertyImplement.property.getSID();
+
+            setPropertyDrawGeneratedSID(newPropertyDraw, propertySID);
         }
 
-        if (propertyDraw.shouldBeLast) {
-            propertyDraws.add(propertyDraw);
-        } else {
-            int count = 0;
-            for (PropertyDrawEntity property : propertyDraws) {
-                if (property.shouldBeLast) {
-                    propertyDraws.add(count, propertyDraw);
-                    count = -1;
+        int ind = propertyDraws.size() - 1;
+        if (!newPropertyDraw.shouldBeLast) {
+            while (ind >= 0) {
+                PropertyDrawEntity property = propertyDraws.get(ind);
+                if (!property.shouldBeLast) {
                     break;
                 }
-                count++;
-            }
-
-            if (count >= 0) {
-                propertyDraws.add(propertyDraw);
+                --ind;
             }
         }
-
+        propertyDraws.add(ind + 1, newPropertyDraw);
 
         assert richDesign == null;
 
-        return propertyDraw;
+        return newPropertyDraw;
+    }
+
+    public void setPropertyDrawGeneratedSID(PropertyDrawEntity property, String baseSID) {
+        assert baseSID != null;
+
+        property.setSID(null);
+
+        String sidToSet = baseSID;
+        int cnt = 0;
+
+        while (getPropertyDraw(sidToSet) != null) {
+            sidToSet = baseSID + (++cnt);
+        }
+
+        property.setSID(sidToSet);
     }
 
     protected <P extends PropertyInterface> void removePropertyDraw(PropertyDrawEntity<P> property) {
@@ -496,6 +495,19 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public PropertyDrawEntity<?> getPropertyDraw(int iID) {
         for (PropertyDrawEntity propertyDraw : propertyDraws) {
             if (propertyDraw.getID() == iID) {
+                return propertyDraw;
+            }
+        }
+
+        return null;
+    }
+
+    public PropertyDrawEntity<?> getPropertyDraw(String sid) {
+        if (sid == null) {
+            return null;
+        }
+        for (PropertyDrawEntity propertyDraw : propertyDraws) {
+            if (sid.equals(propertyDraw.getSID())) {
                 return propertyDraw;
             }
         }

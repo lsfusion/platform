@@ -416,19 +416,21 @@ formObjectDeclaration returns [String name, String className, String caption]
 formPropertiesList
 @init {
 	List<String> properties = new ArrayList<String>();
+	List<String> aliases = new ArrayList<String>();
 	List<List<String>> mapping = new ArrayList<List<String>>();
 	FormPropertyOptions commonOptions = null;
 	List<FormPropertyOptions> options = new ArrayList<FormPropertyOptions>();
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedPropertyDraws(properties, mapping, commonOptions, options);
+		$formStatement::form.addScriptedPropertyDraws(properties, aliases, mapping, commonOptions, options);
 	}
 }
 	:	'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertiesNamesList
 		{
 			commonOptions = $opts.options;
 			properties = $list.properties;
+			aliases = $list.aliases;
 			mapping = Collections.nCopies(properties.size(), $objects.ids);
 			options = $list.options;
 		}
@@ -436,6 +438,7 @@ formPropertiesList
 		{
 			commonOptions = $opts.options;
 			properties = $mappedList.properties;
+			aliases = $mappedList.aliases;
 			mapping = $mappedList.mapping;
 			options = $mappedList.options;
 		}
@@ -459,14 +462,34 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	;
 
 
-formMappedPropertiesList returns [List<String> properties, List<List<String>> mapping, List<FormPropertyOptions> options]
+formMappedPropertiesList returns [List<String> aliases, List<String> properties, List<List<String>> mapping, List<FormPropertyOptions> options]
 @init {
+	$aliases = new ArrayList<String>();
 	$properties = new ArrayList<String>();
 	$mapping = new ArrayList<List<String>>();
 	$options = new ArrayList<FormPropertyOptions>();
+	String alias = null;
 }
-	:	mappedProp=formMappedProperty opts=formPropertyOptionsList { $properties.add($mappedProp.name); $mapping.add($mappedProp.mapping); $options.add($opts.options); }
-		(',' mappedProp=formMappedProperty opts=formPropertyOptionsList { $properties.add($mappedProp.name); $mapping.add($mappedProp.mapping); $options.add($opts.options); })*
+	:	{ alias = null; }
+		(id=ID '=' { alias = $id.text; })?
+		mappedProp=formMappedProperty opts=formPropertyOptionsList
+		{
+			$aliases.add(alias);
+			$properties.add($mappedProp.name);
+			$mapping.add($mappedProp.mapping);
+			$options.add($opts.options);
+		}
+		(','
+			{ alias = null; }
+			(id=ID '=' { alias = $id.text; })?
+			mappedProp=formMappedProperty opts=formPropertyOptionsList
+			{
+				$aliases.add(alias);
+				$properties.add($mappedProp.name);
+				$mapping.add($mappedProp.mapping);
+				$options.add($opts.options);
+			}
+		)*
 	;
 
 formPropertyObject returns [PropertyObjectEntity property = null]
@@ -494,13 +517,31 @@ formMappedProperty returns [String name, List<String> mapping]
 	;
 
 
-formPropertiesNamesList returns [List<String> properties, List<FormPropertyOptions> options]
+formPropertiesNamesList returns [List<String> aliases, List<String> properties, List<FormPropertyOptions> options]
 @init {
+	$aliases = new ArrayList<String>();
 	$properties = new ArrayList<String>();
 	$options = new ArrayList<FormPropertyOptions>();
+	String alias = null;
 }
-	:	pname=formPropertyName opts=formPropertyOptionsList { $properties.add($pname.name); $options.add($opts.options); }
-		(',' pname=formPropertyName opts=formPropertyOptionsList { $properties.add($pname.name); $options.add($opts.options); })*
+	:	{ alias = null; }
+		(id=ID '=' { alias = $id.text; })?
+		pname=formPropertyName opts=formPropertyOptionsList
+		{
+			$aliases.add(alias);
+			$properties.add($pname.name);
+			$options.add($opts.options);
+		}
+		(','
+			{ alias = null; }
+			(id=ID '=' { alias = $id.text; })?
+			pname=formPropertyName opts=formPropertyOptionsList
+			{
+				$aliases.add(alias);
+				$properties.add($pname.name);
+				$options.add($opts.options);
+			}
+		)*
 	;
 
 

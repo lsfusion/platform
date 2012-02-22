@@ -1,17 +1,14 @@
 package platform.server.logics.property.actions;
 
-import platform.base.BaseUtils;
 import platform.interop.KeyStrokes;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.CustomObjectInstance;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -32,7 +29,7 @@ public class DeleteObjectActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form) {
         super.proceedDefaultDraw(entity, form);
         entity.shouldBeLast = true;
     }

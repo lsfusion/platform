@@ -280,7 +280,7 @@ OBJECTS document, article
 //            [alias=] className ['<caption>'] [PARENT <property>] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [PARENT <properties separated with space>]
 
 // Property list syntax:
-// PROPERTIES propName1(param1, ..., paramN1), ..., propNameK(param1, ..., paramNK)
+// PROPERTIES [alias1=]propName1(param1, ..., paramN1), ..., [aliasN=]propNameK(param1, ..., paramNK)
 // Special properties: SELECTION, OBJVALUE, ADDOBJ
 // Property options:    [READONLY] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [HIGHLIGHTIF <mappedProperty>]
 //                      [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
@@ -321,14 +321,14 @@ showTestModalForm 'Показать тестовую форму' = ACTION() {
 
 FORM storeArticle 'По складам'
 OBJECTS s=store '-Склад-', a=article
-PROPERTIES SELECTION(s), name(s) READONLY, OBJVALUE(a), name(a)
+PROPERTIES ssel=SELECTION(s), sname=name(s) READONLY, obja=OBJVALUE(a), aname=name(a)
 PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm()
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
-PROPERTIES(s) storeSizeName, storeSizeCode, storeIsHuge, storeIsHuge2
+PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, ssc2=storeSizeCode, storeIsHuge, storeIsHuge2
 PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
 FILTERGROUP filters1
     FILTER 'Показывать только огромные склады' 'F10' NOT NULL storeIsHuge(s)
-ORDER BY name, foo
+ORDER BY sname, foo, ssel
 ;
 
 FORM editStore 'Редактирование склада'
@@ -569,7 +569,8 @@ DESIGN storeArticle FROM DEFAULT {
     }
 
     // настройка некоторых других свойств
-    PROPERTY(name(a)) {
+//    PROPERTY(name(a)) {
+    PROPERTY(aname) {
         // настройка свойств, соответсвующих клавишам
         editKey = 'ctrl F6';
 

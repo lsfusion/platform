@@ -42,7 +42,7 @@ public class SelectionProperty extends SessionDataProperty {
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form) {
         super.proceedDefaultDraw(entity, form);
         RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(form.genID());
         filterGroup.addFilter(new RegularFilterEntity(form.genID(),
