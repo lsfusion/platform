@@ -203,13 +203,12 @@ META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, capti
     prop##Date caption = DATA type (object1, object2, object3, DATE) IN group;
     name##prop##Date caption (object1, object2, object3, date) = name(prop##Date(object1, object2, object3, date));
     date##prop (object1, object2, object3, date) = GROUP MAX dateIn AND prop##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
-    prop##Val caption (object1, object2, object3, date) = prop##Date(object1, object2, object3, date##prop(object1, object2, object3, date));
-    prop caption (object1, object2, object3) = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2 AND  object3 IS object3,
-                                                     prop##Val(object1, object2, object3, currentDate());
+    prop##Val caption (object1, object2, object3, date) = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2 AND object3 IS object3 AND date IS DATE,
+                                                                         prop##Date(object1, object2, object3, date##prop(object1, object2, object3, date));
+    prop caption (object1, object2, object3) = prop##Val(object1, object2, object3, currentDate());
     name##prop caption (object1, object2, object3) = name(prop(object1, object2, object3)) IN group;
 
-    prop##Over caption = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2 AND object3 IS object3 AND date IS DATE,
-                                        prop##Val(object1, object2, object3, date), prop##Date(object1, object2, object3, date);
+    prop##Over caption = UNION OVERRIDE prop##Val(object1, object2, object3, date), prop##Date(object1, object2, object3, date);
     name##prop##Over caption (object1, object2, object3, date) = name(prop##Over(object1, object2, object3, date)) FIXEDCHARWIDTH 7;
 
     FORM addName##prop caption
@@ -1878,7 +1877,7 @@ recommendCountOrderSupplier 'Рекомендцемое количество т�
     UNION MAX (quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item)), minQuantityOrderItem(item)
     AND orderSupplier IS orderSupplier IF isEnoughItem(orderSupplier, item);
 
-isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
+isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentVal(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
 isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) == yesNo.yes;
 isSupplyDatePreliminaryOrder (preliminaryOrder, date) = dateSupplyPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
 
@@ -2930,8 +2929,10 @@ CLASS shipmentPosted 'Поставка (закрытая)': shipment;
 CLASS batch 'Партия';
 CLASS shipmentDetail 'Строка документа поставки': batch;
 
-waybillShipment 'Номер накладной' (shipment) = DATA STRING[7] (shipment) IN baseGroup;
+//шапка документа поставки
+waybillShipment 'Номер накладной' (shipment) = DATA STRING[7] (shipment) IN baseGroup FIXEDCHARWIDTH 7;
 dateWaybillShipment 'Дата поставки' (shipment) = DATA DATE (shipment) IN baseGroup;
+seriesWaybillShipment 'Серия накладной' (shipment) = DATA STRING[2] (shipment) IN baseGroup FIXEDCHARWIDTH 2;
 departmentStoreShipment 'Отдел поставки (ИД)' (shipment) = DATA departmentStore(shipment) IN idGroup;
 nameDepartmentStoreShipment 'Отдел поставки' (shipment) = name(departmentStoreShipment(shipment)) IN baseGroup;
 supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipment) IN idGroup;
@@ -3024,8 +3025,8 @@ CONSTRAINT priceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (ite
 CONSTRAINT priceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MSG 'Цена поставки меньше цены заказа';
 
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
-packQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM packQuantityItemOrderSupplier (orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
-isOrderedItemShipment 'Товар есть в заказах поставки' (item, shipment) =  packQuantityOrderedItemShipment(item, shipment) > 0;
+sumQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM sumQuantityItemOrderSupplier (orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
+isOrderedItemShipment 'Товар есть в заказах поставки' (item, shipment) =  sumQuantityOrderedItemShipment(item, shipment) > 0;
 isOrderedShipmentDetail 'Товар поставки есть в заказах поставки' (shipmentDetail) = isOrderedItemShipment(itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail));
 quantityOrderedShipmentDetailsShipment 'Количество позиций, для которых есть заказ' (shipment) = GROUP SUM 1 IF isOrderedShipmentDetail(shipmentDetail) AND shipmentShipmentDetail(shipmentDetail)==shipment BY shipment;
 percentOrderedShipmentDetailsShipment 'Процент позиций поставки, для которых есть заказ' (shipment) = [X*100/Y](quantityOrderedShipmentDetailsShipment(shipment), quantityShipmentDetailsShipment(shipment));
@@ -3040,11 +3041,15 @@ CONSTRAINT controlSupplierDepartmentStoreShipment (shipment) AND percentOrderedS
 isAvailableOrderShipment 'Заявка допустимая для заказа' (shipment, orderSupplier) = dateWaybillShipment (shipment) <= addDate2(dateOrderSupplier (orderSupplier), UNION OVERRIDE 0 IF shipment IS shipment, afterDaysSupplier (supplierShipment(shipment)));
 
 FORM ordersShipment 'Заказы'
-    OBJECTS s=shipment FIXED PANEL, o=orderSupplier
+    OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s) READONLY waybillShipment, dateWaybillShipment
-    PROPERTIES (s, o) inShipmentOrder
+
+    OBJECTS o=orderSupplier
     PROPERTIES (o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
-                   nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
+          nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
+
+    PROPERTIES (s, o) inShipmentOrder
+
     FILTERS NOT NULL isSupplierShipmentOrder (s, o),
             NOT NULL isDepartmentStoreShipmentOrder (s, o),
             NOT NULL isAvailableOrderShipment (s, o)
@@ -3054,8 +3059,9 @@ showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OB
 
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
-    PROPERTIES (s) waybillShipment, dateWaybillShipment, nameDepartmentStoreShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment, totalQuantityShipment,
-                    totalSumSupplierVATShipmentDetail, totalSumSupplierShipmentDetail, percentOrderedShipmentDetailsShipment, showFormOrdersShipment
+    PROPERTIES (s) waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameDepartmentStoreShipment,
+                   nameSupplierShipment, carryingChargesShipment, ordersShipment, totalQuantityShipment,
+                   totalSumSupplierVATShipmentDetail, totalSumSupplierShipmentDetail, percentOrderedShipmentDetailsShipment, showFormOrdersShipment
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d) numberShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail,
@@ -3067,12 +3073,29 @@ FORM shipment 'Поставка'
 
     FILTERS NOT NULL inShipmentShipmentDetail(s, d)
 
+    OBJECTS i=item
+    PROPERTIES (i) captionItem
+    PROPERTIES (i, s) quantityItemShipment, sumQuantityOrderedItemShipment
+
     EDIT shipment OBJECT s
 ;
 
+DESIGN shipment FROM DEFAULT{
+    main{
+        ADD new.box BEFORE functions.box{
+            tabbedPane = TRUE;
+            ADD d.box{
+                title = 'Спецификация';
+            };
+            ADD i.box;
+        }
+    }
+}
+
 FORM shipments 'Поставки'
     OBJECTS s=shipment
-    PROPERTIES (s) READONLY waybillShipment, dateWaybillShipment, nameDepartmentStoreShipment, nameSupplierShipment, carryingChargesShipment, ordersShipment, percentOrderedShipmentDetailsShipment
+    PROPERTIES (s) READONLY  waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameDepartmentStoreShipment, nameSupplierShipment,
+                            carryingChargesShipment, ordersShipment, percentOrderedShipmentDetailsShipment
     PROPERTIES (s) ADDFORM, EDITFORM, delete
 
     OBJECTS d=shipmentDetail
