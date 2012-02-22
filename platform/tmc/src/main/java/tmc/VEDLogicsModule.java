@@ -4523,7 +4523,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             // сколько в документе, сколько на остатках, уменьшаем на разницу
             KeyExpr docKey = new KeyExpr("doc"); KeyExpr articleKey = new KeyExpr("article");
-            Expr newQuantity = articleQuantity.getExpr(context.getModifier(), documentObject.getExpr(), articleKey).sum(freeIncOrderArticle.getExpr(context.getModifier(), documentObject.getExpr(), articleKey).scale(-1));
+            Expr newQuantity = articleQuantity.getExpr(context.getModifier(), documentObject.getExpr(), articleKey).diff(freeIncOrderArticle.getExpr(context.getModifier(), documentObject.getExpr(), articleKey));
             context.getSession().execute(articleQuantity.getDataChanges(newQuantity, newQuantity.getWhere().and(docKey.compare(documentObject, Compare.EQUALS)), context.getModifier(), docKey, articleKey), null, null);
 
             context.addAction(new MessageClientAction("Остатки были успешно обнулены", "Обнуление остатков"));

@@ -1021,18 +1021,37 @@ public abstract class LogicsModule {
     }
 
     protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String name, boolean persistent, String caption, PartitionType partitionType, boolean ascending, boolean includeLast, int partNum, Object... params) {
-        List<LI> li = readLI(params);
         List<PropertyInterface> interfaces = genInterfaces(getIntNum(params));
+        List<PropertyInterfaceImplement<PropertyInterface>> listImplements = mapLI(readLI(params), interfaces);
 
-        List<PropertyInterfaceImplement<PropertyInterface>> mainProp = PropertyUtils.mapLI(li.subList(0, 1), interfaces);
-        Collection<PropertyInterfaceImplement<PropertyInterface>> partitions = mapLI(li.subList(1, partNum + 1), interfaces);
+        List<PropertyInterfaceImplement<PropertyInterface>> mainProp = listImplements.subList(0, 1);
+        Collection<PropertyInterfaceImplement<PropertyInterface>> partitions = listImplements.subList(1, partNum + 1);
         OrderedMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
-                new OrderedMap<PropertyInterfaceImplement<PropertyInterface>, Boolean>(mapLI(li.subList(partNum + 1, li.size()), interfaces), !ascending);
+                new OrderedMap<PropertyInterfaceImplement<PropertyInterface>, Boolean>(listImplements.subList(partNum + 1, listImplements.size()), !ascending);
 
         PropertyMapImplement<P, PropertyInterface> orderProperty;
         orderProperty = (PropertyMapImplement<P, PropertyInterface>) DerivedProperty.createOProp(name, caption, partitionType, interfaces, mainProp, partitions, orders, includeLast);
 
         return addProperty(group, persistent, new LP<P>(orderProperty.property, BaseUtils.mapList(interfaces, BaseUtils.reverse(orderProperty.mapping))));
+    }
+
+    protected <P extends PropertyInterface> LP addRProp(AbstractGroup group, String name, boolean persistent, String caption, int intCount, Object... params) {
+        int innerCount = getIntNum(params);
+        List<PropertyInterface> innerInterfaces = genInterfaces(innerCount);
+        List<PropertyInterfaceImplement<PropertyInterface>> listImplement = mapLI(readLI(params), innerInterfaces);
+
+        List<RecursiveProperty.Interface> interfaces = RecursiveProperty.getInterfaces(intCount);
+        Map<RecursiveProperty.Interface, PropertyInterface> mapInterfaces = new HashMap<RecursiveProperty.Interface, PropertyInterface>();
+        for(int i=0;i<intCount;i++)
+            mapInterfaces.put(interfaces.get(i), innerInterfaces.get(i));
+        Map<PropertyInterface, PropertyInterface> mapIterate = new HashMap<PropertyInterface, PropertyInterface>();// старые на новые;
+        for(int i=intCount;i<innerCount;i++) // старые на новые
+            mapIterate.put(innerInterfaces.get(i), innerInterfaces.get(i-(innerCount-intCount)));
+        RecursiveProperty<PropertyInterface> property = new RecursiveProperty<PropertyInterface>(name, caption, interfaces, mapInterfaces, mapIterate, listImplement.get(0), listImplement.get(1));
+
+        addProperty(null, new LP(property.getConstrainedProperty()));
+
+        return addProperty(group, persistent, new LP<RecursiveProperty.Interface>(property, interfaces));
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LP addUGProp(AbstractGroup group, String caption, boolean ascending, LP<R> restriction, LP<L> ungroup, Object... params) {

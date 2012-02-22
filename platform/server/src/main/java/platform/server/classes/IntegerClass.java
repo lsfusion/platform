@@ -82,7 +82,7 @@ public class IntegerClass extends IntegralClass<Integer> {
     }
 
     @Override
-    public Object getInfiniteValue() {
+    public Number getInfiniteValue() {
         return Integer.MAX_VALUE / 2;
     }
 

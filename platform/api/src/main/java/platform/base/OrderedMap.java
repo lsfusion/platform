@@ -11,6 +11,10 @@ public class OrderedMap<K,V> extends LinkedHashMap<K,V> {
         super(orderedMap);
     }
 
+    public OrderedMap(Map<? extends K, ? extends V> map) {
+        super(map);
+    }
+
     public OrderedMap(List<K> list, V value) {
         for(K item : list)
             put(item, value);

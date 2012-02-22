@@ -8,6 +8,7 @@ import platform.server.caches.ManualLazy;
 import platform.server.caches.PackInterface;
 import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
+import platform.server.classes.IntegralClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
@@ -95,6 +96,10 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         map.add(this,coeff);
         return map.getExpr();
     }
+    
+    public Expr mult(Expr expr, IntegralClass intClass) {
+        return FormulaExpr.create2(FormulaExpr.MULT2, intClass, this, expr);
+    }
 
     public Expr sum(Expr expr) {
         if(getWhere().means(expr.getWhere().not())) // если не пересекаются то возвращаем case
@@ -104,6 +109,10 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         map.add(this,1);
         map.add(expr,1);
         return map.getExpr();
+    }
+
+    public Expr diff(Expr expr) {
+        return sum(expr.scale(-1));
     }
 
     public Expr and(Where where) {

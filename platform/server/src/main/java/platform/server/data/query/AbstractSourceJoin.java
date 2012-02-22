@@ -10,6 +10,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.PartitionExpr;
+import platform.server.data.expr.query.RecursiveExpr;
 import platform.server.data.expr.query.SubQueryExpr;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
@@ -46,6 +47,10 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
 
         public String getSource(PartitionExpr partitionExpr) {
             return partitionExpr.toString();
+        }
+
+        public String getSource(RecursiveExpr recursiveExpr) {
+            return recursiveExpr.toString();
         }
 
         public String getSource(SubQueryExpr subQueryExpr) {

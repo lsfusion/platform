@@ -233,7 +233,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public Type getKeyType(KeyExpr expr) {
-        return getClassWhere().getType(expr);
+        return getClassWhere().getKeyType(expr);
     }
     public Stat getKeyStat(KeyExpr key) {
         return getClassWhere().getKeyStat(key);

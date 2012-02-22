@@ -17,12 +17,15 @@ import platform.server.data.query.JoinData;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 public class FormulaExpr extends StaticClassExpr {
 
     public final static String MIN2 = "(prm1+prm2-ABS(prm1-prm2))/2"; // пока так сделаем min и проверку на infinite
+    public final static String MULT2 = "(prm1*prm2)";
 
     private final String formula;
     private final ConcreteValueClass valueClass;
@@ -46,6 +49,16 @@ public class FormulaExpr extends StaticClassExpr {
         }
 
         return BaseExpr.create(new FormulaExpr(formula, params, value));
+    }
+
+    public static Expr create1(final String formula, final ConcreteValueClass value,Expr prm1) {
+        return create(formula, value, Collections.singletonMap("prm1", prm1));
+    }
+    public static Expr create2(final String formula, final ConcreteValueClass value,Expr prm1, Expr prm2) {
+        Map<String, Expr> params = new HashMap<String, Expr>();
+        params.put("prm1", prm1);
+        params.put("prm2", prm2);
+        return create(formula, value, params);
     }
 
     public static Expr create(final String formula, final ConcreteValueClass value,Map<String,? extends Expr> params) {

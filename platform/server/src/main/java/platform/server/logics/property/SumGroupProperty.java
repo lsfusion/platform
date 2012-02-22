@@ -40,7 +40,7 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
 
     public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
-        return changedExpr.sum(changedPrevExpr.scale(-1)).sum(getExpr(joinImplement));
+        return changedExpr.diff(changedPrevExpr).sum(getExpr(joinImplement));
     }
 
     private PropertyMapImplement<ClassPropertyInterface, Interface<I>> nullImplement;

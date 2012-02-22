@@ -54,7 +54,7 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
     public String reformatString(String string) {
         DecimalFormat format = (DecimalFormat) getDefaultFormat();
         if (format.getDecimalFormatSymbols().getGroupingSeparator() != '.')
-            return string.replaceAll(",", ".");
+            return string.replace(",", ".");
         else
             return string;
     }

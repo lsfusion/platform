@@ -9,6 +9,7 @@ import platform.server.data.type.TypeSerializer;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 public abstract class Field extends TwinImmutableObject {
     public String name;
@@ -27,6 +28,13 @@ public abstract class Field extends TwinImmutableObject {
         this.type = type;
     }
 
+    public static String getDeclare(Map<String, Type> map, SQLSyntax syntax) {
+        String result = "";
+        for(Map.Entry<String, Type> entry : map.entrySet())
+            result = (result.length()==0?"":result + ',') + entry.getKey() + " " + entry.getValue().getDB(syntax);
+        return result;
+    }
+    
     public String getDeclare(SQLSyntax syntax) {
         return name + " " + type.getDB(syntax);
     }

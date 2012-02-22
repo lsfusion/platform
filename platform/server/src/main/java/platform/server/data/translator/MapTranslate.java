@@ -37,6 +37,8 @@ public interface MapTranslate extends MapObject {
 
     <K> Map<KeyExpr,K> translateMapKeys(Map<KeyExpr, K> map);
 
+    <K extends BaseExpr> Map<KeyExpr,K> translateMap(Map<KeyExpr, K> map);
+
     <K> QuickMap<KeyExpr,K> translateMapKeys(QuickMap<KeyExpr, K> map);
 
     <K> Map<K, Expr> translate(Map<K, ? extends Expr> map);

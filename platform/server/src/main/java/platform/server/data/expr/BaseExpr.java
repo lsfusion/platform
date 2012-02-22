@@ -11,6 +11,7 @@ import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.ExprCaseList;
 import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.expr.where.extra.GreaterWhere;
+import platform.server.data.expr.where.extra.InArrayWhere;
 import platform.server.data.expr.where.extra.LikeWhere;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
@@ -100,6 +101,8 @@ public abstract class BaseExpr extends Expr {
                 return LikeWhere.create(expr, this, true);
             case LIKE:
                 return LikeWhere.create(expr, this, false);
+            case INARRAY:
+                return InArrayWhere.create(expr, this);
         }
         throw new RuntimeException("should not be");
     }

@@ -28,6 +28,11 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
         reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
         return true;
     }
+    
+    @Override
+    public Number getInfiniteValue() {
+        throw new RuntimeException("not supported");
+    }
 
     abstract int getWhole();
     abstract int getPrecision();

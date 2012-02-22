@@ -83,14 +83,26 @@ public class DerivedProperty {
         return new PropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
     }
 
-    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createCompare(Collection<T> interfaces, PropertyInterfaceImplement<T> distribute, PropertyInterfaceImplement<T> previous, Compare compare) {
+    public static <T extends PropertyInterface> PropertyMapImplement<?, T> createCompare(Compare compare, T operator1, T operator2) {
+        CompareFormulaProperty compareProperty = new CompareFormulaProperty(genID(),compare);
+
+        Map<CompareFormulaProperty.Interface,T> mapImplement = new HashMap<CompareFormulaProperty.Interface, T>();
+        mapImplement.put(compareProperty.operator1, operator1);
+        mapImplement.put(compareProperty.operator2, operator2);
+
+        return new PropertyMapImplement<CompareFormulaProperty.Interface, T>(compareProperty,mapImplement);
+    }
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createCompare(String caption, Collection<T> interfaces, PropertyInterfaceImplement<T> distribute, PropertyInterfaceImplement<T> previous, Compare compare) {
         List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(interfaces.size());
         Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(interfaces, listInterfaces);
-        JoinProperty<CompareFormulaProperty.Interface> joinProperty = new JoinProperty<CompareFormulaProperty.Interface>(genID(),"sys",
+        JoinProperty<CompareFormulaProperty.Interface> joinProperty = new JoinProperty<CompareFormulaProperty.Interface>(genID(),caption,
                 listInterfaces,false, compareJoin(compare, distribute.map(joinMap), previous.map(joinMap)));
         return new PropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
     }
-
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createCompare(Collection<T> interfaces, PropertyInterfaceImplement<T> distribute, PropertyInterfaceImplement<T> previous, Compare compare) {
+        return createCompare("sys", interfaces, distribute, previous, compare);
+    }
+    
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(String name, String caption, Collection<T> interfaces, PropertyInterfaceImplement<T> object, List<PropertyInterfaceImplement<T>> ands, List<Boolean> nots) {
         if(ands.size()==0 && object instanceof PropertyMapImplement)
             return (PropertyMapImplement<?,T>)object;
@@ -111,7 +123,7 @@ public class DerivedProperty {
     }
 
 
-    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, Collection<PropertyInterfaceImplement<T>> ands) {
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, Collection<PropertyInterfaceImplement<T>> ands) {
         return createAnd(genID(), "sys", interfaces, object, ands);
     }
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(String name, String caption, Collection<T> interfaces, PropertyInterfaceImplement<T> object, Collection<PropertyInterfaceImplement<T>> ands) {

@@ -87,6 +87,13 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K, V> OrderedMap<K, V> mapOrder(List<? extends K> list, Map<K, ? extends V> map) {
+        OrderedMap<K, V> result = new OrderedMap<K, V>();
+        for (K element : list)
+            result.put(element, map.get(element));
+        return result;
+    }
+
     public static <K, E, V> OrderedMap<V, E> mapOrder(OrderedMap<K, E> list, Map<K, ? extends V> map) { // map предполагается reversed
         OrderedMap<V, E> result = new OrderedMap<V, E>();
         for (Map.Entry<K, E> entry : list.entrySet())

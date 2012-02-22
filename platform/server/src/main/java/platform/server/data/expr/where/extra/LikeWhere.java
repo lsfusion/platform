@@ -38,9 +38,10 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
     }
 
     protected String getCompareSource(CompileSource compile) {
-        return " LIKE ";
+        throw new RuntimeException("not supported");
     }
 
+    @Override
     public String getSource(CompileSource compile) {
         String likeString = operator1.getType(compile.keyType) instanceof InsensitiveStringClass
                                ? " " + compile.syntax.getInsensitiveLike() + " " : " LIKE ";

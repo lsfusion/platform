@@ -107,7 +107,7 @@ public class NumericClass extends IntegralClass<Double> {
     }
 
     @Override
-    public Object getInfiniteValue() {
+    public Number getInfiniteValue() {
         return Double.MAX_VALUE / 2;
     }
 

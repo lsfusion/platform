@@ -43,10 +43,10 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     public abstract IQuery<K, V> translateQuery(MapTranslate translate);
 
     public CompiledQuery<K,V> compile(SQLSyntax syntax) {
-        return compile(syntax, new OrderedMap<V, Boolean>(), 0, "");
+        return compile(syntax, new OrderedMap<V, Boolean>(), 0, SubQueryContext.EMPTY, false);
     }
 
-    public abstract CompiledQuery<K,V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, Integer top, String prefix);
+    public abstract CompiledQuery<K,V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, Integer top, SubQueryContext subcontext, boolean recursive);
 
     public abstract <B> ClassWhere<B> getClassWhere(Collection<? extends V> classProps);
 

@@ -42,6 +42,16 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return result;
         }
 
+        public And<K> keep(Collection<? extends K> keys) {
+            And<K> result = new And<K>();
+            for(int i=0;i<size;i++) {
+                K key = getKey(i);
+                if(keys.contains(key))
+                    result.add(key, getValue(i));
+            }
+            return result;
+        }
+
         protected AndClassSet addValue(K key, AndClassSet prevValue, AndClassSet newValue) {
             AndClassSet andValue = prevValue.and(newValue);
             if(andValue.isEmpty())

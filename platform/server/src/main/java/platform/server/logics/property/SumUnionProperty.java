@@ -37,7 +37,7 @@ public class SumUnionProperty extends IncrementUnionProperty {
             WhereBuilder changedOperandWhere = new WhereBuilder();
             Expr newOperandExpr = operandCoeff.getKey().mapExpr(joinImplement, propChanges, changedOperandWhere);
             Expr prevOperandExpr = operandCoeff.getKey().mapExpr(joinImplement);
-            result = result.sum(newOperandExpr.sum(prevOperandExpr.scale(-1)).and(changedOperandWhere.toWhere()).scale(operandCoeff.getValue()));
+            result = result.sum(newOperandExpr.diff(prevOperandExpr).and(changedOperandWhere.toWhere()).scale(operandCoeff.getValue()));
             if(changedWhere!=null) changedWhere.add(changedOperandWhere.toWhere());
         }
         return result;

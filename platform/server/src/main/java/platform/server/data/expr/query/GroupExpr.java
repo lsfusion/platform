@@ -11,6 +11,7 @@ import platform.server.data.expr.where.pull.*;
 import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.query.AndContext;
 import platform.server.data.query.CompileSource;
+import platform.server.data.query.SubQueryContext;
 import platform.server.data.query.innerjoins.*;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.sql.SQLSyntax;
@@ -171,14 +172,14 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         return createOuterGroupCases(translator.translate(group), query, new HashMap<BaseExpr, BaseExpr>());
     }
 
-    public String getExprSource(CompileSource source, String prefix) {
+    public String getExprSource(CompileSource source, SubQueryContext subcontext) {
 
         Set<Expr> queryExprs = BaseUtils.mergeSet(group.keySet(), query.getExprs()); // так как может одновременно и SUM и MAX нужен
 
         Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
         Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
         String fromSelect = new platform.server.data.query.Query<KeyExpr,Expr>(getInner().getInnerKeys().toMap(),BaseUtils.toMap(queryExprs), Expr.getWhere(queryExprs))
-            .compile(source.syntax, prefix).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, source.params);
+            .compile(source.syntax, subcontext).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, source.params, null);
         for(Map.Entry<Expr, BaseExpr> groupEntry : group.entrySet())
             whereSelect.add(fromPropertySelect.get(groupEntry.getKey())+"="+groupEntry.getValue().getSource(source));
 

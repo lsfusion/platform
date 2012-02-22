@@ -40,6 +40,13 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
         return transMap;
     }
 
+    public <K extends BaseExpr> Map<KeyExpr,K> translateMap(Map<KeyExpr, K> map) {
+        Map<KeyExpr, K> transMap = new HashMap<KeyExpr, K>();
+        for(Map.Entry<KeyExpr,K> entry : map.entrySet())
+            transMap.put(entry.getKey().translateOuter(this), (K) entry.getValue().translateOuter(this));
+        return transMap;
+    }
+
     public <K> QuickMap<KeyExpr,K> translateMapKeys(QuickMap<KeyExpr, K> map) {
         QuickMap<KeyExpr, K> transMap = new SimpleMap<KeyExpr, K>();
         for(int i=0;i<map.size;i++)

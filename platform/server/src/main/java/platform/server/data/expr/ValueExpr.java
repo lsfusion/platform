@@ -61,8 +61,12 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
         return compile.params.get(this);
     }
 
-    public Type getType(KeyType keyType) {
+    public Type getType() {
         return objectClass.getType();
+    }
+
+    public Type getType(KeyType keyType) {
+        return getType();
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {

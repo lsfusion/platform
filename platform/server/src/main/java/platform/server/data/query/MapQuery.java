@@ -11,7 +11,6 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
-import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.where.classes.ClassWhere;
 
 import java.sql.SQLException;
@@ -48,8 +47,8 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
         this.mapValues = mapValues;
     }
 
-    public CompiledQuery<K, V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, Integer top, String prefix) {
-        return new CompiledQuery<K,V>(query.compile(syntax, orders.map(mapProps), top, prefix),mapKeys,mapProps,mapValues);
+    public CompiledQuery<K, V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, Integer top, SubQueryContext subcontext, boolean recursive) {
+        return new CompiledQuery<K,V>(query.compile(syntax, orders.map(mapProps), top, subcontext, recursive),mapKeys,mapProps,mapValues);
     }
 
     public <B> ClassWhere<B> getClassWhere(Collection<? extends V> classProps) {

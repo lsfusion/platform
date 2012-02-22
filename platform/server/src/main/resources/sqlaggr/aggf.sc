@@ -113,3 +113,86 @@ CREATE AGGREGATE DISTR_CUM_PROPORTION (double precision, double precision, doubl
     stype = propdistr,
     finalfunc = resultProp
 );
+
+CREATE OR REPLACE FUNCTION recursion(rectable text, initial text, step text, VARIADIC params char[]) RETURNS SETOF RECORD AS
+$$
+    DECLARE inserted INT;
+    DECLARE toggler BOOLEAN;
+    DECLARE stepnext TEXT;
+    DECLARE nextrectable TEXT;
+    BEGIN
+
+    nextrectable = 'nt' || rectable || 'it';
+	stepnext = replace(step, rectable, nextrectable);
+	EXECUTE 'CREATE TEMP TABLE ' || rectable || ' AS ' || initial USING params;
+	GET DIAGNOSTICS inserted = ROW_COUNT;
+	EXECUTE 'CREATE TEMP TABLE ' || nextrectable || ' AS SELECT * FROM ' || rectable || ' LIMIT 0';
+
+	WHILE inserted > 0 LOOP
+		IF toggler THEN
+			RETURN QUERY EXECUTE 'SELECT * FROM ' || nextrectable;
+			EXECUTE 'INSERT INTO ' || rectable || ' ' || stepnext USING params;
+			GET DIAGNOSTICS inserted = ROW_COUNT;
+			EXECUTE 'DELETE FROM ' || nextrectable;
+			toggler = FALSE;
+		ELSE
+			RETURN QUERY EXECUTE 'SELECT * FROM ' || rectable;
+			EXECUTE 'INSERT INTO ' || nextrectable || ' ' || step USING params;
+			GET DIAGNOSTICS inserted = ROW_COUNT;
+			EXECUTE 'DELETE FROM ' || rectable;
+			toggler = TRUE;
+		END IF;
+	END LOOP;
+
+	EXECUTE 'DROP TABLE ' || nextrectable;
+	EXECUTE 'DROP TABLE ' || rectable;
+    END
+ $$ LANGUAGE 'plpgsql' VOLATILE;
+
+CREATE OR REPLACE FUNCTION array_setadd(anyarray, anyarray) RETURNS anyarray AS
+$$
+	DECLARE length1 int;
+	DECLARE length2 int;
+	DECLARE i int;
+	DECLARE j int;
+BEGIN
+	length1 = array_upper($1,1);
+	length2 = array_upper($2,1);
+	IF length1 IS NULL OR length1 = 0 THEN
+		RETURN $2;
+	END IF;
+	IF length2 IS NULL OR length2 = 0 THEN
+		RETURN $1;
+	END IF;
+
+	j=1;
+	i=1;
+	IF length1 < length2 THEN
+		WHILE i<=length1 LOOP
+			IF NOT ($1[i] = ANY ($2)) THEN
+				$2[length2+j] = $1[i];
+				j=j+1;
+			END IF;
+			i=i+1;
+		END LOOP;
+		RETURN $2;
+	ELSE
+		WHILE i<=length2 LOOP
+			IF NOT ($2[i] = ANY ($1)) THEN
+				$1[length1+j] = $2[i];
+				j=j+1;
+			END IF;
+			i=i+1;
+		END LOOP;
+		RETURN $1;
+	END IF;
+END
+$$ LANGUAGE 'plpgsql' IMMUTABLE;
+
+DROP AGGREGATE IF EXISTS AGGAR_SETADD(anyarray) CASCADE;
+
+CREATE AGGREGATE AGGAR_SETADD (anyarray) (
+    sfunc = array_setadd,
+    stype = anyarray,
+    initcond = '{}'
+);

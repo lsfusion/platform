@@ -65,13 +65,15 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return new StatKeys<KeyField>(distinctKeys.getMax().min(stat), distinctKeys);
     }
 
-    protected static Map<PropertyField, Stat> getStatProps(Table table, int count) { // для мн-го наследования
-        Stat stat = new Stat(count);
-
+    protected static Map<PropertyField, Stat> getStatProps(Table table, Stat stat) { // для мн-го наследования
         Map<PropertyField, Stat> result = new HashMap<PropertyField, Stat>();
         for(PropertyField prop : table.properties)
             result.put(prop, getFieldStat(prop, stat));
         return result;
+    }
+    
+    protected static Map<PropertyField, Stat> getStatProps(Table table, int count) { // для мн-го наследования
+        return getStatProps(table, new Stat(count));
     }
 
     public boolean isSingle() {

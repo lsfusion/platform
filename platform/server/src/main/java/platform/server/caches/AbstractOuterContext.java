@@ -128,6 +128,13 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
         return hash;
     }
 
+    public static int hashMapOuter(Map<? extends OuterContext, ? extends OuterContext> map, HashContext hashContext) {
+        int hash = 0;
+        for(Map.Entry<? extends OuterContext, ? extends OuterContext> entry : map.entrySet())
+            hash += entry.getKey().hashOuter(hashContext) ^ entry.getValue().hashOuter(hashContext);
+        return hash;
+    }
+
     public static int hashKeysOuter(QuickMap<? extends OuterContext, ?> map, HashContext hashContext) {
         int hash = 0;
         for(int i=0;i<map.size;i++)

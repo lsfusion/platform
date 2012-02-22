@@ -258,20 +258,23 @@ public class Query<K,V> extends IQuery<K,V> {
         return new Query<K,V>(BaseUtils.filterNotKeys(mapKeys, pullKeys.keySet()), BaseUtils.filterNotKeys(transProps, pullProps.keySet()), transWhere);
     }
 
-    public CompiledQuery<K,V> compile(SQLSyntax syntax) {
-        return compile(syntax, new OrderedMap<V, Boolean>(), 0);
-    }
     public CompiledQuery<K,V> compile(SQLSyntax syntax,OrderedMap<V,Boolean> orders,int selectTop) {
-        return compile(syntax, orders, selectTop, "");
+        return compile(syntax, orders, selectTop, SubQueryContext.EMPTY);
     }
-    public CompiledQuery<K,V> compile(SQLSyntax syntax, String prefix) {
-        return compile(syntax, new OrderedMap<V, Boolean>(), 0, prefix);
+    public CompiledQuery<K,V> compile(SQLSyntax syntax, SubQueryContext subcontext) {
+        return compile(syntax, new OrderedMap<V, Boolean>(), 0, subcontext);
+    }
+    public CompiledQuery<K,V> compile(SQLSyntax syntax, SubQueryContext subcontext, boolean recursive) {
+        return compile(syntax, new OrderedMap<V, Boolean>(), 0, subcontext, recursive);
+    }
+    public CompiledQuery<K,V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, Integer selectTop, SubQueryContext subcontext) {
+        return compile(syntax, orders, selectTop, subcontext, false);
     }
     @SynchronizedLazy
     @Pack
     @Message("message.core.query.compile")
-    public CompiledQuery<K,V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, Integer selectTop, String prefix) {
-        return new CompiledQuery<K,V>(this, syntax, orders, selectTop, prefix);
+    public CompiledQuery<K,V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, Integer selectTop, SubQueryContext subcontext, boolean recursive) {
+        return new CompiledQuery<K,V>(this, syntax, orders, selectTop, subcontext, recursive);
     }
 
     public Collection<GroupJoinsWhere> getWhereJoins(boolean tryExclusive, Result<Boolean> isExclusive) {

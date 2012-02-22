@@ -8,6 +8,7 @@ import platform.base.Result;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.data.expr.Expr;
+import platform.server.data.query.ExecuteEnvironment;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
@@ -165,14 +166,14 @@ public class SQLSession extends MutableObject {
         createString = createString + "," + getConstraintDeclare(table, keys);
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
-        executeDDL("CREATE TABLE " + table + " (" + createString + ")", false);
+        executeDDL("CREATE TABLE " + table + " (" + createString + ")");
         addExtraIndices(table, keys);
         logger.info(" Done");
     }
 
     public void dropTable(String table) throws SQLException {
         logger.info(ServerResourceBundle.getString("data.table.deletion") + " " + table + "... ");
-        executeDDL("DROP TABLE " + table, false);
+        executeDDL("DROP TABLE " + table);
         logger.info(" Done");
     }
 
@@ -189,13 +190,13 @@ public class SQLSession extends MutableObject {
         for (String indexField : fields)
             columns = (columns.length() == 0 ? "" : columns + ",") + indexField;
 
-        executeDDL("CREATE INDEX " + getIndexName(table, fields) + " ON " + table + " (" + columns + ")", false);
+        executeDDL("CREATE INDEX " + getIndexName(table, fields) + " ON " + table + " (" + columns + ")");
         logger.info(" Done");
     }
 
     public void dropIndex(String table, Collection<String> fields) throws SQLException {
         logger.info(ServerResourceBundle.getString("data.index.deletion") + " " + getIndexName(table, fields) + "... ");
-        executeDDL("DROP INDEX " + getIndexName(table, fields), false);
+        executeDDL("DROP INDEX " + getIndexName(table, fields));
         logger.info(" Done");
     }
 
@@ -227,20 +228,20 @@ public class SQLSession extends MutableObject {
 
     public void addColumn(String table, PropertyField field) throws SQLException {
         logger.info(ServerResourceBundle.getString("data.column.adding") + " " + table + "." + field.name + "... ");
-        executeDDL("ALTER TABLE " + table + " ADD " + field.getDeclare(syntax), false); //COLUMN
+        executeDDL("ALTER TABLE " + table + " ADD " + field.getDeclare(syntax)); //COLUMN
         logger.info(" Done");
     }
 
     public void dropColumn(String table, String field) throws SQLException {
         logger.info(ServerResourceBundle.getString("data.column.deletion") + " " + table + "." + field + "... ");
-        executeDDL("ALTER TABLE " + table + " DROP COLUMN " + field, false);
+        executeDDL("ALTER TABLE " + table + " DROP COLUMN " + field);
         logger.info(" Done");
     }
 
     public void modifyColumn(String table, PropertyField field, Type oldType) throws SQLException {
         logger.info(ServerResourceBundle.getString("data.column.type.changing") + " " + table + "." + field.name + "... ");
         executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.name + " TYPE " +
-                field.type.getDB(syntax) + " " + syntax.typeConvertSuffix(oldType, field.type, field.name), false);
+                field.type.getDB(syntax) + " " + syntax.typeConvertSuffix(oldType, field.type, field.name));
         logger.info(" Done");
     }
 
@@ -303,7 +304,7 @@ public class SQLSession extends MutableObject {
     // напрямую не используется, только через Pool
 
     private void dropTemporaryTableFromDB(String tableName) throws SQLException {
-        executeDDL(syntax.getDropSessionTable(tableName), true);
+        executeDDL(syntax.getDropSessionTable(tableName), ExecuteEnvironment.NOREEADONLY);
     }
 
     public void createTemporaryTable(String name, List<KeyField> keys, Collection<PropertyField> properties) throws SQLException {
@@ -315,23 +316,36 @@ public class SQLSession extends MutableObject {
         for (PropertyField prop : properties)
             createString = (createString.length() == 0 ? "" : createString + ',') + prop.getDeclare(syntax);
         createString = createString + "," + getConstraintDeclare(name, keys);
-        executeDDL(syntax.getCreateSessionTable(name, createString), true);
+        executeDDL(syntax.getCreateSessionTable(name, createString), ExecuteEnvironment.NOREEADONLY);
     }
 
     public void analyzeSessionTable(String table) throws SQLException {
 //        if(inTransaction)
-        executeDDL("ANALYZE " + table, true);
+        executeDDL("ANALYZE " + table, ExecuteEnvironment.NOREEADONLY);
 //        else
 //            executeDerived("VACUUM ANALYZE " + table);
     }
 
-    private void executeDDL(String DDL, boolean temporary) throws SQLException {
+    public void pushNoReadOnly(Connection connection) throws SQLException {
+        if(inTransaction==0)
+            connection.setReadOnly(false);
+    }
+    public void popNoReadOnly(Connection connection) throws SQLException {
+        if(inTransaction==0)
+            connection.setReadOnly(true);
+    }
+
+
+    private void executeDDL(String DDL) throws SQLException {
+        executeDDL(DDL, ExecuteEnvironment.EMPTY);
+    }
+
+    private void executeDDL(String DDL, ExecuteEnvironment env) throws SQLException {
         Connection connection = getConnection();
 
         logger.info(DDL);
 
-        if(temporary && inTransaction == 0) // если temporary таблица то для DDL надо выключать read-only
-            connection.setReadOnly(false);
+        env.before(this, connection);
 
         Statement statement = connection.createStatement();
         try {
@@ -342,15 +356,14 @@ public class SQLSession extends MutableObject {
         } finally {
             statement.close();
 
-            if(temporary && inTransaction == 0)
-                connection.setReadOnly(true);
+            env.after(this, connection);
 
             returnConnection(connection);
         }
     }
 
     private int executeDML(SQLExecute execute) throws SQLException {
-        return executeDML(execute.command, execute.params);
+        return executeDML(execute.command, execute.params, execute.env);
     }
 
     private boolean explainAnalyzeMode = false;
@@ -366,10 +379,12 @@ public class SQLSession extends MutableObject {
     }
 
     @Message("message.sql.execute")
-    private int executeDML(@ParamMessage String command, Map<String, ParseInterface> paramObjects) throws SQLException {
+    private int executeDML(@ParamMessage String command, Map<String, ParseInterface> paramObjects, ExecuteEnvironment env) throws SQLException {
         Connection connection = getConnection();
 
         logger.info(command);
+
+        env.before(this, connection);
 
         PreparedStatement statement = getStatement((explainAnalyzeMode?"EXPLAIN ANALYZE ":"") + command, paramObjects, connection, syntax);
 
@@ -385,6 +400,8 @@ public class SQLSession extends MutableObject {
             throw e;
         } finally {
             statement.close();
+
+            env.after(this, connection);
 
             returnConnection(connection);
         }
@@ -412,10 +429,12 @@ public class SQLSession extends MutableObject {
     }
 
     @Message("message.sql.execute")
-    public <K,V> OrderedMap<Map<K, Object>, Map<V, Object>> executeSelect(@ParamMessage String select, Map<String, ParseInterface> paramObjects, Map<K, String> keyNames, Map<K, ? extends Reader> keyReaders, Map<V, String> propertyNames, Map<V, ? extends Reader> propertyReaders) throws SQLException {
+    public <K,V> OrderedMap<Map<K, Object>, Map<V, Object>> executeSelect(@ParamMessage String select, ExecuteEnvironment env, Map<String, ParseInterface> paramObjects, Map<K, String> keyNames, Map<K, ? extends Reader> keyReaders, Map<V, String> propertyNames, Map<V, ? extends Reader> propertyReaders) throws SQLException {
         Connection connection = getConnection();
 
         logger.info(select);
+
+        env.before(this, connection);
 
         if(explainAnalyzeMode) {
             executeExplain(getStatement("EXPLAIN ANALYZE " + select, paramObjects, connection, syntax));
@@ -445,6 +464,8 @@ public class SQLSession extends MutableObject {
             throw e;
         } finally {
             statement.close();
+
+            env.after(this, connection);
 
             returnConnection(connection);
         }
@@ -542,7 +563,7 @@ public class SQLSession extends MutableObject {
             valueString = "0";
         }
 
-        executeDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", params);
+        executeDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", params, ExecuteEnvironment.EMPTY);
     }
 
     public void insertRecord(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) throws SQLException {
@@ -825,4 +846,9 @@ public class SQLSession extends MutableObject {
                 result.put(names.get(expr), exprs.get(expr));
         return result;
     }
+
+    public static OrderedMap<String, String> mapNames(Map<String, String> exprs, List<String> order) {
+        return mapNames(exprs, BaseUtils.toMap(exprs.keySet()), order);
+    }
+
 }

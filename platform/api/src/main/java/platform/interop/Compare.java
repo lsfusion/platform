@@ -7,7 +7,7 @@ import java.io.IOException;
 import static platform.base.ApiResourceBundle.getString;
 
 public enum Compare {
-    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, LIKE;
+    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, LIKE, INARRAY;
 
     public static Compare get(boolean min) {
         return min?Compare.LESS:Compare.GREATER;
@@ -31,6 +31,8 @@ public enum Compare {
                 return START_WITH;
             case 7:
                 return LIKE;
+            case 8:
+                return INARRAY;
         }
         throw new RuntimeException("Deserialize Compare");
     }
@@ -52,6 +54,8 @@ public enum Compare {
             case START_WITH:
                 return 6;
             case LIKE:
+                return 7;
+            case INARRAY:
                 return 7;
         }
         throw new RuntimeException("Serialize Compare");
@@ -80,6 +84,8 @@ public enum Compare {
                 return getString("interop.starts.with");
             case LIKE :
                 return "LIKE";
+            case INARRAY :
+                return "IN ARRAY";
         }
         throw new RuntimeException("Serialize Compare");
     }

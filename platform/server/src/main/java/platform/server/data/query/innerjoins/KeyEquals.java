@@ -106,8 +106,10 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
                         result.add(new KeyEqual(andEq), andWhere);
                 } else {
                     KeyEquals recEquals = andWhere.getKeyEquals();
-                    for(int i=0;i<recEquals.size;i++)
-                        result.add(new KeyEqual(BaseUtils.merge(andEq, recEquals.getKey(i).keyExprs)), recEquals.getValue(i));
+                    for(int i=0;i<recEquals.size;i++) {
+                        KeyEqual recEqual = recEquals.getKey(i);
+                        result.add(new KeyEqual((Map<KeyExpr, BaseExpr>) (Object) BaseUtils.merge(recEqual.getTranslator().translate(andEq), recEqual.keyExprs)), recEquals.getValue(i));
+                    }
                 }
             }
         return result;

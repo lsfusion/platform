@@ -7,6 +7,7 @@ import platform.server.classes.StaticCustomClass;
 import platform.server.data.query.CompileSource;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
+import platform.server.data.type.Type;
 
 public class StaticValueExpr extends StaticExpr<StaticClass> {
 
@@ -49,7 +50,9 @@ public class StaticValueExpr extends StaticExpr<StaticClass> {
             return object + " - " + objectClass + " sID";
         if(sID)
             return ((StaticCustomClass)objectClass).getString(object,compile.syntax);
-        else
-            return objectClass.getType().getString(object, compile.syntax);
+        else {
+            Type type = objectClass.getType(); // может нижнюю часть надо перенести в IntegralClass
+            return "CAST(" + type.getString(object, compile.syntax) + " AS " + type.getDB(compile.syntax) + ")";
+        }
     }
 }

@@ -30,7 +30,7 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
     private static Map<String, DataClass> sidToClass = new HashMap<String, DataClass>();
     protected String caption;
 
-    static void storeClass(String sid, DataClass cls) {
+    public static void storeClass(String sid, DataClass cls) {
         sidToClass.put(sid, cls);
     }
 

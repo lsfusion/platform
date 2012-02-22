@@ -27,6 +27,9 @@ import java.awt.event.KeyEvent;
 
 public class SampleLogicsModule extends LogicsModule {
 
+    private LP inGroup;
+    private LP inRecGroup;
+
     public SampleLogicsModule(BaseLogicsModule<SampleBusinessLogics> baseLM) {
         super("SampleLogicsModule");
         setBaseLogicsModule(baseLM);
@@ -106,6 +109,9 @@ public class SampleLogicsModule extends LogicsModule {
         parentGroup = addDProp(baseGroup, "parentGroup", "Родитель", articleGroup, articleGroup);
         articleToGroup = addDProp(baseGroup, "articleToGroup", "Группа товаров", articleGroup, article);
 
+        inGroup = addDProp(baseGroup, "inGroup", "Входит", LogicalClass.instance, articleGroup, articleGroup);
+        inRecGroup = addRProp(baseGroup, "inRecGroup", true, "Входит (рек)", 2, addJProp(baseLM.and1, is(articleGroup), 1, baseLM.equals2, 1, 2), 1, 2, inGroup, 3, 2);
+
         initNavigators();
     }
 
@@ -125,9 +131,11 @@ public class SampleLogicsModule extends LogicsModule {
             FormEntity storeArticleForm = new StoreArticleFormEntity(aggregateData, "storeArticleForm", "Товары по складам");
             FormEntity systemForm = new SystemFormEntity(aggregateData, "systemForm", "Движение (документ*товар)");
             FormEntity treeStoreArticleForm = new TreeStoreArticleFormEntity(aggregateData, "treeStoreArticleForm", "Товары по складам (дерево)");
+            FormEntity treeForm = new TreeFormEntity(aggregateData, "treeForm", "Дерево групп");
             addFormEntity(storeArticleForm);
             addFormEntity(systemForm);
             addFormEntity(treeStoreArticleForm);
+            addFormEntity(treeForm);
 
 //        extIncomeDocument.relevantElements.set(0, extIncDetailForm);
     }
@@ -208,6 +216,36 @@ public class SampleLogicsModule extends LogicsModule {
 //            design.get(getPropertyDraw(documentStore)).autoHide = true;
 
             return design;
+        }
+    }
+
+    private class TreeFormEntity extends FormEntity {
+
+        public TreeFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            ObjectEntity objArtGroup1 = addSingleGroupObject(articleGroup, baseLM.name, articleGroupDescription);
+            addObjectActions(this, objArtGroup1);
+
+            ObjectEntity objArtGroup2 = addSingleGroupObject(articleGroup, baseLM.name, articleGroupDescription);
+            addObjectActions(this, objArtGroup2);
+
+            addPropertyDraw(inGroup, objArtGroup1, objArtGroup2);
+            addPropertyDraw(inRecGroup, objArtGroup1, objArtGroup2);
+            addPropertyDraw(inRecGroup, objArtGroup2, objArtGroup1);
+
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(getPropertyObject(inGroup)),
+                    "В группе",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(getPropertyObject(inRecGroup)),
+                    "В рек. группе",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F9, InputEvent.SHIFT_DOWN_MASK)));
+            addRegularFilterGroup(filterGroup);
+
+//            addHintsNoUpdate(inRecGroup);
         }
     }
 

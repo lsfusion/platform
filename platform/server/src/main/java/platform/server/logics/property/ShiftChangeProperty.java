@@ -110,7 +110,7 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         Expr propertyExpr = property.getExpr(mapKeys, propChanges);
         ValueExpr shiftExpr = new ValueExpr(1, (IntegralClass) property.getType());
 
-        return property.getDataChanges(new PropertyChange<P>(mapKeys, propertyExpr.sum(shiftExpr.scale(-1)).and(propertyExpr.compare(shiftExpr, Compare.EQUALS).not()).
+        return property.getDataChanges(new PropertyChange<P>(mapKeys, propertyExpr.diff(shiftExpr).and(propertyExpr.compare(shiftExpr, Compare.EQUALS).not()).
             ifElse(reverseWhere,propertyExpr.sum(shiftExpr)), change.where), propChanges, changedWhere).
                 add(reverse.mapJoinDataChanges(mapKeys, CaseExpr.NULL, reverseWhere, null, propChanges)).map(mapInterfaces); // reverse'им
     }

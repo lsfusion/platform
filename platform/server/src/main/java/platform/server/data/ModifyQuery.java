@@ -104,7 +104,7 @@ public class ModifyQuery {
                 throw new RuntimeException();
         }
 
-        return new SQLExecute(update,changeCompile.getQueryParams(env));
+        return new SQLExecute(update,changeCompile.getQueryParams(env), changeCompile.env);
     }
 
     public SQLExecute getInsertLeftKeys(SQLSyntax syntax) {
@@ -148,7 +148,7 @@ public class ModifyQuery {
         for(PropertyField propertyField : changeCompile.propertyOrder)
             insertString = (insertString.length()==0?"":insertString+",") + propertyField.name;
 
-        return new SQLExecute("INSERT INTO " + name + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax),changeCompile.getQueryParams(env));
+        return new SQLExecute("INSERT INTO " + name + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax),changeCompile.getQueryParams(env), changeCompile.env);
     }
 
     public SQLExecute getInsertSelect(SQLSyntax syntax) {
