@@ -2599,19 +2599,20 @@ inListInventoryPageList(listInventory, pageList) = listInventoryPageList(pageLis
 sumPageListInventory 'К-во страниц' (listInventory) = GROUP SUM 1 IF pageList IS pageList BY listInventoryPageList(pageList) IN adverbGroup;
 counterPageList(pageList) = PARTITION SUM 1 IF pageList IS pageList BY listInventoryPageList(pageList) ORDER pageList IN baseGroup;
 namePageList 'Номер страницы' (pageList) = castToString30('Страница ', counterPageList(pageList)) IN baseGroup;
-
 notePageList 'Примечание к странице' = DATA STRING[100] (pageList) IN baseGroup;
 
 pageListDetailPage(detailPage) = DATA pageList (detailPage) IN idGroup;
 inPageListDetailPage(pageList, detailPage) = pageListDetailPage(detailPage) == pageList;
 barcodeDetailPage(detailPage) = DATA barcode (detailPage) IN idGroup;
+nameBarcodeDetailPage 'Штрих-код' (detailPage) = barcodeEx(barcodeDetailPage(detailPage)) IN baseGroup;
 
 nameDetailPage 'Номер строки' (detailPage) = PARTITION SUM 1 IF detailPage IS detailPage BY listInventoryPageList(pageListDetailPage(detailPage)), pageListDetailPage(detailPage)  ORDER detailPage IN baseGroup;
 
-nameBarcodeDetailPage 'Штрих-код' (detailPage) = barcodeEx(barcodeDetailPage(detailPage)) IN baseGroup;
-// по Ш-К выбрать товар
-itemDetailPage(detailPage) = DATA item (detailPage) IN idGroup;       // потом переделаеть от Ш-К
-nameAttributeItemDetailPage 'Товар' (detailPage) = nameAttributeItem(itemDetailPage(detailPage)) IN baseGroup;
+skuBarcodeDetailPage 'Товар (ИД)' (detailPage) =  skuBarcode(barcodeDetailPage(detailPage)) IN idGroup;
+nameAttributeItemDetailPage 'Товар' (detailPage) = nameAttributeItem(skuBarcodeDetailPage(detailPage)) IN baseGroup;
+
+//itemDetailPage(detailPage) = DATA item (detailPage) IN idGroup;       // потом переделаеть от Ш-К
+//nameAttributeItemDetailPage 'Товар' (detailPage) = nameAttributeItem(itemDetailPage(detailPage)) IN baseGroup;
 
 quantityCountedDetailPage 'Количество посчитано' = DATA DOUBLE (detailPage) IN baseGroup;
 priceDetailPage 'Цена за ед.' = DATA INTEGER (detailPage) IN baseGroup;
@@ -2624,6 +2625,10 @@ totalPageList 'Сумма посчитанного' (pageList) = GROUP SUM total
 quantityDetailListInventory 'Количество строк' (listInventory) = GROUP SUM quantityDetailPageList(pageList) BY listInventoryPageList(pageList) IN adverbGroup;
 quantityCountedListInventory 'Количество посчитано' (listInventory) = GROUP SUM quantityCountedPageList(pageList) BY listInventoryPageList(pageList) IN adverbGroup;
 totalDetailListInventory 'Сумма посчитанного' (listInventory) = GROUP SUM totalPageList(pageList) BY listInventoryPageList(pageList) IN adverbGroup;
+
+quantityDetailDepartmentStoreInventory 'Количество строк' (departmentStore, inventory) = GROUP SUM quantityDetailListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN adverbGroup;
+quantityCountedDepartmentStoreInventory 'Количество посчитано' (departmentStore, inventory) = GROUP SUM quantityCountedListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN adverbGroup;
+totalDetailDepartmentStoreInventory 'Сумма посчитанного' (departmentStore, inventory) = GROUP SUM totalDetailListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN adverbGroup;
 
 collationSheetListInventory(listInventory) = uniqueCollationSheetDepartmentStoreInventory(departmentStoreListInventory(listInventory), inventoryListInventory(listInventory)) IN baseGroup;
 nameCollationSheetListInventory 'Название сл. ведомости' (listInventory) = nameCollationSheet(collationSheetListInventory(listInventory)) IN listInventoryGroup;
@@ -2643,8 +2648,8 @@ balanceCollationSheetItem 'Остаток' (collationSheet, item) = balanceDepar
 retailPriceCollationSheetItem 'Учетная цена' (collationSheet, item) = retailPriceItemDepartmentVal(item, departmentStoreCollationSheet(collationSheet), dateToInventory(inventoryCollationSheet(collationSheet))) IN baseGroup;
 totalBalansCollationSheetItem 'Сумма по учетным данным ' (collationSheet, item) = retailPriceCollationSheetItem(collationSheet, item) * balanceCollationSheetItem(collationSheet, item) IN baseGroup;
 
-quantityCountedCollationSheetItem 'Количество посчитано' (collationSheet, item) = GROUP SUM quantityCountedDetailPage(detailPage) BY collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage))), itemDetailPage(detailPage);
-totalCollationSheetItem 'Сумма посчитанного' (collationSheet, item) = GROUP SUM totalDetailPage(detailPage) BY collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage))), itemDetailPage(detailPage);
+quantityCountedCollationSheetItem 'Количество посчитано' (collationSheet, item) = GROUP SUM quantityCountedDetailPage(detailPage) BY collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage))), skuBarcodeDetailPage(detailPage);
+totalCollationSheetItem 'Сумма посчитанного' (collationSheet, item) = GROUP SUM totalDetailPage(detailPage) BY collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage))), skuBarcodeDetailPage(detailPage);
 
 shortageQuantityCountedCollationSheetItem 'Излишек/недостача (к-во)' (collationSheet, item) =
     [UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, quantityCountedCollationSheetItem(collationSheet, item)](collationSheet, item) -
@@ -2739,8 +2744,8 @@ FORM collationSheetItem 'Товары для добавления в сличи�
     OBJECTS cs=manyCollationSheet FIXED PANEL
     PROPERTIES (cs) READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet
     TREE treeGroup g=itemGroup PARENT parentItemGroup
-    OBJECTS i=item
     PROPERTIES(g) READONLY name
+    OBJECTS i=item
     PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem
     PROPERTIES(cs, i) inManyCollationSheetItem
     FILTERS NOT NULL  inItemGroupSku(g, i)
@@ -2792,6 +2797,7 @@ FORM inventory 'Инвентаризация'
     OBJECTS          dp=detailPage, cs=collationSheet, i=item
     PROPERTIES(pl)   quantityDetailPageList, quantityCountedPageList, totalPageList, delete
     PROPERTIES(li)   quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, ADDFORM, EDITFORM, delete
+    PROPERTIES(ds, in) quantityDetailDepartmentStoreInventory, quantityCountedDepartmentStoreInventory, totalDetailDepartmentStoreInventory
 
     FILTERS NOT NULL inInventoryDepartmentStoreListInventoryPageListDetailPage(in, ds, li, pl, dp),
             NOT NULL inInventoryListInventory(in, li),
