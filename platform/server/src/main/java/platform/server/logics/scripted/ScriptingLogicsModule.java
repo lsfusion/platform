@@ -467,6 +467,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public void makeLoggable(LP<?> property) {
+        property.makeLoggable(baseLM);
+    }
+
+    public void setEchoSymbols(LP<?> property) {
+        property.setEchoSymbols(true);
+    }
+
     private <T extends LP<?>> void changePropertyName(T lp, String name) {
         removeModuleLP(lp);
         setPropertySID(lp, transformNameToSID(name), false);

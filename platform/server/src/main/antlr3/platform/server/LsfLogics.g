@@ -5,6 +5,7 @@ grammar LsfLogics;
 
 	import platform.interop.ClassViewType;
 	import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+	import platform.interop.navigator.FormShowType;
 	import platform.server.data.Union;
 	import platform.server.data.expr.query.PartitionType;
 	import platform.server.form.entity.GroupObjectEntity;
@@ -293,13 +294,27 @@ listFormDeclaration
 	;
 
 formDeclaration returns [ScriptingFormEntity form]
+@init {
+	boolean isPrint = false;
+	FormShowType showType = null;
+}
 @after {
 	if (inPropParseState()) {
 		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption);
+		$form.setIsPrintForm(isPrint);
+		$form.setShowType(showType);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
+		('PRINT' { isPrint = true; })?
+		(type = formShowTypeSetting { showType = $type.value; })?
+	;
+
+formShowTypeSetting returns [FormShowType value = null]
+	:	'DOCKING' { $value = FormShowType.DOCKING; }
+	|	'MODAL' { $value = FormShowType.MODAL; }
+	|	'FULLSCREEN' { $value = FormShowType.MODAL_FULLSCREEN; }
 	;
 
 formGroupObjectsList 
@@ -336,6 +351,7 @@ formTreeGroupObject
 formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	:	(object = formCommonGroupObject { $groupObject = $object.groupObject; })	
 		(viewType = formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.isInitType); } )?
+		(pageSize = formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); })?
 	; 
 
 formTreeGroupObjectDeclaration returns [ScriptingGroupObject groupObject, List<String> properties]
@@ -366,6 +382,10 @@ formGroupObjectViewType returns [ClassViewType type, boolean isInitType]
 
 classViewType returns [ClassViewType type]
 	: 	('PANEL' {$type = ClassViewType.PANEL;} | 'HIDE' {$type = ClassViewType.HIDE;} | 'GRID' {$type = ClassViewType.GRID;})
+	;
+
+formGroupObjectPageSize returns [Integer value = null]
+	:	'PAGESIZE' size = intLiteral { $value = $size.val; }
 	;
 
 formSingleGroupObjectDeclaration returns [String name, String className, String caption] 
@@ -941,6 +961,8 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		(autosetSetting [property])?
 		(confirmSetting [property])?
 		(regexpSetting [property])?
+		(loggableSetting [property])?
+		(echoSymbolsSetting [property])?
 	;
 
 
@@ -1055,6 +1077,24 @@ regexpSetting [LP property]
 }
 	:	'REGEXP' exp = stringLiteral
 		(mess = stringLiteral { message = $mess.val; })?
+	;
+
+loggableSetting [LP property]
+@after {
+	if (inPropParseState()) {
+		self.makeLoggable(property);
+	}
+}
+	:	'LOGGABLE'
+	;
+
+echoSymbolsSetting [LP property]
+@after {
+	if (inPropParseState()) {
+		self.setEchoSymbols(property);
+	}
+}
+	:	'ECHO'
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

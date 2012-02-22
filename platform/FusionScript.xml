@@ -50,8 +50,10 @@
       <keyword name="DESIGN" />
       <keyword name="DIALOG" />
       <keyword name="DO" />
+      <keyword name="DOCKING" />
       <keyword name="DOUBLE" />
       <keyword name="DRAWROOT" />
+      <keyword name="ECHO" />
       <keyword name="EDIT" />
       <keyword name="EDITABLE" />
       <keyword name="EDITFORM" />
@@ -73,6 +75,7 @@
       <keyword name="FORCE" />
       <keyword name="FORM" />
       <keyword name="FORMULA" />
+      <keyword name="FULLSCREEN" />
       <keyword name="FROM" />
       <keyword name="GRID" />
       <keyword name="GROUP" />
@@ -96,6 +99,7 @@
       <keyword name="ISTRING" />
       <keyword name="LEFT" />
       <keyword name="LIST" />
+      <keyword name="LOGGABLE" />
       <keyword name="LONG" />
       <keyword name="MAX" />
       <keyword name="MAXCHARWIDTH" />
@@ -121,12 +125,14 @@
       <keyword name="ON" />
       <keyword name="ORDER" />
       <keyword name="OVERRIDE" />
+      <keyword name="PAGESIZE" />
       <keyword name="PANEL" />
       <keyword name="PARENT" />
       <keyword name="PARTITION" />
       <keyword name="PERSISTENT" />
       <keyword name="POSITION" />
       <keyword name="PREFCHARWIDTH" />
+      <keyword name="PRINT" />
       <keyword name="PROPERTIES" />
       <keyword name="PROPERTY" />
       <keyword name="READONLY" />

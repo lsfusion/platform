@@ -11,6 +11,7 @@ public class ScriptingGroupObject {
     List<String> captions;
     ClassViewType viewType;
     boolean isInitType;
+    Integer pageSize;
 
     public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<String> captions) {
         assert objects.size() == classes.size() && classes.size() == captions.size();
@@ -31,5 +32,9 @@ public class ScriptingGroupObject {
     public void setViewType(ClassViewType viewType, boolean isInitType) {
         this.viewType = viewType;
         this.isInitType = isInitType;
+    }
+
+    public void setPageSize(Integer pageSize) {
+        this.pageSize = pageSize;
     }
 }

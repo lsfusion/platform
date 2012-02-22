@@ -2,6 +2,7 @@ package platform.server.logics.scripted;
 
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
+import platform.interop.navigator.FormShowType;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.*;
@@ -66,6 +67,10 @@ public class ScriptingFormEntity extends FormEntity {
                 } else {
                     groupObj.setSingleClassView(viewType);
                 }
+            }
+
+            if (groupObject.pageSize != null) {
+                groupObj.pageSize = groupObject.pageSize;
             }
 
             addGroupObjectEntity(groupName, groupObj);
@@ -300,6 +305,15 @@ public class ScriptingFormEntity extends FormEntity {
 
     public void setAsListForm(String className, String objectID) throws ScriptingErrorLog.SemanticErrorException {
         findCustomClassForFormSetup(className).setListForm(this, getObjectEntity(objectID));
+    }
+
+    public void setIsPrintForm(boolean isPrintForm) {
+        this.isPrintForm = isPrintForm;
+    }
+
+    public void setShowType(FormShowType showType) {
+        if (showType != null)
+            this.showType = showType;
     }
 
     private CustomClass findCustomClassForFormSetup(String className) throws ScriptingErrorLog.SemanticErrorException {
