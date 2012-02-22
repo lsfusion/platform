@@ -411,7 +411,7 @@ itemGroupSku = DATA itemGroup(sku) IN idGroup AUTOSET;
 nameItemGroupSku 'Группа товара' = name(itemGroupSku(sku)) IN baseGroup;
 
 //descriptionGroup
-captionItem 'Наименование' = DATA STRING[100](item) IN descriptionGroup;
+captionItem 'Название' = DATA STRING[100](item) IN descriptionGroup;
 @metaCodeShowItemAttribute(Caption, 'Показывать наименование', displayGroup);
 
 brandItem = DATA brand(item);
@@ -563,7 +563,7 @@ rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) I
 CLASS ABSTRACT itemAttribute 'Атрибут товара' : named;
 
 CLASS STATIC stringItemAttribute 'Строковый атрибут' {
-    captionItem 'Наименование',
+    captionItem 'Название',
     article 'Артикул',
     hallmark 'Отличительный признак'
 } : itemAttribute;
@@ -728,7 +728,9 @@ GROUP barcodeGroup : baseGroup;
 CLASS barcode 'Штрих код';
 
 barcodeEx 'Штрих код' = DATA STRING[14] (barcode) IN baseGroup FIXEDCHARWIDTH 14;
-dateBarcode 'Дата действия' = DATA DATE (barcode) IN baseGroup;
+
+dateUserBarcode 'Дата действия' = DATA DATE (barcode) IN baseGroup;
+dateBarcode 'Дата действия' = UNION OVERRIDE currentDate() IF barcode IS barcode, dateUserBarcode(barcode) IN baseGroup;
 
 skuBarcode 'Товар штрих-кода' = DATA sku(barcode) IN baseGroup;
 
@@ -779,7 +781,7 @@ barcodeBarcodeSku 'Основной штрих-код' = barcodeEx(barcodeSku(sk
 
 inSkuBarcode(sku, barcode) = skuBarcode(barcode)==sku;
 
-concatBarcodeBySkuDate 'Штрих-кода товара' (sku, date) = GROUP CONCAT barcodeEx(barcode) IF dateBarcode(barcode) < date AND date AS DATE, ', ' BY skuBarcode(barcode), date IN baseGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+concatBarcodeBySkuDate 'Штрих-кода товара' (sku, date) = GROUP CONCAT barcodeEx(barcode) IF dateBarcode(barcode) <= date AND date AS DATE, ', ' BY skuBarcode(barcode), date IN baseGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 FORM barcode 'Штрих-код'
 OBJECTS b=barcode
@@ -1227,20 +1229,17 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 // Посуда
 @metaCodeObjectDateProperty(priceWare, ware, 'Цена', DOUBLE, baseGroup);
 
-retailRangeWare(ware) = DATA range (ware) IN idGroup;
-dataRetailRateRangeWare 'Розничный НДС' (ware) = dataActingRateRange(retailRangeWare(ware)) IN baseGroup;
-
-suppliersRangeWare(ware) = DATA range (ware) IN idGroup;
-dataSuppliersRateRangeWare 'НДС поставщика,%' (ware) = dataActingRateRange(suppliersRangeWare(ware)) IN baseGroup;
+rangeWare(ware) = DATA range (ware) IN idGroup;
+dataRateRangeWare 'НДС,%' (ware) = dataActingRateRange(rangeWare(ware)) IN baseGroup;
 
 FORM ware 'Посуда'
 OBJECTS w=ware
-PROPERTIES(w) name, priceWare, showFormpriceWare, dataRetailRateRangeWare, dataSuppliersRateRangeWare
+PROPERTIES(w) name, priceWare, showFormpriceWare, dataRateRangeWare
 EDIT ware OBJECT w;
 
 FORM wares 'Посуда'
 OBJECTS w=ware
-PROPERTIES(w) READONLY name, priceWare, dataRetailRateRangeWare, dataSuppliersRateRangeWare
+PROPERTIES(w) READONLY name, priceWare, dataRateRangeWare
 PROPERTIES(w) ADDFORM, EDITFORM, delete;
 
 
@@ -1389,7 +1388,7 @@ FORM items 'Товары'
 TREE treeGroup g=itemGroup PARENT parentItemGroup
 OBJECTS i=item
 PROPERTIES(g) READONLY name
-PROPERTIES(i) READONLY captionItem, nameAttributeItem, shortNameUnitOfMeasureItem
+PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem
 PROPERTIES(i) ADDFORM, EDITFORM, delete
 FILTERS NOT NULL inItemGroupSku(g, i);
 
@@ -1968,7 +1967,7 @@ FORM timeTableDate 'График поставок'
         FILTER 'С предварительным заказом на дату заказа' 'F10' NOT NULL quantityOrderPreliminaryOrder(s, d, t)
         FILTER 'С предварительным заказом на дату поставки' 'F10' NOT NULL quantitySupplyPreliminaryOrder(s, d, t)
         FILTER 'С заказом на дату заказа' 'F10' NOT NULL quantityOrderOrderSupplier(s, d, t)
-        FILTER 'С заказом на дату поставки' 'F10' NOT NULL quantitySupplyOrderSupplier(s, d, t)
+        FILTER 'С заказом на дату поставки' 'F10' NOT NULL quantitySupplyOrderSupplier(s, d, t);
 ;
 
 DESIGN timeTableDate FROM DEFAULT {
