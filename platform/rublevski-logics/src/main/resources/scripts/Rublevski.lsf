@@ -24,7 +24,7 @@ timeClosed 'Время закрытия' = DATA DATETIME (postedObject) IN poste
 userClosed 'Закрыт пользователем' = DATA customUser (postedObject) IN idGroup;
 computerClosed 'Компьютер, с которого осуществляется закрытие' = DATA computer (postedObject) IN idGroup;
 
-commonNameUserClosed 'Закрыт пользователем' (postedObject) = commonName(userClosed(postedObject)) IN postedGroup;
+nameUserClosed 'Закрыт пользователем' (postedObject) = commonName(userClosed(postedObject)) IN postedGroup;
 hostnameComputerClosed 'Компьютер, с которого осуществляется закрытие' (postedObject) = hostname(computerClosed(postedObject)) IN postedGroup;
 
 timeClosed(postedObject) <- currentDateTime() ON ASSIGN postedObject IS postedObject;
@@ -1163,20 +1163,27 @@ dataOverrideRateRangeItem 'Значение НДС' (item) = dataActingRateRange
 toShowDataRangeItem(item) = TRUE IF item IS item AND dataSuppliersRateRangeItem(item);
 
 FORM tax 'Налог'
-OBJECTS t=tax FIXED PANEL
-OBJECTS ra=range, rt=rate, s=store
-PROPERTIES(t)     name, nameTax, addNewRange TODRAW ra
-PROPERTIES(ra)    dataRange, nameRangeTypeRange, delete
-PROPERTIES(ra)    READONLY dataActingRateRange, dateFromActingRateRange, dateToActingRateRange
-PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
-PROPERTIES(s)     name, addressStore//, ADDOBJ, delete
-PROPERTIES(ra, s) inRangeStore
-FILTERS NOT NULL  inRangeRate(ra, rt),
-        NOT NULL  inTaxRange(t, ra)
-FILTERGROUP filters6
-    FILTER 'Показывать магазины только для данного налога' 'F10' NOT NULL inRangeStore(ra, s) DEFAULT
+    OBJECTS           t=tax FIXED PANEL, ra=range
+    PROPERTIES(t)     name, nameTax, addNewRange TODRAW ra
 
-EDIT tax OBJECT t;
+    PROPERTIES(ra)    dataRange, nameRangeTypeRange, delete
+    PROPERTIES(ra)    READONLY dataActingRateRange, dateFromActingRateRange, dateToActingRateRange
+
+    OBJECTS           rt=rate
+    PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
+
+    OBJECTS           s=store
+    PROPERTIES(s)     name, addressStore
+
+    PROPERTIES(ra, s) inRangeStore
+
+    FILTERS NOT NULL  inRangeRate(ra, rt),
+            NOT NULL  inTaxRange(t, ra)
+    FILTERGROUP filters6
+        FILTER 'Показывать магазины только для данного налога' 'F10' NOT NULL inRangeStore(ra, s) DEFAULT
+
+    EDIT tax OBJECT t
+;
 
 DESIGN tax FROM DEFAULT {
     main {
@@ -1193,14 +1200,21 @@ DESIGN tax FROM DEFAULT {
 }
 
 FORM taxes 'Налоги'
-OBJECTS t=tax, ra=range, s=store
-PROPERTIES(t)     READONLY name, nameTax
-PROPERTIES(t)     EDITFORM, delete
-PROPERTIES(s)     READONLY name, addressStore
-PROPERTIES(ra, s) READONLY inRangeStore
-PROPERTIES(ra)  READONLY dataRange, dataActingRateRange, dateFromActingRateRange, dateToActingRateRange, nameUserRateRange, nameRangeTypeRange, quantityRateRange
-FILTERS NOT NULL inTaxRange(t, ra),
-        NOT NULL inRangeStore(ra, s);
+    OBJECTS           t=tax
+    PROPERTIES(t)     READONLY name, nameTax
+    PROPERTIES(t)     EDITFORM, delete
+
+    OBJECTS           ra=range
+    PROPERTIES(ra)    READONLY dataRange, dataActingRateRange, dateFromActingRateRange, dateToActingRateRange, nameUserRateRange, nameRangeTypeRange, quantityRateRange
+
+    OBJECTS           s=store
+    PROPERTIES(s)     READONLY name, addressStore
+
+    PROPERTIES(ra, s) READONLY inRangeStore
+
+    FILTERS NOT NULL  inTaxRange(t, ra),
+            NOT NULL  inRangeStore(ra, s)
+;
 
 
 //------------------------------------ Товар для подразделения с историей -------------------------------------------//
@@ -2633,21 +2647,29 @@ GROUP adverbGroup 'Итого' : baseGroup;
 
 nameInventory 'Инвентаризация (номер, название)' = DATA STRING[100] (inventory) IN inventoryGroup;
 dateToInventory 'Остатки выставить на (утро) дату' = DATA DATE (inventory) IN inventoryGroup;
-timeToInventory 'Выставить остатки на время' = DATA STRING[10] (inventory) IN inventoryGroup;        // переделать: должен быть класс - время
-noteInventory 'Примечание (основание)' = DATA STRING[500] (inventory) IN inventoryGroup;
+timeToInventory 'Выставить остатки на время' = DATA TIME (inventory) IN inventoryGroup;        // переделать: должен быть класс - время
+noteInventory 'Примечание (основание)' = DATA STRING[500] (inventory) IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 150;
 dateClosedInventory 'Дата закрытия инвентаризации' = DATA DATE (inventory) IN inventoryGroup;
-timeClosedInventory 'Время закрытия инвентаризации' = DATA STRING[10] (inventory) IN inventoryGroup;// переделать: должен быть класс - время
-// userCreated кто создал
-//  timeClosed, commonNameUserClosed     кто закрыл
+timeClosedInventory 'Время закрытия инвентаризации' = DATA TIME (inventory) IN inventoryGroup;// переделать: должен быть класс - время
+
 infoInventory 'Дополнительная информация по инвентаризации' = DATA STRING[500] (inventory) IN inventoryGroup;
 
-nameCollationSheet 'Номер (название сличит. ведомости)' = DATA STRING[100] (collationSheet) IN collationSheetGroup;
 departmentStoreCollationSheet(collationSheet) = DATA departmentStore (collationSheet) IN idGroup;
 inventoryCollationSheet(collationSheet) = DATA inventory (collationSheet) IN idGroup;
 nameDepartmentStoreCollationSheet 'Подразделение' (collationSheet) = name(departmentStoreCollationSheet(collationSheet)) IN collationSheetGroup;
 nameInventoryCollationSheet 'Инвентаризация (номер, название)' (collationSheet) = nameInventory(inventoryCollationSheet(collationSheet)) IN collationSheetGroup;
 inInventoryCollationSheet(inventory, collationSheet) = inventoryCollationSheet(collationSheet) == inventory;
 inDepartmentStoreCollationSheet(departmentStore, collationSheet) = departmentStoreCollationSheet(collationSheet) == departmentStore;
+
+castToString30 = FORMULA STRING[30] '$1 || CAST ($2 AS character(20))';
+dataCollationSheet 'Номер сличительной ведомости' (collationSheet) = DATA INTEGER (collationSheet) IN baseGroup;
+maxDataCollationSheet = UNION OVERRIDE 0, [GROUP MAX dataCollationSheet(collationSheet)]();
+nextDataCollationSheet = maxDataCollationSheet() + 1;
+nameCollationSheet 'Номер (название сличит. ведомости)' (collationSheet) = castToString30('Сличительная ведомость ', dataCollationSheet(collationSheet)) IN collationSheetGroup;
+
+setDataCollationSheet 'Создать номер' (collationSheet) = ACTION SET dataCollationSheet (collationSheet) <- nextDataCollationSheet();
+setDataCollationSheet(collationSheet) <- TRUE ON ASSIGN collationSheet IS collationSheet;                              // пока не работает.....
+
 
 includeDepartmentStoreInventory 'Включить в инвентаризацию' = DATA BOOLEAN (departmentStore, inventory) IN inventoryGroup;
 uniqueCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
@@ -2660,7 +2682,7 @@ nameTypeOfAdditionDepartmentStoreInventory 'Тип сличительной ве
     name(includeTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory)) IN inventoryGroup;
 
 concatNameDepartmentByInventory 'Подразделения для инвентаризации' (inventory) =
-    GROUP CONCAT name(departmentStore) IF includeDepartmentStoreInventory(departmentStore, inventory), ', ' BY inventory IN inventoryGroup MINCHARWIDTH 150 PREFCHARWIDTH 150;
+    GROUP CONCAT name(departmentStore) IF includeDepartmentStoreInventory(departmentStore, inventory), ', ' BY inventory IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 150;
 
 quantityStoreInventory(store, inventory) = GROUP SUM 1 IF includeDepartmentStoreInventory(departmentStore, inventory)  BY storeDepartmentStore(departmentStore), inventory;
 quantityStoreByInventory(inventory) = GROUP SUM 1 IF quantityStoreInventory(store, inventory) BY inventory;
@@ -2682,7 +2704,6 @@ sumListInventoryByInventoryDepartmentStore 'К-во описей' (inventory, de
 counterListInventory(listInventory) = PARTITION SUM 1 IF listInventory IS listInventory
     BY inventoryListInventory(listInventory), departmentStoreListInventory(listInventory)  ORDER listInventory IN baseGroup;
 
-castToString30 = FORMULA STRING[30] '$1 || CAST ($2 AS character(20))';
 nameListInventory 'Номер описи' (listInventory) = castToString30('Опись ', counterListInventory(listInventory)) IN listInventoryGroup;
 
 noteListInventory 'Примечание (наименование описи)' = DATA STRING[100] (listInventory) IN listInventoryGroup;
@@ -2706,6 +2727,11 @@ inPageListDetailPage(pageList, detailPage) = pageListDetailPage(detailPage) == p
 barcodeDetailPage(detailPage) = DATA barcode (detailPage) IN idGroup;
 nameBarcodeDetailPage 'Штрих-код' (detailPage) = barcodeEx(barcodeDetailPage(detailPage)) IN baseGroup;
 
+departmentStoreDetailPage(detailPage) = departmentStoreListInventory(listInventoryPageList(pageListDetailPage(detailPage))) PERSISTENT;
+listInventoryDetailPage(detailPage) = listInventoryPageList(pageListDetailPage(detailPage)) PERSISTENT;
+inventoryDetailPage(detailPage) = inventoryListInventory(listInventoryPageList(pageListDetailPage(detailPage))) PERSISTENT;
+inListInventoryDetailPage(listInventory, detailPage) = listInventoryDetailPage(detailPage) == listInventory;
+
 nameDetailPage 'Номер строки' (detailPage) = PARTITION SUM 1 IF detailPage IS detailPage
     BY listInventoryPageList(pageListDetailPage(detailPage)), pageListDetailPage(detailPage)  ORDER detailPage IN baseGroup;
 
@@ -2713,8 +2739,11 @@ skuBarcodeDetailPage 'Товар (ИД)' (detailPage) =  skuBarcode(barcodeDetai
 nameAttributeItemDetailPage 'Товар' (detailPage) = nameAttributeItem(skuBarcodeDetailPage(detailPage)) IN baseGroup;
 
 quantityCountedDetailPage 'Количество посчитано' = DATA DOUBLE (detailPage) IN baseGroup;
-priceDetailPage 'Цена за ед.' = DATA INTEGER (detailPage) IN baseGroup;
-totalDetailPage 'Сумма' (detailPage) = priceDetailPage(detailPage) * quantityCountedDetailPage(detailPage) IN baseGroup;
+//priceDetailPage 'Цена за ед.' = DATA INTEGER (detailPage) IN baseGroup;
+retailPriceDetailPage 'Учетная цена' (detailPage) =
+    retailPriceItemDepartmentVal(skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateToInventory(inventoryDetailPage(detailPage))) IN baseGroup;
+
+totalDetailPage 'Сумма' (detailPage) = retailPriceDetailPage(detailPage) * quantityCountedDetailPage(detailPage) IN baseGroup;
 
 quantityDetailPageList 'Количество строк' (pageList) = GROUP SUM 1 IF detailPage IS detailPage BY pageListDetailPage(detailPage) IN baseGroup;
 quantityCountedPageList 'Количество посчитано' (pageList) = GROUP SUM quantityCountedDetailPage(detailPage) BY pageListDetailPage(detailPage) IN baseGroup;
@@ -2795,6 +2824,9 @@ includeRegisterDepartmentStoreInventory(departmentStore, inventory) =
     includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.register;
 includeRegisterDepartmentStoreInventory(departmentStore, inventory) => uniqueRegisterCollationSheetDepartmentStoreInventory (departmentStore, inventory) RESOLVE ALL;
 
+isRegisterCollationSheet(collationSheet) = collationSheet IS registerCollationSheet;
+isRegisterCollationSheet(collationSheet) => includeRegisterDepartmentStoreInventory(departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)) RESOLVE ALL;
+
 // автоматическое создание сличительной ведомости (по остаткам) //
 uniqueRemainsCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
     GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)
@@ -2802,6 +2834,9 @@ uniqueRemainsCollationSheetDepartmentStoreInventory (departmentStore, inventory)
 includeRemainsDepartmentStoreInventory(departmentStore, inventory) =
     includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.remains;
 includeRemainsDepartmentStoreInventory(departmentStore, inventory) => uniqueRemainsCollationSheetDepartmentStoreInventory (departmentStore, inventory) RESOLVE ALL;
+
+isRemainsCollationSheet(collationSheet) = collationSheet IS remainsCollationSheet;
+isRemainsCollationSheet(collationSheet) => includeRemainsDepartmentStoreInventory(departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)) RESOLVE ALL;
 
 // автоматическое создание сличительной ведомости (по множеству товаров) //
 uniqueManyCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
@@ -2811,12 +2846,12 @@ includeManyDepartmentStoreInventory(departmentStore, inventory) =
     includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.many;
 includeManyDepartmentStoreInventory(departmentStore, inventory) => uniqueManyCollationSheetDepartmentStoreInventory (departmentStore, inventory) RESOLVE ALL;
 
+isManyCollationSheet(collationSheet) = collationSheet IS manyCollationSheet;
+isManyCollationSheet(collationSheet) => includeManyDepartmentStoreInventory(departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)) RESOLVE ALL;
+
 inInventoryDepartmentStoreListInventory(inventory, departmentStore, listInventory) = departmentStoreListInventory(listInventory) == departmentStore AND inventoryListInventory(listInventory) == inventory;
 
-departmentStoreDetailPage(detailPage) = departmentStoreListInventory(listInventoryPageList(pageListDetailPage(detailPage))) PERSISTENT;
-listInventoryDetailPage(detailPage) = listInventoryPageList(pageListDetailPage(detailPage)) PERSISTENT;
-inventoryDetailPage(detailPage) = inventoryListInventory(listInventoryPageList(pageListDetailPage(detailPage))) PERSISTENT;
-inListInventoryDetailPage(listInventory, detailPage) = listInventoryDetailPage(detailPage) == listInventory;
+
 
 inInventoryDepartmentStoreListInventoryPageListDetailPage (inventory, departmentStore, listInventory, pageList, detailPage) = UNION OVERRIDE
     pageListDetailPage(detailPage) == pageList AND listInventory AND departmentStore AND inventory,
@@ -2869,7 +2904,7 @@ FORM listInventory 'Опись'
     PROPERTIES(pl)  namePageList, notePageList, quantityDetailPageList, quantityCountedPageList, totalPageList, ADDOBJ, delete
 
     OBJECTS         dp=detailPage
-    PROPERTIES (dp) nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage, priceDetailPage,
+    PROPERTIES (dp) nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage, retailPriceDetailPage,
                     totalDetailPage, ADDOBJ, delete
 
     OBJECTS         e=employee
@@ -2894,8 +2929,8 @@ DESIGN listInventory FROM DEFAULT {
 
 FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
-    PROPERTIES (in)  nameInventory, dateToInventory, timeToInventory, nameUserCreated, noteInventory, infoInventory, concatNameDepartmentByInventory,
-                     timeClosed, commonNameUserClosed, hostnameComputerClosed, showFormConcatNameDepartmentByInventory
+    PROPERTIES (in)  nameInventory, dateToInventory, timeToInventory, noteInventory, infoInventory, concatNameDepartmentByInventory,
+                     timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed, showFormConcatNameDepartmentByInventory
 
     TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageList
     PROPERTIES       READONLY name(ds),  nameListInventory(li), namePageList(pl)
@@ -2906,10 +2941,10 @@ FORM inventory 'Инвентаризация'
 
     OBJECTS          dp=detailPage
     PROPERTIES (dp)  READONLY nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage,
-                     priceDetailPage, totalDetailPage
+                     retailPriceDetailPage, totalDetailPage
 
     OBJECTS          cs=collationSheet
-    PROPERTIES (cs)  nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,  quantityCountedItemByCollationSheet,
+    PROPERTIES (cs)  nameCollationSheet, setDataCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,  quantityCountedItemByCollationSheet,
                      totalItemByCollationSheet, shortageQuantityCountedItemByCollationSheet, shortageTotalItemByCollationSheet, showFormItemByCollationSheet, delete
 
     OBJECTS          i=item
@@ -2931,20 +2966,24 @@ FORM inventory 'Инвентаризация'
 
 DESIGN inventory FROM DEFAULT {
     main{
+        in.box {
+                POSITION in.historyGroup TO THE LEFT in.postedGroup;
+        }
         ADD arop.box BEFORE functions.box{
-        tabbedPane = TRUE;
-                ADD z.box { title = 'Подразделение, опись, страница';
+                tabbedPane = TRUE;
+                ADD z.box { title = 'Описи';
+                    fillVertical = 5;
                     ADD treeDepartmentStore.box { fillHorizontal = 2;};
                     ADD dp.box  {fillHorizontal = 3;};
                     POSITION treeDepartmentStore.box TO THE LEFT dp.box;
-                };
+                }
 
-                ADD x.box { title = 'Сличительная ведомость';
-                    ADD cs.box  { fillHorizontal = 2;};
-                    ADD i.box { fillHorizontal = 3;};
-                    POSITION cs.box TO THE LEFT i.box;
+                ADD x.box { title = 'Сличительные ведомости';
+                    fillVertical = 5;
+                    ADD cs.box  { fillVertical = 1;};
+                    ADD i.box { fillVertical = 4;};
                     ADD PROPERTY(showFormItemByCollationSheet) IN i.panel;
-                };
+                }
 
         }
     }
@@ -2952,7 +2991,7 @@ DESIGN inventory FROM DEFAULT {
 
 FORM inventories 'Инвентаризации'
     OBJECTS in=inventory
-    PROPERTIES (in) READONLY nameInventory, dateToInventory
+    PROPERTIES (in) READONLY nameInventory, concatNameDepartmentByInventory, noteInventory, dateToInventory, timeToInventory, nameUserCreated
     PROPERTIES (in) ADDFORM, EDITFORM, delete
 ;
 
