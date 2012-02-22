@@ -1963,6 +1963,7 @@ FORM timeTableDate 'График поставок'
         FILTER 'С предварительным заказом на дату поставки' 'F10' NOT NULL quantitySupplyPreliminaryOrder(s, d, t)
         FILTER 'С заказом на дату заказа' 'F10' NOT NULL quantityOrderOrderSupplier(s, d, t)
         FILTER 'С заказом на дату поставки' 'F10' NOT NULL quantitySupplyOrderSupplier(s, d, t)
+;
 
 DESIGN timeTableDate FROM DEFAULT {
         POSITION s.box TO THE LEFT p.box;
