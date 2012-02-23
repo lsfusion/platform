@@ -37,6 +37,7 @@ META metaCodeObjectDateProperty(prop, object, caption, type, group)
 
     prop##Date caption = DATA type (object, DATE) IN group;
     date##prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
+    prop##AtDate caption (object, date) = prop##Date(object, date##prop(object, date)) IN group;
     prop caption (object) = prop##Date(object, date##prop(object, currentDate())) IN group;
 
     FORM add##prop caption
@@ -3102,10 +3103,12 @@ namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоце
 //количество-цены по строкам
 quantityShipmentDetail 'Количество' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 totalQuantityShipment 'Общее количество' (shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
-quantityItemShipment 'Количество по товару в поставке' (item, shipment) = GROUP SUM quantityShipmentDetail (shipmentDetail) BY shipmentShipmentDetail(shipmentDetail), itemShipmentDetail(shipmentDetail);
+quantityItemShipment 'Количество по товару в поставке' (item, shipment) = GROUP SUM quantityShipmentDetail (shipmentDetail) BY itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
 
 priceShipmentDetail 'Цена товара'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 supplierMarkupShipmentDetail 'Оптовая надбавка/торговая скидка, %' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+overSupplierMarkupShipmentDetail 'Оптовая надбавка/торговая скидка, %' (shipmentDetail) =
+        UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, supplierMarkupShipmentDetail(shipmentDetail);
 dateFitToShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
 
 suppliersRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
@@ -3115,11 +3118,13 @@ suppliersRangeShipmentDetail(shipmentDetail) <- suppliersRangeItem(itemShipmentD
 sumPriceShipmentDetail 'Сумма без НДС' (shipmentDetail) = priceShipmentDetail(shipmentDetail) * quantityShipmentDetail(shipmentDetail);
 calcSumSupplierVATShipmentDetail 'Сумма НДС (расчетная)' (shipmentDetail) = sumPriceShipmentDetail(shipmentDetail) * dataSuppliersRangeShipmentDetail(shipmentDetail)/100;
 sumSupplierVATShipmentDetail 'Сумма НДС' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-totalSumSupplierVATShipmentDetail 'Общая сумма НДС' (shipment) = GROUP SUM sumSupplierVATShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
+totalSumSupplierVATShipment 'Общая сумма НДС поставщика' (shipment) = GROUP SUM
+    UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, sumSupplierVATShipmentDetail(shipmentDetail)
+    BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 sumSupplierVATShipmentDetail(shipmentDetail) <- calcSumSupplierVATShipmentDetail(shipmentDetail) ON CHANGE itemShipmentDetail(shipmentDetail);
 
-sumSupplierShipmentDetail 'Сумма с НДС' (shipmentDetail) = sumPriceShipmentDetail(shipmentDetail) + sumSupplierVATShipmentDetail(shipmentDetail);
-totalSumSupplierShipmentDetail 'Общая сумма с НДС' (shipment) = GROUP SUM sumSupplierShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
+sumSupplierShipmentDetail 'Сумма с НДС' (shipmentDetail) = sumPriceShipmentDetail(shipmentDetail) +
+    UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, sumSupplierVATShipmentDetail(shipmentDetail);
 
 retailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
 dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = dataActingRateRange(retailRangeShipmentDetail(shipmentDetail)) IN baseGroup;
@@ -3128,28 +3133,81 @@ retailRangeShipmentDetail(shipmentDetail) <- overrideRateRangeItem(itemShipmentD
 wareShipmentDetail 'Посуда (ИД)' (shipmentDetail) = DATA ware(shipmentDetail) IN baseGroup;
 nameWareShipmentDetail 'Посуда' (shipmentDetail) = name(wareShipmentDetail(shipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
 wareShipmentDetail(shipmentDetail) <- wareItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+priceWareShipmentDetail 'Цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail);
+priceWareShipmentDetail (shipmentDetail) <- priceWareAtDate (wareShipmentDetail (shipmentDetail), dateWaybillShipmentDetail(shipmentDetail))
+                                            ON CHANGE itemShipmentDetail(shipmentDetail);
+overPriceWareShipmentDetail (shipmentDetail) = UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail,
+                                               priceWareShipmentDetail (shipmentDetail);
+
+wareRangeShipmentDetail 'Шкала НДС по посуде' (shipmentDetail) = DATA range (shipmentDetail);
+dataWareRangeShipmentDetail 'НДС по посуде' (shipmentDetail) = dataActingRateRange(wareRangeShipmentDetail(shipmentDetail));
+wareRangeShipmentDetail (shipmentDetail) <- rangeWare (wareShipmentDetail (shipmentDetail))
+    ON CHANGE itemShipmentDetail(shipmentDetail);
+
+sumVatWareShipmentDetail 'Сумма НДС по посуде, за ед.' (shipmentDetail) =
+     round0((priceWareShipmentDetail (shipmentDetail) *
+     UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, dataWareRangeShipmentDetail(shipmentDetail))/100);
+
+sumDetailVatWareShipmentDetail 'Сумма НДС по посуде' (shipmentDetail) =
+    sumVatWareShipmentDetail(shipmentDetail) * quantityShipmentDetail(shipmentDetail);
+
+totalSumVatWareShipment 'Общая сумма НДС по посуде' (shipment) =  GROUP SUM
+    sumDetailVatWareShipmentDetail(shipmentDetail) IF shipmentShipmentDetail(shipmentDetail)==shipment
+    BY shipment;
+
+
+sumWareShipmentDetail 'Сумма посуды' (shipmentDetail) =
+    UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, priceWareShipmentDetail (shipmentDetail) *
+    quantityShipmentDetail (shipmentDetail);
+
+totalSumWareShipment 'Общая сумма посуды' (shipment) = GROUP SUM sumWareShipmentDetail (shipmentDetail)
+    IF shipmentShipmentDetail(shipmentDetail) == shipment BY shipment;
+
+totalCleanSumSupplierShipment 'Общая сумма с НДС (без посуды)' (shipment) =
+    GROUP SUM sumSupplierShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
+
+totalSumIncVATShipment 'Общая сумма НДС' (shipment) =
+    totalSumSupplierVATShipment (shipment) + totalSumVatWareShipment (shipment);
+
+totalSumSupplierShipment 'Общая сумма с НДС' (shipment) =
+    totalCleanSumSupplierShipment (shipment) + totalSumWareShipment (shipment);
 
 retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-retailMarkupShipmentDetail(shipmentDetail) <- markupSupplierItemDepartmentVal (supplierShipment(shipmentShipmentDetail(shipmentDetail)), itemShipmentDetail(shipmentDetail),
-                                                                                departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateWaybillShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+retailMarkupShipmentDetail(shipmentDetail) <-
+    markupSupplierItemDepartmentVal (supplierShipment(shipmentShipmentDetail(shipmentDetail)), itemShipmentDetail(shipmentDetail),
+    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateWaybillShipmentDetail(shipmentDetail))
+    ON CHANGE itemShipmentDetail(shipmentDetail);
 
 isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN baseGroup;
 isFixPriceShipmentDetail(shipmentDetail) <- isFixPriceItem (itemShipmentDetail (shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
-notRoundImporterPriceShipmentDetail 'Цена изготовителя/импортера (неокругленная)' (shipmentDetail) = UNION OVERRIDE [X*100/(100+Y)](priceShipmentDetail(shipmentDetail), supplierMarkupShipmentDetail(shipmentDetail)),
-                                                                            [X*(100+Y)/100](priceShipmentDetail(shipmentDetail), supplierMarkupShipmentDetail(shipmentDetail)) IF isFixPriceShipmentDetail(shipmentDetail);
+notRoundImporterPriceShipmentDetail 'Цена изготовителя/импортера (неокругленная)' (shipmentDetail) = UNION OVERRIDE
+     [X*100/(100+Y)](priceShipmentDetail(shipmentDetail), overSupplierMarkupShipmentDetail(shipmentDetail)),
+     [X*(100+Y)/100](priceShipmentDetail(shipmentDetail), overSupplierMarkupShipmentDetail(shipmentDetail))
+     IF isFixPriceShipmentDetail(shipmentDetail);
+
 importerPriceShipmentDetail 'Цена изготовителя/импортера' (shipmentDetail) = round0(notRoundImporterPriceShipmentDetail(shipmentDetail));
 
 oldRetailPriceShipmentDetail 'Старая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 oldRetailPriceShipmentDetail (shipmentDetail) <- retailPriceItemDepartmentVal (itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
                                                               subtractDate2(dateWaybillShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
-sumMarkupShipmentDetail 'Сумма торговой надбавки (за ед.)' (shipmentDetail) =  priceShipmentDetail(shipmentDetail)*retailMarkupShipmentDetail(shipmentDetail)/100;
-sumRetailVATShipmentDetail 'Сумма розничного НДС (за ед.)' (shipmentDetail) =  (priceShipmentDetail(shipmentDetail) + sumMarkupShipmentDetail(shipmentDetail))*dataRetailRangeShipmentDetail(shipmentDetail)/100;
+sumMarkupShipmentDetail 'Сумма торговой надбавки (за ед.)' (shipmentDetail) =
+    priceShipmentDetail(shipmentDetail) *
+    (UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, retailMarkupShipmentDetail(shipmentDetail))/100;
+
+sumRetailVATShipmentDetail 'Сумма розничного НДС (за ед.)' (shipmentDetail) =
+    (priceShipmentDetail(shipmentDetail) + sumMarkupShipmentDetail(shipmentDetail))*
+    (UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, dataRetailRangeShipmentDetail(shipmentDetail))/100;
+
 nonRoundRetailPriceShipmentDetail 'Цена розничная (неокруглен.)'(shipmentDetail) = priceShipmentDetail(shipmentDetail) + sumMarkupShipmentDetail(shipmentDetail) + sumRetailVATShipmentDetail(shipmentDetail);
 
-retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = UNION OVERRIDE roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail)),
-                    roundMinus1(importerPriceShipmentDetail(shipmentDetail)) IF isFixPriceShipmentDetail(shipmentDetail);
+retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = UNION OVERRIDE
+    roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail) + overPriceWareShipmentDetail(shipmentDetail)),
+    roundMinus1(importerPriceShipmentDetail(shipmentDetail) + overPriceWareShipmentDetail(shipmentDetail))
+    IF isFixPriceShipmentDetail(shipmentDetail);
+
 diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentDetail) = retailPriceShipmentDetail(shipmentDetail) - nonRoundRetailPriceShipmentDetail(shipmentDetail);
 
 quantityShipmentOrderItem 'Поставленное количество' (orderSupplier, item) = GROUP SUM quantityShipmentDetail (shipmentDetail) IF inShipmentOrder (shipmentShipmentDetail (shipmentDetail), orderSupplier) BY orderSupplier, itemShipmentDetail(shipmentDetail);
@@ -3166,7 +3224,10 @@ sumQuantityOrderedItemShipment 'Количество по товару в зак
 isOrderedItemShipment 'Товар есть в заказах поставки' (item, shipment) =  sumQuantityOrderedItemShipment(item, shipment) > 0;
 isOrderedShipmentDetail 'Товар поставки есть в заказах поставки' (shipmentDetail) = isOrderedItemShipment(itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail));
 quantityOrderedShipmentDetailsShipment 'Количество позиций, для которых есть заказ' (shipment) = GROUP SUM 1 IF isOrderedShipmentDetail(shipmentDetail) AND shipmentShipmentDetail(shipmentDetail)==shipment BY shipment;
-percentOrderedShipmentDetailsShipment 'Процент позиций поставки, для которых есть заказ' (shipment) = [X*100/Y](quantityOrderedShipmentDetailsShipment(shipment), quantityShipmentDetailsShipment(shipment));
+percentOrderedShipmentDetailsShipment 'Процент позиций поставки, для которых есть заказ' (shipment) =
+    [X*100/Y](
+    quantityOrderedShipmentDetailsShipment(shipment),
+    UNION OVERRIDE 1 IF shipment IS shipment, quantityShipmentDetailsShipment(shipment));
 surePercentSupplierShipment 'Обязательный % заказанных товаров в прих. накладной' (shipment) = DATA INTEGER (shipment);
 surePercentSupplierShipment (shipment) <- surePercentSupplier(supplierShipment (shipment)) ON CHANGE supplierShipment(shipment);
 controlSupplierDepartmentStoreShipment 'Контролировать ассортимент поставщика' (shipment) = DATA yesNo(shipment);
@@ -3214,21 +3275,22 @@ FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s) waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameDepartmentStoreShipment,
                    nameSupplierShipment, carryingChargesShipment, ordersShipment, totalQuantityShipment,
-                   totalSumSupplierVATShipmentDetail, totalSumSupplierShipmentDetail, percentOrderedShipmentDetailsShipment, showFormOrdersShipment
+                   totalSumIncVATShipment, totalSumSupplierShipment, percentOrderedShipmentDetailsShipment, showFormOrdersShipment
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail,
                     dateFitToShipmentDetail, dataSuppliersRangeShipmentDetail READONLY, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail READONLY, nameWareShipmentDetail READONLY, dataRetailRangeShipmentDetail READONLY,
                     retailMarkupShipmentDetail READONLY, oldRetailPriceShipmentDetail READONLY, retailPriceShipmentDetail READONLY, ADDOBJ, delete
-    PROPERTIES (d) FORCE PANEL READONLY isFixPriceShipmentDetail, controlExpiryShipmentDetail, isManufacturedShipmentDetail, isWeightShipmentDetail,
+    PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, controlExpiryShipmentDetail, isManufacturedShipmentDetail, isWeightShipmentDetail,
                                nameinActionItemDepartmentShipmentDetail, hintShipmentDetail, nameCountryShipmentDetail,
-                               namebanRevaluationItemDepartmentShipmentDetail, importerPriceShipmentDetail
+                               namebanRevaluationItemDepartmentShipmentDetail, importerPriceShipmentDetail,
+                               dataWareRangeShipmentDetail, priceWareShipmentDetail
     PROPERTIES      addShipmentDetailBarcode(s) TODRAW d
 
     FILTERS NOT NULL inShipmentShipmentDetail(s, d)
 
     OBJECTS i=item
-    PROPERTIES (i) captionItem
+    PROPERTIES (i) nameAttributeItem
     PROPERTIES (i, s) quantityItemShipment, sumQuantityOrderedItemShipment
 
     EDIT shipment OBJECT s
