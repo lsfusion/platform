@@ -2743,7 +2743,12 @@ quantityCountedDetailPage 'Количество посчитано' = DATA DOUBL
 retailPriceDetailPage 'Учетная цена' (detailPage) =
     retailPriceItemDepartmentVal(skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateToInventory(inventoryDetailPage(detailPage))) IN baseGroup;
 
-totalDetailPage 'Сумма' (detailPage) = retailPriceDetailPage(detailPage) * quantityCountedDetailPage(detailPage) IN baseGroup;
+priceDetailPage 'Учетная цена' (detailPage) = DATA DOUBLE (detailPage) IN baseGroup;
+priceDetailPage(detailPage) <- retailPriceDetailPage(detailPage) ON CHANGE skuBarcodeDetailPage(detailPage);
+
+   // todo :  надо установить другую цену, действующую (управленческая)
+
+totalDetailPage 'Сумма' (detailPage) = priceDetailPage(detailPage) * quantityCountedDetailPage(detailPage) IN baseGroup;
 
 quantityDetailPageList 'Количество строк' (pageList) = GROUP SUM 1 IF detailPage IS detailPage BY pageListDetailPage(detailPage) IN baseGroup;
 quantityCountedPageList 'Количество посчитано' (pageList) = GROUP SUM quantityCountedDetailPage(detailPage) BY pageListDetailPage(detailPage) IN baseGroup;
@@ -2778,10 +2783,16 @@ typeOfAdditionListInventory(listInventory) = typeOfAdditionDepartmentStoreInvent
 
 balanceCollationSheetItem 'Остаток' (collationSheet, item) = balanceDepartmentStoreItem(departmentStoreCollationSheet(collationSheet), item) IN baseGroup;
 
+//    нужно ли делать остаток с использованием WRITEONCHANGE ?????????
+
 retailPriceCollationSheetItem 'Учетная цена' (collationSheet, item) =
     retailPriceItemDepartmentVal(item, departmentStoreCollationSheet(collationSheet), dateToInventory(inventoryCollationSheet(collationSheet))) IN baseGroup;
 
-totalBalansCollationSheetItem 'Сумма по учетным данным ' (collationSheet, item) = retailPriceCollationSheetItem(collationSheet, item) * balanceCollationSheetItem(collationSheet, item) IN baseGroup;
+priceCollationSheetItem 'Учетная цена' (collationSheet, item) = DATA DOUBLE (collationSheet, item) IN baseGroup;
+priceCollationSheetItem(collationSheet, item) <- retailPriceCollationSheetItem(collationSheet, item) ON CHANGE item IS item;
+
+
+totalBalansCollationSheetItem 'Сумма по учетным данным ' (collationSheet, item) = priceCollationSheetItem(collationSheet, item) * balanceCollationSheetItem(collationSheet, item) IN baseGroup;
 
 quantityCountedCollationSheetItem 'Количество посчитано' (collationSheet, item) = GROUP SUM quantityCountedDetailPage(detailPage)
     BY collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage))), skuBarcodeDetailPage(detailPage);
@@ -2910,7 +2921,7 @@ FORM listInventory 'Опись'
     PROPERTIES(pl)  namePageList, notePageList, quantityDetailPageList, quantityCountedPageList, totalPageList, ADDOBJ, delete
 
     OBJECTS         dp=detailPage
-    PROPERTIES (dp) nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage, retailPriceDetailPage,
+    PROPERTIES (dp) nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage, priceDetailPage READONLY,
                     totalDetailPage, ADDOBJ, delete
 
     OBJECTS         e=employee
@@ -2947,7 +2958,7 @@ FORM inventory 'Инвентаризация'
 
     OBJECTS          dp=detailPage
     PROPERTIES (dp)  READONLY nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage,
-                     retailPriceDetailPage, totalDetailPage
+                     priceDetailPage, totalDetailPage
 
     OBJECTS          cs=collationSheet
     PROPERTIES (cs)  nameCollationSheet, setDataCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
