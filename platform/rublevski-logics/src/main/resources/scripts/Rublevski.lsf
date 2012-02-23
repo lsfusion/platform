@@ -2789,6 +2789,13 @@ quantityCountedCollationSheetItem 'Количество посчитано' (col
 totalCollationSheetItem 'Сумма посчитанного' (collationSheet, item) = GROUP SUM totalDetailPage(detailPage)
     BY collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage))), skuBarcodeDetailPage(detailPage);
 
+inManyCollationSheetItem 'Вкл в ведомость' = DATA BOOLEAN (manyCollationSheet, item) IN baseGroup;
+
+includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE
+    [collationSheet IS registerCollationSheet IF quantityCountedCollationSheetItem(collationSheet, item)](collationSheet, item),
+    [UNION OVERRIDE inManyCollationSheetItem(collationSheet, item), [collationSheet IS manyCollationSheet IF quantityCountedCollationSheetItem(collationSheet, item)](collationSheet, item)](collationSheet, item),
+    [collationSheet IS remainsCollationSheet IF UNION OVERRIDE balanceCollationSheetItem(collationSheet, item) != 0, TRUE IF quantityCountedCollationSheetItem(collationSheet, item)](collationSheet, item);
+
 shortageQuantityCountedCollationSheetItem 'Излишек/недостача (к-во)' (collationSheet, item) =
     [UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, quantityCountedCollationSheetItem(collationSheet, item)](collationSheet, item) -
     [UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, balanceCollationSheetItem(collationSheet, item)](collationSheet, item);
@@ -2797,24 +2804,23 @@ shortageTotalCollationSheetItem 'Излишек/недостача (сумма)'
     [UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalCollationSheetItem(collationSheet, item)](collationSheet, item) -
     [UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalBalansCollationSheetItem(collationSheet, item)](collationSheet, item);
 
-quantityCountedItemByCollationSheet 'Количество товаров по ведомости' (collationSheet) =
-    GROUP SUM quantityCountedCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
+quantityCountedItemByCollationSheet 'Количество посчитано по ведомости' (collationSheet) =
+    GROUP SUM quantityCountedCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
 
 totalItemByCollationSheet 'Сумма посчитанного по ведомости' (collationSheet) =
-    GROUP SUM totalCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
+    GROUP SUM totalCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
+
+balanceItemByCollationSheet 'Остаток' (collationSheet) =
+    GROUP SUM balanceCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
+
+totalBalansItemByCollationSheet 'Сумма по учетным данным ' (collationSheet) =
+    GROUP SUM totalBalansCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
 
 shortageQuantityCountedItemByCollationSheet 'Излишек/недостача (к-во) по ведомости' (collationSheet) =
-    GROUP SUM shortageQuantityCountedCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
+    GROUP SUM shortageQuantityCountedCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
 
 shortageTotalItemByCollationSheet 'Излишек/недостача (сумма) по ведомости' (collationSheet) =
-    GROUP SUM shortageTotalCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
-
-inManyCollationSheetItem 'Вкл в ведомость' = DATA BOOLEAN (manyCollationSheet, item) IN baseGroup;
-
-includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE
-    [collationSheet IS registerCollationSheet IF quantityCountedCollationSheetItem(collationSheet, item)](collationSheet, item),
-    [UNION OVERRIDE inManyCollationSheetItem(collationSheet, item), [collationSheet IS manyCollationSheet IF quantityCountedCollationSheetItem(collationSheet, item)](collationSheet, item)](collationSheet, item),
-    [collationSheet IS remainsCollationSheet IF UNION OVERRIDE balanceCollationSheetItem(collationSheet, item) != 0, TRUE IF quantityCountedCollationSheetItem(collationSheet, item)](collationSheet, item);
+    GROUP SUM shortageTotalCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
 
 // автоматическое создание сличительной ведомости (товары из описей) //
 uniqueRegisterCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
@@ -2944,8 +2950,9 @@ FORM inventory 'Инвентаризация'
                      retailPriceDetailPage, totalDetailPage
 
     OBJECTS          cs=collationSheet
-    PROPERTIES (cs)  nameCollationSheet, setDataCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,  quantityCountedItemByCollationSheet,
-                     totalItemByCollationSheet, shortageQuantityCountedItemByCollationSheet, shortageTotalItemByCollationSheet, showFormItemByCollationSheet, delete
+    PROPERTIES (cs)  nameCollationSheet, setDataCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
+                     quantityCountedItemByCollationSheet, balanceItemByCollationSheet, shortageQuantityCountedItemByCollationSheet,
+                     totalItemByCollationSheet, totalBalansItemByCollationSheet, shortageTotalItemByCollationSheet, showFormItemByCollationSheet, delete
 
     OBJECTS          i=item
     PROPERTIES (i)   nameAttributeItem
