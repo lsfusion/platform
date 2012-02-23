@@ -24,7 +24,6 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.instance.filter.AndFilterInstance;
-import platform.server.form.instance.filter.CompareFilterInstance;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.filter.OrFilterInstance;
 import platform.server.form.instance.listener.CustomClassListener;
@@ -148,7 +147,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         List<FilterInstance> orFilters = new ArrayList<FilterInstance>();
         for (FilterInstance filter : filterSet) {
             orFilters.add(filter);
-            if (((CompareFilterInstance) filter).junction) {
+            if (filter.junction) {
                 organizedFilters.add(orFilters);
                 orFilters = new ArrayList<FilterInstance>();
             }

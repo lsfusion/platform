@@ -27,7 +27,6 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     boolean negate;
     public Compare compare;
     public CompareValue value;
-    public boolean junction;
 
     // не можем хранить ссылку на Entity, так как этот Instance может создаваться на стороне клиента и не иметь Entity
     public CompareFilterInstance(PropertyObjectInstance<P> iProperty,Compare iCompare, CompareValue iValue) {

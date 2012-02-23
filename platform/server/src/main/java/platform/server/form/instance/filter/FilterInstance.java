@@ -26,6 +26,7 @@ public abstract class FilterInstance implements Updated {
 
     // даже если не в интерфейсе все равно ставить (то есть по сути фильтр делать false)
     public final static boolean ignoreInInterface = true;
+    public boolean junction; //true - conjunction, false - disjunction
 
     public FilterInstance() {
     }
@@ -42,12 +43,17 @@ public abstract class FilterInstance implements Updated {
                 return new AndFilterInstance(inStream, form);
             case FilterType.COMPARE:
                 CompareFilterInstance filter = new CompareFilterInstance(inStream, form);
-                if (filter.value instanceof NullValue)
+                if (filter.value instanceof NullValue) {
+                    FilterInstance notNullFilter = new NotNullFilterInstance(filter.property);
+                    notNullFilter.junction = filter.junction;
                     if (!filter.negate) {
-                        return new NotFilterInstance(new NotNullFilterInstance(filter.property));
+                        NotFilterInstance notFilter = new NotFilterInstance(notNullFilter);
+                        notFilter.junction = notNullFilter.junction;
+                        return notFilter;
                     } else {
-                        return new NotNullFilterInstance(filter.property);
+                        return notNullFilter;
                     }
+                }
                 else
                     return filter;
             case FilterType.NOTNULL:
