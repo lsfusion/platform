@@ -1655,19 +1655,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    public static class MessageActionProperty extends CustomActionProperty {
-        private String message;
-
-        MessageActionProperty(String message, String sID, String caption) {
-            super(sID, caption, new ValueClass[]{});
-            this.message = message;
-        }
-
-        public void execute(ExecutionContext context) throws SQLException {
-            context.addAction(new MessageClientAction(message, caption));
-        }
-    }
-
     class AddBarcodeActionProperty extends CustomActionProperty {
 
         ConcreteCustomClass customClass;

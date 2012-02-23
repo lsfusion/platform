@@ -216,7 +216,8 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 
 // Message action
 // statement syntax:
-// MESSAGE 'message'
+// MESSAGE [ LENGTH = n ] propertyExpr
+// Default length = 2000
 
 copyStoreNameToArticles 'Скопировать имя склада в имена артиклей' (s) = ACTION(s) {
     SET (name(a) AND a IS article) <- (name(s) AND s IS store);
@@ -301,11 +302,20 @@ showForm(document) = ACTION FORM documentArticle OBJECTS document NEWSESSION MOD
 showDocumentArticleModalForm 'Показать форму "По документам"' = ACTION() {
     FORM documentArticle NEWSESSION MODAL;
 
-//    [MESSAGE 'You pressed "ok"']() IF (formResult() == formResult.ok);
-//    [MESSAGE 'You pressed "close"']() IF (formResult() == formResult.close);
+    IF (formResult() == formResult.ok) THEN {
+        MESSAGE 'You pressed "ok"';
+//        MESSAGE [FORMULA STRING[100] '\'You have choosen article \' || $1 || \' and store \' || $2'](name(chosenObject('article')), name(store(chosenObject('document'))));
+        MESSAGE [FORMULA STRING[100] '\'You have choosen article \' || $1 || \' and store \' || $2'](name(chosenObject('article')), '<TODO>');
 
-    SET name(k) IF k == chosenObject('article') IF (formResult() == formResult.ok) <- 'THIS article was chosen in modal form';
-    SET name(k) IF k == store(chosenObject('document')) IF (formResult() == formResult.ok) <- 'Document for THIS store was chosen in modal form';
+        FOR (k == chosenObject('article')) DO {
+            SET name(k) <- 'THIS article was chosen in modal form';
+        };
+        FOR (k == store(chosenObject('document'))) DO {
+            SET name(k) <- 'Document for THIS store was chosen in modal form';
+        };
+    } ELSE IF (formResult() == formResult.close) THEN {
+        MESSAGE 'You pressed "close"';
+    };
 };
 
 FORM testModalForm 'Показать тестовую модальную форму'

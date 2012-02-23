@@ -1169,7 +1169,7 @@ actionPropertyDefinition[List<String> context, boolean dynamic] returns [LP prop
 actionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	extPDB=extendContextActionPDB[context, dynamic] { $property = $extPDB.property; }
 	|	keepPDB=keepContextActionPDB[context, dynamic] { $property = $keepPDB.property; }
-	|	trivPDB=trivialActionPDB { $property = $trivPDB.property; }
+	|	trivPDB=trivialActionPDB[context, dynamic] { $property = $trivPDB.property; }
 	;
 
 extendContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -1188,14 +1188,14 @@ keepContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParam
 	|	ifPDB=ifActionPropertyDefinitionBody[context, dynamic] { $property = $ifPDB.property; }
 	;
 
-trivialActionPDB returns [LPWithParams property]
+trivialActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	$property = new LPWithParams(null, new ArrayList<Integer>());
 }
 	:	formPDB=formActionPropertyDefinitionBody { $property.property = $formPDB.property; }
 	|	addPDB=addObjectActionPropertyDefinitionBody { $property.property = $addPDB.property; }
 	|	actPDB=customActionPropertyDefinitionBody { $property.property = $actPDB.property; }
-	|   msgPDB=messageActionPropertyDefinitionBody { $property.property = $msgPDB.property; }
+	|   msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
 	;
 
 			
@@ -1238,15 +1238,17 @@ addObjectActionPropertyDefinitionBody returns [LP property]
 	:	'ADDOBJ' cid=classId
 	;
 
-messageActionPropertyDefinitionBody returns [LP property]
+messageActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	int length = 2000;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedMessageProp($s.val);
+		$property = self.addScriptedMessageProp(length, $pe.property);
 	}
 }
-	:	'MESSAGE' s=stringLiteral
+	:	'MESSAGE' ('LENGTH' '=' len=uintLiteral { length = $len.val; } ']')? pe=propertyExpression[context, dynamic]
 	;
-
 
 listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
@@ -1256,7 +1258,7 @@ listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedListAProp(newSession, doApply, context, props);
+		$property = self.addScriptedListAProp(newSession, doApply, props);
 	}
 }
 	:	('NEWSESSION' { newSession = true; } ('NOAPPLY' {doApply = false; } )? )?
@@ -1270,7 +1272,7 @@ listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 execActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedJoinAProp(context, $prop.property, $exprList.props);
+		$property = self.addScriptedJoinAProp($prop.property, $exprList.props);
 	}
 }
 	:	'EXEC'
@@ -1936,7 +1938,7 @@ intLiteral returns [int val]
 	boolean isMinus = false;
 }
 	:	(MINUS {isMinus=true;})?
-		ui=uintLiteral  { $val = (isMinus ? -1 : 1) * Integer.parseInt($ui.text); }
+		ui=uintLiteral  { $val = isMinus ? -$ui.val : $ui.val; }
 	;
 
 doubleLiteral returns [double val]
@@ -1944,7 +1946,7 @@ doubleLiteral returns [double val]
 	boolean isMinus = false;
 }
 	:	(MINUS {isMinus=true;})?
-		ud=udoubleLiteral { $val = (isMinus ? -1 : 1) * Double.parseDouble($ud.text); }
+		ud=udoubleLiteral { $val = isMinus ? -$ud.val : $ud.val; }
 	;
 
 booleanLiteral returns [boolean val]
@@ -1988,12 +1990,12 @@ panelLocationLiteral returns [PanelLocationView val]
 	|	'SHORTCUT' { toolbar = false; } (onlyProp=propertySelector { property = $onlyProp.propertyView; })? ('DEFAULT' { defaultProperty = true; })?
 	;
 	
-udoubleLiteral
-	:	POSITIVE_DOUBLE_LITERAL
+udoubleLiteral returns [double val]
+	:	d=POSITIVE_DOUBLE_LITERAL  { $val = Double.parseDouble($d.text); }
 	; 
 		
-uintLiteral
-	:	UINT_LITERAL
+uintLiteral returns [int val]
+	:	u=UINT_LITERAL { $val = Integer.parseInt($u.text); }
 	;		
 
 

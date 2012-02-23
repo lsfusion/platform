@@ -1778,11 +1778,21 @@ public abstract class LogicsModule {
     }
 
     protected LP addMAProp(String message, String caption) {
-        return addMAProp(message, null, caption);
+        return addMAProp(null, message, caption);
     }
 
-    protected LP addMAProp(String message, AbstractGroup group, String caption) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new BaseLogicsModule.MessageActionProperty(message, genSID(), caption)));
+    protected LP addMAProp(AbstractGroup group, String message, String caption) {
+        int length = message.length();
+        return addJProp(addMAProp(caption, length),
+                        addCProp(StringClass.get(length), message));
+    }
+
+    protected LP addMAProp(String caption, int length) {
+        return addMAProp(null, caption, length);
+    }
+
+    protected LP addMAProp(AbstractGroup group, String caption, int length) {
+        return addProperty(group, new LP<ClassPropertyInterface>(new MessageActionProperty(genSID(), caption, length)));
     }
 
     /**
@@ -1902,8 +1912,8 @@ public abstract class LogicsModule {
 
     protected LP addAAProp(CustomClass customClass, LP barcode, LP barcodePrefix, boolean quantity, LP... properties) {
         return addAProp(new AddObjectActionProperty(genSID(),
-                (barcode != null) ? barcode.property : null, (barcodePrefix != null) ? barcodePrefix.property : null,
-                quantity, customClass, LP.toPropertyArray(properties), null, null));
+                                                    (barcode != null) ? barcode.property : null, (barcodePrefix != null) ? barcodePrefix.property : null,
+                                                    quantity, customClass, LP.toPropertyArray(properties), null, null));
     }
 
     @IdentityLazy

@@ -630,16 +630,16 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
 
-    public LPWithParams addScriptedListAProp(boolean newSession, boolean doApply, List<String> context, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedListAProp(" + context + ");");
+    public LPWithParams addScriptedListAProp(boolean newSession, boolean doApply, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedListAProp(" + newSession + ", " + doApply + ", " + properties + ");");
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
         LP prop = addListAProp(null, genSID(), "", usedParams.size(), newSession, doApply, resultParams.toArray());
         return new LPWithParams(prop, usedParams);
     }
 
-    public LPWithParams addScriptedJoinAProp(List<String> context, LP mainProp, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedJoinAProp(" + context + ", " + mainProp + ", " + properties + ", " + ");");
+    public LPWithParams addScriptedJoinAProp(LP mainProp, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedJoinAProp(" + mainProp + ", " + properties + ", " + ");");
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
         LP prop = addJoinAProp(null, genSID(), "", usedParams.size(), mainProp, resultParams.toArray());
@@ -650,8 +650,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getSimpleAddObjectAction((CustomClass) findClassByCompoundName(className));
     }
 
-    public LP addScriptedMessageProp(String message) throws ScriptingErrorLog.SemanticErrorException {
-        return addMAProp(message, "");
+    public LPWithParams addScriptedMessageProp(int length, LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedMessageProp(" + length + ", " + msgProp + ");");
+        return addScriptedJoinAProp(addMAProp("", length), asList(msgProp));
     }
 
     public LPWithParams addScriptedSetPropertyAProp(List<String> context, LPWithParams toProperty, LPWithParams fromProperty) throws ScriptingErrorLog.SemanticErrorException {
