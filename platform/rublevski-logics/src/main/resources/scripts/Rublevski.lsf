@@ -2657,10 +2657,10 @@ GROUP adverbGroup 'Итого' : baseGroup;
 
 nameInventory 'Инвентаризация (номер, название)' = DATA STRING[100] (inventory) IN inventoryGroup;
 dateToInventory 'Остатки выставить на (утро) дату' = DATA DATE (inventory) IN inventoryGroup;
-timeToInventory 'Выставить остатки на время' = DATA TIME (inventory) IN inventoryGroup;        // переделать: должен быть класс - время
+timeToInventory 'Выставить остатки на время' = DATA TIME (inventory) IN inventoryGroup;
 noteInventory 'Примечание (основание)' = DATA STRING[500] (inventory) IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 150;
 dateClosedInventory 'Дата закрытия инвентаризации' = DATA DATE (inventory) IN inventoryGroup;
-timeClosedInventory 'Время закрытия инвентаризации' = DATA TIME (inventory) IN inventoryGroup;// переделать: должен быть класс - время
+timeClosedInventory 'Время закрытия инвентаризации' = DATA TIME (inventory) IN inventoryGroup;
 
 infoInventory 'Дополнительная информация по инвентаризации' = DATA STRING[500] (inventory) IN inventoryGroup;
 
@@ -2678,7 +2678,9 @@ nextDataCollationSheet = maxDataCollationSheet() + 1;
 nameCollationSheet 'Номер (название сличит. ведомости)' (collationSheet) = castToString30('Сличительная ведомость ', dataCollationSheet(collationSheet)) IN collationSheetGroup;
 
 setDataCollationSheet 'Создать номер' (collationSheet) = ACTION SET dataCollationSheet (collationSheet) <- nextDataCollationSheet();
-setDataCollationSheet(collationSheet) <- TRUE ON ASSIGN collationSheet IS collationSheet;                              // пока не работает.....
+setDataCollationSheet(collationSheet) <- TRUE ON ASSIGN collationSheet IS collationSheet;
+
+  // todo : пока не работает, обязательно переделать.....
 
 
 includeDepartmentStoreInventory 'Включить в инвентаризацию' = DATA BOOLEAN (departmentStore, inventory) IN inventoryGroup;
@@ -2707,9 +2709,6 @@ inInventoryListInventory(inventory, listInventory) = inventoryListInventory(list
 departmentStoreListInventory(listInventory) = DATA departmentStore (listInventory) IN idGroup AUTOSET;
 nameDepartmentStoreListInventory 'Подразделение' (listInventory) = name(departmentStoreListInventory(listInventory)) IN listInventoryGroup;
 inDepartmentStoreListInventory(departmentStore, listInventory) = departmentStoreListInventory(listInventory) == departmentStore;
-
-sumListInventoryByInventoryDepartmentStore 'К-во описей' (inventory, departmentStore) =
-    GROUP SUM 1 IF listInventory IS listInventory BY inventoryListInventory(listInventory), departmentStoreListInventory(listInventory);
 
 counterListInventory(listInventory) = PARTITION SUM 1 IF listInventory IS listInventory
     BY inventoryListInventory(listInventory), departmentStoreListInventory(listInventory)  ORDER listInventory IN baseGroup;
@@ -2799,7 +2798,7 @@ retailPriceCollationSheetItem 'Учетная цена' (collationSheet, item) =
     retailPriceItemDepartmentVal(item, departmentStoreCollationSheet(collationSheet), dateToInventory(inventoryCollationSheet(collationSheet))) IN baseGroup;
 
 priceCollationSheetItem 'Учетная цена' (collationSheet, item) = DATA DOUBLE (collationSheet, item) IN baseGroup;
-priceCollationSheetItem(collationSheet, item) <- retailPriceCollationSheetItem(collationSheet, item) ON CHANGE item IS item;
+priceCollationSheetItem(collationSheet, item) <- retailPriceCollationSheetItem(collationSheet, item) ON CHANGE item IS item AND collationSheet IS collationSheet;
 
 
 totalBalansCollationSheetItem 'Сумма по учетным данным ' (collationSheet, item) = priceCollationSheetItem(collationSheet, item) * balanceCollationSheetItem(collationSheet, item) IN baseGroup;
@@ -2813,17 +2812,17 @@ totalCollationSheetItem 'Сумма посчитанного' (collationSheet, i
 inManyCollationSheetItem 'Вкл в ведомость' = DATA BOOLEAN (manyCollationSheet, item) IN baseGroup;
 
 includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE
-    [collationSheet IS registerCollationSheet IF quantityCountedCollationSheetItem(collationSheet, item)](collationSheet, item),
-    [UNION OVERRIDE inManyCollationSheetItem(collationSheet, item), [collationSheet IS manyCollationSheet IF quantityCountedCollationSheetItem(collationSheet, item)](collationSheet, item)](collationSheet, item),
-    [collationSheet IS remainsCollationSheet IF UNION OVERRIDE balanceCollationSheetItem(collationSheet, item) != 0, TRUE IF quantityCountedCollationSheetItem(collationSheet, item)](collationSheet, item);
+    collationSheet IS registerCollationSheet IF quantityCountedCollationSheetItem(collationSheet, item),
+    (UNION OVERRIDE inManyCollationSheetItem(collationSheet, item), collationSheet IS manyCollationSheet IF quantityCountedCollationSheetItem(collationSheet, item)),
+    (collationSheet IS remainsCollationSheet IF UNION OVERRIDE balanceCollationSheetItem(collationSheet, item) != 0, TRUE IF quantityCountedCollationSheetItem(collationSheet, item));
 
 shortageQuantityCountedCollationSheetItem 'Излишек/недостача (к-во)' (collationSheet, item) =
-    [UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, quantityCountedCollationSheetItem(collationSheet, item)](collationSheet, item) -
-    [UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, balanceCollationSheetItem(collationSheet, item)](collationSheet, item);
+    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, quantityCountedCollationSheetItem(collationSheet, item)) -
+    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, balanceCollationSheetItem(collationSheet, item));
 
 shortageTotalCollationSheetItem 'Излишек/недостача (сумма)' (collationSheet, item) =
-    [UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalCollationSheetItem(collationSheet, item)](collationSheet, item) -
-    [UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalBalansCollationSheetItem(collationSheet, item)](collationSheet, item);
+    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalCollationSheetItem(collationSheet, item)) -
+    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalBalansCollationSheetItem(collationSheet, item));
 
 quantityCountedItemByCollationSheet 'Количество посчитано по ведомости' (collationSheet) =
     GROUP SUM quantityCountedCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
@@ -2842,6 +2841,12 @@ shortageQuantityCountedItemByCollationSheet 'Излишек/недостача (
 
 shortageTotalItemByCollationSheet 'Излишек/недостача (сумма) по ведомости' (collationSheet) =
     GROUP SUM shortageTotalCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
+
+convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
+    SET priceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory <- retailPriceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory;
+    SET priceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- retailPriceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory;
+
+};
 
 // автоматическое создание сличительной ведомости (товары из описей) //
 uniqueRegisterCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
@@ -2878,7 +2883,11 @@ isManyCollationSheet(collationSheet) => includeManyDepartmentStoreInventory(depa
 
 inInventoryDepartmentStoreListInventory(inventory, departmentStore, listInventory) = departmentStoreListInventory(listInventory) == departmentStore AND inventoryListInventory(listInventory) == inventory;
 
+sumListInventoryByCollationSheet 'К-во описей' (collationSheet) =
+    GROUP SUM 1 IF listInventory IS listInventory BY collationSheetListInventory(listInventory);
 
+sumPageListByCollationSheet 'К-во страниц' (collationSheet) =
+    GROUP SUM 1 IF pageList IS pageList BY collationSheetListInventory(listInventoryPageList(pageList));
 
 inInventoryDepartmentStoreListInventoryPageListDetailPage (inventory, departmentStore, listInventory, pageList, detailPage) = UNION OVERRIDE
     pageListDetailPage(detailPage) == pageList AND listInventory AND departmentStore AND inventory,
@@ -2957,7 +2966,7 @@ DESIGN listInventory FROM DEFAULT {
 FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
     PROPERTIES (in)  nameInventory, dateToInventory, timeToInventory, noteInventory, infoInventory, concatNameDepartmentByInventory,
-                     timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed, showFormConcatNameDepartmentByInventory
+                     timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed, showFormConcatNameDepartmentByInventory, convertPriceInventory
 
     TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageList
     PROPERTIES       READONLY name(ds),  nameListInventory(li), namePageList(pl)
@@ -2973,7 +2982,8 @@ FORM inventory 'Инвентаризация'
     OBJECTS          cs=collationSheet
     PROPERTIES (cs)  nameCollationSheet, setDataCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
                      quantityCountedItemByCollationSheet, balanceItemByCollationSheet, shortageQuantityCountedItemByCollationSheet,
-                     totalItemByCollationSheet, totalBalansItemByCollationSheet, shortageTotalItemByCollationSheet, showFormItemByCollationSheet, delete
+                     totalItemByCollationSheet, totalBalansItemByCollationSheet, shortageTotalItemByCollationSheet, showFormItemByCollationSheet,
+                     sumListInventoryByCollationSheet, sumPageListByCollationSheet, delete
 
     OBJECTS          i=item
     PROPERTIES (i)   nameAttributeItem
