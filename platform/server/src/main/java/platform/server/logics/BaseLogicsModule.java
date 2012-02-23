@@ -683,12 +683,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         positive = addJProp(greater2, 1, vzero);
         negative = addJProp(less2, 1, vzero);
 
-        weekInDate = addSFProp("(extract(week from (prm1)))", IntegerClass.instance, 1);
+        weekInDate = addSFProp("weekInDate", "(extract(week from (prm1)))", IntegerClass.instance, 1);
         numberDOWInDate = addSFProp("numberDOWInDate", "(extract(dow from (prm1)))", IntegerClass.instance, 1);
         numberMonthInDate = addSFProp("numberMonthInDate", "(extract(month from (prm1)))", IntegerClass.instance, 1);
-        yearInDate = addSFProp("(extract(year from (prm1)))", IntegerClass.instance, 1);
-        dayInDate = addSFProp("(extract(day from (prm1)))", IntegerClass.instance, 1);
-        dateInTime = addSFProp("(CAST((prm1) as date))", DateClass.instance, 1);
+        yearInDate = addSFProp("yearInDate", "(extract(year from (prm1)))", IntegerClass.instance, 1);
+        dayInDate = addSFProp("dayInDate", "(extract(day from (prm1)))", IntegerClass.instance, 1);
+        dateInTime = addSFProp("dayInTime", "(CAST((prm1) as date))", DateClass.instance, 1);
 
         numberMonth = addOProp(baseGroup, "numberMonth", true, getString("logics.month.number"), addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(month), 1), PartitionType.SUM, true, true, 0, 1);
         numberToMonth = addAGProp("numberToMonth", getString("logics.month.id"), numberMonth);

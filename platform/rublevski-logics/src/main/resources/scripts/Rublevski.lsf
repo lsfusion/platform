@@ -3,6 +3,7 @@ MODULE Rublevski;
 IMPORT BaseLogicsModule;
 
 castToString255 = FORMULA STRING[255] 'CAST($1 AS character(255))';
+isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE 0 END';
 
 CLASS doubleNamed 'Объект с кратким наименованием' : named;
 
@@ -794,8 +795,16 @@ FORM barcode 'Штрих-код'
 
 FORM barcodeInput 'Ввод штрих-кода'
     OBJECTS             barcode=STRING[14] FIXED PANEL
-    PROPERTIES(barcode) OBJVALUE
+    PROPERTIES(barcode) objValue = OBJVALUE
 ;
+
+DESIGN barcodeInput FROM DEFAULT {
+    PROPERTY (objValue) {
+        caption = 'Штрих-код';
+        font = 'Tahoma bold 64';
+        panelLabelAbove = TRUE;
+    }
+}
 
 // ----------------------------------- Компоненты ------------------------------------------ //
 CLASS component 'Компонент' : sku, named;
@@ -1965,20 +1974,121 @@ isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepa
 isSupplyDatePreliminaryOrder (preliminaryOrder, date) = dateSupplyPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
 isOrderDatePreliminaryOrder (preliminaryOrder, date) = dateOrderPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
 
-createGenTimeTable 'Создать график поставок' () = ACTION FORM genTimeTable SET [ACTION ADDOBJ genTimeTable]() NEWSESSION MODAL;
+tmpGTT = SESSION DATA genTimeTable();
+tmpDate = SESSION DATA DATE();
+tmpDateS = SESSION DATA DATE();
 
-  createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
-      ADDOBJ orderSupplier;
-      SET (dateOrderSupplier(o) IF o == addedObject()) <- dateSupplyPreliminaryOrder(preliminaryOrder);
-      SET (curDateOrderSupplier(o) IF o == addedObject()) <- dateOrderPreliminaryOrder(preliminaryOrder);
-      SET (departmentStoreOrderSupplier(o) IF o == addedObject()) <- departmentStorePreliminaryOrder(preliminaryOrder);
-      SET (supplierOrderSupplier(o) IF o == addedObject()) <- supplierPreliminaryOrder(preliminaryOrder);
-      SET (allowablePercentOrderSupplier(o) IF o == addedObject()) <- allowablePercentSupplier(supplierPreliminaryOrder(preliminaryOrder));
-      SET (preliminaryOrderOrderSupplier(o) IF o == addedObject()) <- preliminaryOrder AS preliminaryOrder;
-      EXEC apply();
-  }](preliminaryOrder)
-    AND NOT preliminaryOrderToOrderSupplier(preliminaryOrder) CONFIRM
-  ;
+createGenTimeTable 'Создать график поставок' = ACTION () {
+    FORM genTimeTable SET [ACTION ADDOBJ genTimeTable]() MODAL;
+
+    IF formResult() == formResult.ok THEN {
+
+        SET tmpGTT() <- chosenObject('g');
+        // генерация через N недель
+        IF genTimeTableType(tmpGTT()) == genType.genWeek THEN {
+            // бежим по всем дням недели
+            FOR inDayGenTimeTable(tmpGTT(), dow) DO {
+                SET tmpDate() <- startDateGenTimeTable(tmpGTT());
+                // ищем первую дату начиная со стартовой с нужным днем недели
+                WHILE DOWInDate(tmpDate()) != dow AS DOW DO {
+                    SET tmpDate() <- addDate2(tmpDate(), 1);
+                };
+
+                // итерируемся по всем датам через период * 7 дней
+                WHILE tmpDate() <= endDateGenTimeTable(tmpGTT()) DO {
+                    ADDOBJ preliminaryOrder;
+                    FOR o == addedObject() DO {
+                        SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
+                        SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
+                        SET dateOrderPreliminaryOrder(o) <- subtractDate2(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
+                        SET dateSupplyPreliminaryOrder(o) <- tmpDate();
+                    };
+                    SET tmpDate() <- addDate2(tmpDate(), periodGenTimeTable(tmpGTT()) * 7);
+                };
+            };
+        };
+
+        // генерация через N дней
+        IF genTimeTableType(tmpGTT()) == genType.genDays THEN {
+            SET tmpDate() <- dayLastOrderGenTimeTable(tmpGTT());
+            // итерируемся по всем датам через n дней
+            WHILE tmpDate() <= endDateGenTimeTable(tmpGTT()) DO {
+                IF tmpDate() >= startDateGenTimeTable(tmpGTT()) THEN {
+                    ADDOBJ preliminaryOrder;
+                    FOR o == addedObject() DO {
+                        SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
+                        SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
+                        SET dateOrderPreliminaryOrder(o) <- subtractDate2(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
+                        SET dateSupplyPreliminaryOrder(o) <- tmpDate();
+                    };
+                };
+                SET tmpDate() <- addDate2(tmpDate(), dayAfterGenTimeTable(tmpGTT()));
+            };
+        };
+
+        // генерация по числам
+        IF genTimeTableType(tmpGTT()) == genType.genNumber THEN {
+            SET tmpDate() <- startDateGenTimeTable(tmpGTT());
+            // итерируемся по всем датам через 1 день
+            WHILE tmpDate() <= endDateGenTimeTable(tmpGTT()) DO {
+                IF isWordInCSV(dayInDate(tmpDate()), stringNumberGenTimeTable(tmpGTT())) == 1 THEN {
+                    ADDOBJ preliminaryOrder;
+                    FOR o == addedObject() DO {
+                        SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
+                        SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
+                        SET tmpDateS() <- tmpDate();
+                        // если попали на субботу или воскресенье
+                        IF UNION OVERRIDE numberDOWInDate(tmpDateS()) == 0, numberDOWInDate(tmpDateS()) == 6 THEN {
+                            IF numberDOW(transferDayGenTimeTable(tmpGTT())) == 1 THEN {
+                                // если нужно переносить на понедельник, то добавляем
+                                WHILE numberDOWInDate(tmpDateS()) != 1 DO SET tmpDateS() <- addDate2(tmpDateS(), 1);
+                            } ELSE {
+                                // если нужно переносить на пятницу, то отнимаем
+                                WHILE numberDOWInDate(tmpDateS()) != 5 DO SET tmpDateS() <- subtractDate2(tmpDateS(), 1);
+                            };
+                        };
+                        SET dateSupplyPreliminaryOrder(o) <- tmpDateS();
+                        SET dateOrderPreliminaryOrder(o) <- subtractDate2(tmpDateS(), dayBeforeGenTimeTable(tmpGTT()));
+                    };
+                };
+                SET tmpDate() <- addDate2(tmpDate(), 1);
+            };
+        };
+
+        // генерация по дням и месяцам
+        IF genTimeTableType(tmpGTT()) == genType.genDayMonth THEN {
+            SET tmpDate() <- startDateGenTimeTable(tmpGTT());
+            // итерируемся по всем датам через 1 день
+            WHILE tmpDate() <= endDateGenTimeTable(tmpGTT()) DO {
+                IF inMonthGenTimeTable(tmpGTT(), monthInDate(tmpDate())) AND inDayGenTimeTable(tmpGTT(), DOWInDate(tmpDate())) THEN {
+                    ADDOBJ preliminaryOrder;
+                    FOR o == addedObject() DO {
+                        SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
+                        SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
+                        SET dateOrderPreliminaryOrder(o) <- subtractDate2(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
+                        SET dateSupplyPreliminaryOrder(o) <- tmpDate();
+                    };
+                };
+                SET tmpDate() <- addDate2(tmpDate(), 1);
+            };
+        };
+
+    } ELSE
+        EXEC delete(tmpGTT());
+};
+
+createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
+    ADDOBJ orderSupplier;
+    FOR o == addedObject() DO {
+        SET dateOrderSupplier(o) <- dateSupplyPreliminaryOrder(preliminaryOrder);
+        SET curDateOrderSupplier(o) <- dateOrderPreliminaryOrder(preliminaryOrder);
+        SET departmentStoreOrderSupplier(o) <- departmentStorePreliminaryOrder(preliminaryOrder);
+        SET supplierOrderSupplier(o) <- supplierPreliminaryOrder(preliminaryOrder);
+        SET allowablePercentOrderSupplier(o) <- allowablePercentSupplier(supplierPreliminaryOrder(preliminaryOrder));
+        SET preliminaryOrderOrderSupplier(o) <- preliminaryOrder AS preliminaryOrder;
+    };
+    EXEC apply();
+}] (preliminaryOrder) AND NOT preliminaryOrderToOrderSupplier(preliminaryOrder) CONFIRM;
 
 FORM orderSupplier 'Заказ поставщику'
 
@@ -3299,9 +3409,11 @@ addShipmentDetailBarcode 'Добавить строку по штрих-коду
         SET tmpSku() <- skuBarcodeStringDate(chosenString('barcode'), dateWaybillShipment(shipment));
         IF tmpSku() IS item THEN {
             ADDOBJ shipmentDetail;
-            SET shipmentShipmentDetail(o) IF o == addedObject() <- shipment AS shipment;
-            SET itemShipmentDetail(o) IF o == addedObject() <- tmpSku();
-            SET quantityShipmentDetail(o) IF o == addedObject() <- amountBarcode(valueBarcodeToDate(chosenString('barcode'), dateWaybillShipment(shipment)));
+            FOR o == addedObject() DO {
+                SET shipmentShipmentDetail(o) <- shipment AS shipment;
+                SET itemShipmentDetail(o) <- tmpSku();
+                SET quantityShipmentDetail(o) <- amountBarcode(valueBarcodeToDate(chosenString('barcode'), dateWaybillShipment(shipment)));
+            };
         } ELSE
             MESSAGE 'Не найден штрих-код';
     };
