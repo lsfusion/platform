@@ -1918,17 +1918,17 @@ quantityDaysNextOrder 'Дней до поставки' (orderSupplier) =
     UNION MAX 0 IF orderSupplier IS orderSupplier,
               daysInclBetweenDates(curDateOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
 
-quantityOrderOrderSupplier 'Количество заказов на дату поставки' (supplier, departmentStore, date) =
+quantityOrderOrderSupplier 'Заказов на дату заказа' (supplier, departmentStore, date) =
     GROUP SUM 1 IF orderSupplier
     BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier), curDateOrderSupplier(orderSupplier);
 
-quantitySupplyOrderSupplier 'Количество заказов на дату поставки' (supplier, departmentStore, date) =
+quantitySupplyOrderSupplier 'Заказов на дату поставки' (supplier, departmentStore, date) =
     GROUP SUM 1 IF orderSupplier BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier),
                                     dateOrderSupplier(orderSupplier);
-quantityOrderPreliminaryOrder 'Количество предварительных заказов на дату заказа' (supplier, departmentStore, date) =
+quantityOrderPreliminaryOrder 'Предварительных заказов на дату заказа' (supplier, departmentStore, date) =
     GROUP SUM 1 IF preliminaryOrder BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder),
                                        dateOrderPreliminaryOrder(preliminaryOrder);
-quantitySupplyPreliminaryOrder 'Количество предварительных заказов на дату поставки' (supplier, departmentStore, date) =
+quantitySupplyPreliminaryOrder 'Предварительных заказов на дату поставки' (supplier, departmentStore, date) =
     GROUP SUM 1 IF preliminaryOrder BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder),
                                        dateSupplyPreliminaryOrder(preliminaryOrder);
 nextDateOrder 'Дата следующей поставки' (preliminaryOrder) =
@@ -1938,7 +1938,7 @@ nextDateOrder 'Дата следующей поставки' (preliminaryOrder) 
 nextDateOrderSupplier 'Дата следующей поставки' (orderSupplier) = nextDateOrder(preliminaryOrderOrderSupplier(orderSupplier));
 quantityDaysAfterNextOrder 'Дней до следующей поставки' (orderSupplier) =
     daysInclBetweenDates(curDateOrderSupplier(orderSupplier), nextDateOrderSupplier(orderSupplier));
-CONSTRAINT CHECKED nextDateOrderSupplier(orderSupplier) < dateOrderSupplier(orderSupplier) MSG 'Дата поставки не должна превышать дату поставки следующей поставки';
+CONSTRAINT nextDateOrderSupplier(orderSupplier) < dateOrderSupplier(orderSupplier) MSG 'Дата поставки не должна превышать дату поставки следующей поставки';
 quantityRealizationItemNextOrder 'Предполагаемое количество реализации товара до следующей поставки' (orderSupplier, item) =
     quantityDaysAfterNextOrder(orderSupplier)*quantityRealizationDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
 balance2DepartmentStoreItem 'Величина остатков товара и минимального резерва' (orderSupplier, item) =
@@ -1966,14 +1966,14 @@ createGenTimeTable 'Создать график поставок' () = ACTION FO
       SET (preliminaryOrderOrderSupplier(o) IF o == addedObject()) <- preliminaryOrder AS preliminaryOrder;
       EXEC apply();
   }](preliminaryOrder)
-    AND NOT preliminaryOrderToOrderSupplier(preliminaryOrder)
+    AND NOT preliminaryOrderToOrderSupplier(preliminaryOrder) CONFIRM
   ;
 
 FORM orderSupplier 'Заказ поставщику'
 
     OBJECTS o=orderSupplier FIXED PANEL
-    PROPERTIES(o)          dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, quantityDaysNextOrder,
-                           nextDateOrderSupplier, quantityDaysAfterNextOrder, nameDepartmentStoreOrderSupplier,
+    PROPERTIES(o)          dataOrderSupplier, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
+                           quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
                            nameSupplierOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated,
                            allowablePercentOrderSupplier
     PROPERTIES(o)          completePercentageOrderSupplier
@@ -1981,8 +1981,8 @@ FORM orderSupplier 'Заказ поставщику'
     OBJECTS i=item
     PROPERTIES(i)          nameAttributeItem, quantityPackItemOver, minQuantityOrderItem READONLY
 
-    PROPERTIES(o, i)       recommendCountOrderSupplier, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier,
-                           fullSumItemOrderSupplier
+    PROPERTIES(o, i)       recommendCountOrderSupplier, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier,
+                           fullPriceItemOrderSupplier, fullSumItemOrderSupplier
 
     FILTERS NOT NULL isSupplierItemDepartmentOrderSupplier(o, i),
             NOT NULL isBanSupplierItemDepartmentOrderSupplier(o, i)
@@ -1996,8 +1996,8 @@ FORM orderSupplier 'Заказ поставщику'
 FORM orderSuppliers 'Заказы поставщику'
 
     OBJECTS o=orderSupplier
-    PROPERTIES(o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, quantityDaysNextOrder,
-                           nextDateOrderSupplier, quantityDaysAfterNextOrder, nameDepartmentStoreOrderSupplier,
+    PROPERTIES(o) READONLY dataOrderSupplier, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
+                           quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
                            nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated,
                            nameUserCreated, allowablePercentOrderSupplier
     PROPERTIES(o) ADDFORM, EDITFORM, delete
@@ -3455,7 +3455,6 @@ NAVIGATOR {
     NEW processes 'Бизнес-процессы' TO formsToolbar{
         NEW orders 'Заказы' {
             ADD orderSuppliers;
-            ADD genTimeTables;
             ADD timeTableDate;
         }
         NEW incomeShipments 'Поставки' {
@@ -3517,6 +3516,7 @@ NAVIGATOR {
             ADD coefficientNetGrossItem;
             ADD addrateNaturalLossItem;
             ADD rateNaturalLossItem;
+            ADD genTimeTables;
 //            ADD addNDSSupplierItem;
 //            ADD NDSSupplierItem;
             ADD addpriceWare;
