@@ -27,6 +27,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     boolean negate;
     public Compare compare;
     public CompareValue value;
+    public boolean junction;
 
     // не можем хранить ссылку на Entity, так как этот Instance может создаваться на стороне клиента и не иметь Entity
     public CompareFilterInstance(PropertyObjectInstance<P> iProperty,Compare iCompare, CompareValue iValue) {
@@ -40,6 +41,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         negate = inStream.readBoolean();
         compare = Compare.deserialize(inStream);
         value = deserializeCompare(inStream, form, property.getType());
+        junction = inStream.readBoolean();
     }
 
     private static CompareValue deserializeCompare(DataInputStream inStream, FormInstance form, Type DBType) throws IOException, SQLException {

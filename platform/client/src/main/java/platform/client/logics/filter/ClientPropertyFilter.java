@@ -17,6 +17,7 @@ public class ClientPropertyFilter {
 
     public boolean negation;
     public Compare compare;
+    public boolean junction = true; //true - conjunction, false - disjunction
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(FilterType.COMPARE);
@@ -25,5 +26,6 @@ public class ClientPropertyFilter {
         outStream.writeBoolean(negation);
         compare.serialize(outStream);
         value.serialize(outStream);
+        outStream.writeBoolean(junction);
     }    
 }

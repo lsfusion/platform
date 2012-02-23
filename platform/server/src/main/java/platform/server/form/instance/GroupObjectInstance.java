@@ -23,7 +23,10 @@ import platform.server.data.query.Query;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.instance.filter.AndFilterInstance;
+import platform.server.form.instance.filter.CompareFilterInstance;
 import platform.server.form.instance.filter.FilterInstance;
+import platform.server.form.instance.filter.OrFilterInstance;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
@@ -131,15 +134,55 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public Set<FilterInstance> setFilters = null;
     public Set<FilterInstance> getSetFilters() {
-        if(setFilters==null)
-            setFilters = BaseUtils.mergeSet(BaseUtils.mergeSet(BaseUtils.mergeSet(fixedFilters,userFilters),regularFilters),tempFilters);
+        if(setFilters==null) {
+            FilterInstance userComboFilter = combineUserFilters(userFilters);
+            Set<FilterInstance> userComboSet = userComboFilter != null ? new HashSet<FilterInstance>(Collections.singleton(userComboFilter)) : userFilters;
+            setFilters = BaseUtils.mergeSet(BaseUtils.mergeSet(BaseUtils.mergeSet(fixedFilters, userComboSet),regularFilters),tempFilters);
+        }
         return setFilters;
+    }
+
+    private FilterInstance combineUserFilters(Set<FilterInstance> filterSet) {
+        FilterInstance comboFilter = null;
+        List<List<FilterInstance>> organizedFilters = new ArrayList<List<FilterInstance>>();
+        List<FilterInstance> orFilters = new ArrayList<FilterInstance>();
+        for (FilterInstance filter : filterSet) {
+            orFilters.add(filter);
+            if (((CompareFilterInstance) filter).junction) {
+                organizedFilters.add(orFilters);
+                orFilters = new ArrayList<FilterInstance>();
+            }
+        }
+        if (!orFilters.isEmpty())
+            organizedFilters.add(orFilters);
+
+        List<FilterInstance> ands = new ArrayList<FilterInstance>();
+        for (List<FilterInstance> ors : organizedFilters) {
+            FilterInstance filt = null;
+            for (FilterInstance filter : ors) {
+                if (filt == null) {
+                    filt = filter;
+                    continue;
+                }
+                filt = new OrFilterInstance(filt, filter);
+            }
+            ands.add(filt);
+        }
+
+        for (FilterInstance filter : ands) {
+            if (comboFilter == null) {
+                comboFilter = filter;
+                continue;
+            }
+            comboFilter = new AndFilterInstance(comboFilter, filter);
+        }
+        return comboFilter;
     }
 
     // вообще все фильтры
     public Set<FilterInstance> fixedFilters = new HashSet<FilterInstance>();
 
-    private Set<FilterInstance> userFilters = new HashSet<FilterInstance>();
+    private Set<FilterInstance> userFilters = new LinkedHashSet<FilterInstance>();
     public void clearUserFilters() {
         userFilters.clear();
 

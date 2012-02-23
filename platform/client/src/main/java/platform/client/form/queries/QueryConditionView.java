@@ -13,6 +13,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -37,6 +39,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
     private JComboBox propertyView;
     private JComboBox compareView;
     private JCheckBox negationView;
+    private JComboBox junctionView;
 
     public QueryConditionView(ClientPropertyFilter ifilter, GroupObjectLogicsSupplier logicsSupplier) {
         filter = ifilter;
@@ -116,6 +119,19 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
             }
         });
 
+        junctionView = new JComboBox(new String[] {ClientResourceBundle.getString("form.queries.and"), ClientResourceBundle.getString("form.queries.or")});
+        junctionView.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                int index = junctionView.getSelectedIndex();
+                if (index == 0)
+                    filter.junction = true;
+                else
+                    filter.junction = false;
+                conditionChanged();
+            }
+        });
+        centerPanel.add(junctionView);
+
         add(centerPanel, BorderLayout.CENTER);
 
         delButton = new FlatRolloverButton(deleteIcon);
@@ -138,7 +154,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         valueView = valueViews.get(filter.value);
 
         if (valueView != null) {
-            centerPanel.add(valueView);
+            centerPanel.add(valueView, Arrays.asList(centerPanel.getComponents()).indexOf(junctionView));
             valueView.propertyChanged(filter.property);
         }
         compareView.setModel(new DefaultComboBoxModel(filter.property.baseType.getFilerCompares()));
