@@ -114,21 +114,21 @@ public class ReportDesignGenerator {
         PropertyObjectEntity highlightProp = group.propertyHighlight;
 
         for (PropertyDrawView property : formView.properties) {
-            if (userPreferences != null) {
             GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.groups);
             GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
-            Map<String, FormColumnUserPreferences> formColumnUserPreferences = userPreferences.getFormColumnUserPreferences();
-                Boolean contains = formColumnUserPreferences.containsKey(property.getSID());
-                Boolean hidden = formColumnUserPreferences.get(property.getSID()).isNeedToHide();
-                if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup) && !hidden && contains) {
-                    ReportDrawField reportField = property.getReportDrawField();
-                    Integer widthUser = formColumnUserPreferences.get(property.getSID()).getWidthUser();
-                    if ((reportField != null) && (widthUser != null)) {
+
+            FormColumnUserPreferences columnUserPreferences = null;
+            if (userPreferences != null)
+                columnUserPreferences = userPreferences.getFormColumnUserPreferences().get(property.getSID());
+            boolean hidden = columnUserPreferences != null && columnUserPreferences.isNeedToHide();
+
+            if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup) && !hidden) {
+                ReportDrawField reportField = property.getReportDrawField();
+                if (reportField != null && (highlightProp == null || highlightProp.property != property.entity.propertyObject.property)) {
+                    Integer widthUser = columnUserPreferences == null ? null : columnUserPreferences.getWidthUser();
+                    if (widthUser != null)
                         reportField.setWidthUser(widthUser);
-                    }
-                    if (reportField != null && (highlightProp == null || highlightProp.property != property.entity.propertyObject.property)) {
-                        fields.add(reportField);
-                    }
+                    fields.add(reportField);
                 }
             }
         }
