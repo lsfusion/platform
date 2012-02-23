@@ -16,10 +16,7 @@ import platform.interop.Scroll;
 import platform.interop.action.CheckFailed;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ClientApply;
-import platform.interop.form.FormUserPreferences;
-import platform.interop.form.RemoteChanges;
-import platform.interop.form.RemoteDialogInterface;
-import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.*;
 import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ConcreteCustomClass;
@@ -100,20 +97,20 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public byte[] getReportDesignsByteArray(boolean toExcel) {
-        return getReportDesignsByteArray(toExcel, null);
+    public byte[] getReportDesignsByteArray(boolean toExcel, FormUserPreferences userPreferences) {
+        return getReportDesignsByteArray(toExcel, null, userPreferences);
     }
 
     /// Отчет по одной группе
-    public byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId) {
-        return getReportDesignsByteArray(toExcel, groupId);
+    public byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId, FormUserPreferences userPreferences) {
+        return getReportDesignsByteArray(toExcel, groupId, userPreferences);
     }
 
-    private byte[] getReportDesignsByteArray(boolean toExcel, Integer groupId) {
+    private byte[] getReportDesignsByteArray(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             ObjectOutputStream objOut = new ObjectOutputStream(outStream);
-            Map<String, JasperDesign> res = getReportDesigns(toExcel, groupId);
+            Map<String, JasperDesign> res = getReportDesigns(toExcel, groupId, userPreferences);
             objOut.writeObject(res);
             return outStream.toByteArray();
         } catch (IOException e) {
@@ -242,7 +239,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public Map<String, String> getReportPath(boolean toExcel, Integer groupId) {
+    public Map<String, String> getReportPath(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) {
         Map<String, String> ret = new HashMap<String, String>();
 
         String sid = getReportSID(toExcel, groupId);
@@ -264,7 +261,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 }
             }
             try {
-                ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, toExcel);
+                ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, userPreferences, toExcel);
                 Map<String, JasperDesign> designs = generator.generate();
                 String reportName;
                 for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
@@ -294,7 +291,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return reportSID + (toExcel ? xlsSuffix : "");
     }
 
-    private Map<String, JasperDesign> getReportDesigns(boolean toExcel, Integer groupId) {
+    private Map<String, JasperDesign> getReportDesigns(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) {
         String sid = getReportSID(toExcel, groupId);
         Map<String, JasperDesign> customDesigns = getCustomReportDesigns(toExcel, groupId);
         if (customDesigns != null) {
@@ -308,7 +305,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             }
         }
         try {
-            ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, toExcel);
+            ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, userPreferences, toExcel);
             Map<String, JasperDesign> designs = generator.generate();
             for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
                 String id = entry.getKey();
@@ -730,7 +727,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         RemoteFormInterface remoteForm = createForm(formEntity, Collections.singletonMap(objectEntity, dataObject));
         try {
             ReportGenerator report = new ReportGenerator(remoteForm, BL.getTimeZone());
-            JasperPrint print = report.createReport(false, false, new HashMap());
+            JasperPrint print = report.createReport(false, false, new HashMap(), null);
             File tempFile = File.createTempFile("lsfReport", ".pdf");
 
             JRAbstractExporter exporter = new JRPdfExporter();
@@ -829,12 +826,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 //    }
 
     @Override
-    public void saveUserPreferences(Map<String, FormUserPreferences> preferences, Boolean forAllUsers) throws RemoteException {
+    public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException {
         form.saveUserPreferences(preferences, forAllUsers);
     }
 
     @Override
-    public Map<String, FormUserPreferences> loadUserPreferences() throws RemoteException {
+    public FormUserPreferences loadUserPreferences() throws RemoteException {
         return form.loadUserPreferences();
     }
 

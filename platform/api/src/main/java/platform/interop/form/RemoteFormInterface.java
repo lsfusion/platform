@@ -17,11 +17,11 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     byte[] getReportHierarchyByteArray() throws RemoteException;
     byte[] getSingleGroupReportHierarchyByteArray(int groupId) throws RemoteException;
 
-    byte[] getReportDesignsByteArray(boolean toExcel) throws RemoteException;
-    byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId) throws RemoteException;
+    byte[] getReportDesignsByteArray(boolean toExcel, FormUserPreferences userPreferences) throws RemoteException;
+    byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId, FormUserPreferences userPreferences) throws RemoteException;
     byte[] getReportSourcesByteArray() throws RemoteException;
     byte[] getSingleGroupReportSourcesByteArray(int groupId) throws RemoteException;
-    Map<String, String> getReportPath(boolean toExcel, Integer groupId) throws RemoteException;
+    Map<String, String> getReportPath(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) throws RemoteException;
 
     public RemoteChanges getRemoteChanges() throws RemoteException;
 
@@ -104,7 +104,7 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     //todo: remove later
 //    void continueAutoActions() throws RemoteException;
 
-    void saveUserPreferences(Map<String, FormUserPreferences> preferences, Boolean forAllUsers) throws RemoteException;
+    void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException;
 
-    Map<String, FormUserPreferences> loadUserPreferences() throws RemoteException;
+    FormUserPreferences loadUserPreferences() throws RemoteException;
 }

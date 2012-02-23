@@ -7,9 +7,11 @@ import bibliothek.gui.dock.common.intern.CDockable;
 import net.sf.jasperreports.engine.JRException;
 import platform.client.Main;
 import platform.client.SwingUtils;
+import platform.client.form.ClientFormController;
 import platform.client.form.ClientModalForm;
 import platform.client.ClientResourceBundle;
 import platform.client.navigator.ClientNavigator;
+import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
@@ -74,16 +76,16 @@ public class ViewManager {
         new ClientModalForm(Main.frame, navigator.remoteNavigator.createForm(formSID, currentSession, true), !currentSession).showDialog(showFullScreen);
     }
 
-    public void openReport(String formSID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {
-        openForm(new ReportDockable(formSID, navigator, currentSession, pageFactory));
+    public void openReport(String formSID, ClientNavigator navigator, boolean currentSession, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
+        openForm(new ReportDockable(formSID, navigator, currentSession, pageFactory, userPreferences));
     }
 
-    public void openReport(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
-        openForm(new ReportDockable(navigator, remoteForm, pageFactory));
+    public void openReport(ClientNavigator navigator, RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
+        openForm(new ReportDockable(navigator, remoteForm, pageFactory, userPreferences));
     }
 
-    public void openSingleGroupReport(ClientNavigator navigator, RemoteFormInterface remoteForm, int groupId) throws IOException, ClassNotFoundException {
-        openForm(new ReportDockable(navigator, remoteForm, groupId, pageFactory));
+    public void openSingleGroupReport(ClientNavigator navigator, RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
+        openForm(new ReportDockable(navigator, remoteForm, groupId, pageFactory, userPreferences));
     }
 
     public void openReport(File file) throws JRException {

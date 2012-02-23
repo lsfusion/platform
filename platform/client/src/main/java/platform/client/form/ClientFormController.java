@@ -15,6 +15,7 @@ import platform.client.remote.proxy.RemoteObjectProxy;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.*;
 import platform.interop.action.*;
+import platform.interop.form.FormColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteFormInterface;
@@ -420,15 +421,15 @@ public class ClientFormController {
     }
 
     private void applyUserProperties() throws RemoteException {
-        Map<String, FormUserPreferences> preferences = remoteForm.loadUserPreferences();
+        FormUserPreferences preferences = remoteForm.loadUserPreferences();
 
         if (preferences != null)
             for (ClientPropertyDraw property : form.getPropertyDraws()) {
                 String propertySID = property.getSID();
-                if (preferences.containsKey(propertySID)) {
-                    property.hideUser = preferences.get(propertySID).isNeedToHide();
-                    if (preferences.get(propertySID).getWidthUser() != null)
-                        property.widthUser = preferences.get(propertySID).getWidthUser();
+                if (preferences.getFormColumnUserPreferences().containsKey(propertySID)) {
+                    property.hideUser = preferences.getFormColumnUserPreferences().get(propertySID).isNeedToHide();
+                    if (preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser() != null)
+                        property.widthUser = preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser();
                 }
             }
     }
@@ -834,21 +835,33 @@ public class ClientFormController {
         this.canClose = canClose;
     }
 
+    public Boolean needToHideProperty(ClientPropertyDraw property){
+        return property.hideUser == null ? property.hide : property.hideUser;
+    }
+
+    public FormUserPreferences getUserPreferences(){
+        Map<String, FormColumnUserPreferences> columnPreferences = new HashMap<String, FormColumnUserPreferences>();
+        for (GroupObjectController controller : controllers.values())
+            for (ClientPropertyDraw property : controller.getPropertyDraws())
+                 columnPreferences.put(property.getSID(), new FormColumnUserPreferences(needToHideProperty(property), property.widthUser));
+        return new FormUserPreferences(columnPreferences);
+    }
+    
     void printPressed() {
         try {
-            Main.frame.runReport(remoteForm, false);
+            Main.frame.runReport(remoteForm, false, getUserPreferences());
         } catch (Exception e) {
             throw new RuntimeException(ClientResourceBundle.getString("form.error.printing.form"), e);
         }
     }
 
     void xlsPressed() {
-        Main.module.runExcel(remoteForm);
+        Main.module.runExcel(remoteForm, getUserPreferences());
     }
 
     void editPressed() {
         try {
-            Map<String, String> pathMap = Main.frame.getReportPath(remoteForm);
+            Map<String, String> pathMap = Main.frame.getReportPath(remoteForm, getUserPreferences());
 
             for (String path : pathMap.keySet()) {
                 Desktop.getDesktop().open(new File(path));

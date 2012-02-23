@@ -33,7 +33,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         try {
             RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm);
             if (action.isPrintForm) {
-                Main.frame.runReport(remoteForm, action.isModal);
+                Main.frame.runReport(remoteForm, action.isModal, form.getUserPreferences());
             } else {
                 if (!action.isModal) {
                     Main.frame.runForm(remoteForm);

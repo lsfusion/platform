@@ -2,10 +2,7 @@ package platform.client.remote.proxy;
 
 import platform.interop.ClassViewType;
 import platform.interop.action.ClientApply;
-import platform.interop.form.FormUserPreferences;
-import platform.interop.form.RemoteChanges;
-import platform.interop.form.RemoteDialogInterface;
-import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.*;
 import platform.interop.remote.MethodInvocation;
 
 import java.rmi.RemoteException;
@@ -24,16 +21,16 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         super(target);
     }
 
-    public byte[] getReportDesignsByteArray(boolean toExcel) throws RemoteException {
+    public byte[] getReportDesignsByteArray(boolean toExcel, FormUserPreferences userPreferences) throws RemoteException {
         logRemoteMethodStartCall("getReportDesignsByteArray");
-        byte[] result = target.getReportDesignsByteArray(toExcel);
+        byte[] result = target.getReportDesignsByteArray(toExcel, userPreferences);
         logRemoteMethodEndCall("getReportDesignsByteArray", result);
         return result;
     }
 
-    public byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId) throws RemoteException {
+    public byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId, FormUserPreferences userPreferences) throws RemoteException {
         logRemoteMethodStartCall("getSingleGroupReportDesignByteArray");
-        byte[] result = target.getSingleGroupReportDesignByteArray(toExcel, groupId);
+        byte[] result = target.getSingleGroupReportDesignByteArray(toExcel, groupId, userPreferences);
         logRemoteMethodEndCall("getSingleGroupReportDesignByteArray", result);
         return result;
     }
@@ -53,8 +50,8 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @Override
-    public Map<String, String> getReportPath(boolean toExcel, Integer groupId) throws RemoteException {
-        Map<String, String> result = target.getReportPath(toExcel, groupId);
+    public Map<String, String> getReportPath(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) throws RemoteException {
+        Map<String, String> result = target.getReportPath(toExcel, groupId, userPreferences);
         return result;
     }
 
@@ -303,12 +300,12 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
 //        logRemoteMethodEndVoidCall("continueAutoActions");
 //    }
 
-    public void saveUserPreferences(Map<String, FormUserPreferences> preferences, Boolean forAllUsers) throws RemoteException {
+    public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException {
         target.saveUserPreferences(preferences, forAllUsers);
     }
 
     @ImmutableMethod
-    public Map<String, FormUserPreferences> loadUserPreferences() throws RemoteException {
+    public FormUserPreferences loadUserPreferences() throws RemoteException {
         return target.loadUserPreferences();
     }
 

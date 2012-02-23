@@ -5,6 +5,8 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.type.*;
+import platform.interop.form.FormColumnUserPreferences;
+import platform.interop.form.FormUserPreferences;
 import platform.interop.form.ReportConstants;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
@@ -30,6 +32,7 @@ public class ReportDesignGenerator {
     private GroupObjectHierarchy.ReportHierarchy hierarchy;
     private FormView formView;
     private Set<Integer> hiddenGroupsId;
+    private FormUserPreferences userPreferences;
     private boolean toExcel;
 
     private static final int defaultPageWidth = 842;  //
@@ -43,10 +46,11 @@ public class ReportDesignGenerator {
 
     private Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
 
-    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId, boolean toExcel) {
+    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId, FormUserPreferences userPreferences, boolean toExcel) {
         this.formView = formView;
         this.hierarchy = hierarchy;
         this.hiddenGroupsId = hiddenGroupsId;
+        this.userPreferences = userPreferences;
         this.toExcel = toExcel;
 
         pageWidth = calculatePageWidth(toExcel);
@@ -110,12 +114,21 @@ public class ReportDesignGenerator {
         PropertyObjectEntity highlightProp = group.propertyHighlight;
 
         for (PropertyDrawView property : formView.properties) {
+            if (userPreferences != null) {
             GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.groups);
             GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
-            if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup)) {
-                ReportDrawField reportField = property.getReportDrawField();
-                if (reportField != null && (highlightProp == null || highlightProp.property != property.entity.propertyObject.property)) {
-                    fields.add(reportField);
+            Map<String, FormColumnUserPreferences> formColumnUserPreferences = userPreferences.getFormColumnUserPreferences();
+                Boolean contains = formColumnUserPreferences.containsKey(property.getSID());
+                Boolean hidden = formColumnUserPreferences.get(property.getSID()).isNeedToHide();
+                if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup) && !hidden && contains) {
+                    ReportDrawField reportField = property.getReportDrawField();
+                    Integer widthUser = formColumnUserPreferences.get(property.getSID()).getWidthUser();
+                    if ((reportField != null) && (widthUser != null)) {
+                        reportField.setWidthUser(widthUser);
+                    }
+                    if (reportField != null && (highlightProp == null || highlightProp.property != property.entity.propertyObject.property)) {
+                        fields.add(reportField);
+                    }
                 }
             }
         }
@@ -166,7 +179,7 @@ public class ReportDesignGenerator {
                 if (detail) {
                     reportLayout = new ReportDetailLayout(design);
                 } else {
-                    
+
                     int captionWidth = 0, preferredWidth = 0;
                     for (ReportDrawField reportField : drawFields) {
                         captionWidth += reportField.getCaptionWidth();

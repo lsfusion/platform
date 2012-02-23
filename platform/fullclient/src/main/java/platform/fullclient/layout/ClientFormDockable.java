@@ -4,6 +4,7 @@ import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import net.sf.jasperreports.engine.JRException;
 import platform.client.form.ClientFormController;
 import platform.client.navigator.ClientNavigator;
+import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
 
 import java.awt.*;
@@ -14,15 +15,15 @@ public class ClientFormDockable extends FormDockable {
     private ClientFormController clientForm;
 
     public ClientFormDockable(String formSID, ClientNavigator inavigator, boolean currentSession, MultipleCDockableFactory<FormDockable, ?> factory) throws IOException, ClassNotFoundException {
-        super(formSID, inavigator, currentSession, factory, true);
+        super(formSID, inavigator, currentSession, factory, true, null);
     }
 
     public ClientFormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable, ?> factory) throws IOException, ClassNotFoundException, JRException {
-        super(navigator, remoteForm, factory);
+        super(navigator, remoteForm, factory, null);
     }
 
     public ClientFormDockable(String formSID, MultipleCDockableFactory<FormDockable, ?> factory, ClientNavigator navigator) throws IOException, ClassNotFoundException, IOException {
-        super(formSID, factory, navigator);
+        super(formSID, factory, navigator,null);
     }
 
     private ClientFormController getClientForm(ClientNavigator navigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
@@ -42,7 +43,7 @@ public class ClientFormDockable extends FormDockable {
     }
 
     @Override
-    Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+    Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
         return getClientForm(navigator, remoteForm).getComponent();
     }
 

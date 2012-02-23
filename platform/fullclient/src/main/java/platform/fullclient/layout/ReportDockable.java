@@ -10,6 +10,7 @@ import net.sf.jasperreports.view.JRViewer;
 import platform.base.OSUtils;
 import platform.client.Main;
 import platform.client.navigator.ClientNavigator;
+import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
@@ -23,18 +24,18 @@ public class ReportDockable extends FormDockable {
     private String reportCaption;
     private Integer groupId = null;
 
-    public ReportDockable(String formSID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException {
-        super(formSID, navigator, currentSession, factory, false);
+    public ReportDockable(String formSID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
+        super(formSID, navigator, currentSession, factory, false, userPreferences);
     }
 
-    public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable,?> factory) throws ClassNotFoundException, IOException {
-        super(navigator, remoteForm, factory);
+    public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable,?> factory, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
+        super(navigator, remoteForm, factory, userPreferences);
     }
 
-    public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, int groupId, MultipleCDockableFactory<FormDockable,?> factory) throws ClassNotFoundException, IOException {
+    public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, int groupId, MultipleCDockableFactory<FormDockable,?> factory, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
         super("SingleGroupReport_" + remoteForm.getSID(), factory);
         this.groupId = groupId;
-        setActiveComponent(getActiveComponent(navigator, remoteForm), getCaption());
+        setActiveComponent(getActiveComponent(navigator, remoteForm, userPreferences), getCaption());
     }
 
     // из файла
@@ -45,14 +46,14 @@ public class ReportDockable extends FormDockable {
     }
 
     @Override
-    Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+    Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
         try {
             ReportGenerator report = new ReportGenerator(remoteForm, Main.timeZone);
             JasperPrint print;
             if (groupId != null) {
-                print = report.createSingleGroupReport(groupId, false, false, null);
+                print = report.createSingleGroupReport(groupId, false, false, null, userPreferences);
             } else {
-                print = report.createReport(false, false, null);
+                print = report.createReport(false, false, null, userPreferences);
             }
             reportCaption = print.getName();
             print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");

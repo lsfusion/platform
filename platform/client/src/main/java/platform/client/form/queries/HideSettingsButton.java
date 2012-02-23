@@ -6,6 +6,7 @@ import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.form.ClientFormController;
 import platform.client.form.grid.GridTable;
 import platform.client.logics.ClientPropertyDraw;
+import platform.interop.form.FormColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
 
 import javax.swing.*;
@@ -185,13 +186,13 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
 
         private void applyButtonPressed(Boolean forAllUsers) throws IOException {
 
-            Map<String, FormUserPreferences> preferences = new HashMap<String, FormUserPreferences>();
+            Map<String, FormColumnUserPreferences> preferences = new HashMap<String, FormColumnUserPreferences>();
 
             for (int i = 0; i < groupChecks.size(); i++) {
                 Boolean needToHideSet = groupChecks.get(i).getForeground().equals(Color.black);
                 Boolean isSelected = groupChecks.get(i).isSelected();
                 preferences.put(initialTable.getProperty(i).getSID(),
-                        new FormUserPreferences(!needToHideSet ? null : isSelected, initialTable.getProperty(i).widthUser));
+                        new FormColumnUserPreferences(!needToHideSet ? null : isSelected, initialTable.getProperty(i).widthUser));
                 if (needToHideSet)
                     if (isSelected) {
                         initialTable.getProperty(i).hideUser = false;
@@ -199,7 +200,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
                         initialTable.getProperty(i).hideUser = true;
                     }
             }
-            form.remoteForm.saveUserPreferences(preferences, forAllUsers);
+            form.remoteForm.saveUserPreferences(new FormUserPreferences(preferences), forAllUsers);
             JOptionPane.showMessageDialog(this, ClientResourceBundle.getString("form.grid.hide.save.settings.successfully.complete"), ClientResourceBundle.getString("form.grid.hide.save.complete"), JOptionPane.INFORMATION_MESSAGE);
         }
     }

@@ -10,6 +10,7 @@ import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
 import platform.interop.action.DenyCloseFormClientAction;
 import platform.interop.action.ResultClientAction;
+import platform.interop.form.FormColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
 import platform.server.Message;
 import platform.server.ParamMessage;
@@ -260,8 +261,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         this.interactive = interactive;
     }
 
-    public Map<String, FormUserPreferences> loadUserPreferences() {
-        Map<String, FormUserPreferences> preferences = new HashMap<String, FormUserPreferences>();
+    public FormUserPreferences loadUserPreferences() {
+        Map<String, FormColumnUserPreferences> preferences = new HashMap<String, FormColumnUserPreferences>();
         try {
 
             ObjectValue formValue = BL.LM.SIDToNavigatorElement.readClasses(session, new DataObject(entity.getSID(), StringClass.get(50)));
@@ -299,18 +300,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                         needToHide = false;
                 }
                 Integer width = (Integer) values.get("columnWidthOverridePropertyDrawCustomUser");
-                preferences.put(propertyDrawSID, new FormUserPreferences(needToHide, width));
+                preferences.put(propertyDrawSID, new FormColumnUserPreferences(needToHide, width));
             }
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-        return preferences;
+        return new FormUserPreferences(preferences);
     }
 
-    public void saveUserPreferences(Map<String, FormUserPreferences> preferences, Boolean forAllUsers) {
+    public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) {
         try {
             DataSession dataSession = session.createSession();
-            for (Map.Entry<String, FormUserPreferences> entry : preferences.entrySet()) {
+            for (Map.Entry<String, FormColumnUserPreferences> entry : preferences.getFormColumnUserPreferences().entrySet()) {
                 DataObject userObject = dataSession.getDataObject(BL.LM.currentUser.read(dataSession), ObjectType.instance);
                 Integer id = (Integer) BL.LM.SIDNavigatorElementSIDPropertyDrawToPropertyDraw.read(dataSession, new DataObject(entity.getSID(), StringClass.get(50)), new DataObject(entry.getKey(), StringClass.get(50)));
                 DataObject propertyDrawObject = dataSession.getDataObject(id, ObjectType.instance);

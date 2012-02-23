@@ -3,6 +3,7 @@ package platform.fullclient.layout;
 import bibliothek.gui.dock.common.DefaultMultipleCDockable;
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import platform.client.navigator.ClientNavigator;
+import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
 
 import java.awt.*;
@@ -23,25 +24,25 @@ abstract class FormDockable extends DefaultMultipleCDockable {
         setRemoveOnClose(true);
     }
 
-    protected FormDockable(String formSID, MultipleCDockableFactory<FormDockable, ?> factory, ClientNavigator navigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
+    protected FormDockable(String formSID, MultipleCDockableFactory<FormDockable, ?> factory, ClientNavigator navigator, RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
         this(formSID, factory);
-        createActiveComponent(navigator, remoteForm);
+        createActiveComponent(navigator, remoteForm, userPreferences);
     }
 
-    protected FormDockable(String formSID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable, ?> factory, boolean interactive) throws IOException, ClassNotFoundException {
-        this(formSID, factory, navigator, navigator.remoteNavigator.createForm(formSID, currentSession, interactive));
+    protected FormDockable(String formSID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable, ?> factory, boolean interactive, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
+        this(formSID, factory, navigator, navigator.remoteNavigator.createForm(formSID, currentSession, interactive), userPreferences);
     }
 
-    protected FormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable, ?> factory) throws IOException, ClassNotFoundException {
-        this(remoteForm.getSID(), factory, navigator, remoteForm);
+    protected FormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable, ?> factory, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
+        this(remoteForm.getSID(), factory, navigator, remoteForm, userPreferences);
     }
 
-    protected FormDockable(String formSID, MultipleCDockableFactory<FormDockable, ?> factory, ClientNavigator navigator) throws ClassNotFoundException, IOException {
-        this(formSID, factory, navigator, navigator.remoteNavigator.createForm(formSID, true, true));
+    protected FormDockable(String formSID, MultipleCDockableFactory<FormDockable, ?> factory, ClientNavigator navigator, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
+        this(formSID, factory, navigator, navigator.remoteNavigator.createForm(formSID, true, true), userPreferences);
     }
 
-    private void createActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
-        setActiveComponent(getActiveComponent(navigator, remoteForm), getCaption());
+    private void createActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
+        setActiveComponent(getActiveComponent(navigator, remoteForm, userPreferences), getCaption());
     }
 
     void setActiveComponent(Component comp, String caption) {
@@ -65,7 +66,7 @@ abstract class FormDockable extends DefaultMultipleCDockable {
         getContentPane().removeAll();
     }
 
-    abstract Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException;
+    abstract Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException;
 
     protected abstract String getCaption();
 

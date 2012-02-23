@@ -5,6 +5,7 @@ import platform.client.Main;
 import platform.client.MainFrame;
 import platform.fullclient.layout.DockableMainFrame;
 import platform.interop.ServerInfo;
+import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
@@ -20,8 +21,8 @@ public class FullMain extends Main {
                 return new DockableMainFrame(remoteNavigator);
             }
 
-            public void runExcel(RemoteFormInterface remoteForm) {
-                ReportGenerator.exportToExcel(remoteForm, timeZone);
+            public void runExcel(RemoteFormInterface remoteForm, FormUserPreferences userPreferences) {
+                ReportGenerator.exportToExcel(remoteForm, timeZone, userPreferences);
             }
 
             public boolean isFull() {

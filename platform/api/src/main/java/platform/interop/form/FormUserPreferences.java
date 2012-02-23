@@ -1,23 +1,16 @@
 package platform.interop.form;
 
+import java.util.Map;
 import java.io.Serializable;
 
-
 public class FormUserPreferences implements Serializable {
+    private Map<String, FormColumnUserPreferences> formColumnUserPreferences;
 
-    private Boolean needToHide;
-    private Integer widthUser;
-
-    public FormUserPreferences(Boolean needToHide, Integer width) {
-        this.needToHide = needToHide;
-        this.widthUser = width;
-    }
-    
-    public Boolean isNeedToHide(){
-        return needToHide;
+    public FormUserPreferences(Map<String, FormColumnUserPreferences> formColumnUserPreferences) {
+        this.formColumnUserPreferences = formColumnUserPreferences;
     }
 
-    public Integer getWidthUser(){
-        return widthUser;
+    public Map<String, FormColumnUserPreferences> getFormColumnUserPreferences() {
+        return formColumnUserPreferences;
     }
 }

@@ -35,9 +35,16 @@ public class ReportDrawField implements AbstractRowLayoutElement {
         return minimumWidth;
     }
 
+    public Integer widthUser;
+    public void setWidthUser(Integer widthUser){
+        this.widthUser = widthUser;
+    }
+
     public int getPreferredWidth() {
         int width;
-        if (fixedCharWidth != null) {
+        if (widthUser != null)
+            width = widthUser;
+        else if (fixedCharWidth != null) {
             width = fixedCharWidth * charWidth;
         } else {
             width = preferredWidth;

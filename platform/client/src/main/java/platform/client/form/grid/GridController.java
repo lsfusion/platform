@@ -12,6 +12,8 @@ import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientIntegralClass;
 import platform.interop.Order;
+import platform.interop.form.FormColumnUserPreferences;
+import platform.interop.form.FormUserPreferences;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
@@ -205,7 +207,7 @@ public class GridController {
                     addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             try {
-                                Main.frame.runSingleGroupReport(form.remoteForm, groupObjectController.getGroupObject().getID());
+                                Main.frame.runSingleGroupReport(form.remoteForm, groupObjectController.getGroupObject().getID(), form.getUserPreferences());
                             } catch (Exception ex) {
                                 throw new RuntimeException(ex);
                             }
@@ -216,13 +218,13 @@ public class GridController {
         }
 
         if (key.showPrintGroupXlsButton && Main.module.isFull()) {
-            groupObjectController.addToToolbar(new ToolbarGridButton("/images/excelbw.jpg",  ClientResourceBundle.getString("form.grid.export.to.xls")) {
+            groupObjectController.addToToolbar(new ToolbarGridButton("/images/excelbw.jpg", ClientResourceBundle.getString("form.grid.export.to.xls")) {
                 @Override
                 public void addListener() {
                     addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             try {
-                                Main.frame.runSingleGroupXlsExport(form.remoteForm, groupObjectController.getGroupObject().getID());
+                                Main.frame.runSingleGroupXlsExport(form.remoteForm, groupObjectController.getGroupObject().getID(), form.getUserPreferences());
                             } catch (Exception ex) {
                                 throw new RuntimeException(ex);
                             }

@@ -19,7 +19,7 @@ public class ReportDialog extends JDialog {
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         ReportGenerator report = new ReportGenerator(remoteForm, Main.timeZone);
-        JasperPrint print = report.createReport(false, false, null);
+        JasperPrint print = report.createReport(false, false, null, null);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
         final DialogReportViewer viewer = new DialogReportViewer(print);

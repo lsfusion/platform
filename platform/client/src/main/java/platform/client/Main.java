@@ -20,6 +20,7 @@ import platform.interop.RemoteLogicsInterface;
 import platform.interop.ServerInfo;
 import platform.interop.event.EventBus;
 import platform.interop.event.IDaemonTask;
+import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
@@ -506,7 +507,7 @@ public class Main {
     public interface ModuleFactory {
         MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException;
 
-        void runExcel(RemoteFormInterface remoteForm);
+        void runExcel(RemoteFormInterface remoteForm, FormUserPreferences userPreferences);
 
         boolean isFull();
 
@@ -532,7 +533,7 @@ public class Main {
                 return new SimpleMainFrame(remoteNavigator, forms);
             }
 
-            public void runExcel(RemoteFormInterface remoteForm) {
+            public void runExcel(RemoteFormInterface remoteForm, FormUserPreferences preferences) {
                 // not supported
             }
 

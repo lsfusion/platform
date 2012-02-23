@@ -24,6 +24,7 @@ import platform.client.navigator.*;
 import platform.fullclient.navigator.NavigatorController;
 import platform.interop.AbstractWindowType;
 import platform.interop.exceptions.LoginException;
+import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
@@ -33,9 +34,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class DockableMainFrame extends MainFrame {
     private CControl control;
@@ -60,9 +59,9 @@ public class DockableMainFrame extends MainFrame {
                 }
             }
 
-            public void openRelevantForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
+            public void openRelevantForm(ClientNavigatorForm element, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
                 if (element.isPrintForm) {
-                    view.openReport(element.getSID(), this, true);
+                    view.openReport(element.getSID(), this, true, userPreferences);
                 } else {
                     try {
                         view.openClient(element.getSID(), this, true);
@@ -138,7 +137,7 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public void runReport(RemoteFormInterface remoteForm, boolean isModal) throws ClassNotFoundException, IOException {
+    public void runReport(RemoteFormInterface remoteForm, boolean isModal, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
         if (isModal) {
             try {
                 ReportDialog dlg = new ReportDialog(Main.frame, remoteForm);
@@ -147,23 +146,23 @@ public class DockableMainFrame extends MainFrame {
                 throw new RuntimeException(e);
             }
         } else {
-            view.openReport(mainNavigator, remoteForm);
+            view.openReport(mainNavigator, remoteForm, userPreferences);
         }
     }
 
     @Override
-    public Map<String, String> getReportPath(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
-        return remoteForm.getReportPath(false, null);
+    public Map<String, String> getReportPath(RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
+        return remoteForm.getReportPath(false, null, userPreferences);
     }
 
     @Override
-    public void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId) throws IOException, ClassNotFoundException {
-        view.openSingleGroupReport(mainNavigator, remoteForm, groupId);
+    public void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
+        view.openSingleGroupReport(mainNavigator, remoteForm, groupId, userPreferences);
     }
 
     @Override
-    public void runSingleGroupXlsExport(RemoteFormInterface remoteForm, int groupId) throws IOException, ClassNotFoundException {
-        ReportGenerator.exportToExcel(remoteForm, groupId, Main.timeZone);
+    public void runSingleGroupXlsExport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
+        ReportGenerator.exportToExcel(remoteForm, groupId, Main.timeZone, userPreferences);
     }
 
     @Override
