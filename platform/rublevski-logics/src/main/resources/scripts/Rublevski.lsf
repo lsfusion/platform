@@ -1248,6 +1248,8 @@ TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
 @metaCodeDoubleObjectDateProperty(retailPriceItemDepartment, item, departmentStore, 'Розничная цена', DOUBLE, retailGroup);
 
+@metaCodeDoubleObjectDateProperty(accountPriceItemDepartment, item, departmentStore, 'Учётная цена', DOUBLE, retailGroup);
+
 @metaCodeDoubleObjectDateProperty(discountItemDepartment, item, departmentStore, 'Скидка для товара', STRING[100], discountGroup);
 
 TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
@@ -1328,6 +1330,7 @@ PROPERTIES nameisSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF nameisSupp
            priceSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF priceSupplierItemDepartmentDate(sp, i, d, dt), showFormpriceSupplierItemDepartmentOver(sp, i, d),
            markupSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF markupSupplierItemDepartmentDate(sp, i, d, dt), showFormmarkupSupplierItemDepartmentOver(sp, i, d)
 PROPERTIES retailPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF retailPriceItemDepartmentDate(i, d, dt), showFormretailPriceItemDepartmentOver(i, d),
+           accountPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF accountPriceItemDepartmentDate(i, d, dt), showFormaccountPriceItemDepartmentOver(i, d),
            maxReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF maxReserveItemDepartmentDate(i, d, dt), showFormmaxReserveItemDepartmentOver(i, d),
            minReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF minReserveItemDepartmentDate(i, d, dt), showFormminReserveItemDepartmentOver(i, d),
            namebanRevaluationItemDepartmentOver(i, d, dt) HIGHLIGHTIF namebanRevaluationItemDepartmentDate(i, d, dt), showFormNamebanRevaluationItemDepartmentOver(i, d),
@@ -3358,23 +3361,40 @@ FORM shipments 'Поставки'
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 CLASS writeOff 'Списание';
+CLASS writeOffPosted 'Списание (закрытая)': writeOff;
 CLASS writeOffDetail 'Строка списания';
 CLASS reasonOff 'Причина списания' : named;
 
-numberWriteOff '№ документа' = DATA STRING[10] (writeOff) IN baseGroup;
+departmentStoreWriteOff 'Отдел для списания (ИД)' = DATA departmentStore(writeOff) IN idGroup;
+nameDepartmentStoreWriteOff 'Отдел для списания' (writeOff) = name(departmentStoreWriteOff(writeOff)) IN baseGroup;
+
+numberWriteOff 'Номер акта' = DATA STRING[10] (writeOff) IN baseGroup;
 dateWriteOff 'Дата акта' = DATA DATE (writeOff) IN baseGroup;
+datePriceWriteOff 'Цена на дату' = DATA DATE (writeOff) IN baseGroup;
 
 reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
 nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN baseGroup;
 
 writeOffWriteOffDetail 'Документ строки списания' = DATA writeOff (writeOffDetail) IN idGroup;
+inWriteOffWriteOffDetail(writeOff, writeOffDetail) = writeOffWriteOffDetail(writeOffDetail) == writeOff;
+
+departmentStoreWriteOffDetail 'Отдел для строки списания (ИД)' (writeOffDetail) = departmentStoreWriteOff(writeOffWriteOffDetail(writeOffDetail)) IN idGroup;
+datePriceWriteOffDetail 'Цена на дату' (writeOffDetail) = datePriceWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
 itemWriteOffDetail 'Товар строки списания (ИД)' = DATA item (writeOffDetail) IN idGroup;
 nameItemWriteOffDetail 'Товар строки списания' (writeOffDetail) = nameAttributeItem(itemWriteOffDetail(writeOffDetail)) IN baseGroup;
 
-inWriteOffWriteOffDetail(writeOff, writeOffDetail) = writeOffWriteOffDetail(writeOffDetail) == writeOff;
-
 quantityWriteOffDetail 'Кол-во для строки списания' = DATA INTEGER (writeOffDetail) IN baseGroup;
+quantityDetailsWriteOff 'Кол-во строк' (writeOff) = GROUP SUM 1 IF writeOffDetail BY writeOffWriteOffDetail(writeOffDetail);
+quantityWriteOff 'Общее кол-во' (writeOff) = GROUP SUM quantityWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN baseGroup;
+
+priceWriteOffDetail 'Цена учётная' = DATA DOUBLE (writeOffDetail) IN baseGroup;
+priceWriteOffDetail(writeOffDetail) <- accountPriceItemDepartmentVal (itemWriteOffDetail(writeOffDetail),
+                                                                      departmentStoreWriteOffDetail(writeOffDetail),
+                                                                      datePriceWriteOffDetail(writeOffDetail)) ON CHANGE itemWriteOffDetail(writeOffDetail);
+
+sumWriteOffDetail 'Сумма' (writeOffDetail) = priceWriteOffDetail(writeOffDetail)*quantityWriteOffDetail(writeOffDetail);
+sumWriteOff 'Сумма' (writeOff) = GROUP SUM sumWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN baseGroup;
 
 addWriteOffDetailBarcode 'Добавить строку по штрих-коду' = ACTION (writeOff) {
     FORM barcodeInput MODAL;
@@ -3393,14 +3413,16 @@ addWriteOffDetailBarcode 'Добавить строку по штрих-коду
 
 FORM reasonOff 'Причина списания'
     OBJECTS r=reasonOff  FIXED PANEL
-    PROPERTIES(r) name;
+    PROPERTIES(r) name
+;
 
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
-    PROPERTIES (w) numberWriteOff, dateWriteOff, nameReasonOffWriteOff
+    PROPERTIES (w) nameDepartmentStoreWriteOff, numberWriteOff, dateWriteOff, nameReasonOffWriteOff, quantityWriteOff,
+                   quantityDetailsWriteOff, datePriceWriteOff, sumWriteOff
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) nameItemWriteOffDetail, quantityWriteOffDetail, ADDOBJ, delete
+    PROPERTIES (d) nameItemWriteOffDetail, quantityWriteOffDetail, priceWriteOffDetail, ADDOBJ, delete
 
     PROPERTIES addWriteOffDetailBarcode(w) TODRAW d
     FILTERS NOT NULL inWriteOffWriteOffDetail(w, d)
@@ -3410,11 +3432,12 @@ FORM writeOff 'Списание'
 
 FORM writeOffs 'Списания'
     OBJECTS w=writeOff
-    PROPERTIES (w) READONLY numberWriteOff, dateWriteOff, nameReasonOffWriteOff
+    PROPERTIES (w) READONLY nameDepartmentStoreWriteOff, numberWriteOff, dateWriteOff, nameReasonOffWriteOff,
+                   quantityWriteOff, quantityDetailsWriteOff, datePriceWriteOff, sumWriteOff
     PROPERTIES (w) ADDFORM, EDITFORM, delete
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) nameItemWriteOffDetail, quantityWriteOffDetail
+    PROPERTIES (d) nameItemWriteOffDetail, quantityWriteOffDetail, priceWriteOffDetail
 
 ;
 
@@ -3570,6 +3593,8 @@ NAVIGATOR {
             ADD marginProductionItemDepartment;
             ADD addretailPriceItemDepartment;
             ADD retailPriceItemDepartment;
+            ADD addaccountPriceItemDepartment;
+            ADD accountPriceItemDepartment;
             ADD adddiscountItemDepartment;
             ADD discountItemDepartment;
             ADD addNameisSupplierItemDepartment;
