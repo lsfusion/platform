@@ -3122,6 +3122,7 @@ namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоце
 quantityShipmentDetail 'Количество' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 totalQuantityShipment 'Общее количество' (shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 quantityItemShipment 'Количество по товару в поставке' (item, shipment) = GROUP SUM quantityShipmentDetail (shipmentDetail) BY itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
+isShipedItemShipment 'Товар есть в поставке' (item, shipment) = quantityItemShipment(item, shipment) > 0;
 
 priceShipmentDetail 'Цена товара'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 supplierMarkupShipmentDetail 'Оптовая надбавка/торговая скидка, %' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
@@ -3231,7 +3232,9 @@ diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentD
 quantityShipmentOrderItem 'Поставленное количество' (orderSupplier, item) = GROUP SUM quantityShipmentDetail (shipmentDetail) IF inShipmentOrder (shipmentShipmentDetail (shipmentDetail), orderSupplier) BY orderSupplier, itemShipmentDetail(shipmentDetail);
 
 //контроль цен поставки по заказам с учетом допустимых отклонений по поставщику
-priceOrderItemShipment (item, shipment) = GROUP MAX fullPriceItemOrderSupplier(orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
+priceOrderItemShipment 'Цена товара в заказах поставки (максим.)' (item, shipment) = GROUP MAX
+        fullPriceItemOrderSupplier(orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
+
 maxAllowPriceItemShipment 'Максимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 + [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
 minAllowPriceItemShipment 'Минимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 - [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
 CONSTRAINT priceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MSG 'Цена поставки больше цены заказа';
@@ -3240,7 +3243,12 @@ CONSTRAINT priceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (ite
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
 sumQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM sumQuantityItemOrderSupplier (orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
 isOrderedItemShipment 'Товар есть в заказах поставки' (item, shipment) =  sumQuantityOrderedItemShipment(item, shipment) > 0;
+
+isNotShipedOrderedItemShipment 'Товар есть в заказе и отсутствуетв поставке' (item, shipment) =
+    isOrderedItemShipment (item, shipment) AND NOT isShipedItemShipment (item, shipment);
+
 isOrderedShipmentDetail 'Товар поставки есть в заказах поставки' (shipmentDetail) = isOrderedItemShipment(itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail));
+
 quantityOrderedShipmentDetailsShipment 'Количество позиций, для которых есть заказ' (shipment) = GROUP SUM 1 IF isOrderedShipmentDetail(shipmentDetail) AND shipmentShipmentDetail(shipmentDetail)==shipment BY shipment;
 percentOrderedShipmentDetailsShipment 'Процент позиций поставки, для которых есть заказ' (shipment) =
     [X*100/Y](
@@ -3255,6 +3263,14 @@ CONSTRAINT controlSupplierDepartmentStoreShipment (shipment) AND percentOrderedS
             MSG 'Процент заказанных позиций для поставки меньше допустимого для данного поставщика';
 
 isAvailableOrderShipment 'Заявка допустимая для заказа' (shipment, orderSupplier) = dateWaybillShipment (shipment) <= addDate2(dateOrderSupplier (orderSupplier), UNION OVERRIDE 0 IF shipment IS shipment, afterDaysSupplier (supplierShipment(shipment)));
+
+toFillShipmentDetailsShipment 'Заполнить поставку из заказов' =  ACTION (shipment){
+    FOR isNotShipedOrderedItemShipment (item, shipment) DO {
+        ADDOBJ shipmentDetail;
+        SET itemShipmentDetail(s) IF s == addedObject() <- item AS item;
+        SET priceShipmentDetail(s) IF s == addedObject() <- priceOrderItemShipment(item, shipment);
+    };
+} CONFIRM;
 
 FORM ordersShipment 'Заказы'
     OBJECTS s=shipment FIXED PANEL
@@ -3292,8 +3308,9 @@ addShipmentDetailBarcode 'Добавить строку по штрих-коду
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s) waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameDepartmentStoreShipment,
-                   nameSupplierShipment, carryingChargesShipment, ordersShipment, totalQuantityShipment,
-                   totalSumIncVATShipment, totalSumSupplierShipment, percentOrderedShipmentDetailsShipment, showFormOrdersShipment
+                   nameSupplierShipment, carryingChargesShipment, ordersShipment, toFillShipmentDetailsShipment,
+                   totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment,
+                   percentOrderedShipmentDetailsShipment, showFormOrdersShipment
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail,
