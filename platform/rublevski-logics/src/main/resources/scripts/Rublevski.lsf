@@ -825,11 +825,9 @@ CLASS STATIC genType 'Тип генерации' {
 
 CLASS genTimeTable 'Генерация графика' : named;
 
+//общие свойства
 genTimeTableType 'Тип генерации графика (ИД)' = DATA genType (genTimeTable);
 nameGenTimeTableType 'Тип генерации графика' (genTimeTable) = name(genTimeTableType(genTimeTable)) IN baseGroup;
-
-startDateGenTimeTable 'Дата начала' = DATA DATE (genTimeTable) IN baseGroup;
-endDateGenTimeTable 'Дата окончания' = DATA DATE (genTimeTable) IN baseGroup;
 
 supplierGenTimeTable 'Поставщик (ИД)' = DATA supplier (genTimeTable);
 nameSupplierGenTimeTable 'Поставщик' (genTimeTable) = name(supplierGenTimeTable(genTimeTable)) IN baseGroup;
@@ -837,15 +835,25 @@ nameSupplierGenTimeTable 'Поставщик' (genTimeTable) = name(supplierGenT
 departmentStoreGenTimeTable 'Подразделение (ИД)' = DATA departmentStore (genTimeTable) AUTOSET;
 nameDepartmentStoreGenTimeTable 'Подразделение' (genTimeTable) = name(departmentStoreGenTimeTable(genTimeTable)) IN baseGroup;
 
+startDateGenTimeTable 'Дата начала' = DATA DATE (genTimeTable) IN baseGroup;
+endDateGenTimeTable 'Дата окончания' = DATA DATE (genTimeTable) IN baseGroup;
+
 dayBeforeGenTimeTable 'За сколько дней формировать заказ' = DATA INTEGER (genTimeTable);
-dayAfterGenTimeTable 'Через сколько дней после последней поставки делать заказ' = DATA INTEGER (genTimeTable);
+
+//свойства "Каждые N недель"
 periodGenTimeTable 'По прошествии скольки недель будет осуществится следующая поставка' = DATA INTEGER (genTimeTable);
+
+//свойства "Каждые N дней"
+dayAfterGenTimeTable 'Через сколько дней после последней поставки делать заказ' = DATA INTEGER (genTimeTable);
+dayLastOrderGenTimeTable 'Дата последнего заказа' = DATA DATE (genTimeTable);
+
+//свойства "По числам"
 stringNumberGenTimeTable 'Числа месяца поставок (указывать через запятую)' = DATA STRING[100] (genTimeTable);
 transferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья (ИД)' = DATA DOW (genTimeTable);
 nameTransferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья' (genTimeTable) = name(transferDayGenTimeTable(genTimeTable));
 CONSTRAINT CHECKED numberDOW(transferDayGenTimeTable(genTimeTable))!=5 AND numberDOW(transferDayGenTimeTable(genTimeTable))!=1 MSG 'Выберите день с ПН по ПТ';
-dayLastOrderGenTimeTable 'Дата последнего заказа' = DATA DATE (genTimeTable);
 
+//свойства "По дням недели и месяца"
 inMonthGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, month);
 inDayGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, DOW);
 inAllMonthGenTable 'Включить все месяцы' = DATA BOOLEAN (genTimeTable);
@@ -863,7 +871,7 @@ PROPERTIES(g) nameGenTimeTableType, nameSupplierGenTimeTable, nameDepartmentStor
               endDateGenTimeTable, dayBeforeGenTimeTable,inAllMonthGenTable SHOWIF toShowGenDayMonth(g),
               dayAfterGenTimeTable SHOWIF toShowGenDay(g), periodGenTimeTable SHOWIF toShowGenWeek(g),
               stringNumberGenTimeTable SHOWIF toShowGenNumber(g), nameTransferDayGenTimeTable SHOWIF toShowGenNumber(g),
-              dayLastOrderGenTimeTable SHOWIF toShowGenNumber(g)
+              dayLastOrderGenTimeTable SHOWIF toShowGenDay(g)
 PROPERTIES(m) READONLY name SHOWIF toShowGenDayMonth(g)
 PROPERTIES(d) READONLY name SHOWIF toShowGenWeekOrDayMonth(g)
 PROPERTIES(g, m) inMonthGenTimeTable SHOWIF toShowGenDayMonth(g)
@@ -1865,7 +1873,7 @@ PROPERTIES(co) ADDFORM, EDITFORM, delete;
 
 //--------------------------------------Заказ------------------------------------------------------------------//
 
-CLASS preliminaryOrder 'Предварительный заказ' : named, historyObject;
+CLASS preliminaryOrder 'Предварительный заказ' : historyObject;
 
 dateOrderPreliminaryOrder 'Дата заказа' = DATA DATE (preliminaryOrder) IN baseGroup;
 dateSupplyPreliminaryOrder 'Дата поставки' = DATA DATE (preliminaryOrder) IN baseGroup;
@@ -1878,7 +1886,7 @@ TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
 @metaCodeDoubleObjectDateProperty(timeTable, supplier, departmentStore, 'Поставка', BOOLEAN, baseGroup);
 
-CLASS ABSTRACT order 'Заказ' : named, historyObject;
+CLASS ABSTRACT order 'Заказ' : historyObject;
 CLASS orderSupplier 'Заказ поставщику' : order;
 CLASS orderSupplierPost 'Одобренный заказ поставщику' :orderSupplier;
 //CLASS orderStock 'Заказ складу' :order;
