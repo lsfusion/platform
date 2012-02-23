@@ -732,7 +732,8 @@ CLASS barcode 'Штрих код';
 barcodeEx 'Штрих код' = DATA STRING[14] (barcode) IN baseGroup FIXEDCHARWIDTH 14;
 
 dateUserBarcode 'Дата действия' = DATA DATE (barcode) IN baseGroup;
-dateBarcode 'Дата действия' = UNION OVERRIDE currentDate() IF barcode IS barcode, dateUserBarcode(barcode) IN baseGroup;
+dateMaxGlobal 'Наименьшая дата' = DATA DATE() IN baseGroup;
+dateBarcode 'Дата действия' = UNION OVERRIDE dateMaxGlobal() IF barcode IS barcode, dateUserBarcode(barcode) IN baseGroup;
 
 skuBarcode 'Товар штрих-кода' = DATA sku(barcode) IN baseGroup;
 
@@ -1361,9 +1362,15 @@ DESIGN item FROM DEFAULT {
 
                 ADD containerRight {
                     childConstraints = TO THE BOTTOM;
-                    ADD i.headGroup;
-                    ADD i.rateGroup;
-                    ADD i.sizeGroup;
+                    ADD i.headGroup {
+                        childConstraints = TO THE BOTTOM;
+                    };
+                    ADD i.rateGroup {
+                        childConstraints = TO THE BOTTOM;
+                    };
+                    ADD i.sizeGroup {
+                        childConstraints = TO THE BOTTOM;
+                    };
                     ADD i.barGroup;
                 }
                 POSITION containerLeft TO THE LEFT containerRight;
@@ -1388,7 +1395,9 @@ DESIGN item FROM DEFAULT {
 
                 ADD containerARight {
                     childConstraints = TO THE BOTTOM;
-                    ADD i.substanceGroup;
+                    ADD i.substanceGroup{
+                        childConstraints = TO THE BOTTOM;
+                    };
                     ADD i.tagGroup {
                         childConstraints = TO THE BOTTOM;
                     };
@@ -3250,7 +3259,74 @@ FORM shipments 'Поставки'
     FILTERS NOT NULL inShipmentShipmentDetail(s, d)
 ;
 
-//---------------------------- Импорт данных ----------------------------------------//
+//----------------------------------------------- Списание товара ---------------------------------------------------//
+CLASS writeOff 'Списание';
+CLASS writeOffDetail 'Строка списания';
+CLASS reasonOff 'Причина списания' : named;
+
+numberWriteOff '№ документа' = DATA STRING[10] (writeOff) IN baseGroup;
+dateWriteOff 'Дата акта' = DATA DATE (writeOff) IN baseGroup;
+
+reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
+nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN baseGroup;
+
+writeOffWriteOffDetail 'Документ строки списания' = DATA writeOff (writeOffDetail) IN idGroup;
+
+itemWriteOffDetail 'Товар строки списания (ИД)' = DATA item (writeOffDetail) IN idGroup;
+nameItemWriteOffDetail 'Товар строки списания' (writeOffDetail) = nameAttributeItem(itemWriteOffDetail(writeOffDetail)) IN baseGroup;
+
+inWriteOffWriteOffDetail(writeOff, writeOffDetail) = writeOffWriteOffDetail(writeOffDetail) == writeOff;
+
+quantityWriteOffDetail 'Кол-во для строки списания' = DATA INTEGER (writeOffDetail) IN baseGroup;
+
+addWriteOffDetailBarcode 'Добавить строку по штрих-коду' = ACTION (writeOff) {
+    FORM barcodeInput MODAL;
+
+    IF formResult() == formResult.ok THEN {
+        IF skuBarcodeStringDate(chosenString('barcode'), dateWriteOff(writeOff)) IS item THEN {
+            ADDOBJ writeOffDetail;
+            SET writeOffWriteOffDetail(o) IF o == addedObject() <- writeOff AS writeOff;
+            SET itemWriteOffDetail(o) IF o == addedObject() <- skuBarcodeStringDate(chosenString('barcode'), dateWriteOff(writeOff));
+            SET quantityWriteOffDetail(o) IF o == addedObject() <- amountBarcode(valueBarcodeToDate(chosenString('barcode'), dateWriteOff(writeOff)));
+        } ELSE
+            MESSAGE 'Не найден штрих-код';
+    };
+
+} TOOLBAR EDITKEY 'F4';
+
+FORM reasonOff 'Причина списания'
+    OBJECTS r=reasonOff  FIXED PANEL
+    PROPERTIES(r) name;
+
+FORM writeOff 'Списание'
+    OBJECTS w=writeOff FIXED PANEL
+    PROPERTIES (w) numberWriteOff, dateWriteOff, nameReasonOffWriteOff
+
+    OBJECTS d=writeOffDetail
+    PROPERTIES (d) nameItemWriteOffDetail, quantityWriteOffDetail, ADDOBJ, delete
+
+    PROPERTIES addWriteOffDetailBarcode(w) TODRAW d
+    FILTERS NOT NULL inWriteOffWriteOffDetail(w, d)
+
+    EDIT writeOff OBJECT w
+;
+
+FORM writeOffs 'Списания'
+    OBJECTS w=writeOff
+    PROPERTIES (w) READONLY numberWriteOff, dateWriteOff, nameReasonOffWriteOff
+    PROPERTIES (w) ADDFORM, EDITFORM, delete
+
+    OBJECTS d=writeOffDetail
+    PROPERTIES (d) nameItemWriteOffDetail, quantityWriteOffDetail
+
+;
+
+//----------------------------------- Форма для общих параметров -------------------------------------------------//
+FORM globalParameters 'Параметры'
+    PROPERTIES () dateMaxGlobal
+;
+
+//---------------------------------------------- Импорт данных -----------------------------------------------------//
 
 importDataAction 'Импортировать данные' = ACTION CUSTOM 'rublevski.actions.ImportDataActionProperty';
 importUrl 'URL' = DATA STRING[200] ();
@@ -3324,7 +3400,10 @@ NAVIGATOR {
             ADD shipments;
         }
         NEW carryingInventories 'Инвентаризация' {
-        ADD inventories;
+            ADD inventories;
+        }
+        NEW itemWriteOffs 'Списания' {
+            ADD writeOffs;
         }
     }
 
@@ -3404,8 +3483,6 @@ NAVIGATOR {
             ADD markupSupplierItemDepartment;
             ADD addNamebanSupplierItemDepartment;
             ADD namebanSupplierItemDepartment;
-            //ADD addNameskuBarcode;
-            //ADD nameskuBarcode;
 
             ADD cash;
             ADD scales;
@@ -3446,11 +3523,15 @@ NAVIGATOR {
             ADD ordersShipment;
             ADD shipment;
             ADD inventory;
+            ADD reasonOff;
+            ADD writeOff;
             ADD listInventory;
             ADD concatNameDepartmentByInventory;
             ADD collationSheetItem;
         }
         ADD importData;
+        ADD globalParameters;
+
     }
 }
 
