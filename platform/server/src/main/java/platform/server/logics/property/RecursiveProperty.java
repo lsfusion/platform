@@ -4,11 +4,14 @@ import platform.base.BaseUtils;
 import platform.base.Result;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
+import platform.server.classes.IntegralClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.RecursiveExpr;
+import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.derived.DerivedProperty;
@@ -38,43 +41,76 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         return BaseUtils.merge(mapInterfaces.values(), mapIterate.keySet());
     }
 
-    private final Map<Interface, T> mapInterfaces;
-    private final Map<T, T> mapIterate; // старый на новый
-    private final PropertyInterfaceImplement<T> initial;
-    private final PropertyInterfaceImplement<T> step;
+    protected final Map<Interface, T> mapInterfaces;
+    protected final Map<T, T> mapIterate; // старый на новый
+    protected final PropertyMapImplement<?, T> initial;
+    protected final PropertyMapImplement<?, T> step;
+    
+    protected final Cycle cycle;
+    
+    protected boolean isLogical() {
+        boolean isIntegral = initial.property.getType() instanceof IntegralClass;
+        assert step.property.getType() instanceof IntegralClass == isIntegral;
+        return !isIntegral;
+    }
+    
+    protected boolean isCyclePossible() {
+        return cycle!=Cycle.IMPOSSIBLE;
+    }
 
     @IdentityLazy
     public Property getConstrainedProperty() {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false
-        Property constraint = DerivedProperty.createCompare(interfaces, getImplement(), DerivedProperty.<Interface>createStatic(RecursiveExpr.maxvalue/2, RecursiveExpr.type), Compare.GREATER).property;
+        assert cycle == Cycle.NO;
+        assert !isLogical();
+
+        IntegralClass integralClass = (IntegralClass)getType();
+        Property constraint = DerivedProperty.createCompare(interfaces, getImplement(), DerivedProperty.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
         constraint.caption = ServerResourceBundle.getString("logics.property.cycle.detected", caption);
         constraint.setConstraint(false);
         return constraint;
     }
 
-
-    public RecursiveProperty(String sID, String caption, List<Interface> interfaces, Map<Interface, T> mapInterfaces, Map<T, T> mapIterate, PropertyInterfaceImplement<T> initial, PropertyInterfaceImplement<T> step) {
+    public RecursiveProperty(String sID, String caption, List<Interface> interfaces, Cycle cycle, Map<Interface, T> mapInterfaces, Map<T, T> mapIterate, PropertyMapImplement<?, T> initial, PropertyMapImplement<?, T> step) {
         super(sID, caption, interfaces);
         this.mapInterfaces = mapInterfaces;
         this.mapIterate = mapIterate;
+        this.cycle = cycle;
 
-        // приведем к работе с числами
         Collection<T> innerInterfaces = getInnerInterfaces();
-        PropertyMapImplement<?, T> one = DerivedProperty.createStatic(1, RecursiveExpr.type);
 
+        // в initial докинем недостающие ключи
         Collection<PropertyInterfaceImplement<T>> and = new ArrayList<PropertyInterfaceImplement<T>>();
-        and.add(initial);
         for(Map.Entry<T, T> mapIt : mapIterate.entrySet())
             and.add(DerivedProperty.createCompare(Compare.EQUALS, mapIt.getKey(), mapIt.getValue()));
-        this.initial = DerivedProperty.createAnd(innerInterfaces, one, and);
-        this.step = DerivedProperty.createAnd(innerInterfaces, one, step);
+        initial = DerivedProperty.createAnd(innerInterfaces, initial, and);
+
+        this.initial = initial;
+        this.step = step;
     }
 
-    // если нужна инкрементность
-    protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
+    protected Where getLogicalIncrementWhere(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges) {
         Result<Map<KeyExpr, KeyExpr>> mapIterate = new Result<Map<KeyExpr, KeyExpr>>();
-        Result<Map<KeyExpr, ? extends Expr>> group = new Result<Map<KeyExpr, ? extends Expr>>();
+        Map<KeyExpr, Expr> group = new HashMap<KeyExpr, Expr>();
+        Map<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
+
+        WhereBuilder initialWhere = new WhereBuilder(); // cg(Pb, b) (gN(Pb, b) - gp(Pb, b))
+        Where initialChanged = initial.mapExpr(recursiveKeys, propChanges, initialWhere).getWhere().xor(initial.mapExpr(recursiveKeys).getWhere()).and(initialWhere.toWhere());
+
+        WhereBuilder stepWhere = new WhereBuilder(); // // cs(Pb, b) * (sN(Pb,b)-sp(Pb,b)) * f(Pb)
+        Expr newStep = step.mapExpr(recursiveKeys, propChanges, stepWhere); // STEP sn(pb,b)
+        Where stepChanged = newStep.getWhere().xor(step.mapExpr(recursiveKeys).getWhere()).and(stepWhere.toWhere()).and(getExpr(join(replaceValues(mapInterfaces, reverse(this.mapIterate)), recursiveKeys)).getWhere());
+        Expr changedExpr = RecursiveExpr.create(mapIterate.result, ValueExpr.get(initialChanged.or(stepChanged)), newStep, isCyclePossible(), group);
+
+        return changedExpr.getWhere();
+    }
+
+    protected Expr getSumIncrementExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges) {
+        assert !isLogical();
+
+        Result<Map<KeyExpr, KeyExpr>> mapIterate = new Result<Map<KeyExpr, KeyExpr>>();
+        Map<KeyExpr, Expr> group = new HashMap<KeyExpr, Expr>();
         Map<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
 
         WhereBuilder initialWhere = new WhereBuilder(); // cg(Pb, b) (gN(Pb, b) - gp(Pb, b))
@@ -82,27 +118,47 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
 
         WhereBuilder stepWhere = new WhereBuilder(); // // cs(Pb, b) * (sN(Pb,b)-sp(Pb,b)) * f(Pb)
         Expr newStep = step.mapExpr(recursiveKeys, propChanges, stepWhere); // STEP sn(pb,b)
-        Expr stepChanged = newStep.diff(step.mapExpr(recursiveKeys)).and(stepWhere.toWhere()).mult(getExpr(join(replaceValues(mapInterfaces, reverse(this.mapIterate)), recursiveKeys)), RecursiveExpr.type);
-        Expr changedExpr = RecursiveExpr.create(mapIterate.result, initialChanged.sum(stepChanged), newStep, group.result);
+        Expr stepChanged = newStep.diff(step.mapExpr(recursiveKeys)).and(stepWhere.toWhere()).mult(getExpr(join(replaceValues(mapInterfaces, reverse(this.mapIterate)), recursiveKeys)), (IntegralClass) getType());
+        return RecursiveExpr.create(mapIterate.result, initialChanged.sum(stepChanged), newStep, isCyclePossible(), group);
+    }
 
-        if(changedWhere!=null) changedWhere.add(changedExpr.getWhere());
-        return changedExpr.sum(prevExpr);
+    protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
+        if(isLogical() || cycle == Cycle.YES) { // если допускаются циклы, то придется все пересчитывать
+            if(changedWhere!=null) changedWhere.add(getLogicalIncrementWhere(joinImplement, propChanges));
+            return calculateNewExpr(joinImplement, propChanges);
+        } else {
+            Expr changedExpr = getSumIncrementExpr(joinImplement, propChanges);
+            if(changedWhere!=null) changedWhere.add(changedExpr.getWhere());
+            return changedExpr.sum(prevExpr);
+        }
     }
 
     protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges) {
         Result<Map<KeyExpr, KeyExpr>> mapIterate = new Result<Map<KeyExpr, KeyExpr>>();
-        Result<Map<KeyExpr, ? extends Expr>> group = new Result<Map<KeyExpr, ? extends Expr>>();
+        Map<KeyExpr, Expr> group = new HashMap<KeyExpr, Expr>();
         Map<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
         return RecursiveExpr.create(mapIterate.result, initial.mapExpr(recursiveKeys, propChanges),
-                step.mapExpr(recursiveKeys, propChanges), group.result);
+                step.mapExpr(recursiveKeys, propChanges), isCyclePossible(), group);
     }
 
     // проталкивание значений на уровне property
-    private Map<T, Expr> getRecursiveKeys(Map<Interface,? extends Expr> joinImplement, Result<Map<KeyExpr, KeyExpr>> mapKeysIterate, Result<Map<KeyExpr, ? extends Expr>> group) {
+    protected Map<T, Expr> getRecursiveKeys(Map<Interface,? extends Expr> joinImplement, Result<Map<KeyExpr, KeyExpr>> mapKeysIterate, Map<KeyExpr, Expr> group) {
         Map<T, KeyExpr> recursiveKeys = KeyExpr.getMapKeys(getInnerInterfaces());
+        
+        Map<T, Expr> result = new HashMap<T, Expr>(BaseUtils.filterKeys(recursiveKeys, mapIterate.keySet())); // старые закинем как было
+        for(Map.Entry<Interface, ? extends Expr> mapExpr : joinImplement.entrySet()) {
+            T inner = mapInterfaces.get(mapExpr.getKey());
+            if(mapExpr.getValue().isValue() && !mapIterate.containsValue(inner)) // если не итерируемый ключ
+                result.put(inner, mapExpr.getValue());
+            else {
+                KeyExpr keyExpr = recursiveKeys.get(inner);
+                result.put(inner, keyExpr);
+                group.put(keyExpr, mapExpr.getValue());
+            }
+        }
+
         mapKeysIterate.set(crossJoin(join(mapIterate, recursiveKeys), recursiveKeys));
-        group.set(crossJoin(join(mapInterfaces, recursiveKeys), joinImplement));
-        return BaseUtils.<Map<T, Expr>>immutableCast(recursiveKeys);
+        return result;
     }
 
     @Override

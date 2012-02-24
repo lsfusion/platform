@@ -39,7 +39,7 @@ public class RecursiveTable extends Table {
     }
 
 
-    public Map<PropertyField, Stat> getStatProps() {
-        return getStatProps(this, RecursiveExpr.type.getTypeStat());
+    public Map<PropertyField, Stat> getStatProps() { // assert что пустой если Logical рекурсия
+        return getStatProps(this, Stat.MAX);
     }
 }

@@ -39,6 +39,8 @@ import java.util.*;
 import static platform.base.BaseUtils.*;
 import static platform.server.logics.PropertyUtils.*;
 import static platform.server.logics.property.actions.ExecutePropertiesActionProperty.EPA_INTERFACE;
+import static platform.server.logics.property.derived.DerivedProperty.createAnd;
+import static platform.server.logics.property.derived.DerivedProperty.createStatic;
 
 /**
  * User: DAle
@@ -1035,7 +1037,7 @@ public abstract class LogicsModule {
         return addProperty(group, persistent, new LP<P>(orderProperty.property, BaseUtils.mapList(interfaces, BaseUtils.reverse(orderProperty.mapping))));
     }
 
-    protected <P extends PropertyInterface> LP addRProp(AbstractGroup group, String name, boolean persistent, String caption, int intCount, Object... params) {
+    protected <P extends PropertyInterface> LP addRProp(AbstractGroup group, String name, boolean persistent, String caption, Cycle cycle, int intCount, Object... params) {
         int innerCount = getIntNum(params);
         List<PropertyInterface> innerInterfaces = genInterfaces(innerCount);
         List<PropertyInterfaceImplement<PropertyInterface>> listImplement = mapLI(readLI(params), innerInterfaces);
@@ -1047,11 +1049,33 @@ public abstract class LogicsModule {
         Map<PropertyInterface, PropertyInterface> mapIterate = new HashMap<PropertyInterface, PropertyInterface>();// старые на новые;
         for(int i=intCount;i<innerCount;i++) // старые на новые
             mapIterate.put(innerInterfaces.get(i), innerInterfaces.get(i-(innerCount-intCount)));
-        RecursiveProperty<PropertyInterface> property = new RecursiveProperty<PropertyInterface>(name, caption, interfaces, mapInterfaces, mapIterate, listImplement.get(0), listImplement.get(1));
 
-        addProperty(null, new LP(property.getConstrainedProperty()));
+        PropertyMapImplement<?, PropertyInterface> initial = (PropertyMapImplement<?, PropertyInterface>) listImplement.get(0);
+        PropertyMapImplement<?, PropertyInterface> step = (PropertyMapImplement<?, PropertyInterface>) listImplement.get(1);
 
-        return addProperty(group, persistent, new LP<RecursiveProperty.Interface>(property, interfaces));
+        boolean isIntegral = initial.property.getType() instanceof IntegralClass;
+        boolean convertToLogical = false;
+        assert isIntegral == (step.property.getType() instanceof IntegralClass);
+        
+        if(!isIntegral && (cycle == Cycle.NO || (cycle==Cycle.IMPOSSIBLE && persistent))) {
+            PropertyMapImplement<?, PropertyInterface> one = createStatic(1, LongClass.instance);
+            initial = createAnd(innerInterfaces, one, initial);
+            step = createAnd(innerInterfaces, one, step);
+            isIntegral = true;
+            convertToLogical = true;
+        }
+
+        boolean wrapProperty = (persistent || convertToLogical) && isIntegral;
+        RecursiveProperty<PropertyInterface> property = new RecursiveProperty<PropertyInterface>((wrapProperty?"wr_":"") + name, caption, interfaces, cycle,
+                mapInterfaces, mapIterate, initial, step);
+        if(cycle==Cycle.NO)
+            addProperty(null, new LP(property.getConstrainedProperty()));
+
+        LP result = new LP<RecursiveProperty.Interface>(property, interfaces);
+        if (wrapProperty)
+            return addJProp(group, name, false, caption, convertToLogical ? baseLM.notZero : baseLM.onlyNotZero, directLI(addProperty(null, persistent, result)));
+        else
+            return addProperty(group, persistent, result);
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LP addUGProp(AbstractGroup group, String caption, boolean ascending, LP<R> restriction, LP<L> ungroup, Object... params) {
@@ -1199,7 +1223,7 @@ public abstract class LogicsModule {
 
         LP result;
         if (wrapNotZero)
-            result = addJProp(group, name, persistent, caption, baseLM.onlyNotZero, directLI(mapLGProp(null, false, property, listImplements)));
+            result = addJProp(group, name, false, caption, baseLM.onlyNotZero, directLI(mapLGProp(null, persistent, property, listImplements)));
         else
             result = mapLGProp(group, persistent, property, listImplements);
 

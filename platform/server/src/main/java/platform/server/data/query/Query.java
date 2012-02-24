@@ -273,8 +273,8 @@ public class Query<K,V> extends IQuery<K,V> {
     @SynchronizedLazy
     @Pack
     @Message("message.core.query.compile")
-    public CompiledQuery<K,V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, Integer selectTop, SubQueryContext subcontext, boolean recursive) {
-        return new CompiledQuery<K,V>(this, syntax, orders, selectTop, subcontext, recursive);
+    public CompiledQuery<K,V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, Integer selectTop, SubQueryContext subcontext, boolean noExclusive) {
+        return new CompiledQuery<K,V>(this, syntax, orders, selectTop, subcontext, noExclusive);
     }
 
     public Collection<GroupJoinsWhere> getWhereJoins(boolean tryExclusive, Result<Boolean> isExclusive) {

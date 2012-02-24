@@ -1,12 +1,14 @@
 package platform.server.data.query;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import platform.base.*;
 import platform.interop.Compare;
 import platform.server.Settings;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
+import platform.server.classes.IntegralClass;
 import platform.server.data.*;
 import platform.server.data.expr.*;
 import platform.server.data.expr.order.PartitionCalc;
@@ -139,7 +141,7 @@ public class CompiledQuery<K,V> {
         }
     }
 
-    public CompiledQuery(Query<K,V> query, SQLSyntax syntax, OrderedMap<V,Boolean> orders, int top, SubQueryContext subcontext, boolean recursive) {
+    public CompiledQuery(Query<K,V> query, SQLSyntax syntax, OrderedMap<V,Boolean> orders, int top, SubQueryContext subcontext, boolean noExclusive) {
 
         keySelect = new HashMap<K, String>();
         propertySelect = new HashMap<V, String>();
@@ -174,7 +176,7 @@ public class CompiledQuery<K,V> {
 
         boolean useFJ = syntax.useFJ();
         Result<Boolean> unionAll = new Result<Boolean>();
-        Collection<GroupJoinsWhere> queryJoins = GroupJoinsWhere.pack(query.getWhereJoins(!useFJ && !recursive, unionAll));
+        Collection<GroupJoinsWhere> queryJoins = GroupJoinsWhere.pack(query.getWhereJoins(!useFJ && !noExclusive, unionAll));
         union = !useFJ && queryJoins.size() >= 2 && (unionAll.result || !Settings.instance.isUseFJInsteadOfUnion());
         if (union) { // сложный UNION запрос
             Map<V, Type> castTypes = new HashMap<V, Type>();
@@ -625,7 +627,7 @@ public class CompiledQuery<K,V> {
                 super(recJoin);
             }
 
-            private String getSelect(Map<String, KeyExpr> keys, Map<String, Expr> props, Map<String, Type> columnTypes, Where where, List<String> keyOrder, List<String> propOrder, boolean recursive, Map<Value, String> params, SubQueryContext subcontext, ExecuteEnvironment env) {
+            private String getSelect(Map<String, KeyExpr> keys, Map<String, Expr> props, Map<String, Type> columnTypes, Where where, List<String> keyOrder, List<String> propOrder, boolean useRecursionFunction, boolean recursive, Map<Value, String> params, SubQueryContext subcontext, ExecuteEnvironment env) {
                 Map<String, KeyExpr> allKeys = new HashMap<String, KeyExpr>(keys); int pv = 0;
                 for(KeyExpr mapIt : innerJoin.getMapIterate().values())
                     allKeys.put("pv_"+(pv++),mapIt);
@@ -633,51 +635,66 @@ public class CompiledQuery<K,V> {
                 Map<String, String> keySelect = new HashMap<String, String>();
                 Map<String, String> propertySelect = new HashMap<String, String>();
                 Collection<String> whereSelect = new ArrayList<String>();
-                String fromSelect = new Query<String,String>(allKeys, props, where).compile(syntax, subcontext, recursive).fillSelect(keySelect, propertySelect, whereSelect, params, env);
+                String fromSelect = new Query<String,String>(allKeys, props, where).compile(syntax, subcontext, recursive && !useRecursionFunction).fillSelect(keySelect, propertySelect, whereSelect, params, env);
 
                 OrderedMap<String, String> orderKeySelect = SQLSession.mapNames(BaseUtils.filterKeys(keySelect, keys.keySet()), keyOrder);
                 OrderedMap<String, String> orderPropertySelect = SQLSession.mapNames(propertySelect, propOrder);
 
-//                return "(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(orderKeySelect, orderPropertySelect), BaseUtils.toString(whereSelect," AND "),"","","") + ")";
-                OrderedMap<String, String> orderGroupPropertySelect = new OrderedMap<String, String>();
-                for(Map.Entry<String, String> prop : orderPropertySelect.entrySet()) {
-                    Type type = columnTypes.get(prop.getKey());
-                    orderGroupPropertySelect.put(prop.getKey(), "CAST(" + (type instanceof ArrayClass ? "AGGAR_SETADD" : "SUM") + "(" + prop.getValue() + ")" + " AS " + type.getDB(syntax) + ")");
-                }
-                return "(" + getGroupSelect(fromSelect, orderKeySelect, orderGroupPropertySelect, whereSelect) + ")";
+                if(useRecursionFunction) {
+                    OrderedMap<String, String> orderGroupPropertySelect = new OrderedMap<String, String>();
+                    for(Map.Entry<String, String> prop : orderPropertySelect.entrySet()) {
+                        Type type = columnTypes.get(prop.getKey());
+                        orderGroupPropertySelect.put(prop.getKey(), "CAST(" + (type instanceof ArrayClass ? "AGGAR_SETADD" : "SUM") + "(" + prop.getValue() + ")" + " AS " + type.getDB(syntax) + ")");
+                    }
+                    return "(" + getGroupSelect(fromSelect, orderKeySelect, orderGroupPropertySelect, whereSelect) + ")";
+                } else
+                    return "(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(orderKeySelect, orderPropertySelect), BaseUtils.toString(whereSelect," AND "),"","","") + ")";
             }
 
-            public String getSource(ExecuteEnvironment env) {
-
+            public String getParamSource(boolean useRecursionFunction, boolean wrapStep, ExecuteEnvironment env) {
                 Map<KeyExpr, KeyExpr> mapIterate = innerJoin.getMapIterate();
 
                 Where initialWhere = innerJoin.getInitialWhere();
                 Where stepWhere = innerJoin.getStepWhere();
 
-                boolean cyclesPossible = true; // теоретически - надо проверить, что функция не строго возрастающая, то есть из stepWhere => in > ip OR ...
+                boolean isLogical = innerJoin.isLogical();
+                boolean cyclePossible = innerJoin.isCyclePossible();
 
                 String rowPath = "qwpather";
 
-                Collection<String> props = queries.values();
-                if(cyclesPossible)
-                    props = BaseUtils.add(props, rowPath);
-                
+                Map<String, Type> props = new HashMap<String, Type>();
+                for(Map.Entry<RecursiveExpr.Query, String> query : queries.entrySet())
+                    props.put(query.getValue(), query.getKey().getType());
+                Expr concKeys = null; ArrayClass rowType = null;
+                if(cyclePossible && (!isLogical || useRecursionFunction)) {
+                    concKeys = ConcatenateExpr.create(new ArrayList<KeyExpr>(mapIterate.keySet()));
+                    rowType = ArrayClass.get(concKeys.getType(initialWhere));
+                    props.put(rowPath, rowType);
+                }
+
                 String recName = subcontext.wrapRecursion("rectable"); Map<String, KeyExpr> recKeys = new HashMap<String, KeyExpr>();
                 Join<String> recJoin = innerJoin.getRecJoin(props, recName, recKeys);
-                
+
                 Map<String, Expr> initialExprs = new HashMap<String, Expr>();
                 Map<String, Expr> stepExprs = new HashMap<String, Expr>();
                 Map<String, String> propertySelect = new HashMap<String, String>();
                 for(Map.Entry<RecursiveExpr.Query, String> query : queries.entrySet()) {
-                    initialExprs.put(query.getValue(), query.getKey().initial);
-                    stepExprs.put(query.getValue(), recJoin.getExpr(query.getValue()).mult(query.getKey().step, RecursiveExpr.type));
-                    propertySelect.put(query.getValue(), "SUM(" + query.getValue() + ")");
+                    if(isLogical)
+                        propertySelect.put(query.getValue(), syntax.getBitString(true));
+                    else {
+                        initialExprs.put(query.getValue(), query.getKey().initial);
+                        Expr step = query.getKey().step;
+                        if(wrapStep)
+                            step = SubQueryExpr.create(step);
+                        stepExprs.put(query.getValue(), recJoin.getExpr(query.getValue()).mult(step, (IntegralClass) query.getKey().getType()));
+                        propertySelect.put(query.getValue(), "SUM(" + query.getValue() + ")");
+                    }
                 }
+                if(wrapStep) // чтобы избавляться от проблем с 2-м использованием
+                    stepWhere = SubQueryExpr.create(stepWhere);
 
                 Where recWhere;
-                if(cyclesPossible) {
-                    Expr concKeys = ConcatenateExpr.create(new ArrayList<KeyExpr>(mapIterate.keySet()));
-                    ArrayClass rowType = ArrayClass.get(concKeys.getType(initialWhere));
+                if(cyclePossible && (!isLogical || useRecursionFunction)) {
                     Expr rowSource = FormulaExpr.create1("CAST(ARRAY[prm1] AS " + rowType.getDB(syntax) + ")", rowType, concKeys); // баг сервера, с какого-то бодуна ARRAY[char(8)] дает text[]
 
                     initialExprs.put(rowPath, rowSource); // заполняем начальный путь
@@ -685,11 +702,16 @@ public class CompiledQuery<K,V> {
                     stepExprs.put(rowPath, FormulaExpr.create2("CAST((prm1 || prm2) AS " + rowType.getDB(syntax) + ")", rowType, prevPath, rowSource)); // добавляем тек. вершину
 
                     Where noNodeCycle = concKeys.compare(prevPath, Compare.INARRAY).not();
-                    Expr maxExpr = RecursiveExpr.type.getStaticExpr(RecursiveExpr.maxvalue);
-                    recWhere = Where.TRUE;
-                    for(String query : queries.values()) {
-                        stepExprs.put(query, stepExprs.get(query).ifElse(noNodeCycle, maxExpr)); // если цикл даем максимальное значение
-                        recWhere = recWhere.and(recJoin.getExpr(query).compare(maxExpr, Compare.LESS)); // останавливаемся если количество значений становится очень большим
+                    if(isLogical)
+                        recWhere = recJoin.getWhere().and(noNodeCycle);
+                    else {
+                        recWhere = Where.TRUE;
+                        for(Map.Entry<RecursiveExpr.Query, String> query : queries.entrySet()) {
+                            IntegralClass type = (IntegralClass)query.getKey().getType();
+                            Expr maxExpr = type.getStaticExpr(type.getSafeInfiniteValue());
+                            stepExprs.put(query.getValue(), stepExprs.get(query.getValue()).ifElse(noNodeCycle, maxExpr)); // если цикл даем максимальное значение
+                            recWhere = recWhere.and(recJoin.getExpr(query.getValue()).compare(maxExpr, Compare.LESS)); // останавливаемся если количество значений становится очень большим
+                        }
                     }
                 } else
                     recWhere = recJoin.getWhere();
@@ -700,8 +722,6 @@ public class CompiledQuery<K,V> {
                 WhereBuilder insufWhere = new WhereBuilder(); // statKeys.rows
                 if(whereJoins.getStatKeys(staticGroup.keySet(), upWheres, innerJoin, insufWhere, keyStat).rows.less(statKeys.rows)) // проталкивание по многим ключам
                     pushWhere = GroupExpr.create(staticGroup, insufWhere.toWhere(), BaseUtils.toMap(staticGroup.keySet())).getWhere();
-
-                boolean useRecursionFunction = true;
 
                 String outerParams = null;
                 Map<Value, String> innerParams;
@@ -735,10 +755,8 @@ public class CompiledQuery<K,V> {
 
                 List<String> keyOrder = new ArrayList<String>();
                 List<String> propOrder = new ArrayList<String>();
-                String initialSelect = getSelect(recKeys, initialExprs, columnTypes, initialWhere.and(pushWhere), keyOrder, propOrder, false, innerParams, pushContext, env);
-                if(!useRecursionFunction) // чтобы избежать ограничения на 2 раза использования
-                    stepWhere = SubQueryExpr.create(stepWhere);
-                String stepSelect = getSelect(recKeys, stepExprs, columnTypes, stepWhere.and(recWhere), keyOrder, propOrder, true, innerParams, pushContext, env);
+                String initialSelect = getSelect(recKeys, initialExprs, columnTypes, initialWhere.and(pushWhere), keyOrder, propOrder, useRecursionFunction, false, innerParams, pushContext, env);
+                String stepSelect = getSelect(recKeys, stepExprs, columnTypes, stepWhere.and(recWhere), keyOrder, propOrder, useRecursionFunction, true, innerParams, pushContext, env);
                 List<String> fieldOrder = BaseUtils.mergeList(keyOrder, propOrder);
 
                 Map<String, String> keySelect = BaseUtils.join(group, BaseUtils.reverse(recKeys));
@@ -748,10 +766,35 @@ public class CompiledQuery<K,V> {
                             "'" + StringEscapeUtils.escapeSql(initialSelect)+"','" +StringEscapeUtils.escapeSql(stepSelect)+"'"+outerParams+") recursion ("
                             + Field.getDeclare(BaseUtils.mapOrder(fieldOrder, columnTypes), syntax) + ")", keySelect, propertySelect, new ArrayList<String>()) + ")";
                 } else {
-                    return "(WITH RECURSIVE " + recName + "(" + BaseUtils.toString(fieldOrder, ",") + ") AS (" +
-                            initialSelect + " UNION ALL " + stepSelect + ") " +
-                                getGroupSelect(recName, keySelect, propertySelect, new ArrayList<String>()) + ")";
+                    if(StringUtils.countMatches(stepSelect, recName) > 1)
+                        return null;
+                    String recursiveWith = "WITH RECURSIVE " + recName + "(" + BaseUtils.toString(fieldOrder, ",") + ") AS (" + initialSelect +
+                            " UNION " + (isLogical && cyclePossible?"":"ALL ") + stepSelect + ") ";
+                    return "(" + recursiveWith + (isLogical ? syntax.getSelect(recName, SQLSession.stringExpr(keySelect, propertySelect), "", "", "", "")
+                            : getGroupSelect(recName, keySelect, propertySelect, new ArrayList<String>())) + ")";
                 }
+            }
+
+            private String getCTESource(boolean wrapExpr, ExecuteEnvironment env) {
+                ExecuteEnvironment thisEnv = new ExecuteEnvironment();
+                String cteSelect = getParamSource(false, wrapExpr, thisEnv);
+                if(cteSelect!=null)
+                    env.add(thisEnv);
+                return cteSelect;
+            }
+            public String getSource(ExecuteEnvironment env) {
+                boolean isLogical = innerJoin.isLogical();
+                boolean cyclePossible = innerJoin.isCyclePossible();
+
+                if(isLogical || !cyclePossible) { // если isLogical или !cyclePossible пытаемся обойтись рекурсивным CTE
+                    String cteSelect = getCTESource(false, env);
+                    if(cteSelect!=null)
+                        return cteSelect;
+                    cteSelect = getCTESource(true, env);
+                    if(cteSelect!=null)
+                        return cteSelect;
+                }
+                return getParamSource(true, false, env);
             }
 
             protected Where getInnerWhere() {

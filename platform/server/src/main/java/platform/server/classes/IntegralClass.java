@@ -33,6 +33,14 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     public Number getInfiniteValue() {
         throw new RuntimeException("not supported");
     }
+    
+    public Number getSafeInfiniteValue() { // бесконечное число которое можно сколько угодно суммировать и не выйти за тип
+        return read(Math.round(Math.sqrt(getInfiniteValue().doubleValue())));
+    }
+    
+    public Number div(Number obj, int div) {
+        return read(obj.doubleValue() / 2);
+    }
 
     abstract int getWhole();
     abstract int getPrecision();

@@ -15,6 +15,7 @@ import platform.server.data.query.RemapJoin;
 import platform.server.data.query.stat.*;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
+import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
@@ -27,26 +28,30 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     public static class Query extends AbstractOuterContext<Query> {
         private final Where initialWhere;
         private final Where stepWhere;
+        private final boolean cyclePossible;
+        private final boolean isLogical;
         private final Map<KeyExpr, KeyExpr> mapIterate;
 
-        public Query(Where initialWhere, Where stepWhere, Map<KeyExpr, KeyExpr> mapIterate) {
+        public Query(Where initialWhere, Where stepWhere, Map<KeyExpr, KeyExpr> mapIterate, boolean cyclePossible, boolean isLogical) {
             this.initialWhere = initialWhere;
             this.stepWhere = stepWhere;
             this.mapIterate = mapIterate;
+            this.cyclePossible = cyclePossible;
+            this.isLogical = isLogical;
         }
 
         public boolean twins(TwinImmutableInterface o) {
-            return initialWhere.equals(((Query) o).initialWhere) && stepWhere.equals(((Query) o).stepWhere) && mapIterate.equals(((Query) o).mapIterate);
+            return initialWhere.equals(((Query) o).initialWhere) && stepWhere.equals(((Query) o).stepWhere) && mapIterate.equals(((Query) o).mapIterate) && cyclePossible==((Query)o).cyclePossible && isLogical==((Query)o).isLogical;
         }
 
         protected boolean isComplex() {
             return true;
         }
         protected int hash(HashContext hash) {
-            return 31 * (31 * hashMapOuter(mapIterate, hash) + initialWhere.hashOuter(hash)) + stepWhere.hashOuter(hash);
+            return 31 * (31 * (31 * (31 * hashMapOuter(mapIterate, hash) + initialWhere.hashOuter(hash)) + stepWhere.hashOuter(hash)) + (isLogical ? 1 : 0)) + (cyclePossible ? 1 : 0);
         }
         protected Query translate(MapTranslate translator) {
-            return new Query(initialWhere.translateOuter(translator),stepWhere.translateOuter(translator), translator.translateMap(mapIterate));
+            return new Query(initialWhere.translateOuter(translator),stepWhere.translateOuter(translator), translator.translateMap(mapIterate), cyclePossible, isLogical);
         }
         public QuickSet<OuterContext> calculateOuterDepends() {
             return new QuickSet<OuterContext>(initialWhere, stepWhere);
@@ -57,8 +62,8 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         super(join, translator);
     }
 
-    public RecursiveJoin(QuickSet<KeyExpr> keys, QuickSet<Value> values, Where initialWhere, Where stepWhere, Map<KeyExpr, KeyExpr> mapIterate, Map<KeyExpr, BaseExpr> group) {
-        super(keys, values, new Query(initialWhere, stepWhere, mapIterate), group);
+    public RecursiveJoin(QuickSet<KeyExpr> keys, QuickSet<Value> values, Where initialWhere, Where stepWhere, Map<KeyExpr, KeyExpr> mapIterate, boolean cyclePossible, boolean isLogical, Map<KeyExpr, BaseExpr> group) {
+        super(keys, values, new Query(initialWhere, stepWhere, mapIterate, cyclePossible, isLogical), group);
     }
 
     public RecursiveJoin(QuickSet<KeyExpr> keys, QuickSet<Value> values, Query inner, Map<KeyExpr, BaseExpr> group) {
@@ -116,15 +121,15 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
 
     @IdentityLazy
     public Where getFullStepWhere() {
-        return getStepWhere().and(getRecJoin(new ArrayList<String>(), "recursivetable", new HashMap<String, KeyExpr>(),
+        return getStepWhere().and(getRecJoin(new HashMap<String, Type>(), "recursivetable", new HashMap<String, KeyExpr>(),
                 getInitialClassWhere(), getInitialStatKeys()).getWhere());
     }
     
-    public Join<String> getRecJoin(Collection<String> props, String name, Map<String, KeyExpr> keys) {
+    public Join<String> getRecJoin(Map<String, Type> props, String name, Map<String, KeyExpr> keys) {
         return getRecJoin(props, name, keys, getClassWhere(), getStatKeys());
     }
 
-    public Join<String> getRecJoin(Collection<String> props, String name, Map<String, KeyExpr> keys, ClassExprWhere classWhere, StatKeys<KeyExpr> statKeys) {
+    public Join<String> getRecJoin(Map<String, Type> props, String name, Map<String, KeyExpr> keys, ClassExprWhere classWhere, StatKeys<KeyExpr> statKeys) {
 
         // создаем рекурсивную таблиц
         int i=0;
@@ -136,8 +141,8 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         }
 
         Map<PropertyField, String> recProps = new HashMap<PropertyField, String>();
-        for(String query : props)
-            recProps.put(new PropertyField(query, RecursiveExpr.type), query);
+        for(Map.Entry<String, Type> query : props.entrySet()) // assert что пустое если logical рекурсия
+            recProps.put(new PropertyField(query.getKey(), query.getValue()), query.getKey());
 
         RecursiveTable recTable = new RecursiveTable(name, recKeys.values(), recProps.keySet(),
                 classWhere.map(recKeys), statKeys.map(recKeys));
@@ -162,7 +167,13 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     public Where getStepWhere() {
         return query.stepWhere;
     }
+    public boolean isLogical() {
+        return query.isLogical;
+    }
     public Map<KeyExpr, KeyExpr> getMapIterate() {
         return query.mapIterate;
+    }
+    public boolean isCyclePossible() {
+        return query.cyclePossible;
     }
 }

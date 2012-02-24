@@ -273,6 +273,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP userPolicyOrder;
 
     public LP hostname;
+    public LP notZero;
     public LP onlyNotZero;
 
     public LP delete;
@@ -707,6 +708,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
 
+        notZero = addJProp(diff2, 1, vzero);
         onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
         onlyNotZero.property.isOnlyNotZero = true;
 

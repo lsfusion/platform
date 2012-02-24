@@ -14,6 +14,7 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.Cycle;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
@@ -110,7 +111,7 @@ public class SampleLogicsModule extends LogicsModule {
         articleToGroup = addDProp(baseGroup, "articleToGroup", "Группа товаров", articleGroup, article);
 
         inGroup = addDProp(baseGroup, "inGroup", "Входит", LogicalClass.instance, articleGroup, articleGroup);
-        inRecGroup = addRProp(baseGroup, "inRecGroup", true, "Входит (рек)", 2, addJProp(baseLM.and1, is(articleGroup), 1, baseLM.equals2, 1, 2), 1, 2, inGroup, 3, 2);
+        inRecGroup = addRProp(baseGroup, "inRecGroup", true, "Входит (рек)", Cycle.NO, 2, addJProp(baseLM.and1, is(articleGroup), 1, baseLM.equals2, 1, 2), 1, 2, inGroup, 3, 2);
 
         initNavigators();
     }
