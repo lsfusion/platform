@@ -626,10 +626,11 @@ DESIGN storeArticle FROM DEFAULT {
 // @codeName([param1, ..., paramN]);
 //
 // concatenation operator: ##
+// concatenation capitalize operator: ###
 
 META metaCodeSample(name)
     CLASS name##Class;
-    GROUP name ## Group;
+    GROUP name ### group;
 END
 
 @metaCodeSample(testName1);

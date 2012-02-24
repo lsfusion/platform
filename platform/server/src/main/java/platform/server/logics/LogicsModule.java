@@ -1,5 +1,6 @@
 package platform.server.logics;
 
+import org.apache.commons.lang.StringUtils;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Result;
@@ -2354,17 +2355,19 @@ public abstract class LogicsModule {
             assert params.size() == parameters.size();
             String resultCode = "";
             String separator = " ";
+            boolean capitalizeNext = false;
             for (String token : tokens) {
                 int index = parameters.indexOf(token);
                 if (index >= 0) {
-                    resultCode = resultCode + separator + params.get(index);
+                    resultCode = resultCode + separator + (capitalizeNext ? StringUtils.capitalize(params.get(index)) : params.get(index));
                     separator = " ";
-                } else if (token.equals("##")) {
+                } else if (token.equals("##") || token.equals("###")) {
                     separator = "";
                 } else {
-                    resultCode = resultCode + separator + token;
+                    resultCode = resultCode + separator + (capitalizeNext ? StringUtils.capitalize(token) : token);
                     separator = " ";
                 }
+                capitalizeNext = token.equals("###");
             }
             return resultCode;
         }
