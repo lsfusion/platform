@@ -6,11 +6,15 @@ import platform.server.data.expr.*;
 import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.CompileSource;
 import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQueryExpr, SubQueryExpr.QueryInnerContext> {
 
@@ -102,7 +106,19 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
     }
 
     public static Expr createBase(Expr expr, Map<KeyExpr, BaseExpr> group) {
-        return BaseExpr.create(new SubQueryExpr(expr, group));
+        Map<KeyExpr,BaseExpr> restGroup = new HashMap<KeyExpr, BaseExpr>();
+        Map<KeyExpr,BaseExpr> translate = new HashMap<KeyExpr, BaseExpr>();
+        for(Map.Entry<KeyExpr,BaseExpr> groupKey : group.entrySet())
+            if(groupKey.getValue().isValue())
+                translate.put(groupKey.getKey(), groupKey.getValue());
+            else
+                restGroup.put(groupKey.getKey(), groupKey.getValue());
+        if(translate.size()>0) {
+            QueryTranslator translator = new PartialQueryTranslator(translate);
+            expr = expr.translateQuery(translator);
+        }
+
+        return BaseExpr.create(new SubQueryExpr(expr, restGroup));
     }
 
     @Override
