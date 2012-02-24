@@ -3282,44 +3282,81 @@ CLASS shipmentPosted 'Поставка (закрытая)': shipment;
 CLASS batch 'Партия';
 CLASS shipmentDetail 'Строка документа поставки': batch;
 
+GROUP waybillInfo 'Шапка накладной' : baseGroup;
+GROUP waybillSum 'Суммы накладной': baseGroup;
+GROUP ordersInfo 'Заказы': baseGroup;
+GROUP additionalInfo 'Дополнительно' : baseGroup;
+
 //шапка документа поставки
-waybillShipment 'Номер накладной' (shipment) = DATA STRING[7] (shipment) IN baseGroup FIXEDCHARWIDTH 7;
-dateWaybillShipment 'Дата поставки' (shipment) = DATA DATE (shipment) IN baseGroup;
-seriesWaybillShipment 'Серия накладной' (shipment) = DATA STRING[2] (shipment) IN baseGroup FIXEDCHARWIDTH 2;
+waybillShipment 'Номер накладной' (shipment) = DATA STRING[7] (shipment) IN waybillInfo FIXEDCHARWIDTH 7;
+
+dateWaybillShipment 'Дата накладной' (shipment) = DATA DATE (shipment) IN waybillInfo;
+
+seriesWaybillShipment 'Серия накладной' (shipment) = DATA STRING[2] (shipment) IN waybillInfo FIXEDCHARWIDTH 4;
+
 departmentStoreShipment 'Отдел поставки (ИД)' (shipment) = DATA departmentStore(shipment) IN idGroup;
-nameDepartmentStoreShipment 'Отдел поставки' (shipment) = name(departmentStoreShipment(shipment)) IN baseGroup;
+
+nameDepartmentStoreShipment 'Отдел поставки' (shipment) = name(departmentStoreShipment(shipment)) IN waybillInfo;
+
 supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipment) IN idGroup;
-nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN baseGroup;
-noteShipment 'Примечание' (shipment) = DATA STRING[100] (shipment) IN baseGroup;
-carryingChargesShipment 'Транспортные расходы' (shipment) = DATA DOUBLE (shipment) IN baseGroup;
-inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) = DATA BOOLEAN (shipment, orderSupplier) IN idGroup;
-ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(dataOrderSupplier(orderSupplier)) IF inShipmentOrder(shipment, orderSupplier), ', ' BY shipment MINCHARWIDTH 10 PREFCHARWIDTH 10;
+
+nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN waybillInfo;
+
+noteShipment 'Примечание' (shipment) = DATA STRING[100] (shipment) IN additionalInfo;
+
+carryingChargesShipment 'Транспортные расходы' (shipment) = DATA DOUBLE (shipment) IN waybillSum;
+
+inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) = DATA BOOLEAN (shipment, orderSupplier)
+    IN idGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
+
+ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(dataOrderSupplier(orderSupplier))
+    IF inShipmentOrder(shipment, orderSupplier), ', ' BY shipment IN ordersInfo MINCHARWIDTH 10 PREFCHARWIDTH 10;
+
 isSupplierShipmentOrder 'Заявка поставщика поставки' (shipment, orderSupplier) = supplierShipment(shipment)== supplierOrderSupplier(orderSupplier);
+
 isDepartmentStoreShipmentOrder 'Заявка отдела поставки' (shipment, orderSupplier) = departmentStoreShipment(shipment)== departmentStoreOrderSupplier(orderSupplier);
 
 shipmentShipmentDetail 'Строка в поставке' (shipmentDetail) = DATA shipment(shipmentDetail) IN idGroup;
+
 inShipmentShipmentDetail(shipment, shipmentDetail) = shipmentShipmentDetail(shipmentDetail) == shipment;
-numberShipmentDetail 'Номер строки' (shipmentDetail) = PARTITION SUM 1 IF shipmentDetail IS shipmentDetail BY shipmentShipmentDetail(shipmentDetail) ORDER shipmentDetail IN recognizeGroup;
+
+numberShipmentDetail 'Номер строки' (shipmentDetail) =
+    PARTITION SUM 1 IF shipmentDetail IS shipmentDetail BY shipmentShipmentDetail(shipmentDetail)
+    ORDER shipmentDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
+
 itemShipmentDetail 'Товар строки документа поставки (ИД)' (shipmentDetail) = DATA item (shipmentDetail) IN idGroup;
+
 nameAttributeItemShipmentDetail 'Товар строки документа поставки' (shipmentDetail) =  nameAttributeItem(itemShipmentDetail(shipmentDetail)) IN recognizeGroup;
+
 quantityShipmentDetailsShipment 'Количество строк в поставке' (shipment) = GROUP SUM 1 IF inShipmentShipmentDetail(shipment, shipmentDetail) BY shipment;
 
 dateWaybillShipmentDetail 'Дата поставки' (shipmentDetail) = dateWaybillShipment(shipmentShipmentDetail(shipmentDetail));
 
 //атрибуты для подсказки по товару строки
-controlExpiryShipmentDetail 'Контролировать сроки годности товара?' (shipmentDetail) = controlExpiryItem (itemShipmentDetail(shipmentDetail));
-isManufacturedShipmentDetail 'Товар производится?' (shipmentDetail) = isManufacturedItem(itemShipmentDetail(shipmentDetail));
-isWeightShipmentDetail 'Весовой товар?' (shipmentDetail) = isWeightItem(itemShipmentDetail(shipmentDetail));
+GROUP itemShipmentDetailInfo 'Информация по товару' : baseGroup;
+
+controlExpiryShipmentDetail 'Контролировать сроки годности товара?' (shipmentDetail) =
+    controlExpiryItem (itemShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
+
+isManufacturedShipmentDetail 'Товар производится?' (shipmentDetail) = isManufacturedItem(itemShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
+isWeightShipmentDetail 'Весовой товар?' (shipmentDetail) = isWeightItem(itemShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
+
 nameinActionItemDepartmentShipmentDetail 'Товар акции?' (shipmentDetail) = name(inActionItemDepartmentVal(itemShipmentDetail(shipmentDetail),
-    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateWaybillShipmentDetail(shipmentDetail)));
-hintShipmentDetail 'Подсказка по товару' (shipmentDetail) = hintItem(itemShipmentDetail(shipmentDetail));
-nameCountryShipmentDetail 'Страна производства/происхождения' (shipmentDetail) = name(countryItem(itemShipmentDetail(shipmentDetail)));
+    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateWaybillShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
+
+hintShipmentDetail 'Подсказка по товару' (shipmentDetail) = hintItem(itemShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
+
+nameCountryShipmentDetail 'Страна производства/происхождения' (shipmentDetail) =
+    name(countryItem(itemShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo MINCHARWIDTH 15 PREFCHARWIDTH 15;
+
 namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоценку' (shipmentDetail) = name(banRevaluationItemDepartmentVal(itemShipmentDetail(shipmentDetail),
-    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateWaybillShipmentDetail(shipmentDetail)));
+    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateWaybillShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
 
 //количество-цены по строкам
+GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
+
 quantityShipmentDetail 'Количество' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-totalQuantityShipment 'Общее количество' (shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
+totalQuantityShipment 'Общее количество' (shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN waybillSum;
 quantityItemShipment 'Количество по товару в поставке' (item, shipment) = GROUP SUM quantityShipmentDetail (shipmentDetail) BY itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
 isShipedItemShipment 'Товар есть в поставке' (item, shipment) = quantityItemShipment(item, shipment) > 0;
 
@@ -3351,14 +3388,20 @@ retailRangeShipmentDetail(shipmentDetail) <- overrideRateRangeItem(itemShipmentD
 wareShipmentDetail 'Посуда (ИД)' (shipmentDetail) = DATA ware(shipmentDetail) IN baseGroup;
 nameWareShipmentDetail 'Посуда' (shipmentDetail) = name(wareShipmentDetail(shipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
 wareShipmentDetail(shipmentDetail) <- wareItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
-priceWareShipmentDetail 'Цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail);
+
+priceWareShipmentDetail 'Цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
+
 priceWareShipmentDetail (shipmentDetail) <- priceWareAtDate (wareShipmentDetail (shipmentDetail), dateWaybillShipmentDetail(shipmentDetail))
                                             ON CHANGE itemShipmentDetail(shipmentDetail);
+
 overPriceWareShipmentDetail (shipmentDetail) = UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail,
                                                priceWareShipmentDetail (shipmentDetail);
 
 wareRangeShipmentDetail 'Шкала НДС по посуде' (shipmentDetail) = DATA range (shipmentDetail);
-dataWareRangeShipmentDetail 'НДС по посуде' (shipmentDetail) = dataActingRateRange(wareRangeShipmentDetail(shipmentDetail));
+
+dataWareRangeShipmentDetail 'НДС по посуде' (shipmentDetail) =
+    dataActingRateRange(wareRangeShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo MINCHARWIDTH 4 PREFCHARWIDTH 4;
+
 wareRangeShipmentDetail (shipmentDetail) <- rangeWare (wareShipmentDetail (shipmentDetail))
     ON CHANGE itemShipmentDetail(shipmentDetail);
 
@@ -3385,10 +3428,10 @@ totalCleanSumSupplierShipment 'Общая сумма с НДС (без посу�
     GROUP SUM sumSupplierShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 
 totalSumIncVATShipment 'Общая сумма НДС' (shipment) =
-    totalSumSupplierVATShipment (shipment) + totalSumVatWareShipment (shipment);
+    totalSumSupplierVATShipment (shipment) + totalSumVatWareShipment (shipment) IN waybillSum;
 
 totalSumSupplierShipment 'Общая сумма с НДС' (shipment) =
-    totalCleanSumSupplierShipment (shipment) + totalSumWareShipment (shipment);
+    totalCleanSumSupplierShipment (shipment) + totalSumWareShipment (shipment) IN waybillSum;
 
 retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 
@@ -3397,7 +3440,7 @@ retailMarkupShipmentDetail(shipmentDetail) <-
     departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateWaybillShipmentDetail(shipmentDetail))
     ON CHANGE itemShipmentDetail(shipmentDetail);
 
-isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN baseGroup;
+isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN pricingShipmentDetailInfo;
 isFixPriceShipmentDetail(shipmentDetail) <- isFixPriceItem (itemShipmentDetail (shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 notRoundImporterPriceShipmentDetail 'Цена изготовителя/импортера (неокругленная)' (shipmentDetail) = UNION OVERRIDE
@@ -3405,7 +3448,8 @@ notRoundImporterPriceShipmentDetail 'Цена изготовителя/импо�
      [X*(100+Y)/100](priceShipmentDetail(shipmentDetail), overSupplierMarkupShipmentDetail(shipmentDetail))
      IF isFixPriceShipmentDetail(shipmentDetail);
 
-importerPriceShipmentDetail 'Цена изготовителя/импортера' (shipmentDetail) = round0(notRoundImporterPriceShipmentDetail(shipmentDetail));
+importerPriceShipmentDetail 'Цена изготовителя/импортера' (shipmentDetail) =
+    round0(notRoundImporterPriceShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo;
 
 oldRetailPriceShipmentDetail 'Старая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 oldRetailPriceShipmentDetail (shipmentDetail) <- retailPriceItemDepartmentVal (itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
@@ -3440,7 +3484,10 @@ CONSTRAINT priceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (ite
 CONSTRAINT priceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MESSAGE 'Цена поставки меньше цены заказа';
 
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
-sumQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM sumQuantityItemOrderSupplier (orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
+sumQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM
+    sumQuantityItemOrderSupplier (orderSupplier, item)
+    IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
+
 isOrderedItemShipment 'Товар есть в заказах поставки' (item, shipment) =  sumQuantityOrderedItemShipment(item, shipment) > 0;
 
 isNotShipedOrderedItemShipment 'Товар есть в заказе и отсутствуетв поставке' (item, shipment) =
@@ -3452,7 +3499,8 @@ quantityOrderedShipmentDetailsShipment 'Количество позиций, д�
 percentOrderedShipmentDetailsShipment 'Процент позиций поставки, для которых есть заказ' (shipment) =
     [X*100/Y](
     quantityOrderedShipmentDetailsShipment(shipment),
-    UNION OVERRIDE 1 IF shipment IS shipment, quantityShipmentDetailsShipment(shipment));
+    UNION OVERRIDE 1 IF shipment IS shipment, quantityShipmentDetailsShipment(shipment)) IN ordersInfo;
+
 surePercentSupplierShipment 'Обязательный % заказанных товаров в прих. накладной' (shipment) = DATA INTEGER (shipment);
 surePercentSupplierShipment (shipment) <- surePercentSupplier(supplierShipment (shipment)) ON CHANGE supplierShipment(shipment);
 controlSupplierDepartmentStoreShipment 'Контролировать ассортимент поставщика' (shipment) = DATA yesNo(shipment);
@@ -3463,23 +3511,23 @@ CONSTRAINT controlSupplierDepartmentStoreShipment (shipment) AND percentOrderedS
 
 isAvailableOrderShipment 'Заявка допустимая для заказа' (shipment, orderSupplier) = dateWaybillShipment (shipment) <= addDate2(dateOrderSupplier (orderSupplier), UNION OVERRIDE 0 IF shipment IS shipment, afterDaysSupplier (supplierShipment(shipment)));
 
-toFillShipmentDetailsShipment 'Заполнить поставку из заказов' =  ACTION (shipment){
+toFillShipmentDetailsShipment 'Заполнить поставку из заказов' =  ACTION (shipment) {
     FOR isNotShipedOrderedItemShipment (item, shipment) DO {
         ADDOBJ shipmentDetail;
         SET itemShipmentDetail(s) IF s == addedObject() <- item AS item;
         SET priceShipmentDetail(s) IF s == addedObject() <- priceOrderItemShipment(item, shipment);
     };
-} CONFIRM;
+} IN ordersInfo CONFIRM;
 
 FORM ordersShipment 'Заказы'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s) READONLY waybillShipment, dateWaybillShipment
 
     OBJECTS o=orderSupplier
-    PROPERTIES (o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
-          nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
 
     PROPERTIES (s, o) inShipmentOrder
+    PROPERTIES (o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
+          nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
 
     FILTERS NOT NULL isSupplierShipmentOrder (s, o),
             NOT NULL isDepartmentStoreShipmentOrder (s, o),
@@ -3508,20 +3556,22 @@ addShipmentDetailBarcode 'Добавить строку по штрих-коду
 
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
-    PROPERTIES (s) waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameDepartmentStoreShipment,
-                   nameSupplierShipment, carryingChargesShipment, ordersShipment, toFillShipmentDetailsShipment,
-                   totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment,
-                   percentOrderedShipmentDetailsShipment, showFormOrdersShipment
+    PROPERTIES (s) waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameSupplierShipment,
+                   nameDepartmentStoreShipment, ordersShipment, toFillShipmentDetailsShipment,
+                   percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
+                   carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment,
+                   noteShipment
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail,
                     dateFitToShipmentDetail, dataSuppliersRangeShipmentDetail READONLY, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail READONLY, nameWareShipmentDetail READONLY, dataRetailRangeShipmentDetail READONLY,
                     retailMarkupShipmentDetail READONLY, oldRetailPriceShipmentDetail READONLY, retailPriceShipmentDetail READONLY, ADDOBJ, delete
-    PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, controlExpiryShipmentDetail, isManufacturedShipmentDetail, isWeightShipmentDetail,
-                               nameinActionItemDepartmentShipmentDetail, hintShipmentDetail, nameCountryShipmentDetail,
-                               namebanRevaluationItemDepartmentShipmentDetail, importerPriceShipmentDetail,
-                               dataWareRangeShipmentDetail, priceWareShipmentDetail
-    PROPERTIES      addShipmentDetailBarcode(s) TODRAW d
+    PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, importerPriceShipmentDetail, dataWareRangeShipmentDetail,
+                                priceWareShipmentDetail, controlExpiryShipmentDetail, isManufacturedShipmentDetail,
+                               isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail, hintShipmentDetail,
+                               nameCountryShipmentDetail, namebanRevaluationItemDepartmentShipmentDetail
+
+    PROPERTIES addShipmentDetailBarcode(s) TODRAW d
 
     FILTERS NOT NULL inShipmentShipmentDetail(s, d)
 
@@ -3546,8 +3596,9 @@ DESIGN shipment FROM DEFAULT{
 
 FORM shipments 'Поставки'
     OBJECTS s=shipment
-    PROPERTIES (s) READONLY waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameDepartmentStoreShipment, nameSupplierShipment,
-                            carryingChargesShipment, ordersShipment, percentOrderedShipmentDetailsShipment
+    PROPERTIES (s) READONLY waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameDepartmentStoreShipment,
+                            nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment
+
     PROPERTIES (s)          ADDFORM, EDITFORM, delete
 
     OBJECTS d=shipmentDetail
@@ -3583,7 +3634,7 @@ noteWriteOff 'Примечание' = DATA STRING[100] (writeOff) IN baseGroup;
 writeOffWriteOffDetail 'Документ строки списания' = DATA writeOff (writeOffDetail) IN idGroup;
 inWriteOffWriteOffDetail(writeOff, writeOffDetail) = writeOffWriteOffDetail(writeOffDetail) == writeOff;
 numberWriteOffDetail 'Номер строки' (writeOffDetail) = PARTITION SUM 1 IF writeOffDetail IS writeOffDetail
-                                                                  BY writeOffWriteOffDetail(writeOffDetail) ORDER writeOffDetail IN recognizeGroup;
+    BY writeOffWriteOffDetail(writeOffDetail) ORDER writeOffDetail IN recognizeGroup;
 
 departmentStoreWriteOffDetail 'Отдел для строки списания (ИД)' (writeOffDetail) = departmentStoreWriteOff(writeOffWriteOffDetail(writeOffDetail)) IN idGroup;
 datePriceWriteOffDetail 'Цена на дату' (writeOffDetail) = datePriceWriteOff(writeOffWriteOffDetail(writeOffDetail));
