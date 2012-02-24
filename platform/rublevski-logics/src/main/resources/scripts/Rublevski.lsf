@@ -3566,25 +3566,36 @@ CLASS reasonOff 'Причина списания' : named;
 departmentStoreWriteOff 'Отдел для списания (ИД)' = DATA departmentStore(writeOff) IN idGroup;
 nameDepartmentStoreWriteOff 'Отдел для списания' (writeOff) = name(departmentStoreWriteOff(writeOff)) IN baseGroup;
 
-numberWriteOff 'Номер акта' = DATA STRING[10] (writeOff) IN baseGroup;
+numberWriteOff 'Номер документа' = DATA INTEGER (writeOff) IN baseGroup;
+maxNumberWriteOff = UNION OVERRIDE 0, [GROUP MAX numberWriteOff(writeOff)]();
+nextNumberWriteOff = maxNumberWriteOff() + 1;
+
+numberWriteOff(writeOff) <- OLD nextNumberWriteOff() ON ASSIGN writeOff IS writeOff;
+
+numberActWriteOff 'Номер акта' = DATA STRING[10] (writeOff) IN baseGroup;
 dateWriteOff 'Дата акта' = DATA DATE (writeOff) IN baseGroup;
 datePriceWriteOff 'Цена на дату' = DATA DATE (writeOff) IN baseGroup;
 
 reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
 nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN baseGroup;
+noteWriteOff 'Примечание' = DATA STRING[100] (writeOff) IN baseGroup;
 
 writeOffWriteOffDetail 'Документ строки списания' = DATA writeOff (writeOffDetail) IN idGroup;
 inWriteOffWriteOffDetail(writeOff, writeOffDetail) = writeOffWriteOffDetail(writeOffDetail) == writeOff;
+numberWriteOffDetail 'Номер строки' (writeOffDetail) = PARTITION SUM 1 IF writeOffDetail IS writeOffDetail
+                                                                  BY writeOffWriteOffDetail(writeOffDetail) ORDER writeOffDetail IN recognizeGroup;
 
 departmentStoreWriteOffDetail 'Отдел для строки списания (ИД)' (writeOffDetail) = departmentStoreWriteOff(writeOffWriteOffDetail(writeOffDetail)) IN idGroup;
 datePriceWriteOffDetail 'Цена на дату' (writeOffDetail) = datePriceWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
 itemWriteOffDetail 'Товар строки списания (ИД)' = DATA item (writeOffDetail) IN idGroup;
 nameItemWriteOffDetail 'Товар строки списания' (writeOffDetail) = nameAttributeItem(itemWriteOffDetail(writeOffDetail)) IN baseGroup;
+barcodeExSkuWriteOffDetail 'Штрих-код товара' (writeOffDetail) = barcodeEx(barcodeSku(itemWriteOffDetail(writeOffDetail))) IN baseGroup;
 
 quantityWriteOffDetail 'Кол-во для строки списания' = DATA INTEGER (writeOffDetail) IN baseGroup;
 quantityDetailsWriteOff 'Кол-во строк' (writeOff) = GROUP SUM 1 IF writeOffDetail BY writeOffWriteOffDetail(writeOffDetail);
-quantityWriteOff 'Общее кол-во' (writeOff) = GROUP SUM quantityWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN baseGroup;
+quantityWriteOff 'Общее кол-во' (writeOff) = GROUP SUM quantityWriteOffDetail(writeOffDetail)
+                                                    BY writeOffWriteOffDetail(writeOffDetail) IN baseGroup;
 
 priceWriteOffDetail 'Цена учётная' = DATA DOUBLE (writeOffDetail) IN baseGroup;
 priceWriteOffDetail(writeOffDetail) <- accountPriceItemDepartmentVal (itemWriteOffDetail(writeOffDetail),
@@ -3616,11 +3627,11 @@ FORM reasonOff 'Причина списания'
 
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
-    PROPERTIES (w) nameDepartmentStoreWriteOff, numberWriteOff, dateWriteOff, nameReasonOffWriteOff, quantityWriteOff,
-                   quantityDetailsWriteOff, datePriceWriteOff, sumWriteOff
+    PROPERTIES (w) numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff, nameReasonOffWriteOff, noteWriteOff,
+                   quantityWriteOff, quantityDetailsWriteOff, datePriceWriteOff, sumWriteOff
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) nameItemWriteOffDetail, quantityWriteOffDetail, priceWriteOffDetail, ADDOBJ, delete
+    PROPERTIES (d) numberWriteOffDetail, nameItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail, priceWriteOffDetail, ADDOBJ, delete
 
     PROPERTIES addWriteOffDetailBarcode(w) TODRAW d
     FILTERS NOT NULL inWriteOffWriteOffDetail(w, d)
@@ -3630,13 +3641,13 @@ FORM writeOff 'Списание'
 
 FORM writeOffs 'Списания'
     OBJECTS w=writeOff
-    PROPERTIES (w) READONLY nameDepartmentStoreWriteOff, numberWriteOff, dateWriteOff, nameReasonOffWriteOff,
+    PROPERTIES (w) READONLY numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff, nameReasonOffWriteOff, noteWriteOff,
                    quantityWriteOff, quantityDetailsWriteOff, datePriceWriteOff, sumWriteOff
     PROPERTIES (w) ADDFORM, EDITFORM, delete
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) nameItemWriteOffDetail, quantityWriteOffDetail, priceWriteOffDetail
-
+    PROPERTIES (d) numberWriteOffDetail, nameItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail, priceWriteOffDetail
+    FILTERS NOT NULL inWriteOffWriteOffDetail(w, d)
 ;
 
 //----------------------------------- Форма для общих параметров -------------------------------------------------//
