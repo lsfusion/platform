@@ -876,7 +876,7 @@ toShowGenWeekOrDayMonth (genTimeTable) = UNION OVERRIDE toShowGenWeek(genTimeTab
 
 FORM genTimeTable 'Генерация графика'
 OBJECTS g=genTimeTable FIXED PANEL, m=month, d=DOW
-PROPERTIES(g) nameGenTimeTableType, nameSupplierGenTimeTable, nameDepartmentStoreGenTimeTable, startDateGenTimeTable,
+PROPERTIES(g) nameGenTimeTableType, nameDepartmentStoreGenTimeTable, nameSupplierGenTimeTable, startDateGenTimeTable,
               endDateGenTimeTable, dayBeforeGenTimeTable,inAllMonthGenTable SHOWIF toShowGenDayMonth(g),
               dayAfterGenTimeTable SHOWIF toShowGenDay(g), periodGenTimeTable SHOWIF toShowGenWeek(g),
               stringNumberGenTimeTable SHOWIF toShowGenNumber(g), nameTransferDayGenTimeTable SHOWIF toShowGenNumber(g),
@@ -1969,8 +1969,26 @@ sumQuantityItemOrderSupplier 'Сумарное количество товара
 fullPriceItemOrderSupplier 'Цена с НДС' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item) IN baseGroup;
 fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) = sumQuantityItemOrderSupplier(orderSupplier, item) * fullPriceItemOrderSupplier(orderSupplier, item) IN baseGroup;
 fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier;
+retailPriceItemOrderSupplier 'Розничная цена' (orderSupplier, item) =
+    retailPriceItemDepartmentOver(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
+nameinActionItemOrderSupplier 'Товар акции' (orderSupplier, item) =
+    nameinActionItemDepartmentOver(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
+banMovementDepartmentStoreOrderSupplier 'Запрет на внутреннее перемещение товара' (orderSupplier, item) =
+    banMovementDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
 //minQuantityOrderSupplier 'Минимальный заказ' (orderSupplier, item) = minCountItemAssortment(departmentStoreOrderSupplier(orderSupplier), supplierOrderSupplier(orderSupplier), item);
 //CONSTRAINT packQuantityItemOrderSupplier(orderSupplier, item) < minQuantityOrderSupplier(orderSupplier, item) AND packQuantityItemOrderSupplier(orderSupplier, item) != 0  MESSAGE 'Заказ должен быть больше минимального';
+
+castFiveObjectsToString100 =
+     FORMULA STRING[100] 'CAST($1 AS TEXT) || CAST($2 AS TEXT) || CAST($3 AS TEXT) || CAST($4 AS TEXT) || CAST($5 AS TEXT)';
+ lastOrderSupplierVal 'Последний заказ(ИД)' (orderSupplier) =
+     PARTITION PREV orderSupplier BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier)
+     ORDER dateOrderSupplier(orderSupplier);
+ lastOrderSupplier 'Последний заказ' (orderSupplier, item) =
+     castFiveObjectsToString100(dataOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier),
+                     packQuantityItemOrderSupplier(orderSupplier, item), fullPriceItemOrderSupplier(orderSupplier, item),
+                     nameSupplierOrderSupplier(orderSupplier)
+                     )
+ ;
 
 quantityDaysNextOrder 'Дней до поставки' (orderSupplier) =
     UNION MAX 0 IF orderSupplier IS orderSupplier,
@@ -2130,6 +2148,8 @@ createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
 
 FORM orderSupplier 'Заказ поставщику'
 
+    TREE treeGroup g=itemGroup PARENT parentItemGroup
+
     OBJECTS o=orderSupplier FIXED PANEL
     PROPERTIES(o)          dataOrderSupplier, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
                            quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
@@ -2139,9 +2159,14 @@ FORM orderSupplier 'Заказ поставщику'
 
     OBJECTS i=item
     PROPERTIES(i)          nameAttributeItem, quantityPackItemOver, minQuantityOrderItem READONLY
+    PROPERTIES FORCE PANEL READONLY barcodeBarcodeSku(i), articleItem(i), nameCountryItem(i), retailPriceItemOrderSupplier(o, i),
+                                    nameinActionItemOrderSupplier(o, i), banMovementDepartmentStoreOrderSupplier(o, i),
+                                    lastOrderSupplier(o, i)
 
     PROPERTIES(o, i)       recommendCountOrderSupplier, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier,
                            fullPriceItemOrderSupplier, fullSumItemOrderSupplier
+
+    FILTERS NOT NULL inItemGroupSku(g, i)
 
     FILTERS NOT NULL isSupplierItemDepartmentOrderSupplier(o, i),
             NOT NULL isBanSupplierItemDepartmentOrderSupplier(o, i)
@@ -2151,6 +2176,13 @@ FORM orderSupplier 'Заказ поставщику'
 
     EDIT orderSupplier OBJECT o
 ;
+
+DESIGN orderSupplier FROM DEFAULT {
+    POSITION treeGroup.box TO THE LEFT i.box;
+    POSITION treeGroup.box TO THE BOTTOM o.box;
+    treeGroup.box {fillHorizontal = 2;}
+    i.box {fillHorizontal = 3;}
+}
 
 FORM orderSuppliers 'Заказы поставщику'
 
@@ -2189,18 +2221,19 @@ FORM timeTableDate 'График поставок'
     PROPERTIES(s, d, t) READONLY quantityOrderOrderSupplier, quantitySupplyOrderSupplier, quantityOrderPreliminaryOrder, quantitySupplyPreliminaryOrder
     PROPERTIES(p) ADDFORM, EDITFORM, delete  //убрать как только будет сделана генерация предварительных заказов
     FILTERS NOT NULL isSupplierDepartmentStore(d, s, p)
-    FILTERS NOT NULL isOrderDatePreliminaryOrder(p, t)
     FILTERGROUP filters
         FILTER 'С предварительным заказом на дату заказа' 'F10' NOT NULL quantityOrderPreliminaryOrder(s, d, t)
         FILTER 'С предварительным заказом на дату поставки' 'F10' NOT NULL quantitySupplyPreliminaryOrder(s, d, t)
         FILTER 'С заказом на дату заказа' 'F10' NOT NULL quantityOrderOrderSupplier(s, d, t)
-        FILTER 'С заказом на дату поставки' 'F10' NOT NULL quantitySupplyOrderSupplier(s, d, t);
+        FILTER 'С заказом на дату поставки' 'F10' NOT NULL quantitySupplyOrderSupplier(s, d, t)
+    FILTERGROUP filters2
+        FILTER 'Отображать заказы после даты' 'F10' NOT NULL isOrderDatePreliminaryOrder(p, t) DEFAULT;
 ;
 
 DESIGN timeTableDate FROM DEFAULT {
         POSITION s.box TO THE LEFT p.box;
-        s.box {fillHorizontal = 2;}
-        p.box {fillHorizontal = 3;}
+        s.box {fillHorizontal = 1;}
+        p.box {fillHorizontal = 4;}
 
         ADD PROPERTY(createGenTimeTable) IN d.panel;
 }
@@ -2334,7 +2367,7 @@ FORM tradingNetwork 'Торговая сеть'
 FORM qualifier 'Классификатор магазинов'
     OBJECTS n=tradingNetwork
     PROPERTIES(n) READONLY name
-    PROPERTIES(n) ADDFORM, EDITFORM
+    PROPERTIES(n) ADDFORM, EDITFORM, delete
 
     OBJECTS s=storeType
     PROPERTIES(s) READONLY name
