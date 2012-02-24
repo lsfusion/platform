@@ -8,6 +8,7 @@ import platform.server.daemons.WeightDaemonTask;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
 import java.io.FileNotFoundException;
@@ -31,6 +32,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         super.createModules();
         RomanLM = new RomanLogicsModule(LM, this);
         addLogicsModule(RomanLM);
+        ScriptingLogicsModule RomanRB = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/RomanRB.lsf"), LM, this);
+        addLogicsModule(RomanRB);
     }
 
     @Override
