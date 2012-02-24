@@ -19,7 +19,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "HIDETITLE HIGHLIGHTIF HINT HORIZONTAL IF IMAGE IMPORT " + 
                            "IN INCREMENT INIT INTERSECT IS LEFT LIST LOGGABLE MAX " + 
                            "MAXCHARWIDTH MESSAGE META MIN MINCHARWIDTH MODAL MODULE " + 
-                           "MSG NAVIGATOR NEW NEWSESSION NO NOAPPLY NOT NOTHING NULL " + 
+                           "NAVIGATOR NEW NEWSESSION NO NOAPPLY NOT NOTHING NULL " +
                            "OBJECT OBJECTS OBJVALUE OLD ON ORDER OVERRIDE PAGESIZE " + 
                            "PANEL PARENT PARTITION PERSISTENT POSITION PREFCHARWIDTH " + 
                            "PRINT PROPERTIES PROPERTY READONLY READONLYIF REGEXP REMOVE " + 

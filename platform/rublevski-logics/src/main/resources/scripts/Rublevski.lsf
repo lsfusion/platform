@@ -779,7 +779,7 @@ barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku) IN 
 
 equalsSkuBarcode 'Основной штрих-код' (sku, barcode) = barcodeSku(sku) == barcode;
 
-CONSTRAINT CHECKED skuBarcode(barcodeSku(item)) != item MSG 'Товар основного штрих-кода должен совпадать с товаром';
+CONSTRAINT CHECKED skuBarcode(barcodeSku(item)) != item MESSAGE 'Товар основного штрих-кода должен совпадать с товаром';
 
 barcodeBarcodeSku 'Основной штрих-код' = barcodeEx(barcodeSku(sku)) IN baseGroup;
 //barcodeToBarcode (barcode) = GROUP UNIQUE barcode BY barcodeEx(barcode);
@@ -860,7 +860,7 @@ dayLastOrderGenTimeTable 'Дата последнего заказа' = DATA DAT
 stringNumberGenTimeTable 'Числа месяца поставок (указывать через запятую)' = DATA STRING[100] (genTimeTable);
 transferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья (ИД)' = DATA DOW (genTimeTable);
 nameTransferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья' (genTimeTable) = name(transferDayGenTimeTable(genTimeTable));
-CONSTRAINT CHECKED numberDOW(transferDayGenTimeTable(genTimeTable))!=5 AND numberDOW(transferDayGenTimeTable(genTimeTable))!=1 MSG 'Выберите день с ПН по ПТ';
+CONSTRAINT CHECKED numberDOW(transferDayGenTimeTable(genTimeTable))!=5 AND numberDOW(transferDayGenTimeTable(genTimeTable))!=1 MESSAGE 'Выберите день с ПН по ПТ';
 
 //свойства "По дням недели и месяца"
 inMonthGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, month);
@@ -1145,8 +1145,8 @@ dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
 dateToRate 'Действует по' = DATA DATE (rate) IN baseGroup;
 
 quantityRateRange 'Количество историй' (range) = GROUP SUM 1 IF rate BY rangeRate(rate);
-CONSTRAINT CHECKED range IS range AND NOT rangeTypeRange(range)  MSG 'ошибка: Не выбран тип действия для шкалы';
-CONSTRAINT CHECKED rate IS rate AND NOT dataRate(rate)  MSG 'ошибка: Не указано значение ставки';
+CONSTRAINT CHECKED range IS range AND NOT rangeTypeRange(range)  MESSAGE 'ошибка: Не выбран тип действия для шкалы';
+CONSTRAINT CHECKED rate IS rate AND NOT dataRate(rate)  MESSAGE 'ошибка: Не указано значение ставки';
 
 
 inRangeRate(range, rate) = rangeRate(rate) == range;
@@ -1163,20 +1163,20 @@ nameUserRateRange 'Создан пользователем' (range) = nameUserCr
 
 quantityActingRateRangeDate(range, date) = GROUP SUM 1 IF actingRateDate(rate, date) BY rangeRate(rate), date;
 quantityActingRateRange 'Количество действующих историй' (range) = quantityActingRateRangeDate(range, currentDate());
-CONSTRAINT CHECKED quantityActingRateRange(range) > 1 MSG 'ошибка: Одновременно не может быть несколько действующих ставок';
+CONSTRAINT CHECKED quantityActingRateRange(range) > 1 MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок';
 
 suppliersTaxNDSItem(item) = tax.taxNDS IF item IS item IN idGroup;
 nameSuppliersTaxNDSItem(item) = name(suppliersTaxNDSItem(item));
 suppliersRangeItem(item) = DATA range (item) IN idGroup;
 dataSuppliersRateRangeItem 'НДС поставщика,%' (item) = dataActingRateRange(suppliersRangeItem(item)) IN retailGroup;
-CONSTRAINT CHECKED suppliersTaxNDSItem(item) != taxRange(suppliersRangeItem(item))  MSG 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT CHECKED suppliersTaxNDSItem(item) != taxRange(suppliersRangeItem(item))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 
 retailTaxNDSItem(item) = tax.taxNDS IF item IS item IN idGroup;
 nameRetailTaxNDSItem(item) = name(retailTaxNDSItem(item));
 retailRangeItem(item) = DATA range (item) IN idGroup;
 dataRetailRateRangeItem 'Розничный НДС' (item) = dataActingRateRange(retailRangeItem(item)) IN retailGroup;
-CONSTRAINT CHECKED retailTaxNDSItem(item) != taxRange(retailRangeItem(item))  MSG 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT CHECKED retailTaxNDSItem(item) != taxRange(retailRangeItem(item))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 overrideRateRangeItem 'НДС (ИД)' (item) = UNION OVERRIDE retailRangeItem(item), suppliersRangeItem(item) IN idGroup;
 dataOverrideRateRangeItem 'Значение НДС' (item) = dataActingRateRange(overrideRateRangeItem(item)) IN retailGroup;
 toShowDataRangeItem(item) = TRUE IF item IS item AND dataSuppliersRateRangeItem(item);
@@ -1527,9 +1527,9 @@ chairmanCommittee 'Председатель комиссии (ИД)' = DATA empl
 commonNameChairmanCommittee 'Председатель комиссии' (committee) = commonName(chairmanCommittee(committee)) IN baseGroup;
 departmentStoreCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (committee);
 nameDepartmentStoreCommittee 'Отдел комиссии' (committee) = commonName(departmentStoreCommittee(committee)) IN baseGroup;
-CONSTRAINT CHECKED chairmanCommittee(committee) IF committee IS revaluationCommittee AND NOT departmentStoreEmployee(departmentStoreCommittee(committee), chairmanCommittee(committee))  MSG 'Отдел комиссии должен соответствовать отделу председателя комиссии';
-CONSTRAINT CHECKED departmentStoreCommittee(revaluationCommitteeDepartmentStore(departmentStore)) != departmentStore MSG 'Отдел комиссии должен соответствовать текущему отделу';
-CONSTRAINT CHECKED committee IS committee AND NOT chairmanCommittee(committee) MSG 'Ошибка: не задан председатель комиссии';
+CONSTRAINT CHECKED chairmanCommittee(committee) IF committee IS revaluationCommittee AND NOT departmentStoreEmployee(departmentStoreCommittee(committee), chairmanCommittee(committee))  MESSAGE 'Отдел комиссии должен соответствовать отделу председателя комиссии';
+CONSTRAINT CHECKED departmentStoreCommittee(revaluationCommitteeDepartmentStore(departmentStore)) != departmentStore MESSAGE 'Отдел комиссии должен соответствовать текущему отделу';
+CONSTRAINT CHECKED committee IS committee AND NOT chairmanCommittee(committee) MESSAGE 'Ошибка: не задан председатель комиссии';
 
 inCommitteeEmployee 'Является членом комиссии' (committee, employee) = DATA BOOLEAN (committee, employee);
 
@@ -1651,7 +1651,7 @@ defaultAccountLegalEntity(legalEntity) = GROUP MAX account AS account BY legalEn
 overrideAccountLegalEntity 'Основной р/сч.' (legalEntity) = UNION OVERRIDE defaultAccountLegalEntity(legalEntity), userAccountLegalEntity(legalEntity);
 dataOverrideAccountLegalEntity 'Основной р/сч.' (legalEntity) = dataAccount(overrideAccountLegalEntity(legalEntity)) IN lawGroup;
 
-CONSTRAINT CHECKED legalEntity != legalEntityAccount(userAccountLegalEntity(legalEntity)) MSG 'ошибка: Р/сч. по умолчанию должен соответствовать р/сч. Ю.Л.';
+CONSTRAINT CHECKED legalEntity != legalEntityAccount(userAccountLegalEntity(legalEntity)) MESSAGE 'ошибка: Р/сч. по умолчанию должен соответствовать р/сч. Ю.Л.';
 equalsLegalEntityAccount 'Основной р/сч.' (legalEntity, account) = userAccountLegalEntity(legalEntity) == account;
 
 legalEntityLicense 'ЮЛ (ИД)' = DATA legalEntity (license) IN idGroup;
@@ -1667,9 +1667,9 @@ dataActingLicenseLegalEntity 'Действующая лицензия' (legalEnt
 //overrideLicenseLegalEntity 'Действующая' (legalEntity) = UNION OVERRIDE defaultLicenseLegalEntity(legalEntity) IF dateFromLicense(defaultLicenseLegalEntity(legalEntity)) < currentDate() AND dateToLicense(defaultLicenseLegalEntity(legalEntity)) > currentDate(),
 //                                                                        userLicenseLegalEntity(legalEntity) IF dateFromLicense(userLicenseLegalEntity(legalEntity)) < currentDate() AND dateToLicense(userLicenseLegalEntity(legalEntity)) > currentDate();
                         // работает как то не так, надо проверить //
-//CONSTRAINT CHECKED legalEntity != legalEntityLicense(userLicenseLegalEntity(legalEntity)) MSG 'ошибка: Лицензия по умолчанию должен соответствовать лицензии Ю.Л.';
-//CONSTRAINT  dateFromLicense(overrideLicenseLegalEntity(legalEntity)) > currentDate() MSG 'ошибка: действие лицензии еще не началось';
-//CONSTRAINT  dateToLicense(overrideLicenseLegalEntity(legalEntity)) < currentDate() MSG 'ошибка: действие выбранной лицензии уже окончилось';
+//CONSTRAINT CHECKED legalEntity != legalEntityLicense(userLicenseLegalEntity(legalEntity)) MESSAGE 'ошибка: Лицензия по умолчанию должен соответствовать лицензии Ю.Л.';
+//CONSTRAINT  dateFromLicense(overrideLicenseLegalEntity(legalEntity)) > currentDate() MESSAGE 'ошибка: действие лицензии еще не началось';
+//CONSTRAINT  dateToLicense(overrideLicenseLegalEntity(legalEntity)) < currentDate() MESSAGE 'ошибка: действие выбранной лицензии уже окончилось';
 //equalsLegalEntityLicense 'Действующая' (legalEntity, license) = userLicenseLegalEntity(legalEntity) == license IN lawGroup;
 
 // ----------------------------------- Юридическое лицо-дата ------------------------------------------ //
@@ -1720,7 +1720,7 @@ requestContract 'Форма оплаты: Платежное требовани�
 noteContract 'Примечание' = DATA STRING[100] (contract) IN contractGroup;
 
 @metaCodeNameObjectDateProperty(formContract, contract, 'Порядок оплаты по договору', contractForm, contractGroup);
-CONSTRAINT contract IS contract AND NOT formContract(contract)  MSG 'ошибка: Не выбран порядок оплаты по договору';
+CONSTRAINT contract IS contract AND NOT formContract(contract)  MESSAGE 'ошибка: Не выбран порядок оплаты по договору';
 @metaCodeObjectDateProperty(delayContract, contract, 'Отсрочка платежа(кален. дней),при "-" предоплата', DOUBLE, baseGroup);
 
 
@@ -1770,7 +1770,7 @@ defaultContractSupplier(supplier) = GROUP MAX contract AS contract BY supplierCo
 
 overrideContractSupplier 'Основной договор' (supplier) = UNION OVERRIDE defaultContractSupplier(supplier), userContractSupplier(supplier);
 dataOverrideContractSupplier 'Основной договор' (supplier) = dataContract(overrideContractSupplier(supplier)) IN lawGroup;
-CONSTRAINT CHECKED supplier != supplierContract(userContractSupplier(supplier)) MSG 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
+CONSTRAINT CHECKED supplier != supplierContract(userContractSupplier(supplier)) MESSAGE 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
 equalsSupplierContract 'Основной договор' (supplier, contract) = userContractSupplier(supplier) == contract;
 
 inSupplierContract(supplier, contract) = supplierContract(contract) == supplier;
@@ -1790,8 +1790,8 @@ actingContractCompanySupplier(company, supplier) = GROUP MAX actingContract(cont
 
 overrideContractCompanySupplier 'Основной договор' (company, supplier) = UNION OVERRIDE actingContractCompanySupplier(company, supplier), userContractCompanySupplier(company, supplier);
 dataOverrideContractCompanySupplier 'Основной договор' (company, supplier) = dataContract(overrideContractCompanySupplier(company, supplier)) IN lawGroup;
-CONSTRAINT CHECKED supplier != supplierContract(userContractCompanySupplier(company, supplier)) MSG 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
-CONSTRAINT CHECKED company != companyContract(userContractCompanySupplier(company, supplier)) MSG 'ошибка: Договор по умолчанию для компании должен соответствовать договорам компании';
+CONSTRAINT CHECKED supplier != supplierContract(userContractCompanySupplier(company, supplier)) MESSAGE 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
+CONSTRAINT CHECKED company != companyContract(userContractCompanySupplier(company, supplier)) MESSAGE 'ошибка: Договор по умолчанию для компании должен соответствовать договорам компании';
 equalsCompanySupplierContract 'Основной договор' (company, supplier, contract) = userContractCompanySupplier(company, supplier) == contract;
 
 
@@ -1970,7 +1970,7 @@ fullPriceItemOrderSupplier 'Цена с НДС' (orderSupplier, item) = DATA DOU
 fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) = sumQuantityItemOrderSupplier(orderSupplier, item) * fullPriceItemOrderSupplier(orderSupplier, item) IN baseGroup;
 fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier;
 //minQuantityOrderSupplier 'Минимальный заказ' (orderSupplier, item) = minCountItemAssortment(departmentStoreOrderSupplier(orderSupplier), supplierOrderSupplier(orderSupplier), item);
-//CONSTRAINT packQuantityItemOrderSupplier(orderSupplier, item) < minQuantityOrderSupplier(orderSupplier, item) AND packQuantityItemOrderSupplier(orderSupplier, item) != 0  MSG 'Заказ должен быть больше минимального';
+//CONSTRAINT packQuantityItemOrderSupplier(orderSupplier, item) < minQuantityOrderSupplier(orderSupplier, item) AND packQuantityItemOrderSupplier(orderSupplier, item) != 0  MESSAGE 'Заказ должен быть больше минимального';
 
 quantityDaysNextOrder 'Дней до поставки' (orderSupplier) =
     UNION MAX 0 IF orderSupplier IS orderSupplier,
@@ -1996,7 +1996,7 @@ nextDateOrder 'Дата следующей поставки' (preliminaryOrder) 
 nextDateOrderSupplier 'Дата следующей поставки' (orderSupplier) = nextDateOrder(preliminaryOrderOrderSupplier(orderSupplier));
 quantityDaysAfterNextOrder 'Дней до следующей поставки' (orderSupplier) =
     daysInclBetweenDates(curDateOrderSupplier(orderSupplier), nextDateOrderSupplier(orderSupplier));
-CONSTRAINT nextDateOrderSupplier(orderSupplier) < dateOrderSupplier(orderSupplier) MSG 'Дата поставки не должна превышать дату поставки следующей поставки';
+CONSTRAINT nextDateOrderSupplier(orderSupplier) < dateOrderSupplier(orderSupplier) MESSAGE 'Дата поставки не должна превышать дату поставки следующей поставки';
 quantityRealizationItemNextOrder 'Предполагаемое количество реализации товара до следующей поставки' (orderSupplier, item) =
     quantityDaysAfterNextOrder(orderSupplier)*quantityRealizationDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
 balance2DepartmentStoreItem 'Величина остатков товара и минимального резерва' (orderSupplier, item) =
@@ -2600,7 +2600,7 @@ departmentStoreCash(cash) = departmentStoreGroupMachinery(groupCashCash(cash)) I
 nameDepartmentStoreCash 'Наименование отдела' (cash) = name(departmentStoreCash(cash)) IN baseGroup;
 nameStoreDepartmentStoreCash 'Наименование магазина' (cash) = name(storeDepartmentStore(departmentStoreCash(cash)))  IN baseGroup;
 
-CONSTRAINT  groupUserEmployee(employee) AND NOT nameActionEmployee(employee) MSG 'Для сотрудника не выбран доступ к подразделениям';
+CONSTRAINT  groupUserEmployee(employee) AND NOT nameActionEmployee(employee) MESSAGE 'Для сотрудника не выбран доступ к подразделениям';
 // todo: надо сделать проверку для сотрудника на доступ к подразделению//
 
 
@@ -2767,7 +2767,7 @@ CLASS recipe 'Рецепт' : named;
 CLASS recipeDetail 'Сырье рецепта';
 
 dishRecipe  'Блюдо (ИД)' = DATA item (recipe) IN idGroup;
-CONSTRAINT CHECKED dishRecipe (recipe) AND NOT isManufacturedItem(dishRecipe(recipe)) MSG 'Блюдо должно производиться';
+CONSTRAINT CHECKED dishRecipe (recipe) AND NOT isManufacturedItem(dishRecipe(recipe)) MESSAGE 'Блюдо должно производиться';
 captionDishRecipe 'Блюдо' = captionItem (dishRecipe(recipe)) IN baseGroup;
 
 beginDateRecipe 'Используется с' = DATA DATE (recipe) IN baseGroup;
@@ -2901,8 +2901,8 @@ concatNameDepartmentByInventory 'Подразделения для инвент�
 quantityStoreInventory(store, inventory) = GROUP SUM 1 IF includeDepartmentStoreInventory(departmentStore, inventory)  BY storeDepartmentStore(departmentStore), inventory;
 quantityStoreByInventory(inventory) = GROUP SUM 1 IF quantityStoreInventory(store, inventory) BY inventory;
 
-CONSTRAINT quantityStoreByInventory(inventory) > 1  MSG 'Ошибка: для инвентаризации могут задаваться отделы только в рамках одного магазина';
-CONSTRAINT includeDepartmentStoreInventory(departmentStore, inventory) AND NOT nameTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory)  MSG 'Ошибка: обязательно задавать тип сличительной ведомости для выбранного отдела';
+CONSTRAINT quantityStoreByInventory(inventory) > 1  MESSAGE 'Ошибка: для инвентаризации могут задаваться отделы только в рамках одного магазина';
+CONSTRAINT includeDepartmentStoreInventory(departmentStore, inventory) AND NOT nameTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory)  MESSAGE 'Ошибка: обязательно задавать тип сличительной ведомости для выбранного отдела';
 
 inventoryListInventory(listInventory) = DATA inventory (listInventory) IN idGroup AUTOSET;
 nameInventoryListInventory 'Название инвентаризации' (listInventory) = nameInventory(inventoryListInventory(listInventory)) IN listInventoryGroup;
@@ -3436,8 +3436,8 @@ priceOrderItemShipment 'Цена товара в заказах поставки
 
 maxAllowPriceItemShipment 'Максимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 + [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
 minAllowPriceItemShipment 'Минимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 - [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
-CONSTRAINT priceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MSG 'Цена поставки больше цены заказа';
-CONSTRAINT priceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MSG 'Цена поставки меньше цены заказа';
+CONSTRAINT priceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MESSAGE 'Цена поставки больше цены заказа';
+CONSTRAINT priceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MESSAGE 'Цена поставки меньше цены заказа';
 
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
 sumQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM sumQuantityItemOrderSupplier (orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
@@ -3459,7 +3459,7 @@ controlSupplierDepartmentStoreShipment 'Контролировать ассор�
 controlSupplierDepartmentStoreShipment(shipment) <- controlSupplierDepartmentStore (supplierShipment(shipment), departmentStoreShipment(shipment)) ON CHANGE supplierShipment(shipment); //неполный случай, нужно доделывать
 
 CONSTRAINT controlSupplierDepartmentStoreShipment (shipment) AND percentOrderedShipmentDetailsShipment(shipment)<surePercentSupplierShipment (shipment)
-            MSG 'Процент заказанных позиций для поставки меньше допустимого для данного поставщика';
+            MESSAGE 'Процент заказанных позиций для поставки меньше допустимого для данного поставщика';
 
 isAvailableOrderShipment 'Заявка допустимая для заказа' (shipment, orderSupplier) = dateWaybillShipment (shipment) <= addDate2(dateOrderSupplier (orderSupplier), UNION OVERRIDE 0 IF shipment IS shipment, afterDaysSupplier (supplierShipment(shipment)));
 

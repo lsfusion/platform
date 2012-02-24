@@ -938,6 +938,19 @@ caseBranchBody[List<String> context, boolean dynamic] returns [LPWithParams when
 		'THEN' thenExpr=propertyExpression[context, dynamic] { $thenProperty = $thenExpr.property; }
 	;
 
+//recursionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
+//@init {
+//}
+//@after {
+//	if (inPropParseState()) {
+//	}
+//}
+//	:	'RECURSION'
+//		propertyExpression[context, dynamic]
+//		'STEP'
+//		propertyExpression[context, dynamic]
+//	;
+
 
 formulaPropertyDefinition returns [LP property]
 @after {
@@ -1350,7 +1363,7 @@ constraintStatement
 }
 	:	'CONSTRAINT' ('CHECKED' { checked = true; })?
 		expr=propertyExpression[new ArrayList<String>(), true]
-		'MSG' message=STRING_LITERAL
+		'MESSAGE' message=STRING_LITERAL
 		';'
 	;
 

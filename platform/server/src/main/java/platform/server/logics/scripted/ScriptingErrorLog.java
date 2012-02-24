@@ -181,10 +181,6 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "it's illegal to add navigator element to system window '" + sid + "'");
     }
 
-    public void emitDuplicateAliasError(LsfLogicsParser parser, String alias) throws SemanticErrorException {
-        emitSimpleError(parser, format("duplicate alias '%s'", alias));
-    }
-
     public void emitParamIndexError(LsfLogicsParser parser, int paramIndex, int paramCount) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String errText = "wrong parameter index $" + String.valueOf(paramIndex);

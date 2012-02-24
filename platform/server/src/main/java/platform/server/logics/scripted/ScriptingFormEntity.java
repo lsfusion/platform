@@ -255,7 +255,7 @@ public class ScriptingFormEntity extends FormEntity {
         }
 
         if (aliasToPropertyMap.containsKey(alias)) {
-            LM.getErrLog().emitDuplicateAliasError(LM.getParser(), alias);
+            LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "alias", alias);
         }
 
         aliasToPropertyMap.put(alias, property);
