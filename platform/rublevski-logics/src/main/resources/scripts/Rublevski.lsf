@@ -860,7 +860,7 @@ dayLastOrderGenTimeTable 'Дата последнего заказа' = DATA DAT
 stringNumberGenTimeTable 'Числа месяца поставок (указывать через запятую)' = DATA STRING[100] (genTimeTable);
 transferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья (ИД)' = DATA DOW (genTimeTable);
 nameTransferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья' (genTimeTable) = name(transferDayGenTimeTable(genTimeTable));
-CONSTRAINT CHECKED numberDOW(transferDayGenTimeTable(genTimeTable))!=5 AND numberDOW(transferDayGenTimeTable(genTimeTable))!=1 MESSAGE 'Выберите день с ПН по ПТ';
+CONSTRAINT CHECKED transferDayGenTimeTable(genTimeTable) != DOW.friday AND transferDayGenTimeTable(genTimeTable) != DOW.monday MESSAGE 'Выберите день с ПН по ПТ';
 
 //свойства "По дням недели и месяца"
 inMonthGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, month);
@@ -3069,7 +3069,7 @@ priceMinByCollationSheetItem(collationSheet, item) = GROUP MIN priceDetailPage(d
 
 notEqualsPriceByCollationSheetItem(collationSheet, item) =  priceMaxByCollationSheetItem(collationSheet, item) != priceCollationSheetItem(collationSheet, item);
 
-CONSTRAINT priceMaxByCollationSheetItem(collationSheet, item) != priceMinByCollationSheetItem(collationSheet, item) MSG 'Ошибка: для товара должна быть задана лишь одна цена';
+CONSTRAINT priceMaxByCollationSheetItem(collationSheet, item) != priceMinByCollationSheetItem(collationSheet, item) MESSAGE 'Ошибка: для товара должна быть задана лишь одна цена';
 
 // автоматическое создание сличительной ведомости (товары из описей) //
 uniqueRegisterCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
@@ -3575,6 +3575,14 @@ addShipmentDetailBarcode 'Добавить строку по штрих-коду
 
 } TOOLBAR EDITKEY 'F4';
 
+isDraftShipment 'Открыт' (shipment) = shipment IS shipment AND NOT shipment IS shipmentPosted;
+isPostedShipment 'Закрыт' (shipment) = shipment IS shipmentPosted;
+
+postShipment 'Закрыть' (shipment) = [ACTION (shipment) SET objectClass(shipment) <- CustomObjectClass.Rublevski_shipmentPosted] (shipment)
+                                    IF shipment IS shipment AND NOT shipment IS shipmentPosted TOOLBAR CONFIRM;
+unpostShipment 'Открыть' (shipment) = [ACTION (shipment) SET objectClass(shipment) <- CustomObjectClass.Rublevski_shipment] (shipment)
+                                      IF shipment IS shipmentPosted TOOLBAR CONFIRM;
+
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s) waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameSupplierShipment,
@@ -3617,10 +3625,11 @@ DESIGN shipment FROM DEFAULT{
 
 FORM shipments 'Поставки'
     OBJECTS s=shipment
-    PROPERTIES (s) READONLY waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameDepartmentStoreShipment,
+    PROPERTIES (s) READONLY objectClassName, waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameDepartmentStoreShipment,
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment
 
-    PROPERTIES (s)          ADDFORM, EDITFORM, delete
+    PROPERTIES (s)          ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
+                            postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d) READONLY numberShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail,
@@ -3628,6 +3637,16 @@ FORM shipments 'Поставки'
 
     FILTERS NOT NULL inShipmentShipmentDetail(s, d)
 ;
+
+DESIGN shipments FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+    PROPERTY (delete(s)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 CLASS writeOff 'Списание';
