@@ -1749,14 +1749,20 @@ marksSupplier 'Число знаков после зап.в сумме к опл
 emailOrderSupplierDepartmentStore 'e-mail для передачи заказа' = DATA STRING[100] (supplier, departmentStore)IN supplierGroup;
 contactSupplierDepartmentStore 'Контактная информация' = DATA STRING[500] (supplier, departmentStore)IN supplierGroup;
 controlSupplierDepartmentStore(supplier, departmentStore) = DATA yesNo (supplier, departmentStore)IN idGroup;
-nameControlSupplierDepartmentStore 'Контролировать ассортимент поставщика, ДА/НЕТ' (supplier, departmentStore) = name(UNION OVERRIDE yesNo.no IF supplier IS supplier AND departmentStore IS departmentStore,
-                                                                                                                                controlSupplierDepartmentStore(supplier, departmentStore)) IN supplierGroup;
+
+nameControlSupplierDepartmentStore 'Контролировать ассортимент поставщика, ДА/НЕТ' (supplier, departmentStore) = name(UNION OVERRIDE
+    yesNo.no IF supplier IS supplier AND departmentStore IS departmentStore,
+    controlSupplierDepartmentStore(supplier, departmentStore)) IN supplierGroup;
 
 @metaCodeNameDoubleObjectDateProperty(sureSupplierDepartmentStore, supplier, departmentStore, 'Обязателен заказ поставщику, ДА/НЕТ', yesNo, orderGroup);
 
-overrideSupplierDepartmentStoreDate(supplier, departmentStore, date) = UNION OVERRIDE (TRUE IF UNION OVERRIDE emailOrderSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE, contactSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE),
-                                                                                  controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes AND date IS DATE,
-                                                                                  sureSupplierDepartmentStoreVal(supplier, departmentStore, date) == yesNo.yes;
+overrideSupplierDepartmentStoreDate(supplier, departmentStore, date) = UNION OVERRIDE
+    (TRUE IF UNION OVERRIDE emailOrderSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE, contactSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE),
+    controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes AND date IS DATE,
+    sureSupplierDepartmentStoreVal(supplier, departmentStore, date) == yesNo.yes;
+
+isYesControlSupplierDepartmentStore(supplier, departmentStore) = controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes;
+isYesSureSupplierDepartmentStoreVal(supplier, departmentStore, date) = sureSupplierDepartmentStoreVal(supplier, departmentStore, date) == yesNo.yes;
 
 //dataContractSupplier 'Договор по умолчанию' (supplier) = dataContract(userContractSupplier(supplier));
 defaultContractSupplier(supplier) = GROUP MAX contract AS contract BY supplierContract(contract);
@@ -1790,79 +1796,109 @@ equalsCompanySupplierContract 'Основной договор' (company, suppli
 
 
 FORM supplier 'Поставщик'
-OBJECTS s=supplier FIXED PANEL
-TREE treeStore y=STRING[3], t=tradingNetwork, st=storeType, so=store
-OBJECTS a=account, c=contractProvider, l=license, dt=DATE FIXED PANEL, d=departmentStore
-PROPERTIES READONLY OBJVALUE(y), name(t), name(st), name(so)
-FILTERS NOT NULL stringEqualsAll(y)
-FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
-FILTERS NOT NULL inStoreTypeStore (st, so)
-FILTERS NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, so, d)
-PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormaddressLegalEntity, postAddressLegalEntity, showFormpostAddressLegalEntity,
-              managerLegalEntity, showFormmanagerLegalEntity, accountantLegalEntity, showFormaccountantLegalEntity,
-              phoneLegalEntity, showFormphoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
-              residentLegalEntity, manufacturerLegalEntity, surePercentSupplier, allowablePercentSupplier,
-              afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier //dataActingLicenseLegalEntity, dataOverrideContractSupplier, dataOverrideAccountLegalEntity
-PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
-PROPERTIES(c) dataContract, nameCompanyContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract,   // nameFormContract
-              delayContract, showFormdelayContract, requestContract, noteContract, ADDOBJ, delete
-PROPERTIES(l) dataLicense, dateFromLicense, dateToLicense, ADDOBJ, delete   //        tabaccoLicense
-PROPERTIES(d) nameStoreDepartmentStore, name
-PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
-PROPERTIES (s, d, dt) namesureSupplierDepartmentStoreOver HIGHLIGHTIF namesureSupplierDepartmentStoreDate(s, d, dt)
-PROPERTIES(s,d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore, showFormNamesureSupplierDepartmentStoreOver //namesureSupplierDepartmentStore, showFormNamesureSupplierDepartmentStore
-PROPERTIES(s,c) equalsSupplierContract
-PROPERTIES(s,a) equalsLegalEntityAccount
-//PROPERTIES(s,l) equalsLegalEntityLicense
-FILTERS NOT NULL inSupplierContract(s, c),
+    TREE treeStore y=STRING[3], t=tradingNetwork, st=storeType, so=store
+    PROPERTIES READONLY OBJVALUE(y), name(t), name(st), name(so)
+
+    OBJECTS s=supplier FIXED PANEL, dt=DATE FIXED PANEL
+    PROPERTIES(s) nameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormaddressLegalEntity,
+                  postAddressLegalEntity, showFormpostAddressLegalEntity, managerLegalEntity, showFormmanagerLegalEntity,
+                  accountantLegalEntity, showFormaccountantLegalEntity, phoneLegalEntity, showFormphoneLegalEntity,
+                  UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
+                  residentLegalEntity, manufacturerLegalEntity, surePercentSupplier, allowablePercentSupplier,
+                  afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier //dataActingLicenseLegalEntity, dataOverrideContractSupplier, dataOverrideAccountLegalEntity
+
+    OBJECTS a=account
+    PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+
+    OBJECTS c=contractProvider
+    PROPERTIES(c) dataContract, nameCompanyContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract,
+                  dateToContract, currencyContract, warnContract, banContract, delayContract, showFormdelayContract, requestContract, noteContract, ADDOBJ, delete
+    OBJECTS l=license
+    PROPERTIES(l) dataLicense, dateFromLicense, dateToLicense, ADDOBJ, delete   //        tabaccoLicense
+
+    OBJECTS d=departmentStore
+    PROPERTIES(d) nameStoreDepartmentStore, name
+
+    PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
+
+    PROPERTIES(s, d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore  //namesureSupplierDepartmentStore, showFormNamesureSupplierDepartmentStore
+    PROPERTIES       namesureSupplierDepartmentStoreOver(s, d, dt) HIGHLIGHTIF namesureSupplierDepartmentStoreDate(s, d, dt), showFormNamesureSupplierDepartmentStoreOver(s, d)
+
+    PROPERTIES(s,c) equalsSupplierContract
+    PROPERTIES(s,a) equalsLegalEntityAccount
+    //PROPERTIES(s,l) equalsLegalEntityLicense
+    FILTERS NOT NULL stringEqualsAll(y),
+        NOT NULL inStoreTypeTradingNetwork (st, t),
+        NOT NULL inStoreTypeStore (st, so),
+        NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, so, d),
+        NOT NULL inSupplierContract(s, c),
         NOT NULL inSupplierAccount(s, a),
         NOT NULL inSupplierLicense(s, l)
-FILTERGROUP filters9
-    FILTER 'Показывать только с заполненными полями' 'F10' NOT NULL overrideSupplierDepartmentStoreDate(s, d, dt) DEFAULT
-EDIT supplier OBJECT s;
+
+    FILTERGROUP filters9
+        FILTER 'Показывать только с заполненными полями' 'F10' NOT NULL overrideSupplierDepartmentStoreDate(s, d, dt)
+        FILTER 'Показывать только с заполненным полем: e-mail' 'F9' NOT NULL emailOrderSupplierDepartmentStore(s, d)
+        FILTER 'Показывать только с заполненным полем: контактная инф-ия' 'F8' NOT NULL contactSupplierDepartmentStore(s, d)
+        FILTER 'Показывать только с заполненным полем: контролировать пост-ка' 'F7' NOT NULL isYesControlSupplierDepartmentStore(s, d)
+        FILTER 'Показывать только с заполненным полем: обязателен заказ поставщику' 'F6' NOT NULL isYesSureSupplierDepartmentStoreVal(s, d, dt)
+
+    EDIT supplier OBJECT s
+;
 
 DESIGN supplier FROM DEFAULT {
-//PROPERTY (showFormaddressLegalEntity){panelLocation = SHORTCUT addressLegalEntity DEFAULT;}
     main{
        ADD prop.box BEFORE functions.box{
             tabbedPane = TRUE;
             ADD a.box;
             ADD c.box;
             ADD l.box;
+
             ADD d.box {
-               ADD dt.box BEFORE d.grid.box;
-                   ADD treeStore.box BEFORE d.grid.box;
-                   POSITION treeStore.box TO THE LEFT d.grid.box;
-                   d.grid.box {
-                   fillHorizontal = 3;
-                   };
+
+                ADD dt.box BEFORE d.grid.box;
+                ADD treeStore.box BEFORE d.grid.box;
+                POSITION treeStore.box TO THE LEFT d.grid.box;
+                d.grid.box {
+                fillHorizontal = 3;
+                };
             }
        }
     }
 }
 
 FORM suppliers 'Поставщики'
-OBJECTS s=supplier
-PROPERTIES(s) READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity
-PROPERTIES(s) ADDFORM, EDITFORM, delete;
+    OBJECTS s=supplier
+    PROPERTIES(s)  READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, managerLegalEntity, phoneLegalEntity,
+                   UNPLegalEntity, emailLegalEntity, siteLegalEntity
+    PROPERTIES(s)  ADDFORM, EDITFORM, delete
+;
 
 FORM company 'Компания'
-OBJECTS co=company FIXED PANEL
-OBJECTS a=account
-OBJECTS s=supplier
-OBJECTS c=contractProvider
-PROPERTIES(co) nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity, showFormaddressLegalEntity, postAddressLegalEntity, showFormpostAddressLegalEntity,
-               managerLegalEntity, showFormmanagerLegalEntity, accountantLegalEntity, showFormaccountantLegalEntity, phoneLegalEntity, showFormphoneLegalEntity, UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
-PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
-PROPERTIES(c) dataContract, nameSupplierContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract, dateToContract, currencyContract, noteContract, delayContract, showFormdelayContract, ADDOBJ, delete
-PROPERTIES(s) name, fullNameLegalEntity
-PROPERTIES(co, s)    dataOverrideContractCompanySupplier
-PROPERTIES(co, s, c) equalsCompanySupplierContract
-FILTERS NOT NULL inCompanyContract(co, c),
+    OBJECTS co=company FIXED PANEL
+    PROPERTIES(co) nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, name, fullNameLegalEntity, addressLegalEntity,
+                   showFormaddressLegalEntity, postAddressLegalEntity, showFormpostAddressLegalEntity, managerLegalEntity,
+                   showFormmanagerLegalEntity, accountantLegalEntity, showFormaccountantLegalEntity, phoneLegalEntity, showFormphoneLegalEntity,
+                   UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
+
+    OBJECTS a=account
+    PROPERTIES(a)  dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+
+    OBJECTS c=contractProvider
+    PROPERTIES(c)  dataContract, nameSupplierContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract,
+                   dateToContract, currencyContract, noteContract, delayContract, showFormdelayContract, ADDOBJ, delete
+
+    OBJECTS s=supplier
+    PROPERTIES(s) name, fullNameLegalEntity
+
+    PROPERTIES(co, s)    dataOverrideContractCompanySupplier
+    PROPERTIES(co, s, c) equalsCompanySupplierContract
+
+    FILTERS NOT NULL inCompanyContract(co, c),
         NOT NULL inCompanyAccount(co, a),
         NOT NULL inSupplierContract(s, c)
 
-EDIT company OBJECT co;
+    EDIT company OBJECT co
+;
 
 DESIGN company FROM DEFAULT {
     main{
@@ -1877,9 +1913,11 @@ DESIGN company FROM DEFAULT {
    }
 }
 FORM companies 'Компании'
-OBJECTS co=company
-PROPERTIES(co) READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, managerLegalEntity, phoneLegalEntity, UNPLegalEntity, emailLegalEntity, siteLegalEntity, dataOverrideAccountLegalEntity
-PROPERTIES(co) ADDFORM, EDITFORM, delete;
+    OBJECTS co=company
+    PROPERTIES(co) READONLY shortNameOwnershipLegalEntity, name, fullNameLegalEntity, managerLegalEntity, phoneLegalEntity,
+                   UNPLegalEntity, emailLegalEntity, siteLegalEntity, dataOverrideAccountLegalEntity
+    PROPERTIES(co) ADDFORM, EDITFORM, delete
+;
 
 //---------------------------- по поставщикам и товарам ----------------------------------------
 
@@ -2870,13 +2908,12 @@ nameAttributeItemDetailPage 'Товар' (detailPage) = nameAttributeItem(skuBar
 
 quantityCountedDetailPage 'Количество посчитано' = DATA DOUBLE (detailPage) IN baseGroup;
 //priceDetailPage 'Цена за ед.' = DATA INTEGER (detailPage) IN baseGroup;
-retailPriceDetailPage 'Учетная цена' (detailPage) =
-    retailPriceItemDepartmentVal(skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateToInventory(inventoryDetailPage(detailPage))) IN baseGroup;
+accountPriceDetailPage 'Учетная цена' (detailPage) =
+    accountPriceItemDepartmentVal(skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateToInventory(inventoryDetailPage(detailPage))) IN baseGroup;
 
 priceDetailPage 'Учетная цена' (detailPage) = DATA DOUBLE (detailPage) IN baseGroup;
-priceDetailPage(detailPage) <- retailPriceDetailPage(detailPage) ON CHANGE skuBarcodeDetailPage(detailPage);
+priceDetailPage(detailPage) <- accountPriceDetailPage(detailPage) ON CHANGE skuBarcodeDetailPage(detailPage);
 
-   // todo :  надо установить другую цену, действующую (управленческая)
 
 totalDetailPage 'Сумма' (detailPage) = priceDetailPage(detailPage) * quantityCountedDetailPage(detailPage) IN baseGroup;
 
@@ -2901,9 +2938,14 @@ collationSheetListInventory(listInventory) = uniqueCollationSheetDepartmentStore
 nameCollationSheetListInventory 'Название сл. ведомости' (listInventory) = nameCollationSheet(collationSheetListInventory(listInventory)) IN listInventoryGroup;
 inCollationSheetListInventory(collationSheet, listInventory) = collationSheetListInventory(listInventory) ==  collationSheet;
 
-quantityDetailCollationSheet 'Количество строк' (collationSheet) = GROUP SUM quantityDetailListInventory(listInventory) BY collationSheetListInventory(listInventory) IN baseGroup;
-quantityCountedCollationSheet 'Количество посчитано' (collationSheet) = GROUP SUM quantityCountedListInventory(listInventory) BY collationSheetListInventory(listInventory) IN baseGroup;
-totalDetailCollationSheet 'Сумма посчитанного' (collationSheet) = GROUP SUM totalDetailListInventory(listInventory) BY collationSheetListInventory(listInventory) IN baseGroup;
+quantityDetailCollationSheet 'Количество строк' (collationSheet) = GROUP SUM quantityDetailListInventory(listInventory)
+    BY collationSheetListInventory(listInventory) IN baseGroup;
+
+quantityCountedCollationSheet 'Количество посчитано' (collationSheet) = GROUP SUM quantityCountedListInventory(listInventory)
+    BY collationSheetListInventory(listInventory) IN baseGroup;
+
+totalDetailCollationSheet 'Сумма посчитанного' (collationSheet) = GROUP SUM totalDetailListInventory(listInventory)
+    BY collationSheetListInventory(listInventory) IN baseGroup;
 
 typeOfAdditionCollationSheet(collationSheet)= typeOfAdditionDepartmentStoreInventory(departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet));
 nameTypeOfAdditionCollationSheet 'Тип сличительной ведомости' (collationSheet) = name(typeOfAdditionCollationSheet(collationSheet)) IN baseGroup;
@@ -2915,14 +2957,15 @@ balanceCollationSheetItem 'Остаток' (collationSheet, item) = balanceDepar
 
 //    нужно ли делать остаток с использованием WRITEONCHANGE ?????????
 
-retailPriceCollationSheetItem 'Учетная цена' (collationSheet, item) =
-    retailPriceItemDepartmentVal(item, departmentStoreCollationSheet(collationSheet), dateToInventory(inventoryCollationSheet(collationSheet))) IN baseGroup;
+accountPriceCollationSheetItem 'Учетная цена' (collationSheet, item) =
+    accountPriceItemDepartmentVal(item, departmentStoreCollationSheet(collationSheet), dateToInventory(inventoryCollationSheet(collationSheet))) IN baseGroup;
 
 priceCollationSheetItem 'Учетная цена' (collationSheet, item) = DATA DOUBLE (collationSheet, item) IN baseGroup;
-priceCollationSheetItem(collationSheet, item) <- retailPriceCollationSheetItem(collationSheet, item) ON CHANGE item IS item AND collationSheet IS collationSheet;
+priceCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item) ON CHANGE item IS item;// AND collationSheet IS collationSheet;
 
 
-totalBalansCollationSheetItem 'Сумма по учетным данным ' (collationSheet, item) = priceCollationSheetItem(collationSheet, item) * balanceCollationSheetItem(collationSheet, item) IN baseGroup;
+totalBalansCollationSheetItem 'Сумма по учетным данным ' (collationSheet, item) =
+    priceCollationSheetItem(collationSheet, item) * balanceCollationSheetItem(collationSheet, item) IN baseGroup;
 
 quantityCountedCollationSheetItem 'Количество посчитано' (collationSheet, item) = GROUP SUM quantityCountedDetailPage(detailPage)
     BY collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage))), skuBarcodeDetailPage(detailPage);
@@ -2964,8 +3007,8 @@ shortageTotalItemByCollationSheet 'Излишек/недостача (сумма
     GROUP SUM shortageTotalCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
 
 convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
-    SET priceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory <- retailPriceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory;
-    SET priceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- retailPriceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory;
+    SET priceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory <- accountPriceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory;
+    SET priceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- accountPriceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory;
 
 };
 
