@@ -248,6 +248,20 @@ show##attribute##ItemGroup(itemGroup) <- TRUE ON ASSIGN itemGroup IS itemGroup;
 
 END
 
+// ----------------------------------- Свойства изменения объектов в Posted ------------------------------------------ //
+META metaCodePostedObject (object)
+
+isDraft##object 'Открыт' (object) = object IS object AND NOT object IS object##Posted;
+isPosted##object 'Закрыт' (object) = object IS object##Posted;
+
+post##object 'Закрыть' (object) = [ACTION (object) SET objectClass(object) <- CustomObjectClass.Rublevski_##object##Posted] (object)
+                                    IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
+
+unpost##object 'Открыть' (object) = [ACTION (object) SET objectClass(object) <- CustomObjectClass.Rublevski_##object] (object)
+                                      IF object IS object##Posted TOOLBAR CONFIRM;
+
+END
+
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 CLASS itemGroup 'Товарная группа' : named, externalObject;
 
@@ -3332,7 +3346,7 @@ FILTERS NOT NULL inCashReportDocument(r,d);
 
 //---------------------------- Приход товара от поставщика ----------------------------------------//
 CLASS shipment 'Поставка': historyObject;
-CLASS shipmentPosted 'Поставка (закрытая)': shipment;
+CLASS shipmentPosted 'Поставка (закрытая)': shipment, postedObject;
 CLASS batch 'Партия';
 CLASS shipmentDetail 'Строка документа поставки': batch;
 
@@ -3608,13 +3622,7 @@ addShipmentDetailBarcode 'Добавить строку по штрих-коду
 
 } TOOLBAR EDITKEY 'F4';
 
-isDraftShipment 'Открыт' (shipment) = shipment IS shipment AND NOT shipment IS shipmentPosted;
-isPostedShipment 'Закрыт' (shipment) = shipment IS shipmentPosted;
-
-postShipment 'Закрыть' (shipment) = [ACTION (shipment) SET objectClass(shipment) <- CustomObjectClass.Rublevski_shipmentPosted] (shipment)
-                                    IF shipment IS shipment AND NOT shipment IS shipmentPosted TOOLBAR CONFIRM;
-unpostShipment 'Открыть' (shipment) = [ACTION (shipment) SET objectClass(shipment) <- CustomObjectClass.Rublevski_shipment] (shipment)
-                                      IF shipment IS shipmentPosted TOOLBAR CONFIRM;
+@metaCodePostedObject (shipment);
 
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
@@ -3661,8 +3669,8 @@ FORM shipments 'Поставки'
     PROPERTIES (s) READONLY objectClassName, waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameDepartmentStoreShipment,
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment
 
-    PROPERTIES (s)          ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
-                            postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
+    PROPERTIES (s)          ADDFORM, EDITFORM SHOWIF isDraftshipment(s), delete FORCE PANEL SHOWIF isDraftshipment(s),
+                            postshipment SHOWIF isDraftshipment(s), unpostshipment SHOWIF isPostedshipment(s)
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d) READONLY numberShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail,
