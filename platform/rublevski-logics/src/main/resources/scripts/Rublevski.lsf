@@ -251,13 +251,13 @@ END
 // ----------------------------------- Свойства изменения объектов в Posted ------------------------------------------ //
 META metaCodePostedObject (object)
 
-isDraft##object 'Открыт' (object) = object IS object AND NOT object IS object##Posted;
-isPosted##object 'Закрыт' (object) = object IS object##Posted;
+isDraft###object 'Открыт' (object) = object IS object AND NOT object IS object##Posted;
+isPosted###object 'Закрыт' (object) = object IS object##Posted;
 
-post##object 'Закрыть' (object) = [ACTION (object) SET objectClass(object) <- CustomObjectClass.Rublevski_##object##Posted] (object)
+post###object 'Закрыть' (object) = [ACTION (object) SET objectClass(object) <- CustomObjectClass.Rublevski_##object##Posted] (object)
                                     IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
 
-unpost##object 'Открыть' (object) = [ACTION (object) SET objectClass(object) <- CustomObjectClass.Rublevski_##object] (object)
+unpost###object 'Открыть' (object) = [ACTION (object) SET objectClass(object) <- CustomObjectClass.Rublevski_##object] (object)
                                       IF object IS object##Posted TOOLBAR CONFIRM;
 
 END
@@ -3654,12 +3654,24 @@ FORM shipment 'Поставка'
 
 DESIGN shipment FROM DEFAULT{
     main{
-        ADD new.box BEFORE functions.box{
+        ADD specification.box BEFORE functions.box{
             tabbedPane = TRUE;
             ADD d.box{
                 title = 'Спецификация';
             };
-            ADD i.box;
+            ADD i.box{
+                ADD p.pricingShipmentDetailInfo;
+                ADD i.itemShipmentDetailInfo;
+                POSITION p.pricingShipmentDetailInfo TO THE LEFT i.itemShipmentDetailInfo;
+            };
+        }
+        ADD header.box BEFORE specification.box {
+            ADD ws.waybillSum;
+            ADD add.additionalInfo;
+            POSITION ws.waybillSum TO THE LEFT add.additionalInfo;
+            ADD w.waybillInfo BEFORE ws.waybillSum;
+            ADD o.ordersInfo BEFORE ws.waybillSum;
+            POSITION w.waybillInfo TO THE LEFT o.ordersInfo;
         }
     }
 }
@@ -3669,8 +3681,8 @@ FORM shipments 'Поставки'
     PROPERTIES (s) READONLY objectClassName, waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameDepartmentStoreShipment,
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment
 
-    PROPERTIES (s)          ADDFORM, EDITFORM SHOWIF isDraftshipment(s), delete FORCE PANEL SHOWIF isDraftshipment(s),
-                            postshipment SHOWIF isDraftshipment(s), unpostshipment SHOWIF isPostedshipment(s)
+    PROPERTIES (s)          ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
+                            postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d) READONLY numberShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail,
