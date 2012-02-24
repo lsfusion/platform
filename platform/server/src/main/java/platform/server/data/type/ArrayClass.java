@@ -3,7 +3,6 @@ package platform.server.data.type;
 import platform.server.classes.DataClass;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.DataObject;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -19,10 +18,6 @@ public class ArrayClass<T> extends DataClass<T[]> {
     private ArrayClass(Type<T> type) {
         super("Массив " + type);
         this.type = type;
-    }
-
-    public DataObject getEmptyValueExpr() {
-        throw new RuntimeException("not supported");
     }
 
     public Format getReportFormat() {

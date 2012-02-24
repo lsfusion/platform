@@ -20,6 +20,9 @@ public interface Type<T> extends ClassReader<T> {
         Type getType(K key);
     }
 
+    String getCast(String value, SQLSyntax syntax, boolean needLength);
+    String getBinaryCast(String value, SQLSyntax syntax, boolean needLength);
+    
     String getDB(SQLSyntax syntax);
     int getSQL(SQLSyntax syntax);
 
@@ -28,8 +31,6 @@ public interface Type<T> extends ClassReader<T> {
     String getString(Object value, SQLSyntax syntax);
 
     void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException;
-
-    DataObject getEmptyValueExpr();
 
     Format getReportFormat();
     int getMinimumWidth();

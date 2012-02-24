@@ -2,7 +2,6 @@ package platform.server.classes;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import platform.interop.Data;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
@@ -10,6 +9,7 @@ import platform.server.data.SQLSession;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.Query;
+import platform.server.data.type.AbstractType;
 import platform.server.data.type.Type;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.DataObjectInstance;
@@ -26,7 +26,7 @@ import java.sql.SQLException;
 import java.text.Format;
 import java.util.*;
 
-public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet, OrClassSet {
+public abstract class DataClass<T> extends AbstractType<T> implements StaticClass, AndClassSet, OrClassSet {
     private static Map<String, DataClass> sidToClass = new HashMap<String, DataClass>();
     protected String caption;
 
@@ -154,10 +154,6 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
         throw new IOException();
     }
 
-    public DataObject getEmptyValueExpr() {
-        return new DataObject(0, this);
-    }
-
     public Expr getStaticExpr(Object value) {
         Type type = getType();
         return type instanceof DateClass || type.isSafeString(value) // идея в том что, если не Safe String то нужно по любому использовать ValueExpr, очень маловероятно что он пересекется с другим значением
@@ -217,10 +213,6 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
 
     public DataClass getKeepClass() {
         return this;
-    }
-
-    public boolean isSafeType(Object value) {
-        return true;
     }
 
     public DataClass getBaseClass() {

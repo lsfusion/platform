@@ -12,7 +12,6 @@ import platform.server.data.expr.query.Stat;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.form.view.report.ReportDrawField;
-import platform.server.logics.DataObject;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -21,7 +20,7 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
 
-public class ObjectType implements Type<Integer> {
+public class ObjectType extends AbstractType<Integer> {
 
     public ObjectType() {
         super();
@@ -55,10 +54,6 @@ public class ObjectType implements Type<Integer> {
 
     public String getString(Object value, SQLSyntax syntax) {
         return value.toString();
-    }
-
-    public DataObject getEmptyValueExpr() {
-        throw new RuntimeException("temporary");
     }
 
     public int getPreferredWidth() { return 45; }
@@ -104,10 +99,6 @@ public class ObjectType implements Type<Integer> {
 
     public int getBinaryLength(boolean charBinary) {
         return 8;
-    }
-
-    public boolean isSafeType(Object value) {
-        return true;
     }
 
     public Object parseString(String s) throws ParseException {

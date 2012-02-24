@@ -130,4 +130,12 @@ public class StringClass extends DataClass<String> {
     public StringClass extend(int times) {
         return get(length * times);
     }
+
+    @Override
+    public String getCast(String value, SQLSyntax syntax, boolean needLength) {
+        String castString = super.getCast(value, syntax, needLength);
+        if(needLength)
+            return "lpad(" + castString + "," + length + ")";
+        return castString;
+    }
 }

@@ -128,7 +128,7 @@ public class ModifyQuery {
             for(PropertyField propertyField : changeCompile.propertyOrder) {
                 String propertyExpr = alias + "." + changeCompile.propertyNames.get(propertyField);
                 if(changeCompile.propertyReaders.get(propertyField) instanceof NullReader) { // если null, вставляем явный cast
-                    propertyExpr = "CAST(" + propertyExpr + " AS " + propertyField.type.getDB(syntax) + ")";
+                    propertyExpr = propertyField.type.getCast(propertyExpr,syntax, false);
                     casted = true;
                 }
                 exprs = (exprs.length()==0?"":exprs+",") + propertyExpr;

@@ -644,7 +644,7 @@ public class CompiledQuery<K,V> {
                     OrderedMap<String, String> orderGroupPropertySelect = new OrderedMap<String, String>();
                     for(Map.Entry<String, String> prop : orderPropertySelect.entrySet()) {
                         Type type = columnTypes.get(prop.getKey());
-                        orderGroupPropertySelect.put(prop.getKey(), "CAST(" + (type instanceof ArrayClass ? "AGGAR_SETADD" : "SUM") + "(" + prop.getValue() + ")" + " AS " + type.getDB(syntax) + ")");
+                        orderGroupPropertySelect.put(prop.getKey(), type.getCast((type instanceof ArrayClass ? "AGGAR_SETADD" : "SUM") + "(" + prop.getValue() + ")", syntax, false));
                     }
                     return "(" + getGroupSelect(fromSelect, orderKeySelect, orderGroupPropertySelect, whereSelect) + ")";
                 } else
@@ -695,11 +695,11 @@ public class CompiledQuery<K,V> {
 
                 Where recWhere;
                 if(cyclePossible && (!isLogical || useRecursionFunction)) {
-                    Expr rowSource = FormulaExpr.create1("CAST(ARRAY[prm1] AS " + rowType.getDB(syntax) + ")", rowType, concKeys); // баг сервера, с какого-то бодуна ARRAY[char(8)] дает text[]
+                    Expr rowSource = FormulaExpr.create1(rowType.getCast("ARRAY[prm1]", syntax, false), rowType, concKeys); // баг сервера, с какого-то бодуна ARRAY[char(8)] дает text[]
 
                     initialExprs.put(rowPath, rowSource); // заполняем начальный путь
                     Expr prevPath = recJoin.getExpr(rowPath);
-                    stepExprs.put(rowPath, FormulaExpr.create2("CAST((prm1 || prm2) AS " + rowType.getDB(syntax) + ")", rowType, prevPath, rowSource)); // добавляем тек. вершину
+                    stepExprs.put(rowPath, FormulaExpr.create2(rowType.getCast("(prm1 || prm2)", syntax, false), rowType, prevPath, rowSource)); // добавляем тек. вершину
 
                     Where noNodeCycle = concKeys.compare(prevPath, Compare.INARRAY).not();
                     if(isLogical)
@@ -735,8 +735,8 @@ public class CompiledQuery<K,V> {
                         String paramValue = params.get(value);
                         if(!value.getParseInterface().isSafeString()) {
                             Type type = ((ValueExpr)value).getType();
-                            innerParams.put(value, "CAST($1["+(iv++)+"] AS "+type.getDB(syntax)+")");
-                            outerParams += "," + "CAST(" + paramValue + " AS " + syntax.getBinaryType(type.getBinaryLength(syntax.isBinaryString())) +")";
+                            innerParams.put(value, type.getCast("$1["+(iv++)+"]",syntax, false));
+                            outerParams += "," + type.getBinaryCast(paramValue, syntax, false);
                         } else
                             innerParams.put(value, paramValue);
                     }
@@ -880,7 +880,7 @@ public class CompiledQuery<K,V> {
             String propertyString = property.getValue();
             Type castType;
             if(propertyString.equals(SQLSyntax.NULL) && (castType = castTypes.get(property.getKey()))!=null) // кривовато с проверкой на null, но собсно и надо чтобы обойти баг
-                propertyString = "CAST(" + propertyString + " AS " + castType.getDB(syntax) + ")";
+                propertyString = castType.getCast(propertyString, syntax, false);
             castPropertySelect.put(property.getKey(), propertyString);
         }
         return castPropertySelect;        
