@@ -3740,6 +3740,7 @@ NAVIGATOR {
             ADD groupUser;
             ADD tradingSquare;
             ADD departmentStore;
+            ADD departmentStores;
             ADD store;
             ADD tradingNetwork;
             ADD committee;
