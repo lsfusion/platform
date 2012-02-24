@@ -461,9 +461,9 @@ public abstract class ExpertMainWidget extends Composite {
     }
 
     private void hideRowsAccordingToRevision(VoteInfo vi) {
-        if (VOTE_REVISION_1.equals(vi.revision)) {
+        if (VOTE_REVISION_1.equals(vi.revision.trim())) {
             hideRevisionRowGroup("r2DataRow");
-        } else if (VOTE_REVISION_2.equals(vi.revision)) {
+        } else if (VOTE_REVISION_2.equals(vi.revision.trim())) {
             hideRevisionRowGroup("dataRow");
         } else {
             voteResultSpan.setInnerText("");

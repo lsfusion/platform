@@ -43,11 +43,11 @@ public class ExpertFrame implements EntryPoint {
                     @Override
                     public boolean onVoted(String voteResult, boolean confirm) {
                         if (VOTED.equals(voteResult)) {
-                            if ((VOTE_REVISION_1.equals(vi.revision) &&
+                            if ((VOTE_REVISION_1.equals(vi.revision.trim()) &&
                                  (bxInCluster.getSelectedIndex() == 0 ||
                                   bxInnovative.getSelectedIndex() == 0 ||
                                   bxForeign.getSelectedIndex() == 0)) ||
-                                (VOTE_REVISION_2.equals(vi.revision) &&
+                                (VOTE_REVISION_2.equals(vi.revision.trim()) &&
                                  ((bxCompetitive.getSelectedIndex() == 0 ||
                                    bxCommercePotential.getSelectedIndex() == 0 ||
                                    bxImplement.getSelectedIndex() == 0 ||
@@ -58,7 +58,7 @@ public class ExpertFrame implements EntryPoint {
                                 return false;
                             }
 
-                            if (VOTE_REVISION_2.equals(vi.revision)) {
+                            if (VOTE_REVISION_2.equals(vi.revision.trim())) {
                                 String questions = "";
                                 if (taCompetitiveComment.getText().length() > commentMaxLength || taCompetitiveComment.getText().length() < commentMinLength) {
                                     questions += "1";
