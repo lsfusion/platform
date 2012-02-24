@@ -76,8 +76,6 @@ public class AddObjectActionProperty extends CustomActionProperty {
     }
 
     public void execute(ExecutionContext context) throws SQLException {
-        FormInstance<?> form = context.getFormInstance();
-
         Integer quantityAdd = 1;
         // пока привязываемся к тому, что interfaces будет выдавать все в правильном порядке
         if (quantity) {
@@ -91,18 +89,16 @@ public class AddObjectActionProperty extends CustomActionProperty {
             quantityAdd = values.size();
         }
 
+        FormInstance<?> form = context.getFormInstance();
         for (int k = 0; k < quantityAdd; k++) {
             DataObject object;
             if (valueClass.hasChildren()) {
-                if (form != null)
+                if (context.isInFormSession())
                     object = form.addObject((ConcreteCustomClass) form.getCustomClass((Integer) context.getValueObject()));
                 else
                     object = context.getSession().addObject((ConcreteCustomClass)valueClass.findClassID((Integer) context.getValueObject()), context.getModifier());
             } else {
-                if (form != null)
-                    object = form.addObject((ConcreteCustomClass) valueClass);
-                else
-                    object = context.getSession().addObject((ConcreteCustomClass)valueClass, context.getModifier());
+                object = context.addObject((ConcreteCustomClass) valueClass);
             }
 
             if (barcode != null) {

@@ -4159,7 +4159,6 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         public void execute(ExecutionContext context) throws SQLException {
-            //To change body of implemented methods use File | Settings | File Templates.
             FormInstance<?> remoteForm = context.getFormInstance();
             context.addAction(((CommitSaleCheckRetailFormEntity) remoteForm.entity).getPrintOrderAction(remoteForm));
         }

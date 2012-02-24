@@ -1411,6 +1411,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         public void execute(ExecutionContext context) throws SQLException {
+            context.emitExceptionIfNotInFormSession();
+
             FormInstance<?> form = context.getFormInstance();
             Collection<ObjectInstance> objects;
             if (property != null)
@@ -1544,6 +1546,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         public void execute(ExecutionContext context) throws SQLException {
+            context.emitExceptionIfNotInFormSession();
+
             DataObject user = context.getSingleKeyValue();
             if (context.getFormInstance().BL.requiredPassword) {
                 context.addAction(new UserReloginClientAction(context.getFormInstance().BL.getUserName(user).trim()));

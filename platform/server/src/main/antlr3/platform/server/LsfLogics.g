@@ -1260,21 +1260,21 @@ messageActionPropertyDefinitionBody[List<String> context, boolean dynamic] retur
 		$property = self.addScriptedMessageProp(length, $pe.property);
 	}
 }
-	:	'MESSAGE' ('LENGTH' '=' len=uintLiteral { length = $len.val; } ']')? pe=propertyExpression[context, dynamic]
+	:	'MESSAGE' pe=propertyExpression[context, dynamic] ('LENGTH' len=uintLiteral { length = $len.val; } )?
 	;
 
 listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	boolean newSession = false;
-	boolean doApply = true;
+	boolean doApply = false;
 }
 @after {
 	if (inPropParseState()) {
 		$property = self.addScriptedListAProp(newSession, doApply, props);
 	}
 }
-	:	('NEWSESSION' { newSession = true; } ('NOAPPLY' {doApply = false; } )? )?
+	:	('NEWSESSION' { newSession = true; } ('AUTOAPPLY' {doApply = true; } )? )?
 		'{'
 			(	PDB=actionPropertyDefinitionBody[context, dynamic] ';' { props.add($PDB.property); }
 		    |   emptyStatement

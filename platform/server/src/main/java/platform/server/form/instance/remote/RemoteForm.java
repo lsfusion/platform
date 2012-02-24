@@ -918,7 +918,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     public RemoteFormInterface createForm(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) {
         try {
             FormInstance<T> formInstance = form.createForm(formEntity, mapObjects, false, false);
-            if(!formInstance.areObjectsFounded())
+            if(!formInstance.areObjectsFound())
                 return null;
             return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, getRemoteFormListener());
         } catch (Exception e) {

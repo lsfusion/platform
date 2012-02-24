@@ -163,10 +163,11 @@ public class EmailActionProperty extends CustomActionProperty {
                 }
                 
                 RemoteFormInterface remoteForm;
-                if(context.getRemoteForm() !=null)
+                if (context.isInFormSession()) {
                     remoteForm = context.getRemoteForm().createForm(forms.get(i), formObjects);
-                else
+                } else {
                     remoteForm = BL.createForm(context.getSession(), forms.get(i), formObjects);
+                }
                 if(remoteForm!=null) { // если объекты подошли
                     ReportGenerator report = new ReportGenerator(remoteForm, BL.getTimeZone());
                     JasperPrint print = report.createReport(false, types.get(i) == FormStorageType.INLINE, attachmentFiles, null);

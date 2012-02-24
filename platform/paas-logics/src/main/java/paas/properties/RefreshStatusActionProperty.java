@@ -2,10 +2,8 @@ package paas.properties;
 
 import paas.PaasBusinessLogics;
 import platform.server.classes.ValueClass;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 
@@ -23,9 +21,8 @@ public class RefreshStatusActionProperty extends CustomActionProperty {
     @Override
     public void execute(ExecutionContext context) throws SQLException {
         paas.refreshConfigurationStatuses(context.getSingleKeyValue());
-        FormInstance<?> form = context.getFormInstance();
-        if (form != null) {
-            form.refreshData();
+        if (context.isInFormSession()) {
+            context.getFormInstance().refreshData();
         }
     }
 

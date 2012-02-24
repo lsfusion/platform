@@ -36,6 +36,7 @@ public class ImportFromExcelActionProperty extends CustomActionProperty {
     }
 
     public void execute(ExecutionContext context) throws SQLException {
+        context.emitExceptionIfNotInFormSession();
 
         Sheet sh;
         try {

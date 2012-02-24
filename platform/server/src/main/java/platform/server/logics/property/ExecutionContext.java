@@ -16,7 +16,6 @@ import platform.server.session.Modifier;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +32,9 @@ public class ExecutionContext {
     private final Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects;
     private final boolean groupLast; // обозначает, что изменение последнее, чтобы форма начинала определять, что изменилось
 
+    private final boolean inFormSession;
+    private final FormInstance formInstance;
+
     public ExecutionContext(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier modifier, List<ClientAction> actions, RemoteForm form, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) {
         this.keys = keys;
         this.value = value;
@@ -42,6 +44,9 @@ public class ExecutionContext {
         this.form = form;
         this.mapObjects = mapObjects;
         this.groupLast = groupLast;
+
+        this.formInstance = form != null ? form.form : null;
+        this.inFormSession = form != null && formInstance.session == session;
     }
 
     public Map<ClassPropertyInterface, DataObject> getKeys() {
@@ -50,10 +55,6 @@ public class ExecutionContext {
 
     public DataObject getKeyValue(ClassPropertyInterface key) {
         return keys.get(key);
-    }
-
-    public DataObject getKeyValue(Property property, int index) {
-        return getKeyValue(((List<ClassPropertyInterface>)property.interfaces).get(index));
     }
 
     public Object getKeyObject(ClassPropertyInterface key) {
@@ -81,17 +82,7 @@ public class ExecutionContext {
     }
 
     public DataSession getSession() {
-        if (form != null)
-            return getFormInstance().session;
-        else
-            return session;
-    }
-
-    public Modifier getModifier() {
-        if (form != null)
-            return getFormInstance();
-        else
-            return modifier;
+        return session;
     }
 
     public List<ClientAction> getActions() {
@@ -111,22 +102,15 @@ public class ExecutionContext {
     }
 
     public FormInstance<?> getFormInstance() {
-        if (form != null)
-            return form.form;
-        else
-            return null;
+        return formInstance;
     }
 
     public Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> getObjectInstances() {
         return mapObjects;
     }
 
-    public int getObjectInstanceCount() {
-        return mapObjects.size();
-    }
-
     public ObjectInstance getObjectInstance(ObjectEntity object) {
-        return getFormInstance().instanceFactory.getInstance(object);
+        return formInstance.instanceFactory.getInstance(object);
     }
 
     public PropertyObjectInterfaceInstance getObjectInstance(ClassPropertyInterface cls) {
@@ -134,40 +118,52 @@ public class ExecutionContext {
     }
 
     public PropertyObjectInterfaceInstance getSingleObjectInstance() {
-        return BaseUtils.singleValue(mapObjects);
+        return mapObjects != null ? BaseUtils.singleValue(mapObjects) : null;
     }
 
     public boolean isGroupLast() {
         return groupLast;
     }
 
+    public boolean isInFormSession() {
+        return inFormSession;
+    }
+
+    public Modifier getModifier() {
+        if (inFormSession) {
+            return formInstance;
+        } else {
+            return modifier;
+        }
+    }
+
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException {
-        if (form != null)
-            return getFormInstance().addObject(cls);
-        else
-            return getSession().addObject(cls, getModifier());
+        if (inFormSession) {
+            return formInstance.addObject(cls);
+        } else {
+            return getSession().addObject(cls, modifier);
+        }
     }
 
     public String applyChanges(BusinessLogics BL) throws SQLException {
-        if (form != null) {
-            form.applyChanges(null, getActions());
+        if (inFormSession) {
+            form.applyChanges(null, actions);
             return null;
         } else {
-            return getSession().apply(BL, getActions());
+            return getSession().apply(BL, actions);
         }
     }
 
     public void cancelChanges() throws SQLException {
-        if (form != null)
+        if (inFormSession) {
             form.cancelChanges();
-        else
-            getSession().restart(true);
+        } else {
+            session.restart(true);
+        }
     }
 
     public ExecutionContext override(DataSession newSession) {
-        return new ExecutionContext(keys, value, newSession, newSession.modifier,
-                                    new ArrayList<ClientAction>(), null,
-                                    new HashMap<ClassPropertyInterface, PropertyObjectInterfaceInstance>(), groupLast);
+        return new ExecutionContext(keys, value, newSession, newSession.modifier, new ArrayList<ClientAction>(), form, mapObjects, groupLast);
     }
 
     public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys) {
@@ -176,5 +172,11 @@ public class ExecutionContext {
 
     public ExecutionContext map(Map<ClassPropertyInterface, ClassPropertyInterface> map, ObjectValue value) {
         return new ExecutionContext(join(map, keys), value, session, modifier, actions, form, nullJoin(map, mapObjects), groupLast);
+    }
+
+    public void emitExceptionIfNotInFormSession() {
+        if (!inFormSession) {
+            throw new IllegalStateException("Property should only be used in form's session!");
+        }
     }
 }

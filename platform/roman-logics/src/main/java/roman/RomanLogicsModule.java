@@ -16,7 +16,6 @@ import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
@@ -8110,17 +8109,25 @@ public class RomanLogicsModule extends LogicsModule {
     public class AddNewArticleActionProperty extends CustomActionProperty {
 
         ObjectEntity objArticle;
+        private final ClassPropertyInterface sidInterface;
+        private final ClassPropertyInterface docInterface;
 
         public AddNewArticleActionProperty(ObjectEntity objArticle) {
             super(genSID(), StringClass.get(50), document);
 
             this.objArticle = objArticle;
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            sidInterface = i.next();
+            docInterface = i.next();
         }
 
         @Override
         public void execute(ExecutionContext context) throws SQLException {
-            DataObject sID = context.getKeyValue(this, 0);
-            DataObject document = context.getKeyValue(this, 1);
+            context.emitExceptionIfNotInFormSession();
+
+            DataObject sID = context.getKeyValue(sidInterface);
+            DataObject document = context.getKeyValue(docInterface);
 
             ObjectValue supplier = supplierDocument.readClasses(context, document);
             if (supplier.isNull()) {
@@ -8194,7 +8201,7 @@ public class RomanLogicsModule extends LogicsModule {
         @Override
         public void execute(ExecutionContext context) throws SQLException {
             DataObject cloneObject = context.getKeyValue(itemInterface);
-            DataObject newObject = context.getFormInstance().addObject(item);
+            DataObject newObject = context.addObject(item);
 
             for(LP lp : new LP[]{colorSupplierItem, sizeSupplierItem})
                 lp.execute(lp.read(context, cloneObject), context, newObject);
@@ -8219,7 +8226,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         @Override
         public void execute(ExecutionContext context) throws SQLException {
-            FormInstance<?> form = (FormInstance<?>) context.getFormInstance();
+            context.emitExceptionIfNotInFormSession();
 
             DataObject objShipment = context.getKeyValue(shipmentInterface);
             DataObject objSku = context.getKeyValue(skuInterface);
@@ -8262,8 +8269,7 @@ public class RomanLogicsModule extends LogicsModule {
                 }
             }
 
-            form.seekObject(objectInstance, objRouteResult);
+            context.getFormInstance().seekObject(objectInstance, objRouteResult);
         }
     }
-
 }

@@ -333,7 +333,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     private Map<ObjectEntity, ? extends ObjectValue> mapObjects = null;
 
-    public boolean areObjectsFounded() {
+    public boolean areObjectsFound() {
         assert !interactive;
         for(Entry<ObjectEntity, ? extends ObjectValue> mapObjectInstance : mapObjects.entrySet())
             if(!instanceFactory.getInstance(mapObjectInstance.getKey()).getObjectValue().equals(mapObjectInstance.getValue()))
@@ -938,7 +938,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
         return usedProperties;
     }
+
     public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, boolean newSession, boolean interactive) throws SQLException {
+        return createForm(form, mapObjects, session, newSession, interactive);
+    }
+
+    public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive) throws SQLException {
         return new FormInstance<T>(form, BL, newSession ? session.createSession() : session, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, interactive);
     }
 

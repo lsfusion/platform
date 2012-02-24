@@ -14,7 +14,6 @@ import platform.server.form.instance.*;
 import platform.server.form.instance.filter.NotNullFilterInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 import tmc.VEDLogicsModule;
@@ -24,7 +23,10 @@ import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class CashRegController {
 
@@ -456,12 +458,13 @@ public class CashRegController {
         }
 
         public void execute(ExecutionContext context) throws SQLException {
-            if (context.getValueObject() != null && context.getValueObject() instanceof Double) {
+            Object countValue = context.getValueObject();
+            if (countValue instanceof Double) {
                 int comPort = getCashRegComPort(context.getFormInstance());
                 if (comPort == 0) {
                     return;
                 }
-                context.addAction(new MoneyOperationAction(type, comPort, (Double) context.getValueObject()));
+                context.addAction(new MoneyOperationAction(type, comPort, (Double) countValue));
             }
         }
 

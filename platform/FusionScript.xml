@@ -26,6 +26,7 @@
       <keyword name="AS" />
       <keyword name="ASC" />
       <keyword name="ASSIGN" />
+      <keyword name="AUTOAPPLY" />
       <keyword name="AUTOSET" />
       <keyword name="BEFORE" />
       <keyword name="BOOLEAN" />
@@ -98,6 +99,7 @@
       <keyword name="IS" />
       <keyword name="ISTRING" />
       <keyword name="LEFT" />
+      <keyword name="LENGTH" />
       <keyword name="LIST" />
       <keyword name="LOGGABLE" />
       <keyword name="LONG" />
@@ -113,7 +115,6 @@
       <keyword name="NEW" />
       <keyword name="NEWSESSION" />
       <keyword name="NO" />
-      <keyword name="NOAPPLY" />
       <keyword name="NOT" />
       <keyword name="NOTHING" />
       <keyword name="NULL" />

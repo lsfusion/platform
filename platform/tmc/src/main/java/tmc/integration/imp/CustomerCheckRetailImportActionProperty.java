@@ -6,7 +6,6 @@ import platform.server.classes.ValueClass;
 import platform.server.form.entity.ListFormEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 import tmc.VEDBusinessLogics;
@@ -24,6 +23,7 @@ public class CustomerCheckRetailImportActionProperty extends CustomActionPropert
     }
 
     public void execute(ExecutionContext context) throws SQLException {
+        context.emitExceptionIfNotInFormSession();
 
         DBF impFile = null;
 

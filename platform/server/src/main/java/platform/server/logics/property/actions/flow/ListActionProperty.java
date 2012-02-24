@@ -45,7 +45,7 @@ public class ListActionProperty extends KeepContextActionProperty {
             innerContext.getSession().close();
 
             context.addActions(innerContext.getActions());
-            if (context.getRemoteForm() != null) {
+            if (context.getFormInstance() != null) {
                 context.getFormInstance().refreshData();
             }
         }

@@ -34,23 +34,20 @@ public class SimpleAddObjectActionProperty extends CustomActionProperty {
     }
 
     public void execute(ExecutionContext context) throws SQLException {
-        FormInstance<?> form = context.getFormInstance();
-
         DataObject object;
         if (valueClass.hasChildren()) {
             // нужен такой чит, поскольку в FlowAction может вызываться ADDOBJ с конкретным классом, у которого есть потомки, но при этом не будет передан context.getValueObject()
             boolean valueProvided = !getValueClass().getDefaultValue().equals(context.getValueObject());
-            if (form != null) {
-                object = form.addObject((ConcreteCustomClass) (valueProvided ? form.getCustomClass((Integer) context.getValueObject()) : valueClass));
+            if (context.isInFormSession()) {
+                FormInstance<?> formInstance = context.getFormInstance();
+                object = formInstance.addObject((ConcreteCustomClass) (valueProvided ? formInstance.getCustomClass((Integer) context.getValueObject()) : valueClass));
             } else {
-                object = context.getSession().addObject((ConcreteCustomClass) (valueProvided ? valueClass.findClassID((Integer) context.getValueObject()) : valueClass), context.getModifier());
+                object = context.getSession().addObject(
+                        (ConcreteCustomClass) (valueProvided ? valueClass.findClassID((Integer) context.getValueObject()) : valueClass),
+                        context.getModifier());
             }
         } else {
-            if (form != null) {
-                object = form.addObject((ConcreteCustomClass) valueClass);
-            } else {
-                object = context.getSession().addObject((ConcreteCustomClass) valueClass, context.getModifier());
-            }
+            object = context.addObject((ConcreteCustomClass) valueClass);
         }
 
         if (storeNewObjectProperty != null && object != null) {

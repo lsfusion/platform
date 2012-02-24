@@ -1,9 +1,10 @@
 package platform.server.logics.property.actions;
 
-import platform.base.BaseUtils;
 import platform.interop.action.FormClientAction;
 import platform.interop.action.MessageClientAction;
-import platform.server.classes.*;
+import platform.server.classes.DataClass;
+import platform.server.classes.StaticCustomClass;
+import platform.server.classes.ValueClass;
 import platform.server.form.entity.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
@@ -17,6 +18,8 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 import java.util.*;
+
+import static platform.base.BaseUtils.join;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
 public class FormActionProperty extends CustomActionProperty {
@@ -74,8 +77,8 @@ public class FormActionProperty extends CustomActionProperty {
     public void execute(ExecutionContext context) throws SQLException {
         final RemoteForm thisRemoteForm = context.getRemoteForm();
         final FormInstance thisFormInstance = context.getFormInstance();
-        final FormInstance newFormInstance = thisFormInstance.createForm(form, BaseUtils.join(mapObjects, context.getKeys()), newSession, !form.isPrintForm);
-        if (form.isPrintForm && !newFormInstance.areObjectsFounded()) {
+        final FormInstance newFormInstance = thisFormInstance.createForm(form, join(mapObjects, context.getKeys()), context.getSession(), newSession, !form.isPrintForm);
+        if (form.isPrintForm && !newFormInstance.areObjectsFound()) {
             thisRemoteForm.requestUserInteraction(
                     new MessageClientAction(ServerResourceBundle.getString("form.navigator.form.do.not.fit.for.specified.parameters"), form.caption));
         } else {
@@ -90,9 +93,13 @@ public class FormActionProperty extends CustomActionProperty {
             final RemoteForm newRemoteForm = thisRemoteForm.createForm(newFormInstance);
 
             for (int i = 0; i < setProperties.length; i++) {
+                Object setValue = getProperties[i] != null && context.isInFormSession()
+                               ? getProperties[i].getValue(thisFormInstance.instanceFactory, context.getSession(), context.getModifier())
+                               : context.getValueObject();
                 newFormInstance.changeProperty(newFormInstance.instanceFactory.getInstance(setProperties[i]),
-                                               getProperties[i] != null ? getProperties[i].getValue(thisFormInstance.instanceFactory, context.getSession(), context.getModifier()) : context.getValueObject(),
-                                               newRemoteForm, null);
+                                               setValue,
+                                               newRemoteForm,
+                                               null);
             }
 
             thisRemoteForm.requestUserInteraction(new FormClientAction(form.isPrintForm, newSession, isModal, newRemoteForm));

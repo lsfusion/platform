@@ -167,15 +167,15 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 
 // List action
 // statement syntax:
-// [NEWSESSION [NOAPPLY]]  {
+// [NEWSESSION [AUTOAPPLY]]  {
 //      actionStatement1;
 //      ...
 //      actionStatementN;
 // }
 //
 // If NEWSESSION is specified than action will be performed in new session.
-// If NOAPPLY is specified - this new session will not be applied by default,
-// and to apply it, one should do 'EXEC apply();' explicitly.
+// If AUTOAPPLY is specified - this new session will be applied by default,
+// if not - one should do 'EXEC apply();' explicitly.
 
 // Exec action
 // statement syntax:
@@ -216,18 +216,18 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 
 // Message action
 // statement syntax:
-// MESSAGE [ LENGTH = n ] propertyExpr
+// MESSAGE propertyExpr [ LENGTH n ]
 // Default length = 2000
 
 copyStoreNameToArticles 'Скопировать имя склада в имена артиклей' (s) = ACTION(s) {
     SET (name(a) AND a IS article) <- (name(s) AND s IS store);
 };
 
-copyStoreNameToArticle 'Добавить имя склада к имени артикля' (s, a) = ACTION(s, a) NEWSESSION {
+copyStoreNameToArticle 'Добавить имя склада к имени артикля' (s, a) = ACTION(s, a) NEWSESSION AUTOAPPLY {
     SET name(a) <- [FORMULA STRING[20] '$1 || $2'](name(a), name(s));
 };
 
-copyStoreNameToArticleError 'Скопировать имя склада в имя артикля (с ошибкой)' (s, a) = ACTION(s, a) NEWSESSION NOAPPLY {
+copyStoreNameToArticleError 'Скопировать имя склада в имя артикля (с ошибкой)' (s, a) = ACTION(s, a) NEWSESSION {
     SET name(a) <- name(s);
     EXEC apply();
 };
@@ -299,11 +299,17 @@ FILTERS NOT NULL name(article);
 
 showForm(document) = ACTION FORM documentArticle OBJECTS document NEWSESSION MODAL;
 
-showDocumentArticleModalForm 'Показать форму "По документам"' = ACTION() {
-    FORM documentArticle NEWSESSION MODAL;
+showDocumentArticleModalForm 'Показать форму "По документам"' = ACTION() NEWSESSION {
+    ADDOBJ article;
+
+    FOR (k == addedObject()) DO {
+        SET name(k) <- 'this is new article';
+    };
+
+    FORM documentArticle MODAL;
 
     IF (formResult() == formResult.ok) THEN {
-        MESSAGE 'You pressed "ok"';
+        MESSAGE 'You pressed "ok"' LENGTH 50;
 //        MESSAGE [FORMULA STRING[100] '\'You have choosen article \' || $1 || \' and store \' || $2'](name(chosenObject('article')), name(store(chosenObject('document'))));
         MESSAGE [FORMULA STRING[100] '\'You have choosen article \' || $1 || \' and store \' || $2'](name(chosenObject('article')), '<TODO>');
 

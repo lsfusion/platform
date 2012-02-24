@@ -49,10 +49,11 @@ public class ObjectClassProperty extends ExecuteProperty {
     }
 
     public void execute(ExecutionContext context) throws SQLException {
-        if(context.getObjectInstances() != null && context.getObjectInstanceCount() > 0 && context.getSingleObjectInstance() instanceof ObjectInstance)
+        if (context.isInFormSession() && context.getSingleObjectInstance() instanceof ObjectInstance) {
             context.getFormInstance().changeClass((CustomObjectInstance) context.getSingleObjectInstance(), context.getSingleKeyValue(), (Integer) context.getValueObject());
-        else
+        } else {
             context.getSession().changeClass(context.getSingleKeyValue(), baseClass.findConcreteClassID((Integer) context.getValueObject()), context.isGroupLast());
+        }
     }
 
     protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {

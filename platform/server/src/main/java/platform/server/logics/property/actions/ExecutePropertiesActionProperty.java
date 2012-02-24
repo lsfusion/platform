@@ -91,7 +91,7 @@ public class ExecutePropertiesActionProperty extends CustomActionProperty {
 
             Map<PropertyInterface, DataObject> mapKeys = join(mapPropInterfaces, context.getKeys());
 
-            boolean inForm = context.getRemoteForm() != null && dataProperty.property instanceof UserProperty;
+            boolean inForm = context.isInFormSession() && dataProperty.property instanceof UserProperty;
             if (inForm) {
                 Map<PropertyInterface, PropertyObjectInterfaceInstance> mapObjects = join(mapPropInterfaces, context.getObjectInstances());
                 context.addActions(

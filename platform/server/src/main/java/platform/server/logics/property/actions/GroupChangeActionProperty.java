@@ -5,12 +5,14 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.where.Where;
 import platform.server.form.entity.GroupObjectEntity;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.PropertyUtils;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.*;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.session.PropertyChange;
 
 import java.sql.SQLException;
@@ -126,8 +128,6 @@ public class GroupChangeActionProperty extends CustomActionProperty {
     }
 
     public void execute(ExecutionContext context) throws SQLException {
-        FormInstance<?> form = (FormInstance<?>) context.getFormInstance();
-
         Map<PropertyInterface, Expr> mainKeys = mainProperty.getMapKeys();
 
         Map<PropertyInterface, PropertyObjectInterfaceInstance> mainMapObjects = getMapObjectsForMainProperty(context.getObjectInstances());
@@ -139,8 +139,9 @@ public class GroupChangeActionProperty extends CustomActionProperty {
         );
 
         if (filterGroupObject != null) {
-            GroupObjectInstance groupInstance = form.instanceFactory.getInstance(filterGroupObject);
+            context.emitExceptionIfNotInFormSession();
 
+            GroupObjectInstance groupInstance = context.getFormInstance().instanceFactory.getInstance(filterGroupObject);
             changeWhere = changeWhere.and(
                     groupInstance.getWhere(
                             filterKeys(crossJoin(mainMapObjects, mainKeys), groupInstance.objects),
@@ -166,6 +167,10 @@ public class GroupChangeActionProperty extends CustomActionProperty {
     }
 
     private Map<PropertyInterface, PropertyObjectInterfaceInstance> getMapObjectsForMainProperty(Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {
+        if (mapObjects == null) {
+            return null;
+        }
+
         Map<PropertyInterface, PropertyObjectInterfaceInstance> execMapObjects = new HashMap<PropertyInterface, PropertyObjectInterfaceInstance>();
         for (PropertyInterface mainIFace : (List<PropertyInterface>) mainProperty.interfaces) {
             execMapObjects.put(mainIFace, mapMainToThis.containsKey(mainIFace) ? mapObjects.get(mapMainToThis.get(mainIFace)) : null);

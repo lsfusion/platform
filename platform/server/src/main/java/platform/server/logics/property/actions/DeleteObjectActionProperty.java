@@ -25,7 +25,11 @@ public class DeleteObjectActionProperty extends CustomActionProperty {
     }
 
     public void execute(ExecutionContext context) throws SQLException {
-        context.getFormInstance().changeClass((CustomObjectInstance) context.getSingleObjectInstance(), context.getSingleKeyValue(), -1);
+        if (context.isInFormSession()) {
+            context.getFormInstance().changeClass((CustomObjectInstance) context.getSingleObjectInstance(), context.getSingleKeyValue(), -1);
+        } else {
+            context.getSession().changeClass(context.getSingleKeyValue(), null, context.isGroupLast());
+        }
     }
 
     @Override

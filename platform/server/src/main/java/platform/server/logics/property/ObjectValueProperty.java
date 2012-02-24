@@ -1,24 +1,19 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.where.WhereBuilder;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.instance.CustomObjectInstance;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.session.PropertyChanges;
-import platform.server.session.StructChanges;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -55,9 +50,17 @@ public class ObjectValueProperty extends ExecuteClassProperty {
     }
 
     public void execute(ExecutionContext context) throws SQLException {
-        FormInstance<?> remoteForm = context.getFormInstance();
-        if(context.getObjectInstanceCount() > 0 && context.getSingleObjectInstance() instanceof ObjectInstance)
-            context.addActions(remoteForm.changeObject((ObjectInstance) context.getSingleObjectInstance(), context.getValue(), context.getRemoteForm()));
+        if (context.isInFormSession()) {
+            if (context.getSingleObjectInstance() instanceof ObjectInstance) {
+                context.addActions(
+                        context.getFormInstance().changeObject(
+                                (ObjectInstance) context.getSingleObjectInstance(),
+                                context.getValue(),
+                                context.getRemoteForm()));
+            }
+        } else {
+            context.emitExceptionIfNotInFormSession();
+        }
     }
 
     protected Expr getValueExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement) {
