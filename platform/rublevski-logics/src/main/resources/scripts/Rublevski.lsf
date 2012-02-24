@@ -2210,31 +2210,40 @@ DESIGN timeTableDate FROM DEFAULT {
 isManufactory (departmentStore) = departmentStore IS manufactory;
 
 FORM departmentStore 'Отдел магазина'
-OBJECTS d=departmentStore FIXED PANEL, e=employee, t=tradingSquare, s=supplier, tm=DATE, d2=departmentStore
-PROPERTIES(d) name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
-              verifyOrderArrivalDepartmentStore, // controlAssortmentProviderDepartmentStore это св-во для пересечения поставщ. и отдела, создано ниже
-              maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
-              quantityCashChangeOneOperationAccountDepartmentStore, commonNameMateriallyResponsiblePersonItemReportDepartmentStore,
-              commonNameBookkeeperItemReportDepartmentStore, commonNamePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore
-              //nameOutDepartmentManufactory, nameInPriceDepartmentManufactory, marginPublicCateringManufactory
-PROPERTIES(e) READONLY userFirstName, userLastName
-PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
-PROPERTIES(t) squareTradingSquare, dateTradingSquare
-PROPERTIES(t) ADDOBJ, delete
-PROPERTIES(d2) READONLY name
-PROPERTIES(d, d2) rawDepartmentStore
-FILTERS NOT NULL inRawDepartmentStore(d, d2)
-FILTERGROUP rawFilter
-    FILTER 'Подразделения из которых полуется сырье' 'F10' NOT NULL rawDepartmentStore(d, d2)
-PROPERTIES(d) namediscount, showFormNamediscount
-PROPERTIES(s) READONLY name
-//PROPERTIES(s, d) timeTable
-PROPERTIES(tm) OBJVALUE
-PROPERTIES(s, d, tm) READONLY timeTableDate
-FILTERS NOT NULL timeTableDate(s, d, tm)
-FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
-FILTERS NOT NULL departmentStoreEmployee(d, e)
-EDIT departmentStore OBJECT d;
+    OBJECTS d=departmentStore FIXED PANEL
+    PROPERTIES(d)           name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
+                            verifyOrderArrivalDepartmentStore, maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
+                            quantityCashChangeOneOperationAccountDepartmentStore, commonNameMateriallyResponsiblePersonItemReportDepartmentStore,
+                            commonNameBookkeeperItemReportDepartmentStore, commonNamePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore,
+                            namediscount, showFormNamediscount
+
+    OBJECTS e=employee
+    PROPERTIES(e) READONLY userFirstName, userLastName
+    PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
+    FILTERS NOT NULL departmentStoreEmployee(d, e)
+
+    OBJECTS t=tradingSquare
+    PROPERTIES(t) squareTradingSquare, dateTradingSquare
+    PROPERTIES(t) ADDOBJ, delete
+    FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
+
+    OBJECTS s=supplier
+    PROPERTIES(s) READONLY name
+
+    OBJECTS tm=DATE
+    PROPERTIES(tm)                OBJVALUE
+    PROPERTIES(s, d, tm) READONLY timeTableDate
+    FILTERS NOT NULL timeTableDate(s, d, tm)
+
+    OBJECTS d2=departmentStore
+    PROPERTIES(d2) READONLY name
+    PROPERTIES(d, d2) rawDepartmentStore
+    FILTERS NOT NULL inRawDepartmentStore(d, d2)
+    FILTERGROUP rawFilter
+        FILTER 'Подразделения из которых полуется сырье' 'F10' NOT NULL rawDepartmentStore(d, d2)
+
+    EDIT departmentStore OBJECT d
+;
 
 DESIGN departmentStore FROM DEFAULT {
     main{
@@ -2250,25 +2259,52 @@ DESIGN departmentStore FROM DEFAULT {
    }
 }
 
+FORM departmentStores 'Отделы магазинов'
+    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+    PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
+    FILTERS NOT NULL stringEqualsAll(a), NOT NULL inStoreTypeTradingNetwork (st, t), NOT NULL inStoreTypeStore(st, s)
+
+    OBJECTS d=departmentStore
+    PROPERTIES(d) READONLY name
+    FILTERS NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
+
+    DIALOG departmentStore OBJECT d
+;
+
+DESIGN departmentStores FROM DEFAULT {
+    POSITION treeStore.box TO THE LEFT d.box;
+    d.grid {
+        defaultComponent = TRUE;
+    }
+}
+
 FORM store 'Магазин'
-OBJECTS s=store FIXED PANEL, d=departmentStore, t=tradingSquare
-PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameCompanyStore
-PROPERTIES(d) READONLY name, defaultTradingSquareDepartmentStore
-PROPERTIES(d) ADDSESSIONFORM, EDITSESSIONFORM, delete
-FILTERS NOT NULL inStoreDepartment(s, d)
-EDIT store OBJECT s;
+    OBJECTS s=store FIXED PANEL
+    PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameCompanyStore
+
+    OBJECTS d=departmentStore
+    PROPERTIES(d) READONLY name, defaultTradingSquareDepartmentStore
+    PROPERTIES(d)          ADDSESSIONFORM, EDITSESSIONFORM, delete
+    FILTERS NOT NULL inStoreDepartment(s, d)
+
+    EDIT store OBJECT s
+;
 
 FORM stores 'Магазины'
-TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType
-OBJECTS s=store, d=departmentStore
-PROPERTIES READONLY OBJVALUE(a), name(t), name(st)
-FILTERS NOT NULL stringEqualsAll(a)
-FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
-FILTERS NOT NULL inTradingNetworkStoreTypeStore(t, st, s)
-PROPERTIES(s) name, addressStore, nameStoreTypeStore, nameCompanyStore
-PROPERTIES(s) ADDFORM, EDITFORM, delete
-PROPERTIES(d) READONLY name
-FILTERS NOT NULL inStoreDepartment(s, d);
+    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType
+    PROPERTIES READONLY OBJVALUE(a), name(t), name(st)
+    FILTERS NOT NULL stringEqualsAll(a)
+    FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
+
+    OBJECTS s=store
+    PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore
+    PROPERTIES(s)          ADDFORM, EDITFORM, delete
+    FILTERS NOT NULL inTradingNetworkStoreTypeStore(t, st, s)
+
+    OBJECTS d=departmentStore
+    PROPERTIES(d) READONLY name
+    FILTERS NOT NULL inStoreDepartment(s, d)
+;
 
 DESIGN stores FROM DEFAULT {
     POSITION treeStore.box TO THE LEFT s.box;
@@ -2284,19 +2320,26 @@ DESIGN stores FROM DEFAULT {
 }
 
 FORM tradingNetwork 'Торговая сеть'
-OBJECTS n=tradingNetwork FIXED PANEL, s=storeType
-PROPERTIES(n) name
-PROPERTIES(s) name
-PROPERTIES(s) ADDOBJ, delete
-FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
-EDIT tradingNetwork OBJECT n;
+    OBJECTS n=tradingNetwork FIXED PANEL
+    PROPERTIES(n) name
+
+    OBJECTS s=storeType
+    PROPERTIES(s) name
+    PROPERTIES(s) ADDOBJ, delete
+    FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
+
+    EDIT tradingNetwork OBJECT n
+;
 
 FORM qualifier 'Классификатор магазинов'
-OBJECTS n=tradingNetwork, s=storeType
-PROPERTIES(n) READONLY name
-PROPERTIES(n) ADDFORM, EDITFORM
-PROPERTIES(s) READONLY name
-FILTERS NOT NULL inStoreTypeTradingNetwork(s, n);
+    OBJECTS n=tradingNetwork
+    PROPERTIES(n) READONLY name
+    PROPERTIES(n) ADDFORM, EDITFORM
+
+    OBJECTS s=storeType
+    PROPERTIES(s) READONLY name
+    FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
+;
 
 //---------------------------- Модели оборудования ----------------------------------------//
 CLASS ABSTRACT model 'Модель' : named;
