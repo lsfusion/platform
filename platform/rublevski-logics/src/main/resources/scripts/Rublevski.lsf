@@ -32,7 +32,7 @@ timeClosed(postedObject) <- currentDateTime() ON ASSIGN postedObject IS postedOb
 userClosed(postedObject) <- currentUser() ON ASSIGN postedObject IS postedObject;
 computerClosed(postedObject) <- currentComputer() ON ASSIGN postedObject IS postedObject;
 
-GROUP documentHeaderGroup 'Шапка документа';
+GROUP documentHeaderGroup 'Шапка документа' : baseGroup;
 // ----------------------------------- Шаблоны ------------------------------------------ //
 
 // ----------------------------------- Свойство объект-дата------------------------------------------ //
@@ -268,8 +268,12 @@ END
 META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
 
     CLASS object caption : historyObject;
+    TABLE object (object);
+
     CLASS object##Posted captionPosted : object, postedObject;
+
     CLASS object##Detail 'Строка документа' : detailClass;
+    TABLE object##Detail (object##Detail);
 
     date###object 'Дата документа' (object) = DATA DATE (object) IN documentHeaderGroup;
 
@@ -320,6 +324,7 @@ END
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 CLASS itemGroup 'Товарная группа' : named, externalObject;
+TABLE itemGroup(itemGroup);
 
 parentItemGroup = DATA itemGroup (itemGroup) AUTOSET;
 nameParentItemGroup 'Родительская группа' = name(parentItemGroup(itemGroup));
@@ -467,7 +472,11 @@ GROUP documentGroup 'Для документов' : publicGroup;
 GROUP displayGroup 'Свойства для отображения' : baseGroup;
 
 CLASS ABSTRACT sku 'SKU';
+TABLE sku(sku);
+
 CLASS item 'Товар' : sku;
+TABLE item(item);
+
 CLASS ware 'Посуда' : sku, named;
 
 CLASS brand 'Бренд' : named;
@@ -2475,6 +2484,9 @@ FORM departmentStores 'Отделы магазинов'
 
 DESIGN departmentStores FROM DEFAULT {
     POSITION treeStore.box TO THE LEFT d.box;
+    treeStore.tree {
+        fillHorizontal = 0.3;
+    }
     d.grid {
         defaultComponent = TRUE;
     }
@@ -3884,7 +3896,7 @@ DESIGN shipments FROM DEFAULT {
 }
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
-@metaCodeObjectWithPost (writeOff, 'Списание', 'Закрытое списание', named);
+@metaCodeObjectWithPost (writeOff, 'Списание', 'Закрытое списание', object);
 CLASS reasonOff 'Причина списания' : named;
 
 numberWriteOff 'Номер документа' = DATA INTEGER (writeOff) IN baseGroup;
