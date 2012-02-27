@@ -3954,13 +3954,22 @@ FORM globalParameters 'Параметры'
 
 //---------------------------------------------- Импорт данных -----------------------------------------------------//
 
-importDataAction 'Импортировать данные' = ACTION CUSTOM 'rublevski.actions.ImportDataActionProperty';
-importUrl 'URL' = DATA STRING[200] ();
-importLogin 'Логин' = DATA STRING[200] ();
-importPassword 'Пароль' = DATA STRING[200] ();
+//GROUP formularGroup 'Formular' : baseGroup;
+
+importDataAction 'Импортировать данные (Formular)' = ACTION CUSTOM 'rublevski.actions.ImportDataActionProperty';// IN formularGroup;
+importUrl 'URL' = DATA STRING[200] (); //IN formularGroup;
+importLogin 'Логин' = DATA STRING[200] ();// IN formularGroup;
+importPassword 'Пароль' = DATA STRING[200] ();// IN formularGroup;
+
+//GROUP lstradeGroup 'LS Trade' : baseGroup;
+
+importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'rublevski.actions.ImportLSFDataActionProperty';// IN lstradeGroup;
+importLSTDirectory 'Папка' = DATA STRING[200] ();// IN lstradeGroup;
 
 FORM importData 'Импорт данных'
-PROPERTIES() importDataAction, importUrl, importLogin, importPassword;
+    PROPERTIES() importDataAction, importUrl, importLogin, importPassword
+    PROPERTIES() importLSTDataAction, importLSTDirectory
+;
 
 //---------------------------- Настройка навигатора ----------------------------------------//
 
