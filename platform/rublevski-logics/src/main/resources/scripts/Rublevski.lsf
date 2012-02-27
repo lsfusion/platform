@@ -2247,6 +2247,10 @@ createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
     EXEC apply();
 }] (preliminaryOrder) AND NOT preliminaryOrderToOrderSupplier(preliminaryOrder) CONFIRM;
 
+fillInOrderSupplier 'Заполнить заказ рекомендованным количеством' = ACTION (orderSupplier) {
+    SET packQuantityItemOrderSupplier(orderSupplier, item) <- recommendCountOrderSupplier(orderSupplier, item AS item);
+};
+
 FORM orderSupplier 'Заказ поставщику'
 
     TREE treeGroup g=itemGroup PARENT parentItemGroup
@@ -2256,7 +2260,7 @@ FORM orderSupplier 'Заказ поставщику'
     PROPERTIES(o)          dataOrderSupplier, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
                            quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
                            nameSupplierOrderSupplier, fullSumOrderSupplier, // timeCreated, nameUserCreated,
-                           allowablePercentOrderSupplier
+                           allowablePercentOrderSupplier, fillInOrderSupplier
     PROPERTIES(o)          completePercentageOrderSupplier
 
     OBJECTS i=item
@@ -2294,6 +2298,7 @@ DESIGN orderSupplier FROM DEFAULT {
         ADD o.dateOrderSupplierGroup{
             childConstraints = TO THE BOTTOM;
             };
+        ADD PROPERTY(fillInOrderSupplier);
     }
 
     POSITION treeGroup.box TO THE LEFT i.box;
@@ -2350,7 +2355,6 @@ FORM timeTableDate 'График поставок'
     PROPERTIES(p) READONLY dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder, dataOrderPreliminaryOrder
     PROPERTIES(p) nextDateOrder, createOrderSupplier
     PROPERTIES(s, d, t) READONLY quantityOrderOrderSupplier, quantitySupplyOrderSupplier, quantityOrderPreliminaryOrder, quantitySupplyPreliminaryOrder
-    PROPERTIES(p) ADDFORM, EDITFORM, delete  //убрать как только будет сделана генерация предварительных заказов
     FILTERS NOT NULL isSupplierDepartmentStore(d, s, p)
     FILTERGROUP filters
         FILTER 'С предварительным заказом на дату заказа' 'F10' NOT NULL quantityOrderPreliminaryOrder(s, d, t)
