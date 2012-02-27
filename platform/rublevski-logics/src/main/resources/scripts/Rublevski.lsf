@@ -1640,23 +1640,23 @@ dateToLicense 'Действует по ' = DATA DATE (license) IN licensGroup;
 
 // ----------------------------------- Юридическое лицо ------------------------------------------ //
 
-GROUP lawGroup 'Юридическая информация' : baseGroup;
-GROUP contactGroup 'Контактная информация' : baseGroup;
-GROUP docGroup 'Для договора' : baseGroup;
+GROUP lawGroup 'Юридическая информация' : publicGroup;
+GROUP contactGroup 'Контактная информация' : publicGroup;
+GROUP docGroup 'Для договора' : publicGroup;
 
 CLASS ABSTRACT legalEntity 'Юридическое лицо' : named;
 
-ownershipLegalEntity 'Форма собственности (ИД)' = DATA ownership (legalEntity) IN licensGroup;
+ownershipLegalEntity 'Форма собственности (ИД)' = DATA ownership (legalEntity) IN idGroup;
 
 nameOwnershipLegalEntity 'Форма собственности' = name(ownershipLegalEntity(legalEntity)) IN lawGroup;
-shortNameOwnershipLegalEntity 'Форма собственности (сокр.)' = shortNameOwnership(ownershipLegalEntity(legalEntity)) IN lawGroup;
-fullNameLegalEntity 'Наименование для накладных' = DATA STRING[200] (legalEntity) IN lawGroup;
-UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN docGroup FIXEDCHARWIDTH 9;
+shortNameOwnershipLegalEntity 'Форма собственности (сокр.)' = shortNameOwnership(ownershipLegalEntity(legalEntity)) IN baseGroup;
+fullNameLegalEntity 'Наименование для накладных' = DATA STRING[200] (legalEntity) IN baseGroup;
+UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN baseGroup FIXEDCHARWIDTH 9;
 UNPLegalEntityToLegalEntity (UNPLegalEntity) = GROUP UNIQUE legalEntity BY UNPLegalEntity(legalEntity);
 OKPOLegalEntity 'Код по ОКПО' = DATA STRING[20] (legalEntity) IN docGroup;
 OKYLPLegalEntity 'Код ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup;
 emailLegalEntity 'e-mail' = DATA STRING[100] (legalEntity) IN contactGroup;
-siteLegalEntity 'Сайт' = DATA STRING[100] (legalEntity) IN contactGroup;
+siteLegalEntity 'Сайт' = DATA STRING[100] (legalEntity) IN baseGroup;
 contactsLegalEntity 'Дополнительная информация' = DATA STRING[300] (legalEntity) IN contactGroup;
 residentLegalEntity 'Резидент РБ' = DATA BOOLEAN (legalEntity) IN lawGroup;
 manufacturerLegalEntity 'Производитель' = DATA BOOLEAN (legalEntity) IN lawGroup;
@@ -1693,9 +1693,9 @@ dataActingLicenseLegalEntity 'Действующая лицензия' (legalEnt
 TABLE legalEntityDate (legalEntity, DATE);
 
 @metaCodeObjectDateProperty(addressLegalEntity, legalEntity, 'Юридический адрес', STRING[150], baseGroup);
-@metaCodeObjectDateProperty(managerLegalEntity, legalEntity, 'Руководитель', STRING[100], baseGroup);
-@metaCodeObjectDateProperty(accountantLegalEntity, legalEntity, 'Главный бухгалтер', STRING[100], baseGroup);
-@metaCodeObjectDateProperty(postAddressLegalEntity, legalEntity, 'Почтовый адрес', STRING[150], baseGroup);
+@metaCodeObjectDateProperty(managerLegalEntity, legalEntity, 'Руководитель', STRING[100], publicGroup);
+@metaCodeObjectDateProperty(accountantLegalEntity, legalEntity, 'Главный бухгалтер', STRING[100], publicGroup);
+@metaCodeObjectDateProperty(postAddressLegalEntity, legalEntity, 'Почтовый адрес', STRING[150], publicGroup);
 @metaCodeObjectDateProperty(phoneLegalEntity, legalEntity, 'Телефон/факс', STRING[100], baseGroup);
 
 
@@ -1742,7 +1742,7 @@ CONSTRAINT contract IS contract AND NOT formContract(contract)  MESSAGE 'оши�
 
 // ----------------------------------- Поставщик ------------------------------------------ //
 
-GROUP supplierGroup 'Информация о поставщике' : baseGroup;
+GROUP supplierGroup 'Информация о поставщике' : publicGroup;
 CLASS supplier 'Поставщик' : legalEntity;
 CLASS company 'Компания' : legalEntity;
 
@@ -3327,11 +3327,25 @@ DESIGN inventory FROM DEFAULT {
     }
 }
 
+@metaCodePostedObject (inventory) ;
+
 FORM inventories 'Инвентаризации'
     OBJECTS in=inventory
-    PROPERTIES (in) READONLY numberInventory, nameInventory, nameDepartmentByInventory, noteInventory, dateToInventory, timeToInventory, nameUserCreated
-    PROPERTIES (in) ADDFORM, EDITFORM, delete
+    PROPERTIES (in) READONLY numberInventory, objectClassName, nameInventory, nameDepartmentByInventory, noteInventory, dateToInventory, timeToInventory, nameUserCreated
+    PROPERTIES(in)  ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL SHOWIF isDraftInventory(in),
+                    postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)//(in) ADDFORM, EDITFORM, delete
 ;
+
+DESIGN inventories FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 25;
+    }
+    PROPERTY (delete(in)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
 
 //---------------------------- Кассовые отчеты ----------------------------------------//
 CLASS cashReport 'Кассовый отчет' : transaction;
