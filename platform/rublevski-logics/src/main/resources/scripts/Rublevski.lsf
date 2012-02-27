@@ -2062,8 +2062,10 @@ allowablePercentOrderSupplier 'Допустимый % изменения цен 
 quantityPackItemOver 'Количество в грузовом месте' (item) = UNION OVERRIDE 1 IF item IS item, quantityPackItem(item);
 packQuantityItemOrderSupplier 'Заказ' = DATA INTEGER (orderSupplier, item);
 sumQuantityItemOrderSupplier 'Суммарное количество' (orderSupplier, item) = quantityPackItemOver(item) * packQuantityItemOrderSupplier(orderSupplier, item);
-priceSupplierItemOrderSupplier 'Цена поставщика' (orderSupplier, item) =
-    priceSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
+priceSupplierItemOrderSupplier 'Цена поставщика' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item);
+priceSupplierItemOrderSupplier (orderSupplier, item) <- priceSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier))
+    ON CHANGE packQuantityItemOrderSupplier(orderSupplier, item);
+//    priceSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
 fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) =
     sumQuantityItemOrderSupplier(orderSupplier, item) * priceSupplierItemOrderSupplier(orderSupplier, item) IN baseGroup;
 fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
