@@ -2057,8 +2057,8 @@ completePercentageOrderSupplier 'Процент выполнения' (orderSupp
 allowablePercentOrderSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (orderSupplier) IN supplierGroup;
 
 quantityPackItemOver 'Количество в грузовом месте' (item) = UNION OVERRIDE 1 IF item IS item, quantityPackItem(item);
-packQuantityItemOrderSupplier 'Количество мест' = DATA INTEGER (orderSupplier, item);
-sumQuantityItemOrderSupplier 'Суммарное количество товара' (orderSupplier, item) = quantityPackItemOver(item) * packQuantityItemOrderSupplier(orderSupplier, item);
+packQuantityItemOrderSupplier 'Заказ' = DATA INTEGER (orderSupplier, item);
+sumQuantityItemOrderSupplier 'Суммарное количество' (orderSupplier, item) = quantityPackItemOver(item) * packQuantityItemOrderSupplier(orderSupplier, item);
 priceSupplierItemOrderSupplier 'Цена поставщика' (orderSupplier, item) =
     priceSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
 fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) =
@@ -2122,7 +2122,7 @@ balance2DepartmentStoreItem 'Величина остатков товара и �
     balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)+minReserveItem(item);
 isEnoughItem 'Достаточно ли остатков товара' (orderSupplier, item) =
     balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)-quantityRealizationItemNextOrder(orderSupplier, item)<minReserveItem(item);
-recommendCountOrderSupplier 'Рекомендуемое количество товара для заказа' (orderSupplier, item) =
+recommendCountOrderSupplier 'Рекомендуемый заказ' (orderSupplier, item) =
     UNION MAX (quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item)), minQuantityOrderItem(item)
     AND orderSupplier IS orderSupplier IF isEnoughItem(orderSupplier, item);
 
