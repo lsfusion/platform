@@ -70,9 +70,10 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
 
     @Override
     public boolean allowHintIncrement(Property property) {
-        for(PullChangeProperty pullProp : pullProps)
-            if(pullProp.isChangeBetween(property))
-                return false;
+        if(pullProps!=null)
+            for(PullChangeProperty pullProp : pullProps)
+                if(pullProp.isChangeBetween(property))
+                    return false;
         return super.allowHintIncrement(property);
     }
 
