@@ -31,6 +31,8 @@ hostnameComputerClosed 'Компьютер, с которого осуществ
 timeClosed(postedObject) <- currentDateTime() ON ASSIGN postedObject IS postedObject;
 userClosed(postedObject) <- currentUser() ON ASSIGN postedObject IS postedObject;
 computerClosed(postedObject) <- currentComputer() ON ASSIGN postedObject IS postedObject;
+
+GROUP documentHeaderGroup 'Шапка документа';
 // ----------------------------------- Шаблоны ------------------------------------------ //
 
 // ----------------------------------- Свойство объект-дата------------------------------------------ //
@@ -269,8 +271,6 @@ META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
     CLASS object##Posted captionPosted : object, postedObject;
     CLASS object##Detail 'Строка документа' : detailClass;
 
-    GROUP documentHeaderGroup;
-
     date###object 'Дата документа' (object) = DATA DATE (object) IN documentHeaderGroup;
 
     departmentStore###object 'Отдел документа (ИД)' (object) = DATA departmentStore(object) IN idGroup;
@@ -289,6 +289,9 @@ META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
 
     nameAttributeItem###object##Detail 'Товар строки документа' (object##Detail) =
         nameAttributeItem(item###object##Detail(object##Detail)) IN recognizeGroup;
+
+    barcodeExSku###object##Detail 'Штрих-код товара' (object) =
+        barcodeEx(barcodeSku(item###object##Detail (object))) IN baseGroup;
 
     quantity###object##Details###object 'Количество строк в документе' (object) =
         GROUP SUM 1 IF in###object###object##Detail(object, object##Detail) BY object;
@@ -834,7 +837,7 @@ unitOfMeasureBarcode = UNION OVERRIDE unitOfMeasureSkuBarcode (barcode), unitOfM
 shortNameUnitOfMeasureBarcode 'Единица измерения' (barcode) = shortName(unitOfMeasureBarcode(barcode)) IN barcodeGroup;
 
 amountUserBarcode 'Количество (сколько списать при продаже)' = DATA DOUBLE (barcode) IN barcodeGroup;
-amountBarcode 'Количество (сколько списать при продаже)' = UNION OVERRIDE 1 IF barcode IS barcode, amountUserBarcode (barcode) IN barcodeGroup;
+amountBarcode 'Количество (сколько списать при продаже)' = UNION OVERRIDE 1.0 IF barcode IS barcode, amountUserBarcode (barcode) IN barcodeGroup;
 removeBarcode 'Заблокирован (удален с оборудования)' = DATA BOOLEAN (barcode) IN barcodeGroup;
 commentRemoveBarcode 'Причина блокировки' = DATA STRING[100] (barcode) IN barcodeGroup;
 
@@ -2126,8 +2129,12 @@ recommendCountOrderSupplier 'Рекомендуемый заказ' (orderSuppli
     UNION MAX (quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item)), minQuantityOrderItem(item)
     AND orderSupplier IS orderSupplier IF isEnoughItem(orderSupplier, item);
 
-isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentVal(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
-isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepartmentVal(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) == yesNo.yes;
+isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentVal (
+    supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
+
+isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepartmentVal(
+    supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) == yesNo.yes;
+
 isSupplyDatePreliminaryOrder (preliminaryOrder, date) = dateSupplyPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
 isOrderDatePreliminaryOrder (preliminaryOrder, date) = dateOrderPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
 
@@ -3521,19 +3528,18 @@ CLASS batch 'Партия';
 
 @metaCodeObjectWithPost(shipment, 'Поставка', 'Закрытая поставка', batch);
 
-GROUP waybillInfo 'Шапка накладной' : baseGroup;
 GROUP waybillSum 'Суммы накладной': baseGroup;
 GROUP ordersInfo 'Заказы': baseGroup;
 GROUP additionalInfo 'Дополнительно' : baseGroup;
 
 //шапка документа поставки
-waybillShipment 'Номер накладной' (shipment) = DATA STRING[7] (shipment) IN waybillInfo FIXEDCHARWIDTH 7;
+waybillShipment 'Номер накладной' (shipment) = DATA STRING[7] (shipment) IN documentHeaderGroup FIXEDCHARWIDTH 7;
 
-seriesWaybillShipment 'Серия накладной' (shipment) = DATA STRING[2] (shipment) IN waybillInfo FIXEDCHARWIDTH 4;
+seriesWaybillShipment 'Серия накладной' (shipment) = DATA STRING[2] (shipment) IN documentHeaderGroup FIXEDCHARWIDTH 4;
 
 supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipment) IN idGroup;
 
-nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN waybillInfo;
+nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN documentHeaderGroup;
 
 noteShipment 'Примечание' (shipment) = DATA STRING[100] (shipment) IN additionalInfo;
 
@@ -3755,8 +3761,6 @@ FORM ordersShipment 'Заказы'
 
 showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OBJECTS s MODAL SHORTCUT ordersShipment DEFAULT;
 
-//@metaCodePostedObject (shipment);
-
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s) waybillShipment, seriesWaybillShipment, dateShipment, nameSupplierShipment,
@@ -3766,8 +3770,9 @@ FORM shipment 'Поставка'
                    noteShipment
 
     OBJECTS d=shipmentDetail
-    PROPERTIES (d)  numberShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail,
-                    dateFitToShipmentDetail, dataSuppliersRangeShipmentDetail READONLY, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail READONLY, nameWareShipmentDetail READONLY, dataRetailRangeShipmentDetail READONLY,
+    PROPERTIES (d)  numberShipmentDetail, nameAttributeItemShipmentDetail, barcodeExSkuShipmentDetail, quantityShipmentDetail,
+                    priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, dataSuppliersRangeShipmentDetail READONLY,
+                    sumSupplierVATShipmentDetail, sumSupplierShipmentDetail READONLY, nameWareShipmentDetail READONLY, dataRetailRangeShipmentDetail READONLY,
                     retailMarkupShipmentDetail READONLY, oldRetailPriceShipmentDetail READONLY, retailPriceShipmentDetail READONLY, ADDOBJ, delete
     PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, importerPriceShipmentDetail, dataWareRangeShipmentDetail,
                                 priceWareShipmentDetail, controlExpiryShipmentDetail, isManufacturedShipmentDetail,
@@ -3802,7 +3807,7 @@ DESIGN shipment FROM DEFAULT{
 
             ADD headerRow1 {
                 childConstraints = TO THE RIGHT;
-                ADD w.waybillInfo;
+                ADD w.documentHeaderGroup;
                 ADD o.ordersInfo {
                     childConstraints = TO THE BOTTOM;
                 };
@@ -3828,8 +3833,10 @@ FORM shipments 'Поставки'
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
     OBJECTS d=shipmentDetail
-    PROPERTIES (d) READONLY numberShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail,
-                            nameWareShipmentDetail, dataSuppliersRangeShipmentDetail, dataRetailRangeShipmentDetail, retailMarkupShipmentDetail, oldRetailPriceShipmentDetail, retailPriceShipmentDetail
+    PROPERTIES (d) READONLY numberShipmentDetail, nameAttributeItemShipmentDetail, barcodeExSkuShipmentDetail,
+                            quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail,
+                            nameWareShipmentDetail, dataSuppliersRangeShipmentDetail, dataRetailRangeShipmentDetail,
+                            retailMarkupShipmentDetail, oldRetailPriceShipmentDetail, retailPriceShipmentDetail
 
     FILTERS NOT NULL inShipmentShipmentDetail(s, d)
 ;
@@ -3845,13 +3852,8 @@ DESIGN shipments FROM DEFAULT {
 }
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
-CLASS writeOff 'Списание';
-CLASS writeOffPosted 'Списание (закрытая)': writeOff;
-CLASS writeOffDetail 'Строка списания';
+@metaCodeObjectWithPost (writeOff, 'Списание', 'Закрытое списание', named);
 CLASS reasonOff 'Причина списания' : named;
-
-departmentStoreWriteOff 'Отдел для списания (ИД)' = DATA departmentStore(writeOff) IN idGroup;
-nameDepartmentStoreWriteOff 'Отдел для списания' (writeOff) = name(departmentStoreWriteOff(writeOff)) IN baseGroup;
 
 numberWriteOff 'Номер документа' = DATA INTEGER (writeOff) IN baseGroup;
 maxNumberWriteOff = UNION OVERRIDE 0, [GROUP MAX numberWriteOff(writeOff)]();
@@ -3860,27 +3862,18 @@ nextNumberWriteOff = maxNumberWriteOff() + 1;
 numberWriteOff(writeOff) <- OLD nextNumberWriteOff() ON ASSIGN writeOff IS writeOff;
 
 numberActWriteOff 'Номер акта' = DATA STRING[10] (writeOff) IN baseGroup;
-dateWriteOff 'Дата акта' = DATA DATE (writeOff) IN baseGroup;
+
 datePriceWriteOff 'Цена на дату' = DATA DATE (writeOff) IN baseGroup;
 
 reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
 nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN baseGroup;
 noteWriteOff 'Примечание' = DATA STRING[100] (writeOff) IN baseGroup;
 
-writeOffWriteOffDetail 'Документ строки списания' = DATA writeOff (writeOffDetail) IN idGroup;
-inWriteOffWriteOffDetail(writeOff, writeOffDetail) = writeOffWriteOffDetail(writeOffDetail) == writeOff;
-numberWriteOffDetail 'Номер строки' (writeOffDetail) = PARTITION SUM 1 IF writeOffDetail IS writeOffDetail
-    BY writeOffWriteOffDetail(writeOffDetail) ORDER writeOffDetail IN recognizeGroup;
-
 departmentStoreWriteOffDetail 'Отдел для строки списания (ИД)' (writeOffDetail) = departmentStoreWriteOff(writeOffWriteOffDetail(writeOffDetail)) IN idGroup;
 datePriceWriteOffDetail 'Цена на дату' (writeOffDetail) = datePriceWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
-itemWriteOffDetail 'Товар строки списания (ИД)' = DATA item (writeOffDetail) IN idGroup;
-nameItemWriteOffDetail 'Товар строки списания' (writeOffDetail) = nameAttributeItem(itemWriteOffDetail(writeOffDetail)) IN baseGroup;
-barcodeExSkuWriteOffDetail 'Штрих-код товара' (writeOffDetail) = barcodeEx(barcodeSku(itemWriteOffDetail(writeOffDetail))) IN baseGroup;
-
 quantityWriteOffDetail 'Кол-во для строки списания' = DATA INTEGER (writeOffDetail) IN baseGroup;
-quantityDetailsWriteOff 'Кол-во строк' (writeOff) = GROUP SUM 1 IF writeOffDetail BY writeOffWriteOffDetail(writeOffDetail);
+
 quantityWriteOff 'Общее кол-во' (writeOff) = GROUP SUM quantityWriteOffDetail(writeOffDetail)
                                                     BY writeOffWriteOffDetail(writeOffDetail) IN baseGroup;
 
@@ -3892,21 +3885,6 @@ priceWriteOffDetail(writeOffDetail) <- accountPriceItemDepartmentVal (itemWriteO
 sumWriteOffDetail 'Сумма' (writeOffDetail) = priceWriteOffDetail(writeOffDetail)*quantityWriteOffDetail(writeOffDetail);
 sumWriteOff 'Сумма' (writeOff) = GROUP SUM sumWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN baseGroup;
 
-addWriteOffDetailBarcode 'Добавить строку по штрих-коду' = ACTION (writeOff) {
-    FORM barcodeInput MODAL;
-
-    IF formResult() == formResult.ok THEN {
-        IF skuBarcodeStringDate(chosenString('barcode'), dateWriteOff(writeOff)) IS item THEN {
-            ADDOBJ writeOffDetail;
-            SET writeOffWriteOffDetail(o) IF o == addedObject() <- writeOff AS writeOff;
-            SET itemWriteOffDetail(o) IF o == addedObject() <- skuBarcodeStringDate(chosenString('barcode'), dateWriteOff(writeOff));
-            SET quantityWriteOffDetail(o) IF o == addedObject() <- amountBarcode(valueBarcodeToDate(chosenString('barcode'), dateWriteOff(writeOff)));
-        } ELSE
-            MESSAGE 'Не найден штрих-код';
-    };
-
-} TOOLBAR EDITKEY 'F4';
-
 FORM reasonOff 'Причина списания'
     OBJECTS r=reasonOff  FIXED PANEL
     PROPERTIES(r) name
@@ -3915,10 +3893,10 @@ FORM reasonOff 'Причина списания'
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
     PROPERTIES (w) numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff, nameReasonOffWriteOff, noteWriteOff,
-                   quantityWriteOff, quantityDetailsWriteOff, datePriceWriteOff, sumWriteOff
+                   quantityWriteOff, quantityWriteOffDetailsWriteOff, datePriceWriteOff, sumWriteOff
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) numberWriteOffDetail, nameItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail, priceWriteOffDetail, ADDOBJ, delete
+    PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail, priceWriteOffDetail, ADDOBJ, delete
 
     PROPERTIES addWriteOffDetailBarcode(w) TODRAW d
     FILTERS NOT NULL inWriteOffWriteOffDetail(w, d)
@@ -3929,11 +3907,11 @@ FORM writeOff 'Списание'
 FORM writeOffs 'Списания'
     OBJECTS w=writeOff
     PROPERTIES (w) READONLY numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff, nameReasonOffWriteOff, noteWriteOff,
-                   quantityWriteOff, quantityDetailsWriteOff, datePriceWriteOff, sumWriteOff
+                   quantityWriteOff, quantityWriteOffDetailsWriteOff, datePriceWriteOff, sumWriteOff
     PROPERTIES (w) ADDFORM, EDITFORM, delete
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) numberWriteOffDetail, nameItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail, priceWriteOffDetail
+    PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail, priceWriteOffDetail
     FILTERS NOT NULL inWriteOffWriteOffDetail(w, d)
 ;
 
