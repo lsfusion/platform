@@ -1990,14 +1990,14 @@ public abstract class LogicsModule {
         ClassFormEntity form = cls.getEditForm(baseLM);
 
         LP addObjectAction = getAddObjectAction(cls);
-        LP property = addMFAProp(actionGroup, "add" + (session ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.add") + "(" + cls + ")",
+        LP property = addMFAProp(actionGroup, "add" + (session ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
                                 form.form, new ObjectEntity[] {},
                                 new PropertyObjectEntity[] {form.form.addPropertyObject(addObjectAction)},
                                 new OrderEntity[] {null}, ((ActionProperty)addObjectAction.property).getValueClass(), !session);
         property.setImage("add.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
-        property.setShowEditKey(true);
+        property.setShowEditKey(false);
         property.setPanelLocation(new ToolbarPanelLocation());
         property.setForceViewType(ClassViewType.PANEL);
 
@@ -2013,12 +2013,12 @@ public abstract class LogicsModule {
     @IdentityLazy
     public LP getEditFormAction(CustomClass cls, boolean session) {
         ClassFormEntity form = cls.getEditForm(baseLM);
-        LP property = addMFAProp(actionGroup, "edit" + (session ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit") + "(" + cls + ")",
+        LP property = addMFAProp(actionGroup, "edit" + (session ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit"), // + "(" + cls + ")",
                                 form.form, new ObjectEntity[] {form.object}, !session);
         property.setImage("edit.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
-        property.setShowEditKey(true);
+        property.setShowEditKey(false);
         property.setPanelLocation(new ToolbarPanelLocation());
         property.setForceViewType(ClassViewType.PANEL);
         return property;

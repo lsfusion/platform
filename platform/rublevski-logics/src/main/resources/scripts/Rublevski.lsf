@@ -2050,7 +2050,7 @@ tmpGTT = SESSION DATA genTimeTable();
 tmpDate = SESSION DATA DATE();
 tmpDateS = SESSION DATA DATE();
 
-createGenTimeTable 'Создать график поставок' = ACTION () {
+createGenTimeTable 'Создать график поставок' = ACTION () NEWSESSION {
     FORM genTimeTable SET [ACTION ADDOBJ genTimeTable]() MODAL;
 
     IF formResult() == formResult.ok THEN {
@@ -2145,8 +2145,8 @@ createGenTimeTable 'Создать график поставок' = ACTION () {
             };
         };
 
-    } ELSE
-        EXEC delete(tmpGTT());
+        EXEC apply();
+    };
 };
 
 createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
@@ -2165,6 +2165,7 @@ createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
 FORM orderSupplier 'Заказ поставщику'
 
     TREE treeGroup g=itemGroup PARENT parentItemGroup
+    PROPERTIES(g)          name
 
     OBJECTS o=orderSupplier FIXED PANEL
     PROPERTIES(o)          dataOrderSupplier, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,

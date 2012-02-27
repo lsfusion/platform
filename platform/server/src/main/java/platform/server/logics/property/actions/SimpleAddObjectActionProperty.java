@@ -27,7 +27,7 @@ public class SimpleAddObjectActionProperty extends CustomActionProperty {
     private LP storeNewObjectProperty;
 
     public SimpleAddObjectActionProperty(String sID, CustomClass valueClass, LP storeNewObjectProperty) {
-        super(sID, ServerResourceBundle.getString("logics.add") + "(" + valueClass + ")", new ValueClass[0]);
+        super(sID, ServerResourceBundle.getString("logics.add"), new ValueClass[0]);
         this.valueClass = valueClass;
 
         this.storeNewObjectProperty = storeNewObjectProperty;

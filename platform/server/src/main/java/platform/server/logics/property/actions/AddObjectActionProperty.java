@@ -59,7 +59,7 @@ public class AddObjectActionProperty extends CustomActionProperty {
     }
 
     public AddObjectActionProperty(String sID, Property barcode, Property barcodePrefix, boolean quantity, CustomClass valueClass, List<Property> properties, Property propertyValue, DataClass dataClass) {
-        super(sID, ServerResourceBundle.getString("logics.add") + "(" + valueClass + ")", getValueClassList(quantity, properties)); // сам класс не передаем, поскольку это свойство "глобальное"
+        super(sID, ServerResourceBundle.getString("logics.add"), getValueClassList(quantity, properties)); // сам класс не передаем, поскольку это свойство "глобальное"
 
         this.barcode = barcode;
         this.barcodePrefix = barcodePrefix;

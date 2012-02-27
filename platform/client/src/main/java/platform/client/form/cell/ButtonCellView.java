@@ -88,11 +88,11 @@ public class ButtonCellView extends ClientButton implements CellView {
 
     public void setCaption(String caption) {
         this.caption = caption;
-        if (!toToolbar || getIcon() == null) {
+//        if (!toToolbar || getIcon() == null) {
             setText(caption);
-        } else {
-            setText("");
-        }
+//        } else {
+//            setText("");
+//        }
     }
 
     public void setHighlight(Object highlight, Color highlightColor) {
@@ -111,17 +111,21 @@ public class ButtonCellView extends ClientButton implements CellView {
     public void changeViewType(ClassViewType type) {
         toToolbar = (type == ClassViewType.GRID);
         setCaption(caption);
-        if (toToolbar && key.design.getImage() != null) {
-            setPreferredSize(new Dimension(Math.max(key.design.getImage().getIconWidth() + 2, ToolbarGridButton.BUTTON_SIZE.width), Math.max(key.design.getImage().getIconHeight() + 2, ToolbarGridButton.BUTTON_SIZE.height)));
-            setMaximumSize(new Dimension(Math.max(key.design.getImage().getIconWidth() + 2, ToolbarGridButton.BUTTON_SIZE.width), Math.max(key.design.getImage().getIconHeight() + 2, ToolbarGridButton.BUTTON_SIZE.height)));
-        } else {
+//        if (toToolbar && key.design.getImage() != null) {
+//            setPreferredSize(new Dimension(key.design.getImage().getIconWidth() + 2 + key.getPreferredWidth(this),
+//                                           Math.max(key.design.getImage().getIconHeight() + 2,
+//                                                    ToolbarGridButton.BUTTON_SIZE.height)));
+//            setMaximumSize(new Dimension(key.design.getImage().getIconWidth() + 2 + key.getMaximumWidth(this),
+//                                         Math.max(key.design.getImage().getIconHeight() + 2,
+//                                                  ToolbarGridButton.BUTTON_SIZE.height)));
+//        } else {
             setPreferredSize(null);
             setDefaultSizes();
-        }
+//        }
     }
 
     private void setDefaultSizes() {
-        int height = key.getPreferredHeight(this);
+        int height = toToolbar ? ToolbarGridButton.BUTTON_SIZE.height : key.getPreferredHeight(this);
         setMinimumSize(new Dimension(0, height));
         setMaximumSize(new Dimension(32767, height));
     }
