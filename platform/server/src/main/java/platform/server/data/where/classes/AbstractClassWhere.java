@@ -354,4 +354,15 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
         return result;
     }
+
+    private static <K> Map<K,AndClassSet> initUpClassSets(Map<K, ValueClass> map) {
+        Map<K, AndClassSet> result = new HashMap<K,AndClassSet>();
+        for(Map.Entry<K, ValueClass> entry : map.entrySet())
+            result.put(entry.getKey(),entry.getValue().getUpSet());
+        return result;
+    }
+    public AbstractClassWhere(Map<K, ValueClass> mapClasses,boolean up) {
+        this(initUpClassSets(mapClasses));
+        assert up;
+    }
 }

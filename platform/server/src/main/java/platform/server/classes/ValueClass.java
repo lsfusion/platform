@@ -20,9 +20,6 @@ public interface ValueClass extends RemoteClass {
 
     ObjectInstance newInstance(ObjectEntity entity);
 
-    // получает выражение чисто для получения класса
-    BaseExpr getClassExpr();
-
     ValueClass getBaseClass();
 
     String getSID();

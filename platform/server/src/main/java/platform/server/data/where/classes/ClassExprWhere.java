@@ -4,6 +4,7 @@ import platform.base.*;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
+import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
@@ -99,6 +100,10 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
 
     public ClassExprWhere(QuickMap<KeyExpr,AndClassSet> andKeys) {
         this(new And<VariableClassExpr>(andKeys));
+    }
+
+    public ClassExprWhere(Map<? extends VariableClassExpr,ValueClass> andKeys) {
+        super((Map<VariableClassExpr,ValueClass>) andKeys, true);
     }
 
     private ClassExprWhere(And<VariableClassExpr>[] iWheres) {

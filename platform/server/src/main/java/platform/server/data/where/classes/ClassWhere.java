@@ -65,15 +65,8 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         super(key, classes);
     }
 
-    private static <K> Map<K,AndClassSet> initUpClassSets(Map<K, ValueClass> map) {
-        Map<K, AndClassSet> result = new HashMap<K,AndClassSet>();
-        for(Map.Entry<K, ValueClass> entry : map.entrySet())
-            result.put(entry.getKey(),entry.getValue().getUpSet());
-        return result;
-    }
     public ClassWhere(Map<K, ValueClass> mapClasses,boolean up) {
-        super(initUpClassSets(mapClasses));
-        assert up;
+        super(mapClasses, up);
     }
 
 

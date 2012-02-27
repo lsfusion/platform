@@ -310,8 +310,8 @@ showDocumentArticleModalForm 'Показать форму "По документ
 
     IF (formResult() == formResult.ok) THEN {
         MESSAGE 'You pressed "ok"' LENGTH 50;
-//        MESSAGE [FORMULA STRING[100] '\'You have choosen article \' || $1 || \' and store \' || $2'](name(chosenObject('article')), name(store(chosenObject('document'))));
-        MESSAGE [FORMULA STRING[100] '\'You have choosen article \' || $1 || \' and store \' || $2'](name(chosenObject('article')), '<TODO>');
+        MESSAGE [FORMULA STRING[100] '\'You have choosen article \' || $1 || \' and store \' || $2'](name(chosenObject('article')), name(store(chosenObject('document'))));
+//        MESSAGE [FORMULA STRING[100] '\'You have choosen article \' || $1 || \' and store \' || $2'](name(chosenObject('article')), '<TODO>');
 
         FOR (k == chosenObject('article')) DO {
             SET name(k) <- 'THIS article was chosen in modal form';

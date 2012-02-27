@@ -557,6 +557,12 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K, V> Map<K, V> add(Map<? extends K, ? extends V> map, K add, V addValue) {
+        Map<K, V> result = new HashMap<K, V>(map);
+        result.put(add, addValue);
+        return result;
+    }
+    
     public static <K> List<K> add(K add, List<? extends K> col) {
         ArrayList<K> result = new ArrayList<K>();
         result.add(add);

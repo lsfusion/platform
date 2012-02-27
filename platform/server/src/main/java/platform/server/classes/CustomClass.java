@@ -1,32 +1,17 @@
 package platform.server.classes;
 
 import platform.base.ImmutableObject;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
 import platform.interop.Data;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
-import platform.server.caches.hash.HashContext;
 import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.classes.sets.CustomClassSet;
 import platform.server.classes.sets.UpClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.query.innerjoins.GroupJoinsWheres;
-import platform.server.data.query.stat.InnerBaseJoin;
-import platform.server.data.query.stat.KeyStat;
-import platform.server.data.query.stat.StatKeys;
-import platform.server.data.where.MapWhere;
-import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
-import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
-import platform.server.data.where.DataWhereSet;
-import platform.server.data.where.Where;
-import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.form.entity.*;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.ObjectInstance;
@@ -35,6 +20,7 @@ import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.IsClassProperty;
+import platform.server.logics.property.SessionDataProperty;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -326,89 +312,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     public ObjectInstance newInstance(ObjectEntity entity) {
         return new CustomObjectInstance(entity, this);
-    }
-
-    private static class ClassExpr extends NotNullExpr {
-
-        private final ValueClass valueClass;
-
-        private ClassExpr(ValueClass valueClass) {
-            this.valueClass = valueClass;
-        }
-
-        protected VariableClassExpr translate(MapTranslate translator) {
-            return this;
-        }
-
-        public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-            throw new RuntimeException("not supported");
-        }
-
-        private class NotNull extends NotNullExpr.NotNull {
-
-            protected DataWhereSet calculateFollows() {
-                return new DataWhereSet();
-            }
-
-            public ClassExprWhere calculateClassWhere() {
-                return new ClassExprWhere(ClassExpr.this, valueClass.getUpSet());
-            }
-
-            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
-                return new GroupJoinsWheres(this);
-            }
-        }
-
-        public Type getType(KeyType keyType) {
-            return valueClass.getType();
-        }
-
-        public Where calculateWhere() {
-            return new NotNull();
-        }
-
-        public Expr translateQuery(QueryTranslator translator) {
-            return this;
-        }
-
-        public boolean twins(TwinImmutableInterface obj) {
-            return valueClass.equals(((ClassExpr) obj).valueClass);
-        }
-
-        protected int hash(HashContext hashContext) {
-            return valueClass.hashCode();
-        }
-
-        public String getSource(CompileSource compile) {
-            if(compile instanceof ToString)
-                return "act(" + valueClass + ")";
-            throw new RuntimeException("not supported");
-        }
-
-        public Stat getStatValue(KeyStat keyStat) {
-            throw new RuntimeException("not supported");
-        }
-        public Stat getTypeStat(KeyStat keyStat) {
-            throw new RuntimeException("not supported");
-        }
-        public InnerBaseJoin<?> getBaseJoin() {
-            return new InnerBaseJoin<Object>() {
-                public InnerExprSet getExprFollows(boolean recursive) {
-                    return InnerExpr.getExprFollows(this, recursive);
-                }
-                public Map<Object, BaseExpr> getJoins() {
-                    return new HashMap<Object, BaseExpr>();
-                }
-                public StatKeys<Object> getStatKeys(KeyStat keyStat) {
-                    throw new RuntimeException("not supported");
-                }
-            };
-        }
-
-    }
-
-    public BaseExpr getClassExpr() {
-        return new ClassExpr(this);
     }
 
     // чисто для IdentityLazy, потом если сделать для static'ов можно вернуть в ClassActionClass

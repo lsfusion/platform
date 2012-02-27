@@ -52,7 +52,7 @@ public class StaticValueExpr extends StaticExpr<StaticClass> {
             return ((StaticCustomClass)objectClass).getString(object,compile.syntax);
         else
             return objectClass.getType().getString(object, compile.syntax);
-/*        {
+/*        { для рекурсий зачем-то надо было
             Type type = objectClass.getType();
             return type.getCast(type.getString(object, compile.syntax),compile.syntax, true);
         }*/

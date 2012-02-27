@@ -52,10 +52,6 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return getDefaultObjectValue().getExpr();
     }
 
-    public BaseExpr getClassExpr() {
-        return getDefaultExpr();
-    }
-
     public AbstractGroup getParent() {
         return null;
     }
