@@ -1650,14 +1650,14 @@ ownershipLegalEntity 'Форма собственности (ИД)' = DATA owner
 
 nameOwnershipLegalEntity 'Форма собственности' = name(ownershipLegalEntity(legalEntity)) IN lawGroup;
 shortNameOwnershipLegalEntity 'Форма собственности (сокр.)' = shortNameOwnership(ownershipLegalEntity(legalEntity)) IN baseGroup;
-fullNameLegalEntity 'Наименование для накладных' = DATA STRING[200] (legalEntity) IN baseGroup;
+fullNameLegalEntity 'Наименование для накладных' = DATA STRING[200] (legalEntity) IN baseGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN baseGroup FIXEDCHARWIDTH 9;
 UNPLegalEntityToLegalEntity (UNPLegalEntity) = GROUP UNIQUE legalEntity BY UNPLegalEntity(legalEntity);
 OKPOLegalEntity 'Код по ОКПО' = DATA STRING[20] (legalEntity) IN docGroup;
 OKYLPLegalEntity 'Код ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup;
-emailLegalEntity 'e-mail' = DATA STRING[100] (legalEntity) IN contactGroup;
-siteLegalEntity 'Сайт' = DATA STRING[100] (legalEntity) IN baseGroup;
-contactsLegalEntity 'Дополнительная информация' = DATA STRING[300] (legalEntity) IN contactGroup;
+emailLegalEntity 'e-mail' = DATA STRING[100] (legalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+siteLegalEntity 'Сайт' = DATA STRING[100] (legalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+contactsLegalEntity 'Дополнительная информация' = DATA STRING[300] (legalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 residentLegalEntity 'Резидент РБ' = DATA BOOLEAN (legalEntity) IN lawGroup;
 manufacturerLegalEntity 'Производитель' = DATA BOOLEAN (legalEntity) IN lawGroup;
 
@@ -1693,9 +1693,9 @@ dataActingLicenseLegalEntity 'Действующая лицензия' (legalEnt
 TABLE legalEntityDate (legalEntity, DATE);
 
 @metaCodeObjectDateProperty(addressLegalEntity, legalEntity, 'Юридический адрес', STRING[150], baseGroup);
-@metaCodeObjectDateProperty(managerLegalEntity, legalEntity, 'Руководитель', STRING[100], publicGroup);
-@metaCodeObjectDateProperty(accountantLegalEntity, legalEntity, 'Главный бухгалтер', STRING[100], publicGroup);
-@metaCodeObjectDateProperty(postAddressLegalEntity, legalEntity, 'Почтовый адрес', STRING[150], publicGroup);
+@metaCodeObjectDateProperty(managerLegalEntity, legalEntity, 'Руководитель', STRING[100], lawGroup);
+@metaCodeObjectDateProperty(accountantLegalEntity, legalEntity, 'Главный бухгалтер', STRING[100], lawGroup);
+@metaCodeObjectDateProperty(postAddressLegalEntity, legalEntity, 'Почтовый адрес', STRING[150], lawGroup);
 @metaCodeObjectDateProperty(phoneLegalEntity, legalEntity, 'Телефон/факс', STRING[100], baseGroup);
 
 
@@ -1733,7 +1733,7 @@ warnContract 'За сколько дней предупредить об око�
 banContract 'За сколько дней запретить закупку товара' = DATA INTEGER (contract) IN contractGroup;
 //delayContract 'Отсрочка платежа, дней' = DATA INTEGER (contract) IN contractGroup;
 requestContract 'Форма оплаты: Платежное требование' = DATA BOOLEAN (contract) IN contractGroup;
-noteContract 'Примечание' = DATA STRING[100] (contract) IN contractGroup;
+noteContract 'Примечание' = DATA STRING[500] (contract) IN contractGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 @metaCodeNameObjectDateProperty(formContract, contract, 'Порядок оплаты по договору', contractForm, contractGroup);
 CONSTRAINT contract IS contract AND NOT formContract(contract)  MESSAGE 'ошибка: Не выбран порядок оплаты по договору';
@@ -1762,8 +1762,8 @@ prioritySupplier 'Приоритет оплаты (1 - в первую очер�
 signsSupplier 'Число знаков после запятой для строки накладной' = DATA INTEGER (supplier) IN supplierGroup;
 marksSupplier 'Число знаков после зап.в сумме к оплате по накладной' = DATA INTEGER (supplier) IN supplierGroup;
 
-emailOrderSupplierDepartmentStore 'e-mail для передачи заказа' = DATA STRING[100] (supplier, departmentStore)IN supplierGroup;
-contactSupplierDepartmentStore 'Контактная информация' = DATA STRING[500] (supplier, departmentStore)IN supplierGroup;
+emailOrderSupplierDepartmentStore 'e-mail для передачи заказа' = DATA STRING[100] (supplier, departmentStore)IN supplierGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+contactSupplierDepartmentStore 'Контактная информация' = DATA STRING[500] (supplier, departmentStore)IN supplierGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 controlSupplierDepartmentStore(supplier, departmentStore) = DATA yesNo (supplier, departmentStore)IN idGroup;
 
 nameControlSupplierDepartmentStore 'Контролировать ассортимент поставщика, ДА/НЕТ' (supplier, departmentStore) = name(UNION OVERRIDE
@@ -1863,6 +1863,27 @@ FORM supplier 'Поставщик'
 
 DESIGN supplier FROM DEFAULT {
     main{
+       s.box {
+            childConstraints = TO THE RIGHT;
+
+            ADD oneCase {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(name(s));
+                ADD PROPERTY(fullNameLegalEntity(s));
+                ADD PROPERTY(addressLegalEntity(s));
+                ADD PROPERTY(phoneLegalEntity(s));
+                ADD PROPERTY(UNPLegalEntity(s));
+                ADD s.contactGroup;
+                ADD s.lawGroup;
+            };
+
+            ADD twoCase{
+                childConstraints = TO THE BOTTOM;
+                ADD s.docGroup;
+                ADD s.supplierGroup;
+            }
+       }
+
        ADD prop.box BEFORE functions.box{
             tabbedPane = TRUE;
             ADD a.box;
@@ -3236,7 +3257,7 @@ EDIT listInventory OBJECT li
 
 DESIGN listInventory FROM DEFAULT {
     main{
-       ADD yrop.box BEFORE functions.box {
+       ADD firstCase BEFORE functions.box {
             ADD x.box BEFORE dp.box;
             ADD pl.box IN x.box;
             ADD e.box IN x.box { title = 'Члены комиссии' ;}
@@ -3247,7 +3268,7 @@ DESIGN listInventory FROM DEFAULT {
 
 FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
-    PROPERTIES (in)  numberInventory, nameInventory, dateToInventory, timeToInventory, noteInventory, infoInventory, nameDepartmentByInventory,
+    PROPERTIES (in)  numberInventory READONLY, nameInventory, dateToInventory, timeToInventory, noteInventory, infoInventory, nameDepartmentByInventory,
                      timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed, showFormNameDepartmentByInventory, convertPriceInventory
 
     TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageList
@@ -3331,7 +3352,8 @@ DESIGN inventory FROM DEFAULT {
 
 FORM inventories 'Инвентаризации'
     OBJECTS in=inventory
-    PROPERTIES (in) READONLY numberInventory, objectClassName, nameInventory, nameDepartmentByInventory, noteInventory, dateToInventory, timeToInventory, nameUserCreated
+    PROPERTIES (in) READONLY numberInventory, objectClassName, nameInventory, nameDepartmentByInventory, noteInventory,
+                    dateToInventory, timeToInventory, timeCreated FORCE PANEL, nameUserCreated FORCE PANEL, hostnameComputerCreated FORCE PANEL, timeClosed, nameUserClosed, hostnameComputerClosed
     PROPERTIES(in)  ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL SHOWIF isDraftInventory(in),
                     postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)//(in) ADDFORM, EDITFORM, delete
 ;
@@ -3344,6 +3366,7 @@ DESIGN inventories FROM DEFAULT {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
+    POSITION in.historyGroup TO THE LEFT in.postedGroup;
 }
 
 
