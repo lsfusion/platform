@@ -1566,6 +1566,8 @@ FORM committee 'Комиссия'
         FILTER 'Показывать только членов комиссии' 'F10' NOT NULL inCommitteeEmployee(c, e) DEFAULT
 
     EDIT committee OBJECT c
+    EDIT inventoryCommittee OBJECT c
+
 ;
 
 FORM employeesCommittees 'Комиссии'
@@ -2883,10 +2885,10 @@ FILTERS  NOT NULL barcodeStageGroupMachinery(st, gr);
 
 //---------------------------- Проведение инвентаризации ----------------------------------------//
 
-CLASS inventory 'Инвентаризация' : historyObject;
-CLASS inventoryPosted 'Закрытая инвентаризация' : inventory, postedObject;
-CLASS listInventory 'Опись';
-CLASS listInventoryPosted 'Закрытая опись' : listInventory, postedObject;
+CLASS inventory 'Инвентаризация (открытая)' : historyObject;
+CLASS inventoryPosted 'Инвентаризация (закрытая)' : inventory, postedObject;
+CLASS listInventory 'Опись (открытая)';
+CLASS listInventoryPosted 'Опись (закрытая)' : listInventory, postedObject;
 CLASS ABSTRACT collationSheet 'Сличительная ведомость';
 CLASS registerCollationSheet 'Сличительная ведомость по описи' : collationSheet;
 CLASS remainsCollationSheet 'Сличительная ведомость по остаткам' : collationSheet;
@@ -2975,12 +2977,13 @@ noteListInventory 'Примечание (наименование описи)' =
 committeeListInventory(listInventory) = DATA inventoryCommittee (listInventory) IN idGroup;
 inCommitteeListInventoryEmployee 'Сотрудник комиссии' (listInventory, employee) = inCommitteeEmployee(committeeListInventory(listInventory), employee);
 
-nameCommitteeListInventory 'Название комиссии' (listInventory) = name(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
+commonNameCommitteeListInventory 'Название комиссии' (listInventory) = commonName(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
 commonNameChairmanCommitteeListInventory 'Председатель комиссии' (listInventory) = commonNameChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
 closeListInventory 'Закрыть' = DATA BOOLEAN (listInventory) IN baseGroup;
 
 
 listInventoryPageList(pageList) = DATA listInventory (pageList) IN idGroup;
+nameListInventoryPageList 'Номер описи' (pageList) = nameListInventory(listInventoryPageList(pageList));
 inListInventoryPageList(listInventory, pageList) = listInventoryPageList(pageList) == listInventory;
 sumPageListInventory 'К-во страниц' (listInventory) = GROUP SUM 1 IF pageList IS pageList BY listInventoryPageList(pageList) IN adverbGroup;
 counterPageList(pageList) = PARTITION SUM 1 IF pageList IS pageList BY listInventoryPageList(pageList) ORDER pageList IN baseGroup;
@@ -3164,6 +3167,14 @@ inInventoryDepartmentStoreListInventoryPageListDetailPage (inventory, department
     listInventoryDetailPage(detailPage) == listInventory AND departmentStore AND NOT pageList AND inventory,
     departmentStoreDetailPage(detailPage) == departmentStore AND inventory == inventoryDetailPage(detailPage) AND NOT pageList AND NOT listInventory;
 
+isDraftListInventory 'Открыт' (listInventory) = listInventory IS listInventory AND NOT listInventory IS listInventoryPosted;
+isPostedListInventory 'Закрыт' (listInventory) = listInventory IS listInventoryPosted;
+
+postListInventory 'Закрыть' (listInventory) = [ACTION (listInventory) SET objectClass(listInventory) <- CustomObjectClass.Rublevski_listInventoryPosted] (listInventory)
+                                    IF listInventory IS listInventory AND NOT listInventory IS listInventoryPosted TOOLBAR CONFIRM;
+unpostListInventory 'Открыть' (listInventory) = [ACTION (listInventory) SET objectClass(listInventory) <- CustomObjectClass.Rublevski_listInventory] (listInventory)
+                                      IF listInventory IS listInventoryPosted TOOLBAR CONFIRM;
+
 
 FORM nameDepartmentByInventory 'Подразделения для инвентаризации'
     OBJECTS in=inventory FIXED PANEL
@@ -3203,7 +3214,7 @@ showFormItemByCollationSheet 'Добавить товар' (collationSheet) = [A
 FORM listInventory 'Опись'
     OBJECTS         li=listInventory FIXED PANEL
     PROPERTIES (li) nameListInventory, nameDepartmentStoreListInventory, nameInventoryListInventory, noteListInventory,
-                    nameCommitteeListInventory, commonNameChairmanCommitteeListInventory, closeListInventory,
+                    commonNameCommitteeListInventory, commonNameChairmanCommitteeListInventory, closeListInventory,
                     quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, sumPageListInventory
 
     OBJECTS         pl=pageList
@@ -3241,9 +3252,14 @@ FORM inventory 'Инвентаризация'
     TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageList
     PROPERTIES       READONLY name(ds),  nameListInventory(li), namePageList(pl)
 
-    PROPERTIES(pl)   quantityDetailPageList, quantityCountedPageList, totalPageList, delete
-    PROPERTIES(li)   quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, ADDFORM, EDITFORM, delete
-    PROPERTIES(ds, in) quantityDetailDepartmentStoreInventory, quantityCountedDepartmentStoreInventory, totalDetailDepartmentStoreInventory
+    PROPERTIES(ds, in) READONLY quantityDetailDepartmentStoreInventory, quantityCountedDepartmentStoreInventory, totalDetailDepartmentStoreInventory
+    PROPERTIES(ds)   READONLY nameStoreDepartmentStore
+
+    PROPERTIES (li)  ADDFORM,  EDITFORM SHOWIF isDraftListInventory(li), delete FORCE PANEL SHOWIF isDraftListInventory(li), //delete SHOWIF isDraftListInventory(li),      //FORCE PANEL
+                     postListInventory SHOWIF isDraftListInventory(li), unpostListInventory SHOWIF isPostedListInventory(li)
+
+    PROPERTIES(pl)   READONLY quantityDetailPageList, quantityCountedPageList, totalPageList, nameListInventoryPageList//, delete
+    PROPERTIES(li)   READONLY quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, objectClassName//, ADDFORM, EDITFORM, delete
 
     OBJECTS          dp=detailPage
     PROPERTIES (dp)  READONLY nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage,
@@ -3289,6 +3305,14 @@ DESIGN inventory FROM DEFAULT {
                     ADD treeDepartmentStore.box { fillHorizontal = 2;};
                     ADD dp.box  {fillHorizontal = 3;};
                     POSITION treeDepartmentStore.box TO THE LEFT dp.box;
+                    PROPERTY(objectClassName) {
+                            preferredCharWidth = 15;
+                    }
+                    PROPERTY (delete(li)) {
+                            caption = 'Удалить опись';
+                            panelLocation = TOOLBAR;
+                            askConfirm = TRUE;
+                    }
                 }
 
                 ADD x.box { title = 'Сличительные ведомости';
