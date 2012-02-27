@@ -35,7 +35,9 @@ public class ListActionProperty extends KeepContextActionProperty {
 
     @Override
     public void execute(ExecutionContext context) throws SQLException {
-        ExecutionContext innerContext = newSession ? context.override(BL.createSession()) : context;
+        ExecutionContext innerContext = newSession
+                                        ? context.override(context.getSession().createSession())
+                                        : context;
 
         for (PropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> action : actions) {
             execute(action, innerContext);
