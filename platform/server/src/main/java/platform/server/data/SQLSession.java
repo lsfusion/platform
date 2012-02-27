@@ -238,6 +238,12 @@ public class SQLSession extends MutableObject {
         logger.info(" Done");
     }
 
+    public void renameColumn(String table, String columnName, String newColumnName) throws SQLException {
+        logger.info(ServerResourceBundle.getString("data.column.renaming") + " " + table + "." + columnName + " -> " + newColumnName + "... ");
+        executeDDL("ALTER TABLE " + table + " RENAME " + columnName + " TO " + newColumnName);
+        logger.info(" Done");
+    }
+
     public void modifyColumn(String table, PropertyField field, Type oldType) throws SQLException {
         logger.info(ServerResourceBundle.getString("data.column.type.changing") + " " + table + "." + field.name + "... ");
         executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.name + " TYPE " +

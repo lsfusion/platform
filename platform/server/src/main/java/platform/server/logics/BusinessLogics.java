@@ -56,6 +56,7 @@ import java.io.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -894,6 +895,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         reloadNavigatorTree();
     }
 
+    private String getRevision() {
+        String revision = null;
+        InputStream manifestStream = getClass().getResourceAsStream("/platform/server/../../META-INF/MANIFEST.MF");
+        try {
+            if (manifestStream != null) {
+                Manifest manifest = new Manifest(manifestStream);
+                Attributes attributes = manifest.getMainAttributes();
+                revision = attributes.getValue("SCM-Revision");
+            }
+        } catch (IOException ex) {
+        }
+        return revision;
+    }
+
     private void logLaunch() throws SQLException {
 
         DataSession session = createSession();
@@ -901,18 +916,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         DataObject newLaunch = session.addObject(LM.launch, session.modifier);
         LM.launchComputer.execute(getComputer(OSUtils.getLocalHostName()), session, newLaunch);
         LM.launchTime.execute(LM.currentDateTime.read(session), session, newLaunch);
-
-        InputStream manifestStream = getClass().getResourceAsStream("/platform/server/../../META-INF/MANIFEST.MF");
-        try {
-            if (manifestStream != null) {
-                Manifest manifest = new Manifest(manifestStream);
-                Attributes attributes = manifest.getMainAttributes();
-                String revision = attributes.getValue("SCM-Revision");
-                LM.launchRevision.execute(revision, session, newLaunch);
-            }
-        } catch (IOException ex) {
-        }
-
+        LM.launchRevision.execute(getRevision(), session, newLaunch);
 
         session.apply(this);
         session.close();
@@ -1806,6 +1810,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
+        outDB.write('v');  //для поддержки обратной совместимости
+
         outDB.writeInt(mapIndexes.size());
         for (Map.Entry<ImplementTable, Set<List<String>>> mapIndex : mapIndexes.entrySet()) {
             mapIndex.getKey().serialize(outDB);
@@ -1822,6 +1828,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         outDB.writeInt(storedProperties.size());
         for (Property<?> property : storedProperties) {
             outDB.writeUTF(property.getSID());
+            outDB.writeBoolean(property instanceof DataProperty);
             outDB.writeUTF(property.mapTable.table.name);
             for (Map.Entry<? extends PropertyInterface, KeyField> mapKey : property.mapTable.mapKeys.entrySet()) {
                 outDB.writeInt(mapKey.getKey().ID);
@@ -1831,6 +1838,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // если не совпали sID или идентификаторы из базы удаляем сразу
         Map<String, SerializedTable> prevTables = new HashMap<String, SerializedTable>();
+
+        //для поддержки обратной совместимости
+        boolean newVersion = inputDB.read() == 'v';
+        if (!newVersion)
+            inputDB.reset();
+
         for (int i = inputDB == null ? 0 : inputDB.readInt(); i > 0; i--) {
             SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass);
             prevTables.put(prevTable.name, prevTable);
@@ -1855,8 +1868,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // бежим по свойствам
         int prevStoredNum = inputDB == null ? 0 : inputDB.readInt();
+        Map<String, String> columnsToDrop = new HashMap<String, String>();
         for (int i = 0; i < prevStoredNum; i++) {
             String sID = inputDB.readUTF();
+            boolean isDataProperty = true;
+            if (newVersion)
+                isDataProperty = inputDB.readBoolean();
             SerializedTable prevTable = prevTables.get(inputDB.readUTF());
             Map<Integer, KeyField> mapKeys = new HashMap<Integer, KeyField>();
             for (int j = 0; j < prevTable.keys.size(); j++)
@@ -1889,9 +1906,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 }
             }
             if (!keep) {
-                sql.dropColumn(prevTable.name, sID);
-                ImplementTable table = implementTables.get(prevTable.name); // надо упаковать таблицу если удалили колонку
-                if (table != null) packTables.add(table);
+                if (isDataProperty) {
+                    String newName = sID + "_deleted";
+                    sql.renameColumn(prevTable.name, sID, newName);
+                    columnsToDrop.put(newName, prevTable.name);
+                } else {
+                    sql.dropColumn(prevTable.name, sID);
+                    ImplementTable table = implementTables.get(prevTable.name); // надо упаковать таблицу если удалили колонку
+                    if (table != null) packTables.add(table);
+                }
             }
         }
 
@@ -1931,6 +1954,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 //        recalculateAggregations(sql, getAggregateStoredProperties());
 
         sql.commitTransaction();
+
+        DataSession session = createSession();
+        for (String sid : columnsToDrop.keySet()) {
+            DataObject object = session.addObject(LM.dropColumn, session);
+            LM.sidDropColumn.execute(sid, session, object);
+            LM.sidTableDropColumn.execute(columnsToDrop.get(sid), session, object);
+            LM.timeDropColumn.execute(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
+            LM.revisionDropColumn.execute(getRevision(), session, object);
+        }
+        session.apply(this);
+        session.close();
     }
 
     public void synchronizeTables() {
@@ -2019,6 +2053,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
             dataTable.updateStat(LM, session, statDefault);
         }
+    }
+
+    public void dropColumn(String tableName, String columnName) throws SQLException {
+        SQLSession sql = getThreadLocalSql();
+        sql.startTransaction();
+        sql.dropColumn(tableName, columnName);
+        ImplementTable table = LM.tableFactory.getImplementTablesMap().get(tableName); // надо упаковать таблицу, если удалили колонку
+        if (table != null)
+            sql.packTable(table);
+        sql.commitTransaction();
     }
 
     protected LP getLP(String sID) {

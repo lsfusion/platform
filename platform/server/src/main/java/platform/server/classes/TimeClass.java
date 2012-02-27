@@ -88,10 +88,6 @@ public class TimeClass extends DataClass<Time> {
     }
 
     public Object getDefaultValue() {
-//        Calendar calendar = Calendar.getInstance();
-//        int hours = calendar.get(Calendar.HOUR_OF_DAY);
-//        int minutes = calendar.get(Calendar.MINUTE);
-//        int seconds = calendar.get(Calendar.SECOND);
         return new Time(System.currentTimeMillis());
     }
 

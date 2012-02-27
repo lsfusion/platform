@@ -16,6 +16,7 @@ import platform.server.data.Union;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
+import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.remote.RemoteForm;
@@ -85,6 +86,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass table;
     public ConcreteCustomClass tableKey;
     public ConcreteCustomClass tableColumn;
+    public ConcreteCustomClass dropColumn;
 
     public AbstractCustomClass transaction, transactionTime, barcodeObject, externalObject, historyObject;
 
@@ -377,6 +379,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP quantityTableColumn;
     public LP recalculateAggregationTableColumn;
 
+    public LP sidDropColumn;
+    public LP sidToDropColumn;
+    public LP sidTableDropColumn;
+    public LP timeDropColumn;
+    public LP revisionDropColumn;
+    public LP dropDropColumn;
+
     public LP customID;
     public LP stringID;
     public LP integerID;
@@ -495,7 +504,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         externalObject = addAbstractClass("externalObject", getString("logics.object.external.object"), baseClass);
 
         historyObject = addAbstractClass("historyObject", getString("logics.object.history.object"), baseClass);
-        
+
         emailObject = addAbstractClass("emailObject", getString("logics.object.with.email"), baseClass);
 
         encryptedConnectionTypeStatus = addStaticClass("encryptedConnectionTypeStatus", getString("logics.connection.type.status"),
@@ -536,6 +545,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         table = addConcreteClass("table", getString("logics.tables.table"), baseClass);
         tableKey = addConcreteClass("tableKey", getString("logics.tables.key"), baseClass);
         tableColumn = addConcreteClass("tableColumn", getString("logics.tables.column"), baseClass);
+        dropColumn = addConcreteClass("dropColumn", getString("logics.tables.deleted.column"), baseClass);
 
         month = addStaticClass("month", getString("logics.month"),
                 new String[]{"january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"},
@@ -596,6 +606,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         tableFactory.include("tables", table);
         tableFactory.include("tableKey", tableKey);
         tableFactory.include("tableColumn", tableColumn);
+        tableFactory.include("dropColumn", dropColumn);
 
         tableFactory.include("customUserRole", customUser, userRole);
         tableFactory.include("userRolePolicy", userRole, policy);
@@ -680,7 +691,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addText2 = addSFProp("((prm1)+(prm2))", TextClass.instance, 2);
 
         charLength = addSFProp("char_length(prm1)", IntegerClass.instance, 1);
-        
+
         positive = addJProp(greater2, 1, vzero);
         negative = addJProp(less2, 1, vzero);
 
@@ -725,10 +736,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         sidCountry = addDProp(baseGroup, "sidCountry", getString("logics.country.key"), IntegerClass.instance, country);
         generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", getString("logics.day.generate.days.off"), LogicalClass.instance, country);
         sidToCountry = addAGProp("sidToCountry", getString("logics.country"), sidCountry);
-        
+
         isDayOffCountryDate = addDProp(baseGroup, "isDayOffCD", getString("logics.day.off"), LogicalClass.instance, country, DateClass.instance);
 
-        
+
         workingDay = addJProp(baseGroup, "workingDay", getString("logics.day.working"), andNot1, addCProp(IntegerClass.instance, 1, country, DateClass.instance), 1, 2, isDayOffCountryDate, 1, 2);
         isWorkingDay = addJProp(baseGroup, "isWorkingDay", getString("logics.day.working"), and(false, false), workingDay, 1, 3, groeq2, 3, 2, is(DateClass.instance), 3);
         workingDaysQuantity = addOProp(baseGroup, "workingDaysQuantity", getString("logics.day.working.days"), PartitionType.SUM, isWorkingDay, true, true, 1, 2, 1, 3);
@@ -980,6 +991,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         quantityTableKey = addDProp(baseGroup, "quantityTableKey", getString("logics.tables.key.distinct.quantity"), IntegerClass.instance, tableKey);
         quantityTableColumn = addDProp(baseGroup, "quantityTableColumn", getString("logics.tables.column.values.quantity"), IntegerClass.instance, tableColumn);
         recalculateAggregationTableColumn = addAProp(actionGroup, new RecalculateTableColumnActionProperty(getString("logics.recalculate.aggregations"), tableColumn));
+
+        sidDropColumn = addDProp(baseGroup, "sidDropColumn", getString("logics.tables.column.name"), StringClass.get(100), dropColumn);
+        sidToDropColumn = addAGProp("sidToDropColumn", getString("logics.tables.deleted.column"), sidDropColumn);
+        sidTableDropColumn = addDProp(baseGroup, "sidTableDropColumn", getString("logics.tables.name"), StringClass.get(100), dropColumn);
+        timeDropColumn = addDProp(baseGroup, "timeDropColumn", getString("logics.tables.deleted.column.time"), DateTimeClass.instance, dropColumn);
+        revisionDropColumn = addDProp(baseGroup, "revisionDropColumn", getString("logics.launch.revision"), StringClass.get(10), dropColumn);
+        dropDropColumn = addAProp(baseGroup, new DropColumnActionProperty("dropDropColumn", getString("logics.tables.deleted.column.drop"), dropColumn));
+        dropDropColumn.setAskConfirm(true);
 
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
@@ -1362,7 +1381,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     boolean isGeneratedSID(String sid) {
         return idSet.contains(sid) || sid.startsWith(DerivedProperty.ID_PREFIX_GEN);
-    } 
+    }
 
     Collection<LP[]> checkCUProps = new ArrayList<LP[]>();
 
@@ -1661,6 +1680,27 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
+    public class DropColumnActionProperty extends CustomActionProperty {
+        private DropColumnActionProperty(String sID, String caption, ValueClass dropColumn) {
+            super(sID, caption, new ValueClass[] {dropColumn});
+        }
+
+        public void execute(ExecutionContext context) throws SQLException {
+            DataObject dropColumnObject = context.getSingleKeyValue();
+            String columnName = (String) sidDropColumn.read(context, dropColumnObject);
+            String tableName = (String) sidTableDropColumn.read(context, dropColumnObject);
+            BL.dropColumn(tableName, columnName);
+
+            context.getFormInstance().changeClass((CustomObjectInstance) context.getSingleObjectInstance(), context.getSingleKeyValue(), -1);
+            context.applyChanges(BL);
+        }
+
+        public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+            super.proceedDefaultDesign(propertyView, view);
+            propertyView.design.setIconPath("delete.png");
+        }
+    }
+
     class AddBarcodeActionProperty extends CustomActionProperty {
 
         ConcreteCustomClass customClass;
@@ -1892,20 +1932,51 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     }
 
     class PhysicalModelFormEntity extends FormEntity{
+        PropertyDrawEntity recalculateStats;
+        ObjectEntity objTable;
+        ObjectEntity objKey;
+        ObjectEntity objColumn;
+        ObjectEntity objDropColumn;
+
         protected PhysicalModelFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.tables.physical.model"));
 
-            ObjectEntity objTable = addSingleGroupObject(table, getString("logics.tables.tables"), baseGroup);
-            ObjectEntity objKey = addSingleGroupObject(tableKey, getString("logics.tables.keys"), baseGroup);
-            ObjectEntity objColumn = addSingleGroupObject(tableColumn, getString("logics.tables.columns"), baseGroup);
+            objTable = addSingleGroupObject(table, getString("logics.tables.tables"), baseGroup);
+            objKey = addSingleGroupObject(tableKey, getString("logics.tables.keys"), baseGroup);
+            objColumn = addSingleGroupObject(tableColumn, getString("logics.tables.columns"), baseGroup);
+            objDropColumn = addSingleGroupObject(dropColumn, getString("logics.tables.deleted.column"), baseGroup);
+            setReadOnly(objDropColumn, true);
 
-            addPropertyDraw(addAProp(new RecalculateStatsActionProperty("recalculateStats", getString("logics.tables.recalculate.stats"))));
+            recalculateStats = addPropertyDraw(addAProp(new RecalculateStatsActionProperty("recalculateStats", getString("logics.tables.recalculate.stats"))));
             addPropertyDraw(recalculateAggregationTableColumn, objColumn);
 
             setReadOnly(propertyNameTableColumn, true);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(tableTableKey, objKey), Compare.EQUALS, objTable));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(tableTableColumn, objColumn), Compare.EQUALS, objTable));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            ContainerView modelContainer = design.createContainer(getString("logics.tables.physical.model"));
+            modelContainer.add(design.getGroupObjectContainer(objTable.groupTo));
+            modelContainer.add(design.getGroupObjectContainer(objKey.groupTo));
+            modelContainer.add(design.getGroupObjectContainer(objColumn.groupTo));
+            modelContainer.add(design.get(recalculateStats));
+
+            ContainerView dropColumnsContainer = design.createContainer(getString("logics.tables.deleted.columns"));
+            dropColumnsContainer.add(design.getGroupObjectContainer(objDropColumn.groupTo));
+
+            ContainerView container = design.createContainer();
+            container.tabbedPane = true;
+            container.add(modelContainer);
+            container.add(dropColumnsContainer);
+
+            design.getMainContainer().add(0, container);
+
+            return design;
         }
     }
 
