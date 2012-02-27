@@ -39,23 +39,23 @@ public class KeyStrokes {
     }
 
     public static KeyStroke getPrintKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK);
     }
 
     public static KeyStroke getEditKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
     }
 
     public static KeyStroke getXlsKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.ALT_DOWN_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK);
     }
 
     public static KeyStroke getNullKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.SHIFT_DOWN_MASK);
     }
 
     public static KeyStroke getRefreshKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK);
     }
 
     public static KeyStroke getApplyKeyStroke(int modifiers) {
@@ -75,7 +75,7 @@ public class KeyStrokes {
     }
 
     public static KeyStroke getSwitchClassViewKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.ALT_DOWN_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK);
     }
 
     public static KeyStroke getForwardTraversalKeyStroke() {
@@ -91,11 +91,11 @@ public class KeyStrokes {
     }
 
     public static KeyStroke getSelectionFilterKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_DOWN_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK);
     }
 
     public static KeyStroke getSelectionPropertyKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_DOWN_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK);
     }
 
     public static KeyStroke getAddActionPropertyKeyStroke() {
@@ -111,7 +111,7 @@ public class KeyStrokes {
     }
 
     public static KeyStroke getImportActionPropertyKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.ALT_DOWN_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);
     }
 
     public static KeyStroke getGroupCorrectionKeyStroke() {
