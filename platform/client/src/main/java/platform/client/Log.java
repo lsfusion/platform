@@ -159,17 +159,13 @@ public final class Log {
             }
         });
 
-        dialog = new JDialog(SwingUtils.getActiveWindow(), Main.getMainTitle(), Dialog.DEFAULT_MODALITY_TYPE);
+        dialog = new JDialog(Main.frame, Main.getMainTitle(), Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setContentPane(optionPane);
         dialog.pack();
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int width = dialog.getWidth();
-        int height = dialog.getHeight();
-        dialog.setLocation((int) (screenSize.getWidth() - width) / 2, (int) (screenSize.getHeight() - height) / 2);
+        //центрируем на экране
+        dialog.setLocationRelativeTo(null);
 
         dialog.setVisible(true);
     }
 }
-
-
