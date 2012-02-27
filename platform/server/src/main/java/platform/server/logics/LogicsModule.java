@@ -2245,7 +2245,7 @@ public abstract class LogicsModule {
         for (int i = 0; i < interfaces; ++i) {
             params[i] = baseLM.baseClass;
         }
-        return addCProp("dumbProperty" + interfaces, StringClass.get(0), "", params);
+        return addCProp(privateGroup, "dumb" + interfaces, false, "dumbProperty" + interfaces, StringClass.get(0), "", params);
     }
 
     protected NavigatorElement addNavigatorElement(String name, String caption) {

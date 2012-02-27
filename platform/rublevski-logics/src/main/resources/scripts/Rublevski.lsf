@@ -254,11 +254,11 @@ META metaCodePostedObject (object)
     isDraft###object 'Открыт' (object) = object IS object AND NOT object IS object##Posted;
     isPosted###object 'Закрыт' (object) = object IS object##Posted;
 
-    post###object 'Закрыть' (object) = [ACTION (object) SET objectClass(object) <- CustomObjectClass.Rublevski_##object##Posted] (object)
-                                        IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
+    post###object 'Закрыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { SET objectClass(object) <- CustomObjectClass.Rublevski_##object##Posted; } ] (object)
+                                    IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
 
-    unpost###object 'Открыть' (object) = [ACTION (object) SET objectClass(object) <- CustomObjectClass.Rublevski_##object] (object)
-                                          IF object IS object##Posted TOOLBAR CONFIRM;
+    unpost###object 'Открыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { SET objectClass(object) <- CustomObjectClass.Rublevski_##object; } ] (object)
+                                      IF object IS object##Posted TOOLBAR CONFIRM;
 
 END
 
@@ -3372,13 +3372,13 @@ FORM inventory 'Инвентаризация'
     PROPERTIES       READONLY name(ds),  nameListInventory(li), namePageList(pl)
 
     PROPERTIES(ds, in) READONLY quantityDetailDepartmentStoreInventory, quantityCountedDepartmentStoreInventory, totalDetailDepartmentStoreInventory
-    PROPERTIES(ds)   READONLY nameStoreDepartmentStore
 
-    PROPERTIES (li)  ADDFORM,  EDITFORM SHOWIF isDraftListInventory(li), delete FORCE PANEL SHOWIF isDraftListInventory(li), //delete SHOWIF isDraftListInventory(li),      //FORCE PANEL
-                     postListInventory SHOWIF isDraftListInventory(li), unpostListInventory SHOWIF isPostedListInventory(li)
+    PROPERTIES(li)   READONLY quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, objectClassName
 
-    PROPERTIES(pl)   READONLY quantityDetailPageList, quantityCountedPageList, totalPageList, nameListInventoryPageList//, delete
-    PROPERTIES(li)   READONLY quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, objectClassName//, ADDFORM, EDITFORM, delete
+    PROPERTIES(li)   ADDFORM, editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), delete FORCE PANEL SHOWIF isDraftListInventory(li), //delete SHOWIF isDraftListInventory(li),      //FORCE PANEL
+                     postListInventory FORCE PANEL SHOWIF isDraftListInventory(li), unpostListInventory FORCE PANEL SHOWIF isPostedListInventory(li)
+
+    PROPERTIES(pl)   READONLY quantityDetailPageList, quantityCountedPageList, totalPageList, dumb1
 
     OBJECTS          dp=detailPage
     PROPERTIES (dp)  READONLY nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage,
@@ -3427,10 +3427,23 @@ DESIGN inventory FROM DEFAULT {
                     PROPERTY(objectClassName) {
                             preferredCharWidth = 15;
                     }
+                    PROPERTY (dumb1) {
+                        caption = 'Статус';
+                        minimumCharWidth = 15;
+                    }
+                    PROPERTY (postListInventory) {
+                        caption = 'Закрыть';
+                    }
+                    PROPERTY (unpostListInventory) {
+                        caption = 'Открыть';
+                    }
+                    PROPERTY (editLI) {
+                        caption = 'Редактировать';
+                    }
                     PROPERTY (delete(li)) {
-                            caption = 'Удалить опись';
-                            panelLocation = TOOLBAR;
-                            askConfirm = TRUE;
+                        caption = 'Удалить';
+                        panelLocation = TOOLBAR;
+                        askConfirm = TRUE;
                     }
                 }
 

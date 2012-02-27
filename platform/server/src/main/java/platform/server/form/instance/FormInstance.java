@@ -1338,11 +1338,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         Property<PropertyInterface> filterProperty = aggProp.result;
         if (filterProperty != null) {
-            PropertyDrawEntity filterPropertyDraw = formEntity.form.getPropertyDraw(filterProperty, dialogObject);
-            if (filterPropertyDraw == null)
-                filterPropertyDraw = formEntity.form.addPropertyDraw(filterProperty,
-                        Collections.singletonMap(BaseUtils.single(filterProperty.interfaces), (PropertyObjectInterfaceEntity) dialogObject));
-            dialog.initFilterPropertyDraw = filterPropertyDraw;
+            dialog.initFilterPropertyDraw = formEntity.form.getPropertyDraw(filterProperty, dialogObject);
         }
 
         dialog.undecorated = BL.isDialogUndecorated();
