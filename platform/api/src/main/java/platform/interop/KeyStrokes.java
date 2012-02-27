@@ -99,15 +99,15 @@ public class KeyStrokes {
     }
 
     public static KeyStroke getAddActionPropertyKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.ALT_DOWN_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0);
     }
 
     public static KeyStroke getEditActionPropertyKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.ALT_DOWN_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0);
     }
 
     public static KeyStroke getDeleteActionPropertyKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.CTRL_DOWN_MASK);
     }
 
     public static KeyStroke getImportActionPropertyKeyStroke() {

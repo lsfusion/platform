@@ -810,7 +810,11 @@ public abstract class GridTable extends ClientFormTable
 
         if (!super.editCellAt(row, column, editEvent)) {
             if (editEvent instanceof KeyEvent && cellEditor != null) {
-                if (!cellEditor.editPerformed && cellEditor.isCellEditable(editEvent)) {
+                if (!cellEditor.editPerformed &&
+                    cellEditor.isCellEditable(editEvent) &&
+                    !((KeyEvent) editEvent).isActionKey() &&
+                    ((KeyEvent) editEvent).getKeyCode() != KeyEvent.VK_BACK_SPACE &&
+                    ((KeyEvent) editEvent).getKeyCode() != KeyEvent.VK_DELETE) {
                     groupObjectController.quickEditFilter();
                 }
             } else {
