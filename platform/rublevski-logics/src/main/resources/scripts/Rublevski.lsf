@@ -242,23 +242,76 @@ END
 // ----------------------------------- Отображение атрибутов товаров по свойству товарной группы ------------------------------------------ //
 META metaCodeShowItemAttribute (attribute, caption, group)
 
-show##attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN group;
-toShow##attribute caption (item) = show##attribute##ItemGroup(itemGroupSku(item));
-show##attribute##ItemGroup(itemGroup) <- TRUE ON ASSIGN itemGroup IS itemGroup;
+    show##attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN group;
+    toShow##attribute caption (item) = show##attribute##ItemGroup(itemGroupSku(item));
+    show##attribute##ItemGroup(itemGroup) <- TRUE ON ASSIGN itemGroup IS itemGroup;
 
 END
 
 // ----------------------------------- Свойства изменения объектов в Posted ------------------------------------------ //
 META metaCodePostedObject (object)
 
-isDraft###object 'Открыт' (object) = object IS object AND NOT object IS object##Posted;
-isPosted###object 'Закрыт' (object) = object IS object##Posted;
+    isDraft###object 'Открыт' (object) = object IS object AND NOT object IS object##Posted;
+    isPosted###object 'Закрыт' (object) = object IS object##Posted;
 
-post###object 'Закрыть' (object) = [ACTION (object) SET objectClass(object) <- CustomObjectClass.Rublevski_##object##Posted] (object)
-                                    IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
+    post###object 'Закрыть' (object) = [ACTION (object) SET objectClass(object) <- CustomObjectClass.Rublevski_##object##Posted] (object)
+                                        IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
 
-unpost###object 'Открыть' (object) = [ACTION (object) SET objectClass(object) <- CustomObjectClass.Rublevski_##object] (object)
-                                      IF object IS object##Posted TOOLBAR CONFIRM;
+    unpost###object 'Открыть' (object) = [ACTION (object) SET objectClass(object) <- CustomObjectClass.Rublevski_##object] (object)
+                                          IF object IS object##Posted TOOLBAR CONFIRM;
+
+END
+
+// ----------------------------------- Свойства для объектов Posted ------------------------------------------ //
+META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
+
+    CLASS object caption : historyObject;
+    CLASS object##Posted captionPosted : object, postedObject;
+    CLASS object##Detail 'Строка документа' : detailClass;
+
+    GROUP documentHeaderGroup;
+
+    date###object 'Дата документа' (object) = DATA DATE (object) IN documentHeaderGroup;
+
+    departmentStore###object 'Отдел документа (ИД)' (object) = DATA departmentStore(object) IN idGroup;
+
+    nameDepartmentStore###object 'Отдел документа' (object) = name(departmentStore###object(object)) IN documentHeaderGroup;
+
+    object###object##Detail 'Строка документа' = DATA object (object##Detail) IN idGroup;
+
+    in###object###object##Detail(object, object##Detail) = object###object##Detail(object##Detail) == object;
+
+    number###object##Detail 'Номер строки' (object##Detail) =
+        PARTITION SUM 1 IF object##Detail IS object##Detail BY object###object##Detail(object##Detail)
+        ORDER object##Detail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
+
+    item###object##Detail 'Товар строки документа (ИД)' (object##Detail) = DATA item (object##Detail) IN idGroup;
+
+    nameAttributeItem###object##Detail 'Товар строки документа' (object##Detail) =
+        nameAttributeItem(item###object##Detail(object##Detail)) IN recognizeGroup;
+
+    quantity###object##Details###object 'Количество строк в документе' (object) =
+        GROUP SUM 1 IF in###object###object##Detail(object, object##Detail) BY object;
+
+    add###object##DetailBarcode 'Добавить строку по штрих-коду' = ACTION (object) {
+        FORM barcodeInput MODAL;
+
+        IF formResult() == formResult.ok THEN {
+            SET tmpSku() <- skuBarcodeStringDate(chosenString('barcode'), date###object(object));
+            IF tmpSku() IS item THEN {
+                ADDOBJ object##Detail;
+                FOR o == addedObject() DO {
+                    SET object###object##Detail(o) <- object AS object;
+                    SET item###object##Detail(o) <- tmpSku();
+            //        SET quantity###object##Detail(o) <- amountBarcode(valueBarcodeToDate(chosenString('barcode'), date###object(object)));
+                };
+            } ELSE
+                MESSAGE 'Не найден штрих-код';
+        };
+
+    }TOOLBAR EDITKEY 'F4';
+
+    @metaCodePostedObject (object);
 
 END
 
@@ -3407,10 +3460,9 @@ PROPERTIES (d) READONLY numberCashDocument, sumCashDocument
 FILTERS NOT NULL inCashReportDocument(r,d);
 
 //---------------------------- Приход товара от поставщика ----------------------------------------//
-CLASS shipment 'Поставка': historyObject;
-CLASS shipmentPosted 'Поставка (закрытая)': shipment, postedObject;
 CLASS batch 'Партия';
-CLASS shipmentDetail 'Строка документа поставки': batch;
+
+@metaCodeObjectWithPost(shipment, 'Поставка', 'Закрытая поставка', batch);
 
 GROUP waybillInfo 'Шапка накладной' : baseGroup;
 GROUP waybillSum 'Суммы накладной': baseGroup;
@@ -3420,13 +3472,7 @@ GROUP additionalInfo 'Дополнительно' : baseGroup;
 //шапка документа поставки
 waybillShipment 'Номер накладной' (shipment) = DATA STRING[7] (shipment) IN waybillInfo FIXEDCHARWIDTH 7;
 
-dateWaybillShipment 'Дата накладной' (shipment) = DATA DATE (shipment) IN waybillInfo;
-
 seriesWaybillShipment 'Серия накладной' (shipment) = DATA STRING[2] (shipment) IN waybillInfo FIXEDCHARWIDTH 4;
-
-departmentStoreShipment 'Отдел поставки (ИД)' (shipment) = DATA departmentStore(shipment) IN idGroup;
-
-nameDepartmentStoreShipment 'Отдел поставки' (shipment) = name(departmentStoreShipment(shipment)) IN waybillInfo;
 
 supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipment) IN idGroup;
 
@@ -3446,21 +3492,7 @@ isSupplierShipmentOrder 'Заявка поставщика поставки' (sh
 
 isDepartmentStoreShipmentOrder 'Заявка отдела поставки' (shipment, orderSupplier) = departmentStoreShipment(shipment)== departmentStoreOrderSupplier(orderSupplier);
 
-shipmentShipmentDetail 'Строка в поставке' (shipmentDetail) = DATA shipment(shipmentDetail) IN idGroup;
-
-inShipmentShipmentDetail(shipment, shipmentDetail) = shipmentShipmentDetail(shipmentDetail) == shipment;
-
-numberShipmentDetail 'Номер строки' (shipmentDetail) =
-    PARTITION SUM 1 IF shipmentDetail IS shipmentDetail BY shipmentShipmentDetail(shipmentDetail)
-    ORDER shipmentDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
-
-itemShipmentDetail 'Товар строки документа поставки (ИД)' (shipmentDetail) = DATA item (shipmentDetail) IN idGroup;
-
-nameAttributeItemShipmentDetail 'Товар строки документа поставки' (shipmentDetail) =  nameAttributeItem(itemShipmentDetail(shipmentDetail)) IN recognizeGroup;
-
-quantityShipmentDetailsShipment 'Количество строк в поставке' (shipment) = GROUP SUM 1 IF inShipmentShipmentDetail(shipment, shipmentDetail) BY shipment;
-
-dateWaybillShipmentDetail 'Дата поставки' (shipmentDetail) = dateWaybillShipment(shipmentShipmentDetail(shipmentDetail));
+dateShipmentDetail 'Дата поставки' (shipmentDetail) = dateShipment(shipmentShipmentDetail(shipmentDetail));
 
 //атрибуты для подсказки по товару строки
 GROUP itemShipmentDetailInfo 'Информация по товару' : baseGroup;
@@ -3472,7 +3504,7 @@ isManufacturedShipmentDetail 'Товар производится?' (shipmentDet
 isWeightShipmentDetail 'Весовой товар?' (shipmentDetail) = isWeightItem(itemShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
 
 nameinActionItemDepartmentShipmentDetail 'Товар акции?' (shipmentDetail) = name(inActionItemDepartmentVal(itemShipmentDetail(shipmentDetail),
-    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateWaybillShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
+    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
 
 hintShipmentDetail 'Подсказка по товару' (shipmentDetail) = hintItem(itemShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
 
@@ -3480,7 +3512,7 @@ nameCountryShipmentDetail 'Страна производства/происхо�
     name(countryItem(itemShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоценку' (shipmentDetail) = name(banRevaluationItemDepartmentVal(itemShipmentDetail(shipmentDetail),
-    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateWaybillShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
+    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
 
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
@@ -3521,7 +3553,7 @@ wareShipmentDetail(shipmentDetail) <- wareItem(itemShipmentDetail(shipmentDetail
 
 priceWareShipmentDetail 'Цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
 
-priceWareShipmentDetail (shipmentDetail) <- priceWareAtDate (wareShipmentDetail (shipmentDetail), dateWaybillShipmentDetail(shipmentDetail))
+priceWareShipmentDetail (shipmentDetail) <- priceWareAtDate (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
                                             ON CHANGE itemShipmentDetail(shipmentDetail);
 
 overPriceWareShipmentDetail (shipmentDetail) = UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail,
@@ -3567,7 +3599,7 @@ retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail
 
 retailMarkupShipmentDetail(shipmentDetail) <-
     markupSupplierItemDepartmentVal (supplierShipment(shipmentShipmentDetail(shipmentDetail)), itemShipmentDetail(shipmentDetail),
-    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateWaybillShipmentDetail(shipmentDetail))
+    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateShipmentDetail(shipmentDetail))
     ON CHANGE itemShipmentDetail(shipmentDetail);
 
 isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN pricingShipmentDetailInfo;
@@ -3583,7 +3615,7 @@ importerPriceShipmentDetail 'Цена изготовителя/импортер�
 
 oldRetailPriceShipmentDetail 'Старая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 oldRetailPriceShipmentDetail (shipmentDetail) <- retailPriceItemDepartmentVal (itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
-                                                              subtractDate2(dateWaybillShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
+                                                              subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 sumMarkupShipmentDetail 'Сумма торговой надбавки (за ед.)' (shipmentDetail) =
     priceShipmentDetail(shipmentDetail) *
@@ -3639,7 +3671,7 @@ controlSupplierDepartmentStoreShipment(shipment) <- controlSupplierDepartmentSto
 CONSTRAINT controlSupplierDepartmentStoreShipment (shipment) AND percentOrderedShipmentDetailsShipment(shipment)<surePercentSupplierShipment (shipment)
             MESSAGE 'Процент заказанных позиций для поставки меньше допустимого для данного поставщика';
 
-isAvailableOrderShipment 'Заявка допустимая для заказа' (shipment, orderSupplier) = dateWaybillShipment (shipment) <= addDate2(dateOrderSupplier (orderSupplier), UNION OVERRIDE 0 IF shipment IS shipment, afterDaysSupplier (supplierShipment(shipment)));
+isAvailableOrderShipment 'Заявка допустимая для заказа' (shipment, orderSupplier) = dateShipment (shipment) <= addDate2(dateOrderSupplier (orderSupplier), UNION OVERRIDE 0 IF shipment IS shipment, afterDaysSupplier (supplierShipment(shipment)));
 
 toFillShipmentDetailsShipment 'Заполнить поставку из заказов' =  ACTION (shipment) {
     FOR isNotShipedOrderedItemShipment (item, shipment) DO {
@@ -3651,7 +3683,7 @@ toFillShipmentDetailsShipment 'Заполнить поставку из зака
 
 FORM ordersShipment 'Заказы'
     OBJECTS s=shipment FIXED PANEL
-    PROPERTIES (s) READONLY waybillShipment, dateWaybillShipment
+    PROPERTIES (s) READONLY waybillShipment, dateShipment
 
     OBJECTS o=orderSupplier
 
@@ -3666,29 +3698,11 @@ FORM ordersShipment 'Заказы'
 
 showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OBJECTS s MODAL SHORTCUT ordersShipment DEFAULT;
 
-addShipmentDetailBarcode 'Добавить строку по штрих-коду' = ACTION (shipment) {
-    FORM barcodeInput MODAL;
-
-    IF formResult() == formResult.ok THEN {
-        SET tmpSku() <- skuBarcodeStringDate(chosenString('barcode'), dateWaybillShipment(shipment));
-        IF tmpSku() IS item THEN {
-            ADDOBJ shipmentDetail;
-            FOR o == addedObject() DO {
-                SET shipmentShipmentDetail(o) <- shipment AS shipment;
-                SET itemShipmentDetail(o) <- tmpSku();
-                SET quantityShipmentDetail(o) <- amountBarcode(valueBarcodeToDate(chosenString('barcode'), dateWaybillShipment(shipment)));
-            };
-        } ELSE
-            MESSAGE 'Не найден штрих-код';
-    };
-
-} TOOLBAR EDITKEY 'F4';
-
-@metaCodePostedObject (shipment);
+//@metaCodePostedObject (shipment);
 
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
-    PROPERTIES (s) waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameSupplierShipment,
+    PROPERTIES (s) waybillShipment, seriesWaybillShipment, dateShipment, nameSupplierShipment,
                    nameDepartmentStoreShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
                    carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment,
@@ -3720,27 +3734,37 @@ DESIGN shipment FROM DEFAULT{
             tabbedPane = TRUE;
             ADD d.box{
                 title = 'Спецификация';
-            };
-            ADD i.box{
                 ADD p.pricingShipmentDetailInfo;
                 ADD i.itemShipmentDetailInfo;
                 POSITION p.pricingShipmentDetailInfo TO THE LEFT i.itemShipmentDetailInfo;
             };
-        }
+            ADD i.box;
+        };
         ADD header.box BEFORE specification.box {
-            ADD ws.waybillSum;
-            ADD add.additionalInfo;
-            POSITION ws.waybillSum TO THE LEFT add.additionalInfo;
-            ADD w.waybillInfo BEFORE ws.waybillSum;
-            ADD o.ordersInfo BEFORE ws.waybillSum;
-            POSITION w.waybillInfo TO THE LEFT o.ordersInfo;
-        }
-    }
-}
+            childConstraints = TO THE BOTTOM;
+
+            ADD headerRow1 {
+                childConstraints = TO THE RIGHT;
+                ADD w.waybillInfo;
+                ADD o.ordersInfo {
+                    childConstraints = TO THE BOTTOM;
+                };
+            };
+
+            ADD headerRow2 {
+                childConstraints = TO THE RIGHT;
+                ADD ws.waybillSum {
+                    childConstraints = TO THE RIGHT;
+                };
+                ADD add.additionalInfo;
+             };
+        };
+    };
+};
 
 FORM shipments 'Поставки'
     OBJECTS s=shipment
-    PROPERTIES (s) READONLY objectClassName, waybillShipment, seriesWaybillShipment, dateWaybillShipment, nameDepartmentStoreShipment,
+    PROPERTIES (s) READONLY objectClassName, waybillShipment, seriesWaybillShipment, dateShipment, nameDepartmentStoreShipment,
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment
 
     PROPERTIES (s)          ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
