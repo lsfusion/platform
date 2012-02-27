@@ -2013,14 +2013,17 @@ FORM companies 'Компании'
 
 //--------------------------------------Заказ------------------------------------------------------------------//
 
+GROUP orderSupplierGroup 'Информация о заказе' : publicGroup;
+GROUP dateOrderSupplierGroup 'Даты' : publicGroup;
+
 CLASS preliminaryOrder 'Предварительный заказ' : historyObject;
 
 dateOrderPreliminaryOrder 'Дата заказа' = DATA DATE (preliminaryOrder) IN baseGroup;
 dateSupplyPreliminaryOrder 'Дата поставки' = DATA DATE (preliminaryOrder) IN baseGroup;
 departmentStorePreliminaryOrder 'Отдел заказа (ИД)' = DATA departmentStore (preliminaryOrder);
-nameDepartmentStorePreliminaryOrder 'Отдел заказа' (preliminaryOrder) = name(departmentStorePreliminaryOrder(preliminaryOrder)) IN baseGroup;
+nameDepartmentStorePreliminaryOrder 'Отдел заказа' (preliminaryOrder) = name(departmentStorePreliminaryOrder(preliminaryOrder)) IN orderSupplierGroup;
 supplierPreliminaryOrder 'Поставщик заказа (ИД)' = DATA supplier (preliminaryOrder);
-nameSupplierPreliminaryOrder 'Поставщик заказа' (preliminaryOrder) = name(supplierPreliminaryOrder(preliminaryOrder)) IN baseGroup;
+nameSupplierPreliminaryOrder 'Поставщик заказа' (preliminaryOrder) = name(supplierPreliminaryOrder(preliminaryOrder)) IN supplierGroup;
 
 TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
@@ -2031,13 +2034,13 @@ CLASS orderSupplier 'Заказ поставщику' : order;
 CLASS orderSupplierPost 'Одобренный заказ поставщику' :orderSupplier;
 //CLASS orderStock 'Заказ складу' :order;
 
-dataOrderSupplier 'Номер заказа' (orderSupplier) = DATA INTEGER (orderSupplier) IN baseGroup;
+dataOrderSupplier 'Номер заказа' (orderSupplier) = DATA INTEGER (orderSupplier) IN orderSupplierGroup;
 maxDataOrderSupplier = UNION OVERRIDE 0, [GROUP MAX dataOrderSupplier(orderSupplier)]();
 nextDataOrderSupplier = maxDataOrderSupplier() + 1;
 dataOrderSupplier (orderSupplier) <- OLD nextDataOrderSupplier() ON ASSIGN orderSupplier IS orderSupplier;
 
-curDateOrderSupplier 'Дата заказа' = DATA DATE (orderSupplier);
-dateOrderSupplier 'Дата поставки' = DATA DATE (orderSupplier);
+curDateOrderSupplier 'Дата заказа' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
+dateOrderSupplier 'Дата поставки' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
 
 departmentStoreOrderSupplier 'Отдел заказа (ИД)' = DATA departmentStore (orderSupplier);
 nameDepartmentStoreOrderSupplier 'Отдел заказа' (orderSupplier) = name(departmentStoreOrderSupplier(orderSupplier));
@@ -2050,39 +2053,47 @@ preliminaryOrderOrderSupplier 'Предварительный заказ зак�
 preliminaryOrderToOrderSupplier (preliminaryOrder) = GROUP UNIQUE orderSupplier BY preliminaryOrderOrderSupplier(orderSupplier);
 dataOrderPreliminaryOrder 'Номер заказа для предварительного заказа' (preliminaryOrder) = dataOrderSupplier(preliminaryOrderToOrderSupplier(preliminaryOrder));
 
-completePercentageOrderSupplier 'Процент выполнения' (orderSupplier) = DATA DOUBLE (orderSupplier) IN baseGroup;
+completePercentageOrderSupplier 'Процент выполнения' (orderSupplier) = DATA DOUBLE (orderSupplier) IN orderSupplierGroup;
 allowablePercentOrderSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (orderSupplier) IN supplierGroup;
 
 quantityPackItemOver 'Количество в грузовом месте' (item) = UNION OVERRIDE 1 IF item IS item, quantityPackItem(item);
 packQuantityItemOrderSupplier 'Количество мест' = DATA INTEGER (orderSupplier, item);
-sumQuantityItemOrderSupplier 'Сумарное количество товара' (orderSupplier, item) = quantityPackItemOver(item) * packQuantityItemOrderSupplier(orderSupplier, item);
-fullPriceItemOrderSupplier 'Цена с НДС' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item) IN baseGroup;
-fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) = sumQuantityItemOrderSupplier(orderSupplier, item) * fullPriceItemOrderSupplier(orderSupplier, item) IN baseGroup;
-fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier;
+sumQuantityItemOrderSupplier 'Суммарное количество товара' (orderSupplier, item) = quantityPackItemOver(item) * packQuantityItemOrderSupplier(orderSupplier, item);
+priceSupplierItemOrderSupplier 'Цена поставщика' (orderSupplier, item) =
+    priceSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
+fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) =
+    sumQuantityItemOrderSupplier(orderSupplier, item) * priceSupplierItemOrderSupplier(orderSupplier, item) IN baseGroup;
+fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
 retailPriceItemOrderSupplier 'Розничная цена' (orderSupplier, item) =
-    retailPriceItemDepartmentOver(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
+    retailPriceItemDepartmentVal(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
 nameinActionItemOrderSupplier 'Товар акции' (orderSupplier, item) =
     nameinActionItemDepartmentOver(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
 banMovementDepartmentStoreOrderSupplier 'Запрет на внутреннее перемещение товара' (orderSupplier, item) =
     banMovementDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
+topItem 'Топ' (orderSupplier, item) = topDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
 //minQuantityOrderSupplier 'Минимальный заказ' (orderSupplier, item) = minCountItemAssortment(departmentStoreOrderSupplier(orderSupplier), supplierOrderSupplier(orderSupplier), item);
 //CONSTRAINT packQuantityItemOrderSupplier(orderSupplier, item) < minQuantityOrderSupplier(orderSupplier, item) AND packQuantityItemOrderSupplier(orderSupplier, item) != 0  MESSAGE 'Заказ должен быть больше минимального';
 
 castFiveObjectsToString100 =
-     FORMULA STRING[100] 'CAST($1 AS TEXT) || CAST($2 AS TEXT) || CAST($3 AS TEXT) || CAST($4 AS TEXT) || CAST($5 AS TEXT)';
- lastOrderSupplierVal 'Последний заказ(ИД)' (orderSupplier) =
-     PARTITION PREV orderSupplier BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier)
+     FORMULA STRING[100] '\'№\' || CAST($1 AS TEXT) || \'  от \' || CAST($2 AS TEXT) || \'  Количество: \' || CAST($3 AS TEXT) || \'  Розн. цена: \' || CAST($4 AS TEXT) || \'(\' || CAST($5 AS TEXT) || \')\' ';
+//если разбивать формулу на 2 строки выдает ошибку
+
+isItemInOrderSupplier 'Товар в заказе' (orderSupplier, item) = packQuantityItemOrderSupplier(orderSupplier, item) > 0;
+lastOrderSupplierVal 'Последний заказ(ИД)' (orderSupplier, item) =
+     PARTITION PREV orderSupplier AND isItemInOrderSupplier(orderSupplier, item)
+     BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier), item
      ORDER dateOrderSupplier(orderSupplier);
- lastOrderSupplier 'Последний заказ' (orderSupplier, item) =
-     castFiveObjectsToString100(dataOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier),
-                     packQuantityItemOrderSupplier(orderSupplier, item), fullPriceItemOrderSupplier(orderSupplier, item),
-                     nameSupplierOrderSupplier(orderSupplier)
-                     )
- ;
+lastOrderSupplier 'Последний заказ' (orderSupplier, item) =
+     castFiveObjectsToString100(dataOrderSupplier(lastOrderSupplierVal(orderSupplier, item)),
+                                dateOrderSupplier(lastOrderSupplierVal(orderSupplier, item)),
+                                packQuantityItemOrderSupplier(lastOrderSupplierVal(orderSupplier, item), item),
+                                retailPriceItemOrderSupplier(lastOrderSupplierVal(orderSupplier, item), item),
+                                nameSupplierOrderSupplier(lastOrderSupplierVal(orderSupplier, item))
+     );
 
 quantityDaysNextOrder 'Дней до поставки' (orderSupplier) =
     UNION MAX 0 IF orderSupplier IS orderSupplier,
-              daysInclBetweenDates(curDateOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
+              daysInclBetweenDates(curDateOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) IN dateOrderSupplierGroup;
 
 quantityOrderOrderSupplier 'Заказов на дату заказа' (supplier, departmentStore, date) =
     GROUP SUM 1 IF orderSupplier
@@ -2101,9 +2112,9 @@ nextDateOrder 'Дата следующей поставки' (preliminaryOrder) 
     PARTITION PREV dateSupplyPreliminaryOrder(preliminaryOrder)
     BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder)
     ORDER DESC dateSupplyPreliminaryOrder(preliminaryOrder);
-nextDateOrderSupplier 'Дата следующей поставки' (orderSupplier) = nextDateOrder(preliminaryOrderOrderSupplier(orderSupplier));
+nextDateOrderSupplier 'Дата следующей поставки' (orderSupplier) = nextDateOrder(preliminaryOrderOrderSupplier(orderSupplier)) IN dateOrderSupplierGroup;
 quantityDaysAfterNextOrder 'Дней до следующей поставки' (orderSupplier) =
-    daysInclBetweenDates(curDateOrderSupplier(orderSupplier), nextDateOrderSupplier(orderSupplier));
+    daysInclBetweenDates(curDateOrderSupplier(orderSupplier), nextDateOrderSupplier(orderSupplier)) IN dateOrderSupplierGroup;
 CONSTRAINT nextDateOrderSupplier(orderSupplier) < dateOrderSupplier(orderSupplier) MESSAGE 'Дата поставки не должна превышать дату поставки следующей поставки';
 quantityRealizationItemNextOrder 'Предполагаемое количество реализации товара до следующей поставки' (orderSupplier, item) =
     quantityDaysAfterNextOrder(orderSupplier)*quantityRealizationDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
@@ -2111,7 +2122,7 @@ balance2DepartmentStoreItem 'Величина остатков товара и �
     balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)+minReserveItem(item);
 isEnoughItem 'Достаточно ли остатков товара' (orderSupplier, item) =
     balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)-quantityRealizationItemNextOrder(orderSupplier, item)<minReserveItem(item);
-recommendCountOrderSupplier 'Рекомендцемое количество товара для заказа' (orderSupplier, item) =
+recommendCountOrderSupplier 'Рекомендуемое количество товара для заказа' (orderSupplier, item) =
     UNION MAX (quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item)), minQuantityOrderItem(item)
     AND orderSupplier IS orderSupplier IF isEnoughItem(orderSupplier, item);
 
@@ -2244,7 +2255,7 @@ FORM orderSupplier 'Заказ поставщику'
     OBJECTS o=orderSupplier FIXED PANEL
     PROPERTIES(o)          dataOrderSupplier, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
                            quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
-                           nameSupplierOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated,
+                           nameSupplierOrderSupplier, fullSumOrderSupplier, // timeCreated, nameUserCreated,
                            allowablePercentOrderSupplier
     PROPERTIES(o)          completePercentageOrderSupplier
 
@@ -2254,8 +2265,8 @@ FORM orderSupplier 'Заказ поставщику'
                                     nameinActionItemOrderSupplier(o, i), banMovementDepartmentStoreOrderSupplier(o, i),
                                     lastOrderSupplier(o, i)
 
-    PROPERTIES(o, i)       recommendCountOrderSupplier, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier,
-                           fullPriceItemOrderSupplier, fullSumItemOrderSupplier
+    PROPERTIES(o, i)       topItem, recommendCountOrderSupplier, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier,
+                           priceSupplierItemOrderSupplier, fullSumItemOrderSupplier
 
     FILTERS NOT NULL inItemGroupSku(g, i)
 
@@ -2269,10 +2280,39 @@ FORM orderSupplier 'Заказ поставщику'
 ;
 
 DESIGN orderSupplier FROM DEFAULT {
+
+    o.box {
+        childConstraints = TO THE RIGHT;
+        ADD headerLeft {
+            childConstraints = TO THE BOTTOM;
+            ADD o.orderSupplierGroup {
+                childConstraints = TO THE RIGHT;
+            };
+            ADD o.panel;
+            ADD PROPERTY(allowablePercentOrderSupplier);
+        }
+        ADD o.dateOrderSupplierGroup{
+            childConstraints = TO THE BOTTOM;
+            };
+    }
+
     POSITION treeGroup.box TO THE LEFT i.box;
     POSITION treeGroup.box TO THE BOTTOM o.box;
-    treeGroup.box {fillHorizontal = 2;}
-    i.box {fillHorizontal = 3;}
+
+    i.grid {
+        fillHorizontal = 4;
+    }
+
+    i.panel{
+        childConstraints = TO THE BOTTOM;
+        ADD PROPERTY(barcodeBarcodeSku);
+        ADD PROPERTY(articleItem);
+        ADD PROPERTY(nameCountryItem);
+        ADD PROPERTY(retailPriceItemOrderSupplier);
+        ADD PROPERTY(nameinActionItemOrderSupplier);
+        ADD PROPERTY(banMovementDepartmentStoreOrderSupplier);
+        ADD PROPERTY(lastOrderSupplier);
+    }
 }
 
 FORM orderSuppliers 'Заказы поставщику'
@@ -2287,7 +2327,7 @@ FORM orderSuppliers 'Заказы поставщику'
     OBJECTS i=item
     PROPERTIES(i) READONLY nameAttributeItem
 
-    PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, fullPriceItemOrderSupplier,
+    PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, priceSupplierItemOrderSupplier,
                                fullSumItemOrderSupplier
 
     FILTERS NOT NULL sumQuantityItemOrderSupplier(o, i)
@@ -3638,7 +3678,7 @@ quantityShipmentOrderItem 'Поставленное количество' (order
 
 //контроль цен поставки по заказам с учетом допустимых отклонений по поставщику
 priceOrderItemShipment 'Цена товара в заказах поставки (максим.)' (item, shipment) = GROUP MAX
-        fullPriceItemOrderSupplier(orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
+        priceSupplierItemOrderSupplier(orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
 
 maxAllowPriceItemShipment 'Максимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 + [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
 minAllowPriceItemShipment 'Минимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 - [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
