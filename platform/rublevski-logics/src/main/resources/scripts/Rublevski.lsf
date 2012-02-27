@@ -2098,13 +2098,13 @@ packQuantityItemOrderSupplier 'Заказ' = DATA INTEGER (orderSupplier, item);
 sumQuantityItemOrderSupplier 'Суммарное количество' (orderSupplier, item) = quantityPackItemOver(item) * packQuantityItemOrderSupplier(orderSupplier, item);
 priceSupplierItemOrderSupplier 'Цена поставщика' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item);
 priceSupplierItemOrderSupplier (orderSupplier, item) <- priceSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier))
-    ON CHANGE packQuantityItemOrderSupplier(orderSupplier, item);
-//    priceSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
+    ON ASSIGN packQuantityItemOrderSupplier(orderSupplier, item);
+retailPriceItemOrderSupplier 'Розничная цена' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item);
+retailPriceItemOrderSupplier (orderSupplier, item) <- retailPriceItemDepartmentVal(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier))
+    ON ASSIGN packQuantityItemOrderSupplier(orderSupplier, item);
 fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) =
     sumQuantityItemOrderSupplier(orderSupplier, item) * priceSupplierItemOrderSupplier(orderSupplier, item) IN baseGroup;
 fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
-retailPriceItemOrderSupplier 'Розничная цена' (orderSupplier, item) =
-    retailPriceItemDepartmentVal(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
 nameinActionItemOrderSupplier 'Товар акции' (orderSupplier, item) =
     nameinActionItemDepartmentOver(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
 banMovementDepartmentStoreOrderSupplier 'Запрет на внутреннее перемещение товара' (orderSupplier, item) =
@@ -2300,20 +2300,28 @@ FORM orderSupplier 'Заказ поставщику'
     PROPERTIES(g)          name
 
     OBJECTS o=orderSupplier FIXED PANEL
+
     PROPERTIES(o)          dataOrderSupplier, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
                            quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
                            nameSupplierOrderSupplier, fullSumOrderSupplier, // timeCreated, nameUserCreated,
-                           allowablePercentOrderSupplier, fillInOrderSupplier
+                           allowablePercentOrderSupplier
     PROPERTIES(o)          completePercentageOrderSupplier
 
     OBJECTS i=item
-    PROPERTIES(i)          nameAttributeItem, quantityPackItemOver, minQuantityOrderItem READONLY
-    PROPERTIES FORCE PANEL READONLY barcodeBarcodeSku(i), articleItem(i), nameCountryItem(i), retailPriceItemOrderSupplier(o, i),
+
+    PROPERTIES(i)          nameAttributeItem, barcodeBarcodeSku
+
+    PROPERTIES(o, i)       topItem
+
+    PROPERTIES(i)          quantityPackItemOver, minQuantityOrderItem READONLY
+    PROPERTIES FORCE PANEL READONLY articleItem(i), nameCountryItem(i), retailPriceItemOrderSupplier(o, i),
                                     nameinActionItemOrderSupplier(o, i), banMovementDepartmentStoreOrderSupplier(o, i),
                                     lastOrderSupplier(o, i)
 
-    PROPERTIES(o, i)       topItem, recommendCountOrderSupplier, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier,
+    PROPERTIES(o, i)       recommendCountOrderSupplier, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier,
                            priceSupplierItemOrderSupplier, fullSumItemOrderSupplier
+
+    PROPERTIES(o)          fillInOrderSupplier TODRAW i FORCE PANEL
 
     FILTERS NOT NULL inItemGroupSku(g, i)
 
@@ -2341,7 +2349,6 @@ DESIGN orderSupplier FROM DEFAULT {
         ADD o.dateOrderSupplierGroup{
             childConstraints = TO THE BOTTOM;
             };
-        ADD PROPERTY(fillInOrderSupplier);
     }
 
     POSITION treeGroup.box TO THE LEFT i.box;
@@ -2353,13 +2360,16 @@ DESIGN orderSupplier FROM DEFAULT {
 
     i.panel{
         childConstraints = TO THE BOTTOM;
-        ADD PROPERTY(barcodeBarcodeSku);
         ADD PROPERTY(articleItem);
         ADD PROPERTY(nameCountryItem);
         ADD PROPERTY(retailPriceItemOrderSupplier);
         ADD PROPERTY(nameinActionItemOrderSupplier);
         ADD PROPERTY(banMovementDepartmentStoreOrderSupplier);
         ADD PROPERTY(lastOrderSupplier);
+    }
+
+    PROPERTY (fillInOrderSupplier) {
+        panelLocation = TOOLBAR;
     }
 }
 
@@ -2410,7 +2420,6 @@ FORM timeTableDate 'График поставок'
 
 DESIGN timeTableDate FROM DEFAULT {
         POSITION s.box TO THE LEFT p.box;
-        s.box {fillHorizontal = 1;}
         p.box {fillHorizontal = 4;}
 
         ADD PROPERTY(createGenTimeTable) IN d.panel;
