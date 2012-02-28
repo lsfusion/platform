@@ -3084,7 +3084,7 @@ GROUP adverbGroup 'Итого' : baseGroup;
 
 castToString30 = FORMULA STRING[30] '$1 || CAST ($2 AS character(20))';
 
-nameInventory 'Инвентаризация (номер, название)' = DATA STRING[100] (inventory) IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+nameInventory 'Название инвентаризации' = DATA STRING[100] (inventory) IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 dateToInventory 'Остатки выставить на (утро) дату' = DATA DATE (inventory) IN inventGroup;
 timeToInventory 'Выставить остатки на время' = DATA TIME (inventory) IN inventGroup;
 noteInventory 'Примечание (основание)' = DATA STRING[500] (inventory) IN inventGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
@@ -3101,7 +3101,7 @@ numberInventory(inventory) <- OLD nextNumberInventory() ON ASSIGN inventory IS i
 departmentStoreCollationSheet(collationSheet) = DATA departmentStore (collationSheet) IN idGroup;
 inventoryCollationSheet(collationSheet) = DATA inventory (collationSheet) IN idGroup;
 nameDepartmentStoreCollationSheet 'Подразделение' (collationSheet) = name(departmentStoreCollationSheet(collationSheet)) IN collationSheetGroup;
-nameInventoryCollationSheet 'Инвентаризация (номер, название)' (collationSheet) = nameInventory(inventoryCollationSheet(collationSheet)) IN collationSheetGroup;
+nameInventoryCollationSheet 'Название инвентаризации' (collationSheet) = nameInventory(inventoryCollationSheet(collationSheet)) IN collationSheetGroup;
 inInventoryCollationSheet(inventory, collationSheet) = inventoryCollationSheet(collationSheet) == inventory;
 inDepartmentStoreCollationSheet(departmentStore, collationSheet) = departmentStoreCollationSheet(collationSheet) == departmentStore;
 
@@ -3126,9 +3126,10 @@ includeTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory) =
 nameTypeOfAdditionDepartmentStoreInventory 'Тип сличительной ведомости' (departmentStore, inventory) =
     name(includeTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory)) IN inventoryGroup;
 
-typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory) =  UNION OVERRIDE
-    typeOfAdditionInventory(inventory) AND departmentStore IS departmentStore AND includeDepartmentStoreInventory(departmentStore, inventory),
-    includeTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory);
+typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory) =
+    (UNION OVERRIDE typeOfAdditionInventory(inventory) AND departmentStore IS departmentStore,
+                    typeOfAdditionDepartmentStoreInventory(departmentStore, inventory))
+    AND includeDepartmentStoreInventory(departmentStore, inventory);
 
 nameTypeOfAdditionDepartmentStoreInventoryOver 'Тип сличительной ведомости' (departmentStore, inventory) = name(typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory)) IN inventoryGroup;
 
@@ -3239,7 +3240,6 @@ accountPriceCollationSheetItem 'Учетная цена' (collationSheet, item) 
     accountPriceItemDepartmentVal(item, departmentStoreCollationSheet(collationSheet), dateToInventory(inventoryCollationSheet(collationSheet))) IN baseGroup;
 
 priceCollationSheetItem 'Учетная цена, за ед.' (collationSheet, item) = DATA DOUBLE (collationSheet, item) IN baseGroup;
-priceCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item) ON CHANGE item IS item;// AND collationSheet IS collationSheet;
 
 totalBalansCollationSheetItem 'Сумма по остаткам' (collationSheet, item) =
     priceCollationSheetItem(collationSheet, item) * balanceCollationSheetItem(collationSheet, item) IN baseGroup;
@@ -3256,6 +3256,8 @@ includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE
     collationSheet IS registerCollationSheet IF quantityCountedCollationSheetItem(collationSheet, item),
     (UNION OVERRIDE inManyCollationSheetItem(collationSheet, item), collationSheet IS manyCollationSheet IF quantityCountedCollationSheetItem(collationSheet, item)),
     (collationSheet IS remainsCollationSheet IF UNION OVERRIDE balanceCollationSheetItem(collationSheet, item) != 0, TRUE IF quantityCountedCollationSheetItem(collationSheet, item));
+
+priceCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item) ON ASSIGN includeCollationSheetItem(collationSheet, item); //CHANGE item IS item AND collationSheet IS collationSheet;
 
 shortageQuantityCountedCollationSheetItem 'Количество недостача' (collationSheet, item) =
     (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, quantityCountedCollationSheetItem(collationSheet, item)) -
@@ -3357,7 +3359,7 @@ unpostListInventory 'Открыть' (listInventory) = [ACTION (listInventory) S
 
 FORM nameDepartmentByInventory 'Подразделения для инвентаризации'
     OBJECTS in=inventory FIXED PANEL
-    PROPERTIES (in) READONLY nameInventory, dateToInventory
+    PROPERTIES (in) READONLY numberInventory, nameInventory, dateToInventory
 
     TREE treeStore t=tradingNetwork, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY name(t), name(st), name(s), name(ds)
