@@ -1380,14 +1380,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         List<PropertyObjectEntity> actionsOnEvent = entity.getActionsOnEvent(eventObject);
         List<ClientAction> clientActions = new ArrayList<ClientAction>();
         if (actionsOnEvent != null) {
-            //todo: remove later
-//            clientActions = new AutoActionsRunner(form, actionsOnEvent).run();
+            AUTOACTIONS:
             for (PropertyObjectEntity autoAction : actionsOnEvent) {
-                PropertyObjectInstance action = instanceFactory.getInstance(autoAction);
-                if (action.isInInterface(null)) {
-                    clientActions.addAll(
-                            changeProperty(action, read(action) == null ? true : null, form, null)
-                    );
+                PropertyObjectInstance autoActionInstance = instanceFactory.getInstance(autoAction);
+                if (autoActionInstance.isInInterface(null)) {
+                    List<ClientAction> actions = changeProperty(autoActionInstance, read(autoActionInstance) == null ? true : null, form, null);
+                    for (ClientAction clientAction : actions) {
+                        clientActions.add(clientAction);
+                        if (clientAction instanceof DenyCloseFormClientAction) {
+                            break AUTOACTIONS;
+                        }
+                    }
                 }
             }
         }
