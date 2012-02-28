@@ -1348,16 +1348,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     // ---------------------------------------- Events ----------------------------------------
 
-    //todo: remove later
-//    private AutoActionsRunner autoActionsRunner;
-//    public List<ClientAction> continueAutoActions() throws SQLException {
-//        if (autoActionsRunner != null) {
-//            return autoActionsRunner.run();
-//        }
-//
-//        return new ArrayList<ClientAction>();
-//    }
-
     private List<ClientAction> fireObjectChanged(ObjectInstance object, RemoteForm form) throws SQLException {
         return fireEvent(form, object.entity);
     }

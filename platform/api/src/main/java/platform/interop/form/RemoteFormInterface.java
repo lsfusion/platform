@@ -101,9 +101,6 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     RemoteChanges applyChanges(Object clientResult) throws RemoteException;
 
-    //todo: remove later
-//    void continueAutoActions() throws RemoteException;
-
     void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException;
 
     FormUserPreferences loadUserPreferences() throws RemoteException;

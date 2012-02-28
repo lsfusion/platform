@@ -1,42 +1,28 @@
 package platform.server.mail;
 
-import jasperapi.ReportGenerator;
-import jasperapi.ReportHTMLExporter;
+import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.ByteArray;
-import platform.base.OrderedMap;
 import platform.base.Result;
-import platform.interop.Compare;
 import platform.interop.action.MessageClientAction;
-import platform.interop.form.RemoteFormInterface;
-import platform.server.classes.ActionClass;
-import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
-import platform.server.data.type.ObjectType;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.ObjectEntity;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.*;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyMapImplement;
 import platform.server.logics.property.actions.CustomActionProperty;
-import platform.server.session.DataSession;
 
 import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
-import java.io.File;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NotificationActionProperty extends CustomActionProperty {
+    private final static Logger logger = Logger.getLogger(NotificationActionProperty.class);
 
     private final LinkedHashMap<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipients = new LinkedHashMap<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType>();
 
@@ -72,7 +58,7 @@ public class NotificationActionProperty extends CustomActionProperty {
     public void execute(ExecutionContext context) throws SQLException {
 
         if (BL.LM.disableEmail.read(context) != null) {
-            EmailSender.logger.error(ServerResourceBundle.getString("mail.sending.disabled"));
+            logger.error(ServerResourceBundle.getString("mail.sending.disabled"));
             return;
         }
 
@@ -130,7 +116,7 @@ public class NotificationActionProperty extends CustomActionProperty {
 
         if (smtpHost == null || emailFromNotification == null) {
             String errorMessage = ServerResourceBundle.getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent");
-            EmailSender.logger.error(errorMessage);
+            logger.error(errorMessage);
             context.addAction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
         } else {
             EmailSender sender = new EmailSender(smtpHost.trim(),BaseUtils.nullTrim(smtpPort), encryptedConnectionType.trim(), emailFromNotification.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recipientEmails);
@@ -138,7 +124,7 @@ public class NotificationActionProperty extends CustomActionProperty {
                 sender.sendPlainMail(subjectNotification, currentText, attachmentForms, attachmentFiles);
             } catch (Exception e) {
                 String errorMessage = ServerResourceBundle.getString("mail.failed.to.send.mail") + " : " + e.toString();
-                EmailSender.logger.error(errorMessage);
+                logger.error(errorMessage);
                 context.addAction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
                 e.printStackTrace();
             }

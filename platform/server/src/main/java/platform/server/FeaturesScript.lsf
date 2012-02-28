@@ -114,12 +114,14 @@ documentTypeString 'Тип документа' (doc) = IF (doc IS incomeDocument
 //      WHEN whenPropertyExpression1 THEN thenPropertyExpression1
 //      ...
 //      WHEN whenPropertyExpressionN THEN thenPropertyExpressionN
+//      DEFAULT defaultPropertyExpression
 // END
 storeSizeCode 'Размер склада (код)' (s) = CASE
                                               WHEN storeSize(s) == storeSize.huge THEN ('HUGE' IF s IS store)
                                               WHEN storeSize(s) == storeSize.big THEN ('BIG' IF s IS store)
                                               WHEN storeSize(s) == storeSize.medium THEN ('MEDIUM' IF s IS store)
                                               WHEN storeSize(s) == storeSize.small THEN ('SMALL' IF s IS store)
+                                              DEFAULT 'UNKNOWN' IF s IS store
                                           END;
 
 // Partition property
@@ -219,6 +221,15 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // MESSAGE propertyExpr [ LENGTH n ]
 // Default length = 2000
 
+// Email action
+// statement syntax:
+// EMAIL
+//  [FROM propertyExpression]
+//  SUBJECT propertyExpression
+//  (TO || CC || BCC) propertyExpression [ (TO || CC || BCC) propertyExpression ...]
+//  [(INLINE formName OBJECTS obj1=propertyExpression1, ..., objN=propertyExpressionN) ...]
+//  [(ATTACH (PDF, DOCX, HTML, RTF) [NAME propertyExpression] formName OBJECTS obj1=propertyExpression1, ..., objN=propertyExpressionN) ...]
+
 copyStoreNameToArticles 'Скопировать имя склада в имена артиклей' (s) = ACTION(s) {
     SET (name(a) AND a IS article) <- (name(s) AND s IS store);
 };
@@ -311,7 +322,6 @@ showDocumentArticleModalForm 'Показать форму "По документ
     IF (formResult() == formResult.ok) THEN {
         MESSAGE 'You pressed "ok"' LENGTH 50;
         MESSAGE [FORMULA STRING[100] '\'You have choosen article \' || $1 || \' and store \' || $2'](name(chosenObject('article')), name(store(chosenObject('document'))));
-//        MESSAGE [FORMULA STRING[100] '\'You have choosen article \' || $1 || \' and store \' || $2'](name(chosenObject('article')), '<TODO>');
 
         FOR (k == chosenObject('article')) DO {
             SET name(k) <- 'THIS article was chosen in modal form';
@@ -334,6 +344,23 @@ showTestModalForm 'Показать тестовую форму' = ACTION() {
     SET name(k) IF k == chosenObject('store') IF (formResult() == formResult.ok) <- chosenString('s');
     SET name(k) IF k == chosenObject('article') IF (formResult() == formResult.ok) <- [FORMULA STRING[30] '$1 || CAST($2 as char(20))']('Товар ', chosenInt('i'));
 };
+
+remindPasswordEmail 'Выслать пароль на этот email' (u, to) = ACTION EMAIL
+//    FROM 'luxsoft@adsl.by'
+    SUBJECT [FORMULA STRING[60] '\'Напоминание пароля для \' || $1'](email(u))
+    TO (to IF to IS STRING[200])
+    CC 'some@someserv.net'
+//    BCC 'luxsoft@adsl.by'
+    INLINE remindPasswordLetter OBJECTS customUser=(u AS customUser)
+    ATTACH PDF
+           NAME [FORMULA STRING[60] '\'ATTACH: Напоминание пароля для \' || $1'](email(u))
+           remindPasswordLetter OBJECTS customUser=(u AS customUser)
+    ;
+
+FORM testEmailForm 'Тестирование EMAIL'
+OBJECTS s=STRING[100] 'Email:' FIXED PANEL, u=customUser
+PROPERTIES OBJVALUE(s), userLogin(u), userPassword(u), email(u), ADDOBJ(u), remindPasswordEmail(u, s) TODRAW s
+;
 
 FORM storeArticle 'По складам'
 OBJECTS s=store '-Склад-', a=article
@@ -413,6 +440,8 @@ NAVIGATOR {
         }
         ADD element2;
         ADD underForm;
+        ADD editStore;
+        ADD testModalForm;
     }
     // так можно отдельно настроить окно, в которое будет рисоваться элемент
     baseElement TO mainToolbar;

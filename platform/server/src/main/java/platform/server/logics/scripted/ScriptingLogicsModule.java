@@ -7,6 +7,7 @@ import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.base.OrderedMap;
 import platform.server.LsfLogicsLexer;
 import platform.server.LsfLogicsParser;
 import platform.server.classes.*;
@@ -25,7 +26,11 @@ import platform.server.logics.panellocation.ShortcutPanelLocation;
 import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.mail.AttachmentFormat;
+import platform.server.mail.EmailActionProperty;
+import platform.server.mail.EmailActionProperty.FormStorageType;
 
+import javax.mail.Message;
 import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +40,8 @@ import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
 import static platform.base.BaseUtils.*;
+import static platform.server.logics.PropertyUtils.getIntNum;
+import static platform.server.logics.PropertyUtils.readImplements;
 import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
 
 /**
@@ -556,7 +563,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                        addScriptedJProp(and(true), asList(elseProp, ifProp))));
     }
 
-    public LPWithParams addScriptedCaseUProp(List<LPWithParams> whenProps, List<LPWithParams> thenProps) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedCaseUProp(List<LPWithParams> whenProps, List<LPWithParams> thenProps, LPWithParams defaultProp) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedCaseUProp(" + whenProps  + "->" + thenProps + ");");
 
         assert whenProps.size() > 0 && whenProps.size() == thenProps.size();
@@ -568,6 +575,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             caseParamProps.add(whenProps.get(i));
             caseParamProps.add(thenProps.get(i));
         }
+        caseParamProps.add(defaultProp);
 
         LP caseProp = addCaseUProp(null, genSID(), false, "", getParamsPlainList(caseParamProps).toArray());
         return new LPWithParams(caseProp, mergeAllParams(caseParamProps));
@@ -584,6 +592,75 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitCreatingClassInstanceError(parser, javaClassName);
         }
         return null;
+    }
+
+    public LPWithParams addScriptedEmailProp(LPWithParams fromProp,
+                                             LPWithParams subjProp,
+                                             List<Message.RecipientType> recipTypes,
+                                             List<LPWithParams> recipProps,
+                                             List<String> forms,
+                                             List<FormStorageType> formTypes,
+                                             List<OrderedMap<String, LPWithParams>> mapObjects,
+                                             List<LPWithParams> attachNames,
+                                             List<AttachmentFormat> attachFormats) throws ScriptingErrorLog.SemanticErrorException {
+
+        List<LPWithParams> allProps = new ArrayList<LPWithParams>();
+
+        if (fromProp != null) {
+            allProps.add(fromProp);
+        }
+        allProps.add(subjProp);
+        allProps.addAll(recipProps);
+
+        for (int i = 0; i < forms.size(); ++i) {
+            allProps.addAll(mapObjects.get(i).values());
+            if (formTypes.get(i) == FormStorageType.ATTACH && attachNames.get(i) != null) {
+                allProps.add(attachNames.get(i));
+            }
+        }
+
+        Object[] allParams = getParamsPlainList(allProps).toArray();
+
+        List<PropertyInterface> tempContext = genInterfaces(getIntNum(allParams));
+        ValueClass[] eaClasses = ActionProperty.getClasses(tempContext, readImplements(tempContext, allParams));
+
+        LP<ClassPropertyInterface> eaPropLP = addEAProp(null, "", "", eaClasses, null, null);
+        EmailActionProperty eaProp = (EmailActionProperty) eaPropLP.property;
+
+        List<PropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readImplements(eaPropLP.listInterfaces, allParams);
+
+        int i = 0;
+        if (fromProp != null) {
+            eaProp.setFromAddress(allImplements.get(i++));
+        } else {
+            // по умолчанию используем стандартный fromAddress
+            eaProp.setFromAddress(new PropertyMapImplement(baseLM.fromAddress.property));
+        }
+        eaProp.setSubject(allImplements.get(i++));
+
+        for (Message.RecipientType recipType : recipTypes) {
+            eaProp.addRecipient(allImplements.get(i++), recipType);
+        }
+
+        for (int j = 0; j < forms.size(); ++j) {
+            String formName = forms.get(j);
+            FormStorageType formType = formTypes.get(j);
+            FormEntity form = findFormByCompoundName(formName);
+
+            Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements = new HashMap<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>>();
+            for (Map.Entry<String, LPWithParams> entry : mapObjects.get(j).entrySet()) {
+                objectsImplements.put(findObjectEntity(form, entry.getKey()), allImplements.get(i++));
+            }
+
+            if (formType == FormStorageType.ATTACH) {
+                PropertyInterfaceImplement<ClassPropertyInterface> attachNameProp = attachNames.get(j) != null ? allImplements.get(i++) : null;
+                eaProp.addAttachmentForm(form, attachFormats.get(j), objectsImplements, attachNameProp);
+            } else {
+                eaProp.addInlineForm(form, objectsImplements);
+            }
+        }
+
+        return new LPWithParams(eaPropLP, mergeAllParams(allProps));
     }
 
     public LPWithParams addScriptedAdditiveProp(List<String> operands, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
@@ -874,10 +951,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         ObjectEntity[] objects = new ObjectEntity[objectNames.size()];
         for (int i = 0; i < objectNames.size(); i++) {
-            objects[i] = form.getObject(objectNames.get(i));
-            if (objects[i] == null) {
-                errLog.emitObjectNotFoundError(parser, objectNames.get(i));
-            }
+            objects[i] = findObjectEntity(form, objectNames.get(i));
         }
 
         PropertyObjectEntity[] propObjects = new PropertyObjectEntity[props == null ? 0 : props.size()];
@@ -891,6 +965,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         return addFAProp(null, genSID(), "", form, objects, propObjects, new OrderEntity[propObjects.length], cls, newSession, isModal);
+    }
+
+    public ObjectEntity findObjectEntity(FormEntity form, String objectName) throws ScriptingErrorLog.SemanticErrorException {
+        ObjectEntity result = form.getObject(objectName);
+        if (result == null) {
+            errLog.emitObjectNotFoundError(parser, objectName);
+        }
+        return result;
     }
 
     public void addScriptedMetaCodeFragment(String name, List<String> params, List<String> metaCode) throws ScriptingErrorLog.SemanticErrorException {

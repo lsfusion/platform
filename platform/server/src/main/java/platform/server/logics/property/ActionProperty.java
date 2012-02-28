@@ -1,15 +1,10 @@
 package platform.server.logics.property;
 
-import platform.base.QuickSet;
 import platform.server.classes.ActionClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.where.WhereBuilder;
-import platform.server.session.PropertyChanges;
-import platform.server.session.StructChanges;
 
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +36,7 @@ public abstract class ActionProperty extends ExecuteClassProperty {
         return v1.getUpSet().getOr().or(v2.getUpSet().getOr()).getCommonClass();
     }
 
-    protected static <I extends PropertyInterface> ValueClass[] getClasses(List<I> mapInterfaces, Collection<PropertyInterfaceImplement<I>> props) {
+    public static <I extends PropertyInterface> ValueClass[] getClasses(List<I> mapInterfaces, Collection<PropertyInterfaceImplement<I>> props) {
         ValueClass[] result = new ValueClass[mapInterfaces.size()];
         for(PropertyInterfaceImplement<I> prop : props) {
             Map<I, ValueClass> propClasses;

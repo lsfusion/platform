@@ -3,6 +3,7 @@ grammar LsfLogics;
 @header {
 	package platform.server;
 
+	import platform.base.OrderedMap;
 	import platform.interop.ClassViewType;
 	import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 	import platform.interop.navigator.FormShowType;
@@ -23,12 +24,15 @@ grammar LsfLogics;
 	import platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition;
 	import platform.server.logics.scripted.ScriptingLogicsModule.GroupingType;
 	import platform.server.logics.scripted.ScriptingLogicsModule.LPWithParams;
-
+	import platform.server.mail.EmailActionProperty;
+	import platform.server.mail.EmailActionProperty.FormStorageType;
+	import platform.server.mail.AttachmentFormat;
+	import javax.mail.Message;
+	
+	import java.util.*;
 	import java.awt.*;
-	import java.util.ArrayList;
-	import java.util.Collections;
+	import org.antlr.runtime.BitSet;
 	import java.util.List;
-	import java.util.Stack;
 
 	import static java.util.Arrays.asList;
 	import static platform.interop.form.layout.SingleSimplexConstraint.*;
@@ -921,14 +925,16 @@ casePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPar
 @init {
 	List<LPWithParams> whenProps = new ArrayList<LPWithParams>();
 	List<LPWithParams> thenProps = new ArrayList<LPWithParams>();
+	LPWithParams defaultProp = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedCaseUProp(whenProps, thenProps);
+		$property = self.addScriptedCaseUProp(whenProps, thenProps, defaultProp);
 	}
 }
 	:	'CASE'
 			( branch=caseBranchBody[context, dynamic] { whenProps.add($branch.whenProperty); thenProps.add($branch.thenProperty); } )+
+			'DEFAULT' defaultExpr=propertyExpression[context, dynamic] { defaultProp = $defaultExpr.property; }
 		'END'
 	;
 	
@@ -1183,7 +1189,7 @@ actionPropertyDefinition[List<String> context, boolean dynamic] returns [LP prop
 actionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	extPDB=extendContextActionPDB[context, dynamic] { $property = $extPDB.property; }
 	|	keepPDB=keepContextActionPDB[context, dynamic] { $property = $keepPDB.property; }
-	|	trivPDB=trivialActionPDB[context, dynamic] { $property = $trivPDB.property; }
+	|	trivPDB=customActionPDB[context, dynamic] { $property = $trivPDB.property; }
 	;
 
 extendContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -1202,7 +1208,7 @@ keepContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParam
 	|	ifPDB=ifActionPropertyDefinitionBody[context, dynamic] { $property = $ifPDB.property; }
 	;
 
-trivialActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
+customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	$property = new LPWithParams(null, new ArrayList<Integer>());
 }
@@ -1210,6 +1216,7 @@ trivialActionPDB[List<String> context, boolean dynamic] returns [LPWithParams pr
 	|	addPDB=addObjectActionPropertyDefinitionBody { $property.property = $addPDB.property; }
 	|	actPDB=customActionPropertyDefinitionBody { $property.property = $actPDB.property; }
 	|   msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
+	|   mailPDB=emailActionPropertyDefinitionBody[context, dynamic] { $property = $mailPDB.property; }
 	;
 
 			
@@ -1252,6 +1259,60 @@ addObjectActionPropertyDefinitionBody returns [LP property]
 	:	'ADDOBJ' cid=classId
 	;
 
+emailActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	LPWithParams fromProp = null;
+	LPWithParams subjProp = null;
+	
+	List<Message.RecipientType> recipTypes = new ArrayList<Message.RecipientType>();
+	List<LPWithParams> recipProps = new ArrayList<LPWithParams>();
+
+	List<String> forms = new ArrayList<String>();
+	List<FormStorageType> formTypes = new ArrayList<FormStorageType>();
+	List<OrderedMap<String, LPWithParams>> mapObjects = new ArrayList<OrderedMap<String, LPWithParams>>();
+	List<LPWithParams> attachNames = new ArrayList<LPWithParams>();
+	List<AttachmentFormat> attachFormats = new ArrayList<AttachmentFormat>();
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedEmailProp(fromProp, subjProp, recipTypes, recipProps, forms, formTypes, mapObjects, attachNames, attachFormats);
+	}
+}
+	:	'EMAIL'
+		('FROM' fromExpr=propertyExpression[context, dynamic] { fromProp = $fromExpr.property; } )?
+		'SUBJECT' subjExpr=propertyExpression[context, dynamic] { subjProp = $subjExpr.property; }
+		(
+			recipType=emailRecipientTypeLiteral { recipTypes.add($recipType.val); }
+			recipExpr=propertyExpression[context, dynamic] { recipProps.add($recipExpr.property); }
+		)*
+		(	(	'INLINE' { formTypes.add(FormStorageType.INLINE); }
+				form=compoundID { forms.add($form.sid); attachFormats.add(null); attachNames.add(null); }
+				objects=emailActionFormObjects[context, dynamic] { mapObjects.add($objects.mapObjects); }
+			)
+		|	(	'ATTACH' { formTypes.add(FormStorageType.ATTACH); }
+				format=emailAttachFormat { attachFormats.add($format.val); }
+				
+				{ LPWithParams attachName = null;}
+				('NAME' attachNameExpr=propertyExpression[context, dynamic] { attachName = $attachNameExpr.property; } )?
+				{ attachNames.add(attachName); }
+				
+				form=compoundID { forms.add($form.sid); }
+				objects=emailActionFormObjects[context, dynamic] { mapObjects.add($objects.mapObjects); }
+			)
+		)*
+	;
+	
+emailActionFormObjects[List<String> context, boolean dynamic] returns [OrderedMap<String, LPWithParams> mapObjects]
+@init {
+	$mapObjects = new OrderedMap<String, LPWithParams>();
+}
+
+	:	(	'OBJECTS'
+			obj=ID '=' objValueExpr=propertyExpression[context, dynamic] { $mapObjects.put($obj.text, $objValueExpr.property); }
+			(',' obj=ID '=' objValueExpr=propertyExpression[context, dynamic] { $mapObjects.put($obj.text, $objValueExpr.property); })*
+		)?
+	;
+	
 messageActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	int length = 2000;
@@ -2002,6 +2063,19 @@ panelLocationLiteral returns [PanelLocationView val]
 }
 	:	'TOOLBAR' { toolbar = true; }
 	|	'SHORTCUT' { toolbar = false; } (onlyProp=propertySelector { property = $onlyProp.propertyView; })? ('DEFAULT' { defaultProperty = true; })?
+	;
+
+emailRecipientTypeLiteral returns [Message.RecipientType val]
+	:	'TO'	{ $val = Message.RecipientType.TO; }
+	|	'CC'	{ $val = Message.RecipientType.CC; }
+	|	'BCC'	{ $val = Message.RecipientType.BCC; }
+	;
+	
+emailAttachFormat returns [AttachmentFormat val]
+	:	'PDF'	{ $val = AttachmentFormat.PDF; }
+	|	'DOCX'	{ $val = AttachmentFormat.DOCX; }
+	|	'HTML'	{ $val = AttachmentFormat.HTML; }
+	|	'RTF'	{ $val = AttachmentFormat.RTF; }
 	;
 	
 udoubleLiteral returns [double val]

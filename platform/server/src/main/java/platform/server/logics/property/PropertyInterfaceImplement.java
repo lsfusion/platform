@@ -27,6 +27,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> {
 
     abstract void mapFillDepends(Collection<Property> depends);
 
+    Object read(ExecutionContext context, Map<P, DataObject> interfaceValues) throws SQLException;
     Object read(DataSession session, Map<P, DataObject> interfaceValues, Modifier modifier) throws SQLException;
     ObjectValue readClasses(DataSession session, Map<P, DataObject> interfaceValues, Modifier modifier) throws SQLException;
 

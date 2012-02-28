@@ -798,9 +798,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         emailToObject = addAGProp("emailToObject", getString("logics.email.to.object"), email);
 
-        emailUserPassUser = addEAProp(getString("logics.user.password.reminder"), customUser);
-        addEARecepient(emailUserPassUser, email, 1);
-
         generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(email, userLogin, userPassword, customUser));
 
         name = addCUProp(recognizeGroup, "commonName", getString("logics.name"), dataName,
@@ -1034,6 +1031,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         emailPassword = addDProp(emailGroup, "emailPassword", getString("logics.email.password"), StringClass.get(50));
         emailBlindCarbonCopy = addDProp(emailGroup, "emailBlindCarbonCopy", getString("logics.email.copy.bcc"), StringClass.get(50));
         fromAddress = addDProp(emailGroup, "fromAddress", getString("logics.email.sender"), StringClass.get(50));
+
+        emailUserPassUser = addEAProp(baseGroup, genSID(), "email", getString("logics.user.password.reminder"), fromAddress,  emailBlindCarbonCopy, customUser);
+        addEARecipients(emailUserPassUser, email, 1);
 
         disableEmail = addDProp(emailGroup, "disableEmail", getString("logics.email.disable.email.sending"), LogicalClass.instance);
 
@@ -2294,7 +2294,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class RemindUserPassFormEntity extends FormEntity { // письмо эксперту о логине
+    private class RemindUserPassFormEntity extends FormEntity { // письмо пользователю о логине
         private ObjectEntity objUser;
 
         private RemindUserPassFormEntity(NavigatorElement parent, String sID) {

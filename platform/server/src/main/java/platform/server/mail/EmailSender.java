@@ -16,7 +16,7 @@ import java.io.*;
 import java.util.*;
 
 public class EmailSender {
-    final static Logger logger = Logger.getLogger(EmailSender.class);
+    private final static Logger logger = Logger.getLogger(EmailSender.class);
 
     MimeMessage message;
     Multipart mp = new MimeMultipart();
@@ -28,9 +28,9 @@ public class EmailSender {
     public static class AttachmentProperties {
         public String fileName;
         public String attachmentName;
-        public EmailActionProperty.Format format;
+        public AttachmentFormat format;
 
-        public AttachmentProperties(String fileName, String attachmentName, EmailActionProperty.Format format) {
+        public AttachmentProperties(String fileName, String attachmentName, AttachmentFormat format) {
             this.fileName = fileName;
             this.attachmentName = attachmentName;
             this.format = format;
@@ -97,7 +97,7 @@ public class EmailSender {
         mp.addBodyPart(textPart);
     }
 
-    private String getMimeType(EmailActionProperty.Format format) {
+    private String getMimeType(AttachmentFormat format) {
         switch (format) {
             case PDF:
                 return "application/pdf";
@@ -110,14 +110,14 @@ public class EmailSender {
         }
     }
 
-    public void attachFile(AttachmentProperties props) throws MessagingException, IOException {
-        FileDataSource fds = new FileDataSource(props.fileName);
-        ByteArrayDataSource dataSource = new ByteArrayDataSource(fds.getInputStream(), getMimeType(props.format));
-        attachFile(dataSource, props.attachmentName);
+    public void attachFile(AttachmentProperties attachment) throws MessagingException, IOException {
+        FileDataSource fds = new FileDataSource(attachment.fileName);
+        ByteArrayDataSource dataSource = new ByteArrayDataSource(fds.getInputStream(), getMimeType(attachment.format));
+        attachFile(dataSource, attachment.attachmentName);
     }
 
     public void attachFile(byte[] buf, String attachmentName) throws MessagingException {
-        ByteArrayDataSource dataSource = new ByteArrayDataSource(buf, getMimeType(EmailActionProperty.Format.PDF));
+        ByteArrayDataSource dataSource = new ByteArrayDataSource(buf, getMimeType(AttachmentFormat.PDF));
         attachFile(dataSource, attachmentName);
     }
 
@@ -139,24 +139,24 @@ public class EmailSender {
         return result;
     }
     
-    private String createInlinePart(List<String> inlineForms) throws IOException {
-        String result = convertFilesToUtf(inlineForms);
+    private String createInlinePart(List<String> inlineFiles) throws IOException {
+        String result = convertFilesToUtf(inlineFiles);
         if (result.equals("")) {
             result = ServerResourceBundle.getString("mail.you.have.received.reports");
         }
         return result;
     }
 
-    public void sendMail(String subject, List<String> inlineForms, List<AttachmentProperties> attachmentForms, Map<ByteArray, String> files) throws MessagingException, IOException {
-        assert inlineForms != null && attachmentForms != null && files != null;
+    public void sendMail(String subject, List<String> inlineFiles, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException {
+        assert inlineFiles != null && attachments != null && files != null;
 
         setMessageHeading();
         message.setSubject(subject, "utf-8");
 
-        setText(createInlinePart(inlineForms));
+        setText(createInlinePart(inlineFiles));
 
-        for (AttachmentProperties formProps : attachmentForms) {
-            attachFile(formProps);
+        for (AttachmentProperties attachment : attachments) {
+            attachFile(attachment);
         }
         for (Map.Entry<ByteArray, String> entry : files.entrySet()) {
             attachFile(entry.getKey().array, entry.getValue());
@@ -166,16 +166,16 @@ public class EmailSender {
         sendMail(message, subject);
     }
 
-    public void sendPlainMail(String subject, String inlineForms, List<AttachmentProperties> attachmentForms, Map<ByteArray, String> files) throws MessagingException, IOException {
-        assert inlineForms != null && attachmentForms != null && files != null;
+    public void sendPlainMail(String subject, String inlineForms, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException {
+        assert inlineForms != null && attachments != null && files != null;
 
         setMessageHeading();
         message.setSubject(subject, "utf-8");
 
         setText(inlineForms);
 
-        for (AttachmentProperties formProps : attachmentForms) {
-            attachFile(formProps);
+        for (AttachmentProperties attachment : attachments) {
+            attachFile(attachment);
         }
         for (Map.Entry<ByteArray, String> entry : files.entrySet()) {
             attachFile(entry.getKey().array, entry.getValue());

@@ -292,14 +292,6 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    //todo: remove later
-//    @PendingRemoteMethod
-//    public void continueAutoActions() throws RemoteException {
-//        logRemoteMethodStartVoidCall("continueAutoActions");
-//        target.continueAutoActions();
-//        logRemoteMethodEndVoidCall("continueAutoActions");
-//    }
-
     public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException {
         target.saveUserPreferences(preferences, forAllUsers);
     }

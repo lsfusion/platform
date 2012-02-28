@@ -30,6 +30,7 @@ import platform.server.logics.property.derived.ConcatenateProperty;
 import platform.server.logics.property.derived.CycleGroupProperty;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.mail.AttachmentFormat;
 import platform.server.mail.EmailActionProperty;
 
 import javax.mail.Message;
@@ -37,6 +38,8 @@ import javax.mail.internet.MimeMessage;
 import java.io.FileNotFoundException;
 import java.util.*;
 
+import static java.util.Arrays.asList;
+import static java.util.Arrays.copyOfRange;
 import static platform.base.BaseUtils.*;
 import static platform.server.logics.PropertyUtils.*;
 import static platform.server.logics.property.actions.ExecutePropertiesActionProperty.EPA_INTERFACE;
@@ -386,13 +389,13 @@ public abstract class LogicsModule {
         int i = params.length - 1;
         while (i > 0 && (params[i] == null || params[i] instanceof ValueClass))
             backClasses.add((ValueClass) params[i--]);
-        params = Arrays.copyOfRange(params, 0, i + 1);
+        params = copyOfRange(params, 0, i + 1);
         ValueClass[] overrideClasses = BaseUtils.reverse(backClasses).toArray(new ValueClass[1]);
 
         boolean defaultChanged = false;
         if (params[0] instanceof Boolean) {
             defaultChanged = (Boolean) params[0];
-            params = Arrays.copyOfRange(params, 1, params.length);
+            params = copyOfRange(params, 1, params.length);
         }
 
         // придется создавать Join свойство чтобы считать его класс
@@ -422,7 +425,7 @@ public abstract class LogicsModule {
         if (overrideClasses.length > dersize) {
             valueClass = overrideClasses[dersize];
             assert !overrideClasses[dersize].isCompatibleParent(value.result);
-            overrideClasses = Arrays.copyOfRange(params, 0, dersize, ValueClass[].class);
+            overrideClasses = copyOfRange(params, 0, dersize, ValueClass[].class);
         } else
             valueClass = value.result;
 
@@ -536,29 +539,12 @@ public abstract class LogicsModule {
         return addAProp(new StopActionProperty(genSID(), caption, header));
     }
 
-    protected LP addSetPropertyAProp(AbstractGroup group, String name, String caption, LP toProperty, int[] mapToInterfaces, int mapResultInterface, int[] mapThisInterfaces) {
-        Object[] leftParams = add(toOneBasedArray(mapThisInterfaces), add(toProperty, toOneBasedArray(mapToInterfaces)));
-        return addSetPropertyAProp(group, name, caption, getIntNum(leftParams), mapThisInterfaces.length, add(leftParams, mapResultInterface));
-    }
-
-    protected LP addSetPropertyAProp(AbstractGroup group, String name, String caption, LP toProperty, int[] mapToInterfaces, LP fromProperty, int[] mapFromInterfaces, int[] mapThisInterfaces) {
-        Object[] leftParams = add(toOneBasedArray(mapThisInterfaces), add(toProperty, toOneBasedArray(mapToInterfaces)));
-        return addSetPropertyAProp(group, name, caption, getIntNum(leftParams), mapThisInterfaces.length, add(leftParams, add(fromProperty, toOneBasedArray(mapFromInterfaces))));
-    }
-
     protected <C extends PropertyInterface> LP addSetPropertyAProp(AbstractGroup group, String name, String caption, int interfaces, int resInterfaces, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
         return addProperty(group, new LP<ClassPropertyInterface>(new SetActionProperty<C, PropertyInterface>(name, caption,
-                innerInterfaces, (List)readImplements.subList(0, resInterfaces),
-                (PropertyMapImplement<C, PropertyInterface>)readImplements.get(resInterfaces), readImplements.get(resInterfaces+1))));
-    }
-
-    protected LP addListAProp(AbstractGroup group, String name, String caption, int interfaces, LP[] actions, int[][] mapActions) {
-        Object[] params = new Object[]{};
-        for(int i=0;i<actions.length;i++)
-            params = add(params, add(actions[i], toOneBasedArray(mapActions[i])));
-        return addListAProp(group, name, caption, interfaces, params);
+                                                                                                             innerInterfaces, (List) readImplements.subList(0, resInterfaces),
+                                                                                                             (PropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
     }
 
     protected LP addListAProp(AbstractGroup group, String name, String caption, int interfaces, Object... params) {
@@ -588,7 +574,7 @@ public abstract class LogicsModule {
     protected LP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean recursive, int interfaces, int resInterfaces, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
-        return addProperty(group, new LP<ClassPropertyInterface>(new ForActionProperty<PropertyInterface>(name, caption, 
+        return addProperty(group, new LP<ClassPropertyInterface>(new ForActionProperty<PropertyInterface>(name, caption,
                 innerInterfaces, (List) readImplements.subList(0, resInterfaces), (PropertyMapImplement<?, PropertyInterface>)readImplements.get(resInterfaces),
                 toOrderedMap(readImplements.subList(resInterfaces+1, readImplements.size()-1), ascending), (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(readImplements.size()-1), recursive)));
     }
@@ -609,7 +595,6 @@ public abstract class LogicsModule {
 
     protected LP addEAProp(String subject, ValueClass... params) {
         return addEAProp(subject, baseLM.fromAddress, baseLM.emailBlindCarbonCopy, params);
-
     }
 
     protected LP addEAProp(LP fromAddress, LP emailBlindCarbonCopy, ValueClass... params) {
@@ -621,18 +606,51 @@ public abstract class LogicsModule {
     }
 
     protected LP addEAProp(AbstractGroup group, String name, String caption, String subject, LP fromAddress, LP emailBlindCarbonCopy, ValueClass... params) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new EmailActionProperty(name, caption, subject, fromAddress, emailBlindCarbonCopy, baseLM.BL, params)));
+        Object[] fromImplement = new Object[] {fromAddress};
+        Object[] subjImplement;
+        if (subject != null) {
+            subjImplement = new Object[] {addCProp(StringClass.get(subject.length()), subject)};
+        } else {
+            ValueClass[] nParams = new ValueClass[params.length + 1];
+            System.arraycopy(params, 0, nParams, 0, params.length);
+            nParams[params.length] = StringClass.get(100);
+
+            params = nParams;
+
+            subjImplement = new Object[] {params.length};
+        }
+
+        LP<ClassPropertyInterface> eaPropLP = addEAProp(group, name, caption, params, fromImplement, subjImplement);
+        addEARecipients(eaPropLP, Message.RecipientType.BCC, emailBlindCarbonCopy);
+
+        return eaPropLP;
     }
 
-    protected <X extends PropertyInterface> void addEARecepient(LP<ClassPropertyInterface> eaProp, LP<X> emailProp, Integer... params) {
-        addEARecepient(eaProp, MimeMessage.RecipientType.TO, emailProp, params);
+    protected LP<ClassPropertyInterface> addEAProp(AbstractGroup group, String name, String caption, ValueClass[] params, Object[] fromAddress, Object[] subject) {
+        EmailActionProperty eaProp = new EmailActionProperty(name, caption, baseLM.BL, params);
+        LP<ClassPropertyInterface> eaPropLP = addProperty(group, new LP<ClassPropertyInterface>(eaProp));
+
+        if (fromAddress != null) {
+            eaProp.setFromAddress(single(readImplements(eaPropLP.listInterfaces, fromAddress)));
+        }
+
+        if (subject != null) {
+            eaProp.setSubject(single(readImplements(eaPropLP.listInterfaces, subject)));
+        }
+
+        return eaPropLP;
     }
 
-    protected <X extends PropertyInterface> void addEARecepient(LP<ClassPropertyInterface> eaProp, Message.RecipientType type, LP<X> emailProp, Integer... params) {
-        Map<X, ClassPropertyInterface> mapInterfaces = new HashMap<X, ClassPropertyInterface>();
-        for (int i = 0; i < emailProp.listInterfaces.size(); i++)
-            mapInterfaces.put(emailProp.listInterfaces.get(i), eaProp.listInterfaces.get(params[i] - 1));
-        ((EmailActionProperty) eaProp.property).addRecipient(new PropertyMapImplement<X, ClassPropertyInterface>(emailProp.property, mapInterfaces), type);
+    protected void addEARecipients(LP<ClassPropertyInterface> eaProp, Object... params) {
+        addEARecipients(eaProp, MimeMessage.RecipientType.TO, params);
+    }
+
+    protected void addEARecipients(LP<ClassPropertyInterface> eaProp, Message.RecipientType type, Object... params) {
+        List<PropertyInterfaceImplement<ClassPropertyInterface>> recipImpls = readImplements(eaProp.listInterfaces, params);
+
+        for (PropertyInterfaceImplement<ClassPropertyInterface> recipImpl : recipImpls) {
+            ((EmailActionProperty) eaProp.property).addRecipient(recipImpl, type);
+        }
     }
 
     private Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> readObjectImplements(LP<ClassPropertyInterface> eaProp, Object[] params) {
@@ -642,27 +660,60 @@ public abstract class LogicsModule {
         while (i < params.length) {
             ObjectEntity object = (ObjectEntity)params[i];
 
-            ArrayList<Object> impls = new ArrayList<Object>();
+            ArrayList<Object> objectImplement = new ArrayList<Object>();
             while (++i < params.length && !(params[i] instanceof ObjectEntity)) {
-                impls.add(params[i]);
+                objectImplement.add(params[i]);
             }
-            
-            mapObjects.put(object, readImplements(eaProp.listInterfaces, impls.toArray()).iterator().next()); // знаем, что только один будет
+
+            // знаем, что только один будет
+            mapObjects.put(object, single(readImplements(eaProp.listInterfaces, objectImplement.toArray())));
         }
         return mapObjects;
     }
-    
+
     protected void addInlineEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, Object... params) {
         ((EmailActionProperty) eaProp.property).addInlineForm(form, readObjectImplements(eaProp, params));
     }
 
-    protected void addAttachEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, EmailActionProperty.Format format, Object... params) {
-        LP attachmentName = null;
+    /**
+     * @param params : сначала может идти свойство, из которго будет читаться имя attachment'a,
+     * при этом его входы мэпятся на все входы eaProp по порядку, <br/>
+     * затем список объектов ObjectEntity + мэппинг, из которого будет читаться значение этого объекта.
+     * <br/>
+     * Мэппинг - это мэппинг на интерфейсы результирующего свойства (prop, 1,3,4 или просто N)
+     * @deprecated теперь лучше использовать {@link platform.server.logics.LogicsModule#addAttachEAForm(platform.server.logics.linear.LP<platform.server.logics.property.ClassPropertyInterface>, platform.server.form.entity.FormEntity, platform.server.mail.AttachmentFormat, java.lang.Object...)}
+     * с явным мэппингом свойства для имени
+     */
+    protected void addAttachEAFormNameFullyMapped(LP<ClassPropertyInterface> eaProp, FormEntity form, AttachmentFormat format, Object... params) {
         if (params.length > 0 && params[0] instanceof LP) {
-            attachmentName = (LP) params[0];
-            params = Arrays.copyOfRange(params, 1, params.length);
+            ArrayList nParams = new ArrayList();
+            nParams.add(params[0]);
+            nParams.addAll(genList(eaProp.listInterfaces.size()));
+            nParams.addAll(asList(copyOfRange(params, 1, params.length)));
+
+            params = nParams.toArray();
         }
-        ((EmailActionProperty) eaProp.property).addAttachmentForm(form, format, readObjectImplements(eaProp, params), attachmentName);
+
+        addAttachEAForm(eaProp, form, format, params);
+    }
+
+    /**
+     * @param params : сначала может идти мэппинг, из которго будет читаться имя attachment'a,
+     * затем список объектов ObjectEntity + мэппинг, из которого будет читаться значение этого объекта.
+     * <br/>
+     * Мэппинг - это мэппинг на интерфейсы результирующего свойства (prop, 1,3,4 или просто N)
+     */
+    protected void addAttachEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, AttachmentFormat format, Object... params) {
+        PropertyInterfaceImplement<ClassPropertyInterface> attachNameImpl = null;
+        if (params.length > 0 && !(params[0] instanceof ObjectEntity)) {
+            int attachNameParamsCnt = 1;
+            while (attachNameParamsCnt < params.length && !(params[attachNameParamsCnt] instanceof ObjectEntity)) {
+                ++attachNameParamsCnt;
+            }
+            attachNameImpl = single(readImplements(eaProp.listInterfaces, copyOfRange(params, 0, attachNameParamsCnt)));
+            params = copyOfRange(params, attachNameParamsCnt, params.length);
+        }
+        ((EmailActionProperty) eaProp.property).addAttachmentForm(form, format, readObjectImplements(eaProp, params), attachNameImpl);
     }
 
     protected LP addTAProp(LP sourceProperty, LP targetProperty) {
@@ -960,7 +1011,7 @@ public abstract class LogicsModule {
     private LP addGCAProp(AbstractGroup group, String name, String caption, GroupObjectEntity groupObject, LP mainProperty, int[] mainInts, LP getterProperty, int[] getterInts, int[] groupInts) {
         return addProperty(group, new LP<ClassPropertyInterface>(
                 new GroupChangeActionProperty(name, caption, groupObject,
-                        mainProperty, mainInts, getterProperty, getterInts, groupInts)));
+                                              mainProperty, mainInts, getterProperty, getterInts, groupInts)));
     }
 
     public void showIf(FormEntity<?> form, LP[] properties, LP ifProperty, ObjectEntity... objects) {
@@ -1205,7 +1256,7 @@ public abstract class LogicsModule {
         return addSGProp(group, name, persistent, notZero, caption, groupProp.listInterfaces, add(groupProp.property.getImplement(), listImplements));
     }
 
-    private List<PropertyInterface> genInterfaces(int interfaces) {
+    protected List<PropertyInterface> genInterfaces(int interfaces) {
         List<PropertyInterface> innerInterfaces = new ArrayList<PropertyInterface>();
         for(int i=0;i<interfaces;i++)
             innerInterfaces.add(new PropertyInterface(i));
@@ -1495,7 +1546,7 @@ public abstract class LogicsModule {
                 break;
             case STRING_AGG:
                 delimeter = (String) params[params.length-1];
-                params = Arrays.copyOfRange(params, 0, params.length-1);
+                params = copyOfRange(params, 0, params.length - 1);
                 break;
         }
 
@@ -1646,7 +1697,7 @@ public abstract class LogicsModule {
 
     public LP addLProp(LP lp, ValueClass... classes) {
         LP writeProp = addJProp(baseLM.and1, add(directLI(lp), new Object[]{addJProp(baseLM.equals2, 1, baseLM.currentSession), lp.listInterfaces.size() + 1}));
-        return addDCProp("LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log")+" " + lp.property, writeProp, add(new Object[]{true}, add(getParams(writeProp), add(directLI(lp), classes))));
+        return addDCProp("LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log") + " " + lp.property, writeProp, add(new Object[]{true}, add(getParams(writeProp), add(directLI(lp), classes))));
     }
 
     // XOR
@@ -1766,7 +1817,7 @@ public abstract class LogicsModule {
 
     protected LP[] addMUProp(AbstractGroup group, String[] names, String[] captions, int extra, LP... props) {
         int propNum = props.length / (1 + extra);
-        LP[] maxProps = Arrays.copyOfRange(props, 0, propNum);
+        LP[] maxProps = copyOfRange(props, 0, propNum);
 
         LP[] result = new LP[extra + 1];
         int i = 0;
@@ -2014,7 +2065,7 @@ public abstract class LogicsModule {
     public LP getEditFormAction(CustomClass cls, boolean session) {
         ClassFormEntity form = cls.getEditForm(baseLM);
         LP property = addMFAProp(actionGroup, "edit" + (session ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit"), // + "(" + cls + ")",
-                                form.form, new ObjectEntity[] {form.object}, !session);
+                                 form.form, new ObjectEntity[]{form.object}, !session);
         property.setImage("edit.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());

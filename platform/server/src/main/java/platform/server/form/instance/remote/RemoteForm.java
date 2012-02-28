@@ -816,15 +816,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    //todo: remove later
-//    public void continueAutoActions() throws RemoteException {
-//        try {
-//            actions.addAll(form.continueAutoActions());
-//        } catch (SQLException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-
     @Override
     public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException {
         form.saveUserPreferences(preferences, forAllUsers);

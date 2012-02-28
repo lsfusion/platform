@@ -140,7 +140,7 @@ public class PropertyUtils {
         return result;
     }
 
-    protected static int getIntNum(Object[] params) {
+    public static int getIntNum(Object[] params) {
         int intNum = 0;
         for (Object param : params)
             if (param instanceof Integer)

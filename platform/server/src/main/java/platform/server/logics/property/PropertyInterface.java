@@ -56,6 +56,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return joinImplement.get((P) this);
     }
 
+    public Object read(ExecutionContext context, Map<P, DataObject> interfaceValues) throws SQLException {
+        return read(context.getSession(), interfaceValues, context.getModifier());
+    }
+
     public Object read(DataSession session, Map<P, DataObject> interfaceValues, Modifier modifier) {
         return interfaceValues.get((P) this).object;
     }
