@@ -46,6 +46,7 @@
       <keyword name="CONFIRM" />
       <keyword name="CONSTRAINT" />
       <keyword name="CUSTOM" />
+      <keyword name="CYCLES" />
       <keyword name="DATA" />
       <keyword name="DATE" />
       <keyword name="DATETIME" />
@@ -97,6 +98,7 @@
       <keyword name="IF" />
       <keyword name="IMAGE" />
       <keyword name="IMPORT" />
+      <keyword name="IMPOSSIBLE" />
       <keyword name="IN" />
       <keyword name="INCREMENT" />
       <keyword name="INIT" />
@@ -146,6 +148,7 @@
       <keyword name="PROPERTY" />
       <keyword name="READONLY" />
       <keyword name="READONLYIF" />
+      <keyword name="RECURSION" />
       <keyword name="REGEXP" />
       <keyword name="REMOVE" />
       <keyword name="RESOLVE" />
@@ -159,6 +162,7 @@
       <keyword name="SHOW" />
       <keyword name="SHOWIF" />
       <keyword name="STATIC" />
+      <keyword name="STEP" />
       <keyword name="STRING" />
       <keyword name="SUBJECT" />
       <keyword name="SUM" />

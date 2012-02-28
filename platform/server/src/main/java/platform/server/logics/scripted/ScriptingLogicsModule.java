@@ -350,18 +350,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public int getParamIndex(String param, List<String> namedParams, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
+    public int getParamIndex(String param, List<String> namedParams, boolean dynamic, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
         int index = -1;
         if (namedParams != null) {
             index = namedParams.indexOf(param);
         }
         if (index < 0 && param.startsWith("$")) {
-            index = Integer.parseInt(param.substring(1)) - 1;
-            if (index < 0 || !dynamic && namedParams != null && index >= namedParams.size()) {
-                errLog.emitParamIndexError(parser, index + 1, namedParams == null ? 0 : namedParams.size());
+            if (Character.isDigit(param.charAt(1))) {
+                index = Integer.parseInt(param.substring(1)) - 1;
+                if (index < 0 || !dynamic && namedParams != null && index >= namedParams.size()) {
+                    errLog.emitParamIndexError(parser, index + 1, namedParams == null ? 0 : namedParams.size());
+                }
+            } else if (!insideRecursion) {
+                errLog.emitRecursiveParamsOutideRecursionError(parser, param);
+            } else if (namedParams != null && namedParams.indexOf(param.substring(1)) < 0 && !dynamic) {
+                errLog.emitParamNotFoundError(parser, param.substring(1));
             }
         }
-        if (index < 0 && namedParams != null && dynamic) {
+        if (index < 0 && namedParams != null && (dynamic || param.startsWith("$") && insideRecursion)) {
             index = namedParams.size();
             namedParams.add(param);
         }
@@ -905,6 +911,57 @@ public class ScriptingLogicsModule extends LogicsModule {
         Set<Integer> params = findFormulaParameters(formulaText);
         checkFormulaParameters(params);
         return addSFProp(transformFormulaText(formulaText), (DataClass) cls, params.size());
+    }
+
+    public LPWithParams addScriptedRProp(List<String> context, LPWithParams zeroStep, LPWithParams nextStep, Cycle cycleType) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedRProp(" + context + ", " + zeroStep + ", " + nextStep + ", " + cycleType + ");");
+
+        List<Integer> usedParams = mergeAllParams(Arrays.asList(zeroStep, nextStep));
+
+        checkRecursionContext(context, usedParams);
+
+        Map<Integer, Integer> mapContext = new HashMap<Integer, Integer>();
+        int interfaceIndex = 0;
+        int resIntCnt = 0;
+        for (int usedParam : usedParams) {
+            if (!context.get(usedParam).startsWith("$")) {
+                ++resIntCnt;
+                if (!context.contains("$" + context.get(usedParam))) {
+                    mapContext.put(usedParam, interfaceIndex);
+                    ++interfaceIndex;
+                }
+            }
+        }
+
+        int pureInterfaces = interfaceIndex;
+
+        for (int usedParam : usedParams) {
+            if (!mapContext.containsKey(usedParam) && !context.get(usedParam).startsWith("$")) {
+                mapContext.put(usedParam, interfaceIndex);
+                int prevIndex = context.indexOf("$" + context.get(usedParam));
+                mapContext.put(prevIndex, resIntCnt + interfaceIndex - pureInterfaces);
+                ++interfaceIndex;
+            }
+        }
+
+        List<Object> params = new ArrayList<Object>();
+        params.add(zeroStep.property);
+        for (int param : zeroStep.usedParams) {
+            params.add(mapContext.get(param) + 1);
+        }
+        params.add(nextStep.property);
+        for (int param : nextStep.usedParams) {
+            params.add(mapContext.get(param) + 1);
+        }
+        LP res = addRProp(null, genSID(), false, "", cycleType, resIntCnt, params.toArray());
+
+        List<Integer> resUsedParams = new ArrayList<Integer>();
+        for (Integer usedParam : usedParams) {
+            if (!context.get(usedParam).startsWith("$")) {
+                resUsedParams.add(usedParam);
+            }
+        }
+        return new LPWithParams(res, resUsedParams);
     }
 
     private Set<Integer> findFormulaParameters(String text) {
@@ -1531,6 +1588,20 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkForActionPropertyConstraints(boolean isRecursive, List<Integer> oldContext, List<Integer> newContext) throws ScriptingErrorLog.SemanticErrorException {
         if (!isRecursive && oldContext.size() == newContext.size()) {
             errLog.emitForActionSameContestError(parser);
+        }
+    }
+
+    private void checkRecursionContext(List<String> context, List<Integer> usedParams) throws ScriptingErrorLog.SemanticErrorException {
+        for (String param : context) {
+            if (param.startsWith("$")) {
+                int indexPlain = context.indexOf(param.substring(1));
+                if (indexPlain < 0) {
+                    errLog.emitParamNotFoundError(parser, param.substring(1));
+                }
+                if (!usedParams.contains(indexPlain)) {
+                    errLog.emitParameterNotUsedInRecursionError(parser, param.substring(1));
+                }
+            }
         }
     }
 

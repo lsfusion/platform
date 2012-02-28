@@ -18,6 +18,7 @@ grammar LsfLogics;
 	import platform.server.form.view.panellocation.PanelLocationView;
 	import platform.server.logics.linear.LP;
 	import platform.server.logics.property.PropertyFollows;
+	import platform.server.logics.property.Cycle;
 	import platform.server.logics.scripted.*;
 	import platform.server.logics.scripted.MappedProperty;
 	import platform.server.logics.scripted.ScriptingLogicsModule.WindowType;
@@ -69,7 +70,9 @@ grammar LsfLogics;
 @members {
 	public ScriptingLogicsModule self;
 	public ScriptingLogicsModule.State parseState;
-
+	
+	private boolean insideRecursion = false;
+	
 	public boolean inParseState(ScriptingLogicsModule.State parseState) {
 		return this.parseState == parseState;
 	}
@@ -778,7 +781,7 @@ expressionPrimitive[List<String> context, boolean dynamic] returns [LPWithParams
 	:	paramName=parameter
         {
 			if (inPropParseState()) {
-				$property = new LPWithParams(null, Collections.singletonList(self.getParamIndex($paramName.text, $context, $dynamic)));
+				$property = new LPWithParams(null, Collections.singletonList(self.getParamIndex($paramName.text, $context, $dynamic, insideRecursion)));
 			}
 		}
 	|	expr=expressionFriendlyPD[context, dynamic] { $property = $expr.property; }
@@ -790,6 +793,7 @@ expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParam
 	|	ifElseDef=ifElsePropertyDefinition[context, dynamic] { $property = $ifElseDef.property; }
 	|	caseDef=casePropertyDefinition[context, dynamic] { $property = $caseDef.property; }
 	|	partDef=partitionPropertyDefinition[context, dynamic] { $property = $partDef.property; }
+	|	recDef=recursivePropertyDefinition[context, dynamic] { $property = $recDef.property; } 
 	|	constDef=literal { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
@@ -944,20 +948,28 @@ caseBranchBody[List<String> context, boolean dynamic] returns [LPWithParams when
 		'THEN' thenExpr=propertyExpression[context, dynamic] { $thenProperty = $thenExpr.property; }
 	;
 
-/*recursionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
+recursivePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	
+	Cycle cycleType = Cycle.NO;
+	List<String> recursiveContext = new ArrayList<String>(context);
+	if (inPropParseState() && insideRecursion) {
+		self.getErrLog().emitNestedRecursionError(self.getParser());
+	}
 }
 @after {
 	if (inPropParseState()) {
+		$property = self.addScriptedRProp(recursiveContext, $zeroStep.property, $nextStep.property, cycleType);			
 	}
+	insideRecursion = false;
 }
 	:	'RECURSION'
 		zeroStep=propertyExpression[context, dynamic]
 		'STEP'
-		nextStep=propertyExpression[context, dynamic]
+		{ insideRecursion = true; }
+		nextStep=propertyExpression[recursiveContext, dynamic]
+		('CYCLES' { cycleType = Cycle.YES; } ('IMPOSSIBLE' { cycleType = Cycle.IMPOSSIBLE; })? )?
 	;
-*/
+
 
 formulaPropertyDefinition returns [LP property]
 @after {
@@ -1886,7 +1898,7 @@ propertyWithNamedParams returns [String name, List<String> params]
 	;
 
 parameter
-	:	ID | NUMBERED_PARAM
+	:	ID | NUMBERED_PARAM | RECURSIVE_PARAM
 	;
 
 
@@ -2096,11 +2108,13 @@ fragment SPACE		:	(' '|'\t');
 fragment STR_LITERAL_CHAR	: '\\\'' | ~('\r'|'\n'|'\'');	 // overcomplicated due to bug in ANTLR Works
 fragment DIGITS		:	('0'..'9')+;
 fragment HEX_DIGIT	: 	'0'..'9' | 'a'..'f' | 'A'..'F';
+fragment FIRST_ID_LETTER	: ('a'..'z'|'A'..'Z');
+fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'TEXT' | 'TIME' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';	
 NULL_LITERAL	:	'NULL';	
-ID          	:	('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
+ID          	:	FIRST_ID_LETTER NEXT_ID_LETTER*;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };
 STRING_LITERAL	:	'\'' STR_LITERAL_CHAR* '\'';
 COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;
@@ -2108,6 +2122,7 @@ COMMENTS		:	('//' .* '\n') { $channel=HIDDEN; };
 UINT_LITERAL 	:	DIGITS;
 POSITIVE_DOUBLE_LITERAL	: 	DIGITS '.' DIGITS;	  
 NUMBERED_PARAM	:	'$' DIGITS;
+RECURSIVE_PARAM :	'$' FIRST_ID_LETTER NEXT_ID_LETTER*;	
 EQ_OPERAND		:	('==') | ('!=');
 REL_OPERAND		: 	('<') | ('>') | ('<=') | ('>=');
 MINUS			:	'-';

@@ -333,6 +333,18 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "FOR action statement must introduce new parameters, use IF or WHILE instead");
     }
 
+    public void emitNestedRecursionError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "RECURSION property inside another recursive step is forbidden");
+    }
+
+    public void emitRecursiveParamsOutideRecursionError(LsfLogicsParser parser, String paramName) throws SemanticErrorException {
+        emitSimpleError(parser, format("recursive parameter '%s' outside recursive step is forbidden", paramName));
+    }
+
+    public void emitParameterNotUsedInRecursionError(LsfLogicsParser parser, String paramName) throws SemanticErrorException {
+        emitSimpleError(parser, format("there is no '%s' inside RECURSION", paramName));
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

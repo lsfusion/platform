@@ -103,6 +103,11 @@ nameToCountry(name) = GROUP UNIQUE country BY name(country);
 // UNION (SUM | MAX | OVERRIDE | XOR | EXCLUSIVE) propertyExpression1, ..., propertyExpressionN
 testUnion(store, article) = UNION SUM incomeQuantity(store, article), outcomeQuantity(store, article);
 
+// Recursive property
+// Expression syntax:
+// RECURSION initPropertyExpression STEP stepPropertyExpression [CYCLES [IMPOSSIBLE]]
+// Previous value syntax: $param
+
 // IF THEN ELSE property
 // Expression syntax:
 // IF propertyExpression0 THEN propertyExpression1 ELSE propertyExpression2
