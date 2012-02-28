@@ -1043,6 +1043,7 @@ squareTradingSquare 'Размер торговой площади' = DATA DOUBLE
 departmentStoreTradingSquare 'Отдел торговой площади (ИД)' = DATA departmentStore (tradingSquare);
 nameDepartmentStoreTradingSquare 'Отдел торговой площади' (tradingSquare) = name(departmentStoreTradingSquare(tradingSquare)) IN baseGroup;
 dateTradingSquare 'Дата' = DATA DATE (tradingSquare) IN baseGroup;
+dateTradingSquare (square) <- currentDate() ON ASSIGN square IS tradingSquare;
 
 FORM tradingSquare 'Торговая площадь'
 OBJECTS s=tradingSquare FIXED PANEL
@@ -1054,6 +1055,10 @@ EDIT tradingSquare OBJECT s;
 @metaCodeNameObjectDateProperty(discount, departmentStore, 'Разрешать скидки', yesNo, baseGroup);
 
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
+
+GROUP orderDepartmentStoreGroup 'Заказ' : publicGroup;
+GROUP controlDepartmentStoreGroup 'Контроль остатков' : publicGroup;
+GROUP printDepartmentStoreGroup 'Печать' : publicGroup;
 
 CLASS departmentStore 'Отдел магазина' : stock;
 CLASS kafeteria 'Кафетерий' : departmentStore;
@@ -1076,22 +1081,22 @@ CLASS STATIC itemStatus 'Статус товара'
 storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) AUTOSET;
 nameStoreDepartmentStore 'Магазин' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
 revaluationCommitteeDepartmentStore 'Комиссия отдела (ИД)' = DATA revaluationCommittee (departmentStore);
-nameRevaluationCommitteeDepartmentStore 'Комиссия отдела' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore));
-controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore);
-deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore);
-controlMinusRestsContainerDepartmentStore 'Контроль за минусовыми остатками тары' = DATA BOOLEAN (departmentStore);
+nameRevaluationCommitteeDepartmentStore 'Комиссия отдела' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
+deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
+controlMinusRestsContainerDepartmentStore 'Контроль за минусовыми остатками тары' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
 // controlAssortmentProviderDepartmentStore 'Контролировать ассортимент поставщиков в подразделении?' = DATA BOOLEAN (departmentStore);
-verifyOrderArrivalDepartmentStore 'Сверять заказ и приход в подразделении?' = DATA BOOLEAN (departmentStore);
-maxQuantityDeliveryHourDepartmentStore 'Максимальное допустимое число поставок в час' = DATA INTEGER (departmentStore);
-resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore 'Разрешить превысить количество поставок/час при ассортименте <' = DATA DOUBLE (departmentStore);
-resolveOrderItemDepartmentStore 'Разрешить заказ товара в подразделение?' = DATA BOOLEAN (departmentStore);
-quantityCashChangeOneOperationAccountDepartmentStore ' Количество кассовых смен в одном оперативном отчете' = DATA INTEGER (departmentStore);
+verifyOrderArrivalDepartmentStore 'Сверять заказ и приход в подразделении?' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
+maxQuantityDeliveryHourDepartmentStore 'Максимальное допустимое число поставок в час' = DATA INTEGER (departmentStore) IN orderDepartmentStoreGroup;
+resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore 'Разрешить превысить количество поставок/час при ассортименте <' = DATA DOUBLE (departmentStore) IN orderDepartmentStoreGroup;
+resolveOrderItemDepartmentStore 'Разрешить заказ товара в подразделение?' = DATA BOOLEAN (departmentStore) IN orderDepartmentStoreGroup;
+quantityCashChangeOneOperationAccountDepartmentStore ' Количество кассовых смен в одном оперативном отчете' = DATA INTEGER (departmentStore) IN orderDepartmentStoreGroup;
 materiallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (departmentStore);
-commonNameMateriallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' (departmentStore) = commonName (materiallyResponsiblePersonItemReportDepartmentStore(departmentStore));
+commonNameMateriallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' (departmentStore) = commonName (materiallyResponsiblePersonItemReportDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 bookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (departmentStore);
-commonNameBookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет' (departmentStore) = commonName(bookkeeperItemReportDepartmentStore(departmentStore));
+commonNameBookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет' (departmentStore) = commonName(bookkeeperItemReportDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 personCheckReportDepartmentStore 'Кто проверяет товарный отчет (ИД)' = DATA employee (departmentStore);
-commonNamePersonCheckReportDepartmentStore 'Кто проверяет товарный отчет' (departmentStore) = commonName(personCheckReportDepartmentStore(departmentStore));
+commonNamePersonCheckReportDepartmentStore 'Кто проверяет товарный отчет' (departmentStore) = commonName(personCheckReportDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (departmentStore) = GROUP MAX tradingSquare BY departmentStoreTradingSquare(tradingSquare);   //максимизирует только по ID, переделать после расширения функционала
 defaultTradingSquareDepartmentStore 'Торговая площадь отдела магазина, кв.м.' (departmentStore) = squareTradingSquare(idTradingSquareDepartmentStore(departmentStore));
 tradingSquareStore 'Торговая площадь магазина' = GROUP SUM defaultTradingSquareDepartmentStore(departmentStore) BY storeDepartmentStore(departmentStore);
@@ -2498,17 +2503,9 @@ FORM departmentStore 'Отдел магазина'
     PROPERTIES(t) ADDOBJ, delete
     FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
 
-    OBJECTS s=supplier
-    PROPERTIES(s) READONLY name
-
-    OBJECTS tm=DATE
-    PROPERTIES(tm)                OBJVALUE
-    PROPERTIES(s, d, tm) READONLY timeTableDate
-    FILTERS NOT NULL timeTableDate(s, d, tm)
-
     OBJECTS d2=departmentStore
-    PROPERTIES(d2) READONLY name
-    PROPERTIES(d, d2) rawDepartmentStore
+    PROPERTIES(d2) READONLY name SHOWIF isManufactory(d)
+    PROPERTIES(d, d2) rawDepartmentStore SHOWIF isManufactory(d)
     FILTERS NOT NULL inRawDepartmentStore(d, d2)
     FILTERGROUP rawFilter
         FILTER 'Подразделения из которых полуется сырье' 'F10' NOT NULL rawDepartmentStore(d, d2)
@@ -2518,14 +2515,31 @@ FORM departmentStore 'Отдел магазина'
 
 DESIGN departmentStore FROM DEFAULT {
     main{
-       ADD prop.box BEFORE functions.box{
+
+        d.box{
+            childConstraints = TO THE RIGHT;
+            ADD order {
+                    childConstraints = TO THE BOTTOM;
+                    title = 'Заказ';
+                    ADD PROPERTY (name);
+                    ADD PROPERTY (nameStoreDepartmentStore);
+                    ADD d.orderDepartmentStoreGroup;
+                };
+            ADD d.controlDepartmentStoreGroup{
+                    ADD PROPERTY (namediscount);
+                };
+            ADD d.printDepartmentStoreGroup;
+        };
+
+        ADD prop.box BEFORE functions.box{
             tabbedPane = TRUE;
-            ADD e.box;
+            ADD e.box{
+                    title = 'Сотрудники';
+                };
             ADD t.box;
-            ADD d2.box;
-            ADD s.box{
-                ADD tm.box;
-            };
+            ADD d2.box{
+                    title = 'Отделы сырья';
+                };
       }
    }
 }
