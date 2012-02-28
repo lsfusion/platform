@@ -677,7 +677,7 @@ public abstract class LogicsModule {
 
     /**
      * @param params : сначала может идти свойство, из которго будет читаться имя attachment'a,
-     * при этом его входы мэпятся на все входы eaProp по порядку, <br/>
+     * при этом все его входы мэпятся на входы eaProp по порядку, <br/>
      * затем список объектов ObjectEntity + мэппинг, из которого будет читаться значение этого объекта.
      * <br/>
      * Мэппинг - это мэппинг на интерфейсы результирующего свойства (prop, 1,3,4 или просто N)
@@ -686,9 +686,11 @@ public abstract class LogicsModule {
      */
     protected void addAttachEAFormNameFullyMapped(LP<ClassPropertyInterface> eaProp, FormEntity form, AttachmentFormat format, Object... params) {
         if (params.length > 0 && params[0] instanceof LP) {
+            LP attachmentNameProp = (LP) params[0];
+
             ArrayList nParams = new ArrayList();
-            nParams.add(params[0]);
-            nParams.addAll(genList(eaProp.listInterfaces.size()));
+            nParams.add(attachmentNameProp);
+            nParams.addAll(genList(attachmentNameProp.listInterfaces.size()));
             nParams.addAll(asList(copyOfRange(params, 1, params.length)));
 
             params = nParams.toArray();
