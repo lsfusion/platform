@@ -327,7 +327,8 @@ END
 CLASS itemGroup 'Товарная группа' : named, externalObject;
 TABLE itemGroup(itemGroup);
 
-parentItemGroup = DATA itemGroup (itemGroup) AUTOSET;
+parentItemGroup = DATA itemGroup (itemGroup); //AUTOSET;  --  пока не имеет смысла проставляет не ту группу
+inParentItemGroupItemGroup (parentGroup ,itemGroup) = [parentItemGroup(itemGroup)](parentGroup) == itemGroup;
 nameParentItemGroup 'Родительская группа' = name(parentItemGroup(itemGroup));
 maxTurnoverItemGroup 'Максимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 minTurnoverItemGroup 'Минимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
@@ -1556,12 +1557,14 @@ DESIGN items FROM DEFAULT {
 }
 
 FORM itemGroup 'Товарная группа'
-OBJECTS g=itemGroup FIXED PANEL
-PROPERTIES(g) name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, extSID
-PROPERTIES(g) showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
-showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup, showCoolingDegreeItemGroup, showCountryItemGroup,
-showFormItemItemGroup, showNumberInPackItemGroup, showRateWasteItemGroup, showWareItemGroup
-EDIT itemGroup OBJECT g;
+    OBJECTS g=itemGroup FIXED PANEL
+    PROPERTIES(g)  name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, extSID, showCaptionItemGroup,
+                   showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
+                   showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
+                   showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup, showNumberInPackItemGroup,
+                   showRateWasteItemGroup, showWareItemGroup
+    EDIT itemGroup OBJECT g
+;
 
 DESIGN itemGroup FROM DEFAULT {
      g.displayGroup {
@@ -1569,10 +1572,36 @@ DESIGN itemGroup FROM DEFAULT {
 }
 
 FORM itemGroups 'Товарные группы'
-TREE g=itemGroup PARENT parentItemGroup
-PROPERTIES(g) READONLY name, extSID
-PROPERTIES(g) ADDFORM, EDITFORM, delete
-DIALOG itemGroup OBJECT g;
+    TREE treeGroups g=itemGroup PARENT parentItemGroup
+    PROPERTIES(g) READONLY name, extSID
+    PROPERTIES(g) ADDFORM, EDITFORM, delete
+
+    OBJECTS cg=itemGroup
+    PROPERTIES(cg)   READONLY name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, extSID, showCaptionItemGroup,
+                     showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
+                     showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
+                     showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup, showNumberInPackItemGroup,
+                     showRateWasteItemGroup, showWareItemGroup
+
+    FILTERS NOT NULL inParentItemGroupItemGroup(cg, g)
+    DIALOG itemGroup OBJECT g
+;
+
+DESIGN itemGroups FROM DEFAULT {
+        POSITION treeGroups.box TO THE LEFT cg.box;
+
+        treeGroups.box {
+             fillHorizontal = 2.0;
+             PROPERTY(extSID) {
+                preferredCharWidth = 10;
+             }
+        }
+
+        cg.box {
+             fillHorizontal = 3.0;
+        }
+}
+
 
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
 
@@ -2520,6 +2549,9 @@ FORM stores 'Магазины'
     FILTERS NOT NULL stringEqualsAll(a)
     FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
 
+//    PROPERTIES(t)          ADDFORM, EDITFORM, delete
+//    PROPERTIES(st)         ADDFORM, EDITFORM, delete
+
     OBJECTS s=store
     PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore
     PROPERTIES(s)          ADDFORM, EDITFORM, delete
@@ -3448,13 +3480,15 @@ FORM inventory 'Инвентаризация'
                      priceDetailPage, totalDetailPage
 
     OBJECTS          cs=collationSheet
-    PROPERTIES (cs)  nameCollationSheet, setDataCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
+
+    PROPERTIES (cs)  READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
                      quantityCountedItemByCollationSheet, balanceItemByCollationSheet, shortageQuantityCountedItemByCollationSheet,
                      totalItemByCollationSheet, totalBalansItemByCollationSheet, shortageTotalItemByCollationSheet, showFormItemByCollationSheet,
-                     sumListInventoryByCollationSheet, sumPageListByCollationSheet, convertPriceCollationSheet, delete
+                     sumListInventoryByCollationSheet, sumPageListByCollationSheet
 
+    PROPERTIES (cs)  setDataCollationSheet, convertPriceCollationSheet, delete
     OBJECTS          i=item
-    PROPERTIES (i)   nameAttributeItem, barcodeBarcodeSku
+    PROPERTIES (i)   READONLY nameAttributeItem, barcodeBarcodeSku
 
     PROPERTIES(cs, i) quantityCountedCollationSheetItem, balanceCollationSheetItem, shortageQuantityCountedCollationSheetItem
     PROPERTIES       priceMaxByCollationSheetItem(cs, i) HIGHLIGHTIF notEqualsPriceByCollationSheetItem(cs, i),
@@ -3479,6 +3513,7 @@ DESIGN inventory FROM DEFAULT {
     main{
         in.box {
             POSITION in.inventoryGroup TO THE LEFT in.inventGroup;
+            ADD PROPERTY(convertPriceInventory(in)) IN in.inventGroup;
         }
         ADD secondCase BEFORE functions.box{
                 tabbedPane = TRUE;
@@ -3513,8 +3548,10 @@ DESIGN inventory FROM DEFAULT {
                 ADD x.box { title = 'Сличительные ведомости';
                     fillVertical = 5;
                     ADD cs.box  { fillVertical = 1;};
-                    ADD i.box { fillVertical = 4;};
-                    ADD PROPERTY(showFormItemByCollationSheet) IN i.panel;
+                    ADD i.box { fillVertical = 4;}
+
+                    ADD PROPERTY(showFormItemByCollationSheet(cs)) IN i.panel;
+
                 }
 
         }
