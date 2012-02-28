@@ -2094,17 +2094,18 @@ completePercentageOrderSupplier 'Процент выполнения' (orderSupp
 allowablePercentOrderSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (orderSupplier) IN supplierGroup;
 
 quantityPackItemOver 'Количество в грузовом месте' (item) = UNION OVERRIDE 1 IF item IS item, quantityPackItem(item);
-packQuantityItemOrderSupplier 'Заказ' = DATA INTEGER (orderSupplier, item);
-sumQuantityItemOrderSupplier 'Суммарное количество' (orderSupplier, item) = quantityPackItemOver(item) * packQuantityItemOrderSupplier(orderSupplier, item);
+packQuantityItemOrderSupplier 'Заказ(мест)' = DATA INTEGER (orderSupplier, item);
+sumQuantityItemOrderSupplier 'Заказ(единиц)' (orderSupplier, item) = quantityPackItemOver(item) * packQuantityItemOrderSupplier(orderSupplier, item);
 priceSupplierItemOrderSupplier 'Цена поставщика' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item);
 priceSupplierItemOrderSupplier (orderSupplier, item) <- priceSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier))
     ON ASSIGN packQuantityItemOrderSupplier(orderSupplier, item);
-retailPriceItemOrderSupplier 'Розничная цена' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item);
-retailPriceItemOrderSupplier (orderSupplier, item) <- retailPriceItemDepartmentVal(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier))
-    ON ASSIGN packQuantityItemOrderSupplier(orderSupplier, item);
-fullSumItemOrderSupplier 'Сумма с НДС' (orderSupplier, item) =
+retailPriceItemOrderSupplierVal 'Розничная цена' (orderSupplier, item) =
+    retailPriceItemDepartmentVal(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
+retailPriceItemOrderSupplier 'Розничная цена' (orderSupplier, item) =
+    UNION OVERRIDE 0 IF (orderSupplier IS orderSupplier AND item IS item), retailPriceItemOrderSupplierVal(orderSupplier, item);
+fullSumItemOrderSupplier 'Сумма заказа' (orderSupplier, item) =
     sumQuantityItemOrderSupplier(orderSupplier, item) * priceSupplierItemOrderSupplier(orderSupplier, item) IN baseGroup;
-fullSumOrderSupplier 'Сумма с НДС' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
+fullSumOrderSupplier 'Сумма заказа' (orderSupplier) = GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
 nameinActionItemOrderSupplier 'Товар акции' (orderSupplier, item) =
     nameinActionItemDepartmentOver(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
 banMovementDepartmentStoreOrderSupplier 'Запрет на внутреннее перемещение товара' (orderSupplier, item) =
@@ -2297,7 +2298,7 @@ fillInOrderSupplier 'Заполнить заказ рекомендованны�
 FORM orderSupplier 'Заказ поставщику'
 
     TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES(g)          name
+    PROPERTIES(g) READONLY name
 
     OBJECTS o=orderSupplier FIXED PANEL
 
@@ -2311,15 +2312,14 @@ FORM orderSupplier 'Заказ поставщику'
 
     PROPERTIES(i)          nameAttributeItem, barcodeBarcodeSku
 
-    PROPERTIES(o, i)       topItem
+    PROPERTIES(o, i)       topItem, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
 
     PROPERTIES(i)          quantityPackItemOver, minQuantityOrderItem READONLY
     PROPERTIES FORCE PANEL READONLY articleItem(i), nameCountryItem(i), retailPriceItemOrderSupplier(o, i),
                                     nameinActionItemOrderSupplier(o, i), banMovementDepartmentStoreOrderSupplier(o, i),
                                     lastOrderSupplier(o, i)
 
-    PROPERTIES(o, i)       recommendCountOrderSupplier, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier,
-                           priceSupplierItemOrderSupplier, fullSumItemOrderSupplier
+    PROPERTIES(o, i)       recommendCountOrderSupplier, priceSupplierItemOrderSupplier, fullSumItemOrderSupplier
 
     PROPERTIES(o)          fillInOrderSupplier TODRAW i FORCE PANEL
 
@@ -2340,11 +2340,11 @@ DESIGN orderSupplier FROM DEFAULT {
         childConstraints = TO THE RIGHT;
         ADD headerLeft {
             childConstraints = TO THE BOTTOM;
+            ADD o.panel;
+            ADD PROPERTY(allowablePercentOrderSupplier);
             ADD o.orderSupplierGroup {
                 childConstraints = TO THE RIGHT;
             };
-            ADD o.panel;
-            ADD PROPERTY(allowablePercentOrderSupplier);
         }
         ADD o.dateOrderSupplierGroup{
             childConstraints = TO THE BOTTOM;
