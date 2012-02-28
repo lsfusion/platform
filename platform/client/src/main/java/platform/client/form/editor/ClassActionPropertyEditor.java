@@ -13,7 +13,11 @@ public class ClassActionPropertyEditor extends ClassPropertyEditor {
     }
 
     public Object getCellEditorValue() throws RemoteException {
-        return ((ClientObjectClass)super.getCellEditorValue()).ID; // приходится так извращаться, так как передавать надо не Class, а ID
+        Object value = super.getCellEditorValue();
+        if (value instanceof ClientObjectClass)
+            return ((ClientObjectClass)super.getCellEditorValue()).ID; // приходится так извращаться, так как передавать надо не Class, а ID
+        else
+            return null;
     }
 
     @Override
