@@ -12,7 +12,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class QueryView extends JPanel {
@@ -176,7 +177,7 @@ public abstract class QueryView extends JPanel {
     }
 
     // используется для того, чтобы удалять условия запросов
-    private final Map<ClientPropertyFilter, QueryConditionView> condViews = new HashMap<ClientPropertyFilter, QueryConditionView>();
+    private final Map<ClientPropertyFilter, QueryConditionView> condViews = new LinkedHashMap<ClientPropertyFilter, QueryConditionView>();
 
     void addConditionView(ClientPropertyFilter condition, GroupObjectLogicsSupplier logicsSupplier) {
 
@@ -231,6 +232,10 @@ public abstract class QueryView extends JPanel {
         applyButton.setVisible(true);
 
         collapseButton.setVisible(condViews.size() > 0);
+
+        for (QueryConditionView conditionView : condViews.values()) {
+            conditionView.setJunctionVisible(Arrays.asList(condViews.values().toArray()).indexOf(conditionView) < condViews.size() - 1);
+        }
 
         getParent().getParent().validate();
         revalidate();

@@ -10,6 +10,7 @@ import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.descriptor.PropertyObjectInterfaceDescriptor;
 import platform.client.form.*;
 import platform.client.form.cell.CellView;
+import platform.client.logics.classes.ClientActionClass;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
@@ -154,7 +155,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return null;
         }
 
-        if (askConfirm) {
+        if (askConfirm && !(changeType instanceof ClientActionClass && value == null)) {
             int n = JOptionPane.showConfirmDialog(
                     null,
                     baseType.getConformedMessage() + (caption != null ? " \"" + caption + "\"?" : ""),

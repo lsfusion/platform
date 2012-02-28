@@ -146,6 +146,10 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         filterChanged();
     }
 
+    public void setJunctionVisible(boolean visible) {
+        junctionView.setVisible(visible);
+    }
+
     void filterChanged() {
         if (valueView != null) {
             centerPanel.remove(valueView);
