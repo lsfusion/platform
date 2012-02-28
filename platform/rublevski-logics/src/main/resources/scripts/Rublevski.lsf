@@ -3876,7 +3876,7 @@ toFillShipmentDetailsShipment 'Заполнить поставку из зака
         FOR s == addedObject() DO {
             SET itemShipmentDetail(s) <- item AS item;
             SET priceShipmentDetail(s) <- priceOrderItemShipment(item, shipment);
-        }
+        };
     };
 } IN ordersInfo CONFIRM;
 
