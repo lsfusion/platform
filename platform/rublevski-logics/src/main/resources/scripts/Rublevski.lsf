@@ -279,7 +279,8 @@ META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
 
     departmentStore###object 'Отдел документа (ИД)' (object) = DATA departmentStore(object) IN idGroup;
 
-    nameDepartmentStore###object 'Отдел документа' (object) = name(departmentStore###object(object)) IN documentHeaderGroup;
+    nameDepartmentStore###object 'Отдел документа' (object) = name(departmentStore###object(object)) IN documentHeaderGroup
+        MINCHARWIDTH 20 PREFCHARWIDTH 40;;
 
     object###object##Detail 'Строка документа' = DATA object (object##Detail) IN idGroup;
 
@@ -3594,7 +3595,8 @@ seriesWaybillShipment 'Серия накладной' (shipment) = DATA STRING[2
 
 supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipment) IN idGroup;
 
-nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN documentHeaderGroup;
+nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN documentHeaderGroup
+    MINCHARWIDTH 30 PREFCHARWIDTH 40;
 
 noteShipment 'Примечание' (shipment) = DATA STRING[100] (shipment) IN additionalInfo;
 
@@ -3632,6 +3634,8 @@ nameCountryShipmentDetail 'Страна производства/происхо�
 namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоценку' (shipmentDetail) = name(banRevaluationItemDepartmentVal(itemShipmentDetail(shipmentDetail),
     departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
 
+supplierShipmentDetail 'Поставщик (ИД)' (shipmentDetail) = supplierShipment(shipmentShipmentDetail(shipmentDetail));
+
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
 
@@ -3641,6 +3645,12 @@ quantityItemShipment 'Количество по товару в поставке
 isShipedItemShipment 'Товар есть в поставке' (item, shipment) = quantityItemShipment(item, shipment) > 0;
 
 priceShipmentDetail 'Цена товара'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+
+oldPriceShipmentDetail 'Старая цена товара'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+oldPriceShipmentDetail(shipmentDetail) <- priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail),
+    itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
+    subtractDate2(dateShipmentDetail(shipmentDetail),1))ON CHANGE itemShipmentDetail(shipmentDetail);
+
 supplierMarkupShipmentDetail 'Оптовая надбавка/торговая скидка, %' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 overSupplierMarkupShipmentDetail 'Оптовая надбавка/торговая скидка, %' (shipmentDetail) =
         UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, supplierMarkupShipmentDetail(shipmentDetail);
@@ -3664,6 +3674,11 @@ sumSupplierShipmentDetail 'Сумма с НДС' (shipmentDetail) = sumPriceShip
 retailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
 dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = dataActingRateRange(retailRangeShipmentDetail(shipmentDetail)) IN baseGroup;
 retailRangeShipmentDetail(shipmentDetail) <- overrideRateRangeItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+oldRetailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
+oldDataRetailRangeShipmentDetail 'Старый НДС розничный,%' (shipmentDetail) =
+   actingRateRangeDate(oldRetailRangeShipmentDetail(shipmentDetail), subtractDate2(dateShipmentDetail(shipmentDetail),1));
+// !!!надо продумать, что писать!!!
 
 wareShipmentDetail 'Посуда (ИД)' (shipmentDetail) = DATA ware(shipmentDetail) IN baseGroup;
 nameWareShipmentDetail 'Посуда' (shipmentDetail) = name(wareShipmentDetail(shipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
@@ -3719,6 +3734,12 @@ retailMarkupShipmentDetail(shipmentDetail) <-
     markupSupplierItemDepartmentVal (supplierShipment(shipmentShipmentDetail(shipmentDetail)), itemShipmentDetail(shipmentDetail),
     departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateShipmentDetail(shipmentDetail))
     ON CHANGE itemShipmentDetail(shipmentDetail);
+
+oldRetailMarkupShipmentDetail 'Старая торговая надбавка, %'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+
+oldRetailMarkupShipmentDetail (shipmentDetail) <- markupSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail),
+    itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
+    subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN pricingShipmentDetailInfo;
 isFixPriceShipmentDetail(shipmentDetail) <- isFixPriceItem (itemShipmentDetail (shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
