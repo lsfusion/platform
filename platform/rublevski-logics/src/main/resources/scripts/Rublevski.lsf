@@ -1566,41 +1566,54 @@ FORM itemGroup 'Товарная группа'
     EDIT itemGroup OBJECT g
 ;
 
-DESIGN itemGroup FROM DEFAULT {
-     g.displayGroup {
-    }
-}
+addItemGroup 'Добавить' = ACTION (itemGroup) NEWSESSION {
+    ADDOBJ itemGroup;
+    FOR g == addedObject() DO {
+        SET parentItemGroup(g) <- itemGroup AS itemGroup;
+        EXEC [ACTION FORM itemGroup OBJECTS g MODAL](addedObject());
+        IF formResult() == formResult.ok THEN
+            EXEC apply();
+    };
+} TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
 FORM itemGroups 'Товарные группы'
     TREE treeGroups g=itemGroup PARENT parentItemGroup
-    PROPERTIES(g) READONLY name, extSID
-    PROPERTIES(g) ADDFORM, EDITFORM, delete
+    PROPERTIES(g) READONLY gname = name, extSID
+    PROPERTIES(g) addItemGroup, EDITFORM
 
     OBJECTS cg=itemGroup
-    PROPERTIES(cg)   READONLY name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, extSID, showCaptionItemGroup,
+    PROPERTIES(cg)   cgname = name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, showCaptionItemGroup,
                      showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
                      showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                      showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup, showNumberInPackItemGroup,
-                     showRateWasteItemGroup, showWareItemGroup
+                     showRateWasteItemGroup, showWareItemGroup, delete
+
+    ORDER BY gname, cgname
 
     FILTERS NOT NULL inParentItemGroupItemGroup(cg, g)
-    DIALOG itemGroup OBJECT g
 ;
 
 DESIGN itemGroups FROM DEFAULT {
-        POSITION treeGroups.box TO THE LEFT cg.box;
 
-        treeGroups.box {
-             fillHorizontal = 2.0;
-             PROPERTY(extSID) {
-                preferredCharWidth = 10;
-             }
-        }
+    POSITION treeGroups.box TO THE LEFT cg.box;
 
-        cg.box {
-             fillHorizontal = 3.0;
-        }
+    treeGroups.tree {
+        fillHorizontal = 0.5;
+    }
+
+    PROPERTY(extSID) {
+        maximumCharWidth = 7;
+    }
 }
+
+FORM itemGroupDialog 'Товарные группы'
+    TREE treeGroups g=itemGroup PARENT parentItemGroup
+    PROPERTIES(g) READONLY name, extSID
+    PROPERTIES(g) addItemGroup, EDITFORM
+    ORDER BY name
+
+    DIALOG itemGroup OBJECT g
+;
 
 
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
@@ -3860,8 +3873,10 @@ isAvailableOrderShipment 'Заявка допустимая для заказа'
 toFillShipmentDetailsShipment 'Заполнить поставку из заказов' =  ACTION (shipment) {
     FOR isNotShipedOrderedItemShipment (item, shipment) DO {
         ADDOBJ shipmentDetail;
-        SET itemShipmentDetail(s) IF s == addedObject() <- item AS item;
-        SET priceShipmentDetail(s) IF s == addedObject() <- priceOrderItemShipment(item, shipment);
+        FOR s == addedObject DO {}
+            SET itemShipmentDetail(s) <- item AS item;
+            SET priceShipmentDetail(s) <- priceOrderItemShipment(item, shipment);
+        }
     };
 } IN ordersInfo CONFIRM;
 
@@ -3915,11 +3930,14 @@ DESIGN shipment FROM DEFAULT{
     main{
         ADD specification.box BEFORE functions.box{
             tabbedPane = TRUE;
-            ADD d.box{
+            ADD d.box {
+                childConstraints = TO THE BOTTOM;
                 title = 'Спецификация';
-                ADD p.pricingShipmentDetailInfo;
-                ADD i.itemShipmentDetailInfo;
-                POSITION p.pricingShipmentDetailInfo TO THE LEFT i.itemShipmentDetailInfo;
+                ADD d.pricingShipmentDetailInfo {
+                    childConstraints = TO THE BOTTOM;
+                };
+                ADD d.itemShipmentDetailInfo;
+                POSITION d.pricingShipmentDetailInfo TO THE LEFT d.itemShipmentDetailInfo;
             };
             ADD i.box;
         };
@@ -3928,18 +3946,18 @@ DESIGN shipment FROM DEFAULT{
 
             ADD headerRow1 {
                 childConstraints = TO THE RIGHT;
-                ADD w.documentHeaderGroup;
-                ADD o.ordersInfo {
+                ADD s.documentHeaderGroup;
+                ADD s.ordersInfo {
                     childConstraints = TO THE BOTTOM;
                 };
             };
 
             ADD headerRow2 {
                 childConstraints = TO THE RIGHT;
-                ADD ws.waybillSum {
+                ADD s.waybillSum {
                     childConstraints = TO THE RIGHT;
                 };
-                ADD add.additionalInfo;
+                ADD s.additionalInfo;
              };
         };
     };
@@ -4137,6 +4155,7 @@ NAVIGATOR {
     ADD adminElement TO formsTree {
         NEW objects 'Карточки' {
             ADD itemGroup;
+            ADD itemGroupDialog;
             ADD unitOfMeasure;
             ADD item;
             ADD ware;
