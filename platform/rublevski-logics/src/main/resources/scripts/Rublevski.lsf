@@ -474,7 +474,7 @@ GROUP displayGroup 'Свойства для отображения' : baseGroup;
 CLASS ABSTRACT sku 'SKU';
 TABLE sku(sku);
 
-CLASS item 'Товар' : sku;
+CLASS item 'Товар' : sku, externalObject;
 TABLE item(item);
 
 CLASS ware 'Посуда' : sku, named;
@@ -3984,7 +3984,7 @@ importPassword 'Пароль' = DATA STRING[200] ();// IN formularGroup;
 
 //GROUP lstradeGroup 'LS Trade' : baseGroup;
 
-importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'rublevski.actions.ImportLSFDataActionProperty';// IN lstradeGroup;
+importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'rublevski.actions.ImportLSTDataActionProperty';// IN lstradeGroup;
 importLSTDirectory 'Папка' = DATA STRING[200] ();// IN lstradeGroup;
 
 FORM importData 'Импорт данных'

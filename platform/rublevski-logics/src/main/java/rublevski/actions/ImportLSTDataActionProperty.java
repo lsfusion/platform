@@ -1,6 +1,5 @@
 package rublevski.actions;
 
-import org.apache.poi.poifs.filesystem.DirectoryEntry;
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
 import platform.server.classes.ConcreteCustomClass;
@@ -15,10 +14,10 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
-public class ImportLSFDataActionProperty extends ScriptingActionProperty {
+public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     private ScriptingLogicsModule rublevskiLM;
 
-    public ImportLSFDataActionProperty(RublevskiBusinessLogics BL) {
+    public ImportLSTDataActionProperty(RublevskiBusinessLogics BL) {
         super(BL);
         rublevskiLM = BL.getLM();
 
@@ -32,14 +31,16 @@ public class ImportLSFDataActionProperty extends ScriptingActionProperty {
     @Override
     public void execute(ExecutionContext context) throws SQLException {
         String path = rublevskiLM.getLPByName("importLSTDirectory").read(context).toString().trim();
-        importItemGroup(path);
-        importParentGroup(path);
+        importItemGroups(path + "//_sprgrt.dbf");
+        importParentGroups(path + "//_sprgrt.dbf");
 
+        importItems(path + "//_sprgrm.dbf");
+        importParentItems(path + "//_sprgrm.dbf");
     }
 
-    private void importParentGroup(String path) {
+    private void importParentGroups(String path) {
         try {
-            List<List<Object>> data = importDataFromDBF(path, true);
+            List<List<Object>> data = importItemGroupsFromDBF(path, true);
 
             ImportField itemGroupID = new ImportField(BL.LM.extSID);
             ImportField parentGroupID = new ImportField(BL.LM.extSID);
@@ -70,10 +71,10 @@ public class ImportLSFDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importItemGroup(String path) throws SQLException {
+    private void importItemGroups(String path) throws SQLException {
 
         try {
-            List<List<Object>> data = importDataFromDBF(path, false);
+            List<List<Object>> data = importItemGroupsFromDBF(path, false);
 
             ImportField itemGroupID = new ImportField(BL.LM.extSID);
             ImportField itemGroupName = new ImportField(BL.LM.name);
@@ -103,9 +104,83 @@ public class ImportLSFDataActionProperty extends ScriptingActionProperty {
         }
     }
 
+    private void importItems(String path) throws SQLException {
+
+        try {
+            List<List<Object>> data = importItemsFromDBF(path, false);
+
+            ImportField itemID = new ImportField(BL.LM.extSID);
+            ImportField itemCaption = new ImportField(BL.LM.name);
+
+            ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("item"),
+                    BL.LM.extSIDToObject.getMapping(itemID));
+
+            List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+            props.add(new ImportProperty(itemID, BL.LM.extSID.getMapping(itemKey)));
+            props.add(new ImportProperty(itemCaption, rublevskiLM.getLPByName("captionItem").getMapping(itemKey)));
+
+
+            ImportTable table = new ImportTable(Arrays.asList(itemID, itemCaption), data);
+
+            DataSession session = BL.createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey), props);
+            service.synchronize(true, false);
+            if (session.hasChanges()) {
+                session.apply(BL);
+            }
+
+            session.close();
+
+        } catch (xBaseJException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    private void importParentItems(String path) {
+        try {
+            List<List<Object>> data = importItemsFromDBF(path, true);
+
+            ImportField itemID = new ImportField(BL.LM.extSID);
+            ImportField itemGroupID = new ImportField(BL.LM.extSID);
+
+            ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("item"),
+                    BL.LM.extSIDToObject.getMapping(itemID));
+            ImportKey<?> itemGroupKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("itemGroup"),
+                    BL.LM.extSIDToObject.getMapping(itemGroupID));
+
+            List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+            props.add(new ImportProperty(itemGroupID, rublevskiLM.getLPByName("itemGroupSku").getMapping(itemKey),
+                    BL.LM.object(rublevskiLM.getClassByName("itemGroup")).getMapping(itemGroupKey)));
+
+
+            ImportTable table = new ImportTable(Arrays.asList(itemID, itemGroupID), data);
+
+            DataSession session = BL.createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey), props);
+            service.synchronize(true, false);
+            if (session.hasChanges()) {
+                session.apply(BL);
+            }
+
+            session.close();
+
+        } catch (xBaseJException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+
     private List<List<Object>> data;
 
-    private List<List<Object>> importDataFromDBF(String path, Boolean parents) throws IOException, xBaseJException {
+    private List<List<Object>> importItemGroupsFromDBF(String path, Boolean parents) throws IOException, xBaseJException {
 
         DBF importFile = new DBF(path);
         int recordCount = importFile.getRecordCount();
@@ -127,15 +202,37 @@ public class ImportLSFDataActionProperty extends ScriptingActionProperty {
                     addIfNotContains(Arrays.asList((Object) group3, group3));
                     addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3)), group2));
                     addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), group1));
-                    addIfNotContains(Arrays.asList((Object) (k_grtov + "/" + group1.substring(0, 3) + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), pol_naim));
+                    addIfNotContains(Arrays.asList((Object) k_grtov, pol_naim));
                 } else {
                     //sid - parentSID
                     addIfNotContains(Arrays.asList((Object) group3, null));
                     addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3)), group3));
                     addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), group2 + "/" + group3.substring(0, 3)));
-                    addIfNotContains(Arrays.asList((Object) (k_grtov + "/" + group1.substring(0, 3) + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)));
+                    addIfNotContains(Arrays.asList((Object) k_grtov, group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)));
                 }
             }
+        }
+        return data;
+    }
+
+    private List<List<Object>> importItemsFromDBF(String path, Boolean parents) throws IOException, xBaseJException {
+
+        DBF importFile = new DBF(path);
+        int recordCount = importFile.getRecordCount();
+
+        data = new ArrayList<List<Object>>();
+
+        for (int i = 0; i < recordCount; i++) {
+
+            importFile.read();
+            String k_grmat = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
+            String pol_naim = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
+            String k_grtov = new String(importFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
+
+            if (!parents)
+                addIfNotContains(Arrays.asList((Object) k_grmat, pol_naim));
+            else
+                addIfNotContains(Arrays.asList((Object) k_grmat, k_grtov));
         }
         return data;
     }
