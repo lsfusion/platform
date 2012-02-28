@@ -3873,7 +3873,7 @@ isAvailableOrderShipment 'Заявка допустимая для заказа'
 toFillShipmentDetailsShipment 'Заполнить поставку из заказов' =  ACTION (shipment) {
     FOR isNotShipedOrderedItemShipment (item, shipment) DO {
         ADDOBJ shipmentDetail;
-        FOR s == addedObject DO {}
+        FOR s == addedObject() DO {
             SET itemShipmentDetail(s) <- item AS item;
             SET priceShipmentDetail(s) <- priceOrderItemShipment(item, shipment);
         }
