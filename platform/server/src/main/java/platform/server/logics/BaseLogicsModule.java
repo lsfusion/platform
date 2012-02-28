@@ -589,19 +589,32 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         tableFactory.include("objectObjectDate", baseClass, baseClass, DateClass.instance);
         tableFactory.include("country", country, DateClass.instance);
         tableFactory.include("navigatorElement", navigatorElement);
+        tableFactory.include("abstractGroup", abstractGroup);
+        tableFactory.include("property", property);
+        tableFactory.include("propertyDraw", propertyDraw);
+        tableFactory.include("exception", exception);
+        tableFactory.include("notification", notification);
+        tableFactory.include("launch", launch);
         tableFactory.include("transaction", transaction);
         tableFactory.include("named", baseClass.named);
         tableFactory.include("barcodeObject", barcodeObject);
         tableFactory.include("emailObject", emailObject);
+        tableFactory.include("externalObject", externalObject);
+        tableFactory.include("historyObject", historyObject);
         tableFactory.include("dictionary", dictionary);
         tableFactory.include("dictionaryEntry", dictionaryEntry);
 
         tableFactory.include("session", session);
+        tableFactory.include("exception", exception);
         tableFactory.include("connection", connection);
         tableFactory.include("computer", computer);
 
         tableFactory.include("connectionNavigatorElement", connection, navigatorElement);
         tableFactory.include("userRoleNavigatorElement", userRole, navigatorElement);
+        tableFactory.include("userRoleProperty", userRole, property);
+        tableFactory.include("notificationProperty", notification, property);
+        tableFactory.include("propertyDrawCustomUser", propertyDraw, customUser);
+        tableFactory.include("formPropertyDraw", form, propertyDraw);
 
         tableFactory.include("tables", table);
         tableFactory.include("tableKey", tableKey);
@@ -1946,6 +1959,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             objColumn = addSingleGroupObject(tableColumn, getString("logics.tables.columns"), baseGroup);
             objDropColumn = addSingleGroupObject(dropColumn, getString("logics.tables.deleted.column"), baseGroup);
             setReadOnly(objDropColumn, true);
+            setReadOnly(dropDropColumn, false);
 
             recalculateStats = addPropertyDraw(addAProp(new RecalculateStatsActionProperty("recalculateStats", getString("logics.tables.recalculate.stats"))));
             addPropertyDraw(recalculateAggregationTableColumn, objColumn);

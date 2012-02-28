@@ -1879,7 +1879,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             for (int j = 0; j < prevTable.keys.size(); j++)
                 mapKeys.put(inputDB.readInt(), prevTable.findKey(inputDB.readUTF()));
 
-            boolean keep = false;
+            boolean keep = false, moved = false;
             for (Iterator<Property> is = storedProperties.iterator(); is.hasNext();) {
                 Property<?> property = is.next();
                 if (property.getSID().equals(sID)) {
@@ -1897,6 +1897,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                             property.mapTable.table.moveColumn(sql, property.field, prevTable,
                                     BaseUtils.join(foundInterfaces, (Map<PropertyInterface, KeyField>) property.mapTable.mapKeys), prevTable.findProperty(sID));
                             logger.info("Done");
+                            moved = true;
                         } else // надо проверить что тип не изменился
                             if (!prevTable.findProperty(sID).type.equals(property.field.type))
                                 sql.modifyColumn(property.mapTable.table.name, property.field, prevTable.findProperty(sID).type);
@@ -1906,7 +1907,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 }
             }
             if (!keep) {
-                if (isDataProperty) {
+                if (isDataProperty && !moved) {
                     String newName = sID + "_deleted";
                     sql.renameColumn(prevTable.name, sID, newName);
                     columnsToDrop.put(newName, prevTable.name);
