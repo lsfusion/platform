@@ -951,7 +951,7 @@ caseBranchBody[List<String> context, boolean dynamic] returns [LPWithParams when
 recursivePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	Cycle cycleType = Cycle.NO;
-	List<String> recursiveContext = new ArrayList<String>(context);
+	List<String> recursiveContext = null;
 	if (inPropParseState() && insideRecursion) {
 		self.getErrLog().emitNestedRecursionError(self.getParser());
 	}
@@ -965,7 +965,10 @@ recursivePropertyDefinition[List<String> context, boolean dynamic] returns [LPWi
 	:	'RECURSION'
 		zeroStep=propertyExpression[context, dynamic]
 		'STEP'
-		{ insideRecursion = true; }
+		{ 
+			insideRecursion = true; 
+		  	recursiveContext = new ArrayList<String>(context); 
+		}
 		nextStep=propertyExpression[recursiveContext, dynamic]
 		('CYCLES' { cycleType = Cycle.YES; } ('IMPOSSIBLE' { cycleType = Cycle.IMPOSSIBLE; })? )?
 	;
