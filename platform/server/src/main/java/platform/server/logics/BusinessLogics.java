@@ -1840,7 +1840,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Map<String, SerializedTable> prevTables = new HashMap<String, SerializedTable>();
 
         //для поддержки обратной совместимости
-        boolean newVersion = inputDB.read() == 'v';
+        boolean newVersion = inputDB == null || inputDB.read() == 'v';
         if (!newVersion)
             inputDB.reset();
 
