@@ -12,6 +12,7 @@ import platform.gwt.view.classes.GType;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
+import java.awt.*;
 import java.sql.Timestamp;
 import java.text.Format;
 import java.text.ParseException;
@@ -73,5 +74,10 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
     @Override
     public GType getGwtType() {
         return GDateType.instance;
+    }
+
+    @Override
+    public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
+        return 115;
     }
 }

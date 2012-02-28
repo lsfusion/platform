@@ -517,12 +517,17 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public static final String toolTipFormat =
-            "<html><b>%1$s</b><br><hr>" +
+            "<html><b>%1$s</b><br>" +
+                    "%7$s" +
+                    "<hr>" +
                     "<b>sID:</b> %2$s<br>" +
                     "<b>" + ClientResourceBundle.getString("logics.grid") + ":</b> %3$s<br>" +
-                    "<b>" + ClientResourceBundle.getString("logics.objects") + " :</b> %4$s<br>" +
+                    "<b>" + ClientResourceBundle.getString("logics.objects") + ":</b> %4$s<br>" +
                     "<b>" + ClientResourceBundle.getString("logics.signature") + ":</b> %6$s <i>%2$s</i> (%5$s)" +
                     "</html>";
+
+    public static final String editKeyToolTipFormat =
+            "<hr><b>" + ClientResourceBundle.getString("logics.property.edit.key") + ":</b> %1$s<br>";
 
     public String getTooltipText(String caption) {
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
@@ -531,8 +536,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         String ifaceObjects = BaseUtils.toString(", ", interfacesCaptions);
         String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
         String returnClass = this.returnClass.toString();
+        String editKeyText = editKey == null ? "" : String.format(editKeyToolTipFormat, SwingUtils.getKeyStrokeCaption(editKey));
 
-        return String.format(toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass);
+        return String.format(toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass, editKeyText);
     }
 
     private GPropertyDraw gwtPropertyDraw;

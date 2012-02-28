@@ -8,6 +8,7 @@ import platform.client.form.renderer.TimePropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
+import java.awt.*;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -59,5 +60,10 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
 
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.time");
+    }
+
+    @Override
+    public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
+        return 65;
     }
 }

@@ -30,6 +30,8 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
 
         setEditor(new TimePropertyEditorComponent(this, format.toPattern()));
 
+        setBorder(null);
+
         if (value != null)
             setValue(value);
     }
