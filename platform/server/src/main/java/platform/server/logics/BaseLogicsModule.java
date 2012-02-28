@@ -1032,7 +1032,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         emailBlindCarbonCopy = addDProp(emailGroup, "emailBlindCarbonCopy", getString("logics.email.copy.bcc"), StringClass.get(50));
         fromAddress = addDProp(emailGroup, "fromAddress", getString("logics.email.sender"), StringClass.get(50));
 
-        emailUserPassUser = addEAProp(baseGroup, genSID(), "email", getString("logics.user.password.reminder"), fromAddress,  emailBlindCarbonCopy, customUser);
+        emailUserPassUser = addEAProp(getString("logics.user.password.reminder"), customUser);
         addEARecipients(emailUserPassUser, email, 1);
 
         disableEmail = addDProp(emailGroup, "disableEmail", getString("logics.email.disable.email.sending"), LogicalClass.instance);
