@@ -2124,6 +2124,13 @@ completePercentageOrderSupplier 'Процент выполнения' (orderSupp
 allowablePercentOrderSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (orderSupplier) IN supplierGroup;
 
 quantityPackItemOver 'Количество в грузовом месте' (item) = UNION OVERRIDE 1 IF item IS item, quantityPackItem(item);
+quantityRealizationDepartmentStoreItemOver 'Прожад в день' (departmentStore, item) =
+    UNION OVERRIDE 0 IF (departmentStore IS departmentStore AND item IS item), quantityRealizationDepartmentStoreItem(departmentStore, item);
+balanceDepartmentStoreItemOver 'Текущий остаток' (departmentStore, item) =
+    UNION OVERRIDE 0 IF (departmentStore IS departmentStore AND item IS item), balanceDepartmentStoreItem(departmentStore, item);
+minReserveItemOver 'Минимальный резерв' (item) = UNION OVERRIDE 0 IF item IS item, minReserveItem(item);
+minQuantityOrderItemOver 'Минимальный заказ' (item) = UNION OVERRIDE 0 IF item IS item, minQuantityOrderItem(item);
+
 packQuantityItemOrderSupplier 'Заказ(мест)' = DATA INTEGER (orderSupplier, item);
 sumQuantityItemOrderSupplier 'Заказ(единиц)' (orderSupplier, item) = quantityPackItemOver(item) * packQuantityItemOrderSupplier(orderSupplier, item);
 priceSupplierItemOrderSupplier 'Цена поставщика' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item);
@@ -2182,19 +2189,19 @@ nextDateOrder 'Дата следующей поставки' (preliminaryOrder) 
     PARTITION PREV dateSupplyPreliminaryOrder(preliminaryOrder)
     BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder)
     ORDER DESC dateSupplyPreliminaryOrder(preliminaryOrder);
-nextDateOrderSupplier 'Дата следующей поставки' (orderSupplier) = nextDateOrder(preliminaryOrderOrderSupplier(orderSupplier)) IN dateOrderSupplierGroup;
+nextDateOrderSupplier 'Дата следующей поставки' (orderSupplier) = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
 quantityDaysAfterNextOrder 'Дней до следующей поставки' (orderSupplier) =
     daysInclBetweenDates(curDateOrderSupplier(orderSupplier), nextDateOrderSupplier(orderSupplier)) IN dateOrderSupplierGroup;
 CONSTRAINT nextDateOrderSupplier(orderSupplier) < dateOrderSupplier(orderSupplier) MESSAGE 'Дата поставки не должна превышать дату поставки следующей поставки';
 quantityRealizationItemNextOrder 'Предполагаемое количество реализации товара до следующей поставки' (orderSupplier, item) =
-    quantityDaysAfterNextOrder(orderSupplier)*quantityRealizationDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
-balance2DepartmentStoreItem 'Величина остатков товара и минимального резерва' (orderSupplier, item) =
-    balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)+minReserveItem(item);
+    quantityDaysAfterNextOrder(orderSupplier)*quantityRealizationDepartmentStoreItemOver(departmentStoreOrderSupplier(orderSupplier), item);
+balance2DepartmentStoreItem 'Величина остатков товара за вычетом минимального резерва' (orderSupplier, item) =
+    balanceDepartmentStoreItemOver(departmentStoreOrderSupplier(orderSupplier), item) - minReserveItemOver(item);
 isEnoughItem 'Достаточно ли остатков товара' (orderSupplier, item) =
-    balanceDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item)-quantityRealizationItemNextOrder(orderSupplier, item)<minReserveItem(item);
+    balanceDepartmentStoreItemOver(departmentStoreOrderSupplier(orderSupplier), item) - quantityRealizationItemNextOrder(orderSupplier, item) < minReserveItemOver(item);
 recommendCountOrderSupplier 'Рекомендуемый заказ' (orderSupplier, item) =
-    UNION MAX (quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item)), minQuantityOrderItem(item)
-    AND orderSupplier IS orderSupplier IF isEnoughItem(orderSupplier, item);
+    IF isEnoughItem(orderSupplier, item) THEN (UNION MAX (quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item)), (minQuantityOrderItemOver(item)
+    IF orderSupplier IS orderSupplier)) ELSE 0 IF (orderSupplier IS orderSupplier AND item IS item);
 
 isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentVal (
     supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
@@ -2307,7 +2314,7 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
         EXEC apply();
     };
 };
-
+//nextDateOrderSupplier (orderSupplier) <- nextDateOrder(preliminaryOrderOrderSupplier(orderSupplier)) ON ASSIGN orderSupplier;
 createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
     ADDOBJ orderSupplier;
     FOR o == addedObject() DO {
@@ -2317,6 +2324,7 @@ createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
         SET supplierOrderSupplier(o) <- supplierPreliminaryOrder(preliminaryOrder);
         SET allowablePercentOrderSupplier(o) <- allowablePercentSupplier(supplierPreliminaryOrder(preliminaryOrder));
         SET preliminaryOrderOrderSupplier(o) <- preliminaryOrder AS preliminaryOrder;
+        SET nextDateOrderSupplier(o) <- nextDateOrder(preliminaryOrder);
     };
     EXEC apply();
 }] (preliminaryOrder) AND NOT preliminaryOrderToOrderSupplier(preliminaryOrder) CONFIRM;
@@ -2332,19 +2340,19 @@ FORM orderSupplier 'Заказ поставщику'
 
     OBJECTS o=orderSupplier FIXED PANEL
 
-    PROPERTIES(o)          dataOrderSupplier, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
+    PROPERTIES(o)          dataOrderSupplier READONLY, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
                            quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
                            nameSupplierOrderSupplier, fullSumOrderSupplier, // timeCreated, nameUserCreated,
-                           allowablePercentOrderSupplier
-    PROPERTIES(o)          completePercentageOrderSupplier
+                           allowablePercentOrderSupplier READONLY
+    PROPERTIES(o) READONLY completePercentageOrderSupplier
 
     OBJECTS i=item
 
-    PROPERTIES(i)          nameAttributeItem, barcodeBarcodeSku
+    PROPERTIES(i) READONLY nameAttributeItem, barcodeBarcodeSku
 
     PROPERTIES(o, i)       topItem, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
 
-    PROPERTIES(i)          quantityPackItemOver, minQuantityOrderItem READONLY
+    PROPERTIES(i) READONLY quantityPackItemOver, minQuantityOrderItemOver
     PROPERTIES FORCE PANEL READONLY articleItem(i), nameCountryItem(i), retailPriceItemOrderSupplier(o, i),
                                     nameinActionItemOrderSupplier(o, i), banMovementDepartmentStoreOrderSupplier(o, i),
                                     lastOrderSupplier(o, i)
