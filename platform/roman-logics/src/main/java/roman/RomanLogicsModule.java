@@ -3352,7 +3352,7 @@ public class RomanLogicsModule extends LogicsModule {
         isCurrentFreightBox = addJProp(baseLM.equals2, addJProp(true, currentFreightBoxRoute, routeCreationFreightBoxFreightBox, 1), 1, 1);
         isCurrentPallet = addJProp(baseLM.equals2, addJProp(true, currentPalletRoute, routeCreationPalletPallet, 1), 1, 1);
         currentPalletFreightBox = addJProp(currentPalletRoute, routeCreationFreightBoxFreightBox, 1);
-        isCurrentPalletFreightBox = addJProp(baseLM.equals2, palletFreightBox, 1, currentPalletFreightBox, 1);
+        isCurrentPalletFreightBox = addJProp(true, baseLM.and1, addJProp(baseLM.equals2, palletFreightBox, 1, currentPalletFreightBox, 1), 1, currentPalletFreightBox, 1);
         isStoreFreightBoxSupplierBox = addJProp(baseLM.equals2, destinationFreightBox, 1, destinationSupplierBox, 2);
 
         seekRouteShipmentSkuRoute = addAProp(new SeekRouteActionProperty());

@@ -261,7 +261,7 @@
 			</textField>
 			<textField>
 				<reportElement style="DefaultStyle" x="480" y="103" width="98" height="18"/>
-				<textElement/>
+				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Страница"]]></textFieldExpression>
 			</textField>
 			<textField>

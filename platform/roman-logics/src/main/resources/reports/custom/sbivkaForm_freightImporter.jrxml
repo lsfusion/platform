@@ -43,7 +43,7 @@
 	<field name="grossWeightImporterFreightCustomCategory6" class="java.lang.Double"/>
 	<field name="sumImporterFreightCustomCategory6" class="java.lang.Double"/>
 	<field name="category" class="java.lang.Integer"/>
-	<field name="commonName2" class="java.lang.String"/>
+	<field name="commonName1" class="java.lang.String"/>
 	<field name="quantityProxyImporterFreightCustomCategory6Category" class="java.lang.Double"/>
 	<field name="addressExporterFreight" class="java.lang.String"/>
 	<field name="nameExporterFreight" class="java.lang.String"/>
@@ -55,7 +55,7 @@
 	<field name="nameUnitOfMeasureCategory" class="java.lang.String"/>
 	<field name="sidImporterFreight" class="java.lang.String"/>
 	<variable name="categoryNames" class="java.lang.String" resetType="Group" resetGroup="designGroup4">
-		<variableExpression><![CDATA[$V{categoryNames}+($V{categoryNames}.length() == 0 ? "" : " / ")+$F{commonName2}]]></variableExpression>
+		<variableExpression><![CDATA[$V{categoryNames}+($V{categoryNames}.length() == 0 ? "" : " / ")+$F{commonName1}]]></variableExpression>
 		<initialValueExpression><![CDATA[""]]></initialValueExpression>
 	</variable>
 	<variable name="unitOfMeasureNames" class="java.lang.String" resetType="Group" resetGroup="designGroup4">
