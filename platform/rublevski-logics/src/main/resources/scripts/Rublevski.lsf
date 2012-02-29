@@ -337,13 +337,23 @@ nameParentItemGroup 'Родительская группа' = name(parentItemGro
 maxTurnoverItemGroup 'Максимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 minTurnoverItemGroup 'Минимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 
-hasParentItemGroupInteger 'Предок (уровень)' (child, parent, i) = RECURSION child IS itemGroup AND parent == child AND i == 0 STEP parent == parentItemGroup($parent) AND i == $i + 1 PERSISTENT;
-TABLE itemGroupStructure(itemGroup, itemGroup, INTEGER);
+childNumberItemGroup 'Кол-во непосредственных потомков' (itemGroup) = GROUP SUM 1 BY parentItemGroup(group) PERSISTENT;
 
-hasParentItemGroup 'Уровень' (child, parent) = GROUP SUM i IF hasParentItemGroupInteger(child, parent, i) BY child, parent PERSISTENT;
+isLeafItemGroup 'Лист' (itemGroup) = itemGroup IS itemGroup AND NOT childNumberItemGroup(itemGroup);
+
+hasParentItemGroupInteger 'Предок (уровень)' (child, parent, i) = RECURSION child IS itemGroup AND parent == child AND i == 0
+                                                                  STEP parent == parentItemGroup($parent) AND i == $i + 1 CYCLES IMPOSSIBLE;
+//TABLE itemGroupStructure(itemGroup, itemGroup, INTEGER);
+
+hasParentItemGroup 'Уровень' (child, parent) = GROUP SUM i IF hasParentItemGroupInteger(child, parent, i) BY child, parent;
+
+hasParentAndLeafItemGroup (child, parent) = hasParentItemGroup(child, parent) AND isLeafItemGroup(child);
+
+hasParentOrNullItemGroup (child, parent) = UNION OVERRIDE hasParentItemGroup(child, parent), child IS itemGroup AND NOT parent;
+hasParentAndLeafOrNullItemGroup (child, parent) = UNION OVERRIDE hasParentAndLeafItemGroup(child, parent), isLeafItemGroup(child) AND NOT parent;
 
 canonicalNameItemGroup 'Каноническое имя' (itemGroup) = GROUP CONCAT name(parent) IF hasParentItemGroupInteger(child, parent, i), ' / '
-                                                                BY child ORDER DESC i PERSISTENT MAXCHARWIDTH 40;
+                                                                BY child ORDER DESC i MINCHARWIDTH 20 MAXCHARWIDTH 60 PREFCHARWIDTH 40;
 
 //levelItemGroup 'Уровень' (itemGroup) = GROUP SUM 1 IF hasParentItemGroup(child, parent) BY child PERSISTENT;
 
@@ -508,6 +518,8 @@ tmpSku() = SESSION DATA sku ();
 //baseGroup
 itemGroupSku = DATA itemGroup(sku) IN idGroup AUTOSET;
 nameItemGroupSku 'Группа товара' = name(itemGroupSku(sku)) IN baseGroup;
+
+hasParentItemGroupSku (sku, itemGroup) = hasParentItemGroup(itemGroupSku(sku), itemGroup);
 
 //descriptionGroup
 captionItem 'Название' = DATA STRING[100](item) IN descriptionGroup;
@@ -1686,12 +1698,14 @@ DESIGN item FROM DEFAULT {
 inItemGroupSku(itemGroup, sku) = itemGroupSku(sku) == itemGroup;
 
 FORM items 'Товары'
-TREE treeGroup g=itemGroup PARENT parentItemGroup
-OBJECTS i=item
-PROPERTIES(g) READONLY name
-PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem
-PROPERTIES(i) ADDFORM, EDITFORM, delete
-FILTERS NOT NULL inItemGroupSku(g, i);
+    TREE treeGroup g=itemGroup PARENT parentItemGroup
+    PROPERTIES(g) READONLY name
+
+    OBJECTS i=item
+    PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem
+    PROPERTIES(i) ADDFORM, EDITFORM, delete
+    FILTERS NOT NULL hasParentItemGroupSku(i, g)
+;
 
 DESIGN items FROM DEFAULT {
     POSITION treeGroup.box TO THE LEFT i.box;
@@ -1723,22 +1737,25 @@ addItemGroup 'Добавить' = ACTION (itemGroup) NEWSESSION {
 } TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
 FORM itemGroups 'Товарные группы'
-    TREE treeGroups g=itemGroup PARENT parentItemGroup
-    PROPERTIES(g) READONLY gname = name, extSID
-    PROPERTIES(g) addItemGroup, EDITFORM
+    TREE treeGroups a=STRING[3], g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY OBJVALUE(a), name(g), extSID(g)
+    PROPERTIES(g)       addItemGroup, EDITFORM
+    FILTERS NOT NULL stringEqualsAll(a)
+    ORDER BY name
 
     OBJECTS cg=itemGroup
-    PROPERTIES(cg)   cgname = name, canonicalNameItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, showCaptionItemGroup,
+    PROPERTIES(cg)   canonicalNameItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, showCaptionItemGroup,
                      showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
                      showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                      showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup, showNumberInPackItemGroup,
                      showRateWasteItemGroup, showWareItemGroup, delete
 
-    ORDER BY gname, cgname
+    ORDER BY canonicalNameItemGroup
 
     FILTERGROUP filters
-        FILTER 'Всех потомков' 'F10' NOT NULL hasParentItemGroup(cg, g) DEFAULT
-        FILTER 'Только непосредственных потомков' 'F9' NOT NULL inParentItemGroupItemGroup(cg, g)
+        FILTER 'Все листья' 'F10' NOT NULL hasParentAndLeafOrNullItemGroup(cg, g) DEFAULT
+        FILTER 'Всех потомков' 'F9' NOT NULL hasParentOrNullItemGroup(cg, g)
+        FILTER 'Только непосредственных потомков' 'F8' NOT NULL inParentItemGroupItemGroup(cg, g)
 ;
 
 DESIGN itemGroups FROM DEFAULT {

@@ -778,12 +778,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         userLogin = addDProp(baseGroup, "userLogin", getString("logics.user.login"), StringClass.get(30), customUser);
         loginToUser = addAGProp("loginToUser", getString("logics.user"), userLogin);
-        userPassword = addDProp(baseGroup, "userPassword", getString("logics.user.password"), StringClass.get(30), customUser);
+        userPassword = addDProp(publicGroup, "userPassword", getString("logics.user.password"), StringClass.get(30), customUser);
         userPassword.setEchoSymbols(true);
-        userFirstName = addDProp(baseGroup, "userFirstName", getString("logics.user.firstname"), StringClass.get(30), customUser);
+        userFirstName = addDProp(publicGroup, "userFirstName", getString("logics.user.firstname"), StringClass.get(30), customUser);
         userFirstName.setMinimumCharWidth(10);
 
-        userLastName = addDProp(baseGroup, "userLastName", getString("logics.user.lastname"), StringClass.get(30), customUser);
+        userLastName = addDProp(publicGroup, "userLastName", getString("logics.user.lastname"), StringClass.get(30), customUser);
         userLastName.setMinimumCharWidth(10);
 
         userRoleSID = addDProp(baseGroup, "userRoleSID", getString("logics.user.identificator"), StringClass.get(30), userRole);
@@ -963,23 +963,23 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         forbidForm = addDProp(baseGroup, "forbidForm", getString("logics.forms.prohibit.form"), LogicalClass.instance, navigatorElement);
 
         allowAllUserRoleForms = addDProp(baseGroup, "allowAllUserRoleForms", getString("logics.user.allow.all.user.form"), LogicalClass.instance, userRole);
-        allowAllUserForm = addJProp(baseGroup, "allowAllUserForm", getString("logics.user.allow.all.user.form"), allowAllUserRoleForms, userMainRole, 1);
+        allowAllUserForm = addJProp(publicGroup, "allowAllUserForm", getString("logics.user.allow.all.user.form"), allowAllUserRoleForms, userMainRole, 1);
         forbidAllUserRoleForms = addDProp(baseGroup, "forbidAllUserRoleForms", getString("logics.user.forbid.all.user.form"), LogicalClass.instance, userRole);
-        forbidAllUserForm = addJProp(baseGroup, "forbidAllUserForm", getString("logics.user.forbid.all.user.form"), forbidAllUserRoleForms, userMainRole, 1);
+        forbidAllUserForm = addJProp(publicGroup, "forbidAllUserForm", getString("logics.user.forbid.all.user.form"), forbidAllUserRoleForms, userMainRole, 1);
 
         allowViewAllUserRoleProperty = addDProp(baseGroup, "allowViewAllUserRoleProperty", getString("logics.user.allow.view.all.property"), LogicalClass.instance, userRole);
-        allowViewAllUserForm = addJProp(baseGroup, "allowViewAllUserForm", getString("logics.user.allow.view.all.property"), allowViewAllUserRoleProperty, userMainRole, 1);
+        allowViewAllUserForm = addJProp(publicGroup, "allowViewAllUserForm", getString("logics.user.allow.view.all.property"), allowViewAllUserRoleProperty, userMainRole, 1);
         forbidViewAllUserRoleProperty = addDProp(baseGroup, "forbidViewAllUserRoleProperty", getString("logics.user.forbid.view.all.property"), LogicalClass.instance, userRole);
-        forbidViewAllUserForm = addJProp(baseGroup, "forbidViewAllUserForm", getString("logics.user.forbid.view.all.property"), forbidViewAllUserRoleProperty, userMainRole, 1);
+        forbidViewAllUserForm = addJProp(publicGroup, "forbidViewAllUserForm", getString("logics.user.forbid.view.all.property"), forbidViewAllUserRoleProperty, userMainRole, 1);
 
         allowChangeAllUserRoleProperty = addDProp(baseGroup, "allowChangeAllUserRoleProperty", getString("logics.user.allow.change.all.property"), LogicalClass.instance, userRole);
-        allowChangeAllUserForm = addJProp(baseGroup, "allowChangeAllUserForm", getString("logics.user.allow.change.all.property"), allowChangeAllUserRoleProperty, userMainRole, 1);
+        allowChangeAllUserForm = addJProp(publicGroup, "allowChangeAllUserForm", getString("logics.user.allow.change.all.property"), allowChangeAllUserRoleProperty, userMainRole, 1);
         forbidChangeAllUserRoleProperty = addDProp(baseGroup, "forbidChangeAllUserRoleProperty", getString("logics.user.forbid.change.all.property"), LogicalClass.instance, userRole);
-        forbidChangeAllUserForm = addJProp(baseGroup, "forbidChangeAllUserForm", getString("logics.user.forbid.change.all.property"), forbidChangeAllUserRoleProperty, userMainRole, 1);
+        forbidChangeAllUserForm = addJProp(publicGroup, "forbidChangeAllUserForm", getString("logics.user.forbid.change.all.property"), forbidChangeAllUserRoleProperty, userMainRole, 1);
 
         userRoleFormDefaultNumber = addDProp(baseGroup, "userRoleFormDefaultNumber", getString("logics.forms.default.number"), IntegerClass.instance, userRole, navigatorElement);
         userFormDefaultNumber = addJProp(baseGroup, "userFormDefaultNumber", getString("logics.forms.default.number"), userRoleFormDefaultNumber, userMainRole, 1, 2);
-        userDefaultForms = addJProp(baseGroup, "userDefaultForms", getString("logics.user.displaying.forms.by.default"), userRoleDefaultForms, userMainRole, 1);
+        userDefaultForms = addJProp(publicGroup, "userDefaultForms", getString("logics.user.displaying.forms.by.default"), userRoleDefaultForms, userMainRole, 1);
 //        permissionUserForm = addDProp(baseGroup, "permissionUserForm", "Запретить форму", LogicalClass.instance, user, navigatorElement);
 
         selectUserRoles = addSelectFromListAction(null, getString("logics.user.role.edit.roles"), inUserRole, userRole, customUser);
@@ -1347,6 +1347,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         adminElement.add(objectElement);
 
         accessElement = addNavigatorElement(adminElement, "accessElement", getString("logics.administration.access"));
+
+        UserEditFormEntity userEditForm = addFormEntity(new UserEditFormEntity(null, "userEditForm"));
+        customUser.setEditForm(userEditForm, userEditForm.objUser);
+
         addFormEntity(new UserPolicyFormEntity(accessElement, "userPolicyForm"));
         addFormEntity(new SecurityPolicyFormEntity(accessElement, "securityPolicyForm"));
 
@@ -1763,17 +1767,39 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         protected UserPolicyFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.user.users"));
 
-            ObjectEntity objUser = addSingleGroupObject(customUser, selection, baseGroup, true);
-            ObjectEntity objRole = addSingleGroupObject(userRole, baseGroup, true);
-            getPropertyDraw(userRoleDefaultForms).shouldBeLast = true;
+            ObjectEntity objUser = addSingleGroupObject(customUser, nameUserMainRole, name, userLogin, email, barcode);
+            setReadOnly(objUser, true);
 
-            addObjectActions(this, objUser);
+            addFormActions(this, objUser);
+        }
+    }
 
-            addPropertyDraw(objUser, objRole, baseGroup, true);
+    private class UserEditFormEntity extends FormEntity {
 
-            addPropertyDraw(selectUserRoles, objRole.groupTo, objUser).forceViewType = ClassViewType.PANEL;
+        private final ObjectEntity objUser;
+        private final ObjectEntity objRole;
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(inUserRole, objUser, objRole), Compare.EQUALS, true));
+        protected UserEditFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.user.user"));
+
+            objUser = addSingleGroupObject(customUser, userFirstName, userLastName, userLogin, userPassword, email, nameUserMainRole);
+            objUser.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objRole = addSingleGroupObject(userRole, name, userRoleSID);
+            setReadOnly(objRole, true);
+            
+            addPropertyDraw(objUser, objRole, inUserMainRole);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.addIntersection(design.getGroupObjectContainer(objUser.groupTo),
+                                   design.getGroupObjectContainer(objRole.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            
+            return design;
         }
     }
 

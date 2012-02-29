@@ -51,7 +51,7 @@ public class KeyStrokes {
     }
 
     public static KeyStroke getNullKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.SHIFT_DOWN_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK);
     }
 
     public static KeyStroke getRefreshKeyStroke() {

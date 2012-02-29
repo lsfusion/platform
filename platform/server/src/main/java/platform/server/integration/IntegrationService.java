@@ -71,6 +71,9 @@ public class IntegrationService {
         MapDataChanges<PropertyInterface> propertyChanges = new MapDataChanges<PropertyInterface>();
         for (ImportProperty<?> property : properties)
             propertyChanges = propertyChanges.add((MapDataChanges<PropertyInterface>) property.synchronize(session, importTable, addedKeys, replaceNull, replaceEqual));
+        
+        System.gc();
+
         session.execute(propertyChanges, null, null);
 
         return importTable;
