@@ -102,6 +102,8 @@
       <keyword name="IMPOSSIBLE" />
       <keyword name="IN" />
       <keyword name="INCREMENT" />
+      <keyword name="INDEX" />
+      <keyword name="INDEXED" />
       <keyword name="INIT" />
       <keyword name="INLINE" />
       <keyword name="INTEGER" />

@@ -67,7 +67,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final ScriptingErrorLog errLog;
     private LsfLogicsParser parser;
 
-    public enum State {GROUP, CLASS, PROP, TABLE}
+    public enum State {GROUP, CLASS, PROP, TABLE, INDEX}
     public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
@@ -1159,6 +1159,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         baseLM.tableFactory.include(name, classes);
     }
 
+    public void addScriptedIndices(List<String> propNames) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedIndices(" + propNames + ");");
+
+        for (String name : propNames) {
+            LP<?> lp = findLPByCompoundName(name);
+            addIndex(lp);
+        }
+    }
+
     public void addScriptedWindow(WindowType type, String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
         if (scriptLogger.isInfoEnabled()) {
             scriptLogger.info("addScriptedWindow(" + name + ", " + type + ", " + caption + ", " + options + ");");
@@ -1650,6 +1659,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public void initIndexes() {
+        parseStep(ScriptingLogicsModule.State.INDEX);
     }
 
     @Override

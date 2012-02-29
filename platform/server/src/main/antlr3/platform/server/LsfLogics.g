@@ -97,6 +97,10 @@ grammar LsfLogics;
 		return inParseState(ScriptingLogicsModule.State.TABLE);
 	}
 
+	public boolean inIndexParseState() {
+		return inParseState(ScriptingLogicsModule.State.INDEX);
+	}
+
 	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
 		if (inPropParseState()) {
 			$designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue);
@@ -1025,20 +1029,22 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent);
 	}
 }
-	: 	('IN' name=compoundID { groupName = $name.sid; })?
-		('PERSISTENT' { isPersistent = true; })?
-		(panelLocationSetting [property])?
-		(fixedCharWidthSetting [property])?
-		(minCharWidthSetting [property])?
-		(maxCharWidthSetting [property])?
-		(prefCharWidthSetting [property])?
-		(imageSetting [property])?
-		(editKeySetting [property])?
-		(autosetSetting [property])?
-		(confirmSetting [property])?
-		(regexpSetting [property])?
-		(loggableSetting [property])?
-		(echoSymbolsSetting [property])?
+	: 	(	'IN' name=compoundID { groupName = $name.sid; }
+		|	'PERSISTENT' { isPersistent = true; }
+		|	panelLocationSetting [property]
+		|	fixedCharWidthSetting [property]
+		|	minCharWidthSetting [property]
+		|	maxCharWidthSetting [property]
+		|	prefCharWidthSetting [property]
+		|	imageSetting [property]
+		|	editKeySetting [property]
+		|	autosetSetting [property]
+		|	confirmSetting [property]
+		|	regexpSetting [property]
+		|	loggableSetting [property]
+		|	echoSymbolsSetting [property]
+		|	indexSetting [propertyName]
+		)*
 	;
 
 
@@ -1171,6 +1177,15 @@ echoSymbolsSetting [LP property]
 	}
 }
 	:	'ECHO'
+	;
+
+indexSetting [String propName]
+@after {
+	if (inIndexParseState()) {
+		self.addScriptedIndices(Arrays.asList(propName));
+	}
+}
+	:	'INDEXED'
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1529,7 +1544,13 @@ tableStatement
 ////////////////////////////////////////////////////////////////////////////////
 
 indexStatement
-	:	'I' ';';
+@after {
+	if (inIndexParseState()) {
+		self.addScriptedIndices($list.ids);
+	}	
+}
+	:	'INDEX' list=nonEmptyCompoundIdList ';'
+	;
 
 
 ////////////////////////////////////////////////////////////////////////////////
