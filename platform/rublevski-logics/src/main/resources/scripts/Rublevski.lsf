@@ -251,6 +251,7 @@ META metaCodeShowItemAttribute (attribute, caption, group)
 END
 
 // ----------------------------------- Свойства изменения объектов в Posted ------------------------------------------ //
+
 META metaCodePostedObject (object)
 
     isDraft###object 'Открыт' (object) = object IS object AND NOT object IS object##Posted;
@@ -2253,7 +2254,7 @@ TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
 CLASS ABSTRACT order 'Заказ' : historyObject;
 CLASS orderSupplier 'Заказ поставщику' : order;
-CLASS orderSupplierPost 'Одобренный заказ поставщику' :orderSupplier;
+CLASS orderSupplierPosted 'Закрытый заказ поставщику' :orderSupplier;
 //CLASS orderStock 'Заказ складу' :order;
 
 dataOrderSupplier 'Номер заказа' (orderSupplier) = DATA INTEGER (orderSupplier) IN orderSupplierGroup;
@@ -2366,6 +2367,26 @@ isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepa
 
 isSupplyDatePreliminaryOrder (preliminaryOrder, date) = dateSupplyPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
 isOrderDatePreliminaryOrder (preliminaryOrder, date) = dateOrderPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
+
+@metaCodePostedObject (orderSupplier);
+
+FORM preliminaryOrder 'Предварительный заказ'
+OBJECTS p=preliminaryOrder FIXED PANEL
+PROPERTIES(p) nameDepartmentStorePreliminaryOrder, nameSupplierPreliminaryOrder, dateOrderPreliminaryOrder,
+              dateSupplyPreliminaryOrder
+EDIT preliminaryOrder OBJECT p;
+
+DESIGN preliminaryOrder FROM DEFAULT {
+    p.box{
+        title = 'Предварительный заказ';
+        childConstraints = TO THE BOTTOM;
+        ADD PROPERTY (nameDepartmentStorePreliminaryOrder);
+        ADD PROPERTY (nameSupplierPreliminaryOrder);
+        ADD PROPERTY (dateOrderPreliminaryOrder);
+        ADD PROPERTY (dateSupplyPreliminaryOrder);
+    }
+}
+
 
 tmpGTT = SESSION DATA genTimeTable();
 tmpDate = SESSION DATA DATE();
@@ -2486,7 +2507,7 @@ createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
 
 fillInOrderSupplier 'Заполнить заказ рекомендованным количеством' = ACTION (orderSupplier) {
     SET packQuantityItemOrderSupplier(orderSupplier, item) <- recommendCountOrderSupplier(orderSupplier, item AS item);
-};
+} CONFIRM;
 
 FORM orderSupplier 'Заказ поставщику'
 
@@ -2563,17 +2584,20 @@ DESIGN orderSupplier FROM DEFAULT {
 
     PROPERTY (fillInOrderSupplier) {
         panelLocation = TOOLBAR;
+        askConfirm = TRUE;
     }
 }
 
 FORM orderSuppliers 'Заказы поставщику'
 
     OBJECTS o=orderSupplier
-    PROPERTIES(o) READONLY dataOrderSupplier, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
+    PROPERTIES(o) READONLY objectClassName, dataOrderSupplier, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
                            quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
                            nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated,
                            nameUserCreated, allowablePercentOrderSupplier
-    PROPERTIES(o) ADDFORM, EDITFORM, delete
+
+    PROPERTIES(o)          ADDFORM, EDITFORM SHOWIF isDraftOrderSupplier(o), delete FORCE PANEL SHOWIF isDraftOrderSupplier(o),
+                           postOrderSupplier SHOWIF isDraftOrderSupplier(o), unpostOrderSupplier SHOWIF isPostedOrderSupplier(o)
 
     OBJECTS i=item
     PROPERTIES(i) READONLY nameAttributeItem
@@ -2583,6 +2607,15 @@ FORM orderSuppliers 'Заказы поставщику'
 
     FILTERS NOT NULL sumQuantityItemOrderSupplier(o, i)
 ;
+
+DESIGN orderSuppliers FROM DEFAULT{
+
+    PROPERTY (delete(o)){
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
 
 // ----------------------------------- Разрешать поставки ------------------------------------------- //
 
@@ -2600,6 +2633,7 @@ FORM timeTableDate 'График поставок'
     PROPERTIES(s) READONLY name
     PROPERTIES(p) READONLY dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder, dataOrderPreliminaryOrder
     PROPERTIES(p) nextDateOrder, createOrderSupplier
+    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL
     PROPERTIES(s, d, t) READONLY quantityOrderOrderSupplier, quantitySupplyOrderSupplier, quantityOrderPreliminaryOrder, quantitySupplyPreliminaryOrder
     FILTERS NOT NULL isSupplierDepartmentStore(d, s, p)
     FILTERGROUP filters
@@ -2616,6 +2650,10 @@ DESIGN timeTableDate FROM DEFAULT {
         p.box {fillHorizontal = 4;}
 
         ADD PROPERTY(createGenTimeTable) IN d.panel;
+        PROPERTY (delete(p)) {
+            panelLocation = TOOLBAR;
+            askConfirm = TRUE;
+            }
 }
 
 //--------------------------------------Формы--------------------------------------------------------------------------//
@@ -4406,7 +4444,7 @@ NAVIGATOR {
             ADD markupSupplierItemDepartment;
             ADD addNamebanSupplierItemDepartment;
             ADD namebanSupplierItemDepartment;
-
+            ADD preliminaryOrder;
             ADD cash;
             ADD scales;
             ADD check;
