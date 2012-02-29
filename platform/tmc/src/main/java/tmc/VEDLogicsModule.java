@@ -2666,7 +2666,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         @Override
-        public ClientResultAction getClientApply(FormInstance<VEDBusinessLogics> formInstance) {
+        public ClientResultAction getClientActionOnApply(FormInstance<VEDBusinessLogics> formInstance) {
             if (toAdd) {
 
                 ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
@@ -2682,7 +2682,7 @@ public class VEDLogicsModule extends LogicsModule {
                         getPropertyDraw(nameImplSubjectIncOrder), getPropertyDraw(accumulatedClientSum), getPropertyDraw(discountSumOrder, objDoc),
                         BaseUtils.toSet(obligation.groupTo),getPropertyDraw(baseLM.objectClassName, objObligation), getPropertyDraw(obligationSum, objObligation), getPropertyDraw(baseLM.barcode, objObligation));
             } else
-                return super.getClientApply(formInstance);
+                return super.getClientActionOnApply(formInstance);
         }
 
         public ClientAction getPrintOrderAction(FormInstance<?> formInstance) {
@@ -2700,12 +2700,8 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         @Override
-        public String checkClientApply(Object result) {
-
-            String check = VEDBL.cashRegController.checkCashRegApplyActions(result);
-            if (check != null) return check;
-
-            return super.checkClientApply(result);
+        public String checkClientApply(Object clientResult) {
+            return VEDBL.cashRegController.checkCashRegApplyActions(clientResult);
         }
 
         @Override
@@ -3084,7 +3080,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         @Override
-        public ClientResultAction getClientApply(FormInstance formInstance) {
+        public ClientResultAction getClientActionOnApply(FormInstance formInstance) {
             if (toAdd) {
 
                 ObjectInstance doc = formInstance.instanceFactory.getInstance(objDoc);
@@ -3099,16 +3095,12 @@ public class VEDLogicsModule extends LogicsModule {
                         getPropertyDraw(discountOrderArticle), getPropertyDraw(discountSumOrderArticle),
                         getPropertyDraw(orderUserName), null, null, null, null, null, null, null);
             } else
-                return super.getClientApply(formInstance);
+                return super.getClientActionOnApply(formInstance);
         }
 
         @Override
-        public String checkClientApply(Object result) {
-
-            String check = VEDBL.cashRegController.checkCashRegApplyActions(result);
-            if (check != null) return check;
-
-            return super.checkClientApply(result);
+        public String checkClientApply(Object clientResult) {
+            return VEDBL.cashRegController.checkCashRegApplyActions(clientResult);
         }
     }
 
@@ -3715,7 +3707,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         @Override
-        public ClientResultAction getClientApply(FormInstance<VEDBusinessLogics> formInstance) {
+        public ClientResultAction getClientActionOnApply(FormInstance<VEDBusinessLogics> formInstance) {
             if (toAdd) {
 
                 ObjectInstance doc = formInstance.instanceFactory.getInstance(objDoc);
@@ -3731,16 +3723,12 @@ public class VEDLogicsModule extends LogicsModule {
                         null, null, null, null, null);
 
             } else
-                return super.getClientApply(formInstance);
+                return super.getClientActionOnApply(formInstance);
         }
 
         @Override
-        public String checkClientApply(Object result) {
-
-            String check = VEDBL.cashRegController.checkCashRegApplyActions(result);
-            if (check != null) return check;
-
-            return super.checkClientApply(result);
+        public String checkClientApply(Object clientResult) {
+            return VEDBL.cashRegController.checkCashRegApplyActions(clientResult);
         }
 
         @Override

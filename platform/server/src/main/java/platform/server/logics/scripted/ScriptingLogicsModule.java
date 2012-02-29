@@ -994,7 +994,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    public LP<?> addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> props, String className, boolean newSession, boolean isModal) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?> addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> props, String className, boolean newSession, boolean isModal, boolean checkOnOk) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + props + ", " + className + ", " + newSession + ", " + isModal + ");");
 
         FormEntity form = findFormByCompoundName(formName);
@@ -1021,7 +1021,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 propObjects[i] = form.addPropertyObject(props.get(i).property, params);
             }
         }
-        return addFAProp(null, genSID(), "", form, objects, propObjects, new OrderEntity[propObjects.length], cls, newSession, isModal);
+        return addFAProp(null, genSID(), "", form, objects, propObjects, new OrderEntity[propObjects.length], cls, newSession, isModal, checkOnOk);
     }
 
     public ObjectEntity findObjectEntity(FormEntity form, String objectName) throws ScriptingErrorLog.SemanticErrorException {

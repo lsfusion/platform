@@ -252,13 +252,12 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         }
     }
 
-    public Object execute(ResultClientAction action) {
+    public void execute(LogMessageClientAction action) {
         if (action.failed) {
             Log.error(action.message);
-            return null;
+            form.setCanClose(false);
         } else {
             Log.message(action.message);
-            return true;
         }
     }
 
@@ -267,7 +266,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
     }
 
     public void execute(ApplyClientAction action) {
-        form.applyChanges(true);
+        form.apply(false);
     }
 
     public void execute(OpenFileClientAction action) {

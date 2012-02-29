@@ -1,6 +1,6 @@
 package platform.server.logics.property.actions;
 
-import platform.interop.action.ResultClientAction;
+import platform.interop.action.LogMessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.ExecutionContext;
@@ -21,7 +21,7 @@ public class ApplyActionProperty extends CustomActionProperty {
     public void execute(ExecutionContext context) throws SQLException {
         String result = context.applyChanges(BL);
         if (result != null) {
-            context.addAction(new ResultClientAction(result, true));
+            context.addAction(new LogMessageClientAction(result, true));
         }
     }
 }

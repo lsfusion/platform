@@ -31,6 +31,7 @@ public class FormActionProperty extends CustomActionProperty {
     public List<PropertyObjectEntity> closeProperties = new ArrayList<PropertyObjectEntity>();
     public Set<ObjectEntity> seekOnOk = new HashSet<ObjectEntity>();
     private DataClass valueClass;
+    private final boolean checkOnOk;
     private final boolean newSession;
     private final boolean isModal;
 
@@ -51,7 +52,7 @@ public class FormActionProperty extends CustomActionProperty {
     //assert getProperties и setProperties одинаковой длины
     //setProperties привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal, StaticCustomClass formResultClass, LP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
+    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal, boolean checkOnOk, StaticCustomClass formResultClass, LP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
         super(sID, caption, getValueClasses(objectsToSet));
 
         this.valueClass = valueClass;
@@ -62,6 +63,7 @@ public class FormActionProperty extends CustomActionProperty {
         assert setProperties.length == getProperties.length;
 
         this.isModal = isModal;
+        this.checkOnOk = checkOnOk;
         this.newSession = newSession;
         this.setProperties = setProperties;
         this.getProperties = getProperties;
@@ -90,7 +92,7 @@ public class FormActionProperty extends CustomActionProperty {
                 ((SelfInstancePostProcessor) form).postProcessSelfInstance(context.getKeys(), thisRemoteForm, newFormInstance);
             }
 
-            final RemoteForm newRemoteForm = thisRemoteForm.createForm(newFormInstance);
+            final RemoteForm newRemoteForm = thisRemoteForm.createForm(newFormInstance, checkOnOk);
 
             for (int i = 0; i < setProperties.length; i++) {
                 Object setValue = getProperties[i] != null && context.isInFormSession()

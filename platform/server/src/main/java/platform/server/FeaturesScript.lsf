@@ -210,7 +210,7 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // [OBJECTS object1, ..., objectN]
 // [SET propertyExpr1, ..., propertyExprM]
 // [CLASS className]
-// [NEWSESSION] [MODAL]
+// [NEWSESSION] [MODAL] [CHECK]
 
 
 // Add object action
@@ -322,7 +322,7 @@ showDocumentArticleModalForm 'Показать форму "По документ
         SET name(k) <- 'this is new article';
     };
 
-    FORM documentArticle MODAL;
+    FORM documentArticle MODAL CHECK;
 
     IF (formResult() == formResult.ok) THEN {
         MESSAGE 'You pressed "ok"' LENGTH 50;

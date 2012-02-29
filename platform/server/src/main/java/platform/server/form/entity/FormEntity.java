@@ -834,11 +834,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return false;
     }
 
-    public ClientResultAction getClientApply(FormInstance<T> form) {
+    public ClientResultAction getClientActionOnApply(FormInstance<T> form) {
         return null; // будем возвращать именно null, чтобы меньше данных передавалось        
     }
 
-    public String checkClientApply(Object result) {
+    public String checkClientApply(Object clientResult) {
         return null;
     }
 

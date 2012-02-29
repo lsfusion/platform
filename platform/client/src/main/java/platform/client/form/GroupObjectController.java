@@ -2,7 +2,6 @@ package platform.client.form;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.client.ClientResourceBundle;
 import platform.client.form.cell.PropertyController;
 import platform.client.form.grid.GridController;
 import platform.client.form.grid.GridView;
@@ -19,8 +18,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static platform.client.ClientResourceBundle.getString;
 
 public class GroupObjectController extends AbstractGroupObjectController {
     private final ClientGroupObject groupObject;
@@ -315,7 +318,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
                 try {
                     form.switchClassView(groupObject);
                 } catch (IOException e) {
-                    throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.type"), e);
+                    throw new RuntimeException(getString("errors.error.changing.type"), e);
                 }
             }
         });
@@ -358,12 +361,11 @@ public class GroupObjectController extends AbstractGroupObjectController {
         return grid.getSelectedValue(cell, columnKey);
     }
 
-    public String getSaveMessage() {
-
+    public String getConfirmApplyMessage() {
         String message = "";
         for (ClientObject object : groupObject.objects) {
             if (object.addOnEvent.contains(FormEventType.APPLY) || object.addOnEvent.contains(FormEventType.OK)) {
-                message += ClientResourceBundle.getString("form.create.new")+" " + object.getCaption() + " ?";
+                message += getString("form.create.new") + " " + object.getCaption() + " ?";
             }
         }
 

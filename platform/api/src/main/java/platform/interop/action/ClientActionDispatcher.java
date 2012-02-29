@@ -23,7 +23,7 @@ public interface ClientActionDispatcher {
 
     public void execute(MessageClientAction action);
 
-    public Object execute(ResultClientAction action);
+    public void execute(LogMessageClientAction action);
 
     public Object execute(CustomClientAction action);
 

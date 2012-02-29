@@ -1,9 +1,7 @@
 package platform.interop.action;
 
-import java.io.Serializable;
 import java.io.IOException;
 
-public interface ClientResultAction extends ClientApply {
-
+public interface ClientResultAction extends ClientAction {
     public Object dispatchResult(ClientActionDispatcher dispatcher) throws IOException;
 }

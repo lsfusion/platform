@@ -2,20 +2,20 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class ResultClientAction extends AbstractClientAction {
+public class LogMessageClientAction extends AbstractClientAction {
 
     public String message;
 
     public boolean failed;
 
-    public ResultClientAction(String message, boolean failed) {
+    public LogMessageClientAction(String message, boolean failed) {
         this.message = message;
         this.failed = failed;
     }
 
     @Override
-    public Object dispatchResult(ClientActionDispatcher dispatcher) throws IOException {
-        return dispatcher.execute(this);
+    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+        dispatcher.execute(this);
     }
 
     @Override

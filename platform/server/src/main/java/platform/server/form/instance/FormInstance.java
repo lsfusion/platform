@@ -9,7 +9,7 @@ import platform.interop.FormEventType;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
 import platform.interop.action.DenyCloseFormClientAction;
-import platform.interop.action.ResultClientAction;
+import platform.interop.action.LogMessageClientAction;
 import platform.interop.form.FormColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
 import platform.server.Message;
@@ -40,7 +40,6 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.MaxChangeProperty;
@@ -812,13 +811,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return session.check(BL);
     }
 
-    public void synchronizedApplyChanges(String clientResult, List<ClientAction> actions) throws SQLException {
+    public void synchronizedApplyChanges(String clientActionCheckResult, List<ClientAction> actions) throws SQLException {
         if (entity.isSynchronizedApply)
             synchronized (entity) {
-                applyChanges(clientResult, actions);
+                applyChanges(clientActionCheckResult, actions);
             }
         else
-            applyChanges(clientResult, actions);
+            applyChanges(clientActionCheckResult, actions);
     }
 
     private void fillHints(boolean restart) throws SQLException {
@@ -835,13 +834,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         noUpdate.addAll(hintsNoUpdate);
     }
     
-    public void applyChanges(String checkResult, List<ClientAction> actions) throws SQLException {
-        if(checkResult == null)
-            checkResult = session.apply(BL, actions);
+    public void applyChanges(String clientActionCheckResult, List<ClientAction> actions) throws SQLException {
+        String checkResult = clientActionCheckResult != null
+                             ? clientActionCheckResult
+                             : session.apply(BL, actions);
 
         if (checkResult != null) {
-            actions.add(new ResultClientAction(checkResult, true));
-            actions.add(new DenyCloseFormClientAction());
+            actions.add(new LogMessageClientAction(checkResult, true));
             return;
         }
 
@@ -852,7 +851,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
 
-        actions.add(new ResultClientAction(ServerResourceBundle.getString("form.instance.changes.saved"), false));
+        actions.add(new LogMessageClientAction(getString("form.instance.changes.saved"), false));
     }
 
     public void cancelChanges() throws SQLException {

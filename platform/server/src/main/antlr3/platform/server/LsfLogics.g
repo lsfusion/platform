@@ -1239,11 +1239,12 @@ formActionPropertyDefinitionBody returns [LP property]
 @init {
 	boolean newSession = false;
 	boolean isModal = false;
+	boolean checkOnOk = false;
 	List<String> objects = new ArrayList<String>();
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, $exprList.props, $className.sid, newSession, isModal);	
+		$property = self.addScriptedFAProp($formName.sid, objects, $exprList.props, $className.sid, newSession, isModal, checkOnOk);	
 	}
 }
 	:	'FORM' formName=compoundID 
@@ -1251,7 +1252,8 @@ formActionPropertyDefinitionBody returns [LP property]
 		('SET' exprList=nonEmptyPropertyExpressionList[objects, false])? 
 		('CLASS' className=classId)?
 		('NEWSESSION' { newSession = true; })? 
-		('MODAL' { isModal = true; })?  	
+		('MODAL' { isModal = true; })?
+		('CHECK' { checkOnOk = true; })?
 	;
 
 customActionPropertyDefinitionBody returns [LP property]

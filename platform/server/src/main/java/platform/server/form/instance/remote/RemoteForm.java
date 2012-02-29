@@ -13,9 +13,7 @@ import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
 import platform.interop.Scroll;
-import platform.interop.action.CheckFailed;
-import platform.interop.action.ClientAction;
-import platform.interop.action.ClientApply;
+import platform.interop.action.*;
 import platform.interop.form.*;
 import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
@@ -60,15 +58,22 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     private final WeakReference<RemoteFormListener> weakRemoteFormListener;
 
+    private final boolean checkOnOk;
+
     private RemoteFormListener getRemoteFormListener() {
         return weakRemoteFormListener.get();
     }
 
     public RemoteForm(F form, FormView richDesign, int port, RemoteFormListener remoteFormListener) throws RemoteException {
+        this(form, richDesign, port, remoteFormListener, false);
+    }
+
+    public RemoteForm(F form, FormView richDesign, int port, RemoteFormListener remoteFormListener, boolean checkOnOk) throws RemoteException {
         super(port);
 
         this.form = form;
         this.richDesign = richDesign;
+        this.checkOnOk = checkOnOk;
         this.weakRemoteFormListener = new WeakReference<RemoteFormListener>(remoteFormListener);
         if (remoteFormListener != null) {
             remoteFormListener.formCreated(this);
@@ -738,13 +743,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             return tempFile;
 
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new RuntimeException(e);
         } catch (JRException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new RuntimeException(e);
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     public void refreshData() {
@@ -755,17 +759,17 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public boolean hasClientApply() {
+    public boolean hasClientActionOnApply() {
         return form.entity.hasClientApply();
     }
 
-    public ClientApply checkClientChanges() throws RemoteException {
+    public ClientResultAction getClientActionOnApply() throws RemoteException {
         try {
             String result = form.checkApply();
             if (result != null) {
                 return new CheckFailed(result);
             } else {
-                return form.entity.getClientApply(form);
+                return form.entity.getClientActionOnApply(form);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -795,6 +799,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public void run() {
                 try {
+                    if (checkOnOk) {
+                        String checkResult = form.checkApply();
+                        if (checkResult != null) {
+                            actions.add(new LogMessageClientAction(checkResult, true));
+                            return;
+                        }
+                    }
+
                     actions.addAll(form.fireOnOk(RemoteForm.this));
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -917,9 +929,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public RemoteForm createForm(FormInstance formInstance) {
+    public RemoteForm createForm(FormInstance formInstance, boolean checkOnOk) {
         try {
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, getRemoteFormListener());
+            return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, getRemoteFormListener(), checkOnOk);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

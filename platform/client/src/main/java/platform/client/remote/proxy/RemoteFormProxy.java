@@ -1,7 +1,7 @@
 package platform.client.remote.proxy;
 
 import platform.interop.ClassViewType;
-import platform.interop.action.ClientApply;
+import platform.interop.action.ClientResultAction;
 import platform.interop.form.*;
 import platform.interop.remote.MethodInvocation;
 
@@ -261,14 +261,14 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @ImmutableMethod
-    public boolean hasClientApply() throws RemoteException {
-        logRemoteMethodStartCall("hasClientApply");
-        return target.hasClientApply();
+    public boolean hasClientActionOnApply() throws RemoteException {
+        logRemoteMethodStartCall("hasClientActionOnApply");
+        return target.hasClientActionOnApply();
     }
 
-    public ClientApply checkClientChanges() throws RemoteException {
+    public ClientResultAction getClientActionOnApply() throws RemoteException {
         logRemoteMethodStartCall("applyClientChanges");
-        return target.checkClientChanges();
+        return target.getClientActionOnApply();
     }
 
     public RemoteChanges applyChanges(Object clientResult) throws RemoteException {

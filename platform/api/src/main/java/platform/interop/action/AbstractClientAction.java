@@ -1,9 +1,8 @@
 package platform.interop.action;
 
 import java.io.IOException;
-import java.io.Serializable;
 
-public abstract class AbstractClientAction implements ClientAction, ClientResultAction {
+public abstract class AbstractClientAction implements ClientResultAction {
 
     public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
         dispatchResult(dispatcher);

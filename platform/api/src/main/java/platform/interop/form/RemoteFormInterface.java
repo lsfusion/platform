@@ -2,7 +2,7 @@ package platform.interop.form;
 
 import platform.interop.ClassViewType;
 import platform.interop.RemoteContextInterface;
-import platform.interop.action.ClientApply;
+import platform.interop.action.ClientResultAction;
 import platform.interop.remote.PendingRemote;
 
 import java.rmi.RemoteException;
@@ -32,7 +32,7 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     boolean canChangeClass(int objectID) throws RemoteException;
 
-    boolean hasClientApply() throws RemoteException; // чисто для оптимизации одного RMI вызова
+    boolean hasClientActionOnApply() throws RemoteException; // чисто для оптимизации одного RMI вызова
 
     RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException;
 
@@ -94,7 +94,7 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
 
-    ClientApply checkClientChanges() throws RemoteException;
+    ClientResultAction getClientActionOnApply() throws RemoteException;
 
     RemoteChanges okPressed() throws RemoteException;
     RemoteChanges closedPressed() throws RemoteException;

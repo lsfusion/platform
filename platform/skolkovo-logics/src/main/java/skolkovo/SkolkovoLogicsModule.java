@@ -7556,7 +7556,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 fileDecisionVote.execute(IOUtils.getFileBytes(tempFile), context, voteObject);
 
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
     }

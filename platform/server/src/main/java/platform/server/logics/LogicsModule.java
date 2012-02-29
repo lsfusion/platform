@@ -507,7 +507,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession) {
-        return addFAProp(group, sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, true);
+        return addFAProp(group, sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, true, false);
     }
 
     protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, boolean newSession, boolean isModal) {
@@ -515,11 +515,11 @@ public abstract class LogicsModule {
     }
 
     protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal) {
-        return addFAProp(group, genSID(), caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal);
+        return addFAProp(group, genSID(), caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal, false);
     }
 
-    protected LP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenObjectProperty())));
+    protected LP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal, boolean checkOnOk) {
+        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal, checkOnOk, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenObjectProperty())));
     }
 
     protected LP addSelectFromListAction(AbstractGroup group, String caption, LP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {

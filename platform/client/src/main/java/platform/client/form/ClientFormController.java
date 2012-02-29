@@ -31,6 +31,7 @@ import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
 
+import static platform.client.ClientResourceBundle.getString;
 import static platform.interop.Order.*;
 
 public class ClientFormController {
@@ -152,7 +153,7 @@ public class ClientFormController {
                     ClientExternalScreen.invalidate(getID());
                     ClientExternalScreen.repaintAll(getID());
                 } catch (IOException e) {
-                    throw new RuntimeException(ClientResourceBundle.getString("form.error.form.activation"), e);
+                    throw new RuntimeException(getString("form.error.form.activation"), e);
                 }
             }
         };
@@ -212,7 +213,7 @@ public class ClientFormController {
 
     private void createMultipleFilterComponent(final ClientRegularFilterGroup filterGroup) {
         final JComboBox comboBox = new JComboBox();
-        comboBox.addItem(new ClientRegularFilterWrapped(ClientResourceBundle.getString("form.all")));
+        comboBox.addItem(new ClientRegularFilterWrapped(getString("form.all")));
         for (ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapped(filter));
         }
@@ -232,7 +233,7 @@ public class ClientFormController {
                 try {
                     setRegularFilter(filterGroup, ((ClientRegularFilterWrapped) e.getItem()).filter);
                 } catch (IOException ioe) {
-                    throw new RuntimeException(ClientResourceBundle.getString("form.error.changing.regular.filter"), ioe);
+                    throw new RuntimeException(getString("form.error.changing.regular.filter"), ioe);
                 }
             }
         });
@@ -268,7 +269,7 @@ public class ClientFormController {
                     if (ie.getStateChange() == ItemEvent.DESELECTED)
                         setRegularFilter(filterGroup, null);
                 } catch (IOException e) {
-                    throw new RuntimeException(ClientResourceBundle.getString("form.error.changing.regular.filter"), e);
+                    throw new RuntimeException(getString("form.error.changing.regular.filter"), e);
                 }
             }
         });
@@ -472,7 +473,7 @@ public class ClientFormController {
             applyOrders(form.defaultOrders);
             defaultOrdersInitialized = true;
         } catch (IOException e) {
-            throw new RuntimeException(ClientResourceBundle.getString("form.error.cant.initialize.default.orders"));
+            throw new RuntimeException(getString("form.error.cant.initialize.default.orders"));
         }
     }
 
@@ -653,7 +654,7 @@ public class ClientFormController {
         processRemoteChanges(
                 remoteForm.groupChangePropertyDraw(mainProperty.getID(), mainColumnKey.serialize(), getterProperty.getID(), getterColumnKey.serialize())
         );
-        refreshData();
+        refresh();
     }
 
     public void changeGridClass(ClientObject object, ClientObjectClass cls) throws IOException {
@@ -760,55 +761,59 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
-    void refreshData() {
+    void refresh() {
         try {
             remoteForm.refreshData();
             applyRemoteChanges();
         } catch (IOException e) {
-            throw new RuntimeException(ClientResourceBundle.getString("form.error.refreshing.form"), e);
+            throw new RuntimeException(getString("form.error.refreshing.form"), e);
         }
     }
 
-    void applyChanges(boolean sureApply) {
+    void apply(boolean needConfirm) {
         try {
-            if (true) { //(dataChanged) {
-                if (!sureApply) {
-                    String okMessage = "";
-                    for (ClientGroupObject group : form.groupObjects) {
-                        if (controllers.containsKey(group)) {
-                            okMessage += controllers.get(group).getSaveMessage();
-                        }
-                    }
-
-                    if (!okMessage.isEmpty()) {
-                        if (!(SwingUtils.showConfirmDialog(getComponent(), okMessage, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
-                            setCanClose(false);
-                            return;
-                        }
-                    }
-                }
-
-                Object clientResult = null;
-                if (remoteForm.hasClientApply()) {
-                    ClientApply clientApply = remoteForm.checkClientChanges();
-                    if (clientApply instanceof CheckFailed) { // чтобы не делать лишний RMI вызов
-                        Log.error(((CheckFailed) clientApply).message);
-                        setCanClose(false);
-                        return;
-                    } else {
-                        try {
-                            clientResult = ((ClientResultAction) clientApply).dispatchResult(actionDispatcher);
-                        } catch (Exception e) {
-                            throw new RuntimeException(ClientResourceBundle.getString("form.error.applying.changes"), e);
-                        }
-                    }
-                }
-
-                processRemoteChanges(remoteForm.applyChanges(clientResult));
+            if (needConfirm && !askApplyConfirmation()) {
+                return;
             }
+
+            Object clientResult = null;
+            if (remoteForm.hasClientActionOnApply()) {
+                ClientResultAction actionOnApply = remoteForm.getClientActionOnApply();
+                if (actionOnApply instanceof CheckFailed) { // чтобы не делать лишний RMI вызов
+                    Log.error(((CheckFailed) actionOnApply).message);
+                    setCanClose(false);
+                    return;
+                } else {
+                    try {
+                        clientResult = actionOnApply.dispatchResult(actionDispatcher);
+                    } catch (Exception e) {
+                        throw new RuntimeException(getString("form.error.applying.changes"), e);
+                    }
+                }
+            }
+
+            processRemoteChanges(remoteForm.applyChanges(clientResult));
         } catch (IOException e) {
-            throw new RuntimeException(ClientResourceBundle.getString("form.error.applying.changes"), e);
+            throw new RuntimeException(getString("form.error.applying.changes"), e);
         }
+    }
+
+    private boolean askApplyConfirmation() {
+        String confirmMsg = "";
+        for (ClientGroupObject group : form.groupObjects) {
+            if (controllers.containsKey(group)) {
+                confirmMsg += controllers.get(group).getConfirmApplyMessage();
+            }
+        }
+
+        if (!confirmMsg.isEmpty()) {
+            if (!(SwingUtils.showConfirmDialog(getComponent(), confirmMsg, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
+                setCanClose(false);
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public void dropLayoutCaches() {
@@ -851,7 +856,7 @@ public class ClientFormController {
         try {
             Main.frame.runReport(remoteForm, false, getUserPreferences());
         } catch (Exception e) {
-            throw new RuntimeException(ClientResourceBundle.getString("form.error.printing.form"), e);
+            throw new RuntimeException(getString("form.error.printing.form"), e);
         }
     }
 
@@ -870,29 +875,29 @@ public class ClientFormController {
             // не очень хорошо оставлять живой поток, но это используется только в девелопменте, поэтому не важно
             new SavingThread(pathMap).start();
         } catch (Exception e) {
-            throw new RuntimeException(ClientResourceBundle.getString("form.error.printing.form"), e);
+            throw new RuntimeException(getString("form.error.printing.form"), e);
         }
     }
 
     void cancelPressed() {
         if (dataChanged) {
             try {
-                if (SwingUtils.showConfirmDialog(getComponent(), ClientResourceBundle.getString("form.do.you.really.want.to.undo.changes"), null, JOptionPane.WARNING_MESSAGE, SwingUtils.NO_BUTTON) == JOptionPane.YES_OPTION) {
+                if (SwingUtils.showConfirmDialog(getComponent(), getString("form.do.you.really.want.to.undo.changes"), null, JOptionPane.WARNING_MESSAGE, SwingUtils.NO_BUTTON) == JOptionPane.YES_OPTION) {
                     remoteForm.cancelChanges();
                     applyRemoteChanges();
                 }
             } catch (IOException e) {
-                throw new RuntimeException(ClientResourceBundle.getString("form.error.undoing.changes"), e);
+                throw new RuntimeException(getString("form.error.undoing.changes"), e);
             }
         }
     }
 
     void applyPressed() {
-        applyChanges(false);
+        apply(true);
     }
 
     void refreshPressed() {
-        refreshData();
+        refresh();
     }
 
     public void okPressed() {
@@ -900,10 +905,10 @@ public class ClientFormController {
             processRemoteChanges(remoteForm.okPressed());
 
             if (isNewSession) {
-                applyChanges(false);
+                apply(true);
             }
         } catch (IOException e) {
-            throw new RuntimeException(ClientResourceBundle.getString("form.error.closing.dialog"), e);
+            throw new RuntimeException(getString("form.error.closing.dialog"), e);
         }
     }
 
@@ -911,7 +916,7 @@ public class ClientFormController {
         try {
             processRemoteChanges(remoteForm.closedPressed());
         } catch (IOException e) {
-            throw new RuntimeException(ClientResourceBundle.getString("form.error.closing.dialog"), e);
+            throw new RuntimeException(getString("form.error.closing.dialog"), e);
         }
         // по умолчанию больше ничего не делаем
     }
