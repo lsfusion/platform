@@ -9,6 +9,7 @@ import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.descriptor.PropertyObjectInterfaceDescriptor;
 import platform.client.form.*;
+import platform.client.form.cell.ButtonCellView;
 import platform.client.form.cell.CellView;
 import platform.client.logics.classes.ClientActionClass;
 import platform.client.logics.classes.ClientClass;
@@ -155,7 +156,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return null;
         }
 
-        if (askConfirm && !(changeType instanceof ClientActionClass && value == null)) {
+        if (askConfirm &&
+                !(value == null && changeType instanceof ClientActionClass && !(ownerComponent instanceof ButtonCellView))) {
             int n = JOptionPane.showConfirmDialog(
                     null,
                     baseType.getConformedMessage() + (caption != null ? " \"" + caption + "\"?" : ""),
