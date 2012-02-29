@@ -502,6 +502,11 @@ public class ClientFormController {
     }
 
     private void processRemoteChanges(RemoteChanges remoteChanges) throws IOException {
+        if (remoteChanges == null) {
+            //ХАК: это теоретически возможно, при реконнекте, когда RMI-поток убивается и remote-method возвращает null
+            return;
+        }
+
         do {
             List<ClientAction> remoteActions = remoteChanges.actions;
 

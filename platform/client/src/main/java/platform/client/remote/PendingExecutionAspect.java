@@ -79,7 +79,7 @@ public class PendingExecutionAspect {
             moveInvocationToQueue(thisJoinPoint, object);
             result = remoteObject.flushPendingInvocations();
         } else {
-            //@NonRedirectRemoteMethod показывает, что метод нельзя передавать для выполнения на сервер
+            //@NonPendingRemoteMethod показывает, что метод нельзя передавать для выполнения на сервер
             remoteObject.flushPendingInvocations();
             result = thisJoinPoint.proceed();
         }

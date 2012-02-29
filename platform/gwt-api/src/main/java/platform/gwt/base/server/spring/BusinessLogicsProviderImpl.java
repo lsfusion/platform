@@ -1,16 +1,14 @@
 package platform.gwt.base.server.spring;
 
 import org.apache.log4j.Logger;
+import platform.base.ClassUtils;
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
-import platform.interop.remote.ServerSocketFactory;
 
 import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.RMIFailureHandler;
-import java.rmi.server.RMISocketFactory;
 
 import static platform.base.BaseUtils.nvl;
 
@@ -22,16 +20,7 @@ public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> impleme
 
     static {
         try {
-            if (RMISocketFactory.getSocketFactory() == null) {
-                RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
-                    public boolean failure(Exception ex) {
-                        logger.error("Ошибка RMI: ", ex);
-                        return true;
-                    }
-                });
-
-                RMISocketFactory.setSocketFactory(new ServerSocketFactory());
-            }
+            ClassUtils.initRMICompressedSocketFactory();
         } catch (IOException e) {
             logger.error("Ошибка при инициализации RMISocketFactory: ", e);
             throw new RuntimeException("Произошла ошибка при инициализации RMI.");

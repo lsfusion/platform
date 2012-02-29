@@ -4,8 +4,8 @@ import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
+import platform.base.ClassUtils;
 import platform.base.ExceptionUtils;
-import platform.interop.remote.ServerSocketFactory;
 import platform.server.Settings;
 import platform.server.lifecycle.LifecycleManager;
 import platform.server.net.ServerInstanceLocator;
@@ -15,8 +15,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.RMIFailureHandler;
-import java.rmi.server.RMISocketFactory;
 import java.sql.SQLException;
 
 public class BusinessLogicsBootstrap {
@@ -39,39 +37,14 @@ public class BusinessLogicsBootstrap {
     private static BusinessLogics BL;
     private static Registry registry;
 
-    private static void initRMISocketFactory() throws IOException {
-        if (RMISocketFactory.getSocketFactory() == null) {
-            RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
-                public boolean failure(Exception ex) {
-                    logger.error("Ошибка RMI: ", ex);
-                    return true;
-                }
-            });
-
-            RMISocketFactory.setSocketFactory(new ServerSocketFactory());
-        }
-    }
-
     public static void start() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
-
-        // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
-
-        if (System.getProperty("sun.rmi.dgc.server.gcInterval") == null) {
-            System.setProperty("sun.rmi.dgc.server.gcInterval", "600000");
-        }
-
-//        String isDebug = System.getProperty(PLATFORM_SERVER_ISDEBUG);
-//        if (isDebug == null || !isDebug.equals("true")) {
-//            System.setProperty("java.rmi.dgc.leaseValue", "120000");
-//        }
-
         System.setProperty("mail.mime.encodefilename", "true");
 
         logger.info("Server is starting...");
 
         stopped = false;
 
-        initRMISocketFactory();
+        initRMI();
 
         initSpringContext();
 
@@ -114,6 +87,21 @@ public class BusinessLogicsBootstrap {
             logger.info("Server has stopped");
         }
         lifecycle.fireStopped();
+    }
+
+    private static void initRMI() throws IOException {
+        // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
+
+        if (System.getProperty("sun.rmi.dgc.server.gcInterval") == null) {
+            System.setProperty("sun.rmi.dgc.server.gcInterval", "600000");
+        }
+
+//        String isDebug = System.getProperty(PLATFORM_SERVER_ISDEBUG);
+//        if (isDebug == null || !isDebug.equals("true")) {
+//            System.setProperty("java.rmi.dgc.leaseValue", "120000");
+//        }
+
+        ClassUtils.initRMICompressedSocketFactory();
     }
 
     private static void initRMIRegistry() throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException {
