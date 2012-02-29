@@ -277,11 +277,14 @@ META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
     TABLE object##Detail (object##Detail);
 
     date###object 'Дата документа' (object) = DATA DATE (object) IN documentHeaderGroup;
+    date###object (object) <- currentDate() ON ASSIGN object AS object;
 
     departmentStore###object 'Отдел документа (ИД)' (object) = DATA departmentStore(object) IN idGroup;
 
     nameDepartmentStore###object 'Отдел документа' (object) = name(departmentStore###object(object)) IN documentHeaderGroup
-        MINCHARWIDTH 20 PREFCHARWIDTH 40;;
+            MINCHARWIDTH 20 PREFCHARWIDTH 40;;
+
+    note###object 'Примечание' = DATA STRING[100] (object) IN additionalInfo;
 
     object###object##Detail 'Строка документа' = DATA object (object##Detail) IN idGroup;
 
@@ -580,6 +583,9 @@ percentRateWasteItem 'Норма отходов,%' = percentRateWaste(rateWasteI
 
 wareItem = DATA ware (item) IN idGroup;
 nameWareItem 'Посуда' = name(wareItem(item)) IN retailGroup;
+
+inWareItem 'Товар в посуде' (item) = item IS item AND wareItem(item);
+
 @metaCodeShowItemAttribute(Ware, 'Показывать посуду', displayGroup);
 
 //equipmentGroup
@@ -1450,7 +1456,6 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 @metaCodeTripleObjectDateProperty(markupSupplierItemDepartment, supplier, item, departmentStore, 'Торговая надбавка', DOUBLE, retailGroup);
 
 @metaCodeNameTripleObjectDateProperty(banSupplierItemDepartment, supplier, item, departmentStore, 'Запретить закупку', yesNo, orderGroup);
-
 
 // Посуда
 @metaCodeObjectDateProperty(priceWare, ware, 'Цена', DOUBLE, baseGroup);
@@ -3865,8 +3870,6 @@ supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipmen
 nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN documentHeaderGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40;
 
-noteShipment 'Примечание' (shipment) = DATA STRING[100] (shipment) IN additionalInfo;
-
 carryingChargesShipment 'Транспортные расходы' (shipment) = DATA DOUBLE (shipment) IN waybillSum;
 
 inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) = DATA BOOLEAN (shipment, orderSupplier)
@@ -3913,11 +3916,6 @@ isShipedItemShipment 'Товар есть в поставке' (item, shipment) 
 
 priceShipmentDetail 'Цена товара'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 
-oldPriceShipmentDetail 'Старая цена товара'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-oldPriceShipmentDetail(shipmentDetail) <- priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail),
-    itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
-    subtractDate2(dateShipmentDetail(shipmentDetail),1))ON CHANGE itemShipmentDetail(shipmentDetail);
-
 supplierMarkupShipmentDetail 'Оптовая надбавка/торговая скидка, %' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 overSupplierMarkupShipmentDetail 'Оптовая надбавка/торговая скидка, %' (shipmentDetail) =
         UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, supplierMarkupShipmentDetail(shipmentDetail);
@@ -3942,14 +3940,11 @@ retailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGro
 dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = dataActingRateRange(retailRangeShipmentDetail(shipmentDetail)) IN baseGroup;
 retailRangeShipmentDetail(shipmentDetail) <- overrideRateRangeItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
-oldRetailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
-oldDataRetailRangeShipmentDetail 'Старый НДС розничный,%' (shipmentDetail) =
-   actingRateRangeDate(oldRetailRangeShipmentDetail(shipmentDetail), subtractDate2(dateShipmentDetail(shipmentDetail),1));
-// !!!надо продумать, что писать!!!
-
 wareShipmentDetail 'Посуда (ИД)' (shipmentDetail) = DATA ware(shipmentDetail) IN baseGroup;
 nameWareShipmentDetail 'Посуда' (shipmentDetail) = name(wareShipmentDetail(shipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
 wareShipmentDetail(shipmentDetail) <- wareItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+inWareShipmentDetail 'Товар в посуде' (shipmentDetail) = inWareItem(itemShipmentDetail(shipmentDetail));
 
 priceWareShipmentDetail 'Цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
 
@@ -4002,12 +3997,6 @@ retailMarkupShipmentDetail(shipmentDetail) <-
     departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateShipmentDetail(shipmentDetail))
     ON CHANGE itemShipmentDetail(shipmentDetail);
 
-oldRetailMarkupShipmentDetail 'Старая торговая надбавка, %'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-
-oldRetailMarkupShipmentDetail (shipmentDetail) <- markupSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail),
-    itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
-    subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
-
 isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN pricingShipmentDetailInfo;
 isFixPriceShipmentDetail(shipmentDetail) <- isFixPriceItem (itemShipmentDetail (shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
@@ -4018,10 +4007,6 @@ notRoundImporterPriceShipmentDetail 'Цена изготовителя/импо�
 
 importerPriceShipmentDetail 'Цена изготовителя/импортера' (shipmentDetail) =
     round0(notRoundImporterPriceShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo;
-
-oldRetailPriceShipmentDetail 'Старая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-oldRetailPriceShipmentDetail (shipmentDetail) <- retailPriceItemDepartmentVal (itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
-                                                              subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 sumMarkupShipmentDetail 'Сумма торговой надбавки (за ед.)' (shipmentDetail) =
     priceShipmentDetail(shipmentDetail) *
@@ -4050,6 +4035,30 @@ maxAllowPriceItemShipment 'Максимально допустимая цена 
 minAllowPriceItemShipment 'Минимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 - [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
 CONSTRAINT priceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MESSAGE 'Цена поставки больше цены заказа';
 CONSTRAINT priceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MESSAGE 'Цена поставки меньше цены заказа';
+
+//старые ценовые параметры для переоценок
+oldRetailPriceShipmentDetail 'Старая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+oldRetailPriceShipmentDetail (shipmentDetail) <- retailPriceItemDepartmentVal (
+    itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
+    subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+oldRetailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
+oldDataRetailRangeShipmentDetail 'Старый НДС розничный,%' (shipmentDetail) =
+   actingRateRangeDate(oldRetailRangeShipmentDetail(shipmentDetail), subtractDate2(dateShipmentDetail(shipmentDetail),1));
+// !!!надо продумать, что писать!!!
+
+oldPriceShipmentDetail 'Старая цена поставщика'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+oldPriceShipmentDetail(shipmentDetail) <- priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail),
+    itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
+    subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+oldImporterPriceShipmentDetail 'Старая цена изготовителя/импортера' (shipmentDetail) = DATA DOUBLE (shipmentDetail);
+oldImporterPriceShipmentDetail (shipmentDetail) <- importerPriceItemAtDate (itemShipmentDetail(shipmentDetail),
+    subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+oldPriceWareShipmentDetail 'Старая цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail);
+oldPriceWareShipmentDetail (shipmentDetail) <- priceWareAtDate (wareShipmentDetail (shipmentDetail),
+    subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
 sumQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM
@@ -4119,8 +4128,8 @@ FORM shipment 'Поставка'
                     priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, dataSuppliersRangeShipmentDetail READONLY,
                     sumSupplierVATShipmentDetail, sumSupplierShipmentDetail READONLY, nameWareShipmentDetail READONLY, dataRetailRangeShipmentDetail READONLY,
                     retailMarkupShipmentDetail READONLY, oldRetailPriceShipmentDetail READONLY, retailPriceShipmentDetail READONLY, ADDOBJ, delete
-    PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, importerPriceShipmentDetail, dataWareRangeShipmentDetail,
-                                priceWareShipmentDetail, controlExpiryShipmentDetail, isManufacturedShipmentDetail,
+    PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, importerPriceShipmentDetail, dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d),
+                               priceWareShipmentDetail SHOWIF inWareShipmentDetail(d), controlExpiryShipmentDetail, isManufacturedShipmentDetail,
                                isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail, hintShipmentDetail,
                                nameCountryShipmentDetail, namebanRevaluationItemDepartmentShipmentDetail
 
@@ -4203,27 +4212,28 @@ DESIGN shipments FROM DEFAULT {
 @metaCodeObjectWithPost (writeOff, 'Списание', 'Закрытое списание', object);
 CLASS reasonOff 'Причина списания' : named;
 
-numberWriteOff 'Номер документа' = DATA INTEGER (writeOff) IN baseGroup;
+numberWriteOff 'Номер документа' = DATA INTEGER (writeOff) IN documentHeaderGroup;
 maxNumberWriteOff = UNION OVERRIDE 0, [GROUP MAX numberWriteOff(writeOff)]();
 nextNumberWriteOff = maxNumberWriteOff() + 1;
 
 numberWriteOff(writeOff) <- OLD nextNumberWriteOff() ON ASSIGN writeOff IS writeOff;
 
-numberActWriteOff 'Номер акта' = DATA STRING[10] (writeOff) IN baseGroup;
+numberActWriteOff 'Номер акта' = DATA STRING[10] (writeOff) IN documentHeaderGroup;
 
-datePriceWriteOff 'Цена на дату' = DATA DATE (writeOff) IN baseGroup;
+datePriceWriteOff 'Цена на дату' = DATA DATE (writeOff) IN additionalInfo;
+datePriceWriteOff (writeOff) <- currentDate() ON ASSIGN writeOff AS writeOff;
 
 reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
-nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN baseGroup;
-noteWriteOff 'Примечание' = DATA STRING[100] (writeOff) IN baseGroup;
+nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN additionalInfo;
 
 departmentStoreWriteOffDetail 'Отдел для строки списания (ИД)' (writeOffDetail) = departmentStoreWriteOff(writeOffWriteOffDetail(writeOffDetail)) IN idGroup;
 datePriceWriteOffDetail 'Цена на дату' (writeOffDetail) = datePriceWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
+
 quantityWriteOffDetail 'Кол-во для строки списания' = DATA INTEGER (writeOffDetail) IN baseGroup;
 
 quantityWriteOff 'Общее кол-во' (writeOff) = GROUP SUM quantityWriteOffDetail(writeOffDetail)
-                                                    BY writeOffWriteOffDetail(writeOffDetail) IN baseGroup;
+                                                    BY writeOffWriteOffDetail(writeOffDetail) IN waybillSum;
 
 priceWriteOffDetail 'Цена учётная' = DATA DOUBLE (writeOffDetail) IN baseGroup;
 priceWriteOffDetail(writeOffDetail) <- accountPriceItemDepartmentVal (itemWriteOffDetail(writeOffDetail),
@@ -4231,7 +4241,7 @@ priceWriteOffDetail(writeOffDetail) <- accountPriceItemDepartmentVal (itemWriteO
                                                                       datePriceWriteOffDetail(writeOffDetail)) ON CHANGE itemWriteOffDetail(writeOffDetail);
 
 sumWriteOffDetail 'Сумма' (writeOffDetail) = priceWriteOffDetail(writeOffDetail)*quantityWriteOffDetail(writeOffDetail);
-sumWriteOff 'Сумма' (writeOff) = GROUP SUM sumWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN baseGroup;
+sumWriteOff 'Общая сумма' (writeOff) = GROUP SUM sumWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN waybillSum;
 
 FORM reasonOff 'Причина списания'
     OBJECTS r=reasonOff  FIXED PANEL
@@ -4241,7 +4251,7 @@ FORM reasonOff 'Причина списания'
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
     PROPERTIES (w) numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff, nameReasonOffWriteOff, noteWriteOff,
-                   quantityWriteOff, quantityWriteOffDetailsWriteOff, datePriceWriteOff, sumWriteOff
+                   quantityWriteOff, datePriceWriteOff, sumWriteOff
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail, priceWriteOffDetail, ADDOBJ, delete
@@ -4254,15 +4264,144 @@ FORM writeOff 'Списание'
 
 FORM writeOffs 'Списания'
     OBJECTS w=writeOff
-    PROPERTIES (w) READONLY numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff, nameReasonOffWriteOff, noteWriteOff,
+    PROPERTIES (w) READONLY objectClassName, numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff, nameReasonOffWriteOff, noteWriteOff,
                    quantityWriteOff, quantityWriteOffDetailsWriteOff, datePriceWriteOff, sumWriteOff
-    PROPERTIES (w) ADDFORM, EDITFORM, delete
+
+    PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWriteOff(w), delete FORCE PANEL SHOWIF isDraftWriteOff(w),
+                   postWriteOff SHOWIF isDraftWriteOff(w), unpostWriteOff SHOWIF isPostedWriteOff(w)
+
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail, priceWriteOffDetail
     FILTERS NOT NULL inWriteOffWriteOffDetail(w, d)
 ;
 
+DESIGN writeOffs FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+    PROPERTY (delete(w)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
+//----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
+@metaCodeObjectWithPost (innerFlow, 'Расход в отдел', 'Закрытый расход в отдел', object);
+
+recipientDepartmentInnerFlow 'Отдел-получатель (ИД)' (innerFlow) = DATA departmentStore(innerFlow);
+nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentHeaderGroup;
+
+waybillInnerFlow 'Номер накладной' (innerFlow) = DATA STRING[7] (innerFlow) IN documentHeaderGroup FIXEDCHARWIDTH 7;
+seriesWaybillInnerFlow 'Серия накладной' (innerFlow) = DATA STRING[2] (innerFlow) IN documentHeaderGroup FIXEDCHARWIDTH 4;
+
+quantityInnerFlowDetail 'Количество' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
+priceInnerFlowDetail 'Цена' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
+sumInnerFlowDetail 'Сумма' (innerFlowDetail) = round0(
+    quantityInnerFlowDetail(innerFlowDetail) * priceInnerFlowDetail (innerFlowDetail)) IN baseGroup;
+
+FORM innerFlow 'Расход в другой отдел'
+    OBJECTS f=innerFlow FIXED PANEL
+    PROPERTIES (f) waybillInnerFlow, seriesWaybillInnerFlow, dateInnerFlow, nameDepartmentStoreInnerFlow,
+                   nameRecipientDepartmentInnerFlow, noteInnerFlow
+
+    OBJECTS d=innerFlowDetail
+    PROPERTIES (d) numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
+                   quantityInnerFlowDetail, priceInnerFlowDetail, sumInnerFlowDetail, ADDOBJ, delete
+
+    PROPERTIES addInnerFlowDetailBarcode(f) TODRAW d
+    FILTERS NOT NULL inInnerFlowInnerFlowDetail(f, d)
+
+    EDIT innerFlow OBJECT f
+;
+
+FORM innerFlows 'Расходы в другие отделы'
+    OBJECTS f=innerFlow
+    PROPERTIES (f) READONLY  objectClassName, waybillInnerFlow, seriesWaybillInnerFlow, dateInnerFlow, nameDepartmentStoreInnerFlow,
+                            nameRecipientDepartmentInnerFlow, quantityInnerFlowDetailsInnerFlow,
+                            priceInnerFlowDetail, sumInnerFlowDetail
+
+    PROPERTIES (f) ADDFORM, EDITFORM SHOWIF isDraftInnerFlow(f), delete FORCE PANEL SHOWIF isDraftInnerFlow(f),
+                   postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
+
+    OBJECTS d=innerFlowDetail
+    PROPERTIES (d) numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail
+    FILTERS NOT NULL inInnerFlowInnerFlowDetail(f, d)
+;
+
+DESIGN innerFlows FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+    PROPERTY (delete(f)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
+//----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
+@metaCodeObjectWithPost (innerArrival, 'Приход в отдел', 'Закрытый приход в отдел', object);
+
+innerFlowInnerArrival 'Накладная отгрузки с отдела-отправителя (ИД)' (innerArrival) = DATA innerFlow (innerArrival);
+waybillInnerArrival 'Накладная отгрузки с отдела-отправителя' (innerArrival) = waybillInnerFlow(innerFlowInnerArrival(innerArrival)) IN baseGroup;
+seriesWaybillInnerArrival 'Серия накладной'(innerArrival) = seriesWaybillInnerFlow(innerFlowInnerArrival(innerArrival));
+
+senderDepartmentInnerArrival 'Отдел-отправитель (ИД)' (innerArrival) = DATA departmentStore(innerArrival);
+nameSenderDepartmentInnerArrival 'Отдел-отправитель' (innerArrival) = name(senderDepartmentInnerArrival(innerArrival)) IN documentHeaderGroup;
+
+senderDepartmentInnerArrival (innerArrival) <- departmentStoreInnerFlow(innerFlowInnerArrival(innerArrival))
+    ON CHANGE innerFlowInnerArrival(innerArrival);
+
+waybillInnerArrival (innerArrival) <- waybillInnerFlow(innerFlowInnerArrival(innerArrival))
+    ON CHANGE innerFlowInnerArrival(innerArrival);
+
+seriesWaybillInnerArrival (innerArrival) <- seriesWaybillInnerFlow(innerFlowInnerArrival(innerArrival))
+    ON CHANGE innerFlowInnerArrival(innerArrival);
+
+quantityInnerArrivalDetail 'Количество' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN baseGroup;
+priceInnerArrivalDetail 'Цена' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN baseGroup;
+sumInnerArrivalDetail 'Сумма' (innerArrivalDetail) = round0(
+    quantityInnerArrivalDetail(innerArrivalDetail) * priceInnerArrivalDetail (innerArrivalDetail)) IN baseGroup;
+
+FORM innerArrival 'Приход из другого отдела'
+    OBJECTS a=innerArrival FIXED PANEL
+    PROPERTIES (a) nameDepartmentStoreInnerArrival, waybillInnerArrival, seriesWaybillInnerArrival,
+                   dateInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival SHOWIF innerFlowInnerArrival(a),
+                   noteInnerArrival SHOWIF innerFlowInnerArrival(a)
+
+    OBJECTS d=innerArrivalDetail
+    PROPERTIES (d) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
+                   quantityInnerArrivalDetail, priceInnerArrivalDetail, sumInnerArrivalDetail, ADDOBJ, delete
+
+    PROPERTIES addInnerArrivalDetailBarcode(a) TODRAW d
+    FILTERS NOT NULL inInnerArrivalInnerArrivalDetail(a, d)
+
+    EDIT innerArrival OBJECT a
+;
+
+FORM innerArrivals 'Приходы из других отделов'
+    OBJECTS a=innerArrival
+    PROPERTIES (a) READONLY objectClassName, waybillInnerArrival, seriesWaybillInnerArrival, dateInnerArrival, nameDepartmentStoreInnerArrival,
+                            nameSenderDepartmentInnerArrival,
+                            priceInnerArrivalDetail, sumInnerArrivalDetail
+
+    PROPERTIES (a) ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
+                   postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
+
+    OBJECTS d=innerArrivalDetail
+    PROPERTIES (d) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail
+    FILTERS NOT NULL inInnerArrivalInnerArrivalDetail(a, d)
+;
+
+DESIGN innerArrivals FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+    PROPERTY (delete(a)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
 //----------------------------------- Форма для общих параметров -------------------------------------------------//
 FORM globalParameters 'Параметры'
     PROPERTIES () dateMaxGlobal
@@ -4354,6 +4493,10 @@ NAVIGATOR {
         }
         NEW itemWriteOffs 'Списания' {
             ADD writeOffs;
+        }
+        NEW itemInnerFlows 'Внутренние перемещения' {
+            ADD innerFlows;
+            ADD innerArrivals;
         }
     }
 
@@ -4489,6 +4632,8 @@ NAVIGATOR {
             ADD listInventory;
             ADD nameDepartmentByInventory;
             ADD collationSheetItem;
+            ADD innerFlow;
+            ADD innerArrival;
         }
         ADD importData;
         ADD globalParameters;
