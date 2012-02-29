@@ -1266,9 +1266,51 @@ CONSTRAINT CHECKED quantityActingRateRange(range) > 1 MESSAGE 'ошибка: О�
 
 suppliersTaxNDSItem(item) = tax.taxNDS IF item IS item IN idGroup;
 nameSuppliersTaxNDSItem(item) = name(suppliersTaxNDSItem(item));
-suppliersRangeItem(item) = DATA range (item) IN idGroup;
-dataSuppliersRateRangeItem 'НДС поставщика,%' (item) = dataActingRateRange(suppliersRangeItem(item)) IN retailGroup;
-CONSTRAINT CHECKED suppliersTaxNDSItem(item) != taxRange(suppliersRangeItem(item))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+//suppliersRangeItem(item) = DATA range (item) IN idGroup;
+//dataSuppliersRateRangeItem 'НДС поставщика,%' (item) = dataActingRateRange(suppliersRangeItem(item)) IN retailGroup;
+
+
+suppliersRangeItemDate 'Шкала' (item, date) = DATA range (item, DATE) IN idGroup;
+dataSuppliersRangeItemDate 'Шкала' (item, date) = dataRange(suppliersRangeItemDate(item, date));
+
+dateSuppliersRangeItemDate (item, date) = GROUP MAX dateIn AND suppliersRangeItemDate(item, dateIn) AND dateIn <= (date AS DATE) BY item, date;
+dataActingSuppliersRangeItemDate 'НДС поставщика,%' (item, date) = dataActingRateRangeDate(suppliersRangeItemDate(item, date), date);
+
+suppliersRangeItemAtDate 'На дату' (item, date) = suppliersRangeItemDate(item, dateSuppliersRangeItemDate(item, date)) IN baseGroup;
+suppliersRangeItem 'Шкала' (item) = suppliersRangeItemDate(item, dateSuppliersRangeItemDate(item, currentDate())) IN baseGroup;
+
+taxSuppliersItem(item) = taxRange(suppliersRangeItem(item)) IN idGroup;
+nameTaxSuppliersItem 'Налог' (item) = nameTaxRange(suppliersRangeItem(item)) IN baseGroup;
+
+dataSuppliersRangeItem 'Шкала НДС' (item) = dataRange(suppliersRangeItem(item)) IN baseGroup;
+dataActingRateSuppliersRangeItem 'НДС поставщика,%' (item) = dataActingRateRange(suppliersRangeItem(item)) IN baseGroup;
+
+CONSTRAINT suppliersTaxNDSItem(item) != taxRange(suppliersRangeItem(item))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+
+FORM addSuppliersRangeItem 'Добавить Шкалу'
+    OBJECTS i=item FIXED PANEL, d=DATE FIXED PANEL
+    PROPERTIES nameAttributeItem(i) READONLY, OBJVALUE(d), dataSuppliersRangeItemDate(i, d), dataActingSuppliersRangeItemDate(i, d)
+;
+
+DESIGN addSuppliersRangeItem FROM DEFAULT {
+    PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
+};
+
+showFormAddSuppliersRangeItem 'Добавить' (item) = ACTION FORM addSuppliersRangeItem OBJECTS i MODAL;
+
+FORM suppliersRangeItem 'Дабавить Шкалу'
+OBJECTS i=item FIXED PANEL, d=DATE
+PROPERTIES nameAttributeItem(i) READONLY, showFormAddSuppliersRangeItem(i), OBJVALUE(d), dataSuppliersRangeItemDate(i, d), dataActingSuppliersRangeItemDate(i, d)
+FILTERS NOT NULL suppliersRangeItemDate(i, d);
+
+DESIGN suppliersRangeItem FROM DEFAULT {
+PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
+};
+
+showFormSuppliersRangeItem 'Шкала' (item) = ACTION FORM suppliersRangeItem OBJECTS i MODAL SHORTCUT dataSuppliersRangeItem DEFAULT;
+
+
 
 
 retailTaxNDSItem(item) = tax.taxNDS IF item IS item IN idGroup;
@@ -1278,7 +1320,7 @@ dataRetailRateRangeItem 'Розничный НДС' (item) = dataActingRateRange
 CONSTRAINT CHECKED retailTaxNDSItem(item) != taxRange(retailRangeItem(item))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 overrideRateRangeItem 'НДС (ИД)' (item) = UNION OVERRIDE retailRangeItem(item), suppliersRangeItem(item) IN idGroup;
 dataOverrideRateRangeItem 'Значение НДС' (item) = dataActingRateRange(overrideRateRangeItem(item)) IN retailGroup;
-toShowDataRangeItem(item) = TRUE IF item IS item AND dataSuppliersRateRangeItem(item);
+toShowDataRangeItem(item) = TRUE IF item IS item AND dataActingRateSuppliersRangeItem(item); // dataSuppliersRateRangeItem(item);
 
 FORM tax 'Налог'
     OBJECTS           t=tax FIXED PANEL, ra=range
@@ -1374,17 +1416,58 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 // Посуда
 @metaCodeObjectDateProperty(priceWare, ware, 'Цена', DOUBLE, baseGroup);
 
-rangeWare(ware) = DATA range (ware) IN idGroup;
-dataRateRangeWare 'НДС,%' (ware) = dataActingRateRange(rangeWare(ware)) IN baseGroup;
+taxNDSWare(ware) = tax.taxNDS IF ware IS ware IN idGroup;
+nameTaxNDSWare(ware) = name(taxNDSWare(ware));
+
+rangeWareDate 'Шкала' (ware, date) = DATA range (ware, DATE) IN idGroup;
+dataRangeWareDate 'Шкала' (ware, date) = dataRange(rangeWareDate(ware, date));
+
+dateRangeWareDate (ware, date) = GROUP MAX dateIn AND rangeWareDate(ware, dateIn) AND dateIn <= (date AS DATE) BY ware, date;
+dataActingRateRangeWareDate 'НДС,%' (ware, date) = dataActingRateRangeDate(rangeWareDate(ware, date), date);
+
+rangeWareAtDate 'На дату' (ware, date) = rangeWareDate(ware, dateRangeWareDate(ware, date)) IN baseGroup;
+rangeWare 'Шкала' (ware) = rangeWareDate(ware, dateRangeWareDate(ware, currentDate())) IN baseGroup;
+
+taxRangeWare(ware) = taxRange(rangeWare(ware)) IN idGroup;
+nameTaxWare 'Налог' (ware) = nameTaxRange(rangeWare(ware)) IN baseGroup;
+
+dataRangeWare 'Шкала НДС' (ware) = dataRange(rangeWare(ware)) IN baseGroup;
+dataActingRateRangeWare 'НДС,%' (ware) = dataActingRateRange(rangeWare(ware)) IN baseGroup;
+
+CONSTRAINT  taxNDSWare(ware) != taxRange(rangeWare(ware))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+
+FORM addRangeWare 'Добавить Шкалу'
+    OBJECTS w=ware FIXED PANEL, d=DATE FIXED PANEL
+    PROPERTIES name(w) READONLY, OBJVALUE(d), dataRangeWareDate(w, d), dataActingRateRangeWareDate(w, d)
+;
+
+DESIGN addRangeWare FROM DEFAULT {
+    PROPERTY(name(w)) { focusable = FALSE; }
+};
+
+showFormAddRangeWare 'Добавить' (ware) = ACTION FORM addRangeWare OBJECTS w MODAL;
+
+FORM rangeWare 'Дабавить Шкалу'
+OBJECTS w=ware FIXED PANEL, d=DATE
+PROPERTIES name(w) READONLY, showFormAddRangeWare(w), OBJVALUE(d), dataRangeWareDate(w, d), dataActingRateRangeWareDate(w, d)
+FILTERS NOT NULL rangeWareDate(w, d);
+
+DESIGN rangeWare FROM DEFAULT {
+PROPERTY(name(w)) { focusable = FALSE; }
+};
+
+showFormRangeWare 'Шкала' (ware) = ACTION FORM rangeWare OBJECTS w MODAL SHORTCUT dataRangeWare DEFAULT;
 
 FORM ware 'Посуда'
-OBJECTS w=ware
-PROPERTIES(w) name, priceWare, showFormpriceWare, dataRateRangeWare
+OBJECTS w=ware FIXED PANEL
+PROPERTIES(w) name, priceWare, showFormpriceWare
+PROPERTIES(w) dataRangeWare, dataActingRateRangeWare, showFormRangeWare
 EDIT ware OBJECT w;
 
 FORM wares 'Посуда'
 OBJECTS w=ware
-PROPERTIES(w) READONLY name, priceWare, dataRateRangeWare
+PROPERTIES(w) READONLY name, priceWare, dataActingRateRangeWare
 PROPERTIES(w) ADDFORM, EDITFORM, delete;
 
 
@@ -1413,7 +1496,7 @@ PROPERTIES (i) captionItem, nameAttributeItem, nameCashAttributeItem, nameScales
  nameRateWasteItem, percentRateWasteItem, standartItem SHOWIF isManufacturedItem(i), normOutItem SHOWIF isManufacturedItem(i),
  groupMenuItem SHOWIF isManufacturedItem(i), isCutedItem SHOWIF isManufacturedItem(i), isLoafCutItem, storageTemperatureItem,
  controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem, bonusItem,
- importerPriceItem, showFormimporterPriceItem, dataSuppliersRateRangeItem, dataRetailRateRangeItem, percentWholesaleMarkItem,
+ importerPriceItem, showFormimporterPriceItem, dataSuppliersRangeItem, dataActingRateSuppliersRangeItem, showFormSuppliersRangeItem,  dataRetailRateRangeItem, percentWholesaleMarkItem, // dataSuppliersRateRangeItem
  minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem, banSailItem
 PROPERTIES (i) nameisPortionBarItem, showFormNameisPortionBarItem,
               coefficientNetGrossItem SHOWIF isManufacturedItem(i), showFormcoefficientNetGrossItem,
@@ -2596,14 +2679,26 @@ FORM store 'Магазин'
     EDIT store OBJECT s
 ;
 
+FORM tradingNetwork 'Торговая сеть'
+    OBJECTS n=tradingNetwork FIXED PANEL
+    PROPERTIES(n) name
+
+    OBJECTS s=storeType
+    PROPERTIES(s) name
+    PROPERTIES(s) ADDOBJ, delete
+    FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
+
+    EDIT tradingNetwork OBJECT n
+;
+
 FORM stores 'Магазины'
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType
-    PROPERTIES READONLY OBJVALUE(a), name(t), name(st)
+    PROPERTIES READONLY OBJVALUE(a), name(t), name(st)//, dumb1(st)
+
     FILTERS NOT NULL stringEqualsAll(a)
     FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
 
-//    PROPERTIES(t)          ADDFORM, EDITFORM, delete
-//    PROPERTIES(st)         ADDFORM, EDITFORM, delete
+    PROPERTIES(t)          addT=ADDFORM FORCE PANEL, editT=EDITFORM FORCE PANEL, delete FORCE PANEL//FORCE PANEL
 
     OBJECTS s=store
     PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore
@@ -2619,26 +2714,31 @@ DESIGN stores FROM DEFAULT {
     POSITION treeStore.box TO THE LEFT s.box;
     POSITION treeStore.box TO THE LEFT d.box;
 
-    s.box {
-        fillHorizontal = 3.0;
-    }
+        PROPERTY (delete(t)) {
+            caption = 'Удалить';
+            minimumCharWidth = 8;
+            panelLocation = TOOLBAR;
+            askConfirm = TRUE;
+        }
 
-    d.box {
-        fillHorizontal = 3.0;
-    }
+        PROPERTY (addT) {
+            caption = 'Добавить';
+            minimumCharWidth = 8;
+        }
+
+        PROPERTY (editT) {
+            caption = 'Редактировать';
+            minimumCharWidth = 8;
+        }
+        s.box {
+            fillHorizontal = 2.3;
+        }
+
+        d.box {
+            fillHorizontal = 2.3;
+        }
 }
 
-FORM tradingNetwork 'Торговая сеть'
-    OBJECTS n=tradingNetwork FIXED PANEL
-    PROPERTIES(n) name
-
-    OBJECTS s=storeType
-    PROPERTIES(s) name
-    PROPERTIES(s) ADDOBJ, delete
-    FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
-
-    EDIT tradingNetwork OBJECT n
-;
 
 FORM qualifier 'Классификатор магазинов'
     OBJECTS n=tradingNetwork
@@ -4235,6 +4335,10 @@ NAVIGATOR {
 //            ADD NDSSupplierItem;
             ADD addpriceWare;
             ADD priceWare;
+            ADD rangeWare;
+            ADD addRangeWare;
+            ADD suppliersRangeItem;
+            ADD addSuppliersRangeItem;
             ADD addimporterPriceItem;
             ADD importerPriceItem;
             ADD addmaxReserveItemDepartment;
