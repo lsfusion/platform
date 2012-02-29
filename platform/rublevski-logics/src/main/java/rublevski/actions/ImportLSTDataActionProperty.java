@@ -35,7 +35,6 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         importParentGroups(path + "//_sprgrt.dbf");
 
         importItems(path + "//_sprgrm.dbf");
-        importParentItems(path + "//_sprgrm.dbf");
     }
 
     private void importParentGroups(String path) {
@@ -107,63 +106,63 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     private void importItems(String path) throws SQLException {
 
         try {
-            List<List<Object>> data = importItemsFromDBF(path, false);
+            List<List<Object>> data = importItemsFromDBF(path);
 
-            ImportField itemID = new ImportField(BL.LM.extSID);
-            ImportField itemCaption = new ImportField(BL.LM.name);
-
-            ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("item"),
-                    BL.LM.extSIDToObject.getMapping(itemID));
-
-            List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
-            props.add(new ImportProperty(itemID, BL.LM.extSID.getMapping(itemKey)));
-            props.add(new ImportProperty(itemCaption, rublevskiLM.getLPByName("captionItem").getMapping(itemKey)));
-
-
-            ImportTable table = new ImportTable(Arrays.asList(itemID, itemCaption), data);
-
-            DataSession session = BL.createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey), props);
-            service.synchronize(true, false);
-            if (session.hasChanges()) {
-                session.apply(BL);
-            }
-
-            session.close();
-
-        } catch (xBaseJException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-    }
-
-    private void importParentItems(String path) {
-        try {
-            List<List<Object>> data = importItemsFromDBF(path, true);
-
-            ImportField itemID = new ImportField(BL.LM.extSID);
-            ImportField itemGroupID = new ImportField(BL.LM.extSID);
+            ImportField itemIDField = new ImportField(BL.LM.extSID);
+            ImportField itemGroupIDField = new ImportField(BL.LM.extSID);
+            ImportField itemCaptionField = new ImportField(BL.LM.name);
+            ImportField unitOfMeasureField = new ImportField(BL.LM.name);
+            ImportField brandField = new ImportField(BL.LM.name);
+            ImportField countryField = new ImportField(rublevskiLM.getLPByName("extSIDCountry"));
 
             ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("item"),
-                    BL.LM.extSIDToObject.getMapping(itemID));
+                    BL.LM.extSIDToObject.getMapping(itemIDField));
+
             ImportKey<?> itemGroupKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("itemGroup"),
-                    BL.LM.extSIDToObject.getMapping(itemGroupID));
+                    BL.LM.extSIDToObject.getMapping(itemGroupIDField));
+            
+            ImportKey<?> unitOfMeasureKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("unitOfMeasure"),
+                    BL.LM.extSIDToObject.getMapping(unitOfMeasureField));
+
+            ImportKey<?> brandKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("brand"),
+                    BL.LM.extSIDToObject.getMapping(brandField));
+
+            ImportKey<?> countryKey = new ImportKey(BL.LM.country,
+                    rublevskiLM.getLPByName("extSIDToCountry").getMapping(countryField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
-            props.add(new ImportProperty(itemGroupID, rublevskiLM.getLPByName("itemGroupSku").getMapping(itemKey),
+
+            props.add(new ImportProperty(itemGroupIDField, rublevskiLM.getLPByName("itemGroupSku").getMapping(itemKey),
                     BL.LM.object(rublevskiLM.getClassByName("itemGroup")).getMapping(itemGroupKey)));
+            
+            props.add(new ImportProperty(itemIDField, BL.LM.extSID.getMapping(itemKey)));
+            props.add(new ImportProperty(itemCaptionField, rublevskiLM.getLPByName("captionItem").getMapping(itemKey)));
 
+            props.add(new ImportProperty(unitOfMeasureField, BL.LM.extSID.getMapping(unitOfMeasureKey)));
+            props.add(new ImportProperty(unitOfMeasureField, BL.LM.name.getMapping(unitOfMeasureKey)));
+            props.add(new ImportProperty(unitOfMeasureField,rublevskiLM.getLPByName("shortName").getMapping(unitOfMeasureKey)));
+            props.add(new ImportProperty(unitOfMeasureField, rublevskiLM.getLPByName("unitOfMeasureItem").getMapping(itemKey),
+                    BL.LM.object(rublevskiLM.getClassByName("unitOfMeasure")).getMapping(unitOfMeasureKey)));
 
-            ImportTable table = new ImportTable(Arrays.asList(itemID, itemGroupID), data);
+            props.add(new ImportProperty(brandField, BL.LM.name.getMapping(brandKey)));
+            props.add(new ImportProperty(brandField, BL.LM.extSID.getMapping(brandKey)));
+            props.add(new ImportProperty(brandField, rublevskiLM.getLPByName("brandItem").getMapping(itemKey),
+                    BL.LM.object(rublevskiLM.getClassByName("brand")).getMapping(brandKey)));
+
+            props.add(new ImportProperty(countryField, rublevskiLM.getLPByName("extSIDCountry").getMapping(countryKey)));
+            props.add(new ImportProperty(countryField, BL.LM.name.getMapping(countryKey)));
+            props.add(new ImportProperty(countryField, rublevskiLM.getLPByName("countryItem").getMapping(itemKey),
+                    BL.LM.object(BL.LM.country).getMapping(countryKey)));
+
+            ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, unitOfMeasureField, brandField, countryField), data);
 
             DataSession session = BL.createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, unitOfMeasureKey, brandKey, countryKey), props);
             service.synchronize(true, false);
             if (session.hasChanges()) {
-                session.apply(BL);
+                String result = session.apply(BL);
+                if(result!=null)
+                    result = result.substring(0,result.length());
             }
 
             session.close();
@@ -215,24 +214,24 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         return data;
     }
 
-    private List<List<Object>> importItemsFromDBF(String path, Boolean parents) throws IOException, xBaseJException {
+    private List<List<Object>> importItemsFromDBF(String path) throws IOException, xBaseJException {
 
         DBF importFile = new DBF(path);
         int recordCount = importFile.getRecordCount();
 
         data = new ArrayList<List<Object>>();
 
-        for (int i = 0; i < recordCount; i++) {
+        for (int i = 0; i < 100; i++) {
 
             importFile.read();
             String k_grmat = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
             String pol_naim = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
             String k_grtov = new String(importFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
+            String unitOfMeasure = new String(importFile.getField("K_IZM").getBytes(), "Cp1251").trim();
+            String brand = new String(importFile.getField("BRAND").getBytes(), "Cp1251").trim();
+            String country = new String(importFile.getField("MANFR").getBytes(), "Cp1251").trim();
 
-            if (!parents)
-                addIfNotContains(Arrays.asList((Object) k_grmat, pol_naim));
-            else
-                addIfNotContains(Arrays.asList((Object) k_grmat, k_grtov));
+            addIfNotContains(Arrays.asList((Object) k_grmat, k_grtov, pol_naim, unitOfMeasure, brand, country));
         }
         return data;
     }

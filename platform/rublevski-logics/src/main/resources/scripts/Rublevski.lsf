@@ -346,7 +346,7 @@ canonicalNameItemGroup 'Каноническое имя' (itemGroup) = GROUP CON
 // формы за формами товара
 
 // ----------------------------------- Единицы измерения ------------------------------------------ //
-CLASS unitOfMeasure 'Единица измерения' : doubleNamed;
+CLASS unitOfMeasure 'Единица измерения' : doubleNamed, externalObject;
 
 unitOfMeasureUnitOfMeasure 'Базовая ед.изм. ИД' = DATA unitOfMeasure(unitOfMeasure) IN idGroup;
 shortNameUnitOfMeasureUnitOfMeasure 'Базовая ед.изм.' (unitOfMeasure) = shortName(unitOfMeasureUnitOfMeasure(unitOfMeasure)) IN baseGroup;
@@ -491,7 +491,7 @@ TABLE item(item);
 
 CLASS ware 'Посуда' : sku, named;
 
-CLASS brand 'Бренд' : named;
+CLASS brand 'Бренд' : named, externalObject;
 
 CLASS STATIC groupProduct 'Группа изделий для печати заборного листа'
 {
@@ -557,6 +557,9 @@ nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegree
 countryItem = DATA country (item) IN idGroup;
 nameCountryItem 'Страна' = name(countryItem(item)) IN headGroup;
 @metaCodeShowItemAttribute(Country, 'Показывать страну', displayGroup);
+
+extSIDCountry 'Внешний код страны' = DATA STRING[60] (country);
+extSIDToCountry (string) = GROUP UNIQUE country BY extSIDCountry (country) WHERE country IS country;
 
 isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN manufactoryGroup;
 hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN documentGroup;
