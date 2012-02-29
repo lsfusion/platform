@@ -333,6 +333,16 @@ nameParentItemGroup 'Родительская группа' = name(parentItemGro
 maxTurnoverItemGroup 'Максимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 minTurnoverItemGroup 'Минимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 
+hasParentItemGroupInteger 'Предок (уровень)' (child, parent, i) = RECURSION child IS itemGroup AND parent == child AND i == 0 STEP parent == parentItemGroup($parent) AND i == $i + 1 PERSISTENT;
+TABLE itemGroupStructure(itemGroup, itemGroup, INTEGER);
+
+hasParentItemGroup 'Уровень' (child, parent) = GROUP SUM i IF hasParentItemGroupInteger(child, parent, i) BY child, parent PERSISTENT;
+
+canonicalNameItemGroup 'Каноническое имя' (itemGroup) = GROUP CONCAT name(parent) IF hasParentItemGroupInteger(child, parent, i), ' / '
+                                                                BY child ORDER DESC i PERSISTENT MAXCHARWIDTH 40;
+
+//levelItemGroup 'Уровень' (itemGroup) = GROUP SUM 1 IF hasParentItemGroup(child, parent) BY child PERSISTENT;
+
 // формы за формами товара
 
 // ----------------------------------- Единицы измерения ------------------------------------------ //
@@ -1587,7 +1597,7 @@ FORM itemGroups 'Товарные группы'
     PROPERTIES(g) addItemGroup, EDITFORM
 
     OBJECTS cg=itemGroup
-    PROPERTIES(cg)   cgname = name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, showCaptionItemGroup,
+    PROPERTIES(cg)   cgname = name, canonicalNameItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, showCaptionItemGroup,
                      showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
                      showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                      showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup, showNumberInPackItemGroup,
@@ -1595,7 +1605,9 @@ FORM itemGroups 'Товарные группы'
 
     ORDER BY gname, cgname
 
-    FILTERS NOT NULL inParentItemGroupItemGroup(cg, g)
+    FILTERGROUP filters
+        FILTER 'Всех потомков' 'F10' NOT NULL hasParentItemGroup(cg, g) DEFAULT
+        FILTER 'Только непосредственных потомков' 'F9' NOT NULL inParentItemGroupItemGroup(cg, g)
 ;
 
 DESIGN itemGroups FROM DEFAULT {
