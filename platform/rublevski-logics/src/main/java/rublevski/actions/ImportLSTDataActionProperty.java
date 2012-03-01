@@ -230,8 +230,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             String unitOfMeasure = new String(importFile.getField("K_IZM").getBytes(), "Cp1251").trim();
             String brand = new String(importFile.getField("BRAND").getBytes(), "Cp1251").trim();
             String country = new String(importFile.getField("MANFR").getBytes(), "Cp1251").trim();
-
-            addIfNotContains(Arrays.asList((Object) k_grmat, k_grtov, pol_naim, unitOfMeasure, brand, country));
+            
+            data.add(Arrays.asList((Object) k_grmat, k_grtov, pol_naim, unitOfMeasure, brand, country));
         }
         return data;
     }

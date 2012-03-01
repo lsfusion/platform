@@ -1053,6 +1053,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     @Override
     public void initIndexes() {
         addIndex(barcode);
+        addIndex(dataName);
     }
 
     static int generateStaticNewID() {

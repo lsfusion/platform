@@ -352,8 +352,9 @@ hasParentAndLeafItemGroup (child, parent) = hasParentItemGroup(child, parent) AN
 hasParentOrNullItemGroup (child, parent) = UNION OVERRIDE hasParentItemGroup(child, parent), child IS itemGroup AND NOT parent;
 hasParentAndLeafOrNullItemGroup (child, parent) = UNION OVERRIDE hasParentAndLeafItemGroup(child, parent), isLeafItemGroup(child) AND NOT parent;
 
-canonicalNameItemGroup 'Каноническое имя' (itemGroup) = GROUP CONCAT name(parent) IF hasParentItemGroupInteger(child, parent, i), ' / '
-                                                                BY child ORDER DESC i MINCHARWIDTH 20 MAXCHARWIDTH 60 PREFCHARWIDTH 40;
+canonicalNameItemGroup 'Каноническое имя' (itemGroup) = castToString255(
+                           [GROUP CONCAT name(parent) IF hasParentItemGroupInteger(child, parent, i), ' / ' BY child ORDER DESC i](itemGroup))
+                           MINCHARWIDTH 30 MAXCHARWIDTH 90 PREFCHARWIDTH 90;
 
 //levelItemGroup 'Уровень' (itemGroup) = GROUP SUM 1 IF hasParentItemGroup(child, parent) BY child PERSISTENT;
 
@@ -517,9 +518,11 @@ tmpSku() = SESSION DATA sku ();
 
 //baseGroup
 itemGroupSku = DATA itemGroup(sku) IN idGroup AUTOSET;
-nameItemGroupSku 'Группа товара' = name(itemGroupSku(sku)) IN baseGroup;
+nameItemGroupSku 'Группа товара' (sku) = name(itemGroupSku(sku));
+canonicalNameItemGroupSku 'Группа товара' (sku) = canonicalNameItemGroup(itemGroupSku(sku)) IN baseGroup;
 
 hasParentItemGroupSku (sku, itemGroup) = hasParentItemGroup(itemGroupSku(sku), itemGroup);
+hasParentOrNullItemGroupSku (sku, itemGroup) = UNION OVERRIDE hasParentItemGroupSku(sku, itemGroup), sku IS sku AND NOT itemGroup;
 
 //descriptionGroup
 captionItem 'Название' = DATA STRING[100](item) IN descriptionGroup;
@@ -679,6 +682,8 @@ rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) I
 
 CLASS ABSTRACT itemAttribute 'Атрибут товара' : named;
 
+TABLE itemItemAttribute(item, itemAttribute);
+
 CLASS STATIC stringItemAttribute 'Строковый атрибут' {
     captionItem 'Название',
     article 'Артикул',
@@ -760,7 +765,7 @@ CLASS STATIC objectItemAttribute 'Объектный атрибут' {
 
 } : itemAttribute;
 
-valueItemGroupItemAttribute(item, attribute) = itemGroupSku(item) AND attribute == objectItemAttribute.itemGroup;
+valueItemGroupItemAttribute(item, attribute) = itemGroupSku(item) AND item IS item AND attribute == objectItemAttribute.itemGroup;
 valueUOMItemAttribute(item, attribute) = unitOfMeasureItem(item) AND attribute == objectItemAttribute.unitOfMeasure;
 valueBrandItemAttribute(item, attribute) = brandItem(item) AND attribute == objectItemAttribute.brand;
 valueTypeItemAttribute(item, attribute) = typeItemItem(item) AND attribute == objectItemAttribute.typeItem;
@@ -825,12 +830,15 @@ numberInNameItemAttribute 'Порядковый номер в наименова
 numberInNameCashItemAttribute 'Порядковый номер в наименовании для касс' = DATA INTEGER (itemAttribute) IN baseGroup;
 numberInNameScalesItemAttribute 'Порядковый номер в наименовании для весов' = DATA INTEGER (itemAttribute) IN baseGroup;
 
-nameAttributeItem 'Наименование' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item
-                ORDER numberInNameItemAttribute(attribute) IN recognizeGroup PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
-nameCashAttributeItem 'Наименование для касс' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item
-                ORDER numberInNameCashItemAttribute(attribute) IN recognizeGroup PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
-nameScalesAttributeItem 'Наименование для весов' (item) = GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item
-                ORDER numberInNameScalesItemAttribute(attribute) IN recognizeGroup PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
+nameAttributeItem 'Наименование' (item) = castToString255(
+                [GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameItemAttribute(attribute)](item))
+                IN recognizeGroup PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80 INDEXED;
+nameCashAttributeItem 'Наименование для касс' (item) = castToString255(
+                [GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameCashItemAttribute(attribute)](item))
+                PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
+nameScalesAttributeItem 'Наименование для весов' (item) = castToString255(
+                [GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameScalesItemAttribute(attribute)](item))
+                PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
 
 // ---------------------------------------------------------------------------------------- //
 
@@ -894,7 +902,7 @@ equalsSkuBarcode 'Основной штрих-код' (sku, barcode) = barcodeSk
 
 CONSTRAINT CHECKED skuBarcode(barcodeSku(item)) != item MESSAGE 'Товар основного штрих-кода должен совпадать с товаром';
 
-barcodeBarcodeSku 'Основной штрих-код' = barcodeEx(barcodeSku(sku)) IN baseGroup;
+barcodeBarcodeSku 'Основной штрих-код' = barcodeEx(barcodeSku(sku)) IN baseGroup PERSISTENT;
 //barcodeToBarcode (barcode) = GROUP UNIQUE barcode BY barcodeEx(barcode);
 
 inSkuBarcode(sku, barcode) = skuBarcode(barcode)==sku;
@@ -1538,7 +1546,7 @@ FILTERS NOT NULL stringEqualsAll(a)
 FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
 FILTERS NOT NULL inStoreTypeStore (st, s)
 FILTERS NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
-PROPERTIES (i) captionItem, nameAttributeItem, nameCashAttributeItem, nameScalesAttributeItem, nameItemGroupSku, isManufacturedItem,
+PROPERTIES (i) captionItem, nameAttributeItem, nameCashAttributeItem, nameScalesAttributeItem, canonicalNameItemGroupSku, isManufacturedItem,
  nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i),
  shortNameSpecialtyItem SHOWIF toShowSpecialty(i), isWeightedItem, isWeightItem, passScalesItem, volumeItem, netWeightItem,
@@ -1698,13 +1706,15 @@ DESIGN item FROM DEFAULT {
 inItemGroupSku(itemGroup, sku) = itemGroupSku(sku) == itemGroup;
 
 FORM items 'Товары'
-    TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES(g) READONLY name
+    TREE treeGroup a=STRING[3], g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY OBJVALUE(a), name(g)
+    FILTERS NOT NULL stringEqualsAll(a)
 
     OBJECTS i=item
-    PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem
+    PROPERTIES(i) READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUnitOfMeasureItem
     PROPERTIES(i) ADDFORM, EDITFORM, delete
-    FILTERS NOT NULL hasParentItemGroupSku(i, g)
+    FILTERS NOT NULL hasParentOrNullItemGroupSku(i, g)
+    ORDER BY nameAttributeItem
 ;
 
 DESIGN items FROM DEFAULT {
