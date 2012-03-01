@@ -4306,7 +4306,7 @@ FORM reasonOff 'Причина списания'
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
     PROPERTIES (w) numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff, nameReasonOffWriteOff,
-                   noteWriteOff, quantityWriteOff, datePriceWriteOff, sumWriteOff, dateLastShipment
+                   noteWriteOff, quantityWriteOff, datePriceWriteOff, sumWriteOff//, dateLastShipment
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail,
