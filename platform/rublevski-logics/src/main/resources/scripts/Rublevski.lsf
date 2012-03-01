@@ -50,11 +50,11 @@ META metaCodeObjectDateProperty(prop, object, caption, type, group)
         PROPERTY(name(a)) { focusable = FALSE; }
     }
 
-    showFormAdd##prop 'Добавить' (object) = ACTION FORM add##prop OBJECTS a MODAL;
+    showFormAdd##prop 'Добавить' (object) = ACTION FORM add##prop OBJECTS a MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM prop caption
     OBJECTS a=object FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, showFormAdd##prop(a), OBJVALUE(d), prop##Date(a, d)
+    PROPERTIES name(a) READONLY, showFormAdd##prop(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, prop##Date(a, d)
     FILTERS prop##Date(a, d);
     DESIGN prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
@@ -81,11 +81,11 @@ META metaCodeNameObjectDateProperty(prop, object, caption, type, group)
         PROPERTY(name(a)) { focusable = FALSE; }
     }
 
-    showFormAddName##prop 'Добавить' (object) = ACTION FORM addName##prop OBJECTS a MODAL;
+    showFormAddName##prop 'Добавить' (object) = ACTION FORM addName##prop OBJECTS a MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM name##prop caption
     OBJECTS a=object FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, showFormAddName##prop(a), OBJVALUE(d), name##prop##Date(a, d)
+    PROPERTIES name(a) READONLY, showFormAddName##prop(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, name##prop##Date(a, d)
     FILTERS prop##Date(a, d);
     DESIGN name##prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
@@ -112,11 +112,11 @@ META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type, gro
         PROPERTY(name(b)) { focusable = FALSE; }
     }
 
-    showFormAdd##prop 'Добавить' (object1, object2) = ACTION FORM add##prop OBJECTS a, b MODAL;
+    showFormAdd##prop 'Добавить' (object1, object2) = ACTION FORM add##prop OBJECTS a, b MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, name(b) READONLY, showFormAdd##prop(a, b), OBJVALUE(d), prop##Date(a, b, d)
+    PROPERTIES name(a) READONLY, name(b) READONLY, showFormAdd##prop(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, prop##Date(a, b, d)
     FILTERS prop##Date(a, b, d);
     DESIGN prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
@@ -150,11 +150,11 @@ META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type,
         PROPERTY(name(b)) { focusable = FALSE; }
     }
 
-    showFormAddName##prop 'Добавить' (object1, object2) = ACTION FORM addName##prop OBJECTS a, b MODAL;
+    showFormAddName##prop 'Добавить' (object1, object2) = ACTION FORM addName##prop OBJECTS a, b MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM name##prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, name(b) READONLY,  showFormAddName##prop(a, b), OBJVALUE(d), name##prop##Date(a, b, d)
+    PROPERTIES name(a) READONLY, name(b) READONLY,  showFormAddName##prop(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, name##prop##Date(a, b, d)
     FILTERS prop##Date(a, b, d);
     DESIGN name##prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
@@ -184,11 +184,11 @@ META metaCodeTripleObjectDateProperty(prop, object1, object2, object3, caption, 
         PROPERTY(name(c)) { focusable = FALSE; }
     }
 
-    showFormAdd##prop 'Добавить' (object1, object2, object3) = ACTION FORM add##prop OBJECTS a, b, c MODAL;
+    showFormAdd##prop 'Добавить' (object1, object2, object3) = ACTION FORM add##prop OBJECTS a, b, c MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAdd##prop(a, b, c), OBJVALUE(d), prop##Date(a, b, c, d)
+    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAdd##prop(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, prop##Date(a, b, c, d)
     FILTERS prop##Date(a, b, c, d);
     DESIGN prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
@@ -224,11 +224,11 @@ META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, capti
         PROPERTY(name(c)) { focusable = FALSE; }
     }
 
-    showFormAddName##prop 'Добавить' (object1, object2, object3) = ACTION FORM addName##prop OBJECTS a, b, c MODAL;
+    showFormAddName##prop 'Добавить' (object1, object2, object3) = ACTION FORM addName##prop OBJECTS a, b, c MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM name##prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAddName##prop(a, b, c), OBJVALUE(d), name##prop##Date(a, b, c, d)
+    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAddName##prop(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, name##prop##Date(a, b, c, d)
     FILTERS prop##Date(a, b, c, d);
     DESIGN name##prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
@@ -1581,11 +1581,6 @@ PROPERTIES (b) barcodeEx, dateBarcode, titleScalesBarcode, titleCashBarcode, sho
                amountBarcode, removeBarcode, commentRemoveBarcode, actionBarcode
 PROPERTIES (i, b) equalsSkuBarcode
 PROPERTIES (d) name
-PROPERTIES (d, i) percentDiscountDepartmentItem, additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem,
-                  maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacturerDepartmentStoreItem, statusCashDepartmentStoreItem,
-                  nameStatusCashDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem,
-                  fromDateDeliveryDepartmentStoreItem, banSaleDepartmentStoreItem, banMovementDepartmentStoreItem, reserveDepartmentStoreItem,
-                  topDepartmentStoreItem, quantityRealizationDepartmentStoreItem, balanceDepartmentStoreItem
 
 PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
 PROPERTIES (sp) READONLY name
@@ -1594,7 +1589,6 @@ PROPERTIES nameisSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF nameisSupp
            priceSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF priceSupplierItemDepartmentDate(sp, i, d, dt), showFormpriceSupplierItemDepartmentOver(sp, i, d),
            markupSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF markupSupplierItemDepartmentDate(sp, i, d, dt), showFormmarkupSupplierItemDepartmentOver(sp, i, d)
 PROPERTIES retailPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF retailPriceItemDepartmentDate(i, d, dt), showFormretailPriceItemDepartmentOver(i, d),
-           accountPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF accountPriceItemDepartmentDate(i, d, dt), showFormaccountPriceItemDepartmentOver(i, d),
            maxReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF maxReserveItemDepartmentDate(i, d, dt), showFormmaxReserveItemDepartmentOver(i, d),
            minReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF minReserveItemDepartmentDate(i, d, dt), showFormminReserveItemDepartmentOver(i, d),
            namebanRevaluationItemDepartmentOver(i, d, dt) HIGHLIGHTIF namebanRevaluationItemDepartmentDate(i, d, dt), showFormNamebanRevaluationItemDepartmentOver(i, d),
@@ -1724,6 +1718,8 @@ FORM items 'Товары'
     PROPERTIES(i) ADDFORM, EDITFORM, delete
     FILTERS hasParentOrNullItemGroupSku(i, g)
     ORDER BY nameAttributeItem
+
+    DIALOG item OBJECT i
 ;
 
 DESIGN items FROM DEFAULT {
@@ -1731,6 +1727,10 @@ DESIGN items FROM DEFAULT {
 
     treeGroup.tree {
         fillHorizontal = 0.4;
+    }
+
+    i.grid {
+        defaultComponent = TRUE;
     }
 }
 
