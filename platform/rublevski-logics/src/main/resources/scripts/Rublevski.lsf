@@ -332,7 +332,8 @@ CLASS itemGroup 'Товарная группа' : named, externalObject;
 TABLE itemGroup(itemGroup);
 
 parentItemGroup = DATA itemGroup (itemGroup); //AUTOSET;  --  пока не имеет смысла проставляет не ту группу
-inParentItemGroupItemGroup (parentGroup ,itemGroup) = [parentItemGroup(itemGroup)](parentGroup) == itemGroup;
+inParentItemGroupItemGroup (child, parent) = parentItemGroup(child) == parent;
+
 nameParentItemGroup 'Родительская группа' = name(parentItemGroup(itemGroup));
 maxTurnoverItemGroup 'Максимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 minTurnoverItemGroup 'Минимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
@@ -1031,7 +1032,7 @@ CLASS tradingNetwork 'Торговая сеть' : named; // "Рублевски
 CLASS storeType 'Формат магазина' : named; //Мини, Супер, ...
 
 companyStore 'Юридическое лицо магазина (ИД)' = DATA company (store);
-nameCompanyStore 'Юридическое лицо магазина' (store) = name(companyStore(store)) IN baseGroup;
+nameCompanyStore 'Компания' (store) = name(companyStore(store)) IN baseGroup;
 addressStore 'Адрес магазина' = DATA STRING[100] (store);
 
 storeTypeStore 'Формат магазина (ИД)' = DATA storeType (store) AUTOSET;
@@ -1231,8 +1232,8 @@ GROUP historyGroup 'Изменяемые характеристики' : baseGro
 
 //---------------------------- Налоги ----------------------------------------//
 
-GROUP suppliersNDSGroup 'НДС поставщика' : publicGroup;
-GROUP retailNDSGroup 'НДС розничный' : publicGroup;
+GROUP suppliersNDSGroup 'НДС поставщика' : retailGroup;
+GROUP retailNDSGroup 'НДС розничный' : retailGroup;
 
 CLASS STATIC tax 'Налоги'
 {
@@ -1330,12 +1331,13 @@ DESIGN addSuppliersRangeItem FROM DEFAULT {
 showFormAddSuppliersRangeItem 'Добавить' (item) = ACTION FORM addSuppliersRangeItem OBJECTS i MODAL;
 
 FORM suppliersRangeItem 'Дабавить Шкалу'
-OBJECTS i=item FIXED PANEL, d=DATE
-PROPERTIES nameAttributeItem(i) READONLY, showFormAddSuppliersRangeItem(i), OBJVALUE(d), dataSuppliersRangeItemDate(i, d), dataActingSuppliersRangeItemDate(i, d)
-FILTERS NOT NULL suppliersRangeItemDate(i, d);
+    OBJECTS i=item FIXED PANEL, d=DATE
+    PROPERTIES nameAttributeItem(i) READONLY, showFormAddSuppliersRangeItem(i), OBJVALUE(d), dataSuppliersRangeItemDate(i, d), dataActingSuppliersRangeItemDate(i, d)
+    FILTERS NOT NULL suppliersRangeItemDate(i, d)
+;
 
 DESIGN suppliersRangeItem FROM DEFAULT {
-PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
+    PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
 };
 
 showFormSuppliersRangeItem 'Шкала' (item) = ACTION FORM suppliersRangeItem OBJECTS i MODAL SHORTCUT dataSuppliersRangeItem DEFAULT;
@@ -1374,12 +1376,13 @@ DESIGN addRetailRangeItem FROM DEFAULT {
 showFormAddRetailRangeItem 'Добавить' (item) = ACTION FORM addRetailRangeItem OBJECTS i MODAL;
 
 FORM retailRangeItem 'Дабавить Шкалу'
-OBJECTS i=item FIXED PANEL, d=DATE
-PROPERTIES nameAttributeItem(i) READONLY, showFormAddRetailRangeItem(i), OBJVALUE(d), dataRetailRangeItemDate(i, d), dataActingRetailRangeItemDate(i, d)
-FILTERS NOT NULL retailRangeItemDate(i, d);
+    OBJECTS i=item FIXED PANEL, d=DATE
+    PROPERTIES nameAttributeItem(i) READONLY, showFormAddRetailRangeItem(i), OBJVALUE(d), dataRetailRangeItemDate(i, d), dataActingRetailRangeItemDate(i, d)
+    FILTERS NOT NULL retailRangeItemDate(i, d)
+;
 
 DESIGN retailRangeItem FROM DEFAULT {
-PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
+    PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
 };
 showFormRetailRangeItem 'Шкала' (item) = ACTION FORM retailRangeItem OBJECTS i MODAL SHORTCUT dataRetailRangeItem DEFAULT;
 
@@ -1412,15 +1415,14 @@ FORM tax 'Налог'
 
 DESIGN tax FROM DEFAULT {
     main {
-       ADD pax.box BEFORE functions.box {
+       ADD secondCase BEFORE functions.box {
             ADD s.box;
        }
-       ADD sax.box BEFORE pax.box {
+       ADD firstCase BEFORE secondCase {
             ADD ra.box;
             ADD rt.box;
             POSITION ra.box TO THE LEFT rt.box;
        }
-
     }
 }
 
@@ -1704,17 +1706,23 @@ DESIGN item FROM DEFAULT {
 }
 
 inItemGroupSku(itemGroup, sku) = itemGroupSku(sku) == itemGroup;
+canonicalNameItemGroupItem 'Название товарных групп' (item) = canonicalNameItemGroup(itemGroupSku(item));
+hasParentItemGroupItem 'HAS' (item, itemGroup) = hasParentItemGroup(itemGroupSku(item), itemGroup);
 
 FORM items 'Товары'
-    TREE treeGroup a=STRING[3], g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY OBJVALUE(a), name(g)
-    FILTERS NOT NULL stringEqualsAll(a)
+
+TREE treeGroup g=itemGroup PARENT parentItemGroup
+    PROPERTIES(g)  READONLY gname = name
 
     OBJECTS i=item
-    PROPERTIES(i) READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUnitOfMeasureItem
+    PROPERTIES(i) READONLY nameAttributeItem, canonicalNameItemGroupItem, shortNameUnitOfMeasureItem
     PROPERTIES(i) ADDFORM, EDITFORM, delete
-    FILTERS NOT NULL hasParentOrNullItemGroupSku(i, g)
-    ORDER BY nameAttributeItem
+
+    FILTERGROUP filters       // hasParentItemGroupSku   hasParentOrNullItemGroupSku
+            FILTER 'Всех потомков' 'F10' NOT NULL hasParentItemGroupItem(i, g) DEFAULT
+            FILTER 'Только непосредственных потомков' 'F9' NOT NULL inItemGroupSku(g, i)
+
+    ORDER BY canonicalNameItemGroupItem, nameAttributeItem
 ;
 
 DESIGN items FROM DEFAULT {
@@ -1846,7 +1854,7 @@ FORM committee 'Комиссия'
 
     FILTERS NOT NULL inDepartmentStoreEmployeeCommittee(e, c)
     FILTERGROUP filters6
-        FILTER 'Показывать только членов комиссии' 'F10' NOT NULL inCommitteeEmployee(c, e) DEFAULT
+        FILTER 'Показывать только членов комиссии' 'F10' NOT NULL inCommitteeEmployee(c, e)
 
     EDIT committee OBJECT c
     EDIT inventoryCommittee OBJECT c
@@ -2825,19 +2833,18 @@ DESIGN stores FROM DEFAULT {
 
         PROPERTY (delete(t)) {
             caption = 'Удалить';
-            minimumCharWidth = 8;
             panelLocation = TOOLBAR;
             askConfirm = TRUE;
         }
 
         PROPERTY (addT) {
             caption = 'Добавить';
-            minimumCharWidth = 8;
         }
 
         PROPERTY (editT) {
-            caption = 'Редактировать';
-            minimumCharWidth = 8;
+            caption = 'Ред-ть';
+//            minimumCharWidth = 5;
+            maximumCharWidth = 5;
         }
         s.box {
             fillHorizontal = 2.3;
@@ -2849,15 +2856,15 @@ DESIGN stores FROM DEFAULT {
 }
 
 
-FORM qualifier 'Классификатор магазинов'
-    OBJECTS n=tradingNetwork
-    PROPERTIES(n) READONLY name
-    PROPERTIES(n) ADDFORM, EDITFORM, delete
-
-    OBJECTS s=storeType
-    PROPERTIES(s) READONLY name
-    FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
-;
+//FORM qualifier 'Классификатор магазинов'
+//    OBJECTS n=tradingNetwork
+//    PROPERTIES(n) READONLY name
+//    PROPERTIES(n) ADDFORM, EDITFORM, delete
+//
+//    OBJECTS s=storeType
+//    PROPERTIES(s) READONLY name
+//    FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
+//;
 
 //---------------------------- Модели оборудования ----------------------------------------//
 CLASS ABSTRACT model 'Модель' : named;
@@ -4477,7 +4484,7 @@ NAVIGATOR {
         }
         NEW shopStructure 'Магазины' {
             ADD companies;
-            ADD qualifier;
+//            ADD qualifier;
             ADD stores;
         }
         NEW employeeRelations 'Сотрудники' {
