@@ -323,6 +323,13 @@ META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
 
     }TOOLBAR EDITKEY 'F4';
 
+    cleanAll###object##Details###object 'Очистить документ' = ACTION (object) {
+        FOR object###object##Detail (detail) == object DO {
+          EXEC delete(detail AS object##Detail);
+          EXEC apply();
+        };
+    } IN documentHeaderGroup CONFIRM;
+
     @metaCodePostedObject (object);
 
 END
@@ -4101,7 +4108,7 @@ sumQuantityOrderedItemShipment 'Количество по товару в зак
 
 isOrderedItemShipment 'Товар есть в заказах поставки' (item, shipment) =  sumQuantityOrderedItemShipment(item, shipment) > 0;
 
-isNotShipedOrderedItemShipment 'Товар есть в заказе и отсутствуетв поставке' (item, shipment) =
+isNotShipedOrderedItemShipment 'Товар есть в заказе и отсутствует в поставке' (item, shipment) =
     isOrderedItemShipment (item, shipment) AND NOT isShipedItemShipment (item, shipment);
 
 isOrderedShipmentDetail 'Товар поставки есть в заказах поставки' (shipmentDetail) = isOrderedItemShipment(itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail));
@@ -4366,6 +4373,9 @@ priceInnerFlowDetail 'Цена' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail
 sumInnerFlowDetail 'Сумма' (innerFlowDetail) = round0(
     quantityInnerFlowDetail(innerFlowDetail) * priceInnerFlowDetail (innerFlowDetail)) IN baseGroup;
 
+quantityItemInnerFlow (item, innerFlow) = GROUP SUM quantityInnerFlowDetail(innerFlowDetail)
+    IF inInnerFlowInnerFlowDetail (innerFlow, innerFlowDetail) BY itemInnerFlowDetail (innerFlowDetail), innerFlowInnerFlowDetail (innerFlowDetail);
+
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
     PROPERTIES (f) waybillInnerFlow, seriesWaybillInnerFlow, dateInnerFlow, nameDepartmentStoreInnerFlow,
@@ -4383,7 +4393,7 @@ FORM innerFlow 'Расход в другой отдел'
 
 FORM innerFlows 'Расходы в другие отделы'
     OBJECTS f=innerFlow
-    PROPERTIES (f) READONLY  objectClassName, waybillInnerFlow, seriesWaybillInnerFlow, dateInnerFlow, nameDepartmentStoreInnerFlow,
+    PROPERTIES (f) READONLY objectClassName, waybillInnerFlow, seriesWaybillInnerFlow, dateInnerFlow, nameDepartmentStoreInnerFlow,
                             nameRecipientDepartmentInnerFlow, quantityInnerFlowDetailsInnerFlow,
                             priceInnerFlowDetail, sumInnerFlowDetail
 
@@ -4408,12 +4418,22 @@ DESIGN innerFlows FROM DEFAULT {
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 @metaCodeObjectWithPost (innerArrival, 'Приход в отдел', 'Закрытый приход в отдел', object);
 
-innerFlowInnerArrival 'Накладная отгрузки с отдела-отправителя (ИД)' (innerArrival) = DATA innerFlow (innerArrival);
-waybillInnerArrival 'Накладная отгрузки с отдела-отправителя' (innerArrival) = waybillInnerFlow(innerFlowInnerArrival(innerArrival)) IN baseGroup;
-seriesWaybillInnerArrival 'Серия накладной'(innerArrival) = seriesWaybillInnerFlow(innerFlowInnerArrival(innerArrival));
+innerFlowInnerArrival 'Накладная отгрузки с отдела-отправителя (ИД)' (innerArrival) = DATA innerFlowPosted (innerArrival);
+
+innerArrivalInnerFlow (innerFlow) = GROUP UNIQUE innerArrival BY innerFlowInnerArrival (innerArrival);
+
+isArrivedInnerFlow (innerFlow) = innerFlow IS innerFlow AND innerArrivalInnerFlow (innerFlow);
+
+innerFlowInnerArrivalDetail (innerArrivalDetail) = innerFlowInnerArrival(innerArrivalInnerArrivalDetail(innerArrivalDetail));
+
+waybillInnerArrival 'Накладная отгрузки с отдела-отправителя' (innerArrival) = waybillInnerFlow(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup;
+seriesWaybillInnerArrival 'Серия накладной'(innerArrival) = seriesWaybillInnerFlow(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup;
 
 senderDepartmentInnerArrival 'Отдел-отправитель (ИД)' (innerArrival) = DATA departmentStore(innerArrival);
 nameSenderDepartmentInnerArrival 'Отдел-отправитель' (innerArrival) = name(senderDepartmentInnerArrival(innerArrival)) IN documentHeaderGroup;
+
+CONSTRAINT CHECKED recipientDepartmentInnerFlow(innerFlowInnerArrival(innerArrival)) != departmentStoreInnerArrival(innerArrival)
+    MESSAGE 'Накладная с другого отдела';
 
 senderDepartmentInnerArrival (innerArrival) <- departmentStoreInnerFlow(innerFlowInnerArrival(innerArrival))
     ON CHANGE innerFlowInnerArrival(innerArrival);
@@ -4429,14 +4449,26 @@ priceInnerArrivalDetail 'Цена' (innerArrivalDetail) = DATA DOUBLE (innerArri
 sumInnerArrivalDetail 'Сумма' (innerArrivalDetail) = round0(
     quantityInnerArrivalDetail(innerArrivalDetail) * priceInnerArrivalDetail (innerArrivalDetail)) IN baseGroup;
 
+toFillInnerArrivalDetailsInnerArrival 'Заполнить документ из расхода' =  ACTION (innerArrival) {
+    FOR innerArrivalInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail)) == innerArrival DO {
+        ADDOBJ innerArrivalDetail;
+        FOR d == addedObject() DO {
+            SET innerArrivalInnerArrivalDetail(d) <- innerArrival AS innerArrival;
+            SET quantityInnerArrivalDetail (d) <- quantityInnerFlowDetail(innerFlowDetail);
+            SET itemInnerArrivalDetail (d) <- itemInnerFlowDetail(innerFlowDetail);
+        };
+    };
+} IN documentHeaderGroup CONFIRM;
+
 FORM innerArrival 'Приход из другого отдела'
     OBJECTS a=innerArrival FIXED PANEL
     PROPERTIES (a) nameDepartmentStoreInnerArrival, waybillInnerArrival, seriesWaybillInnerArrival,
-                   dateInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival SHOWIF innerFlowInnerArrival(a),
-                   noteInnerArrival SHOWIF innerFlowInnerArrival(a)
+                   dateInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
+                   cleanAllInnerArrivalDetailsInnerArrival, toFillInnerArrivalDetailsInnerArrival,
+                   noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
-    PROPERTIES (d) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
+    PROPERTIES (d) SHOWIF innerFlowInnerArrival(a) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
                    quantityInnerArrivalDetail, priceInnerArrivalDetail, sumInnerArrivalDetail, ADDOBJ, delete
 
     PROPERTIES addInnerArrivalDetailBarcode(a) TODRAW d
