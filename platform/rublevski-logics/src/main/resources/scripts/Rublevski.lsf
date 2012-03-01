@@ -1415,10 +1415,10 @@ FORM tax 'Налог'
 
 DESIGN tax FROM DEFAULT {
     main {
-       ADD secondCase BEFORE functions.box {
+       NEW secondCase BEFORE functions.box {
             ADD s.box;
        }
-       ADD firstCase BEFORE secondCase {
+       NEW firstCase BEFORE secondCase {
             ADD ra.box;
             ADD rt.box;
             POSITION ra.box TO THE LEFT rt.box;
@@ -1607,17 +1607,17 @@ EDIT barcode OBJECT b;
 
 DESIGN item FROM DEFAULT {
     main {
-     ADD item.box BEFORE b.box {
+        NEW item.box BEFORE b.box {
             tabbedPane = TRUE;
-            ADD primary.box{
+            NEW primary.box {
                 title = 'Основные данные';
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
-                ADD containerLeft {
+                NEW containerLeft {
                     childConstraints = TO THE BOTTOM;
                     ADD i.descriptionGroup {
                         fillVertical = 0.4;
-                        ADD small.box {
+                        NEW small.box {
                             ADD PROPERTY(shortNamePackItem(i));
                             ADD PROPERTY(shortNameSizeItem(i));
                             ADD PROPERTY(shortNameSpecialtyItem(i));
@@ -1630,7 +1630,7 @@ DESIGN item FROM DEFAULT {
                     };
                 }
 
-                ADD containerRight {
+                NEW containerRight {
                     childConstraints = TO THE BOTTOM;
                     ADD i.headGroup {
                         childConstraints = TO THE BOTTOM;
@@ -1647,13 +1647,13 @@ DESIGN item FROM DEFAULT {
                 ADD b.box;
             }
 
-            ADD additional.box {
+            NEW additional.box {
 
                 title = 'Дополнительные';
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
 
-                ADD containerALeft {
+                NEW containerALeft {
                     childConstraints = TO THE BOTTOM;
                     ADD i.equipmentGroup {
                         childConstraints = TO THE BOTTOM;
@@ -1663,7 +1663,7 @@ DESIGN item FROM DEFAULT {
                     };
                 };
 
-                ADD containerARight {
+                NEW containerARight {
                     childConstraints = TO THE BOTTOM;
                     ADD i.substanceGroup{
                         childConstraints = TO THE BOTTOM;
@@ -2158,7 +2158,7 @@ DESIGN supplier FROM DEFAULT {
        s.box {
             childConstraints = TO THE RIGHT;
 
-            ADD oneCase {
+            NEW oneCase {
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(name(s));
                 ADD PROPERTY(fullNameLegalEntity(s));
@@ -2171,14 +2171,14 @@ DESIGN supplier FROM DEFAULT {
                 };
             };
 
-            ADD twoCase{
+            NEW twoCase{
                 childConstraints = TO THE BOTTOM;
                 ADD s.docGroup;
                 ADD s.supplierGroup;
             }
        }
 
-       ADD prop.box BEFORE functions.box{
+       NEW prop.box BEFORE functions.box{
             tabbedPane = TRUE;
             ADD a.box;
             ADD c.box;
@@ -2237,7 +2237,7 @@ DESIGN company FROM DEFAULT {
        co.box {
             childConstraints = TO THE RIGHT;
 
-            ADD oneCase {
+            NEW oneCase {
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(name(co));
                 ADD PROPERTY(fullNameLegalEntity(co));
@@ -2247,7 +2247,7 @@ DESIGN company FROM DEFAULT {
                 ADD co.contactGroup;
             };
 
-            ADD twoCase{
+            NEW twoCase{
                 childConstraints = TO THE BOTTOM;
                 ADD co.docGroup;
                 ADD co.lawGroup {
@@ -2256,10 +2256,10 @@ DESIGN company FROM DEFAULT {
             }
        }
 
-       ADD firstCase BEFORE functions.box {
+       NEW firstCase BEFORE functions.box {
             tabbedPane = TRUE;
             ADD a.box;
-            ADD v.box { title = 'Поставщик-договор'; }
+            NEW v.box { title = 'Поставщик-договор'; }
             ADD s.box IN v.box;
             ADD c.box IN v.box;
             POSITION s.box TO THE LEFT c.box;
@@ -2597,7 +2597,7 @@ DESIGN orderSupplier FROM DEFAULT {
 
     o.box {
         childConstraints = TO THE RIGHT;
-        ADD headerLeft {
+        NEW headerLeft {
             childConstraints = TO THE BOTTOM;
             ADD o.panel;
             ADD PROPERTY(allowablePercentOrderSupplier);
@@ -2738,7 +2738,7 @@ DESIGN departmentStore FROM DEFAULT {
 
         d.box{
             childConstraints = TO THE RIGHT;
-            ADD order {
+            NEW order {
                     childConstraints = TO THE BOTTOM;
                     title = 'Заказ';
                     ADD PROPERTY (name);
@@ -2754,7 +2754,7 @@ DESIGN departmentStore FROM DEFAULT {
             ADD d.printDepartmentStoreGroup;
         };
 
-        ADD prop.box BEFORE functions.box{
+        NEW prop.box BEFORE functions.box{
             tabbedPane = TRUE;
             ADD e.box{
                     title = 'Сотрудники';
@@ -3154,12 +3154,12 @@ EDIT groupUser OBJECT gru;
 
 DESIGN groupUser FROM DEFAULT {
     main{
-       ADD prop.box BEFORE functions.box {
+       NEW prop.box BEFORE functions.box {
             ADD c.box;
             ADD d.box;
             POSITION c.box TO THE LEFT d.box;
        }
-       ADD xrop.box BEFORE prop.box {
+       NEW xrop.box BEFORE prop.box {
             ADD e.box;
        }
 
@@ -3181,12 +3181,12 @@ FILTERS NOT NULL includedEmployeeCash(e, c),
 
 DESIGN groupsUser FROM DEFAULT {
     main{
-       ADD prop.box BEFORE functions.box {
+       NEW prop.box BEFORE functions.box {
             tabbedPane = TRUE;
             ADD c.box;
             ADD d.box;
        }
-       ADD case.box BEFORE prop.box {
+       NEW case.box BEFORE prop.box {
             ADD gru.box;
             ADD e.box;
             POSITION gru.box TO THE LEFT e.box;
@@ -3242,7 +3242,7 @@ EDIT cutting OBJECT c;
 
 DESIGN cutting FROM DEFAULT {
     main{
-       ADD cut.box BEFORE functions.box{
+       NEW cut.box BEFORE functions.box{
             tabbedPane = TRUE;
             ADD d.box;
             ADD dep.box { title = 'Подразделение'; }
@@ -3279,13 +3279,13 @@ FORM cuttings 'Карты проработки'
 DESIGN cuttings FROM DEFAULT {
     main{
 
-       ADD cut2.box BEFORE functions.box{
+       NEW cut2.box BEFORE functions.box{
             ADD dep.box { title = 'Подразделение'; }
 
             ADD i.box { title = 'Товар, для которого действует карта'; }
             POSITION dep.box TO THE LEFT i.box;
        }
-       ADD cut1.box BEFORE cut2.box{
+       NEW cut1.box BEFORE cut2.box{
             ADD d.box;
 
        }
@@ -3723,8 +3723,8 @@ EDIT listInventory OBJECT li
 
 DESIGN listInventory FROM DEFAULT {
     main{
-       ADD firstCase BEFORE functions.box {
-            ADD x.box BEFORE dp.box;
+       NEW firstCase BEFORE functions.box {
+            NEW x.box BEFORE dp.box;
             ADD pl.box IN x.box;
             ADD e.box IN x.box { title = 'Члены комиссии' ;}
             POSITION pl.box TO THE LEFT e.box;
@@ -3789,9 +3789,9 @@ DESIGN inventory FROM DEFAULT {
             POSITION in.inventoryGroup TO THE LEFT in.inventGroup;
             ADD PROPERTY(convertPriceInventory(in)) IN in.inventGroup;
         }
-        ADD secondCase BEFORE functions.box{
+        NEW secondCase BEFORE functions.box{
                 tabbedPane = TRUE;
-                ADD z.box { title = 'Описи';
+                NEW z.box { title = 'Описи';
                     fillVertical = 5;
                     ADD treeDepartmentStore.box { fillHorizontal = 2;};
                     ADD dp.box  {fillHorizontal = 3;};
@@ -3819,7 +3819,7 @@ DESIGN inventory FROM DEFAULT {
                     }
                 }
 
-                ADD x.box { title = 'Сличительные ведомости';
+                NEW x.box { title = 'Сличительные ведомости';
                     fillVertical = 5;
                     ADD cs.box  { fillVertical = 1;};
                     ADD i.box { fillVertical = 4;}
@@ -4185,7 +4185,7 @@ FORM shipment 'Поставка'
 
 DESIGN shipment FROM DEFAULT{
     main{
-        ADD specification.box BEFORE functions.box{
+        NEW specification.box BEFORE functions.box{
             tabbedPane = TRUE;
             ADD d.box {
                 childConstraints = TO THE BOTTOM;
@@ -4198,10 +4198,10 @@ DESIGN shipment FROM DEFAULT{
             };
             ADD i.box;
         };
-        ADD header.box BEFORE specification.box {
+        NEW header.box BEFORE specification.box {
             childConstraints = TO THE BOTTOM;
 
-            ADD headerRow1 {
+            NEW headerRow1 {
                 childConstraints = TO THE RIGHT;
                 ADD s.documentHeaderGroup;
                 ADD s.ordersInfo {
@@ -4209,7 +4209,7 @@ DESIGN shipment FROM DEFAULT{
                 };
             };
 
-            ADD headerRow2 {
+            NEW headerRow2 {
                 childConstraints = TO THE RIGHT;
                 ADD s.waybillSum {
                     childConstraints = TO THE RIGHT;

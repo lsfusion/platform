@@ -241,38 +241,26 @@ public class ScriptingFormView extends DefaultFormView {
         return panelLocation;
     }
 
-    public ComponentView addComponent(String sid, ComponentView component, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {
-        //дополнительная жёсткая проверка, противного не должно произойти в результате разбора грамматикой
-        assert sid == null || sid.matches("[a-zA-Z][a-zA-Z_0-9]*(\\.[a-zA-Z][a-zA-Z_0-9]*)*");
-        assert anchorComponent != null;
+    public ContainerView createNewComponent(String sid, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {
+        assert anchorComponent != null && sid != null && sid.matches("[a-zA-Z][a-zA-Z_0-9]*(\\.[a-zA-Z][a-zA-Z_0-9]*)*");
 
-        if (component == null) {
-            //если sid == null, то componentSelector содержит selector, для которого нельзя просто создать контейнер
-            //т.е. он содержит либо property, либо parent, а не просто sid
-            if (sid != null) {
-                if (anchorComponent == null) {
-                    errLog.emitComponentIsNullError(parser, "can't create new container:");
-                }
-
-                component = createNewContainer(sid);
-            }
+        if (getComponentBySID(sid, false) != null) {
+            errLog.emitAlreadyDefinedError(parser, "component", sid);
         }
 
-        if (component != null) {
-            moveComponent(component, pos, anchorComponent);
-        }
-
-        return component;
-    }
-
-    private ContainerView createNewContainer(String sid) {
         ContainerView container = new ContainerView(idGenerator.idShift());
         container.setSID(sid);
+
         sidToComponent.put(sid, container);
+
+        moveComponent(container, pos, anchorComponent);
+
         return container;
     }
 
-    private void moveComponent(ComponentView component, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {
+    public void moveComponent(ComponentView component, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {
+        assert component != null && anchorComponent != null;
+
         ContainerView parent = null;
         if (pos == IN) {
             if (!(anchorComponent instanceof ContainerView)) {

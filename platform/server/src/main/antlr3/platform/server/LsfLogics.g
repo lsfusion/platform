@@ -1735,6 +1735,7 @@ componentStatementBody [Object propertyReceiver, ComponentView parentComponent]
 			|	positionComponentsStatement[parentComponent]
 			|	setupComponentStatement
 			|	setupGroupObjectStatement
+			|	newComponentStatement[parentComponent]
 			|	addComponentStatement[parentComponent]
 			|	removeComponentStatement
 			|	emptyStatement
@@ -1744,7 +1745,7 @@ componentStatementBody [Object propertyReceiver, ComponentView parentComponent]
 	;
 
 setupComponentStatement
-	:	comp=componentSelector[true] componentStatementBody[$comp.component, $comp.component]
+	:	comp=componentSelector componentStatementBody[$comp.component, $comp.component]
 	;
 
 setupGroupObjectStatement
@@ -1767,19 +1768,34 @@ setupGroupObjectStatement
 		'}'
 	;
 
+newComponentStatement[ComponentView parentComponent]
+@init {
+	boolean hasPosition = false;
+	ComponentView newComp = null;
+}
+	:	'NEW' cid=multiCompoundID (insPosition=insertPositionLiteral posSelector=componentSelector { hasPosition = true; })?
+		{
+			if (inPropParseState()) {
+				newComp = $designStatement::design.createNewComponent($cid.sid,
+																		hasPosition ? $insPosition.val : InsertPosition.IN,
+																		hasPosition ? $posSelector.component : $parentComponent);
+			}
+		}
+		componentStatementBody[newComp, newComp]
+	;
+	
 addComponentStatement[ComponentView parentComponent]
 @init {
 	boolean hasPosition = false;
 	ComponentView insComp = null;
 }
-	:	'ADD' insSelector=componentSelector[false] { insComp = $insSelector.component; }
-		( insPosition=insertPositionLiteral posSelector=componentSelector[true] { hasPosition = true; } )?
+	:	'ADD' insSelector=componentSelector { insComp = $insSelector.component; }
+		( insPosition=insertPositionLiteral posSelector=componentSelector { hasPosition = true; } )?
 		{
 			if (inPropParseState()) {
-				insComp = $designStatement::design.addComponent($insSelector.sid,
-																insComp,
-																hasPosition ? $insPosition.val : InsertPosition.IN,
-																hasPosition ? $posSelector.component : $parentComponent);
+				$designStatement::design.moveComponent(insComp,
+														hasPosition ? $insPosition.val : InsertPosition.IN,
+														hasPosition ? $posSelector.component : $parentComponent);
 			}
 		}
 		componentStatementBody[insComp, insComp]
@@ -1789,7 +1805,7 @@ removeComponentStatement
 @init {
 	boolean cascade = false;
 }
-	:	'REMOVE' compSelector=componentSelector[true] ('CASCADE' { cascade = true; } )? ';'
+	:	'REMOVE' compSelector=componentSelector ('CASCADE' { cascade = true; } )? ';'
 		{
 			if (inPropParseState()) {
 				$designStatement::design.removeComponent($compSelector.component, cascade);
@@ -1797,8 +1813,8 @@ removeComponentStatement
 		}
 	;
 
-componentSelector[boolean hasToExist] returns [String sid, ComponentView component]
-	:	'PARENT' '(' child=componentSelector[true] ')'
+componentSelector returns [ComponentView component]
+	:	'PARENT' '(' child=componentSelector ')'
 		{
 			if (inPropParseState()) {
 				$designStatement::design.getParentContainer($child.component);
@@ -1808,8 +1824,7 @@ componentSelector[boolean hasToExist] returns [String sid, ComponentView compone
 	|	mid=multiCompoundID
 		{
 			if (inPropParseState()) {
-				$sid = $mid.sid;
-				$component = $designStatement::design.getComponentBySID($sid, hasToExist);
+				$component = $designStatement::design.getComponentBySID($mid.sid);
 			}
 		}
 	;
@@ -1834,7 +1849,7 @@ positionComponentsStatement[ComponentView parentComponent]
 @init {
 	boolean hasSecondComponent = false;
 }
-	:	'POSITION' compSelector1=componentSelector[true] constraint=simplexConstraintLiteral ( compSelector2=componentSelector[true]  { hasSecondComponent = true; } )? ';'
+	:	'POSITION' compSelector1=componentSelector constraint=simplexConstraintLiteral ( compSelector2=componentSelector  { hasSecondComponent = true; } )? ';'
 		{
 			if (inPropParseState()) {
 				$designStatement::design.addIntersection($compSelector1.component,

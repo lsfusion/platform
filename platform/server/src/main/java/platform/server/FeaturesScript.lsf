@@ -494,27 +494,27 @@ NAVIGATOR {
 
 
 DESIGN storeArticle FROM DEFAULT {
-    // чтобы добавить контейнер в другой контейнер используется команда 'ADD <имя>' [(IN | BEFORE | AFTER) <имя2>]
-    // если контейнер не существовал, то он будет создан
-    // при этом по умолчанию он будет добавлен в контейнер текущей области видимости
+    // Чтобы добавить контейнер в другой контейнер используется команда '(ADD | NEW ) <имя> [(IN | BEFORE | AFTER) <имя2>]'.
+    // При использовании NEW контейнер будет создан, если компонент с таким именем уже существовал, то будет ошибка.
+    // При этом по умолчанию он будет добавлен в контейнер текущей области видимости
     // (при использовании прямо внутри DESIGN - он будет добавлен в main контейнер)
-    ADD newContainer {
+    NEW newContainer {
         // будет добавлен в newContainer, т.к. находится в его области видимости
-        ADD child1 {
+        NEW child1 {
             // будет добавлен в child1, т.к. находится в его области видимости
-            ADD child11;
+            NEW child11;
         }
 
         // будет добавлен в child11, т.к. явно указано куда добавлять
-        ADD child2 IN child11;
+        NEW child2 IN child11;
 
         // будет добавлен в child1, перед child11, т.к. это явно указано
-        ADD child3 BEFORE child11;
+        NEW child3 BEFORE child11;
 
         // будет добавлен в child1, после child11, т.к. это явно указано
-        ADD child4 AFTER child11;
+        NEW child4 AFTER child11;
 
-        ADD child5;
+        NEW child5;
 
         // для задания intersections используется конструкция вида:
         // POSITION <имя1> (TO THE LEFT | TO THE RIGHT | TO THE BOTTOM | TO THE RIGHTBOTTOM | TO NOT INTERSECT) [<имя2>]
@@ -571,12 +571,12 @@ DESIGN storeArticle FROM DEFAULT {
             fillVertical = 0.2;
 
             //здесь всё так же можно применять команды ADD, POSITION и т.д.
-            ADD child1 {
+            NEW child1 {
                 // так контейнер будет отображаться в виде табов
                 // соответсвует в Java: container.tabbedPane = true;
                 tabbedPane = TRUE;
 
-                ADD child2;
+                NEW child2;
 
                 // настраивать объекты можно в любой области видимости - это ни на что не повлияет
                 s.box {
@@ -602,7 +602,7 @@ DESIGN storeArticle FROM DEFAULT {
     PROPERTY(storeSizeName(s)) { caption = 'Имя размера склада'; }
 
     a.panel {
-        ADD nameContainer {
+        NEW nameContainer {
             title = 'Отдельный контейнер для имени в панели';
             ADD PROPERTY(name(a)) {
                 caption = 'Имя (a)';
@@ -637,7 +637,7 @@ DESIGN storeArticle FROM DEFAULT {
 //        panelLocation = SHORTCUT storeSizeName DEFAULT;
     }
 
-    ADD setupEx {
+    NEW setupEx {
         // Dimension
         minimumSize = (100, 200);
 
