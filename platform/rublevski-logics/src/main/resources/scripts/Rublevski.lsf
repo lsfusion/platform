@@ -1903,6 +1903,7 @@ CLASS account 'Расчетный счет';
 bankAccount 'Банк (ИД)' = DATA bank (account) IN idGroup;
 
 dataAccount 'Номер расчетного счета'  = DATA STRING[13] (account) IN accountGroup;
+dataAccountToAccount (string) = GROUP UNIQUE account BY dataAccount (account) WHERE account IS account;
 nameBankAccount 'Наименование банка' (account) = name(bankAccount(account)) IN accountGroup;
 addressBankAccount 'Адрес банка' (account) = addressBank(bankAccount(account)) IN accountGroup;
 MFOBankAccount 'Код МФО банка' (account) = MFOBank(bankAccount(account)) IN accountGroup;
@@ -1913,6 +1914,7 @@ noteAccount 'Примечание'  = DATA STRING[50] (account) IN accountGroup;
 // ----------------------------------- Форма собственности ------------------------------------------ //
 CLASS ownership 'Форма собственности' : named;
 shortNameOwnership 'Cокращенное название' = DATA STRING[10] (ownership) IN baseGroup FIXEDCHARWIDTH 6;
+shortNameToOwnership (string) = GROUP UNIQUE ownership BY shortNameOwnership (ownership) WHERE ownership IS ownership;
 
 FORM ownership 'Форма собственности'
 OBJECTS o=ownership FIXED PANEL
@@ -4489,10 +4491,12 @@ importPassword 'Пароль' = DATA STRING[200] ();// IN formularGroup;
 
 importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'rublevski.actions.ImportLSTDataActionProperty';// IN lstradeGroup;
 importLSTDirectory 'Папка' = DATA STRING[200] ();// IN lstradeGroup;
-
+importGroupItems 'Импортировать группы товаров' = DATA BOOLEAN ();
+importItems 'Импортировать товары' = DATA BOOLEAN ();
+importLegalEntities 'Импортировать компании' = DATA BOOLEAN ();
 FORM importData 'Импорт данных'
     PROPERTIES() importDataAction, importUrl, importLogin, importPassword
-    PROPERTIES() importLSTDataAction, importLSTDirectory
+    PROPERTIES() importLSTDataAction, importLSTDirectory, importGroupItems, importItems, importLegalEntities
 ;
 
 //---------------------------- Настройка навигатора ----------------------------------------//
