@@ -1947,8 +1947,8 @@ shortNameOwnershipLegalEntity 'Форма собственности (сокр.)
 fullNameLegalEntity 'Наименование для накладных' = DATA STRING[200] (legalEntity) IN baseGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN baseGroup FIXEDCHARWIDTH 9;
 UNPLegalEntityToLegalEntity (UNPLegalEntity) = GROUP UNIQUE legalEntity BY UNPLegalEntity(legalEntity);
-OKPOLegalEntity 'Код по ОКПО' = DATA STRING[20] (legalEntity) IN docGroup;
-OKYLPLegalEntity 'Код ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup;
+OKPOLegalEntity 'Код по ОКПО' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;     // подставить нужное потом значение
+OKYLPLegalEntity 'Код ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
 emailLegalEntity 'e-mail' = DATA STRING[100] (legalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 siteLegalEntity 'Сайт' = DATA STRING[100] (legalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 contactsLegalEntity 'Дополнительная информация' = DATA STRING[300] (legalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
@@ -2039,6 +2039,7 @@ CONSTRAINT contract IS contract AND NOT formContract(contract)  MESSAGE 'оши�
 GROUP supplierGroup 'Информация о поставщике' : publicGroup;
 CLASS supplier 'Поставщик' : legalEntity;
 CLASS company 'Компания' : legalEntity;
+CLASS customer 'Покупатель' : legalEntity;
 
 companyContract 'Организация (ИД)' = DATA company (contract) IN idGroup;
 supplierContract 'Поставщик (ИД)' = DATA supplier (contract) IN idGroup;
@@ -2271,6 +2272,28 @@ FORM companies 'Компании'
     OBJECTS co=company
     PROPERTIES(co) READONLY name, fullNameLegalEntity, UNPLegalEntity, dataOverrideAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(co) ADDFORM, EDITFORM, delete
+;
+
+FORM customer 'Покупатель'
+    OBJECTS cu=customer FIXED PANEL
+    PROPERTIES(cu)     name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, showFormaddressLegalEntity,
+                       postAddressLegalEntity, showFormpostAddressLegalEntity, managerLegalEntity, showFormmanagerLegalEntity,
+                       accountantLegalEntity, showFormaccountantLegalEntity, phoneLegalEntity, showFormphoneLegalEntity,
+                       UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
+                       residentLegalEntity
+    OBJECTS a=account
+    PROPERTIES(a)      dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount,
+                       MFOBankAccount, noteAccount, ADDOBJ, delete
+
+    EDIT customer OBJECT cu
+                                       
+;
+
+FORM customers 'Покупатели'
+    OBJECTS cu=customer
+    PROPERTIES(cu)   name, fullNameLegalEntity, UNPLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
+                     addressLegalEntity
+    PROPERTIES(cu) ADDFORM, EDITFORM, delete
 ;
 
 //---------------------------- по поставщикам и товарам ----------------------------------------
@@ -3853,6 +3876,168 @@ DESIGN inventories FROM DEFAULT {
     POSITION in.historyGroup TO THE LEFT in.postedGroup;
 }
 
+//---------------------------- Отгрузка по безналу(розница) ----------------------------//
+
+GROUP customerGroup 'Покупатель';
+
+CLASS specification 'Счет-фактура': historyObject;
+CLASS objectiveAcquiring 'Цель приобретения' : named;
+
+CLASS detailSpec 'Строка документа';
+TABLE detailSpec (detailSpec);
+
+//@metaCodeObjectWithPost (innerArrival, 'Приход в отдел', 'Закрытый приход в отдел', object);
+
+numberSpecification 'Номер счет-фактуры' = DATA INTEGER (specification) IN documentHeaderGroup;
+
+customerSpecification(specification) = DATA customer (specification) IN idGroup;
+nameCustomerSpecification 'Покупатель' (specification) = name(customerSpecification(specification)) IN customerGroup;
+fullNameCustomerSpecification 'Полное наименование' (specification) = fullNameLegalEntity(customerSpecification(specification)) IN customerGroup;
+UNPCustomerSpecification 'УНП' (specification) = UNPLegalEntity(customerSpecification(specification)) IN customerGroup;
+addressCustomerSpecification 'Юридический адрес' (specification) = addressLegalEntity(customerSpecification(specification)) IN customerGroup;
+nameOwnershipCustomerSpecification 'Форма собственности' (specification) = nameOwnershipLegalEntity(customerSpecification(specification)) IN customerGroup;
+postAddressCustomerSpecification 'Почтовый адрес' (specification) = postAddressLegalEntity(customerSpecification(specification)) IN customerGroup;
+managerCustomerSpecification 'Руководитель' (specification) = managerLegalEntity(customerSpecification(specification)) IN customerGroup;
+phoneCustomerSpecification 'Телефон' (specification) = phoneLegalEntity(customerSpecification(specification)) IN customerGroup;
+
+objectiveAcquiringSpecification(specification) = DATA objectiveAcquiring (specification) IN idGroup;
+nameObjectiveAcquiringSpecification 'Цель приобретения' (specification) = name(objectiveAcquiringSpecification(specification)) IN additionalInfo;
+
+// расчетный счет, банк, и т.д.
+
+dateSpecification 'Дата документа' (specification) = DATA DATE (specification) IN documentHeaderGroup;
+dateSpecification (specification) <- currentDate() ON ASSIGN specification AS specification;
+
+dateToSpecification 'Срок действия с/ф' (specification) = DATA DATE (specification) IN documentHeaderGroup;
+overdueSpecification 'Просроченные с/ф' (specification) = dateToSpecification(specification) < currentDate();
+noOverdueSpecification 'Непросроченные с/ф' (specification) = dateToSpecification(specification) >= currentDate();
+
+
+departmentStoreSpecification 'Отдел документа (ИД)' (specification) = DATA departmentStore(specification) IN idGroup;
+nameDepartmentStoreSpecification 'Отдел выписки (отгрузки) документа' (specification) = name(departmentStoreSpecification(specification))
+    IN documentHeaderGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+
+noteSpecification 'Примечание' = DATA STRING[100] (specification) IN additionalInfo;
+
+specificationDetailSpec 'Строка документа (ИД)' = DATA specification (detailSpec) IN idGroup;
+inSpecificationDetailSpec (specification, detailSpec) = specificationDetailSpec(detailSpec) == specification;
+
+numberDetailSpec 'Номер строки' (detailSpec) =
+    PARTITION SUM 1 IF detailSpec IS detailSpec BY specificationDetailSpec(detailSpec)
+    ORDER detailSpec IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
+
+itemDetailSpec 'Товар строки документа (ИД)' (detailSpec) = DATA item (detailSpec) IN idGroup;
+
+nameAttributeItemDetailSpec 'Товар строки документа' (detailSpec) =
+    nameAttributeItem(itemDetailSpec(detailSpec)) IN recognizeGroup;
+
+barcodeExSkuDetailSpec 'Штрих-код товара' (detailSpec) =
+    barcodeEx(barcodeSku(itemDetailSpec(detailSpec))) IN baseGroup;
+
+quantityDetailInSpecification 'Количество строк в документе' (specification) =
+        GROUP SUM 1 IF inSpecificationDetailSpec (specification, detailSpec) BY specification;
+
+    addSpecificationDetailBarcode 'Добавить строку по штрих-коду' = ACTION (specification) {
+        FORM barcodeInput MODAL;
+
+        IF formResult() == formResult.ok THEN {
+            SET tmpSku() <- skuBarcodeStringDate(chosenString('barcode'), dateSpecification(specification));
+            IF tmpSku() IS item THEN {
+                ADDOBJ detailSpec;
+                FOR o == addedObject() DO {
+                    SET specificationDetailSpec(o) <- specification AS specification;
+                    SET itemDetailSpec(o) <- tmpSku();
+            //        SET quantity###object##Detail(o) <- amountBarcode(valueBarcodeToDate(chosenString('barcode'), date###object(object)));
+                };
+            } ELSE
+                MESSAGE 'Не найден штрих-код';
+        };
+
+    }TOOLBAR EDITKEY 'F4';
+
+datePriceSpecification 'Цена на дату' = DATA DATE (specification) IN additionalInfo;
+datePriceSpecification (specification) <- currentDate() ON ASSIGN specification AS specification;
+
+quantityDetailSpec 'Кол-во товара' = DATA DOUBLE (detailSpec) IN baseGroup;
+
+quantitySpecification 'Общее кол-во' (specification) = GROUP SUM quantityDetailSpec(detailSpec)
+                                                    BY specificationDetailSpec(detailSpec) IN waybillSum;
+
+retailPriceDetailSpec 'Розничная цена' = DATA DOUBLE (detailSpec) IN baseGroup;
+retailPriceDetailSpec(detailSpec) <- retailPriceItemDepartmentVal (itemDetailSpec(detailSpec),
+                                                                   departmentStoreSpecification(specificationDetailSpec(detailSpec)),
+                                                                   dateSpecification(specificationDetailSpec(detailSpec))) ON CHANGE itemDetailSpec(detailSpec);
+
+sumDetailSpec 'Сумма' (detailSpec) = round0(retailPriceDetailSpec(detailSpec)*quantityDetailSpec(detailSpec));
+sumSpecification 'Общая сумма' (specification) = GROUP SUM sumDetailSpec(detailSpec) BY specificationDetailSpec(detailSpec) IN waybillSum;
+
+articleItemDetailSpec 'Артикул производителя/поставщика' (detailSpec) = articleItem(itemDetailSpec(detailSpec));
+nameCountryDetailSpec 'Страна' (detailSpec) = nameCountryItem(itemDetailSpec(detailSpec));
+
+balanceDepartmentStoreItemDetailSpec 'Текущий остаток' (detailSpec) =
+    balanceDepartmentStoreItem(departmentStoreSpecification(specificationDetailSpec(detailSpec)), itemDetailSpec(detailSpec));
+
+minReserveItemDepartmentDetailSpec 'Минимальнодопустимый товарный запас в днях' (detailSpec) =
+    minReserveItemDepartmentOver(itemDetailSpec(detailSpec),
+    departmentStoreSpecification(specificationDetailSpec(detailSpec)),
+    dateSpecification(specificationDetailSpec(detailSpec)));
+
+maxReserveItemDepartmentDetailSpec 'Максимальнодопустимый товарный запас в днях' (detailSpec) =
+    maxReserveItemDepartmentOver(itemDetailSpec(detailSpec),
+    departmentStoreSpecification(specificationDetailSpec(detailSpec)),
+    dateSpecification(specificationDetailSpec(detailSpec)));
+
+
+
+CONSTRAINT quantityDetailSpec(detailSpec) <= 0 MESSAGE 'Количество должно быть положительным';
+//CONSTRAINT priceWriteOffDetail(detailSpec) <= 0 MESSAGE 'Цена должна быть положительной';
+
+
+FORM objectiveAcquiring 'Цель приобретения'
+    OBJECTS oa=objectiveAcquiring  FIXED PANEL
+    PROPERTIES(oa) name
+;
+
+FORM specification 'Счет-фактура'
+    OBJECTS sp=specification FIXED PANEL
+    PROPERTIES (sp) numberSpecification, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification, nameCustomerSpecification,
+    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, datePriceSpecification//, dateLastShipment
+
+    OBJECTS d=detailSpec
+    PROPERTIES (d) numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
+                   retailPriceDetailSpec, ADDOBJ, delete
+
+    PROPERTIES FORCE PANEL READONLY articleItemDetailSpec(d), nameCountryDetailSpec(d), balanceDepartmentStoreItemDetailSpec(d),
+                                    minReserveItemDepartmentDetailSpec(d), maxReserveItemDepartmentDetailSpec(d)
+
+    PROPERTIES addSpecificationDetailBarcode(sp) TODRAW d
+    FILTERS NOT NULL inSpecificationDetailSpec(sp, d)
+
+    EDIT specification OBJECT sp
+;
+
+DESIGN specification FROM DEFAULT{
+    sp.waybillSum { caption = 'Суммы счет-фактуры'; };
+
+    d.panel{
+        childConstraints = TO THE BOTTOM;
+
+    }
+}
+
+FORM specifications 'Счет-фактуры'
+    OBJECTS sp=specification
+    PROPERTIES (sp) READONLY numberSpecification, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
+                   dateToSpecification, quantitySpecification, sumSpecification
+
+    PROPERTIES (sp) ADDFORM, EDITFORM, delete
+    ORDER BY  dateSpecification
+
+    FILTERGROUP filters6
+            FILTER 'Просроченные с/ф' 'F10' NOT NULL overdueSpecification(sp)
+            FILTER 'Непросроченные с/ф' 'F9' NOT NULL noOverdueSpecification(sp)
+;
+
 
 //---------------------------- Кассовые отчеты ----------------------------------------//
 CLASS cashReport 'Кассовый отчет' : transaction;
@@ -4560,6 +4745,10 @@ NAVIGATOR {
             ADD suppliers;
             ADD banks;
         }
+        NEW customerRelation 'Покупатели'{
+            ADD customers;
+        }
+
         NEW equipment 'Оборудование' {
             ADD groupsCash;
             ADD groupsScales;
@@ -4596,6 +4785,9 @@ NAVIGATOR {
             ADD innerFlows;
             ADD innerArrivals;
         }
+        NEW itemspecifications 'Отпуск из розницы' {
+            ADD specifications;
+        }
     }
 
     NEW documents 'Документы' TO formsToolbar {
@@ -4622,6 +4814,7 @@ NAVIGATOR {
             ADD bank;
             ADD ownership;
             ADD supplier;
+            ADD customer;
             ADD company;
             ADD cashModel;
             ADD scalesModel;
@@ -4732,6 +4925,8 @@ NAVIGATOR {
             ADD collationSheetItem;
             ADD innerFlow;
             ADD innerArrival;
+            ADD objectiveAcquiring;
+            ADD specification;
         }
         ADD importData;
         ADD globalParameters;
