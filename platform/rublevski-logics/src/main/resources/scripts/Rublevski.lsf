@@ -1708,28 +1708,23 @@ DESIGN item FROM DEFAULT {
 inItemGroupSku(itemGroup, sku) = itemGroupSku(sku) == itemGroup;
 
 FORM items 'Товары'
-
-TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES(g)  READONLY name
+    TREE treeGroup a=STRING[3], g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY OBJVALUE(a), name(g)
+    FILTERS NOT NULL stringEqualsAll(a)
+    ORDER BY name
 
     OBJECTS i=item
-    PROPERTIES(i) READONLY nameAttributeItem, canonicalNameItemGroupSku, shortNameUnitOfMeasureItem
+    PROPERTIES(i) READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUnitOfMeasureItem
     PROPERTIES(i) ADDFORM, EDITFORM, delete
-
-    FILTERGROUP filters
-//            FILTER 'Все листья' 'F10' NOT NULL hasParentOrNullItemGroupSku(i, g)
-            FILTER 'Всех потомков' 'F9' NOT NULL hasParentItemGroupSku(i, g) DEFAULT
-            FILTER 'Только непосредственных потомков' 'F8' NOT NULL inItemGroupSku(g, i)
-
-    ORDER BY canonicalNameItemGroupSku, nameAttributeItem
+    FILTERS NOT NULL hasParentOrNullItemGroupSku(i, g)
+    ORDER BY nameAttributeItem
 ;
 
 DESIGN items FROM DEFAULT {
     POSITION treeGroup.box TO THE LEFT i.box;
 
-    i.box {
-        fillHorizontal = 2.0;
-
+    treeGroup.tree {
+        fillHorizontal = 0.4;
     }
 }
 

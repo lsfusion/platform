@@ -268,7 +268,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         TableColumnExt tableColumn = getColumnExt(0);
         int min = 50;
         int max = 100000;
-        int pref = treeGroup.groups.size() * 35;
+        int pref = treeGroup.calculatePreferredSize();
 
         setColumnSizes(tableColumn, min, max, pref);
     }
