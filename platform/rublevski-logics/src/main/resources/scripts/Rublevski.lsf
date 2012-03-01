@@ -1706,23 +1706,22 @@ DESIGN item FROM DEFAULT {
 }
 
 inItemGroupSku(itemGroup, sku) = itemGroupSku(sku) == itemGroup;
-canonicalNameItemGroupItem 'Название товарных групп' (item) = canonicalNameItemGroup(itemGroupSku(item));
-hasParentItemGroupItem 'HAS' (item, itemGroup) = hasParentItemGroup(itemGroupSku(item), itemGroup);
 
 FORM items 'Товары'
 
 TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES(g)  READONLY gname = name
+    PROPERTIES(g)  READONLY name
 
     OBJECTS i=item
-    PROPERTIES(i) READONLY nameAttributeItem, canonicalNameItemGroupItem, shortNameUnitOfMeasureItem
+    PROPERTIES(i) READONLY nameAttributeItem, canonicalNameItemGroupSku, shortNameUnitOfMeasureItem
     PROPERTIES(i) ADDFORM, EDITFORM, delete
 
-    FILTERGROUP filters       // hasParentItemGroupSku   hasParentOrNullItemGroupSku
-            FILTER 'Всех потомков' 'F10' NOT NULL hasParentItemGroupItem(i, g) DEFAULT
-            FILTER 'Только непосредственных потомков' 'F9' NOT NULL inItemGroupSku(g, i)
+    FILTERGROUP filters
+//            FILTER 'Все листья' 'F10' NOT NULL hasParentOrNullItemGroupSku(i, g)
+            FILTER 'Всех потомков' 'F9' NOT NULL hasParentItemGroupSku(i, g) DEFAULT
+            FILTER 'Только непосредственных потомков' 'F8' NOT NULL inItemGroupSku(g, i)
 
-    ORDER BY canonicalNameItemGroupItem, nameAttributeItem
+    ORDER BY canonicalNameItemGroupSku, nameAttributeItem
 ;
 
 DESIGN items FROM DEFAULT {
