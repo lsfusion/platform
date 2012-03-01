@@ -1904,7 +1904,7 @@ CLASS account 'Расчетный счет';
 
 bankAccount 'Банк (ИД)' = DATA bank (account) IN idGroup;
 
-dataAccount 'Номер расчетного счета'  = DATA STRING[13] (account) IN accountGroup;
+dataAccount 'Номер расчетного счета'  = DATA STRING[13] (account) IN accountGroup FIXEDCHARWIDTH 13;
 dataAccountToAccount (string) = GROUP UNIQUE account BY dataAccount (account) WHERE account IS account;
 nameBankAccount 'Наименование банка' (account) = name(bankAccount(account)) IN accountGroup;
 addressBankAccount 'Адрес банка' (account) = addressBank(bankAccount(account)) IN accountGroup;
@@ -2201,9 +2201,8 @@ DESIGN supplier FROM DEFAULT {
 
 FORM suppliers 'Поставщики'
     OBJECTS s=supplier
-    PROPERTIES(s)  READONLY name, shortNameOwnershipLegalEntity, fullNameLegalEntity, managerLegalEntity, phoneLegalEntity,
-                   UNPLegalEntity, emailLegalEntity, siteLegalEntity
-    PROPERTIES(s)  ADDFORM, EDITFORM, delete
+    PROPERTIES(s) READONLY name, fullNameLegalEntity, UNPLegalEntity, dataOverrideAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+    PROPERTIES(s) ADDFORM, EDITFORM, delete
 ;
 
 FORM company 'Компания'
@@ -2270,8 +2269,7 @@ DESIGN company FROM DEFAULT {
 }
 FORM companies 'Компании'
     OBJECTS co=company
-    PROPERTIES(co) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, managerLegalEntity, phoneLegalEntity,
-                   UNPLegalEntity, emailLegalEntity, siteLegalEntity, dataOverrideAccountLegalEntity
+    PROPERTIES(co) READONLY name, fullNameLegalEntity, UNPLegalEntity, dataOverrideAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(co) ADDFORM, EDITFORM, delete
 ;
 
@@ -4558,7 +4556,7 @@ NAVIGATOR {
             ADD employeesCommittees;
             ADD groupsUser;
         }
-        NEW supplierRelation 'Поставщики'{
+        NEW contragents 'Контрагенты'{
             ADD suppliers;
             ADD banks;
         }

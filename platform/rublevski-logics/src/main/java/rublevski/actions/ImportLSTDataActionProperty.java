@@ -196,7 +196,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField shortNameOwnershipField = new ImportField(rublevskiLM.getLPByName("shortNameOwnership"));
             ImportField accountField = new ImportField(rublevskiLM.getLPByName("dataAccount"));
 
-            DataObject defaultDate = new DataObject(new java.sql.Date(2001, 01, 01), DateClass.instance);
+            DataObject defaultDate = new DataObject(new java.sql.Date(2001-1900, 0, 1), DateClass.instance);
 
             ImportKey<?> companyKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("company"),
                     BL.LM.extSIDToObject.getMapping(companyIDField));
