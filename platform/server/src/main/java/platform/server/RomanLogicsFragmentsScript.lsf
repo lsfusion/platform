@@ -96,6 +96,6 @@ PROPERTIES
     rateExchange(typeExchange, currency, exchangeDate),
     rateExchange(typeExchange, currency, exchangeDateRate)
 FILTERS
-    NOT NULL rateExchange(typeExchange, currency, exchangeDateRate);
+    rateExchange(typeExchange, currency, exchangeDateRate);
 
 

@@ -183,6 +183,16 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return null;
     }
 
+    public List<String> getObjectsNames() {
+        List<String> names = new ArrayList<String>();
+        for (GroupObjectEntity group : groups) {
+            for (ObjectEntity object : group.objects) {
+                names.add(object.getSID());
+            }
+        }
+        return names;
+    }
+
     public RegularFilterGroupEntity getRegularFilterGroup(int id) {
         for (RegularFilterGroupEntity filterGroup : regularFilterGroups) {
             if (filterGroup.getID() == id) {

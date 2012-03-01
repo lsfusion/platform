@@ -283,15 +283,14 @@ public class ScriptingFormEntity extends FormEntity {
         return property;
     }
 
-    public void addScriptedFilters(List<String> properties, List<List<String>> mappings) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedFilters(List<LP<?>> properties, List<List<String>> mappings) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
-            MappedProperty prop = getPropertyWithMapping(properties.get(i), mappings.get(i));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(prop.property, prop.mapping)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i)))));
         }
     }
 
-    public void addScriptedRegularFilterGroup(String sid, List<String> captions, List<String> keystrokes, List<String> properties, List<List<String>> mappings, List<Boolean> defaults) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedRegularFilterGroup(String sid, List<String> captions, List<String> keystrokes, List<LP<?>> properties, List<List<String>> mappings, List<Boolean> defaults) throws ScriptingErrorLog.SemanticErrorException {
         assert captions.size() == mappings.size() && keystrokes.size() == mappings.size() && properties.size() == mappings.size();
 
         RegularFilterGroupEntity regularFilterGroup = new RegularFilterGroupEntity(genID());
@@ -300,7 +299,6 @@ public class ScriptingFormEntity extends FormEntity {
         for (int i = 0; i < properties.size(); i++) {
             String caption = captions.get(i);
             KeyStroke keyStroke = KeyStroke.getKeyStroke(keystrokes.get(i));
-            MappedProperty property = getPropertyWithMapping(properties.get(i), mappings.get(i));
             Boolean setDefault = defaults.get(i);
 
             if (keyStroke == null) {
@@ -308,7 +306,7 @@ public class ScriptingFormEntity extends FormEntity {
             }
 
             regularFilterGroup.addFilter(
-                    new RegularFilterEntity(genID(), new NotNullFilterEntity(addPropertyObject(property.property, property.mapping)), caption, keyStroke),
+                    new RegularFilterEntity(genID(), new NotNullFilterEntity(addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i)))), caption, keyStroke),
                     setDefault
             );
         }

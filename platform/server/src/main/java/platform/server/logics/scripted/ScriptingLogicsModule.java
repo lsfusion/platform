@@ -71,7 +71,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
-    public enum GroupingType {SUM, MAX, MIN, CONCAT, UNIQUE}
+    public enum GroupingType {SUM, MAX, MIN, CONCAT, UNIQUE, EQUAL}
 
     private State currentState = null;
 
@@ -171,6 +171,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             getErrLog().emitParamCountError(getParser(), property, mapping.size());
         }
         return new MappedProperty(property, getMappingObjectsArray(form, mapping));
+    }
+
+    public List<String> getUsedObjectNames(List<String> context, List<Integer> usedParams) {
+        List<String> usedNames = new ArrayList<String>();
+        for (int usedIndex : usedParams) {
+            usedNames.add(context.get(usedIndex));
+        }
+        return usedNames;
     }
 
     public ValueClass findClassByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -868,6 +876,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             resultProp = addOGProp(null, genSID(), false, "", GroupType.STRING_AGG, orderProps.size(), !ascending /* todo [dale]: wtf? */, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.UNIQUE) {
             resultProp = addAGProp(null, false, getSID(), false, "", false, groupPropParamCount, resultParams.toArray());
+        } else if (type == GroupingType.EQUAL) {
+//            resultProp = addCGProp(null, false, getSID(), false, "", groupPropParamCount, resultParams.toArray());
         }
         return resultProp;
     }

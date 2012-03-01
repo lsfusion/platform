@@ -570,17 +570,17 @@ formPropertyName returns [String name]
 
 formFiltersList
 @init {
-	List<String> propertyNames = new ArrayList<String>();
+	List<LP<?>> properties = new ArrayList<LP<?>>();
 	List<List<String>> propertyMappings = new ArrayList<List<String>>();
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedFilters(propertyNames, propertyMappings);
+		$formStatement::form.addScriptedFilters(properties, propertyMappings);
 	}
 }
 	:	'FILTERS'
-		decl=formFilterDeclaration { propertyNames.add($decl.name); propertyMappings.add($decl.mapping);}
-	    (',' decl=formFilterDeclaration { propertyNames.add($decl.name); propertyMappings.add($decl.mapping);})*
+		decl=formFilterDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);}
+	    (',' decl=formFilterDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);})*
 	;
 	
 filterGroupDeclaration
@@ -588,7 +588,7 @@ filterGroupDeclaration
 	String filterGroupSID = null;
 	List<String> captions = new ArrayList<String>();
 	List<String> keystrokes = new ArrayList<String>();
-	List<String> properties = new ArrayList<String>();
+	List<LP<?>> properties = new ArrayList<LP<?>>();
 	List<List<String>> mappings = new ArrayList<List<String>>();
 	List<Boolean> defaults = new ArrayList<Boolean>();
 }
@@ -603,7 +603,7 @@ filterGroupDeclaration
 			{
 				captions.add($caption.val);
 				keystrokes.add($keystroke.val);
-				properties.add($filter.name);
+				properties.add($filter.property);
 				mappings.add($filter.mapping);
 				defaults.add($setDefault.isDefault);
 			}
@@ -611,8 +611,19 @@ filterGroupDeclaration
 	;
 
 	
-formFilterDeclaration returns [String name, List<String> mapping] 
-	:	'NOT' 'NULL' propDecl=formMappedProperty { $name = $propDecl.name; $mapping = $propDecl.mapping; }
+formFilterDeclaration returns [LP property, List<String> mapping] 
+@init {
+	List<String> context = null;
+	if (inPropParseState()) {
+		context = $formStatement::form.getObjectsNames();
+	}
+}
+@after {
+	if (inPropParseState()) {
+		$mapping = self.getUsedObjectNames(context, $expr.property.usedParams);
+	}	
+}
+	:	expr=propertyExpression[context, false] { if (inPropParseState()) $property = $expr.property.property; }
 	;
 	
 filterSetDefault returns [boolean isDefault = false]
@@ -855,6 +866,7 @@ groupingType returns [GroupingType type]
 	|	'MIN' 	{ $type = GroupingType.MIN; }
 	|	'CONCAT' { $type = GroupingType.CONCAT; }
 	|	'UNIQUE' { $type = GroupingType.UNIQUE; }
+	|	'EQUAL'	{ $type = GroupingType.EQUAL; }	
 	;
 
 

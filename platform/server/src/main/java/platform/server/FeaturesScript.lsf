@@ -45,7 +45,7 @@ CLASS STATIC storeSize 'Размер склада'
 // Common syntax:
 // name ['caption'] [(namedParam1, ..., namedParamN)] = propertyExpression [IN group] [PERSISTENT] [TOOLBAR | (SHORTCUT [propertyExpression] [DEFAULT])] [FIXEDCHARWIDTH <int value>] [MINCHARWIDTH <int value>] [MAXCHARWIDTH <int value>] [PREFCHARWIDTH <int value>]
 //                                                                                                 [IMAGE 'name'] [EDITKEY '<key code>' [SHOW | HIDE]] [AUTOSET] [CONFIRM]
-//                                                                                                 [REGEXP '<expression>' ['<regExp message>']] [LOGGABLE] [ECHO];
+//                                                                                                 [REGEXP '<expression>' ['<regExp message>']] [LOGGABLE] [ECHO] [INDEXED];
 // Если именованные параметры не указываются, то они выводятся из propertyExpression
 
 // Data property
@@ -308,10 +308,10 @@ PROPERTIES inQuantity(document, article), outQuantity(document, article), docume
 PROPERTIES ADDOBJ(document), ADDOBJ(article)
 
 // Filters list syntax:
-// FILTERS NOT NULL property1(param1, ..., paramN1),
+// FILTERS propertyExpression1,
 //         ...
-//         NOT NULL propertyK(param1, ..., paramNK)
-FILTERS NOT NULL name(article);
+//         propertyExpressionK
+FILTERS name(article);
 
 showForm(document) = ACTION FORM documentArticle OBJECTS document NEWSESSION MODAL;
 
@@ -375,7 +375,7 @@ PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
 PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, ssc2=storeSizeCode, storeIsHuge, storeIsHuge2
 PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
 FILTERGROUP filters1
-    FILTER 'Показывать только огромные склады' 'F10' NOT NULL storeIsHuge(s)
+    FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
 ORDER BY sname, foo, ssel
 ;
 
@@ -387,6 +387,12 @@ PROPERTIES(s) name, storeSizeName, storeIsHuge, storeIsHuge2
 //(EDIT | DIALOG | LIST) <className> OBJECT <objectName>
 EDIT store OBJECT s
 ;
+
+//////////////// INDEX STATEMENT //////////////////
+// Syntax:
+// INDEX propertyName1 [, ..., propertyNameN];
+INDEX quantity, store;
+
 
 //////////////// WINDOW STATEMENT /////////////////
 // Add new window statement

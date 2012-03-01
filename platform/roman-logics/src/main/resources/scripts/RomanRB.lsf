@@ -33,7 +33,7 @@ IMPORT RomanLogicsModule;
 //    OBJECTS s=sku
 //
 //    PROPERTIES (f, s) quantityFormedInvoiceSku, quantityProxyFormedInvoiceSku, quantityDirectFormedInvoiceSku
-//    FILTERS NOT NULL quantityFormedInvoiceSku(f, s)
+//    FILTERS quantityFormedInvoiceSku(f, s)
 //;
 //
 ////--------------------------------- Декларации ----------------------------------------------------------------------//
@@ -80,7 +80,7 @@ IMPORT RomanLogicsModule;
 //    OBJECTS dd=declarationDetail
 //    PROPERTIES (dd) barcodeSkuDeclarationDetail, quantityDeclarationDetail, ADDOBJ, delete
 //
-//    FILTERS NOT NULL inDeclarationDeclarationDetail(d, dd)
+//    FILTERS inDeclarationDeclarationDetail(d, dd)
 //    EDIT declaration OBJECT d
 //;
 //
@@ -92,7 +92,7 @@ IMPORT RomanLogicsModule;
 //
 //    OBJECTS dd=declarationDetail
 //    PROPERTIES (dd) barcodeSkuDeclarationDetail, quantityDeclarationDetail, ADDOBJ, delete
-//    FILTERS NOT NULL inDeclarationDeclarationDetail(d, dd)
+//    FILTERS inDeclarationDeclarationDetail(d, dd)
 //;
 //
 

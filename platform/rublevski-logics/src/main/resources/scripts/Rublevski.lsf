@@ -55,7 +55,7 @@ META metaCodeObjectDateProperty(prop, object, caption, type, group)
     FORM prop caption
     OBJECTS a=object FIXED PANEL, d=DATE
     PROPERTIES name(a) READONLY, showFormAdd##prop(a), OBJVALUE(d), prop##Date(a, d)
-    FILTERS NOT NULL prop##Date(a, d);
+    FILTERS prop##Date(a, d);
     DESIGN prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
     }
@@ -86,7 +86,7 @@ META metaCodeNameObjectDateProperty(prop, object, caption, type, group)
     FORM name##prop caption
     OBJECTS a=object FIXED PANEL, d=DATE
     PROPERTIES name(a) READONLY, showFormAddName##prop(a), OBJVALUE(d), name##prop##Date(a, d)
-    FILTERS NOT NULL prop##Date(a, d);
+    FILTERS prop##Date(a, d);
     DESIGN name##prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
     }
@@ -117,7 +117,7 @@ META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type, gro
     FORM prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
     PROPERTIES name(a) READONLY, name(b) READONLY, showFormAdd##prop(a, b), OBJVALUE(d), prop##Date(a, b, d)
-    FILTERS NOT NULL prop##Date(a, b, d);
+    FILTERS prop##Date(a, b, d);
     DESIGN prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
         PROPERTY(name(b)) { focusable = FALSE; }
@@ -155,7 +155,7 @@ META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type,
     FORM name##prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
     PROPERTIES name(a) READONLY, name(b) READONLY,  showFormAddName##prop(a, b), OBJVALUE(d), name##prop##Date(a, b, d)
-    FILTERS NOT NULL prop##Date(a, b, d);
+    FILTERS prop##Date(a, b, d);
     DESIGN name##prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
         PROPERTY(name(b)) { focusable = FALSE; }
@@ -189,7 +189,7 @@ META metaCodeTripleObjectDateProperty(prop, object1, object2, object3, caption, 
     FORM prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
     PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAdd##prop(a, b, c), OBJVALUE(d), prop##Date(a, b, c, d)
-    FILTERS NOT NULL prop##Date(a, b, c, d);
+    FILTERS prop##Date(a, b, c, d);
     DESIGN prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
         PROPERTY(name(b)) { focusable = FALSE; }
@@ -229,7 +229,7 @@ META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, capti
     FORM name##prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
     PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAddName##prop(a, b, c), OBJVALUE(d), name##prop##Date(a, b, c, d)
-    FILTERS NOT NULL prop##Date(a, b, c, d);
+    FILTERS prop##Date(a, b, c, d);
     DESIGN name##prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
         PROPERTY(name(b)) { focusable = FALSE; }
@@ -1172,9 +1172,9 @@ FORM employee 'Сотрудник'
 
     PROPERTIES(ds, e)  departmentStoreEmployee
 
-    FILTERS NOT NULL   inStoreTypeTradingNetwork (st, t),
-            NOT NULL   inStoreTypeStore (st, s),
-            NOT NULL   inStoreDepartment (s, ds)
+    FILTERS   inStoreTypeTradingNetwork (st, t),
+              inStoreTypeStore (st, s),
+              inStoreDepartment (s, ds)
 
     EDIT employee OBJECT e
 ;
@@ -1186,7 +1186,7 @@ FORM employees 'Сотрудники'
 
     OBJECTS ds=departmentStore
     PROPERTIES(ds) READONLY name, nameStoreDepartmentStore
-    FILTERS NOT NULL departmentStoreEmployee(ds, e)
+    FILTERS departmentStoreEmployee(ds, e)
 ;
 
 // ----------------------------------- Цех ----------------------------------- //
@@ -1340,7 +1340,7 @@ showFormAddSuppliersRangeItem 'Добавить' (item) = ACTION FORM addSupplie
 FORM suppliersRangeItem 'Дабавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE
     PROPERTIES nameAttributeItem(i) READONLY, showFormAddSuppliersRangeItem(i), OBJVALUE(d), dataSuppliersRangeItemDate(i, d), dataActingSuppliersRangeItemDate(i, d)
-    FILTERS NOT NULL suppliersRangeItemDate(i, d)
+    FILTERS suppliersRangeItemDate(i, d)
 ;
 
 DESIGN suppliersRangeItem FROM DEFAULT {
@@ -1385,7 +1385,7 @@ showFormAddRetailRangeItem 'Добавить' (item) = ACTION FORM addRetailRang
 FORM retailRangeItem 'Дабавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE
     PROPERTIES nameAttributeItem(i) READONLY, showFormAddRetailRangeItem(i), OBJVALUE(d), dataRetailRangeItemDate(i, d), dataActingRetailRangeItemDate(i, d)
-    FILTERS NOT NULL retailRangeItemDate(i, d)
+    FILTERS retailRangeItemDate(i, d)
 ;
 
 DESIGN retailRangeItem FROM DEFAULT {
@@ -1412,10 +1412,10 @@ FORM tax 'Налог'
 
     PROPERTIES(ra, s) inRangeStore
 
-    FILTERS NOT NULL  inRangeRate(ra, rt),
-            NOT NULL  inTaxRange(t, ra)
+    FILTERS  inRangeRate(ra, rt),
+             inTaxRange(t, ra)
     FILTERGROUP filters6
-        FILTER 'Показывать магазины только для данного налога' 'F10' NOT NULL inRangeStore(ra, s) DEFAULT
+        FILTER 'Показывать магазины только для данного налога' 'F10' inRangeStore(ra, s) DEFAULT
 
     EDIT tax OBJECT t
 ;
@@ -1446,8 +1446,8 @@ FORM taxes 'Налоги'
 
     PROPERTIES(ra, s) READONLY inRangeStore
 
-    FILTERS NOT NULL  inTaxRange(t, ra),
-            NOT NULL  inRangeStore(ra, s)
+    FILTERS  inTaxRange(t, ra),
+             inRangeStore(ra, s)
 ;
 
 
@@ -1524,7 +1524,7 @@ showFormAddRangeWare 'Добавить' (ware) = ACTION FORM addRangeWare OBJECT
 FORM rangeWare 'Дабавить Шкалу'
 OBJECTS w=ware FIXED PANEL, d=DATE
 PROPERTIES name(w) READONLY, showFormAddRangeWare(w), OBJVALUE(d), dataRangeWareDate(w, d), dataActingRateRangeWareDate(w, d)
-FILTERS NOT NULL rangeWareDate(w, d);
+FILTERS rangeWareDate(w, d);
 
 DESIGN rangeWare FROM DEFAULT {
 PROPERTY(name(w)) { focusable = FALSE; }
@@ -1551,10 +1551,10 @@ OBJECTS i=item FIXED PANEL, b=barcode
 TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
 OBJECTS dt=DATE FIXED PANEL, sp=supplier FIXED PANEL, d=departmentStore
 PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
-FILTERS NOT NULL stringEqualsAll(a)
-FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
-FILTERS NOT NULL inStoreTypeStore (st, s)
-FILTERS NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
+FILTERS stringEqualsAll(a)
+FILTERS inStoreTypeTradingNetwork (st, t)
+FILTERS inStoreTypeStore (st, s)
+FILTERS inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
 PROPERTIES (i) captionItem, nameAttributeItem, nameCashAttributeItem, nameScalesAttributeItem, canonicalNameItemGroupSku, isManufacturedItem,
  nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i),
@@ -1605,9 +1605,9 @@ PROPERTIES retailPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF retailPriceItemDe
 
 PROPERTIES(i) isFixPriceItem, banMarkdownItem, nameWareItem SHOWIF toShowWare(i), quantityDiscountItem, fixPriceItem, namebanDiscountItem, showFormNamebanDiscountItem
 
-FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
-FILTERS NOT NULL inStoreTypeStore (st, s)
-FILTERS NOT NULL inSkuBarcode(i, b)
+FILTERS inStoreTypeTradingNetwork (st, t)
+FILTERS inStoreTypeStore (st, s)
+FILTERS inSkuBarcode(i, b)
 PROPERTIES(b) ADDOBJ, delete
 EDIT item OBJECT i
 EDIT barcode OBJECT b;
@@ -1717,13 +1717,13 @@ inItemGroupSku(itemGroup, sku) = itemGroupSku(sku) == itemGroup;
 FORM items 'Товары'
     TREE treeGroup a=STRING[3], g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY OBJVALUE(a), name(g)
-    FILTERS NOT NULL stringEqualsAll(a)
+    FILTERS stringEqualsAll(a)
     ORDER BY name
 
     OBJECTS i=item
     PROPERTIES(i) READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUnitOfMeasureItem
     PROPERTIES(i) ADDFORM, EDITFORM, delete
-    FILTERS NOT NULL hasParentOrNullItemGroupSku(i, g)
+    FILTERS hasParentOrNullItemGroupSku(i, g)
     ORDER BY nameAttributeItem
 ;
 
@@ -1759,7 +1759,7 @@ FORM itemGroups 'Товарные группы'
     TREE treeGroups a=STRING[3], g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY OBJVALUE(a), name(g), extSID(g)
     PROPERTIES(g)       addItemGroup, EDITFORM
-    FILTERS NOT NULL stringEqualsAll(a)
+    FILTERS stringEqualsAll(a)
     ORDER BY name
 
     OBJECTS cg=itemGroup
@@ -1772,9 +1772,9 @@ FORM itemGroups 'Товарные группы'
     ORDER BY canonicalNameItemGroup
 
     FILTERGROUP filters
-        FILTER 'Все листья' 'F10' NOT NULL hasParentAndLeafOrNullItemGroup(cg, g) DEFAULT
-        FILTER 'Всех потомков' 'F9' NOT NULL hasParentOrNullItemGroup(cg, g)
-        FILTER 'Только непосредственных потомков' 'F8' NOT NULL inParentItemGroupItemGroup(cg, g)
+        FILTER 'Все листья' 'F10' hasParentAndLeafOrNullItemGroup(cg, g) DEFAULT
+        FILTER 'Всех потомков' 'F9' hasParentOrNullItemGroup(cg, g)
+        FILTER 'Только непосредственных потомков' 'F8' inParentItemGroupItemGroup(cg, g)
 ;
 
 DESIGN itemGroups FROM DEFAULT {
@@ -1813,7 +1813,7 @@ PROPERTIES(a, i) itemAssortment
 PROPERTIES(i) nameAttributeItem
 PROPERTIES(i) ADDSESSIONFORM, EDITSESSIONFORM, delete
 FILTERGROUP assortment
-    FILTER 'Только товары ассортимента' 'F10' NOT NULL itemAssortment(a, i) DEFAULT
+    FILTER 'Только товары ассортимента' 'F10' itemAssortment(a, i) DEFAULT
 EDIT assortment OBJECT a;
 
 FORM assortments 'Ассортименты'
@@ -1821,7 +1821,7 @@ OBJECTS a=assortment, i=item
 PROPERTIES(a) READONLY name, infoAssortment
 PROPERTIES(a) ADDFORM, EDITFORM, delete
 PROPERTIES(i) READONLY nameAttributeItem
-FILTERS NOT NULL itemAssortment(a, i);
+FILTERS itemAssortment(a, i);
 
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
 
@@ -1853,9 +1853,9 @@ FORM committee 'Комиссия'
 
     PROPERTIES(c, e) inCommitteeEmployee
 
-    FILTERS NOT NULL inDepartmentStoreEmployeeCommittee(e, c)
+    FILTERS inDepartmentStoreEmployeeCommittee(e, c)
     FILTERGROUP filters6
-        FILTER 'Показывать только членов комиссии' 'F10' NOT NULL inCommitteeEmployee(c, e)
+        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
 
     EDIT committee OBJECT c
     EDIT inventoryCommittee OBJECT c
@@ -1870,7 +1870,7 @@ FORM employeesCommittees 'Комиссии'
     OBJECTS e=employee
     PROPERTIES(e) READONLY userFirstName, userLastName
 
-    FILTERS NOT NULL inCommitteeEmployee(c, e)
+    FILTERS inCommitteeEmployee(c, e)
 ;
 
 // ----------------------------------- Банк ------------------------------------------- //
@@ -2138,20 +2138,20 @@ FORM supplier 'Поставщик'
     PROPERTIES(s,c) equalsSupplierContract
     PROPERTIES(s,a) equalsLegalEntityAccount
     //PROPERTIES(s,l) equalsLegalEntityLicense
-    FILTERS NOT NULL stringEqualsAll(y),
-        NOT NULL inStoreTypeTradingNetwork (st, t),
-        NOT NULL inStoreTypeStore (st, so),
-        NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, so, d),
-        NOT NULL inSupplierContract(s, c),
-        NOT NULL inSupplierAccount(s, a),
-        NOT NULL inSupplierLicense(s, l)
+    FILTERS stringEqualsAll(y),
+        inStoreTypeTradingNetwork (st, t),
+        inStoreTypeStore (st, so),
+        inTradingNetworkStoreTypeStoreDepartment(t, st, so, d),
+        inSupplierContract(s, c),
+        inSupplierAccount(s, a),
+        inSupplierLicense(s, l)
 
     FILTERGROUP filters9
-        FILTER 'Показывать только с заполненными полями' 'F10' NOT NULL overrideSupplierDepartmentStoreDate(s, d, dt)
-        FILTER 'Показывать только с заполненным полем: e-mail' 'F9' NOT NULL emailOrderSupplierDepartmentStore(s, d)
-        FILTER 'Показывать только с заполненным полем: контактная инф-ия' 'F8' NOT NULL contactSupplierDepartmentStore(s, d)
-        FILTER 'Показывать только с заполненным полем: контролировать пост-ка' 'F7' NOT NULL isYesControlSupplierDepartmentStore(s, d)
-        FILTER 'Показывать только с заполненным полем: обязателен заказ поставщику' 'F6' NOT NULL isYesSureSupplierDepartmentStoreVal(s, d, dt)
+        FILTER 'Показывать только с заполненными полями' 'F10' overrideSupplierDepartmentStoreDate(s, d, dt)
+        FILTER 'Показывать только с заполненным полем: e-mail' 'F9' emailOrderSupplierDepartmentStore(s, d)
+        FILTER 'Показывать только с заполненным полем: контактная инф-ия' 'F8' contactSupplierDepartmentStore(s, d)
+        FILTER 'Показывать только с заполненным полем: контролировать пост-ка' 'F7' isYesControlSupplierDepartmentStore(s, d)
+        FILTER 'Показывать только с заполненным полем: обязателен заказ поставщику' 'F6' isYesSureSupplierDepartmentStoreVal(s, d, dt)
 
     EDIT supplier OBJECT s
 ;
@@ -2226,9 +2226,9 @@ FORM company 'Компания'
     PROPERTIES(co, s)    dataOverrideContractCompanySupplier
     PROPERTIES(co, s, c) equalsCompanySupplierContract
 
-    FILTERS NOT NULL inCompanyContract(co, c),
-        NOT NULL inCompanyAccount(co, a),
-        NOT NULL inSupplierContract(s, c)
+    FILTERS inCompanyContract(co, c),
+        inCompanyAccount(co, a),
+        inSupplierContract(s, c)
 
     EDIT company OBJECT co
 ;
@@ -2605,13 +2605,13 @@ FORM orderSupplier 'Заказ поставщику'
 
     PROPERTIES(o)          fillInOrderSupplier TODRAW i FORCE PANEL
 
-    FILTERS NOT NULL inItemGroupSku(g, i)
+    FILTERS inItemGroupSku(g, i)
 
-    FILTERS NOT NULL isSupplierItemDepartmentOrderSupplier(o, i),
-            NOT NULL isBanSupplierItemDepartmentOrderSupplier(o, i)
+    FILTERS isSupplierItemDepartmentOrderSupplier(o, i),
+            isBanSupplierItemDepartmentOrderSupplier(o, i)
 
     FILTERGROUP filters1
-        FILTER 'Показывать только заказанные позиции' 'F10' NOT NULL sumQuantityItemOrderSupplier(o, i) DEFAULT
+        FILTER 'Показывать только заказанные позиции' 'F10' sumQuantityItemOrderSupplier(o, i) DEFAULT
 
     EDIT orderSupplier OBJECT o
 ;
@@ -2673,7 +2673,7 @@ FORM orderSuppliers 'Заказы поставщику'
     PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, priceSupplierItemOrderSupplier,
                                fullSumItemOrderSupplier
 
-    FILTERS NOT NULL sumQuantityItemOrderSupplier(o, i)
+    FILTERS sumQuantityItemOrderSupplier(o, i)
 ;
 
 DESIGN orderSuppliers FROM DEFAULT{
@@ -2703,14 +2703,14 @@ FORM timeTableDate 'График поставок'
     PROPERTIES(p) nextDateOrder, createOrderSupplier
     PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL
     PROPERTIES(s, d, t) READONLY quantityOrderOrderSupplier, quantitySupplyOrderSupplier, quantityOrderPreliminaryOrder, quantitySupplyPreliminaryOrder
-    FILTERS NOT NULL isSupplierDepartmentStore(d, s, p)
+    FILTERS isSupplierDepartmentStore(d, s, p)
     FILTERGROUP filters
-        FILTER 'С предварительным заказом на дату заказа' 'F10' NOT NULL quantityOrderPreliminaryOrder(s, d, t)
-        FILTER 'С предварительным заказом на дату поставки' 'F10' NOT NULL quantitySupplyPreliminaryOrder(s, d, t)
-        FILTER 'С заказом на дату заказа' 'F10' NOT NULL quantityOrderOrderSupplier(s, d, t)
-        FILTER 'С заказом на дату поставки' 'F10' NOT NULL quantitySupplyOrderSupplier(s, d, t)
+        FILTER 'С предварительным заказом на дату заказа' 'F10' quantityOrderPreliminaryOrder(s, d, t)
+        FILTER 'С предварительным заказом на дату поставки' 'F10' quantitySupplyPreliminaryOrder(s, d, t)
+        FILTER 'С заказом на дату заказа' 'F10' quantityOrderOrderSupplier(s, d, t)
+        FILTER 'С заказом на дату поставки' 'F10' quantitySupplyOrderSupplier(s, d, t)
     FILTERGROUP filters2
-        FILTER 'Отображать заказы после даты' 'F10' NOT NULL isOrderDatePreliminaryOrder(p, t) DEFAULT;
+        FILTER 'Отображать заказы после даты' 'F10' isOrderDatePreliminaryOrder(p, t) DEFAULT;
 ;
 
 DESIGN timeTableDate FROM DEFAULT {
@@ -2739,19 +2739,19 @@ FORM departmentStore 'Отдел магазина'
     OBJECTS e=employee
     PROPERTIES(e) READONLY userFirstName, userLastName
     PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
-    FILTERS NOT NULL departmentStoreEmployee(d, e)
+    FILTERS departmentStoreEmployee(d, e)
 
     OBJECTS t=tradingSquare
     PROPERTIES(t) squareTradingSquare, dateTradingSquare
     PROPERTIES(t) ADDOBJ, delete
-    FILTERS NOT NULL inTradingSquareDepartmentStore(d, t)
+    FILTERS inTradingSquareDepartmentStore(d, t)
 
     OBJECTS d2=departmentStore
     PROPERTIES(d2) READONLY name SHOWIF isManufactory(d)
     PROPERTIES(d, d2) rawDepartmentStore SHOWIF isManufactory(d)
-    FILTERS NOT NULL inRawDepartmentStore(d, d2)
+    FILTERS inRawDepartmentStore(d, d2)
     FILTERGROUP rawFilter
-        FILTER 'Подразделения из которых полуется сырье' 'F10' NOT NULL rawDepartmentStore(d, d2)
+        FILTER 'Подразделения из которых полуется сырье' 'F10' rawDepartmentStore(d, d2)
 
     EDIT departmentStore OBJECT d
 ;
@@ -2793,11 +2793,11 @@ DESIGN departmentStore FROM DEFAULT {
 FORM departmentStores 'Отделы магазинов'
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS NOT NULL stringEqualsAll(a), NOT NULL inStoreTypeTradingNetwork (st, t), NOT NULL inStoreTypeStore(st, s)
+    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore(st, s)
 
     OBJECTS d=departmentStore
     PROPERTIES(d) READONLY name
-    FILTERS NOT NULL inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
+    FILTERS inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
 
     DIALOG departmentStore OBJECT d
 ;
@@ -2819,7 +2819,7 @@ FORM store 'Магазин'
     OBJECTS d=departmentStore
     PROPERTIES(d) READONLY name, defaultTradingSquareDepartmentStore
     PROPERTIES(d)          ADDSESSIONFORM, EDITSESSIONFORM, delete
-    FILTERS NOT NULL inStoreDepartment(s, d)
+    FILTERS inStoreDepartment(s, d)
 
     EDIT store OBJECT s
 ;
@@ -2831,7 +2831,7 @@ FORM tradingNetwork 'Торговая сеть'
     OBJECTS s=storeType
     PROPERTIES(s) name
     PROPERTIES(s) ADDOBJ, delete
-    FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
+    FILTERS inStoreTypeTradingNetwork(s, n)
 
     EDIT tradingNetwork OBJECT n
 ;
@@ -2840,19 +2840,19 @@ FORM stores 'Магазины'
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st)//, dumb1(st)
 
-    FILTERS NOT NULL stringEqualsAll(a)
-    FILTERS NOT NULL inStoreTypeTradingNetwork (st, t)
+    FILTERS stringEqualsAll(a)
+    FILTERS inStoreTypeTradingNetwork (st, t)
 
     PROPERTIES(t)          addT=ADDFORM FORCE PANEL, editT=EDITFORM FORCE PANEL, delete FORCE PANEL//FORCE PANEL
 
     OBJECTS s=store
     PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore
     PROPERTIES(s)          ADDFORM, EDITFORM, delete
-    FILTERS NOT NULL inTradingNetworkStoreTypeStore(t, st, s)
+    FILTERS inTradingNetworkStoreTypeStore(t, st, s)
 
     OBJECTS d=departmentStore
     PROPERTIES(d) READONLY name
-    FILTERS NOT NULL inStoreDepartment(s, d)
+    FILTERS inStoreDepartment(s, d)
 ;
 
 DESIGN stores FROM DEFAULT {
@@ -2891,7 +2891,7 @@ DESIGN stores FROM DEFAULT {
 //
 //    OBJECTS s=storeType
 //    PROPERTIES(s) READONLY name
-//    FILTERS NOT NULL inStoreTypeTradingNetwork(s, n)
+//    FILTERS inStoreTypeTradingNetwork(s, n)
 //;
 
 //---------------------------- Модели оборудования ----------------------------------------//
@@ -3073,7 +3073,7 @@ PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferG
 PROPERTIES(s)   numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
                 dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales, ADDOBJ, delete
 FILTERGROUP filters1
-    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupScalesScales(grs, s) DEFAULT
+    FILTER 'Показывать только для данной группы' 'F10' isGroupScalesScales(grs, s) DEFAULT
 EDIT groupScales OBJECT grs;
 
 FORM groupsScales 'Группы весов'
@@ -3082,7 +3082,7 @@ PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, 
 PROPERTIES(grs) ADDFORM, EDITFORM, delete
 PROPERTIES(s)   READONLY numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
                 dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales
-FILTERS NOT NULL isGroupScalesScales(grs, s);
+FILTERS isGroupScalesScales(grs, s);
 
 FORM groupCash 'Группа касс'
 OBJECTS grc=groupCash FIXED PANEL
@@ -3091,7 +3091,7 @@ PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferG
 PROPERTIES(c)   numberCash, descriptionMachinery, nameGroupMachineryCash, portMachinery, useMachinery, directoryCash, nameCashModelCash,
                 dateCash, nppCash, statusCash, resultCash, ADDOBJ, delete
 FILTERGROUP filters2
-    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupCashCash(grc, c) DEFAULT
+    FILTER 'Показывать только для данной группы' 'F10' isGroupCashCash(grc, c) DEFAULT
 EDIT groupCash OBJECT grc;
 
 
@@ -3101,7 +3101,7 @@ PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery,
 PROPERTIES(grc)  ADDFORM, EDITFORM, delete
 PROPERTIES(c)    READONLY numberCash, descriptionMachinery, nameGroupMachineryCash, portMachinery, useMachinery, directoryCash, nameCashModelCash,
                  dateCash, nppCash, statusCash, resultCash
-FILTERS NOT NULL isGroupCashCash(grc, c);
+FILTERS isGroupCashCash(grc, c);
 
 FORM groupCheck 'Группа прайс чекеров'
 OBJECTS grch=groupCheck FIXED PANEL
@@ -3109,7 +3109,7 @@ OBJECTS ch=check
 PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
 PROPERTIES(ch)   descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery, ADDOBJ, delete
 FILTERGROUP filters3
-    FILTER 'Показывать только для данной группы' 'F10' NOT NULL isGroupCheckCheck(grch, ch) DEFAULT
+    FILTER 'Показывать только для данной группы' 'F10' isGroupCheckCheck(grch, ch) DEFAULT
 EDIT groupCheck OBJECT grch;
 
 FORM groupsCheck 'Группы прайс чекеров'
@@ -3117,7 +3117,7 @@ OBJECTS grch=groupCheck, ch=check
 PROPERTIES(grch) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
 PROPERTIES(grch) ADDFORM, EDITFORM, delete
 PROPERTIES(ch)   READONLY descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery
-FILTERS NOT NULL isGroupCheckCheck(grch, ch);
+FILTERS isGroupCheckCheck(grch, ch);
 
 // ----------------------------------- Группы пользователей -------------------------------------------------- //
 
@@ -3168,11 +3168,11 @@ PROPERTIES(e, c) includedEmployeeCash, dateFromEmployeeCash, dateToEmployeeCash
 PROPERTIES(d)    READONLY nameStoreDepartmentStore, name
 PROPERTIES(e, d) dateFromEmployeeDepartmentStore, dateToEmployeeDepartmentStore, inEmployeeDepartmentStore
 FILTERGROUP filters1
-    FILTER 'Показывать кассы только для данного пользователя' 'F10' NOT NULL includedEmployeeCash(e, c) DEFAULT
+    FILTER 'Показывать кассы только для данного пользователя' 'F10' includedEmployeeCash(e, c) DEFAULT
 FILTERGROUP filters2
-    FILTER 'Показывать сотрудников только для данной группы пользователей' 'F9' NOT NULL isGroupUserEmployee(gru, e) DEFAULT
+    FILTER 'Показывать сотрудников только для данной группы пользователей' 'F9' isGroupUserEmployee(gru, e) DEFAULT
 FILTERGROUP filters3
-    FILTER 'Показывать подразделения только для данного пользователя' 'F8' NOT NULL inEmployeeDepartmentStore(e, d) DEFAULT
+    FILTER 'Показывать подразделения только для данного пользователя' 'F8' inEmployeeDepartmentStore(e, d) DEFAULT
 EDIT groupUser OBJECT gru;
 
 DESIGN groupUser FROM DEFAULT {
@@ -3198,9 +3198,9 @@ PROPERTIES(c)    READONLY nameStoreDepartmentStoreCash, nameDepartmentStoreCash,
 PROPERTIES(e, c) includedEmployeeCash, dateFromEmployeeCash, dateToEmployeeCash
 PROPERTIES(d)    READONLY nameStoreDepartmentStore, name
 PROPERTIES(e, d) READONLY dateFromEmployeeDepartmentStore, dateToEmployeeDepartmentStore, inEmployeeDepartmentStore
-FILTERS NOT NULL includedEmployeeCash(e, c),
-        NOT NULL isGroupUserEmployee(gru, e),
-        NOT NULL inEmployeeDepartmentStore(e, d);
+FILTERS includedEmployeeCash(e, c),
+        isGroupUserEmployee(gru, e),
+        inEmployeeDepartmentStore(e, d);
 
 DESIGN groupsUser FROM DEFAULT {
     main{
@@ -3255,11 +3255,11 @@ PROPERTIES(i)      nameAttributeItem, shortNameUnitOfMeasureItem, nameBrandItem
 PROPERTIES(dep, c) InDepartmentStoreCutting
 PROPERTIES(i, c)   inItemCutting
 
-FILTERS NOT NULL isCuttingDetailCutting(c, d)
+FILTERS isCuttingDetailCutting(c, d)
 FILTERGROUP filters7
-    FILTER 'Показывать подразделения только для данной карты' 'F10' NOT NULL InDepartmentStoreCutting(dep, c) DEFAULT
+    FILTER 'Показывать подразделения только для данной карты' 'F10' InDepartmentStoreCutting(dep, c) DEFAULT
 FILTERGROUP filters8
-    FILTER 'Показывать товар только для данной карты' 'F9' NOT NULL inItemCutting(i, c) DEFAULT
+    FILTER 'Показывать товар только для данной карты' 'F9' inItemCutting(i, c) DEFAULT
 
 EDIT cutting OBJECT c;
 
@@ -3292,9 +3292,9 @@ FORM cuttings 'Карты проработки'
 
     PROPERTIES(i, c) READONLY inItemCutting
 
-    FILTERS NOT NULL   isCuttingDetailCutting(c, d),
-            NOT NULL   InDepartmentStoreCutting(dep, c),
-            NOT NULL   inItemCutting(i, c)
+    FILTERS   isCuttingDetailCutting(c, d),
+              InDepartmentStoreCutting(dep, c),
+              inItemCutting(i, c)
     ORDER BY           nameStoreDepartmentStore, sidCutting, captionItemDetailCutting, name
 ;
 
@@ -3343,7 +3343,7 @@ FORM recipe 'Рецепт блюда'
     OBJECTS rd=recipeDetail
     PROPERTIES(rd) nameComponentRecipeDetail, normQuantityRecipeDetail, ADDOBJ, delete
 
-    FILTERS NOT NULL inRecipeRecipeDetail(r, rd)
+    FILTERS inRecipeRecipeDetail(r, rd)
 
     EDIT recipe OBJECT r
 ;
@@ -3356,7 +3356,7 @@ FORM recipes 'Рецепты блюд'
     OBJECTS rd=recipeDetail
     PROPERTIES(rd) READONLY nameComponentRecipeDetail, normQuantityRecipeDetail
 
-    FILTERS NOT NULL   inRecipeRecipeDetail(r, rd)
+    FILTERS   inRecipeRecipeDetail(r, rd)
 ;
 
 
@@ -3385,7 +3385,7 @@ PROPERTIES(gr) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, t
 PROPERTIES(st) valueStage
 PROPERTIES(st, gr)  barcodeBarcodeStageGroupMachinery, priceStageGroupMachinery, dateStageGroupMachinery,
                     timeStageGroupMachinery, stockStageGroupMachinery
-FILTERS  NOT NULL barcodeStageGroupMachinery(st, gr);
+FILTERS  barcodeStageGroupMachinery(st, gr);
 
 //---------------------------- Проведение инвентаризации ----------------------------------------//
 
@@ -3694,9 +3694,9 @@ FORM nameDepartmentByInventory 'Подразделения для инвента
     TREE treeStore t=tradingNetwork, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY name(t), name(st), name(s), name(ds)
 
-    FILTERS NOT NULL inStoreTypeTradingNetwork (st, t),
-            NOT NULL inStoreTypeStore (st, s),
-            NOT NULL inStoreDepartment (s, ds)
+    FILTERS inStoreTypeTradingNetwork (st, t),
+            inStoreTypeStore (st, s),
+            inStoreDepartment (s, ds)
 
     PROPERTIES (ds, in) includeDepartmentStoreInventory, nameTypeOfAdditionDepartmentStoreInventoryOver
 
@@ -3713,7 +3713,7 @@ FORM collationSheetItem 'Товары для добавления в сличи�
     OBJECTS i=item
     PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem
     PROPERTIES(cs, i) inManyCollationSheetItem
-    FILTERS NOT NULL  inItemGroupSku(g, i)
+    FILTERS  inItemGroupSku(g, i)
 ;
 
 DESIGN collationSheetItem FROM DEFAULT {
@@ -3738,9 +3738,9 @@ FORM listInventory 'Опись'
     OBJECTS         e=employee
     PROPERTIES (e)  commonName
 
-    FILTERS NOT NULL inListInventoryPageList(li, pl),
-        NOT NULL inPageListDetailPage(pl, dp),
-        NOT NULL inCommitteeListInventoryEmployee(li, e)
+    FILTERS inListInventoryPageList(li, pl),
+        inPageListDetailPage(pl, dp),
+        inCommitteeListInventoryEmployee(li, e)
 EDIT listInventory OBJECT li
 ;
 
@@ -3792,16 +3792,16 @@ FORM inventory 'Инвентаризация'
                      priceCollationSheetItem(cs, i) HIGHLIGHTIF notEqualsPriceByCollationSheetItem(cs, i)
     PROPERTIES(cs, i) totalCollationSheetItem, totalBalansCollationSheetItem, shortageTotalCollationSheetItem
 
-    FILTERS NOT NULL inInventoryDepartmentStoreListInventoryPageListDetailPage(in, ds, li, pl, dp),
-            NOT NULL inInventoryListInventory(in, li),
-            NOT NULL inDepartmentStoreListInventory(ds, li),
-            NOT NULL inListInventoryPageList(li, pl),
-            NOT NULL includeDepartmentStoreInventory(ds, in),
-            NOT NULL inInventoryCollationSheet(in,cs),
-            NOT NULL includeCollationSheetItem(cs, i)
+    FILTERS inInventoryDepartmentStoreListInventoryPageListDetailPage(in, ds, li, pl, dp),
+            inInventoryListInventory(in, li),
+            inDepartmentStoreListInventory(ds, li),
+            inListInventoryPageList(li, pl),
+            includeDepartmentStoreInventory(ds, in),
+            inInventoryCollationSheet(in,cs),
+            includeCollationSheetItem(cs, i)
 
     FILTERGROUP notEqualsPriceFilters
-            FILTER 'Показать товар с разными ценами' 'F10' NOT NULL notEqualsPriceByCollationSheetItem(cs, i)
+            FILTER 'Показать товар с разными ценами' 'F10' notEqualsPriceByCollationSheetItem(cs, i)
 
     EDIT inventory OBJECT in
 ;
@@ -4011,7 +4011,7 @@ FORM specification 'Счет-фактура'
                                     minReserveItemDepartmentDetailSpec(d), maxReserveItemDepartmentDetailSpec(d)
 
     PROPERTIES addSpecificationDetailBarcode(sp) TODRAW d
-    FILTERS NOT NULL inSpecificationDetailSpec(sp, d)
+    FILTERS inSpecificationDetailSpec(sp, d)
 
     EDIT specification OBJECT sp
 ;
@@ -4034,8 +4034,8 @@ FORM specifications 'Счет-фактуры'
     ORDER BY  dateSpecification
 
     FILTERGROUP filters6
-            FILTER 'Просроченные с/ф' 'F10' NOT NULL overdueSpecification(sp)
-            FILTER 'Непросроченные с/ф' 'F9' NOT NULL noOverdueSpecification(sp)
+            FILTER 'Просроченные с/ф' 'F10' overdueSpecification(sp)
+            FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp)
 ;
 
 
@@ -4065,7 +4065,7 @@ OBJECTS r=cashReport FIXED PANEL
 OBJECTS d=cashDocument
 PROPERTIES (r) numberCashReport, startDateCashReport, endDateCashReport
 PROPERTIES (d) objectClassName, numberCashDocument, infoCashDocument, sumCashDocument, ADDOBJ, delete
-FILTERS NOT NULL inCashReportDocument(r,d)
+FILTERS inCashReportDocument(r,d)
 EDIT cashReport OBJECT r;
 
 FORM cashReports 'Кассовые отчеты'
@@ -4073,7 +4073,7 @@ OBJECTS r=cashReport, d=cashDocument
 PROPERTIES (r) startDateCashReport, endDateCashReport
 PROPERTIES (r) ADDFORM, EDITFORM, delete
 PROPERTIES (d) READONLY numberCashDocument, sumCashDocument
-FILTERS NOT NULL inCashReportDocument(r,d);
+FILTERS inCashReportDocument(r,d);
 
 //---------------------------- Приход товара от поставщика ----------------------------------------//
 CLASS batch 'Партия';
@@ -4332,9 +4332,9 @@ FORM ordersShipment 'Заказы'
     PROPERTIES (o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
           nameSupplierOrderSupplier, completePercentageOrderSupplier, fullSumOrderSupplier, timeCreated, nameUserCreated
 
-    FILTERS NOT NULL isSupplierShipmentOrder (s, o),
-            NOT NULL isDepartmentStoreShipmentOrder (s, o),
-            NOT NULL isAvailableOrderShipment (s, o)
+    FILTERS isSupplierShipmentOrder (s, o),
+            isDepartmentStoreShipmentOrder (s, o),
+            isAvailableOrderShipment (s, o)
 ;
 
 showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OBJECTS s MODAL SHORTCUT ordersShipment DEFAULT;
@@ -4359,7 +4359,7 @@ FORM shipment 'Поставка'
 
     PROPERTIES addShipmentDetailBarcode(s) TODRAW d
 
-    FILTERS NOT NULL inShipmentShipmentDetail(s, d)
+    FILTERS inShipmentShipmentDetail(s, d)
 
     OBJECTS i=item
     PROPERTIES (i) nameAttributeItem
@@ -4419,7 +4419,7 @@ FORM shipments 'Поставки'
                             nameWareShipmentDetail, dataSuppliersRangeShipmentDetail, dataRetailRangeShipmentDetail,
                             retailMarkupShipmentDetail, oldRetailPriceShipmentDetail, retailPriceShipmentDetail
 
-    FILTERS NOT NULL inShipmentShipmentDetail(s, d)
+    FILTERS inShipmentShipmentDetail(s, d)
 ;
 
 DESIGN shipments FROM DEFAULT {
@@ -4504,7 +4504,7 @@ FORM writeOff 'Списание'
                                     maxReserveItemDepartmentWriteOff(d)
 
     PROPERTIES addWriteOffDetailBarcode(w) TODRAW d
-    FILTERS NOT NULL inWriteOffWriteOffDetail(w, d)
+    FILTERS inWriteOffWriteOffDetail(w, d)
 
     EDIT writeOff OBJECT w
 ;
@@ -4529,7 +4529,7 @@ FORM writeOffs 'Списания'
     OBJECTS d=writeOffDetail
     PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail,
                    priceWriteOffDetail
-    FILTERS NOT NULL inWriteOffWriteOffDetail(w, d)
+    FILTERS inWriteOffWriteOffDetail(w, d)
 ;
 
 DESIGN writeOffs FROM DEFAULT {
@@ -4569,7 +4569,7 @@ FORM innerFlow 'Расход в другой отдел'
                    quantityInnerFlowDetail, priceInnerFlowDetail, sumInnerFlowDetail, ADDOBJ, delete
 
     PROPERTIES addInnerFlowDetailBarcode(f) TODRAW d
-    FILTERS NOT NULL inInnerFlowInnerFlowDetail(f, d)
+    FILTERS inInnerFlowInnerFlowDetail(f, d)
 
     EDIT innerFlow OBJECT f
 ;
@@ -4585,7 +4585,7 @@ FORM innerFlows 'Расходы в другие отделы'
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail
-    FILTERS NOT NULL inInnerFlowInnerFlowDetail(f, d)
+    FILTERS inInnerFlowInnerFlowDetail(f, d)
 ;
 
 DESIGN innerFlows FROM DEFAULT {
@@ -4655,7 +4655,7 @@ FORM innerArrival 'Приход из другого отдела'
                    quantityInnerArrivalDetail, priceInnerArrivalDetail, sumInnerArrivalDetail, ADDOBJ, delete
 
     PROPERTIES addInnerArrivalDetailBarcode(a) TODRAW d
-    FILTERS NOT NULL inInnerArrivalInnerArrivalDetail(a, d)
+    FILTERS inInnerArrivalInnerArrivalDetail(a, d)
 
     EDIT innerArrival OBJECT a
 ;
@@ -4671,7 +4671,7 @@ FORM innerArrivals 'Приходы из других отделов'
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail
-    FILTERS NOT NULL inInnerArrivalInnerArrivalDetail(a, d)
+    FILTERS inInnerArrivalInnerArrivalDetail(a, d)
 ;
 
 DESIGN innerArrivals FROM DEFAULT {
