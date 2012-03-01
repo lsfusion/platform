@@ -50,11 +50,11 @@ META metaCodeObjectDateProperty(prop, object, caption, type, group)
         PROPERTY(name(a)) { focusable = FALSE; }
     }
 
-    showFormAdd##prop 'Добавить' (object) = ACTION FORM add##prop OBJECTS a MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    showFormAdd##prop 'Добавить' (object) = ACTION FORM add##prop OBJECTS a MODAL;
 
     FORM prop caption
     OBJECTS a=object FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, showFormAdd##prop(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, prop##Date(a, d)
+    PROPERTIES name(a) READONLY, showFormAdd##prop(a), OBJVALUE(d), prop##Date(a, d)
     FILTERS prop##Date(a, d);
     DESIGN prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
@@ -81,11 +81,11 @@ META metaCodeNameObjectDateProperty(prop, object, caption, type, group)
         PROPERTY(name(a)) { focusable = FALSE; }
     }
 
-    showFormAddName##prop 'Добавить' (object) = ACTION FORM addName##prop OBJECTS a MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    showFormAddName##prop 'Добавить' (object) = ACTION FORM addName##prop OBJECTS a MODAL;
 
     FORM name##prop caption
     OBJECTS a=object FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, showFormAddName##prop(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, name##prop##Date(a, d)
+    PROPERTIES name(a) READONLY, showFormAddName##prop(a), OBJVALUE(d), name##prop##Date(a, d)
     FILTERS prop##Date(a, d);
     DESIGN name##prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
@@ -112,11 +112,11 @@ META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type, gro
         PROPERTY(name(b)) { focusable = FALSE; }
     }
 
-    showFormAdd##prop 'Добавить' (object1, object2) = ACTION FORM add##prop OBJECTS a, b MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    showFormAdd##prop 'Добавить' (object1, object2) = ACTION FORM add##prop OBJECTS a, b MODAL;
 
     FORM prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, name(b) READONLY, showFormAdd##prop(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, prop##Date(a, b, d)
+    PROPERTIES name(a) READONLY, name(b) READONLY, showFormAdd##prop(a, b), OBJVALUE(d), prop##Date(a, b, d)
     FILTERS prop##Date(a, b, d);
     DESIGN prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
@@ -150,11 +150,11 @@ META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type,
         PROPERTY(name(b)) { focusable = FALSE; }
     }
 
-    showFormAddName##prop 'Добавить' (object1, object2) = ACTION FORM addName##prop OBJECTS a, b MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    showFormAddName##prop 'Добавить' (object1, object2) = ACTION FORM addName##prop OBJECTS a, b MODAL;
 
     FORM name##prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, name(b) READONLY,  showFormAddName##prop(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, name##prop##Date(a, b, d)
+    PROPERTIES name(a) READONLY, name(b) READONLY,  showFormAddName##prop(a, b), OBJVALUE(d), name##prop##Date(a, b, d)
     FILTERS prop##Date(a, b, d);
     DESIGN name##prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
@@ -184,11 +184,11 @@ META metaCodeTripleObjectDateProperty(prop, object1, object2, object3, caption, 
         PROPERTY(name(c)) { focusable = FALSE; }
     }
 
-    showFormAdd##prop 'Добавить' (object1, object2, object3) = ACTION FORM add##prop OBJECTS a, b, c MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    showFormAdd##prop 'Добавить' (object1, object2, object3) = ACTION FORM add##prop OBJECTS a, b, c MODAL;
 
     FORM prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAdd##prop(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, prop##Date(a, b, c, d)
+    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAdd##prop(a, b, c), OBJVALUE(d), prop##Date(a, b, c, d)
     FILTERS prop##Date(a, b, c, d);
     DESIGN prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
@@ -224,11 +224,11 @@ META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, capti
         PROPERTY(name(c)) { focusable = FALSE; }
     }
 
-    showFormAddName##prop 'Добавить' (object1, object2, object3) = ACTION FORM addName##prop OBJECTS a, b, c MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    showFormAddName##prop 'Добавить' (object1, object2, object3) = ACTION FORM addName##prop OBJECTS a, b, c MODAL;
 
     FORM name##prop caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAddName##prop(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, name##prop##Date(a, b, c, d)
+    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAddName##prop(a, b, c), OBJVALUE(d), name##prop##Date(a, b, c, d)
     FILTERS prop##Date(a, b, c, d);
     DESIGN name##prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
@@ -326,6 +326,7 @@ META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
     cleanAll###object##Details###object 'Очистить документ' = ACTION (object) {
         FOR object###object##Detail (detail) == object DO {
           EXEC delete(detail AS object##Detail);
+          EXEC apply();
         };
     } IN documentHeaderGroup CONFIRM;
 
@@ -1022,6 +1023,8 @@ DESIGN genTimeTable FROM DEFAULT {
     }
 }
 
+showFormGenTimeTable 'Показать генерацию графика' (genTimeTable) = ACTION FORM genTimeTable OBJECTS g MODAL;
+
 FORM genTimeTables 'Графики' //служит для добавления сущности "генерации графиков" и в дальнейшем будет удалена
 OBJECTS g=genTimeTable
 PROPERTIES(g) READONLY name
@@ -1581,6 +1584,11 @@ PROPERTIES (b) barcodeEx, dateBarcode, titleScalesBarcode, titleCashBarcode, sho
                amountBarcode, removeBarcode, commentRemoveBarcode, actionBarcode
 PROPERTIES (i, b) equalsSkuBarcode
 PROPERTIES (d) name
+PROPERTIES (d, i) percentDiscountDepartmentItem, additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem,
+                  maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacturerDepartmentStoreItem, statusCashDepartmentStoreItem,
+                  nameStatusCashDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem,
+                  fromDateDeliveryDepartmentStoreItem, banSaleDepartmentStoreItem, banMovementDepartmentStoreItem, reserveDepartmentStoreItem,
+                  topDepartmentStoreItem, quantityRealizationDepartmentStoreItem, balanceDepartmentStoreItem
 
 PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
 PROPERTIES (sp) READONLY name
@@ -1589,6 +1597,7 @@ PROPERTIES nameisSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF nameisSupp
            priceSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF priceSupplierItemDepartmentDate(sp, i, d, dt), showFormpriceSupplierItemDepartmentOver(sp, i, d),
            markupSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF markupSupplierItemDepartmentDate(sp, i, d, dt), showFormmarkupSupplierItemDepartmentOver(sp, i, d)
 PROPERTIES retailPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF retailPriceItemDepartmentDate(i, d, dt), showFormretailPriceItemDepartmentOver(i, d),
+           accountPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF accountPriceItemDepartmentDate(i, d, dt), showFormaccountPriceItemDepartmentOver(i, d),
            maxReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF maxReserveItemDepartmentDate(i, d, dt), showFormmaxReserveItemDepartmentOver(i, d),
            minReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF minReserveItemDepartmentDate(i, d, dt), showFormminReserveItemDepartmentOver(i, d),
            namebanRevaluationItemDepartmentOver(i, d, dt) HIGHLIGHTIF namebanRevaluationItemDepartmentDate(i, d, dt), showFormNamebanRevaluationItemDepartmentOver(i, d),
@@ -1718,8 +1727,6 @@ FORM items 'Товары'
     PROPERTIES(i) ADDFORM, EDITFORM, delete
     FILTERS hasParentOrNullItemGroupSku(i, g)
     ORDER BY nameAttributeItem
-
-    DIALOG item OBJECT i
 ;
 
 DESIGN items FROM DEFAULT {
@@ -1727,10 +1734,6 @@ DESIGN items FROM DEFAULT {
 
     treeGroup.tree {
         fillHorizontal = 0.4;
-    }
-
-    i.grid {
-        defaultComponent = TRUE;
     }
 }
 
@@ -2285,7 +2288,7 @@ FORM customer 'Покупатель'
                        MFOBankAccount, noteAccount, ADDOBJ, delete
 
     EDIT customer OBJECT cu
-                                       
+
 ;
 
 FORM customers 'Покупатели'
@@ -2310,6 +2313,7 @@ departmentStorePreliminaryOrder 'Отдел заказа (ИД)' = DATA departme
 nameDepartmentStorePreliminaryOrder 'Отдел заказа' (preliminaryOrder) = name(departmentStorePreliminaryOrder(preliminaryOrder)) IN orderSupplierGroup;
 supplierPreliminaryOrder 'Поставщик заказа (ИД)' = DATA supplier (preliminaryOrder);
 nameSupplierPreliminaryOrder 'Поставщик заказа' (preliminaryOrder) = name(supplierPreliminaryOrder(preliminaryOrder)) IN supplierGroup;
+genTimeTablePreliminaryOrder 'График поставок'  = DATA genTimeTable (preliminaryOrder);
 
 TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
@@ -2481,6 +2485,7 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
                         SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
                         SET dateOrderPreliminaryOrder(o) <- subtractDate2(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
                         SET dateSupplyPreliminaryOrder(o) <- tmpDate();
+                        SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
                     };
                     SET tmpDate() <- addDate2(tmpDate(), periodGenTimeTable(tmpGTT()) * 7);
                 };
@@ -2499,6 +2504,7 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
                         SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
                         SET dateOrderPreliminaryOrder(o) <- subtractDate2(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
                         SET dateSupplyPreliminaryOrder(o) <- tmpDate();
+                        SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
                     };
                 };
                 SET tmpDate() <- addDate2(tmpDate(), dayAfterGenTimeTable(tmpGTT()));
@@ -2516,6 +2522,7 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
                         SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
                         SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
                         SET tmpDateS() <- tmpDate();
+                        SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
                         // если попали на субботу или воскресенье
                         IF UNION OVERRIDE numberDOWInDate(tmpDateS()) == 0, numberDOWInDate(tmpDateS()) == 6 THEN {
                             IF numberDOW(transferDayGenTimeTable(tmpGTT())) == 1 THEN {
@@ -2546,6 +2553,7 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
                         SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
                         SET dateOrderPreliminaryOrder(o) <- subtractDate2(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
                         SET dateSupplyPreliminaryOrder(o) <- tmpDate();
+                        SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
                     };
                 };
                 SET tmpDate() <- addDate2(tmpDate(), 1);
@@ -2578,8 +2586,12 @@ fillInOrderSupplier 'Заполнить заказ рекомендованны�
 
 FORM orderSupplier 'Заказ поставщику'
 
-    TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES(g) READONLY name
+    TREE treeGroup a=STRING[3], g=itemGroup PARENT parentItemGroup
+
+    FILTERS stringEqualsAll(a)
+
+    PROPERTIES READONLY OBJVALUE(a), name(g)
+    ORDER BY name
 
     OBJECTS o=orderSupplier FIXED PANEL
 
@@ -2604,13 +2616,14 @@ FORM orderSupplier 'Заказ поставщику'
 
     PROPERTIES(o)          fillInOrderSupplier TODRAW i FORCE PANEL
 
-    FILTERS inItemGroupSku(g, i)
-
     FILTERS isSupplierItemDepartmentOrderSupplier(o, i),
             isBanSupplierItemDepartmentOrderSupplier(o, i)
 
     FILTERGROUP filters1
         FILTER 'Показывать только заказанные позиции' 'F10' sumQuantityItemOrderSupplier(o, i) DEFAULT
+
+    FILTERS hasParentOrNullItemGroupSku(i, g)
+    ORDER BY nameAttributeItem
 
     EDIT orderSupplier OBJECT o
 ;
@@ -2691,6 +2704,7 @@ isSupplyDate (date, preliminaryOrder) = dateSupplyPreliminaryOrder(preliminaryOr
 isSupplierDepartmentStore (departmentStore, supplier, preliminaryOrder) =
     departmentStorePreliminaryOrder(preliminaryOrder) == departmentStore AND supplierPreliminaryOrder(preliminaryOrder) ==supplier;
 
+showFormGenTimeTablePreliminaryOrder 'Показать генерацию графика' (preliminaryOrder) = showFormGenTimeTable(genTimeTablePreliminaryOrder(preliminaryOrder));
 
 FORM timeTableDate 'График поставок'
     OBJECTS t=DATE FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier, p=preliminaryOrder
@@ -2699,8 +2713,9 @@ FORM timeTableDate 'График поставок'
     PROPERTIES createGenTimeTable()
     PROPERTIES(s) READONLY name
     PROPERTIES(p) READONLY dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder, dataOrderPreliminaryOrder
-    PROPERTIES(p) nextDateOrder, createOrderSupplier
+    PROPERTIES(p) nextDateOrder, createOrderSupplier, showFormGenTimeTablePreliminaryOrder
     PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL
+    ORDER BY dateOrderPreliminaryOrder
     PROPERTIES(s, d, t) READONLY quantityOrderOrderSupplier, quantitySupplyOrderSupplier, quantityOrderPreliminaryOrder, quantitySupplyPreliminaryOrder
     FILTERS isSupplierDepartmentStore(d, s, p)
     FILTERGROUP filters
@@ -4128,6 +4143,7 @@ namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоце
     departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
 
 supplierShipmentDetail 'Поставщик (ИД)' (shipmentDetail) = supplierShipment(shipmentShipmentDetail(shipmentDetail));
+departmentStoreShipmentDetail 'Отдел (ИД)' (shipmentDetail) = departmentStoreShipment(shipmentShipmentDetail(shipmentDetail));
 
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
@@ -4482,7 +4498,10 @@ maxReserveItemDepartmentWriteOff 'Максимальнодопустимы то�
 CONSTRAINT quantityWriteOffDetail(writeOffDetail) <= 0 MESSAGE 'Количество должно быть положительным';
 CONSTRAINT priceWriteOffDetail(writeOffDetail) <= 0 MESSAGE 'Цена должна быть положительной';
 
-//dateLastShipment 'Дата последней поставки' (writeOff) = GROUP MAX dateShipment(shipment) IF dateShipment(shipment) < datePriceWriteOff(writeOff) BY shipment;
+dateLastShipment 'Дата последней поставки' (writeOffDetail) = GROUP MAX dateShipmentDetail(shipmentDetail)
+    IF (dateShipmentDetail(shipmentDetail) < datePriceWriteOffDetail(writeOffDetail)
+    AND itemWriteOffDetail(writeOffDetail) == itemShipmentDetail(shipmentDetail))
+    BY writeOffDetail;
 
 FORM reasonOff 'Причина списания'
     OBJECTS r=reasonOff  FIXED PANEL
@@ -4492,7 +4511,7 @@ FORM reasonOff 'Причина списания'
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
     PROPERTIES (w) numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff, nameReasonOffWriteOff,
-                   noteWriteOff, quantityWriteOff, datePriceWriteOff, sumWriteOff//, dateLastShipment
+                   noteWriteOff, quantityWriteOff, datePriceWriteOff, sumWriteOff
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail,
@@ -4500,7 +4519,7 @@ FORM writeOff 'Списание'
 
     PROPERTIES FORCE PANEL READONLY articleItemWriteOff(d), nameCountryItemWriteOff(d), retailPriceItemWriteOff(d),
                                     balanceDepartmentStoreItemWriteOff(d), minReserveItemDepartmentWriteOff(d),
-                                    maxReserveItemDepartmentWriteOff(d)
+                                    maxReserveItemDepartmentWriteOff(d), dateLastShipment(d)
 
     PROPERTIES addWriteOffDetailBarcode(w) TODRAW d
     FILTERS inWriteOffWriteOffDetail(w, d)
@@ -4555,19 +4574,13 @@ priceInnerFlowDetail 'Цена' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail
 sumInnerFlowDetail 'Сумма' (innerFlowDetail) = round0(
     quantityInnerFlowDetail(innerFlowDetail) * priceInnerFlowDetail (innerFlowDetail)) IN baseGroup;
 
-quantityItemInnerFlow 'Количество в расходе' (item, innerFlow) = GROUP SUM quantityInnerFlowDetail(innerFlowDetail)
+quantityItemInnerFlow (item, innerFlow) = GROUP SUM quantityInnerFlowDetail(innerFlowDetail)
     IF inInnerFlowInnerFlowDetail (innerFlow, innerFlowDetail) BY itemInnerFlowDetail (innerFlowDetail), innerFlowInnerFlowDetail (innerFlowDetail);
-
-totalQuantityInnerFlow 'Общее количество' (innerFlow) = GROUP SUM quantityInnerFlowDetail(innerFlowDetail)
-    BY innerFlowInnerFlowDetail(innerFlowDetail) IN waybillSum;
-
-totalSumInnerFlow 'Общая сумма' (innerFlow) = GROUP SUM sumInnerFlowDetail (innerFlowDetail)
-    IF innerFlowInnerFlowDetail (innerFlowDetail) == innerFlow BY innerFlowInnerFlowDetail(innerFlowDetail) IN waybillSum;
 
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
     PROPERTIES (f) waybillInnerFlow, seriesWaybillInnerFlow, dateInnerFlow, nameDepartmentStoreInnerFlow,
-                   nameRecipientDepartmentInnerFlow, noteInnerFlow, totalQuantityInnerFlow, totalSumInnerFlow
+                   nameRecipientDepartmentInnerFlow, noteInnerFlow
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
@@ -4583,14 +4596,13 @@ FORM innerFlows 'Расходы в другие отделы'
     OBJECTS f=innerFlow
     PROPERTIES (f) READONLY objectClassName, waybillInnerFlow, seriesWaybillInnerFlow, dateInnerFlow, nameDepartmentStoreInnerFlow,
                             nameRecipientDepartmentInnerFlow, quantityInnerFlowDetailsInnerFlow,
-                            totalQuantityInnerFlow, totalSumInnerFlow
+                            priceInnerFlowDetail, sumInnerFlowDetail
 
     PROPERTIES (f) ADDFORM, EDITFORM SHOWIF isDraftInnerFlow(f), delete FORCE PANEL SHOWIF isDraftInnerFlow(f),
                    postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
 
     OBJECTS d=innerFlowDetail
-    PROPERTIES (d) numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
-                    quantityInnerFlowDetail, priceInnerFlowDetail, sumInnerFlowDetail
+    PROPERTIES (d) numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 ;
 
@@ -4624,8 +4636,6 @@ nameSenderDepartmentInnerArrival 'Отдел-отправитель' (innerArriv
 CONSTRAINT CHECKED recipientDepartmentInnerFlow(innerFlowInnerArrival(innerArrival)) != departmentStoreInnerArrival(innerArrival)
     MESSAGE 'Накладная с другого отдела';
 
-CONSTRAINT CHECKED innerFlowInnerArrival(p1) == innerFlowInnerArrival(p2) AND p1 != p2 MESSAGE 'Накладная задействована в другом приходе';
-
 senderDepartmentInnerArrival (innerArrival) <- departmentStoreInnerFlow(innerFlowInnerArrival(innerArrival))
     ON CHANGE innerFlowInnerArrival(innerArrival);
 
@@ -4647,89 +4657,38 @@ toFillInnerArrivalDetailsInnerArrival 'Заполнить документ из 
             SET innerArrivalInnerArrivalDetail(d) <- innerArrival AS innerArrival;
             SET quantityInnerArrivalDetail (d) <- quantityInnerFlowDetail(innerFlowDetail);
             SET itemInnerArrivalDetail (d) <- itemInnerFlowDetail(innerFlowDetail);
-            SET quantityInnerArrivalDetail (d) <- quantityInnerFlowDetail(innerFlowDetail);
-            SET priceInnerArrivalDetail (d) <- priceInnerFlowDetail(innerFlowDetail);
         };
     };
 } IN documentHeaderGroup CONFIRM;
-
-quantityItemInnerArrival 'Количество в приходе' (item, innerArrival) = GROUP SUM quantityInnerArrivalDetail(innerArrivalDetail)
-    IF inInnerArrivalInnerArrivalDetail (innerArrival, innerArrivalDetail) BY itemInnerArrivalDetail (innerArrivalDetail),
-    innerArrivalInnerArrivalDetail (innerArrivalDetail);
-
-quantityItemInnerFlowInnerArrival 'Количество в расходе' (item, innerArrival) = quantityItemInnerFlow(item, innerFlowInnerArrival(innerArrival));
-diffQuantityItemInnerArrival 'Расхождение' (item, innerArrival) =
-    quantityItemInnerFlowInnerArrival(item, innerArrival) - quantityItemInnerArrival(item, innerArrival);
-
-inInnerArrivalItem (item, innerArrival) = quantityItemInnerArrival(item, innerArrival) > 0;
-
-totalQuantityInnerArrival 'Общее количество' (innerArrival) = GROUP SUM quantityInnerArrivalDetail(innerArrivalDetail)
-    BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN waybillSum;
-
-totalSumArrivalFlow 'Общая сумма' (innerArrival) = GROUP SUM sumInnerArrivalDetail (innerArrivalDetail)
-    IF innerArrivalInnerArrivalDetail (innerArrivalDetail) == innerArrival BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN waybillSum;
 
 FORM innerArrival 'Приход из другого отдела'
     OBJECTS a=innerArrival FIXED PANEL
     PROPERTIES (a) nameDepartmentStoreInnerArrival, waybillInnerArrival, seriesWaybillInnerArrival,
                    dateInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
                    cleanAllInnerArrivalDetailsInnerArrival, toFillInnerArrivalDetailsInnerArrival,
-                   noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), totalQuantityInnerArrival SHOWIF innerFlowInnerArrival(a),
-                   totalSumArrivalFlow SHOWIF innerFlowInnerArrival(a)
+                   noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) SHOWIF innerFlowInnerArrival(a) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
-                   quantityInnerArrivalDetail, priceInnerArrivalDetail READONLY, sumInnerArrivalDetail READONLY, ADDOBJ, delete
+                   quantityInnerArrivalDetail, priceInnerArrivalDetail, sumInnerArrivalDetail, ADDOBJ, delete
 
     PROPERTIES addInnerArrivalDetailBarcode(a) TODRAW d
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
 
-    OBJECTS i=item
-    PROPERTIES (i) SHOWIF innerFlowInnerArrival(a) nameAttributeItem
-    PROPERTIES (i, a) SHOWIF innerFlowInnerArrival(a) quantityItemInnerFlowInnerArrival, quantityItemInnerArrival, diffQuantityItemInnerArrival
-    FILTERS NOT NULL inInnerArrivalItem (i, a)
-
     EDIT innerArrival OBJECT a
 ;
-
-DESIGN innerArrival FROM DEFAULT{
-    main{
-        NEW specification.box BEFORE functions.box{
-            tabbedPane = TRUE;
-            ADD d.box {
-                childConstraints = TO THE BOTTOM;
-                title = 'Спецификация';
-            };
-            ADD i.box;
-        };
-        NEW header.box BEFORE specification.box {
-            childConstraints = TO THE BOTTOM;
-
-            NEW headerRow1 {
-                childConstraints = TO THE RIGHT;
-                ADD a.documentHeaderGroup;
-            };
-
-            NEW headerRow2 {
-                childConstraints = TO THE RIGHT;
-                ADD a.additionalInfo;
-             };
-        };
-    };
-};
 
 FORM innerArrivals 'Приходы из других отделов'
     OBJECTS a=innerArrival
     PROPERTIES (a) READONLY objectClassName, waybillInnerArrival, seriesWaybillInnerArrival, dateInnerArrival, nameDepartmentStoreInnerArrival,
-                            nameSenderDepartmentInnerArrival, totalQuantityInnerArrival, totalSumArrivalFlow
+                            nameSenderDepartmentInnerArrival,
+                            priceInnerArrivalDetail, sumInnerArrivalDetail
 
     PROPERTIES (a) ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
                    postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
-    PROPERTIES (d) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
-                   quantityInnerArrivalDetail, priceInnerArrivalDetail, sumInnerArrivalDetail
-
+    PROPERTIES (d) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
 ;
 
