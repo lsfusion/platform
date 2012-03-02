@@ -1452,7 +1452,7 @@ showFormAddRetailRangeItem 'Добавить' (item) = ACTION FORM addRetailRang
 
 FORM retailRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE
-    PROPERTIES       nameAttributeItem(i) READONLY, showFormAddSuppliersRangeItem(i) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY
+    PROPERTIES       nameAttributeItem(i) READONLY, showFormAddRetailRangeItem(i) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY
     PROPERTIES(i, d) dataRetailRangeItemDate, dataActingRetailRangeItemDate
     FILTERS retailRangeItemDate(i, d)
 ;
@@ -3507,6 +3507,11 @@ PROPERTIES(st, gr)  barcodeBarcodeStageGroupMachinery, priceStageGroupMachinery,
                     timeStageGroupMachinery, stockStageGroupMachinery
 FILTERS  barcodeStageGroupMachinery(st, gr);
 
+//---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
+
+CLASS ABSTRACT priceChangeDocument 'Акт переоценки';
+CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки';
+
 //---------------------------- Проведение инвентаризации ----------------------------------------//
 
 CLASS inventory 'Инвентаризация (открытая)' : historyObject;
@@ -4664,6 +4669,64 @@ toFillShipmentDetailsShipment 'Заполнить поставку из зака
     };
 } IN ordersInfo CONFIRM;
 
+// ---------------------------------- Дооценка на приходе ------------------------------------------
+
+CLASS priceChangeShipment 'Переоценка на приходе' : priceChangeDocument;
+CLASS priceChangeShipmentDetail 'Строка переоценки на приходе' : priceChangeDocumentDetail;
+
+needToPriceChangeShipmentDetail (shipmentDetail) = oldRetailPriceShipmentDetail(shipmentDetail) != retailPriceShipmentDetail(shipmentDetail) AND
+                                                   balanceBeforeShipmentShipmentDetail(shipmentDetail) != 0;
+
+needToPriceChangeShipment (shipment) = GROUP SUM 1 IF needToPriceChangeShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail);
+
+shipmentPriceChangeShipment = DATA shipment (priceChangeShipment);
+
+uniquePriceChangeShipment (shipment) =
+    GROUP UNIQUE priceChangeShipment BY shipmentPriceChangeShipment(priceChangeShipment)
+    WHERE priceChangeShipment IS priceChangeShipment;
+
+needToPriceChangeShipment(shipment) => uniquePriceChangeShipment(shipment) RESOLVE TRUE;
+
+isPriceChangeShipment(priceChangeShipment) = priceChangeShipment IS priceChangeShipment;
+isPriceChangeShipment(priceChangeShipment) => needToPriceChangeShipment(shipmentPriceChangeShipment(priceChangeShipment)) RESOLVE FALSE;
+
+datePriceChangeShipment 'Дата' (priceChangeShipment) = dateShipment(shipmentPriceChangeShipment(priceChangeShipment));
+waybillPriceChangeShipment 'Номер накладной' (priceChangeShipment) = waybillShipment(shipmentPriceChangeShipment(priceChangeShipment));
+seriesWaybillPriceChangeShipment 'Серия накладной' (priceChangeShipment) = seriesWaybillShipment(shipmentPriceChangeShipment(priceChangeShipment));
+
+supplierPriceChangeShipment (priceChangeShipment) = supplierShipment(shipmentPriceChangeShipment(priceChangeShipment));
+nameSupplierPriceChangeShipment 'Поставщик' (priceChangeShipment) = name(supplierPriceChangeShipment(priceChangeShipment));
+
+departmentStorePriceChangeShipment (priceChangeShipment) = departmentStoreShipment(shipmentPriceChangeShipment(priceChangeShipment));
+nameDepartmentStorePriceChangeShipment 'Отдел магазина' (priceChangeShipment) = name(departmentStorePriceChangeShipment(priceChangeShipment));
+
+shipmentDetailPriceChangeShipmentDetail = DATA shipmentDetail (priceChangeShipmentDetail);
+
+uniquePriceChangeShipmentDetail (shipmentDetail) =
+    GROUP UNIQUE priceChangeShipmentDetail BY shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail)
+    WHERE priceChangeShipmentDetail IS priceChangeShipmentDetail;
+
+needToPriceChangeShipmentDetail(shipmentDetail) => uniquePriceChangeShipmentDetail(shipmentDetail) RESOLVE TRUE;
+
+isPriceChangeShipmentDetail(priceChangeShipmentDetail) = priceChangeShipmentDetail IS priceChangeShipmentDetail;
+isPriceChangeShipmentDetail(priceChangeShipmentDetail) => needToPriceChangeShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail)) RESOLVE FALSE;
+
+priceChangeShipmentPriceChangeShipmentDetail(detail) = uniquePriceChangeShipment(shipmentShipmentDetail(shipmentDetailPriceChangeShipmentDetail(detail)));
+
+itemPriceChangeShipmentDetail (priceChangeShipmentDetail) = itemShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+nameItemPriceChangeShipmentDetail 'Товар' (priceChangeShipmentDetail) = nameAttributeItem(itemPriceChangeShipmentDetail(priceChangeShipmentDetail));
+
+quantityPriceChangeShipmentDetail 'Остаток' (priceChangeShipmentDetail) = balanceBeforeShipmentShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+
+oldImporterPriceChangeShipmentDetail 'Старая цена изготовителя' (priceChangeShipmentDetail) = oldImporterPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+importerPriceChangeShipmentDetail 'Новая цена изготовителя' (priceChangeShipmentDetail) = importerPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+
+oldDataRetailRangePriceChangeShipmentDetail 'Старый НДС, %' (priceChangeShipmentDetail) = oldDataRetailRangeShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+dataRetailRangePriceChangeShipmentDetail 'Новый НДС, %' (priceChangeShipmentDetail) = dataRetailRangeShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+
+oldRetailPriceChangeShipmentDetail 'Старая розничная цена' (priceChangeShipmentDetail) = oldRetailPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+retailPriceChangeShipmentDetail 'Новая розничная цена' (priceChangeShipmentDetail) = retailPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+
 FORM ordersShipment 'Заказы'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s) READONLY waybillShipment, dateShipment
@@ -4713,6 +4776,7 @@ FORM shipment 'Поставка'
 
 DESIGN shipment FROM DEFAULT{
     main{
+        preferredSize = (1024, 768);
         NEW specification.box BEFORE functions.box{
             tabbedPane = TRUE;
             ADD d.box {
@@ -5089,9 +5153,9 @@ totalSumArrivalFlow 'Общая сумма' (innerArrival) = GROUP SUM sumInnerA
 
 FORM innerArrival 'Приход из другого отдела'
     OBJECTS a=innerArrival FIXED PANEL
-    PROPERTIES (a) nameDepartmentStoreInnerArrival, waybillInnerArrival, seriesWaybillInnerArrival,
+    PROPERTIES (a) nameDepartmentStoreInnerArrival, waybillInnerArrival SHOWIF departmentStoreInnerArrival(a), seriesWaybillInnerArrival SHOWIF departmentStoreInnerArrival(a),
                    dateInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
-                   cleanAllInnerArrivalDetailsInnerArrival, toFillInnerArrivalDetailsInnerArrival,
+                   cleanAllInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a), toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a),
                    noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), totalQuantityInnerArrival SHOWIF innerFlowInnerArrival(a),
                    totalSumArrivalFlow SHOWIF innerFlowInnerArrival(a)
 
@@ -5115,6 +5179,7 @@ FORM innerArrival 'Приход из другого отдела'
 
 DESIGN innerArrival FROM DEFAULT{
     main{
+        preferredSize = (1024, 768);
         NEW specification.box BEFORE functions.box{
             tabbedPane = TRUE;
             ADD d.box {
@@ -5165,6 +5230,40 @@ DESIGN innerArrivals FROM DEFAULT {
         askConfirm = TRUE;
     }
 }
+
+//---------------------------- Переоценка (конкретная реализация) ----------------------------------------//
+
+datePriceChangeDocument 'Дата' (priceChangeDocument) = UNION EXCLUSIVE datePriceChangeShipment(priceChangeDocument);
+
+departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE departmentStorePriceChangeShipment(priceChangeDocument);
+nameDepartmentStorePriceChangeDocument 'Отдел магазина' (priceChangeDocument) = name(departmentStorePriceChangeDocument(priceChangeDocument));
+
+itemPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE itemPriceChangeShipmentDetail(priceChangeDocumentDetail);
+nameItemPriceChangeDocumentDetail 'Товар' (priceChangeDocumentDetail) = nameAttributeItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
+
+quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = UNION EXCLUSIVE quantityPriceChangeShipmentDetail(priceChangeDocumentDetail);
+
+oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldImporterPriceChangeShipmentDetail(priceChangeDocumentDetail);
+importerPriceChangeDocumentDetail 'Новая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPriceChangeShipmentDetail(priceChangeDocumentDetail);
+
+oldDataRetailRangePriceChangeDocumentDetail 'Старый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldDataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail);
+dataRetailRangePriceChangeDocumentDetail 'Новый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE dataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail);
+
+oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldRetailPriceChangeShipmentDetail(priceChangeDocumentDetail);
+retailPriceChangeDocumentDetail 'Новая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE retailPriceChangeShipmentDetail(priceChangeDocumentDetail);
+
+FORM priceChangeDocuments 'Акты переоценки'
+    OBJECTS pc=priceChangeDocument
+    PROPERTIES(pc) READONLY objectClassName, datePriceChangeDocument, nameDepartmentStorePriceChangeDocument,
+                            waybillPriceChangeShipment, seriesWaybillPriceChangeShipment, nameSupplierPriceChangeShipment
+
+    OBJECTS pcd=priceChangeDocumentDetail
+    PROPERTIES(pcd) READONLY nameItemPriceChangeDocumentDetail, quantityPriceChangeDocumentDetail,
+                             oldImporterPriceChangeDocumentDetail, importerPriceChangeDocumentDetail,
+                             oldDataRetailRangePriceChangeDocumentDetail, dataRetailRangePriceChangeDocumentDetail,
+                             oldRetailPriceChangeDocumentDetail, retailPriceChangeDocumentDetail
+;
+
 //----------------------------------- Форма для общих параметров -------------------------------------------------//
 FORM globalParameters 'Параметры'
     PROPERTIES () dateMaxGlobal
@@ -5267,14 +5366,13 @@ NAVIGATOR {
             ADD innerFlows;
             ADD innerArrivals;
         }
-        NEW itemspecifications 'Отпуск из розницы' {
+        NEW itemSpecifications 'Отпуск из розницы' {
             ADD specifications;
             ADD statements;
         }
-    }
-
-    NEW documents 'Документы' TO formsToolbar {
-
+        NEW priceManagement 'Управление ценами' {
+            ADD priceChangeDocuments;
+        }
     }
 
     ADD adminElement TO formsTree {

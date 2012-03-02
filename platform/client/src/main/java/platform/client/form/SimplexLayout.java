@@ -282,6 +282,12 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
         logger.info("End calculatePreferredSize");
 
+        Dimension mainPrefSize = constraints.get(mainContainer).preferredSize;
+        if (mainPrefSize != null) {
+            maxw = Math.max(maxw, (int)mainPrefSize.getWidth());
+            maxh = Math.max(maxh, (int)mainPrefSize.getHeight());
+        }
+        
         return new Dimension(maxw, maxh);
     }
 
