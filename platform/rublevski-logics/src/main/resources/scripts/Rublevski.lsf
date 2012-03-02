@@ -3927,7 +3927,7 @@ DESIGN inventories FROM DEFAULT {
 
 //---------------------------- Отгрузка по безналу(розница) ----------------------------//
 
-GROUP customerGroup 'Покупатель';
+GROUP customerGroup 'Покупатель' : publicGroup;
 
 CLASS specification 'Счет-фактура': historyObject;
 CLASS objectiveAcquiring 'Цель приобретения' : named;
@@ -3935,9 +3935,12 @@ CLASS objectiveAcquiring 'Цель приобретения' : named;
 CLASS detailSpec 'Строка документа';
 TABLE detailSpec (detailSpec);
 
-//@metaCodeObjectWithPost (innerArrival, 'Приход в отдел', 'Закрытый приход в отдел', object);
 
 numberSpecification 'Номер счет-фактуры' = DATA INTEGER (specification) IN documentHeaderGroup;
+
+maxNumberSpecification = UNION OVERRIDE 0, [GROUP MAX numberSpecification(specification)]();
+nextNumberSpecification = maxNumberSpecification() + 1;
+numberSpecification(specification) <- OLD nextNumberSpecification() ON ASSIGN specification IS specification;
 
 customerSpecification(specification) = DATA customer (specification) IN idGroup;
 nameCustomerSpecification 'Покупатель' (specification) = name(customerSpecification(specification)) IN customerGroup;
@@ -3996,7 +3999,7 @@ quantityDetailInSpecification 'Количество строк в докумен
                 FOR o == addedObject() DO {
                     SET specificationDetailSpec(o) <- specification AS specification;
                     SET itemDetailSpec(o) <- tmpSku();
-            //        SET quantity###object##Detail(o) <- amountBarcode(valueBarcodeToDate(chosenString('barcode'), date###object(object)));
+
                 };
             } ELSE
                 MESSAGE 'Не найден штрих-код';
@@ -4012,7 +4015,7 @@ quantityDetailSpec 'Кол-во товара' = DATA DOUBLE (detailSpec) IN base
 quantitySpecification 'Общее кол-во' (specification) = GROUP SUM quantityDetailSpec(detailSpec)
                                                     BY specificationDetailSpec(detailSpec) IN waybillSum;
 
-retailPriceDetailSpec 'Розничная цена' = DATA DOUBLE (detailSpec) IN baseGroup;
+retailPriceDetailSpec 'Цена товара (розн.)' = DATA DOUBLE (detailSpec) IN baseGroup;
 retailPriceDetailSpec(detailSpec) <- retailPriceItemDepartmentVal (itemDetailSpec(detailSpec),
                                                                    departmentStoreSpecification(specificationDetailSpec(detailSpec)),
                                                                    dateSpecification(specificationDetailSpec(detailSpec))) ON CHANGE itemDetailSpec(detailSpec);
@@ -4021,7 +4024,7 @@ sumDetailSpec 'Сумма' (detailSpec) = round0(retailPriceDetailSpec(detailSpe
 sumSpecification 'Общая сумма' (specification) = GROUP SUM sumDetailSpec(detailSpec) BY specificationDetailSpec(detailSpec) IN waybillSum;
 
 articleItemDetailSpec 'Артикул производителя/поставщика' (detailSpec) = articleItem(itemDetailSpec(detailSpec));
-nameCountryDetailSpec 'Страна' (detailSpec) = nameCountryItem(itemDetailSpec(detailSpec));
+nameCountryItemDetailSpec 'Страна производства/происхождения' (detailSpec) = nameCountryItem(itemDetailSpec(detailSpec));
 
 balanceDepartmentStoreItemDetailSpec 'Текущий остаток' (detailSpec) =
     balanceDepartmentStoreItem(departmentStoreSpecification(specificationDetailSpec(detailSpec)), itemDetailSpec(detailSpec));
@@ -4036,11 +4039,37 @@ maxReserveItemDepartmentDetailSpec 'Максимальнодопустимый �
     departmentStoreSpecification(specificationDetailSpec(detailSpec)),
     dateSpecification(specificationDetailSpec(detailSpec)));
 
+quantityItemSpecification 'Количество товара в спецификации' (item, specification) = GROUP SUM quantityDetailSpec(detailSpec)
+    BY itemDetailSpec(detailSpec), specificationDetailSpec(detailSpec);
+
+balanceItemSpecification 'Текущий остаток по товару' (item, specification) =
+    balanceDepartmentStoreItem(departmentStoreSpecification(specification), item);
+
+quantityItemDepartmentStore 'Количество выставленного товара на тек. момент' (departmentStore, item) = GROUP SUM
+    quantityDetailSpec(detailSpec) IF noOverdueSpecification(specificationDetailSpec(detailSpec))
+    BY departmentStoreSpecification(specificationDetailSpec(detailSpec)), itemDetailSpec(detailSpec);
+
+availableQuantityItemDepartmentStore 'Доступное к-во, с учетом непросроченных с/ф' (departmentStore, item) =
+    balanceDepartmentStoreItem(departmentStore, item)-quantityItemDepartmentStore(departmentStore, item);
+
+availableQuantityItemByDetailSpec 'Доступное к-во, с учетом непросроченных с/ф' (detailSpec) =
+    availableQuantityItemDepartmentStore(departmentStoreSpecification(specificationDetailSpec(detailSpec)), itemDetailSpec(detailSpec));
+
+NotNullAvailableQuantityItemByDetailSpec(detailSpec) = availableQuantityItemByDetailSpec(detailSpec) < 0;
 
 
 CONSTRAINT quantityDetailSpec(detailSpec) <= 0 MESSAGE 'Количество должно быть положительным';
-//CONSTRAINT priceWriteOffDetail(detailSpec) <= 0 MESSAGE 'Цена должна быть положительной';
+CONSTRAINT retailPriceDetailSpec(detailSpec) <= 0 MESSAGE 'Цена должна быть положительной';
 
+CONSTRAINT quantityDetailSpec(detailSpec) > balanceDepartmentStoreItemDetailSpec(detailSpec)
+    MESSAGE 'Количество в строке больше чем есть в остатках';
+
+CONSTRAINT specification IS specification AND NOT dateToSpecification(specification) MESSAGE 'Не задан срок действия с/ф';
+CONSTRAINT dateToSpecification(specification) < dateSpecification(specification) MESSAGE 'Дата действия с/ф не может быть меньше даты документа';
+
+CONSTRAINT balanceItemSpecification(item, specification) < quantityItemSpecification(item, specification)
+    MESSAGE 'Количество товара выбрано больше чем есть в остатках';
+          // можно поставить CONSTRAINT на то, чтобы не было никаких пустных значений для строки документа
 
 FORM objectiveAcquiring 'Цель приобретения'
     OBJECTS oa=objectiveAcquiring  FIXED PANEL
@@ -4054,10 +4083,12 @@ FORM specification 'Счет-фактура'
 
     OBJECTS d=detailSpec
     PROPERTIES (d) numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
-                   retailPriceDetailSpec, ADDOBJ, delete
+                   retailPriceDetailSpec, sumDetailSpec, ADDOBJ, delete
 
-    PROPERTIES FORCE PANEL READONLY articleItemDetailSpec(d), nameCountryDetailSpec(d), balanceDepartmentStoreItemDetailSpec(d),
+    PROPERTIES FORCE PANEL READONLY articleItemDetailSpec(d), nameCountryItemDetailSpec(d), balanceDepartmentStoreItemDetailSpec(d),
+                                    availableQuantityItemByDetailSpec(d) HIGHLIGHTIF NotNullAvailableQuantityItemByDetailSpec(d),
                                     minReserveItemDepartmentDetailSpec(d), maxReserveItemDepartmentDetailSpec(d)
+
 
     PROPERTIES addSpecificationDetailBarcode(sp) TODRAW d
     FILTERS inSpecificationDetailSpec(sp, d)
@@ -4080,12 +4111,169 @@ FORM specifications 'Счет-фактуры'
                    dateToSpecification, quantitySpecification, sumSpecification
 
     PROPERTIES (sp) ADDFORM, EDITFORM, delete
-    ORDER BY  dateSpecification
+    ORDER BY  numberSpecification
 
     FILTERGROUP filters6
             FILTER 'Просроченные с/ф' 'F10' overdueSpecification(sp)
             FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp)
 ;
+
+//---------------------------- Документ на отгрузку из розницы ----------------------------------------//
+
+GROUP specificationGroup 'Счет-фактуры' : publicGroup;
+
+@metaCodeObjectWithPost(statement, 'Выписка из розницы', 'Закрытая выписка из розницы', object);
+
+                      //    шапка документа поставки
+waybillStatement 'Номер накладной' (statement) = DATA STRING[7] (statement) IN documentHeaderGroup FIXEDCHARWIDTH 7;
+
+seriesWaybillStatement 'Серия накладной' (statement) = DATA STRING[2] (statement) IN documentHeaderGroup FIXEDCHARWIDTH 4;
+
+customerStatement 'Покупатель (ИД)' (statement) = DATA customer (statement) IN idGroup;
+
+nameCustomerStatement 'Покупатель' (statement) = name(customerStatement(statement)) IN documentHeaderGroup
+    MINCHARWIDTH 30 PREFCHARWIDTH 40;
+
+
+inStatementSpecification 'Отгрузка по с/ф' (statement, specification) = DATA BOOLEAN (statement, specification)
+    IN idGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
+
+specificationsStatement 'Ввести на основании с/ф' (statement) = GROUP CONCAT castToString255(numberSpecification(specification))
+    IF inStatementSpecification(statement, specification), ', ' BY statement IN specificationGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+isCustomerStatementSpecification 'Заявка покупателя' (statement, specification) = customerStatement(statement)== customerSpecification(specification);
+
+isDepartmentStoreStatementSpecification 'Заявка отдела' (statement, specification) = departmentStoreStatement(statement)== departmentStoreSpecification(specification);
+
+//dateStatementDetail 'Дата отгрузки' (statementDetail) = dateStatement(statementStatementDetail(statementDetail));
+
+ //атрибуты для подсказки по товару строки
+
+//количество-цены по строкам
+GROUP pricingStatmentDetailInfo 'Дополнительные ценовые параметры': publicGroup;
+
+quantityStatementDetail 'Количество' (statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
+retailPriceStatementDetail 'Цена товара (розн.)'(statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
+sumStatementDetail 'Сумма' (statementDetail) = round0(retailPriceStatementDetail(statementDetail)*quantityStatementDetail(statementDetail))IN baseGroup;
+
+retailPriceStatementDetail(statementDetail) <- retailPriceItemDepartmentVal (itemStatementDetail(statementDetail),
+                                                                   departmentStoreStatement(statementStatementDetail(statementDetail)),
+                                                                   dateStatement(statementStatementDetail(statementDetail))) ON CHANGE itemStatementDetail(statementDetail);
+
+
+quantityItemStatement 'Количество товара в отгрузке' (item, statement) = GROUP SUM quantityStatementDetail(statementDetail)
+    BY itemStatementDetail(statementDetail), statementStatementDetail(statementDetail);
+
+balanceItemStatement 'Текущий остаток по товару' (item, statement) =
+    balanceDepartmentStoreItem(departmentStoreStatement(statement), item);
+
+//isShipedItemShipment 'Товар есть в поставке' (item, shipment) = quantityItemShipment(item, shipment) > 0;
+
+totalQuantityStatement 'Общее количество' (statement) = GROUP SUM quantityStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN waybillSum;
+sumStatement 'Общая сумма' (statement) = GROUP SUM sumStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN waybillSum;
+
+articleItemStatementDetail 'Артикул производителя/поставщика' (statementDetail) = articleItem(itemStatementDetail(statementDetail));
+nameCountryItemStatementDetail 'Страна производства/происхождения' (statementDetail) = nameCountryItem(itemStatementDetail(statementDetail));
+
+balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) =
+    balanceDepartmentStoreItem(departmentStoreStatement(statementStatementDetail(statementDetail)), itemStatementDetail(statementDetail));
+
+minReserveItemDepartmentStatementDetail 'Минимальнодопустимый товарный запас в днях' (statementDetail) =
+    minReserveItemDepartmentOver(itemStatementDetail(statementDetail),
+    departmentStoreStatement(statementStatementDetail(statementDetail)),
+    dateStatement(statementStatementDetail(statementDetail)));
+
+maxReserveItemDepartmentStatementDetail 'Максимальнодопустимый товарный запас в днях' (statementDetail) =
+    maxReserveItemDepartmentOver(itemStatementDetail(statementDetail),
+    departmentStoreStatement(statementStatementDetail(statementDetail)),
+    dateStatement(statementStatementDetail(statementDetail)));
+
+CONSTRAINT quantityStatementDetail(statementDetail) <= 0 MESSAGE 'Количество должно быть положительным';
+CONSTRAINT retailPriceStatementDetail(statementDetail) <= 0 MESSAGE 'Цена должна быть положительной';
+
+CONSTRAINT quantityStatementDetail(statementDetail) > balanceDepartmentStoreItemStatementDetail(statementDetail)
+    MESSAGE 'Количество в строке больше чем есть в остатках';
+
+CONSTRAINT balanceItemStatement(item, statement) < quantityItemStatement(item, statement)
+    MESSAGE 'Количество товара выбрано больше чем есть в остатках';
+
+
+statusStatementSpecification 'Статус' (statement, specification) = CASE
+    WHEN dateStatement(statement) > dateToSpecification(specification) THEN ('Просрочена' IF statement IS statement IF specification IS specification)
+    DEFAULT 'Непросрочена' IF statement IS statement IF specification IS specification
+    END;
+
+
+toFillStatementDetailsStatement 'Заполнить отгрузку на основании с/ф' =  ACTION (statement) {
+    FOR inStatementSpecification (statement, specification) AND inSpecificationDetailSpec(specification, detailSpec) DO {
+        ADDOBJ statementDetail;
+        FOR d == addedObject() DO {
+            SET itemStatementDetail(d) <- itemDetailSpec(detailSpec);
+            SET retailPriceStatementDetail(d) <- retailPriceDetailSpec(detailSpec);
+            SET quantityStatementDetail(d) <- quantityDetailSpec(detailSpec);
+//            SET barcodeExSkuStatementDetail(d) <- barcodeExSkuDetailSpec(detailSpec);   // может для ш-к по другому
+            SET sumStatementDetail(d) <- sumDetailSpec(detailSpec);
+        };
+    };
+} IN specificationGroup CONFIRM;
+
+
+FORM specificationsStatement 'Счета'
+    OBJECTS st=statement FIXED PANEL
+    PROPERTIES (st) READONLY waybillStatement, dateStatement
+
+    OBJECTS sp=specification
+
+    PROPERTIES (st, sp) inStatementSpecification
+    PROPERTIES (sp)     READONLY numberSpecification, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
+                        dateToSpecification, quantitySpecification, sumSpecification
+    PROPERTIES (st, sp) statusStatementSpecification
+
+    FILTERS NOT NULL isCustomerStatementSpecification (st, sp),
+            NOT NULL isDepartmentStoreStatementSpecification (st, sp)
+
+;
+
+showFormSpecificationsStatement 'Заказы' (statement) = ACTION FORM specificationsStatement OBJECTS st MODAL SHORTCUT specificationsStatement DEFAULT;
+
+FORM statement 'Отгрузка из розницы'
+    OBJECTS st=statement FIXED PANEL
+    PROPERTIES (st) waybillStatement, seriesWaybillStatement, dateStatement, nameCustomerStatement,
+                   nameDepartmentStoreStatement, specificationsStatement, totalQuantityStatement, sumStatement,
+                   noteStatement, showFormSpecificationsStatement, toFillStatementDetailsStatement
+
+    OBJECTS d=statementDetail
+    PROPERTIES (d)  numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail, quantityStatementDetail,
+                    retailPriceStatementDetail, sumStatementDetail, ADDOBJ, delete
+
+    PROPERTIES (d)  FORCE PANEL articleItemStatementDetail, nameCountryItemStatementDetail, balanceDepartmentStoreItemStatementDetail,
+                    minReserveItemDepartmentStatementDetail, maxReserveItemDepartmentStatementDetail
+
+    PROPERTIES      addStatementDetailBarcode(st) TODRAW d
+
+    FILTERS NOT NULL inStatementStatementDetail(st, d)
+
+    EDIT statement OBJECT st
+;
+
+FORM statements 'Отгрузки из розницы'
+    OBJECTS st=statement
+    PROPERTIES (st) READONLY objectClassName, waybillStatement, seriesWaybillStatement, dateStatement, nameCustomerStatement,
+                    nameDepartmentStoreStatement, quantityStatementDetailsStatement, totalQuantityStatement, sumStatement
+
+    PROPERTIES (st) ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
+                    postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
+;
+
+DESIGN statements FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+    PROPERTY (delete(st)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
 
 
 //---------------------------- Кассовые отчеты ----------------------------------------//
@@ -4903,6 +5091,7 @@ NAVIGATOR {
         }
         NEW itemspecifications 'Отпуск из розницы' {
             ADD specifications;
+            ADD statements;
         }
     }
 
@@ -5043,6 +5232,8 @@ NAVIGATOR {
             ADD innerArrival;
             ADD objectiveAcquiring;
             ADD specification;
+            ADD specificationsStatement;
+            ADD statement;
         }
         ADD importData;
         ADD globalParameters;
