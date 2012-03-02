@@ -76,7 +76,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private State currentState = null;
 
     private Map<String, ValueClass> primitiveTypeAliases = BaseUtils.buildMap(
-            Arrays.<String>asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME"),
+            asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME"),
             Arrays.<ValueClass>asList(IntegerClass.instance, DoubleClass.instance, LongClass.instance, DateClass.instance, LogicalClass.instance, DateTimeClass.instance, TextClass.instance, TimeClass.instance)
     );
 
@@ -709,7 +709,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedUnaryMinusProp(LPWithParams prop) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(baseLM.minusDouble, Arrays.<LPWithParams>asList(prop));
+        return addScriptedJProp(baseLM.minusDouble, asList(prop));
     }
 
     private List<Integer> mergeAllParams(List<LPWithParams> lpList) {
@@ -773,7 +773,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LPWithParams> paramsList = new ArrayList<LPWithParams>();
         for (int resI : resultInterfaces) {
-            paramsList.add(new LPWithParams(null, Arrays.asList(resI)));
+            paramsList.add(new LPWithParams(null, asList(resI)));
         }
         paramsList.add(toProperty);
         paramsList.add(fromProperty);
@@ -793,13 +793,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(result, allParams);
     }
 
-    public LPWithParams addScriptedForAProp(List<String> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams actionProp, boolean recursive, boolean descending) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedForAProp(" + oldContext + ", " + condition + ", " + orders + ", " + actionProp + ", " + recursive + ");");
+    public LPWithParams addScriptedForAProp(List<String> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, boolean recursive, boolean descending) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedForAProp(" + oldContext + ", " + condition + ", " + orders + ", " + action + ", " + elseAction + ", " + recursive + ", " + descending + ");");
 
         List<LPWithParams> creationParams = new ArrayList<LPWithParams>();
         creationParams.add(condition);
         creationParams.addAll(orders);
-        creationParams.add(actionProp);
+        if (elseAction != null) {
+            creationParams.add(elseAction);
+        }
+        creationParams.add(action);
         List<Integer> allParams = mergeAllParams(creationParams);
 
         List<Integer> usedParams = new ArrayList<Integer>();
@@ -813,12 +816,23 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LPWithParams> allCreationParams = new ArrayList<LPWithParams>();
         for (int usedParam : usedParams) {
-            allCreationParams.add(new LPWithParams(null, Arrays.asList(usedParam)));
+            allCreationParams.add(new LPWithParams(null, asList(usedParam)));
         }
         allCreationParams.addAll(creationParams);
 
-        LP result = addForAProp(null, genSID(), "", !descending, recursive, allParams.size(), usedParams.size(), getParamsPlainList(allCreationParams).toArray());
+        LP result = addForAProp(null, genSID(), "", !descending, recursive, elseAction != null, allParams.size(), usedParams.size(), getParamsPlainList(allCreationParams).toArray());
         return new LPWithParams(result, usedParams);
+    }
+
+    public LPWithParams wrapWithFlowAction(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+        LP<?> action = property.property;
+        int intNum = action.listInterfaces.size();
+        LP joinProp = addJoinAProp(null, genSID(), "", intNum, action.getMapClasses(), action, genList(intNum).toArray());
+        return new LPWithParams(joinProp, property.usedParams);
+    }
+
+    public LPWithParams getTerminalFlowActionProperty(boolean isBreak) {
+        return new LPWithParams(isBreak ? baseLM.flowBreak : baseLM.flowReturn, new ArrayList<Integer>());
     }
 
     private List<Object> getParamsPlainList(List<LPWithParams>... mappedPropLists) throws ScriptingErrorLog.SemanticErrorException {
@@ -934,7 +948,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedRProp(List<String> context, LPWithParams zeroStep, LPWithParams nextStep, Cycle cycleType) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedRProp(" + context + ", " + zeroStep + ", " + nextStep + ", " + cycleType + ");");
 
-        List<Integer> usedParams = mergeAllParams(Arrays.asList(zeroStep, nextStep));
+        List<Integer> usedParams = mergeAllParams(asList(zeroStep, nextStep));
 
         checkRecursionContext(context, usedParams);
 
@@ -1126,7 +1140,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LP<?> addScriptedTypeExprProp(LP<?> mainProp, LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(mainProp, Arrays.<LPWithParams>asList(property)).property;
+        return addScriptedJProp(mainProp, asList(property)).property;
     }
 
     public void addScriptedConstraint(LP<?> property, boolean checked, String message) throws ScriptingErrorLog.SemanticErrorException {
@@ -1614,7 +1628,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private void checkForActionPropertyConstraints(boolean isRecursive, List<Integer> oldContext, List<Integer> newContext) throws ScriptingErrorLog.SemanticErrorException {
         if (!isRecursive && oldContext.size() == newContext.size()) {
-            errLog.emitForActionSameContestError(parser);
+            errLog.emitForActionSameContextError(parser);
         }
     }
 

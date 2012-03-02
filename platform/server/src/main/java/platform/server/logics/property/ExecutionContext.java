@@ -162,21 +162,25 @@ public class ExecutionContext {
         }
     }
 
+    public void emitExceptionIfNotInFormSession() {
+        if (!inFormSession) {
+            throw new IllegalStateException("Property should only be used in form's session!");
+        }
+    }
+
     public ExecutionContext override(DataSession newSession) {
         return new ExecutionContext(keys, value, newSession, newSession.modifier, new ArrayList<ClientAction>(), form, mapObjects, groupLast);
     }
 
     public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys) {
+        return override(keys, mapObjects, value);
+    }
+
+    public ExecutionContext map(Map<ClassPropertyInterface, ClassPropertyInterface> mapping, ObjectValue value) {
+        return override(join(mapping, keys), nullJoin(mapping, mapObjects), value);
+    }
+
+    public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, ObjectValue value) {
         return new ExecutionContext(keys, value, session, modifier, actions, form, mapObjects, groupLast);
-    }
-
-    public ExecutionContext map(Map<ClassPropertyInterface, ClassPropertyInterface> map, ObjectValue value) {
-        return new ExecutionContext(join(map, keys), value, session, modifier, actions, form, nullJoin(map, mapObjects), groupLast);
-    }
-
-    public void emitExceptionIfNotInFormSession() {
-        if (!inFormSession) {
-            throw new IllegalStateException("Property should only be used in form's session!");
-        }
     }
 }

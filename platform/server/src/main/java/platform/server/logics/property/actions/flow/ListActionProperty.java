@@ -27,20 +27,26 @@ public class ListActionProperty extends KeepContextActionProperty {
         this.newSession = newSession;
 
         if (newSession && doApply) {
-            actions.add(new PropertyMapImplement<ClassPropertyInterface, I>(BL.LM.apply.property));
+            actions.add(new PropertyMapImplement<ClassPropertyInterface, I>(BL.LM.flowApply.property));
         }
 
         this.actions = DerivedProperty.mapImplements(reverse(getMapInterfaces(innerInterfaces)), actions);
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public FlowResult flowExecute(ExecutionContext context) throws SQLException {
         ExecutionContext innerContext = newSession
                                         ? context.override(context.getSession().createSession())
                                         : context;
 
+        FlowResult result = FlowResult.FINISH;
+
         for (PropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> action : actions) {
-            execute(action, innerContext);
+            FlowResult actionResult = execute(innerContext, action);
+            if (actionResult != FlowResult.FINISH) {
+                result =  actionResult;
+                break;
+            }
         }
 
         if (newSession) {
@@ -51,5 +57,6 @@ public class ListActionProperty extends KeepContextActionProperty {
                 context.getFormInstance().refreshData();
             }
         }
+        return result;
     }
 }

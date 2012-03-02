@@ -20,32 +20,59 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     private final PropertyMapImplement<?, I> ifProp; // calculate
     private final OrderedMap<PropertyInterfaceImplement<I>, Boolean> orders; // calculate
     private final PropertyMapImplement<ClassPropertyInterface, I> action; // action
+    private final PropertyMapImplement<ClassPropertyInterface, I> elseAction;
     private final boolean recursive;
 
-    public ForActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, PropertyMapImplement<?, I> ifProp, OrderedMap<PropertyInterfaceImplement<I>, Boolean> orders, PropertyMapImplement<ClassPropertyInterface, I> action, boolean recursive) {
+    public ForActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, PropertyMapImplement<?, I> ifProp, OrderedMap<PropertyInterfaceImplement<I>, Boolean> orders, PropertyMapImplement<ClassPropertyInterface, I> action, PropertyMapImplement<ClassPropertyInterface, I> elseAction, boolean recursive) {
         super(sID, caption, innerInterfaces, mapInterfaces, merge(orders.keySet(), toList(ifProp, action)));
+
+        assert elseAction == null || !recursive;
+
         this.ifProp = ifProp;
         this.orders = orders;
         this.action = action;
+        this.elseAction = elseAction;
         this.recursive = recursive;
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
-        while(true) {
-            Set<Map<I,DataObject>> rows = readRows(context.getSession(), context.getKeys(), context.getModifier());
-            for(Map<I, DataObject> row : rows)
-                execute(action, row, context);
-            if(!recursive || rows.size()==0)
-                return;
+    @Override
+    protected FlowResult flowExecute(ExecutionContext context) throws SQLException {
+        FlowResult result = FlowResult.FINISH;
+
+        boolean execElse = elseAction != null;
+
+        Set<Map<I, DataObject>> rows;
+        RECURSIVE:
+        do {
+            rows = readRows(context.getSession(), context.getKeys(), context.getModifier());
+            if (!rows.isEmpty()) {
+                execElse = false;
+            }
+            for (Map<I, DataObject> row : rows) {
+                FlowResult actionResult = execute(context, action, row);
+                if (actionResult != FlowResult.FINISH) {
+                    if (actionResult != FlowResult.BREAK) {
+                        result = actionResult;
+                    }
+                    break RECURSIVE;
+                }
+            }
+        } while (recursive && !rows.isEmpty());
+
+        if (execElse) {
+            return execute(context, elseAction, crossJoin(mapInterfaces, context.getKeys()));
         }
+
+        return result;
     }
 
     private Set<Map<I, DataObject>> readRows(DataSession session, Map<ClassPropertyInterface, DataObject> keys, Modifier modifier) throws SQLException {
         Query<I, PropertyInterfaceImplement<I>> query = new Query<I, PropertyInterfaceImplement<I>>(innerInterfaces);
         query.putKeyWhere(crossJoin(mapInterfaces, keys));
         query.and(ifProp.mapExpr(query.mapKeys, modifier).getWhere());
-        for(PropertyInterfaceImplement<I> order : orders.keySet())
+        for (PropertyInterfaceImplement<I> order : orders.keySet()) {
             query.properties.put(order, order.mapExpr(query.mapKeys, modifier));
+        }
         return query.executeClasses(session, orders).keySet();
     }
 }

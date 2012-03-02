@@ -31,6 +31,8 @@ import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
+import platform.server.logics.property.actions.flow.BreakActionProperty;
+import platform.server.logics.property.actions.flow.ReturnActionProperty;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.PropertySet;
@@ -282,6 +284,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LP apply;
     public LP cancel;
+
+    public LP flowApply;
+    public LP flowBreak;
+    public LP flowReturn;
 
     public LP objectClass;
     public LP objectClassName;
@@ -729,6 +735,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         apply = addAProp(new ApplyActionProperty(BL));
         cancel = addAProp(new CancelActionProperty());
+
+        flowApply = addJoinAProp(null, "", "", 0, apply);
+        flowBreak = addProperty(null, new LP<ClassPropertyInterface>(new BreakActionProperty()));
+        flowReturn = addProperty(null, new LP<ClassPropertyInterface>(new ReturnActionProperty()));
 
         date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
 

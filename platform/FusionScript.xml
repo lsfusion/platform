@@ -33,6 +33,7 @@
       <keyword name="BEFORE" />
       <keyword name="BOOLEAN" />
       <keyword name="BOTTOM" />
+      <keyword name="BREAK" />
       <keyword name="BY" />
       <keyword name="CASCADE" />
       <keyword name="CASE" />
@@ -156,6 +157,7 @@
       <keyword name="REGEXP" />
       <keyword name="REMOVE" />
       <keyword name="RESOLVE" />
+      <keyword name="RETURN" />
       <keyword name="RIGHT" />
       <keyword name="RIGHTBOTTOM" />
       <keyword name="RTF" />

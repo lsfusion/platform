@@ -1261,11 +1261,30 @@ keepContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParam
 	:	listPDB=listActionPropertyDefinitionBody[context, dynamic] { $property = $listPDB.property; }
 	|	execPDB=execActionPropertyDefinitionBody[context, dynamic] { $property = $execPDB.property; }	
 	|	ifPDB=ifActionPropertyDefinitionBody[context, dynamic] { $property = $ifPDB.property; }
+	|	termPDB=terminalFlowActionPropertyDefinitionBody { $property = $termPDB.property; }
+	;
+	
+terminalFlowActionPropertyDefinitionBody returns [LPWithParams property]
+@init {
+	boolean isBreak = true;
+}
+@after {
+	if (inPropParseState()) {
+		$property =	self.getTerminalFlowActionProperty(isBreak);
+	}
+}
+	:	'BREAK'
+	|	'RETURN' { isBreak = false; }
 	;
 
 customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	$property = new LPWithParams(null, new ArrayList<Integer>());
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.wrapWithFlowAction(property);
+	}
 }
 	:	formPDB=formActionPropertyDefinitionBody { $property.property = $formPDB.property; }
 	|	addPDB=addObjectActionPropertyDefinitionBody { $property.property = $addPDB.property; }
@@ -1431,17 +1450,14 @@ setActionPropertyDefinitionBody[List<String> context] returns [LPWithParams prop
 	;
 
 ifActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
-@init {
-	LPWithParams elseProp = null;	
-}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedIfAProp($expr.property, $thenPDB.property, elseProp);
+		$property = self.addScriptedIfAProp($expr.property, $thenPDB.property, $elsePDB.property);
 	}
 }
 	:	'IF' expr=propertyExpression[context, dynamic] 
 		'THEN' thenPDB=actionPropertyDefinitionBody[context, dynamic]
-		('ELSE' elsePDB=actionPropertyDefinitionBody[context, dynamic] { elseProp = $elsePDB.property; })?
+		('ELSE' elsePDB=actionPropertyDefinitionBody[context, dynamic])?
 	;
 
 forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams property]
@@ -1453,7 +1469,7 @@ forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams prop
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, recursive, descending);
+		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, recursive, descending, $elsePDB.property);
 	}	
 }
 	:	(	'FOR' 
@@ -1465,6 +1481,7 @@ forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams prop
 			ordExprs=nonEmptyPropertyExpressionList[newContext, false] { orders = $ordExprs.props; }
 		)?	
 		'DO' actPDB=actionPropertyDefinitionBody[newContext, false]
+		( {!recursive}?=> 'ELSE' elsePDB=actionPropertyDefinitionBody[context, false])?
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -390,7 +390,7 @@ public abstract class LogicsModule {
         while (i > 0 && (params[i] == null || params[i] instanceof ValueClass))
             backClasses.add((ValueClass) params[i--]);
         params = copyOfRange(params, 0, i + 1);
-        ValueClass[] overrideClasses = BaseUtils.reverse(backClasses).toArray(new ValueClass[1]);
+        ValueClass[] overrideClasses = BaseUtils.reverse(backClasses).toArray(new ValueClass[0]);
 
         boolean defaultChanged = false;
         if (params[0] instanceof Boolean) {
@@ -571,18 +571,37 @@ public abstract class LogicsModule {
         }
     }
 
-    protected LP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean recursive, int interfaces, int resInterfaces, Object... params) {
+    protected LP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean recursive, boolean hasElse, int interfaces, int resInterfaces, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
-        return addProperty(group, new LP<ClassPropertyInterface>(new ForActionProperty<PropertyInterface>(name, caption,
-                innerInterfaces, (List) readImplements.subList(0, resInterfaces), (PropertyMapImplement<?, PropertyInterface>)readImplements.get(resInterfaces),
-                toOrderedMap(readImplements.subList(resInterfaces+1, readImplements.size()-1), ascending), (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(readImplements.size()-1), recursive)));
+
+        int implCnt = readImplements.size();
+
+        PropertyMapImplement<?, PropertyInterface> ifProp = (PropertyMapImplement<?, PropertyInterface>) readImplements.get(resInterfaces);
+
+        PropertyMapImplement<ClassPropertyInterface, PropertyInterface> action =
+                (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>) readImplements.get(implCnt - 1);
+        PropertyMapImplement<ClassPropertyInterface, PropertyInterface> elseAction =
+                !hasElse ? null : (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>) readImplements.get(implCnt - 2);
+
+        OrderedMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
+                toOrderedMap(readImplements.subList(resInterfaces + 1, implCnt - (hasElse ? 2 : 1)), ascending);
+
+        List mapInterfaces = readImplements.subList(0, resInterfaces);
+
+        return addProperty(group, new LP<ClassPropertyInterface>(
+                new ForActionProperty<PropertyInterface>(name, caption, innerInterfaces, mapInterfaces, ifProp, orders, action, elseAction, recursive))
+        );
     }
 
     protected LP addJoinAProp(AbstractGroup group, String name, String caption, int interfaces, LP action, Object... params) {
+        return addJoinAProp(group, name, caption, interfaces, null, action, params);
+    }
+
+    protected LP addJoinAProp(AbstractGroup group, String name, String caption, int interfaces, ValueClass[] classes, LP action, Object... params) {
         List<PropertyInterface> listInterfaces = genInterfaces(interfaces);
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
-        return addProperty(group, new LP<ClassPropertyInterface>(new JoinActionProperty(name, caption, listInterfaces, mapImplement(action, readImplements))));
+        return addProperty(group, new LP<ClassPropertyInterface>(new JoinActionProperty(name, caption, listInterfaces, mapImplement(action, readImplements), classes)));
     }
 
     protected LP addEAProp(ValueClass... params) {

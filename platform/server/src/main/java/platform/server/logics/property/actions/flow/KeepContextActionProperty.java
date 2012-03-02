@@ -1,8 +1,9 @@
 package platform.server.logics.property.actions.flow;
 
-import platform.server.logics.property.*;
+import platform.server.classes.ValueClass;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.PropertyInterfaceImplement;
 
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
@@ -12,7 +13,7 @@ public abstract class KeepContextActionProperty extends FlowActionProperty {
         super(sID, caption, listInterfaces, used);
     }
 
-    protected static void execute(PropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> implement, ExecutionContext context) throws SQLException {
-        ((ActionProperty) implement.property).execute(context.map(implement.mapping, ((ActionProperty) implement.property).getValueClass().getDefaultObjectValue()));
+    protected KeepContextActionProperty(String sID, String caption, ValueClass[] classes) {
+        super(sID, caption, classes);
     }
 }

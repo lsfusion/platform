@@ -10,10 +10,12 @@ import platform.server.logics.property.*;
 import platform.server.session.PropertyChange;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static platform.base.BaseUtils.*;
-import static platform.server.logics.PropertyUtils.getValueClasses;
 
 public class SetActionProperty<P extends PropertyInterface, I extends PropertyInterface> extends ExtendContextActionProperty<I> {
 
@@ -32,7 +34,7 @@ public class SetActionProperty<P extends PropertyInterface, I extends PropertyIn
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public FlowResult flowExecute(ExecutionContext context) throws SQLException {
         Map<I, KeyExpr> allKeys = KeyExpr.getMapKeys(innerInterfaces);
 
         Map<P, KeyExpr> toKeys = join(writeTo.mapping, allKeys);
@@ -56,5 +58,6 @@ public class SetActionProperty<P extends PropertyInterface, I extends PropertyIn
         context.addActions(
                 context.getSession().execute(writeTo.property, change, context.getModifier(), context.getRemoteForm(), toObjects)
         );
+        return FlowResult.FINISH;
     }
 }

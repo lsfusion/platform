@@ -18,7 +18,11 @@ public class MessageActionProperty extends CustomActionProperty {
     }
 
     public void execute(ExecutionContext context) throws SQLException {
-        context.addAction(
-                new MessageClientAction((String) context.getKeyValue(msgInterface).object, caption));
+        MessageClientAction msgAction = new MessageClientAction((String) context.getKeyValue(msgInterface).object, caption);
+        if (context.getRemoteForm() != null) {
+            context.getRemoteForm().requestUserInteraction(msgAction);
+        } else {
+            context.addAction(msgAction);
+        }
     }
 }

@@ -113,13 +113,13 @@ public class LP<T extends PropertyInterface> {
     }
 
     public ValueClass[] getMapClasses() {
-        return BaseUtils.mapList(listInterfaces, property.getMapClasses()).toArray(new ValueClass[1]);
+        return BaseUtils.mapList(listInterfaces, property.getMapClasses()).toArray(new ValueClass[0]);
     }
 
     public ValueClass[] getCommonClasses(Result<ValueClass> value) {
         Property.CommonClasses<T> common = property.getCommonClasses();
         value.result = common.value;
-        return BaseUtils.mapList(listInterfaces, common.interfaces).toArray(new ValueClass[1]);
+        return BaseUtils.mapList(listInterfaces, common.interfaces).toArray(new ValueClass[0]);
     }
 
     public ValueClass getResultClass() {

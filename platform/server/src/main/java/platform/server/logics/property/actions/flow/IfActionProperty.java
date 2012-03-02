@@ -19,7 +19,7 @@ public class IfActionProperty extends KeepContextActionProperty {
     public <I extends PropertyInterface> IfActionProperty(String sID, String caption, List<I> innerInterfaces, PropertyInterfaceImplement<I> ifProp, PropertyMapImplement<ClassPropertyInterface, I> trueAction, PropertyMapImplement<ClassPropertyInterface, I> falseAction) {
         super(sID, caption, innerInterfaces, toList(ifProp, trueAction, falseAction));
 
-        Map<I,ClassPropertyInterface> mapInterfaces = reverse(getMapInterfaces(innerInterfaces));
+        Map<I, ClassPropertyInterface> mapInterfaces = reverse(getMapInterfaces(innerInterfaces));
         this.ifProp = ifProp.map(mapInterfaces);
         this.trueAction = trueAction.map(mapInterfaces);
         this.falseAction = falseAction.map(mapInterfaces);
@@ -28,17 +28,19 @@ public class IfActionProperty extends KeepContextActionProperty {
     public <I extends PropertyInterface> IfActionProperty(String sID, String caption, List<I> innerInterfaces, PropertyInterfaceImplement<I> ifProp, PropertyMapImplement<ClassPropertyInterface, I> trueAction) {
         super(sID, caption, innerInterfaces, toList(ifProp, trueAction));
 
-        Map<I,ClassPropertyInterface> mapInterfaces = reverse(getMapInterfaces(innerInterfaces));
+        Map<I, ClassPropertyInterface> mapInterfaces = reverse(getMapInterfaces(innerInterfaces));
         this.ifProp = ifProp.map(mapInterfaces);
         this.trueAction = trueAction.map(mapInterfaces);
         this.falseAction = null;
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
-        if(ifProp.read(context.getSession(), context.getKeys(), context.getModifier())!=null)
-            execute(trueAction, context);
-        else if (falseAction != null)
-            execute(falseAction, context);
+    public FlowResult flowExecute(ExecutionContext context) throws SQLException {
+        if (ifProp.read(context.getSession(), context.getKeys(), context.getModifier()) != null) {
+            return execute(context, trueAction);
+        } else if (falseAction != null) {
+            return execute(context, falseAction);
+        }
+        return FlowResult.FINISH;
     }
 }
