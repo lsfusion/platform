@@ -244,14 +244,18 @@ public class RomanLogicsModule extends LogicsModule {
     private LP rateExchange;
     private LP typeExchangeSTX;
     private LP nameTypeExchangeSTX;
-    private LP typeExchangeCustom;
-    private LP nameTypeExchangeCustom;
+    public LP typeExchangeCustom;
+    public LP nameTypeExchangeCustom;
+    public LP typeExchangePayCustom;
+    public LP nameTypeExchangePayCustom;
     private LP currencyCustom;
     private LP nameCurrencyCustom;
+    public LP currencyPayCustom;
+    public LP nameCurrencyPayCustom;
     private LP NDSPercentCustom;
     private LP lessCmpDate;
     private LP nearestPredDate;
-    private LP nearestRateExchange;
+    public LP nearestRateExchange;
     public LP sidImporterFreightTypeInvoice;
     public LP sidImporterFreight;
     public LP sidDestination;
@@ -1518,16 +1522,20 @@ public class RomanLogicsModule extends LogicsModule {
         rateExchange = addDProp(baseGroup, "rateExchange", "Курс обмена", DoubleClass.instance, typeExchange, currency, DateClass.instance);
         typeExchangeSTX = addDProp(idGroup, "typeExchangeSTX", "Тип обмена валют для STX (ИД)", typeExchange);
         nameTypeExchangeSTX = addJProp(baseGroup, "nameTypeExchangeSTX", "Тип обмена валют для STX", baseLM.name, typeExchangeSTX);
-        typeExchangeCustom = addDProp(idGroup, "typeExchangeCustom", "Тип обмена валют для таможни (ИД)", typeExchange);
-        nameTypeExchangeCustom = addJProp(baseGroup, "nameTypeExchangeCustom", "Тип обмена валют для таможни", baseLM.name, typeExchangeCustom);
-        currencyCustom = addDProp(idGroup, "currencyCustom", "Валюта таможни (ИД)", currency);
-        nameCurrencyCustom = addJProp(baseGroup, "nameCurrencyCustom", "Валюта таможни", baseLM.name, currencyCustom);
+        typeExchangeCustom = addDProp(idGroup, "typeExchangeCustom", "Тип обмена валют для мин.цен (ИД)", typeExchange);
+        nameTypeExchangeCustom = addJProp(baseGroup, "nameTypeExchangeCustom", "Тип обмена валют для мин.цен", baseLM.name, typeExchangeCustom);
+        typeExchangePayCustom = addDProp(idGroup, "typeExchangePayCustom", "Тип обмена валют для платежей (ИД)", typeExchange);
+        nameTypeExchangePayCustom = addJProp(baseGroup, "nameTypeExchangePayCustom", "Тип обмена валют для платежей", baseLM.name, typeExchangePayCustom);
+        currencyCustom = addDProp(idGroup, "currencyCustom", "Валюта мин.цен (ИД)", currency);
+        nameCurrencyCustom = addJProp(baseGroup, "nameCurrencyCustom", "Валюта мин.цен", baseLM.name, currencyCustom);
+        currencyPayCustom = addDProp(idGroup, "currencyPayCustom", "Валюта для платежей (ИД)", currency);
+        nameCurrencyPayCustom = addJProp(baseGroup, "nameCurrencyPayCustom", "Валюта для платежей", baseLM.name, currencyPayCustom);
         NDSPercentCustom = addDProp(baseGroup, "NDSPercentCustom", "НДС", DoubleClass.instance);
 
         //lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, greater2, 3, 4, is(DateClass.instance), 4);
         lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, addJProp(baseLM.greater2, 3, baseLM.date, 4), 1, 2, 3, 4, is(baseLM.transaction), 4);
         nearestPredDate = addMGProp((AbstractGroup) null, "nearestPredDate", "Ближайшая меньшая дата", lessCmpDate, 1, 2, 4);
-        nearestRateExchange = addJProp("Ближайший курс обмена", rateExchange, 1, 2, nearestPredDate, 1, 2, 3);
+        nearestRateExchange = addJProp("nearestRateExchange", "Ближайший курс обмена", rateExchange, 1, 2, nearestPredDate, 1, 2, 3);
 
         // GENERAL
         nameOrigin = addDProp(baseGroup, "nameOrigin", "Наименование (ориг.)", InsensitiveStringClass.get(50), secondNameClass);
@@ -3868,7 +3876,9 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(nameDictionaryComposition);
             addPropertyDraw(nameTypeExchangeSTX);
             addPropertyDraw(nameTypeExchangeCustom);
+            addPropertyDraw(nameTypeExchangePayCustom);
             addPropertyDraw(nameCurrencyCustom);
+            addPropertyDraw(nameCurrencyPayCustom);
             addPropertyDraw(NDSPercentCustom);
             addPropertyDraw(sidTypeDutyDuty);
             addPropertyDraw(nameTypeDutyDuty);
