@@ -977,7 +977,7 @@ generateBarcodeSku 'Сгенерировать штрих-код' = ACTION (sku)
         SET barcodeEx(b) <- curStringValueNumerator(tmpNum());
         EXEC incrementValueNumerator(tmpNum());
     };
-} TOOLBAR;
+} TOOLBAR CONFIRM;
 
 
 FORM barcode 'Штрих-код'
@@ -1401,11 +1401,12 @@ DESIGN addSuppliersRangeItem FROM DEFAULT {
     PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
 };
 
-showFormAddSuppliersRangeItem 'Добавить' (item) = ACTION FORM addSuppliersRangeItem OBJECTS i MODAL;
+showFormAddSuppliersRangeItem 'Добавить' (item) = ACTION FORM addSuppliersRangeItem OBJECTS i MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
-FORM suppliersRangeItem 'Дабавить Шкалу'
+FORM suppliersRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE
-    PROPERTIES nameAttributeItem(i) READONLY, showFormAddSuppliersRangeItem(i), OBJVALUE(d), dataSuppliersRangeItemDate(i, d), dataActingSuppliersRangeItemDate(i, d)
+    PROPERTIES       nameAttributeItem(i) READONLY, showFormAddSuppliersRangeItem(i) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY
+    PROPERTIES(i, d) dataSuppliersRangeItemDate, dataActingSuppliersRangeItemDate
     FILTERS suppliersRangeItemDate(i, d)
 ;
 
@@ -1446,17 +1447,18 @@ DESIGN addRetailRangeItem FROM DEFAULT {
     PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
 };
 
-showFormAddRetailRangeItem 'Добавить' (item) = ACTION FORM addRetailRangeItem OBJECTS i MODAL;
+showFormAddRetailRangeItem 'Добавить' (item) = ACTION FORM addRetailRangeItem OBJECTS i MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
-FORM retailRangeItem 'Дабавить Шкалу'
+FORM retailRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE
-    PROPERTIES nameAttributeItem(i) READONLY, showFormAddRetailRangeItem(i), OBJVALUE(d), dataRetailRangeItemDate(i, d), dataActingRetailRangeItemDate(i, d)
+    PROPERTIES       nameAttributeItem(i) READONLY, showFormAddSuppliersRangeItem(i) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY
+    PROPERTIES(i, d) dataRetailRangeItemDate, dataActingRetailRangeItemDate
     FILTERS retailRangeItemDate(i, d)
 ;
-
 DESIGN retailRangeItem FROM DEFAULT {
     PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
 };
+
 showFormRetailRangeItem 'Шкала' (item) = ACTION FORM retailRangeItem OBJECTS i MODAL SHORTCUT dataRetailRangeItem DEFAULT;
 
 overrideRateRangeItem 'НДС (ИД)' (item) = UNION OVERRIDE retailRangeItem(item), suppliersRangeItem(item) IN idGroup;
@@ -5375,6 +5377,7 @@ NAVIGATOR {
             ADD specification;
             ADD specificationsStatement;
             ADD statement;
+            ADD numerator;
         }
         ADD importData;
         ADD globalParameters;
