@@ -561,7 +561,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                     if (!boundary) {
                         ++row;
                         if (row > maxR) {
-                            row = 0;
+                            row = maxR;
                         }
                     }
                 } else if (column < 0) {
@@ -569,16 +569,16 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                     if (!boundary) {
                         --row;
                         if (row < 0) {
-                            row = maxR;
+                            row = 0;
                         }
                     }
                 }
             } else {
                 row += dr;
                 if (row > maxR) {
-                    row = 0;
-                } else if (row < 0) {
                     row = maxR;
+                } else if (row < 0) {
+                    row = 0;
                 }
             }
             return new int[]{row, column};
