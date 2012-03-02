@@ -326,7 +326,6 @@ META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
     cleanAll###object##Details###object 'Очистить документ' = ACTION (object) {
         FOR object###object##Detail (detail) == object DO {
           EXEC delete(detail AS object##Detail);
-          EXEC apply();
         };
     } IN documentHeaderGroup CONFIRM;
 
@@ -576,6 +575,7 @@ hallmarkItem 'Отличительный признак (особенности)
 @metaCodeShowItemAttribute(Hallmark, 'Показывать отличительный признак', displayGroup);
 
 articleItem 'Артикул поставщика/производителя' = DATA STRING[100] (item) IN descriptionGroup;
+@metaCodeShowItemAttribute(Article, 'Показывать артикул', displayGroup);
 
 coolingDegreeItem 'Степень охлаждения (ИД)' = DATA coolingDegree (item) IN idGroup;
 nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegreeItem(item)) IN descriptionGroup;
@@ -906,14 +906,14 @@ barcodeUserBarcodeSku 'Основной штрих-код' = barcodeEx(userBarco
 defaultBarcodeSku(sku) = GROUP MIN barcode BY skuBarcode(barcode) IN idGroup;
 barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku) IN baseGroup;
 
-equalsSkuBarcode 'Основной штрих-код' (sku, barcode) = barcodeSku(sku) == barcode;
+primarySkuBarcode 'Основной штрих-код' (sku, barcode) = barcodeSku(sku) == barcode;
 
 CONSTRAINT CHECKED skuBarcode(barcodeSku(item)) != item MESSAGE 'Товар основного штрих-кода должен совпадать с товаром';
 
 barcodeBarcodeSku 'Основной штрих-код' = barcodeEx(barcodeSku(sku)) IN baseGroup PERSISTENT;
 //barcodeToBarcode (barcode) = GROUP UNIQUE barcode BY barcodeEx(barcode);
 
-inSkuBarcode(sku, barcode) = skuBarcode(barcode)==sku;
+inSkuBarcode(sku, barcode) = skuBarcode(barcode) == sku;
 
 concatBarcodeBySkuDate 'Штрих-кода товара' (sku, date) = GROUP CONCAT barcodeEx(barcode) IF dateBarcode(barcode) <= date AND date AS DATE, ', ' BY skuBarcode(barcode), date IN baseGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
@@ -1550,73 +1550,102 @@ PROPERTIES(w) ADDFORM, EDITFORM, delete;
 //toShowManufactured(item) =
 
 FORM item 'Товар'
-OBJECTS i=item FIXED PANEL, b=barcode
-TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
-OBJECTS dt=DATE FIXED PANEL, sp=supplier FIXED PANEL, d=departmentStore
-PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
-FILTERS stringEqualsAll(a)
-FILTERS inStoreTypeTradingNetwork (st, t)
-FILTERS inStoreTypeStore (st, s)
-FILTERS inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
-PROPERTIES (i) captionItem, nameAttributeItem, nameCashAttributeItem, nameScalesAttributeItem, canonicalNameItemGroupSku, isManufacturedItem,
- nameBrandItem SHOWIF toShowBrand(i), shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameTypeItemItem SHOWIF toShowType(i),
- nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i),
- shortNameSpecialtyItem SHOWIF toShowSpecialty(i), isWeightedItem, isWeightItem, passScalesItem, volumeItem, netWeightItem,
- nameColorItem SHOWIF toShowColor(i), nameTasteItem SHOWIF toShowTaste(i), hallmarkItem SHOWIF toShowHallmark(i), articleItem,
- quantityPackItem, nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), minQuantityOrderItem, minReserveItem,
- compositionScalesItem, compositionMenuItem SHOWIF isManufacturedItem(i), percentFatItem, percentAlcoholItem,
- lengthItem, widthItem, heightItem, grossWeightItem SHOWIF isManufacturedItem(i), lengthPackItem, widthPackItem, heightPackItem,
- grossWeightPackItem SHOWIF isManufacturedItem(i),
- nameCountryItem SHOWIF toShowCountry(i), bonusReturnItem, nameReturnItem, oldPriceItem, isMarkItem, hintItem,
- isCrudeItem SHOWIF isManufacturedItem(i), nameGroupProductItem SHOWIF isManufacturedItem(i), nameNumberInPackItem, nameFormItemItem,
- nameRateWasteItem, percentRateWasteItem, standartItem SHOWIF isManufacturedItem(i), normOutItem SHOWIF isManufacturedItem(i),
- groupMenuItem SHOWIF isManufacturedItem(i), isCutedItem SHOWIF isManufacturedItem(i), isLoafCutItem, storageTemperatureItem,
- controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem, bonusItem,
- importerPriceItem, showFormimporterPriceItem, dataSuppliersRangeItem, dataActingRateSuppliersRangeItem, showFormSuppliersRangeItem,
- dataRetailRangeItem, dataActingRateRetailRangeItem, showFormRetailRangeItem, percentWholesaleMarkItem, // dataSuppliersRateRangeItem, dataRetailRateRangeItem
- minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem, banSailItem
-PROPERTIES (i) nameisPortionBarItem, showFormNameisPortionBarItem,
-              coefficientNetGrossItem SHOWIF isManufacturedItem(i), showFormcoefficientNetGrossItem,
-              rateNaturalLossItem, showFormrateNaturalLossItem,         //     NDSSupplierItem, showFormNDSSupplierItem,
-              nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem, nameTagItem, multiplierItem
-PROPERTIES (i) READONLY barcodeBarcodeSku
 
-PROPERTIES (b) barcodeEx, dateBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode,
-               amountBarcode, removeBarcode, commentRemoveBarcode, actionBarcode
-PROPERTIES (i, b) equalsSkuBarcode
-PROPERTIES (d) name
-PROPERTIES (d, i) percentDiscountDepartmentItem, additionPriceDepartmentStoreItem, boundCertificateDepartmentStoreItem,
-                  maxAllowedRetailPriceDepartmentStoreItem, netWeightManufacturerDepartmentStoreItem, statusCashDepartmentStoreItem,
-                  nameStatusCashDepartmentStoreItem, dateManufactureDepartmentStoreItem, dateFitToDepartmentStoreItem,
-                  fromDateDeliveryDepartmentStoreItem, banSaleDepartmentStoreItem, banMovementDepartmentStoreItem, reserveDepartmentStoreItem,
-                  topDepartmentStoreItem, quantityRealizationDepartmentStoreItem, balanceDepartmentStoreItem
+    OBJECTS i=item FIXED PANEL
 
-PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
-PROPERTIES (sp) READONLY name
-PROPERTIES nameisSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF nameisSupplierItemDepartmentDate(sp, i, d, dt), showFormNameisSupplierItemDepartmentOver(sp, i, d),
-           namebanSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF namebanSupplierItemDepartmentDate(sp, i, d, dt), showFormNamebanSupplierItemDepartmentOver(sp, i, d),
-           priceSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF priceSupplierItemDepartmentDate(sp, i, d, dt), showFormpriceSupplierItemDepartmentOver(sp, i, d),
-           markupSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF markupSupplierItemDepartmentDate(sp, i, d, dt), showFormmarkupSupplierItemDepartmentOver(sp, i, d)
-PROPERTIES retailPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF retailPriceItemDepartmentDate(i, d, dt), showFormretailPriceItemDepartmentOver(i, d),
-           accountPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF accountPriceItemDepartmentDate(i, d, dt), showFormaccountPriceItemDepartmentOver(i, d),
-           maxReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF maxReserveItemDepartmentDate(i, d, dt), showFormmaxReserveItemDepartmentOver(i, d),
-           minReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF minReserveItemDepartmentDate(i, d, dt), showFormminReserveItemDepartmentOver(i, d),
-           namebanRevaluationItemDepartmentOver(i, d, dt) HIGHLIGHTIF namebanRevaluationItemDepartmentDate(i, d, dt), showFormNamebanRevaluationItemDepartmentOver(i, d),
-           nameinActionItemDepartmentOver(i, d, dt) HIGHLIGHTIF nameinActionItemDepartmentDate(i, d, dt), showFormNameinActionItemDepartmentOver(i, d),
-           marginProductionItemDepartmentOver(i, d, dt) HIGHLIGHTIF marginProductionItemDepartmentDate(i, d, dt), showFormmarginProductionItemDepartmentOver(i, d),
-           discountItemDepartmentOver(i, d, dt) HIGHLIGHTIF discountItemDepartmentDate(i, d, dt), showFormdiscountItemDepartmentOver(i, d)
+    PROPERTIES(i) nameAttributeItem, nameCashAttributeItem, nameScalesAttributeItem, canonicalNameItemGroupSku, barcodeBarcodeSku READONLY,
 
-PROPERTIES(i) isFixPriceItem, banMarkdownItem, nameWareItem SHOWIF toShowWare(i), quantityDiscountItem, fixPriceItem, namebanDiscountItem, showFormNamebanDiscountItem
+                  // Основные данные
+                  captionItem SHOWIF toShowCaption(i), nameBrandItem SHOWIF toShowBrand(i), nameTypeItemItem SHOWIF toShowType(i),
+                  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i),
+                  shortNameSpecialtyItem SHOWIF toShowSpecialty(i), nameColorItem SHOWIF toShowColor(i),
+                  nameTasteItem SHOWIF toShowTaste(i), hallmarkItem SHOWIF toShowHallmark(i), articleItem SHOWIF toShowArticle(i),
+                  nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), nameFormItemItem SHOWIF toShowFormItem(i),
+                  shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameCountryItem SHOWIF toShowCountry(i),
 
-FILTERS inStoreTypeTradingNetwork (st, t)
-FILTERS inStoreTypeStore (st, s)
-FILTERS inSkuBarcode(i, b)
-PROPERTIES(b) ADDOBJ, delete
-EDIT item OBJECT i
-EDIT barcode OBJECT b;
+                  isManufacturedItem,
+                  compositionMenuItem SHOWIF isManufacturedItem(i), grossWeightItem SHOWIF isManufacturedItem(i),
+                  grossWeightPackItem SHOWIF isManufacturedItem(i), isCrudeItem SHOWIF isManufacturedItem(i),
+                  nameGroupProductItem SHOWIF isManufacturedItem(i), standartItem SHOWIF isManufacturedItem(i),
+                  normOutItem SHOWIF isManufacturedItem(i), groupMenuItem SHOWIF isManufacturedItem(i),
+                  isCutedItem SHOWIF isManufacturedItem(i), coefficientNetGrossItem SHOWIF isManufacturedItem(i), showFormcoefficientNetGrossItem,
+
+                  nameRateWasteItem, percentRateWasteItem, rateNaturalLossItem, showFormrateNaturalLossItem,
+
+                  volumeItem, lengthItem, widthItem, heightItem, lengthPackItem, widthPackItem, heightPackItem,
+
+                  nameisPortionBarItem, showFormNameisPortionBarItem,
+
+                  // Дополнительные
+                  isWeightedItem, isWeightItem, passScalesItem, isMarkItem, isLoafCutItem,
+                  compositionScalesItem, storageTemperatureItem, banSailItem,
+
+                  importerPriceItem, showFormimporterPriceItem,
+                  dataSuppliersRangeItem, dataActingRateSuppliersRangeItem, showFormSuppliersRangeItem,
+                  dataRetailRangeItem, dataActingRateRetailRangeItem, showFormRetailRangeItem,
+                  percentWholesaleMarkItem, minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem,
+                  isFixPriceItem, banMarkdownItem, nameWareItem SHOWIF toShowWare(i),
+
+                  quantityDiscountItem, fixPriceItem, namebanDiscountItem, showFormNamebanDiscountItem,
+
+                  percentFatItem, percentAlcoholItem, nutritionalValueItem, energyItem,
+                  fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
+
+                  oldPriceItem, nameTagItem, multiplierItem,
+
+                  controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem,
+
+                  netWeightItem, quantityPackItem, minQuantityOrderItem, minReserveItem, nameNumberInPackItem,
+
+                  bonusReturnItem, nameReturnItem, hintItem, bonusItem
+
+    OBJECTS b=barcode
+    PROPERTIES(b)       barcodeEx, dateBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode,
+                        amountBarcode, removeBarcode, commentRemoveBarcode, actionBarcode
+    PROPERTIES(b)       ADDOBJ, delete
+    PROPERTIES(i, b)    primarySkuBarcode
+
+    // Управленческие параметры
+    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+    PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
+    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore (st, s)
+
+    OBJECTS dt=DATE FIXED PANEL, sp=supplier FIXED PANEL, d=departmentStore
+    PROPERTIES (d) name
+    FILTERS inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
+
+    PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
+    PROPERTIES (sp) READONLY name
+    PROPERTIES      nameisSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF nameisSupplierItemDepartmentDate(sp, i, d, dt), showFormNameisSupplierItemDepartmentOver(sp, i, d),
+                    namebanSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF namebanSupplierItemDepartmentDate(sp, i, d, dt), showFormNamebanSupplierItemDepartmentOver(sp, i, d),
+                    priceSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF priceSupplierItemDepartmentDate(sp, i, d, dt), showFormpriceSupplierItemDepartmentOver(sp, i, d),
+                    markupSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF markupSupplierItemDepartmentDate(sp, i, d, dt), showFormmarkupSupplierItemDepartmentOver(sp, i, d)
+    PROPERTIES      retailPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF retailPriceItemDepartmentDate(i, d, dt), showFormretailPriceItemDepartmentOver(i, d),
+                    maxReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF maxReserveItemDepartmentDate(i, d, dt), showFormmaxReserveItemDepartmentOver(i, d),
+                    minReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF minReserveItemDepartmentDate(i, d, dt), showFormminReserveItemDepartmentOver(i, d),
+                    namebanRevaluationItemDepartmentOver(i, d, dt) HIGHLIGHTIF namebanRevaluationItemDepartmentDate(i, d, dt), showFormNamebanRevaluationItemDepartmentOver(i, d),
+                    nameinActionItemDepartmentOver(i, d, dt) HIGHLIGHTIF nameinActionItemDepartmentDate(i, d, dt), showFormNameinActionItemDepartmentOver(i, d),
+                    marginProductionItemDepartmentOver(i, d, dt) HIGHLIGHTIF marginProductionItemDepartmentDate(i, d, dt), showFormmarginProductionItemDepartmentOver(i, d),
+                    discountItemDepartmentOver(i, d, dt) HIGHLIGHTIF discountItemDepartmentDate(i, d, dt), showFormdiscountItemDepartmentOver(i, d)
+
+    EDIT item OBJECT i
+;
 
 DESIGN item FROM DEFAULT {
     main {
+        i.panel {
+            NEW itemPanelColumn1 {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(nameAttributeItem);
+                ADD PROPERTY(nameCashAttributeItem);
+                ADD PROPERTY(nameScalesAttributeItem);
+            }
+            NEW itemPanelColumn2 {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(canonicalNameItemGroupSku);
+                ADD PROPERTY(barcodeBarcodeSku);
+            }
+        }
         NEW item.box BEFORE b.box {
             tabbedPane = TRUE;
             NEW primary.box {
@@ -1749,8 +1778,8 @@ FORM itemGroup 'Товарная группа'
     PROPERTIES(g)  name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, extSID, showCaptionItemGroup,
                    showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
                    showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
-                   showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup, showNumberInPackItemGroup,
-                   showRateWasteItemGroup, showWareItemGroup
+                   showArticleItemGroup, showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
+                   showNumberInPackItemGroup, showRateWasteItemGroup, showWareItemGroup
     EDIT itemGroup OBJECT g
 ;
 
@@ -2211,7 +2240,7 @@ DESIGN supplier FROM DEFAULT {
 
 FORM suppliers 'Поставщики'
     OBJECTS s=supplier
-    PROPERTIES(s) READONLY name, fullNameLegalEntity, UNPLegalEntity, dataOverrideAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+    PROPERTIES(s) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, UNPLegalEntity, dataOverrideAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(s) ADDFORM, EDITFORM, delete
 ;
 
@@ -2279,7 +2308,7 @@ DESIGN company FROM DEFAULT {
 }
 FORM companies 'Компании'
     OBJECTS co=company
-    PROPERTIES(co) READONLY name, fullNameLegalEntity, UNPLegalEntity, dataOverrideAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+    PROPERTIES(co) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, UNPLegalEntity, dataOverrideAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(co) ADDFORM, EDITFORM, delete
 ;
 
