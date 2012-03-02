@@ -4150,7 +4150,7 @@ FORM objectiveAcquiring 'Цель приобретения'
 FORM specification 'Счет-фактура'
     OBJECTS sp=specification FIXED PANEL
     PROPERTIES (sp) numberSpecification, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification, nameCustomerSpecification,
-    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, datePriceSpecification//, dateLastShipment
+    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification
 
     OBJECTS d=detailSpec
     PROPERTIES (d) numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
@@ -4179,10 +4179,16 @@ DESIGN specification FROM DEFAULT{
 FORM specifications 'Счет-фактуры'
     OBJECTS sp=specification
     PROPERTIES (sp) READONLY numberSpecification, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
-                   dateToSpecification, quantitySpecification, sumSpecification
+                    dateToSpecification, quantitySpecification, sumSpecification
 
     PROPERTIES (sp) ADDFORM, EDITFORM, delete
-    ORDER BY  numberSpecification
+    ORDER BY        numberSpecification
+
+    OBJECTS d=detailSpec
+    PROPERTIES (d)  READONLY numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
+                    retailPriceDetailSpec, sumDetailSpec
+
+    FILTERS         inSpecificationDetailSpec(sp, d)
 
     FILTERGROUP filters6
             FILTER 'Просроченные с/ф' 'F10' overdueSpecification(sp)
@@ -4206,8 +4212,8 @@ nameCustomerStatement 'Покупатель' (statement) = name(customerStatemen
     MINCHARWIDTH 30 PREFCHARWIDTH 40;
 
 
-inStatementSpecification 'Отгрузка по с/ф' (statement, specification) = DATA BOOLEAN (statement, specification)
-    IN idGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
+inStatementSpecification 'Включить в накладную' (statement, specification) = DATA BOOLEAN (statement, specification)
+    IN idGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
 specificationsStatement 'Ввести на основании с/ф' (statement) = GROUP CONCAT castToString255(numberSpecification(specification))
     IF inStatementSpecification(statement, specification), ', ' BY statement IN specificationGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
@@ -4231,6 +4237,10 @@ retailPriceStatementDetail(statementDetail) <- retailPriceItemDepartmentVal (ite
                                                                    departmentStoreStatement(statementStatementDetail(statementDetail)),
                                                                    dateStatement(statementStatementDetail(statementDetail))) ON CHANGE itemStatementDetail(statementDetail);
 
+priceRetailStatementDetail 'Цена товара на момент отгрузки' (statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
+priceRetailStatementDetail(statementDetail) <- retailPriceItemDepartmentVal (itemStatementDetail(statementDetail),
+                                                                   departmentStoreStatement(statementStatementDetail(statementDetail)),
+                                                                   dateStatement(statementStatementDetail(statementDetail))) ON CHANGE itemStatementDetail(statementDetail);
 
 quantityItemStatement 'Количество товара в отгрузке' (item, statement) = GROUP SUM quantityStatementDetail(statementDetail)
     BY itemStatementDetail(statementDetail), statementStatementDetail(statementDetail);
@@ -4272,8 +4282,12 @@ CONSTRAINT balanceItemStatement(item, statement) < quantityItemStatement(item, s
 statusStatementSpecification 'Статус' (statement, specification) = CASE
     WHEN dateStatement(statement) > dateToSpecification(specification) THEN ('Просрочена' IF statement IS statement IF specification IS specification)
     DEFAULT 'Непросрочена' IF statement IS statement IF specification IS specification
-    END;
+    END  MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
+castToStringFour = FORMULA STRING[30] '$1 || CAST ($2 AS character(20)) || $3 || CAST ($4 AS character(20))';
+infoDetailSpec(detailSpec) = castToStringFour('Счет-фактура № ', numberSpecification(specificationDetailSpec(detailSpec)), ' от ', dateSpecification(specificationDetailSpec(detailSpec)));
+
+noteStatementDetail 'Примечание' = DATA STRING[40] (statementDetail) IN baseGroup;
 
 toFillStatementDetailsStatement 'Заполнить отгрузку на основании с/ф' =  ACTION (statement) {
     FOR inStatementSpecification (statement, specification) AND inSpecificationDetailSpec(specification, detailSpec) DO {
@@ -4284,6 +4298,7 @@ toFillStatementDetailsStatement 'Заполнить отгрузку на осн
             SET quantityStatementDetail(d) <- quantityDetailSpec(detailSpec);
 //            SET barcodeExSkuStatementDetail(d) <- barcodeExSkuDetailSpec(detailSpec);   // может для ш-к по другому
             SET sumStatementDetail(d) <- sumDetailSpec(detailSpec);
+            SET noteStatementDetail(d) <- infoDetailSpec(detailSpec);
         };
     };
 } IN specificationGroup CONFIRM;
@@ -4310,15 +4325,15 @@ showFormSpecificationsStatement 'Заказы' (statement) = ACTION FORM specifi
 FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
     PROPERTIES (st) waybillStatement, seriesWaybillStatement, dateStatement, nameCustomerStatement,
-                   nameDepartmentStoreStatement, specificationsStatement, totalQuantityStatement, sumStatement,
-                   noteStatement, showFormSpecificationsStatement, toFillStatementDetailsStatement
+                    nameDepartmentStoreStatement, specificationsStatement, totalQuantityStatement, sumStatement,
+                    noteStatement, showFormSpecificationsStatement, toFillStatementDetailsStatement
 
     OBJECTS d=statementDetail
     PROPERTIES (d)  numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail, quantityStatementDetail,
-                    retailPriceStatementDetail, sumStatementDetail, ADDOBJ, delete
+                    retailPriceStatementDetail, sumStatementDetail, noteStatementDetail READONLY, ADDOBJ, delete
 
     PROPERTIES (d)  FORCE PANEL articleItemStatementDetail, nameCountryItemStatementDetail, balanceDepartmentStoreItemStatementDetail,
-                    minReserveItemDepartmentStatementDetail, maxReserveItemDepartmentStatementDetail
+                    priceRetailStatementDetail, minReserveItemDepartmentStatementDetail, maxReserveItemDepartmentStatementDetail
 
     PROPERTIES      addStatementDetailBarcode(st) TODRAW d
 
@@ -4327,6 +4342,14 @@ FORM statement 'Отгрузка из розницы'
     EDIT statement OBJECT st
 ;
 
+//DESIGN statement FROM DEFAULT {
+//
+//    st.box {
+//        childConstraints = TO THE BOTTOM;
+//    }
+//}
+
+
 FORM statements 'Отгрузки из розницы'
     OBJECTS st=statement
     PROPERTIES (st) READONLY objectClassName, waybillStatement, seriesWaybillStatement, dateStatement, nameCustomerStatement,
@@ -4334,6 +4357,14 @@ FORM statements 'Отгрузки из розницы'
 
     PROPERTIES (st) ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
                     postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
+
+    ORDER BY dateStatement
+
+    OBJECTS d=statementDetail
+    PROPERTIES (d)  READONLY numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail,
+                    quantityStatementDetail, retailPriceStatementDetail, sumStatementDetail
+
+    FILTERS         inStatementStatementDetail(st, d)
 ;
 
 DESIGN statements FROM DEFAULT {
