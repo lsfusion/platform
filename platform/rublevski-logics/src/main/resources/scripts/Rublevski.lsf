@@ -1085,6 +1085,7 @@ DESIGN genTimeTable FROM DEFAULT {
         fillVertical = 0.5;
         preferredSize = (1280, 1024);
     }
+    ADD g.historyGroup BEFORE functions.box;
 }
 
 showFormGenTimeTable 'Показать генерацию графика' (genTimeTable) = ACTION FORM genTimeTable OBJECTS g MODAL;
