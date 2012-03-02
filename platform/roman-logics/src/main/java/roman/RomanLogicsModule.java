@@ -342,6 +342,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP sidCustomCategory6;
     LP sidCustomCategory9;
     LP sidCustomCategory10;
+    LP certificatedCustomCategory10;
     LP sidCustomCategoryOrigin;
     LP numberIdCustomCategory10;
     LP numberIdCustomCategoryOrigin;
@@ -1624,6 +1625,8 @@ public class RomanLogicsModule extends LogicsModule {
                 
         sidCustomCategory10 = addDProp(baseGroup, "sidCustomCategory10", "Код(10)", StringClass.get(10), customCategory10);
         sidCustomCategory10.setFixedCharWidth(10);
+
+        certificatedCustomCategory10 = addDProp(baseGroup, "certificatedCustomCategory10", "Необходимость сертификации", LogicalClass.instance, customCategory10);
 
         sidCustomCategoryOrigin = addDProp(baseGroup, "sidCustomCategoryOrigin", "Код ЕС(10)", StringClass.get(10), customCategoryOrigin);
         sidCustomCategoryOrigin.setFixedCharWidth(10);
@@ -3630,6 +3633,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         shipment.add(actionFreight);
 
+        NavigatorElement customs = addNavigatorElement(baseLM.baseElement, "customs", "Для таможни");
+        customs.window = leftToolbar;
+
         NavigatorElement settings = addNavigatorElement(baseLM.baseElement, "settings", "Настройки");
         settings.window = leftToolbar;
         addFormEntity(new GlobalParamFormEntity(settings, "globalParamForm", "Общие параметры"));
@@ -5547,7 +5553,7 @@ public class RomanLogicsModule extends LogicsModule {
             if (!tree)
                 addObjectActions(this, objCustomCategory9);
 
-            objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, nameCustomCategory);
+            objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, nameCustomCategory, certificatedCustomCategory10);
             addObjectActions(this, objCustomCategory10);
 
             objSubCategory = addSingleGroupObject(subCategory, "Дополнительное деление", nameSubCategory);

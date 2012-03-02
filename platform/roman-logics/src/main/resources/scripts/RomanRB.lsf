@@ -3,98 +3,181 @@ MODULE RB;
 IMPORT BaseLogicsModule;
 IMPORT RomanLogicsModule;
 
+//--------------------------------- Сертификаты --------------------------------------------------------------------//
+CLASS certificate 'Сертификат';
+
+sidCertificate 'Номер' = DATA STRING[20] (certificate) IN baseGroup;
+dateIssueCertificate 'Дата выдачи' = DATA DATE (certificate) IN baseGroup;
+dateValidityCertificate 'Действует до' = DATA DATE (certificate) IN baseGroup;
+
+FORM certificate 'Сертификат'
+    OBJECTS c=certificate FIXED PANEL
+    PROPERTIES(c) sidCertificate, dateIssueCertificate, dateValidityCertificate
+    EDIT certificate OBJECT c
+;
+
+FORM certificates 'Сертификаты'
+    OBJECTS c=certificate
+    PROPERTIES(c) READONLY sidCertificate, dateIssueCertificate, dateValidityCertificate
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+;
+
 //--------------------------------- Инвойсы -------------------------------------------------------------------------//
-//CLASS ABSTRACT innerInvoice 'Внутренний инвойс';
-//CLASS formedInvoice 'Инвойс от STX' : innerInvoice;
-//
-//freightFormedInvoice 'Фрахт инвойса' = DATA freight(formedInvoice) IN idGroup;
-//importerFormedInvoice 'Импортер инвойса' = DATA importer(formedInvoice) IN idGroup;
-//
-//sidFormedInvoice 'Номер инвойса' (formedInvoice) = sidImporterFreight(importerFormedInvoice(formedInvoice), freightFormedInvoice(formedInvoice)) IN baseGroup;
-//
-//uniqueFormedInvoiceImporterFreight (importer, freight) = GROUP UNIQUE formedInvoice
-//                                                                   BY importerFormedInvoice(formedInvoice),
-//                                                                      freightFormedInvoice(formedInvoice)
-//                                                                WHERE formedInvoice IS formedInvoice;
-//
-//includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importer, freight)>0 AND freight IS freightArrived;
-//includeImporterFreight(importer, freight) => uniqueFormedInvoiceImporterFreight(importer, freight) RESOLVE ALL;
-//
-//quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityImporterFreightSku(importerFormedInvoice(formedInvoice), freightFormedInvoice(formedInvoice), sku);
-//quantityProxyFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityProxyImporterFreightSku(importerFormedInvoice(formedInvoice), freightFormedInvoice(formedInvoice), sku);
-//quantityDirectFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityDirectImporterFreightSku(importerFormedInvoice(formedInvoice), freightFormedInvoice(formedInvoice), sku);
-//quantityFormedInvoice 'Кол-во в инвойсе' (formedInvoice) = GROUP SUM quantityFormedInvoiceSku(formedInvoice, sku) BY formedInvoice IN baseGroup;
-//
-//
-//FORM formedInvoices 'Инвойсы'
-//    OBJECTS f=formedInvoice
-//    PROPERTIES(f) READONLY sidFormedInvoice, importerFormedInvoice, freightFormedInvoice
-//
-//    OBJECTS s=sku
-//
-//    PROPERTIES (f, s) quantityFormedInvoiceSku, quantityProxyFormedInvoiceSku, quantityDirectFormedInvoiceSku
-//    FILTERS quantityFormedInvoiceSku(f, s)
-//;
-//
-////--------------------------------- Декларации ----------------------------------------------------------------------//
-//CLASS declaration 'Таможенная декларация';
-//CLASS declarationDetail 'Позиция декларации';
-//
-//sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN baseGroup;
-//importerDeclaration 'Импортер (ИД)' = DATA importer (declaration) IN idGroup;
-//
-//declarationInnerInvoice 'Декларация инвойса (ИД)' = DATA declaration(innerInvoice) IN idGroup;
-//sidDeclarationInnerInvoice 'Декларация инвойса' (innerInvoice) = sidDeclaration(declarationInnerInvoice(innerInvoice)) IN baseGroup;
-//
-//quantityFormedDeclarationSku 'Кол-во в декларации (форм.)' (declaration, sku) = GROUP SUM quantityFormedInvoiceSku(formedInvoice, sku)
-//                                                                                       BY declarationInnerInvoice(formedInvoice), sku IN baseGroup;
-//
-////quantityDirectDeclarationSku 'Кол-во в декларации (напр.)' (declaration, sku) = GROUP SUM quantityDocumentSku(innerInvoice, sku)
-////                                                                                       BY declarationInnerInvoice(innerInvoice), sku IN baseGroup;
-//
-////quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) = quantityFormedDeclarationSku(declaration, sku) +
-////                                                                  quantityDirectDeclarationSku(declaration, sku) IN baseGroup;
-//
-//declarationDeclarationDetail 'Декларация позиции' = DATA declaration(declarationDetail) IN idGroup;
-//skuDeclarationDetail 'Товар позиции (ИД)' = DATA sku(declarationDetail) IN idGroup;
-//barcodeSkuDeclarationDetail 'Штрих-код' = barcode(skuDeclarationDetail(declarationDetail)) IN baseGroup;
-//
-//inDeclarationDeclarationDetail (declaration, declarationDetail) = declarationDeclarationDetail(declarationDetail)==declaration;
-//
-//uniqueDeclarationDetailDeclarationSku (declaration, sku) = GROUP UNIQUE declarationDetail
-//                                                                     BY declarationDeclarationDetail(declarationDetail),
-//                                                                        skuDeclarationDetail(declarationDetail)
-//                                                                  WHERE declarationDetail IS declarationDetail;
-//
+CLASS ABSTRACT innerInvoice 'Внутренний инвойс';
+CLASS formedInvoice 'Инвойс от STX' : innerInvoice;
+
+freightFormedInvoice 'Фрахт инвойса (ИД)' = DATA freight(formedInvoice) IN idGroup;
+importerFormedInvoice 'Импортер инвойса (ИД)' = DATA importer(formedInvoice) IN idGroup;
+dateFreightFormedInvoice 'Фрахт инвойса' (formedInvoice) = dateArrivalFreight(freightFormedInvoice(formedInvoice)) IN baseGroup;
+nameImporterFormedInvoice 'Импортер инвойса' (formedInvoice) = name(importerFormedInvoice(formedInvoice)) IN baseGroup;
+
+sidFormedInvoice 'Номер инвойса' (formedInvoice) = sidImporterFreight(importerFormedInvoice(formedInvoice), freightFormedInvoice(formedInvoice)) IN baseGroup;
+
+uniqueFormedInvoiceImporterFreight (importer, freight) = GROUP UNIQUE formedInvoice
+                                                                   BY importerFormedInvoice(formedInvoice),
+                                                                      freightFormedInvoice(formedInvoice)
+                                                                WHERE formedInvoice IS formedInvoice;
+
+includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importer, freight) AND freight IS freightArrived;
+includeImporterFreight(importer, freight) => uniqueFormedInvoiceImporterFreight(importer, freight) RESOLVE ALL;
+
+quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityProxyImporterFreightSku(importerFormedInvoice(formedInvoice), freightFormedInvoice(formedInvoice), sku);
+quantityFormedInvoice 'Кол-во в инвойсе' (formedInvoice) = GROUP SUM quantityFormedInvoiceSku(formedInvoice, sku) BY formedInvoice IN baseGroup;
+
+
+//--------------------------------- Декларации ----------------------------------------------------------------------//
+CLASS declaration 'Таможенная декларация';
+CLASS declarationDetail 'Позиция декларации';
+
+sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN baseGroup;
+dateDeclaration 'Дата' = DATA DATE (declaration) IN baseGroup;
+importerDeclaration 'Импортер (ИД)' = DATA importer (declaration) IN idGroup;
+
+declarationInnerInvoice 'Декларация инвойса (ИД)' = DATA declaration(innerInvoice) IN idGroup;
+sidDeclarationInnerInvoice 'Декларация инвойса' (innerInvoice) = sidDeclaration(declarationInnerInvoice(innerInvoice)) IN baseGroup;
+
+innerInvoiceDeclarationSku 'Инвойс для декларации' (declaration, sku) = GROUP MAX innerInvoice IF quantityFormedInvoiceSku(innerInvoice, sku)
+                                                                               BY declarationInnerInvoice(innerInvoice), sku;
+
+quantityFormedDeclarationSku 'Кол-во в декларации (форм.)' (declaration, sku) = GROUP SUM quantityFormedInvoiceSku(formedInvoice, sku)
+                                                                                       BY declarationInnerInvoice(formedInvoice), sku IN baseGroup;
+
+//quantityDirectDeclarationSku 'Кол-во в декларации (напр.)' (declaration, sku) = GROUP SUM quantityDocumentSku(innerInvoice, sku)
+//                                                                                       BY declarationInnerInvoice(innerInvoice), sku IN baseGroup;
+
+//quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) = quantityFormedDeclarationSku(declaration, sku) +
+//                                                                  quantityDirectDeclarationSku(declaration, sku) IN baseGroup;
+
+declarationDeclarationDetail 'Декларация позиции' = DATA declaration(declarationDetail) IN idGroup;
+dateDeclarationDetail 'Дата декларации' (declarationDetail) = dateDeclaration(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
+skuDeclarationDetail 'Товар позиции (ИД)' = DATA sku(declarationDetail) IN idGroup;
+barcodeSkuDeclarationDetail 'Штрих-код' = barcode(skuDeclarationDetail(declarationDetail)) IN baseGroup;
+
+inDeclarationDeclarationDetail (declaration, declarationDetail) = declarationDeclarationDetail(declarationDetail)==declaration;
+
+uniqueDeclarationDetailDeclarationSku (declaration, sku) = GROUP UNIQUE declarationDetail
+                                                                     BY declarationDeclarationDetail(declarationDetail),
+                                                                        skuDeclarationDetail(declarationDetail)
+                                                                  WHERE declarationDetail IS declarationDetail;
+
 //includeDeclarationSku(declaration, sku) = quantityFormedDeclarationSku(declaration, sku)>0;
-//includeDeclarationSku(declaration, sku) => uniqueDeclarationDetailDeclarationSku(declaration, sku) RESOLVE ALL;
-//
-//quantityDeclarationDetail 'Кол-во' (declarationDetail) = quantityFormedDeclarationSku(declarationDeclarationDetail(declarationDetail),
-//                                                                                      skuDeclarationDetail(declarationDetail)
-//                                                                                     ) IN baseGroup;
-//
-//FORM declaration 'Декларация'
-//    OBJECTS d=declaration
-//    PROPERTIES(d) sidDeclaration
-//
-//    OBJECTS dd=declarationDetail
-//    PROPERTIES (dd) barcodeSkuDeclarationDetail, quantityDeclarationDetail, ADDOBJ, delete
-//
-//    FILTERS inDeclarationDeclarationDetail(d, dd)
-//    EDIT declaration OBJECT d
-//;
-//
-//
-//FORM declarations 'Декларации'
-//    OBJECTS d=declaration
-//    PROPERTIES(d) READONLY sidDeclaration
-//    PROPERTIES(d) ADDFORM, EDITFORM, delete
-//
-//    OBJECTS dd=declarationDetail
-//    PROPERTIES (dd) barcodeSkuDeclarationDetail, quantityDeclarationDetail, ADDOBJ, delete
-//    FILTERS inDeclarationDeclarationDetail(d, dd)
-//;
-//
+quantityFormedDeclarationSku(declaration, sku) => uniqueDeclarationDetailDeclarationSku(declaration, sku) RESOLVE ALL;
+
+quantityDeclarationDetail 'Кол-во' (declarationDetail) = quantityFormedDeclarationSku(declarationDeclarationDetail(declarationDetail),
+                                                                                      skuDeclarationDetail(declarationDetail)
+                                                                                     ) IN baseGroup;
+
+freightDeclarationDetail 'Фрахт позиции (ИД)' (declarationDetail) = freightFormedInvoice(innerInvoiceDeclarationSku(
+                                                                                declarationDeclarationDetail(declarationDetail),
+                                                                                skuDeclarationDetail(declarationDetail))) IN idGroup;
+
+importerDeclarationDetail 'Импортёр позиции (ИД)' (declarationDetail) = importerFormedInvoice(innerInvoiceDeclarationSku(
+                                                                                declarationDeclarationDetail(declarationDetail),
+                                                                                skuDeclarationDetail(declarationDetail))) IN idGroup;
+
+articleSkuDeclarationDetail 'Артикул товара (ИД)' (declarationDetail) = articleSku(skuDeclarationDetail(declarationDetail)) IN idGroup;
+sidArticleSkuDeclarationDetail 'Артикул товара' (declarationDetail) = sidArticle(articleSkuDeclarationDetail(declarationDetail));
+
+netWeightDeclarationDetail 'Вес товара' (declarationDetail) = netWeightFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                  skuDeclarationDetail(declarationDetail));
+
+mainCompositionDeclarationDetail 'Состав товара' (declarationDetail) = mainCompositionFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                                 skuDeclarationDetail(declarationDetail));
+
+// Для таможенных платежей и оформления
+countryDeclarationDetail 'Страна товара (ИД)' (declarationDetail) = countryOfOriginFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                              skuDeclarationDetail(declarationDetail)) IN idGroup;
+
+nameCountryDeclarationDetail 'Страна товара' (declarationDetail) = name(countryDeclarationDetail(declarationDetail));
+
+customCategory10DeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = customCategory10FreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                                        skuDeclarationDetail(declarationDetail)) IN idGroup;
+
+sidCustomCategory10DeclarationDetail 'ТН ВЭД товара' (declarationDetail) = sidCustomCategory10(customCategory10DeclarationDetail(declarationDetail));
+
+certificatedDeclarationDetail 'Необходимость сертификации' (declarationDetail) = certificatedCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) IN baseGroup;
+
+certificateDeclarationDetail 'Сертификат партии (ИД)' = DATA certificate(declarationDetail) IN idGroup;
+sidCertificateDeclarationDetail 'Сертификат партии' (declarationDetail) = sidCertificate(certificateDeclarationDetail(declarationDetail)) IN baseGroup;
+
+priceDeclarationDetail 'Цена товара' (declarationDetail) = priceInvoiceImporterFreightSku(importerDeclarationDetail(declarationDetail),
+                                                                                          freightDeclarationDetail(declarationDetail),
+                                                                                          skuDeclarationDetail(declarationDetail));
+
+dutyDeclarationDetail 'Пошлина товара (расч.)' (declarationDetail) = dutyImporterFreightSku(importerDeclarationDetail(declarationDetail),
+                                                                                    freightDeclarationDetail(declarationDetail),
+                                                                                    skuDeclarationDetail(declarationDetail));
+
+dutyDataDeclarationDetail 'Пошлина товара' = DATA DOUBLE(declarationDetail) IN baseGroup;
+dutyDataDeclarationDetail (declarationDetail) <- dutyDeclarationDetail(declarationDetail) ON CHANGE dateDeclarationDetail(declarationDetail);
+
+FORM declaration 'Декларация'
+    OBJECTS d=declaration FIXED PANEL
+    PROPERTIES(d) sidDeclaration, dateDeclaration
+
+    OBJECTS dd=declarationDetail
+    PROPERTIES (dd) barcodeSkuDeclarationDetail, sidArticleSkuDeclarationDetail, mainCompositionDeclarationDetail,
+                    nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail, netWeightDeclarationDetail,
+                    quantityDeclarationDetail, priceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
+                    certificatedDeclarationDetail, sidCertificateDeclarationDetail, ADDOBJ, delete
+
+    FILTERS inDeclarationDeclarationDetail(d, dd)
+    EDIT declaration OBJECT d
+;
+
+FORM declarations 'Декларации'
+    OBJECTS d=declaration
+    PROPERTIES(d) READONLY sidDeclaration, dateDeclaration
+    PROPERTIES(d) ADDFORM, EDITFORM, delete
+
+    OBJECTS dd=declarationDetail
+    PROPERTIES (dd) barcodeSkuDeclarationDetail, sidArticleSkuDeclarationDetail, mainCompositionDeclarationDetail,
+                    nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail, netWeightDeclarationDetail,
+                    quantityDeclarationDetail, priceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
+                    certificatedDeclarationDetail, sidCertificateDeclarationDetail, ADDOBJ, delete
+    FILTERS inDeclarationDeclarationDetail(d, dd)
+;
+
+FORM formedInvoices 'Инвойсы'
+    OBJECTS f=formedInvoice
+    PROPERTIES(f) READONLY sidFormedInvoice, nameImporterFormedInvoice, dateFreightFormedInvoice
+    PROPERTIES(f) sidDeclarationInnerInvoice, delete
+
+    OBJECTS s=sku
+    PROPERTIES(s) READONLY barcode, sidArticleSku
+    PROPERTIES (f, s) quantityFormedInvoiceSku
+    FILTERS quantityFormedInvoiceSku(f, s)
+;
 
 
+NAVIGATOR {
 
+    customs 'Для таможни' {
+        ADD certificate;
+        ADD certificates;
+        ADD declaration;
+        ADD declarations;
+        ADD formedInvoices;
+
+     }
+}
