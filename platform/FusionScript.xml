@@ -136,6 +136,7 @@
       <keyword name="OBJVALUE" />
       <keyword name="OLD" />
       <keyword name="ON" />
+      <keyword name="OR" />
       <keyword name="ORDER" />
       <keyword name="OVERRIDE" />
       <keyword name="PAGESIZE" />

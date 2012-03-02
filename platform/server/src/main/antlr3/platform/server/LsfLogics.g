@@ -265,7 +265,7 @@ scope {
 }
 	:	declaration=formDeclaration { $formStatement::form = $declaration.form; }
 		(	formGroupObjectsList
-		|	formTreeGroupObject
+		|	formTreeGroupObjectList
 		|	formFiltersList
 		|	formPropertiesList
 		|	filterGroupDeclaration
@@ -342,7 +342,7 @@ formGroupObjectsList
 		(',' groupElement=formGroupObjectDeclaration { groups.add($groupElement.groupObject); })*
 	;
 
-formTreeGroupObject
+formTreeGroupObjectList
 @init {
 	String treeSID = null;
 	List<ScriptingGroupObject> groups = new ArrayList<ScriptingGroupObject>();
@@ -676,7 +676,20 @@ propertyDeclaration returns [String name, String caption, List<String> paramName
 
 
 propertyExpression[List<String> context, boolean dynamic] returns [LPWithParams property]
-	:	pe=andPE[context, dynamic] { $property = $pe.property; }
+	:	pe=orPE[context, dynamic] { $property = $pe.property; }
+	;
+
+orPE[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedOrProp(props);
+	}
+} 
+	:	firstExpr=andPE[context, dynamic] { props.add($firstExpr.property); }
+		('OR' nextExpr=andPE[context, dynamic] { props.add($nextExpr.property); })*
 	;
 
 andPE[List<String> context, boolean dynamic] returns [LPWithParams property]
