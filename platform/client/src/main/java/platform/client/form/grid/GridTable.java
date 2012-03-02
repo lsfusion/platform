@@ -631,6 +631,15 @@ public abstract class GridTable extends ClientFormTable
         return super.processKeyBinding(ks, e, condition, pressed);
     }
 
+    protected ClientAbstractCellEditor getAbstractCellEditor() {
+        int row = getSelectionModel().getLeadSelectionIndex();
+        int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+        ClientAbstractCellEditor cellEditor = null;
+        if (row != -1 && column != -1)
+            cellEditor = getAbstractCellEditor(row, column);
+        return cellEditor;
+    }
+
     public boolean commitEditing() {
         if (this.isEditing())
             return SwingUtils.commitEditing(this);
@@ -756,6 +765,10 @@ public abstract class GridTable extends ClientFormTable
     public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
         if (isInternalNavigating || isCellFocusable(rowIndex, columnIndex)) {
             if (!properties.isEmpty() && model.getColumnCount() > 0) {
+                if (rowIndex >= getRowCount()) {
+                    changeSelection(rowIndex - 1, columnIndex, toggle, extend);
+                    return;
+                }
                 selectionController.changeSelection(rowIndex, columnIndex, toggle, extend);
             }
             super.changeSelection(rowIndex, columnIndex, toggle, extend);
@@ -1121,15 +1134,13 @@ public abstract class GridTable extends ClientFormTable
                 if (((row == 0 && column == 0 && isNext) || (row == getRowCount() - 1 && column == getColumnCount() - 1 && (!isNext)))
                     && isCellFocusable(initRow, initColumn)) {
                     row = initRow;
-                    column = initColumn;
+                    column = 0;
                     break;
                 }
             } while ((oRow != row || oColumn != column) && !isCellFocusable(row, column));
 
-            if(commitEditing()) {
-                int selectedRow = getSelectionModel().getLeadSelectionIndex();
-                changeSelection(selectedRow != -1 ? selectedRow : row, column, false, false);
-            }
+            if(commitEditing())
+                changeSelection(row, column, false, false);
             isInternalNavigating = false;
         }
     }

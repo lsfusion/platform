@@ -153,5 +153,9 @@ public abstract class CellTable extends SingleCellTable
         return super.processKeyBinding(ks, e, condition, pressed);
     }
 
+    protected ClientAbstractCellEditor getAbstractCellEditor() {
+        return super.getAbstractCellEditor(0, 0);
+    }
+
     public void invokeDefaultAction() {}
 }

@@ -114,8 +114,7 @@ public abstract class ClientFormTable extends JTable implements TableTransferHan
 
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         // проверяем на editPerformed, чтобы предотвратить редактирование свойства с editKey после редактирования текущего по нажатию клавиши
-        ClientAbstractCellEditor cellEditor = getAbstractCellEditor(getSelectionModel().getLeadSelectionIndex(),
-                getColumnModel().getSelectionModel().getLeadSelectionIndex());
+        ClientAbstractCellEditor cellEditor = getAbstractCellEditor();
         if (cellEditor != null)
             cellEditor.editPerformed = false;
 
@@ -128,4 +127,6 @@ public abstract class ClientFormTable extends JTable implements TableTransferHan
 
         return consumed || cellEditor != null && cellEditor.editPerformed;
     }
+
+    protected abstract ClientAbstractCellEditor getAbstractCellEditor();
 }
