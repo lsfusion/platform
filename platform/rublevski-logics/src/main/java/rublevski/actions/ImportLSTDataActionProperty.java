@@ -15,7 +15,6 @@ import rublevski.RublevskiBusinessLogics;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
-import java.util.Date;
 
 public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     private ScriptingLogicsModule rublevskiLM;
@@ -41,8 +40,11 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         if (rublevskiLM.getLPByName("importItems").read(context) != null)
             importItems(path + "//_sprgrm.dbf");
 
-        if (rublevskiLM.getLPByName("importLegalEntities").read(context) != null)
-            importLegalEntities(path + "//_sprana.dbf");
+        if (rublevskiLM.getLPByName("importCompanies").read(context) != null)
+            importCompanies(path + "//_sprana.dbf");
+
+        if (rublevskiLM.getLPByName("importSuppliers").read(context) != null)
+            importSuppliers(path + "//_sprana.dbf");
     }
 
     private void importParentGroups(String path) {
@@ -180,10 +182,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importLegalEntities(String path) throws SQLException {
+    private void importCompanies(String path) throws SQLException {
 
         try {
-            List<List<Object>> data = importLegalEntitiesFromDBF(path);
+            List<List<Object>> data = importLegalEntitiesFromDBF(path, false);
 
             ImportField companyIDField = new ImportField(BL.LM.extSID);
             ImportField nameLegalEntityField = new ImportField(BL.LM.name);
@@ -234,6 +236,78 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(companyKey, ownershipKey, accountKey), props);
+            service.synchronize(true, false);
+            if (session.hasChanges()) {
+                String result = session.apply(BL);
+                if (result != null)
+                    result = result.substring(0, result.length());
+            }
+
+            session.close();
+
+        } catch (xBaseJException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void importSuppliers(String path) throws SQLException {
+
+        try {
+            List<List<Object>> data = importLegalEntitiesFromDBF(path, true);
+
+            ImportField supplierIDField = new ImportField(BL.LM.extSID);
+            ImportField nameLegalEntityField = new ImportField(BL.LM.name);
+            ImportField legalAddressField = new ImportField(BL.LM.name);
+            ImportField unpField = new ImportField(rublevskiLM.getLPByName("UNPLegalEntity"));
+            ImportField okpoField = new ImportField(rublevskiLM.getLPByName("OKPOLegalEntity"));
+            ImportField phoneField = new ImportField(rublevskiLM.getLPByName("phoneLegalEntityDate"));
+            ImportField emailField = new ImportField(BL.LM.name);
+            ImportField nameOwnershipField = new ImportField(BL.LM.name);
+            ImportField shortNameOwnershipField = new ImportField(rublevskiLM.getLPByName("shortNameOwnership"));
+            ImportField accountField = new ImportField(rublevskiLM.getLPByName("dataAccount"));
+
+            DataObject defaultDate = new DataObject(new java.sql.Date(2001, 01, 01), DateClass.instance);
+
+            ImportKey<?> supplierKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("supplier"),
+                    BL.LM.extSIDToObject.getMapping(supplierIDField));
+
+            ImportKey<?> ownershipKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("ownership"),
+                    rublevskiLM.getLPByName("shortNameToOwnership").getMapping(shortNameOwnershipField));
+
+            ImportKey<?> accountKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("account"),
+                    rublevskiLM.getLPByName("dataAccountToAccount").getMapping(accountField));
+
+
+            List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+
+            props.add(new ImportProperty(supplierIDField, BL.LM.extSID.getMapping(supplierKey)));
+            props.add(new ImportProperty(nameLegalEntityField, BL.LM.name.getMapping(supplierKey)));
+            props.add(new ImportProperty(nameLegalEntityField, rublevskiLM.getLPByName("fullNameLegalEntity").getMapping(supplierKey)));
+            props.add(new ImportProperty(legalAddressField, rublevskiLM.getLPByName("addressLegalEntityDate").getMapping(supplierKey, defaultDate)));
+            props.add(new ImportProperty(unpField, rublevskiLM.getLPByName("UNPLegalEntity").getMapping(supplierKey)));
+            props.add(new ImportProperty(okpoField, rublevskiLM.getLPByName("OKPOLegalEntity").getMapping(supplierKey)));
+            props.add(new ImportProperty(phoneField, rublevskiLM.getLPByName("phoneLegalEntityDate").getMapping(supplierKey, defaultDate)));
+            props.add(new ImportProperty(emailField, rublevskiLM.getLPByName("emailLegalEntity").getMapping(supplierKey)));
+
+            props.add(new ImportProperty(nameOwnershipField, BL.LM.name.getMapping(ownershipKey)));
+            props.add(new ImportProperty(shortNameOwnershipField, rublevskiLM.getLPByName("shortNameOwnership").getMapping(ownershipKey)));
+            props.add(new ImportProperty(shortNameOwnershipField, rublevskiLM.getLPByName("ownershipLegalEntity").getMapping(supplierKey),
+                    BL.LM.object(rublevskiLM.getClassByName("ownership")).getMapping(ownershipKey)));
+
+            props.add(new ImportProperty(accountField, rublevskiLM.getLPByName("dataAccount").getMapping(accountKey)));
+            props.add(new ImportProperty(supplierIDField, rublevskiLM.getLPByName("legalEntityAccount").getMapping(accountKey),
+                    BL.LM.object(rublevskiLM.getClassByName("supplier")).getMapping(supplierKey)));
+
+            ImportTable table = new ImportTable(Arrays.asList(supplierIDField, nameLegalEntityField, legalAddressField,
+                    unpField, okpoField, phoneField, emailField, nameOwnershipField, shortNameOwnershipField,
+                    accountField), data);
+
+            DataSession session = BL.createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(supplierKey, ownershipKey, accountKey), props);
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
@@ -312,7 +386,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         return data;
     }
 
-    private List<List<Object>> importLegalEntitiesFromDBF(String path) throws IOException, xBaseJException {
+    private List<List<Object>> importLegalEntitiesFromDBF(String path, boolean supplier) throws IOException, xBaseJException {
 
         DBF importFile = new DBF(path);
         int recordCount = importFile.getRecordCount();
@@ -325,7 +399,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 {"ООО", "Общество с ограниченной ответственностью"},
                 {"ЗАО", "Закрытое акционерное общество"}};
 
-        for (int i = 0; i < 3000; i++) {
+        for (int i = 0; i < 1000; i++) {
 
             importFile.read();
             String k_ana = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
@@ -337,7 +411,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             String email = new String(importFile.getField("EMAIL").getBytes(), "Cp1251").trim();
             String account = new String(importFile.getField("ACCOUNT").getBytes(), "Cp1251").trim();
 
-            if ("ЮР".equals(k_ana.substring(0, 2))) {
+            if ((("ЮР".equals(k_ana.substring(0, 2)))&&!supplier)||("ПС".equals(k_ana.substring(0, 2))&&supplier)) {
                 String ownershipName = "";
                 String ownershipShortName = "";
                 for (String[] ownership : ownershipsList) {
@@ -348,8 +422,6 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                     }
 
                 }
-                if (!isUNPUnique(unp))
-                    unp = unp.substring(0, unp.length() - 2) + "~1";
                 data.add(Arrays.asList((Object) k_ana, name, legalAddress, unp, okpo, phone, email, ownershipName, ownershipShortName, account));
             }
         }
@@ -361,11 +433,4 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             data.add(element);
     }
 
-    private boolean isUNPUnique(String unp) {
-        for (List<Object> legalEntity : data) {
-            if (legalEntity.get(3).toString().equals(unp))
-                return false;
-        }
-        return true;
-    }
 }
