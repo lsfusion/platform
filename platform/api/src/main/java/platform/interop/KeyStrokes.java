@@ -130,6 +130,18 @@ public class KeyStrokes {
         return isKeyEvent(event, KeyEvent.VK_BACK_SPACE);
     }
 
+    public static boolean isDeleteEvent(EventObject event) {
+        return isKeyEvent(event, KeyEvent.VK_DELETE);
+    }
+
+    public static boolean isCharUndefinedEvent(EventObject event) {
+        return isKeyEvent(event, KeyEvent.CHAR_UNDEFINED);
+    }
+
+    public static boolean isEnterEvent(EventObject event) {
+        return isKeyEvent(event, KeyEvent.VK_ENTER);
+    }
+
     public static boolean isEscapeEvent(EventObject event) {
         return isKeyEvent(event, KeyEvent.VK_ESCAPE);
     }

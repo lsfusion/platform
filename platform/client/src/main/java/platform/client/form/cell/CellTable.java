@@ -35,8 +35,6 @@ public abstract class CellTable extends SingleCellTable
 
         setModel(new PropertyModel());
 
-        setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
-        setDefaultEditor(Object.class, new ClientAbstractCellEditor());
         setBorder(BorderFactory.createLineBorder(Color.gray));
     }
 

@@ -2,6 +2,7 @@ package platform.client.form.editor;
 
 import platform.client.form.PropertyEditorComponent;
 import platform.interop.ComponentDesign;
+import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -43,14 +44,10 @@ abstract class TextFieldPropertyEditor extends JFormattedTextField implements Pr
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
         selected = false;
         //для очистки поля ввода перед записью новых данных
-        if (editEvent instanceof KeyEvent) {
-            KeyEvent event = (KeyEvent) editEvent;
-            if (event.getKeyChar() != KeyEvent.CHAR_UNDEFINED ||
-                event.getKeyChar() == KeyEvent.VK_DELETE ||
-                event.getKeyChar() == KeyEvent.VK_BACK_SPACE){
-                setValue(null);
-            }
-        }
+        if (!KeyStrokes.isCharUndefinedEvent(editEvent) ||
+                KeyStrokes.isDeleteEvent(editEvent) ||
+                KeyStrokes.isBackSpaceEvent(editEvent))
+            setValue(null);
         return this;
     }
 
@@ -61,6 +58,6 @@ abstract class TextFieldPropertyEditor extends JFormattedTextField implements Pr
     @Override
     public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
         // не ловим ввод, чтобы его словил сам JTable и обработал
-        return (ke.getKeyCode() != KeyEvent.VK_ENTER && ke.getKeyCode() != KeyEvent.VK_ESCAPE) && super.processKeyBinding(ks, ke, condition, pressed);
+        return (!KeyStrokes.isEnterEvent(ke) && !KeyStrokes.isEscapeEvent(ke)) && super.processKeyBinding(ks, ke, condition, pressed);
     }
 }

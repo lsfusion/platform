@@ -10,7 +10,6 @@ import platform.client.form.ClientFormTable;
 import platform.client.form.GroupObjectController;
 import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
-import platform.client.form.cell.ClientAbstractCellRenderer;
 import platform.client.form.grid.groupchange.GroupChangeAction;
 import platform.client.form.queries.QueryView;
 import platform.client.form.renderer.ActionPropertyRenderer;
@@ -28,7 +27,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
@@ -124,9 +122,6 @@ public abstract class GridTable extends ClientFormTable
             }
         });
         tableHeader.addMouseListener(sortableHeaderManager);
-
-        setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
-        setDefaultEditor(Object.class, new ClientAbstractCellEditor());
 
         addFocusListener(new FocusAdapter() {
             @Override
@@ -813,8 +808,8 @@ public abstract class GridTable extends ClientFormTable
                 if (!cellEditor.editPerformed &&
                     cellEditor.isCellEditable(editEvent) &&
                     !((KeyEvent) editEvent).isActionKey() &&
-                    ((KeyEvent) editEvent).getKeyCode() != KeyEvent.VK_BACK_SPACE &&
-                    ((KeyEvent) editEvent).getKeyCode() != KeyEvent.VK_DELETE) {
+                    (!KeyStrokes.isBackSpaceEvent(editEvent) &&
+                    !KeyStrokes.isDeleteEvent(editEvent))) {
                     groupObjectController.quickEditFilter();
                 }
             } else {
@@ -834,13 +829,6 @@ public abstract class GridTable extends ClientFormTable
         }
 
         return true;
-    }
-
-    private ClientAbstractCellEditor getAbstractCellEditor(int row, int column) {
-        TableCellEditor editor = getCellEditor(row, column);
-        return editor instanceof ClientAbstractCellEditor
-               ? (ClientAbstractCellEditor) editor
-               : null;
     }
 
     public void buildShortcut(Component invoker, Point point) {

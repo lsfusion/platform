@@ -1,8 +1,11 @@
 package platform.client.form;
 
+import platform.client.form.cell.ClientAbstractCellEditor;
+import platform.client.form.cell.ClientAbstractCellRenderer;
 import platform.interop.KeyStrokes;
 
 import javax.swing.*;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
@@ -33,6 +36,9 @@ public abstract class ClientFormTable extends JTable implements TableTransferHan
         getTableHeader().setFocusable(false);
         getTableHeader().setReorderingAllowed(false);
 
+        setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
+        setDefaultEditor(Object.class, new ClientAbstractCellEditor());
+
         setupActionMap();
 
         setTransferHandler(new TableTransferHandler() {
@@ -60,6 +66,13 @@ public abstract class ClientFormTable extends JTable implements TableTransferHan
                 }
             }
         });
+    }
+
+    protected ClientAbstractCellEditor getAbstractCellEditor(int row, int column) {
+        TableCellEditor editor = getCellEditor(row, column);
+        return editor instanceof ClientAbstractCellEditor
+               ? (ClientAbstractCellEditor) editor
+               : null;
     }
 
     abstract public void buildShortcut(Component invoker,  Point point);
@@ -100,6 +113,12 @@ public abstract class ClientFormTable extends JTable implements TableTransferHan
     }
 
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        // проверяем на editPerformed, чтобы предотвратить редактирование свойства с editKey после редактирования текущего по нажатию клавиши
+        ClientAbstractCellEditor cellEditor = getAbstractCellEditor(getSelectionModel().getLeadSelectionIndex(),
+                getColumnModel().getSelectionModel().getLeadSelectionIndex());
+        if (cellEditor != null)
+            cellEditor.editPerformed = false;
+
         boolean consumed = super.processKeyBinding(ks, e, condition, pressed);
         // Вырежем кнопки фильтров, чтобы startEditing не поглощало его
         if (ks.equals(KeyStrokes.getFindKeyStroke(0))) return false;
@@ -107,6 +126,6 @@ public abstract class ClientFormTable extends JTable implements TableTransferHan
         //noinspection SimplifiableIfStatement
         if (ks.equals(KeyStrokes.getF8())) return false;
 
-        return consumed;
+        return consumed || cellEditor != null && cellEditor.editPerformed;
     }
 }

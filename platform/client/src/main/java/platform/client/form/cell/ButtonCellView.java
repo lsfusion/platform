@@ -83,7 +83,8 @@ public class ButtonCellView extends ClientButton implements CellView {
     }
 
     public void startEditing(KeyEvent e) {
-        doClick(20);
+        if (isShowing())
+            doClick(20);
     }
 
     public void setCaption(String caption) {
