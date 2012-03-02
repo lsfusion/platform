@@ -33,6 +33,43 @@ userClosed(postedObject) <- currentUser() ON ASSIGN postedObject IS postedObject
 computerClosed(postedObject) <- currentComputer() ON ASSIGN postedObject IS postedObject;
 
 GROUP documentHeaderGroup 'Шапка документа' : baseGroup;
+
+// ----------------------------------- Нумераторы ------------------------------------------ //
+
+CLASS numerator 'Нумератор' : named;
+
+minValueNumerator 'Мин. значение' = DATA LONG (numerator) IN recognizeGroup;
+maxValueNumerator 'Макс. значение' = DATA LONG (numerator) IN recognizeGroup;
+
+stringLengthNumerator 'Длина' = DATA INTEGER (numerator) IN baseGroup;
+
+curValueNumerator 'Тек. значение' = DATA LONG (numerator) IN recognizeGroup;
+curValueNumerator(numerator) <- minValueNumerator(numerator) ON ASSIGN numerator IS numerator;
+
+lpadStringWithZero = FORMULA STRING[18] 'lpad(CAST($1 AS text),$2,\'0\')';
+
+curStringValueNumerator 'Тек. значение (строка)' (numerator) = lpadStringWithZero(curValueNumerator(numerator), stringLengthNumerator(numerator)) IN baseGroup;
+
+incrementValueNumerator 'Увеличить значение' = ACTION (numerator) NEWSESSION {
+    IF curValueNumerator(numerator) >= maxValueNumerator(numerator) THEN
+        MESSAGE 'Счетчик нумератора достиг максимального значения. Обратитесь к администратору.'
+    ELSE {
+        SET curValueNumerator(numerator) <- curValueNumerator(numerator) + 1;
+        EXEC apply();
+    };
+};
+
+FORM numerator 'Нумератор'
+    OBJECTS n = numerator
+    PROPERTIES(n) name, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
+;
+
+FORM numerators 'Нумераторы'
+    OBJECTS n = numerator
+    PROPERTIES(n) READONLY name, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
+    PROPERTIES(n)          ADDFORM, EDITFORM, delete
+;
+
 // ----------------------------------- Шаблоны ------------------------------------------ //
 
 // ----------------------------------- Свойство объект-дата------------------------------------------ //
@@ -344,6 +381,12 @@ nameParentItemGroup 'Родительская группа' = name(parentItemGro
 maxTurnoverItemGroup 'Максимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 minTurnoverItemGroup 'Минимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 
+pieceNumeratorItemGroup = DATA numerator (itemGroup);
+namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для штучного товара)' (itemGroup) = name(pieceNumeratorItemGroup(itemGroup));
+
+weightNumeratorItemGroup = DATA numerator (itemGroup);
+nameWeightNumeratorItemGroup 'Нумератор штрих-кодов (для весового товара)' (itemGroup) = name(weightNumeratorItemGroup(itemGroup));
+
 childNumberItemGroup 'Кол-во непосредственных потомков' (itemGroup) = GROUP SUM 1 BY parentItemGroup(group) PERSISTENT;
 
 isLeafItemGroup 'Лист' (itemGroup) = itemGroup IS itemGroup AND NOT childNumberItemGroup(itemGroup);
@@ -361,7 +404,7 @@ hasParentAndLeafOrNullItemGroup (child, parent) = UNION OVERRIDE hasParentAndLea
 
 canonicalNameItemGroup 'Каноническое имя' (itemGroup) = castToString255(
                            [GROUP CONCAT name(parent) IF hasParentItemGroupInteger(child, parent, i), ' / ' BY child ORDER DESC i](itemGroup))
-                           MINCHARWIDTH 30 MAXCHARWIDTH 90 PREFCHARWIDTH 90;
+                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100;
 
 //levelItemGroup 'Уровень' (itemGroup) = GROUP SUM 1 IF hasParentItemGroup(child, parent) BY child PERSISTENT;
 
@@ -612,7 +655,7 @@ inWareItem 'Товар в посуде' (item) = item IS item AND wareItem(item)
 @metaCodeShowItemAttribute(Ware, 'Показывать посуду', displayGroup);
 
 //equipmentGroup
-isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN equipmentGroup;
+isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN headGroup;
 isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN equipmentGroup;
 compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
 isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN equipmentGroup;
@@ -860,13 +903,14 @@ GROUP barcodeGroup : baseGroup;
 
 CLASS barcode 'Штрих код';
 
-barcodeEx 'Штрих код' = DATA STRING[14] (barcode) IN baseGroup FIXEDCHARWIDTH 14;
+barcodeEx 'Штрих код' = DATA STRING[14] (barcode) IN recognizeGroup FIXEDCHARWIDTH 14;
 
 dateUserBarcode 'Дата действия' = DATA DATE (barcode) IN baseGroup;
 dateMaxGlobal 'Наименьшая дата' = DATA DATE() IN baseGroup;
 dateBarcode 'Дата действия' = UNION OVERRIDE dateMaxGlobal() IF barcode IS barcode, dateUserBarcode(barcode) IN baseGroup;
 
-skuBarcode 'Товар штрих-кода' = DATA sku(barcode) IN baseGroup;
+skuBarcode = DATA sku(barcode) IN baseGroup;
+nameSkuBarcode 'Товар штрих-кода' (barcode) = nameAttributeItem(skuBarcode(barcode)) IN recognizeGroup;
 
 barcodeToDate(barcode, date) = GROUP UNIQUE barcode BY barcodeEx(barcode), dateBarcode(barcode);
 
@@ -916,6 +960,25 @@ barcodeBarcodeSku 'Основной штрих-код' = barcodeEx(barcodeSku(sk
 inSkuBarcode(sku, barcode) = skuBarcode(barcode) == sku;
 
 concatBarcodeBySkuDate 'Штрих-кода товара' (sku, date) = GROUP CONCAT barcodeEx(barcode) IF dateBarcode(barcode) <= date AND date AS DATE, ', ' BY skuBarcode(barcode), date IN baseGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+
+pieceNumeratorSku (sku) = pieceNumeratorItemGroup(itemGroupSku(sku));
+weightNumeratorSku (sku) = weightNumeratorItemGroup(itemGroupSku(sku));
+
+tmpNum = SESSION DATA numerator();
+
+generateBarcodeSku 'Сгенерировать штрих-код' = ACTION (sku) {
+    ADDOBJ barcode;
+    FOR b == addedObject() DO {
+        SET skuBarcode(b) <- sku AS sku;
+        IF isWeightItem(sku) THEN
+            SET tmpNum() <- weightNumeratorSku(sku)
+        ELSE
+            SET tmpNum() <- pieceNumeratorSku(sku);
+        SET barcodeEx(b) <- curStringValueNumerator(tmpNum());
+        EXEC incrementValueNumerator(tmpNum());
+    };
+} TOOLBAR;
+
 
 FORM barcode 'Штрих-код'
     OBJECTS       b=barcode
@@ -1561,7 +1624,8 @@ FORM item 'Товар'
                   shortNameSpecialtyItem SHOWIF toShowSpecialty(i), nameColorItem SHOWIF toShowColor(i),
                   nameTasteItem SHOWIF toShowTaste(i), hallmarkItem SHOWIF toShowHallmark(i), articleItem SHOWIF toShowArticle(i),
                   nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), nameFormItemItem SHOWIF toShowFormItem(i),
-                  shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameCountryItem SHOWIF toShowCountry(i),
+
+                  shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameCountryItem SHOWIF toShowCountry(i), isWeightItem,
 
                   isManufacturedItem,
                   compositionMenuItem SHOWIF isManufacturedItem(i), grossWeightItem SHOWIF isManufacturedItem(i),
@@ -1576,8 +1640,10 @@ FORM item 'Товар'
 
                   nameisPortionBarItem, showFormNameisPortionBarItem,
 
+                  oldPriceItem, nameTagItem, multiplierItem,
+
                   // Дополнительные
-                  isWeightedItem, isWeightItem, passScalesItem, isMarkItem, isLoafCutItem,
+                  isWeightedItem, passScalesItem, isMarkItem, isLoafCutItem,
                   compositionScalesItem, storageTemperatureItem, banSailItem,
 
                   importerPriceItem, showFormimporterPriceItem,
@@ -1591,8 +1657,6 @@ FORM item 'Товар'
                   percentFatItem, percentAlcoholItem, nutritionalValueItem, energyItem,
                   fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
 
-                  oldPriceItem, nameTagItem, multiplierItem,
-
                   controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem,
 
                   netWeightItem, quantityPackItem, minQuantityOrderItem, minReserveItem, nameNumberInPackItem,
@@ -1602,8 +1666,10 @@ FORM item 'Товар'
     OBJECTS b=barcode
     PROPERTIES(b)       barcodeEx, dateBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode,
                         amountBarcode, removeBarcode, commentRemoveBarcode, actionBarcode
+    PROPERTIES(i)       generateBarcodeSku TODRAW b FORCE PANEL
     PROPERTIES(b)       ADDOBJ, delete
     PROPERTIES(i, b)    primarySkuBarcode
+    FILTERS inSkuBarcode(i, b)
 
     // Управленческие параметры
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
@@ -1681,6 +1747,9 @@ DESIGN item FROM DEFAULT {
                         childConstraints = TO THE BOTTOM;
                     };
                     ADD i.barGroup;
+                    ADD i.tagGroup {
+                        childConstraints = TO THE BOTTOM;
+                    };
                 }
                 POSITION containerLeft TO THE LEFT containerRight;
                 ADD b.box;
@@ -1705,9 +1774,6 @@ DESIGN item FROM DEFAULT {
                 NEW containerARight {
                     childConstraints = TO THE BOTTOM;
                     ADD i.substanceGroup{
-                        childConstraints = TO THE BOTTOM;
-                    };
-                    ADD i.tagGroup {
                         childConstraints = TO THE BOTTOM;
                     };
                     ADD i.expiryGroup {
@@ -1775,8 +1841,8 @@ DESIGN items FROM DEFAULT {
 
 FORM itemGroup 'Товарная группа'
     OBJECTS g=itemGroup FIXED PANEL
-    PROPERTIES(g)  name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, extSID, showCaptionItemGroup,
-                   showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
+    PROPERTIES(g)  name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup,
+                   showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
                    showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                    showArticleItemGroup, showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
                    showNumberInPackItemGroup, showRateWasteItemGroup, showWareItemGroup
@@ -1801,8 +1867,8 @@ FORM itemGroups 'Товарные группы'
     ORDER BY name
 
     OBJECTS cg=itemGroup
-    PROPERTIES(cg)   canonicalNameItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, showCaptionItemGroup,
-                     showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
+    PROPERTIES(cg)   canonicalNameItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup,
+                     showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
                      showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                      showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup, showNumberInPackItemGroup,
                      showRateWasteItemGroup, showWareItemGroup, delete
@@ -5047,12 +5113,9 @@ NAVIGATOR {
         }
         NEW contragents 'Контрагенты'{
             ADD suppliers;
+            ADD customers;
             ADD banks;
         }
-        NEW customerRelation 'Покупатели'{
-            ADD customers;
-        }
-
         NEW equipment 'Оборудование' {
             ADD groupsCash;
             ADD groupsScales;
@@ -5238,6 +5301,10 @@ NAVIGATOR {
         ADD importData;
         ADD globalParameters;
 
+    }
+
+    catalogElement {
+        ADD numerators;
     }
 }
 
