@@ -1469,7 +1469,7 @@ forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams prop
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, recursive, descending, $elsePDB.property);
+		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, $elsePDB.property, recursive, descending);
 	}	
 }
 	:	(	'FOR' 
