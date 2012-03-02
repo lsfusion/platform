@@ -478,21 +478,26 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         Map<ExecuteProperty, List<ExecutionContext>> pendingExecutes = new HashMap<ExecuteProperty, List<ExecutionContext>>();
         IncrementApply incrementApply = new IncrementApply(this);
 
+        String constraintResult = null;
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         for (Property<?> property : BL.getAppliedProperties(onlyCheck)) {
             if(property.isFalse) { // ограничения
-                String constraintResult = check(property, incrementApply);
+                constraintResult = check(property, incrementApply);
                 if (constraintResult != null) {
-                    // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
-                    incrementApply.cleanIncrementTables();
-                    sql.rollbackTransaction();
-                    return constraintResult;
+                    break;
                 }
             }
             if(property instanceof ExecuteProperty)
                 executeDerived((ExecuteProperty) property, incrementApply, actions, pendingExecutes); // действия
             if(property.isStored()) // постоянно-хранимые свойства
                 readStored(property, incrementApply, BL);
+        }
+
+        if (onlyCheck || constraintResult != null) {
+            // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
+            incrementApply.cleanIncrementTables();
+            sql.rollbackTransaction();
+            return constraintResult;
         }
 
         // записываем в базу, то что туда еще не сохранено, приходится сохранять группами, так могут не подходить по классам
