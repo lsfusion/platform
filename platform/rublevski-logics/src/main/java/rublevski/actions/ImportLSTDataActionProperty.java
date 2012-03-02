@@ -2,6 +2,8 @@ package rublevski.actions;
 
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
+import platform.interop.action.MessageClientAction;
+import platform.server.Message;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DateClass;
 import platform.server.integration.*;
@@ -34,20 +36,26 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     public void execute(ExecutionContext context) throws SQLException {
         String path = rublevskiLM.getLPByName("importLSTDirectory").read(context).toString().trim();
         if (rublevskiLM.getLPByName("importGroupItems").read(context) != null) {
-            importItemGroups(path + "//_sprgrt.dbf");
-            importParentGroups(path + "//_sprgrt.dbf");
+            importItemGroups(path + "//_sprgrt.dbf", context);
+            importParentGroups(path + "//_sprgrt.dbf", context);
         }
-        if (rublevskiLM.getLPByName("importItems").read(context) != null)
-            importItems(path + "//_sprgrm.dbf");
+        if (rublevskiLM.getLPByName("importItems").read(context) != null) {
+            Object numberOfItems = rublevskiLM.getLPByName("importNumberItems").read(context);
+            importItems(path + "//_sprgrm.dbf", context, numberOfItems == null ? 0 : (Integer) numberOfItems);
+        }
 
         if (rublevskiLM.getLPByName("importCompanies").read(context) != null)
-            importCompanies(path + "//_sprana.dbf");
+            importCompanies(path + "//_sprana.dbf", context);
 
         if (rublevskiLM.getLPByName("importSuppliers").read(context) != null)
-            importSuppliers(path + "//_sprana.dbf");
+            importSuppliers(path + "//_sprana.dbf", context);
+
+        if (rublevskiLM.getLPByName("importStores").read(context) != null)
+            importStores(path + "//_sprana.dbf", context);
+        
     }
 
-    private void importParentGroups(String path) {
+    private void importParentGroups(String path, ExecutionContext context) {
         try {
             List<List<Object>> data = importItemGroupsFromDBF(path, true);
 
@@ -67,8 +75,11 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemGroupKey, parentGroupKey), propsParent);
             service.synchronize(true, false);
-            if (session.hasChanges())
-                session.apply(BL);
+            if (session.hasChanges()) {
+                String result = session.apply(BL);
+                   if(result!=null)
+                    context.addAction(new MessageClientAction(result, "Ошибка"));
+            }
             session.close();
 
         } catch (xBaseJException e) {
@@ -80,7 +91,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importItemGroups(String path) throws SQLException {
+    private void importItemGroups(String path, ExecutionContext context) throws SQLException {
 
         try {
             List<List<Object>> data = importItemGroupsFromDBF(path, false);
@@ -100,8 +111,11 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemGroupKey), props);
             service.synchronize(true, false);
-            if (session.hasChanges())
-                session.apply(BL);
+            if (session.hasChanges()) {
+                String result = session.apply(BL);
+                if(result!=null)
+                    context.addAction(new MessageClientAction(result, "Ошибка"));
+            }
             session.close();
 
         } catch (xBaseJException e) {
@@ -113,10 +127,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importItems(String path) throws SQLException {
+    private void importItems(String path,ExecutionContext context, Integer numberOfItems) throws SQLException {
 
         try {
-            List<List<Object>> data = importItemsFromDBF(path);
+            List<List<Object>> data = importItemsFromDBF(path, numberOfItems);
 
             ImportField itemIDField = new ImportField(BL.LM.extSID);
             ImportField itemGroupIDField = new ImportField(BL.LM.extSID);
@@ -169,8 +183,11 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, unitOfMeasureKey, brandKey, countryKey), props);
             service.synchronize(true, false);
-            if (session.hasChanges())
-                session.apply(BL);
+            if (session.hasChanges()) {
+                String result = session.apply(BL);
+                if(result!=null)
+                    context.addAction(new MessageClientAction(result, "Ошибка"));
+            }
             session.close();
 
         } catch (xBaseJException e) {
@@ -182,10 +199,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importCompanies(String path) throws SQLException {
+    private void importCompanies(String path, ExecutionContext context) throws SQLException {
 
         try {
-            List<List<Object>> data = importLegalEntitiesFromDBF(path, false);
+            List<List<Object>> data = importLegalEntitiesFromDBF(path, "ЮР");
 
             ImportField companyIDField = new ImportField(BL.LM.extSID);
             ImportField nameLegalEntityField = new ImportField(BL.LM.name);
@@ -198,7 +215,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField shortNameOwnershipField = new ImportField(rublevskiLM.getLPByName("shortNameOwnership"));
             ImportField accountField = new ImportField(rublevskiLM.getLPByName("dataAccount"));
 
-            DataObject defaultDate = new DataObject(new java.sql.Date(2001-1900, 0, 1), DateClass.instance);
+            DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
 
             ImportKey<?> companyKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("company"),
                     BL.LM.extSIDToObject.getMapping(companyIDField));
@@ -239,8 +256,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
-                if (result != null)
-                    result = result.substring(0, result.length());
+                if(result!=null)
+                    context.addAction(new MessageClientAction(result, "Ошибка"));
             }
 
             session.close();
@@ -254,10 +271,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importSuppliers(String path) throws SQLException {
+    private void importSuppliers(String path, ExecutionContext context) throws SQLException {
 
         try {
-            List<List<Object>> data = importLegalEntitiesFromDBF(path, true);
+            List<List<Object>> data = importLegalEntitiesFromDBF(path, "ПС");
 
             ImportField supplierIDField = new ImportField(BL.LM.extSID);
             ImportField nameLegalEntityField = new ImportField(BL.LM.name);
@@ -270,7 +287,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField shortNameOwnershipField = new ImportField(rublevskiLM.getLPByName("shortNameOwnership"));
             ImportField accountField = new ImportField(rublevskiLM.getLPByName("dataAccount"));
 
-            DataObject defaultDate = new DataObject(new java.sql.Date(2001, 01, 01), DateClass.instance);
+            DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
 
             ImportKey<?> supplierKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("supplier"),
                     BL.LM.extSIDToObject.getMapping(supplierIDField));
@@ -311,10 +328,55 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
-                if (result != null)
-                    result = result.substring(0, result.length());
+                if(result!=null)
+                    context.addAction(new MessageClientAction(result, "Ошибка"));
             }
+            session.close();
 
+        } catch (xBaseJException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void importStores(String path, ExecutionContext context) throws SQLException {
+
+        try {
+            List<List<Object>> data = importLegalEntitiesFromDBF(path, "МГ");
+
+            ImportField storeIDField = new ImportField(BL.LM.extSID);
+            ImportField nameStoreField = new ImportField(BL.LM.name);
+            ImportField addressStoreField = new ImportField(BL.LM.name);
+            ImportField companyIDField = new ImportField(BL.LM.extSID);
+
+            ImportKey<?> storeKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("store"),
+                    BL.LM.extSIDToObject.getMapping(storeIDField));
+
+            ImportKey<?> companyKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("company"),
+                    BL.LM.extSIDToObject.getMapping(companyIDField));
+
+            List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+
+            props.add(new ImportProperty(storeIDField, BL.LM.extSID.getMapping(storeKey)));
+            props.add(new ImportProperty(nameStoreField, BL.LM.name.getMapping(storeKey)));
+            props.add(new ImportProperty(addressStoreField, rublevskiLM.getLPByName("addressStore").getMapping(storeKey)));
+            props.add(new ImportProperty(companyIDField, rublevskiLM.getLPByName("companyStore").getMapping(storeKey),
+                    BL.LM.object(rublevskiLM.getClassByName("company")).getMapping(companyKey)));
+
+
+            ImportTable table = new ImportTable(Arrays.asList(storeIDField, nameStoreField, addressStoreField, companyIDField), data);
+
+            DataSession session = BL.createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(storeKey, companyKey), props);
+            service.synchronize(true, false);
+            if (session.hasChanges()) {
+                String result = session.apply(BL);
+                if(result!=null)
+                    context.addAction(new MessageClientAction(result, "Ошибка"));
+            }
             session.close();
 
         } catch (xBaseJException e) {
@@ -363,12 +425,14 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         return data;
     }
 
-    private List<List<Object>> importItemsFromDBF(String path) throws IOException, xBaseJException {
+    private List<List<Object>> importItemsFromDBF(String path, Integer numberOfItems) throws IOException, xBaseJException {
 
         DBF importFile = new DBF(path);
-        int recordCount = importFile.getRecordCount();
+        int totalRecordCount = importFile.getRecordCount();
 
         data = new ArrayList<List<Object>>();
+
+        int recordCount = (numberOfItems != 0 && numberOfItems < totalRecordCount) ? numberOfItems : totalRecordCount;
 
         for (int i = 0; i < recordCount; i++) {
 
@@ -386,7 +450,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         return data;
     }
 
-    private List<List<Object>> importLegalEntitiesFromDBF(String path, boolean supplier) throws IOException, xBaseJException {
+    private List<List<Object>> importLegalEntitiesFromDBF(String path, String type) throws IOException, xBaseJException {
 
         DBF importFile = new DBF(path);
         int recordCount = importFile.getRecordCount();
@@ -399,19 +463,20 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 {"ООО", "Общество с ограниченной ответственностью"},
                 {"ЗАО", "Закрытое акционерное общество"}};
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < recordCount; i++) {
 
             importFile.read();
             String k_ana = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
             String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
-            String legalAddress = new String(importFile.getField("ADDRESS").getBytes(), "Cp1251").trim();
+            String address = new String(importFile.getField("ADDRESS").getBytes(), "Cp1251").trim();
             String unp = new String(importFile.getField("UNN").getBytes(), "Cp1251").trim();
             String okpo = new String(importFile.getField("OKPO").getBytes(), "Cp1251").trim();
             String phone = new String(importFile.getField("TEL").getBytes(), "Cp1251").trim();
             String email = new String(importFile.getField("EMAIL").getBytes(), "Cp1251").trim();
             String account = new String(importFile.getField("ACCOUNT").getBytes(), "Cp1251").trim();
+            String companyStore = new String(importFile.getField("K_JUR").getBytes(), "Cp1251").trim();
 
-            if ((("ЮР".equals(k_ana.substring(0, 2)))&&!supplier)||("ПС".equals(k_ana.substring(0, 2))&&supplier)) {
+            if (type.equals(k_ana.substring(0, 2))) {
                 String ownershipName = "";
                 String ownershipShortName = "";
                 for (String[] ownership : ownershipsList) {
@@ -422,7 +487,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                     }
 
                 }
-                data.add(Arrays.asList((Object) k_ana, name, legalAddress, unp, okpo, phone, email, ownershipName, ownershipShortName, account));
+                if ("МГ".equals(type))
+                    data.add(Arrays.asList((Object) k_ana, name, address, companyStore));
+                else
+                    data.add(Arrays.asList((Object) k_ana, name, address, unp, okpo, phone, email, ownershipName, ownershipShortName, account));
             }
         }
         return data;

@@ -1036,7 +1036,7 @@ CLASS ABSTRACT stock 'Склад' : named;
 
 // ----------------------------------- Магазин ----------------------------------------- //
 
-CLASS store 'Магазин' : named;
+CLASS store 'Магазин' : named, externalObject;
 CLASS tradingNetwork 'Торговая сеть' : named; // "Рублевский", "Базар"
 CLASS storeType 'Формат магазина' : named; //Мини, Супер, ...
 
@@ -1940,7 +1940,7 @@ GROUP lawGroup 'Юридическая информация' : publicGroup;
 GROUP contactGroup 'Контактная информация' : publicGroup;
 GROUP docGroup 'Для договора' : publicGroup;
 
-CLASS ABSTRACT legalEntity 'Юридическое лицо' : named;
+CLASS ABSTRACT legalEntity 'Юридическое лицо' : named, externalObject;
 
 ownershipLegalEntity 'Форма собственности (ИД)' = DATA ownership (legalEntity) IN idGroup;
 
@@ -4721,11 +4721,13 @@ importLSTDataAction 'Импортировать данные (LS Trade)' = ACTIO
 importLSTDirectory 'Папка' = DATA STRING[200] ();// IN lstradeGroup;
 importGroupItems 'Импортировать группы товаров' = DATA BOOLEAN ();
 importItems 'Импортировать товары' = DATA BOOLEAN ();
+importNumberItems 'Кол-во' = DATA INTEGER ();
 importCompanies 'Импортировать компании' = DATA BOOLEAN ();
 importSuppliers 'Импортировать поставщиков' = DATA BOOLEAN ();
+importStores 'Импортировать магазины' = DATA BOOLEAN ();
 FORM importData 'Импорт данных'
     PROPERTIES() importDataAction, importUrl, importLogin, importPassword
-    PROPERTIES() importLSTDataAction, importLSTDirectory, importGroupItems, importItems, importCompanies, importSuppliers
+    PROPERTIES() importLSTDataAction, importLSTDirectory, importGroupItems, importItems, importNumberItems, importCompanies, importSuppliers, importStores
 ;
 
 //---------------------------- Настройка навигатора ----------------------------------------//
