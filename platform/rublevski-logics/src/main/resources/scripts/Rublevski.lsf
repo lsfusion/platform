@@ -4860,10 +4860,30 @@ nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) =
 waybillInnerFlow 'Номер накладной' (innerFlow) = DATA STRING[7] (innerFlow) IN documentHeaderGroup FIXEDCHARWIDTH 7;
 seriesWaybillInnerFlow 'Серия накладной' (innerFlow) = DATA STRING[2] (innerFlow) IN documentHeaderGroup FIXEDCHARWIDTH 4;
 
+dateInnerFlowInnerFlowDetail 'Дата документа' (innerFlowDetail) = dateInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail));
+
 quantityInnerFlowDetail 'Количество' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
+
 priceInnerFlowDetail 'Цена' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
+
+priceItemInnerFlow 'Цена (максим.)' (item, innerFlow) = GROUP MAX priceInnerFlowDetail (innerFlowDetail)
+    IF innerFlowInnerFlowDetail(innerFlowDetail) == innerFlow
+    BY itemInnerFlowDetail(innerFlowDetail), innerFlowInnerFlowDetail(innerFlowDetail);
+
 sumInnerFlowDetail 'Сумма' (innerFlowDetail) = round0(
     quantityInnerFlowDetail(innerFlowDetail) * priceInnerFlowDetail (innerFlowDetail)) IN baseGroup;
+
+importerPriceInnerFlowDetail 'Цена изготовителя' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail);
+importerPriceInnerFlowDetail (innerFlowDetail) <- importerPriceItemAtDate (itemInnerFlowDetail (innerFlowDetail),
+    dateInnerFlowInnerFlowDetail(innerFlowDetail)) ON CHANGE itemInnerFlowDetail (innerFlowDetail);
+
+importerPriceItemInnerFlow 'Цена изготовителя (максим.)' (item, innerFlow) = GROUP MAX importerPriceInnerFlowDetail (innerFlowDetail)
+    IF innerFlowInnerFlowDetail(innerFlowDetail) == innerFlow BY itemInnerFlowDetail(innerFlowDetail), innerFlowInnerFlowDetail(innerFlowDetail);
+
+retailRangeInnerFlowDetail(innerFlowDetail) = DATA range (innerFlowDetail) IN idGroup;
+dataRetailRangeInnerFlowDetail 'НДС розничный,%' (innerFlowDetail) = dataActingRateRange(retailRangeInnerFlowDetail(innerFlowDetail)) IN baseGroup;
+retailRangeInnerFlowDetail(innerFlowDetail) <- overrideRateRangeItem(itemInnerFlowDetail(innerFlowDetail))
+    ON CHANGE itemInnerFlowDetail(innerFlowDetail);
 
 quantityItemInnerFlow 'Количество в расходе' (item, innerFlow) = GROUP SUM quantityInnerFlowDetail(innerFlowDetail)
     IF inInnerFlowInnerFlowDetail (innerFlow, innerFlowDetail) BY itemInnerFlowDetail (innerFlowDetail), innerFlowInnerFlowDetail (innerFlowDetail);
@@ -4881,13 +4901,42 @@ FORM innerFlow 'Расход в другой отдел'
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
-                   quantityInnerFlowDetail, priceInnerFlowDetail, sumInnerFlowDetail, ADDOBJ, delete
+                   quantityInnerFlowDetail, priceInnerFlowDetail, importerPriceInnerFlowDetail READONLY,
+                   dataRetailRangeInnerFlowDetail READONLY,
+                   sumInnerFlowDetail, ADDOBJ, delete
 
     PROPERTIES addInnerFlowDetailBarcode(f) TODRAW d
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 
     EDIT innerFlow OBJECT f
 ;
+
+DESIGN innerFlow FROM DEFAULT{
+    main{
+        NEW specification.box BEFORE functions.box{
+            tabbedPane = TRUE;
+            ADD d.box {
+                childConstraints = TO THE BOTTOM;
+                title = 'Спецификация';
+            };
+        };
+        NEW header.box BEFORE specification.box {
+            childConstraints = TO THE BOTTOM;
+
+            NEW headerRow1 {
+                childConstraints = TO THE RIGHT;
+                ADD f.documentHeaderGroup;
+            };
+            NEW headerRow2 {
+                childConstraints = TO THE RIGHT;
+                ADD f.waybillSum {
+                    childConstraints = TO THE RIGHT;
+                };
+                ADD f.additionalInfo;
+             };
+        };
+    };
+};
 
 FORM innerFlows 'Расходы в другие отделы'
     OBJECTS f=innerFlow
@@ -4899,7 +4948,7 @@ FORM innerFlows 'Расходы в другие отделы'
                    postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
 
     OBJECTS d=innerFlowDetail
-    PROPERTIES (d) numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
+    PROPERTIES (d) READONLY numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
                     quantityInnerFlowDetail, priceInnerFlowDetail, sumInnerFlowDetail
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 ;
@@ -4947,8 +4996,28 @@ seriesWaybillInnerArrival (innerArrival) <- seriesWaybillInnerFlow(innerFlowInne
 
 quantityInnerArrivalDetail 'Количество' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN baseGroup;
 priceInnerArrivalDetail 'Цена' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN baseGroup;
+
+priceItemInnerArrival 'Цена (максим.)' (item, innerArrival) = priceItemInnerFlow (
+    item, innerFlowInnerArrival(innerArrival));
+
+priceInnerArrivalDetail (innerArrivalDetail) <- priceItemInnerArrival(
+    itemInnerArrivalDetail(innerArrivalDetail), innerArrivalInnerArrivalDetail(innerArrivalDetail))
+    ON CHANGE itemInnerArrivalDetail (innerArrivalDetail);
+
 sumInnerArrivalDetail 'Сумма' (innerArrivalDetail) = round0(
     quantityInnerArrivalDetail(innerArrivalDetail) * priceInnerArrivalDetail (innerArrivalDetail)) IN baseGroup;
+
+importerPriceInnerArrivalDetail 'Цена изготовителя' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail);
+
+importerPriceItemInnerArrival 'Цена изготовителя (максим.)' (item, innerArrival) = importerPriceItemInnerFlow(
+    item, innerFlowInnerArrival(innerArrival));
+
+importerPriceInnerArrivalDetail (innerArrivalDetail) <- importerPriceItemInnerArrival(
+    itemInnerArrivalDetail(innerArrivalDetail), innerArrivalInnerArrivalDetail(innerArrivalDetail))
+    ON CHANGE itemInnerArrivalDetail (innerArrivalDetail);
+
+retailRangeInnerArrivalDetail(innerArrivalDetail) = DATA range (innerArrivalDetail) IN idGroup;
+dataRetailRangeInnerArrivalDetail 'НДС розничный,%' (innerArrivalDetail) = dataActingRateRange(retailRangeInnerArrivalDetail(innerArrivalDetail)) IN baseGroup;
 
 toFillInnerArrivalDetailsInnerArrival 'Заполнить документ из расхода' =  ACTION (innerArrival) {
     FOR innerArrivalInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail)) == innerArrival DO {
@@ -4959,6 +5028,8 @@ toFillInnerArrivalDetailsInnerArrival 'Заполнить документ из 
             SET itemInnerArrivalDetail (d) <- itemInnerFlowDetail(innerFlowDetail);
             SET quantityInnerArrivalDetail (d) <- quantityInnerFlowDetail(innerFlowDetail);
             SET priceInnerArrivalDetail (d) <- priceInnerFlowDetail(innerFlowDetail);
+            SET importerPriceInnerArrivalDetail (d) <- importerPriceInnerFlowDetail(innerFlowDetail);
+            SET retailRangeInnerArrivalDetail (d) <- retailRangeInnerFlowDetail(innerFlowDetail);
         };
     };
 } IN documentHeaderGroup CONFIRM;
@@ -4989,14 +5060,17 @@ FORM innerArrival 'Приход из другого отдела'
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) SHOWIF innerFlowInnerArrival(a) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
-                   quantityInnerArrivalDetail, priceInnerArrivalDetail READONLY, sumInnerArrivalDetail READONLY, ADDOBJ, delete
+                   quantityInnerArrivalDetail, priceInnerArrivalDetail READONLY, importerPriceInnerArrivalDetail READONLY,
+                   dataRetailRangeInnerArrivalDetail READONLY,
+                   sumInnerArrivalDetail READONLY, ADDOBJ, delete
 
     PROPERTIES addInnerArrivalDetailBarcode(a) TODRAW d
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
 
     OBJECTS i=item
     PROPERTIES (i) SHOWIF innerFlowInnerArrival(a) nameAttributeItem
-    PROPERTIES (i, a) SHOWIF innerFlowInnerArrival(a) quantityItemInnerFlowInnerArrival, quantityItemInnerArrival, diffQuantityItemInnerArrival
+    PROPERTIES (i, a) SHOWIF innerFlowInnerArrival(a) quantityItemInnerFlowInnerArrival, quantityItemInnerArrival,
+                             diffQuantityItemInnerArrival, importerPriceItemInnerArrival, priceItemInnerArrival
     FILTERS inInnerArrivalItem (i, a)
 
     EDIT innerArrival OBJECT a
@@ -5019,9 +5093,11 @@ DESIGN innerArrival FROM DEFAULT{
                 childConstraints = TO THE RIGHT;
                 ADD a.documentHeaderGroup;
             };
-
             NEW headerRow2 {
                 childConstraints = TO THE RIGHT;
+                ADD a.waybillSum {
+                    childConstraints = TO THE RIGHT;
+                };
                 ADD a.additionalInfo;
              };
         };
@@ -5037,7 +5113,7 @@ FORM innerArrivals 'Приходы из других отделов'
                    postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
-    PROPERTIES (d) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
+    PROPERTIES (d) READONLY numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
                    quantityInnerArrivalDetail, priceInnerArrivalDetail, sumInnerArrivalDetail
 
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
