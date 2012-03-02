@@ -2194,6 +2194,7 @@ inSupplierLicense(supplier, license) = legalEntityLicense(license) == supplier;
 
 inCompanyContract(company, contract) = companyContract(contract) == company;
 inCompanyAccount(company, account) = legalEntityAccount(account) == company;
+inCustomerAccount(customer, account) = legalEntityAccount(account) == customer;
 
 nameSupplierContract 'Контрагент' (contract) = name(supplierContract(contract));
 nameCompanyContract 'Контрагент' (contract) = name(companyContract(contract));
@@ -2388,6 +2389,7 @@ FORM customer 'Покупатель'
     OBJECTS a=account
     PROPERTIES(a)      dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount,
                        MFOBankAccount, noteAccount, ADDOBJ, delete
+    FILTERS inCustomerAccount(cu, a)
 
     EDIT customer OBJECT cu
 
@@ -4295,8 +4297,8 @@ FORM specificationsStatement 'Счета'
                         dateToSpecification, quantitySpecification, sumSpecification
     PROPERTIES (st, sp) statusStatementSpecification
 
-    FILTERS NOT NULL isCustomerStatementSpecification (st, sp),
-            NOT NULL isDepartmentStoreStatementSpecification (st, sp)
+    FILTERS isCustomerStatementSpecification (st, sp),
+            isDepartmentStoreStatementSpecification (st, sp)
 
 ;
 
@@ -4317,7 +4319,7 @@ FORM statement 'Отгрузка из розницы'
 
     PROPERTIES      addStatementDetailBarcode(st) TODRAW d
 
-    FILTERS NOT NULL inStatementStatementDetail(st, d)
+    FILTERS         inStatementStatementDetail(st, d)
 
     EDIT statement OBJECT st
 ;
