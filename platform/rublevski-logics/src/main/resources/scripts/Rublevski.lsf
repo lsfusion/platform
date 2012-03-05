@@ -4619,7 +4619,7 @@ oldRetailPriceShipmentDetail (shipmentDetail) <- retailPriceItemDepartmentVal (
 
 oldRetailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
 oldDataRetailRangeShipmentDetail 'Старый НДС розничный,%' (shipmentDetail) =
-   actingRateRangeDate(oldRetailRangeShipmentDetail(shipmentDetail), subtractDate2(dateShipmentDetail(shipmentDetail),1));
+   actingRateRangeDate(oldRetailRangeShipmentDetail(shipmentDetail), subtractDate2(dateShipmentDetail(shipmentDetail),1)) IN itemShipmentDetailInfo;
 // !!!надо продумать, что писать!!!
 
 oldPriceShipmentDetail 'Старая цена поставщика'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
@@ -4627,7 +4627,7 @@ oldPriceShipmentDetail(shipmentDetail) <- priceSupplierItemDepartmentVal (suppli
     itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
     subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
-oldImporterPriceShipmentDetail 'Старая цена изготовителя/импортера' (shipmentDetail) = DATA DOUBLE (shipmentDetail);
+oldImporterPriceShipmentDetail 'Старая цена изготовителя/импортера' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN itemShipmentDetailInfo;
 oldImporterPriceShipmentDetail (shipmentDetail) <- importerPriceItemAtDate (itemShipmentDetail(shipmentDetail),
     subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
@@ -4765,7 +4765,8 @@ FORM shipment 'Поставка'
     PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, importerPriceShipmentDetail, dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d),
                                priceWareShipmentDetail SHOWIF inWareShipmentDetail(d), controlExpiryShipmentDetail, isManufacturedShipmentDetail,
                                isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail, hintShipmentDetail,
-                               nameCountryShipmentDetail, namebanRevaluationItemDepartmentShipmentDetail
+                               nameCountryShipmentDetail, namebanRevaluationItemDepartmentShipmentDetail,
+                               oldImporterPriceShipmentDetail, oldDataRetailRangeShipmentDetail
 
     PROPERTIES addShipmentDetailBarcode(s) TODRAW d
 
