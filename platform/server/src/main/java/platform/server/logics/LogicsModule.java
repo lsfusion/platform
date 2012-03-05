@@ -1412,15 +1412,23 @@ public abstract class LogicsModule {
     }
 
     protected <T extends PropertyInterface, P extends PropertyInterface> LP addCGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, LP<T> groupProp, LP<P> dataProp, Object... params) {
-        List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
-        CycleGroupProperty<T, P> property = new CycleGroupProperty<T, P>(name, caption, listImplements, groupProp.property, dataProp.property);
+        return addCGProp(group, checkChange, name, persistent, caption, dataProp, groupProp.listInterfaces, add(groupProp.property.getImplement(), readImplements(groupProp.listInterfaces, params)));
+    }
+
+    protected <T extends PropertyInterface, P extends PropertyInterface> LP addCGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, LP<P> dataProp, int interfaces, Object... params) {
+        List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
+        return addCGProp(group, checkChange, name, persistent, caption, dataProp, innerInterfaces, readImplements(innerInterfaces, params));
+    }
+    
+    protected <T extends PropertyInterface, P extends PropertyInterface> LP addCGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, LP<P> dataProp, List<T> innerInterfaces, List<PropertyInterfaceImplement<T>> listImplements) {
+        CycleGroupProperty<T, P> property = new CycleGroupProperty<T, P>(name, caption, innerInterfaces, listImplements.subList(0, listImplements.size()), listImplements.get(0), dataProp.property);
 
         // нужно добавить ограничение на уникальность
         addProperty(null, new LP(property.getConstrainedProperty(checkChange)));
 
         return mapLGProp(group, persistent, property, listImplements);
     }
-
+    
 //    protected static <T extends PropertyInterface<T>> AggregateGroupProperty create(String sID, String caption, Property<T> property, T aggrInterface, Collection<PropertyMapImplement<?, T>> groupProps) {
 
     protected LP addAGProp(String name, String caption, LP... props) {
