@@ -370,6 +370,30 @@ META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
 
 END
 
+META metaCodeSingleAggregation (primObject, aggrObject, aggrProperty)
+
+    primObject###aggrObject = DATA primObject (aggrObject);
+
+    unique###aggrObject (primObject) =
+        GROUP UNIQUE aggrObject BY primObject###aggrObject(aggrObject)
+        WHERE aggrObject IS aggrObject;
+
+    aggrProperty(primObject) => unique###aggrObject(primObject) RESOLVE TRUE;
+
+    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
+    is###aggrObject(aggrObject) => aggrProperty(primObject###aggrObject(aggrObject)) RESOLVE FALSE;
+
+END
+
+META metaCodeDetailAggregation (primObject, aggrObject, aggrProperty)
+
+    @metaCodeSingleAggregation(primObject, aggrObject, aggrProperty);
+    @metaCodeSingleAggregation(primObject##Detail, aggrObject##Detail, aggrProperty##Detail);
+
+    aggrObject###aggrObject##Detail (detail) = unique###aggrObject(primObject###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)));
+
+END
+
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 CLASS itemGroup 'Товарная группа' : named, externalObject;
 TABLE itemGroup(itemGroup);
@@ -4683,16 +4707,9 @@ needToPriceChangeShipmentDetail (shipmentDetail) = oldRetailPriceShipmentDetail(
 
 needToPriceChangeShipment (shipment) = GROUP SUM 1 IF needToPriceChangeShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail);
 
-shipmentPriceChangeShipment = DATA shipment (priceChangeShipment);
+@metaCodeDetailAggregation(shipment, priceChangeShipment, needToPriceChangeShipment);
 
-uniquePriceChangeShipment (shipment) =
-    GROUP UNIQUE priceChangeShipment BY shipmentPriceChangeShipment(priceChangeShipment)
-    WHERE priceChangeShipment IS priceChangeShipment;
-
-needToPriceChangeShipment(shipment) => uniquePriceChangeShipment(shipment) RESOLVE TRUE;
-
-isPriceChangeShipment(priceChangeShipment) = priceChangeShipment IS priceChangeShipment;
-isPriceChangeShipment(priceChangeShipment) => needToPriceChangeShipment(shipmentPriceChangeShipment(priceChangeShipment)) RESOLVE FALSE;
+// атрибуты документа переоценки
 
 datePriceChangeShipment 'Дата' (priceChangeShipment) = dateShipment(shipmentPriceChangeShipment(priceChangeShipment));
 waybillPriceChangeShipment 'Номер накладной' (priceChangeShipment) = waybillShipment(shipmentPriceChangeShipment(priceChangeShipment));
@@ -4704,18 +4721,7 @@ nameSupplierPriceChangeShipment 'Поставщик' (priceChangeShipment) = nam
 departmentStorePriceChangeShipment (priceChangeShipment) = departmentStoreShipment(shipmentPriceChangeShipment(priceChangeShipment));
 nameDepartmentStorePriceChangeShipment 'Отдел магазина' (priceChangeShipment) = name(departmentStorePriceChangeShipment(priceChangeShipment));
 
-shipmentDetailPriceChangeShipmentDetail = DATA shipmentDetail (priceChangeShipmentDetail);
-
-uniquePriceChangeShipmentDetail (shipmentDetail) =
-    GROUP UNIQUE priceChangeShipmentDetail BY shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail)
-    WHERE priceChangeShipmentDetail IS priceChangeShipmentDetail;
-
-needToPriceChangeShipmentDetail(shipmentDetail) => uniquePriceChangeShipmentDetail(shipmentDetail) RESOLVE TRUE;
-
-isPriceChangeShipmentDetail(priceChangeShipmentDetail) = priceChangeShipmentDetail IS priceChangeShipmentDetail;
-isPriceChangeShipmentDetail(priceChangeShipmentDetail) => needToPriceChangeShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail)) RESOLVE FALSE;
-
-priceChangeShipmentPriceChangeShipmentDetail(detail) = uniquePriceChangeShipment(shipmentShipmentDetail(shipmentDetailPriceChangeShipmentDetail(detail)));
+// атрибуты детализации документа переоценки
 
 itemPriceChangeShipmentDetail (priceChangeShipmentDetail) = itemShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 nameItemPriceChangeShipmentDetail 'Товар' (priceChangeShipmentDetail) = nameAttributeItem(itemPriceChangeShipmentDetail(priceChangeShipmentDetail));
@@ -4926,6 +4932,9 @@ FORM writeOff 'Списание'
 
 DESIGN writeOff FROM DEFAULT{
 
+    main {
+        preferredSize = (1024, 768);
+    }
     d.panel{
         childConstraints = TO THE BOTTOM;
     }
