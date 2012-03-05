@@ -77,7 +77,7 @@ META metaCodeObjectDateProperty(prop, object, caption, type, group)
 
     prop##Date caption = DATA type (object, DATE) IN group;
     date##prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
-    prop##AtDate caption (object, date) = prop##Date(object, date##prop(object, date)) IN group;
+    prop##Val caption (object, date) = prop##Date(object, date##prop(object, date)) IN group;
     prop caption (object) = prop##Date(object, date##prop(object, currentDate())) IN group;
 
     FORM add##prop caption
@@ -1405,7 +1405,7 @@ dataSuppliersRangeItemDate 'Шкала' (item, date) = dataRange(suppliersRangeI
 dateSuppliersRangeItemDate (item, date) = GROUP MAX dateIn AND suppliersRangeItemDate(item, dateIn) AND dateIn <= (date AS DATE) BY item, date;
 dataActingSuppliersRangeItemDate 'НДС поставщика,%' (item, date) = dataActingRateRangeDate(suppliersRangeItemDate(item, date), date) IN suppliersNDSGroup;
 
-suppliersRangeItemAtDate 'На дату' (item, date) = suppliersRangeItemDate(item, dateSuppliersRangeItemDate(item, date)) IN idGroup;
+suppliersRangeItemVal 'На дату' (item, date) = suppliersRangeItemDate(item, dateSuppliersRangeItemDate(item, date)) IN idGroup;
 suppliersRangeItem 'Шкала' (item) = suppliersRangeItemDate(item, dateSuppliersRangeItemDate(item, currentDate())) IN idGroup;
 
 taxSuppliersItem(item) = taxRange(suppliersRangeItem(item)) IN idGroup;
@@ -1450,7 +1450,7 @@ dataRetailRangeItemDate 'Шкала' (item, date) = dataRange(retailRangeItemDat
 dateRetailRangeItemDate (item, date) = GROUP MAX dateIn AND retailRangeItemDate(item, dateIn) AND dateIn <= (date AS DATE) BY item, date;
 dataActingRetailRangeItemDate 'Розничный НДС' (item, date) = dataActingRateRangeDate(retailRangeItemDate(item, date), date) IN retailNDSGroup;
 
-retailRangeItemAtDate 'На дату' (item, date) = retailRangeItemDate(item, dateRetailRangeItemDate(item, date)) IN idGroup;
+retailRangeItemVal 'На дату' (item, date) = retailRangeItemDate(item, dateRetailRangeItemDate(item, date)) IN idGroup;
 retailRangeItem 'Шкала' (item) = retailRangeItemDate(item, dateRetailRangeItemDate(item, currentDate())) IN idGroup;
 
 taxRetailItem(item) = taxRange(retailRangeItem(item)) IN idGroup;
@@ -1591,7 +1591,7 @@ dataRangeWareDate 'Шкала' (ware, date) = dataRange(rangeWareDate(ware, date
 dateRangeWareDate (ware, date) = GROUP MAX dateIn AND rangeWareDate(ware, dateIn) AND dateIn <= (date AS DATE) BY ware, date;
 dataActingRateRangeWareDate 'НДС,%' (ware, date) = dataActingRateRangeDate(rangeWareDate(ware, date), date);
 
-rangeWareAtDate 'На дату' (ware, date) = rangeWareDate(ware, dateRangeWareDate(ware, date)) IN baseGroup;
+rangeWareVal 'На дату' (ware, date) = rangeWareDate(ware, dateRangeWareDate(ware, date)) IN baseGroup;
 rangeWare 'Шкала' (ware) = rangeWareDate(ware, dateRangeWareDate(ware, currentDate())) IN baseGroup;
 
 taxRangeWare(ware) = taxRange(rangeWare(ware)) IN idGroup;
@@ -4547,7 +4547,7 @@ inWareShipmentDetail 'Товар в посуде' (shipmentDetail) = inWareItem(
 
 priceWareShipmentDetail 'Цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
 
-priceWareShipmentDetail (shipmentDetail) <- priceWareAtDate (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
+priceWareShipmentDetail (shipmentDetail) <- priceWareVal (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
                                             ON CHANGE itemShipmentDetail(shipmentDetail);
 
 overPriceWareShipmentDetail (shipmentDetail) = UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail,
@@ -4652,11 +4652,11 @@ oldPriceShipmentDetail(shipmentDetail) <- priceSupplierItemDepartmentVal (suppli
     subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 oldImporterPriceShipmentDetail 'Старая цена изготовителя/импортера' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN itemShipmentDetailInfo;
-oldImporterPriceShipmentDetail (shipmentDetail) <- importerPriceItemAtDate (itemShipmentDetail(shipmentDetail),
+oldImporterPriceShipmentDetail (shipmentDetail) <- importerPriceItemVal (itemShipmentDetail(shipmentDetail),
     subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 oldPriceWareShipmentDetail 'Старая цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail);
-oldPriceWareShipmentDetail (shipmentDetail) <- priceWareAtDate (wareShipmentDetail (shipmentDetail),
+oldPriceWareShipmentDetail (shipmentDetail) <- priceWareVal (wareShipmentDetail (shipmentDetail),
     subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
@@ -4989,7 +4989,7 @@ sumInnerFlowDetail 'Сумма' (innerFlowDetail) = round0(
     quantityInnerFlowDetail(innerFlowDetail) * priceInnerFlowDetail (innerFlowDetail)) IN baseGroup;
 
 importerPriceInnerFlowDetail 'Цена изготовителя' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail);
-importerPriceInnerFlowDetail (innerFlowDetail) <- importerPriceItemAtDate (itemInnerFlowDetail (innerFlowDetail),
+importerPriceInnerFlowDetail (innerFlowDetail) <- importerPriceItemVal (itemInnerFlowDetail (innerFlowDetail),
     dateInnerFlowInnerFlowDetail(innerFlowDetail)) ON CHANGE itemInnerFlowDetail (innerFlowDetail);
 
 importerPriceItemInnerFlow 'Цена изготовителя (максим.)' (item, innerFlow) = GROUP MAX importerPriceInnerFlowDetail (innerFlowDetail)
