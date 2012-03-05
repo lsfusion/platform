@@ -68,7 +68,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private LsfLogicsParser parser;
 
     public enum State {GROUP, CLASS, PROP, TABLE, INDEX}
-    public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, NULL }
+    public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, LONG, DATE, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, UNIQUE, EQUAL}
@@ -1017,13 +1017,19 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         switch (type) {
             case INT: return addCProp(IntegerClass.instance, Integer.parseInt(text));
+            case LONG: return addCProp(LongClass.instance, Long.parseLong(text.substring(0, text.length() - 1)));
             case REAL: return addCProp(DoubleClass.instance, Double.parseDouble(text));
             case STRING: text = transformStringLiteral(text); return addCProp(StringClass.get(text.length()), text);
             case LOGICAL: return addCProp(LogicalClass.instance, text.equals("TRUE"));
+            case DATE: return addCProp(DateClass.instance, DateLiteralToDate(text));
             case ENUM: return addStaticClassConst(text);
             case NULL: return baseLM.vnull;
         }
         return null;
+    }
+
+    private java.sql.Date DateLiteralToDate(String text) {
+        return new java.sql.Date(Integer.parseInt(text.substring(0, 4)) - 1900, Integer.parseInt(text.substring(5, 7)) - 1, Integer.parseInt(text.substring(8, 10)));
     }
 
     public LP<?> addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> props, String className, boolean newSession, boolean isModal, boolean checkOnOk) throws ScriptingErrorLog.SemanticErrorException {

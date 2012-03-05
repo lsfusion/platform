@@ -2071,9 +2071,11 @@ literal returns [LP property]
 	}
 }
 	: 	strInt=uintLiteral	{ cls = ScriptingLogicsModule.ConstType.INT; text = $strInt.text; }
+	|	strLong=ulongLiteral { cls = ScriptingLogicsModule.ConstType.LONG; text = $strLong.text; }
 	|	strReal=udoubleLiteral	{ cls = ScriptingLogicsModule.ConstType.REAL; text = $strReal.text; }
 	|	str=STRING_LITERAL	{ cls = ScriptingLogicsModule.ConstType.STRING; text = $str.text; }  
 	|	str=LOGICAL_LITERAL	{ cls = ScriptingLogicsModule.ConstType.LOGICAL; text = $str.text; }
+	|	str=DATE_LITERAL { cls = ScriptingLogicsModule.ConstType.DATE; text = $str.text; }
 	|	strEnum=strictCompoundID { cls = ScriptingLogicsModule.ConstType.ENUM; text = $strEnum.sid; } 
 	|	strNull=NULL_LITERAL { cls = ScriptingLogicsModule.ConstType.NULL; }
 	;
@@ -2181,7 +2183,10 @@ uintLiteral returns [int val]
 	:	u=UINT_LITERAL { $val = Integer.parseInt($u.text); }
 	;		
 
-
+ulongLiteral returns [long val]
+	:	u=ULONG_LITERAL { $val = Long.parseLong($u.text.substring(0, $u.text.length() - 1)); }
+	;
+	
 /////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////// LEXER //////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
@@ -2189,6 +2194,7 @@ uintLiteral returns [int val]
 fragment NEWLINE	:	'\r'?'\n'; 
 fragment SPACE		:	(' '|'\t');
 fragment STR_LITERAL_CHAR	: '\\\'' | ~('\r'|'\n'|'\'');	 // overcomplicated due to bug in ANTLR Works
+fragment DIGIT		:	'0'..'9';
 fragment DIGITS		:	('0'..'9')+;
 fragment HEX_DIGIT	: 	'0'..'9' | 'a'..'f' | 'A'..'F';
 fragment FIRST_ID_LETTER	: ('a'..'z'|'A'..'Z');
@@ -2203,7 +2209,9 @@ STRING_LITERAL	:	'\'' STR_LITERAL_CHAR* '\'';
 COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;
 COMMENTS		:	('//' .* '\n') { $channel=HIDDEN; };
 UINT_LITERAL 	:	DIGITS;
+ULONG_LITERAL	:	DIGITS('l'|'L');
 POSITIVE_DOUBLE_LITERAL	: 	DIGITS '.' DIGITS;	  
+DATE_LITERAL	:	DIGIT DIGIT DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT;
 NUMBERED_PARAM	:	'$' DIGITS;
 RECURSIVE_PARAM :	'$' FIRST_ID_LETTER NEXT_ID_LETTER*;	
 EQ_OPERAND		:	('==') | ('!=');
