@@ -146,7 +146,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
     }
 
     public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parents) {
-        // приводим переданную структуры в нормальную - child -> parent
+        // приводим переданную структуру в нормальную - child -> parent
         OrderedMap<ClientGroupObjectValue, ClientGroupObjectValue> parentTree = new OrderedMap<ClientGroupObjectValue, ClientGroupObjectValue>();
         for (int i = 0; i < keys.size(); i++) {
             ClientGroupObjectValue key = keys.get(i);
@@ -230,7 +230,8 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
 
         for (MutableTreeTableNode child : Collections.list(node.children())) {
             if (child instanceof TreeGroupNode) {
-                removeFromGroupNodes(syncGroup.getDownGroup(), (TreeGroupNode) child);
+                TreeGroupNode groupNode = (TreeGroupNode) child;
+                removeFromGroupNodes(groupNode.group, groupNode);
             }
         }
     }
