@@ -316,6 +316,11 @@ META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
     date###object 'Дата документа' (object) = DATA DATE (object) IN documentHeaderGroup;
     date###object (object) <- currentDate() ON ASSIGN object AS object;
 
+    time###object 'Время документа' (object) = DATA TIME (object) IN documentHeaderGroup;
+    time###object (object) <- currentTime() ON ASSIGN object AS object;
+
+    dateTime###object 'Дата/время документа' (object) = toDateTime(date###object(object), time###object(object));
+
     departmentStore###object 'Отдел документа (ИД)' (object) = DATA departmentStore(object) IN idGroup;
 
     nameDepartmentStore###object 'Отдел документа' (object) = name(departmentStore###object(object)) IN documentHeaderGroup
@@ -2942,8 +2947,9 @@ FORM departmentStores 'Отделы магазинов'
     FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore(st, s)
 
     OBJECTS d=departmentStore
-    PROPERTIES(d) READONLY name
+    PROPERTIES(d) READONLY depName = name
     FILTERS inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
+    ORDER BY depName
 
     DIALOG departmentStore OBJECT d
 ;
@@ -4758,7 +4764,7 @@ showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OB
 
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
-    PROPERTIES (s) waybillShipment, seriesWaybillShipment, dateShipment, nameSupplierShipment,
+    PROPERTIES (s) waybillShipment, seriesWaybillShipment, dateShipment, timeShipment, nameSupplierShipment,
                    nameDepartmentStoreShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
                    carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment,
@@ -4808,7 +4814,21 @@ DESIGN shipment FROM DEFAULT{
 
             NEW headerRow1 {
                 childConstraints = TO THE RIGHT;
-                ADD s.documentHeaderGroup;
+                ADD s.documentHeaderGroup {
+                    childConstraints = TO THE BOTTOM;
+                    NEW docHeadRow1 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(dateShipment);
+                        ADD PROPERTY(timeShipment);
+                        ADD PROPERTY(waybillShipment);
+                        ADD PROPERTY(seriesWaybillShipment);
+                    };
+                    NEW docHeadRow2 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameSupplierShipment);
+                        ADD PROPERTY(nameDepartmentStoreShipment);
+                    };
+                };
                 ADD s.ordersInfo {
                     childConstraints = TO THE BOTTOM;
                 };
@@ -4827,8 +4847,9 @@ DESIGN shipment FROM DEFAULT{
 
 FORM shipments 'Поставки'
     OBJECTS s=shipment
-    PROPERTIES (s) READONLY objectClassName, waybillShipment, seriesWaybillShipment, dateShipment, nameDepartmentStoreShipment,
+    PROPERTIES (s) READONLY objectClassName, waybillShipment, seriesWaybillShipment, dateShipment, timeShipment, nameDepartmentStoreShipment,
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment
+    PROPERTIES (s) FORCE PANEL nameUserCreated, timeCreated, nameUserClosed, timeClosed
 
     PROPERTIES (s)          ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
@@ -5030,6 +5051,7 @@ FORM innerFlow 'Расход в другой отдел'
 
 DESIGN innerFlow FROM DEFAULT{
     main{
+        preferredSize = (1024, 768);
         NEW specification.box BEFORE functions.box{
             tabbedPane = TRUE;
             ADD d.box {

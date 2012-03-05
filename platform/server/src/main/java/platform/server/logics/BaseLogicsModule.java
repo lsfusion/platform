@@ -156,6 +156,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP yearInDate;
     public LP dayInDate;
     public LP dateInTime;
+    public LP timeInDateTime;
     public LP jumpWorkdays;
 
     public LP numberMonth;
@@ -201,6 +202,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP currentMinute;
     protected LP currentEpoch;
     protected LP currentDateTime;
+    protected LP currentTime;
     public LP currentUser;
     public LP currentSession;
     public LP currentComputer;
@@ -721,6 +723,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         dayInDate = addSFProp("dayInDate", "(extract(day from (prm1)))", IntegerClass.instance, 1);
         dateInTime = addSFProp("dayInTime", "(CAST((prm1) as date))", DateClass.instance, 1);
 
+        timeInDateTime = addSFProp("timeInDateTime", "(CAST((prm1) as time))", TimeClass.instance, 1);
+
         numberMonth = addOProp(baseGroup, "numberMonth", true, getString("logics.month.number"), addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(month), 1), PartitionType.SUM, true, true, 0, 1);
         numberToMonth = addAGProp("numberToMonth", getString("logics.month.id"), numberMonth);
         monthInDate = addJProp("monthInDate", getString("logics.month.id"), numberToMonth, numberMonthInDate, 1);
@@ -780,6 +784,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentMinute = addTProp("currentMinute", Time.MINUTE);
         currentEpoch = addTProp("currentEpoch", Time.EPOCH);
         currentDateTime = addTProp("currentDateTime", Time.DATETIME);
+        currentTime = addJProp("currentTime", getString("logics.date.current.time"), timeInDateTime, currentDateTime);
         currentUser = addProperty(null, new LP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
         currentSession = addProperty(null, new LP<PropertyInterface>(new CurrentSessionFormulaProperty("currentSession", session)));
         currentComputer = addProperty(null, new LP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));
