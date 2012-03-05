@@ -895,11 +895,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
             resultProp = addMGProp(null, genSID(), false, "", type == GroupingType.MIN, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.CONCAT) {
-            resultProp = addOGProp(null, genSID(), false, "", GroupType.STRING_AGG, orderProps.size(), !ascending /* todo [dale]: wtf? */, groupPropParamCount, resultParams.toArray());
+            resultProp = addOGProp(null, genSID(), false, "", GroupType.STRING_AGG, orderProps.size(), !ascending, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.UNIQUE) {
             resultProp = addAGProp(null, false, getSID(), false, "", false, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
-//            resultProp = addCGProp(null, false, getSID(), false, "", groupPropParamCount, resultParams.toArray());
+            resultProp = addCGProp(null, false, getSID(), false, "", null, groupPropParamCount, resultParams.toArray());
         }
         return resultProp;
     }
@@ -949,43 +949,27 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedRProp(" + context + ", " + zeroStep + ", " + nextStep + ", " + cycleType + ");");
 
         List<Integer> usedParams = mergeAllParams(asList(zeroStep, nextStep));
-
         checkRecursionContext(context, usedParams);
 
-        Map<Integer, Integer> mapContext = new HashMap<Integer, Integer>();
-        int interfaceIndex = 0;
-        int resIntCnt = 0;
-        for (int usedParam : usedParams) {
-            if (!context.get(usedParam).startsWith("$")) {
-                ++resIntCnt;
-                if (!context.contains("$" + context.get(usedParam))) {
-                    mapContext.put(usedParam, interfaceIndex);
-                    ++interfaceIndex;
-                }
+        List<Integer> mainParams = new ArrayList<Integer>();
+        Map<Integer, Integer> usedToResult = new HashMap<Integer, Integer>();
+        for (int i = 0; i < usedParams.size(); i++) {
+            if (!context.get(usedParams.get(i)).startsWith("$")) {
+                mainParams.add(i);
+                usedToResult.put(usedParams.get(i), i);
             }
         }
 
-        int pureInterfaces = interfaceIndex;
-
-        for (int usedParam : usedParams) {
-            if (!mapContext.containsKey(usedParam) && !context.get(usedParam).startsWith("$")) {
-                mapContext.put(usedParam, interfaceIndex);
-                int prevIndex = context.indexOf("$" + context.get(usedParam));
-                mapContext.put(prevIndex, resIntCnt + interfaceIndex - pureInterfaces);
-                ++interfaceIndex;
+        Map<Integer, Integer> mapPrev = new HashMap<Integer, Integer>();
+        for (int i = 0; i < usedParams.size(); i++) {
+            String param = context.get(usedParams.get(i));
+            if (param.startsWith("$")) {
+                mapPrev.put(i, usedToResult.get(context.indexOf(param.substring(1))));
             }
         }
 
-        List<Object> params = new ArrayList<Object>();
-        params.add(zeroStep.property);
-        for (int param : zeroStep.usedParams) {
-            params.add(mapContext.get(param) + 1);
-        }
-        params.add(nextStep.property);
-        for (int param : nextStep.usedParams) {
-            params.add(mapContext.get(param) + 1);
-        }
-        LP res = addRProp(null, genSID(), false, "", cycleType, resIntCnt, params.toArray());
+        List<Object> resultParams = getParamsPlainList(Arrays.asList(zeroStep, nextStep));
+        LP res = addRProp(null, genSID(), false, "", cycleType, mainParams, mapPrev, resultParams.toArray());
 
         List<Integer> resUsedParams = new ArrayList<Integer>();
         for (Integer usedParam : usedParams) {

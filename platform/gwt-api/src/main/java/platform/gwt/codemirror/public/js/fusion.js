@@ -14,7 +14,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "CHECKED CLASS COLUMNS CONCAT CONFIRM CONSTRAINT CUSTOM " + 
                            "CYCLES DATA DEFAULT DESC DESIGN DIALOG DO DOCKING DOCX " + 
                            "DRAWROOT ECHO EDIT EDITABLE EDITFORM EDITKEY EDITSESSIONFORM " + 
-                           "ELSE EMAIL END EXCEPTLAST EXCLUSIVE EXEC FALSE FILTER " + 
+                           "ELSE EMAIL END EQUAL EXCEPTLAST EXCLUSIVE EXEC FALSE FILTER " +
                            "FILTERGROUP FILTERS FIXED FIXEDCHARWIDTH FOOTER FOR FORCE " + 
                            "FORM FORMULA FROM FULLSCREEN GRID GROUP HALIGN HEADER " + 
                            "HIDE HIDESCROLLBARS HIDETITLE HIGHLIGHTIF HINT HORIZONTAL " + 

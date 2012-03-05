@@ -70,6 +70,7 @@
       <keyword name="ELSE" />
       <keyword name="EMAIL" />
       <keyword name="END" />
+      <keyword name="EQUAL" />
       <keyword name="EXCEPTLAST" />
       <keyword name="EXCLUSIVE" />
       <keyword name="EXEC" />
