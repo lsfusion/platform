@@ -2083,7 +2083,7 @@ nameOwnershipLegalEntity 'Форма собственности' = name(ownershi
 shortNameOwnershipLegalEntity 'Форма собственности (сокр.)' = shortNameOwnership(ownershipLegalEntity(legalEntity)) IN baseGroup;
 fullNameLegalEntity 'Наименование для накладных' = DATA STRING[200] (legalEntity) IN baseGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN baseGroup FIXEDCHARWIDTH 9;
-UNPLegalEntityToLegalEntity (UNPLegalEntity) = GROUP UNIQUE legalEntity BY UNPLegalEntity(legalEntity);
+//UNPLegalEntityToLegalEntity (UNPLegalEntity) = GROUP UNIQUE legalEntity BY UNPLegalEntity(legalEntity);
 OKPOLegalEntity 'Код по ОКПО' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;     // подставить нужное потом значение
 OKYLPLegalEntity 'Код ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
 emailLegalEntity 'e-mail' = DATA STRING[100] (legalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
@@ -5320,17 +5320,18 @@ importPassword 'Пароль' = DATA STRING[200] ();// IN formularGroup;
 
 importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'rublevski.actions.ImportLSTDataActionProperty';// IN lstradeGroup;
 importLSTDirectory 'Папка' = DATA STRING[200] ();// IN lstradeGroup;
+importInactive 'Импортировать в том числе неактивные товары' = DATA BOOLEAN ();
 importGroupItems 'Импортировать группы товаров' = DATA BOOLEAN ();
 importItems 'Импортировать товары' = DATA BOOLEAN ();
 importNumberItems 'Кол-во' = DATA INTEGER ();
 importCompanies 'Импортировать компании' = DATA BOOLEAN ();
 importSuppliers 'Импортировать поставщиков' = DATA BOOLEAN ();
 importStores 'Импортировать магазины' = DATA BOOLEAN ();
-importStocks 'Импортировать склады' = DATA BOOLEAN();
+importDepartmentStores 'Импортировать отделы магазина' = DATA BOOLEAN();
 FORM importData 'Импорт данных'
     PROPERTIES() importDataAction, importUrl, importLogin, importPassword
-    PROPERTIES() importLSTDataAction, importLSTDirectory, importGroupItems, importItems, importNumberItems,
-    importCompanies, importSuppliers, importStores, importStocks
+    PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importItems, importNumberItems,
+    importCompanies, importSuppliers, importStores, importDepartmentStores
 ;
 
 //---------------------------- Настройка навигатора ----------------------------------------//

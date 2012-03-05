@@ -34,32 +34,33 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     @Override
     public void execute(ExecutionContext context) throws SQLException {
         String path = rublevskiLM.getLPByName("importLSTDirectory").read(context).toString().trim();
+        Boolean importInactive = rublevskiLM.getLPByName("importInactive").read(context) != null;
         if (rublevskiLM.getLPByName("importGroupItems").read(context) != null) {
-            importItemGroups(path + "//_sprgrt.dbf", context);
-            importParentGroups(path + "//_sprgrt.dbf", context);
+            importItemGroups(path + "//_sprgrt.dbf", importInactive, context);
+            importParentGroups(path + "//_sprgrt.dbf", importInactive, context);
         }
         if (rublevskiLM.getLPByName("importItems").read(context) != null) {
             Object numberOfItems = rublevskiLM.getLPByName("importNumberItems").read(context);
-            importItems(path + "//_sprgrm.dbf", context, numberOfItems == null ? 0 : (Integer) numberOfItems);
+            importItems(path + "//_sprgrm.dbf", importInactive, context, numberOfItems == null ? 0 : (Integer) numberOfItems);
         }
 
         if (rublevskiLM.getLPByName("importCompanies").read(context) != null)
-            importCompanies(path + "//_sprana.dbf", context);
+            importCompanies(path + "//_sprana.dbf", importInactive, context);
 
         if (rublevskiLM.getLPByName("importSuppliers").read(context) != null)
-            importSuppliers(path + "//_sprana.dbf", context);
+            importSuppliers(path + "//_sprana.dbf", importInactive, context);
 
         if (rublevskiLM.getLPByName("importStores").read(context) != null)
-            importStores(path + "//_sprana.dbf", context);
+            importStores(path + "//_sprana.dbf", importInactive, context);
 
-        if (rublevskiLM.getLPByName("importStocks").read(context) != null)
-            importStocks(path + "//_sprana.dbf", path + "//_storestr.dbf", context);
+        if (rublevskiLM.getLPByName("importDepartmentStores").read(context) != null)
+            importStocks(path + "//_sprana.dbf", path + "//_storestr.dbf", importInactive, context);
 
     }
 
-    private void importParentGroups(String path, ExecutionContext context) {
+    private void importParentGroups(String path, Boolean importInactive, ExecutionContext context) {
         try {
-            List<List<Object>> data = importItemGroupsFromDBF(path, true);
+            List<List<Object>> data = importItemGroupsFromDBF(path, importInactive, true);
 
             ImportField itemGroupID = new ImportField(BL.LM.extSID);
             ImportField parentGroupID = new ImportField(BL.LM.extSID);
@@ -93,10 +94,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importItemGroups(String path, ExecutionContext context) throws SQLException {
+    private void importItemGroups(String path, Boolean importInactive, ExecutionContext context) throws SQLException {
 
         try {
-            List<List<Object>> data = importItemGroupsFromDBF(path, false);
+            List<List<Object>> data = importItemGroupsFromDBF(path, importInactive, false);
 
             ImportField itemGroupID = new ImportField(BL.LM.extSID);
             ImportField itemGroupName = new ImportField(BL.LM.name);
@@ -129,10 +130,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importItems(String path, ExecutionContext context, Integer numberOfItems) throws SQLException {
+    private void importItems(String path, Boolean importInactive, ExecutionContext context, Integer numberOfItems) throws SQLException {
 
         try {
-            List<List<Object>> data = importItemsFromDBF(path, numberOfItems);
+            List<List<Object>> data = importItemsFromDBF(path, importInactive, numberOfItems);
 
             ImportField itemIDField = new ImportField(BL.LM.extSID);
             ImportField itemGroupIDField = new ImportField(BL.LM.extSID);
@@ -201,10 +202,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importCompanies(String path, ExecutionContext context) throws SQLException {
+    private void importCompanies(String path, Boolean importInactive, ExecutionContext context) throws SQLException {
 
         try {
-            List<List<Object>> data = importLegalEntitiesFromDBF(path, "ЮР");
+            List<List<Object>> data = importLegalEntitiesFromDBF(path, importInactive, "ЮР");
 
             ImportField companyIDField = new ImportField(BL.LM.extSID);
             ImportField nameLegalEntityField = new ImportField(BL.LM.name);
@@ -273,10 +274,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importSuppliers(String path, ExecutionContext context) throws SQLException {
+    private void importSuppliers(String path, Boolean importInactive, ExecutionContext context) throws SQLException {
 
         try {
-            List<List<Object>> data = importLegalEntitiesFromDBF(path, "ПС");
+            List<List<Object>> data = importLegalEntitiesFromDBF(path, importInactive, "ПС");
 
             ImportField supplierIDField = new ImportField(BL.LM.extSID);
             ImportField nameLegalEntityField = new ImportField(BL.LM.name);
@@ -344,10 +345,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importStores(String path, ExecutionContext context) throws SQLException {
+    private void importStores(String path, Boolean importInactive, ExecutionContext context) throws SQLException {
 
         try {
-            List<List<Object>> data = importLegalEntitiesFromDBF(path, "МГ");
+            List<List<Object>> data = importLegalEntitiesFromDBF(path, importInactive, "МГ");
 
             ImportField storeIDField = new ImportField(BL.LM.extSID);
             ImportField nameStoreField = new ImportField(BL.LM.name);
@@ -390,10 +391,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importStocks(String path, String pathStores, ExecutionContext context) throws SQLException {
+    private void importStocks(String path, String storesPath, Boolean importInactive, ExecutionContext context) throws SQLException {
 
         try {
-            List<List<Object>> data = importDepartmentStoresFromDBF(path, pathStores);
+            List<List<Object>> data = importDepartmentStoresFromDBF(path, importInactive, storesPath);
 
             ImportField departmentStoreIDField = new ImportField(BL.LM.extSID);
             ImportField nameDepartmentStoreField = new ImportField(BL.LM.name);
@@ -436,7 +437,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
     private List<List<Object>> data;
 
-    private List<List<Object>> importItemGroupsFromDBF(String path, Boolean parents) throws IOException, xBaseJException {
+    private List<List<Object>> importItemGroupsFromDBF(String path, Boolean importInactive, Boolean parents) throws IOException, xBaseJException {
 
         DBF importFile = new DBF(path);
         int recordCount = importFile.getRecordCount();
@@ -446,32 +447,35 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         for (int i = 0; i < recordCount; i++) {
 
             importFile.read();
-            String k_grtov = new String(importFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
-            String pol_naim = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
-            String group1 = new String(importFile.getField("GROUP1").getBytes(), "Cp1251").trim();
-            String group2 = new String(importFile.getField("GROUP2").getBytes(), "Cp1251").trim();
-            String group3 = new String(importFile.getField("GROUP3").getBytes(), "Cp1251").trim();
+            Boolean inactiveItem = "T".equals(new String(importFile.getField("LINACTIVE").getBytes(), "Cp1251"));
+            if (!inactiveItem || importInactive) {
+                String k_grtov = new String(importFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
+                String pol_naim = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
+                String group1 = new String(importFile.getField("GROUP1").getBytes(), "Cp1251").trim();
+                String group2 = new String(importFile.getField("GROUP2").getBytes(), "Cp1251").trim();
+                String group3 = new String(importFile.getField("GROUP3").getBytes(), "Cp1251").trim();
 
-            if ((!"".equals(group1)) && (!"".equals(group2)) && (!"".equals(group3))) {
-                if (!parents) {
-                    //sid - name
-                    addIfNotContains(Arrays.asList((Object) group3, group3));
-                    addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3)), group2));
-                    addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), group1));
-                    addIfNotContains(Arrays.asList((Object) k_grtov, pol_naim));
-                } else {
-                    //sid - parentSID
-                    addIfNotContains(Arrays.asList((Object) group3, null));
-                    addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3)), group3));
-                    addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), group2 + "/" + group3.substring(0, 3)));
-                    addIfNotContains(Arrays.asList((Object) k_grtov, group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)));
+                if ((!"".equals(group1)) && (!"".equals(group2)) && (!"".equals(group3))) {
+                    if (!parents) {
+                        //sid - name
+                        addIfNotContains(Arrays.asList((Object) group3, group3));
+                        addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3)), group2));
+                        addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), group1));
+                        addIfNotContains(Arrays.asList((Object) k_grtov, pol_naim));
+                    } else {
+                        //sid - parentSID
+                        addIfNotContains(Arrays.asList((Object) group3, null));
+                        addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3)), group3));
+                        addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), group2 + "/" + group3.substring(0, 3)));
+                        addIfNotContains(Arrays.asList((Object) k_grtov, group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)));
+                    }
                 }
             }
         }
         return data;
     }
 
-    private List<List<Object>> importItemsFromDBF(String path, Integer numberOfItems) throws IOException, xBaseJException {
+    private List<List<Object>> importItemsFromDBF(String path, Boolean importInactive, Integer numberOfItems) throws IOException, xBaseJException {
 
         DBF importFile = new DBF(path);
         int totalRecordCount = importFile.getRecordCount();
@@ -483,6 +487,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         for (int i = 0; i < recordCount; i++) {
 
             importFile.read();
+            Boolean inactiveItem = "T".equals(new String(importFile.getField("LINACTIVE").getBytes(), "Cp1251"));
             String k_grmat = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
             String pol_naim = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
             String k_grtov = new String(importFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
@@ -490,7 +495,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             String brand = new String(importFile.getField("BRAND").getBytes(), "Cp1251").trim();
             String country = new String(importFile.getField("MANFR").getBytes(), "Cp1251").trim();
 
-            if (!"".equals(k_grtov))
+            if (!"".equals(k_grtov) && (!inactiveItem || importInactive))
                 data.add(Arrays.asList((Object) k_grmat, k_grtov, pol_naim, unitOfMeasure, brand, country));
         }
         return data;
@@ -501,21 +506,33 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             {"ОАО", "Открытое акционерное общество"},
             {"СООО", "Совместное общество с ограниченной ответственностью"},
             {"ООО", "Общество с ограниченной ответственностью"},
-            {"ЗАО", "Закрытое акционерное общество"}};
+            {"ОДО", "Общество с дополнительной ответственностью"},
+            {"ЗАО", "Закрытое акционерное общество"},
+            {"ЧТУП", "Частное торговое унитарное предприятие"},
+            {"ЧУТП", "Частное унитарное торговое предприятие"},
+            {"ТЧУП", "Торговое частное унитарное предприятие"},
+            {"ЧУП", "Частное унитарное предприятие"},
+            {"РУП", "Республиканское унитарное предприятие"},
+            {"РДУП", "Республиканское дочернее унитарное предприятие"},
+            {"УП", "Унитарное предприятие"},
+            {"ИП", "Индивидуальный предприниматель"},
+            {"СПК", "Сельскохозяйственный производственный кооператив"},
+            {"СП", "Совместное предприятие"}};
 
 
-    private List<List<Object>> importLegalEntitiesFromDBF(String path, String type) throws IOException, xBaseJException {
+    private List<List<Object>> importLegalEntitiesFromDBF(String path, Boolean importInactive, String type) throws IOException, xBaseJException {
 
         DBF importFile = new DBF(path);
         int recordCount = importFile.getRecordCount();
 
         data = new ArrayList<List<Object>>();
-
+        
         for (int i = 0; i < recordCount; i++) {
 
             importFile.read();
             String k_ana = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
-            if (type.equals(k_ana.substring(0, 2))) {
+            Boolean inactiveItem = "T".equals(new String(importFile.getField("LINACTIVE").getBytes(), "Cp1251"));
+            if (type.equals(k_ana.substring(0, 2)) && (!inactiveItem || importInactive)) {
                 String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
                 String address = new String(importFile.getField("ADDRESS").getBytes(), "Cp1251").trim();
                 String unp = new String(importFile.getField("UNN").getBytes(), "Cp1251").trim();
@@ -528,7 +545,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
                 if ("МГ".equals(type))
                     data.add(Arrays.asList((Object) k_ana, ownership[2], address, companyStore));
-                else
+                else if ("ПС".equals(type))
+                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account));
+                else if ("ЮР".equals(type))
                     data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account));
             }
         }
@@ -536,7 +555,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     }
 
 
-    private List<List<Object>> importDepartmentStoresFromDBF(String path, String pathStores) throws IOException, xBaseJException {
+    private List<List<Object>> importDepartmentStoresFromDBF(String path, Boolean importInactive, String pathStores) throws IOException, xBaseJException {
 
         DBF importStores = new DBF(pathStores);
         Map<String, String> storeDepartmentStoreMap = new HashMap<String, String>();
@@ -556,7 +575,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             importFile.read();
             String k_ana = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
-            if ("СК".equals(k_ana.substring(0, 2))) {
+            Boolean inactiveItem = "T".equals(new String(importFile.getField("LINACTIVE").getBytes(), "Cp1251"));
+            if ("СК".equals(k_ana.substring(0, 2)) && (!inactiveItem || importInactive)) {
                 String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
                 String store = storeDepartmentStoreMap.get(k_ana);
                 String[] ownership = getAndTrimOwnershipFromName(name);
