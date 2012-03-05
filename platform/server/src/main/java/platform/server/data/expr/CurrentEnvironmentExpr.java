@@ -3,7 +3,6 @@ package platform.server.data.expr;
 import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
@@ -28,9 +27,6 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
     public CurrentEnvironmentExpr(String paramString, AndClassSet paramClass) {
         this.paramString = paramString;
         this.paramClass = paramClass;
-    }
-
-    public void fillFollowSet(DataWhereSet fillSet) {
     }
 
     protected CurrentEnvironmentExpr translate(MapTranslate translator) {
@@ -64,9 +60,6 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
     }
 
     public class NotNull extends NotNullExpr.NotNull {
-        protected DataWhereSet calculateFollows() {
-            return new DataWhereSet();
-        }
 
         public ClassExprWhere calculateClassWhere() {
             return new ClassExprWhere(CurrentEnvironmentExpr.this, paramClass);
@@ -77,7 +70,7 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
         }
     }
 
-    public Where calculateWhere() {
+    public NotNull calculateNotNullWhere() {
         return new NotNull();
     }
 

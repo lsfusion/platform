@@ -276,7 +276,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier, WhereBuilder resultChanged) {
-        return getIncrementExpr(joinImplement, modifier.getPropertyChanges(), resultChanged);
+        return getIncrementExpr(joinImplement, modifier, resultChanged, IncrementType.SUSPICION);
+    }
+
+    public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier, WhereBuilder resultChanged, IncrementType incrementType) {
+        return getIncrementExpr(joinImplement, modifier.getPropertyChanges(), resultChanged, incrementType);
     }
 
     public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier, Modifier prevModifier, WhereBuilder resultChanged, IncrementType incrementType) {
@@ -722,9 +726,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return result;
     }
 
-    public void setJoinNotNull(Map<T, KeyExpr> implementKeys, Where where, DataSession session) throws SQLException {
+    public void setJoinNotNull(Map<T, KeyExpr> implementKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
         Map<T, KeyExpr> mapKeys = getMapKeys();
-        setNotNull(mapKeys, GroupExpr.create(implementKeys, where, mapKeys).getWhere(), session);
+        setNotNull(mapKeys, GroupExpr.create(implementKeys, where, mapKeys).getWhere(), session, modifier);
     }
 
     public PropertyMapImplement<T, T> getImplement() {
@@ -976,29 +980,29 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return null;
     }
 
-    public void setNotNull(Map<T, DataObject> values, DataSession session) throws SQLException {
+    public void setNotNull(Map<T, DataObject> values, DataSession session, Modifier modifier) throws SQLException {
         Map<T, KeyExpr> mapKeys = getMapKeys();
-        setNotNull(mapKeys, EqualsWhere.compareValues(mapKeys, values), session);
+        setNotNull(mapKeys, EqualsWhere.compareValues(mapKeys, values), session, modifier);
     }
 
-    public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
-        proceedNotNull(mapKeys, where.and(getExpr(mapKeys, session.modifier).getWhere().not()), session);
+    public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
+        proceedNotNull(mapKeys, where.and(getExpr(mapKeys, session.modifier).getWhere().not()), session, modifier);
     }
 
-    public void setNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
-        proceedNull(mapKeys, where.and(getExpr(mapKeys, session.modifier).getWhere()), session);
+    public void setNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
+        proceedNull(mapKeys, where.and(getExpr(mapKeys, modifier).getWhere()), session, modifier);
     }
 
     // assert что where содержит getWhere().not
-    protected void proceedNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
+    protected void proceedNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
         Expr defaultExpr = getDefaultExpr(mapKeys);
         if(defaultExpr!=null)
-            session.execute(this, new PropertyChange<T>(mapKeys, defaultExpr, where), session.modifier, null, null);
+            session.execute(this, new PropertyChange<T>(mapKeys, defaultExpr, where), modifier, null, null);
     }
 
     // assert что where содержит getWhere()
-    protected void proceedNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
-        session.execute(this, new PropertyChange<T>(mapKeys, CaseExpr.NULL, where), session.modifier, null, null);
+    protected void proceedNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
+        session.execute(this, new PropertyChange<T>(mapKeys, CaseExpr.NULL, where), modifier, null, null);
     }
 
     @Override

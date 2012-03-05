@@ -1,14 +1,19 @@
 package platform.server.data.expr;
 
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.IntegralClass;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.*;
 import platform.server.data.query.CompileSource;
+import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassExprWhere;
 
 import java.util.*;
 
@@ -21,7 +26,6 @@ public class LinearExpr extends UnionExpr {
     public LinearExpr(LinearOperandMap map) {
         this.map = map;
         assert (map.size()>0);
-        assert !(map.size()==1 && BaseUtils.singleValue(map).equals(1));
     }
 
     public String getSource(CompileSource compile) {
@@ -36,14 +40,34 @@ public class LinearExpr extends UnionExpr {
         return map.keySet();
     }
 
-    @Override
+    @IdentityLazy
+    public Where getCommonWhere() {
+        return getWhere(getCommonExprs());
+    }
+    
+    public class NotNull extends NotNullExpr.NotNull {
+
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
+            return getCommonWhere().groupJoinsWheres(keepStat, keyStat).and(new GroupJoinsWheres(this));
+        }
+
+        public ClassExprWhere calculateClassWhere() {
+            return getCommonWhere().getClassWhere();
+        }
+    }
+
+    public Where calculateNotNullWhere() {
+        return new NotNull();
+    }
+
+    /*    @Override
     public boolean equals(Object obj) {
         if(map.size()==1) {
             Map.Entry<Expr, Integer> singleEntry = BaseUtils.singleEntry(map);
             if(singleEntry.getValue().equals(1)) return singleEntry.getKey().equals(obj);
         }
         return super.equals(obj);
-    }
+    }*/
 
     public boolean twins(TwinImmutableInterface obj) {
         return map.equals(((LinearExpr)obj).map);
@@ -67,7 +91,7 @@ public class LinearExpr extends UnionExpr {
     }
 
     // транслирует выражение/ также дополнительно вытаскивает ExprCase'ы
-    protected BaseExpr translate(MapTranslate translator) {
+    protected LinearExpr translate(MapTranslate translator) {
         LinearOperandMap transMap = new LinearOperandMap();
         for(Map.Entry<Expr, Integer> operand : map.entrySet())
             transMap.put(operand.getKey().translateOuter(translator),operand.getValue());

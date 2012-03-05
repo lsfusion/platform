@@ -56,6 +56,6 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
 
         Map<P, KeyExpr> mapKeys = property.property.getMapKeys();
         Map<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = BaseUtils.crossJoin(property.mapping, mapKeys);
-        property.property.setNotNull(mapKeys, getChangedWhere(object, mapObjects, addObject), session);
+        property.property.setNotNull(mapKeys, getChangedWhere(object, mapObjects, addObject), session, modifier);
     }
 }

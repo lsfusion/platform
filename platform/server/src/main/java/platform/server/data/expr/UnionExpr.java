@@ -2,10 +2,13 @@ package platform.server.data.expr;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.QuickMap;
 import platform.base.QuickSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.OuterContext;
+import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.stat.CalculateJoin;
@@ -14,11 +17,12 @@ import platform.server.data.query.stat.KeyStat;
 import platform.server.data.type.Type;
 import platform.server.data.where.MapWhere;
 import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassExprWhere;
 
 import java.util.*;
 
 // выражение для оптимизации, разворачивание которого в case'ы даст экспоненту
-public abstract class UnionExpr extends StaticClassExpr {
+public abstract class UnionExpr extends NotNullExpr implements StaticClassExprInterface {
 
     public abstract DataClass getStaticClass();
 
@@ -31,8 +35,7 @@ public abstract class UnionExpr extends StaticClassExpr {
         return getStaticClass().getTypeStat();
     }
 
-    // возвращает Where на notNull
-    public Where calculateWhere() {
+    public Where calculateOrWhere() {
         Where result = Where.FALSE;
         for(Expr operand : getParams())
             result = result.or(operand.getWhere());
@@ -65,7 +68,7 @@ public abstract class UnionExpr extends StaticClassExpr {
     private static void fillOrderedExprs(BaseExpr baseExpr, BaseExpr fromExpr, OrderedMap<BaseExpr, Collection<BaseExpr>> orderedExprs) {
         Collection<BaseExpr> fromExprs = orderedExprs.get(baseExpr);
         if(fromExprs == null) {
-            for(BaseExpr joinExpr : baseExpr.getBaseJoin().getJoins().values())
+            for(BaseExpr joinExpr : baseExpr.getUsed())
                 fillOrderedExprs(joinExpr, baseExpr, orderedExprs);
             fromExprs = new ArrayList<BaseExpr>();
             orderedExprs.put(baseExpr, fromExprs);
@@ -116,9 +119,29 @@ public abstract class UnionExpr extends StaticClassExpr {
         return new CalculateJoin<Integer>(BaseUtils.toMap(getCommonExprs())); // тут надо было бы getTypeStat использовать, но пока не предполагается использование Linear в Join'ах
     }
 
+    // множественное наследование StaticClassExpr
     @Override
-    public boolean isOr() {
-        return getParams().size() > 1;
+    public ClassExprWhere getClassWhere(AndClassSet classes) {
+        return StaticClassExpr.getClassWhere(this, classes);
     }
 
+    @Override
+    public Expr classExpr(BaseClass baseClass) {
+        return StaticClassExpr.classExpr(this, baseClass);
+    }
+
+    @Override
+    public Where isClass(AndClassSet set) {
+        return StaticClassExpr.isClass(this, set);
+    }
+
+    @Override
+    public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
+        return StaticClassExpr.getAndClassSet(this, and);
+    }
+
+    @Override
+    public boolean addAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
+        return StaticClassExpr.addAndClassSet(this, add);
+    }
 }

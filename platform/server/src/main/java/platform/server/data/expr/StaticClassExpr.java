@@ -45,7 +45,4 @@ public abstract class StaticClassExpr extends BaseExpr implements StaticClassExp
     public boolean addAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
         return addAndClassSet(this, add);
     }
-
-    public void fillFollowSet(DataWhereSet fillSet) {
-    }
 }

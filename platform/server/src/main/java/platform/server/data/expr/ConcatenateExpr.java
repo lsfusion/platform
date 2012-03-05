@@ -78,10 +78,6 @@ public class ConcatenateExpr extends BaseExpr {
         return true;
     }
 
-    public Where calculateWhere() {
-        return getWhere(exprs);
-    }
-
     public Expr classExpr(BaseClass baseClass) {
         throw new RuntimeException("not supported");
     }
@@ -135,8 +131,5 @@ public class ConcatenateExpr extends BaseExpr {
 
     public InnerBaseJoin<?> getBaseJoin() {
         return new CalculateJoin<Integer>(BaseUtils.toMap(exprs));
-    }
-
-    public void fillFollowSet(DataWhereSet fillSet) {
     }
 }

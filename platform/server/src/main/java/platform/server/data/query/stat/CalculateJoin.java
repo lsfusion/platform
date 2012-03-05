@@ -4,7 +4,7 @@ import platform.base.TwinImmutableInterface;
 import platform.base.TwinImmutableObject;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.InnerExpr;
-import platform.server.data.expr.InnerExprSet;
+import platform.server.data.expr.NotNullExprSet;
 import platform.server.data.expr.query.DistinctKeys;
 import platform.server.data.expr.query.Stat;
 
@@ -33,7 +33,7 @@ public class CalculateJoin<K> extends TwinImmutableObject implements InnerBaseJo
         return new StatKeys<K>(totalStat, distinct);
     }
 
-    public InnerExprSet getExprFollows(boolean recursive) {
+    public NotNullExprSet getExprFollows(boolean recursive) {
         return InnerExpr.getExprFollows(this, recursive);
     }
 

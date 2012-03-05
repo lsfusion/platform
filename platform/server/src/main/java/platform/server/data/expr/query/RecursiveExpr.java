@@ -9,10 +9,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.DataClass;
 import platform.server.classes.IntegralClass;
 import platform.server.classes.LogicalClass;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.InnerExpr;
-import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.*;
 import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.CompileSource;
 import platform.server.data.translator.MapTranslate;
@@ -197,7 +194,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         return compile.getSource(this);
     }
 
-    public Where calculateWhere() {
+    public NotNull calculateNotNullWhere() {
         return new NotNull();
     }
 }

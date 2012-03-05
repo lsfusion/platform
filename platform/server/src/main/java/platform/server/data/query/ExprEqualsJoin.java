@@ -9,7 +9,7 @@ import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.InnerExpr;
-import platform.server.data.expr.InnerExprSet;
+import platform.server.data.expr.NotNullExprSet;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.stat.WhereJoin;
@@ -49,7 +49,7 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
         throw new RuntimeException("not supported yet");
     }
 
-    public InnerExprSet getExprFollows(boolean recursive) {
+    public NotNullExprSet getExprFollows(boolean recursive) {
         return InnerExpr.getExprFollows(this, recursive);
     }
 

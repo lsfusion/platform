@@ -72,11 +72,6 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
     }
 
-    // возвращает Where без следствий
-    public Where calculateWhere() {
-        return Where.TRUE;
-    }
-
     public boolean twins(TwinImmutableInterface o) {
         return object.equals(((ValueExpr)o).object) && objectClass.equals(((ValueExpr)o).objectClass);
     }

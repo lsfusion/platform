@@ -8,7 +8,8 @@ import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.InnerExpr;
-import platform.server.data.expr.InnerExprSet;
+import platform.server.data.expr.NotNullExpr;
+import platform.server.data.expr.NotNullExprSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
@@ -37,10 +38,10 @@ public class ExprJoin extends AbstractOuterContext<ExprJoin> implements WhereJoi
         this.baseExpr = baseExpr;
         this.stat = stat;
 
-        assert !baseExpr.isOr();
+//        assert !baseExpr.hasOr();
     }
 
-    public InnerExprSet getExprFollows(boolean recursive) {
+    public NotNullExprSet getExprFollows(boolean recursive) {
         return InnerExpr.getExprFollows(this, recursive);
     }
 
@@ -75,9 +76,12 @@ public class ExprJoin extends AbstractOuterContext<ExprJoin> implements WhereJoi
 
     public InnerJoins getInnerJoins() {
         InnerJoins result = new InnerJoins();
-        InnerExprSet innerExprs = baseExpr.getExprFollows(true, false);
-        for(int i=0;i<innerExprs.size;i++)
-            result = result.and(new InnerJoins(innerExprs.get(i).getInnerJoin()));
+        NotNullExprSet notNullExprs = baseExpr.getExprFollows(true, false);
+        for(int i=0;i<notNullExprs.size;i++) {
+            NotNullExpr notNullExpr = notNullExprs.get(i);
+            if(notNullExpr instanceof InnerExpr)
+                result = result.and(new InnerJoins(((InnerExpr)notNullExpr).getInnerJoin()));
+        }
         return result;
     }
 }

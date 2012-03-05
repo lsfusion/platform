@@ -75,10 +75,6 @@ public class StringConcatenateExpr extends StaticClassExpr {
         return result;
     }
 
-    public Where calculateWhere() {
-        return getWhere(exprs);
-    }
-
     public Expr translateQuery(QueryTranslator translator) {
         return create(translator.translate(exprs), separator, caseSensitive);
     }

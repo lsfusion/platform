@@ -2,7 +2,7 @@ package platform.server.data.query.stat;
 
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.InnerExpr;
-import platform.server.data.expr.InnerExprSet;
+import platform.server.data.expr.NotNullExprSet;
 import platform.server.data.expr.query.Stat;
 
 import java.util.HashMap;
@@ -23,7 +23,7 @@ public class ValueJoin implements InnerBaseJoin<Object> {
         return new StatKeys<Object>(new HashSet<Object>(), Stat.ONE);
     }
 
-    public InnerExprSet getExprFollows(boolean recursive) {
+    public NotNullExprSet getExprFollows(boolean recursive) {
         return InnerExpr.getExprFollows(this, recursive);
     }
 }

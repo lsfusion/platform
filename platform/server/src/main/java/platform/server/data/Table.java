@@ -249,7 +249,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return platform.server.data.expr.Expr.getWhere(joins);
         }
 
-        public InnerExprSet getExprFollows(boolean recursive) {
+        public NotNullExprSet getExprFollows(boolean recursive) {
             return InnerExpr.getExprFollows(this, recursive);
         }
 
@@ -454,8 +454,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return propertyClasses.get(property).getTypeStat(property);
             }
 
-            // возвращает Where без следствий
-            public Where calculateWhere() {
+            public NotNull calculateNotNullWhere() {
                 return new NotNull();
             }
 
@@ -475,11 +474,6 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             }
 
             public class NotNull extends InnerExpr.NotNull {
-
-                @Override
-                public Where packFollowFalse(Where falseWhere) {
-                    return Expr.this.packFollowFalse(falseWhere).getWhere();
-                }
 
                 @Override
                 protected DataWhereSet calculateFollows() {

@@ -74,15 +74,15 @@ public class FormulaExpr extends StaticClassExpr {
             param.fillJoinWheres(joins, andWhere);
     }
 
-    public static String getSource(String formula, Map<String, ? extends Expr> params, CompileSource compile) {
+    public static String getSource(String formula, Map<String, ? extends Expr> params, Type type, CompileSource compile) {
         String sourceString = formula;
         for(Map.Entry<String, ? extends Expr> prm : params.entrySet())
             sourceString = sourceString.replace(prm.getKey(), prm.getValue().getSource(compile));
-         return "("+sourceString+")";
+         return "("+sourceString+")"; // type.getCast(sourceString, compile.syntax, false)
     }
 
     public String getSource(CompileSource compile) {
-        return getSource(formula, params, compile);
+        return getSource(formula, params, valueClass.getType(), compile);
      }
 
     public Type getType(KeyType keyType) {
@@ -108,11 +108,6 @@ public class FormulaExpr extends StaticClassExpr {
             return create(formula, valueClass, packParams);
         else
             return this;
-    }
-
-    // возвращает Where без следствий
-    public Where calculateWhere() {
-        return getWhere(params);
     }
 
     public boolean twins(TwinImmutableInterface o) {

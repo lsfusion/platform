@@ -69,11 +69,11 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return property.getJoinDataChanges(BaseUtils.join(mapping, joinImplement), expr, where, propChanges, changedWhere).map(mapping);
     }
 
-    public void mapJoinNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
-        property.setJoinNotNull(BaseUtils.join(mapping, mapKeys), where, session);
+    public void mapJoinNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
+        property.setJoinNotNull(BaseUtils.join(mapping, mapKeys), where, session, modifier);
     }
-    public void mapNotNull(Map<T, DataObject> values, DataSession session) throws SQLException {
-        property.setNotNull(BaseUtils.join(mapping, values), session);
+    public void mapNotNull(Map<T, DataObject> values, DataSession session, Modifier modifier) throws SQLException {
+        property.setNotNull(BaseUtils.join(mapping, values), session, modifier);
     }
 
     public PropertyMapImplement<?, T> mapChangeImplement(Map<T, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
@@ -109,6 +109,14 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
 
     public <K> PropertyImplement<P, K> mapImplement(Map<T, K> remap) {
         return new PropertyImplement<P, K>(property, BaseUtils.join(mapping, remap));
+    }
+
+    public Expr mapIncrementExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier, WhereBuilder changedWhere, IncrementType incrementType) {
+        return property.getIncrementExpr(BaseUtils.join(mapping, joinImplement), modifier, changedWhere, incrementType);
+    }
+
+    public Expr mapIncrementExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier, Modifier prevModifier, WhereBuilder changedWhere, IncrementType incrementType) {
+        return property.getIncrementExpr(BaseUtils.join(mapping, joinImplement), modifier, prevModifier, changedWhere, incrementType);
     }
 
     public Expr mapIncrementExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges newChanges, PropertyChanges prevChanges, WhereBuilder changedWhere, IncrementType incrementType) {

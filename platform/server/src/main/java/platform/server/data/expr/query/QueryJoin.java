@@ -16,7 +16,6 @@ import platform.server.data.where.Where;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 // query именно Outer а не Inner, потому как его контекст "связан" с group, и его нельзя прозрачно подменять
 public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T extends QueryJoin<K, I, T, OC>,
@@ -64,7 +63,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
         public InnerExpr getInnerExpr(WhereJoin join) {
             return QueryJoin.getInnerExpr(thisObj, join);
         }
-        public InnerExprSet getExprFollows(boolean recursive) {
+        public NotNullExprSet getExprFollows(boolean recursive) {
             return InnerExpr.getExprFollows(thisObj, recursive);
         }
         public InnerJoins getInnerJoins() {
@@ -112,7 +111,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
     public InnerExpr getInnerExpr(WhereJoin join) {
         return getOuter().getInnerExpr(join);
     }
-    public InnerExprSet getExprFollows(boolean recursive) {
+    public NotNullExprSet getExprFollows(boolean recursive) {
         return getOuter().getExprFollows(recursive);
     }
     public InnerJoins getInnerJoins() {
@@ -128,11 +127,11 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
 
     // множественное наследование
     public static InnerExpr getInnerExpr(InnerJoin<?, ?> join, WhereJoin whereJoin) {
-        InnerExprSet set = whereJoin.getExprFollows(true);
+        NotNullExprSet set = whereJoin.getExprFollows(true);
         for(int i=0;i<set.size;i++) {
-            InnerExpr expr = set.get(i);
-            if(BaseUtils.hashEquals(join,expr.getInnerJoin()))
-                return expr;
+            NotNullExpr expr = set.get(i);
+            if(expr instanceof InnerExpr && BaseUtils.hashEquals(join,((InnerExpr)expr).getInnerJoin()))
+                return (InnerExpr)expr;
         }
         return null;
     }

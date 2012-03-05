@@ -11,7 +11,7 @@ CREATE TYPE winddistr AS (
 CREATE OR REPLACE FUNCTION resultDistr(winddistr) RETURNS double precision AS
 $$
     SELECT  $1.this;
-$$ LANGUAGE 'sql';
+$$ LANGUAGE 'sql' IMMUTABLE;
 
 -- 2 parameter - distr, 3 parameter max, assert all are not nulls
 CREATE OR REPLACE FUNCTION nextDistr(winddistr, double precision, double precision) RETURNS winddistr AS
@@ -34,7 +34,7 @@ $$
 
                 RETURN result;
     END
-$$ LANGUAGE 'plpgsql';
+$$ LANGUAGE 'plpgsql' IMMUTABLE;
 
 DROP AGGREGATE IF EXISTS DISTR_RESTRICT(double precision, double precision) CASCADE;
 
@@ -70,7 +70,7 @@ $$
 
                 RETURN result;
     END
-$$ LANGUAGE 'plpgsql';
+$$ LANGUAGE 'plpgsql' IMMUTABLE;
 
 DROP AGGREGATE IF EXISTS DISTR_RESTRICT_OVER(double precision, double precision, double precision) CASCADE;
 
@@ -91,7 +91,7 @@ CREATE TYPE propdistr AS (
 CREATE OR REPLACE FUNCTION resultProp(propdistr) RETURNS double precision AS
 $$
     SELECT  $1.this;
-$$ LANGUAGE 'sql';
+$$ LANGUAGE 'sql' IMMUTABLE;
 
 -- 2 parameter - distr, 3 parameter max, 4 - totalsum, assert all are not nulls
 CREATE OR REPLACE FUNCTION nextCumProp(propdistr, double precision, double precision, double precision) RETURNS propdistr AS
@@ -104,7 +104,7 @@ $$
 
         RETURN result;
     END
-$$ LANGUAGE 'plpgsql';
+$$ LANGUAGE 'plpgsql' IMMUTABLE;
 
 DROP AGGREGATE IF EXISTS DISTR_CUM_PROPORTION(double precision, double precision, double precision) CASCADE;
 
@@ -196,3 +196,18 @@ CREATE AGGREGATE AGGAR_SETADD (anyarray) (
     stype = anyarray,
     initcond = '{}'
 );
+
+CREATE OR REPLACE FUNCTION notZero(anyelement) RETURNS anyelement AS
+$$
+    SELECT CASE WHEN $1 = 0 THEN NULL ELSE $1 END;
+$$ LANGUAGE 'sql' IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION MIN(anyelement, anyelement) RETURNS anyelement AS
+$$
+    SELECT CASE WHEN $1 > $2 THEN $2 ELSE $1 END;
+$$ LANGUAGE 'sql' IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION MAX(anyelement, anyelement) RETURNS anyelement AS
+$$
+    SELECT CASE WHEN $1 < $2 THEN $2 ELSE $1 END;
+$$ LANGUAGE 'sql' IMMUTABLE;

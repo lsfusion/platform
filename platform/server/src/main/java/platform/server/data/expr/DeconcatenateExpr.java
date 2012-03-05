@@ -79,10 +79,6 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return ((ConcatenateClassSet)expr.getAndClassSet(and)).get(part);
     }
 
-    public Where calculateWhere() {
-        return expr.getWhere();
-    }
-
     public Expr translateQuery(QueryTranslator translator) {
         return create(expr.translateQuery(translator),part,baseClass);
     }
@@ -124,8 +120,5 @@ public class DeconcatenateExpr extends SingleClassExpr {
 
     public InnerBaseJoin<?> getBaseJoin() {
         return new CalculateJoin<Integer>(Collections.singletonMap(0, expr));
-    }
-
-    public void fillFollowSet(DataWhereSet fillSet) {
     }
 }

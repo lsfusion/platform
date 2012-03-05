@@ -12,9 +12,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQueryExpr, SubQueryExpr.QueryInnerContext> {
 
@@ -67,7 +65,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
     public class NotNull extends QueryExpr.NotNull {
     }
 
-    public Where calculateWhere() {
+    public NotNull calculateNotNullWhere() {
         return new NotNull();
     }
 

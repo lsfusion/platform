@@ -2993,7 +2993,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityProxyImporterFreightSku = addSGProp(baseGroup, "quantityProxyImporterFreightSku", true, true, "Кол-во (из приёмки)", quantityImporterStockSku, 1, freightFreightUnit, 2, 3);
         quantityDirectImporterFreightSku = addSGProp(baseGroup, "quantityDirectImporterFreightSku", true, true, "Кол-во (напрямую)", quantityListSku, importerSupplierBox, 1, freightFreightUnit, 1, 2);
-        quantityImporterFreightSku = addSUProp(baseGroup, "quantityImporterFreightSku", true, true, "Кол-во", Union.SUM, quantityProxyImporterFreightSku, quantityDirectImporterFreightSku);
+        quantityImporterFreightSku = addSUProp(baseGroup, "quantityImporterFreightSku", true, "Кол-во", Union.SUM, quantityProxyImporterFreightSku, quantityDirectImporterFreightSku);
 
         quantityFreightArticle = addSGProp(baseGroup, "quantityFreightArticle", "Кол-во отгруженное с STX", quantityImporterFreightSku, 2, articleSku, 3);
         quantityFreightBrandSupplier = addSGProp(baseGroup, "quantityFreightBrandSupplier", "Кол-во отгруженное с STX", quantityImporterFreightSku, 2, brandSupplierArticleSku, 3);
@@ -4151,7 +4151,7 @@ public class RomanLogicsModule extends LogicsModule {
                 // смотрим изменения
                 itemArticleCompositeColorSize.property.setJoinNotNull(
                         BaseUtils.join(BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, quantityListArticleCompositeColorSize.listInterfaces.subList(1, 4)), change.mapKeys),
-                        change.expr.getWhere().and(change.where), session);
+                        change.expr.getWhere().and(change.where), session, modifier);
             }
         }
     }
@@ -4443,7 +4443,7 @@ public class RomanLogicsModule extends LogicsModule {
                 // смотрим изменения
                 Map mapKeys = BaseUtils.join(BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, quantityListArticleCompositeColorSize.listInterfaces.subList(1, 4)), change.mapKeys);
                 itemArticleCompositeColorSize.property.setJoinNotNull(
-                        mapKeys, change.expr.getWhere().and(change.where), session);
+                        mapKeys, change.expr.getWhere().and(change.where), session, modifier);
             }
         }
     }

@@ -23,8 +23,11 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
     public I query;
     Map<K, BaseExpr> group; // вообще гря не reverseable
 
-    public Type getType(KeyType keyType) {
+    public Type getType() {
         return getInner().getType();
+    }
+    public Type getType(KeyType keyType) {
+        return getType();
     }
     public Stat getTypeStat(KeyStat keyStat) {
         return getInner().getTypeStat();
@@ -184,11 +187,6 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         return true;
     }
     public abstract class NotNull extends InnerExpr.NotNull {
-
-        @Override
-        public Where packFollowFalse(Where falseWhere) {
-            return QueryExpr.this.packFollowFalse(falseWhere).getWhere();
-        }
 
         public ClassExprWhere calculateClassWhere() {
             Where fullWhere = getInner().getFullWhere();

@@ -108,22 +108,15 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         return new PartitionExpr(query, group);
     }
 
-    public boolean isOr() {
-        return isWhereCalculated() || super.isOr();
-    }
-
     public class NotNull extends QueryExpr.NotNull {
     }
 
-    public static boolean isWhereCalculated(Expr expr) {
-        return expr instanceof PartitionExpr && ((PartitionExpr)expr).isWhereCalculated();
-    }
-    public boolean isWhereCalculated() {
-        return !query.type.canBeNull();
+    public Where calculateOrWhere() {
+        return getInner().getFullWhere().map(group); //query.type.canBeNull() ? Where.TRUE : getInner().getFullWhere().map(group);
     }
 
-    public Where calculateWhere() {
-        return isWhereCalculated() ? getInner().getFullWhere().map(group) : new NotNull();
+    public Where calculateNotNullWhere() {
+        return query.type.canBeNull() ? new NotNull() : super.calculateNotNullWhere();
     }
 
     public String getSource(CompileSource compile) {
@@ -192,7 +185,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
 
     @Override
     public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
-        if (isWhereCalculated()) {
+        if (!hasNotNull()) {
             Type type = getInner().getType();
             if(type instanceof DataClass)
                 return (AndClassSet) type;

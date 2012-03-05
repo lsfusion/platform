@@ -16,9 +16,6 @@ import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     // public только для symmetricWhere
@@ -27,7 +24,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
     }
 
     public static Where create(BaseExpr operator1, BaseExpr operator2) {
-        if(operator1 instanceof ValueExpr && operator2 instanceof ValueExpr)
+        if(operator1 instanceof StaticExpr && operator1.getClass() == operator2.getClass())
             return BaseUtils.hashEquals(operator1,operator2)? TRUE : FALSE;
         if(BaseUtils.hashEquals(operator1,operator2))
             return operator1.getWhere();
@@ -74,11 +71,11 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     @Override
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
-        if(operator1.isValue() && !operator2.isOr())
+        if(operator1.isValue()) // && !operator2.hasOr()
             return new GroupJoinsWheres(new ExprJoin(operator2, Stat.ONE), this);
-        if(operator2.isValue() && !operator1.isOr())
+        if(operator2.isValue()) // && !operator1.hasOr()
             return new GroupJoinsWheres(new ExprJoin(operator1, Stat.ONE), this);
-        return super.groupJoinsWheres(keepStat, keyStat);    //To change body of overridden methods use File | Settings | File Templates.
+        return super.groupJoinsWheres(keepStat, keyStat);
     }
 
     @Override

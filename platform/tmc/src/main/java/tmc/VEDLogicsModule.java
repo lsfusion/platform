@@ -2888,6 +2888,7 @@ public class VEDLogicsModule extends LogicsModule {
                 addPropertyDraw(objInner, objOuter, objDoc, objArt, baseGroup, true, documentGroup, true);
                 addPropertyDraw(objInner, objOuter, baseGroup, true);
                 addPropertyDraw(objInner, objOuter, objArt, baseGroup, true);
+                addPropertyDraw(returnInnerFreeQuantity, objInner, objOuter, objDoc, objArt);
 
                 NotNullFilterEntity documentCommitFilter = new NotNullFilterEntity(getPropertyObject(returnInnerCommitQuantity));
                 NotNullFilterEntity documentCommitFreeFilter = new NotNullFilterEntity(getPropertyObject(returnInnerFreeQuantity));

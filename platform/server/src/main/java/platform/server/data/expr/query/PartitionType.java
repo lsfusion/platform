@@ -42,15 +42,25 @@ public enum PartitionType implements AggrType {
                 // 2-й пробег - результат
                 PartitionCalc.Aggr totRound = new PartitionCalc.Aggr("SUM", Collections.<PartitionToken>singletonList(round), partitions);
                 return new PartitionCalc("prm1 + (CASE WHEN prm2=1 THEN (prm3-prm4) ELSE 0 END)", totRound, round, number, exprs.get(1));
+            case DISTR_RESTRICT: // exprs : 1-й - ограничение, 2-й что
+                // 1-й пробег высчитываем накопленные ограничения
+                PartitionCalc.Aggr sumRestr = new PartitionCalc.Aggr("SUM", Collections.singletonList(exprs.get(0)), orders, partitions);
+                return new PartitionCalc("(CASE WHEN prm2>(prm3-prm1) THEN MIN(prm1,prm1+prm2-prm3) ELSE NULL END)", sumRestr, exprs.get(0), exprs.get(1));
+            case DISTR_RESTRICT_OVER: // exprs : 1-й - ограничение, 2-й что
+                // 1-й пробег высчитываем накопленные ограничения
+                PartitionCalc.Aggr sumTot = new PartitionCalc.Aggr("SUM", Collections.singletonList(exprs.get(0)), partitions);
+                PartitionCalc.Aggr sumRestrOver = new PartitionCalc.Aggr("SUM", Collections.singletonList(exprs.get(0)), orders, partitions);
+                PartitionCalc.Aggr restrNumber = new PartitionCalc.Aggr("ROW_NUMBER", orders, partitions);
+                return new PartitionCalc("(CASE WHEN prm2>(prm3-prm1) THEN (MIN(prm1,prm1+prm2-prm3)+(CASE WHEN prm5=1 AND prm2>prm4 THEN prm2-prm4 ELSE 0 END)) ELSE NULL END)", new PartitionToken[]{exprs.get(0), exprs.get(1)}, sumRestrOver, sumTot, restrNumber);
         }
         throw new RuntimeException("not supported");
     }
 
     public boolean isSelect() {
-        return this==PREVIOUS;
+        return this==PREVIOUS || this==DISTR_RESTRICT || this==DISTR_RESTRICT_OVER;
     }
 
     public boolean canBeNull() { // может возвращать null если само выражение не null
-        return this==PREVIOUS;
+        return this==PREVIOUS || this==DISTR_RESTRICT || this==DISTR_RESTRICT_OVER;
     }
 }

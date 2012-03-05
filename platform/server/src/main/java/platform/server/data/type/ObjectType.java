@@ -79,9 +79,14 @@ public class ObjectType extends AbstractType<Integer> {
     }
 
     public ConcreteClass getBinaryClass(byte[] value, SQLSession session, BaseClass baseClass) throws SQLException {
-        int idobject = 0;
-        for(int i=0;i<value.length;i++)
-            idobject = idobject * 8 + value[i];
+        int idobject;
+        if(session.syntax.isBinaryString()) {
+            idobject = Integer.parseInt(new String(value).trim());
+        } else {
+            idobject = 0;
+            for(int i=0;i<value.length;i++)
+                idobject = idobject * 8 + value[i];
+        }
         return getDataClass(idobject, session, baseClass); 
     }
 

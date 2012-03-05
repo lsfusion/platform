@@ -7,7 +7,6 @@ import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
-import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.Time;
@@ -1126,28 +1125,24 @@ public abstract class LogicsModule {
         PropertyMapImplement<?, PropertyInterface> initial = (PropertyMapImplement<?, PropertyInterface>) listImplement.get(0);
         PropertyMapImplement<?, PropertyInterface> step = (PropertyMapImplement<?, PropertyInterface>) listImplement.get(1);
 
-        boolean isIntegral = initial.property.getType() instanceof IntegralClass;
         boolean convertToLogical = false;
-        assert isIntegral == (step.property.getType() instanceof IntegralClass);
-        
-        if(!isIntegral && (cycle == Cycle.NO || (cycle==Cycle.IMPOSSIBLE && persistent))) {
+        assert initial.property.getType() instanceof IntegralClass == (step.property.getType() instanceof IntegralClass);
+        if(!(initial.property.getType() instanceof IntegralClass) && (cycle == Cycle.NO || (cycle==Cycle.IMPOSSIBLE && persistent))) {
             PropertyMapImplement<?, PropertyInterface> one = createStatic(1, LongClass.instance);
             initial = createAnd(innerInterfaces, one, initial);
             step = createAnd(innerInterfaces, one, step);
-            isIntegral = true;
             convertToLogical = true;
         }
 
-        boolean wrapProperty = (persistent || convertToLogical) && isIntegral;
-        RecursiveProperty<PropertyInterface> property = new RecursiveProperty<PropertyInterface>((wrapProperty?"wr_":"") + name, caption, interfaces, cycle,
+        RecursiveProperty<PropertyInterface> property = new RecursiveProperty<PropertyInterface>(name, caption, interfaces, cycle,
                 mapInterfaces, mapIterate, initial, step);
         if(cycle==Cycle.NO)
             addProperty(null, new LP(property.getConstrainedProperty()));
 
         LP result = new LP<RecursiveProperty.Interface>(property, interfaces);
-        if (wrapProperty)
-            return addJProp(group, name, false, caption, convertToLogical ? baseLM.notZero : baseLM.onlyNotZero, directLI(addProperty(null, persistent, result)));
-        else
+//        if (convertToLogical)
+//            return addJProp(group, name, false, caption, baseLM.notZero, directLI(addProperty(null, persistent, result)));
+//        else
             return addProperty(group, persistent, result);
     }
 
@@ -1160,13 +1155,17 @@ public abstract class LogicsModule {
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LP addUGProp(AbstractGroup group, String name, boolean persistent, String caption, boolean ascending, LP<R> restriction, LP<L> ungroup, Object... params) {
+        return addUGProp(group, name, persistent, caption, ascending, restriction, ungroup, params);
+    }
+
+    protected <R extends PropertyInterface, L extends PropertyInterface> LP addUGProp(AbstractGroup group, String name, boolean persistent, boolean over, String caption, boolean ascending, LP<R> restriction, LP<L> ungroup, Object... params) {
         List<LI> li = readLI(params);
 
         Map<L, PropertyInterfaceImplement<R>> groupImplement = new HashMap<L, PropertyInterfaceImplement<R>>();
         for (int i = 0; i < ungroup.listInterfaces.size(); i++)
             groupImplement.put(ungroup.listInterfaces.get(i), li.get(i).map(restriction.listInterfaces));
         OrderedMap<PropertyInterfaceImplement<R>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<R>, Boolean>(mapLI(li.subList(ungroup.listInterfaces.size(), li.size()), restriction.listInterfaces), ascending);
-        return mapLProp(group, persistent, DerivedProperty.createUGProp(name, caption, new PropertyImplement<L, PropertyInterfaceImplement<R>>(ungroup.property, groupImplement), orders, restriction.property), restriction);
+        return mapLProp(group, persistent, DerivedProperty.createUGProp(name, caption, new PropertyImplement<L, PropertyInterfaceImplement<R>>(ungroup.property, groupImplement), orders, restriction.property, over), restriction);
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LP addPGProp(AbstractGroup group, String name, boolean persistent, int roundlen, boolean roundfirst, String caption, LP<R> proportion, LP<L> ungroup, Object... params) {
@@ -1290,20 +1289,13 @@ public abstract class LogicsModule {
     }
 
     private <T extends PropertyInterface> LP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, List<T> innerInterfaces, List<PropertyInterfaceImplement<T>> implement) {
-        boolean wrapNotZero = persistent && (notZero || !Settings.instance.isDisableSumGroupNotZero());
         List<PropertyInterfaceImplement<T>> listImplements = implement.subList(1, implement.size());
-        SumGroupProperty<T> property = new SumGroupProperty<T>((wrapNotZero?"wr_":"") + name, caption, innerInterfaces, listImplements, implement.get(0));
+                SumGroupProperty<T> property = new SumGroupProperty<T>(name, caption, innerInterfaces, listImplements, implement.get(0));
 
-        LP result;
-        if (wrapNotZero)
-            result = addJProp(group, name, false, caption, baseLM.onlyNotZero, directLI(mapLGProp(null, persistent, property, listImplements)));
-        else
-            result = mapLGProp(group, persistent, property, listImplements);
 
-        result.sumGroup = property; // так как может wrap'ся, использование - setDG
-        result.listGroupInterfaces = innerInterfaces; // для порядка параметров, использование - setDG
-
-        return result;
+        LP lp = mapLGProp(group, persistent, property, listImplements);
+        lp.listGroupInterfaces = innerInterfaces;
+        return lp;
     }
 
     public <T extends PropertyInterface> LP addOGProp(String caption, GroupType type, int numOrders, boolean ascending, LP<T> groupProp, Object... params) {
@@ -1536,10 +1528,14 @@ public abstract class LogicsModule {
     }
 
     protected <T extends PropertyInterface> LP addDGProp(AbstractGroup group, String name, boolean persistent, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
+        return addDGProp(group, name, persistent, caption, orders, ascending, false, groupProp, params);
+    }
+    
+    protected <T extends PropertyInterface> LP addDGProp(AbstractGroup group, String name, boolean persistent, String caption, int orders, boolean ascending, boolean over, LP<T> groupProp, Object... params) {
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
         int intNum = listImplements.size();
         LP result = addSGProp(group, name, persistent, false, caption, groupProp, listImplements.subList(0, intNum - orders - 1));
-        result.setDG(ascending, listImplements.subList(intNum - orders - 1, intNum));
+        result.setDG(ascending, over, listImplements.subList(intNum - orders - 1, intNum));
         return result;
     }
 
@@ -1803,17 +1799,8 @@ public abstract class LogicsModule {
     }
 
     protected LP addSUProp(AbstractGroup group, String name, boolean persistent, String caption, Union unionType, LP... props) {
-        return addSUProp(group, name, persistent, false, caption, unionType, props);
-    }
-
-    protected LP addSUProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, Union unionType, LP... props) {
         assert baseLM.checkSUProps.add(props);
-        if (notZero) {
-            LP uProp = addUProp(null, genSID(), false, caption, unionType, getUParams(props, (unionType == Union.SUM ? 1 : 0)));
-            return addJProp(group, name, persistent, caption, baseLM.onlyNotZero, directLI(uProp));
-        } else {
-            return addUProp(group, name, persistent, caption, unionType, getUParams(props, (unionType == Union.SUM ? 1 : 0)));
-        }
+        return addUProp(group, name, persistent, caption, unionType, getUParams(props, (unionType == Union.SUM ? 1 : 0)));
     }
 
     protected LP addSFUProp(AbstractGroup group, String name, String caption, String delimiter, LP... props) {
@@ -1881,7 +1868,7 @@ public abstract class LogicsModule {
     protected LP addMAProp(AbstractGroup group, String message, String caption) {
         int length = message.length();
         return addJProp(addMAProp(caption, length),
-                        addCProp(StringClass.get(length), message));
+                addCProp(StringClass.get(length), message));
     }
 
     protected LP addMAProp(String caption, int length) {
@@ -1987,8 +1974,8 @@ public abstract class LogicsModule {
     // params - по каким входам группировать
     protected LP addIAProp(LP dataProperty, Integer... params) {
         return addAProp(new BaseLogicsModule.IncrementActionProperty(genSID(), "sys", dataProperty,
-                                                                     addMGProp(dataProperty, params),
-                                                                     params));
+                addMGProp(dataProperty, params),
+                params));
     }
 
     protected LP addAAProp(CustomClass customClass, LP... properties) {
@@ -2086,7 +2073,7 @@ public abstract class LogicsModule {
     public LP getEditFormAction(CustomClass cls, boolean session) {
         ClassFormEntity form = cls.getEditForm(baseLM);
         LP property = addMFAProp(actionGroup, "edit" + (session ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit"), // + "(" + cls + ")",
-                                 form.form, new ObjectEntity[]{form.object}, !session);
+                form.form, new ObjectEntity[]{form.object}, !session);
         property.setImage("edit.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
@@ -2201,7 +2188,7 @@ public abstract class LogicsModule {
         assert !baseLM.isGeneratedSID(property.getSID());
         property.stored = true;
 
-        baseLM.logger.debug("Initializing stored property...");
+        baseLM.logger.debug("Initializing stored property " + property + "...");
         property.markStored(baseLM.tableFactory);
     }
 

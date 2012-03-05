@@ -41,32 +41,11 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
         public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
             return new GroupJoinsWheres(InnerExpr.this.getInnerJoin(), this);
         }
-
-        protected DataWhereSet calculateFollows() {
-            return new DataWhereSet(getExprFollows(false, true));
-        }
-    }
-
-    private InnerExprSet exprThisFollows = null;
-    @ManualLazy
-    public InnerExprSet getExprFollows(boolean includeThis, boolean recursive) {
-        assert includeThis || recursive;
-        if(recursive) {
-            if(includeThis) {
-                if(exprThisFollows==null) {
-                    exprThisFollows = new InnerExprSet(super.getExprFollows(true, true));
-                    exprThisFollows.add(this);
-                }
-                return exprThisFollows;
-            } else
-                return super.getExprFollows(false, true);
-        } else // не кэшируем так как редко используется
-            return new InnerExprSet(this);
     }
 
     // множественное наследование
-    public static <K> InnerExprSet getExprFollows(BaseJoin<K> join, boolean recursive) { // куда-то надо же положить
-        return new InnerExprSet(join.getJoins().values(), recursive);
+    public static <K> NotNullExprSet getExprFollows(BaseJoin<K> join, boolean recursive) { // куда-то надо же положить
+        return new NotNullExprSet(join.getJoins().values(), recursive);
     }
 
     // множественное наследование
@@ -78,11 +57,14 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
     public static InnerJoins getFollowJoins(WhereJoin<?, ?> join, Result<Map<InnerJoin, Where>> upWheres) { // куда-то надо же положить
         InnerJoins result = new InnerJoins();
         Map<InnerJoin, Where> upResult = new HashMap<InnerJoin, Where>();
-        InnerExprSet innerExprs = join.getExprFollows(false);
-        for(int i=0;i<innerExprs.size;i++) {
-            InnerExpr innerExpr = innerExprs.get(i); InnerJoin innerJoin = innerExpr.getInnerJoin();
-            result = result.and(new InnerJoins(innerJoin));
-            upResult = result.andUpWheres(upResult, Collections.singletonMap(innerJoin,  innerExpr.getWhere()));
+        NotNullExprSet notNullExprs = join.getExprFollows(false);
+        for(int i=0;i<notNullExprs.size;i++) {
+            NotNullExpr notNullExpr = notNullExprs.get(i);
+            if(notNullExpr instanceof InnerExpr) {
+                InnerJoin innerJoin = ((InnerExpr)notNullExpr).getInnerJoin();
+                result = result.and(new InnerJoins(innerJoin));
+                upResult = result.andUpWheres(upResult, Collections.singletonMap(innerJoin,  notNullExpr.getWhere()));
+            }
         }
         upWheres.set(upResult);
         return result;

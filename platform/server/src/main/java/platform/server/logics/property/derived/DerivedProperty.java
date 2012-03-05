@@ -420,15 +420,22 @@ public class DerivedProperty {
         return createCompare(property.interfaces, andImplement, maxPartition, Compare.EQUALS);
     }
 
-    public static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createUGProp(PropertyImplement<L, PropertyInterfaceImplement<T>> group, OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders, Property<T> restriction) {
-        return createUGProp(genID(), "sys", group, orders, restriction);
+    public static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createUGProp(PropertyImplement<L, PropertyInterfaceImplement<T>> group, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, Property<T> restriction, boolean over) {
+        return createUGProp(genID(), "sys", group, orders, restriction, over);
     }
-    public static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createUGProp(String sID, String caption, PropertyImplement<L, PropertyInterfaceImplement<T>> group, OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders, Property<T> restriction) {
+    public static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createUGProp(String sID, String caption, PropertyImplement<L, PropertyInterfaceImplement<T>> group, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, Property<T> restriction, boolean over) {
         // assert'им что все порядки есть, иначе неправильно расписываться будет
         assert BaseUtils.mergeSet(orders.keySet(),BaseUtils.reverse(group.mapping).keySet()).containsAll(restriction.interfaces);
 
+        Collection<PropertyInterfaceImplement<T>> partitions = group.mapping.values();
+
         // строим связное distribute св-во, узнаем все использованные интерфейсы, строим map
         PropertyMapImplement<?, T> distribute = createJoin(group);
+
+        if(true) {
+            PartitionProperty<T> orderProperty = new PartitionProperty<T>(sID, caption, over ? PartitionType.DISTR_RESTRICT_OVER : PartitionType.DISTR_RESTRICT, restriction, partitions, orders, BaseUtils.<PropertyInterfaceImplement<T>>toList(distribute), true);
+            return new PropertyMapImplement<PartitionProperty.Interface<T>, T>(orderProperty, orderProperty.getMapInterfaces());
+        }
 
         // нужно MIN2(огр., распр. - пред.) И распр. > пред. причем пред. подходит и null, остальные не null
         // кроме того у огр. и пред. есть все интерфейсы, а у распр. - не все
@@ -436,7 +443,7 @@ public class DerivedProperty {
         // новый вариант : пред. = UNION (0 and огр., сум. без) или считаем (суи. с - огр.) = пред. ??? и зтем обычную формулу
 
         PropertyMapImplement<?, T> restImplement = restriction.getImplement();
-        
+
         // считаем пред., тут 2 варианта
         PropertyMapImplement<?, T> previous;
         // через Union

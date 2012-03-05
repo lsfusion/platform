@@ -33,11 +33,6 @@ public abstract class StaticExpr<C extends ConcreteClass> extends StaticClassExp
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
     }
 
-    // возвращает Where без следствий
-    public Where calculateWhere() {
-        return Where.TRUE;
-    }
-
     public Stat getStatValue(KeyStat keyStat) {
         return Stat.ONE;
     }

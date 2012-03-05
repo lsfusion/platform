@@ -79,7 +79,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     @Override
-    protected void proceedNotNull(Map<ClassPropertyInterface, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
+    protected void proceedNotNull(Map<ClassPropertyInterface, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
         ValueClass valueClass = getInterfaceClass();
         if(valueClass instanceof ConcreteObjectClass)
             for(Map<ClassPropertyInterface, DataObject> row : new Query<ClassPropertyInterface, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet())
@@ -87,7 +87,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     @Override
-    protected void proceedNull(Map<ClassPropertyInterface, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
+    protected void proceedNull(Map<ClassPropertyInterface, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
         ValueClass valueClass = getInterfaceClass();
         if(valueClass instanceof ConcreteObjectClass)
             for(Map<ClassPropertyInterface, DataObject> row : new Query<ClassPropertyInterface, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet())

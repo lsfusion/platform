@@ -11,7 +11,6 @@ import platform.server.data.expr.*;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExclPullWheres;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.ObjectType;
@@ -202,15 +201,15 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return result;
     }
 
-    public InnerExprSet getExprFollows() {
-        InnerExprSet[] follows = new InnerExprSet[wheres.length] ; int num = 0;
+    public NotNullExprSet getExprFollows() {
+        NotNullExprSet[] follows = new NotNullExprSet[wheres.length] ; int num = 0;
         for(And<VariableClassExpr> where : wheres) {
-            InnerExprSet result = new InnerExprSet();
+            NotNullExprSet result = new NotNullExprSet();
             for(int i=0;i<where.size;i++)
                 result.addAll(where.getKey(i).getExprFollows(true, true));
             follows[num++] = result;
         }
-        return new InnerExprSet(follows);
+        return new NotNullExprSet(follows);
     }
 
     // здесь не обязательно есть все BaseExpr'ы, равно как и то что они не повторяются

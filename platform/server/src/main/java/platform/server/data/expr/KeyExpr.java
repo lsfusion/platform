@@ -55,11 +55,6 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
         return keyStat.getKeyStat(this);
     }
 
-    // возвращает Where без следствий
-    public Where calculateWhere() {
-        return Where.TRUE;
-    }
-
     public Expr translateQuery(QueryTranslator translator) {
         return translator.translate(this);
     }
@@ -84,9 +79,6 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
         return false;
     }
 
-    public void fillFollowSet(DataWhereSet fillSet) {
-    }
-
     public Stat getStatValue(KeyStat keyStat) {
         return FormulaExpr.getStatValue(this, keyStat);
     }
@@ -103,7 +95,7 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
         return new HashMap<Object, BaseExpr>();
     }
 
-    public InnerExprSet getExprFollows(boolean recursive) {
+    public NotNullExprSet getExprFollows(boolean recursive) {
         return InnerExpr.getExprFollows(this, recursive);
     }
 

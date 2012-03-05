@@ -301,7 +301,7 @@ public class Settings {
     private int limitClassWhereCount = 40;
     private int limitClassWhereComplexity = 400;
     private int limitWhereJoinPack = 300;
-    private int limitExclusiveCount = 15; // когда вообще не пытаться строить exclusive (count)
+    private int limitExclusiveCount = 7; // когда вообще не пытаться строить exclusive (count)
     private int limitExclusiveComplexity = 100; // когда вообще не пытаться строить exclusive (complexity)
     private int limitExclusiveSimpleCount = 10; // когда строить exclusive без рекурсии (count)
     private int limitExclusiveSimpleComplexity = 100; // когда строить exclusive без рекурсии (complexity)

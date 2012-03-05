@@ -2,19 +2,29 @@ package platform.server.data.expr;
 
 import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
+import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
-import platform.server.data.expr.query.PartitionExpr;
-import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
+import platform.server.data.where.MapWhere;
 import platform.server.data.where.Where;
 
 public abstract class NotNullExpr extends VariableClassExpr {
+
+    @Override
+    public Where calculateOrWhere() {
+        return Where.TRUE;
+    }
+
+    @Override
+    public Where calculateNotNullWhere() { // assert result instanceof NotNull || result.isTrue()
+        return Where.TRUE;
+    }
 
     public abstract class NotNull extends DataWhere {
 
@@ -22,52 +32,77 @@ public abstract class NotNullExpr extends VariableClassExpr {
             return NotNullExpr.this;
         }
 
-        public String getSource(CompileSource compile) {
-            return NotNullExpr.this.getSource(compile) + " IS NOT NULL";
-        }
-
-        @Override
-        protected String getNotSource(CompileSource compile) {
-            return NotNullExpr.this.getSource(compile) + " IS NULL";
-        }
-
         protected boolean isComplex() {
             return false;
         }
 
-        protected Where translate(MapTranslate translator) {
-            return NotNullExpr.this.translateOuter(translator).getWhere();
+        public String getSource(CompileSource compile) {
+            return getExpr().getSource(compile) + " IS NOT NULL";
         }
+
+        @Override
+        protected String getNotSource(CompileSource compile) {
+            return getExpr().getSource(compile) + " IS NULL";
+        }
+
+        protected Where translate(MapTranslate translator) {
+            return getExpr().translateOuter(translator).getNotNullWhere();
+        }
+
+        @Override
+        public Where packFollowFalse(Where falseWhere) {
+            Expr packExpr = NotNullExpr.this.packFollowFalse(falseWhere);
+            if(packExpr instanceof BaseExpr) // чтобы бесконечных циклов не было
+                return ((BaseExpr)packExpr).getNotNullWhere();
+            else
+                return packExpr.getWhere();
+        }
+
         public Where translateQuery(QueryTranslator translator) {
-            return NotNullExpr.this.translateQuery(translator).getWhere();
+            return getExpr().translateQuery(translator).getWhere();
         }
 
         public QuickSet<OuterContext> calculateOuterDepends() {
-            return new QuickSet<OuterContext>(NotNullExpr.this);
+            return new QuickSet<OuterContext>(getExpr());
         }
 
         protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-            NotNullExpr.this.fillAndJoinWheres(joins,andWhere);
+            getExpr().fillAndJoinWheres(joins,andWhere);
         }
 
         public int hash(HashContext hashContext) {
-            return NotNullExpr.this.hashOuter(hashContext);
+            return getExpr().hashOuter(hashContext);
+        }
+
+        protected DataWhereSet calculateFollows() {
+            return new DataWhereSet(getExprFollows(false, true));
         }
 
         @Override
         public boolean twins(TwinImmutableInterface o) {
-            return NotNullExpr.this.equals(((NotNull) o).getExpr());
+            return getExpr().equals(((NotNull) o).getExpr());
         }
+    }
 
+    private NotNullExprSet exprThisFollows = null;
+    @ManualLazy
+    public NotNullExprSet getExprFollows(boolean includeThis, boolean recursive) {
+        assert includeThis || recursive;
+        if(recursive) {
+            if(includeThis && hasNotNull()) {
+                if(exprThisFollows==null) {
+                    exprThisFollows = new NotNullExprSet(super.getExprFollows(true, true));
+                    exprThisFollows.add(this);
+                }
+                return exprThisFollows;
+            } else
+                return super.getExprFollows(false, true);
+        } else // не кэшируем так как редко используется
+            return new NotNullExprSet(this);
     }
 
     public void fillFollowSet(DataWhereSet fillSet) {
-        Where where = getWhere();
-        if(where instanceof DataWhere)
-            fillSet.add((DataWhere) getWhere());
-        else
-            assert PartitionExpr.isWhereCalculated(this);
+        assert hasNotNull();
+        fillSet.add((NotNull)getNotNullWhere());
     }
-
-
 }

@@ -59,9 +59,10 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
 
     protected String getNotSource(CompileSource compile) {
         String op1Source = operator1.getSource(compile);
-        String result = operator1.getWhere().isTrue() || operator1.isOr()?"":op1Source + " IS NULL";
         String op2Source = operator2.getSource(compile);
-        if(!(operator2.getWhere().isTrue() || operator2.isOr()))
+
+        String result = operator1.hasNotNull()?op1Source + " IS NULL":"";
+        if(operator2.hasNotNull())
             result = (result.length()==0?"":result+" OR ") + op2Source + " IS NULL";
         String compare = "NOT " + op1Source + getCompareSource(compile) + op2Source;
         if(result.length()==0)

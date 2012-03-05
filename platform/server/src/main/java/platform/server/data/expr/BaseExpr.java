@@ -13,10 +13,8 @@ import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.expr.where.extra.GreaterWhere;
 import platform.server.data.expr.where.extra.InArrayWhere;
 import platform.server.data.expr.where.extra.LikeWhere;
-import platform.server.data.query.SourceJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
@@ -42,9 +40,9 @@ public abstract class BaseExpr extends Expr {
         return new ExprCaseList(this);
     }
 
-    private InnerExprSet exprFollows = null;
+    private NotNullExprSet exprFollows = null;
     @ManualLazy
-    public InnerExprSet getExprFollows(boolean includeThis, boolean recursive) {
+    public NotNullExprSet getExprFollows(boolean includeThis, boolean recursive) {
         assert includeThis || recursive; // также предполагается что InnerExpr includeThis отработал
         if(exprFollows==null)
             exprFollows = getBaseJoin().getExprFollows(recursive);
@@ -159,10 +157,8 @@ public abstract class BaseExpr extends Expr {
     public abstract InnerBaseJoin<?> getBaseJoin();
 
     public QuickSet<OuterContext> calculateOuterDepends() {
-        return new QuickSet<OuterContext>(getBaseJoin().getJoins().values());
+        return new QuickSet<OuterContext>(getUsed());
     }
-
-    public abstract void fillFollowSet(DataWhereSet fillSet);
 
     public abstract Stat getTypeStat(KeyStat keyStat);
 
@@ -174,12 +170,45 @@ public abstract class BaseExpr extends Expr {
         return Collections.singleton(this);
     }
 
-    public boolean isOr() {
-        boolean result = false;
-        if(!(this instanceof NotNullExpr)) {
-            for(BaseExpr baseExpr : getBaseJoin().getJoins().values())
-                result = result || baseExpr.isOr();
-        }
+    public Collection<BaseExpr> getUsed() {
+        return getBaseJoin().getJoins().values();
+    }
+
+    public Where calculateWhere() {
+        return getOrWhere().and(getNotNullWhere());
+    }
+    
+    private Where orWhere;
+    @ManualLazy
+    public Where getOrWhere() {
+        if(orWhere==null)
+            orWhere = calculateOrWhere();
+        return orWhere;
+    } 
+    
+    public Where calculateOrWhere() {
+        Where result = Where.TRUE;
+        for(BaseExpr baseExpr : getUsed())
+            result = result.and(baseExpr.getOrWhere());
         return result;
+    }
+    
+    private Where notNullWhere;
+    @ManualLazy
+    public Where getNotNullWhere() {
+        if(notNullWhere==null)
+            notNullWhere = calculateNotNullWhere();
+        return notNullWhere;
+    }
+
+    public Where calculateNotNullWhere() {
+        Where result = Where.TRUE;
+        for(BaseExpr baseExpr : getUsed())
+            result = result.and(baseExpr.getNotNullWhere());
+        return result;
+    }
+
+    public boolean hasNotNull() {
+        return !getNotNullWhere().isTrue();
     }
 }

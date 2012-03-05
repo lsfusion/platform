@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.List;
 
 public enum GroupType implements AggrType {
-    SUM, MAX, MIN, ANY, STRING_AGG;
+    SUM, MAX, MIN, ANY, STRING_AGG, AGGAR_SETADD;
 
     public String getString() {
         switch (this) {
@@ -28,6 +28,8 @@ public enum GroupType implements AggrType {
                 return "SUM";
             case STRING_AGG:
                 return "STRING_AGG";
+            case AGGAR_SETADD:
+                return "AGGAR_SETADD";
         }
         throw new RuntimeException("can not be");
     }
@@ -67,7 +69,7 @@ public enum GroupType implements AggrType {
     }
 
     public boolean hasAdd() {
-        return this!=STRING_AGG;
+        return this!=STRING_AGG && this!=AGGAR_SETADD;
     }
 
     public boolean splitExprCases() {
@@ -90,8 +92,11 @@ public enum GroupType implements AggrType {
         return !isSelect();
     }
 
-    public String getSource(List<String> exprs, OrderedMap<String, Boolean> orders, SQLSyntax syntax) {
-        return getString() + "(" + BaseUtils.toString(exprs, ",") + BaseUtils.clause("ORDER BY", Query.stringOrder(orders, syntax)) + ")";
+    public String getSource(List<String> exprs, OrderedMap<String, Boolean> orders, Type type, SQLSyntax syntax) {
+        String result = getString() + "(" + BaseUtils.toString(exprs, ",") + BaseUtils.clause("ORDER BY", Query.stringOrder(orders, syntax)) + ")";
+        if(this==SUM)
+            result = "notZero(" + result + ")";
+        return result;
     }
 
     public Expr getSingleExpr(List<Expr> exprs, OrderedMap<Expr, Boolean> orders) {

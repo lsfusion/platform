@@ -415,11 +415,11 @@ childNumberItemGroup 'Кол-во непосредственных потомк�
 
 isLeafItemGroup 'Лист' (itemGroup) = itemGroup IS itemGroup AND NOT childNumberItemGroup(itemGroup);
 
-hasParentItemGroupInteger 'Предок (уровень)' (child, parent, i) = RECURSION child IS itemGroup AND parent == child AND i == 0
-                                                                  STEP parent == parentItemGroup($parent) AND i == $i + 1 CYCLES IMPOSSIBLE;
-//TABLE itemGroupStructure(itemGroup, itemGroup, INTEGER);
+hasParentItemGroupLevel 'Уровень' (child, parent) = RECURSION 1l AND child IS itemGroup AND parent == child
+                                                                  STEP 2l AND parent == parentItemGroup($parent) PERSISTENT;
+TABLE itemGroupStructure(itemGroup, itemGroup, LONG);
 
-hasParentItemGroup 'Уровень' (child, parent) = GROUP SUM i IF hasParentItemGroupInteger(child, parent, i) BY child, parent;
+hasParentItemGroup 'Уровень' (child, parent) = TRUE AND hasParentItemGroupLevel(child, parent);
 
 hasParentAndLeafItemGroup (child, parent) = hasParentItemGroup(child, parent) AND isLeafItemGroup(child);
 
@@ -427,8 +427,8 @@ hasParentOrNullItemGroup (child, parent) = UNION OVERRIDE hasParentItemGroup(chi
 hasParentAndLeafOrNullItemGroup (child, parent) = UNION OVERRIDE hasParentAndLeafItemGroup(child, parent), isLeafItemGroup(child) AND NOT parent;
 
 canonicalNameItemGroup 'Каноническое имя' (itemGroup) = castToString255(
-                           [GROUP CONCAT name(parent) IF hasParentItemGroupInteger(child, parent, i), ' / ' BY child ORDER DESC i](itemGroup))
-                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100;
+                           [GROUP CONCAT name(parent), ' / ' BY child ORDER DESC hasParentItemGroupLevel(child, parent)](itemGroup))
+                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 
 //levelItemGroup 'Уровень' (itemGroup) = GROUP SUM 1 IF hasParentItemGroup(child, parent) BY child PERSISTENT;
 

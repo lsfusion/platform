@@ -9,7 +9,7 @@ import platform.server.caches.OuterContext;
 import platform.server.caches.ParamLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.InnerExprSet;
+import platform.server.data.expr.NotNullExprSet;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
@@ -41,31 +41,8 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         operator2.fillJoinWheres(joins,andWhere);
     }
 
-    private static Collection<BaseExpr> getAndOperands(BaseExpr operator1, BaseExpr operator2) {
-        Collection<BaseExpr> follows = new ArrayList<BaseExpr>();
-        if(!operator1.isOr())
-            follows.add(operator1);
-        if(!operator2.isOr())
-            follows.add(operator2);
-        return follows;
-    }
-
-    private static Collection<BaseExpr> getOrOperands(BaseExpr operator1, BaseExpr operator2) {
-        Collection<BaseExpr> follows = new ArrayList<BaseExpr>();
-        if(operator1.isOr())
-            follows.add(operator1);
-        if(operator2.isOr())
-            follows.add(operator2);
-        return follows;
-    }
-
-    @IdentityLazy
-    private Collection<BaseExpr> getAndOperands() {
-        return getAndOperands(operator1, operator2);
-    }
-
     public DataWhereSet calculateFollows() {
-        return new DataWhereSet(new InnerExprSet(getAndOperands(), true));
+        return new DataWhereSet(new NotNullExprSet(BaseUtils.toSet(operator1, operator2), true));
     }
 
     protected abstract This createThis(BaseExpr operator1, BaseExpr operator2);
@@ -93,8 +70,9 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         return getOperandWhere().groupJoinsWheres(keepStat, keyStat).and(new GroupJoinsWheres(this));
     }
 
+    @IdentityLazy
     protected Where getOperandWhere() {
-        return Expr.getWhere(getAndOperands());
+        return operator1.getNotNullWhere().and(operator2.getNotNullWhere());
     }
 
     public ClassExprWhere calculateClassWhere() {
@@ -111,6 +89,6 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
     }
 
     protected static Where create(BaseExpr operator1, BaseExpr operator2, BinaryWhere where) {
-        return create(where).and(Expr.getWhere(getOrOperands(operator1, operator2)));
+        return create(where).and(operator1.getOrWhere().and(operator2.getOrWhere()));
     }
 }

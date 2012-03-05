@@ -85,8 +85,8 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
             return result;
         }
 
-        public String getSource(Map<Expr, String> fromPropertySelect, SQLSyntax syntax) {
-            return type.getSource(BaseUtils.mapList(exprs, fromPropertySelect), BaseUtils.mapOrder(orders, fromPropertySelect), syntax);
+        public String getSource(Map<Expr, String> fromPropertySelect, SQLSyntax syntax, Type resultType) {
+            return type.getSource(BaseUtils.mapList(exprs, fromPropertySelect), BaseUtils.mapOrder(orders, fromPropertySelect), resultType, syntax);
         }
     }
 
@@ -147,7 +147,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     public class NotNull extends QueryExpr.NotNull {
     }
 
-    public Where calculateWhere() {
+    public NotNull calculateNotNullWhere() {
         return new NotNull();
     }
 
@@ -183,7 +183,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         for(Map.Entry<Expr, BaseExpr> groupEntry : group.entrySet())
             whereSelect.add(fromPropertySelect.get(groupEntry.getKey())+"="+groupEntry.getValue().getSource(source));
 
-        return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect, source.syntax),
+        return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect, source.syntax, getType()),
                 BaseUtils.toString(whereSelect, " AND "), "", "", "") + ")";
     }
 

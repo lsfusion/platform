@@ -478,7 +478,7 @@ public class CompiledQuery<K,V> {
                 Map<String, String> keySelect = BaseUtils.join(group,fromPropertySelect);
                 Map<String,String> propertySelect = new HashMap<String, String>();
                 for(Map.Entry<GroupExpr.Query, String> expr : queries.entrySet())
-                    propertySelect.put(expr.getValue(),expr.getKey().getSource(fromPropertySelect, syntax));
+                    propertySelect.put(expr.getValue(),expr.getKey().getSource(fromPropertySelect, syntax, exprs.get(expr.getKey()).getType()));
                 return "(" + getGroupSelect(fromSelect, keySelect, propertySelect, whereSelect) + ")";
             }
 
@@ -641,12 +641,17 @@ public class CompiledQuery<K,V> {
                 OrderedMap<String, String> orderPropertySelect = SQLSession.mapNames(propertySelect, propOrder);
 
                 if(useRecursionFunction) {
+                    OrderedMap<String, String> orderCastKeySelect = new OrderedMap<String, String>();
+                    for(Map.Entry<String, String> orderKey : orderKeySelect.entrySet()) {
+                        Type type = columnTypes.get(orderKey.getKey());
+                        orderCastKeySelect.put(orderKey.getKey(), type.getCast(orderKey.getValue(), syntax, false));
+                    }
                     OrderedMap<String, String> orderGroupPropertySelect = new OrderedMap<String, String>();
                     for(Map.Entry<String, String> prop : orderPropertySelect.entrySet()) {
                         Type type = columnTypes.get(prop.getKey());
-                        orderGroupPropertySelect.put(prop.getKey(), type.getCast((type instanceof ArrayClass ? "AGGAR_SETADD" : "SUM") + "(" + prop.getValue() + ")", syntax, false));
+                        orderGroupPropertySelect.put(prop.getKey(), type.getCast((type instanceof ArrayClass ? GroupType.AGGAR_SETADD : GroupType.SUM).getSource(Collections.singletonList(prop.getValue()), new OrderedMap<String, Boolean>(), type, syntax), syntax, false));
                     }
-                    return "(" + getGroupSelect(fromSelect, orderKeySelect, orderGroupPropertySelect, whereSelect) + ")";
+                    return "(" + getGroupSelect(fromSelect, orderCastKeySelect, orderGroupPropertySelect, whereSelect) + ")";
                 } else
                     return "(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(orderKeySelect, orderPropertySelect), BaseUtils.toString(whereSelect," AND "),"","","") + ")";
             }
@@ -687,7 +692,7 @@ public class CompiledQuery<K,V> {
                         if(wrapStep)
                             step = SubQueryExpr.create(step);
                         stepExprs.put(query.getValue(), recJoin.getExpr(query.getValue()).mult(step, (IntegralClass) query.getKey().getType()));
-                        propertySelect.put(query.getValue(), "SUM(" + query.getValue() + ")");
+                        propertySelect.put(query.getValue(), GroupType.SUM.getSource(Collections.singletonList(query.getValue()), new OrderedMap<String, Boolean>(), query.getKey().getType(), syntax));
                     }
                 }
                 if(wrapStep) // чтобы избавляться от проблем с 2-м использованием

@@ -7,18 +7,14 @@ import platform.base.QuickSet;
 import platform.server.caches.AbstractTranslateContext;
 import platform.server.caches.CacheAspect;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.InnerExpr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.query.PartitionExpr;
+import platform.server.data.expr.NotNullExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.GroupStatType;
 import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.MeanClassWheres;
-import platform.server.logics.property.GroupProperty;
-
-import javax.mail.Part;
 
 
 // аспект который заодно транслирует ManualLazy операции
@@ -31,7 +27,7 @@ public class AfterTranslateAspect {
         MapTranslate translator = expr.getTranslator();
         if(from!=null && translator!=null) { // объект не ушел
             Where fromResult = from.getWhere();
-            if(expr instanceof InnerExpr && !PartitionExpr.isWhereCalculated(expr)) { // если результат использует сам объект, то вычисляем а затем в явную проставляем транслятор от основного объекта (если тот был посчитан или всегда)
+            if(expr instanceof NotNullExpr && ((NotNullExpr) expr).hasNotNull()) { // если результат использует сам объект, то вычисляем а затем в явную проставляем транслятор от основного объекта (если тот был посчитан или всегда)
                 AbstractTranslateContext calcObject = (AbstractTranslateContext) thisJoinPoint.proceed();
                 calcObject.initTranslate(fromResult, translator);
                 return calcObject;

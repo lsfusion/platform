@@ -104,9 +104,9 @@ public class ConcatenateType extends AbstractType<byte[]> {
             int blength = types[i].getBinaryLength(session.syntax.isBinaryString());
             byte[] typeValue;
             if(session.syntax.isBinaryString())
-                typeValue = new String(byteValue).substring(offset,blength).getBytes();
+                typeValue = new String(byteValue).substring(offset,offset+blength).getBytes();
             else
-                typeValue = Arrays.copyOfRange(byteValue,offset,blength);
+                typeValue = Arrays.copyOfRange(byteValue,offset,offset+blength);
             classes[i] = types[i].getBinaryClass(typeValue,session,baseClass);
             offset += blength;
         }

@@ -2,8 +2,6 @@ package platform.server.logics.property;
 
 import platform.base.QuickSet;
 import platform.interop.Compare;
-import platform.server.classes.DataClass;
-import platform.server.classes.ValueClass;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -46,7 +44,7 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
     private PropertyMapImplement<ClassPropertyInterface, Interface<I>> nullImplement;
     private PropertyMapImplement<?, I> distribute;
 
-    public <L extends PropertyInterface> void setDataChanges(OrderedMap<PropertyInterfaceImplement<I>,Boolean> mapOrders, PropertyMapImplement<L,I> restriction) {
+    public <L extends PropertyInterface> void setDataChanges(OrderedMap<PropertyInterfaceImplement<I>, Boolean> mapOrders, PropertyMapImplement<L, I> restriction, boolean over) {
         OrderedMap<PropertyInterfaceImplement<L>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<L>, Boolean>();
         for(Map.Entry<PropertyInterfaceImplement<I>,Boolean> order : mapOrders.entrySet())
             orders.put(order.getKey().map(BaseUtils.reverse(restriction.mapping)),order.getValue());
@@ -55,7 +53,7 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
 
         distribute = DerivedProperty.createUGProp(new PropertyImplement<ClassPropertyInterface, PropertyInterfaceImplement<L>>(nullImplement.property,
                 BaseUtils.join(nullImplement.mapping, DerivedProperty.mapImplements(getMapInterfaces(), BaseUtils.reverse(restriction.mapping)))),
-                orders, restriction.property).map(restriction.mapping);
+                orders, restriction.property, over).map(restriction.mapping);
     }
 
     public Set<Property> getChangeDepends() {
