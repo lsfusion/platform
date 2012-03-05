@@ -50,7 +50,7 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
         editFunction.setCaption(getString("form.layout.edit"));
         editFunction.setType("Edit");
         editFunction.getConstraints().directions = new SimplexComponentDirections(0,0.01,0.01,0);
-        editFunction.setIconPath("/images/edit.png");
+        editFunction.setIconPath("/images/editReport.png");
         set.formButtonContainer.add((T) editFunction);
 
         F nullFunction = form.getNullFunction();
