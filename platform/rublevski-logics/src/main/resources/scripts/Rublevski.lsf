@@ -4177,7 +4177,8 @@ DESIGN specification FROM DEFAULT{
 
     d.panel{
         childConstraints = TO THE BOTTOM;
-
+        fillVertical = 1;
+        fillHorizontal = 1;
     }
 }
 
@@ -4289,8 +4290,8 @@ statusStatementSpecification 'Статус' (statement, specification) = CASE
     DEFAULT 'Непросрочена' IF statement IS statement IF specification IS specification
     END  MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
-castToStringFour = FORMULA STRING[30] '$1 || CAST ($2 AS character(20)) || $3 || CAST ($4 AS character(20))';
-infoDetailSpec(detailSpec) = castToStringFour('Счет-фактура № ', numberSpecification(specificationDetailSpec(detailSpec)), ' от ', dateSpecification(specificationDetailSpec(detailSpec)));
+castToStringFour = FORMULA STRING[40] '$1 || CAST ($2 AS character(20)) || $3 || $4 || CAST ($5 AS character(20))';
+infoDetailSpec(detailSpec) = castToStringFour('Счет-фактура № ', numberSpecification(specificationDetailSpec(detailSpec)), ' от ', ' ', dateSpecification(specificationDetailSpec(detailSpec)));
 
 noteStatementDetail 'Примечание' = DATA STRING[40] (statementDetail) IN baseGroup;
 
@@ -4330,8 +4331,8 @@ showFormSpecificationsStatement 'Заказы' (statement) = ACTION FORM specifi
 FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
     PROPERTIES (st) waybillStatement, seriesWaybillStatement, dateStatement, nameCustomerStatement,
-                    nameDepartmentStoreStatement, specificationsStatement, totalQuantityStatement, sumStatement,
-                    noteStatement, showFormSpecificationsStatement, toFillStatementDetailsStatement
+                    nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, showFormSpecificationsStatement,
+                    noteStatement, totalQuantityStatement, sumStatement
 
     OBJECTS d=statementDetail
     PROPERTIES (d)  numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail, quantityStatementDetail,
@@ -4347,12 +4348,15 @@ FORM statement 'Отгрузка из розницы'
     EDIT statement OBJECT st
 ;
 
-//DESIGN statement FROM DEFAULT {
-//
-//    st.box {
-//        childConstraints = TO THE BOTTOM;
-//    }
-//}
+DESIGN statement FROM DEFAULT {
+
+    st.box {
+        childConstraints = TO THE RIGHTBOTTOM;
+        fillVertical = 1;
+        fillHorizontal = 1;
+        POSITION st.documentHeaderGroup TO THE LEFT st.specificationGroup;
+    }
+}
 
 
 FORM statements 'Отгрузки из розницы'
@@ -4367,7 +4371,7 @@ FORM statements 'Отгрузки из розницы'
 
     OBJECTS d=statementDetail
     PROPERTIES (d)  READONLY numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail,
-                    quantityStatementDetail, retailPriceStatementDetail, sumStatementDetail
+                    quantityStatementDetail, retailPriceStatementDetail, sumStatementDetail, noteStatementDetail
 
     FILTERS         inStatementStatementDetail(st, d)
 ;
