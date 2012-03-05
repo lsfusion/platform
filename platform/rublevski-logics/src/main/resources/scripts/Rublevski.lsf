@@ -1175,7 +1175,7 @@ GROUP orderDepartmentStoreGroup 'Заказ' : publicGroup;
 GROUP controlDepartmentStoreGroup 'Контроль остатков' : publicGroup;
 GROUP printDepartmentStoreGroup 'Печать' : publicGroup;
 
-CLASS departmentStore 'Отдел магазина' : stock;
+CLASS departmentStore 'Отдел магазина' : stock, externalObject;
 CLASS kafeteria 'Кафетерий' : departmentStore;
 CLASS tradingFloar 'Торговый зал' : departmentStore;
 CLASS wholesaleStock 'Оптовый склад' : departmentStore;
@@ -5292,9 +5292,11 @@ importNumberItems 'Кол-во' = DATA INTEGER ();
 importCompanies 'Импортировать компании' = DATA BOOLEAN ();
 importSuppliers 'Импортировать поставщиков' = DATA BOOLEAN ();
 importStores 'Импортировать магазины' = DATA BOOLEAN ();
+importStocks 'Импортировать склады' = DATA BOOLEAN();
 FORM importData 'Импорт данных'
     PROPERTIES() importDataAction, importUrl, importLogin, importPassword
-    PROPERTIES() importLSTDataAction, importLSTDirectory, importGroupItems, importItems, importNumberItems, importCompanies, importSuppliers, importStores
+    PROPERTIES() importLSTDataAction, importLSTDirectory, importGroupItems, importItems, importNumberItems,
+    importCompanies, importSuppliers, importStores, importStocks
 ;
 
 //---------------------------- Настройка навигатора ----------------------------------------//

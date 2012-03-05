@@ -3,7 +3,6 @@ package rublevski.actions;
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
 import platform.interop.action.MessageClientAction;
-import platform.server.Message;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DateClass;
 import platform.server.integration.*;
@@ -52,7 +51,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
         if (rublevskiLM.getLPByName("importStores").read(context) != null)
             importStores(path + "//_sprana.dbf", context);
-        
+
+        if (rublevskiLM.getLPByName("importStocks").read(context) != null)
+            importStocks(path + "//_sprana.dbf", path + "//_storestr.dbf", context);
+
     }
 
     private void importParentGroups(String path, ExecutionContext context) {
@@ -77,7 +79,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
-                   if(result!=null)
+                if (result != null)
                     context.addAction(new MessageClientAction(result, "Ошибка"));
             }
             session.close();
@@ -113,7 +115,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
-                if(result!=null)
+                if (result != null)
                     context.addAction(new MessageClientAction(result, "Ошибка"));
             }
             session.close();
@@ -127,7 +129,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importItems(String path,ExecutionContext context, Integer numberOfItems) throws SQLException {
+    private void importItems(String path, ExecutionContext context, Integer numberOfItems) throws SQLException {
 
         try {
             List<List<Object>> data = importItemsFromDBF(path, numberOfItems);
@@ -185,7 +187,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
-                if(result!=null)
+                if (result != null)
                     context.addAction(new MessageClientAction(result, "Ошибка"));
             }
             session.close();
@@ -256,7 +258,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
-                if(result!=null)
+                if (result != null)
                     context.addAction(new MessageClientAction(result, "Ошибка"));
             }
 
@@ -328,7 +330,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
-                if(result!=null)
+                if (result != null)
                     context.addAction(new MessageClientAction(result, "Ошибка"));
             }
             session.close();
@@ -374,7 +376,51 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
-                if(result!=null)
+                if (result != null)
+                    context.addAction(new MessageClientAction(result, "Ошибка"));
+            }
+            session.close();
+
+        } catch (xBaseJException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void importStocks(String path, String pathStores, ExecutionContext context) throws SQLException {
+
+        try {
+            List<List<Object>> data = importDepartmentStoresFromDBF(path, pathStores);
+
+            ImportField departmentStoreIDField = new ImportField(BL.LM.extSID);
+            ImportField nameDepartmentStoreField = new ImportField(BL.LM.name);
+            ImportField storeIDField = new ImportField(BL.LM.extSID);
+
+            ImportKey<?> departmentStoreKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("departmentStore"),
+                    BL.LM.extSIDToObject.getMapping(departmentStoreIDField));
+
+            ImportKey<?> storeKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("store"),
+                    BL.LM.extSIDToObject.getMapping(storeIDField));
+
+            List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+
+            props.add(new ImportProperty(departmentStoreIDField, BL.LM.extSID.getMapping(departmentStoreKey)));
+            props.add(new ImportProperty(nameDepartmentStoreField, BL.LM.name.getMapping(departmentStoreKey)));
+            props.add(new ImportProperty(storeIDField, rublevskiLM.getLPByName("storeDepartmentStore").getMapping(departmentStoreKey),
+                    BL.LM.object(rublevskiLM.getClassByName("store")).getMapping(storeKey)));
+
+
+            ImportTable table = new ImportTable(Arrays.asList(departmentStoreIDField, nameDepartmentStoreField, storeIDField), data);
+
+            DataSession session = BL.createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(departmentStoreKey, storeKey), props);
+            service.synchronize(true, false);
+            if (session.hasChanges()) {
+                String result = session.apply(BL);
+                if (result != null)
                     context.addAction(new MessageClientAction(result, "Ошибка"));
             }
             session.close();
@@ -450,47 +496,71 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         return data;
     }
 
+    String[][] ownershipsList = new String[][]{
+            {"ОАОТ", "Открытое акционерное общество торговое"},
+            {"ОАО", "Открытое акционерное общество"},
+            {"СООО", "Совместное общество с ограниченной ответственностью"},
+            {"ООО", "Общество с ограниченной ответственностью"},
+            {"ЗАО", "Закрытое акционерное общество"}};
+
+
     private List<List<Object>> importLegalEntitiesFromDBF(String path, String type) throws IOException, xBaseJException {
 
         DBF importFile = new DBF(path);
         int recordCount = importFile.getRecordCount();
 
         data = new ArrayList<List<Object>>();
-        String[][] ownershipsList = new String[][]{
-                {"ОАОТ", "Открытое акционерное общество торговое"},
-                {"ОАО", "Открытое акционерное общество"},
-                {"СООО", "Совместное общество с ограниченной ответственностью"},
-                {"ООО", "Общество с ограниченной ответственностью"},
-                {"ЗАО", "Закрытое акционерное общество"}};
 
         for (int i = 0; i < recordCount; i++) {
 
             importFile.read();
             String k_ana = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
-            String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
-            String address = new String(importFile.getField("ADDRESS").getBytes(), "Cp1251").trim();
-            String unp = new String(importFile.getField("UNN").getBytes(), "Cp1251").trim();
-            String okpo = new String(importFile.getField("OKPO").getBytes(), "Cp1251").trim();
-            String phone = new String(importFile.getField("TEL").getBytes(), "Cp1251").trim();
-            String email = new String(importFile.getField("EMAIL").getBytes(), "Cp1251").trim();
-            String account = new String(importFile.getField("ACCOUNT").getBytes(), "Cp1251").trim();
-            String companyStore = new String(importFile.getField("K_JUR").getBytes(), "Cp1251").trim();
-
             if (type.equals(k_ana.substring(0, 2))) {
-                String ownershipName = "";
-                String ownershipShortName = "";
-                for (String[] ownership : ownershipsList) {
-                    if (name.contains(ownership[0])) {
-                        ownershipName = ownership[1];
-                        ownershipShortName = ownership[0];
-                        name = name.replace(ownership[0], "");
-                    }
+                String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
+                String address = new String(importFile.getField("ADDRESS").getBytes(), "Cp1251").trim();
+                String unp = new String(importFile.getField("UNN").getBytes(), "Cp1251").trim();
+                String okpo = new String(importFile.getField("OKPO").getBytes(), "Cp1251").trim();
+                String phone = new String(importFile.getField("TEL").getBytes(), "Cp1251").trim();
+                String email = new String(importFile.getField("EMAIL").getBytes(), "Cp1251").trim();
+                String account = new String(importFile.getField("ACCOUNT").getBytes(), "Cp1251").trim();
+                String companyStore = new String(importFile.getField("K_JUR").getBytes(), "Cp1251").trim();
+                String[] ownership = getAndTrimOwnershipFromName(name);
 
-                }
                 if ("МГ".equals(type))
-                    data.add(Arrays.asList((Object) k_ana, name, address, companyStore));
+                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, companyStore));
                 else
-                    data.add(Arrays.asList((Object) k_ana, name, address, unp, okpo, phone, email, ownershipName, ownershipShortName, account));
+                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account));
+            }
+        }
+        return data;
+    }
+
+
+    private List<List<Object>> importDepartmentStoresFromDBF(String path, String pathStores) throws IOException, xBaseJException {
+
+        DBF importStores = new DBF(pathStores);
+        Map<String, String> storeDepartmentStoreMap = new HashMap<String, String>();
+        for (int i = 0; i < importStores.getRecordCount(); i++) {
+
+            importStores.read();
+            storeDepartmentStoreMap.put(new String(importStores.getField("K_SKL").getBytes(), "Cp1251").trim(),
+                    new String(importStores.getField("K_SKLP").getBytes(), "Cp1251").trim());
+        }
+
+        DBF importFile = new DBF(path);
+        int recordCount = importFile.getRecordCount();
+
+        data = new ArrayList<List<Object>>();
+
+        for (int i = 0; i < recordCount; i++) {
+
+            importFile.read();
+            String k_ana = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
+            if ("СК".equals(k_ana.substring(0, 2))) {
+                String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
+                String store = storeDepartmentStoreMap.get(k_ana);
+                String[] ownership = getAndTrimOwnershipFromName(name);
+                data.add(Arrays.asList((Object) k_ana, ownership[2], store));
             }
         }
         return data;
@@ -499,6 +569,19 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     private void addIfNotContains(List<Object> element) {
         if (!data.contains(element))
             data.add(element);
+    }
+
+    private String[] getAndTrimOwnershipFromName(String name) {
+        String ownershipName = "";
+        String ownershipShortName = "";
+        for (String[] ownership : ownershipsList) {
+            if (name.contains(ownership[0])) {
+                ownershipName = ownership[1];
+                ownershipShortName = ownership[0];
+                name = name.replace(ownership[0], "");
+            }
+        }
+        return new String[]{ownershipShortName, ownershipName, name};
     }
 
 }
