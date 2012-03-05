@@ -1054,7 +1054,7 @@ CLASS genTimeTable 'Генерация графика' : historyObject;
 genTimeTableType 'Тип генерации графика (ИД)' = DATA genType (genTimeTable);
 nameGenTimeTableType 'Тип генерации графика' (genTimeTable) = name(genTimeTableType(genTimeTable)) IN baseGroup;
 
-supplierGenTimeTable 'Поставщик (ИД)' = DATA supplier (genTimeTable);
+supplierGenTimeTable 'Поставщик (ИД)' = DATA supplier (genTimeTable) AUTOSET;
 nameSupplierGenTimeTable 'Поставщик' (genTimeTable) = name(supplierGenTimeTable(genTimeTable)) IN baseGroup;
 
 departmentStoreGenTimeTable 'Подразделение (ИД)' = DATA departmentStore (genTimeTable) AUTOSET;
@@ -1612,11 +1612,12 @@ DESIGN addRangeWare FROM DEFAULT {
     PROPERTY(name(w)) { focusable = FALSE; }
 };
 
-showFormAddRangeWare 'Добавить' (ware) = ACTION FORM addRangeWare OBJECTS w MODAL;
+showFormAddRangeWare 'Добавить' (ware) = ACTION FORM addRangeWare OBJECTS w MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
-FORM rangeWare 'Дабавить Шкалу'
+FORM rangeWare 'Добавить Шкалу'
 OBJECTS w=ware FIXED PANEL, d=DATE
-PROPERTIES name(w) READONLY, showFormAddRangeWare(w), OBJVALUE(d), dataRangeWareDate(w, d), dataActingRateRangeWareDate(w, d)
+PROPERTIES name(w) READONLY, showFormAddRangeWare(w) TODRAW d, OBJVALUE(d) READONLY,
+           dataRangeWareDate(w, d), dataActingRateRangeWareDate(w, d)
 FILTERS rangeWareDate(w, d);
 
 DESIGN rangeWare FROM DEFAULT {
@@ -2440,8 +2441,8 @@ CLASS preliminaryOrder 'Предварительный заказ' : historyObje
 
 dateOrderPreliminaryOrder 'Дата заказа' = DATA DATE (preliminaryOrder) IN baseGroup;
 dateSupplyPreliminaryOrder 'Дата поставки' = DATA DATE (preliminaryOrder) IN baseGroup;
-departmentStorePreliminaryOrder 'Отдел заказа (ИД)' = DATA departmentStore (preliminaryOrder);
-nameDepartmentStorePreliminaryOrder 'Отдел заказа' (preliminaryOrder) = name(departmentStorePreliminaryOrder(preliminaryOrder)) IN orderSupplierGroup;
+departmentStorePreliminaryOrder 'Отдел заказа (ИД)' = DATA departmentStore (preliminaryOrder) AUTOSET;
+nameDepartmentStorePreliminaryOrder 'Отдел заказа' (preliminaryOrder) = name(departmentStorePreliminaryOrder(preliminaryOrder)) IN orderSupplierGroup AUTOSET;
 supplierPreliminaryOrder 'Поставщик заказа (ИД)' = DATA supplier (preliminaryOrder);
 nameSupplierPreliminaryOrder 'Поставщик заказа' (preliminaryOrder) = name(supplierPreliminaryOrder(preliminaryOrder)) IN supplierGroup;
 genTimeTablePreliminaryOrder 'График поставок'  = DATA genTimeTable (preliminaryOrder);
@@ -2842,8 +2843,9 @@ FORM timeTableDate 'График поставок'
     PROPERTIES(d) READONLY name
     PROPERTIES createGenTimeTable()
     PROPERTIES(s) READONLY name
+    PROPERTIES(p) showFormGenTimeTablePreliminaryOrder
     PROPERTIES(p) READONLY dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder, dataOrderPreliminaryOrder
-    PROPERTIES(p) nextDateOrder, createOrderSupplier, showFormGenTimeTablePreliminaryOrder
+    PROPERTIES(p) nextDateOrder, createOrderSupplier
     PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL
     ORDER BY dateOrderPreliminaryOrder
     PROPERTIES(s, d, t) READONLY quantityOrderOrderSupplier, quantitySupplyOrderSupplier, quantityOrderPreliminaryOrder, quantitySupplyPreliminaryOrder
@@ -5364,10 +5366,10 @@ NAVIGATOR {
         }
     }
 
-    NEW processes 'Бизнес-процессы' TO formsToolbar{
+    NEW processes 'Бизнес-процессы' TO formsToolbar {
         NEW orders 'Заказы' {
-            ADD orderSuppliers;
             ADD timeTableDate;
+            ADD orderSuppliers;
         }
         NEW incomeShipments 'Поставки' {
             ADD shipments;
