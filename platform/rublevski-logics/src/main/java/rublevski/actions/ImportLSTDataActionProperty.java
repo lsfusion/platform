@@ -16,6 +16,7 @@ import rublevski.RublevskiBusinessLogics;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     private ScriptingLogicsModule rublevskiLM;
@@ -34,33 +35,35 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     @Override
     public void execute(ExecutionContext context) throws SQLException {
         String path = rublevskiLM.getLPByName("importLSTDirectory").read(context).toString().trim();
-        Boolean importInactive = rublevskiLM.getLPByName("importInactive").read(context) != null;
-        if (rublevskiLM.getLPByName("importGroupItems").read(context) != null) {
-            importItemGroups(path + "//_sprgrt.dbf", importInactive, context);
-            importParentGroups(path + "//_sprgrt.dbf", importInactive, context);
+        if (!"".equals(path)) {
+            Boolean importInactive = rublevskiLM.getLPByName("importInactive").read(context) != null;
+            if (rublevskiLM.getLPByName("importGroupItems").read(context) != null) {
+                importItemGroups(path + "//_sprgrt.dbf", context);
+                importParentGroups(path + "//_sprgrt.dbf", context);
+            }
+            if (rublevskiLM.getLPByName("importItems").read(context) != null) {
+                Object numberOfItems = rublevskiLM.getLPByName("importNumberItems").read(context);
+                importItems(path + "//_sprgrm.dbf", importInactive, context, numberOfItems == null ? 0 : (Integer) numberOfItems);
+            }
+
+            if (rublevskiLM.getLPByName("importCompanies").read(context) != null)
+                importCompanies(path + "//_sprana.dbf", importInactive, context);
+
+            if (rublevskiLM.getLPByName("importSuppliers").read(context) != null)
+                importSuppliers(path + "//_sprana.dbf", importInactive, context);
+
+            if (rublevskiLM.getLPByName("importStores").read(context) != null)
+                importStores(path + "//_sprana.dbf", importInactive, context);
+
+            if (rublevskiLM.getLPByName("importDepartmentStores").read(context) != null)
+                importStocks(path + "//_sprana.dbf", path + "//_storestr.dbf", importInactive, context);
         }
-        if (rublevskiLM.getLPByName("importItems").read(context) != null) {
-            Object numberOfItems = rublevskiLM.getLPByName("importNumberItems").read(context);
-            importItems(path + "//_sprgrm.dbf", importInactive, context, numberOfItems == null ? 0 : (Integer) numberOfItems);
-        }
-
-        if (rublevskiLM.getLPByName("importCompanies").read(context) != null)
-            importCompanies(path + "//_sprana.dbf", importInactive, context);
-
-        if (rublevskiLM.getLPByName("importSuppliers").read(context) != null)
-            importSuppliers(path + "//_sprana.dbf", importInactive, context);
-
-        if (rublevskiLM.getLPByName("importStores").read(context) != null)
-            importStores(path + "//_sprana.dbf", importInactive, context);
-
-        if (rublevskiLM.getLPByName("importDepartmentStores").read(context) != null)
-            importStocks(path + "//_sprana.dbf", path + "//_storestr.dbf", importInactive, context);
 
     }
 
-    private void importParentGroups(String path, Boolean importInactive, ExecutionContext context) {
+    private void importParentGroups(String path, ExecutionContext context) {
         try {
-            List<List<Object>> data = importItemGroupsFromDBF(path, importInactive, true);
+            List<List<Object>> data = importItemGroupsFromDBF(path, true);
 
             ImportField itemGroupID = new ImportField(BL.LM.extSID);
             ImportField parentGroupID = new ImportField(BL.LM.extSID);
@@ -94,10 +97,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importItemGroups(String path, Boolean importInactive, ExecutionContext context) throws SQLException {
+    private void importItemGroups(String path, ExecutionContext context) throws SQLException {
 
         try {
-            List<List<Object>> data = importItemGroupsFromDBF(path, importInactive, false);
+            List<List<Object>> data = importItemGroupsFromDBF(path, false);
 
             ImportField itemGroupID = new ImportField(BL.LM.extSID);
             ImportField itemGroupName = new ImportField(BL.LM.name);
@@ -138,9 +141,14 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField itemIDField = new ImportField(BL.LM.extSID);
             ImportField itemGroupIDField = new ImportField(BL.LM.extSID);
             ImportField itemCaptionField = new ImportField(BL.LM.name);
-            ImportField unitOfMeasureField = new ImportField(BL.LM.name);
-            ImportField brandField = new ImportField(BL.LM.name);
-            ImportField countryField = new ImportField(rublevskiLM.getLPByName("extSIDCountry"));
+            ImportField unitOfMeasureIDField = new ImportField(BL.LM.name);
+            ImportField nameUnitOfMeasureField = new ImportField(BL.LM.name);
+            ImportField brandIDField = new ImportField(BL.LM.name);
+            ImportField nameBrandField = new ImportField(BL.LM.name);
+            ImportField countryIDField = new ImportField(rublevskiLM.getLPByName("extSIDCountry"));
+            ImportField nameCountryField = new ImportField(BL.LM.name);
+            ImportField barcodeField = new ImportField(rublevskiLM.getLPByName("barcodeEx"));
+            ImportField dateField = new ImportField(BL.LM.date);
 
             ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("item"),
                     BL.LM.extSIDToObject.getMapping(itemIDField));
@@ -149,13 +157,16 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                     BL.LM.extSIDToObject.getMapping(itemGroupIDField));
 
             ImportKey<?> unitOfMeasureKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("unitOfMeasure"),
-                    BL.LM.extSIDToObject.getMapping(unitOfMeasureField));
+                    BL.LM.extSIDToObject.getMapping(unitOfMeasureIDField));
 
             ImportKey<?> brandKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("brand"),
-                    BL.LM.extSIDToObject.getMapping(brandField));
+                    BL.LM.extSIDToObject.getMapping(brandIDField));
 
             ImportKey<?> countryKey = new ImportKey(BL.LM.country,
-                    rublevskiLM.getLPByName("extSIDToCountry").getMapping(countryField));
+                    rublevskiLM.getLPByName("extSIDToCountry").getMapping(countryIDField));
+
+            ImportKey<?> barcodeKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("barcode"),
+                    rublevskiLM.getLPByName("barcodeToDate").getMapping(barcodeField, dateField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -165,26 +176,31 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(itemIDField, BL.LM.extSID.getMapping(itemKey)));
             props.add(new ImportProperty(itemCaptionField, rublevskiLM.getLPByName("captionItem").getMapping(itemKey)));
 
-            props.add(new ImportProperty(unitOfMeasureField, BL.LM.extSID.getMapping(unitOfMeasureKey)));
-            props.add(new ImportProperty(unitOfMeasureField, BL.LM.name.getMapping(unitOfMeasureKey)));
-            props.add(new ImportProperty(unitOfMeasureField, rublevskiLM.getLPByName("shortName").getMapping(unitOfMeasureKey)));
-            props.add(new ImportProperty(unitOfMeasureField, rublevskiLM.getLPByName("unitOfMeasureItem").getMapping(itemKey),
+            props.add(new ImportProperty(unitOfMeasureIDField, BL.LM.extSID.getMapping(unitOfMeasureKey)));
+            props.add(new ImportProperty(nameUnitOfMeasureField, BL.LM.name.getMapping(unitOfMeasureKey)));
+            props.add(new ImportProperty(nameUnitOfMeasureField, rublevskiLM.getLPByName("shortName").getMapping(unitOfMeasureKey)));
+            props.add(new ImportProperty(unitOfMeasureIDField, rublevskiLM.getLPByName("unitOfMeasureItem").getMapping(itemKey),
                     BL.LM.object(rublevskiLM.getClassByName("unitOfMeasure")).getMapping(unitOfMeasureKey)));
 
-            props.add(new ImportProperty(brandField, BL.LM.name.getMapping(brandKey)));
-            props.add(new ImportProperty(brandField, BL.LM.extSID.getMapping(brandKey)));
-            props.add(new ImportProperty(brandField, rublevskiLM.getLPByName("brandItem").getMapping(itemKey),
+            props.add(new ImportProperty(nameBrandField, BL.LM.name.getMapping(brandKey)));
+            props.add(new ImportProperty(brandIDField, BL.LM.extSID.getMapping(brandKey)));
+            props.add(new ImportProperty(brandIDField, rublevskiLM.getLPByName("brandItem").getMapping(itemKey),
                     BL.LM.object(rublevskiLM.getClassByName("brand")).getMapping(brandKey)));
 
-            props.add(new ImportProperty(countryField, rublevskiLM.getLPByName("extSIDCountry").getMapping(countryKey)));
-            props.add(new ImportProperty(countryField, BL.LM.name.getMapping(countryKey)));
-            props.add(new ImportProperty(countryField, rublevskiLM.getLPByName("countryItem").getMapping(itemKey),
+            props.add(new ImportProperty(countryIDField, rublevskiLM.getLPByName("extSIDCountry").getMapping(countryKey)));
+            props.add(new ImportProperty(nameCountryField, BL.LM.name.getMapping(countryKey)));
+            props.add(new ImportProperty(countryIDField, rublevskiLM.getLPByName("countryItem").getMapping(itemKey),
                     BL.LM.object(BL.LM.country).getMapping(countryKey)));
 
-            ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, unitOfMeasureField, brandField, countryField), data);
+            props.add(new ImportProperty(barcodeField, rublevskiLM.getLPByName("barcodeEx").getMapping(barcodeKey)));
+            props.add(new ImportProperty(dateField, rublevskiLM.getLPByName("dateUserBarcode").getMapping(barcodeKey)));
+            props.add(new ImportProperty(barcodeField, rublevskiLM.getLPByName("userBarcodeSku").getMapping(barcodeKey),
+                    BL.LM.object(rublevskiLM.getClassByName("item")).getMapping(itemKey)));
+
+            ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, unitOfMeasureIDField, nameUnitOfMeasureField, nameBrandField, brandIDField, countryIDField, nameCountryField, barcodeField, dateField), data);
 
             DataSession session = BL.createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, unitOfMeasureKey, brandKey, countryKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, unitOfMeasureKey, brandKey, countryKey, barcodeKey), props);
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
@@ -458,7 +474,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
     private List<List<Object>> data;
 
-    private List<List<Object>> importItemGroupsFromDBF(String path, Boolean importInactive, Boolean parents) throws IOException, xBaseJException {
+    private List<List<Object>> importItemGroupsFromDBF(String path, Boolean parents) throws IOException, xBaseJException {
 
         DBF importFile = new DBF(path);
         int recordCount = importFile.getRecordCount();
@@ -468,28 +484,25 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         for (int i = 0; i < recordCount; i++) {
 
             importFile.read();
-            Boolean inactiveItem = "T".equals(new String(importFile.getField("LINACTIVE").getBytes(), "Cp1251"));
-            if (!inactiveItem || importInactive) {
-                String k_grtov = new String(importFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
-                String pol_naim = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
-                String group1 = new String(importFile.getField("GROUP1").getBytes(), "Cp1251").trim();
-                String group2 = new String(importFile.getField("GROUP2").getBytes(), "Cp1251").trim();
-                String group3 = new String(importFile.getField("GROUP3").getBytes(), "Cp1251").trim();
+            String k_grtov = new String(importFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
+            String pol_naim = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
+            String group1 = new String(importFile.getField("GROUP1").getBytes(), "Cp1251").trim();
+            String group2 = new String(importFile.getField("GROUP2").getBytes(), "Cp1251").trim();
+            String group3 = new String(importFile.getField("GROUP3").getBytes(), "Cp1251").trim();
 
-                if ((!"".equals(group1)) && (!"".equals(group2)) && (!"".equals(group3))) {
-                    if (!parents) {
-                        //sid - name
-                        addIfNotContains(Arrays.asList((Object) group3, group3));
-                        addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3)), group2));
-                        addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), group1));
-                        addIfNotContains(Arrays.asList((Object) k_grtov, pol_naim));
-                    } else {
-                        //sid - parentSID
-                        addIfNotContains(Arrays.asList((Object) group3, null));
-                        addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3)), group3));
-                        addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), group2 + "/" + group3.substring(0, 3)));
-                        addIfNotContains(Arrays.asList((Object) k_grtov, group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)));
-                    }
+            if ((!"".equals(group1)) && (!"".equals(group2)) && (!"".equals(group3))) {
+                if (!parents) {
+                    //sid - name
+                    addIfNotContains(Arrays.asList((Object) group3, group3));
+                    addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3)), group2));
+                    addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), group1));
+                    addIfNotContains(Arrays.asList((Object) k_grtov, pol_naim));
+                } else {
+                    //sid - parentSID
+                    addIfNotContains(Arrays.asList((Object) group3, null));
+                    addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3)), group3));
+                    addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), group2 + "/" + group3.substring(0, 3)));
+                    addIfNotContains(Arrays.asList((Object) k_grtov, group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)));
                 }
             }
         }
@@ -515,9 +528,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             String unitOfMeasure = new String(importFile.getField("K_IZM").getBytes(), "Cp1251").trim();
             String brand = new String(importFile.getField("BRAND").getBytes(), "Cp1251").trim();
             String country = new String(importFile.getField("MANFR").getBytes(), "Cp1251").trim();
-
+            String barcode = new String(importFile.getField("K_GRUP").getBytes(), "Cp1251").trim();
             if (!"".equals(k_grtov) && (!inactiveItem || importInactive))
-                data.add(Arrays.asList((Object) k_grmat, k_grtov, pol_naim, unitOfMeasure, brand, country));
+                data.add(Arrays.asList((Object) k_grmat, k_grtov, pol_naim, "U_" + unitOfMeasure, unitOfMeasure, brand, "B_" + brand, "C_" + country, country, barcode,
+                        new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance));
         }
         return data;
     }
@@ -569,7 +583,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 else if ("ПС".equals(type))
                     data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account));
                 else if ("ЮР".equals(type))
-                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account, k_ana+"ТС", ownership[2]));
+                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account, k_ana + "ТС", ownership[2]));
             }
         }
         return data;
