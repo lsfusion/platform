@@ -623,7 +623,7 @@ formFilterDeclaration returns [LP property, List<String> mapping]
 		$mapping = self.getUsedObjectNames(context, $expr.property.usedParams);
 	}	
 }
-	:	expr=propertyExpression[context, false] { if (inPropParseState()) $property = $expr.property.property; }
+	:	expr=propertyExpression[context, false] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); $property = $expr.property.property; } }
 	;
 	
 filterSetDefault returns [boolean isDefault = false]
@@ -662,7 +662,7 @@ propertyStatement
 	:	declaration=propertyDeclaration { if ($declaration.paramNames != null) { context = $declaration.paramNames; dynamic = false; }}
 		'=' 
 		(	def=expressionUnfriendlyPD[context, dynamic, false] { property = $def.property; }
-		|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) {property = $expr.property.property;} }
+		|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); property = $expr.property.property; } }
 		)
 		settings=commonPropertySettings[property, $declaration.name, $declaration.caption, context]
 		';'
@@ -1037,7 +1037,7 @@ propertyObject returns [LP property]
 				$property = self.findLPByCompoundName($name.sid);
 			}
 		}
-	|	'['	(	expr=propertyExpression[newContext, true] { if (inPropParseState()) { $property = $expr.property.property; } }
+	|	'['	(	expr=propertyExpression[newContext, true] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); $property = $expr.property.property; } }
 			|	def=expressionUnfriendlyPD[newContext, true, true] { $property = $def.property; }
 			)
 		']'
@@ -1498,7 +1498,7 @@ constraintStatement
 	}
 }
 	:	'CONSTRAINT' ('CHECKED' { checked = true; })?
-		expr=propertyExpression[new ArrayList<String>(), true]
+		expr=propertyExpression[new ArrayList<String>(), true] { if (inPropParseState()) self.checkNecessaryProperty($expr.property); }
 		'MESSAGE' message=STRING_LITERAL
 		';'
 	;

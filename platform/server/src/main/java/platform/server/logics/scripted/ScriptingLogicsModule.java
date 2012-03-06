@@ -746,7 +746,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LP addScriptedAddObjProp(String className) throws ScriptingErrorLog.SemanticErrorException {
-        return getSimpleAddObjectAction((CustomClass) findClassByCompoundName(className));
+        scriptLogger.info("addScriptedAddObjProp(" + className + ");");
+        ValueClass cls = findClassByCompoundName(className);
+        if (!(cls instanceof CustomClass)) {
+            errLog.emitAddObjClassError(parser);
+        }
+        return getSimpleAddObjectAction((CustomClass) cls);
     }
 
     public LPWithParams addScriptedMessageProp(int length, LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {
@@ -1633,6 +1638,12 @@ public class ScriptingLogicsModule extends LogicsModule {
                     errLog.emitParameterNotUsedInRecursionError(parser, param.substring(1));
                 }
             }
+        }
+    }
+
+    public void checkNecessaryProperty(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+        if (property.property == null) {
+            errLog.emitNecessaryPropertyError(parser);
         }
     }
 

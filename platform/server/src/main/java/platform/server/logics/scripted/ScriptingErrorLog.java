@@ -345,6 +345,14 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("there is no '%s' inside RECURSION", paramName));
     }
 
+    public void emitAddObjClassError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "built-in class cannot be used in ADDOBJ action");
+    }
+
+    public void emitNecessaryPropertyError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "single parameter is forbidden in this context");
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);
