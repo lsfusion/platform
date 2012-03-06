@@ -218,6 +218,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField shortNameOwnershipField = new ImportField(rublevskiLM.getLPByName("shortNameOwnership"));
             ImportField accountField = new ImportField(rublevskiLM.getLPByName("dataAccount"));
 
+            ImportField tradingNetworkIDField = new ImportField(BL.LM.extSID);
+            ImportField nameTradingNetworkField = new ImportField(BL.LM.name);
+
             DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
 
             ImportKey<?> companyKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("company"),
@@ -229,6 +232,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportKey<?> accountKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("account"),
                     rublevskiLM.getLPByName("dataAccountToAccount").getMapping(accountField));
 
+            ImportKey<?> tradingNetworkKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("tradingNetwork"),
+                    BL.LM.extSIDToObject.getMapping(tradingNetworkIDField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -250,12 +255,15 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(companyIDField, rublevskiLM.getLPByName("legalEntityAccount").getMapping(accountKey),
                     BL.LM.object(rublevskiLM.getClassByName("company")).getMapping(companyKey)));
 
+            props.add(new ImportProperty(tradingNetworkIDField, BL.LM.extSID.getMapping(tradingNetworkKey)));
+            props.add(new ImportProperty(nameTradingNetworkField, BL.LM.name.getMapping(tradingNetworkKey)));
+
             ImportTable table = new ImportTable(Arrays.asList(companyIDField, nameLegalEntityField, legalAddressField,
                     unpField, okpoField, phoneField, emailField, nameOwnershipField, shortNameOwnershipField,
-                    accountField), data);
+                    accountField, tradingNetworkIDField, nameTradingNetworkField), data);
 
             DataSession session = BL.createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(companyKey, ownershipKey, accountKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(companyKey, ownershipKey, accountKey, tradingNetworkKey), props);
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
@@ -354,12 +362,20 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField nameStoreField = new ImportField(BL.LM.name);
             ImportField addressStoreField = new ImportField(BL.LM.name);
             ImportField companyIDField = new ImportField(BL.LM.extSID);
+            ImportField tradingNetworkIDField = new ImportField(BL.LM.extSID);
+            ImportField storeTypeField = new ImportField(BL.LM.name);
 
             ImportKey<?> storeKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("store"),
                     BL.LM.extSIDToObject.getMapping(storeIDField));
 
             ImportKey<?> companyKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("company"),
                     BL.LM.extSIDToObject.getMapping(companyIDField));
+
+            ImportKey<?> tradingNetworkKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("tradingNetwork"),
+                    BL.LM.extSIDToObject.getMapping(tradingNetworkIDField));
+
+            ImportKey<?> storeTypeKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("storeType"),
+                    rublevskiLM.getLPByName("nameToStoreType").getMapping(storeTypeField, tradingNetworkIDField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -369,11 +385,16 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(companyIDField, rublevskiLM.getLPByName("companyStore").getMapping(storeKey),
                     BL.LM.object(rublevskiLM.getClassByName("company")).getMapping(companyKey)));
 
+            props.add(new ImportProperty(storeTypeField, BL.LM.name.getMapping(storeTypeKey)));
+            props.add(new ImportProperty(storeTypeField, rublevskiLM.getLPByName("storeTypeStore").getMapping(storeKey),
+                    BL.LM.object(rublevskiLM.getClassByName("storeType")).getMapping(storeTypeKey)));
+            props.add(new ImportProperty(tradingNetworkIDField, rublevskiLM.getLPByName("tradingNetworkStoreType").getMapping(storeTypeKey),
+                    BL.LM.object(rublevskiLM.getClassByName("tradingNetwork")).getMapping(tradingNetworkKey)));
 
-            ImportTable table = new ImportTable(Arrays.asList(storeIDField, nameStoreField, addressStoreField, companyIDField), data);
+            ImportTable table = new ImportTable(Arrays.asList(storeIDField, nameStoreField, addressStoreField, companyIDField, storeTypeField, tradingNetworkIDField), data);
 
             DataSession session = BL.createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(storeKey, companyKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(storeKey, companyKey, tradingNetworkKey, storeTypeKey), props);
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
@@ -544,11 +565,11 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 String[] ownership = getAndTrimOwnershipFromName(name);
 
                 if ("МГ".equals(type))
-                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, companyStore));
+                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, companyStore, "Магазин", companyStore + "ТС"));
                 else if ("ПС".equals(type))
                     data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account));
                 else if ("ЮР".equals(type))
-                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account));
+                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account, k_ana+"ТС", ownership[2]));
             }
         }
         return data;

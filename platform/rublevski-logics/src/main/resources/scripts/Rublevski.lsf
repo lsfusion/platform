@@ -1131,7 +1131,7 @@ CLASS ABSTRACT stock 'Склад' : named;
 // ----------------------------------- Магазин ----------------------------------------- //
 
 CLASS store 'Магазин' : named, externalObject;
-CLASS tradingNetwork 'Торговая сеть' : named; // "Рублевский", "Базар"
+CLASS tradingNetwork 'Торговая сеть' : named, externalObject; // "Рублевский", "Базар"
 CLASS storeType 'Формат магазина' : named; //Мини, Супер, ...
 
 companyStore 'Юридическое лицо магазина (ИД)' = DATA company (store);
@@ -1144,6 +1144,7 @@ inStoreTypeStore (storeType, store) = storeTypeStore (store) == storeType;
 
 tradingNetworkStoreType 'Торговая сеть формата магазина (ИД)' = DATA tradingNetwork (storeType);
 nameTradingNetworkStoreType 'Торговая сеть формата магазина' (storeType) = name(tradingNetworkStoreType(storeType)) IN baseGroup;
+nameToStoreType (name, tradingNetwork) = GROUP UNIQUE storeType BY name (storeType), tradingNetworkStoreType(storeType);
 
 tradingNetworkStore 'Торговая сеть магазина (ИД)' (store) = tradingNetworkStoreType(storeTypeStore(store));
 nameTradingNetworkStore 'Торговая сеть магазина' (store) = name(tradingNetworkStore(store)) IN baseGroup;
