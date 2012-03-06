@@ -111,7 +111,7 @@ public class SampleLogicsModule extends LogicsModule {
         articleToGroup = addDProp(baseGroup, "articleToGroup", "Группа товаров", articleGroup, article);
 
         inGroup = addDProp(baseGroup, "inGroup", "Входит", LogicalClass.instance, articleGroup, articleGroup);
-        inRecGroup = addRProp(baseGroup, "inRecGroup", true, "Входит (рек)", Cycle.NO, 2, addJProp(baseLM.and1, is(articleGroup), 1, baseLM.equals2, 1, 2), 1, 2, inGroup, 3, 2);
+//        inRecGroup = addRProp(baseGroup, "inRecGroup", true, "Входит (рек)", Cycle.NO, 2, addJProp(baseLM.and1, is(articleGroup), 1, baseLM.equals2, 1, 2), 1, 2, inGroup, 3, 2);
 
         initNavigators();
     }
