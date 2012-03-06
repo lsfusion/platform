@@ -4325,6 +4325,15 @@ quantityItemStatement 'Количество товара в отгрузке' (i
 balanceItemStatement 'Текущий остаток по товару' (item, statement) =
     balanceDepartmentStoreItem(departmentStoreStatement(statement), item);
 
+minPriceItemStatement(item, statement) = GROUP MIN retailPriceStatementDetail(statementDetail) 
+    BY itemStatementDetail(statementDetail), statementStatementDetail(statementDetail);
+
+maxPriceItemStatement(item, statement) = GROUP MAX retailPriceStatementDetail(statementDetail) 
+    BY itemStatementDetail(statementDetail), statementStatementDetail(statementDetail);
+
+CONSTRAINT minPriceItemStatement(item, statement) != maxPriceItemStatement(item, statement)
+    MESSAGE 'В накладной присутствует товар с разными ценами';
+
 totalQuantityStatement 'Общее количество' (statement) = GROUP SUM quantityStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN waybillSum;
 sumStatement 'Общая сумма' (statement) = GROUP SUM sumStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN waybillSum;
 
@@ -4418,32 +4427,12 @@ oldImporterPriceStatementDetail 'Старая цена изготовителя/
 oldImporterPriceStatementDetail (statementDetail) <- importerPriceItemVal ( itemStatementDetail(statementDetail),
     dateStatementDetail(statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
 
-//isFixPriceStatementDetail 'Товар с фиксированной ценой' (statementDetail) = DATA BOOLEAN (statementDetail) IN pricingStatementDetailInfo;
-//isFixPriceStatementDetail(statementDetail) <- isFixPriceItem (itemStatementDetail (statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
-//
-//supplierMarkupStatementDetail 'Оптовая надбавка/торговая скидка, %' (statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
-//overSupplierMarkupStatementDetail 'Оптовая надбавка/торговая скидка, %' (statementDetail) =
-//        UNION OVERRIDE 0 IF statementDetail IS statementDetail, supplierMarkupStatementDetail(statementDetail);
-//
-//notRoundImporterPriceStatementDetail 'Цена изготовителя/импортера (неокругленная)' (statementDetail) = UNION OVERRIDE
-//     [X*100/(100+Y)](retailPriceStatementDetail(statementDetail), overSupplierMarkupStatementDetail(statementDetail)),
-//     [X*(100+Y)/100](retailPriceStatementDetail(statementDetail), overSupplierMarkupStatementDetail(statementDetail))
-//     IF isFixPriceStatementDetail(statementDetail);
-//
-//importerPriceStatementDetail 'Цена изготовителя/импортера' (statementDetail) =
-//    round0(notRoundImporterPriceStatementDetail(statementDetail)) IN pricingShipmentDetailInfo;
-//
-//retailRangeStatementDetail(statementDetail) = DATA range (statementDetail) IN idGroup;
-//dataRetailRangeStatementDetail 'НДС розничный,%' (statementDetail) = dataActingRateRange(retailRangeStatementDetail(statementDetail)) IN baseGroup;
-//retailRangeStatementDetail(statementDetail) <- overrideRateRangeItem(itemStatementDetail(statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
-
-
 //// атрибуты детализации документа переоценки
 
 itemPriceChangeStatementDetail (priceChangeStatementDetail) = itemStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
 nameItemPriceChangeStatementDetail 'Товар' (priceChangeStatementDetail) = nameAttributeItem(itemPriceChangeStatementDetail(priceChangeStatementDetail));
 
-quantityPriceChangeStatementDetail 'Остаток' (priceChangeStatementDetail) = quantityStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
+quantityPriceChangeStatementDetail 'Количество' (priceChangeStatementDetail) = quantityStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
 
 oldImporterPriceChangeStatementDetail 'Старая цена изготовителя' (priceChangeStatementDetail) = oldImporterPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
 importerPriceChangeStatementDetail 'Новая цена изготовителя' (priceChangeStatementDetail) = oldImporterPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
@@ -4453,8 +4442,6 @@ dataRetailRangePriceChangeStatementDetail 'Новый НДС, %' (priceChangeSta
                                     //  пока что НДС старый и новый равны   //
 oldRetailPriceChangeStatementDetail 'Старая розничная цена' (priceChangeStatementDetail) = oldRetailPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
 retailPriceChangeStatementDetail 'Новая розничная цена' (priceChangeStatementDetail) = retailPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
-
-//dataRangePriceChangeStatementDetail 'Расчетная ставка НДС' (priceChangeStatementDetail) = dataActingRateRangeStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
 
 FORM specificationsStatement 'Счета'
     OBJECTS st=statement FIXED PANEL
