@@ -933,7 +933,7 @@ unionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPa
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedUProp(type, $exprList.props);
+		$property = self.addScriptedUProp(type, $exprList.props, "UNION");
 	}
 }
 	:	'UNION'

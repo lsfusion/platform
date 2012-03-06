@@ -265,8 +265,8 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "number of named parameters should be equal to actual number of parameters");
     }
 
-    public void emitUnionPropParamsError(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "parameters of union property should all have same number of arguments");
+    public void emitUnionArgumentsEqualParamsCountError(LsfLogicsParser parser, String errMsgPropType) throws SemanticErrorException {
+        emitSimpleError(parser, format("arguments of %s property should all have same number of parameters that equals to the number of parameters of the result property", errMsgPropType));
     }
 
     public void emitCasePropWhenParamMissingInThenParams(LsfLogicsParser parser) throws SemanticErrorException {

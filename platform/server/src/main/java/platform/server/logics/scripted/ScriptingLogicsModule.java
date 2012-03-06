@@ -559,7 +559,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedOrProp(List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
         LPWithParams res = properties.get(0);
         if (properties.size() > 1) {
-            res = addScriptedUProp(Union.OVERRIDE, properties);
+            res = addScriptedUProp(Union.OVERRIDE, properties, "OR");
         }
         return res;
     }
@@ -582,7 +582,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedIfElseUProp(" + ifProp + ", " + thenProp + ", " + elseProp + ");");
         return addScriptedUProp(Union.EXCLUSIVE,
                                 asList(addScriptedJProp(and(false), asList(thenProp, ifProp)),
-                                       addScriptedJProp(and(true), asList(elseProp, ifProp))));
+                                       addScriptedJProp(and(true), asList(elseProp, ifProp))),
+                                "IF");
     }
 
     public LPWithParams addScriptedCaseUProp(List<LPWithParams> whenProps, List<LPWithParams> thenProps, LPWithParams defaultProp) throws ScriptingErrorLog.SemanticErrorException {
@@ -920,9 +921,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return newList;
     }
 
-    public LPWithParams addScriptedUProp(Union unionType, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedUProp(Union unionType, List<LPWithParams> paramProps, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedUProp(" + unionType + ", " + paramProps + ");");
-        checkUnionPropertyParams(paramProps);
+        checkUnionPropertyParams(paramProps, errMsgPropType);
         List<Object> resultParams = getParamsPlainList(paramProps);
         if (unionType == Union.SUM) {
             resultParams = transformSumUnionParams(resultParams);
@@ -1480,11 +1481,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private void checkUnionPropertyParams(List<LPWithParams> uPropParams) throws ScriptingErrorLog.SemanticErrorException {
+    private void checkUnionPropertyParams(List<LPWithParams> uPropParams, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {
         int paramCnt = uPropParams.get(0).property.property.interfaces.size();
+        if (mergeAllParams(uPropParams).size() != paramCnt) {
+            errLog.emitUnionArgumentsEqualParamsCountError(parser, errMsgPropType);
+        }
         for (LPWithParams lp : uPropParams) {
             if (lp.property.property.interfaces.size() != paramCnt) {
-                errLog.emitUnionPropParamsError(parser);
+                errLog.emitUnionArgumentsEqualParamsCountError(parser, errMsgPropType);
             }
         }
     }
