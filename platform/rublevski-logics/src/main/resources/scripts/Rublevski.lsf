@@ -1383,7 +1383,7 @@ CONSTRAINT CHECKED range IS range AND NOT rangeTypeRange(range)  MESSAGE 'оши
 CONSTRAINT CHECKED rate IS rate AND NOT dataRate(rate)  MESSAGE 'ошибка: Не указано значение ставки';
 
 inTaxNDSRangeStore(range, store) = inRangeStore(range, store) AND tax.taxNDS == taxRange(range);
-rangeToTaxStore (tax, store) = GROUP UNIQUE range BY taxRange(range), store WHERE inTaxNDSRangeStore(range, store) AND store IS store;
+rangeToTaxStore (tax, store) = GROUP UNIQUE range BY taxRange(range), store WHERE inTaxNDSRangeStore(range, store);
 
 inRangeRate(range, rate) = rangeRate(rate) == range;
 inTaxRange(tax, range) = taxRange(range) == tax;
@@ -4136,12 +4136,11 @@ sumDetailSpec 'Сумма' (detailSpec) = round0(retailPriceDetailSpec(detailSpe
 sumSpecification 'Общая сумма' (specification) = GROUP SUM sumDetailSpec(detailSpec) BY specificationDetailSpec(detailSpec) IN waybillSum;
 
 specificationsTaxNDSDetailSpec(detailSpec) = tax.taxNDS IF detailSpec IS detailSpec IN idGroup;
-//taxNDSSpecification(specification) = tax.taxNDS IF specification IS specification IN idGroup;
 
 rangeDetailSpec (detailSpec) = DATA range (detailSpec) IN baseGroup;
 dataActingRateRangeDetailSpec 'Ставка НДС расчетная' (detailSpec) = dataActingRateRange(rangeDetailSpec(detailSpec)) IN baseGroup;
 rangeDetailSpec (detailSpec) <- rangeToTaxStore(specificationsTaxNDSDetailSpec(detailSpec),
-                                storeDepartmentStore(departmentStoreSpecification(specificationDetailSpec(detailSpec)))) ON CHANGE detailSpec;
+                                storeDepartmentStore(departmentStoreSpecification(specificationDetailSpec(detailSpec)))) ON ASSIGN detailSpec IS detailSpec;
 
 
 sumNDSDetailSpec 'НДС за ед.' (detailSpec) = round0(dataActingRateRangeDetailSpec(detailSpec)*retailPriceDetailSpec(detailSpec)/100) IN baseGroup;
@@ -4152,9 +4151,9 @@ sumNDSSpecification 'Общая сумма НДС' (specification) = GROUP SUM t
 //oldImporterPriceDetailSpec (detailSpec) <- importerPriceItemVal (itemDetailSpec(detailSpec),
 //   dateSpecification(specificationDetailSpec(detailSpec))) ON CHANGE itemDetailSpec(detailSpec);
 
-retailRangeDetailSpec(detailSpec) = DATA range (detailSpec) IN idGroup;
-dataRetailRangeDetailSpec 'НДС розничный,%' (detailSpec) = dataActingRateRange(retailRangeDetailSpec(detailSpec)) IN itemDetailSpecInfo;
-retailRangeDetailSpec(detailSpec) <- overrideRateRangeItem(itemDetailSpec(detailSpec)) ON CHANGE itemDetailSpec(detailSpec);
+//retailRangeDetailSpec(detailSpec) = DATA range (detailSpec) IN idGroup;
+//dataRetailRangeDetailSpec 'НДС розничный,%' (detailSpec) = dataActingRateRange(retailRangeDetailSpec(detailSpec)) IN itemDetailSpecInfo;
+//retailRangeDetailSpec(detailSpec) <- overrideRateRangeItem(itemDetailSpec(detailSpec)) ON CHANGE itemDetailSpec(detailSpec);
 
 
 articleItemDetailSpec 'Артикул производителя/поставщика' (detailSpec) = articleItem(itemDetailSpec(detailSpec));
@@ -4221,8 +4220,8 @@ FORM specification 'Счет-фактура'
 
     PROPERTIES FORCE PANEL READONLY articleItemDetailSpec(d), nameCountryItemDetailSpec(d), balanceDepartmentStoreItemDetailSpec(d),
                                     availableQuantityItemByDetailSpec(d) HIGHLIGHTIF NotNullAvailableQuantityItemByDetailSpec(d),
-                                    minReserveItemDepartmentDetailSpec(d), maxReserveItemDepartmentDetailSpec(d),
-                                    dataRetailRangeDetailSpec(d)
+                                    minReserveItemDepartmentDetailSpec(d), maxReserveItemDepartmentDetailSpec(d)
+
 
 
     PROPERTIES addSpecificationDetailBarcode(sp) TODRAW d
@@ -4309,10 +4308,10 @@ priceRetailStatementDetail(statementDetail) <- retailPriceItemDepartmentVal (ite
 
 
 taxNDSStatementDetail(statementDetail) = tax.taxNDS IF statementDetail IS statementDetail IN idGroup;
-rangeStatementDetail (statementDetail) = DATA range (statementDetail) IN baseGroup;
+rangeStatementDetail (statementDetail) = DATA range (statementDetail) IN idGroup;
 dataActingRateRangeStatementDetail 'Ставка НДС расчетная' (statementDetail) = dataActingRateRange(rangeStatementDetail(statementDetail)) IN waybillSum;
 rangeStatementDetail (statementDetail) <- rangeToTaxStore(taxNDSStatementDetail(statementDetail),
-                                          storeDepartmentStore(departmentStoreStatement(statementStatementDetail(statementDetail)))) ON CHANGE statementDetail;
+                                          storeDepartmentStore(departmentStoreStatement(statementStatementDetail(statementDetail)))) ON ASSIGN statementDetail IS statementDetail;
 
 
 sumNDSStatementDetail 'НДС за ед.' (statementDetail) = round0(dataActingRateRangeStatementDetail(statementDetail)*retailPriceStatementDetail(statementDetail)/100) IN baseGroup;
@@ -4455,8 +4454,7 @@ dataRetailRangePriceChangeStatementDetail 'Новый НДС, %' (priceChangeSta
 oldRetailPriceChangeStatementDetail 'Старая розничная цена' (priceChangeStatementDetail) = oldRetailPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
 retailPriceChangeStatementDetail 'Новая розничная цена' (priceChangeStatementDetail) = retailPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
 
-
-
+//dataRangePriceChangeStatementDetail 'Расчетная ставка НДС' (priceChangeStatementDetail) = dataActingRateRangeStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
 
 FORM specificationsStatement 'Счета'
     OBJECTS st=statement FIXED PANEL
@@ -4484,7 +4482,7 @@ FORM statement 'Отгрузка из розницы'
 
     OBJECTS d=statementDetail
     PROPERTIES (d)  numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail, quantityStatementDetail,
-                    retailPriceStatementDetail, sumNDSStatementDetail, sumStatementDetail, totalSumNDSStatementDetail,
+                    retailPriceStatementDetail, dataActingRateRangeStatementDetail, sumNDSStatementDetail, sumStatementDetail, totalSumNDSStatementDetail,
                     noteStatementDetail READONLY, ADDOBJ, delete
 
     PROPERTIES (d)  FORCE PANEL articleItemStatementDetail, nameCountryItemStatementDetail, balanceDepartmentStoreItemStatementDetail,
