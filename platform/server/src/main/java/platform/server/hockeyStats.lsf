@@ -19,8 +19,6 @@ CLASS STATIC GameResult 'S/O'
 city 'City' (team) = DATA City (Team);
 cityName(team) = name(city(team)) IN baseGroup;
 
-teamByCity(city) = GROUP UNIQUE team BY city(team) WHERE team IS Team IN baseGroup;
-
 teamName 'Team' (team) = name(team) IF team IS Team;
 
 conference(team) = DATA Conference (Team);
@@ -48,7 +46,7 @@ gameResultData(game) = DATA GameResult (Game);
 
 gameResult(game) = UNION OVERRIDE GameResult.win IF game IS Game, gameResultData(game);
 
-pureWin(game) = deltaDouble2(hostGoals(game), guestGoals(game)) > 1;
+pureWin(game) = hostGoals(game) - guestGoals(game) > 1 OR guestGoals(game) - hostGoals(game) > 1;
 
 gameResult(game) <- GameResult.win ON ASSIGN pureWin(game);
 
@@ -99,16 +97,10 @@ CONSTRAINT extendedGame(game) AND hostGoals(game) > guestGoals(game) + 1 MESSAGE
 CONSTRAINT extendedGame(game) AND guestGoals(game) > hostGoals(game) + 1 MESSAGE 'Overtime is impossible';
 CONSTRAINT hostGoals(game) == guestGoals(game) MESSAGE 'The game cannot end in a draw';
 
-FORM testForm 'test'
-OBJECTS game=Game FIXED PANEL
-PROPERTIES(game) gameDate, hostTeamName, hostGoals, guestGoals, guestTeamName, gameResultName;
-
-testAction(game) = ACTION FORM testForm OBJECTS game SET hostGoals(game) MODAL;
 
 FORM MainForm 'Scoreboard'
 OBJECTS game=Game, team=Team
-PROPERTIES(game) gameDate, hostTeamName, hostGoals, guestGoals, guestTeamName, gameResultName, testAction
+PROPERTIES(game) gameDate, hostTeamName, hostGoals, guestGoals, guestTeamName, gameResultName
 PROPERTIES(team) place, conferencePlace, teamName, gamesPlayed, gamesWon, gamesWonOT, gamesWonSO,
                  gamesLostSO, gamesLostOT, gamesLost, goalsScored, goalsConceded, points
 PROPERTIES ADDOBJ(game), ADDOBJ(team);
-           

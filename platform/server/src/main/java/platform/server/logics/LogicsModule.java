@@ -1424,12 +1424,12 @@ public abstract class LogicsModule {
     }
     
     protected <T extends PropertyInterface, P extends PropertyInterface> LP addCGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, LP<P> dataProp, List<T> innerInterfaces, List<PropertyInterfaceImplement<T>> listImplements) {
-        CycleGroupProperty<T, P> property = new CycleGroupProperty<T, P>(name, caption, innerInterfaces, listImplements.subList(1, listImplements.size()), listImplements.get(0), dataProp.property);
+        CycleGroupProperty<T, P> property = new CycleGroupProperty<T, P>(name, caption, innerInterfaces, listImplements.subList(1, listImplements.size()), listImplements.get(0), dataProp == null ? null : dataProp.property);
 
         // нужно добавить ограничение на уникальность
         addProperty(null, new LP(property.getConstrainedProperty(checkChange)));
 
-        return mapLGProp(group, persistent, property, listImplements);
+        return mapLGProp(group, persistent, property, listImplements.subList(1, listImplements.size()));
     }
     
 //    protected static <T extends PropertyInterface<T>> AggregateGroupProperty create(String sID, String caption, Property<T> property, T aggrInterface, Collection<PropertyMapImplement<?, T>> groupProps) {
