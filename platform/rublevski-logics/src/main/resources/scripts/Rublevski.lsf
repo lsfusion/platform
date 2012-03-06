@@ -421,7 +421,7 @@ childNumberItemGroup 'Кол-во непосредственных потомк�
 isLeafItemGroup 'Лист' (itemGroup) = itemGroup IS itemGroup AND NOT childNumberItemGroup(itemGroup);
 
 hasParentItemGroupLevel 'Уровень' (child, parent) = RECURSION 1l AND child IS itemGroup AND parent == child
-                                                                  STEP 2l AND parent == parentItemGroup($parent) PERSISTENT;
+                                                                  STEP 2l AND parent == parentItemGroup($parent);
 TABLE itemGroupStructure(itemGroup, itemGroup, LONG);
 
 hasParentItemGroup 'Уровень' (child, parent) = TRUE AND hasParentItemGroupLevel(child, parent);
@@ -433,7 +433,7 @@ hasParentAndLeafOrNullItemGroup (child, parent) = UNION OVERRIDE hasParentAndLea
 
 canonicalNameItemGroup 'Каноническое имя' (itemGroup) = castToString255(
                            [GROUP CONCAT name(parent), ' / ' BY child ORDER DESC hasParentItemGroupLevel(child, parent)](itemGroup))
-                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100;
 
 //levelItemGroup 'Уровень' (itemGroup) = GROUP SUM 1 IF hasParentItemGroup(child, parent) BY child PERSISTENT;
 
