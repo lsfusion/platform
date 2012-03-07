@@ -57,6 +57,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             if (rublevskiLM.getLPByName("importDepartmentStores").read(context) != null)
                 importStocks(path + "//_sprana.dbf", path + "//_storestr.dbf", importInactive, context);
+
+            if (rublevskiLM.getLPByName("importBanks").read(context) != null)
+                importBanks(path + "//_sprbank.dbf", context);
         }
 
     }
@@ -314,6 +317,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField nameOwnershipField = new ImportField(BL.LM.name);
             ImportField shortNameOwnershipField = new ImportField(rublevskiLM.getLPByName("shortNameOwnership"));
             ImportField accountField = new ImportField(rublevskiLM.getLPByName("dataAccount"));
+            ImportField bankIDField = new ImportField(BL.LM.extSID);
 
             DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
 
@@ -326,6 +330,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportKey<?> accountKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("account"),
                     rublevskiLM.getLPByName("dataAccountToAccount").getMapping(accountField));
 
+            ImportKey<?>bankKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("bank"),
+                    BL.LM.extSIDToObject.getMapping(bankIDField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -346,13 +352,15 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(accountField, rublevskiLM.getLPByName("dataAccount").getMapping(accountKey)));
             props.add(new ImportProperty(supplierIDField, rublevskiLM.getLPByName("legalEntityAccount").getMapping(accountKey),
                     BL.LM.object(rublevskiLM.getClassByName("supplier")).getMapping(supplierKey)));
+            props.add(new ImportProperty(bankIDField, rublevskiLM.getLPByName("bankAccount").getMapping(accountKey),
+                    BL.LM.object(rublevskiLM.getClassByName("bank")).getMapping(bankKey)));
 
             ImportTable table = new ImportTable(Arrays.asList(supplierIDField, nameLegalEntityField, legalAddressField,
                     unpField, okpoField, phoneField, emailField, nameOwnershipField, shortNameOwnershipField,
-                    accountField), data);
+                    accountField, bankIDField), data);
 
             DataSession session = BL.createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(supplierKey, ownershipKey, accountKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(supplierKey, ownershipKey, accountKey, bankKey), props);
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
@@ -456,6 +464,53 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(departmentStoreKey, storeKey), props);
+            service.synchronize(true, false);
+            if (session.hasChanges()) {
+                String result = session.apply(BL);
+                if (result != null)
+                    context.addAction(new MessageClientAction(result, "Ошибка"));
+            }
+            session.close();
+
+        } catch (xBaseJException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void importBanks(String path, ExecutionContext context) throws SQLException {
+
+        try {
+            List<List<Object>> data = importBanksFromDBF(path);
+
+            ImportField bankIDField = new ImportField(BL.LM.extSID);
+            ImportField nameBankField = new ImportField(BL.LM.name);
+            ImportField addressBankField = new ImportField(BL.LM.name);
+            ImportField departmentBankField = new ImportField(rublevskiLM.getLPByName("departmentBank"));
+            ImportField mfoBankField = new ImportField(rublevskiLM.getLPByName("MFOBank"));
+            ImportField cbuBankField = new ImportField(rublevskiLM.getLPByName("CBUBank"));
+
+            ImportKey<?>bankKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("bank"),
+                    BL.LM.extSIDToObject.getMapping(bankIDField));
+
+            DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
+
+            List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+
+            props.add(new ImportProperty(bankIDField, BL.LM.extSID.getMapping(bankKey)));
+            props.add(new ImportProperty(nameBankField, BL.LM.name.getMapping(bankKey)));
+            props.add(new ImportProperty(addressBankField,rublevskiLM.getLPByName("addressBankDate").getMapping(bankKey, defaultDate)));
+            props.add(new ImportProperty(departmentBankField, rublevskiLM.getLPByName("departmentBank").getMapping(bankKey)));
+            props.add(new ImportProperty(mfoBankField, rublevskiLM.getLPByName("MFOBank").getMapping(bankKey)));
+            props.add(new ImportProperty(cbuBankField, rublevskiLM.getLPByName("CBUBank").getMapping(bankKey)));
+
+            ImportTable table = new ImportTable(Arrays.asList(bankIDField, nameBankField, addressBankField, departmentBankField, mfoBankField, cbuBankField), data);
+
+            DataSession session = BL.createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(bankKey), props);
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
@@ -587,12 +642,13 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 String email = new String(importFile.getField("EMAIL").getBytes(), "Cp1251").trim();
                 String account = new String(importFile.getField("ACCOUNT").getBytes(), "Cp1251").trim();
                 String companyStore = new String(importFile.getField("K_JUR").getBytes(), "Cp1251").trim();
+                String k_bank = new String(importFile.getField("K_BANK").getBytes(), "Cp1251").trim();
                 String[] ownership = getAndTrimOwnershipFromName(name);
 
                 if ("МГ".equals(type))
                     data.add(Arrays.asList((Object) k_ana, ownership[2], address, companyStore, "Магазин", companyStore + "ТС"));
                 else if ("ПС".equals(type))
-                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account));
+                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account, "BANK_"+k_bank));
                 else if ("ЮР".equals(type))
                     data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account, k_ana + "ТС", ownership[2]));
             }
@@ -628,6 +684,27 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 String[] ownership = getAndTrimOwnershipFromName(name);
                 data.add(Arrays.asList((Object) k_ana, ownership[2], store));
             }
+        }
+        return data;
+    }
+
+    private List<List<Object>> importBanksFromDBF(String path) throws IOException, xBaseJException {
+
+        DBF importFile = new DBF(path);
+        int recordCount = importFile.getRecordCount();
+
+        data = new ArrayList<List<Object>>();
+
+        for (int i = 0; i < recordCount; i++) {
+
+            importFile.read();
+            String k_bank = new String(importFile.getField("K_BANK").getBytes(), "Cp1251").trim();
+            String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
+            String address = new String(importFile.getField("ADDRESS").getBytes(), "Cp1251").trim();
+            String department = new String(importFile.getField("DEPART").getBytes(), "Cp1251").trim();
+            String mfo = new String(importFile.getField("K_MFO").getBytes(), "Cp1251").trim();
+            String cbu = new String(importFile.getField("CBU").getBytes(), "Cp1251").trim();
+            data.add(Arrays.asList((Object) ("BANK_"+k_bank), name, address, department, mfo, cbu));
         }
         return data;
     }

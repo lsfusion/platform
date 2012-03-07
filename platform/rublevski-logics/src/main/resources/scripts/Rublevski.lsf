@@ -2018,7 +2018,7 @@ FORM employeesCommittees 'Комиссии'
 
 GROUP banksGroup 'Информация о банке' : baseGroup;
 
-CLASS bank 'Банк' : named;
+CLASS bank 'Банк' : named, externalObject;
 
 MFOBank 'Код МФО' = DATA STRING[9] (bank) IN banksGroup;
 departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN banksGroup;
@@ -5532,10 +5532,11 @@ importCompanies 'Импортировать компании' = DATA BOOLEAN ();
 importSuppliers 'Импортировать поставщиков' = DATA BOOLEAN ();
 importStores 'Импортировать магазины' = DATA BOOLEAN ();
 importDepartmentStores 'Импортировать отделы магазина' = DATA BOOLEAN();
+importBanks 'Импортировать банки' = DATA BOOLEAN();
 FORM importData 'Импорт данных'
     PROPERTIES() importDataAction, importUrl, importLogin, importPassword
     PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importItems, importNumberItems,
-    importCompanies, importSuppliers, importStores, importDepartmentStores
+    importCompanies, importSuppliers, importStores, importDepartmentStores, importBanks
 ;
 
 //---------------------------- Настройка навигатора ----------------------------------------//
