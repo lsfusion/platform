@@ -31,12 +31,22 @@ import static platform.server.logics.PropertyUtils.readImplements;
 
 public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     public ObjectEntity[] params;
+    BaseLogicsModule<?> LM;
+    ObjectEntity[] entities;
+    ObjectEntity objSession;
+    LP<?> logProperty;
+    LP<?> property;
+    public boolean lazyInit;
 
-    public LogFormEntity(String sID, String caption, LP<?> property, LP<?> logProperty, BaseLogicsModule<?> LM) {
+    public LogFormEntity(String sID, String caption, LP<?> property, LP<?> logProperty, BaseLogicsModule<?> LM, boolean lazyInit) {
         super(sID, caption);
+        this.LM = LM;
+        this.logProperty = logProperty;
+        this.property = property;
+        this.lazyInit = lazyInit;
 
         ValueClass[] classes = getValueClassesList(property);
-        ObjectEntity[] entities = new ObjectEntity[classes.length + 1];
+        entities = new ObjectEntity[classes.length + 1];
 
         GroupObjectEntity paramsGroup = new GroupObjectEntity(0, "paramsGroup");
         paramsGroup.setInitClassView(ClassViewType.PANEL);
@@ -52,15 +62,20 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         params = Arrays.copyOf(entities, classes.length);
 
         GroupObjectEntity logGroup = new GroupObjectEntity(classes.length + 1, "logGroup");
-        ObjectEntity objSession = new ObjectEntity(classes.length + 2, "session", LM.session, ServerResourceBundle.getString("form.entity.session"));
+        objSession = new ObjectEntity(classes.length + 2, "session", LM.session, ServerResourceBundle.getString("form.entity.session"));
         entities[classes.length] = objSession;
         logGroup.add(objSession);
 
         addGroup(paramsGroup);
         addGroup(logGroup);
 
+        if (!lazyInit)
+            initProperties();
+    }
+
+    public void initProperties() {
         for (ObjectEntity obj : entities) {
-            addPropertyDraw(obj, LM.recognizeGroup);
+            addPropertyDraw(obj, LM.recognizeGroup, true);
         }
         addPropertyDraw(objSession, LM.baseGroup);
 
@@ -69,7 +84,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         Result<ValueClass> value = new Result<ValueClass>();
         property.getCommonClasses(value);
         List<PropertyClassImplement> recognizePropImpls =
-                LM.recognizeGroup.getProperties(Arrays.asList(Arrays.asList(new ValueClassWrapper(value.result))), false);
+                LM.recognizeGroup.getProperties(Arrays.asList(Arrays.asList(new ValueClassWrapper(value.result))), true);
 
         for (PropertyClassImplement impl : recognizePropImpls) {
             int paramCnt = logProperty.property.interfaces.size();

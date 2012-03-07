@@ -74,7 +74,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public boolean loggable;
     public boolean setNotNull;
     private LP logProperty;
-    private LP logFormProperty;
+    public LP logFormProperty;
 
     public void setFixedCharWidth(int charWidth) {
         minimumCharWidth = charWidth;

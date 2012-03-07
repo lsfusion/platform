@@ -897,6 +897,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         objectClass = addProperty(null, new LP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
         objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
+        objectClassName.makeLoggable(this, true);
 
         navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", getString("logics.forms.code"), formSIDValueClass, navigatorElement);
         numberNavigatorElement = addDProp(baseGroup, "numberNavigatorElement", getString("logics.number"), IntegerClass.instance, navigatorElement);

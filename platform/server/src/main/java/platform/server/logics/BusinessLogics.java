@@ -33,6 +33,7 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.LogFormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.FormInstance;
@@ -42,6 +43,7 @@ import platform.server.integration.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.scheduler.Scheduler;
@@ -723,6 +725,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             for (LogicsModule module : logicModules) {
                 module.initProperties();
             }
+
+            finishLogInit();
+
             LM.initClassForms();
 
             Set idSet = new HashSet<String>();
@@ -759,6 +764,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         if (errors.length() > 0 || syntaxErrors.length() > 0) {
             errors = "\n" + syntaxErrors + errors;
             throw new RuntimeException(errors);
+        }
+    }
+
+    private void finishLogInit() {
+        // с одной стороны нужно отрисовать на форме логирования все свойства из recognizeGroup, с другой - LogFormEntity с Action'ом должен уже существовать
+        // поэтому makeLoggable делаем сразу, а LogFormEntity при желании заполняем здесь
+        for (Property property : getProperties()) {
+            if (property.loggable && property.logFormProperty.property instanceof FormActionProperty &&
+                    ((FormActionProperty) property.logFormProperty.property).form instanceof LogFormEntity) {
+                LogFormEntity logForm = (LogFormEntity) ((FormActionProperty) property.logFormProperty.property).form;
+                if (logForm.lazyInit)
+                    logForm.initProperties();
+            }
         }
     }
 

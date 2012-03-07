@@ -488,8 +488,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void makeLoggable(LP<?> property) {
-        property.makeLoggable(baseLM);
+    public void makeLoggable(LP<?> property, Boolean isLoggable) {
+        if (isLoggable != null && isLoggable && property != null)
+            property.makeLoggable(baseLM);
     }
 
     public void setEchoSymbols(LP<?> property) {
@@ -1193,6 +1194,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (String name : propNames) {
             LP<?> lp = findLPByCompoundName(name);
             addIndex(lp);
+        }
+    }
+
+    public void addScriptedLoggable(List<String> propNames) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedLoggable(" + propNames + ");");
+
+        for (String name : propNames) {
+            LP<?> lp = findLPByCompoundName(name);
+            lp.makeLoggable(baseLM);
         }
     }
 

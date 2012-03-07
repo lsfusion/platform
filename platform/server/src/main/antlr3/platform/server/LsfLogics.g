@@ -185,6 +185,7 @@ statement
 		|	followsStatement
 		|	writeOnChangeStatement
 		|	tableStatement
+		|	loggableStatement
 		|	indexStatement
 		|	formStatement
 		|	designStatement
@@ -1048,10 +1049,12 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 @init {
 	String groupName = null;
 	boolean isPersistent = false;
+	Boolean isLoggable = null;
 }
 @after {
 	if (inPropParseState()) {
 		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent);
+		self.makeLoggable(property, isLoggable);
 	}
 }
 	: 	(	'IN' name=compoundID { groupName = $name.sid; }
@@ -1066,7 +1069,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		|	autosetSetting [property]
 		|	confirmSetting [property]
 		|	regexpSetting [property]
-		|	loggableSetting [property]
+		|	loggableSetting { isLoggable = true; }
 		|	echoSymbolsSetting [property]
 		|	indexSetting [propertyName]
 		)*
@@ -1186,12 +1189,7 @@ regexpSetting [LP property]
 		(mess = stringLiteral { message = $mess.val; })?
 	;
 
-loggableSetting [LP property]
-@after {
-	if (inPropParseState()) {
-		self.makeLoggable(property);
-	}
-}
+loggableSetting
 	:	'LOGGABLE'
 	;
 
@@ -1580,6 +1578,18 @@ tableStatement
 }
 	:	'TABLE' name=ID '(' list=nonEmptyClassIdList ')' ';';
 
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// LOGGABLE STATEMENT /////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+loggableStatement
+@after {
+	if (inPropParseState()) {
+		self.addScriptedLoggable($list.ids);
+	}	
+}
+	:	'LOGGABLE' list=nonEmptyCompoundIdList ';'
+	;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// INDEX STATEMENT /////////////////////////////

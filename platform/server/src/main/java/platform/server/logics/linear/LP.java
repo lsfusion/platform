@@ -288,24 +288,26 @@ public class LP<T extends PropertyInterface> {
     }
 
      public void makeUserLoggable(BaseLogicsModule LM) {
+         makeUserLoggable(LM, false);
+    }
+
+    public void makeUserLoggable(BaseLogicsModule LM, boolean lazyInit) {
         if (property.getLogProperty() == null) {
             property.setLogProperty(LM.addLProp(this));
         }
         if (property.getLogFormProperty() == null) {
-            LogFormEntity logFormEntity = new LogFormEntity("log" + BaseUtils.capitalize(property.getSID()) + "Form", ServerResourceBundle.getString("logics.property.log.form"), LM.getLP(property.getSID()), property.getLogProperty(), LM);
+            LogFormEntity logFormEntity = new LogFormEntity("log" + BaseUtils.capitalize(property.getSID()) + "Form", ServerResourceBundle.getString("logics.property.log.form"), LM.getLP(property.getSID()), property.getLogProperty(), LM, lazyInit);
             property.setLogFormProperty(LM.addMFAProp(ServerResourceBundle.getString("logics.property.log.action"), logFormEntity, logFormEntity.params));
         }
     }
 
     public void makeLoggable(BaseLogicsModule LM) {
+        makeLoggable(LM, false);
+    }
+
+    public void makeLoggable(BaseLogicsModule LM, boolean lazyInit) {
         property.loggable = true;
-        if (property.getLogProperty() == null) {
-            property.setLogProperty(LM.addLProp(this));
-        }
-        if (property.getLogFormProperty() == null) {
-            LogFormEntity logFormEntity = new LogFormEntity("log" + BaseUtils.capitalize(property.getSID()) + "Form", ServerResourceBundle.getString("logics.property.log.form"), LM.getLP(property.getSID()), property.getLogProperty(), LM);
-            property.setLogFormProperty(LM.addMFAProp(ServerResourceBundle.getString("logics.property.log.action"), logFormEntity, logFormEntity.params));
-        }
+        makeUserLoggable(LM, lazyInit);
     }
 
     public LP setImage(String name) {

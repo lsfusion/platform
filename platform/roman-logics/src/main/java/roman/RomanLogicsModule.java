@@ -3632,7 +3632,7 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new FreightChangeFormEntity(actionFreight, "freightChangeForm", "Обработка фрахта"));
         addFormEntity(new FreightInvoiceFormEntity(actionFreight, "freightInvoiceForm", "Расценка фрахта"));
 
-        logFreightForm = new LogFormEntity("logFreightForm", "История фрахта", nameClassFreight, logFreight, baseLM);
+        logFreightForm = new LogFormEntity("logFreightForm", "История фрахта", nameClassFreight, logFreight, baseLM, false);
         formLogFreight = addMFAProp("История фрахта", logFreightForm, logFreightForm.params);
         formLogFreight.setImage("history.png");
 
