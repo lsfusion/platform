@@ -158,6 +158,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP dateInTime;
     public LP timeInDateTime;
     public LP jumpWorkdays;
+    public LP toEAN13;
 
     public LP numberMonth;
     public LP numberToMonth;
@@ -692,6 +693,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         percent2 = addSFProp("round(CAST(((prm1)*(prm2)/100) as numeric), 2)", DoubleClass.instance, 2);
         share2 = addSFProp("round(CAST(((prm1)*100/(prm2)) as numeric), 2)", DoubleClass.instance, 2);
         jumpWorkdays = addSFProp("jumpWorkdays(prm1, prm2, prm3)", DateClass.instance, 3); //1 - country, 2 - date, 3 - days to jump
+        toEAN13 = addSFProp("toEAN13(prm1)", StringClass.get(13), 1);
         between = addJProp("between", getString("logics.between"), and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
