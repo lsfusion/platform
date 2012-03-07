@@ -4138,14 +4138,15 @@ sumSpecification 'Общая сумма' (specification) = GROUP SUM sumDetailSp
 specificationsTaxNDSDetailSpec(detailSpec) = tax.taxNDS IF detailSpec IS detailSpec IN idGroup;
 
 rangeDetailSpec (detailSpec) = DATA range (detailSpec) IN baseGroup;
-dataActingRateRangeDetailSpec 'Ставка НДС расчетная' (detailSpec) = dataActingRateRange(rangeDetailSpec(detailSpec)) IN baseGroup;
+dataActingRateRangeDetailSpec 'Ставка НДС расчетная' (detailSpec) = dataActingRateRangeDate(rangeDetailSpec(detailSpec), dateSpecification(specificationDetailSpec(detailSpec))) IN baseGroup;
 rangeDetailSpec (detailSpec) <- rangeToTaxStore(specificationsTaxNDSDetailSpec(detailSpec),
                                 storeDepartmentStore(departmentStoreSpecification(specificationDetailSpec(detailSpec)))) ON ASSIGN detailSpec IS detailSpec;
 
 
 sumNDSDetailSpec 'НДС за ед.' (detailSpec) = round0(dataActingRateRangeDetailSpec(detailSpec)*retailPriceDetailSpec(detailSpec)/100) IN baseGroup;
 totalSumNDSDetailSpec 'Сумма НДС' (detailSpec) = round0(dataActingRateRangeDetailSpec(detailSpec)*sumDetailSpec(detailSpec)/100) IN baseGroup;
-sumNDSSpecification 'Общая сумма НДС' (specification) = GROUP SUM totalSumNDSDetailSpec(detailSpec) BY specificationDetailSpec(detailSpec) IN waybillSum;
+sumNDSSpecification 'Общая сумма НДС' (specification) = GROUP SUM totalSumNDSDetailSpec(detailSpec)
+    BY specificationDetailSpec(detailSpec) IN waybillSum;
 
 //oldImporterPriceDetailSpec 'Цена изготовителя/импортера' (detailSpec) = DATA DOUBLE (detailSpec) IN itemDetailSpecInfo;
 //oldImporterPriceDetailSpec (detailSpec) <- importerPriceItemVal (itemDetailSpec(detailSpec),
@@ -4309,7 +4310,7 @@ priceRetailStatementDetail(statementDetail) <- retailPriceItemDepartmentVal (ite
 
 taxNDSStatementDetail(statementDetail) = tax.taxNDS IF statementDetail IS statementDetail IN idGroup;
 rangeStatementDetail (statementDetail) = DATA range (statementDetail) IN idGroup;
-dataActingRateRangeStatementDetail 'Ставка НДС расчетная' (statementDetail) = dataActingRateRange(rangeStatementDetail(statementDetail)) IN waybillSum;
+dataActingRateRangeStatementDetail 'Ставка НДС расчетная' (statementDetail) = dataActingRateRangeDate(rangeStatementDetail(statementDetail),  dateStatement(statementStatementDetail(statementDetail))) IN waybillSum;
 rangeStatementDetail (statementDetail) <- rangeToTaxStore(taxNDSStatementDetail(statementDetail),
                                           storeDepartmentStore(departmentStoreStatement(statementStatementDetail(statementDetail)))) ON ASSIGN statementDetail IS statementDetail;
 
@@ -4420,7 +4421,7 @@ oldRetailPriceStatementDetail (statementDetail) <- priceRetailStatementDetail (s
 
 oldRetailRangeStatementDetail(statementDetail) = DATA range (statementDetail) IN idGroup;
 oldDataRetailRangeStatementDetail 'Старый НДС розничный,%' (statementDetail) =
-   dataActingRateRange(oldRetailRangeStatementDetail(statementDetail)) IN itemStatementDetailInfo;
+   dataActingRateRangeDate(oldRetailRangeStatementDetail(statementDetail),  dateStatement(statementStatementDetail(statementDetail))) IN itemStatementDetailInfo;
 oldRetailRangeStatementDetail(statementDetail) <- overrideRateRangeItem(itemStatementDetail(statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
 
 oldImporterPriceStatementDetail 'Старая цена изготовителя/импортера' (statementDetail) = DATA DOUBLE (statementDetail) IN itemStatementDetailInfo;
@@ -5374,24 +5375,24 @@ DESIGN innerArrivals FROM DEFAULT {
 
 //---------------------------- Переоценка (конкретная реализация) ----------------------------------------//
 
-datePriceChangeDocument 'Дата' (priceChangeDocument) = UNION EXCLUSIVE datePriceChangeShipment(priceChangeDocument);
+datePriceChangeDocument 'Дата' (priceChangeDocument) = UNION EXCLUSIVE datePriceChangeShipment(priceChangeDocument);//, datePriceChangeStatement(priceChangeDocument);
 
-departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE departmentStorePriceChangeShipment(priceChangeDocument);
+departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE departmentStorePriceChangeShipment(priceChangeDocument);//, departmentStorePriceChangeStatement(priceChangeDocument);
 nameDepartmentStorePriceChangeDocument 'Отдел магазина' (priceChangeDocument) = name(departmentStorePriceChangeDocument(priceChangeDocument));
 
-itemPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE itemPriceChangeShipmentDetail(priceChangeDocumentDetail);
+itemPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE itemPriceChangeShipmentDetail(priceChangeDocumentDetail);//, itemPriceChangeStatementDetail(priceChangeDocumentDetail);
 nameItemPriceChangeDocumentDetail 'Товар' (priceChangeDocumentDetail) = nameAttributeItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
-quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = UNION EXCLUSIVE quantityPriceChangeShipmentDetail(priceChangeDocumentDetail);
+quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = UNION EXCLUSIVE quantityPriceChangeShipmentDetail(priceChangeDocumentDetail);//, quantityPriceChangeStatementDetail(priceChangeDocumentDetail);
 
-oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldImporterPriceChangeShipmentDetail(priceChangeDocumentDetail);
-importerPriceChangeDocumentDetail 'Новая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPriceChangeShipmentDetail(priceChangeDocumentDetail);
+oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldImporterPriceChangeShipmentDetail(priceChangeDocumentDetail);//, oldImporterPriceChangeStatementDetail(priceChangeDocumentDetail);
+importerPriceChangeDocumentDetail 'Новая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPriceChangeShipmentDetail(priceChangeDocumentDetail);//, importerPriceChangeStatementDetail(priceChangeDocumentDetail);
 
-oldDataRetailRangePriceChangeDocumentDetail 'Старый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldDataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail);
-dataRetailRangePriceChangeDocumentDetail 'Новый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE dataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail);
+oldDataRetailRangePriceChangeDocumentDetail 'Старый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldDataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail);//, oldDataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail);
+dataRetailRangePriceChangeDocumentDetail 'Новый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE dataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail);//, dataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail);
 
-oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldRetailPriceChangeShipmentDetail(priceChangeDocumentDetail);
-retailPriceChangeDocumentDetail 'Новая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE retailPriceChangeShipmentDetail(priceChangeDocumentDetail);
+oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldRetailPriceChangeShipmentDetail(priceChangeDocumentDetail);//, oldRetailPriceChangeStatementDetail(priceChangeDocumentDetail);
+retailPriceChangeDocumentDetail 'Новая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE retailPriceChangeShipmentDetail(priceChangeDocumentDetail);//, retailPriceChangeStatementDetail(priceChangeDocumentDetail);
 
 FORM priceChangeDocuments 'Акты переоценки'
     OBJECTS pc=priceChangeDocument
