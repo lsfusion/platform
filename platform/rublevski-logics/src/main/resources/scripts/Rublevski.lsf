@@ -4703,7 +4703,6 @@ namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоце
 
 supplierShipmentDetail 'Поставщик (ИД)' (shipmentDetail) = supplierShipment(shipmentShipmentDetail(shipmentDetail));
 
-
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
 
@@ -4772,7 +4771,6 @@ sumDetailVatWareShipmentDetail 'Сумма НДС по посуде' (shipmentDe
 totalSumVatWareShipment 'Общая сумма НДС по посуде' (shipment) =  GROUP SUM
     sumDetailVatWareShipmentDetail(shipmentDetail) IF shipmentShipmentDetail(shipmentDetail)==shipment
     BY shipment;
-
 
 sumWareShipmentDetail 'Сумма посуды' (shipmentDetail) =
     UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, priceWareShipmentDetail (shipmentDetail) *
@@ -4978,7 +4976,6 @@ FORM shipment 'Поставка'
 
     EDIT shipment OBJECT s
 ;
-
 
 DESIGN shipment FROM DEFAULT{
     main{
@@ -5542,6 +5539,7 @@ oldRetailPriceShipmentDetail (shipmentDetail) <- priceAccountLedgerDateTime(
 
 @metaCodeObjectWithPost(returnSupplier, 'Возрат поставщику', 'Закрытый возврат поставщику', object);
 
+// шапка документа "Возврат поставщику"
 waybillReturnSupplier 'Номер накладной' (returnSupplier) = DATA STRING[7] (returnSupplier) IN documentHeaderGroup FIXEDCHARWIDTH 7;
 
 seriesWaybillReturnSupplier 'Серия накладной' (returnSupplier) = DATA STRING[2] (returnSupplier) IN documentHeaderGroup FIXEDCHARWIDTH 4;
@@ -5550,6 +5548,38 @@ supplierReturnSupplier 'Поставщик (ИД)' (returnSupplier) = DATA suppl
 
 nameSupplierReturnSupplier 'Поставщик' (returnSupplier) = name(supplierReturnSupplier(returnSupplier)) IN documentHeaderGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40;
+
+dateReturnSupplierDetail 'Дата поставки' (returnSupplierDetail) = dateReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
+
+// информация по товару
+
+GROUP itemReturnSupplierDetailInfo 'Информация по товару' : baseGroup;
+
+controlExpiryReturmSupplierDetail 'Контролировать сроки годности товара?' (returnSupplierDetail) =
+    controlExpiryItem (itemReturnSupplierDetail(returnSupplierDetail)) IN itemReturnSupplierDetailInfo;
+
+isManufacturedReturnSupplierDetail 'Товар производится?' (returnSupplierDetail) =
+    isManufacturedItem(itemReturnSupplierDetail(returnSupplierDetail)) IN itemReturnSupplierDetailInfo;
+isWeightReturnSupplierDetail 'Весовой товар?' (returnSupplierDetail) =
+    isWeightItem(itemReturnSupplierDetail(returnSupplierDetail)) IN itemReturnSupplierDetailInfo;
+
+nameinActionItemDepartmentReturnSupplierDetail 'Товар акции?' (returnSupplierDetail) =
+    name(inActionItemDepartmentVal(itemReturnSupplierDetail(returnSupplierDetail),
+    departmentStoreReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail)),
+    dateReturnSupplierDetail(returnSupplierDetail))) IN itemReturnSupplierDetailInfo FIXEDCHARWIDTH 2;
+
+hintReturnSupplierDetail 'Подсказка по товару' (returnSupplierDetail) =
+    hintItem(itemReturnSupplierDetail(returnSupplierDetail)) IN itemReturnSupplierDetailInfo;
+
+nameCountryReturnSupplierDetail 'Страна производства/происхождения' (returnSupplierDetail) =
+    name(countryItem(itemReturnSupplierDetail(returnSupplierDetail))) IN itemReturnSupplierDetailInfo MINCHARWIDTH 15 PREFCHARWIDTH 15;
+
+namebanRevaluationItemDepartmentReturnSupplierDetail 'Запрет на переоценку' (returnSupplierDetail) =
+    name(banRevaluationItemDepartmentVal(itemReturnSupplierDetail(returnSupplierDetail),
+    departmentStoreReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail)),
+    dateReturnSupplierDetail(returnSupplierDetail))) IN itemReturnSupplierDetailInfo FIXEDCHARWIDTH 2;
+
+// количество/цены по строкам
 
 quantityReturnSupplierDetail 'Количество' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
 totalQuantityReturnSupplier 'Общее количество' (returnSupplier) = GROUP SUM quantityReturnSupplierDetail(returnSupplierDetail)
@@ -5562,7 +5592,7 @@ isItemReturnSupplier 'Товар есть в поставке' (item, returnSupp
 
 priceReturnSupplierDetail 'Цена товара'(returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
 
-isReturnSupplier (returnSupplier, returnSupplierDetail) = returnSupplierReturnSupplierDetail(returnSupplierDetail) == returnSupplier;
+//isReturnSupplier (returnSupplier, returnSupplierDetail) = returnSupplierReturnSupplierDetail(returnSupplierDetail) == returnSupplier;
 
 FORM returnSupplier 'Возврат поставщику'
 OBJECTS r=returnSupplier FIXED PANEL
@@ -5573,6 +5603,10 @@ OBJECTS d=returnSupplierDetail
 PROPERTIES(d) numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
               quantityReturnSupplierDetail, priceReturnSupplierDetail
 PROPERTIES(d) ADDOBJ, delete FORCE PANEL
+PROPERTIES FORCE PANEL READONLY controlExpiryReturmSupplierDetail(d), isManufacturedReturnSupplierDetail(d),
+                                isWeightReturnSupplierDetail(d), nameinActionItemDepartmentReturnSupplierDetail(d),
+                                hintReturnSupplierDetail(d), nameCountryReturnSupplierDetail(d),
+                                namebanRevaluationItemDepartmentReturnSupplierDetail(d)
 
 OBJECTS i=item
 PROPERTIES(i) nameAttributeItem
@@ -5592,9 +5626,10 @@ PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSu
 
 OBJECTS d=returnSupplierDetail
 PROPERTIES(d) READONLY numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
-                       quantityReturnSupplierDetail, priceReturnSupplierDetail
+                       quantityReturnSupplierDetail, priceReturnSupplierDetail;
 
-FILTERS isReturnSupplier(r, d);
+//FILTERS isReturnSupplier(r, d);
+
 
 DESIGN returnSupplier FROM DEFAULT {
 
