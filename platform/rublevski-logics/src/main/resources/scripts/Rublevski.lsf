@@ -1237,7 +1237,8 @@ resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore 'Разрешить 
 resolveOrderItemDepartmentStore 'Разрешить заказ товара в подразделение?' = DATA BOOLEAN (departmentStore) IN orderDepartmentStoreGroup;
 quantityCashChangeOneOperationAccountDepartmentStore 'Количество кассовых смен в одном оперативном отчете' = DATA INTEGER (departmentStore) IN orderDepartmentStoreGroup;
 materiallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (departmentStore);
-commonNameMateriallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' (departmentStore) = commonName (materiallyResponsiblePersonItemReportDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+commonNameMateriallyResponsiblePersonItemReportDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' (departmentStore) =
+    commonName (materiallyResponsiblePersonItemReportDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 bookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (departmentStore);
 commonNameBookkeeperItemReportDepartmentStore 'Бухгалтер, принимающий товарный отчет' (departmentStore) = commonName(bookkeeperItemReportDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 personCheckReportDepartmentStore 'Кто проверяет товарный отчет (ИД)' = DATA employee (departmentStore);
@@ -5370,6 +5371,99 @@ DESIGN innerArrivals FROM DEFAULT {
     PROPERTY (delete(a)) {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
+    }
+}
+
+//----------------------------- Возврат поставщику ---------------------------------------------------------------//
+
+@metaCodeObjectWithPost(returnSeller, 'Возрат поставщику', 'Закрытый возврат поставщику', object);
+
+waybillReturnSeller 'Номер накладной' (returnSeller) = DATA STRING[7] (returnSeller) IN documentHeaderGroup FIXEDCHARWIDTH 7;
+
+seriesWaybillReturnSeller 'Серия накладной' (returnSeller) = DATA STRING[2] (returnSeller) IN documentHeaderGroup FIXEDCHARWIDTH 4;
+
+supplierReturnSeller 'Поставщик (ИД)' (returnSeller) = DATA supplier (returnSeller) IN idGroup;
+
+nameSupplierReturnSeller 'Поставщик' (returnSeller) = name(supplierReturnSeller(returnSeller)) IN documentHeaderGroup
+    MINCHARWIDTH 30 PREFCHARWIDTH 40;
+
+quantityReturnSellerDetail 'Количество' (returnSellerDetail) = DATA DOUBLE (returnSellerDetail) IN baseGroup;
+totalQuantityReturnSeller 'Общее количество' (returnSeller) = GROUP SUM quantityReturnSellerDetail(returnSellerDetail)
+    BY returnSellerReturnSellerDetail(returnSellerDetail) IN waybillSum;
+quantityItemReturnSeller 'Количество по товару в поставке' (item, returnSeller) = GROUP SUM quantityReturnSellerDetail (returnSellerDetail)
+    BY itemReturnSellerDetail(returnSellerDetail), returnSellerReturnSellerDetail(returnSellerDetail);
+isItemReturnSeller 'Товар есть в поставке' (item, returnSeller) = quantityItemReturnSeller(item, returnSeller) > 0;
+
+//balanceBeforeShipmentShipmentDetail 'Остаток до поставки' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+
+priceReturnSellerDetail 'Цена товара'(returnSellerDetail) = DATA DOUBLE (returnSellerDetail) IN baseGroup;
+
+isReturnSeller (returnSeller, returnSellerDetail) = returnSellerReturnSellerDetail(returnSellerDetail) == returnSeller;
+
+FORM returnSeller 'Возврат поставщику'
+OBJECTS r=returnSeller FIXED PANEL
+PROPERTIES(r) seriesWaybillReturnSeller, waybillReturnSeller, dateReturnSeller,
+              nameDepartmentStoreReturnSeller, nameSupplierReturnSeller, noteReturnSeller
+
+OBJECTS d=returnSellerDetail
+PROPERTIES(d) numberReturnSellerDetail, nameAttributeItemReturnSellerDetail, barcodeExSkuReturnSellerDetail,
+              quantityReturnSellerDetail, priceReturnSellerDetail
+PROPERTIES(d) ADDOBJ, delete FORCE PANEL
+
+OBJECTS i=item
+PROPERTIES(i) nameAttributeItem, quantityItemReturnSeller
+
+EDIT returnSeller OBJECT r;
+
+FORM returnSellers 'Возвраты поставщику'
+OBJECTS r=returnSeller
+PROPERTIES(r) READONLY objectClassName, seriesWaybillReturnSeller, waybillReturnSeller, dateReturnSeller,
+                       nameDepartmentStoreReturnSeller, nameSupplierReturnSeller, nameUserCreated,
+                       timeCreated, noteReturnSeller
+PROPERTIES(r) postReturnSeller SHOWIF isDraftReturnSeller(r), unpostReturnSeller SHOWIF isPostedReturnSeller(r),
+              ADDFORM, EDITFORM SHOWIF isDraftReturnSeller(r), delete FORCE PANEL SHOWIF isDraftReturnSeller(r)
+OBJECTS d=returnSellerDetail
+PROPERTIES(d) READONLY numberReturnSellerDetail, nameAttributeItemReturnSellerDetail, barcodeExSkuReturnSellerDetail,
+                       quantityReturnSellerDetail, priceReturnSellerDetail
+
+FILTERS isReturnSeller(r, d);
+
+DESIGN returnSeller FROM DEFAULT {
+
+    NEW specification.box BEFORE functions.box{
+        tabbedPane = TRUE;
+        ADD d.box{
+            title = 'Спецификация';
+        };
+
+        ADD i.box;
+    };
+
+    NEW header.box BEFORE specification.box{
+        childConstraints = TO THE RIGHT;
+
+        NEW headerRow1 {
+            childConstraints = TO THE RIGHT;
+            ADD r.documentHeaderGroup{
+                POSITION PROPERTY(nameSupplierReturnSeller) TO THE BOTTOM PROPERTY(nameDepartmentStoreReturnSeller);
+            };
+        };
+
+        NEW headerRow2 {
+            ADD PROPERTY(noteReturnSeller);
+        };
+    };
+
+    ADD PROPERTY(delete(d)){
+        panelLocation=TOOLBAR;
+        askConfirm=TRUE;
+    }
+}
+
+DESIGN returnSellers FROM DEFAULT{
+    ADD PROPERTY(delete(r)){
+        panelLocation=TOOLBAR;
+        askConfirm=TRUE;
     }
 }
 
