@@ -194,7 +194,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             props.add(new ImportProperty(barcodeField, rublevskiLM.getLPByName("barcodeEx").getMapping(barcodeKey)));
             props.add(new ImportProperty(dateField, rublevskiLM.getLPByName("dateUserBarcode").getMapping(barcodeKey)));
-            props.add(new ImportProperty(barcodeField, rublevskiLM.getLPByName("userBarcodeSku").getMapping(barcodeKey),
+
+            props.add(new ImportProperty(itemIDField, rublevskiLM.getLPByName("skuBarcode").getMapping(barcodeKey),
                     BL.LM.object(rublevskiLM.getClassByName("item")).getMapping(itemKey)));
 
             ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, unitOfMeasureIDField, nameUnitOfMeasureField, nameBrandField, brandIDField, countryIDField, nameCountryField, barcodeField, dateField), data);
