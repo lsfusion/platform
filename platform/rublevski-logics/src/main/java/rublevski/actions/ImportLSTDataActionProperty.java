@@ -519,9 +519,20 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
         int recordCount = (numberOfItems != 0 && numberOfItems < totalRecordCount) ? numberOfItems : totalRecordCount;
 
+        Set<String> barcodes = new HashSet<String>();
+
         for (int i = 0; i < recordCount; i++) {
 
             importFile.read();
+            String barcode = new String(importFile.getField("K_GRUP").getBytes(), "Cp1251").trim();
+            int counter = 1;
+            if (barcodes.contains(barcode)) {
+                while (barcodes.contains(barcode + "_" + counter)) {
+                    counter++;
+                }
+                barcode += "_" + counter;
+            }
+            barcodes.add(barcode);
             Boolean inactiveItem = "T".equals(new String(importFile.getField("LINACTIVE").getBytes(), "Cp1251"));
             String k_grmat = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
             String pol_naim = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
@@ -529,7 +540,6 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             String unitOfMeasure = new String(importFile.getField("K_IZM").getBytes(), "Cp1251").trim();
             String brand = new String(importFile.getField("BRAND").getBytes(), "Cp1251").trim();
             String country = new String(importFile.getField("MANFR").getBytes(), "Cp1251").trim();
-            String barcode = new String(importFile.getField("K_GRUP").getBytes(), "Cp1251").trim();
             if (!"".equals(k_grtov) && (!inactiveItem || importInactive))
                 data.add(Arrays.asList((Object) k_grmat, k_grtov, pol_naim, "U_" + unitOfMeasure, unitOfMeasure, brand, "B_" + brand, "C_" + country, country, barcode,
                         new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance));
@@ -562,7 +572,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         int recordCount = importFile.getRecordCount();
 
         data = new ArrayList<List<Object>>();
-        
+
         for (int i = 0; i < recordCount; i++) {
 
             importFile.read();
