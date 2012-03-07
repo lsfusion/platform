@@ -4616,6 +4616,7 @@ namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоце
 supplierShipmentDetail 'Поставщик (ИД)' (shipmentDetail) = supplierShipment(shipmentShipmentDetail(shipmentDetail));
 departmentStoreShipmentDetail 'Отдел (ИД)' (shipmentDetail) = departmentStoreShipment(shipmentShipmentDetail(shipmentDetail));
 
+
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
 
@@ -4897,6 +4898,7 @@ FORM shipment 'Поставка'
 
     EDIT shipment OBJECT s
 ;
+
 
 DESIGN shipment FROM DEFAULT{
     main{
@@ -5376,59 +5378,63 @@ DESIGN innerArrivals FROM DEFAULT {
 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
-@metaCodeObjectWithPost(returnSeller, 'Возрат поставщику', 'Закрытый возврат поставщику', object);
+@metaCodeObjectWithPost(returnSupplier, 'Возрат поставщику', 'Закрытый возврат поставщику', object);
 
-waybillReturnSeller 'Номер накладной' (returnSeller) = DATA STRING[7] (returnSeller) IN documentHeaderGroup FIXEDCHARWIDTH 7;
+waybillReturnSupplier 'Номер накладной' (returnSupplier) = DATA STRING[7] (returnSupplier) IN documentHeaderGroup FIXEDCHARWIDTH 7;
 
-seriesWaybillReturnSeller 'Серия накладной' (returnSeller) = DATA STRING[2] (returnSeller) IN documentHeaderGroup FIXEDCHARWIDTH 4;
+seriesWaybillReturnSupplier 'Серия накладной' (returnSupplier) = DATA STRING[2] (returnSupplier) IN documentHeaderGroup FIXEDCHARWIDTH 4;
 
-supplierReturnSeller 'Поставщик (ИД)' (returnSeller) = DATA supplier (returnSeller) IN idGroup;
+supplierReturnSupplier 'Поставщик (ИД)' (returnSupplier) = DATA supplier (returnSupplier) IN idGroup;
 
-nameSupplierReturnSeller 'Поставщик' (returnSeller) = name(supplierReturnSeller(returnSeller)) IN documentHeaderGroup
+nameSupplierReturnSupplier 'Поставщик' (returnSupplier) = name(supplierReturnSupplier(returnSupplier)) IN documentHeaderGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40;
 
-quantityReturnSellerDetail 'Количество' (returnSellerDetail) = DATA DOUBLE (returnSellerDetail) IN baseGroup;
-totalQuantityReturnSeller 'Общее количество' (returnSeller) = GROUP SUM quantityReturnSellerDetail(returnSellerDetail)
-    BY returnSellerReturnSellerDetail(returnSellerDetail) IN waybillSum;
-quantityItemReturnSeller 'Количество по товару в поставке' (item, returnSeller) = GROUP SUM quantityReturnSellerDetail (returnSellerDetail)
-    BY itemReturnSellerDetail(returnSellerDetail), returnSellerReturnSellerDetail(returnSellerDetail);
-isItemReturnSeller 'Товар есть в поставке' (item, returnSeller) = quantityItemReturnSeller(item, returnSeller) > 0;
+quantityReturnSupplierDetail 'Количество' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
+totalQuantityReturnSupplier 'Общее количество' (returnSupplier) = GROUP SUM quantityReturnSupplierDetail(returnSupplierDetail)
+    BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN waybillSum;
+quantityItemReturnSupplier 'Количество по товару в поставке' (item, returnSupplier) = GROUP SUM quantityReturnSupplierDetail (returnSupplierDetail)
+    BY itemReturnSupplierDetail(returnSupplierDetail), returnSupplierReturnSupplierDetail(returnSupplierDetail);
+isItemReturnSupplier 'Товар есть в поставке' (item, returnSupplier) = quantityItemReturnSupplier(item, returnSupplier) > 0;
 
 //balanceBeforeShipmentShipmentDetail 'Остаток до поставки' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 
-priceReturnSellerDetail 'Цена товара'(returnSellerDetail) = DATA DOUBLE (returnSellerDetail) IN baseGroup;
+priceReturnSupplierDetail 'Цена товара'(returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
 
-isReturnSeller (returnSeller, returnSellerDetail) = returnSellerReturnSellerDetail(returnSellerDetail) == returnSeller;
+isReturnSupplier (returnSupplier, returnSupplierDetail) = returnSupplierReturnSupplierDetail(returnSupplierDetail) == returnSupplier;
 
-FORM returnSeller 'Возврат поставщику'
-OBJECTS r=returnSeller FIXED PANEL
-PROPERTIES(r) seriesWaybillReturnSeller, waybillReturnSeller, dateReturnSeller,
-              nameDepartmentStoreReturnSeller, nameSupplierReturnSeller, noteReturnSeller
+FORM returnSupplier 'Возврат поставщику'
+OBJECTS r=returnSupplier FIXED PANEL
+PROPERTIES(r) seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier,
+              nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier
 
-OBJECTS d=returnSellerDetail
-PROPERTIES(d) numberReturnSellerDetail, nameAttributeItemReturnSellerDetail, barcodeExSkuReturnSellerDetail,
-              quantityReturnSellerDetail, priceReturnSellerDetail
+OBJECTS d=returnSupplierDetail
+PROPERTIES(d) numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
+              quantityReturnSupplierDetail, priceReturnSupplierDetail
 PROPERTIES(d) ADDOBJ, delete FORCE PANEL
 
 OBJECTS i=item
-PROPERTIES(i) nameAttributeItem, quantityItemReturnSeller
+PROPERTIES(i) nameAttributeItem
 
-EDIT returnSeller OBJECT r;
+PROPERTIES(i, r) quantityItemReturnSupplier
 
-FORM returnSellers 'Возвраты поставщику'
-OBJECTS r=returnSeller
-PROPERTIES(r) READONLY objectClassName, seriesWaybillReturnSeller, waybillReturnSeller, dateReturnSeller,
-                       nameDepartmentStoreReturnSeller, nameSupplierReturnSeller, nameUserCreated,
-                       timeCreated, noteReturnSeller
-PROPERTIES(r) postReturnSeller SHOWIF isDraftReturnSeller(r), unpostReturnSeller SHOWIF isPostedReturnSeller(r),
-              ADDFORM, EDITFORM SHOWIF isDraftReturnSeller(r), delete FORCE PANEL SHOWIF isDraftReturnSeller(r)
-OBJECTS d=returnSellerDetail
-PROPERTIES(d) READONLY numberReturnSellerDetail, nameAttributeItemReturnSellerDetail, barcodeExSkuReturnSellerDetail,
-                       quantityReturnSellerDetail, priceReturnSellerDetail
+EDIT returnSupplier OBJECT r;
 
-FILTERS isReturnSeller(r, d);
+FORM returnSuppliers 'Возвраты поставщику'
 
-DESIGN returnSeller FROM DEFAULT {
+OBJECTS r=returnSupplier
+PROPERTIES(r) READONLY objectClassName, seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier,
+                       nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, nameUserCreated,
+                       timeCreated, noteReturnSupplier
+PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
+              ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
+
+OBJECTS d=returnSupplierDetail
+PROPERTIES(d) READONLY numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
+                       quantityReturnSupplierDetail, priceReturnSupplierDetail
+
+FILTERS isReturnSupplier(r, d);
+
+DESIGN returnSupplier FROM DEFAULT {
 
     NEW specification.box BEFORE functions.box{
         tabbedPane = TRUE;
@@ -5445,12 +5451,12 @@ DESIGN returnSeller FROM DEFAULT {
         NEW headerRow1 {
             childConstraints = TO THE RIGHT;
             ADD r.documentHeaderGroup{
-                POSITION PROPERTY(nameSupplierReturnSeller) TO THE BOTTOM PROPERTY(nameDepartmentStoreReturnSeller);
+                POSITION PROPERTY(nameSupplierReturnSupplier) TO THE BOTTOM PROPERTY(nameDepartmentStoreReturnSupplier);
             };
         };
 
         NEW headerRow2 {
-            ADD PROPERTY(noteReturnSeller);
+            ADD PROPERTY(noteReturnSupplier);
         };
     };
 
@@ -5460,7 +5466,7 @@ DESIGN returnSeller FROM DEFAULT {
     }
 }
 
-DESIGN returnSellers FROM DEFAULT{
+DESIGN returnSuppliers FROM DEFAULT{
     ADD PROPERTY(delete(r)){
         panelLocation=TOOLBAR;
         askConfirm=TRUE;
