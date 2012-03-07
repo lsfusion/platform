@@ -117,7 +117,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP sidArticle;
     LP articleCompositeItem;
     public LP itemSupplierArticleSIDColorSIDSizeSID;
-    private LP round2;
+    public LP round2;
     private LP articleSku;
     private ConcreteCustomClass order;
     private ConcreteCustomClass typeInvoice;
@@ -1505,7 +1505,7 @@ public class RomanLogicsModule extends LogicsModule {
         idGroup.add(baseLM.objectValue);
         baseLM.delete.property.askConfirm = true;
 
-        round2 = addSFProp("round(CAST((prm1) as numeric), 2)", DoubleClass.instance, 1);
+        round2 = addSFProp("round2", "round(CAST((prm1) as numeric), 2)", DoubleClass.instance, 1);
 
         typeSupplier = is(simpleSupplier);
         //typeSupplier = addCUProp("typeSupplier", addCProp(LogicalClass.instance, true, hugoBossSupplier), addCProp(LogicalClass.instance, true, gerryWeberSupplier), addCProp(LogicalClass.instance, true, sOliverSupplier), addCProp(LogicalClass.instance, true, babyPhatSupplier));
