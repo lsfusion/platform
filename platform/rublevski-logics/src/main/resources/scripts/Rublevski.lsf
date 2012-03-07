@@ -1613,7 +1613,7 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 
 @metaCodeTripleObjectDateProperty(priceSupplierItemDepartment, supplier, item, departmentStore, 'Цена поставщика', DOUBLE, retailGroup);
 
-@metaCodeTripleObjectDateProperty(markupSupplierItemDepartment, supplier, item, departmentStore, 'Торговая надбавка', DOUBLE, retailGroup);
+@metaCodeDoubleObjectDateProperty(markupItemDepartment, item, departmentStore, 'Торговая надбавка', DOUBLE, retailGroup);
 
 @metaCodeNameTripleObjectDateProperty(banSupplierItemDepartment, supplier, item, departmentStore, 'Запретить закупку', yesNo, orderGroup);
 
@@ -1751,7 +1751,7 @@ FORM item 'Товар'
     PROPERTIES      nameisSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF nameisSupplierItemDepartmentDate(sp, i, d, dt), showFormNameisSupplierItemDepartmentOver(sp, i, d),
                     namebanSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF namebanSupplierItemDepartmentDate(sp, i, d, dt), showFormNamebanSupplierItemDepartmentOver(sp, i, d),
                     priceSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF priceSupplierItemDepartmentDate(sp, i, d, dt), showFormpriceSupplierItemDepartmentOver(sp, i, d),
-                    markupSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF markupSupplierItemDepartmentDate(sp, i, d, dt), showFormmarkupSupplierItemDepartmentOver(sp, i, d)
+                    markupItemDepartmentOver(i, d, dt) HIGHLIGHTIF markupItemDepartmentDate(i, d, dt), showFormmarkupItemDepartmentOver(i, d)
     PROPERTIES      retailPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF retailPriceItemDepartmentDate(i, d, dt), showFormretailPriceItemDepartmentOver(i, d),
                     maxReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF maxReserveItemDepartmentDate(i, d, dt), showFormmaxReserveItemDepartmentOver(i, d),
                     minReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF minReserveItemDepartmentDate(i, d, dt), showFormminReserveItemDepartmentOver(i, d),
@@ -4793,7 +4793,7 @@ totalSumSupplierShipment 'Общая сумма с НДС' (shipment) =
 retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 
 retailMarkupShipmentDetail(shipmentDetail) <-
-    markupSupplierItemDepartmentVal (supplierShipment(shipmentShipmentDetail(shipmentDetail)), itemShipmentDetail(shipmentDetail),
+    markupItemDepartmentVal (itemShipmentDetail(shipmentDetail),
     departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
     ON CHANGE itemShipmentDetail(shipmentDetail);
 
@@ -5682,6 +5682,48 @@ FORM priceChangeDocuments 'Акты переоценки'
     FILTERS documentPriceChangeDocumentDetail(pcd) == pc
 ;
 
+//----------------------------------- Списание отходов по нормам -------------------------------------------------//
+needToWasteShipmentDetail (shipmentDetail) = rateWasteItem(itemShipmentDetail(shipmentDetail));
+needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
+
+CLASS wastage 'Списание отходов' : historyObject;
+CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
+CLASS wastageDetail 'Строка документа';
+
+@metaCodeDetailAggregation (shipment, wastage, needToWasteShipment);
+
+dateWastage 'Дата документа' (wastage) = dateShipment(shipmentWastage(wastage));
+
+departmentStoreWastage 'Отдел документа (ИД)' (wastage) = departmentStoreShipment (shipmentWastage(wastage));
+nameDepartmentStoreWastage 'Отдел документа' (wastage) = name(departmentStoreWastage (wastage));
+
+itemWastageDetail 'Товар (ИД)' (wastageDetail) = itemShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+nameAttributeItemWastageDetail 'Товар' (wastageDetail) = nameAttributeItem (itemWastageDetail(wastageDetail));
+
+quantityWastageDetail 'Количество' (wastageDetail) = DATA DOUBLE (wastageDetail);
+
+percentRateWasteShipmentDetail (shipmentDetail) = percentRateWasteItem(itemShipmentDetail(shipmentDetail));
+percentRateWasteWastageDetail 'Процент списания' (wastageDetail) = percentRateWasteShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+
+quantityWastageDetail(wastageDetail) <-
+    percentRateWasteWastageDetail (wastageDetail)* quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail))/100
+    ON ASSIGN wastageDetail IS wastageDetail;
+
+priceWastageDetail 'Цена' (wastageDetail) = retailPriceShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+
+sumWastageDetail 'Сумма' (wastageDetail) = quantityWastageDetail(wastageDetail) * priceWastageDetail(wastageDetail);
+
+FORM wastages 'Списания отходов'
+
+    OBJECTS w=wastage
+    PROPERTIES (w) READONLY dateWastage, nameDepartmentStoreWastage
+
+    OBJECTS d=wastageDetail
+    PROPERTIES (d) READONLY nameAttributeItemWastageDetail, quantityWastageDetail, priceWastageDetail, sumWastageDetail, delete
+
+    FILTERS wastageWastageDetail(d)== w;
+;
+
 //----------------------------------- Форма для общих параметров -------------------------------------------------//
 FORM globalParameters 'Параметры'
     PROPERTIES () dateMaxGlobal
@@ -5877,8 +5919,8 @@ NAVIGATOR {
             ADD nameisSupplierItemDepartment;
             ADD addpriceSupplierItemDepartment;
             ADD priceSupplierItemDepartment;
-            ADD addmarkupSupplierItemDepartment;
-            ADD markupSupplierItemDepartment;
+            ADD addmarkupItemDepartment;
+            ADD markupItemDepartment;
             ADD addNamebanSupplierItemDepartment;
             ADD namebanSupplierItemDepartment;
             ADD preliminaryOrder;
