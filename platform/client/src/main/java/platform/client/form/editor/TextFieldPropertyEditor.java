@@ -44,10 +44,12 @@ abstract class TextFieldPropertyEditor extends JFormattedTextField implements Pr
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
         selected = false;
         //для очистки поля ввода перед записью новых данных
-        if (!KeyStrokes.isCharUndefinedEvent(editEvent) ||
-                KeyStrokes.isDeleteEvent(editEvent) ||
-                KeyStrokes.isBackSpaceEvent(editEvent))
-            setValue(null);
+        if (editEvent instanceof KeyEvent) {
+            if (!KeyStrokes.isCharUndefinedEvent(editEvent) ||
+                    KeyStrokes.isDeleteEvent(editEvent) ||
+                    KeyStrokes.isBackSpaceEvent(editEvent))
+                setValue(null);
+        }
         return this;
     }
 
