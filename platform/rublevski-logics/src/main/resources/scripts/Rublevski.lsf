@@ -336,6 +336,8 @@ META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
         PARTITION SUM 1 IF object##Detail IS object##Detail BY object###object##Detail(object##Detail)
         ORDER object##Detail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
 
+    departmentStore###object##Detail 'Отдел магазина (ИД)' (object##Detail) = departmentStore###object(object###object##Detail(object##Detail));
+
     item###object##Detail 'Товар строки документа (ИД)' (object##Detail) = DATA item (object##Detail) IN idGroup;
 
     nameAttributeItem###object##Detail 'Товар строки документа' (object##Detail) =
@@ -3543,6 +3545,13 @@ PROPERTIES(st, gr)  barcodeBarcodeStageGroupMachinery, priceStageGroupMachinery,
                     timeStageGroupMachinery, stockStageGroupMachinery
 FILTERS  barcodeStageGroupMachinery(st, gr);
 
+//---------------------------- Ценовые регистры ----------------------------------------//
+
+CLASS ABSTRACT importerPriceLedger 'Изменение цены изготовителя/импортера';
+CLASS ABSTRACT retailVATLedger 'Изменение НДС';
+CLASS ABSTRACT accountPriceLedger 'Изменение учетной цены';
+CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
+
 //---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
 
 CLASS ABSTRACT priceChangeDocument 'Акт переоценки';
@@ -4563,7 +4572,9 @@ FILTERS inCashReportDocument(r,d);
 //---------------------------- Приход товара от поставщика ----------------------------------------//
 CLASS batch 'Партия';
 
-@metaCodeObjectWithPost(shipment, 'Поставка', 'Закрытая поставка', batch);
+CLASS ABSTRACT batchShipment 'Партия из прихода' : batch, importerPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
+
+@metaCodeObjectWithPost(shipment, 'Поставка', 'Закрытая поставка', batchShipment);
 
 GROUP waybillSum 'Суммы накладной': baseGroup;
 GROUP ordersInfo 'Заказы': baseGroup;
@@ -4592,6 +4603,8 @@ isSupplierShipmentOrder 'Заявка поставщика поставки' (sh
 isDepartmentStoreShipmentOrder 'Заявка отдела поставки' (shipment, orderSupplier) = departmentStoreShipment(shipment)== departmentStoreOrderSupplier(orderSupplier);
 
 dateShipmentDetail 'Дата поставки' (shipmentDetail) = dateShipment(shipmentShipmentDetail(shipmentDetail));
+dateTimeShipmentDetail 'Дата/время поставки' (shipmentDetail) = dateTimeShipment(shipmentShipmentDetail(shipmentDetail));
+isPostedShipmentDetail 'Закрыт' (shipmentDetail) = isPostedShipment(shipmentShipmentDetail(shipmentDetail));
 
 //атрибуты для подсказки по товару строки
 GROUP itemShipmentDetailInfo 'Информация по товару' : baseGroup;
@@ -4603,7 +4616,7 @@ isManufacturedShipmentDetail 'Товар производится?' (shipmentDet
 isWeightShipmentDetail 'Весовой товар?' (shipmentDetail) = isWeightItem(itemShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
 
 nameinActionItemDepartmentShipmentDetail 'Товар акции?' (shipmentDetail) = name(inActionItemDepartmentVal(itemShipmentDetail(shipmentDetail),
-    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
+    departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
 
 hintShipmentDetail 'Подсказка по товару' (shipmentDetail) = hintItem(itemShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
 
@@ -4611,10 +4624,9 @@ nameCountryShipmentDetail 'Страна производства/происхо�
     name(countryItem(itemShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоценку' (shipmentDetail) = name(banRevaluationItemDepartmentVal(itemShipmentDetail(shipmentDetail),
-    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
+    departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
 
 supplierShipmentDetail 'Поставщик (ИД)' (shipmentDetail) = supplierShipment(shipmentShipmentDetail(shipmentDetail));
-departmentStoreShipmentDetail 'Отдел (ИД)' (shipmentDetail) = departmentStoreShipment(shipmentShipmentDetail(shipmentDetail));
 
 
 //количество-цены по строкам
@@ -4707,7 +4719,7 @@ retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail
 
 retailMarkupShipmentDetail(shipmentDetail) <-
     markupSupplierItemDepartmentVal (supplierShipment(shipmentShipmentDetail(shipmentDetail)), itemShipmentDetail(shipmentDetail),
-    departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)), dateShipmentDetail(shipmentDetail))
+    departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
     ON CHANGE itemShipmentDetail(shipmentDetail);
 
 isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN pricingShipmentDetailInfo;
@@ -4751,23 +4763,16 @@ CONSTRAINT priceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (ite
 
 //старые ценовые параметры для переоценок
 oldRetailPriceShipmentDetail 'Старая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-oldRetailPriceShipmentDetail (shipmentDetail) <- retailPriceItemDepartmentVal (
-    itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
-    subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 oldRetailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
-oldDataRetailRangeShipmentDetail 'Старый НДС розничный,%' (shipmentDetail) =
-   actingRateRangeDate(oldRetailRangeShipmentDetail(shipmentDetail), subtractDate2(dateShipmentDetail(shipmentDetail),1)) IN itemShipmentDetailInfo;
-// !!!надо продумать, что писать!!!
+oldDataRetailRangeShipmentDetail 'Старый НДС розничный,%' (shipmentDetail) = dataActingRateRange(oldRetailRangeShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
 
 oldPriceShipmentDetail 'Старая цена поставщика'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 oldPriceShipmentDetail(shipmentDetail) <- priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail),
-    itemShipmentDetail(shipmentDetail), departmentStoreShipment(shipmentShipmentDetail(shipmentDetail)),
+    itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail),
     subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 oldImporterPriceShipmentDetail 'Старая цена изготовителя/импортера' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN itemShipmentDetailInfo;
-oldImporterPriceShipmentDetail (shipmentDetail) <- importerPriceItemVal (itemShipmentDetail(shipmentDetail),
-    subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 oldPriceWareShipmentDetail 'Старая цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail);
 oldPriceWareShipmentDetail (shipmentDetail) <- priceWareVal (wareShipmentDetail (shipmentDetail),
@@ -4879,9 +4884,9 @@ FORM shipment 'Поставка'
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, nameAttributeItemShipmentDetail, barcodeExSkuShipmentDetail, quantityShipmentDetail,
                     priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
-                    dataSuppliersRangeShipmentDetail READONLY, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail READONLY,
-                    nameWareShipmentDetail READONLY, dataRetailRangeShipmentDetail READONLY,
-                    retailMarkupShipmentDetail READONLY, oldRetailPriceShipmentDetail READONLY, retailPriceShipmentDetail READONLY, ADDOBJ, delete
+                    dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
+                    nameWareShipmentDetail, dataRetailRangeShipmentDetail,
+                    retailMarkupShipmentDetail, oldRetailPriceShipmentDetail, retailPriceShipmentDetail, ADDOBJ, delete
     PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, importerPriceShipmentDetail, dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d),
                                priceWareShipmentDetail SHOWIF inWareShipmentDetail(d), controlExpiryShipmentDetail, isManufacturedShipmentDetail,
                                isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail, hintShipmentDetail,
@@ -4998,7 +5003,6 @@ datePriceWriteOff (writeOff) <- currentDate() ON ASSIGN writeOff AS writeOff;
 reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
 nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN additionalInfo;
 
-departmentStoreWriteOffDetail 'Отдел для строки списания (ИД)' (writeOffDetail) = departmentStoreWriteOff(writeOffWriteOffDetail(writeOffDetail)) IN idGroup;
 datePriceWriteOffDetail 'Цена на дату' (writeOffDetail) = datePriceWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
 
@@ -5376,6 +5380,89 @@ DESIGN innerArrivals FROM DEFAULT {
     }
 }
 
+//---------------------------- Ценовые регистры (конкретная реализация) ----------------------------------------//
+
+META metaCodeItemDepartmentStoreLedger(prefix)
+
+    nameItem###prefix##Ledger 'Товар' (ledger) = nameAttributeItem(item###prefix##Ledger(ledger));
+    nameDepartmentStore###prefix##Ledger 'Отдел магазина' (ledger) = name(departmentStore###prefix##Ledger(ledger));
+
+    ledger###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX ledger AND
+        itemImporterPriceLedger(ledger) == item AND departmentStoreImporterPriceLedger(ledger) == departmentStore AND isPosted###prefix##Ledger(ledger) AND
+        dateTimeImporterPriceLedger(ledger) ==
+            [GROUP MAX dateTimeImporterPriceLedger(ledger) AND
+                       itemImporterPriceLedger(ledger) == item AND
+                       departmentStoreImporterPriceLedger(ledger) == departmentStore AND
+                       isPosted###prefix##Ledger(ledger) AND
+                       dateTime###prefix##Ledger(ledger) <= (dateIn AS DATETIME)
+            BY item, departmentStore, dateIn](item, departmentStore, dateTime)
+        BY item, departmentStore, dateTime;
+
+    // todo : переделать на concat и deconcat
+
+END
+
+// Цена изготовителя / импортера
+dateTimeImporterPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger);
+isPostedImporterPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger);
+itemImporterPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger);
+departmentStoreImporterPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger);
+priceImporterLedger 'Цена' (ledger) = UNION EXCLUSIVE importerPriceShipmentDetail(ledger);
+
+@metaCodeItemDepartmentStoreLedger(importerPrice);
+
+priceImporterLedgerDateTime (item, departmentStore, dateTime) = priceImporterLedger(ledgerImporterPriceDateTime(item, departmentStore, dateTime));
+
+// Розничный НДС
+dateTimeRetailVATLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger);
+isPostedRetailVATLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger);
+itemRetailVATLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger);
+departmentStoreRetailVATLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger);
+rangeRetailLedger (ledger) = UNION EXCLUSIVE retailRangeShipmentDetail(ledger);
+dataRetailLedger 'НДС, %' (ledger) = dataActingRateRangeDate(rangeRetailLedger(ledger), dateInTime(dateTimeRetailVATLedger(ledger)));
+
+@metaCodeItemDepartmentStoreLedger(retailVAT);
+
+rangeRetailLedgerDateTime (item, departmentStore, dateTime) = rangeRetailLedger(ledgerRetailVATDateTime(item, departmentStore, dateTime));
+dataRetailLedgerDateTime 'НДС, %' (item, departmentStore, dateTime) =
+            dataActingRateRangeDate(rangeRetailLedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
+
+// Цена учетная
+dateTimeAccountPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger);
+isPostedAccountPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger);
+itemAccountPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger);
+departmentStoreAccountPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger);
+priceAccountLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger);
+
+@metaCodeItemDepartmentStoreLedger(accountPrice);
+
+priceAccountLedgerDateTime (item, departmentStore, dateTime) = priceAccountLedger(ledgerAccountPriceDateTime(item, departmentStore, dateTime));
+
+// Цена розничная
+dateTimeRetailPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger);
+isPostedRetailPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger);
+itemRetailPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger);
+departmentStoreRetailPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger);
+priceRetailLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger);
+
+@metaCodeItemDepartmentStoreLedger(retailPrice);
+
+priceRetailLedgerDateTime (item, departmentStore, dateTime) = priceRetailLedger(ledgerRetailPriceDateTime(item, departmentStore, dateTime));
+
+// --------------------------- Использование регистров (автоматическое заполнение) ---------------------------------
+
+oldImporterPriceShipmentDetail (shipmentDetail) <- priceImporterLedgerDateTime (
+                itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
+                ON CHANGE itemShipmentDetail(shipmentDetail);
+
+oldRetailRangeShipmentDetail (shipmentDetail) <- rangeRetailLedgerDateTime(
+                itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
+                ON CHANGE itemShipmentDetail(shipmentDetail);
+
+oldRetailPriceShipmentDetail (shipmentDetail) <- priceAccountLedgerDateTime(
+                itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
+                ON CHANGE itemShipmentDetail(shipmentDetail);
+
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
 @metaCodeObjectWithPost(returnSupplier, 'Возрат поставщику', 'Закрытый возврат поставщику', object);
@@ -5475,24 +5562,37 @@ DESIGN returnSuppliers FROM DEFAULT{
 
 //---------------------------- Переоценка (конкретная реализация) ----------------------------------------//
 
-datePriceChangeDocument 'Дата' (priceChangeDocument) = UNION EXCLUSIVE datePriceChangeShipment(priceChangeDocument);//, datePriceChangeStatement(priceChangeDocument);
+datePriceChangeDocument 'Дата' (priceChangeDocument) = UNION EXCLUSIVE datePriceChangeShipment(priceChangeDocument),
+                                                                       datePriceChangeStatement(priceChangeDocument);
 
-departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE departmentStorePriceChangeShipment(priceChangeDocument);//, departmentStorePriceChangeStatement(priceChangeDocument);
+departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE departmentStorePriceChangeShipment(priceChangeDocument),
+                                                                           departmentStorePriceChangeStatement(priceChangeDocument);
 nameDepartmentStorePriceChangeDocument 'Отдел магазина' (priceChangeDocument) = name(departmentStorePriceChangeDocument(priceChangeDocument));
 
-itemPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE itemPriceChangeShipmentDetail(priceChangeDocumentDetail);//, itemPriceChangeStatementDetail(priceChangeDocumentDetail);
+documentPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE priceChangeShipmentPriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                priceChangeStatementPriceChangeStatementDetail(priceChangeDocumentDetail);
+
+itemPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE itemPriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                            itemPriceChangeStatementDetail(priceChangeDocumentDetail);
 nameItemPriceChangeDocumentDetail 'Товар' (priceChangeDocumentDetail) = nameAttributeItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
-quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = UNION EXCLUSIVE quantityPriceChangeShipmentDetail(priceChangeDocumentDetail);//, quantityPriceChangeStatementDetail(priceChangeDocumentDetail);
+quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = UNION EXCLUSIVE quantityPriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                          quantityPriceChangeStatementDetail(priceChangeDocumentDetail);
 
-oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldImporterPriceChangeShipmentDetail(priceChangeDocumentDetail);//, oldImporterPriceChangeStatementDetail(priceChangeDocumentDetail);
-importerPriceChangeDocumentDetail 'Новая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPriceChangeShipmentDetail(priceChangeDocumentDetail);//, importerPriceChangeStatementDetail(priceChangeDocumentDetail);
+oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldImporterPriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                              oldImporterPriceChangeStatementDetail(priceChangeDocumentDetail);
+importerPriceChangeDocumentDetail 'Новая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                          importerPriceChangeStatementDetail(priceChangeDocumentDetail);
 
-oldDataRetailRangePriceChangeDocumentDetail 'Старый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldDataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail);//, oldDataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail);
-dataRetailRangePriceChangeDocumentDetail 'Новый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE dataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail);//, dataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail);
+oldDataRetailRangePriceChangeDocumentDetail 'Старый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldDataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                          oldDataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail);
+dataRetailRangePriceChangeDocumentDetail 'Новый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE dataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                      dataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail);
 
-oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldRetailPriceChangeShipmentDetail(priceChangeDocumentDetail);//, oldRetailPriceChangeStatementDetail(priceChangeDocumentDetail);
-retailPriceChangeDocumentDetail 'Новая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE retailPriceChangeShipmentDetail(priceChangeDocumentDetail);//, retailPriceChangeStatementDetail(priceChangeDocumentDetail);
+oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldRetailPriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                         oldRetailPriceChangeStatementDetail(priceChangeDocumentDetail);
+retailPriceChangeDocumentDetail 'Новая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE retailPriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                     retailPriceChangeStatementDetail(priceChangeDocumentDetail);
 
 FORM priceChangeDocuments 'Акты переоценки'
     OBJECTS pc=priceChangeDocument
@@ -5504,6 +5604,7 @@ FORM priceChangeDocuments 'Акты переоценки'
                              oldImporterPriceChangeDocumentDetail, importerPriceChangeDocumentDetail,
                              oldDataRetailRangePriceChangeDocumentDetail, dataRetailRangePriceChangeDocumentDetail,
                              oldRetailPriceChangeDocumentDetail, retailPriceChangeDocumentDetail
+    FILTERS documentPriceChangeDocumentDetail(pcd) == pc
 ;
 
 //----------------------------------- Форма для общих параметров -------------------------------------------------//

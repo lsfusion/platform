@@ -159,6 +159,9 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
             step = step.translateQuery(translator);
         }
 
+        if(initial.getWhere().isFalse()) // потому как иначе в getInnerJoin используется getType который assert'ит что не null
+            return NULL;
+
         RecursiveExpr expr = new RecursiveExpr(new Query(mapIterate, initial, step, cyclePossible), restGroup);
         if(expr.getInnerJoin().getFullStepWhere().isFalse()) // чтобы кэшировалось
             return GroupExpr.create(BaseUtils.toMap(restGroup.keySet()), initial, GroupType.SUM, restGroup);

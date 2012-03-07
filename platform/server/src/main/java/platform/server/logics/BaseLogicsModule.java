@@ -723,7 +723,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         numberMonthInDate = addSFProp("numberMonthInDate", "(extract(month from (prm1)))", IntegerClass.instance, 1);
         yearInDate = addSFProp("yearInDate", "(extract(year from (prm1)))", IntegerClass.instance, 1);
         dayInDate = addSFProp("dayInDate", "(extract(day from (prm1)))", IntegerClass.instance, 1);
-        dateInTime = addSFProp("dayInTime", "(CAST((prm1) as date))", DateClass.instance, 1);
+        dateInTime = addSFProp("dateInTime", "(CAST((prm1) as date))", DateClass.instance, 1);
 
         timeInDateTime = addSFProp("timeInDateTime", "(CAST((prm1) as time))", TimeClass.instance, 1);
 
