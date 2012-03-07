@@ -1374,6 +1374,7 @@ rangeTypeRange 'Тип ИД' = DATA rangeType (range) IN idGroup;
 nameRangeTypeRange 'Тип действия' = name(rangeTypeRange(range)) IN baseGroup;
 inRangeStoreDefault 'Вкл.' (range, store) = DATA BOOLEAN (range, store) IN baseGroup;
 inRangeStore 'Вкл.' (range, store) = inRangeStoreDefault(range, store)  IF rangeTypeRange(range) == rangeType.units IN baseGroup;
+isUnitsTypeRange(range) = rangeTypeRange(range) == rangeType.units;
 
 rangeTypeRange(range) <- rangeType.common ON ASSIGN range IS range;     /// потом согласовать, какое значение должно быть по-умолчанию ///
 
@@ -1401,9 +1402,13 @@ dateToActingRateRange 'Действует по' (range) = dateToRate(actingRateR
 nameUserCreatedActingRateRange 'Создан пользователем' (range) = nameUserCreated(actingRateRange(range)) IN baseGroup;
 
 quantityActingRateRangeDate(range, date) = GROUP SUM 1 IF actingRateDate(rate, date) BY rangeRate(rate), date;
+
 quantityActingRateRange 'Количество действующих историй' (range) = quantityActingRateRangeDate(range, currentDate());
 CONSTRAINT CHECKED quantityActingRateRange(range) > 1 MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок';
+CONSTRAINT CHECKED quantityActingRateRangeDate(range, date) > 1 MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок';
 
+
+ // todo: сделать проверку на то, что на дату для шкалы есть только одно значение ставки
 suppliersTaxNDSItem(item) = tax.taxNDS IF item IS item IN idGroup;
 nameSuppliersTaxNDSItem(item) = name(suppliersTaxNDSItem(item));
 //suppliersRangeItem(item) = DATA range (item) IN idGroup;
@@ -1501,6 +1506,10 @@ overrideRateRangeItem 'НДС (ИД)' (item) = UNION OVERRIDE retailRangeItem(it
 dataOverrideRateRangeItem 'Значение НДС' (item) = dataActingRateRange(overrideRateRangeItem(item)) IN retailGroup;
 toShowDataRangeItem(item) = TRUE IF item IS item AND dataActingRateSuppliersRangeItem(item); // dataSuppliersRateRangeItem(item);
 
+inCompanyStore (company, store) = companyStore(store) == company;
+isInCompanyStore (company, store)  = UNION OVERRIDE  companyStore(store) == company, store IS store AND NOT company;
+
+
 FORM tax 'Налог'
     OBJECTS           t=tax FIXED PANEL, ra=range
     PROPERTIES(t)     name, nameTax, addNewRange TODRAW ra
@@ -1511,13 +1520,20 @@ FORM tax 'Налог'
     OBJECTS           rt=rate
     PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
 
+    TREE treeCompanyStore a=STRING[3], co=company
+
+    PROPERTIES READONLY OBJVALUE(a), name(co)
+
     OBJECTS           s=store
     PROPERTIES(s)     name, addressStore
 
-    PROPERTIES(ra, s) inRangeStore
+    PROPERTIES(ra, s) inRangeStore SHOWIF isUnitsTypeRange(ra)
 
-    FILTERS  inRangeRate(ra, rt),
-             inTaxRange(t, ra)
+    FILTERS           stringEqualsAll(a),
+                      inRangeRate(ra, rt),
+                      inTaxRange(t, ra),
+                      isInCompanyStore(co, s)
+
     FILTERGROUP filters6
         FILTER 'Показывать магазины только для данного налога' 'F10' inRangeStore(ra, s)
 
@@ -1527,11 +1543,22 @@ FORM tax 'Налог'
 DESIGN tax FROM DEFAULT {
     main {
        NEW secondCase BEFORE functions.box {
-            ADD s.box;
+            ADD s.box {
+                fillHorizontal = 3.8;
+            };
+            ADD treeCompanyStore.box {
+                title = 'компании';
+                fillHorizontal = 1.2;
+            };
+            POSITION treeCompanyStore.box TO THE LEFT s.box;
        }
        NEW firstCase BEFORE secondCase {
-            ADD ra.box;
-            ADD rt.box;
+            ADD ra.box {
+                fillHorizontal = 2.5;
+            };
+            ADD rt.box {
+                fillHorizontal = 2.5;
+            };
             POSITION ra.box TO THE LEFT rt.box;
        }
     }
@@ -4148,7 +4175,7 @@ sumSpecification 'Общая сумма' (specification) = GROUP SUM sumDetailSp
 specificationsTaxNDSDetailSpec(detailSpec) = tax.taxNDS IF detailSpec IS detailSpec IN idGroup;
 
 rangeDetailSpec (detailSpec) = DATA range (detailSpec) IN baseGroup;
-dataActingRateRangeDetailSpec 'Ставка НДС расчетная' (detailSpec) = dataActingRateRangeDate(rangeDetailSpec(detailSpec), dateSpecification(specificationDetailSpec(detailSpec))) IN baseGroup;
+dataActingRateRangeDetailSpec 'Ставка НДС расчетная,%' (detailSpec) = dataActingRateRangeDate(rangeDetailSpec(detailSpec), dateSpecification(specificationDetailSpec(detailSpec))) IN baseGroup;
 rangeDetailSpec (detailSpec) <- rangeToTaxStore(specificationsTaxNDSDetailSpec(detailSpec),
                                 storeDepartmentStore(departmentStoreSpecification(specificationDetailSpec(detailSpec)))) ON ASSIGN detailSpec IS detailSpec;
 
@@ -4220,56 +4247,6 @@ FORM objectiveAcquiring 'Цель приобретения'
     PROPERTIES(oa) name
 ;
 
-FORM specification 'Счет-фактура'
-    OBJECTS sp=specification FIXED PANEL
-    PROPERTIES (sp) numberSpecification, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification, nameCustomerSpecification,
-    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
-
-    OBJECTS d=detailSpec
-    PROPERTIES (d) numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
-                   retailPriceDetailSpec, dataActingRateRangeDetailSpec, sumNDSDetailSpec, sumDetailSpec, totalSumNDSDetailSpec, ADDOBJ, delete
-
-    PROPERTIES FORCE PANEL READONLY articleItemDetailSpec(d), nameCountryItemDetailSpec(d), balanceDepartmentStoreItemDetailSpec(d),
-                                    availableQuantityItemByDetailSpec(d) HIGHLIGHTIF NotNullAvailableQuantityItemByDetailSpec(d),
-                                    minReserveItemDepartmentDetailSpec(d), maxReserveItemDepartmentDetailSpec(d)
-
-
-
-    PROPERTIES addSpecificationDetailBarcode(sp) TODRAW d
-    FILTERS inSpecificationDetailSpec(sp, d)
-
-    EDIT specification OBJECT sp
-;
-
-DESIGN specification FROM DEFAULT{
-    sp.waybillSum { caption = 'Суммы счет-фактуры'; };
-
-    d.panel{
-        childConstraints = TO THE BOTTOM;
-        fillVertical = 1;
-        fillHorizontal = 1;
-    }
-}
-
-FORM specifications 'Счет-фактуры'
-    OBJECTS sp=specification
-    PROPERTIES (sp) READONLY numberSpecification, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
-                    dateToSpecification, quantitySpecification, sumSpecification
-
-    PROPERTIES (sp) ADDFORM, EDITFORM, delete
-    ORDER BY        numberSpecification
-
-    OBJECTS d=detailSpec
-    PROPERTIES (d)  READONLY numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
-                    retailPriceDetailSpec, sumDetailSpec
-
-    FILTERS         inSpecificationDetailSpec(sp, d)
-
-    FILTERGROUP filters6
-            FILTER 'Просроченные с/ф' 'F10' overdueSpecification(sp)
-            FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp)
-;
-
 //---------------------------- Документ на отгрузку из розницы ----------------------------------------//
 
 GROUP specificationGroup 'Счет-фактуры' : publicGroup;
@@ -4298,6 +4275,14 @@ isCustomerStatementSpecification 'Заявка покупателя' (statement,
 isDepartmentStoreStatementSpecification 'Заявка отдела' (statement, specification) = departmentStoreStatement(statement)== departmentStoreSpecification(specification);
 
 dateStatementDetail 'Дата отгрузки' (statementDetail) = dateStatement(statementStatementDetail(statementDetail));
+
+quantityStatementsInSpecification(specification) = GROUP SUM 1 IF inStatementSpecification(statement, specification) BY specification;
+noQuantityStatementsInSpecification(specification) = specification IS specification AND NOT quantityStatementsInSpecification(specification);
+
+statusSpecification 'Расход' (specification) = CASE
+    WHEN quantityStatementsInSpecification(specification) > 0 THEN ('Отгрузки были' IF specification IS specification)
+    DEFAULT 'Отгрузок не было' IF specification IS specification
+    END  MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
  //атрибуты для подсказки по товару строки
 
@@ -4426,8 +4411,11 @@ nameDepartmentStorePriceChangeStatement 'Отдел документа' (priceCh
 
 
 //старые ценовые параметры для переоценок
-oldRetailPriceStatementDetail 'Старая розничная цена' (statementDetail) = DATA DOUBLE (statementDetail) IN itemStatementDetailInfo;
+oldRetailPriceStatementDetail 'Розничная цена действующая' (statementDetail) = DATA DOUBLE (statementDetail) IN itemStatementDetailInfo;
 oldRetailPriceStatementDetail (statementDetail) <- priceRetailStatementDetail (statementDetail) ON CHANGE itemStatementDetail(statementDetail);  //     subtractDate2
+
+notEqualsPriceStatementDetail(statementDetail)  = retailPriceStatementDetail(statementDetail) != oldRetailPriceStatementDetail(statementDetail);
+
 
 oldRetailRangeStatementDetail(statementDetail) = DATA range (statementDetail) IN idGroup;
 oldDataRetailRangeStatementDetail 'Старый НДС розничный,%' (statementDetail) =
@@ -4454,6 +4442,80 @@ dataRetailRangePriceChangeStatementDetail 'Новый НДС, %' (priceChangeSta
 oldRetailPriceChangeStatementDetail 'Старая розничная цена' (priceChangeStatementDetail) = oldRetailPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
 retailPriceChangeStatementDetail 'Новая розничная цена' (priceChangeStatementDetail) = retailPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
 
+
+FORM specificationForm 'Отгрузки по данной с/ф'
+    OBJECTS sp=specification FIXED PANEL
+    PROPERTIES (sp) READONLY numberSpecification, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification, nameCustomerSpecification,
+                    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
+
+    OBJECTS st=statement
+    PROPERTIES (st) READONLY waybillStatement, seriesWaybillStatement, dateStatement, nameCustomerStatement, nameDepartmentStoreStatement,
+                    noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement
+
+    FILTERS inStatementSpecification(st, sp)
+;
+
+showFormSpecificationForm 'Показать отгрузки по данной с/ф' (specification) = ACTION FORM specificationForm OBJECTS sp MODAL TOOLBAR;
+
+FORM specification 'Счет-фактура'
+    OBJECTS sp=specification FIXED PANEL
+    PROPERTIES (sp) numberSpecification, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification, nameCustomerSpecification,
+    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
+
+    OBJECTS d=detailSpec
+    PROPERTIES (d) numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
+                   retailPriceDetailSpec, dataActingRateRangeDetailSpec, sumNDSDetailSpec, totalSumNDSDetailSpec, sumDetailSpec, ADDOBJ, delete
+
+    PROPERTIES FORCE PANEL READONLY articleItemDetailSpec(d), nameCountryItemDetailSpec(d), balanceDepartmentStoreItemDetailSpec(d),
+                                    availableQuantityItemByDetailSpec(d) HIGHLIGHTIF NotNullAvailableQuantityItemByDetailSpec(d)
+
+
+
+
+    PROPERTIES addSpecificationDetailBarcode(sp) TODRAW d
+    FILTERS inSpecificationDetailSpec(sp, d)
+
+    EDIT specification OBJECT sp
+;
+
+DESIGN specification FROM DEFAULT{
+    main {
+        preferredSize = (1024, 768);
+
+        sp.waybillSum { caption = 'Суммы счет-фактуры'; };
+
+        d.panel {
+            childConstraints = TO THE BOTTOM;
+
+        POSITION PROPERTY (balanceDepartmentStoreItemDetailSpec(d)) TO THE LEFT PROPERTY (availableQuantityItemByDetailSpec(d));
+        }
+
+    }
+}
+
+FORM specifications 'Счет-фактуры'
+    OBJECTS sp=specification
+    PROPERTIES (sp) READONLY numberSpecification, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
+                    dateToSpecification, quantitySpecification, sumSpecification
+    PROPERTIES (sp) showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
+
+    PROPERTIES (sp) ADDFORM, EDITFORM, delete
+    ORDER BY        numberSpecification
+
+    OBJECTS d=detailSpec
+    PROPERTIES (d)  READONLY numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
+                    retailPriceDetailSpec, sumDetailSpec
+
+    FILTERS         inSpecificationDetailSpec(sp, d)
+
+    FILTERGROUP filters6
+            FILTER 'Просроченные с/ф' 'F10' overdueSpecification(sp)
+            FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp)
+;
+
+
+
+
 FORM specificationsStatement 'Счета'
     OBJECTS st=statement FIXED PANEL
     PROPERTIES (st) READONLY waybillStatement, dateStatement
@@ -4462,30 +4524,33 @@ FORM specificationsStatement 'Счета'
 
     PROPERTIES (st, sp) inStatementSpecification
     PROPERTIES (sp)     READONLY numberSpecification, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
-                        dateToSpecification, quantitySpecification, sumSpecification
+                        dateToSpecification, quantitySpecification, sumSpecification, statusSpecification
     PROPERTIES (st, sp) statusStatementSpecification
 
     FILTERS isCustomerStatementSpecification (st, sp),
             isDepartmentStoreStatementSpecification (st, sp)
 
+    FILTERGROUP filters6
+            FILTER 'Просроченные с/ф' 'F10' overdueSpecification(sp)
+            FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp)
+            FILTER 'Без отгрузок с/ф ' 'F8' noQuantityStatementsInSpecification(sp) DEFAULT
 ;
 
 showFormSpecificationsStatement 'Заказы' (statement) = ACTION FORM specificationsStatement OBJECTS st MODAL SHORTCUT specificationsStatement DEFAULT;
 
 FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
-    PROPERTIES (st) waybillStatement, seriesWaybillStatement, dateStatement, nameCustomerStatement,
+    PROPERTIES (st) waybillStatement, seriesWaybillStatement, dateStatement, timeStatement, nameCustomerStatement,
                     nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, showFormSpecificationsStatement,
                     noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement
 
     OBJECTS d=statementDetail
     PROPERTIES (d)  numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail, quantityStatementDetail,
-                    retailPriceStatementDetail, dataActingRateRangeStatementDetail, sumNDSStatementDetail, sumStatementDetail, totalSumNDSStatementDetail,
-                    noteStatementDetail READONLY, ADDOBJ, delete
+                    retailPriceStatementDetail, dataActingRateRangeStatementDetail, sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail,
+                    oldRetailPriceStatementDetail HIGHLIGHTIF notEqualsPriceStatementDetail(d), noteStatementDetail READONLY, ADDOBJ, delete
 
     PROPERTIES (d)  FORCE PANEL articleItemStatementDetail, nameCountryItemStatementDetail, balanceDepartmentStoreItemStatementDetail,
-                    minReserveItemDepartmentStatementDetail, maxReserveItemDepartmentStatementDetail,
-                    oldRetailPriceStatementDetail, oldDataRetailRangeStatementDetail, oldImporterPriceStatementDetail
+                    oldDataRetailRangeStatementDetail, oldImporterPriceStatementDetail
 
     PROPERTIES      addStatementDetailBarcode(st) TODRAW d
 
@@ -4495,12 +4560,22 @@ FORM statement 'Отгрузка из розницы'
 ;
 
 DESIGN statement FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
 
-    st.box {
-        childConstraints = TO THE RIGHTBOTTOM;
-        fillVertical = 1;
-        fillHorizontal = 1;
-        POSITION st.documentHeaderGroup TO THE LEFT st.specificationGroup;
+        st.box {
+            childConstraints = TO THE RIGHTBOTTOM;
+            POSITION st.documentHeaderGroup TO THE LEFT st.specificationGroup;
+        }
+        d.panel {
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(articleItemStatementDetail);
+                ADD PROPERTY(nameCountryItemStatementDetail);
+                ADD PROPERTY (balanceDepartmentStoreItemStatementDetail);
+            }
+            POSITION headerRow1 TO THE LEFT d.itemStatementDetailInfo;
+        }
     }
 }
 
