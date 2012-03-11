@@ -4889,6 +4889,11 @@ toFillShipmentDetailsShipment 'Заполнить поставку из зака
     };
 } IN ordersInfo CONFIRM;
 
+percentRateWasteShipmentDetail 'Процент для списания отходов' (shipmentDetail) = DATA DOUBLE (shipmentDetail);
+
+percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShipmentDetail(shipmentDetail))
+    ON CHANGE itemShipmentDetail(shipmentDetail);
+
 // ---------------------------------- Дооценка на приходе ------------------------------------------
 
 CLASS priceChangeShipment 'Переоценка на приходе' : priceChangeDocument;
@@ -4955,7 +4960,7 @@ FORM shipment 'Поставка'
                    noteShipment
 
     OBJECTS d=shipmentDetail
-    PROPERTIES (d)  numberShipmentDetail, nameAttributeItemShipmentDetail, barcodeExSkuShipmentDetail, quantityShipmentDetail,
+    PROPERTIES (d)  percentRateWasteShipmentDetail, numberShipmentDetail, nameAttributeItemShipmentDetail, barcodeExSkuShipmentDetail, quantityShipmentDetail,
                     priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
                     dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
                     nameWareShipmentDetail, dataRetailRangeShipmentDetail,
@@ -5718,7 +5723,7 @@ FORM priceChangeDocuments 'Акты переоценки'
 ;
 
 //----------------------------------- Списание отходов по нормам -------------------------------------------------//
-needToWasteShipmentDetail (shipmentDetail) = rateWasteItem(itemShipmentDetail(shipmentDetail));
+needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDetail(shipmentDetail);
 needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 
 CLASS wastage 'Списание отходов' : historyObject;
@@ -5728,16 +5733,19 @@ CLASS wastageDetail 'Строка документа';
 @metaCodeDetailAggregation (shipment, wastage, needToWasteShipment);
 
 dateWastage 'Дата документа' (wastage) = dateShipment(shipmentWastage(wastage));
+waybillWastage 'Документ для списания' (wastage) = waybillShipment(shipmentWastage(wastage));
 
 departmentStoreWastage 'Отдел документа (ИД)' (wastage) = departmentStoreShipment (shipmentWastage(wastage));
 nameDepartmentStoreWastage 'Отдел документа' (wastage) = name(departmentStoreWastage (wastage));
+
+supplierWastage 'Поставщик (ИД)' (wastage) = supplierShipment(shipmentWastage(wastage));
+nameSupplierWastage 'Поставщик' (wastage) = name(supplierWastage(wastage));
 
 itemWastageDetail 'Товар (ИД)' (wastageDetail) = itemShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 nameAttributeItemWastageDetail 'Товар' (wastageDetail) = nameAttributeItem (itemWastageDetail(wastageDetail));
 
 quantityWastageDetail 'Количество' (wastageDetail) = DATA DOUBLE (wastageDetail);
 
-percentRateWasteShipmentDetail (shipmentDetail) = percentRateWasteItem(itemShipmentDetail(shipmentDetail));
 percentRateWasteWastageDetail 'Процент списания' (wastageDetail) = percentRateWasteShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 
 quantityWastageDetail(wastageDetail) <-
@@ -5748,13 +5756,16 @@ priceWastageDetail 'Цена' (wastageDetail) = retailPriceShipmentDetail(shipme
 
 sumWastageDetail 'Сумма' (wastageDetail) = quantityWastageDetail(wastageDetail) * priceWastageDetail(wastageDetail);
 
+totalSumWastage 'Общая сумма' (wastage) = GROUP SUM sumWastageDetail (wastageDetail)
+    IF  wastageWastageDetail(wastageDetail) == wastage BY wastageWastageDetail(wastageDetail) IN waybillSum;
+
 FORM wastages 'Списания отходов'
 
     OBJECTS w=wastage
-    PROPERTIES (w) READONLY dateWastage, nameDepartmentStoreWastage
+    PROPERTIES (w) READONLY dateWastage, waybillWastage, nameDepartmentStoreWastage, nameSupplierWastage, totalSumWastage
 
     OBJECTS d=wastageDetail
-    PROPERTIES (d) READONLY nameAttributeItemWastageDetail, quantityWastageDetail, priceWastageDetail, sumWastageDetail, delete
+    PROPERTIES (d) READONLY nameAttributeItemWastageDetail, quantityWastageDetail, priceWastageDetail, sumWastageDetail
 
     FILTERS wastageWastageDetail(d)== w;
 ;
@@ -5855,6 +5866,7 @@ NAVIGATOR {
         }
         NEW incomeShipments 'Поставки' {
             ADD shipments;
+            ADD wastages;
         }
         NEW carryingInventories 'Инвентаризация' {
             ADD inventories;
