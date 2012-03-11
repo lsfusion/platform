@@ -5781,6 +5781,7 @@ importInactive 'Импортировать в том числе неактивн
 importGroupItems 'Импортировать группы товаров' = DATA BOOLEAN ();
 importItems 'Импортировать товары' = DATA BOOLEAN ();
 importNumberItems 'Кол-во' = DATA INTEGER ();
+importPrices 'Импортировать цены товаров' = DATA BOOLEAN ();
 importCompanies 'Импортировать компании' = DATA BOOLEAN ();
 importSuppliers 'Импортировать поставщиков' = DATA BOOLEAN ();
 importStores 'Импортировать магазины' = DATA BOOLEAN ();
@@ -5789,7 +5790,7 @@ importBanks 'Импортировать банки' = DATA BOOLEAN();
 FORM importData 'Импорт данных'
     PROPERTIES() importDataAction, importUrl, importLogin, importPassword
     PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importItems, importNumberItems,
-    importCompanies, importSuppliers, importStores, importDepartmentStores, importBanks
+    importPrices, importCompanies, importSuppliers, importStores, importDepartmentStores, importBanks
 ;
 
 //---------------------------- Настройка навигатора ----------------------------------------//
