@@ -1383,8 +1383,8 @@ dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
 dateToRate 'Действует по' = DATA DATE (rate) IN baseGroup;
 
 quantityRateRange 'Количество историй' (range) = GROUP SUM 1 IF rate BY rangeRate(rate);
-CONSTRAINT CHECKED range IS range AND NOT rangeTypeRange(range)  MESSAGE 'ошибка: Не выбран тип действия для шкалы';
-CONSTRAINT CHECKED rate IS rate AND NOT dataRate(rate)  MESSAGE 'ошибка: Не указано значение ставки';
+CONSTRAINT range IS range AND NOT rangeTypeRange(range)  MESSAGE 'ошибка: Не выбран тип действия для шкалы';
+CONSTRAINT rate IS rate AND NOT dataRate(rate)  MESSAGE 'ошибка: Не указано значение ставки';
 
 inTaxNDSRangeStore(range, store) = inRangeStore(range, store) AND tax.taxNDS == taxRange(range);
 rangeToTaxStore (tax, store) = GROUP UNIQUE range BY taxRange(range), store WHERE inTaxNDSRangeStore(range, store);
@@ -1394,7 +1394,7 @@ inTaxRange(tax, range) = taxRange(range) == tax;
 
 actingRateDate(rate, date) = rate IF dateFromRate(rate) <= date AND NOT dateToRate(rate) < date AND date AS DATE;
 actingRateRangeDate(range, date) = GROUP MAX actingRateDate(rate, date) BY rangeRate(rate), date;
-dataActingRateRangeDate 'На дату' (range, date) = dataRate(actingRateRangeDate(range, date));  // в последствии, если надо можно сделать проверку на одну ставку на дату
+dataActingRateRangeDate 'На дату' (range, date) = dataRate(actingRateRangeDate(range, date));
 actingRateRange 'Действующая ИД' (range) = actingRateRangeDate(range, currentDate()) IN idGroup;
 dataActingRateRange 'Действующая ставка' (range) = dataRate(actingRateRange(range)) IN baseGroup;
 dateFromActingRateRange 'Действует с' (range) = dateFromRate(actingRateRange(range)) IN baseGroup;
@@ -1404,16 +1404,17 @@ nameUserCreatedActingRateRange 'Создан пользователем' (range)
 quantityActingRateRangeDate(range, date) = GROUP SUM 1 IF actingRateDate(rate, date) BY rangeRate(rate), date;
 
 quantityActingRateRange 'Количество действующих историй' (range) = quantityActingRateRangeDate(range, currentDate());
-CONSTRAINT CHECKED quantityActingRateRange(range) > 1 MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок';
-CONSTRAINT CHECKED quantityActingRateRangeDate(range, date) > 1 MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок';
+//CONSTRAINT quantityActingRateRange(range) > 1 MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок';
 
+rateToRate (rt1, rt2) = UNION OVERRIDE dateFromRate(rt2) <= dateFromRate(rt1),
+                                       dateToRate(rt1) < dateFromRate(rt2);
+
+
+CONSTRAINT rangeRate(rt1) == rangeRate(rt2) AND NOT rateToRate (rt1, rt2)  MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок';
 
  // todo: сделать проверку на то, что на дату для шкалы есть только одно значение ставки
 suppliersTaxNDSItem(item) = tax.taxNDS IF item IS item IN idGroup;
 nameSuppliersTaxNDSItem(item) = name(suppliersTaxNDSItem(item));
-//suppliersRangeItem(item) = DATA range (item) IN idGroup;
-//dataSuppliersRateRangeItem 'НДС поставщика,%' (item) = dataActingRateRange(suppliersRangeItem(item)) IN retailGroup;
-
 
 suppliersRangeItemDate 'Шкала' (item, date) = DATA range (item, DATE) IN idGroup;
 dataSuppliersRangeItemDate 'Шкала' (item, date) = dataRange(suppliersRangeItemDate(item, date)) IN suppliersNDSGroup;
@@ -1430,7 +1431,7 @@ nameTaxSuppliersItem 'Налог' (item) = nameTaxRange(suppliersRangeItem(item)
 dataSuppliersRangeItem 'Шкала НДС' (item) = dataRange(suppliersRangeItem(item)) IN suppliersNDSGroup;
 dataActingRateSuppliersRangeItem 'НДС поставщика,%' (item) = dataActingRateRange(suppliersRangeItem(item)) IN suppliersNDSGroup;
 
-CONSTRAINT suppliersTaxNDSItem(item) != taxRange(suppliersRangeItem(item))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT CHECKED suppliersTaxNDSItem(item) != taxRange(suppliersRangeItem(item))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 
 FORM addSuppliersRangeItem 'Добавить Шкалу'
@@ -1477,7 +1478,7 @@ dataActingRateRetailRangeItem 'Розничный НДС' (item) = dataActingRat
 
 //retailRangeItem(item) = DATA range (item) IN idGroup;
 //dataRetailRateRangeItem 'Розничный НДС' (item) = dataActingRateRange(retailRangeItem(item)) IN retailGroup;
-CONSTRAINT retailTaxNDSItem(item) != taxRange(retailRangeItem(item))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT CHECKED retailTaxNDSItem(item) != taxRange(retailRangeItem(item))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 FORM addRetailRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE FIXED PANEL
@@ -1638,7 +1639,7 @@ nameTaxWare 'Налог' (ware) = nameTaxRange(rangeWare(ware)) IN baseGroup;
 dataRangeWare 'Шкала НДС' (ware) = dataRange(rangeWare(ware)) IN baseGroup;
 dataActingRateRangeWare 'НДС,%' (ware) = dataActingRateRange(rangeWare(ware)) IN baseGroup;
 
-CONSTRAINT  taxNDSWare(ware) != taxRange(rangeWare(ware))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT CHECKED taxNDSWare(ware) != taxRange(rangeWare(ware))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 
 FORM addRangeWare 'Добавить Шкалу'
@@ -2005,7 +2006,7 @@ departmentStoreCommittee 'Отдел комиссии (ИД)' = DATA departmentS
 nameDepartmentStoreCommittee 'Отдел комиссии' (committee) = commonName(departmentStoreCommittee(committee)) IN baseGroup;
 CONSTRAINT CHECKED chairmanCommittee(committee) IF committee IS revaluationCommittee AND NOT departmentStoreEmployee(departmentStoreCommittee(committee), chairmanCommittee(committee))  MESSAGE 'Отдел комиссии должен соответствовать отделу председателя комиссии';
 CONSTRAINT CHECKED departmentStoreCommittee(revaluationCommitteeDepartmentStore(departmentStore)) != departmentStore MESSAGE 'Отдел комиссии должен соответствовать текущему отделу';
-CONSTRAINT CHECKED committee IS committee AND NOT chairmanCommittee(committee) MESSAGE 'Ошибка: не задан председатель комиссии';
+CONSTRAINT committee IS committee AND NOT chairmanCommittee(committee) MESSAGE 'Ошибка: не задан председатель комиссии';
 
 inCommitteeEmployee 'Является членом комиссии' (committee, employee) = DATA BOOLEAN (committee, employee);
 
@@ -6021,6 +6022,7 @@ NAVIGATOR {
             ADD objectiveAcquiring;
             ADD specification;
             ADD specificationsStatement;
+            ADD specificationForm;
             ADD statement;
             ADD numerator;
         }
