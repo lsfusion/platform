@@ -1635,7 +1635,7 @@ rangeWareDate 'Шкала' (ware, date) = DATA range (ware, DATE) IN idGroup;
 dataRangeWareDate 'Шкала' (ware, date) = dataRange(rangeWareDate(ware, date));
 
 dateRangeWareDate (ware, date) = GROUP MAX dateIn AND rangeWareDate(ware, dateIn) AND dateIn <= (date AS DATE) BY ware, date;
-dataActingRateRangeWareDate 'НДС,%' (ware, date) = dataActingRateRangeDate(rangeWareDate(ware, date), date);
+dataActingRateRangeWareDate 'НДС,%' (ware, date) = dataActingRateRangeDate(rangeWareDate(ware, date), dateRangeWareDate (ware, date));
 
 rangeWareVal 'На дату' (ware, date) = rangeWareDate(ware, dateRangeWareDate(ware, date)) IN baseGroup;
 rangeWare 'Шкала' (ware) = rangeWareDate(ware, dateRangeWareDate(ware, currentDate())) IN baseGroup;
@@ -3583,6 +3583,7 @@ FILTERS  barcodeStageGroupMachinery(st, gr);
 //---------------------------- Количественные регистры ----------------------------------------//
 
 CLASS ABSTRACT balanceItemLedger 'Изменение остатка по товару';
+TABLE balanceItemLedger (balanceItemLedger);
 
 //---------------------------- Ценовые регистры ----------------------------------------//
 
@@ -4560,7 +4561,9 @@ sumSupplierShipmentDetail 'Сумма с НДС' (shipmentDetail) = sumPriceShip
     UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, sumSupplierVATShipmentDetail(shipmentDetail);
 
 retailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
-dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = dataActingRateRange(retailRangeShipmentDetail(shipmentDetail)) IN baseGroup;
+dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = dataActingRateRangeDate
+    (retailRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN baseGroup;
+
 retailRangeShipmentDetail(shipmentDetail) <- overrideRateRangeItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 wareShipmentDetail 'Посуда (ИД)' (shipmentDetail) = DATA ware(shipmentDetail) IN baseGroup;
@@ -4914,8 +4917,6 @@ sumWriteOff 'Общая сумма' (writeOff) = GROUP SUM sumWriteOffDetail(wri
 articleItemWriteOff 'Артикул производителя/поставщика' (writeOffDetail) = articleItem(itemWriteOffDetail(writeOffDetail));
 nameCountryItemWriteOff 'Страна' (writeOffDetail) = nameCountryItem(itemWriteOffDetail(writeOffDetail));
 
-balanceDepartmentStoreItemWriteOff 'Текущий остаток' (writeOffDetail) =
-    balanceDepartmentStoreItem(departmentStoreWriteOffDetail(writeOffDetail), itemWriteOffDetail(writeOffDetail));
 minReserveItemDepartmentWriteOff 'Минимальнодопустимый товарный запас в днях' (writeOffDetail) =
     minReserveItemDepartmentOver(itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail),
                                  dateWriteOffDetail(writeOffDetail));
@@ -5406,35 +5407,35 @@ dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateT
                                                                   dateTimeStatementDetail(ledger),
                                                                   dateTimeInnerFlowDetail(ledger),
                                                                   dateTimeWastageDetail(ledger),
-                                                                  dateTimeReturnSupplierDetail(ledger);
+                                                                  dateTimeReturnSupplierDetail(ledger) PERSISTENT;
 
 isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                               isPostedInnerArrivalDetail(ledger),
                                                               isPostedStatementDetail(ledger),
                                                               isPostedInnerFlowDetail(ledger),
                                                               isPostedWastageDetail(ledger),
-                                                              isPostedReturnSupplierDetail(ledger);
+                                                              isPostedReturnSupplierDetail(ledger) PERSISTENT;
 
 itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                  itemInnerArrivalDetail(ledger),
                                                  itemStatementDetail(ledger),
                                                  itemInnerFlowDetail(ledger),
                                                  itemWastageDetail(ledger),
-                                                 itemReturnSupplierDetail(ledger);
+                                                 itemReturnSupplierDetail(ledger) PERSISTENT;
 
 departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                             departmentStoreInnerArrivalDetail(ledger),
                                                             departmentStoreStatementDetail(ledger),
                                                             departmentStoreInnerFlowDetail(ledger),
                                                             departmentStoreWastageDetail(ledger),
-                                                            departmentStoreReturnSupplierDetail(ledger);
+                                                            departmentStoreReturnSupplierDetail(ledger) PERSISTENT;
 
 quantityBalanceItemLedger (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
                                                      quantityInnerArrivalDetail(ledger),
                                                     -quantityStatementDetail(ledger),
                                                     -quantityInnerFlowDetail(ledger),
                                                     -quantityWastageDetail(ledger),
-                                                    -quantityReturnSupplierDetail(ledger);
+                                                    -quantityReturnSupplierDetail(ledger) PERSISTENT;
 
 currentBalanceItemLedger (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
                                                           BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger);
@@ -5448,6 +5449,11 @@ balanceBItemLedgerDateTime (item, departmentStore, dateTime) = UNION SUM current
 balanceAItemLedgerDateTime (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
                                                                          -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) > (dateTime AS DATETIME) AND isPostedBalanceItemLedger(ledger)
                                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
+
+// --------------------------- Использование регистров количества (автоматическое заполнение) ---------------------------------
+
+balanceDepartmentStoreItemWriteOff 'Текущий остаток' (writeOffDetail) =
+    balanceDepartmentStoreItem(departmentStoreWriteOffDetail(writeOffDetail), itemWriteOffDetail(writeOffDetail)) PERSISTENT;
 
 //---------------------------- Ценовые регистры (конкретная реализация) ----------------------------------------//
 
