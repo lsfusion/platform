@@ -271,7 +271,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     boolean upKeys, downKeys;
-    OrderedMap<Map<ObjectInstance,DataObject>,Map<OrderInstance,ObjectValue>> keys = new OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>();
+    public OrderedMap<Map<ObjectInstance,DataObject>,Map<OrderInstance,ObjectValue>> keys = new OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>();
 
     // 0 !!! - изменился объект, 1 - класс объекта, 2 !!! - отбор, 3 !!! - хоть один класс, 4 !!! - классовый вид
 
