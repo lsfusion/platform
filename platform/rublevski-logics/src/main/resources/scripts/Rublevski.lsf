@@ -4314,10 +4314,6 @@ sumStatementDetail 'Сумма' (statementDetail) = round0(retailPriceStatementD
 
 oldRetailPriceStatementDetail 'Розничная цена действующая' (statementDetail) = DATA DOUBLE (statementDetail) IN itemStatementDetailInfo;
 
-//priceRetailStatementDetail 'Цена товара на момент отгрузки' (statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
-//priceRetailStatementDetail(statementDetail) <- retailPriceItemDepartmentVal (itemStatementDetail(statementDetail),
-//                                                                   departmentStoreStatementDetail(statementDetail),
-//                                                                   dateStatement(statementStatementDetail(statementDetail))) ON CHANGE itemStatementDetail(statementDetail);
 
 
 taxNDSStatementDetail(statementDetail) = tax.taxNDS IF statementDetail IS statementDetail IN idGroup;
@@ -5086,14 +5082,8 @@ numberWriteOff(writeOff) <- OLD nextNumberWriteOff() ON ASSIGN writeOff IS write
 
 numberActWriteOff 'Номер акта' = DATA STRING[10] (writeOff) IN documentHeaderGroup;
 
-datePriceWriteOff 'Цена на дату' = DATA DATE (writeOff) IN additionalInfo;
-datePriceWriteOff (writeOff) <- currentDate() ON ASSIGN writeOff AS writeOff;
-
 reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
 nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN additionalInfo;
-
-datePriceWriteOffDetail 'Цена на дату' (writeOffDetail) = datePriceWriteOff(writeOffWriteOffDetail(writeOffDetail));
-
 
 quantityWriteOffDetail 'Кол-во для строки списания' = DATA INTEGER (writeOffDetail) IN baseGroup;
 
@@ -5101,31 +5091,26 @@ quantityWriteOff 'Общее кол-во' (writeOff) = GROUP SUM quantityWriteOf
                                                     BY writeOffWriteOffDetail(writeOffDetail) IN waybillSum;
 
 priceWriteOffDetail 'Цена учётная' = DATA DOUBLE (writeOffDetail) IN baseGroup;
-priceWriteOffDetail(writeOffDetail) <- accountPriceItemDepartmentVal (itemWriteOffDetail(writeOffDetail),
-                                                                      departmentStoreWriteOffDetail(writeOffDetail),
-                                                                      datePriceWriteOffDetail(writeOffDetail)) ON CHANGE itemWriteOffDetail(writeOffDetail);
 
 sumWriteOffDetail 'Сумма' (writeOffDetail) = priceWriteOffDetail(writeOffDetail)*quantityWriteOffDetail(writeOffDetail);
 sumWriteOff 'Общая сумма' (writeOff) = GROUP SUM sumWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN waybillSum;
 
 articleItemWriteOff 'Артикул производителя/поставщика' (writeOffDetail) = articleItem(itemWriteOffDetail(writeOffDetail));
 nameCountryItemWriteOff 'Страна' (writeOffDetail) = nameCountryItem(itemWriteOffDetail(writeOffDetail));
-retailPriceItemWriteOff 'Розничная цена' (writeOffDetail) =
-    retailPriceItemDepartmentVal(itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail),
-                                 datePriceWriteOffDetail(writeOffDetail));
+
 balanceDepartmentStoreItemWriteOff 'Текущий остаток' (writeOffDetail) =
     balanceDepartmentStoreItem(departmentStoreWriteOffDetail(writeOffDetail), itemWriteOffDetail(writeOffDetail));
 minReserveItemDepartmentWriteOff 'Минимальнодопустимый товарный запас в днях' (writeOffDetail) =
     minReserveItemDepartmentOver(itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail),
-                                 datePriceWriteOffDetail(writeOffDetail));
+                                 dateWriteOffDetail(writeOffDetail));
 maxReserveItemDepartmentWriteOff 'Максимальнодопустимы товарный запас в днях' (writeOffDetail) =
     maxReserveItemDepartmentOver(itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail),
-                                 datePriceWriteOffDetail(writeOffDetail));
+                                 dateWriteOffDetail(writeOffDetail));
 CONSTRAINT quantityWriteOffDetail(writeOffDetail) <= 0 MESSAGE 'Количество должно быть положительным';
 CONSTRAINT priceWriteOffDetail(writeOffDetail) <= 0 MESSAGE 'Цена должна быть положительной';
 
 dateLastShipment 'Дата последней поставки' (writeOffDetail) = GROUP MAX dateShipmentDetail(shipmentDetail)
-    IF (dateShipmentDetail(shipmentDetail) < datePriceWriteOffDetail(writeOffDetail)
+    IF (dateShipmentDetail(shipmentDetail) < dateWriteOffDetail(writeOffDetail)
     AND itemWriteOffDetail(writeOffDetail) == itemShipmentDetail(shipmentDetail))
     BY writeOffDetail;
 
@@ -5133,61 +5118,6 @@ FORM reasonOff 'Причина списания'
     OBJECTS r=reasonOff  FIXED PANEL
     PROPERTIES(r) name
 ;
-
-FORM writeOff 'Списание'
-    OBJECTS w=writeOff FIXED PANEL
-    PROPERTIES (w) numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff, nameReasonOffWriteOff,
-                   noteWriteOff, quantityWriteOff, datePriceWriteOff, sumWriteOff
-
-    OBJECTS d=writeOffDetail
-    PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail,
-                   priceWriteOffDetail, ADDOBJ, delete
-
-    PROPERTIES FORCE PANEL READONLY articleItemWriteOff(d), nameCountryItemWriteOff(d), retailPriceItemWriteOff(d),
-                                    balanceDepartmentStoreItemWriteOff(d), minReserveItemDepartmentWriteOff(d),
-                                    maxReserveItemDepartmentWriteOff(d), dateLastShipment(d)
-
-    PROPERTIES addWriteOffDetailBarcode(w) TODRAW d
-    FILTERS inWriteOffWriteOffDetail(w, d)
-
-    EDIT writeOff OBJECT w
-;
-
-DESIGN writeOff FROM DEFAULT{
-
-    main {
-        preferredSize = (1024, 768);
-    }
-    d.panel{
-        childConstraints = TO THE BOTTOM;
-    }
-}
-
-FORM writeOffs 'Списания'
-    OBJECTS w=writeOff
-    PROPERTIES (w) READONLY objectClassName, numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff,
-                            nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, quantityWriteOffDetailsWriteOff,
-                            datePriceWriteOff, sumWriteOff
-
-    PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWriteOff(w), delete FORCE PANEL SHOWIF isDraftWriteOff(w),
-                   postWriteOff SHOWIF isDraftWriteOff(w), unpostWriteOff SHOWIF isPostedWriteOff(w)
-
-
-    OBJECTS d=writeOffDetail
-    PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail,
-                   priceWriteOffDetail
-    FILTERS inWriteOffWriteOffDetail(w, d)
-;
-
-DESIGN writeOffs FROM DEFAULT {
-    PROPERTY(objectClassName) {
-        preferredCharWidth = 15;
-    }
-    PROPERTY (delete(w)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-}
 
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
 @metaCodeObjectWithPost (innerFlow, 'Расход в отдел', 'Закрытый расход в отдел', object);
@@ -5197,8 +5127,6 @@ nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) =
 
 waybillInnerFlow 'Номер накладной' (innerFlow) = DATA STRING[7] (innerFlow) IN documentHeaderGroup FIXEDCHARWIDTH 7;
 seriesWaybillInnerFlow 'Серия накладной' (innerFlow) = DATA STRING[2] (innerFlow) IN documentHeaderGroup FIXEDCHARWIDTH 4;
-
-dateInnerFlowInnerFlowDetail 'Дата документа' (innerFlowDetail) = dateInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail));
 
 quantityInnerFlowDetail 'Количество' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
 
@@ -5212,16 +5140,12 @@ sumInnerFlowDetail 'Сумма' (innerFlowDetail) = round0(
     quantityInnerFlowDetail(innerFlowDetail) * priceInnerFlowDetail (innerFlowDetail)) IN baseGroup;
 
 importerPriceInnerFlowDetail 'Цена изготовителя' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail);
-importerPriceInnerFlowDetail (innerFlowDetail) <- importerPriceItemVal (itemInnerFlowDetail (innerFlowDetail),
-    dateInnerFlowInnerFlowDetail(innerFlowDetail)) ON CHANGE itemInnerFlowDetail (innerFlowDetail);
 
 importerPriceItemInnerFlow 'Цена изготовителя (максим.)' (item, innerFlow) = GROUP MAX importerPriceInnerFlowDetail (innerFlowDetail)
     IF innerFlowInnerFlowDetail(innerFlowDetail) == innerFlow BY itemInnerFlowDetail(innerFlowDetail), innerFlowInnerFlowDetail(innerFlowDetail);
 
 retailRangeInnerFlowDetail(innerFlowDetail) = DATA range (innerFlowDetail) IN idGroup;
 dataRetailRangeInnerFlowDetail 'НДС розничный,%' (innerFlowDetail) = dataActingRateRange(retailRangeInnerFlowDetail(innerFlowDetail)) IN baseGroup;
-retailRangeInnerFlowDetail(innerFlowDetail) <- overrideRateRangeItem(itemInnerFlowDetail(innerFlowDetail))
-    ON CHANGE itemInnerFlowDetail(innerFlowDetail);
 
 quantityItemInnerFlow 'Количество в расходе' (item, innerFlow) = GROUP SUM quantityInnerFlowDetail(innerFlowDetail)
     IF inInnerFlowInnerFlowDetail (innerFlow, innerFlowDetail) BY itemInnerFlowDetail (innerFlowDetail), innerFlowInnerFlowDetail (innerFlowDetail);
@@ -5234,7 +5158,7 @@ totalSumInnerFlow 'Общая сумма' (innerFlow) = GROUP SUM sumInnerFlowDe
 
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
-    PROPERTIES (f) waybillInnerFlow, seriesWaybillInnerFlow, dateInnerFlow, nameDepartmentStoreInnerFlow,
+    PROPERTIES (f) waybillInnerFlow, seriesWaybillInnerFlow, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
                    nameRecipientDepartmentInnerFlow, noteInnerFlow, totalQuantityInnerFlow, totalSumInnerFlow
 
     OBJECTS d=innerFlowDetail
@@ -5586,6 +5510,80 @@ oldRetailPriceShipmentDetail (shipmentDetail) <- priceAccountLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
 
+priceWriteOffDetail (writeOffDetail) <- priceAccountLedgerDateTime(
+                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
+                ON CHANGE itemWriteOffDetail(writeOffDetail);
+
+retailPriceItemWriteOffDetail 'Розничная цена' (writeOffDetail) = priceRetailLedgerDateTime (
+                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail));
+
+priceInnerFlowDetail (innerFlowDetail) <- priceRetailLedgerDateTime(
+                itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
+                ON CHANGE itemInnerFlowDetail(innerFlowDetail);
+
+importerPriceInnerFlowDetail (innerFlowDetail) <- priceImporterLedgerDateTime(
+                itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
+                ON CHANGE itemInnerFlowDetail(innerFlowDetail);
+
+retailRangeInnerFlowDetail (innerFlowDetail) <- rangeRetailLedgerDateTime(
+                itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
+                ON CHANGE itemInnerFlowDetail(innerFlowDetail);
+
+// --------------------------- Формы списания ---------------------------------
+FORM writeOff 'Списание'
+    OBJECTS w=writeOff FIXED PANEL
+    PROPERTIES (w) numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff, timeWriteOff, nameReasonOffWriteOff,
+                   noteWriteOff, quantityWriteOff, sumWriteOff
+
+    OBJECTS d=writeOffDetail
+    PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail,
+                   priceWriteOffDetail, ADDOBJ, delete
+
+    PROPERTIES FORCE PANEL READONLY articleItemWriteOff(d), nameCountryItemWriteOff(d), retailPriceItemWriteOffDetail(d),
+                                    balanceDepartmentStoreItemWriteOff(d), minReserveItemDepartmentWriteOff(d),
+                                    maxReserveItemDepartmentWriteOff(d), dateLastShipment(d)
+
+    PROPERTIES addWriteOffDetailBarcode(w) TODRAW d
+    FILTERS inWriteOffWriteOffDetail(w, d)
+
+    EDIT writeOff OBJECT w
+;
+
+DESIGN writeOff FROM DEFAULT{
+
+    main {
+        preferredSize = (1024, 768);
+            d.panel{
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+}
+
+FORM writeOffs 'Списания'
+    OBJECTS w=writeOff
+    PROPERTIES (w) READONLY objectClassName, numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff,
+                            nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, quantityWriteOffDetailsWriteOff, sumWriteOff
+
+    PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWriteOff(w), delete FORCE PANEL SHOWIF isDraftWriteOff(w),
+                   postWriteOff SHOWIF isDraftWriteOff(w), unpostWriteOff SHOWIF isPostedWriteOff(w)
+
+
+    OBJECTS d=writeOffDetail
+    PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail,
+                   priceWriteOffDetail
+    FILTERS inWriteOffWriteOffDetail(w, d)
+;
+
+DESIGN writeOffs FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+    PROPERTY (delete(w)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
 // --------------------------- Использование регистров (автоматическое заполнение): выписка из розницы-------------//
 
 retailPriceDetailSpec (detailSpec) <- priceRetailLedgerDateTime(
@@ -5860,17 +5858,15 @@ importGroupItems 'Импортировать группы товаров' = DATA
 importItems 'Импортировать товары' = DATA BOOLEAN ();
 importNumberItems 'Кол-во' = DATA INTEGER ();
 importPrices 'Импортировать цены товаров' = DATA BOOLEAN ();
-importAssortment 'Импортировать ассортимент' = DATA BOOLEAN();
 importCompanies 'Импортировать компании' = DATA BOOLEAN ();
 importSuppliers 'Импортировать поставщиков' = DATA BOOLEAN ();
-importCustomers 'Импортировать покупателей' = DATA BOOLEAN ();
 importStores 'Импортировать магазины' = DATA BOOLEAN ();
 importDepartmentStores 'Импортировать отделы магазина' = DATA BOOLEAN();
 importBanks 'Импортировать банки' = DATA BOOLEAN();
 FORM importData 'Импорт данных'
     PROPERTIES() importDataAction, importUrl, importLogin, importPassword
     PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importItems, importNumberItems,
-    importPrices, importAssortment, importCompanies, importSuppliers, importCustomers, importStores, importDepartmentStores, importBanks
+    importPrices, importCompanies, importSuppliers, importStores, importDepartmentStores, importBanks
 ;
 
 //---------------------------- Настройка навигатора ----------------------------------------//
@@ -6004,6 +6000,8 @@ NAVIGATOR {
             ADD addrateNaturalLossItem;
             ADD rateNaturalLossItem;
             ADD genTimeTables;
+//            ADD addNDSSupplierItem;
+//            ADD NDSSupplierItem;
             ADD addpriceWare;
             ADD priceWare;
             ADD rangeWare;
