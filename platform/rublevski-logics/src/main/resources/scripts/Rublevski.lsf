@@ -306,9 +306,9 @@ META metaCodePostedObject (object)
 END
 
 // ----------------------------------- Свойства для объектов Posted ------------------------------------------ //
-META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
+META metaCodeObjectWithPost (object, caption, captionPosted, documentClass, detailClass)
 
-    CLASS object caption : historyObject;
+    CLASS object caption : documentClass;
     TABLE object (object);
 
     CLASS object##Posted captionPosted : object, postedObject;
@@ -4085,7 +4085,7 @@ FORM objectiveAcquiring 'Цель приобретения'
 
 GROUP specificationGroup 'Счет-фактуры' : publicGroup;
 
-@metaCodeObjectWithPost(statement, 'Выписка из розницы', 'Закрытая выписка из розницы', balanceItemLedger);
+@metaCodeObjectWithPost(statement, 'Выписка из розницы', 'Закрытая выписка из розницы', historyObject, balanceItemLedger);
 
                       //    шапка документа поставки
 waybillStatement 'Номер накладной' (statement) = DATA STRING[7] (statement) IN documentHeaderGroup FIXEDCHARWIDTH 7;
@@ -4478,7 +4478,7 @@ CLASS batch 'Партия';
 
 CLASS ABSTRACT batchShipment 'Партия из прихода' : batch, balanceItemLedger, importerPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
 
-@metaCodeObjectWithPost(shipment, 'Поставка', 'Закрытая поставка', batchShipment);
+@metaCodeObjectWithPost(shipment, 'Поставка', 'Закрытая поставка', historyObject, batchShipment);
 
 GROUP waybillSum 'Суммы накладной': baseGroup;
 GROUP ordersInfo 'Заказы': baseGroup;
@@ -4890,7 +4890,7 @@ DESIGN shipments FROM DEFAULT {
 }
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
-@metaCodeObjectWithPost (writeOff, 'Списание', 'Закрытое списание', object);
+@metaCodeObjectWithPost (writeOff, 'Списание', 'Закрытое списание', historyObject, object);
 CLASS reasonOff 'Причина списания' : named;
 
 numberWriteOff 'Номер документа' = DATA INTEGER (writeOff) IN documentHeaderGroup;
@@ -4937,7 +4937,7 @@ FORM reasonOff 'Причина списания'
 ;
 
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
-@metaCodeObjectWithPost (innerFlow, 'Расход в отдел', 'Закрытый расход в отдел', balanceItemLedger);
+@metaCodeObjectWithPost (innerFlow, 'Расход в отдел', 'Закрытый расход в отдел', historyObject, balanceItemLedger);
 
 recipientDepartmentInnerFlow 'Отдел-получатель (ИД)' (innerFlow) = DATA departmentStore(innerFlow);
 nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentHeaderGroup;
@@ -5044,7 +5044,7 @@ DESIGN innerFlows FROM DEFAULT {
 }
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
-@metaCodeObjectWithPost (innerArrival, 'Приход в отдел', 'Закрытый приход в отдел', balanceItemLedger);
+@metaCodeObjectWithPost (innerArrival, 'Приход в отдел', 'Закрытый приход в отдел', historyObject, balanceItemLedger);
 
 innerFlowInnerArrival 'Накладная отгрузки с отдела-отправителя (ИД)' (innerArrival) = DATA innerFlowPosted (innerArrival);
 
@@ -5269,7 +5269,7 @@ FORM wastages 'Списания отходов'
 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
-@metaCodeObjectWithPost(returnSupplier, 'Возрат поставщику', 'Закрытый возврат поставщику', balanceItemLedger);
+@metaCodeObjectWithPost(returnSupplier, 'Возрат поставщику', 'Закрытый возврат поставщику', historyObject, balanceItemLedger);
 
 // шапка документа "Возврат поставщику"
 waybillReturnSupplier 'Номер накладной' (returnSupplier) = DATA STRING[7] (returnSupplier) IN documentHeaderGroup FIXEDCHARWIDTH 7;
@@ -5400,6 +5400,76 @@ DESIGN returnSuppliers FROM DEFAULT{
     }
 }
 
+//----------------------------------------------- Переоценка товара ---------------------------------------------------//
+
+CLASS ABSTRACT abstractUserPriceChangeDetail : priceChangeDocumentDetail, accountPriceLedger, retailPriceLedger;
+@metaCodeObjectWithPost (userPriceChange, 'Переоценка товаров', 'Закрытая переоценка товаров', priceChangeDocument, abstractUserPriceChangeDetail);
+
+numberUserPriceChange 'Номер документа' = DATA INTEGER (userPriceChange) IN documentHeaderGroup;
+maxNumberUserPriceChange = UNION OVERRIDE 0, [GROUP MAX numberUserPriceChange(userPriceChange)]();
+nextNumberUserPriceChange = maxNumberUserPriceChange() + 1;
+
+numberUserPriceChange(userPriceChange) <- OLD nextNumberUserPriceChange() ON ASSIGN userPriceChange IS userPriceChange;
+
+quantityUserPriceChangeDetail 'Кол-во переоценки' = DATA DOUBLE (userPriceChangeDetail);
+
+importerPriceUserPriceChangeDetail 'Цена изготовителя' = DATA DOUBLE (userPriceChangeDetail);
+retailRangeUserPriceChangeDetail 'НДС' = DATA range (userPriceChangeDetail);
+numberRetailRangeUserPriceChangeDetail 'НДС, номер' (userPriceChangeDetail) = dataRange(retailRangeUserPriceChangeDetail(userPriceChangeDetail));
+dataRetailRangeUserPriceChangeDetail 'НДС, %' (userPriceChangeDetail) = dataActingRateRangeDate(retailRangeUserPriceChangeDetail(userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail));
+
+oldRetailPriceUserPriceChangeDetail 'Старая розничная цена' = DATA DOUBLE (userPriceChangeDetail);
+retailPriceUserPriceChangeDetail 'Новая розничная цена' = DATA DOUBLE (userPriceChangeDetail);
+
+FORM userPriceChange 'Переоценка товаров'
+    OBJECTS u=userPriceChange FIXED PANEL
+    PROPERTIES (u) numberUserPriceChange, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
+
+    OBJECTS d=userPriceChangeDetail
+    PROPERTIES (d) numberUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
+                   importerPriceUserPriceChangeDetail, numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
+                   oldRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail,
+                   ADDOBJ, delete
+
+    PROPERTIES addUserPriceChangeDetailBarcode(u) TODRAW d
+    FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
+
+    EDIT userPriceChange OBJECT u
+;
+
+DESIGN userPriceChange FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+    }
+}
+
+FORM userPriceChanges 'Переоценки товаров'
+
+    OBJECTS u=userPriceChange
+    PROPERTIES (u) READONLY objectClassName, numberUserPriceChange, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
+
+    PROPERTIES (u) ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
+                   postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
+
+    OBJECTS d=userPriceChangeDetail
+    PROPERTIES (d) numberUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
+                   importerPriceUserPriceChangeDetail, numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
+                   oldRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail,
+                   ADDOBJ, delete
+
+    FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
+;
+
+DESIGN userPriceChanges FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+    PROPERTY (delete(u)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
 dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
@@ -5462,18 +5532,23 @@ META metaCodeItemDepartmentStoreLedger(prefix)
     nameItem###prefix##Ledger 'Товар' (ledger) = nameAttributeItem(item###prefix##Ledger(ledger));
     nameDepartmentStore###prefix##Ledger 'Отдел магазина' (ledger) = name(departmentStore###prefix##Ledger(ledger));
 
-    ledger###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX ledger AND
-        itemImporterPriceLedger(ledger) == item AND departmentStoreImporterPriceLedger(ledger) == departmentStore AND isPosted###prefix##Ledger(ledger) AND
-        dateTimeImporterPriceLedger(ledger) ==
-            [GROUP MAX dateTime###prefix##Ledger(ledger) AND
-                       item###prefix##Ledger(ledger) == item AND
-                       departmentStore###prefix##Ledger(ledger) == departmentStore AND
-                       isPosted###prefix##Ledger(ledger) AND
+    ledger###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX ledger AND isPosted###prefix##Ledger(ledger) AND
+        dateTime###prefix##Ledger(ledger) ==
+            [GROUP MAX dateTime###prefix##Ledger(ledger) AND isPosted###prefix##Ledger(ledger) AND
                        dateTime###prefix##Ledger(ledger) <= (dateIn AS DATETIME)
-            BY item, departmentStore, dateIn](item, departmentStore, dateTime)
-        BY item, departmentStore, dateTime;
+                       BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateIn]
+            (item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateTime)
+        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateTime;
 
     // todo : переделать на concat и deconcat
+
+//    order###prefix##Ledger = LIST(dateTime###prefix##Ledger(ledger), ledger) PERSISTENT;
+//
+//    concatLedger###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX order###prefix##Ledger(ledger) AND
+//        isPosted###prefix##Ledger(ledger) AND dateTime###prefix##Ledger(ledger) <= (dateTime AS DATETIME)
+//        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateTime;
+//
+//    ledger###prefix##DateTime (item, departmentStore, dateTime) = concatLedger###prefix##DateTime(item, departmentStore, dateTime)[2];
 
 END
 
@@ -5503,22 +5578,40 @@ dataRetailLedgerDateTime 'НДС, %' (item, departmentStore, dateTime) =
             dataActingRateRangeDate(rangeRetailLedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
 
 // Цена учетная
-dateTimeAccountPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger);
-isPostedAccountPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger);
-itemAccountPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger);
-departmentStoreAccountPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger);
-priceAccountLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger);
+dateTimeAccountPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
+                                                                   dateTimeUserPriceChangeDetail(ledger);
+
+isPostedAccountPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
+                                                               isPostedUserPriceChangeDetail(ledger);
+
+itemAccountPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
+                                                  itemUserPriceChangeDetail(ledger);
+
+departmentStoreAccountPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
+                                                             departmentStoreUserPriceChangeDetail(ledger);
+
+priceAccountLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger),
+                                                     retailPriceUserPriceChangeDetail(ledger);
 
 @metaCodeItemDepartmentStoreLedger(accountPrice);
 
 priceAccountLedgerDateTime (item, departmentStore, dateTime) = priceAccountLedger(ledgerAccountPriceDateTime(item, departmentStore, dateTime));
 
 // Цена розничная
-dateTimeRetailPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger);
-isPostedRetailPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger);
-itemRetailPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger);
-departmentStoreRetailPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger);
-priceRetailLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger);
+dateTimeRetailPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
+                                                                  dateTimeUserPriceChangeDetail(ledger);
+
+isPostedRetailPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
+                                                              isPostedUserPriceChangeDetail(ledger);
+
+itemRetailPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
+                                                 itemUserPriceChangeDetail(ledger);
+
+departmentStoreRetailPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
+                                                            departmentStoreUserPriceChangeDetail(ledger);
+
+priceRetailLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger),
+                                                    retailPriceUserPriceChangeDetail(ledger);
 
 @metaCodeItemDepartmentStoreLedger(retailPrice);
 
@@ -5674,36 +5767,47 @@ convertPriceCollationSheet 'Пересчитать цены в сличител�
 //---------------------------- Переоценка (конкретная реализация) ----------------------------------------//
 
 datePriceChangeDocument 'Дата' (priceChangeDocument) = UNION EXCLUSIVE datePriceChangeShipment(priceChangeDocument),
-                                                                       datePriceChangeStatement(priceChangeDocument);
+                                                                       datePriceChangeStatement(priceChangeDocument),
+                                                                       dateUserPriceChange(priceChangeDocument);
 
 departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE departmentStorePriceChangeShipment(priceChangeDocument),
-                                                                           departmentStorePriceChangeStatement(priceChangeDocument);
+                                                                           departmentStorePriceChangeStatement(priceChangeDocument),
+                                                                           departmentStoreUserPriceChange(priceChangeDocument);
 nameDepartmentStorePriceChangeDocument 'Отдел магазина' (priceChangeDocument) = name(departmentStorePriceChangeDocument(priceChangeDocument));
 
 documentPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE priceChangeShipmentPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                priceChangeStatementPriceChangeStatementDetail(priceChangeDocumentDetail);
+                                                                                priceChangeStatementPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                userPriceChangeUserPriceChangeDetail(priceChangeDocumentDetail);
 
 itemPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE itemPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                            itemPriceChangeStatementDetail(priceChangeDocumentDetail);
+                                                                            itemPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                            itemUserPriceChangeDetail(priceChangeDocumentDetail);
 nameItemPriceChangeDocumentDetail 'Товар' (priceChangeDocumentDetail) = nameAttributeItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = UNION EXCLUSIVE quantityPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                          quantityPriceChangeStatementDetail(priceChangeDocumentDetail);
+                                                                                          quantityPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                          quantityUserPriceChangeDetail(priceChangeDocumentDetail);
 
 oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldImporterPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                                              oldImporterPriceChangeStatementDetail(priceChangeDocumentDetail);
+                                                                                                              oldImporterPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                              importerPriceUserPriceChangeDetail(priceChangeDocumentDetail);
 importerPriceChangeDocumentDetail 'Новая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                                          importerPriceChangeStatementDetail(priceChangeDocumentDetail);
+                                                                                                          importerPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                          importerPriceUserPriceChangeDetail(priceChangeDocumentDetail);
 
 oldDataRetailRangePriceChangeDocumentDetail 'Старый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldDataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                                          oldDataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail);
+                                                                                                          oldDataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                          dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail);
 dataRetailRangePriceChangeDocumentDetail 'Новый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE dataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                                      dataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail);
+                                                                                                      dataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                      dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail);
 
 oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldRetailPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                                         oldRetailPriceChangeStatementDetail(priceChangeDocumentDetail);
+                                                                                                         oldRetailPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                         oldRetailPriceUserPriceChangeDetail(priceChangeDocumentDetail);
 retailPriceChangeDocumentDetail 'Новая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE retailPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                                     retailPriceChangeStatementDetail(priceChangeDocumentDetail);
+                                                                                                     retailPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                     retailPriceUserPriceChangeDetail(priceChangeDocumentDetail);
 
 FORM priceChangeDocuments 'Акты переоценки'
     OBJECTS pc=priceChangeDocument
@@ -6023,6 +6127,7 @@ NAVIGATOR {
             ADD statements;
         }
         NEW priceManagement 'Управление ценами' {
+            ADD userPriceChanges;
             ADD priceChangeDocuments;
         }
     }
@@ -6162,6 +6267,7 @@ NAVIGATOR {
             ADD specificationForm;
             ADD statement;
             ADD numerator;
+            ADD userPriceChange;
         }
         ADD importData;
         ADD globalParameters;
