@@ -1522,7 +1522,7 @@ FORM tax 'Налог'
     PROPERTIES(ra)    READONLY dataActingRateRange, dateFromActingRateRange, dateToActingRateRange
 
     OBJECTS           rt=rate
-    PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
+    PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, OBJVALUE, ADDOBJ, delete
 
     TREE treeCompanyStore a=STRING[3], co=company
 
@@ -4113,6 +4113,12 @@ nameObjectiveAcquiringSpecification 'Цель приобретения' (specifi
 dateSpecification 'Дата документа' (specification) = DATA DATE (specification) IN documentHeaderGroup;
 dateSpecification (specification) <- currentDate() ON ASSIGN specification AS specification;
 
+timeSpecification 'Время документа' (specification) = DATA TIME (specification) IN documentHeaderGroup;
+    timeSpecification (specification) <- currentTime() ON ASSIGN specification AS specification;
+
+dateTimeSpecification 'Дата/время документа' (specification) = toDateTime(dateSpecification(specification), timeSpecification(specification));
+
+
 dateToSpecification 'Срок действия с/ф' (specification) = DATA DATE (specification) IN documentHeaderGroup;
 overdueSpecification 'Просроченные с/ф' (specification) = dateToSpecification(specification) < currentDate();
 noOverdueSpecification 'Непросроченные с/ф' (specification) = dateToSpecification(specification) >= currentDate();
@@ -4126,6 +4132,8 @@ noteSpecification 'Примечание' = DATA STRING[100] (specification) IN a
 
 specificationDetailSpec 'Строка документа (ИД)' = DATA specification (detailSpec) IN idGroup;
 inSpecificationDetailSpec (specification, detailSpec) = specificationDetailSpec(detailSpec) == specification;
+
+dateTimeDetailSpec 'Дата/время отгрузки' (detailSpec) = dateTimeSpecification(specificationDetailSpec(detailSpec));
 
 numberDetailSpec 'Номер строки' (detailSpec) =
     PARTITION SUM 1 IF detailSpec IS detailSpec BY specificationDetailSpec(detailSpec)
@@ -4160,18 +4168,16 @@ quantityDetailInSpecification 'Количество строк в докумен
 
     }TOOLBAR EDITKEY 'F4';
 
-//datePriceSpecification 'Цена на дату' = DATA DATE (specification) IN additionalInfo;
-//datePriceSpecification (specification) <- currentDate() ON ASSIGN specification AS specification;
-
 quantityDetailSpec 'Кол-во товара' = DATA DOUBLE (detailSpec) IN baseGroup;
 
 quantitySpecification 'Общее кол-во' (specification) = GROUP SUM quantityDetailSpec(detailSpec)
                                                     BY specificationDetailSpec(detailSpec) IN waybillSum;
+departmentStoreDetailSpec(detailSpec) = departmentStoreSpecification(specificationDetailSpec(detailSpec));
 
 retailPriceDetailSpec 'Цена товара (розн.)' = DATA DOUBLE (detailSpec) IN baseGroup;
-retailPriceDetailSpec(detailSpec) <- retailPriceItemDepartmentVal (itemDetailSpec(detailSpec),
-                                                                   departmentStoreSpecification(specificationDetailSpec(detailSpec)),
-                                                                   dateSpecification(specificationDetailSpec(detailSpec))) ON CHANGE itemDetailSpec(detailSpec);
+//retailPriceDetailSpec(detailSpec) <- retailPriceItemDepartmentVal (itemDetailSpec(detailSpec),
+//                                                                   departmentStoreDetailSpec(detailSpec),
+//                                                                   dateSpecification(specificationDetailSpec(detailSpec))) ON CHANGE itemDetailSpec(detailSpec);
 
 sumDetailSpec 'Сумма' (detailSpec) = round0(retailPriceDetailSpec(detailSpec)*quantityDetailSpec(detailSpec));
 sumSpecification 'Общая сумма' (specification) = GROUP SUM sumDetailSpec(detailSpec) BY specificationDetailSpec(detailSpec) IN waybillSum;
@@ -4181,7 +4187,7 @@ specificationsTaxNDSDetailSpec(detailSpec) = tax.taxNDS IF detailSpec IS detailS
 rangeDetailSpec (detailSpec) = DATA range (detailSpec) IN baseGroup;
 dataActingRateRangeDetailSpec 'Ставка НДС расчетная,%' (detailSpec) = dataActingRateRangeDate(rangeDetailSpec(detailSpec), dateSpecification(specificationDetailSpec(detailSpec))) IN baseGroup;
 rangeDetailSpec (detailSpec) <- rangeToTaxStore(specificationsTaxNDSDetailSpec(detailSpec),
-                                storeDepartmentStore(departmentStoreSpecification(specificationDetailSpec(detailSpec)))) ON ASSIGN detailSpec IS detailSpec;
+                                storeDepartmentStore(departmentStoreDetailSpec(detailSpec))) ON ASSIGN detailSpec IS detailSpec;
 
 
 sumNDSDetailSpec 'НДС за ед.' (detailSpec) = round0(dataActingRateRangeDetailSpec(detailSpec)*retailPriceDetailSpec(detailSpec)/100) IN baseGroup;
@@ -4197,21 +4203,20 @@ sumNDSSpecification 'Общая сумма НДС' (specification) = GROUP SUM t
 //dataRetailRangeDetailSpec 'НДС розничный,%' (detailSpec) = dataActingRateRange(retailRangeDetailSpec(detailSpec)) IN itemDetailSpecInfo;
 //retailRangeDetailSpec(detailSpec) <- overrideRateRangeItem(itemDetailSpec(detailSpec)) ON CHANGE itemDetailSpec(detailSpec);
 
-
 articleItemDetailSpec 'Артикул производителя/поставщика' (detailSpec) = articleItem(itemDetailSpec(detailSpec));
 nameCountryItemDetailSpec 'Страна производства/происхождения' (detailSpec) = nameCountryItem(itemDetailSpec(detailSpec));
 
 balanceDepartmentStoreItemDetailSpec 'Текущий остаток' (detailSpec) =
-    balanceDepartmentStoreItem(departmentStoreSpecification(specificationDetailSpec(detailSpec)), itemDetailSpec(detailSpec));
+    balanceDepartmentStoreItem(departmentStoreDetailSpec(detailSpec), itemDetailSpec(detailSpec));
 
 minReserveItemDepartmentDetailSpec 'Минимальнодопустимый товарный запас в днях' (detailSpec) =
     minReserveItemDepartmentOver(itemDetailSpec(detailSpec),
-    departmentStoreSpecification(specificationDetailSpec(detailSpec)),
+    departmentStoreDetailSpec(detailSpec),
     dateSpecification(specificationDetailSpec(detailSpec)));
 
 maxReserveItemDepartmentDetailSpec 'Максимальнодопустимый товарный запас в днях' (detailSpec) =
     maxReserveItemDepartmentOver(itemDetailSpec(detailSpec),
-    departmentStoreSpecification(specificationDetailSpec(detailSpec)),
+    departmentStoreDetailSpec(detailSpec),
     dateSpecification(specificationDetailSpec(detailSpec)));
 
 quantityItemSpecification 'Количество товара в спецификации' (item, specification) = GROUP SUM quantityDetailSpec(detailSpec)
@@ -4222,13 +4227,13 @@ balanceItemSpecification 'Текущий остаток по товару' (item
 
 quantityItemDepartmentStore 'Количество выставленного товара на тек. момент' (departmentStore, item) = GROUP SUM
     quantityDetailSpec(detailSpec) IF noOverdueSpecification(specificationDetailSpec(detailSpec))
-    BY departmentStoreSpecification(specificationDetailSpec(detailSpec)), itemDetailSpec(detailSpec);
+    BY departmentStoreDetailSpec(detailSpec), itemDetailSpec(detailSpec);
 
 availableQuantityItemDepartmentStore 'Доступное к-во, с учетом непросроченных с/ф' (departmentStore, item) =
     balanceDepartmentStoreItem(departmentStore, item)-quantityItemDepartmentStore(departmentStore, item);
 
 availableQuantityItemByDetailSpec 'Доступное к-во, с учетом непросроченных с/ф' (detailSpec) =
-    availableQuantityItemDepartmentStore(departmentStoreSpecification(specificationDetailSpec(detailSpec)), itemDetailSpec(detailSpec));
+    availableQuantityItemDepartmentStore(departmentStoreDetailSpec(detailSpec), itemDetailSpec(detailSpec));
 
 NotNullAvailableQuantityItemByDetailSpec(detailSpec) = availableQuantityItemByDetailSpec(detailSpec) < 0;
 
@@ -4279,6 +4284,8 @@ isCustomerStatementSpecification 'Заявка покупателя' (statement,
 isDepartmentStoreStatementSpecification 'Заявка отдела' (statement, specification) = departmentStoreStatement(statement)== departmentStoreSpecification(specification);
 
 dateStatementDetail 'Дата отгрузки' (statementDetail) = dateStatement(statementStatementDetail(statementDetail));
+dateTimeStatementDetail 'Дата/время отгрузки' (statementDetail) = dateTimeStatement(statementStatementDetail(statementDetail));
+//isPostedStatementDetail 'Закрыт' (statementDetail) = isPostedStatement(statementStatementDetail(statementDetail));
 
 quantityStatementsInSpecification(specification) = GROUP SUM 1 IF inStatementSpecification(statement, specification) BY specification;
 noQuantityStatementsInSpecification(specification) = specification IS specification AND NOT quantityStatementsInSpecification(specification);
@@ -4288,7 +4295,6 @@ statusSpecification 'Расход' (specification) = CASE
     DEFAULT 'Отгрузок не было' IF specification IS specification
     END  MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
- //атрибуты для подсказки по товару строки
 
 //количество-цены по строкам
 GROUP pricingStatementDetailInfo 'Дополнительные ценовые параметры': publicGroup;
@@ -4297,21 +4303,24 @@ quantityStatementDetail 'Количество' (statementDetail) = DATA DOUBLE (
 retailPriceStatementDetail 'Цена товара (розн.)'(statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
 sumStatementDetail 'Сумма' (statementDetail) = round0(retailPriceStatementDetail(statementDetail)*quantityStatementDetail(statementDetail))IN baseGroup;
 
-retailPriceStatementDetail(statementDetail) <- retailPriceItemDepartmentVal (itemStatementDetail(statementDetail),
-                                                                   departmentStoreStatement(statementStatementDetail(statementDetail)),
-                                                                   dateStatement(statementStatementDetail(statementDetail))) ON CHANGE itemStatementDetail(statementDetail);
+//departmentStoreStatementDetail(statementDetail) = departmentStoreStatement(statementStatementDetail(statementDetail));
+//retailPriceStatementDetail(statementDetail) <- retailPriceItemDepartmentVal (itemStatementDetail(statementDetail),
+//                                                                   departmentStoreStatementDetail(statementDetail),
+//                                                                   dateStatement(statementStatementDetail(statementDetail))) ON CHANGE itemStatementDetail(statementDetail);
 
-priceRetailStatementDetail 'Цена товара на момент отгрузки' (statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
-priceRetailStatementDetail(statementDetail) <- retailPriceItemDepartmentVal (itemStatementDetail(statementDetail),
-                                                                   departmentStoreStatement(statementStatementDetail(statementDetail)),
-                                                                   dateStatement(statementStatementDetail(statementDetail))) ON CHANGE itemStatementDetail(statementDetail);
+oldRetailPriceStatementDetail 'Розничная цена действующая' (statementDetail) = DATA DOUBLE (statementDetail) IN itemStatementDetailInfo;
+
+//priceRetailStatementDetail 'Цена товара на момент отгрузки' (statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
+//priceRetailStatementDetail(statementDetail) <- retailPriceItemDepartmentVal (itemStatementDetail(statementDetail),
+//                                                                   departmentStoreStatementDetail(statementDetail),
+//                                                                   dateStatement(statementStatementDetail(statementDetail))) ON CHANGE itemStatementDetail(statementDetail);
 
 
 taxNDSStatementDetail(statementDetail) = tax.taxNDS IF statementDetail IS statementDetail IN idGroup;
 rangeStatementDetail (statementDetail) = DATA range (statementDetail) IN idGroup;
 dataActingRateRangeStatementDetail 'Ставка НДС расчетная' (statementDetail) = dataActingRateRangeDate(rangeStatementDetail(statementDetail),  dateStatement(statementStatementDetail(statementDetail))) IN waybillSum;
 rangeStatementDetail (statementDetail) <- rangeToTaxStore(taxNDSStatementDetail(statementDetail),
-                                          storeDepartmentStore(departmentStoreStatement(statementStatementDetail(statementDetail)))) ON ASSIGN statementDetail IS statementDetail;
+                                          storeDepartmentStore(departmentStoreStatementDetail(statementDetail))) ON ASSIGN statementDetail IS statementDetail;
 
 
 sumNDSStatementDetail 'НДС за ед.' (statementDetail) = round0(dataActingRateRangeStatementDetail(statementDetail)*retailPriceStatementDetail(statementDetail)/100) IN baseGroup;
@@ -4341,16 +4350,16 @@ articleItemStatementDetail 'Артикул производителя/поста
 nameCountryItemStatementDetail 'Страна производства/происхождения' (statementDetail) = nameCountryItem(itemStatementDetail(statementDetail));
 
 balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) =
-    balanceDepartmentStoreItem(departmentStoreStatement(statementStatementDetail(statementDetail)), itemStatementDetail(statementDetail));
+    balanceDepartmentStoreItem(departmentStoreStatementDetail(statementDetail), itemStatementDetail(statementDetail));
 
 minReserveItemDepartmentStatementDetail 'Минимальнодопустимый товарный запас в днях' (statementDetail) =
     minReserveItemDepartmentOver(itemStatementDetail(statementDetail),
-    departmentStoreStatement(statementStatementDetail(statementDetail)),
+    departmentStoreStatementDetail(statementDetail),
     dateStatement(statementStatementDetail(statementDetail)));
 
 maxReserveItemDepartmentStatementDetail 'Максимальнодопустимый товарный запас в днях' (statementDetail) =
     maxReserveItemDepartmentOver(itemStatementDetail(statementDetail),
-    departmentStoreStatement(statementStatementDetail(statementDetail)),
+    departmentStoreStatementDetail(statementDetail),
     dateStatement(statementStatementDetail(statementDetail)));
 
 CONSTRAINT quantityStatementDetail(statementDetail) <= 0 MESSAGE 'Количество должно быть положительным';
@@ -4394,7 +4403,7 @@ GROUP itemStatementDetailInfo 'Информация по товару' : publicG
 CLASS priceChangeStatement 'Переоценка при отгрузке из розницы' : priceChangeDocument;
 CLASS priceChangeStatementDetail 'Строка переоценки при отгрузке из розницы' : priceChangeDocumentDetail;
 
-needToPriceChangeStatementDetail (statementDetail) = priceRetailStatementDetail(statementDetail) != retailPriceStatementDetail(statementDetail) AND
+needToPriceChangeStatementDetail (statementDetail) = oldRetailPriceStatementDetail(statementDetail) != retailPriceStatementDetail(statementDetail) AND
                                                    quantityStatementDetail(statementDetail) >0; // <= balanceDepartmentStoreItemStatementDetail(statementDetail);
 
 needToPriceChangeStatement (statement) = GROUP SUM 1 IF needToPriceChangeStatementDetail(statementDetail) BY statementStatementDetail(statementDetail);
@@ -4415,8 +4424,7 @@ nameDepartmentStorePriceChangeStatement 'Отдел документа' (priceCh
 
 
 //старые ценовые параметры для переоценок
-oldRetailPriceStatementDetail 'Розничная цена действующая' (statementDetail) = DATA DOUBLE (statementDetail) IN itemStatementDetailInfo;
-oldRetailPriceStatementDetail (statementDetail) <- priceRetailStatementDetail (statementDetail) ON CHANGE itemStatementDetail(statementDetail);  //     subtractDate2
+//oldRetailPriceStatementDetail (statementDetail) <- priceRetailStatementDetail (statementDetail) ON CHANGE itemStatementDetail(statementDetail);  //     subtractDate2
 
 notEqualsPriceStatementDetail(statementDetail)  = retailPriceStatementDetail(statementDetail) != oldRetailPriceStatementDetail(statementDetail);
 
@@ -4424,11 +4432,11 @@ notEqualsPriceStatementDetail(statementDetail)  = retailPriceStatementDetail(sta
 oldRetailRangeStatementDetail(statementDetail) = DATA range (statementDetail) IN idGroup;
 oldDataRetailRangeStatementDetail 'Старый НДС розничный,%' (statementDetail) =
    dataActingRateRangeDate(oldRetailRangeStatementDetail(statementDetail),  dateStatement(statementStatementDetail(statementDetail))) IN itemStatementDetailInfo;
-oldRetailRangeStatementDetail(statementDetail) <- overrideRateRangeItem(itemStatementDetail(statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
+//oldRetailRangeStatementDetail(statementDetail) <- overrideRateRangeItem(itemStatementDetail(statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
 
 oldImporterPriceStatementDetail 'Старая цена изготовителя/импортера' (statementDetail) = DATA DOUBLE (statementDetail) IN itemStatementDetailInfo;
-oldImporterPriceStatementDetail (statementDetail) <- importerPriceItemVal ( itemStatementDetail(statementDetail),
-    dateStatementDetail(statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
+//oldImporterPriceStatementDetail (statementDetail) <- importerPriceItemVal ( itemStatementDetail(statementDetail),
+//    dateStatementDetail(statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
 
 //// атрибуты детализации документа переоценки
 
@@ -4463,7 +4471,7 @@ showFormSpecificationForm 'Показать отгрузки по данной �
 
 FORM specification 'Счет-фактура'
     OBJECTS sp=specification FIXED PANEL
-    PROPERTIES (sp) numberSpecification, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification, nameCustomerSpecification,
+    PROPERTIES (sp) numberSpecification, nameDepartmentStoreSpecification, dateSpecification, timeSpecification, dateToSpecification, nameCustomerSpecification,
     nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
 
     OBJECTS d=detailSpec
@@ -5545,6 +5553,29 @@ oldRetailPriceShipmentDetail (shipmentDetail) <- priceAccountLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
 
+// --------------------------- Использование регистров (автоматическое заполнение): выписка из розницы-------------//
+
+retailPriceDetailSpec (detailSpec) <- priceRetailLedgerDateTime(
+                itemDetailSpec(detailSpec), departmentStoreDetailSpec(detailSpec), dateTimeDetailSpec(detailSpec))
+                ON CHANGE itemDetailSpec(detailSpec);
+
+oldImporterPriceStatementDetail (statementDetail) <- priceImporterLedgerDateTime (
+                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
+                ON CHANGE itemStatementDetail(statementDetail);
+
+oldRetailRangeStatementDetail (statementDetail) <- rangeRetailLedgerDateTime(
+                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
+                ON CHANGE itemStatementDetail(statementDetail);
+
+oldRetailPriceStatementDetail (statementDetail) <- priceRetailLedgerDateTime (
+                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
+                ON CHANGE itemStatementDetail(statementDetail);
+
+retailPriceStatementDetail (statementDetail) <- priceRetailLedgerDateTime (
+                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
+                ON CHANGE itemStatementDetail(statementDetail);
+
+
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
 @metaCodeObjectWithPost(returnSupplier, 'Возрат поставщику', 'Закрытый возврат поставщику', object);
@@ -5942,8 +5973,6 @@ NAVIGATOR {
             ADD addrateNaturalLossItem;
             ADD rateNaturalLossItem;
             ADD genTimeTables;
-//            ADD addNDSSupplierItem;
-//            ADD NDSSupplierItem;
             ADD addpriceWare;
             ADD priceWare;
             ADD rangeWare;
