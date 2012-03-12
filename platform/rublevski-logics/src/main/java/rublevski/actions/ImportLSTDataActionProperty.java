@@ -292,8 +292,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField itemIDField = new ImportField(BL.LM.extSID);
             ImportField supplierIDField = new ImportField(BL.LM.extSID);
             ImportField departmentStoreIDField = new ImportField(BL.LM.extSID);
-            ImportField isSupplierItemDepartmentField = new ImportField(rublevskiLM.getLPByName("nameisSupplierItemDepartmentOver"));
-
+            ImportField isSupplierItemDepartmentField = new ImportField(BL.LM.name);
+            ImportField priceSupplierItemDepartmentField = new ImportField(rublevskiLM.getLPByName("priceSupplierItemDepartmentOver"));
+            
             ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("item"),
                     BL.LM.extSIDToObject.getMapping(itemIDField));
 
@@ -303,18 +304,19 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportKey<?> departmentStoreKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("departmentStore"),
                     BL.LM.extSIDToObject.getMapping(departmentStoreIDField));
 
-            ImportKey<?> yesNoKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("yesNo"),
+            ImportKey<?> logicalKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("yesNo"),
                     rublevskiLM.getLPByName("classSIDToYesNo").getMapping(isSupplierItemDepartmentField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
+            props.add(new ImportProperty(priceSupplierItemDepartmentField, rublevskiLM.getLPByName("priceSupplierItemDepartmentOver").getMapping(supplierKey, itemKey, departmentStoreKey, defaultDate)));
             props.add(new ImportProperty(isSupplierItemDepartmentField, rublevskiLM.getLPByName("isSupplierItemDepartmentOver").getMapping(supplierKey, itemKey, departmentStoreKey, defaultDate),
-                    BL.LM.object(rublevskiLM.getClassByName("yesNo")).getMapping(yesNoKey)));
+                    BL.LM.object(rublevskiLM.getClassByName("yesNo")).getMapping(logicalKey)));
 
-            ImportTable table = new ImportTable(Arrays.asList(itemIDField, supplierIDField, departmentStoreIDField, isSupplierItemDepartmentField), data);
+            ImportTable table = new ImportTable(Arrays.asList(itemIDField, supplierIDField, departmentStoreIDField, isSupplierItemDepartmentField, priceSupplierItemDepartmentField), data);
 
             DataSession session = BL.createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(supplierKey, itemKey, departmentStoreKey, yesNoKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(supplierKey, itemKey, departmentStoreKey, logicalKey), props);
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
@@ -728,7 +730,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 String departmentStore = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
                 Date date = new java.sql.Date(DateUtils.parseDate(new String(importFile.getField("D_CEN").getBytes(), "Cp1251").trim(), new String[]{"yyyyMMdd"}).getTime());
                 Double price = new Double(new String(importFile.getField("N_CENU").getBytes(), "Cp1251").trim());
-                Double markup = new Double(new String(importFile.getField("CENNDSPT").getBytes(), "Cp1251").trim());
+                Double markup = new Double(new String(importFile.getField("N_TN").getBytes(), "Cp1251").trim());
 
                 data.add(Arrays.asList((Object) item, departmentStore, date, price, markup));
             } catch (ParseException e) {
@@ -752,8 +754,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             String item = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
             String supplier = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
             String departmentStore = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
+            Double price = new Double(new String(importFile.getField("N_CENU").getBytes(), "Cp1251").trim());
 
-            data.add(Arrays.asList((Object) item, supplier, "СК" + departmentStore.substring(2, departmentStore.length()), "yes"));
+            data.add(Arrays.asList((Object) item, supplier, "СК" + departmentStore.substring(2, departmentStore.length()), "yes", price));
         }
         return data;
     }
