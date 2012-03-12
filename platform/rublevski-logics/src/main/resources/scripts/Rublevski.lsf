@@ -5486,17 +5486,17 @@ departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipm
 quantityBalanceItemLedger (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
                                                      -quantityStatementDetail(ledger);
 
-currentBalanceItemLedger (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger)
+currentBalanceItemLedger (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
                                                           BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger);
 
 // без учета текущей даты/времени
 balanceBItemLedgerDateTime (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
-                                                                         -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) >= (dateTime AS DATETIME)
+                                                                         -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) >= (dateTime AS DATETIME) AND isPostedBalanceItemLedger(ledger)
                                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
 
 // с учетом текущей даты/времени
 balanceAItemLedgerDateTime (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
-                                                                         -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) > (dateTime AS DATETIME)
+                                                                         -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) > (dateTime AS DATETIME) AND isPostedBalanceItemLedger(ledger)
                                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
 
 //---------------------------- Ценовые регистры (конкретная реализация) ----------------------------------------//
