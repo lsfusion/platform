@@ -8,6 +8,7 @@ import platform.base.BaseUtils;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DateClass;
+import platform.server.classes.StaticCustomClass;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ExecutionContext;
@@ -54,6 +55,11 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             if (rublevskiLM.getLPByName("importPrices").read(context) != null) {
                 Object numberOfItems = rublevskiLM.getLPByName("importNumberItems").read(context);
                 importPrices(path + "//_grmcen.dbf", context, numberOfItems == null ? 0 : (Integer) numberOfItems);
+            }
+
+            if (rublevskiLM.getLPByName("importAssortment").read(context) != null) {
+                Object numberOfItems = rublevskiLM.getLPByName("importNumberItems").read(context);
+                importAssortment(path + "//_strvar.dbf", context, numberOfItems == null ? 0 : (Integer) numberOfItems);
             }
 
             if (rublevskiLM.getLPByName("importCompanies").read(context) != null)
@@ -255,10 +261,60 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(markupField, rublevskiLM.getLPByName("markupItemDepartmentOver").getMapping(itemKey, departmentStoreKey, dateField)));
 
 
-            ImportTable table = new ImportTable(Arrays.asList(itemIDField, departmentStoreIDField, dateField,  priceField, markupField), data);
+            ImportTable table = new ImportTable(Arrays.asList(itemIDField, departmentStoreIDField, dateField, priceField, markupField), data);
 
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, departmentStoreKey), props);
+            service.synchronize(true, false);
+            if (session.hasChanges()) {
+                String result = session.apply(BL);
+                if (result != null)
+                    context.addAction(new MessageClientAction(result, "Ошибка"));
+            }
+            session.close();
+
+        } catch (xBaseJException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void importAssortment(String path, ExecutionContext context, Integer numberOfItems) throws SQLException {
+
+        try {
+            List<List<Object>> data = importAssortmentFromDBF(path, numberOfItems);
+
+            DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
+
+            ImportField itemIDField = new ImportField(BL.LM.extSID);
+            ImportField supplierIDField = new ImportField(BL.LM.extSID);
+            ImportField departmentStoreIDField = new ImportField(BL.LM.extSID);
+            ImportField isSupplierItemDepartmentField = new ImportField(rublevskiLM.getLPByName("nameisSupplierItemDepartmentOver"));
+
+            ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("item"),
+                    BL.LM.extSIDToObject.getMapping(itemIDField));
+
+            ImportKey<?> supplierKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("supplier"),
+                    BL.LM.extSIDToObject.getMapping(supplierIDField));
+
+            ImportKey<?> departmentStoreKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("departmentStore"),
+                    BL.LM.extSIDToObject.getMapping(departmentStoreIDField));
+
+            ImportKey<?> yesNoKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("yesNo"),
+                    rublevskiLM.getLPByName("classSIDToYesNo").getMapping(isSupplierItemDepartmentField));
+
+            List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+
+            props.add(new ImportProperty(isSupplierItemDepartmentField, rublevskiLM.getLPByName("isSupplierItemDepartmentOver").getMapping(supplierKey, itemKey, departmentStoreKey, defaultDate),
+                    BL.LM.object(rublevskiLM.getClassByName("yesNo")).getMapping(yesNoKey)));
+
+            ImportTable table = new ImportTable(Arrays.asList(itemIDField, supplierIDField, departmentStoreIDField, isSupplierItemDepartmentField), data);
+
+            DataSession session = BL.createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(supplierKey, itemKey, departmentStoreKey, yesNoKey), props);
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
@@ -678,6 +734,26 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             } catch (ParseException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
+        }
+        return data;
+    }
+
+    private List<List<Object>> importAssortmentFromDBF(String path, Integer numberOfItems) throws IOException, xBaseJException {
+
+        DBF importFile = new DBF(path);
+        int totalRecordCount = importFile.getRecordCount();
+
+        data = new ArrayList<List<Object>>();
+
+        int recordCount = (numberOfItems != 0 && numberOfItems < totalRecordCount) ? numberOfItems : totalRecordCount;
+
+        for (int i = 0; i < recordCount; i++) {
+            importFile.read();
+            String item = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
+            String supplier = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
+            String departmentStore = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
+
+            data.add(Arrays.asList((Object) item, supplier, "СК" + departmentStore.substring(2, departmentStore.length()), "yes"));
         }
         return data;
     }
