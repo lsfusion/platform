@@ -4679,6 +4679,7 @@ isSupplierShipmentOrder 'Заявка поставщика поставки' (sh
 isDepartmentStoreShipmentOrder 'Заявка отдела поставки' (shipment, orderSupplier) = departmentStoreShipment(shipment)== departmentStoreOrderSupplier(orderSupplier);
 
 dateShipmentDetail 'Дата поставки' (shipmentDetail) = dateShipment(shipmentShipmentDetail(shipmentDetail));
+
 dateTimeShipmentDetail 'Дата/время поставки' (shipmentDetail) = dateTimeShipment(shipmentShipmentDetail(shipmentDetail));
 isPostedShipmentDetail 'Закрыт' (shipmentDetail) = isPostedShipment(shipmentShipmentDetail(shipmentDetail));
 
@@ -4961,7 +4962,7 @@ FORM shipment 'Поставка'
                    noteShipment
 
     OBJECTS d=shipmentDetail
-    PROPERTIES (d)  percentRateWasteShipmentDetail, numberShipmentDetail, nameAttributeItemShipmentDetail, barcodeExSkuShipmentDetail, quantityShipmentDetail,
+    PROPERTIES (d)  numberShipmentDetail, nameAttributeItemShipmentDetail, barcodeExSkuShipmentDetail, quantityShipmentDetail,
                     priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
                     dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
                     nameWareShipmentDetail, dataRetailRangeShipmentDetail,
@@ -5468,9 +5469,9 @@ META metaCodeItemDepartmentStoreLedger(prefix)
     ledger###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX ledger AND
         itemImporterPriceLedger(ledger) == item AND departmentStoreImporterPriceLedger(ledger) == departmentStore AND isPosted###prefix##Ledger(ledger) AND
         dateTimeImporterPriceLedger(ledger) ==
-            [GROUP MAX dateTimeImporterPriceLedger(ledger) AND
-                       itemImporterPriceLedger(ledger) == item AND
-                       departmentStoreImporterPriceLedger(ledger) == departmentStore AND
+            [GROUP MAX dateTime###prefix##Ledger(ledger) AND
+                       item###prefix##Ledger(ledger) == item AND
+                       departmentStore###prefix##Ledger(ledger) == departmentStore AND
                        isPosted###prefix##Ledger(ledger) AND
                        dateTime###prefix##Ledger(ledger) <= (dateIn AS DATETIME)
             BY item, departmentStore, dateIn](item, departmentStore, dateTime)
