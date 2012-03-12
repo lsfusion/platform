@@ -75,9 +75,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitNotFoundError(LsfLogicsParser parser, String objectName, String name) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText(objectName + " '" + name + "' not found\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, format("%s '%s' not found", objectName, name));
     }
 
     public void emitClassNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
@@ -182,27 +180,21 @@ public class ScriptingErrorLog {
     }
 
     public void emitParamIndexError(LsfLogicsParser parser, int paramIndex, int paramCount) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
         String errText = "wrong parameter index $" + String.valueOf(paramIndex);
         if (paramIndex < 1) {
             errText += ", first parameter is $1";
         } else {
             errText += ", last parameter is $" + String.valueOf(paramCount);
         }
-        String msg = getSemanticRecognitionErrorText(errText + "\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, errText);
     }
 
     public void emitBuiltInClassAsParentError(LsfLogicsParser parser, String className) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("built-in class '" + className + "' cannot be inherited\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, format("built-in class '%s' cannot be inherited", className));
     }
 
     public void emitStaticClassAsParentError(LsfLogicsParser parser, String className) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("static class '" + className + "' cannot be inherited\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, format("static class '%s' cannot be inherited", className));
     }
 
     public void emitBuiltInClassFormSetupError(LsfLogicsParser parser, String className) throws SemanticErrorException {
@@ -214,15 +206,11 @@ public class ScriptingErrorLog {
     }
 
     public void emitNonStaticHasInstancesError(LsfLogicsParser parser, String className) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("сlass '" + className + "' must be static to have instances\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, format("сlass '%s' must be static to have instances", className));
     }
 
     public void emitStaticHasNoInstancesError(LsfLogicsParser parser, String className) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("static сlass '" + className + "' should have instances\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, format("static сlass '%s' should have instances", className));
     }
 
     public void emitParamCountError(LsfLogicsParser parser, LP<?> property, int paramCount) throws SemanticErrorException {
@@ -231,10 +219,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitParamCountError(LsfLogicsParser parser, int interfacesCount, int paramCount) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText(String.valueOf(interfacesCount) + " parameter(s) expected, " +
-                String.valueOf(paramCount) + " provided\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, format("%d parameter(s) expected, %d provided", interfacesCount, paramCount));
     }
 
     public void emitConstraintPropertyAlwaysNullError(LsfLogicsParser parser) throws SemanticErrorException {
@@ -250,15 +235,11 @@ public class ScriptingErrorLog {
     }
 
     public void emitPropertyAlwaysNullError(LsfLogicsParser parser, String propertyName) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("property '" + propertyName +  "' is always NULL\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, format("property '%s' is always NULL", propertyName));
     }
 
     public void emitAlreadyDefinedError(LsfLogicsParser parser, String type, String name) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText(type + " '" + name + "' was already defined\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, format("%s '%s' was already defined", type, name));
     }
 
     public void emitNamedParamsError(LsfLogicsParser parser) throws SemanticErrorException {
