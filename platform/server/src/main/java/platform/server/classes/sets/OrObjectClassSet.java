@@ -51,7 +51,27 @@ public class OrObjectClassSet implements OrClassSet, AndClassSet {
         ConcreteCustomClassSet orSet = new ConcreteCustomClassSet();
         orSet.addAll(set,node.up,false);
         orSet.addAll(node.set,up,false);
-        return new OrObjectClassSet(up.add(node.up),orSet,unknown || node.unknown);
+        UpClassSet orUp = up.add(node.up);
+
+        while(true) {
+            UpClassSet parentSet = null;
+            for(int i=0;i<orSet.size;i++) {
+                for(CustomClass parent : orSet.get(i).parents)
+                    if(parent.upInSet(orUp, orSet)) {
+                        parentSet = new UpClassSet(parent);
+                        break;
+                    }
+                if(parentSet!=null)
+                    break;
+            }
+            // remove'им orSet
+            if(parentSet == null)
+                return new OrObjectClassSet(orUp,orSet,unknown || node.unknown);
+            else {
+                orSet = orSet.remove(parentSet);
+                orUp = orUp.add(parentSet);
+            }
+        }
     }
 
     public OrObjectClassSet and(OrClassSet node) {

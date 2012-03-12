@@ -54,7 +54,7 @@ public class ModifyQuery {
                 String SelectString = syntax.getSelect(fromSelect, SQLSession.stringExpr(
                         SQLSession.mapNames(changeCompile.keySelect,changeCompile.keyNames,keyOrder),
                         SQLSession.mapNames(changeCompile.propertySelect,changeCompile.propertyNames,propertyOrder)),
-                        BaseUtils.toString(whereSelect, " AND "),"","","");
+                        BaseUtils.toString(whereSelect, " AND "),"","","", "");
 
                 setString = "";
                 for(KeyField field : keyOrder)

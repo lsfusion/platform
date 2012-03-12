@@ -75,7 +75,7 @@ public interface SQLSyntax {
     String getByteArrayType();
     int getByteArraySQL();
 
-    String getSelect(String from,String exprs,String where,String orderBy,String groupBy, String top);
+    String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top);
 
     boolean nullUnionTrouble();
     String getUnionOrder(String union,String orderBy, String top);
@@ -83,7 +83,7 @@ public interface SQLSyntax {
     // проблема что inline'ся query и идут duplicate subplan'ы
     boolean inlineTrouble();
 
-    String getOrderDirection(boolean descending);
+    String getOrderDirection(boolean descending, boolean notNull);
 
     String getHour();
     String getMinute();

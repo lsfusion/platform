@@ -1766,13 +1766,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     //////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
 
-    protected Set<List<? extends Property>> indexes = new HashSet<List<? extends Property>>();
+    protected Map<List<? extends Property>, Boolean> indexes = new HashMap<List<? extends Property>, Boolean>();
 
     public void addIndex(LP<?>... lps) {
         List<Property> index = new ArrayList<Property>();
         for (LP<?> lp : lps)
             index.add(lp.property);
-        indexes.add(index);
+        indexes.put(index, lps[0].property.getType() instanceof DataClass);
     }
 
 

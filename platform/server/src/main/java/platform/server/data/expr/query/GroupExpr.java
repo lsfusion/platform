@@ -11,6 +11,7 @@ import platform.server.data.expr.where.pull.*;
 import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.query.AndContext;
 import platform.server.data.query.CompileSource;
+import platform.server.data.query.CompiledQuery;
 import platform.server.data.query.SubQueryContext;
 import platform.server.data.query.innerjoins.*;
 import platform.server.data.query.stat.StatKeys;
@@ -86,7 +87,9 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         }
 
         public String getSource(Map<Expr, String> fromPropertySelect, SQLSyntax syntax, Type resultType) {
-            return type.getSource(BaseUtils.mapList(exprs, fromPropertySelect), BaseUtils.mapOrder(orders, fromPropertySelect), resultType, syntax);
+            Set<Expr> ordersNotNull = new HashSet<Expr>();
+            OrderedMap<Expr, Boolean> packOrders = CompiledQuery.getOrdersNotNull(orders, BaseUtils.toMap(orders.keySet()), ordersNotNull);
+            return type.getSource(BaseUtils.mapList(exprs, fromPropertySelect), BaseUtils.mapOrder(packOrders, fromPropertySelect), BaseUtils.mapSet(ordersNotNull,fromPropertySelect), resultType, syntax);
         }
     }
 
@@ -184,7 +187,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
             whereSelect.add(fromPropertySelect.get(groupEntry.getKey())+"="+groupEntry.getValue().getSource(source));
 
         return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect, source.syntax, getType()),
-                BaseUtils.toString(whereSelect, " AND "), "", "", "") + ")";
+                BaseUtils.toString(whereSelect, " AND "), "", "", "", "") + ")";
     }
 
     @IdentityLazy

@@ -101,6 +101,13 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K, V> Set<V> mapSet(Set<K> set, Map<K, ? extends V> map) { // map предполагается reversed
+        Set<V> result = new HashSet<V>();
+        for (K element : set)
+            result.add(map.get(element));
+        return result;
+    }
+
     public static <K, E, V> Map<K, V> innerJoin(Map<K, E> map, Map<E, V> joinMap) {
         Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<K, E> entry : map.entrySet()) {

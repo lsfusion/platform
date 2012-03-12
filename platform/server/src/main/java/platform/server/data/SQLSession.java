@@ -142,7 +142,7 @@ public class SQLSession extends MutableObject {
         for(KeyField key : keys)
             keyStrings.add(key.name);
         for(int i=1;i<keys.size();i++)
-            addIndex(table, keyStrings.subList(i, keys.size()));
+            addIndex(table, BaseUtils.toOrderedMap(keyStrings.subList(i, keys.size()), true));
     }
 
     private String getConstraintName(String table) {
@@ -177,24 +177,43 @@ public class SQLSession extends MutableObject {
         logger.info(" Done");
     }
 
-    static String getIndexName(String table, Collection<String> fields) {
+    static String getIndexName(String table, OrderedMap<String, Boolean> fields) {
         String name = table + "_idx";
-        for (String indexField : fields)
+        for (String indexField : fields.keySet())
             name = name + "_" + indexField;
         return name;
     }
 
-    public void addIndex(String table, List<String> fields) throws SQLException {
+    private OrderedMap<String, Boolean> getOrderFields(List<KeyField> keyFields, List<String> fields, boolean order) {
+        OrderedMap<String, Boolean> result = new OrderedMap<String, Boolean>();
+        for (String element : fields)
+            result.put(element, false);
+        if(order) {
+            for(KeyField key : keyFields)
+                result.put(key.name, true);
+        }
+        return result;
+    }
+    
+    public void addIndex(String table, List<KeyField> keyFields, List<String> fields, boolean order) throws SQLException {
+        addIndex(table, getOrderFields(keyFields, fields, order));
+    }
+
+    public void addIndex(String table, OrderedMap<String, Boolean> fields) throws SQLException {
         logger.info(ServerResourceBundle.getString("data.index.creation") + " " + getIndexName(table, fields) + "... ");
         String columns = "";
-        for (String indexField : fields)
-            columns = (columns.length() == 0 ? "" : columns + ",") + indexField;
+        for (Map.Entry<String, Boolean> indexField : fields.entrySet())
+            columns = (columns.length() == 0 ? "" : columns + ",") + indexField.getKey() + " ASC" + (indexField.getValue()?"":" NULLS FIRST");
 
         executeDDL("CREATE INDEX " + getIndexName(table, fields) + " ON " + table + " (" + columns + ")");
         logger.info(" Done");
     }
 
-    public void dropIndex(String table, Collection<String> fields) throws SQLException {
+    public void dropIndex(String table, List<KeyField> keyFields, List<String> fields, boolean order) throws SQLException {
+        dropIndex(table, getOrderFields(keyFields, fields, order));
+    }
+    
+    public void dropIndex(String table, OrderedMap<String, Boolean> fields) throws SQLException {
         logger.info(ServerResourceBundle.getString("data.index.deletion") + " " + getIndexName(table, fields) + "... ");
         executeDDL("DROP INDEX " + getIndexName(table, fields));
         logger.info(" Done");
@@ -310,7 +329,7 @@ public class SQLSession extends MutableObject {
     // напрямую не используется, только через Pool
 
     private void dropTemporaryTableFromDB(String tableName) throws SQLException {
-        executeDDL(syntax.getDropSessionTable(tableName), ExecuteEnvironment.NOREEADONLY);
+        executeDDL(syntax.getDropSessionTable(tableName), ExecuteEnvironment.NOREADONLY);
     }
 
     public void createTemporaryTable(String name, List<KeyField> keys, Collection<PropertyField> properties) throws SQLException {
@@ -322,14 +341,11 @@ public class SQLSession extends MutableObject {
         for (PropertyField prop : properties)
             createString = (createString.length() == 0 ? "" : createString + ',') + prop.getDeclare(syntax);
         createString = createString + "," + getConstraintDeclare(name, keys);
-        executeDDL(syntax.getCreateSessionTable(name, createString), ExecuteEnvironment.NOREEADONLY);
+        executeDDL(syntax.getCreateSessionTable(name, createString), ExecuteEnvironment.NOREADONLY);
     }
 
     public void analyzeSessionTable(String table) throws SQLException {
-//        if(inTransaction)
-        executeDDL("ANALYZE " + table, ExecuteEnvironment.NOREEADONLY);
-//        else
-//            executeDerived("VACUUM ANALYZE " + table);
+        executeDDL("ANALYZE " + table, ExecuteEnvironment.NOREADONLY);
     }
 
     public void pushNoReadOnly(Connection connection) throws SQLException {

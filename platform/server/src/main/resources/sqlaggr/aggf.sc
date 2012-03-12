@@ -147,7 +147,7 @@ $$
 	EXECUTE 'DROP TABLE ' || nextrectable;
 	EXECUTE 'DROP TABLE ' || rectable;
     END
- $$ LANGUAGE 'plpgsql' VOLATILE;
+ $$ LANGUAGE 'plpgsql' VOLATILE COST 1000000;
 
 CREATE OR REPLACE FUNCTION array_setadd(anyarray, anyarray) RETURNS anyarray AS
 $$

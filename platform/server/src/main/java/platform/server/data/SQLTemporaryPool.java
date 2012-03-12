@@ -2,6 +2,7 @@ package platform.server.data;
 
 import platform.base.BaseUtils;
 import platform.base.Result;
+import platform.server.Settings;
 import platform.server.data.expr.query.Stat;
 
 import java.lang.ref.WeakReference;
@@ -35,14 +36,18 @@ public class SQLTemporaryPool {
                     session.truncate(matchTable); // удаляем старые данные
                     Integer actual = data.fill(matchTable); // заполняем
                     assert (actual!=null)==(count==null);
-                    if(count==null) {
+                    if(Settings.instance.isAutoAnalyzeTempStats())
+                        session.analyzeSessionTable(matchTable);
+                    else {
                         Object actualStatistics = getDBStatistics(actual);
                         if(!actualStatistics.equals(stats.get(matchTable))) {
                             session.analyzeSessionTable(matchTable);
                             stats.put(matchTable, actualStatistics);
                         }
-                        resultActual.set(actual);
                     }
+                    if(count==null)
+                        resultActual.set(actual);
+
                     return matchTable;
                 }
 
@@ -53,7 +58,8 @@ public class SQLTemporaryPool {
             assert (actual!=null)==(count==null);
             session.analyzeSessionTable(table); // выполняем ее analyze, чтобы сказать постгре какие там будут записи
             if(count==null) { // обновляем реальной статистикой
-                stats.put(table, getDBStatistics(actual));
+                if(!Settings.instance.isAutoAnalyzeTempStats())
+                    stats.put(table, getDBStatistics(actual));
                 resultActual.set(actual);
             }
             structs.put(table, fieldStruct);
@@ -66,7 +72,8 @@ public class SQLTemporaryPool {
 
     public void removeTable(String table) {
         synchronized (tables) {
-            stats.remove(table);
+            if(!Settings.instance.isAutoAnalyzeTempStats())
+                stats.remove(table);
             FieldStruct fieldStruct = structs.remove(table);
             tables.get(fieldStruct).remove(table);
         }
@@ -83,7 +90,7 @@ public class SQLTemporaryPool {
             this.keys = keys;
             this.properties = properties;
 
-            if(count==null)
+            if(Settings.instance.isAutoAnalyzeTempStats() || count==null)
                 this.statistics = null;
             else
                 this.statistics = getDBStatistics(count);

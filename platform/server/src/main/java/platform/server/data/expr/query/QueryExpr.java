@@ -7,6 +7,7 @@ import platform.server.classes.DataClass;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.expr.where.pull.StatPullWheres;
+import platform.server.data.query.CompileSource;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
@@ -187,6 +188,16 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         return true;
     }
     public abstract class NotNull extends InnerExpr.NotNull {
+
+        @Override
+        public String getSource(CompileSource compile) {
+            return compile.getNullSource(QueryExpr.this, true);
+        }
+
+        @Override
+        protected String getNotSource(CompileSource compile) {
+            return compile.getNullSource(QueryExpr.this, false);
+        }
 
         public ClassExprWhere calculateClassWhere() {
             Where fullWhere = getInner().getFullWhere();

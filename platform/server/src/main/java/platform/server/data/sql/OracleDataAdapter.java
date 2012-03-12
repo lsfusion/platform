@@ -85,10 +85,10 @@ class OracleDataAdapter extends DataAdapter {
         return SelectString + (WhereString.length()==0?"":" WHERE ") + WhereString + OrderString;
     }
 
-    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String top) {
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top) {
         if(top.length()!=0)
             where = (where.length()==0?"": where +" AND ") + "rownum<=" + top;
-        return "SELECT " + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("ORDER BY", orderBy);
+        return "SELECT " + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("HAVING", having) + BaseUtils.clause("ORDER BY", orderBy);
     }
 
     public String getUnionOrder(String union, String orderBy, String top) {

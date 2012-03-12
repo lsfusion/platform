@@ -34,4 +34,14 @@ public class ConcreteCustomClassSet extends QuickSet<ConcreteCustomClass> {
             if(!up.has(get(i)) && !set.contains(get(i))) return false;
         return true;
     }
+
+    public ConcreteCustomClassSet remove(UpClassSet up) {
+        ConcreteCustomClassSet result = new ConcreteCustomClassSet();
+        for(int i=0;i<size;i++) {
+            ConcreteCustomClass nodeSet = get(i);
+            if(!up.has(nodeSet))
+                result.add(nodeSet,htable[indexes[i]]);
+        }
+        return result;
+    }
 }

@@ -285,7 +285,17 @@ public class Settings {
     public boolean getUseUniPass() {
         return useUniPass;
     }
-    
+
+    private boolean useSingleJoins = false;
+
+    public boolean isUseSingleJoins() {
+        return useSingleJoins;
+    }
+
+    public void setUseSingleJoins(boolean useSingleJoins) {
+        this.useSingleJoins = useSingleJoins;
+    }
+
     private boolean useQueryExpr = true;
 
     public boolean isUseQueryExpr() {
@@ -396,5 +406,14 @@ public class Settings {
     }
     public void setLimitExclusiveComplexity(int limitExclusiveComplexity) {
         this.limitExclusiveComplexity = limitExclusiveComplexity;
+    }
+
+    private boolean autoAnalyzeTempStats = true; // автоматически анализировать статистику после каждого заполнения временной таблицы (прикол в том что после удаления таблицы и добавления новых записей статистика сама увеличивается)
+    public boolean isAutoAnalyzeTempStats() {
+        return autoAnalyzeTempStats;
+    }
+
+    public void setAutoAnalyzeTempStats(boolean autoAnalyzeTempStats) {
+        this.autoAnalyzeTempStats = autoAnalyzeTempStats;
     }
 }

@@ -38,7 +38,7 @@ public class PartitionCalc extends PartitionToken {
         public String getSource(Map<PartitionToken, String> sources, SQLSyntax syntax) {
             return "(" + func + "(" + BaseUtils.toString(BaseUtils.mapList(exprs, sources), ",") + ") OVER ("+BaseUtils.toString(" ",
                     BaseUtils.clause("PARTITION BY ",BaseUtils.toString(BaseUtils.filterKeys(sources, partitions).values(),",")) +
-                    BaseUtils.clause("ORDER BY ", Query.stringOrder(BaseUtils.mapOrder(orders, sources), syntax))) + ")" + ")";
+                    BaseUtils.clause("ORDER BY ", Query.stringOrder(BaseUtils.mapOrder(orders, sources), new HashSet<String>(), syntax))) + ")" + ")";
         }
     }
 

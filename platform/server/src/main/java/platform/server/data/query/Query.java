@@ -169,17 +169,22 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
 
-    public static <K> String stringOrder(List<K> sources, int offset, OrderedMap<K,Boolean> orders, SQLSyntax syntax) {
+    public static <K> String stringOrder(List<K> sources, int offset, OrderedMap<K, Boolean> orders, Set<K> ordersNotNull, SQLSyntax syntax) {
         OrderedMap<String, Boolean> orderSources = new OrderedMap<String, Boolean>();
-        for(Map.Entry<K,Boolean> order : orders.entrySet())
-            orderSources.put(((Integer)(sources.indexOf(order.getKey())+offset+1)).toString(),order.getValue());
-        return stringOrder(orderSources, syntax);
+        Set<String> sourcesNotNull = new HashSet<String>();
+        for(Map.Entry<K,Boolean> order : orders.entrySet()) {
+            String source = ((Integer) (sources.indexOf(order.getKey()) + offset + 1)).toString();
+            orderSources.put(source,order.getValue());
+            if(ordersNotNull.contains(order.getKey()))
+                sourcesNotNull.add(source);
+        }
+        return stringOrder(orderSources, sourcesNotNull, syntax);
     }
 
-    public static String stringOrder(OrderedMap<String,Boolean> orders, SQLSyntax syntax) {
+    public static String stringOrder(OrderedMap<String,Boolean> orders, Set<String> notNull, SQLSyntax syntax) {
         String orderString = "";
         for(Map.Entry<String,Boolean> order : orders.entrySet())
-            orderString = (orderString.length()==0?"":orderString+",") + order.getKey() + " " + syntax.getOrderDirection(order.getValue());
+            orderString = (orderString.length()==0?"":orderString+",") + order.getKey() + " " + syntax.getOrderDirection(order.getValue(), notNull.contains(order.getKey()));
         return orderString;
     }
 

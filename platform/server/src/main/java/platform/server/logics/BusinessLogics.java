@@ -1799,13 +1799,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         Map<String, ImplementTable> implementTables = LM.tableFactory.getImplementTablesMap();
 
-        Map<ImplementTable, Set<List<String>>> mapIndexes = new HashMap<ImplementTable, Set<List<String>>>();
+        Map<ImplementTable, Map<List<String>, Boolean>> mapIndexes = new HashMap<ImplementTable, Map<List<String>, Boolean>>();
         for (ImplementTable table : implementTables.values())
-            mapIndexes.put(table, new HashSet<List<String>>());
+            mapIndexes.put(table, new HashMap<List<String>, Boolean>());
 
         // привяжем индексы
-        for (List<? extends Property> index : LM.indexes) {
-            Iterator<? extends Property> i = index.iterator();
+        for (Map.Entry<List<? extends Property>, Boolean> index : LM.indexes.entrySet()) {
+            Iterator<? extends Property> i = index.getKey().iterator();
             if (!i.hasNext())
                 throw new RuntimeException(getString("logics.policy.forbidden.to.create.empty.indexes"));
             Property baseProperty = i.next();
@@ -1824,20 +1824,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables", baseProperty, property));
                 tableIndex.add(property.field.name);
             }
-            mapIndexes.get(indexTable).add(tableIndex);
+            mapIndexes.get(indexTable).put(tableIndex, index.getValue());
         }
 
         // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
-        outDB.write('v');  //для поддержки обратной совместимости
+        outDB.write('v'+1);  //для поддержки обратной совместимости
 
         outDB.writeInt(mapIndexes.size());
-        for (Map.Entry<ImplementTable, Set<List<String>>> mapIndex : mapIndexes.entrySet()) {
+        for (Map.Entry<ImplementTable, Map<List<String>, Boolean>> mapIndex : mapIndexes.entrySet()) {
             mapIndex.getKey().serialize(outDB);
             outDB.writeInt(mapIndex.getValue().size());
-            for (List<String> index : mapIndex.getValue()) {
-                outDB.writeInt(index.size());
-                for (String indexField : index)
+            for (Map.Entry<List<String>, Boolean> index : mapIndex.getValue().entrySet()) {
+                outDB.writeInt(index.getKey().size());
+                for (String indexField : index.getKey())
                     outDB.writeUTF(indexField);
+                outDB.writeBoolean(index.getValue());
             }
         }
 
@@ -1858,21 +1859,39 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Map<String, SerializedTable> prevTables = new HashMap<String, SerializedTable>();
 
         //для поддержки обратной совместимости
-        boolean newVersion = inputDB == null || inputDB.read() == 'v';
-        if (!newVersion)
-            inputDB.reset();
+        int version;
+        if(inputDB==null)
+            version = -2;
+        else {
+            version = inputDB.read()-'v';
+            if(version<0)
+                inputDB.reset();
+        }
 
         for (int i = inputDB == null ? 0 : inputDB.readInt(); i > 0; i--) {
             SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass);
             prevTables.put(prevTable.name, prevTable);
 
+            ImplementTable implementTable = implementTables.get(prevTable.name);
+            Map<List<String>, Boolean> tableIndexes = null;
+            if(implementTable!=null)
+                tableIndexes = mapIndexes.get(implementTable);
+
             for (int j = inputDB.readInt(); j > 0; j--) {
                 List<String> index = new ArrayList<String>();
                 for (int k = inputDB.readInt(); k > 0; k--)
                     index.add(inputDB.readUTF());
-                ImplementTable implementTable = implementTables.get(prevTable.name);
-                if (implementTable == null || !mapIndexes.get(implementTable).remove(index))
-                    sql.dropIndex(prevTable.name, index);
+                boolean prevOrdered = version >= 1 && inputDB.readBoolean();
+                boolean drop = (implementTable == null); // ушла таблица
+                if(!drop) {
+                    Boolean newOrdered = tableIndexes.get(index);
+                    if(newOrdered!=null && newOrdered.equals(prevOrdered))
+                        tableIndexes.remove(index); // не трогаем индекс
+                    else
+                        drop = true;
+                }
+                if(drop)
+                    sql.dropIndex(prevTable.name, prevTable.keys, index, prevOrdered);
             }
         }
 
@@ -1890,7 +1909,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (int i = 0; i < prevStoredNum; i++) {
             String sID = inputDB.readUTF();
             boolean isDataProperty = true;
-            if (newVersion)
+            if (version >= 0)
                 isDataProperty = inputDB.readBoolean();
             SerializedTable prevTable = prevTables.get(inputDB.readUTF());
             Map<Integer, KeyField> mapKeys = new HashMap<Integer, KeyField>();
@@ -1954,9 +1973,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         updateStats();  // пересчитаем статистику
 
         // создадим индексы в базе
-        for (Map.Entry<ImplementTable, Set<List<String>>> mapIndex : mapIndexes.entrySet())
-            for (List<String> index : mapIndex.getValue())
-                sql.addIndex(mapIndex.getKey().name, index);
+        for (Map.Entry<ImplementTable, Map<List<String>, Boolean>> mapIndex : mapIndexes.entrySet())
+            for (Map.Entry<List<String>, Boolean> index : mapIndex.getValue().entrySet())
+                sql.addIndex(mapIndex.getKey().name, mapIndex.getKey().keys, index.getKey(), index.getValue());
 
         try {
             sql.insertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), Collections.singletonMap(StructTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)), true);

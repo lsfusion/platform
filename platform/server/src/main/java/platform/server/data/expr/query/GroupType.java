@@ -11,7 +11,9 @@ import platform.server.data.type.Type;
 import platform.server.logics.property.*;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public enum GroupType implements AggrType {
     SUM, MAX, MIN, ANY, STRING_AGG, AGGAR_SETADD;
@@ -92,8 +94,8 @@ public enum GroupType implements AggrType {
         return !isSelect();
     }
 
-    public String getSource(List<String> exprs, OrderedMap<String, Boolean> orders, Type type, SQLSyntax syntax) {
-        String result = getString() + "(" + BaseUtils.toString(exprs, ",") + BaseUtils.clause("ORDER BY", Query.stringOrder(orders, syntax)) + ")";
+    public String getSource(List<String> exprs, OrderedMap<String, Boolean> orders, Set<String> ordersNotNull, Type type, SQLSyntax syntax) {
+        String result = getString() + "(" + BaseUtils.toString(exprs, ",") + BaseUtils.clause("ORDER BY", Query.stringOrder(orders, ordersNotNull, syntax)) + ")";
         if(this==SUM)
             result = "notZero(" + result + ")";
         return result;

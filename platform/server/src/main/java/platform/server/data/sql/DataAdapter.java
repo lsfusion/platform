@@ -167,7 +167,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "DROP TABLE " + getSessionTableName(tableName);
     }
 
-    public String getOrderDirection(boolean descending) {
+    public String getOrderDirection(boolean descending, boolean notNull) {
         return descending ? "DESC" : "ASC";
     }
 

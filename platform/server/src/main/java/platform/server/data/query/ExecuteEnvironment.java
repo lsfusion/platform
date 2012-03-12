@@ -11,7 +11,7 @@ import java.sql.SQLException;
 public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironment> {
 
     public final static ExecuteEnvironment EMPTY = new ExecuteEnvironment();
-    public final static ExecuteEnvironment NOREEADONLY = new ExecuteEnvironment(true);
+    public final static ExecuteEnvironment NOREADONLY = new ExecuteEnvironment(true);
 
     private boolean noReadOnly;
 

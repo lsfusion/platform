@@ -8,10 +8,7 @@ import platform.server.data.Value;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
-import platform.server.data.expr.query.GroupExpr;
-import platform.server.data.expr.query.PartitionExpr;
-import platform.server.data.expr.query.RecursiveExpr;
-import platform.server.data.expr.query.SubQueryExpr;
+import platform.server.data.expr.query.*;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
@@ -41,20 +38,8 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
             return where.toString();
         }
 
-        public String getSource(GroupExpr groupExpr) {
-            return groupExpr.toString();
-        }
-
-        public String getSource(PartitionExpr partitionExpr) {
-            return partitionExpr.toString();
-        }
-
-        public String getSource(RecursiveExpr recursiveExpr) {
-            return recursiveExpr.toString();
-        }
-
-        public String getSource(SubQueryExpr subQueryExpr) {
-            return subQueryExpr.toString();
+        public String getSource(QueryExpr queryExpr) {
+            return queryExpr.toString();
         }
 
         public String getSource(IsClassExpr classExpr) {

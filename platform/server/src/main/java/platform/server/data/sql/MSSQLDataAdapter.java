@@ -85,8 +85,8 @@ public class MSSQLDataAdapter extends DataAdapter {
         return false;
     }
 
-    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String top) {
-        return "SELECT" + BaseUtils.clause("TOP", top) + " " + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("ORDER BY", orderBy);
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top) {
+        return "SELECT" + BaseUtils.clause("TOP", top) + " " + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("HAVING", having) + BaseUtils.clause("ORDER BY", orderBy);
     }
 
     public String getUnionOrder(String union, String orderBy, String top) {

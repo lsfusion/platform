@@ -101,8 +101,8 @@ public class PostgreDataAdapter extends DataAdapter {
         return "COALESCE(" + expr1 + "," + expr2 + ")";
     }
 
-    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String top) {
-        return "SELECT " + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top);
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top) {
+        return "SELECT " + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("HAVING", having) + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top);
     }
 
     public String getUnionOrder(String union, String orderBy, String top) {
@@ -118,8 +118,8 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String getOrderDirection(boolean descending) {
-        return descending ? "DESC NULLS LAST" : "ASC NULLS FIRST";
+    public String getOrderDirection(boolean descending, boolean notNull) {
+        return (descending?"DESC":"ASC")  + (!notNull? " NULLS " + (descending?"LAST":"FIRST"): "");
     }
 
     @Override
