@@ -378,6 +378,10 @@ META metaCodeObjectWithPost (object, caption, captionPosted, detailClass)
 
     @metaCodePostedObject (object);
 
+    date###object##Detail 'Дата документа' (object##Detail) = date###object(object###object##Detail(object##Detail));
+    dateTime###object##Detail 'Дата/время документа' (object##Detail) = dateTime###object(object###object##Detail(object##Detail));
+    isPosted###object##Detail 'Закрыт' (object##Detail) = isPosted###object(object###object##Detail(object##Detail));
+
 END
 
 META metaCodeSingleAggregation (primObject, aggrObject, aggrProperty)
@@ -3576,6 +3580,10 @@ PROPERTIES(st, gr)  barcodeBarcodeStageGroupMachinery, priceStageGroupMachinery,
                     timeStageGroupMachinery, stockStageGroupMachinery
 FILTERS  barcodeStageGroupMachinery(st, gr);
 
+//---------------------------- Количественные регистры ----------------------------------------//
+
+CLASS ABSTRACT balanceItemLedger 'Изменение остатка по товару';
+
 //---------------------------- Ценовые регистры ----------------------------------------//
 
 CLASS ABSTRACT importerPriceLedger 'Изменение цены изготовителя/импортера';
@@ -4260,7 +4268,7 @@ FORM objectiveAcquiring 'Цель приобретения'
 
 GROUP specificationGroup 'Счет-фактуры' : publicGroup;
 
-@metaCodeObjectWithPost(statement, 'Выписка из розницы', 'Закрытая выписка из розницы', object);
+@metaCodeObjectWithPost(statement, 'Выписка из розницы', 'Закрытая выписка из розницы', balanceItemLedger);
 
                       //    шапка документа поставки
 waybillStatement 'Номер накладной' (statement) = DATA STRING[7] (statement) IN documentHeaderGroup FIXEDCHARWIDTH 7;
@@ -4282,10 +4290,6 @@ specificationsStatement 'Ввести на основании с/ф' (statement)
 isCustomerStatementSpecification 'Заявка покупателя' (statement, specification) = customerStatement(statement)== customerSpecification(specification);
 
 isDepartmentStoreStatementSpecification 'Заявка отдела' (statement, specification) = departmentStoreStatement(statement)== departmentStoreSpecification(specification);
-
-dateStatementDetail 'Дата отгрузки' (statementDetail) = dateStatement(statementStatementDetail(statementDetail));
-dateTimeStatementDetail 'Дата/время отгрузки' (statementDetail) = dateTimeStatement(statementStatementDetail(statementDetail));
-//isPostedStatementDetail 'Закрыт' (statementDetail) = isPostedStatement(statementStatementDetail(statementDetail));
 
 quantityStatementsInSpecification(specification) = GROUP SUM 1 IF inStatementSpecification(statement, specification) BY specification;
 noQuantityStatementsInSpecification(specification) = specification IS specification AND NOT quantityStatementsInSpecification(specification);
@@ -4659,7 +4663,7 @@ FILTERS inCashReportDocument(r,d);
 //---------------------------- Приход товара от поставщика ----------------------------------------//
 CLASS batch 'Партия';
 
-CLASS ABSTRACT batchShipment 'Партия из прихода' : batch, importerPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
+CLASS ABSTRACT batchShipment 'Партия из прихода' : batch, balanceItemLedger, importerPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
 
 @metaCodeObjectWithPost(shipment, 'Поставка', 'Закрытая поставка', batchShipment);
 
@@ -4688,11 +4692,6 @@ ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(dataOrde
 isSupplierShipmentOrder 'Заявка поставщика поставки' (shipment, orderSupplier) = supplierShipment(shipment)== supplierOrderSupplier(orderSupplier);
 
 isDepartmentStoreShipmentOrder 'Заявка отдела поставки' (shipment, orderSupplier) = departmentStoreShipment(shipment)== departmentStoreOrderSupplier(orderSupplier);
-
-dateShipmentDetail 'Дата поставки' (shipmentDetail) = dateShipment(shipmentShipmentDetail(shipmentDetail));
-
-dateTimeShipmentDetail 'Дата/время поставки' (shipmentDetail) = dateTimeShipment(shipmentShipmentDetail(shipmentDetail));
-isPostedShipmentDetail 'Закрыт' (shipmentDetail) = isPostedShipment(shipmentShipmentDetail(shipmentDetail));
 
 //атрибуты для подсказки по товару строки
 GROUP itemShipmentDetailInfo 'Информация по товару' : baseGroup;
@@ -5470,6 +5469,36 @@ DESIGN innerArrivals FROM DEFAULT {
     }
 }
 
+//---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
+
+dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
+                                                                  dateTimeStatementDetail(ledger);
+
+isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
+                                                              isPostedStatementDetail(ledger);
+
+itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
+                                                 itemStatementDetail(ledger);
+
+departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
+                                                            departmentStoreStatementDetail(ledger);
+
+quantityBalanceItemLedger (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
+                                                     -quantityStatementDetail(ledger);
+
+currentBalanceItemLedger (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger)
+                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger);
+
+// без учета текущей даты/времени
+balanceBItemLedgerDateTime (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) >= (dateTime AS DATETIME)
+                                                                         BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
+
+// с учетом текущей даты/времени
+balanceAItemLedgerDateTime (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) > (dateTime AS DATETIME)
+                                                                         BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
+
 //---------------------------- Ценовые регистры (конкретная реализация) ----------------------------------------//
 
 META metaCodeItemDepartmentStoreLedger(prefix)
@@ -5541,6 +5570,10 @@ priceRetailLedgerDateTime (item, departmentStore, dateTime) = priceRetailLedger(
 
 // --------------------------- Использование регистров (автоматическое заполнение) ---------------------------------
 
+balanceBeforeShipmentShipmentDetail (shipmentDetail) <- balanceBItemLedgerDateTime (
+                itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
+                ON CHANGE itemShipmentDetail(shipmentDetail);
+
 oldImporterPriceShipmentDetail (shipmentDetail) <- priceImporterLedgerDateTime (
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
@@ -5589,8 +5622,6 @@ supplierReturnSupplier 'Поставщик (ИД)' (returnSupplier) = DATA suppl
 
 nameSupplierReturnSupplier 'Поставщик' (returnSupplier) = name(supplierReturnSupplier(returnSupplier)) IN documentHeaderGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40;
-
-dateReturnSupplierDetail 'Дата поставки' (returnSupplierDetail) = dateReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
 
 // информация по товару
 
