@@ -5616,7 +5616,23 @@ public class RomanLogicsModule extends LogicsModule {
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory4CustomCategory6, objCustomCategory6), Compare.EQUALS, objCustomCategory4));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory6CustomCategory9, objCustomCategory9), Compare.EQUALS, objCustomCategory6));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory9CustomCategory10, objCustomCategory10), Compare.EQUALS, objCustomCategory9));
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory9CustomCategory10, objCustomCategory10), Compare.EQUALS, objCustomCategory9));
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new CompareFilterEntity(addPropertyObject(customCategory9CustomCategory10, objCustomCategory10), Compare.EQUALS, objCustomCategory9),
+                    "от 3 уровня",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new CompareFilterEntity(addPropertyObject(customCategory6CustomCategory10, objCustomCategory10), Compare.EQUALS, objCustomCategory6),
+                    "от 2 уровня",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new CompareFilterEntity(addPropertyObject(customCategory4CustomCategory10, objCustomCategory10), Compare.EQUALS, objCustomCategory4),
+                    "от 1 уровня",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            filterGroup.defaultFilter = 0;
+            addRegularFilterGroup(filterGroup);
+
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory4CustomCategory6, objCustomCategory6Origin), Compare.EQUALS, objCustomCategory4Origin));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory6CustomCategoryOrigin, objCustomCategoryOrigin), Compare.EQUALS, objCustomCategory6Origin));

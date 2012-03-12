@@ -54,6 +54,9 @@ CLASS declaration 'Таможенная декларация' : transaction;
 CLASS declarationDetail 'Позиция декларации';
 
 sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN baseGroup;
+beginDeclaration 'Начало обработки' = DATA TIME (declaration) IN baseGroup;
+endDeclaration 'Конец обработки' = DATA TIME (declaration) IN baseGroup;
+
 importerDeclaration 'Импортер (ИД)' = DATA importer (declaration) IN idGroup;
 nameImporterDeclaration 'Импортёр' = name(importerDeclaration(declaration)) IN baseGroup;
 
@@ -135,12 +138,23 @@ customCategory10DeclarationDetail 'ТН ВЭД товара (ИД)' (declaration
 
 sidCustomCategory10DeclarationDetail 'ТН ВЭД товара' (declarationDetail) = sidCustomCategory10(customCategory10DeclarationDetail(declarationDetail));
 
+// сертификация
 certificatedDeclarationDetail 'Необходимость сертификации' (declarationDetail) = certificatedCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) IN baseGroup;
 
 quantityCertificatedDeclarationDetail 'Кол-во для экспертизы' = DATA DOUBLE(declarationDetail);
 
 certificateDeclarationDetail 'Сертификат партии (ИД)' = DATA certificate(declarationDetail) IN idGroup;
 sidCertificateDeclarationDetail 'Сертификат партии' (declarationDetail) = sidCertificate(certificateDeclarationDetail(declarationDetail)) IN baseGroup;
+
+isCertificateDeclarationDetail 'Отсутствие сертификата' (declarationDetail) = certificatedDeclarationDetail(declarationDetail) AND
+                                                                              NOT certificateDeclarationDetail(declarationDetail);
+
+quantityNoCertificateDeclaration 'Кол-во без сертификатов' (declaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
+                                                                                  IF isCertificateDeclarationDetail(declarationDetail)
+                                                                                  BY declarationDeclarationDetail(declarationDetail);
+
+CONSTRAINT quantityNoCertificateDeclaration(declaration)>0 AND endDeclaration(declaration)
+   MESSAGE 'Не у всех товаров требующих сертификации заданы сертификаты';
 
 // Для таможенных платежей
 rateExchangeDeclaration 'Курс обмена' (declaration) = nearestRateExchange(typeExchangePayCustom(),
@@ -171,14 +185,16 @@ dutyDeclaration 'Сумма пошлин' (declaration) = GROUP SUM rateDutyDecl
                                                       BY declarationDeclarationDetail(declarationDetail) IN baseGroup;
 
 // НДС
-priceDutyDeclarationDetail 'Стоимость с пошлиной' (declarationDetail) = priceDeclarationDetail(declarationDetail) + dutyDataDeclarationDetail(declarationDetail);
+priceDutyDeclarationDetail 'Стоимость с пошлиной' (declarationDetail) = priceDeclarationDetail(declarationDetail) +
+                                                                        dutyDataDeclarationDetail(declarationDetail);
 
 NDSPercentOriginDeclarationDetail 'НДС (%)' (declarationDetail) = dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyNDS());
 NDSPercentCustomDeclarationDetail 'НДС (%)' (declarationDetail) = NDSPercentCustom() AND declarationDetail IS declarationDetail;
 NDSPercentDeclarationDetail 'НДС (%)' (declarationDetail) = UNION OVERRIDE NDSPercentCustomDeclarationDetail(declarationDetail),
                                                                            NDSPercentOriginDeclarationDetail(declarationDetail);
 
-NDSDeclarationDetail 'НДС товара (расч.)' (declarationDetail) = round2(priceDutyDeclarationDetail(declarationDetail) * NDSPercentDeclarationDetail(declarationDetail)/100);
+NDSDeclarationDetail 'НДС товара (расч.)' (declarationDetail) = round2(priceDutyDeclarationDetail(declarationDetail) *
+                                                                       NDSPercentDeclarationDetail(declarationDetail)/100);
 
 NDSDataDeclarationDetail 'НДС товара' = DATA DOUBLE(declarationDetail) IN baseGroup;
 NDSDataDeclarationDetail (declarationDetail) <- NDSDeclarationDetail(declarationDetail) ON CHANGE dateDeclarationDetail(declarationDetail);
@@ -207,9 +223,10 @@ totalCustomSum 'Сумма платежей' (declaration) = dutyDeclaration(dec
 // корректировка таможенной стоимости
 correctionPriceDeclarationDetail 'Скорректированная стоимость' = DATA DOUBLE(declarationDetail) IN baseGroup;
 
-correctionDutyDeclarationDetail 'Скорректированная пошлина (расч.)' (declarationDetail) = UNION MAX
+correctionDutyDeclarationDetail 'Скорректированная пошлина (расч.)' (declarationDetail) = (UNION MAX
                                 netWeightDeclarationDetail(declarationDetail) * dutySumCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty()),
-                                correctionPriceDeclarationDetail(declarationDetail) * (dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty())/100);
+                                correctionPriceDeclarationDetail(declarationDetail) * (dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty())/100))
+                                IF correctionPriceDeclarationDetail(declarationDetail);
 
 correctionDutyDataDeclarationDetail 'Скорректированная пошлина' = DATA DOUBLE(declarationDetail) IN baseGroup;
 correctionDutyDataDeclarationDetail(declarationDetail) <- correctionDutyDeclarationDetail(declarationDetail) ON CHANGE dateDeclarationDetail(declarationDetail);
@@ -241,12 +258,21 @@ diffNDSDeclararion 'Разница НДС' (declaration) = GROUP SUM diffNDSDecl
 
 diffDeclaration 'Сумма доп. платежей' (declaration) = diffDutyDeclararion(declaration) + diffNDSDeclararion(declaration);
 
+// учёт расходов на сертификацию
+declarationPriceDeclarationDetail 'Cтоимость' (declarationDetail) = UNION OVERRIDE priceDeclarationDetail(declarationDetail),
+                                                                                   correctionPriceDeclarationDetail(declarationDetail) IN baseGroup;
+
+expenseCertificateDeclaration 'Расходы на сертификацию' (declaration) = GROUP SUM declarationPriceDeclarationDetail(declarationDetail) *
+                                                                                  quantityCertificatedDeclarationDetail(declarationDetail)
+                                                                               IF certificatedDeclarationDetail(declarationDetail)
+                                                                               BY declarationDeclarationDetail(declarationDetail) IN baseGroup;
 
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
-    PROPERTIES(d) sidDeclaration, date, rateExchangeDeclaration, nameImporterDeclaration, dateCorrectionDeclaration, sumRegistrationDataDeclaration,
-                  rateSumRegistrationDeclaration, dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion,
-                  diffNDSDeclararion, diffDeclaration
+    PROPERTIES(d) sidDeclaration, date, beginDeclaration, endDeclaration, rateExchangeDeclaration, nameImporterDeclaration,
+                  dateCorrectionDeclaration, sumRegistrationDataDeclaration, rateSumRegistrationDeclaration,
+                  dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion,
+                  diffNDSDeclararion, diffDeclaration, quantityNoCertificateDeclaration, expenseCertificateDeclaration
 
     OBJECTS dd=declarationDetail
     PROPERTIES (dd) numberDeclarationDetail, barcodeSkuDeclarationDetail, sidArticleSkuDeclarationDetail, mainCompositionDeclarationDetail,
@@ -263,9 +289,10 @@ FORM declaration 'Декларация'
 
 FORM declarations 'Декларации'
     OBJECTS d=declaration
-    PROPERTIES(d) READONLY sidDeclaration, date, rateExchangeDeclaration, nameImporterDeclaration, dateCorrectionDeclaration, sumRegistrationDataDeclaration,
-                           rateSumRegistrationDeclaration, dutyDeclaration, NDSDeclaration, totalCustomSum,
-                           diffDutyDeclararion, diffNDSDeclararion, diffDeclaration
+    PROPERTIES(d) READONLY sidDeclaration, date, beginDeclaration, endDeclaration, rateExchangeDeclaration, nameImporterDeclaration,
+                           dateCorrectionDeclaration, sumRegistrationDataDeclaration, rateSumRegistrationDeclaration,
+                           dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion, diffNDSDeclararion, diffDeclaration,
+                           quantityNoCertificateDeclaration, expenseCertificateDeclaration
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 
     OBJECTS dd=declarationDetail
@@ -273,10 +300,20 @@ FORM declarations 'Декларации'
                     nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail, netWeightDeclarationDetail,
                     quantityDeclarationDetail, priceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
                     rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail,
-                    certificatedDeclarationDetail, quantityCertificatedDeclarationDetail, sidCertificateDeclarationDetail,
-                    correctionPriceDeclarationDetail, correctionDutyDeclarationDetail, correctionDutyDataDeclarationDetail, diffDutyDeclarationDetail
+                    certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
+                    sidCertificateDeclarationDetail HIGHLIGHTIF isCertificateDeclarationDetail(dd),
+                    correctionPriceDeclarationDetail, correctionDutyDeclarationDetail, correctionDutyDataDeclarationDetail,
+                    diffDutyDeclarationDetail
     FILTERS inDeclarationDeclarationDetail(d, dd)
 ;
+
+DESIGN declarations FROM DEFAULT {
+    d.grid {
+        fillVertical = 0.4;
+        //preferredSize = (1280, 1024);
+    }
+}
+
 
 FORM formedInvoices 'Инвойсы'
     OBJECTS f=formedInvoice
