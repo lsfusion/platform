@@ -171,6 +171,12 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField nameCountryField = new ImportField(BL.LM.name);
             ImportField barcodeField = new ImportField(rublevskiLM.getLPByName("barcodeEx"));
             ImportField dateField = new ImportField(BL.LM.date);
+            ImportField importerPriceField = new ImportField(rublevskiLM.getLPByName("importerPriceItemDate"));
+            ImportField percentWholesaleMarkItemField = new ImportField(rublevskiLM.getLPByName("percentWholesaleMarkItem"));
+            ImportField isFixPriceItemField = new ImportField(rublevskiLM.getLPByName("isFixPriceItem"));
+            ImportField isLoafCutItemField = new ImportField(rublevskiLM.getLPByName("isLoafCutItem"));
+            ImportField isWeightItemField = new ImportField(rublevskiLM.getLPByName("isWeightItem"));
+            ImportField compositionField = new ImportField(rublevskiLM.getLPByName("compositionScalesItem"));
 
             ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("item"),
                     BL.LM.extSIDToObject.getMapping(itemIDField));
@@ -220,7 +226,16 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(itemIDField, rublevskiLM.getLPByName("skuBarcode").getMapping(barcodeKey),
                     BL.LM.object(rublevskiLM.getClassByName("item")).getMapping(itemKey)));
 
-            ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, unitOfMeasureIDField, nameUnitOfMeasureField, nameBrandField, brandIDField, countryIDField, nameCountryField, barcodeField, dateField), data);
+            props.add(new ImportProperty(importerPriceField, rublevskiLM.getLPByName("importerPriceItemDate").getMapping(itemKey, dateField)));
+            props.add(new ImportProperty(percentWholesaleMarkItemField, rublevskiLM.getLPByName("percentWholesaleMarkItem").getMapping(itemKey)));
+            props.add(new ImportProperty(isFixPriceItemField, rublevskiLM.getLPByName("isFixPriceItem").getMapping(itemKey)));
+            props.add(new ImportProperty(isLoafCutItemField, rublevskiLM.getLPByName("isLoafCutItem").getMapping(itemKey)));
+            props.add(new ImportProperty(isWeightItemField, rublevskiLM.getLPByName("isWeightItem").getMapping(itemKey)));
+            props.add(new ImportProperty(compositionField, rublevskiLM.getLPByName("compositionScalesItem").getMapping(itemKey)));
+
+            ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, unitOfMeasureIDField,
+                    nameUnitOfMeasureField, nameBrandField, brandIDField, countryIDField, nameCountryField, barcodeField, dateField,
+                    importerPriceField, percentWholesaleMarkItemField, isFixPriceItemField, isLoafCutItemField, isWeightItemField, compositionField), data);
 
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, unitOfMeasureKey, brandKey, countryKey, barcodeKey), props);
@@ -297,7 +312,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField departmentStoreIDField = new ImportField(BL.LM.extSID);
             ImportField isSupplierItemDepartmentField = new ImportField(BL.LM.name);
             ImportField priceSupplierItemDepartmentField = new ImportField(rublevskiLM.getLPByName("priceSupplierItemDepartmentOver"));
-            
+
             ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("item"),
                     BL.LM.extSIDToObject.getMapping(itemIDField));
 
@@ -768,27 +783,42 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         Set<String> barcodes = new HashSet<String>();
 
         for (int i = 0; i < recordCount; i++) {
-
             importFile.read();
-            String barcode = new String(importFile.getField("K_GRUP").getBytes(), "Cp1251").trim();
-            int counter = 1;
-            if (barcodes.contains(barcode)) {
-                while (barcodes.contains(barcode + "_" + counter)) {
-                    counter++;
+            try {
+                String barcode = new String(importFile.getField("K_GRUP").getBytes(), "Cp1251").trim();
+                int counter = 1;
+                if (barcodes.contains(barcode)) {
+                    while (barcodes.contains(barcode + "_" + counter)) {
+                        counter++;
+                    }
+                    barcode += "_" + counter;
                 }
-                barcode += "_" + counter;
+                barcodes.add(barcode);
+                Boolean inactiveItem = Boolean.valueOf(new String(importFile.getField("LINACTIVE").getBytes(), "Cp1251"));
+                String k_grmat = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
+                String pol_naim = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
+                String k_grtov = new String(importFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
+                String unitOfMeasure = new String(importFile.getField("K_IZM").getBytes(), "Cp1251").trim();
+                String brand = new String(importFile.getField("BRAND").getBytes(), "Cp1251").trim();
+                String country = new String(importFile.getField("MANFR").getBytes(), "Cp1251").trim();
+                Date date = new java.sql.Date(DateUtils.parseDate(new String(importFile.getField("P_TIME").getBytes(), "Cp1251").trim(), new String[]{"yyyyMMdd"}).getTime());
+                Double importerPrice = new Double(new String(importFile.getField("N_IZG").getBytes(), "Cp1251").trim());
+                Double percentWholesaleMarkItem = new Double(new String(importFile.getField("N_OPT").getBytes(), "Cp1251").trim());
+                Boolean isFixPriceItem = Boolean.valueOf(new String(importFile.getField("LFIXEDPRC").getBytes(), "Cp1251").substring(0, 1));
+                Boolean isLoafCutItem = Boolean.valueOf(new String(importFile.getField("LSPLIT").getBytes(), "Cp1251").substring(0, 1));
+                Boolean isWeightItem = Boolean.valueOf(new String(importFile.getField("LWEIGHT").getBytes(), "Cp1251").substring(0, 1));
+                String composition = null;
+                if (importFile.getField("FORMULA").getBytes() != null) {
+                    composition = new String(importFile.getField("FORMULA").getBytes(), "Cp1251").replace("\n", "").replace("\r", "");
+                }
+
+                if (!"".equals(k_grtov) && (!inactiveItem || importInactive))
+                    data.add(Arrays.asList((Object) k_grmat, k_grtov, pol_naim, "U_" + unitOfMeasure, unitOfMeasure, brand, "B_" + brand, "C_" + country, country, barcode,
+                            date, importerPrice, percentWholesaleMarkItem, isFixPriceItem ? isFixPriceItem : null, isLoafCutItem ? isLoafCutItem : null, isWeightItem ? isWeightItem : null,
+                            "".equals(composition) ? null : composition));
+            } catch (ParseException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-            barcodes.add(barcode);
-            Boolean inactiveItem = "T".equals(new String(importFile.getField("LINACTIVE").getBytes(), "Cp1251"));
-            String k_grmat = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
-            String pol_naim = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
-            String k_grtov = new String(importFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
-            String unitOfMeasure = new String(importFile.getField("K_IZM").getBytes(), "Cp1251").trim();
-            String brand = new String(importFile.getField("BRAND").getBytes(), "Cp1251").trim();
-            String country = new String(importFile.getField("MANFR").getBytes(), "Cp1251").trim();
-            if (!"".equals(k_grtov) && (!inactiveItem || importInactive))
-                data.add(Arrays.asList((Object) k_grmat, k_grtov, pol_naim, "U_" + unitOfMeasure, unitOfMeasure, brand, "B_" + brand, "C_" + country, country, barcode,
-                        new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance));
         }
         return data;
     }
