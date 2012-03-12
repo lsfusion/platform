@@ -3631,6 +3631,8 @@ infoInventory 'Дополнительная информация по инвен
 typeOfAdditionInventory(inventory) = DATA typeOfAddition (inventory) IN idGroup;
 nameTypeOfAdditionInventory 'Тип сличительной ведомости' (inventory) = name(typeOfAdditionInventory(inventory)) IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
+dateTimeToInventory 'Выставить остатки на дату/время' (inventory) = toDateTime(dateToInventory(inventory), timeToInventory(inventory));
+
 numberInventory 'Номер инвентаризации' (inventory) = DATA INTEGER (inventory) IN inventoryGroup;
 maxNumberInventory = UNION OVERRIDE 0, [GROUP MAX numberInventory(inventory)]();
 nextNumberInventory = maxNumberInventory() + 1;
@@ -3726,12 +3728,12 @@ skuBarcodeDetailPage 'Товар (ИД)' (detailPage) =  skuBarcode(barcodeDetai
 nameAttributeItemDetailPage 'Товар' (detailPage) = nameAttributeItem(skuBarcodeDetailPage(detailPage)) IN baseGroup;
 
 quantityCountedDetailPage 'Количество посчитано' = DATA DOUBLE (detailPage) IN baseGroup;
-//priceDetailPage 'Цена за ед.' = DATA INTEGER (detailPage) IN baseGroup;
-accountPriceDetailPage 'Учетная цена' (detailPage) =
-    accountPriceItemDepartmentVal(skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateToInventory(inventoryDetailPage(detailPage))) IN baseGroup;
+
+//accountPriceDetailPage 'Учетная цена' (detailPage) =
+//    accountPriceItemDepartmentVal(skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateToInventory(inventoryDetailPage(detailPage))) IN baseGroup;
 
 priceDetailPage 'Учетная цена' (detailPage) = DATA DOUBLE (detailPage) IN baseGroup;
-priceDetailPage(detailPage) <- accountPriceDetailPage(detailPage) ON CHANGE skuBarcodeDetailPage(detailPage);
+//priceDetailPage(detailPage) <- accountPriceDetailPage(detailPage) ON CHANGE skuBarcodeDetailPage(detailPage);
 
 totalDetailPage 'Сумма' (detailPage) = priceDetailPage(detailPage) * quantityCountedDetailPage(detailPage) IN baseGroup;
 
@@ -3775,8 +3777,8 @@ balanceCollationSheetItem 'Количество остаток' (collationSheet,
 
 //    нужно ли делать остаток с использованием WRITEONCHANGE ?????????
 
-accountPriceCollationSheetItem 'Учетная цена' (collationSheet, item) =
-    accountPriceItemDepartmentVal(item, departmentStoreCollationSheet(collationSheet), dateToInventory(inventoryCollationSheet(collationSheet))) IN baseGroup;
+//accountPriceCollationSheetItem 'Учетная цена' (collationSheet, item) =
+//    accountPriceItemDepartmentVal(item, departmentStoreCollationSheet(collationSheet), dateToInventory(inventoryCollationSheet(collationSheet))) IN baseGroup;
 
 priceCollationSheetItem 'Учетная цена, за ед.' (collationSheet, item) = DATA DOUBLE (collationSheet, item) IN baseGroup;
 
@@ -3796,7 +3798,7 @@ includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE
     (UNION OVERRIDE inManyCollationSheetItem(collationSheet, item), collationSheet IS manyCollationSheet IF quantityCountedCollationSheetItem(collationSheet, item)),
     (collationSheet IS remainsCollationSheet IF UNION OVERRIDE balanceCollationSheetItem(collationSheet, item) != 0, TRUE IF quantityCountedCollationSheetItem(collationSheet, item));
 
-priceCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item) ON ASSIGN includeCollationSheetItem(collationSheet, item); //CHANGE item IS item AND collationSheet IS collationSheet;
+//priceCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item) ON ASSIGN includeCollationSheetItem(collationSheet, item); //CHANGE item IS item AND collationSheet IS collationSheet;
 
 shortageQuantityCountedCollationSheetItem 'Количество недостача' (collationSheet, item) =
     (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, quantityCountedCollationSheetItem(collationSheet, item)) -
@@ -3824,15 +3826,15 @@ shortageQuantityCountedItemByCollationSheet 'Излишек/недостача (
 shortageTotalItemByCollationSheet 'Излишек/недостача (сумма) по ведомости' (collationSheet) =
     GROUP SUM shortageTotalCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
 
-convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
-    SET priceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory <- accountPriceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory;
-    SET priceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- accountPriceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory;
-} CONFIRM;
-
-convertPriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION(collationSheet) {
-    SET priceDetailPage(detailPage) AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet <- accountPriceDetailPage(detailPage) AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet;
-    SET priceCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item);
-} CONFIRM;
+//convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
+//    SET priceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory <- accountPriceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory;
+//    SET priceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- accountPriceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory;
+//} CONFIRM;
+//
+//convertPriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION(collationSheet) {
+//    SET priceDetailPage(detailPage) AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet <- accountPriceDetailPage(detailPage) AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet;
+//    SET priceCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item);
+//} CONFIRM;
 
 priceMaxByCollationSheetItem 'Цена из описи, за ед.' (collationSheet, item) = GROUP MAX priceDetailPage(detailPage) BY collationSheetListInventory(listInventoryDetailPage(detailPage)), skuBarcodeDetailPage(detailPage);
 priceMinByCollationSheetItem(collationSheet, item) = GROUP MIN priceDetailPage(detailPage) BY collationSheetListInventory(listInventoryDetailPage(detailPage)), skuBarcodeDetailPage(detailPage);
@@ -3896,194 +3898,8 @@ unpostListInventory 'Открыть' (listInventory) = [ACTION (listInventory) S
                                       IF listInventory IS listInventoryPosted TOOLBAR CONFIRM;
 
 
-FORM nameDepartmentByInventory 'Подразделения для инвентаризации'
-    OBJECTS in=inventory FIXED PANEL
-    PROPERTIES (in) READONLY numberInventory, nameInventory, dateToInventory
+//--------------------------------Формы по инвентаризации см. в конце-------------------//
 
-    TREE treeStore t=tradingNetwork, st=storeType, s=store, ds=departmentStore
-    PROPERTIES READONLY name(t), name(st), name(s), name(ds)
-
-    FILTERS inStoreTypeTradingNetwork (st, t),
-            inStoreTypeStore (st, s),
-            inStoreDepartment (s, ds)
-
-    PROPERTIES (ds, in) includeDepartmentStoreInventory, nameTypeOfAdditionDepartmentStoreInventoryOver
-
-;
-
-showFormNameDepartmentByInventory 'Подразделения для инвентаризации' (inventory) =
-    ACTION FORM nameDepartmentByInventory OBJECTS in MODAL SHORTCUT nameDepartmentByInventory DEFAULT;
-
-FORM collationSheetItem 'Товары для добавления в сличительную ведомость'
-    OBJECTS cs=manyCollationSheet FIXED PANEL
-    PROPERTIES (cs) READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet
-    TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES(g) READONLY name
-    OBJECTS i=item
-    PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem
-    PROPERTIES(cs, i) inManyCollationSheetItem
-    FILTERS  inItemGroupSku(g, i)
-;
-
-DESIGN collationSheetItem FROM DEFAULT {
-    POSITION treeGroup.box TO THE LEFT i.box;
-}
-
-showFormItemByCollationSheet 'Добавить товар' (collationSheet) = [ACTION FORM collationSheetItem OBJECTS cs MODAL](collationSheet) AND collationSheet IS manyCollationSheet;
-
-FORM listInventory 'Опись'
-    OBJECTS         li=listInventory FIXED PANEL
-    PROPERTIES (li) nameListInventory, nameDepartmentStoreListInventory, nameInventoryListInventory, noteListInventory,
-                    commonNameCommitteeListInventory, commonNameChairmanCommitteeListInventory,
-                    quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, sumPageListInventory
-
-    OBJECTS         pl=pageList
-    PROPERTIES(pl)  namePageList, notePageList, quantityDetailPageList, quantityCountedPageList, totalPageList, ADDOBJ, delete
-
-    OBJECTS         dp=detailPage
-    PROPERTIES (dp) nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage, priceDetailPage, // READONLY,   надо или не надо????
-                    totalDetailPage, ADDOBJ, delete
-
-    OBJECTS         e=employee
-    PROPERTIES (e)  commonName
-
-    FILTERS inListInventoryPageList(li, pl),
-        inPageListDetailPage(pl, dp),
-        inCommitteeListInventoryEmployee(li, e)
-EDIT listInventory OBJECT li
-;
-
-DESIGN listInventory FROM DEFAULT {
-    main{
-       NEW firstCase BEFORE functions.box {
-            NEW x.box BEFORE dp.box;
-            ADD pl.box IN x.box;
-            ADD e.box IN x.box { title = 'Члены комиссии' ;}
-            POSITION pl.box TO THE LEFT e.box;
-       }
-    }
-}
-
-FORM inventory 'Инвентаризация'
-    OBJECTS          in=inventory FIXED PANEL
-    PROPERTIES (in)  numberInventory READONLY, nameInventory, nameTypeOfAdditionInventory, dateToInventory, timeToInventory,
-                     noteInventory, infoInventory, nameDepartmentByInventory, showFormNameDepartmentByInventory, convertPriceInventory
-
-    TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageList
-    PROPERTIES       READONLY name(ds),  nameListInventory(li), namePageList(pl)
-
-    PROPERTIES(ds, in) READONLY quantityDetailDepartmentStoreInventory, quantityCountedDepartmentStoreInventory, totalDetailDepartmentStoreInventory
-
-    PROPERTIES(li)   READONLY quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, objectClassName
-
-    PROPERTIES(li)   ADDFORM, editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), delete FORCE PANEL SHOWIF isDraftListInventory(li), //delete SHOWIF isDraftListInventory(li),      //FORCE PANEL
-                     postListInventory FORCE PANEL SHOWIF isDraftListInventory(li), unpostListInventory FORCE PANEL SHOWIF isPostedListInventory(li)
-
-    PROPERTIES(pl)   READONLY quantityDetailPageList, quantityCountedPageList, totalPageList, dumb1
-
-    OBJECTS          dp=detailPage
-    PROPERTIES (dp)  READONLY nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage,
-                     priceDetailPage, totalDetailPage
-
-    OBJECTS          cs=collationSheet
-
-    PROPERTIES (cs)  READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
-                     quantityCountedItemByCollationSheet, balanceItemByCollationSheet, shortageQuantityCountedItemByCollationSheet,
-                     totalItemByCollationSheet, totalBalansItemByCollationSheet, shortageTotalItemByCollationSheet, showFormItemByCollationSheet,
-                     sumListInventoryByCollationSheet, sumPageListByCollationSheet
-
-    PROPERTIES (cs)  setDataCollationSheet, convertPriceCollationSheet, delete
-    OBJECTS          i=item
-    PROPERTIES (i)   READONLY nameAttributeItem, barcodeBarcodeSku
-
-    PROPERTIES(cs, i) quantityCountedCollationSheetItem, balanceCollationSheetItem, shortageQuantityCountedCollationSheetItem
-    PROPERTIES       priceMaxByCollationSheetItem(cs, i) HIGHLIGHTIF notEqualsPriceByCollationSheetItem(cs, i),
-                     priceCollationSheetItem(cs, i) HIGHLIGHTIF notEqualsPriceByCollationSheetItem(cs, i)
-    PROPERTIES(cs, i) totalCollationSheetItem, totalBalansCollationSheetItem, shortageTotalCollationSheetItem
-
-    FILTERS inInventoryDepartmentStoreListInventoryPageListDetailPage(in, ds, li, pl, dp),
-            inInventoryListInventory(in, li),
-            inDepartmentStoreListInventory(ds, li),
-            inListInventoryPageList(li, pl),
-            includeDepartmentStoreInventory(ds, in),
-            inInventoryCollationSheet(in,cs),
-            includeCollationSheetItem(cs, i)
-
-    FILTERGROUP notEqualsPriceFilters
-            FILTER 'Показать товар с разными ценами' 'F10' notEqualsPriceByCollationSheetItem(cs, i)
-
-    EDIT inventory OBJECT in
-;
-
-DESIGN inventory FROM DEFAULT {
-    main{
-        in.box {
-            POSITION in.inventoryGroup TO THE LEFT in.inventGroup;
-            ADD PROPERTY(convertPriceInventory(in)) IN in.inventGroup;
-        }
-        NEW secondCase BEFORE functions.box{
-                tabbedPane = TRUE;
-                NEW z.box { title = 'Описи';
-                    fillVertical = 5;
-                    ADD treeDepartmentStore.box { fillHorizontal = 2;};
-                    ADD dp.box  {fillHorizontal = 3;};
-                    POSITION treeDepartmentStore.box TO THE LEFT dp.box;
-                    PROPERTY(objectClassName) {
-                            preferredCharWidth = 15;
-                    }
-                    PROPERTY (dumb1) {
-                        caption = 'Статус';
-                        minimumCharWidth = 15;
-                    }
-                    PROPERTY (postListInventory) {
-                        caption = 'Закрыть';
-                    }
-                    PROPERTY (unpostListInventory) {
-                        caption = 'Открыть';
-                    }
-                    PROPERTY (editLI) {
-                        caption = 'Редактировать';
-                    }
-                    PROPERTY (delete(li)) {
-                        caption = 'Удалить';
-                        panelLocation = TOOLBAR;
-                        askConfirm = TRUE;
-                    }
-                }
-
-                NEW x.box { title = 'Сличительные ведомости';
-                    fillVertical = 5;
-                    ADD cs.box  { fillVertical = 1;};
-                    ADD i.box { fillVertical = 4;}
-
-                    ADD PROPERTY(showFormItemByCollationSheet(cs)) IN i.panel;
-
-                }
-
-        }
-    }
-}
-
-@metaCodePostedObject (inventory) ;
-
-FORM inventories 'Инвентаризации'
-    OBJECTS in=inventory
-    PROPERTIES (in) READONLY objectClassName, numberInventory, nameInventory, nameDepartmentByInventory, noteInventory,
-                    dateToInventory, timeToInventory, timeCreated FORCE PANEL, nameUserCreated FORCE PANEL, hostnameComputerCreated FORCE PANEL, timeClosed, nameUserClosed, hostnameComputerClosed
-    PROPERTIES(in)  ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL SHOWIF isDraftInventory(in),
-                    postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)//(in) ADDFORM, EDITFORM, delete
-;
-
-DESIGN inventories FROM DEFAULT {
-    PROPERTY(objectClassName) {
-        preferredCharWidth = 25;
-    }
-    PROPERTY (delete(in)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-    POSITION in.historyGroup TO THE LEFT in.postedGroup;
-}
 
 //---------------------------- Отгрузка по безналу(розница) ----------------------------//
 
@@ -5816,6 +5632,37 @@ retailPriceStatementDetail (statementDetail) <- priceRetailLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
                 ON CHANGE itemStatementDetail(statementDetail);
 
+// --------------------------- Использование регистров (автоматическое заполнение): инвентаризация---------------//
+
+priceDetailPage(detailPage) <- priceAccountLedgerDateTime(
+                skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeToInventory(inventoryDetailPage(detailPage)))
+                ON CHANGE skuBarcodeDetailPage(detailPage);
+
+priceCollationSheetItem(collationSheet, item) <- priceAccountLedgerDateTime(
+                item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)))
+                ON ASSIGN includeCollationSheetItem(collationSheet, item);
+
+//priceAccountLedgerDateTimeDetailPage (detailPage) = priceAccountLedgerDateTime(skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeToInventory(inventoryDetailPage(detailPage)));
+//priceAccountLedgerDateTimeItemCollationSheet(item, collationSheet) = priceAccountLedgerDateTime(item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)));
+
+
+convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
+    SET priceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory <- priceAccountLedgerDateTime(
+            skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeToInventory(inventoryDetailPage(detailPage)))
+            AND inventoryDetailPage(detailPage) == inventory;
+    SET priceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- priceAccountLedgerDateTime(
+            item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)))
+            AND inventoryCollationSheet(collationSheet) == inventory;
+} CONFIRM;
+
+convertPriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION(collationSheet) {
+    SET priceDetailPage(detailPage) AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet <- priceAccountLedgerDateTime(
+            skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeToInventory(inventoryDetailPage(detailPage)))
+            AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet;
+    SET priceCollationSheetItem(collationSheet, item) <- priceAccountLedgerDateTime(
+            item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)));
+} CONFIRM;
+
 
 
 //---------------------------- Переоценка (конкретная реализация) ----------------------------------------//
@@ -5864,6 +5711,198 @@ FORM priceChangeDocuments 'Акты переоценки'
                              oldRetailPriceChangeDocumentDetail, retailPriceChangeDocumentDetail
     FILTERS documentPriceChangeDocumentDetail(pcd) == pc
 ;
+
+
+//------------------------------------Формы для инвентаризации------------------------------------------//
+
+FORM nameDepartmentByInventory 'Подразделения для инвентаризации'
+    OBJECTS in=inventory FIXED PANEL
+    PROPERTIES (in) READONLY numberInventory, nameInventory, dateToInventory
+
+    TREE treeStore t=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    PROPERTIES READONLY name(t), name(st), name(s), name(ds)
+
+    FILTERS inStoreTypeTradingNetwork (st, t),
+            inStoreTypeStore (st, s),
+            inStoreDepartment (s, ds)
+
+    PROPERTIES (ds, in) includeDepartmentStoreInventory, nameTypeOfAdditionDepartmentStoreInventoryOver
+
+;
+
+showFormNameDepartmentByInventory 'Подразделения для инвентаризации' (inventory) =
+    ACTION FORM nameDepartmentByInventory OBJECTS in MODAL SHORTCUT nameDepartmentByInventory DEFAULT;
+
+FORM collationSheetItem 'Товары для добавления в сличительную ведомость'
+    OBJECTS cs=manyCollationSheet FIXED PANEL
+    PROPERTIES (cs) READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet
+    TREE treeGroup g=itemGroup PARENT parentItemGroup
+    PROPERTIES(g) READONLY name
+    OBJECTS i=item
+    PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem
+    PROPERTIES(cs, i) inManyCollationSheetItem
+    FILTERS  inItemGroupSku(g, i)
+;
+
+DESIGN collationSheetItem FROM DEFAULT {
+    POSITION treeGroup.box TO THE LEFT i.box;
+}
+
+showFormItemByCollationSheet 'Добавить товар' (collationSheet) = [ACTION FORM collationSheetItem OBJECTS cs MODAL](collationSheet) AND collationSheet IS manyCollationSheet;
+
+FORM listInventory 'Опись'
+    OBJECTS         li=listInventory FIXED PANEL
+    PROPERTIES (li) nameListInventory, nameDepartmentStoreListInventory, nameInventoryListInventory, noteListInventory,
+                    commonNameCommitteeListInventory, commonNameChairmanCommitteeListInventory,
+                    quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, sumPageListInventory
+
+    OBJECTS         pl=pageList
+    PROPERTIES(pl)  namePageList, notePageList, quantityDetailPageList, quantityCountedPageList, totalPageList, ADDOBJ, delete
+
+    OBJECTS         dp=detailPage
+    PROPERTIES (dp) nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage, priceDetailPage,
+                    totalDetailPage, ADDOBJ, delete
+
+    OBJECTS         e=employee
+    PROPERTIES (e)  commonName
+
+    FILTERS inListInventoryPageList(li, pl),
+        inPageListDetailPage(pl, dp),
+        inCommitteeListInventoryEmployee(li, e)
+EDIT listInventory OBJECT li
+;
+
+DESIGN listInventory FROM DEFAULT {
+    main{
+       NEW firstCase BEFORE functions.box {
+            NEW x.box BEFORE dp.box;
+            ADD pl.box IN x.box;
+            ADD e.box IN x.box { title = 'Члены комиссии' ;}
+            POSITION pl.box TO THE LEFT e.box;
+       }
+    }
+}
+
+FORM inventory 'Инвентаризация'
+    OBJECTS          in=inventory FIXED PANEL
+    PROPERTIES (in)  numberInventory READONLY, nameInventory, nameTypeOfAdditionInventory, dateToInventory, timeToInventory,
+                     noteInventory, infoInventory, nameDepartmentByInventory, showFormNameDepartmentByInventory, convertPriceInventory, dateTimeToInventory
+
+    TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageList
+    PROPERTIES       READONLY name(ds),  nameListInventory(li), namePageList(pl)
+
+    PROPERTIES(ds, in) READONLY quantityDetailDepartmentStoreInventory, quantityCountedDepartmentStoreInventory, totalDetailDepartmentStoreInventory
+
+    PROPERTIES(li)   READONLY quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, objectClassName
+
+    PROPERTIES(li)   ADDFORM, editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), delete FORCE PANEL SHOWIF isDraftListInventory(li), //delete SHOWIF isDraftListInventory(li),      //FORCE PANEL
+                     postListInventory FORCE PANEL SHOWIF isDraftListInventory(li), unpostListInventory FORCE PANEL SHOWIF isPostedListInventory(li)
+
+    PROPERTIES(pl)   READONLY quantityDetailPageList, quantityCountedPageList, totalPageList, dumb1
+
+    OBJECTS          dp=detailPage
+    PROPERTIES (dp)  READONLY nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage,
+                     priceDetailPage, totalDetailPage
+
+    OBJECTS          cs=collationSheet
+
+    PROPERTIES (cs)  READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
+                     quantityCountedItemByCollationSheet, balanceItemByCollationSheet, shortageQuantityCountedItemByCollationSheet,
+                     totalItemByCollationSheet, totalBalansItemByCollationSheet, shortageTotalItemByCollationSheet, showFormItemByCollationSheet,
+                     sumListInventoryByCollationSheet, sumPageListByCollationSheet
+
+    PROPERTIES (cs)  setDataCollationSheet, convertPriceCollationSheet, delete
+    OBJECTS          i=item
+    PROPERTIES (i)   READONLY nameAttributeItem, barcodeBarcodeSku
+
+    PROPERTIES(cs, i) quantityCountedCollationSheetItem, balanceCollationSheetItem, shortageQuantityCountedCollationSheetItem
+    PROPERTIES       priceMaxByCollationSheetItem(cs, i) HIGHLIGHTIF notEqualsPriceByCollationSheetItem(cs, i),
+                     priceCollationSheetItem(cs, i) HIGHLIGHTIF notEqualsPriceByCollationSheetItem(cs, i)
+    PROPERTIES(cs, i) totalCollationSheetItem, totalBalansCollationSheetItem, shortageTotalCollationSheetItem
+
+    FILTERS inInventoryDepartmentStoreListInventoryPageListDetailPage(in, ds, li, pl, dp),
+            inInventoryListInventory(in, li),
+            inDepartmentStoreListInventory(ds, li),
+            inListInventoryPageList(li, pl),
+            includeDepartmentStoreInventory(ds, in),
+            inInventoryCollationSheet(in,cs),
+            includeCollationSheetItem(cs, i)
+
+    FILTERGROUP notEqualsPriceFilters
+            FILTER 'Показать товар с разными ценами' 'F10' notEqualsPriceByCollationSheetItem(cs, i)
+
+    EDIT inventory OBJECT in
+;
+
+DESIGN inventory FROM DEFAULT {
+    main{
+        in.box {
+            POSITION in.inventoryGroup TO THE LEFT in.inventGroup;
+            ADD PROPERTY(convertPriceInventory(in)) IN in.inventGroup;
+        }
+        NEW secondCase BEFORE functions.box{
+                tabbedPane = TRUE;
+                NEW z.box { title = 'Описи';
+                    fillVertical = 5;
+                    ADD treeDepartmentStore.box { fillHorizontal = 2;};
+                    ADD dp.box  {fillHorizontal = 3;};
+                    POSITION treeDepartmentStore.box TO THE LEFT dp.box;
+                    PROPERTY(objectClassName) {
+                            preferredCharWidth = 15;
+                    }
+                    PROPERTY (dumb1) {
+                        caption = 'Статус';
+                        minimumCharWidth = 15;
+                    }
+                    PROPERTY (postListInventory) {
+                        caption = 'Закрыть';
+                    }
+                    PROPERTY (unpostListInventory) {
+                        caption = 'Открыть';
+                    }
+                    PROPERTY (editLI) {
+                        caption = 'Редактировать';
+                    }
+                    PROPERTY (delete(li)) {
+                        caption = 'Удалить';
+                        panelLocation = TOOLBAR;
+                        askConfirm = TRUE;
+                    }
+                }
+
+                NEW x.box { title = 'Сличительные ведомости';
+                    fillVertical = 5;
+                    ADD cs.box  { fillVertical = 1;};
+                    ADD i.box { fillVertical = 4;}
+
+                    ADD PROPERTY(showFormItemByCollationSheet(cs)) IN i.panel;
+
+                }
+
+        }
+    }
+}
+
+@metaCodePostedObject (inventory) ;
+
+FORM inventories 'Инвентаризации'
+    OBJECTS in=inventory
+    PROPERTIES (in) READONLY objectClassName, numberInventory, nameInventory, nameDepartmentByInventory, noteInventory,
+                    dateToInventory, timeToInventory, timeCreated FORCE PANEL, nameUserCreated FORCE PANEL, hostnameComputerCreated FORCE PANEL, timeClosed, nameUserClosed, hostnameComputerClosed
+    PROPERTIES(in)  ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL SHOWIF isDraftInventory(in),
+                    postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)//(in) ADDFORM, EDITFORM, delete
+;
+
+DESIGN inventories FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 25;
+    }
+    PROPERTY (delete(in)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+    POSITION in.historyGroup TO THE LEFT in.postedGroup;
+}
 
 //----------------------------------- Форма для общих параметров -------------------------------------------------//
 FORM globalParameters 'Параметры'
@@ -6030,8 +6069,6 @@ NAVIGATOR {
             ADD addrateNaturalLossItem;
             ADD rateNaturalLossItem;
             ADD genTimeTables;
-//            ADD addNDSSupplierItem;
-//            ADD NDSSupplierItem;
             ADD addpriceWare;
             ADD priceWare;
             ADD rangeWare;
