@@ -76,8 +76,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     private State currentState = null;
 
     private Map<String, ValueClass> primitiveTypeAliases = BaseUtils.buildMap(
-            asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME"),
-            Arrays.<ValueClass>asList(IntegerClass.instance, DoubleClass.instance, LongClass.instance, DateClass.instance, LogicalClass.instance, DateTimeClass.instance, TextClass.instance, TimeClass.instance)
+            asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME", "WORD_FILE", "IMAGE_FILE", "PDF_FILE", "CUSTOM_FILE", "EXCEL_FILE"),
+            Arrays.<ValueClass>asList(IntegerClass.instance, DoubleClass.instance, LongClass.instance, DateClass.instance, LogicalClass.instance,
+                    DateTimeClass.instance, TextClass.instance, TimeClass.instance, WordClass.instance, ImageClass.instance, PDFClass.instance,
+                    CustomFileClass.instance, ExcelClass.instance)
     );
 
     private ScriptingLogicsModule(BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
