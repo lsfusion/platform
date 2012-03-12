@@ -5120,7 +5120,7 @@ FORM reasonOff 'Причина списания'
 ;
 
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
-@metaCodeObjectWithPost (innerFlow, 'Расход в отдел', 'Закрытый расход в отдел', object);
+@metaCodeObjectWithPost (innerFlow, 'Расход в отдел', 'Закрытый расход в отдел', balanceItemLedger);
 
 recipientDepartmentInnerFlow 'Отдел-получатель (ИД)' (innerFlow) = DATA departmentStore(innerFlow);
 nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentHeaderGroup;
@@ -5227,7 +5227,7 @@ DESIGN innerFlows FROM DEFAULT {
 }
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
-@metaCodeObjectWithPost (innerArrival, 'Приход в отдел', 'Закрытый приход в отдел', object);
+@metaCodeObjectWithPost (innerArrival, 'Приход в отдел', 'Закрытый приход в отдел', balanceItemLedger);
 
 innerFlowInnerArrival 'Накладная отгрузки с отдела-отправителя (ИД)' (innerArrival) = DATA innerFlowPosted (innerArrival);
 
@@ -5393,22 +5393,232 @@ DESIGN innerArrivals FROM DEFAULT {
     }
 }
 
+//----------------------------------- Списание отходов по нормам -------------------------------------------------//
+needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDetail(shipmentDetail);
+needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
+
+
+CLASS wastage 'Списание отходов' : historyObject;
+CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
+CLASS wastageDetail 'Строка документа': balanceItemLedger;
+
+@metaCodePostedObject (wastage);
+
+@metaCodeDetailAggregation (shipment, wastage, needToWasteShipment);
+
+dateWastage 'Дата документа' (wastage) = dateShipment(shipmentWastage(wastage));
+waybillWastage 'Документ для списания' (wastage) = waybillShipment(shipmentWastage(wastage));
+
+departmentStoreWastage 'Отдел документа (ИД)' (wastage) = departmentStoreShipment (shipmentWastage(wastage));
+nameDepartmentStoreWastage 'Отдел документа' (wastage) = name(departmentStoreWastage (wastage));
+
+supplierWastage 'Поставщик (ИД)' (wastage) = supplierShipment(shipmentWastage(wastage));
+nameSupplierWastage 'Поставщик' (wastage) = name(supplierWastage(wastage));
+
+dateTimeWastageDetail (wastageDetail) = dateTimeShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+
+departmentStoreWastageDetail (wastageDetail) = departmentStoreShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+
+isPostedWastageDetail 'Закрыт' (wastageDetail) = isPostedWastage(wastageWastageDetail(wastageDetail));
+
+itemWastageDetail 'Товар (ИД)' (wastageDetail) = itemShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+nameAttributeItemWastageDetail 'Товар' (wastageDetail) = nameAttributeItem (itemWastageDetail(wastageDetail));
+
+quantityWastageDetail 'Количество' (wastageDetail) = DATA DOUBLE (wastageDetail);
+
+percentRateWasteWastageDetail 'Процент списания' (wastageDetail) = percentRateWasteShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+
+quantityWastageDetail(wastageDetail) <-
+    percentRateWasteWastageDetail (wastageDetail)* quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail))/100
+    ON ASSIGN wastageDetail IS wastageDetail;
+
+priceWastageDetail 'Цена' (wastageDetail) = retailPriceShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+
+sumWastageDetail 'Сумма' (wastageDetail) = quantityWastageDetail(wastageDetail) * priceWastageDetail(wastageDetail);
+
+totalSumWastage 'Общая сумма' (wastage) = GROUP SUM sumWastageDetail (wastageDetail)
+    IF  wastageWastageDetail(wastageDetail) == wastage BY wastageWastageDetail(wastageDetail) IN waybillSum;
+
+FORM wastages 'Списания отходов'
+
+    OBJECTS w=wastage
+    PROPERTIES (w) READONLY dateWastage, waybillWastage, nameDepartmentStoreWastage, nameSupplierWastage, totalSumWastage
+
+    OBJECTS d=wastageDetail
+    PROPERTIES (d) READONLY nameAttributeItemWastageDetail, quantityWastageDetail, priceWastageDetail, sumWastageDetail
+
+    FILTERS wastageWastageDetail(d)== w;
+;
+
+//----------------------------- Возврат поставщику ---------------------------------------------------------------//
+
+@metaCodeObjectWithPost(returnSupplier, 'Возрат поставщику', 'Закрытый возврат поставщику', balanceItemLedger);
+
+// шапка документа "Возврат поставщику"
+waybillReturnSupplier 'Номер накладной' (returnSupplier) = DATA STRING[7] (returnSupplier) IN documentHeaderGroup FIXEDCHARWIDTH 7;
+
+seriesWaybillReturnSupplier 'Серия накладной' (returnSupplier) = DATA STRING[2] (returnSupplier) IN documentHeaderGroup FIXEDCHARWIDTH 4;
+
+supplierReturnSupplier 'Поставщик (ИД)' (returnSupplier) = DATA supplier (returnSupplier) IN idGroup;
+
+nameSupplierReturnSupplier 'Поставщик' (returnSupplier) = name(supplierReturnSupplier(returnSupplier)) IN documentHeaderGroup
+    MINCHARWIDTH 30 PREFCHARWIDTH 40;
+
+// информация по товару
+
+GROUP itemReturnSupplierDetailInfo 'Информация по товару' : baseGroup;
+
+controlExpiryReturmSupplierDetail 'Контролировать сроки годности товара?' (returnSupplierDetail) =
+    controlExpiryItem (itemReturnSupplierDetail(returnSupplierDetail)) IN itemReturnSupplierDetailInfo;
+
+isManufacturedReturnSupplierDetail 'Товар производится?' (returnSupplierDetail) =
+    isManufacturedItem(itemReturnSupplierDetail(returnSupplierDetail)) IN itemReturnSupplierDetailInfo;
+isWeightReturnSupplierDetail 'Весовой товар?' (returnSupplierDetail) =
+    isWeightItem(itemReturnSupplierDetail(returnSupplierDetail)) IN itemReturnSupplierDetailInfo;
+
+nameinActionItemDepartmentReturnSupplierDetail 'Товар акции?' (returnSupplierDetail) =
+    name(inActionItemDepartmentVal(itemReturnSupplierDetail(returnSupplierDetail),
+    departmentStoreReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail)),
+    dateReturnSupplierDetail(returnSupplierDetail))) IN itemReturnSupplierDetailInfo FIXEDCHARWIDTH 2;
+
+hintReturnSupplierDetail 'Подсказка по товару' (returnSupplierDetail) =
+    hintItem(itemReturnSupplierDetail(returnSupplierDetail)) IN itemReturnSupplierDetailInfo;
+
+nameCountryReturnSupplierDetail 'Страна производства/происхождения' (returnSupplierDetail) =
+    name(countryItem(itemReturnSupplierDetail(returnSupplierDetail))) IN itemReturnSupplierDetailInfo MINCHARWIDTH 15 PREFCHARWIDTH 15;
+
+namebanRevaluationItemDepartmentReturnSupplierDetail 'Запрет на переоценку' (returnSupplierDetail) =
+    name(banRevaluationItemDepartmentVal(itemReturnSupplierDetail(returnSupplierDetail),
+    departmentStoreReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail)),
+    dateReturnSupplierDetail(returnSupplierDetail))) IN itemReturnSupplierDetailInfo FIXEDCHARWIDTH 2;
+
+// количество/цены по строкам
+
+quantityReturnSupplierDetail 'Количество' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
+totalQuantityReturnSupplier 'Общее количество' (returnSupplier) = GROUP SUM quantityReturnSupplierDetail(returnSupplierDetail)
+    BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN waybillSum;
+quantityItemReturnSupplier 'Количество по товару в поставке' (item, returnSupplier) = GROUP SUM quantityReturnSupplierDetail (returnSupplierDetail)
+    BY itemReturnSupplierDetail(returnSupplierDetail), returnSupplierReturnSupplierDetail(returnSupplierDetail);
+isItemReturnSupplier 'Товар есть в поставке' (item, returnSupplier) = quantityItemReturnSupplier(item, returnSupplier) > 0;
+
+//balanceBeforeShipmentShipmentDetail 'Остаток до поставки' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+
+priceReturnSupplierDetail 'Цена товара'(returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
+
+//isReturnSupplier (returnSupplier, returnSupplierDetail) = returnSupplierReturnSupplierDetail(returnSupplierDetail) == returnSupplier;
+
+FORM returnSupplier 'Возврат поставщику'
+OBJECTS r=returnSupplier FIXED PANEL
+PROPERTIES(r) seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier,
+              nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier
+
+OBJECTS d=returnSupplierDetail
+PROPERTIES(d) numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
+              quantityReturnSupplierDetail, priceReturnSupplierDetail
+PROPERTIES(d) ADDOBJ, delete FORCE PANEL
+PROPERTIES FORCE PANEL READONLY controlExpiryReturmSupplierDetail(d), isManufacturedReturnSupplierDetail(d),
+                                isWeightReturnSupplierDetail(d), nameinActionItemDepartmentReturnSupplierDetail(d),
+                                hintReturnSupplierDetail(d), nameCountryReturnSupplierDetail(d),
+                                namebanRevaluationItemDepartmentReturnSupplierDetail(d)
+
+OBJECTS i=item
+PROPERTIES(i) nameAttributeItem
+
+PROPERTIES(i, r) quantityItemReturnSupplier
+
+EDIT returnSupplier OBJECT r;
+
+FORM returnSuppliers 'Возвраты поставщику'
+
+OBJECTS r=returnSupplier
+PROPERTIES(r) READONLY objectClassName, seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier,
+                       nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, nameUserCreated,
+                       timeCreated, noteReturnSupplier
+PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
+              ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
+
+OBJECTS d=returnSupplierDetail
+PROPERTIES(d) READONLY numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
+                       quantityReturnSupplierDetail, priceReturnSupplierDetail;
+
+//FILTERS isReturnSupplier(r, d);
+
+
+DESIGN returnSupplier FROM DEFAULT {
+
+    NEW specification.box BEFORE functions.box{
+        tabbedPane = TRUE;
+        ADD d.box{
+            title = 'Спецификация';
+        };
+
+        ADD i.box;
+    };
+
+    NEW header.box BEFORE specification.box{
+        childConstraints = TO THE RIGHT;
+
+        NEW headerRow1 {
+            childConstraints = TO THE RIGHT;
+            ADD r.documentHeaderGroup{
+                POSITION PROPERTY(nameSupplierReturnSupplier) TO THE BOTTOM PROPERTY(nameDepartmentStoreReturnSupplier);
+            };
+        };
+
+        NEW headerRow2 {
+            ADD PROPERTY(noteReturnSupplier);
+        };
+    };
+
+    ADD PROPERTY(delete(d)){
+        panelLocation=TOOLBAR;
+        askConfirm=TRUE;
+    }
+}
+
+DESIGN returnSuppliers FROM DEFAULT{
+    ADD PROPERTY(delete(r)){
+        panelLocation=TOOLBAR;
+        askConfirm=TRUE;
+    }
+}
+
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
 dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
-                                                                  dateTimeStatementDetail(ledger);
+                                                                  dateTimeInnerArrivalDetail(ledger),
+                                                                  dateTimeStatementDetail(ledger),
+                                                                  dateTimeInnerFlowDetail(ledger),
+                                                                  dateTimeWastageDetail(ledger),
+                                                                  dateTimeReturnSupplierDetail(ledger);
 
 isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
-                                                              isPostedStatementDetail(ledger);
+                                                              isPostedInnerArrivalDetail(ledger),
+                                                              isPostedStatementDetail(ledger),
+                                                              isPostedInnerFlowDetail(ledger),
+                                                              isPostedWastageDetail(ledger),
+                                                              isPostedReturnSupplierDetail(ledger);
 
 itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
-                                                 itemStatementDetail(ledger);
+                                                 itemInnerArrivalDetail(ledger),
+                                                 itemStatementDetail(ledger),
+                                                 itemInnerFlowDetail(ledger),
+                                                 itemWastageDetail(ledger),
+                                                 itemReturnSupplierDetail(ledger);
 
 departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
-                                                            departmentStoreStatementDetail(ledger);
+                                                            departmentStoreInnerArrivalDetail(ledger),
+                                                            departmentStoreStatementDetail(ledger),
+                                                            departmentStoreInnerFlowDetail(ledger),
+                                                            departmentStoreWastageDetail(ledger),
+                                                            departmentStoreReturnSupplierDetail(ledger);
 
 quantityBalanceItemLedger (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
-                                                     -quantityStatementDetail(ledger);
+                                                     quantityInnerArrivalDetail(ledger),
+                                                    -quantityStatementDetail(ledger),
+                                                    -quantityInnerFlowDetail(ledger),
+                                                    -quantityWastageDetail(ledger),
+                                                    -quantityReturnSupplierDetail(ledger);
 
 currentBalanceItemLedger (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
                                                           BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger);
@@ -5607,138 +5817,6 @@ retailPriceStatementDetail (statementDetail) <- priceRetailLedgerDateTime (
                 ON CHANGE itemStatementDetail(statementDetail);
 
 
-//----------------------------- Возврат поставщику ---------------------------------------------------------------//
-
-@metaCodeObjectWithPost(returnSupplier, 'Возрат поставщику', 'Закрытый возврат поставщику', object);
-
-// шапка документа "Возврат поставщику"
-waybillReturnSupplier 'Номер накладной' (returnSupplier) = DATA STRING[7] (returnSupplier) IN documentHeaderGroup FIXEDCHARWIDTH 7;
-
-seriesWaybillReturnSupplier 'Серия накладной' (returnSupplier) = DATA STRING[2] (returnSupplier) IN documentHeaderGroup FIXEDCHARWIDTH 4;
-
-supplierReturnSupplier 'Поставщик (ИД)' (returnSupplier) = DATA supplier (returnSupplier) IN idGroup;
-
-nameSupplierReturnSupplier 'Поставщик' (returnSupplier) = name(supplierReturnSupplier(returnSupplier)) IN documentHeaderGroup
-    MINCHARWIDTH 30 PREFCHARWIDTH 40;
-
-// информация по товару
-
-GROUP itemReturnSupplierDetailInfo 'Информация по товару' : baseGroup;
-
-controlExpiryReturmSupplierDetail 'Контролировать сроки годности товара?' (returnSupplierDetail) =
-    controlExpiryItem (itemReturnSupplierDetail(returnSupplierDetail)) IN itemReturnSupplierDetailInfo;
-
-isManufacturedReturnSupplierDetail 'Товар производится?' (returnSupplierDetail) =
-    isManufacturedItem(itemReturnSupplierDetail(returnSupplierDetail)) IN itemReturnSupplierDetailInfo;
-isWeightReturnSupplierDetail 'Весовой товар?' (returnSupplierDetail) =
-    isWeightItem(itemReturnSupplierDetail(returnSupplierDetail)) IN itemReturnSupplierDetailInfo;
-
-nameinActionItemDepartmentReturnSupplierDetail 'Товар акции?' (returnSupplierDetail) =
-    name(inActionItemDepartmentVal(itemReturnSupplierDetail(returnSupplierDetail),
-    departmentStoreReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail)),
-    dateReturnSupplierDetail(returnSupplierDetail))) IN itemReturnSupplierDetailInfo FIXEDCHARWIDTH 2;
-
-hintReturnSupplierDetail 'Подсказка по товару' (returnSupplierDetail) =
-    hintItem(itemReturnSupplierDetail(returnSupplierDetail)) IN itemReturnSupplierDetailInfo;
-
-nameCountryReturnSupplierDetail 'Страна производства/происхождения' (returnSupplierDetail) =
-    name(countryItem(itemReturnSupplierDetail(returnSupplierDetail))) IN itemReturnSupplierDetailInfo MINCHARWIDTH 15 PREFCHARWIDTH 15;
-
-namebanRevaluationItemDepartmentReturnSupplierDetail 'Запрет на переоценку' (returnSupplierDetail) =
-    name(banRevaluationItemDepartmentVal(itemReturnSupplierDetail(returnSupplierDetail),
-    departmentStoreReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail)),
-    dateReturnSupplierDetail(returnSupplierDetail))) IN itemReturnSupplierDetailInfo FIXEDCHARWIDTH 2;
-
-// количество/цены по строкам
-
-quantityReturnSupplierDetail 'Количество' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
-totalQuantityReturnSupplier 'Общее количество' (returnSupplier) = GROUP SUM quantityReturnSupplierDetail(returnSupplierDetail)
-    BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN waybillSum;
-quantityItemReturnSupplier 'Количество по товару в поставке' (item, returnSupplier) = GROUP SUM quantityReturnSupplierDetail (returnSupplierDetail)
-    BY itemReturnSupplierDetail(returnSupplierDetail), returnSupplierReturnSupplierDetail(returnSupplierDetail);
-isItemReturnSupplier 'Товар есть в поставке' (item, returnSupplier) = quantityItemReturnSupplier(item, returnSupplier) > 0;
-
-//balanceBeforeShipmentShipmentDetail 'Остаток до поставки' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-
-priceReturnSupplierDetail 'Цена товара'(returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
-
-//isReturnSupplier (returnSupplier, returnSupplierDetail) = returnSupplierReturnSupplierDetail(returnSupplierDetail) == returnSupplier;
-
-FORM returnSupplier 'Возврат поставщику'
-OBJECTS r=returnSupplier FIXED PANEL
-PROPERTIES(r) seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier,
-              nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier
-
-OBJECTS d=returnSupplierDetail
-PROPERTIES(d) numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
-              quantityReturnSupplierDetail, priceReturnSupplierDetail
-PROPERTIES(d) ADDOBJ, delete FORCE PANEL
-PROPERTIES FORCE PANEL READONLY controlExpiryReturmSupplierDetail(d), isManufacturedReturnSupplierDetail(d),
-                                isWeightReturnSupplierDetail(d), nameinActionItemDepartmentReturnSupplierDetail(d),
-                                hintReturnSupplierDetail(d), nameCountryReturnSupplierDetail(d),
-                                namebanRevaluationItemDepartmentReturnSupplierDetail(d)
-
-OBJECTS i=item
-PROPERTIES(i) nameAttributeItem
-
-PROPERTIES(i, r) quantityItemReturnSupplier
-
-EDIT returnSupplier OBJECT r;
-
-FORM returnSuppliers 'Возвраты поставщику'
-
-OBJECTS r=returnSupplier
-PROPERTIES(r) READONLY objectClassName, seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier,
-                       nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, nameUserCreated,
-                       timeCreated, noteReturnSupplier
-PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
-              ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
-
-OBJECTS d=returnSupplierDetail
-PROPERTIES(d) READONLY numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
-                       quantityReturnSupplierDetail, priceReturnSupplierDetail;
-
-//FILTERS isReturnSupplier(r, d);
-
-
-DESIGN returnSupplier FROM DEFAULT {
-
-    NEW specification.box BEFORE functions.box{
-        tabbedPane = TRUE;
-        ADD d.box{
-            title = 'Спецификация';
-        };
-
-        ADD i.box;
-    };
-
-    NEW header.box BEFORE specification.box{
-        childConstraints = TO THE RIGHT;
-
-        NEW headerRow1 {
-            childConstraints = TO THE RIGHT;
-            ADD r.documentHeaderGroup{
-                POSITION PROPERTY(nameSupplierReturnSupplier) TO THE BOTTOM PROPERTY(nameDepartmentStoreReturnSupplier);
-            };
-        };
-
-        NEW headerRow2 {
-            ADD PROPERTY(noteReturnSupplier);
-        };
-    };
-
-    ADD PROPERTY(delete(d)){
-        panelLocation=TOOLBAR;
-        askConfirm=TRUE;
-    }
-}
-
-DESIGN returnSuppliers FROM DEFAULT{
-    ADD PROPERTY(delete(r)){
-        panelLocation=TOOLBAR;
-        askConfirm=TRUE;
-    }
-}
 
 //---------------------------- Переоценка (конкретная реализация) ----------------------------------------//
 
@@ -5785,54 +5863,6 @@ FORM priceChangeDocuments 'Акты переоценки'
                              oldDataRetailRangePriceChangeDocumentDetail, dataRetailRangePriceChangeDocumentDetail,
                              oldRetailPriceChangeDocumentDetail, retailPriceChangeDocumentDetail
     FILTERS documentPriceChangeDocumentDetail(pcd) == pc
-;
-
-//----------------------------------- Списание отходов по нормам -------------------------------------------------//
-needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDetail(shipmentDetail);
-needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
-
-CLASS wastage 'Списание отходов' : historyObject;
-CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
-CLASS wastageDetail 'Строка документа';
-
-@metaCodeDetailAggregation (shipment, wastage, needToWasteShipment);
-
-dateWastage 'Дата документа' (wastage) = dateShipment(shipmentWastage(wastage));
-waybillWastage 'Документ для списания' (wastage) = waybillShipment(shipmentWastage(wastage));
-
-departmentStoreWastage 'Отдел документа (ИД)' (wastage) = departmentStoreShipment (shipmentWastage(wastage));
-nameDepartmentStoreWastage 'Отдел документа' (wastage) = name(departmentStoreWastage (wastage));
-
-supplierWastage 'Поставщик (ИД)' (wastage) = supplierShipment(shipmentWastage(wastage));
-nameSupplierWastage 'Поставщик' (wastage) = name(supplierWastage(wastage));
-
-itemWastageDetail 'Товар (ИД)' (wastageDetail) = itemShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-nameAttributeItemWastageDetail 'Товар' (wastageDetail) = nameAttributeItem (itemWastageDetail(wastageDetail));
-
-quantityWastageDetail 'Количество' (wastageDetail) = DATA DOUBLE (wastageDetail);
-
-percentRateWasteWastageDetail 'Процент списания' (wastageDetail) = percentRateWasteShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-
-quantityWastageDetail(wastageDetail) <-
-    percentRateWasteWastageDetail (wastageDetail)* quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail))/100
-    ON ASSIGN wastageDetail IS wastageDetail;
-
-priceWastageDetail 'Цена' (wastageDetail) = retailPriceShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-
-sumWastageDetail 'Сумма' (wastageDetail) = quantityWastageDetail(wastageDetail) * priceWastageDetail(wastageDetail);
-
-totalSumWastage 'Общая сумма' (wastage) = GROUP SUM sumWastageDetail (wastageDetail)
-    IF  wastageWastageDetail(wastageDetail) == wastage BY wastageWastageDetail(wastageDetail) IN waybillSum;
-
-FORM wastages 'Списания отходов'
-
-    OBJECTS w=wastage
-    PROPERTIES (w) READONLY dateWastage, waybillWastage, nameDepartmentStoreWastage, nameSupplierWastage, totalSumWastage
-
-    OBJECTS d=wastageDetail
-    PROPERTIES (d) READONLY nameAttributeItemWastageDetail, quantityWastageDetail, priceWastageDetail, sumWastageDetail
-
-    FILTERS wastageWastageDetail(d)== w;
 ;
 
 //----------------------------------- Форма для общих параметров -------------------------------------------------//
