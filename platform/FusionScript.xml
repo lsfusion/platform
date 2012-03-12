@@ -48,7 +48,7 @@
       <keyword name="CONFIRM" />
       <keyword name="CONSTRAINT" />
       <keyword name="CUSTOM" />
-      <keyword name="CUSTOM_FILE" />
+      <keyword name="CUSTOMFILE" />
       <keyword name="CYCLES" />
       <keyword name="DATA" />
       <keyword name="DATE" />
@@ -72,7 +72,7 @@
       <keyword name="EMAIL" />
       <keyword name="END" />
       <keyword name="EQUAL" />
-      <keyword name="EXCEL_FILE" />
+      <keyword name="EXCELFILE" />
       <keyword name="EXCEPTLAST" />
       <keyword name="EXCLUSIVE" />
       <keyword name="EXEC" />
@@ -102,7 +102,7 @@
       <keyword name="HTML" />
       <keyword name="IF" />
       <keyword name="IMAGE" />
-      <keyword name="IMAGE_FILE" />
+      <keyword name="IMAGEFILE" />
       <keyword name="IMPORT" />
       <keyword name="IMPOSSIBLE" />
       <keyword name="IN" />
@@ -149,7 +149,7 @@
       <keyword name="PARENT" />
       <keyword name="PARTITION" />
       <keyword name="PDF" />
-      <keyword name="PDF_FILE" />
+      <keyword name="PDFFILE" />
       <keyword name="PERSISTENT" />
       <keyword name="POSITION" />
       <keyword name="PREFCHARWIDTH" />
@@ -198,7 +198,7 @@
       <keyword name="WHERE" />
       <keyword name="WHILE" />
       <keyword name="WINDOW" />
-      <keyword name="WORD_FILE" />
+      <keyword name="WORDFILE" />
       <keyword name="XOR" />
     </keywords>
     <keywords2>

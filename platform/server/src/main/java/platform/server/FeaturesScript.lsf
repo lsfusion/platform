@@ -52,7 +52,7 @@ CLASS STATIC storeSize 'Размер склада'
 // Expression syntax:
 // [SESSION] DATA returnClass ( [paramClass1, ..., paramClassN] )
 // If SESSION modifier is spesified, than session data property will be created.
-// Built-in types: INTEGER, LONG, DOUBLE, BOOLEAN, DATE, DATETIME, TEXT, STRING, ISTRING, TIME, WORD_FILE, IMAGE_FILE, PDF_FILE, CUSTOM_FILE, EXCEL_FILE
+// Built-in types: INTEGER, LONG, DOUBLE, BOOLEAN, DATE, DATETIME, TEXT, STRING, ISTRING, TIME, WORDFILE, IMAGEFILE, PDFFILE, CUSTOMFILE, EXCELFILE
 store(document) = DATA store (document) IN base;
 quantity(document, article) = DATA DOUBLE (document, article) IN base;
 storeSize(store) = DATA storeSize (store) IN base;

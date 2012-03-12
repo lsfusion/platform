@@ -2240,7 +2240,7 @@ fragment HEX_DIGIT	: 	'0'..'9' | 'a'..'f' | 'A'..'F';
 fragment FIRST_ID_LETTER	: ('a'..'z'|'A'..'Z');
 fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
 
-PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'TEXT' | 'TIME' | 'WORD_FILE' | 'IMAGE_FILE' | 'PDF_FILE' | 'CUSTOM_FILE' | 'EXCEL_FILE' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']';
+PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'TEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'CUSTOMFILE' | 'EXCELFILE' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';	
 NULL_LITERAL	:	'NULL';	
 ID          	:	FIRST_ID_LETTER NEXT_ID_LETTER*;
