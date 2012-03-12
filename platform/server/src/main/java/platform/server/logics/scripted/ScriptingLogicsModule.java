@@ -14,6 +14,8 @@ import platform.server.classes.*;
 import platform.server.data.Union;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
+import platform.server.data.type.ConcatenateType;
+import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.window.*;
@@ -944,6 +946,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(prop, mergeAllParams(paramProps));
     }
 
+    public LPWithParams addScriptedCCProp(List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedCCProp(" + params + ");");
+        return addScriptedJProp(addCCProp(params.size()), params);
+    }
+
+    public LPWithParams addScriptedDCCProp(LPWithParams ccProp, int index) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedDCCProp(" + ccProp + ", " + index + ");");
+        checkDeconcatenateIndex(ccProp, index);
+        return addScriptedJProp(addDCCProp(index-1), Arrays.asList(ccProp));
+    }
+
     public LP<?> addScriptedSFProp(String typeName, String formulaLiteral) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedSFProp(" + typeName + ", " + formulaLiteral + ");");
         ValueClass cls = findClassByCompoundName(typeName);
@@ -952,6 +965,22 @@ public class ScriptingLogicsModule extends LogicsModule {
         Set<Integer> params = findFormulaParameters(formulaText);
         checkFormulaParameters(params);
         return addSFProp(transformFormulaText(formulaText), (DataClass) cls, params.size());
+    }
+
+    private Set<Integer> findFormulaParameters(String text) {
+        Set<Integer> params = new HashSet<Integer>();
+        Pattern pattern = Pattern.compile("\\$\\d+");
+        Matcher matcher = pattern.matcher(text);
+        while (matcher.find()) {
+            String group = matcher.group();
+            int paramNumber = Integer.valueOf(group.substring(1));
+            params.add(paramNumber);
+        }
+        return params;
+    }
+
+    private String transformFormulaText(String text) {
+        return text.replaceAll("\\$(\\d+)", "prm$1");
     }
 
     public LPWithParams addScriptedRProp(List<String> context, LPWithParams zeroStep, LPWithParams nextStep, Cycle cycleType) throws ScriptingErrorLog.SemanticErrorException {
@@ -987,22 +1016,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         return new LPWithParams(res, resUsedParams);
-    }
-
-    private Set<Integer> findFormulaParameters(String text) {
-        Set<Integer> params = new HashSet<Integer>();
-        Pattern pattern = Pattern.compile("\\$\\d+");
-        Matcher matcher = pattern.matcher(text);
-        while (matcher.find()) {
-            String group = matcher.group();
-            int paramNumber = Integer.valueOf(group.substring(1));
-            params.add(paramNumber);
-        }
-        return params;
-    }
-
-    private String transformFormulaText(String text) {
-        return text.replaceAll("\\$(\\d+)", "prm$1");
     }
 
     public LP<?> addConstantProp(ConstType type, String text) throws ScriptingErrorLog.SemanticErrorException {
@@ -1660,6 +1673,18 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void checkNecessaryProperty(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
         if (property.property == null) {
             errLog.emitNecessaryPropertyError(parser);
+        }
+    }
+
+    public void checkDeconcatenateIndex(LPWithParams property, int index) throws ScriptingErrorLog.SemanticErrorException {
+        Type propType = property.property.property.getType();
+        if (propType instanceof ConcatenateType) {
+            int concatParts = ((ConcatenateType) propType).getPartsCount();
+            if (index <= 0 || index > concatParts) {
+                errLog.emitDeconcatIndexError(parser, index, concatParts);
+            }
+        } else {
+            errLog.emitDeconcatError(parser);
         }
     }
 

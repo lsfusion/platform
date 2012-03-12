@@ -24,10 +24,7 @@ import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
 import platform.server.logics.property.actions.flow.*;
-import platform.server.logics.property.derived.AggregateGroupProperty;
-import platform.server.logics.property.derived.ConcatenateProperty;
-import platform.server.logics.property.derived.CycleGroupProperty;
-import platform.server.logics.property.derived.DerivedProperty;
+import platform.server.logics.property.derived.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.AttachmentFormat;
 import platform.server.mail.EmailActionProperty;
@@ -868,6 +865,10 @@ public abstract class LogicsModule {
 
     protected LP addCCProp(int paramCount) {
         return addProperty(null, new LP<ConcatenateProperty.Interface>(new ConcatenateProperty(genSID(), paramCount)));
+    }
+
+    protected LP addDCCProp(int paramIndex) {
+        return addProperty(null, new LP<DeconcatenateProperty.Interface>(new DeconcatenateProperty(genSID(), paramIndex, baseClass)));
     }
 
     protected boolean isDefaultJoinImplementChange(Property property) {

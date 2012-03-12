@@ -353,6 +353,18 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "single parameter is forbidden in this context");
     }
 
+    public void emitDeconcatIndexError(LsfLogicsParser parser, int index, int size) throws SemanticErrorException {
+        if (index == 0) {
+            emitSimpleError(parser, "indices are one-based");
+        } else if (index > size) {
+            emitSimpleError(parser, format("wrong index, should be at most %d", size));
+        }
+    }
+
+    public void emitDeconcatError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "expression is not a list");
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

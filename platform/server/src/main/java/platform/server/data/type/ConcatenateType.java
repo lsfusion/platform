@@ -31,6 +31,10 @@ public class ConcatenateType extends AbstractType<byte[]> {
         return types[i];        
     }
 
+    public int getPartsCount() {
+        return types.length;
+    }
+
     public String getDB(SQLSyntax syntax) {
         return syntax.getBinaryType(getBinaryLength(syntax.isBinaryString()));
     }

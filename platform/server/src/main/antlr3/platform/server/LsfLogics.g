@@ -782,30 +782,48 @@ multiplicativePE[List<String> context, boolean dynamic] returns [LPWithParams pr
 		$property = self.addScriptedMultiplicativeProp(ops, props);				
 	}
 }
-	:	firstExpr=simplePE[context, dynamic] { props.add($firstExpr.property); }
+	:	firstExpr=prefixUnaryPE[context, dynamic] { props.add($firstExpr.property); }
 		(operand=MULT_OPERAND { ops.add($operand.text); }
-		nextExpr=simplePE[context, dynamic] { props.add($nextExpr.property); })*
+		nextExpr=prefixUnaryPE[context, dynamic] { props.add($nextExpr.property); })*
 	;
+
 	
+prefixUnaryPE[List<String> context, boolean dynamic] returns [LPWithParams property] 
+@init {
+	boolean hasPrefix = false;
+}
+@after {
+	if (inPropParseState() && hasPrefix) {
+		$property = self.addScriptedUnaryMinusProp($expr.property);
+	} 
+}
+	:	MINUS expr=prefixUnaryPE[context, dynamic]  { hasPrefix = true; }
+	|	simpleExpr=postfixUnaryPE[context, dynamic] { $property = $simpleExpr.property; }
+	;
+
 		 
-	 
+postfixUnaryPE[List<String> context, boolean dynamic] returns [LPWithParams property] 
+@init {	
+	boolean hasPostfix = false;
+}
+@after {
+	if (inPropParseState() && hasPostfix) {
+		$property = self.addScriptedDCCProp($expr.property, $index.val);
+	} 
+}
+	:	expr=simplePE[context, dynamic] { $property = $expr.property; }
+		(
+			'[' index=uintLiteral ']' { hasPostfix = true; }
+		)?
+	;		 
+
+		 
 simplePE[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	'(' expr=propertyExpression[context, dynamic] ')' { $property = $expr.property; } 
 	|	primitive=expressionPrimitive[context, dynamic] { $property = $primitive.property; } 
-	|	uexpr=unaryMinusPE[context, dynamic] { $property = $uexpr.property; }
 	;
 
 	
-unaryMinusPE[List<String> context, boolean dynamic] returns [LPWithParams property] 	
-@after {
-	if (inPropParseState()) {
-		$property = self.addScriptedUnaryMinusProp($property);
-	}
-}
-	:	MINUS expr=simplePE[context, dynamic] { $property = $expr.property; }
-	;		 
-	
-
 expressionPrimitive[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	paramName=parameter
         {
@@ -823,6 +841,7 @@ expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParam
 	|	caseDef=casePropertyDefinition[context, dynamic] { $property = $caseDef.property; }
 	|	partDef=partitionPropertyDefinition[context, dynamic] { $property = $partDef.property; }
 	|	recDef=recursivePropertyDefinition[context, dynamic] { $property = $recDef.property; } 
+	|	concatDef=concatenationPropertyDefinition[context, dynamic] { $property = $concatDef.property; }
 	|	constDef=literal { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
@@ -1003,6 +1022,17 @@ recursivePropertyDefinition[List<String> context, boolean dynamic] returns [LPWi
 		('CYCLES' { cycleType = Cycle.YES; } ('IMPOSSIBLE' { cycleType = Cycle.IMPOSSIBLE; })? )?
 	;
 
+concatenationPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property] 
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedCCProp($list.props);		
+	}
+}
+	:	'LIST'
+		'('
+			list=nonEmptyPropertyExpressionList[context, dynamic] 
+		')' 
+	;
 
 formulaPropertyDefinition returns [LP property]
 @after {
