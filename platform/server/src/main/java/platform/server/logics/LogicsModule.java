@@ -868,7 +868,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addDCCProp(int paramIndex) {
-        return addProperty(null, new LP<DeconcatenateProperty.Interface>(new DeconcatenateProperty(genSID(), paramIndex, baseClass)));
+        return addProperty(null, new LP<DeconcatenateProperty.Interface>(new DeconcatenateProperty(genSID(), paramIndex, baseLM.baseClass)));
     }
 
     protected boolean isDefaultJoinImplementChange(Property property) {
