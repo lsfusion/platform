@@ -5576,7 +5576,7 @@ departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipm
                                                             departmentStoreReturnSupplierDetail(ledger),
                                                             departmentStoreInventoryLedger(ledger) PERSISTENT;
 
-quantityBalanceItemLedger (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
+quantityBalanceItemLedger 'Количество' (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
                                                      quantityInnerArrivalDetail(ledger),
                                                     -quantityStatementDetail(ledger),
                                                     -quantityInnerFlowDetail(ledger),
@@ -6101,15 +6101,46 @@ FORM balanceItemDepartment 'Остатки по отделам'
 
     OBJECTS i=item
     PROPERTIES(i) nameAttributeItem
-
     PROPERTIES(i, ds, t) priceAccountLedgerDateTime, balanceAItemLedgerDateTime
-
     FILTERGROUP filters
         FILTER 'Товары с остатком' 'F10' balanceAItemLedgerDateTime(i, ds, t) DEFAULT
+
+    OBJECTS apl=accountPriceLedger
+    PROPERTIES (apl) dateTimeAccountPriceLedger, priceAccountLedger
+    FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==ds
+
+    OBJECTS rpl=retailPriceLedger
+    PROPERTIES (rpl) dateTimeRetailPriceLedger, priceRetailLedger
+    FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==ds
+
+    OBJECTS bil=balanceItemLedger
+    PROPERTIES(bil) dateTimeBalanceItemLedger, quantityBalanceItemLedger
+    FILTERS isPostedBalanceItemLedger(bil) AND itemBalanceItemLedger(bil)==i AND departmentStoreBalanceItemLedger(bil)==ds
+
+    OBJECTS ipl=importerPriceLedger
+    PROPERTIES(ipl) dateTimeImporterPriceLedger, priceImporterLedger
+    FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==ds
+
+    OBJECTS rvl=retailVATLedger
+    PROPERTIES(rvl) dateTimeRetailVATLedger, dataRetailLedger
+    FILTERS isPostedRetailVATLedger(rvl) AND itemRetailVATLedger(rvl)==i AND departmentStoreRetailVATLedger(rvl)==ds
 ;
 
 DESIGN balanceItemDepartment FROM DEFAULT {
     main{
+        preferredSize = (1024, 768);
+        NEW ledger.box BEFORE functions.box{
+            title = 'Изменение цен';
+            tabbedPane = TRUE;
+            ADD bil.box;
+            ADD apl.box;
+            ADD rpl.box;
+            ADD ipl.box;
+            ADD rvl.box;
+        };
+
+        ADD i.box BEFORE ledger.box;
+        POSITION i.box TO THE LEFT ledger.box;
         ADD treeStore.box BEFORE ds.box;
         POSITION treeStore.box TO THE LEFT ds.box;
         treeStore.tree {
