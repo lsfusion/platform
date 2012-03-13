@@ -940,6 +940,7 @@ TABLE stringDate (STRING[14], DATE);
 GROUP barcodeGroup : baseGroup;
 
 CLASS barcode 'Штрих код';
+TABLE barcode (barcode);
 
 barcodeEx 'Штрих код' = DATA STRING[14] (barcode) IN recognizeGroup FIXEDCHARWIDTH 14;
 

@@ -618,6 +618,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         tableFactory.include("connection", connection);
         tableFactory.include("computer", computer);
 
+        tableFactory.include("sessionObject", session, baseClass);
+
         tableFactory.include("connectionNavigatorElement", connection, navigatorElement);
         tableFactory.include("userRoleNavigatorElement", userRole, navigatorElement);
         tableFactory.include("userRoleProperty", userRole, property);
