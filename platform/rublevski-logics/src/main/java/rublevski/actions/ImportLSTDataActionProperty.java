@@ -158,7 +158,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     private void importItems(String path, Boolean importInactive, ExecutionContext context, Integer numberOfItems) throws SQLException {
 
         try {
-            List<List<Object>> data = importItemsFromDBF(path, importInactive, numberOfItems);
+            List<List<Object>> data = importItemsFromDBF(path, context, importInactive, numberOfItems);
 
             ImportField itemIDField = new ImportField(BL.LM.extSID);
             ImportField itemGroupIDField = new ImportField(BL.LM.extSID);
@@ -177,6 +177,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField isLoafCutItemField = new ImportField(rublevskiLM.getLPByName("isLoafCutItem"));
             ImportField isWeightItemField = new ImportField(rublevskiLM.getLPByName("isWeightItem"));
             ImportField compositionField = new ImportField(rublevskiLM.getLPByName("compositionScalesItem"));
+            ImportField dataSuppliersRangeItemField = new ImportField(rublevskiLM.getLPByName("dataSuppliersRangeItemDate"));
+            ImportField dataRetailRangeItemField = new ImportField(rublevskiLM.getLPByName("dataRetailRangeItemDate"));
 
             ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("item"),
                     BL.LM.extSIDToObject.getMapping(itemIDField));
@@ -195,6 +197,12 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             ImportKey<?> barcodeKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("barcode"),
                     rublevskiLM.getLPByName("barcodeToDate").getMapping(barcodeField, dateField));
+
+            ImportKey<?> supplierRangeKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("range"),
+                    rublevskiLM.getLPByName("dataActingRateRangeToRange").getMapping(dataSuppliersRangeItemField));
+
+            ImportKey<?> retailRangeKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("range"),
+                    rublevskiLM.getLPByName("dataActingRateRangeToRange").getMapping(dataRetailRangeItemField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -232,13 +240,17 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(isLoafCutItemField, rublevskiLM.getLPByName("isLoafCutItem").getMapping(itemKey)));
             props.add(new ImportProperty(isWeightItemField, rublevskiLM.getLPByName("isWeightItem").getMapping(itemKey)));
             props.add(new ImportProperty(compositionField, rublevskiLM.getLPByName("compositionScalesItem").getMapping(itemKey)));
-
+            props.add(new ImportProperty(dataSuppliersRangeItemField, rublevskiLM.getLPByName("suppliersRangeItemDate").getMapping(itemKey, dateField, supplierRangeKey),
+                    BL.LM.object(rublevskiLM.getClassByName("range")).getMapping(supplierRangeKey)));
+            props.add(new ImportProperty(dataRetailRangeItemField, rublevskiLM.getLPByName("retailRangeItemDate").getMapping(itemKey, dateField, retailRangeKey),
+                    BL.LM.object(rublevskiLM.getClassByName("range")).getMapping(retailRangeKey)));
             ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, unitOfMeasureIDField,
                     nameUnitOfMeasureField, nameBrandField, brandIDField, countryIDField, nameCountryField, barcodeField, dateField,
-                    importerPriceField, percentWholesaleMarkItemField, isFixPriceItemField, isLoafCutItemField, isWeightItemField, compositionField), data);
+                    importerPriceField, percentWholesaleMarkItemField, isFixPriceItemField, isLoafCutItemField, isWeightItemField,
+                    compositionField, dataSuppliersRangeItemField, dataRetailRangeItemField), data);
 
             DataSession session = BL.createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, unitOfMeasureKey, brandKey, countryKey, barcodeKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, unitOfMeasureKey, brandKey, countryKey, barcodeKey, supplierRangeKey, retailRangeKey), props);
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
@@ -771,7 +783,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         return data;
     }
 
-    private List<List<Object>> importItemsFromDBF(String path, Boolean importInactive, Integer numberOfItems) throws IOException, xBaseJException {
+    private List<List<Object>> importItemsFromDBF(String path, ExecutionContext context, Boolean importInactive, Integer numberOfItems) throws IOException, xBaseJException {
 
         DBF importFile = new DBF(path);
         int totalRecordCount = importFile.getRecordCount();
@@ -811,11 +823,12 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 if (importFile.getField("FORMULA").getBytes() != null) {
                     composition = new String(importFile.getField("FORMULA").getBytes(), "Cp1251").replace("\n", "").replace("\r", "");
                 }
-
+                Double suppliersRange = new Double(new String(importFile.getField("NDSP").getBytes(), "Cp1251").trim());
+                Double retailRange = new Double(new String(importFile.getField("NDSR").getBytes(), "Cp1251").trim());
                 if (!"".equals(k_grtov) && (!inactiveItem || importInactive))
                     data.add(Arrays.asList((Object) k_grmat, k_grtov, pol_naim, "U_" + unitOfMeasure, unitOfMeasure, brand, "B_" + brand, "C_" + country, country, barcode,
                             date, importerPrice, percentWholesaleMarkItem, isFixPriceItem ? isFixPriceItem : null, isLoafCutItem ? isLoafCutItem : null, isWeightItem ? isWeightItem : null,
-                            "".equals(composition) ? null : composition));
+                            "".equals(composition) ? null : composition, suppliersRange, retailRange));
             } catch (ParseException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }

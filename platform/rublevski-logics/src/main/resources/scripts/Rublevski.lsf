@@ -1519,6 +1519,37 @@ inCompanyStore (company, store) = companyStore(store) == company;
 isInCompanyStore (company, store)  = UNION OVERRIDE  companyStore(store) == company, store IS store AND NOT company;
 
 
+dataActingRateRangeToRange (range) = GROUP UNIQUE range BY dataActingRateRange (range);
+
+FORM Test 'Test'
+    OBJECTS i = INTEGER FIXED PANEL
+    PROPERTIES OBJVALUE(i), dataActingRateRangeToRange(i)
+;
+
+addNDSValue 'Добавить значение НДС' = ACTION (tax, number, value) {
+    ADDOBJ range;
+    FOR rn == addedObject() DO {
+       SET rangeTypeRange(rn) <- rangeType.common;
+       SET taxRange(rn) <- tax AS tax;
+       SET dataRange(rn) <- number AS INTEGER;
+       ADDOBJ rate;
+       FOR ra == addedObject() DO {
+          SET rangeRate(ra) <- rn AS range;
+          SET dataRate(ra) <- value AS DOUBLE;
+          //SET dateFromRate(ra) <- 2001_01_01;
+       };
+    };
+};
+
+fillNDSDefaultValues 'Заполнить значения НДС по умолчанию' = ACTION (tax) {
+    EXEC addNDSValue(tax AS tax, 1, 0);
+    EXEC addNDSValue(tax AS tax, 2, 9.09);
+    EXEC addNDSValue(tax AS tax, 3, 16.67);
+    EXEC addNDSValue(tax AS tax, 4, 10);
+    EXEC addNDSValue(tax AS tax, 5, 20);
+    EXEC addNDSValue(tax AS tax, 6, 24);
+};
+
 FORM tax 'Налог'
     OBJECTS           t=tax FIXED PANEL, ra=range
     PROPERTIES(t)     name, nameTax, addNewRange TODRAW ra
@@ -1537,6 +1568,8 @@ FORM tax 'Налог'
     PROPERTIES(s)     name, addressStore
 
     PROPERTIES(ra, s) inRangeStore SHOWIF isUnitsTypeRange(ra)
+
+    PROPERTIES(t)     fillNDSDefaultValues TODRAW t FORCE PANEL
 
     FILTERS           stringEqualsAll(a),
                       inRangeRate(ra, rt),
