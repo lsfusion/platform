@@ -4616,10 +4616,12 @@ suppliersRangeShipmentDetail(shipmentDetail) <- suppliersRangeItem(itemShipmentD
 sumPriceShipmentDetail 'Сумма без НДС' (shipmentDetail) = priceShipmentDetail(shipmentDetail) * quantityShipmentDetail(shipmentDetail);
 calcSumSupplierVATShipmentDetail 'Сумма НДС (расчетная)' (shipmentDetail) = sumPriceShipmentDetail(shipmentDetail) * dataSuppliersRangeShipmentDetail(shipmentDetail)/100;
 sumSupplierVATShipmentDetail 'Сумма НДС' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-totalSumSupplierVATShipment 'Общая сумма НДС поставщика' (shipment) = GROUP SUM
-    UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, sumSupplierVATShipmentDetail(shipmentDetail)
-    BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
+
 sumSupplierVATShipmentDetail(shipmentDetail) <- calcSumSupplierVATShipmentDetail(shipmentDetail) ON CHANGE itemShipmentDetail(shipmentDetail);
+
+totalSumSupplierVATShipment 'Общая сумма НДС поставщика' (shipment) = GROUP SUM
+    sumSupplierVATShipmentDetail(shipmentDetail)
+    BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 
 sumSupplierShipmentDetail 'Сумма с НДС' (shipmentDetail) = sumPriceShipmentDetail(shipmentDetail) +
     UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, sumSupplierVATShipmentDetail(shipmentDetail);
@@ -4653,19 +4655,19 @@ wareRangeShipmentDetail (shipmentDetail) <- rangeWare (wareShipmentDetail (shipm
     ON CHANGE itemShipmentDetail(shipmentDetail);
 
 sumVatWareShipmentDetail 'Сумма НДС по посуде, за ед.' (shipmentDetail) =
-     round0((priceWareShipmentDetail (shipmentDetail) *
+     round0((
+     (UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, priceWareShipmentDetail (shipmentDetail)) *
      UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, dataWareRangeShipmentDetail(shipmentDetail))/100);
 
 sumDetailVatWareShipmentDetail 'Сумма НДС по посуде' (shipmentDetail) =
-    sumVatWareShipmentDetail(shipmentDetail) * quantityShipmentDetail(shipmentDetail);
+    UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, sumVatWareShipmentDetail(shipmentDetail) * quantityShipmentDetail(shipmentDetail);
 
 totalSumVatWareShipment 'Общая сумма НДС по посуде' (shipment) =  GROUP SUM
     sumDetailVatWareShipmentDetail(shipmentDetail) IF shipmentShipmentDetail(shipmentDetail)==shipment
     BY shipment;
 
 sumWareShipmentDetail 'Сумма посуды' (shipmentDetail) =
-    UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, priceWareShipmentDetail (shipmentDetail) *
-    quantityShipmentDetail (shipmentDetail);
+    priceWareShipmentDetail (shipmentDetail) * quantityShipmentDetail (shipmentDetail);
 
 totalSumWareShipment 'Общая сумма посуды' (shipment) = GROUP SUM sumWareShipmentDetail (shipmentDetail)
     IF shipmentShipmentDetail(shipmentDetail) == shipment BY shipment;
@@ -4674,10 +4676,12 @@ totalCleanSumSupplierShipment 'Общая сумма с НДС (без посу�
     GROUP SUM sumSupplierShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 
 totalSumIncVATShipment 'Общая сумма НДС' (shipment) =
-    totalSumSupplierVATShipment (shipment) + totalSumVatWareShipment (shipment) IN waybillSum;
+    (UNION OVERRIDE 0 IF shipment IS shipment, totalSumSupplierVATShipment (shipment)) +
+    (UNION OVERRIDE 0 IF shipment IS shipment, totalSumVatWareShipment (shipment)) IN waybillSum;
 
 totalSumSupplierShipment 'Общая сумма с НДС' (shipment) =
-    totalCleanSumSupplierShipment (shipment) + totalSumWareShipment (shipment) IN waybillSum;
+    totalCleanSumSupplierShipment (shipment) +
+    (UNION OVERRIDE 0 IF shipment IS shipment, totalSumWareShipment (shipment)) IN waybillSum;
 
 retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 
@@ -6062,8 +6066,6 @@ DESIGN inventory FROM DEFAULT {
         }
     }
 }
-
-
 
 FORM inventories 'Инвентаризации'
     OBJECTS in=inventory
