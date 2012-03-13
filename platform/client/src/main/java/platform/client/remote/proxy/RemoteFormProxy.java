@@ -119,10 +119,10 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public RemoteChanges continuePausedInvocation() throws RemoteException {
-        logRemoteMethodStartCall("continuePausedInvocation");
-        RemoteChanges result = target.continuePausedInvocation();
-        logRemoteMethodEndCall("continuePausedInvocation", result);
+    public RemoteChanges resumePausedInvocation() throws RemoteException {
+        logRemoteMethodStartCall("resumePausedInvocation");
+        RemoteChanges result = target.resumePausedInvocation();
+        logRemoteMethodEndCall("resumePausedInvocation", result);
         return result;
     }
 

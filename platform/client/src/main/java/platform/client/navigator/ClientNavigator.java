@@ -1,83 +1,26 @@
 package platform.client.navigator;
 
-import platform.client.logics.DeSerializer;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.util.List;
 
-public abstract class ClientNavigator extends AbstractNavigator {
+public abstract class ClientNavigator {
+    public final RemoteNavigatorInterface remoteNavigator;
 
-    public final RelevantFormNavigator relevantFormNavigator;
-    public final RelevantClassNavigator relevantClassNavigator;
+    public final RelevantFormNavigatorPanel relevantFormNavigator;
+    public final RelevantClassNavigatorPanel relevantClassNavigator;
 
-    public ClientNavigator(RemoteNavigatorInterface iremoteNavigator) {
-        super(iremoteNavigator);
+    public ClientNavigator(RemoteNavigatorInterface remoteNavigator) {
+        this.remoteNavigator = remoteNavigator;
 
-        relevantFormNavigator = new RelevantFormNavigator(iremoteNavigator);
-        relevantClassNavigator = new RelevantClassNavigator(iremoteNavigator);
-    }
-
-    public void currentFormChanged() {
-        relevantFormNavigator.tree.createRootNode();
-    }
-
-    private int classID = 0; // временная оптимизация
-
-    public void changeCurrentClass(int classID) throws RemoteException {
-        if (classID != 0 && this.classID != classID) {
-            this.classID = classID;
-            relevantClassNavigator.tree.createRootNode();
-        }
-    }
-
-    public void openRelevantForm(ClientNavigatorForm form) throws IOException, ClassNotFoundException {
-        openForm(form);
-    }
-
-    void openClassForm(ClientNavigatorForm form) throws ClassNotFoundException, IOException {
-        openRelevantForm(form);
+        relevantFormNavigator = new RelevantFormNavigatorPanel(this);
+        relevantClassNavigator = new RelevantClassNavigatorPanel(this);
     }
 
     public void openModalForm(ClientNavigatorForm form) throws ClassNotFoundException, IOException {
-        openRelevantForm(form);
+        openForm(form);
     }
 
-    class RelevantFormNavigator extends AbstractNavigator {
-
-        public RelevantFormNavigator(RemoteNavigatorInterface iremoteNavigator) {
-            super(iremoteNavigator);
-        }
-
-        public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
-            openRelevantForm(element);
-        }
-
-        @Override
-        protected List<ClientNavigatorElement> getNodeElements(ClientNavigatorElement element) throws IOException {
-            return DeSerializer.deserializeListClientNavigatorElement(
-                    remoteNavigator.getElementsByteArray(element.getSID().equals(AbstractNavigator.BASE_ELEMENT_SID) ? RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM : element.getSID()));
-        }
-
-    }
-
-    class RelevantClassNavigator extends AbstractNavigator {
-
-        public RelevantClassNavigator(RemoteNavigatorInterface iremoteNavigator) {
-            super(iremoteNavigator);
-        }
-
-        public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
-            openClassForm(element);
-        }
-
-        @Override
-        protected List<ClientNavigatorElement> getNodeElements(ClientNavigatorElement element) throws IOException {
-            return DeSerializer.deserializeListClientNavigatorElement(
-                    remoteNavigator.getElementsByteArray(element.getSID().equals(BASE_ELEMENT_SID) ? RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS : element.getSID()));
-        }
-
-    }
-
+    public abstract void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException;
+    public abstract void openAction(ClientNavigatorAction action);
 }

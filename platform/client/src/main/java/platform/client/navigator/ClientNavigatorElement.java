@@ -10,6 +10,10 @@ import java.io.IOException;
 import java.util.*;
 
 public class ClientNavigatorElement {
+    public static final String BASE_ELEMENT_SID = "baseElement";
+
+    public static ClientNavigatorElement root;
+
     private static Map<String, HashSet<ClientNavigatorElement>> parents = new HashMap<String, HashSet<ClientNavigatorElement>>();
 
     public int ID;
@@ -18,7 +22,6 @@ public class ClientNavigatorElement {
     public List<String> childrenSid = new LinkedList<String>();
     public List<ClientNavigatorElement> children = new LinkedList<ClientNavigatorElement>();
     public ImageIcon image;
-    public static ClientNavigatorElement root;
 
     protected boolean hasChildren = false;
     public ClientNavigatorWindow window;
@@ -62,16 +65,19 @@ public class ClientNavigatorElement {
         if (window != null) {
             window.elements.add(this);
         }
-        if (sID.equals(AbstractNavigator.BASE_ELEMENT_SID)) {
+        if (sID.equals(BASE_ELEMENT_SID)) {
             root = this;
         }
     }
 
     private void addChild(String childSID) {
         childrenSid.add(childSID);
-        HashSet<ClientNavigatorElement> parentsSet = parents.containsKey(childSID) ? parents.get(childSID) : new HashSet<ClientNavigatorElement>();
-        parentsSet.add(this);
-        parents.put(childSID, parentsSet);
+        HashSet<ClientNavigatorElement> parentSet = parents.get(childSID);
+        if (parentSet == null) {
+            parentSet = new HashSet<ClientNavigatorElement>();
+            parents.put(childSID, parentSet);
+        }
+        parentSet.add(this);
     }
 
     public static ClientNavigatorElement deserialize(DataInputStream inStream) throws IOException {
@@ -82,6 +88,9 @@ public class ClientNavigatorElement {
         }
         if (type == 1) {
             return new ClientNavigatorElement(inStream);
+        }
+        if (type == 2) {
+            return new ClientNavigatorAction(inStream);
         }
 
         throw new IOException();

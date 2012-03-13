@@ -51,14 +51,10 @@ public abstract class ClassTree extends ClientTree {
 
         currentClass = rootClass;
         currentNode = new ClientTreeNode(rootClass, true, ClientTreeNode.SUB_TREE,
-                new ClientTreeAction(ClientResourceBundle.getString("form.classes.open")){
+                new ClientTreeAction(ClientResourceBundle.getString("form.classes.open"), true){
                     public void actionPerformed(ClientTreeActionEvent e){
-                        changeCurrentElement();
-                    }
-
-                    @Override
-                    public boolean canBeDefault(TreePath path) {
-                        return true;
+                        changeCurrentClass(getSelectionClass(), getSelectionNode());
+                        currentClassChanged();
                     }
                 });
 
@@ -93,12 +89,6 @@ public abstract class ClassTree extends ClientTree {
 
         this.setSelectionRow(0);
 
-    }
-
-    //@Override
-    protected void changeCurrentElement() {
-        changeCurrentClass(getSelectionClass(), getSelectionNode());
-        currentClassChanged();
     }
 
     private void changeCurrentClass(ClientObjectClass cls, DefaultMutableTreeNode clsNode) {

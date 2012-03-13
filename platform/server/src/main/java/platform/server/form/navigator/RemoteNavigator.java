@@ -7,14 +7,18 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import platform.base.BaseUtils;
+import platform.base.ExceptionUtils;
 import platform.base.IOUtils;
 import platform.base.WeakIdentityHashSet;
+import platform.interop.action.ClientAction;
 import platform.interop.event.IDaemonTask;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.navigator.NavigatorActionResult;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.CallbackMessage;
 import platform.interop.remote.ClientCallBackInterface;
 import platform.interop.remote.RemoteObject;
+import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
@@ -27,15 +31,20 @@ import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.data.where.Where;
 import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.form.instance.listener.RemoteFormListener;
+import platform.server.form.instance.remote.InvocationHandler;
+import platform.server.form.instance.remote.InvocationResult;
+import platform.server.form.instance.remote.PausableInvocation;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.FormView;
 import platform.server.logics.*;
+import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.serialization.SerializationType;
@@ -52,9 +61,10 @@ import java.rmi.server.Unreferenced;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static platform.base.BaseUtils.nvl;
-import static platform.base.BaseUtils.orderList;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
@@ -368,13 +378,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             if (connection != null) {
                 DataSession session = createSession();
 
-                Integer formId = (Integer) BL.LM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.formSIDValueClass));
+                Integer formId = (Integer) BL.LM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.navigatorElementSIDClass));
                 if (formId == null) {
                     //будем считать, что к SID модифицированных форм будет добавляться что-нибудь через подчёркивание
                     int ind = sid.indexOf('_');
                     if (ind != -1) {
                         sid = sid.substring(0, ind);
-                        formId = (Integer) BL.LM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.formSIDValueClass));
+                        formId = (Integer) BL.LM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.navigatorElementSIDClass));
                     }
 
                     if (formId == null) {
@@ -712,8 +722,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     @Override
-    public byte[] getWindows() throws RemoteException {
-
+    public byte[] getCommonWindows() throws RemoteException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
@@ -735,14 +744,95 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         return  BL.getDaemonTasks(compId);
     }
 
+    private final ExecutorService pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this));
+    private PausableInvocation<NavigatorActionResult, RemoteException> pausableInvocation = null;
+
+    @Override
+    public NavigatorActionResult executeNavigatorAction(String navigatorActionSID) throws RemoteException {
+        final NavigatorElement element = BL.LM.baseElement.getNavigatorElement(navigatorActionSID);
+
+        if (!(element instanceof NavigatorAction)) {
+            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.action.not.found"));
+        }
+
+        if (!securityPolicy.navigator.checkPermission(element)) {
+            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.not.enough.permissions"));
+        }
+
+        final ActionProperty property = ((NavigatorAction) element).getProperty();
+        final List<ClientAction> result = new ArrayList<ClientAction>();
+
+        pausableInvocation = new PausableInvocation<NavigatorActionResult, RemoteException>(
+                pausablesExecutor,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        threads.add(Thread.currentThread());
+                        try {
+                            DataSession session = createSession();
+                            result.addAll(
+                                    property.execute(session, true, session.modifier)
+                            );
+                            session.apply(BL);
+                            session.close();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        } finally {
+                            threads.remove(Thread.currentThread());
+                        }
+                    }
+                },
+                new InvocationHandler<NavigatorActionResult, RemoteException>() {
+                    @Override
+                    public NavigatorActionResult handle(InvocationResult invocationResult) throws RemoteException {
+                        InvocationResult.Status invocationStatus = invocationResult.getStatus();
+                        if (invocationStatus == InvocationResult.Status.EXCEPTION_THROWN) {
+                            ExceptionUtils.emitRemoteException(invocationResult.getThrowable());
+                        }
+
+                        return new NavigatorActionResult(result, invocationStatus == InvocationResult.Status.PAUSED);
+                    }
+                }
+        );
+
+        return pausableInvocation.execute();
+    }
+
+    @Override
+    public NavigatorActionResult continueNavigatorAction() throws RemoteException {
+        return pausableInvocation.resume();
+    }
+
+    @Override
+    public void requestUserInteraction(final ClientAction... acts) {
+        pausableInvocation.pause(new NavigatorActionResult(Arrays.asList(acts), true));
+    }
+
+    @Override
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive) throws SQLException {
+        return new FormInstance<T>(formEntity, BL, newSession ? session.createSession() : session, securityPolicy, this, this, computer, mapObjects, interactive);
+    }
+
+    @Override
+    public RemoteForm createRemoteForm(FormInstance formInstance, boolean checkOnOk) {
+        try {
+            return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, this, checkOnOk);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public boolean isBusy() {
-        boolean busy = !threads.isEmpty();
+        if (!threads.isEmpty()) {
+            return true;
+        }
+
         for (RemoteForm form : openForms.values()) {
             if (!form.threads.isEmpty()) {
-                busy = true;
+                return true;
             }
         }
-        return busy;
+        return false;
     }
 
     public void killThreads() {

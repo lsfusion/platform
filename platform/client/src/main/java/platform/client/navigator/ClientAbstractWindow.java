@@ -8,8 +8,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 
-public abstract class ClientAbstractWindow<C extends JComponent> extends IdentityObject implements Serializable {
-
+public class ClientAbstractWindow<C extends JComponent> extends IdentityObject implements Serializable {
     public String caption;
     public int position;
 

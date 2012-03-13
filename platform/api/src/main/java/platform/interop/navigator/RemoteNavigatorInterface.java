@@ -54,11 +54,15 @@ public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextIn
     ArrayList<String> getDefaultForms() throws RemoteException;
 
     byte[] getNavigatorTree() throws RemoteException;
-    byte[] getWindows() throws RemoteException;
+    byte[] getCommonWindows() throws RemoteException;
 
     ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException;
 
     String getCurrentFormSID() throws RemoteException;
     
     Boolean getConfiguratorSecurityPolicy() throws RemoteException;
+
+    NavigatorActionResult executeNavigatorAction(String navigatorActionSID) throws RemoteException;
+
+    NavigatorActionResult continueNavigatorAction() throws RemoteException;
 }

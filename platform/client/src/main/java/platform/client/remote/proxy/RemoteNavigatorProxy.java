@@ -2,6 +2,7 @@ package platform.client.remote.proxy;
 
 import platform.interop.event.IDaemonTask;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.navigator.NavigatorActionResult;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.ClientCallBackInterface;
 import platform.interop.remote.MethodInvocation;
@@ -156,8 +157,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     @ImmutableMethod
-    public byte[] getWindows() throws RemoteException {
-        return target.getWindows();
+    public byte[] getCommonWindows() throws RemoteException {
+        return target.getCommonWindows();
     }
 
     @Override
@@ -177,5 +178,15 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
 
     public String getRemoteActionMessage() throws RemoteException {
         return target.getRemoteActionMessage();
+    }
+
+    @Override
+    public NavigatorActionResult executeNavigatorAction(String navigatorActionSID) throws RemoteException {
+        return target.executeNavigatorAction(navigatorActionSID);
+    }
+
+    @Override
+    public NavigatorActionResult continueNavigatorAction() throws RemoteException {
+        return target.continueNavigatorAction();
     }
 }

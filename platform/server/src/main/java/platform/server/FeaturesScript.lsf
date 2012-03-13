@@ -356,6 +356,21 @@ showDocumentArticleModalForm 'Показать форму "По документ
     };
 };
 
+i() = SESSION DATA INTEGER ();
+testAction 'Показать "По документам" 3 раза' = ACTION() {
+    SET i() <- 0;
+    WHILE (i() < 3) DO {
+        FORM documentArticle MODAL CHECK;
+        IF (formResult() == formResult.ok) THEN {
+            MESSAGE 'You pressed "ok"' LENGTH 50;
+        } ELSE IF (formResult() == formResult.close) THEN {
+            MESSAGE 'You pressed "close"';
+        };
+
+        SET i() <- i() + 1;
+    };
+};
+
 FORM testModalForm 'Показать тестовую модальную форму'
 OBJECTS article, i=INTEGER 'Новое имя товара ("Товар %N%"):' FIXED PANEL, store, s=STRING[50] 'Новое имя склада:' FIXED PANEL
 PROPERTIES name(article), name(store), OBJVALUE(s), OBJVALUE(i)
@@ -443,7 +458,7 @@ NAVIGATOR {
     // (при использовании прямо внутри NAVIGATOR - он будет добавлен в baseElement)
     //
     // для создания нового элемента используется команда:
-    // NEW <имя> '<заголовок>' [(IN | AFTER | BEFORE) <имя>] [TO <имя окна>];
+    // NEW <имя> '<заголовок>' [(IN | AFTER | BEFORE) <имя>] [TO <имя окна>] [ACTION <имя экшена>];
 
     NEW element1 'Element 1' AFTER userPolicyForm;
 
@@ -470,6 +485,9 @@ NAVIGATOR {
         ADD underForm;
         ADD editStore;
         ADD testModalForm;
+
+        //если задано имя действия, то создаться элемент для запуска этого действия
+        NEW testNavigatorAction 'Показать "По документам" 3 раза' ACTION testAction;
     }
     // так можно отдельно настроить окно, в которое будет рисоваться элемент
     baseElement TO mainToolbar;

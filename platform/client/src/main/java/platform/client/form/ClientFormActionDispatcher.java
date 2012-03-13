@@ -11,29 +11,60 @@ import platform.client.remote.proxy.RemoteFormProxy;
 import platform.interop.action.*;
 import platform.interop.exceptions.LoginException;
 
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.text.DecimalFormat;
+import java.util.List;
 
 public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
     private final ClientFormController form;
+
+    public ClientFormActionDispatcher() {
+        this(null);
+    }
+
     public ClientFormActionDispatcher(ClientFormController form) {
         this.form = form;
     }
 
+    private Container getDialogParentContainer() {
+        return form == null ? Main.frame : form.getComponent();
+    }
+
+    public void dispatchActions(List<ClientAction> actions) throws IOException {
+        dispatchActions(actions, true);
+        dispatchActions(actions, false);
+    }
+
+    public void dispatchActions(List<ClientAction> actions, boolean beforeApply) throws IOException {
+        for (ClientAction action : actions) {
+            if (action.isBeforeApply() == beforeApply) {
+                action.dispatch(this);
+            }
+        }
+    }
+
     public void execute(DenyCloseFormClientAction action) {
-        form.setCanClose(false);
+        denyFormClose();
+    }
+
+    private void denyFormClose() {
+        if (form != null) {
+            form.setCanClose(false);
+        }
     }
 
     public void execute(FormClientAction action) {
         try {
             RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm);
             if (action.isPrintForm) {
-                Main.frame.runReport(remoteForm, action.isModal, form.getUserPreferences());
+                Main.frame.runReport(remoteForm, action.isModal, form == null ? null : form.getUserPreferences());
             } else {
                 if (!action.isModal) {
                     Main.frame.runForm(remoteForm);
@@ -57,8 +88,9 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
                 inStream.write(action.input);
             }
 
-            if (action.waitFor)
+            if (action.waitFor) {
                 p.waitFor();
+            }
 
             InputStream outStream = p.getInputStream();
             InputStream errStream = p.getErrorStream();
@@ -120,7 +152,9 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             fileStream.read(fileContent);
             fileStream.close();
 
-            if (action.erase) file.delete();
+            if (action.erase) {
+                file.delete();
+            }
 
             return new ImportFileClientActionResult(true, action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName));
 
@@ -150,17 +184,20 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             try {
                 fileStream = new FileInputStream(file);
             } catch (FileNotFoundException e) {
-                if (action.mustExist)
+                if (action.mustExist) {
                     throw new RuntimeException(e);
-                else
+                } else {
                     return null;
+                }
             }
 
             byte[] fileContent = new byte[fileStream.available()];
             fileStream.read(fileContent);
             fileStream.close();
 
-            if (action.erase) file.delete();
+            if (action.erase) {
+                file.delete();
+            }
 
             String fileText = action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName);
             if (action.multiplier > 0) {
@@ -168,11 +205,11 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             }
 
             if (action.mask != null) {
-                fileText = new DecimalFormat(action.mask).format((Double) (Double.parseDouble(fileText))); 
+                fileText = new DecimalFormat(action.mask).format((Double) (Double.parseDouble(fileText)));
             }
 
-            JOptionPane.showMessageDialog(form.getComponent(), fileText,
-                    action.caption, JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(getDialogParentContainer(), fileText,
+                                          action.caption, JOptionPane.INFORMATION_MESSAGE);
 
             return true;
 
@@ -194,10 +231,8 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
     public void execute(UserReloginClientAction action) {
         try {
             final JPasswordField jpf = new JPasswordField();
-            JOptionPane jop = new JOptionPane(jpf,
-                    JOptionPane.QUESTION_MESSAGE,
-                    JOptionPane.OK_CANCEL_OPTION);
-            JDialog dialog = jop.createDialog(form.getComponent(), ClientResourceBundle.getString("form.enter.password"));
+            JOptionPane jop = new JOptionPane(jpf, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+            JDialog dialog = jop.createDialog(getDialogParentContainer(), ClientResourceBundle.getString("form.enter.password"));
             dialog.addComponentListener(new ComponentAdapter() {
                 @Override
                 public void componentShown(ComponentEvent e) {
@@ -214,8 +249,9 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
                 if (check) {
                     Main.frame.remoteNavigator.relogin(action.login);
                     Main.frame.updateUser();
-                } else
+                } else {
                     throw new RuntimeException();
+                }
             }
         } catch (LoginException e) {
             throw new RuntimeException(e);
@@ -228,9 +264,9 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
     public void execute(MessageClientAction action) {
         if (!action.extended) {
-            JOptionPane.showMessageDialog(form.getComponent(), action.message, action.caption, JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.INFORMATION_MESSAGE);
         } else {
-            new ExtendedMessageDialog(form.getComponent(), action.caption, action.message).setVisible(true);
+            new ExtendedMessageDialog(getDialogParentContainer(), action.caption, action.message).setVisible(true);
         }
     }
 
@@ -255,7 +291,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
     public void execute(LogMessageClientAction action) {
         if (action.failed) {
             Log.error(action.message);
-            form.setCanClose(false);
+            denyFormClose();
         } else {
             Log.message(action.message);
         }
@@ -266,20 +302,22 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
     }
 
     public void execute(ApplyClientAction action) {
-        form.apply(false);
+        if (form != null) {
+            form.apply(false);
+        }
     }
 
     public void execute(OpenFileClientAction action) {
         try {
-            if(action.file!=null)
+            if (action.file != null) {
                 BaseUtils.openFile(action.file, action.extension);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void execute(AudioClientAction action) {
-
         try {
             Clip clip = AudioSystem.getClip();
             AudioInputStream inputStream = AudioSystem.getAudioInputStream(new ByteArrayInputStream(action.audio));

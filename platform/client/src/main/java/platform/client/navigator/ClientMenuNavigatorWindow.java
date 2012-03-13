@@ -14,7 +14,7 @@ public class ClientMenuNavigatorWindow extends ClientNavigatorWindow {
     }
 
     @Override
-    public MenuNavigatorView getView(INavigatorController controller) {
+    public MenuNavigatorView createView(INavigatorController controller) {
         return new MenuNavigatorView(this, controller);
     }
 }

@@ -66,6 +66,5 @@ public abstract class ClientNavigatorWindow extends ClientAbstractWindow {
         return result;
     }
 
-    public abstract NavigatorView getView(INavigatorController controller);
-
+    public abstract NavigatorView createView(INavigatorController controller);
 }

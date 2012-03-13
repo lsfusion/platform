@@ -10,9 +10,9 @@ import platform.client.navigator.ClientNavigatorElement;
 import platform.client.navigator.NavigatorTreeNode;
 import platform.client.remote.proxy.RemoteFormProxy;
 import platform.client.tree.ClientTreeNode;
+import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
-import javax.swing.text.Position;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,16 +23,19 @@ import java.util.*;
 import java.util.List;
 
 public class NavigatorDescriptorView extends JPanel {
-    private FormDescriptorView formView;
-    private VisualSetupNavigator visualNavigator;
+    private final RemoteNavigatorInterface remoteNavigator;
 
-    private Map<String, FormDescriptor> newForms = new HashMap<String, FormDescriptor>();
-    private Map<String, ClientNavigatorElement> newElements = new HashMap<String, ClientNavigatorElement>();
-    private Map<String, FormDescriptor> changedForms = new HashMap<String, FormDescriptor>();
+    private final FormDescriptorView formView;
+    private final VisualSetupNavigatorPanel visualNavigator;
 
-    private JButton previewBtn;
-    private JButton saveBtn;
-    private JButton cancelBtn;
+    private final Map<String, FormDescriptor> newForms = new HashMap<String, FormDescriptor>();
+    private final Map<String, ClientNavigatorElement> newElements = new HashMap<String, ClientNavigatorElement>();
+    private final Map<String, FormDescriptor> changedForms = new HashMap<String, FormDescriptor>();
+
+    private final JButton previewBtn;
+    private final JButton saveBtn;
+    private final JButton cancelBtn;
+
     private boolean hasChangedNodes = false;
 
     private final IncrementView captionUpdater = new IncrementView() {
@@ -77,10 +80,10 @@ public class NavigatorDescriptorView extends JPanel {
     };
 
     public NavigatorDescriptorView(final ClientNavigator clientNavigator) {
-
         setLayout(new BorderLayout());
 
-        visualNavigator = new VisualSetupNavigator(this, clientNavigator.remoteNavigator);
+        remoteNavigator = clientNavigator.remoteNavigator;
+        visualNavigator = new VisualSetupNavigatorPanel(this, clientNavigator);
 
         formView = new FormDescriptorView();
 
@@ -197,7 +200,7 @@ public class NavigatorDescriptorView extends JPanel {
                 }
             }
 
-            visualNavigator.remoteNavigator.saveVisualSetup(outStream.toByteArray());
+            remoteNavigator.saveVisualSetup(outStream.toByteArray());
 
             formView.setUpdated(false);
             changedForms.clear();
@@ -251,8 +254,8 @@ public class NavigatorDescriptorView extends JPanel {
             if (newForms.containsKey(sID)) {
                 form = newForms.get(sID);
             } else {
-                form = FormDescriptor.deserialize(visualNavigator.remoteNavigator.getRichDesignByteArray(sID),
-                                                  visualNavigator.remoteNavigator.getFormEntityByteArray(sID));
+                form = FormDescriptor.deserialize(remoteNavigator.getRichDesignByteArray(sID),
+                                                  remoteNavigator.getFormEntityByteArray(sID));
             }
         }
 

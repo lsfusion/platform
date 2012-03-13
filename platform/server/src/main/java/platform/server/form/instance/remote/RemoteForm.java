@@ -13,8 +13,14 @@ import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
 import platform.interop.Scroll;
-import platform.interop.action.*;
-import platform.interop.form.*;
+import platform.interop.action.CheckFailed;
+import platform.interop.action.ClientAction;
+import platform.interop.action.ClientResultAction;
+import platform.interop.action.LogMessageClientAction;
+import platform.interop.form.FormUserPreferences;
+import platform.interop.form.RemoteChanges;
+import platform.interop.form.RemoteDialogInterface;
+import platform.interop.form.RemoteFormInterface;
 import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ConcreteCustomClass;
@@ -34,6 +40,7 @@ import platform.server.logics.property.Property;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
+import platform.server.session.DataSession;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -42,12 +49,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static platform.base.BaseUtils.deserializeObject;
-import static platform.server.form.instance.remote.RemoteForm.ServerInvocationStatus.*;
 
 // фасад для работы с клиентом
 public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends RemoteContextObject implements RemoteFormInterface {
@@ -384,6 +387,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public RemoteChanges getRemoteChanges() {
+        return getRemoteChanges(false);
+    }
+
+    public RemoteChanges getRemoteChanges(boolean resumeInvocation) {
         byte[] formChanges = getFormChangesByteArray();
 
         int objectClassID = 0;
@@ -396,7 +403,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
             updateCurrentClass = null;
         }
-        RemoteChanges result = new RemoteChanges(formChanges, new ArrayList<ClientAction>(actions), objectClassID, serverInvocationStatus == PAUSED);
+        RemoteChanges result = new RemoteChanges(formChanges, new ArrayList<ClientAction>(actions), objectClassID, resumeInvocation);
         actions.clear();
         return result;
     }
@@ -929,7 +936,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public RemoteForm createForm(FormInstance formInstance, boolean checkOnOk) {
+    @Override
+    public RemoteForm createRemoteForm(FormInstance formInstance, boolean checkOnOk) {
         try {
             return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, getRemoteFormListener(), checkOnOk);
         } catch (Exception e) {
@@ -938,141 +946,54 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     @Override
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive) throws SQLException {
+        return form.createForm(formEntity, mapObjects, session, newSession, interactive);
+    }
+
+    @Override
     public BusinessLogics getBL() {
         return form.BL;
     }
 
-    private final ExecutorService executorService = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this));
-
-    public enum ServerInvocationStatus {RUNNING, PAUSED, EXCEPTION_THROWN, FINISHED}
-
-    private final Lock userInteractionLock = new ReentrantLock();
-
-    private final Condition serverInvocationFinished = userInteractionLock.newCondition();
-    private final Condition userInteractionFinished = userInteractionLock.newCondition();
-
-    private volatile ServerInvocationStatus serverInvocationStatus = FINISHED;
-    private Throwable serverInvocationThrowable = null;
-    private boolean bUserInteractionFinished = false;
-
+    private final ExecutorService pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this));
+    private PausableInvocation<RemoteChanges, RemoteException> pausableInvocation = null;
     private RemoteChanges executePausableInvocation(final Runnable runnable) throws RemoteException {
-        userInteractionLock.lock();
-        try {
-            bUserInteractionFinished = false;
-            serverInvocationStatus = PAUSED;
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    //регистрируем новые потоки, чтобы они убивались, если клиент упадёт
-                    threads.add(Thread.currentThread());
-                    try {
-                        waitWhileUserInteractionFinished();
+        pausableInvocation = new PausableInvocation<RemoteChanges, RemoteException>(
+                pausablesExecutor,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        threads.add(Thread.currentThread());
                         try {
                             runnable.run();
-                            signalServerInvocationFinished(FINISHED, null);
-                        } catch (Throwable t) {
-                            signalServerInvocationFinished(EXCEPTION_THROWN, t);
+                        } finally {
+                            threads.remove(Thread.currentThread());
                         }
-                    } finally {
-                        threads.remove(Thread.currentThread());
+                    }
+                },
+                new InvocationHandler<RemoteChanges, RemoteException>() {
+                    @Override
+                    public RemoteChanges handle(InvocationResult invocationResult)  throws RemoteException {
+                        InvocationResult.Status invocationStatus = invocationResult.getStatus();
+                        if (invocationStatus == InvocationResult.Status.EXCEPTION_THROWN) {
+                            ExceptionUtils.emitRemoteException(invocationResult.getThrowable());
+                        }
+
+                        return getRemoteChanges(invocationStatus == InvocationResult.Status.PAUSED);
                     }
                 }
-            });
-            return continuePausedInvocation();
-        } finally {
-            userInteractionLock.unlock();
-        }
+        );
+        return pausableInvocation.execute();
     }
 
-    private void signalServerInvocationFinished(ServerInvocationStatus status, Throwable t) {
-        userInteractionLock.lock();
-        try {
-            serverInvocationStatus = status;
-            serverInvocationThrowable = t;
-            serverInvocationFinished.signal();
-        } finally {
-            userInteractionLock.unlock();
-        }
-    }
-
-    private void signalUserInteractionFinished() {
-        try {
-            userInteractionLock.lock();
-            bUserInteractionFinished = true;
-            userInteractionFinished.signal();
-        } finally {
-            userInteractionLock.unlock();
-        }
-    }
-
-    private void waitWhileServerInvocationFinished() {
-        userInteractionLock.lock();
-        try {
-            while(serverInvocationStatus == RUNNING) {
-                serverInvocationFinished.await();
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            userInteractionLock.unlock();
-        }
-    }
-
-    private void waitWhileUserInteractionFinished() {
-        userInteractionLock.lock();
-        try {
-            while (!bUserInteractionFinished) {
-                userInteractionFinished.await();
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            userInteractionLock.unlock();
-        }
+    public RemoteChanges resumePausedInvocation() throws RemoteException {
+        return pausableInvocation.resume();
     }
 
     public void requestUserInteraction(ClientAction... acts) {
-        userInteractionLock.lock();
-
-        bUserInteractionFinished = false;
-
-        //todo: assert, что этот метод вызывается только из server-invocation потока
-        if (serverInvocationStatus != RUNNING) {
-            throw new IllegalStateException("Illegal call to requestUserInteraction(). Server invocation isn't running.");
-        }
-
-        try {
-            //мы не синхронизируем actions, потому что реализация предполагает, что с remoteForm будут работать только два потока:
-            //текущий rmi-поток и рабочий поток выполнения вызова, которые работают по порядку и никогда вместе
-            Collections.addAll(actions, acts);
-
-            signalServerInvocationFinished(PAUSED, null);
-
-            waitWhileUserInteractionFinished();
-        } finally {
-            userInteractionLock.unlock();
-        }
-    }
-
-    public RemoteChanges continuePausedInvocation() throws RemoteException {
-        userInteractionLock.lock();
-
-        if (serverInvocationStatus != PAUSED) {
-            throw new IllegalStateException("Illegal call to continuePausedInvocation(). Server invocation isn't paused.");
-        }
-
-        serverInvocationStatus = RUNNING;
-        try {
-            signalUserInteractionFinished();
-            waitWhileServerInvocationFinished();
-
-            if (serverInvocationStatus == EXCEPTION_THROWN) {
-                ExceptionUtils.emitRemoteException(serverInvocationThrowable);
-            }
-
-            return getRemoteChanges();
-        } finally {
-            userInteractionLock.unlock();
-        }
+        //мы не синхронизируем actions, потому что реализация предполагает, что работать будут только два потока:
+        //текущий rmi-поток и рабочий поток выполнения вызова. Причём работать они будут по порядку и никогда вместе.
+        Collections.addAll(actions, acts);
+        pausableInvocation.pause();
     }
 }

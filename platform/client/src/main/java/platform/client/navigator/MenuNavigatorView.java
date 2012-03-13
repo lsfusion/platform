@@ -30,7 +30,7 @@ public class MenuNavigatorView extends NavigatorView {
 
     private JComponent addElement(JComponent parent, ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int level) {
         boolean isLeaf = true;
-        for (ClientNavigatorElement childEl: element.children) {
+        for (ClientNavigatorElement childEl : element.children) {
             if (newElements.contains(childEl)) {
                 isLeaf = false;
                 break;
@@ -47,7 +47,7 @@ public class MenuNavigatorView extends NavigatorView {
             } else {
                 node = addNode(parent, element);
             }
-            for (ClientNavigatorElement childEl: element.children) {
+            for (ClientNavigatorElement childEl : element.children) {
                 if (newElements.contains(childEl)) {
                     addElement(node, childEl, newElements, level + 1);
                 }
@@ -90,14 +90,15 @@ public class MenuNavigatorView extends NavigatorView {
         public void actionPerformed(ActionEvent e) {
             selected = element;
             controller.update();
-            controller.openForm(getSelectedElement());
+            controller.openElement(getSelectedElement());
         }
     }
-}
 
-class VerticalMenuBar extends JMenuBar {
-    private static final LayoutManager grid = new GridLayout(0,1);
-    public VerticalMenuBar() {
-        setLayout(grid);
+    private static class VerticalMenuBar extends JMenuBar {
+        private static final LayoutManager grid = new GridLayout(0, 1);
+
+        public VerticalMenuBar() {
+            setLayout(grid);
+        }
     }
 }

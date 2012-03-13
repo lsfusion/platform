@@ -1,10 +1,7 @@
 package platform.client.navigator;
 
 import platform.client.ClientResourceBundle;
-import platform.client.tree.ClientTree;
-import platform.client.tree.ClientTreeAction;
-import platform.client.tree.ClientTreeActionEvent;
-import platform.client.tree.ExpandingTreeNode;
+import platform.client.tree.*;
 
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
@@ -19,9 +16,9 @@ public class NavigatorTree extends ClientTree {
 
     public NavigatorTreeNode rootNode;
     public final DefaultTreeModel model;
-    public AbstractNavigator navigator;
+    public final AbstractNavigatorPanel navigator;
 
-    public NavigatorTree(AbstractNavigator navigator) {
+    public NavigatorTree(AbstractNavigatorPanel navigator) {
         super();
         this.navigator = navigator;
 
@@ -34,7 +31,7 @@ public class NavigatorTree extends ClientTree {
         addTreeWillExpandListener(new TreeWillExpandListener() {
             public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
                 try {
-                    addNodeElements((DefaultMutableTreeNode)event.getPath().getLastPathComponent());
+                    addNodeElements(ClientTree.getNode(event.getPath()));
                 } catch (IOException e) {
                     throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.info.about.forms"), e);
                 }
@@ -47,55 +44,49 @@ public class NavigatorTree extends ClientTree {
     }
 
     public void createRootNode() {
-        rootNode = new NavigatorTreeNode(this, new ClientNavigatorElement(0, AbstractNavigator.BASE_ELEMENT_SID, "", true));
+        rootNode = new NavigatorTreeNode(this, ClientNavigatorElement.root);
         model.setRoot(rootNode);
 
         rootNode.add(new ExpandingTreeNode());
         expandPath(new TreePath(rootNode));
 
-        rootNode.addSubTreeAction(new ClientTreeAction(ClientResourceBundle.getString("navigator.open")) {
+        rootNode.addSubTreeAction(new ClientTreeAction(ClientResourceBundle.getString("navigator.open"), true) {
             public void actionPerformed(ClientTreeActionEvent e) {
-                changeCurrentElement();
+                openForm((ClientNavigatorForm) e.getNode().getUserObject());
             }
 
             @Override
-            public boolean isApplicable(TreePath path) {
-                if (path == null) return false;
+            public boolean isApplicable(ClientTreeNode node) {
+                return node.getUserObject() instanceof ClientNavigatorForm;
+            }
+        });
 
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-                if (node == null) return false;
-
-                Object nodeObject = node.getUserObject();
-                return nodeObject instanceof ClientNavigatorForm;
+        rootNode.addSubTreeAction(new ClientTreeAction(ClientResourceBundle.getString("navigator.execute.action"), true) {
+            public void actionPerformed(ClientTreeActionEvent e) {
+                openAction((ClientNavigatorAction) e.getNode().getUserObject());
             }
 
             @Override
-            public boolean canBeDefault(TreePath path) {
-                return true;
+            public boolean isApplicable(ClientTreeNode node) {
+                return node.getUserObject() instanceof ClientNavigatorAction;
             }
         });
     }
 
-    //@Override
-    protected void changeCurrentElement() {
+    private void openAction(ClientNavigatorAction action) {
+        navigator.openAction(action);
+    }
 
-        TreePath path = getSelectionPath();
-        if (path == null) return;
-
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-        if (node == null) return;
-
-        Object nodeObject = node.getUserObject();
-        if (!(nodeObject instanceof ClientNavigatorForm)) return;
-
+    private void openForm(ClientNavigatorForm form) {
+        assert form != null;
         try {
-            navigator.openForm((ClientNavigatorForm) nodeObject);
+            navigator.openForm(form);
         } catch (Exception e) {
             throw new RuntimeException(ClientResourceBundle.getString("errors.error.opening.form"), e);
         }
     }
 
-    private void addNodeElements(DefaultMutableTreeNode parent) throws IOException {
+    private void addNodeElements(ClientTreeNode parent) throws IOException {
 
         DefaultMutableTreeNode firstChild = (DefaultMutableTreeNode) parent.getFirstChild();
 
@@ -112,9 +103,7 @@ public class NavigatorTree extends ClientTree {
         List<ClientNavigatorElement> elements = navigator.getNodeElements(element);
 
         for (ClientNavigatorElement child : elements) {
-
-            DefaultMutableTreeNode node;
-            node = new NavigatorTreeNode(this, child);
+            NavigatorTreeNode node = new NavigatorTreeNode(this, child);
             parent.add(node);
 
             if (child.hasChildren()) {

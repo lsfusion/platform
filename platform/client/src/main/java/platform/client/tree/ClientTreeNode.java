@@ -1,21 +1,21 @@
 package platform.client.tree;
 
 import platform.base.BaseUtils;
+import platform.base.context.ApplicationContextHolder;
+import platform.base.context.ApplicationContextProvider;
+import platform.base.context.Lookup;
 import platform.base.identity.IdentityInterface;
 import platform.client.ClientResourceBundle;
 import platform.client.descriptor.CustomConstructible;
 import platform.client.descriptor.nodes.NodeCreator;
 import platform.client.descriptor.nodes.NullFieldNode;
-import platform.base.context.Lookup;
-import platform.base.context.ApplicationContextHolder;
-import platform.base.context.ApplicationContextProvider;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableTreeNode {
 
@@ -79,21 +79,15 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
     }
 
     public void addNodeAction(ClientTreeAction... actions) {
-        for (ClientTreeAction act : actions) {
-            nodeActions.add(act);
-        }
+        Collections.addAll(nodeActions, actions);
     }
 
     public void addSonAction(ClientTreeAction... actions) {
-        for (ClientTreeAction act : actions) {
-            sonActions.add(act);
-        }
+        Collections.addAll(sonActions, actions);
     }
 
     public void addSubTreeAction(ClientTreeAction... actions) {
-        for (ClientTreeAction act : actions) {
-            subTreeActions.add(act);
-        }
+        Collections.addAll(subTreeActions, actions);
     }
 
     protected void addFieldReferenceNode(Object object, String field, String fieldCaption, Object context, String[] derivedNames, Class[] derivedClasses) {

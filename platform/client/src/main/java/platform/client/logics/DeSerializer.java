@@ -23,10 +23,6 @@ public class DeSerializer {
         }
 
         for (ClientNavigatorElement element : elements) {
-            elementsMap.put(element.getSID(), element);
-        }
-
-        for (ClientNavigatorElement element : elements) {
             for (String s : element.childrenSid) {
                 ClientNavigatorElement child = elementsMap.get(s);
                 element.children.add(child);
@@ -37,7 +33,6 @@ public class DeSerializer {
     }
 
     public static List<ClientNavigatorElement> deserializeListClientNavigatorElement(byte[] state) throws IOException {
-
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(state));
         List<ClientNavigatorElement> listElements = new ArrayList<ClientNavigatorElement>();
         int count = dataStream.readInt();

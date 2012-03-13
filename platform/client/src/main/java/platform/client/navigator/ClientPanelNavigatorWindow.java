@@ -12,7 +12,7 @@ public class ClientPanelNavigatorWindow extends ClientNavigatorWindow {
     }
 
     @Override
-    public PanelNavigatorView getView(INavigatorController controller) {
+    public PanelNavigatorView createView(INavigatorController controller) {
         return new PanelNavigatorView(this, controller);
     }
 }

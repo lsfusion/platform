@@ -2,8 +2,6 @@ package platform.client;
 
 import platform.client.form.ClientFormController;
 import platform.client.logics.DeSerializer;
-import platform.client.navigator.ClientNavigator;
-import platform.client.navigator.ClientNavigatorForm;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -12,19 +10,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.*;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 public class SimpleMainFrame extends MainFrame {
     public SimpleMainFrame(RemoteNavigatorInterface remoteNavigator, String forms) throws ClassNotFoundException, IOException {
         super(remoteNavigator);
         DeSerializer.deserializeListClientNavigatorElement(remoteNavigator.getNavigatorTree());
-        ClientNavigator navigator = new ClientNavigator(remoteNavigator) {
-
-            @Override
-            public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
-                // пока ничего не делаем, так как не должны вообще формы вызываться
-            }
-        };
 
         Container cont = getContentPane();
         final JTabbedPane mainPane = new JTabbedPane(JTabbedPane.BOTTOM);

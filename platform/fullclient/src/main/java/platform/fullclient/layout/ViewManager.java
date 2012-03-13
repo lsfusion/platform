@@ -7,7 +7,6 @@ import bibliothek.gui.dock.common.intern.CDockable;
 import net.sf.jasperreports.engine.JRException;
 import platform.client.Main;
 import platform.client.SwingUtils;
-import platform.client.form.ClientFormController;
 import platform.client.form.ClientModalForm;
 import platform.client.ClientResourceBundle;
 import platform.client.navigator.ClientNavigator;
@@ -28,7 +27,7 @@ public class ViewManager {
 
     private FormFactory pageFactory;
 
-    private CGridArea gridArea;
+    private CGridArea formArea;
 
     private FormRepository forms;
 
@@ -37,7 +36,7 @@ public class ViewManager {
 
         pageFactory = new FormFactory(mainNavigator);
         control.addMultipleDockableFactory("page", pageFactory);
-        gridArea = control.createWorkingArea("Form area");
+        formArea = control.createWorkingArea("Form area");
 
         forms = new FormRepository();
         //gridArea.setVisible(true);
@@ -47,13 +46,13 @@ public class ViewManager {
         return forms;
     }
 
-    public CGridArea getGridArea() {
-        return gridArea;
+    public CGridArea getFormArea() {
+        return formArea;
     }
 
     private void openForm(FormDockable page) {
         page.addCDockableStateListener(new CDockableStateAdapter(page));
-        page.setLocation(gridArea.getStationLocation());
+        page.setLocation(formArea.getStationLocation());
         control.addDockable(page);
         changeCloseAction(page);
         page.setVisible(true);

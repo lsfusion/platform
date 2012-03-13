@@ -9,13 +9,12 @@ import platform.client.tree.ClientTreeNode;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
-import java.util.*;
+import java.util.Set;
 
 public class TreeNavigatorView extends NavigatorView {
     private ClientTreeNode root;
     private ClientTree tree;
-    private TreePath selectedPath;
+    private ClientNavigatorElement selected;
     public DefaultTreeModel model;
 
     public TreeNavigatorView(ClientNavigatorWindow iWindow, INavigatorController controller) {
@@ -39,8 +38,9 @@ public class TreeNavigatorView extends NavigatorView {
         }
         model = new DefaultTreeModel(root);
         tree.setModelPreservingState(model);
-        if (window.drawRoot)
+        if (window.drawRoot) {
             tree.expandRow(0);
+        }
     }
 
     private void addElement(DefaultMutableTreeNode parent, ClientNavigatorElement element, Set<ClientNavigatorElement> newElements) {
@@ -55,7 +55,6 @@ public class TreeNavigatorView extends NavigatorView {
         }
     }
 
-
     private DefaultMutableTreeNode addNode(DefaultMutableTreeNode parent, ClientNavigatorElement element) {
         DefaultMutableTreeNode node = new TreeNavigatorViewNode(element);
         parent.add(node);
@@ -64,42 +63,27 @@ public class TreeNavigatorView extends NavigatorView {
 
     @Override
     public ClientNavigatorElement getSelectedElement() {
-        if (selectedPath == null) {
-            return null;
-        }
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
-        return (ClientNavigatorElement) node.getUserObject();
+        return selected;
     }
 
     private void addRootActions() {
-        root.addSubTreeAction(new ClientTreeAction(ClientResourceBundle.getString("navigator.open")) {
+        root.addSubTreeAction(new ClientTreeAction(ClientResourceBundle.getString("navigator.open"), true) {
             public void actionPerformed(ClientTreeActionEvent e) {
-                selectedPath = tree.getSelectionPath();
-                if (selectedPath == null) return;
+                selected = (ClientNavigatorElement) e.getNode().getUserObject();
                 controller.update();
-                controller.openForm(getSelectedElement());
-            }
-
-            @Override
-            public boolean canBeDefault(TreePath path) {
-                return true;
+                controller.openElement(selected);
             }
         });
-
-    }
-}
-
-class TreeNavigatorViewNode extends ClientTreeNode {
-    ClientNavigatorElement element;
-
-    public TreeNavigatorViewNode(ClientNavigatorElement element) {
-        super(element);
-        this.element = element;
     }
 
-    @Override
-    public Icon getIcon() {
-        return element.image;
-    }
+    private static class TreeNavigatorViewNode extends ClientTreeNode<ClientNavigatorElement, TreeNavigatorViewNode> {
+        public TreeNavigatorViewNode(ClientNavigatorElement element) {
+            super(element);
+        }
 
+        @Override
+        public Icon getIcon() {
+            return getTypedObject().image;
+        }
+    }
 }

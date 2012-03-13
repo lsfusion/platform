@@ -960,56 +960,48 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         int counter = 1;
         for (NavigatorElement<T> child : children) {
             parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID(), counter++));
-            for (List<Object> info : getRelations(child)) {
-                parentInfo.add(info);
-            }
+            parentInfo.addAll(getRelations(child));
         }
         return parentInfo;
     }
 
-      protected void synchronizeForms() {
-          synchronizeNavigatorElements(false);
-          synchronizeNavigatorElements(true);
-          synchronizeParents();
-          synchronizePropertyDraws();
-      }
+    protected void synchronizeForms() {
+        synchronizeNavigatorElements(LM.form, FormEntity.class, false, LM.isForm);
+        synchronizeNavigatorElements(LM.navigatorAction, NavigatorAction.class, true, LM.isNavigatorAction);
+        synchronizeNavigatorElements(LM.navigatorElement, NavigatorElement.class, true, LM.isNavigatorElement);
+        synchronizeParents();
+        synchronizePropertyDraws();
+    }
 
-    private void synchronizeNavigatorElements(boolean forms) {
-        ImportField sidField = new ImportField(LM.formSIDValueClass);
-        ImportField captionField = new ImportField(LM.formCaptionValueClass);
+    private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, Class<? extends NavigatorElement> filterJavaClass, boolean exactJavaClass, LP deleteLP) {
+        ImportField sidField = new ImportField(LM.navigatorElementSIDClass);
+        ImportField captionField = new ImportField(LM.navigatorElementCaptionClass);
 
-        ImportKey<?> keyNavigatorElement;
-        if(forms)
-            keyNavigatorElement = new ImportKey(LM.form, LM.SIDToNavigatorElement.getMapping(sidField));
-        else
-            keyNavigatorElement = new ImportKey(LM.navigatorElement, LM.SIDToNavigatorElement.getMapping(sidField));
+        ImportKey<?> keyNavigatorElement = new ImportKey(elementCustomClass, LM.SIDToNavigatorElement.getMapping(sidField));
 
-        List<List<Object>> dataNavigatorElement = new ArrayList<List<Object>>();
-            for (NavigatorElement<T> navElement : LM.baseElement.getChildren(true)) {
-                if ((forms)&&(navElement instanceof FormEntity))
-                    dataNavigatorElement.add(Arrays.asList((Object) navElement.getSID(), navElement.caption));
-                else if ((!forms)&&(!(navElement instanceof FormEntity)))
-                    dataNavigatorElement.add(Arrays.asList((Object) navElement.getSID(), navElement.caption));
+        List<List<Object>> elementsData = new ArrayList<List<Object>>();
+        for (NavigatorElement<T> element : LM.baseElement.getChildren(true)) {
+            if (exactJavaClass ? filterJavaClass == element.getClass() : filterJavaClass.isInstance(element)) {
+                elementsData.add(asList((Object) element.getSID(), element.caption));
             }
+        }
 
         List<ImportProperty<?>> propsNavigatorElement = new ArrayList<ImportProperty<?>>();
         propsNavigatorElement.add(new ImportProperty(sidField, LM.navigatorElementSID.getMapping(keyNavigatorElement)));
         propsNavigatorElement.add(new ImportProperty(captionField, LM.navigatorElementCaption.getMapping(keyNavigatorElement)));
 
-        List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        if (forms)
-            deletes.add(new ImportDelete(keyNavigatorElement, LM.is(LM.form).getMapping(keyNavigatorElement), false));
-        else
-            deletes.add(new ImportDelete(keyNavigatorElement, LM.isNavigatorElementNotForm.getMapping(keyNavigatorElement), false));
-
-        ImportTable table = new ImportTable(Arrays.asList(sidField, captionField), dataNavigatorElement);
+        List<ImportDelete> deletes = asList(
+                new ImportDelete(keyNavigatorElement, deleteLP.getMapping(keyNavigatorElement), false)
+        );
+        ImportTable table = new ImportTable(asList(sidField, captionField), elementsData);
 
         try {
             DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(keyNavigatorElement), propsNavigatorElement, deletes);
+            IntegrationService service = new IntegrationService(session, table, asList(keyNavigatorElement), propsNavigatorElement, deletes);
             service.synchronize(true, false);
-            if (session.hasChanges())
+            if (session.hasChanges()) {
                 session.apply(this);
+            }
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1017,8 +1009,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private void synchronizeParents() {
-        ImportField sidField = new ImportField(LM.formSIDValueClass);
-        ImportField parentSidField = new ImportField(LM.formSIDValueClass);
+        ImportField sidField = new ImportField(LM.navigatorElementSIDClass);
+        ImportField parentSidField = new ImportField(LM.navigatorElementSIDClass);
         ImportField numberField = new ImportField(LM.numberNavigatorElement);
 
         List<List<Object>> dataParents = getRelations(LM.baseElement);
@@ -1028,11 +1020,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         List<ImportProperty<?>> propsParent = new ArrayList<ImportProperty<?>>();
         propsParent.add(new ImportProperty(parentSidField, LM.parentNavigatorElement.getMapping(keyElement), LM.object(LM.navigatorElement).getMapping(keyParent)));
         propsParent.add(new ImportProperty(numberField, LM.numberNavigatorElement.getMapping(keyElement), GroupType.MIN));
-        ImportTable table = new ImportTable(Arrays.asList(sidField, parentSidField, numberField), dataParents);
-
+        ImportTable table = new ImportTable(asList(sidField, parentSidField, numberField), dataParents);
         try {
             DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(keyElement, keyParent), propsParent);
+            IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
             service.synchronize(true, false);
             if (session.hasChanges())
                 session.apply(this);
@@ -1049,32 +1040,32 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (formElement instanceof FormEntity) {
                 List<PropertyDrawEntity> propertyDraws = ((FormEntity<T>) formElement).propertyDraws;
                 for (PropertyDrawEntity drawEntity : propertyDraws) {
-                    dataPropertyDraws.add(Arrays.asList(drawEntity.propertyObject.toString(), drawEntity.getSID(), (Object) formElement.getSID()));
+                    dataPropertyDraws.add(asList(drawEntity.propertyObject.toString(), drawEntity.getSID(), (Object) formElement.getSID()));
                 }
             }
         }
 
         ImportField captionPropertyDrawField = new ImportField(LM.propertyCaptionValueClass);
         ImportField sidPropertyDrawField = new ImportField(LM.propertySIDValueClass);
-        ImportField navigatorElementPropertyDrawField = new ImportField(LM.formSIDValueClass);
+        ImportField sidNavigatorElementField = new ImportField(LM.navigatorElementSIDClass);
 
-        ImportKey<?> keyForm = new ImportKey(LM.form, LM.SIDToNavigatorElement.getMapping(navigatorElementPropertyDrawField));
-        ImportKey<?> keyPropertyDraw = new ImportKey(LM.propertyDraw, LM.SIDNavigatorElementSIDPropertyDrawToPropertyDraw.getMapping(navigatorElementPropertyDrawField, sidPropertyDrawField));
+        ImportKey<?> keyForm = new ImportKey(LM.form, LM.SIDToNavigatorElement.getMapping(sidNavigatorElementField));
+        ImportKey<?> keyPropertyDraw = new ImportKey(LM.propertyDraw, LM.SIDNavigatorElementSIDPropertyDrawToPropertyDraw.getMapping(sidNavigatorElementField, sidPropertyDrawField));
 
         List<ImportProperty<?>> propsPropertyDraw = new ArrayList<ImportProperty<?>>();
         propsPropertyDraw.add(new ImportProperty(captionPropertyDrawField, LM.captionPropertyDraw.getMapping(keyPropertyDraw)));
         propsPropertyDraw.add(new ImportProperty(sidPropertyDrawField, LM.propertyDrawSID.getMapping(keyPropertyDraw)));
-        propsPropertyDraw.add(new ImportProperty(navigatorElementPropertyDrawField, LM.formPropertyDraw.getMapping(keyPropertyDraw), LM.object(LM.navigatorElement).getMapping(keyForm)));
+        propsPropertyDraw.add(new ImportProperty(sidNavigatorElementField, LM.formPropertyDraw.getMapping(keyPropertyDraw), LM.object(LM.navigatorElement).getMapping(keyForm)));
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
         deletes.add(new ImportDelete(keyPropertyDraw, LM.is(LM.propertyDraw).getMapping(keyPropertyDraw), false));
 
-        ImportTable table = new ImportTable(Arrays.asList(captionPropertyDrawField, sidPropertyDrawField, navigatorElementPropertyDrawField), dataPropertyDraws);
+        ImportTable table = new ImportTable(asList(captionPropertyDrawField, sidPropertyDrawField, sidNavigatorElementField), dataPropertyDraws);
 
         try {
             DataSession session = createSession();
 
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(keyForm, keyPropertyDraw), propsPropertyDraw, deletes);
+            IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyPropertyDraw), propsPropertyDraw, deletes);
             service.synchronize(true, false);
 
             if (session.hasChanges())
@@ -1128,7 +1119,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 } catch (ArrayIndexOutOfBoundsException e) {
                     commonClasses = "";
                 }
-                dataProperty.add(Arrays.asList((Object) property.getSID(), property.caption, property.loggable ? true : null, property.isStored() ? true : null, property.setNotNull ? true : null, commonClasses, returnClass, classProperty));
+                dataProperty.add(asList((Object) property.getSID(), property.caption, property.loggable ? true : null, property.isStored() ? true : null, property.setNotNull ? true : null, commonClasses, returnClass, classProperty));
             }
         }
 
@@ -1145,11 +1136,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
         deletes.add(new ImportDelete(keyProperty, LM.is(LM.property).getMapping(keyProperty), false));
 
-        ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, captionPropertyField, loggablePropertyField, storedPropertyField, isSetNotNullPropertyField, signaturePropertyField, returnPropertyField, classPropertyField), dataProperty);
+        ImportTable table = new ImportTable(asList(sidPropertyField, captionPropertyField, loggablePropertyField, storedPropertyField, isSetNotNullPropertyField, signaturePropertyField, returnPropertyField, classPropertyField), dataProperty);
 
         try {
             DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(keyProperty), properties, deletes);
+            IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties, deletes);
             service.synchronize(true, false);
 
             if (session.hasChanges()) {
@@ -1164,12 +1155,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void synchronizePropertyParents() {
         ImportField sidPropertyField = new ImportField(LM.propertySIDValueClass);
         ImportField numberPropertyField = new ImportField(LM.numberProperty);
-        ImportField parentSidField = new ImportField(LM.formSIDValueClass);
+        ImportField parentSidField = new ImportField(LM.navigatorElementSIDClass);
 
         List<List<Object>> dataParent = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
             if (needsToBeSynchronized(property))
-                dataParent.add(Arrays.asList(property.getSID(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
+                dataParent.add(asList(property.getSID(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
         }
 
         ImportKey<?> keyProperty = new ImportKey(LM.property, LM.SIDToProperty.getMapping(sidPropertyField));
@@ -1178,11 +1169,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         properties.add(new ImportProperty(parentSidField, LM.parentProperty.getMapping(keyProperty), LM.object(LM.abstractGroup).getMapping(keyParent)));
         properties.add(new ImportProperty(numberPropertyField, LM.numberProperty.getMapping(keyProperty)));
-        ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, parentSidField, numberPropertyField), dataParent);
+        ImportTable table = new ImportTable(asList(sidPropertyField, parentSidField, numberPropertyField), dataParent);
 
         try {
             DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(keyProperty, keyParent), properties);
+            IntegrationService service = new IntegrationService(session, table, asList(keyProperty, keyParent), properties);
             service.synchronize(true, false);
 
             if (session.hasChanges()) {
@@ -1195,8 +1186,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected void synchronizeGroupProperties() {
-        ImportField sidField = new ImportField(LM.formSIDValueClass);
-        ImportField captionField = new ImportField(LM.formCaptionValueClass);
+        ImportField sidField = new ImportField(LM.navigatorElementSIDClass);
+        ImportField captionField = new ImportField(LM.navigatorElementCaptionClass);
         ImportField numberField = new ImportField(LM.numberAbstractGroup);
 
         ImportKey<?> key = new ImportKey(LM.abstractGroup, LM.SIDToAbstractGroup.getMapping(sidField));
@@ -1204,7 +1195,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         List<List<Object>> data = new ArrayList<List<Object>>();
 
         for (AbstractGroup group : getParentGroups()) {
-            data.add(Arrays.asList(group.getSID(), (Object) group.caption));
+            data.add(asList(group.getSID(), (Object) group.caption));
         }
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
@@ -1214,29 +1205,29 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
         deletes.add(new ImportDelete(key, LM.is(LM.abstractGroup).getMapping(key), false));
 
-        ImportTable table = new ImportTable(Arrays.asList(sidField, captionField), data);
+        ImportTable table = new ImportTable(asList(sidField, captionField), data);
 
         List<List<Object>> data2 = new ArrayList<List<Object>>();
 
         for (AbstractGroup group : getParentGroups()) {
             if (group.getParent() != null) {
-                data2.add(Arrays.asList(group.getSID(), (Object) group.getParent().getSID(), getNumberInListOfChildren(group)));
+                data2.add(asList(group.getSID(), (Object) group.getParent().getSID(), getNumberInListOfChildren(group)));
             }
         }
 
-        ImportField parentSidField = new ImportField(LM.formSIDValueClass);
+        ImportField parentSidField = new ImportField(LM.navigatorElementSIDClass);
         ImportKey<?> key2 = new ImportKey(LM.abstractGroup, LM.SIDToAbstractGroup.getMapping(parentSidField));
         List<ImportProperty<?>> props2 = new ArrayList<ImportProperty<?>>();
         props2.add(new ImportProperty(parentSidField, LM.parentAbstractGroup.getMapping(key), LM.object(LM.abstractGroup).getMapping(key2)));
         props2.add(new ImportProperty(numberField, LM.numberAbstractGroup.getMapping(key)));
-        ImportTable table2 = new ImportTable(Arrays.asList(sidField, parentSidField, numberField), data2);
+        ImportTable table2 = new ImportTable(asList(sidField, parentSidField, numberField), data2);
 
         try {
             DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(key), props, deletes);
+            IntegrationService service = new IntegrationService(session, table, asList(key), props, deletes);
             service.synchronize(true, false);
 
-            service = new IntegrationService(session, table2, Arrays.asList(key, key2), props2);
+            service = new IntegrationService(session, table2, asList(key, key2), props2);
             service.synchronize(true, false);
 
             if (session.hasChanges())
@@ -2021,7 +2012,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             Object tableName = dataTable.name;
             Map<KeyField, ValueClass> classes = dataTable.getClasses().getCommonParent(dataTable.keys);
             for (KeyField key : dataTable.keys) {
-                data.add(Arrays.asList(tableName, key.name, tableName + "." + key.name, classes.get(key).getCaption()));
+                data.add(asList(tableName, key.name, tableName + "." + key.name, classes.get(key).getCaption()));
             }
         }
 
@@ -2036,13 +2027,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         deletes.add(new ImportDelete(tableKey, LM.is(LM.table).getMapping(tableKey), false));
         deletes.add(new ImportDelete(tableKeyKey, LM.is(LM.tableKey).getMapping(tableKeyKey), false));
 
-        ImportTable table = new ImportTable(Arrays.asList(tableSidField, tableKeyNameField, tableKeySidField, tableKeyClassField), data);
+        ImportTable table = new ImportTable(asList(tableSidField, tableKeyNameField, tableKeySidField, tableKeyClassField), data);
 
         List<List<Object>> data2 = new ArrayList<List<Object>>();
         for(DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
             Object tableName = dataTable.name;
             for (PropertyField property : dataTable.properties) {
-                data2.add(Arrays.asList(tableName, property.name));
+                data2.add(asList(tableName, property.name));
             }
         }
 
@@ -2054,14 +2045,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         List<ImportDelete> deletes2 = new ArrayList<ImportDelete>();
         deletes2.add(new ImportDelete(tableColumnKey, LM.is(LM.tableColumn).getMapping(tableColumnKey), false));
 
-        ImportTable table2 = new ImportTable(Arrays.asList(tableSidField, tableColumnSidField), data2);
+        ImportTable table2 = new ImportTable(asList(tableSidField, tableColumnSidField), data2);
 
         try {
             DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(tableKey, tableKeyKey), properties, deletes);
+            IntegrationService service = new IntegrationService(session, table, asList(tableKey, tableKeyKey), properties, deletes);
             service.synchronize(true, false);
 
-            service = new IntegrationService(session, table2, Arrays.asList(tableKey, tableColumnKey), properties2, deletes2);
+            service = new IntegrationService(session, table2, asList(tableKey, tableColumnKey), properties2, deletes2);
             service.synchronize(true, false);
 
             if (session.hasChanges()) {

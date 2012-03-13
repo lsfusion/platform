@@ -36,11 +36,11 @@ import static platform.interop.Order.*;
 
 public class ClientFormController {
 
-    public final ClientForm form;
-
     public RemoteFormInterface remoteForm;
-    public final ClientNavigator clientNavigator;
-    public final ClientFormActionDispatcher actionDispatcher;
+
+    private final ClientForm form;
+    private final ClientNavigator clientNavigator;
+    private final ClientFormActionDispatcher actionDispatcher;
 
     // здесь хранится список всех GroupObjects плюс при необходимости null
 //    private List<ClientGroupObject> groupObjects;
@@ -136,7 +136,7 @@ public class ClientFormController {
                 try {
                     remoteForm.gainedFocus();
                     if (clientNavigator != null) {
-                        clientNavigator.currentFormChanged();
+                        clientNavigator.relevantFormNavigator.currentFormChanged();
                     }
 
 /*                    //при старте перемещаем фокус на стандартный (только в первый раз, из-за диалогов)
@@ -493,14 +493,6 @@ public class ClientFormController {
         }
     }
 
-    private void applyActions(List<ClientAction> actions, boolean beforeApply) throws IOException {
-        for (ClientAction action : actions) {
-            if (action.isBeforeApply() == beforeApply) {
-                action.dispatch(actionDispatcher);
-            }
-        }
-    }
-
     private void processRemoteChanges(RemoteChanges remoteChanges) throws IOException {
         if (remoteChanges == null) {
             //ХАК: это теоретически возможно, при реконнекте, когда RMI-поток убивается и remote-method возвращает null
@@ -510,21 +502,21 @@ public class ClientFormController {
         do {
             List<ClientAction> remoteActions = remoteChanges.actions;
 
-            applyActions(remoteActions, true);
+            actionDispatcher.dispatchActions(remoteActions, true);
 
             applyFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.form)), form, controllers));
 
-            applyActions(remoteActions, false);
+            actionDispatcher.dispatchActions(remoteActions, false);
 
             if (clientNavigator != null) {
-                clientNavigator.changeCurrentClass(remoteChanges.classID);
+                clientNavigator.relevantClassNavigator.updateCurrentClass(remoteChanges.classID);
             }
 
-            if (!remoteChanges.continueInteraction) {
+            if (!remoteChanges.resumeInvocation) {
                 break;
             }
 
-            remoteChanges = remoteForm.continuePausedInvocation();
+            remoteChanges = remoteForm.resumePausedInvocation();
             remoteForm.refreshData();
         } while (true);
     }

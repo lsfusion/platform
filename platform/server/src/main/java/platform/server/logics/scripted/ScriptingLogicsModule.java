@@ -1334,14 +1334,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         findWindowByCompoundName(name).visible = false;
     }
 
-    public NavigatorElement createScriptedNavigatorElement(String name, String caption, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName) throws ScriptingErrorLog.SemanticErrorException {
+    public NavigatorElement createScriptedNavigatorElement(String name, String caption, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName, String actionName) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("createScriptedNavigatorElement(" + name + ", " + caption + ");");
 
         assert name != null && caption != null && anchorElement != null;
 
         checkDuplicateNavigatorElement(name);
 
-        NavigatorElement newElement = addNavigatorElement(name, caption);
+        NavigatorElement newElement;
+
+        if (actionName != null) {
+            LP actionProperty = findLPByCompoundName(actionName);
+            checkActionProperty(actionProperty);
+
+            newElement = addNavigatorAction(name, caption, actionProperty);
+        } else {
+            newElement = addNavigatorElement(name, caption);
+        }
+
 
         setupNavigatorElement(newElement, caption, pos, anchorElement, windowName);
 

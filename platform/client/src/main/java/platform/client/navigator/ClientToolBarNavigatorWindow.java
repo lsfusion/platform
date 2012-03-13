@@ -1,6 +1,5 @@
 package platform.client.navigator;
 
-import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 
@@ -35,7 +34,7 @@ public class ClientToolBarNavigatorWindow extends ClientNavigatorWindow {
     }
 
     @Override
-    public ToolBarNavigatorView getView(INavigatorController controller) {
+    public ToolBarNavigatorView createView(INavigatorController controller) {
         return new ToolBarNavigatorView(this, controller);
     }
 }

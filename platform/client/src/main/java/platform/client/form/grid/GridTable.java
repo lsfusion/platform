@@ -15,6 +15,7 @@ import platform.client.form.queries.QueryView;
 import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.form.sort.MultiLineHeaderRenderer;
 import platform.client.form.sort.TableSortableHeaderManager;
+import platform.client.logics.ClientForm;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
@@ -127,7 +128,7 @@ public abstract class GridTable extends ClientFormTable
             @Override
             public void focusGained(FocusEvent e) {
                 if(groupObject!=null)
-                    form.form.lastActiveGroupObject = groupObject;
+                    ClientForm.lastActiveGroupObject = groupObject;
             }
         });
 

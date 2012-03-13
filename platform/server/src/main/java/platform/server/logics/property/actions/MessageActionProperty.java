@@ -2,6 +2,7 @@ package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
 import platform.interop.action.MessageClientAction;
+import platform.server.Context;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -18,11 +19,8 @@ public class MessageActionProperty extends CustomActionProperty {
     }
 
     public void execute(ExecutionContext context) throws SQLException {
-        MessageClientAction msgAction = new MessageClientAction((String) context.getKeyValue(msgInterface).object, caption);
-        if (context.getRemoteForm() != null) {
-            context.getRemoteForm().requestUserInteraction(msgAction);
-        } else {
-            context.addAction(msgAction);
-        }
+        Context.context.get().requestUserInteraction(
+                new MessageClientAction((String) context.getKeyValue(msgInterface).object, caption)
+        );
     }
 }

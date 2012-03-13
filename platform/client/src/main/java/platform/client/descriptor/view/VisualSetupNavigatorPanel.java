@@ -5,7 +5,6 @@ import platform.client.descriptor.FormDescriptor;
 import platform.client.navigator.*;
 import platform.client.tree.*;
 import platform.interop.Constants;
-import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import javax.swing.tree.TreeNode;
@@ -14,11 +13,13 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.Enumeration;
 
-class VisualSetupNavigator extends AbstractNavigator {
+import static platform.client.navigator.ClientNavigatorElement.BASE_ELEMENT_SID;
+
+class VisualSetupNavigatorPanel extends AbstractNavigatorPanel {
     private NavigatorDescriptorView navigatorDescriptorView;
 
-    public VisualSetupNavigator(final NavigatorDescriptorView navigatorDescriptorView, RemoteNavigatorInterface iremoteNavigator) {
-        super(iremoteNavigator);
+    public VisualSetupNavigatorPanel(final NavigatorDescriptorView navigatorDescriptorView, ClientNavigator clientNavigator) {
+        super(clientNavigator);
         this.navigatorDescriptorView = navigatorDescriptorView;
 
         tree.setDropMode(DropMode.ON_OR_INSERT);
@@ -39,16 +40,6 @@ class VisualSetupNavigator extends AbstractNavigator {
                         node.addNode(new NavigatorTreeNode(tree, new ClientNavigatorForm(newForm.getID(), Constants.getDefaultFormSID(newForm.getID()), newForm.getCaption())));
 
                         tree.getModel().reload(node);
-                    }
-
-                    @Override
-                    public boolean isApplicable(TreePath path) {
-                        ClientTreeNode node = ClientTree.getNode(path);
-                        if (node != null) {
-                            Object nodeObject = node.getUserObject();
-                            return nodeObject instanceof ClientNavigatorElement;
-                        }
-                        return false;
                     }
                 });
 
@@ -82,15 +73,12 @@ class VisualSetupNavigator extends AbstractNavigator {
                     }
 
                     @Override
-                    public boolean isApplicable(TreePath path) {
-                        ClientTreeNode node = ClientTree.getNode(path);
-                        if (node != null) {
-                            Object nodeObject = node.getUserObject();
+                    public boolean isApplicable(ClientTreeNode node) {
+                        Object nodeObject = node.getUserObject();
 
-                            if (nodeObject instanceof ClientNavigatorForm) {
-                                ClientNavigatorForm navigatorForm = (ClientNavigatorForm) nodeObject;
-                                return navigatorDescriptorView.isFormChanged(navigatorForm.getSID());
-                            }
+                        if (nodeObject instanceof ClientNavigatorForm) {
+                            ClientNavigatorForm navigatorForm = (ClientNavigatorForm) nodeObject;
+                            return navigatorDescriptorView.isFormChanged(navigatorForm.getSID());
                         }
                         return false;
                     }
@@ -117,16 +105,13 @@ class VisualSetupNavigator extends AbstractNavigator {
                     }
 
                     @Override
-                    public boolean isApplicable(TreePath path) {
-                        ClientTreeNode node = ClientTree.getNode(path);
-                        if (node != null) {
-                            Object nodeObject = node.getUserObject();
+                    public boolean isApplicable(ClientTreeNode node) {
+                        Object nodeObject = node.getUserObject();
 
-                            if (nodeObject instanceof ClientNavigatorElement) {
-                                ClientNavigatorElement navigatorElement = (ClientNavigatorElement) nodeObject;
-                                //не показываем для root'а
-                                return !navigatorElement.getSID().equals(BASE_ELEMENT_SID);
-                            }
+                        if (nodeObject instanceof ClientNavigatorElement) {
+                            ClientNavigatorElement navigatorElement = (ClientNavigatorElement) nodeObject;
+                            //не показываем для root'а
+                            return !navigatorElement.getSID().equals(BASE_ELEMENT_SID);
                         }
                         return false;
                     }
@@ -140,6 +125,11 @@ class VisualSetupNavigator extends AbstractNavigator {
     @Override
     public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
         navigatorDescriptorView.openForm(element.getSID());
+    }
+
+    @Override
+    public void openAction(ClientNavigatorAction action) {
+        //todo: редактирование action'а
     }
 
     public void cancelNavigatorChanges() {

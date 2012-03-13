@@ -1,9 +1,6 @@
 package platform.fullclient.layout;
 
-import bibliothek.gui.dock.common.CControl;
-import bibliothek.gui.dock.common.CGrid;
-import bibliothek.gui.dock.common.DefaultSingleCDockable;
-import bibliothek.gui.dock.common.SingleCDockable;
+import bibliothek.gui.dock.common.*;
 import bibliothek.gui.dock.common.intern.CSetting;
 import bibliothek.gui.dock.common.menu.*;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
@@ -13,19 +10,23 @@ import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
-import platform.base.BaseUtils;
 import platform.base.ExceptionUtils;
-import platform.client.ClientResourceBundle;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.MainFrame;
 import platform.client.descriptor.view.LogicsDescriptorView;
-import platform.client.navigator.*;
+import platform.client.form.ClientFormActionDispatcher;
+import platform.client.logics.DeSerializer;
+import platform.client.navigator.ClientAbstractWindow;
+import platform.client.navigator.ClientNavigator;
+import platform.client.navigator.ClientNavigatorAction;
+import platform.client.navigator.ClientNavigatorForm;
 import platform.fullclient.navigator.NavigatorController;
 import platform.interop.AbstractWindowType;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.navigator.NavigatorActionResult;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
@@ -34,65 +35,109 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import static platform.base.BaseUtils.mergeLinked;
+import static platform.client.ClientResourceBundle.getString;
 
 public class DockableMainFrame extends MainFrame {
-    private CControl control;
-    ViewManager view;
+    private final ClientFormActionDispatcher dispatcher = new ClientFormActionDispatcher();
 
+    private final LinkedHashMap<SingleCDockable, ClientAbstractWindow> windowDockables = new LinkedHashMap<SingleCDockable, ClientAbstractWindow>();
+    private final CControl mainControl;
+    private final ViewManager viewManager;
 
-    private ClientNavigator mainNavigator;
-    public NavigatorController navigatorController;
+    private final NavigatorController navigatorController;
+    private final ClientNavigator mainNavigator;
 
     public DockableMainFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
         super(remoteNavigator);
 
-        navigatorController = new NavigatorController(remoteNavigator);
+        DeSerializer.deserializeListClientNavigatorElementWithChildren(remoteNavigator.getNavigatorTree());
 
         mainNavigator = new ClientNavigator(remoteNavigator) {
-
             public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
                 try {
-                    view.openClient(element.getSID(), this, false);
+                    viewManager.openClient(element.getSID(), this, false);
                 } catch (JRException e) {
                     throw new RuntimeException(e);
                 }
             }
 
-            public void openRelevantForm(ClientNavigatorForm element, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-                if (element.isPrintForm) {
-                    view.openReport(element.getSID(), this, true, userPreferences);
-                } else {
-                    try {
-                        view.openClient(element.getSID(), this, true);
-                    } catch (JRException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
+            public void openModalForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
+                viewManager.openModalForm(element.getSID(), this, false, element.showType.isFullScreen());
             }
 
-            public void openModalForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
-                view.openModalForm(element.getSID(), this, false, element.showType.isFullScreen());
+            @Override
+            public void openAction(ClientNavigatorAction action) {
+                executeNavigatorAction(action);
             }
         };
 
-        navigatorController.mainNavigator = mainNavigator;
+        navigatorController = new NavigatorController(mainNavigator);
 
-        initDockStations(mainNavigator, navigatorController);
+        mainControl = new CControl(this);
+
+        viewManager = new ViewManager(mainControl, mainNavigator);
+
+        initDockStations();
 
         setupMenu();
 
         navigatorController.update();
 
+        focusPageIfNeeded();
+
+        bindUIHandlers();
+    }
+
+    private void executeNavigatorAction(ClientNavigatorAction action) {
+        try {
+            NavigatorActionResult result = remoteNavigator.executeNavigatorAction(action.getSID());
+            do {
+                dispatcher.dispatchActions(result.actions);
+
+                if (result.resumeInvocation) {
+                    result = remoteNavigator.continueNavigatorAction();
+                } else {
+                    result = null;
+                }
+            } while (result != null);
+        } catch (IOException e) {
+            throw new RuntimeException(getString("errors.error.executing.action"), e);
+        }
+    }
+
+    private void bindUIHandlers() {
+        // временно отключаем из-за непредсказуемого поведения при измении окон
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent event) {
+                //windowClosing не срабатывает, если вызван dispose,
+                //поэтому сохраняем лэйаут в windowClosed
+                try {
+                    mainControl.save("default");
+                    DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "layout.data")));
+                    viewManager.getForms().write(out);
+                    mainControl.getResources().writeStream(out);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void focusPageIfNeeded() {
         try {
             ClientFormDockable pageToFocus = null;
             if (remoteNavigator.showDefaultForms()) {
                 ArrayList<String> ids = remoteNavigator.getDefaultForms();
-                view.getForms().getFormsList().clear();
+                viewManager.getForms().getFormsList().clear();
                 ClientFormDockable page = null;
                 for (String id : ids) {
-                    page = view.openClient(id.trim(), mainNavigator, false);
+                    page = viewManager.openClient(id.trim(), mainNavigator, false);
                     if (pageToFocus == null) {
                         pageToFocus = page;
                     }
@@ -101,11 +146,11 @@ public class DockableMainFrame extends MainFrame {
                     page.setExtendedMode(ExtendedMode.MAXIMIZED);
                 }
             } else {
-                ArrayList<String> savedForms = new ArrayList<String>(view.getForms().getFormsList());
-                view.getForms().getFormsList().clear();
+                ArrayList<String> savedForms = new ArrayList<String>(viewManager.getForms().getFormsList());
+                viewManager.getForms().getFormsList().clear();
                 ClientFormDockable page;
                 for (String id : savedForms) {
-                    page = view.openClient(id, mainNavigator, false);
+                    page = viewManager.openClient(id, mainNavigator, false);
                     if (pageToFocus == null) {
                         pageToFocus = page;
                     }
@@ -117,104 +162,17 @@ public class DockableMainFrame extends MainFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        // временно отключаем из-за непредсказуемого поведения при измении окон
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent event) {
-                //windowClosing не срабатывает, если вызван dispose,
-                //поэтому сохраняем лэйаут в windowClosed
-                try {
-                    control.save("default");
-                    DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "layout.data")));
-                    view.getForms().write(out);
-                    control.getResources().writeStream(out);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
     }
-
-    @Override
-    public void runReport(RemoteFormInterface remoteForm, boolean isModal, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
-        if (isModal) {
-            try {
-                ReportDialog dlg = new ReportDialog(Main.frame, remoteForm);
-                dlg.setVisible(true);
-            } catch (JRException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            view.openReport(mainNavigator, remoteForm, userPreferences);
-        }
-    }
-
-    @Override
-    public Map<String, String> getReportPath(RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
-        return remoteForm.getReportPath(false, null, userPreferences);
-    }
-
-    @Override
-    public void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-        view.openSingleGroupReport(mainNavigator, remoteForm, groupId, userPreferences);
-    }
-
-    @Override
-    public void runSingleGroupXlsExport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-        ReportGenerator.exportToExcel(remoteForm, groupId, Main.timeZone, userPreferences);
-    }
-
-    @Override
-    public void runForm(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
-        try {
-            view.openClient(mainNavigator, remoteForm);
-        } catch (JRException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private LinkedHashMap<ClientAbstractWindow, JComponent> windows = new LinkedHashMap<ClientAbstractWindow, JComponent>();
-    private ClientFormsWindow formsWindow;
-
-    private void initWindows(RemoteNavigatorInterface remoteNavigator) {
-
-        try {
-            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(remoteNavigator.getWindows()));
-
-            windows.put(new ClientRelevantFormsWindow(inStream), mainNavigator.relevantFormNavigator);
-            windows.put(new ClientRelevantClassFormsWindow(inStream), mainNavigator.relevantClassNavigator);
-            windows.put(new ClientLogWindow(inStream), Log.recreateLogPanel());
-            windows.put(new ClientStatusWindow(inStream), status);
-
-            formsWindow = new ClientFormsWindow(inStream);
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка при считывании информации об окнах", e);
-        }
-    }
-
-    private LinkedHashMap<? extends ClientAbstractWindow,? extends JComponent> getAbstractWindows(NavigatorController navigatorController) {
-        LinkedHashMap<ClientNavigatorWindow, JComponent> views = new LinkedHashMap<ClientNavigatorWindow, JComponent>();
-        for (ClientNavigatorWindow win : navigatorController.views.keySet()) {
-            views.put(win, navigatorController.views.get(win).getView());
-        }
-        return BaseUtils.mergeLinked(windows, views);
-    }
-
-    LinkedHashMap<SingleCDockable, ClientAbstractWindow> dockables = new LinkedHashMap<SingleCDockable, ClientAbstractWindow>();
 
     // важно, что в случае каких-либо Exception'ов при восстановлении форм нужно все игнорировать и открывать расположение "по умолчанию"
-    private void initDockStations(ClientNavigator mainNavigator, NavigatorController navigatorController) {
-
-        control = new CControl(this);
-        view = new ViewManager(control, mainNavigator);
-        control.setTheme(ThemeMap.KEY_ECLIPSE_THEME);
+    private void initDockStations() {
+        mainControl.setTheme(ThemeMap.KEY_ECLIPSE_THEME);
 
         DataInputStream in = null;
         try {
             in = new DataInputStream(new FileInputStream(new File(baseDir, "layout.data")));
-            view.getForms().read(in);
-            control.getResources().readStream(in);
+            viewManager.getForms().read(in);
+            mainControl.getResources().readStream(in);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -228,41 +186,23 @@ public class DockableMainFrame extends MainFrame {
         }
 
         // создаем все окна и их виды
-        initWindows(remoteNavigator);
-        navigatorController.initViews();
+        initWindows();
 
-        LinkedHashMap<? extends ClientAbstractWindow, ? extends JComponent> windows = getAbstractWindows(navigatorController);
-
-        // инициализируем dockables
-        for (Map.Entry<? extends ClientAbstractWindow, ? extends JComponent> entry : windows.entrySet()) {
-            ClientAbstractWindow window = entry.getKey();
-            JComponent component = entry.getValue();
-            if (window.position == AbstractWindowType.DOCKING_POSITION) {
-                SingleCDockable dockable = createDockable(window, entry.getValue());
-                navigatorController.recordDockable(/*(NavigatorView)*/component, dockable);
-                dockables.put(dockable, window);
-            } else {
-                add(component, window.borderConstraint);
-            }
-        }
-
-        dockables.put(view.getGridArea(), formsWindow);
-
-        CGrid grid = createGrid();
-        control.getContentArea().deploy(grid);
-
-        add(control.getContentArea(), BorderLayout.CENTER);
+        CGrid mainGrid = createGrid();
+        CContentArea mainContentArea = mainControl.getContentArea();
+        mainContentArea.deploy(mainGrid);
+        add(mainContentArea, BorderLayout.CENTER);
 
         setDefaultVisible();
 
-        for (String s : control.layouts()) {
+        for (String s : mainControl.layouts()) {
             if (s.equals("default")) {
                 try {
                     //проверяем, бы ли созданы новые Dockable
                     boolean hasNewDockables = false;
-                    CSetting setting = (CSetting) control.intern().getSetting(s);
+                    CSetting setting = (CSetting) mainControl.intern().getSetting(s);
                     if (setting != null) {
-                        for (SingleCDockable dockable : dockables.keySet()) {
+                        for (SingleCDockable dockable : windowDockables.keySet()) {
                             boolean isNewDockable = true;
                             for (int i = 0; i < setting.getModes().size(); i++) {
                                 if (setting.getModes().getId(i).equals("single " + dockable.getUniqueId())) {
@@ -278,20 +218,100 @@ public class DockableMainFrame extends MainFrame {
                     }
                     //если новые Dockable созданы не были, грузим сохранённое расположение
                     if (!hasNewDockables) {
-                        control.load("default");
+                        mainControl.load("default");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    control.getContentArea().deploy(grid); // иначе покажется пустая форма
+                    mainContentArea.deploy(mainGrid); // иначе покажется пустая форма
                 }
                 break;
             }
-
         }
     }
 
+    @Override
+    public void runReport(RemoteFormInterface remoteForm, boolean isModal, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
+        if (isModal) {
+            try {
+                ReportDialog dlg = new ReportDialog(Main.frame, remoteForm);
+                dlg.setVisible(true);
+            } catch (JRException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            viewManager.openReport(mainNavigator, remoteForm, userPreferences);
+        }
+    }
 
-    void setupMenu() {
+    @Override
+    public Map<String, String> getReportPath(RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
+        return remoteForm.getReportPath(false, null, userPreferences);
+    }
+
+    @Override
+    public void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
+        viewManager.openSingleGroupReport(mainNavigator, remoteForm, groupId, userPreferences);
+    }
+
+    @Override
+    public void runSingleGroupXlsExport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
+        ReportGenerator.exportToExcel(remoteForm, groupId, Main.timeZone, userPreferences);
+    }
+
+    @Override
+    public void runForm(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+        try {
+            viewManager.openClient(mainNavigator, remoteForm);
+        } catch (JRException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private DefaultSingleCDockable createDockable(ClientAbstractWindow window, JComponent navigator) {
+        DefaultSingleCDockable dockable = new DefaultSingleCDockable(window.getSID(), window.caption, navigator);
+        dockable.setTitleShown(window.titleShown);
+        dockable.setCloseable(true);
+        return dockable;
+    }
+
+    private void initWindows() {
+        ClientAbstractWindow formsWindow;
+        LinkedHashMap<ClientAbstractWindow, JComponent> windows = new LinkedHashMap<ClientAbstractWindow, JComponent>();
+
+        try {
+            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(remoteNavigator.getCommonWindows()));
+
+            windows.put(new ClientAbstractWindow(inStream), mainNavigator.relevantFormNavigator);
+            windows.put(new ClientAbstractWindow(inStream), mainNavigator.relevantClassNavigator);
+            windows.put(new ClientAbstractWindow(inStream), Log.recreateLogPanel());
+            windows.put(new ClientAbstractWindow(inStream), status);
+
+            formsWindow = new ClientAbstractWindow(inStream);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при считывании информации об окнах", e);
+        }
+
+        navigatorController.initWindowViews();
+
+        windows = mergeLinked(windows, navigatorController.getWindowsViews());
+
+        // инициализируем dockables
+        for (Map.Entry<ClientAbstractWindow, JComponent> entry : windows.entrySet()) {
+            ClientAbstractWindow window = entry.getKey();
+            JComponent component = entry.getValue();
+            if (window.position == AbstractWindowType.DOCKING_POSITION) {
+                SingleCDockable dockable = createDockable(window, entry.getValue());
+                navigatorController.recordDockable(component, dockable);
+                windowDockables.put(dockable, window);
+            } else {
+                add(component, window.borderConstraint);
+            }
+        }
+
+        windowDockables.put(viewManager.getFormArea(), formsWindow);
+    }
+
+    private void setupMenu() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(createFileMenu());
         menuBar.add(createViewMenu());
@@ -302,8 +322,8 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private CGrid createGrid() {
-        CGrid grid = new CGrid(control);
-        for (Map.Entry<SingleCDockable, ClientAbstractWindow> entry : dockables.entrySet()) {
+        CGrid grid = new CGrid(mainControl);
+        for (Map.Entry<SingleCDockable, ClientAbstractWindow> entry : windowDockables.entrySet()) {
             ClientAbstractWindow window = entry.getValue();
             grid.add(window.x, window.y, window.width, window.height, entry.getKey());
         }
@@ -311,19 +331,19 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private void setDefaultVisible() {
-        for (Map.Entry<SingleCDockable, ClientAbstractWindow> entry : dockables.entrySet()) {
+        for (Map.Entry<SingleCDockable, ClientAbstractWindow> entry : windowDockables.entrySet()) {
             entry.getKey().setVisible(entry.getValue().visible);
         }
     }
 
     private JMenu createWindowMenu() {
-        RootMenuPiece dockableMenu = new RootMenuPiece(ClientResourceBundle.getString("layout.menu.window"), false, new SingleCDockableListMenuPiece(control));
-        dockableMenu.add(new SeparatingMenuPiece(new CLayoutChoiceMenuPiece(control, false), true, false, false));
+        RootMenuPiece dockableMenu = new RootMenuPiece(getString("layout.menu.window"), false, new SingleCDockableListMenuPiece(mainControl));
+        dockableMenu.add(new SeparatingMenuPiece(new CLayoutChoiceMenuPiece(mainControl, false), true, false, false));
 
-        final JMenuItem reload = new JMenuItem((ClientResourceBundle.getString("layout.menu.window.default.location")));
+        final JMenuItem reload = new JMenuItem((getString("layout.menu.window.default.location")));
         reload.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                control.getContentArea().deploy(createGrid());
+                mainControl.getContentArea().deploy(createGrid());
                 setDefaultVisible();
                 navigatorController.update();
             }
@@ -335,18 +355,18 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private JMenu createViewMenu() {
-        RootMenuPiece layout = new RootMenuPiece(ClientResourceBundle.getString("layout.menu.view"), false);
-        layout.add(new SubmenuPiece(ClientResourceBundle.getString("layout.menu.view.look.and.feel"), true, new CLookAndFeelMenuPiece(control)));
-        layout.add(new SubmenuPiece(ClientResourceBundle.getString("layout.menu.view.theme"), true, new CThemeMenuPiece(control)));
-        layout.add(CPreferenceMenuPiece.setup(control));
+        RootMenuPiece layout = new RootMenuPiece(getString("layout.menu.view"), false);
+        layout.add(new SubmenuPiece(getString("layout.menu.view.look.and.feel"), true, new CLookAndFeelMenuPiece(mainControl)));
+        layout.add(new SubmenuPiece(getString("layout.menu.view.theme"), true, new CThemeMenuPiece(mainControl)));
+        layout.add(CPreferenceMenuPiece.setup(mainControl));
 
         return layout.getMenu();
     }
 
-    JMenu createFileMenu() {
+    private JMenu createFileMenu() {
 
-        JMenu menu = new JMenu(ClientResourceBundle.getString("layout.menu.file"));
-        final JMenuItem changeUser = new JMenuItem(ClientResourceBundle.getString("layout.menu.file.change.user"));
+        JMenu menu = new JMenu(getString("layout.menu.file"));
+        final JMenuItem changeUser = new JMenuItem(getString("layout.menu.file.change.user"));
         changeUser.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 try {
@@ -354,10 +374,12 @@ public class DockableMainFrame extends MainFrame {
                     while (true) {
                         final JTextField login = new JTextField();
                         final JPasswordField jpf = new JPasswordField();
-                        JOptionPane jop = new JOptionPane(new Object[]{new JLabel(ClientResourceBundle.getString("layout.menu.file.login")), login, new JLabel(ClientResourceBundle.getString("layout.menu.file.password")), jpf},
+                        JOptionPane jop = new JOptionPane(
+                                new Object[]{new JLabel(getString("layout.menu.file.login")), login, new JLabel(getString("layout.menu.file.password")), jpf},
                                 JOptionPane.QUESTION_MESSAGE,
-                                JOptionPane.OK_CANCEL_OPTION);
-                        JDialog dialog = jop.createDialog(DockableMainFrame.this, ClientResourceBundle.getString("layout.menu.file.enter.login.and.password"));
+                                JOptionPane.OK_CANCEL_OPTION
+                        );
+                        JDialog dialog = jop.createDialog(DockableMainFrame.this, getString("layout.menu.file.enter.login.and.password"));
                         dialog.addComponentListener(new ComponentAdapter() {
                             @Override
                             public void componentShown(ComponentEvent e) {
@@ -378,13 +400,15 @@ public class DockableMainFrame extends MainFrame {
                                     break;
                                 }
                             } catch (RemoteException e) {
-                                if (ExceptionUtils.getInitialCause(e) instanceof LoginException)
-                                    JOptionPane.showMessageDialog(DockableMainFrame.this, ExceptionUtils.getInitialCause(e).getMessage(), ClientResourceBundle.getString("layout.menu.file.error.user.changing"), JOptionPane.ERROR_MESSAGE);
-                                else
+                                if (ExceptionUtils.getInitialCause(e) instanceof LoginException) {
+                                    JOptionPane.showMessageDialog(DockableMainFrame.this, ExceptionUtils.getInitialCause(e).getMessage(), getString("layout.menu.file.error.user.changing"), JOptionPane.ERROR_MESSAGE);
+                                } else {
                                     throw new RuntimeException(e);
+                                }
                             }
-                        } else
+                        } else {
                             break;
+                        }
                     }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -396,7 +420,7 @@ public class DockableMainFrame extends MainFrame {
 
         menu.add(changeUser);
 
-        final JMenuItem changePassword = new JMenuItem(ClientResourceBundle.getString("layout.menu.file.change.password"));
+        final JMenuItem changePassword = new JMenuItem(getString("layout.menu.file.change.password"));
         changePassword.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 String login = null;
@@ -409,13 +433,13 @@ public class DockableMainFrame extends MainFrame {
                     final JPasswordField oldPassword = new JPasswordField();
                     final JPasswordField newPassword = new JPasswordField();
                     final JPasswordField confirmPassword = new JPasswordField();
-                    JOptionPane jop = new JOptionPane(new Object[]{new JLabel(ClientResourceBundle.getString("layout.menu.file.login") + ": " + login),
-                            new JLabel(ClientResourceBundle.getString("layout.menu.file.old.password")), oldPassword,
-                            new JLabel(ClientResourceBundle.getString("layout.menu.file.new.password")), newPassword,
-                            new JLabel(ClientResourceBundle.getString("layout.menu.file.confirm.password")), confirmPassword},
-                            JOptionPane.QUESTION_MESSAGE,
-                            JOptionPane.OK_CANCEL_OPTION);
-                    JDialog dialog = jop.createDialog(DockableMainFrame.this, ClientResourceBundle.getString("layout.menu.file.change.password"));
+                    JOptionPane jop = new JOptionPane(new Object[]{new JLabel(getString("layout.menu.file.login") + ": " + login),
+                                                                   new JLabel(getString("layout.menu.file.old.password")), oldPassword,
+                                                                   new JLabel(getString("layout.menu.file.new.password")), newPassword,
+                                                                   new JLabel(getString("layout.menu.file.confirm.password")), confirmPassword},
+                                                      JOptionPane.QUESTION_MESSAGE,
+                                                      JOptionPane.OK_CANCEL_OPTION);
+                    JDialog dialog = jop.createDialog(DockableMainFrame.this, getString("layout.menu.file.change.password"));
                     dialog.addComponentListener(new ComponentAdapter() {
                         @Override
                         public void componentShown(ComponentEvent e) {
@@ -432,30 +456,32 @@ public class DockableMainFrame extends MainFrame {
                         String confirmPass = new String(confirmPassword.getPassword());
                         try {
                             if (Main.remoteLogics.checkUser(login, oldPass)) {
-                                if (!"".equals(newPass))
+                                if (!"".equals(newPass)) {
                                     if (newPass.equals(confirmPass)) {
                                         Main.frame.remoteNavigator.changePassword(login, newPass);
                                     } else {
-                                        JOptionPane.showMessageDialog(DockableMainFrame.this, ClientResourceBundle.getString("layout.menu.file.passwords.not.equals"));
+                                        JOptionPane.showMessageDialog(DockableMainFrame.this, getString("layout.menu.file.passwords.not.equals"));
                                         break;
                                     }
+                                }
                                 login = Main.frame.remoteNavigator.getCurrentUserLogin();
                                 Main.frame.updateUser();
                                 break;
                             }
                         } catch (IOException e1) {
                             if (ExceptionUtils.getInitialCause(e1) instanceof LoginException) {
-                                JOptionPane.showMessageDialog(DockableMainFrame.this, ExceptionUtils.getInitialCause(e1).getMessage(), ClientResourceBundle.getString("layout.menu.file.error.password.changing"), JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(DockableMainFrame.this, ExceptionUtils.getInitialCause(e1).getMessage(), getString("layout.menu.file.error.password.changing"), JOptionPane.ERROR_MESSAGE);
                                 break;
-                            }
-                            else
+                            } else {
                                 throw new RuntimeException(e1);
+                            }
                         } catch (ClassNotFoundException e1) {
                             e1.printStackTrace();
                         }
 
-                    } else
+                    } else {
                         break;
+                    }
                 }
             }
         }
@@ -466,18 +492,18 @@ public class DockableMainFrame extends MainFrame {
 
         menu.addSeparator();
 
-        JMenuItem openReport = new JMenuItem(ClientResourceBundle.getString("layout.menu.file.open.report"));
-        openReport.setToolTipText(ClientResourceBundle.getString("layout.menu.file.opens.previously.saved.report"));
+        JMenuItem openReport = new JMenuItem(getString("layout.menu.file.open.report"));
+        openReport.setToolTipText(getString("layout.menu.file.opens.previously.saved.report"));
 
         openReport.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 JFileChooser chooser = new JFileChooser();
-                chooser.addChoosableFileFilter(new FileNameExtensionFilter(ClientResourceBundle.getString("layout.menu.file.jasperReports.reports"), "jrprint"));
+                chooser.addChoosableFileFilter(new FileNameExtensionFilter(getString("layout.menu.file.jasperReports.reports"), "jrprint"));
                 if (chooser.showOpenDialog(DockableMainFrame.this) == JFileChooser.APPROVE_OPTION) {
                     try {
-                        view.openReport(chooser.getSelectedFile());
+                        viewManager.openReport(chooser.getSelectedFile());
                     } catch (JRException e) {
-                        throw new RuntimeException(ClientResourceBundle.getString("layout.menu.file.error.opening.saved.report"), e);
+                        throw new RuntimeException(getString("layout.menu.file.error.opening.saved.report"), e);
                     }
                 }
             }
@@ -486,7 +512,7 @@ public class DockableMainFrame extends MainFrame {
 
         menu.addSeparator();
 
-        final JMenuItem exit = new JMenuItem(ClientResourceBundle.getString("layout.menu.file.exit"));
+        final JMenuItem exit = new JMenuItem(getString("layout.menu.file.exit"));
         exit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -500,20 +526,20 @@ public class DockableMainFrame extends MainFrame {
         return menu;
     }
 
-    JMenu createOptionsMenu() {
+    private JMenu createOptionsMenu() {
 
-        JMenu menu = new JMenu(ClientResourceBundle.getString("layout.menu.options"));
+        JMenu menu = new JMenu(getString("layout.menu.options"));
 
-        final JMenuItem logicsConfigurator = new JMenuItem(ClientResourceBundle.getString("layout.menu.options.configurator"));
+        final JMenuItem logicsConfigurator = new JMenuItem(getString("layout.menu.options.configurator"));
         logicsConfigurator.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 try {
                     Boolean configurator = Main.frame.remoteNavigator.getConfiguratorSecurityPolicy();
-                    if ((configurator != null) && (configurator == true))
+                    if ((configurator != null) && (configurator == true)) {
                         openLogicSetupForm();
-                    else {
-                        JOptionPane.showMessageDialog(null, ClientResourceBundle.getString("descriptor.view.access.denied"), ClientResourceBundle.getString("descriptor.view.error"), JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(null, getString("descriptor.view.access.denied"), getString("descriptor.view.error"), JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (RemoteException e1) {
                     e1.printStackTrace();
@@ -539,9 +565,9 @@ public class DockableMainFrame extends MainFrame {
         view.setVisible(true);
     }
 
-    JMenu createHelpMenu() {
-        JMenu menu = new JMenu(ClientResourceBundle.getString("layout.menu.help"));
-        final JMenuItem about = new JMenuItem(ClientResourceBundle.getString("layout.menu.help.about"));
+    private JMenu createHelpMenu() {
+        JMenu menu = new JMenu(getString("layout.menu.help"));
+        final JMenuItem about = new JMenuItem(getString("layout.menu.help.about"));
         about.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JDialog dialog = new JDialog(DockableMainFrame.this);
@@ -552,10 +578,11 @@ public class DockableMainFrame extends MainFrame {
                 contentPane.add(new JSeparator(JSeparator.HORIZONTAL));
 
                 String text = Main.getDisplayName();
-                if (text == null)
+                if (text == null) {
                     text = Main.PLATFORM_TITLE;
-                else
+                } else {
                     text = "<html><b>" + text + "</b> powered by " + Main.PLATFORM_TITLE + "</html>";
+                }
                 JLabel labelName = new JLabel(text);
                 labelName.setFont(labelName.getFont().deriveFont(10));
                 contentPane.add(labelName);
@@ -570,13 +597,4 @@ public class DockableMainFrame extends MainFrame {
         menu.add(about);
         return menu;
     }
-
-
-    public DefaultSingleCDockable createDockable(ClientAbstractWindow window, JComponent navigator) {
-        DefaultSingleCDockable dockable = new DefaultSingleCDockable(window.getSID(), window.caption, navigator);
-        dockable.setTitleShown(window.titleShown);
-        dockable.setCloseable(true);
-        return dockable;
-    }
-
 }

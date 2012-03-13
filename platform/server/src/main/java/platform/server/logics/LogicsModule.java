@@ -17,6 +17,7 @@ import platform.server.data.expr.query.PartitionType;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.FilterEntity;
+import platform.server.form.navigator.NavigatorAction;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.window.AbstractWindow;
 import platform.server.logics.linear.LP;
@@ -96,6 +97,7 @@ public abstract class LogicsModule {
     private final Map<String, ValueClass> moduleClasses = new HashMap<String, ValueClass>();
     private final Map<String, AbstractWindow> windows = new HashMap<String, AbstractWindow>();
     private final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<String, NavigatorElement<?>>();
+    private final Map<String, NavigatorElement<?>> moduleNavigatorActions = new HashMap<String, NavigatorElement<?>>();
 
     private final Map<String, List<String>> propNamedParams = new HashMap<String, List<String>>();
     private final Map<String, MetaCodeFragment> metaCodeFragments = new HashMap<String, MetaCodeFragment>();
@@ -2327,6 +2329,23 @@ public abstract class LogicsModule {
         NavigatorElement elem = new NavigatorElement(parent, transformNameToSID(name), caption);
         addModuleNavigator(elem);
         return elem;
+    }
+
+    protected NavigatorAction addNavigatorAction(String name, String caption, LP property) {
+        return addNavigatorAction(null, name, caption, property);
+    }
+
+    protected NavigatorAction addNavigatorAction(NavigatorElement parent, String name, String caption, LP property) {
+        return addNavigatorAction(parent, name, caption, property.property);
+    }
+
+    protected NavigatorAction addNavigatorAction(NavigatorElement parent, String name, String caption, Property property) {
+        assert property instanceof ActionProperty;
+
+        NavigatorAction navigatorAction = new NavigatorAction(parent, transformNameToSID(name), caption);
+        navigatorAction.setProperty(property);
+        addModuleNavigator(navigatorAction);
+        return navigatorAction;
     }
 
     public NavigatorElement getNavigatorElementBySID(String sid) {

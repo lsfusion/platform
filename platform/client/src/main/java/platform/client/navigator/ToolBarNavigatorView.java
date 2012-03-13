@@ -114,7 +114,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         public void mouseReleased(MouseEvent e) {
             setSelectedElement(selected);
             controller.update();
-            controller.openForm(getSelectedElement());
+            controller.openElement(getSelectedElement());
         }
     }
 }

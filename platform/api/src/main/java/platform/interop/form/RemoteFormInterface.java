@@ -51,7 +51,7 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     RemoteChanges changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException;
 
-    RemoteChanges continuePausedInvocation() throws RemoteException;
+    RemoteChanges resumePausedInvocation() throws RemoteException;
 
     RemoteChanges groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException;
 

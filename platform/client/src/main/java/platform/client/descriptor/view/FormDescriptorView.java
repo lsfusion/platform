@@ -163,15 +163,9 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
 
     private void addActions(FormNode formNode) {
         formNode.addSubTreeAction(
-                new ClassFilteredAction(ClientResourceBundle.getString("descriptor.view.edit"), EditableTreeNode.class) {
+                new ClassFilteredAction(ClientResourceBundle.getString("descriptor.view.edit"), EditableTreeNode.class, true) {
                     public void actionPerformed(ClientTreeActionEvent e) {
-                        Object editObject = ((ClientTreeNode) tree.getSelectionPath().getLastPathComponent()).getUserObject();
-                        form.getContext().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, editObject);
-                    }
-
-                    @Override
-                    public boolean canBeDefault(TreePath path) {
-                        return true;
+                        form.getContext().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, e.getNode().getUserObject());
                     }
                 });
     }

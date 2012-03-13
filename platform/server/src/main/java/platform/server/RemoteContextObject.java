@@ -5,11 +5,20 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import platform.base.BaseUtils;
 import platform.interop.RemoteContextInterface;
+import platform.interop.action.ClientAction;
 import platform.interop.remote.RemoteObject;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.remote.RemoteForm;
+import platform.server.logics.DataObject;
+import platform.server.session.DataSession;
 
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 public abstract class RemoteContextObject extends RemoteObject implements Context, RemoteContextInterface {
@@ -77,6 +86,19 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
             else
                 return "";
         }
+    }
+
+    @Override
+    public void requestUserInteraction(ClientAction... actions) {
+        throw new UnsupportedOperationException("requestUserInteraction is not supported");
+    }
+
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive) throws SQLException {
+        throw new UnsupportedOperationException("requestUserInteraction is not supported");
+    }
+
+    public RemoteForm createRemoteForm(FormInstance formInstance, boolean checkOnOk) {
+        throw new UnsupportedOperationException("requestUserInteraction is not supported");
     }
 
     public void killThreads() {

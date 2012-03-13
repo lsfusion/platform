@@ -11,7 +11,7 @@ import java.awt.*;
 
 public class PreviewDialog extends JDialog {
     private final FormDescriptor form;
-    private ClientNavigator navigator;
+    private final ClientNavigator navigator;
 
     public PreviewDialog(ClientNavigator iNavigator, FormDescriptor iForm) {
         super(null, Dialog.ModalityType.MODELESS);

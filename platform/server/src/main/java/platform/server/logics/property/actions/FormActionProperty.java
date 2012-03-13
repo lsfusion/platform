@@ -2,6 +2,7 @@ package platform.server.logics.property.actions;
 
 import platform.interop.action.FormClientAction;
 import platform.interop.action.MessageClientAction;
+import platform.server.Context;
 import platform.server.classes.DataClass;
 import platform.server.classes.StaticCustomClass;
 import platform.server.classes.ValueClass;
@@ -77,11 +78,14 @@ public class FormActionProperty extends CustomActionProperty {
     }
 
     public void execute(ExecutionContext context) throws SQLException {
-        final RemoteForm thisRemoteForm = context.getRemoteForm();
         final FormInstance thisFormInstance = context.getFormInstance();
-        final FormInstance newFormInstance = thisFormInstance.createForm(form, join(mapObjects, context.getKeys()), context.getSession(), newSession, !form.isPrintForm);
+
+        final Context currentContext = Context.context.get();
+
+        final FormInstance newFormInstance = currentContext.createFormInstance(form, join(mapObjects, context.getKeys()), context.getSession(), newSession, !form.isPrintForm);
+
         if (form.isPrintForm && !newFormInstance.areObjectsFound()) {
-            thisRemoteForm.requestUserInteraction(
+            currentContext.requestUserInteraction(
                     new MessageClientAction(ServerResourceBundle.getString("form.navigator.form.do.not.fit.for.specified.parameters"), form.caption));
         } else {
             for (Map.Entry<ObjectEntity, ClassPropertyInterface> entry : mapObjects.entrySet()) {
@@ -89,22 +93,24 @@ public class FormActionProperty extends CustomActionProperty {
             }
 
             if (form instanceof SelfInstancePostProcessor) {
-                ((SelfInstancePostProcessor) form).postProcessSelfInstance(context.getKeys(), thisRemoteForm, newFormInstance);
+                ((SelfInstancePostProcessor) form).postProcessSelfInstance(context.getKeys(), context.getRemoteForm(), newFormInstance);
             }
 
-            final RemoteForm newRemoteForm = thisRemoteForm.createForm(newFormInstance, checkOnOk);
+            final RemoteForm newRemoteForm = currentContext.createRemoteForm(newFormInstance, checkOnOk);
 
             for (int i = 0; i < setProperties.length; i++) {
                 Object setValue = getProperties[i] != null && context.isInFormSession()
-                               ? getProperties[i].getValue(thisFormInstance.instanceFactory, context.getSession(), context.getModifier())
-                               : context.getValueObject();
+                                  ? getProperties[i].getValue(thisFormInstance.instanceFactory, context.getSession(), context.getModifier())
+                                  : context.getValueObject();
                 newFormInstance.changeProperty(newFormInstance.instanceFactory.getInstance(setProperties[i]),
                                                setValue,
                                                newRemoteForm,
                                                null);
             }
 
-            thisRemoteForm.requestUserInteraction(new FormClientAction(form.isPrintForm, newSession, isModal, newRemoteForm));
+            currentContext.requestUserInteraction(
+                    new FormClientAction(form.isPrintForm, newSession, isModal, newRemoteForm)
+            );
 
             String formResult = newFormInstance.getFormResult();
 
@@ -147,8 +153,10 @@ public class FormActionProperty extends CustomActionProperty {
                 }
             }
 
-            //обновляем текущую форму, чтобы подхватить изменения из вызываемой формы
-            thisFormInstance.refreshData();
+            if (thisFormInstance != null) {
+                //обновляем текущую форму, чтобы подхватить изменения из вызываемой формы
+                thisFormInstance.refreshData();
+            }
         }
     }
 

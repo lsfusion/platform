@@ -1,35 +1,27 @@
 package platform.fullclient.navigator;
 
 import bibliothek.gui.dock.common.SingleCDockable;
-import platform.client.logics.DeSerializer;
 import platform.client.navigator.*;
-import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.util.*;
-import java.util.List;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
 
 public class NavigatorController implements INavigatorController {
-    RemoteNavigatorInterface remoteNavigator;
-    List<ClientNavigatorElement> elements;
-    public LinkedHashMap<ClientNavigatorWindow, NavigatorView> views = new LinkedHashMap<ClientNavigatorWindow, NavigatorView>();
-    public ClientNavigator mainNavigator;
+    private final ClientNavigator mainNavigator;
+    private LinkedHashMap<ClientNavigatorWindow, NavigatorView> views = new LinkedHashMap<ClientNavigatorWindow, NavigatorView>();
     private Map<JComponent, SingleCDockable> docks = new HashMap<JComponent, SingleCDockable>();
 
-    public NavigatorController(RemoteNavigatorInterface iremoteNavigator) {
-        remoteNavigator = iremoteNavigator;
-
-        try {
-            elements = DeSerializer.deserializeListClientNavigatorElementWithChildren(remoteNavigator.getNavigatorTree());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public NavigatorController(ClientNavigator mainNavigator) {
+        this.mainNavigator = mainNavigator;
     }
 
-    public void initViews() { // нет никакой гарантии, что в ходе работы sidToWindow не появятся новые элементы (например, с классовыми или объектными формами)
+    public void initWindowViews() { // нет никакой гарантии, что в ходе работы sidToWindow не появятся новые элементы (например, с классовыми или объектными формами)
         for (ClientNavigatorWindow window : ClientNavigatorWindow.sidToWindow.values()) {
-            NavigatorView navigatorView = window.getView(this);
+            NavigatorView navigatorView = window.createView(this);
             views.put(window, navigatorView);
         }
     }
@@ -55,20 +47,31 @@ public class NavigatorController implements INavigatorController {
         }
     }
 
-    public void openForm(ClientNavigatorElement element) {
-        if (element instanceof ClientNavigatorForm) {
-            try {
+    public LinkedHashMap<ClientNavigatorWindow, JComponent> getWindowsViews() {
+        LinkedHashMap<ClientNavigatorWindow, JComponent> av = new LinkedHashMap<ClientNavigatorWindow, JComponent>();
+        for (Map.Entry<ClientNavigatorWindow, NavigatorView> entry : views.entrySet()) {
+            av.put(entry.getKey(), entry.getValue().getView());
+        }
+
+        return av;
+    }
+
+    public void openElement(ClientNavigatorElement element) {
+        try {
+            if (element instanceof ClientNavigatorForm) {
                 ClientNavigatorForm form = (ClientNavigatorForm) element;
                 if (form.showType.isModal()) {
                     mainNavigator.openModalForm(form);
                 } else {
                     mainNavigator.openForm(form);
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
+            } else if (element instanceof ClientNavigatorAction) {
+                mainNavigator.openAction((ClientNavigatorAction) element);
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -76,17 +79,18 @@ public class NavigatorController implements INavigatorController {
         if ((currentElement.window != null) && (currentElement.window.drawRoot)) {
             result.get(currentElement.window).add(currentElement);
         } else {
-            if (currentWindow != null)
+            if (currentWindow != null) {
                 result.get(currentWindow).add(currentElement);
+            }
         }
         ClientNavigatorWindow nextWindow = currentElement.window == null ? currentWindow : currentElement.window;
 
         // считаем, что если currentWindow == null, то это baseElement и он всегда выделен, но не рисуется никуда
         if (currentElement.window == null
-                || currentWindow == null
-                || currentElement == views.get(currentWindow).getSelectedElement()
-                || currentElement.window == currentWindow
-                || currentElement.window.drawRoot) {
+            || currentWindow == null
+            || currentElement == views.get(currentWindow).getSelectedElement()
+            || currentElement.window == currentWindow
+            || currentElement.window.drawRoot) {
             for (ClientNavigatorElement element : currentElement.children) {
                 if (!result.get(nextWindow).contains(element)) {
                     dfsAddElements(element, nextWindow, result);

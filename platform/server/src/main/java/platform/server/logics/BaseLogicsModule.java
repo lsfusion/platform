@@ -72,6 +72,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass country;
     public ConcreteCustomClass navigatorElement;
     public ConcreteCustomClass form;
+    public ConcreteCustomClass navigatorAction;
     public ConcreteCustomClass propertyDraw;
     public StaticCustomClass propertyDrawShowStatus;
     public ConcreteCustomClass abstractGroup;
@@ -361,7 +362,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LP SIDToNavigatorElement;
     public LP parentNavigatorElement;
-    public LP isNavigatorElementNotForm;
+    public LP isNavigatorElement;
+    public LP isNavigatorAction;
+    public LP isForm;
     public LP permitUserRoleForm;
     public LP forbidUserRoleForm;
     public LP permitUserForm;
@@ -466,8 +469,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public TableFactory tableFactory;
 
-    public final StringClass formSIDValueClass = StringClass.get(50);
-    public final StringClass formCaptionValueClass = StringClass.get(250);
+    public final StringClass navigatorElementSIDClass = StringClass.get(50);
+    public final StringClass navigatorElementCaptionClass = StringClass.get(250);
 
     public final StringClass propertySIDValueClass = StringClass.get(100);
     public final StringClass propertyCaptionValueClass = StringClass.get(250);
@@ -538,6 +541,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         navigatorElement = addConcreteClass("navigatorElement", getString("logics.navigator.element"), baseClass);
         form = addConcreteClass("form", getString("logics.forms.form"), navigatorElement);
+        navigatorAction = addConcreteClass("navigatorAction", getString("logics.forms.action"), navigatorElement);
         propertyDraw = addConcreteClass("propertyDraw", getString("logics.property.draw"), baseClass);
         propertyDrawShowStatus = addStaticClass("propertyDrawShowStatus", getString("logics.forms.property.show"),
                 new String[]{"Show", "Hide"},
@@ -903,12 +907,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
         objectClassName.makeLoggable(this, true);
 
-        navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", getString("logics.forms.code"), formSIDValueClass, navigatorElement);
+        navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", getString("logics.forms.code"), navigatorElementSIDClass, navigatorElement);
         numberNavigatorElement = addDProp(baseGroup, "numberNavigatorElement", getString("logics.number"), IntegerClass.instance, navigatorElement);
-        navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", getString("logics.forms.name"), formCaptionValueClass, navigatorElement);
+        navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", getString("logics.forms.name"), navigatorElementCaptionClass, navigatorElement);
         SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", getString("logics.forms.form"), navigatorElementSID);
         parentNavigatorElement = addDProp("parentNavigatorElement", getString("logics.forms.parent.form"), navigatorElement, navigatorElement);
-        isNavigatorElementNotForm = addJProp("isNavigatorElementNotForm", and(true), is(navigatorElement), 1, is(form), 1);
+        isNavigatorElement = addJProp("isNavigatorElement", and(true, true), is(navigatorElement), 1, is(form), 1, is(navigatorAction), 1);
+        isForm = is(form);
+        isNavigatorAction = is(navigatorAction);
 
         propertyDrawSID = addDProp(baseGroup, "propertyDrawSID", getString("logics.forms.property.draw.code"), propertySIDValueClass, propertyDraw);
         captionPropertyDraw = addDProp(baseGroup, "captionPropertyDraw", getString("logics.forms.property.draw.caption"), propertyCaptionValueClass, propertyDraw);

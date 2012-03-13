@@ -98,11 +98,7 @@ public class ClientTree extends JTree {
         return lastNode != null ? getPathToRoot(lastNode) : null;
     }
 
-    protected void changeCurrentElement() {
-    }
-
     public DefaultMutableTreeNode getSelectionNode() {
-
         TreePath path = getSelectionPath();
         if (path == null) {
             return null;
@@ -123,14 +119,12 @@ public class ClientTree extends JTree {
                     }
                 }
                 List<ClientTreeAction> actions = getActions(path);
-                if (actions != null) {
-                    int[] rows = getSelectionRows();
-                    for (ClientTreeAction action : actions) {
-                        if (action.keyCode == e.getKeyCode()) {
-                            action.actionPerformed(new ClientTreeActionEvent((ClientTreeNode) getSelectionNode(), null));
-                            int row = Math.min(rows[0] + 1, getRowCount() - 2);
-                            setSelectionRow(row);
-                        }
+                int[] rows = getSelectionRows();
+                for (ClientTreeAction action : actions) {
+                    if (action.keyCode == e.getKeyCode()) {
+                        action.actionPerformed(new ClientTreeActionEvent((ClientTreeNode) getSelectionNode(), null));
+                        int row = Math.min(rows[0] + 1, getRowCount() - 2);
+                        setSelectionRow(row);
                     }
                 }
             }
@@ -182,37 +176,40 @@ public class ClientTree extends JTree {
     }
 
     private ArrayList<ClientTreeAction> getActions(TreePath path) {
-        if (path == null) {
-            return null;
-        }
-        ArrayList<ClientTreeAction> list = new ArrayList<ClientTreeAction>();
+        ClientTreeNode node = ClientTree.getNode(path);
 
-        int cnt = path.getPathCount();
-        for (int i = 0; i < cnt; i++) {
-            Object oNode = path.getPathComponent(i);
-            if (oNode instanceof ClientTreeNode) {
-                ClientTreeNode<?, ?> node = (ClientTreeNode) oNode;
+        ArrayList<ClientTreeAction> result = new ArrayList<ClientTreeAction>();
 
-                list.addAll(node.subTreeActions);
+        if (node != null) {
+            int cnt = path.getPathCount();
+            for (int i = 0; i < cnt; i++) {
+                Object oNode = path.getPathComponent(i);
+                if (oNode instanceof ClientTreeNode) {
+                    ClientTreeNode<?, ?> pathNode = (ClientTreeNode) oNode;
 
-                if (i == cnt - 2) {
-                    list.addAll(node.sonActions);
+                    result.addAll(pathNode.subTreeActions);
+
+                    if (i == cnt - 2) {
+                        result.addAll(pathNode.sonActions);
+                    }
+
+                    if (i == cnt - 1) {
+                        result.addAll(pathNode.nodeActions);
+                    }
                 }
+            }
 
-                if (i == cnt - 1) {
-                    list.addAll(node.nodeActions);
+
+            for (Iterator<ClientTreeAction> it = result.iterator(); it.hasNext();) {
+                ClientTreeAction act = it.next();
+
+                if (!act.isApplicable(node)) {
+                    it.remove();
                 }
             }
         }
 
-        for (Iterator<ClientTreeAction> it = list.iterator(); it.hasNext();) {
-            ClientTreeAction act = it.next();
-            if (!act.isApplicable(path)) {
-                it.remove();
-            }
-        }
-
-        return list;
+        return result;
     }
 
     public class ClientTransferHandler extends TransferHandler {
