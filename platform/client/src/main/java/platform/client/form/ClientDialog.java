@@ -20,8 +20,8 @@ public class ClientDialog extends ClientModalForm {
 
     private RemoteDialogInterface remoteDialog;
 
-    public ClientDialog(Component owner, final RemoteDialogInterface dialog, boolean showQuickFilterOnStartup) throws IOException, ClassNotFoundException {
-        super(owner, dialog, false); // обозначаем parent'а и модальность
+    public ClientDialog(Component owner, final RemoteDialogInterface dialog, boolean showQuickFilterOnStartup, boolean isDailog) throws IOException, ClassNotFoundException {
+        super(owner, dialog, false, isDailog); // обозначаем parent'а и модальность
 
         this.showQuickFilterOnStartup = showQuickFilterOnStartup;
 
@@ -58,10 +58,10 @@ public class ClientDialog extends ClientModalForm {
     }
 
     // необходим чтобы в диалоге менять формы (панели)
-    protected ClientFormController createFormController() throws IOException, ClassNotFoundException {
+    protected ClientFormController createFormController(boolean isDialog) throws IOException, ClassNotFoundException {
         remoteDialog = (RemoteDialogInterface) remoteForm;
 
-        return new ClientFormController(remoteDialog, null, true, true, false) {
+        return new ClientFormController(remoteDialog, null, isDialog, true, false) {
             @Override
             void nullPressed() {
                 result = VALUE_CHOSEN;

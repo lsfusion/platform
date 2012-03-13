@@ -21,18 +21,20 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
     private RemoteDialogInterface dialog;
 
     private ClientDialog clientDialog;
+    private boolean isDialog;
 
-    public ObjectPropertyEditor(Component owner, RemoteDialogInterface dialog) {
+    public ObjectPropertyEditor(Component owner, RemoteDialogInterface dialog, boolean isDialog) {
 
         this.owner = owner;
         this.dialog = dialog;
+        this.isDialog = isDialog;
     }
 
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject event) throws IOException, ClassNotFoundException {
         if (KeyStrokes.isSpaceEvent(event) || KeyStrokes.isObjectEditorDialogEvent(event)) {
-            clientDialog = new ClientNavigatorDialog(owner, dialog);
+            clientDialog = new ClientNavigatorDialog(owner, dialog, isDialog);
         } else {
-            clientDialog = new ClientDialog(owner, dialog, event instanceof KeyEvent);
+            clientDialog = new ClientDialog(owner, dialog, event instanceof KeyEvent, isDialog);
         }
 
         clientDialog.showDialog(false, translate(tableLocation, (int) cellRectangle.getX(), (int) cellRectangle.getMaxY()));

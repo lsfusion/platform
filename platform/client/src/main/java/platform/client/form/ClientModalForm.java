@@ -20,6 +20,10 @@ public class ClientModalForm extends JDialog {
     private final boolean newSession;
 
     public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean newSession) throws IOException, ClassNotFoundException {
+        this(owner, remoteForm, newSession, false);
+    }
+
+    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean newSession, boolean isDialog) throws IOException, ClassNotFoundException {
         super(getWindow(owner), ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
 
         this.remoteForm = remoteForm;
@@ -32,7 +36,7 @@ public class ClientModalForm extends JDialog {
         // делаем, чтобы не выглядел как диалог
         getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
 
-        form = createFormController();
+        form = createFormController(isDialog);
         setTitle(form.getCaption());
 
         add(form.getComponent(), BorderLayout.CENTER);
@@ -75,7 +79,7 @@ public class ClientModalForm extends JDialog {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(form.getComponent());
     }
 
-    protected ClientFormController createFormController() throws IOException, ClassNotFoundException {
+    protected ClientFormController createFormController(boolean isDialog) throws IOException, ClassNotFoundException {
         return new ClientFormController(remoteForm, null, false, true, newSession) {
             @Override
             public void okPressed() {
