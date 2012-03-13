@@ -1713,6 +1713,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public void initClasses() {
+        initBaseClassAliases();
         parseStep(ScriptingLogicsModule.State.CLASS);
     }
 
@@ -1723,6 +1724,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public void initGroups() {
+        initBaseGroupAliases();
         parseStep(ScriptingLogicsModule.State.GROUP);
     }
 
