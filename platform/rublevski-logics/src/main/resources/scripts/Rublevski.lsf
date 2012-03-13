@@ -388,14 +388,42 @@ META metaCodeSingleAggregation (primObject, aggrObject, aggrProperty)
 
     primObject###aggrObject = DATA primObject (aggrObject);
 
+    @metaCodeSinglePropsAggregation (primObject###aggrObject, aggrObject, aggrProperty);
+
+END
+
+META metaCodeSinglePropsAggregation (primProperty, aggrObject, aggrProperty)
+
     unique###aggrObject (primObject) =
-        GROUP UNIQUE aggrObject BY primObject###aggrObject(aggrObject)
+        GROUP UNIQUE aggrObject BY primProperty(aggrObject)
         WHERE aggrObject IS aggrObject;
 
     aggrProperty(primObject) => unique###aggrObject(primObject) RESOLVE TRUE;
 
     is###aggrObject(aggrObject) = aggrObject IS aggrObject;
-    is###aggrObject(aggrObject) => aggrProperty(primObject###aggrObject(aggrObject)) RESOLVE FALSE;
+    is###aggrObject(aggrObject) => aggrProperty(primProperty(aggrObject)) RESOLVE FALSE;
+
+END
+
+META metaCodeDoubleAggregation (prim1Object, prim2Object, aggrObject, aggrProperty)
+
+    prim1Object###aggrObject = DATA prim1Object (aggrObject);
+    prim2Object###aggrObject = DATA prim2Object (aggrObject);
+
+    @metaCodeDoublePropsAggregation(prim1Object###aggrObject, prim2Object###aggrObject, aggrObject, aggrProperty);
+
+END
+
+META metaCodeDoublePropsAggregation (prim1Property, prim2Property, aggrObject, aggrProperty)
+
+    unique###aggrObject (prim1Object, prim2Object) =
+        GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
+        WHERE aggrObject IS aggrObject;
+
+    aggrProperty(prim1Object, prim2Object) => unique###aggrObject(prim1Object, prim2Object) RESOLVE TRUE;
+
+    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
+    is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject)) RESOLVE FALSE;
 
 END
 
@@ -3885,37 +3913,22 @@ priceByCollationSheetItem 'Цена из описи, за ед.' (collationSheet
 notEqualsPriceByCollationSheetItem(collationSheet, item) =  priceByCollationSheetItem(collationSheet, item) != priceCollationSheetItem(collationSheet, item);
 
 // автоматическое создание сличительной ведомости (товары из описей) //
-uniqueRegisterCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
-    GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)
-    WHERE collationSheet IS registerCollationSheet;
 includeRegisterDepartmentStoreInventory(departmentStore, inventory) = // includeDepartmentStoreInventory(departmentStore, inventory) AND
     typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory) == typeOfAddition.register;
-includeRegisterDepartmentStoreInventory(departmentStore, inventory) => uniqueRegisterCollationSheetDepartmentStoreInventory (departmentStore, inventory) RESOLVE ALL;
 
-isRegisterCollationSheet(collationSheet) = collationSheet IS registerCollationSheet;
-isRegisterCollationSheet(collationSheet) => includeRegisterDepartmentStoreInventory(departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)) RESOLVE ALL;
+@metaCodeDoublePropsAggregation(departmentStoreCollationSheet, inventoryCollationSheet, registerCollationSheet, includeRegisterDepartmentStoreInventory);
 
 // автоматическое создание сличительной ведомости (по остаткам) //
-uniqueRemainsCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
-    GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)
-    WHERE collationSheet IS remainsCollationSheet;
 includeRemainsDepartmentStoreInventory(departmentStore, inventory) =//        includeDepartmentStoreInventory(departmentStore, inventory) AND
     typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory) == typeOfAddition.remains;
-includeRemainsDepartmentStoreInventory(departmentStore, inventory) => uniqueRemainsCollationSheetDepartmentStoreInventory (departmentStore, inventory) RESOLVE ALL;
 
-isRemainsCollationSheet(collationSheet) = collationSheet IS remainsCollationSheet;
-isRemainsCollationSheet(collationSheet) => includeRemainsDepartmentStoreInventory(departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)) RESOLVE ALL;
+@metaCodeDoublePropsAggregation(departmentStoreCollationSheet, inventoryCollationSheet, remainsCollationSheet, includeRemainsDepartmentStoreInventory);
 
 // автоматическое создание сличительной ведомости (по множеству товаров) //
-uniqueManyCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
-    GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)
-    WHERE collationSheet IS manyCollationSheet;
 includeManyDepartmentStoreInventory(departmentStore, inventory) =// includeDepartmentStoreInventory(departmentStore, inventory) AND
     typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory) == typeOfAddition.many;
-includeManyDepartmentStoreInventory(departmentStore, inventory) => uniqueManyCollationSheetDepartmentStoreInventory (departmentStore, inventory) RESOLVE ALL;
 
-isManyCollationSheet(collationSheet) = collationSheet IS manyCollationSheet;
-isManyCollationSheet(collationSheet) => includeManyDepartmentStoreInventory(departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)) RESOLVE ALL;
+@metaCodeDoublePropsAggregation(departmentStoreCollationSheet, inventoryCollationSheet, manyCollationSheet, includeManyDepartmentStoreInventory);
 
 inInventoryDepartmentStoreListInventory(inventory, departmentStore, listInventory) = departmentStoreListInventory(listInventory) == departmentStore AND inventoryListInventory(listInventory) == inventory;
 
@@ -3946,17 +3959,7 @@ TABLE inventoryLedgerTable (inventoryLedger);
 needToLedgerCollationSheetItem (collationSheet, item) = shortageQuantityCountedCollationSheetItem(collationSheet, item) != 0
     AND isPostedInventory(inventoryCollationSheet(collationSheet)) AND includeCollationSheetItem(collationSheet, item);
 
-collationSheetInventoryLedger(inventoryLedger) = DATA collationSheet (inventoryLedger);
-itemInventoryLedger(inventoryLedger) = DATA item (inventoryLedger);
-
-uniqueItemInventoryLedgerByCollationSheetItem(collationSheet, item)  = GROUP UNIQUE inventoryLedger
-    BY collationSheetInventoryLedger(inventoryLedger), itemInventoryLedger(inventoryLedger)
-    WHERE inventoryLedger IS inventoryLedger;
-
-needToLedgerCollationSheetItem (collationSheet, item) => uniqueItemInventoryLedgerByCollationSheetItem(collationSheet, item) RESOLVE TRUE;
-
-isInventoryLedger(inventoryLedger) = inventoryLedger IS inventoryLedger;
-isInventoryLedger(inventoryLedger) => needToLedgerCollationSheetItem(collationSheetInventoryLedger(inventoryLedger), itemInventoryLedger(inventoryLedger)) RESOLVE FALSE;
+@metaCodeDoubleAggregation(collationSheet, item, inventoryLedger, needToLedgerCollationSheetItem);
 
 inventoryInventoryLedger(inventoryLedger) = inventoryCollationSheet(collationSheetInventoryLedger(inventoryLedger));
 
