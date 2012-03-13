@@ -4546,7 +4546,9 @@ overSupplierMarkupShipmentDetail 'Оптовая надбавка/торгова
 dateFitToShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
 
 suppliersRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
-dataSuppliersRangeShipmentDetail 'НДС поставщика,%' (shipmentDetail) = dataActingRateRange(suppliersRangeShipmentDetail(shipmentDetail)) IN baseGroup;
+dataSuppliersRangeShipmentDetail 'НДС поставщика,%' (shipmentDetail) = dataActingRateRangeDate
+    (suppliersRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN baseGroup;
+
 suppliersRangeShipmentDetail(shipmentDetail) <- suppliersRangeItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 sumPriceShipmentDetail 'Сумма без НДС' (shipmentDetail) = priceShipmentDetail(shipmentDetail) * quantityShipmentDetail(shipmentDetail);
@@ -6037,15 +6039,17 @@ importGroupItems 'Импортировать группы товаров' = DATA
 importItems 'Импортировать товары' = DATA BOOLEAN ();
 importNumberItems 'Кол-во' = DATA INTEGER ();
 importPrices 'Импортировать цены товаров' = DATA BOOLEAN ();
+importAssortment 'Импортировать ассортимент' = DATA BOOLEAN();
 importCompanies 'Импортировать компании' = DATA BOOLEAN ();
 importSuppliers 'Импортировать поставщиков' = DATA BOOLEAN ();
+importCustomers 'Импортировать покупателей' = DATA BOOLEAN ();
 importStores 'Импортировать магазины' = DATA BOOLEAN ();
 importDepartmentStores 'Импортировать отделы магазина' = DATA BOOLEAN();
 importBanks 'Импортировать банки' = DATA BOOLEAN();
 FORM importData 'Импорт данных'
     PROPERTIES() importDataAction, importUrl, importLogin, importPassword
     PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importItems, importNumberItems,
-    importPrices, importCompanies, importSuppliers, importStores, importDepartmentStores, importBanks
+    importPrices, importAssortment, importCompanies, importSuppliers, importCustomers, importStores, importDepartmentStores, importBanks
 ;
 
 //---------------------------- Настройка навигатора ----------------------------------------//
