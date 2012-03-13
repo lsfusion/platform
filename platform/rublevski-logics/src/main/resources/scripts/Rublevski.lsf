@@ -1352,7 +1352,8 @@ GROUP retailNDSGroup 'НДС розничный' : retailGroup;
 
 CLASS STATIC tax 'Налоги'
 {
-    taxNDS 'НДС'
+    taxNDS 'НДС',
+    taxNP 'Налог с продаж'      // пусть будет для теста
 };
 
 nameTax 'Наименование налога' = DATA STRING[200] (tax) IN baseGroup;
@@ -1386,7 +1387,7 @@ isUnitsTypeRange(range) = rangeTypeRange(range) == rangeType.units;
 
 rangeTypeRange(range) <- rangeType.common ON ASSIGN range IS range;     /// потом согласовать, какое значение должно быть по-умолчанию ///
 
-dataRate 'Значение ставки' = DATA DOUBLE (rate) IN baseGroup;
+dataRate 'Значение ставки' = DATA DOUBLE (rate) IN recognizeGroup;
 dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
 dateToRate 'Действует по' = DATA DATE (rate) IN baseGroup;
 
@@ -1521,6 +1522,7 @@ isInCompanyStore (company, store)  = UNION OVERRIDE  companyStore(store) == comp
 
 dataActingRateRangeToRange (range) = GROUP UNIQUE range BY dataActingRateRange (range);
 
+toShowAddNDSValue(tax) = tax == tax.taxNDS;
 addNDSValue 'Добавить значение НДС' = ACTION (tax, number, value) {
     ADDOBJ range;
     FOR rn == addedObject() DO {
@@ -1536,14 +1538,14 @@ addNDSValue 'Добавить значение НДС' = ACTION (tax, number, va
     };
 };
 
-fillNDSDefaultValues 'Заполнить значения НДС по умолчанию' = ACTION (tax) {
+fillNDSDefaultValues 'Заполнить значения НДС по умолчанию' = [ACTION (tax) {
     EXEC addNDSValue(tax AS tax, 1, 0);
     EXEC addNDSValue(tax AS tax, 2, 9.09);
     EXEC addNDSValue(tax AS tax, 3, 16.67);
     EXEC addNDSValue(tax AS tax, 4, 10);
     EXEC addNDSValue(tax AS tax, 5, 20);
     EXEC addNDSValue(tax AS tax, 6, 24);
-};
+}](tax) AND tax==tax.taxNDS;
 
 FORM tax 'Налог'
     OBJECTS           t=tax FIXED PANEL, ra=range
@@ -1553,7 +1555,7 @@ FORM tax 'Налог'
     PROPERTIES(ra)    READONLY dataActingRateRange, dateFromActingRateRange, dateToActingRateRange
 
     OBJECTS           rt=rate
-    PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, OBJVALUE, ADDOBJ, delete
+    PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
 
     TREE treeCompanyStore a=STRING[3], co=company
 
@@ -1564,7 +1566,7 @@ FORM tax 'Налог'
 
     PROPERTIES(ra, s) inRangeStore SHOWIF isUnitsTypeRange(ra)
 
-    PROPERTIES(t)     fillNDSDefaultValues TODRAW t FORCE PANEL
+    PROPERTIES(t)     fillNDSDefaultValues SHOWIF toShowAddNDSValue(t) TODRAW t FORCE PANEL
 
     FILTERS           stringEqualsAll(a),
                       inRangeRate(ra, rt),
@@ -3767,7 +3769,7 @@ nameDetailPage 'Номер строки' (detailPage) = PARTITION SUM 1 IF detai
     BY listInventoryPageList(pageListDetailPage(detailPage)), pageListDetailPage(detailPage)  ORDER detailPage IN baseGroup;
 
 skuBarcodeDetailPage 'Товар (ИД)' (detailPage) =  skuBarcode(barcodeDetailPage(detailPage)) IN idGroup;
-nameAttributeItemDetailPage 'Товар' (detailPage) = nameAttributeItem(skuBarcodeDetailPage(detailPage)) IN baseGroup;
+nameAttributeItemDetailPage 'Товар' (detailPage) = nameAttributeItem(skuBarcodeDetailPage(detailPage)) IN recognizeGroup;
 
 quantityCountedDetailPage 'Количество посчитано' = DATA DOUBLE (detailPage) IN baseGroup;
 
@@ -3878,12 +3880,9 @@ shortageTotalItemByCollationSheet 'Излишек/недостача (сумма
 //    SET priceCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item);
 //} CONFIRM;
 
-priceMaxByCollationSheetItem 'Цена из описи, за ед.' (collationSheet, item) = GROUP MAX priceDetailPage(detailPage) BY collationSheetListInventory(listInventoryDetailPage(detailPage)), skuBarcodeDetailPage(detailPage);
-priceMinByCollationSheetItem(collationSheet, item) = GROUP MIN priceDetailPage(detailPage) BY collationSheetListInventory(listInventoryDetailPage(detailPage)), skuBarcodeDetailPage(detailPage);
+priceByCollationSheetItem 'Цена из описи, за ед.' (collationSheet, item) = GROUP EQUAL priceDetailPage(detailPage) BY collationSheetListInventory(listInventoryDetailPage(detailPage)), skuBarcodeDetailPage(detailPage);
 
-notEqualsPriceByCollationSheetItem(collationSheet, item) =  priceMaxByCollationSheetItem(collationSheet, item) != priceCollationSheetItem(collationSheet, item);
-
-CONSTRAINT priceMaxByCollationSheetItem(collationSheet, item) != priceMinByCollationSheetItem(collationSheet, item) MESSAGE 'Ошибка: для товара должна быть задана лишь одна цена';
+notEqualsPriceByCollationSheetItem(collationSheet, item) =  priceByCollationSheetItem(collationSheet, item) != priceCollationSheetItem(collationSheet, item);
 
 // автоматическое создание сличительной ведомости (товары из описей) //
 uniqueRegisterCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
@@ -4074,6 +4073,9 @@ retailPriceDetailSpec 'Цена товара (розн.)' = DATA DOUBLE (detailS
 sumDetailSpec 'Сумма' (detailSpec) = round0(retailPriceDetailSpec(detailSpec)*quantityDetailSpec(detailSpec));
 sumSpecification 'Общая сумма' (specification) = GROUP SUM sumDetailSpec(detailSpec) BY specificationDetailSpec(detailSpec) IN waybillSum;
 
+priceBySpecificationItem (specification, item) = GROUP EQUAL retailPriceDetailSpec(detailSpec)
+    BY specificationDetailSpec(detailSpec), itemDetailSpec(detailSpec);
+
 specificationsTaxNDSDetailSpec(detailSpec) = tax.taxNDS IF detailSpec IS detailSpec IN idGroup;
 
 rangeDetailSpec (detailSpec) = DATA range (detailSpec) IN baseGroup;
@@ -4218,14 +4220,8 @@ quantityItemStatement 'Количество товара в отгрузке' (i
 balanceItemStatement 'Текущий остаток по товару' (item, statement) =
     balanceDepartmentStoreItem(departmentStoreStatement(statement), item);
 
-minPriceItemStatement(item, statement) = GROUP MIN retailPriceStatementDetail(statementDetail) 
+priceByItemStatement(item, statement) = GROUP EQUAL retailPriceStatementDetail(statementDetail)
     BY itemStatementDetail(statementDetail), statementStatementDetail(statementDetail);
-
-maxPriceItemStatement(item, statement) = GROUP MAX retailPriceStatementDetail(statementDetail) 
-    BY itemStatementDetail(statementDetail), statementStatementDetail(statementDetail);
-
-CONSTRAINT minPriceItemStatement(item, statement) != maxPriceItemStatement(item, statement)
-    MESSAGE 'В накладной присутствует товар с разными ценами';
 
 totalQuantityStatement 'Общее количество' (statement) = GROUP SUM quantityStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN waybillSum;
 sumStatement 'Общая сумма' (statement) = GROUP SUM sumStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN waybillSum;
@@ -5827,6 +5823,8 @@ convertPriceInventory 'Пересчитать цены по всей инвен�
             AND inventoryCollationSheet(collationSheet) == inventory;
 } CONFIRM;
 
+// todo: какой-то баг, не всегда срабатывает action
+
 convertPriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION(collationSheet) {
     SET priceDetailPage(detailPage) AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet <- priceAccountLedgerDateTime(
             skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeToInventory(inventoryDetailPage(detailPage)))
@@ -5999,8 +5997,9 @@ FORM inventory 'Инвентаризация'
     PROPERTIES (i)   READONLY nameAttributeItem, barcodeBarcodeSku
 
     PROPERTIES(cs, i) quantityCountedCollationSheetItem, balanceCollationSheetItem, shortageQuantityCountedCollationSheetItem
-    PROPERTIES       priceMaxByCollationSheetItem(cs, i) HIGHLIGHTIF notEqualsPriceByCollationSheetItem(cs, i),
+    PROPERTIES       priceByCollationSheetItem (cs,i) HIGHLIGHTIF notEqualsPriceByCollationSheetItem(cs, i),
                      priceCollationSheetItem(cs, i) HIGHLIGHTIF notEqualsPriceByCollationSheetItem(cs, i)
+
     PROPERTIES(cs, i) totalCollationSheetItem, totalBalansCollationSheetItem, shortageTotalCollationSheetItem
 
     FILTERS inInventoryDepartmentStoreListInventoryPageListDetailPage(in, ds, li, pl, dp),
