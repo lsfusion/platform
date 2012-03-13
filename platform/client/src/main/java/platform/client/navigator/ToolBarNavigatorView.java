@@ -43,7 +43,7 @@ public class ToolBarNavigatorView extends NavigatorView {
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int allign) {
         JComponent button = addNavigationButton(element, allign);
-        if (window.showSelect && element.equals(getSelectedElement()) && ! (element instanceof ClientNavigatorForm)) {
+        if (window.showSelect && element.equals(getSelectedElement()) && (element.getClass() == ClientNavigatorElement.class)) {
             button.setForeground(Color.blue);
             button.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         }
@@ -66,7 +66,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         selected = element;
     }
 
-    protected JComponent addNavigationButton(ClientNavigatorElement element, final int allign) {
+    private JComponent addNavigationButton(ClientNavigatorElement element, final int allign) {
 
         JButton button = new JButton(element.toString()) {
             @Override
@@ -103,7 +103,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         return button;
     }
 
-    class NavigatorMouseAdapter extends MouseAdapter {
+    private class NavigatorMouseAdapter extends MouseAdapter {
         ClientNavigatorElement selected;
 
         public NavigatorMouseAdapter(ClientNavigatorElement element) {
