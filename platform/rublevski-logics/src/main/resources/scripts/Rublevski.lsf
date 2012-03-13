@@ -4747,6 +4747,7 @@ toFillShipmentDetailsShipment 'Заполнить поставку из зака
         ADDOBJ shipmentDetail;
         FOR s == addedObject() DO {
             SET itemShipmentDetail(s) <- item AS item;
+            SET quantityShipmentDetail(s) <- sumQuantityOrderedItemShipment(item, shipment);
             SET priceShipmentDetail(s) <- priceOrderItemShipment(item, shipment);
         };
     };
@@ -5543,7 +5544,7 @@ quantityBalanceItemLedger (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledg
                                                     -quantityWastageDetail(ledger),
                                                     -quantityReturnSupplierDetail(ledger) PERSISTENT;
 
-currentBalanceItemLedger (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
+currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
                                                           BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger);
 
 // без учета текущей даты/времени
@@ -5552,7 +5553,7 @@ balanceBItemLedgerDateTime (item, departmentStore, dateTime) = UNION SUM current
                                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
 
 // с учетом текущей даты/времени
-balanceAItemLedgerDateTime (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
+balanceAItemLedgerDateTime 'Остаток на дату' (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
                                                                          -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) > (dateTime AS DATETIME) AND isPostedBalanceItemLedger(ledger)
                                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
 
@@ -5631,7 +5632,7 @@ priceAccountLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDeta
 
 @metaCodeItemDepartmentStoreLedger(accountPrice);
 
-priceAccountLedgerDateTime (item, departmentStore, dateTime) = priceAccountLedger(ledgerAccountPriceDateTime(item, departmentStore, dateTime));
+priceAccountLedgerDateTime 'Учетная цена' (item, departmentStore, dateTime) = priceAccountLedger(ledgerAccountPriceDateTime(item, departmentStore, dateTime));
 
 // Цена розничная
 dateTimeRetailPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
@@ -6050,6 +6051,41 @@ DESIGN inventories FROM DEFAULT {
     POSITION in.historyGroup TO THE LEFT in.postedGroup;
 }
 
+//----------------------------------- Форма для остатков -------------------------------------------------//
+FORM balanceItemDepartment 'Остатки по отделам'
+
+    OBJECTS t=DATETIME FIXED PANEL
+    PROPERTIES(t) OBJVALUE
+
+    TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store
+    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s)
+    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, tn), inStoreTypeStore (st, s)
+
+    OBJECTS ds=departmentStore
+    PROPERTIES(ds) READONLY depName = name
+    FILTERS inTradingNetworkStoreTypeStoreDepartment(tn, st, s, ds)
+    ORDER BY depName
+
+    DIALOG departmentStore OBJECT ds
+
+    OBJECTS i=item
+    PROPERTIES(i) nameAttributeItem
+
+    PROPERTIES(i, ds, t) priceAccountLedgerDateTime, balanceAItemLedgerDateTime
+
+    FILTERGROUP filters
+        FILTER 'Товары с остатком' 'F10' balanceAItemLedgerDateTime(i, ds, t) DEFAULT
+;
+
+DESIGN balanceItemDepartment FROM DEFAULT {
+    main{
+        ADD treeStore.box BEFORE ds.box;
+        POSITION treeStore.box TO THE LEFT ds.box;
+        treeStore.tree {
+            fillHorizontal = 0.3;
+        }
+    }
+}
 //----------------------------------- Форма для общих параметров -------------------------------------------------//
 FORM globalParameters 'Параметры'
     PROPERTIES () dateMaxGlobal
@@ -6168,6 +6204,12 @@ NAVIGATOR {
             ADD userPriceChanges;
             ADD priceChangeDocuments;
         }
+    }
+    NEW accountInfo 'Сводная информация' TO formsToolbar{
+
+        NEW accountBalance 'Остатки'{
+            ADD balanceItemDepartment 'Остатки на дату';
+       }
     }
 
     ADD adminElement TO formsTree {
