@@ -202,13 +202,17 @@ public abstract class BaseExpr extends Expr {
     }
 
     public Where calculateNotNullWhere() {
-        Where result = Where.TRUE;
-        for(BaseExpr baseExpr : getUsed())
-            result = result.and(baseExpr.getNotNullWhere());
-        return result;
+        return getNotNullWhere(getUsed());
     }
 
     public boolean hasNotNull() {
         return !getNotNullWhere().isTrue();
+    }
+    
+    public static Where getNotNullWhere(Collection<? extends BaseExpr> exprs) {
+        Where result = Where.TRUE;
+        for(BaseExpr baseExpr : exprs)
+            result = result.and(baseExpr.getNotNullWhere());
+        return result;
     }
 }

@@ -64,7 +64,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return new IsClassExpr(expr.translateOuter(translator),baseClass);
     }
 
-    public Where calculateOrWhere() {
+    public Where calculateNotNullWhere() {
         return expr.isClass(baseClass.getUpSet());
     }
 

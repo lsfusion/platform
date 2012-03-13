@@ -103,6 +103,6 @@ public abstract class NotNullExpr extends VariableClassExpr {
 
     public void fillFollowSet(DataWhereSet fillSet) {
         assert hasNotNull();
-        fillSet.add((NotNull)getNotNullWhere());
+        fillSet.add((DataWhere)getNotNullWhere());
     }
 }
