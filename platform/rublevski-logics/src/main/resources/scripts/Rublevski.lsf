@@ -1521,11 +1521,6 @@ isInCompanyStore (company, store)  = UNION OVERRIDE  companyStore(store) == comp
 
 dataActingRateRangeToRange (range) = GROUP UNIQUE range BY dataActingRateRange (range);
 
-FORM Test 'Test'
-    OBJECTS i = INTEGER FIXED PANEL
-    PROPERTIES OBJVALUE(i), dataActingRateRangeToRange(i)
-;
-
 addNDSValue 'Добавить значение НДС' = ACTION (tax, number, value) {
     ADDOBJ range;
     FOR rn == addedObject() DO {
@@ -3622,14 +3617,24 @@ TABLE balanceItemLedger (balanceItemLedger);
 //---------------------------- Ценовые регистры ----------------------------------------//
 
 CLASS ABSTRACT importerPriceLedger 'Изменение цены изготовителя/импортера';
+TABLE importerPriceLedger (importerPriceLedger);
+
 CLASS ABSTRACT retailVATLedger 'Изменение НДС';
+TABLE retailVATLedger (retailVATLedger);
+
 CLASS ABSTRACT accountPriceLedger 'Изменение учетной цены';
+TABLE accountPriceLedger (accountPriceLedger);
+
 CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
+TABLE retailPriceLedger (retailPriceLedger);
 
 //---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
 
 CLASS ABSTRACT priceChangeDocument 'Акт переоценки';
+TABLE priceChangeDocument (priceChangeDocument);
+
 CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки';
+TABLE priceChangeDocumentDetail (priceChangeDocumentDetail);
 
 //---------------------------- Проведение инвентаризации ----------------------------------------//
 
@@ -5539,6 +5544,8 @@ DESIGN userPriceChanges FROM DEFAULT {
     }
 }
 
+TABLE itemDepartmentStore (item, departmentStore);
+
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
 dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
@@ -5582,7 +5589,7 @@ quantityBalanceItemLedger (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledg
                                                      quantityInventoryLedger(ledger) PERSISTENT;
 
 currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
-                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger);
+                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger) PERSISTENT;
 
 // без учета текущей даты/времени
 balanceBItemLedgerDateTime (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
@@ -5606,44 +5613,36 @@ META metaCodeItemDepartmentStoreLedger(prefix)
     nameItem###prefix##Ledger 'Товар' (ledger) = nameAttributeItem(item###prefix##Ledger(ledger));
     nameDepartmentStore###prefix##Ledger 'Отдел магазина' (ledger) = name(departmentStore###prefix##Ledger(ledger));
 
-    ledger###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX ledger AND isPosted###prefix##Ledger(ledger) AND
-        dateTime###prefix##Ledger(ledger) ==
-            [GROUP MAX dateTime###prefix##Ledger(ledger) AND isPosted###prefix##Ledger(ledger) AND
-                       dateTime###prefix##Ledger(ledger) <= (dateIn AS DATETIME)
-                       BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateIn]
-            (item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateTime)
-        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateTime;
-
     // todo : переделать на concat и deconcat
 
-//    order###prefix##Ledger = LIST(dateTime###prefix##Ledger(ledger), ledger) PERSISTENT;
-//
-//    concatLedger###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX order###prefix##Ledger(ledger) AND
-//        isPosted###prefix##Ledger(ledger) AND dateTime###prefix##Ledger(ledger) <= (dateTime AS DATETIME)
-//        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateTime;
-//
-//    ledger###prefix##DateTime (item, departmentStore, dateTime) = concatLedger###prefix##DateTime(item, departmentStore, dateTime)[2];
+    order###prefix##Ledger = LIST(dateTime###prefix##Ledger(ledger), ledger) PERSISTENT;
+
+    concatLedger###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX order###prefix##Ledger(ledger) AND
+        isPosted###prefix##Ledger(ledger) AND dateTime###prefix##Ledger(ledger) <= (dateTime AS DATETIME)
+        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateTime;
+
+    ledger###prefix##DateTime (item, departmentStore, dateTime) = concatLedger###prefix##DateTime(item, departmentStore, dateTime)[2];
 
 END
 
 // Цена изготовителя / импортера
-dateTimeImporterPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger);
-isPostedImporterPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger);
-itemImporterPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger);
-departmentStoreImporterPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger);
-priceImporterLedger 'Цена' (ledger) = UNION EXCLUSIVE importerPriceShipmentDetail(ledger);
+dateTimeImporterPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger) PERSISTENT;
+isPostedImporterPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger) PERSISTENT;
+itemImporterPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger) PERSISTENT;
+departmentStoreImporterPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger) PERSISTENT;
+priceImporterLedger 'Цена' (ledger) = UNION EXCLUSIVE importerPriceShipmentDetail(ledger) PERSISTENT;
 
 @metaCodeItemDepartmentStoreLedger(importerPrice);
 
 priceImporterLedgerDateTime (item, departmentStore, dateTime) = priceImporterLedger(ledgerImporterPriceDateTime(item, departmentStore, dateTime));
 
 // Розничный НДС
-dateTimeRetailVATLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger);
-isPostedRetailVATLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger);
-itemRetailVATLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger);
-departmentStoreRetailVATLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger);
-rangeRetailLedger (ledger) = UNION EXCLUSIVE retailRangeShipmentDetail(ledger);
-dataRetailLedger 'НДС, %' (ledger) = dataActingRateRangeDate(rangeRetailLedger(ledger), dateInTime(dateTimeRetailVATLedger(ledger)));
+dateTimeRetailVATLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger) PERSISTENT;
+isPostedRetailVATLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger) PERSISTENT;
+itemRetailVATLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger) PERSISTENT;
+departmentStoreRetailVATLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger) PERSISTENT;
+rangeRetailLedger (ledger) = UNION EXCLUSIVE retailRangeShipmentDetail(ledger) PERSISTENT;
+dataRetailLedger 'НДС, %' (ledger) = dataActingRateRangeDate(rangeRetailLedger(ledger), dateInTime(dateTimeRetailVATLedger(ledger))) PERSISTENT;
 
 @metaCodeItemDepartmentStoreLedger(retailVAT);
 
@@ -5653,19 +5652,19 @@ dataRetailLedgerDateTime 'НДС, %' (item, departmentStore, dateTime) =
 
 // Цена учетная
 dateTimeAccountPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
-                                                                   dateTimeUserPriceChangeDetail(ledger);
+                                                                   dateTimeUserPriceChangeDetail(ledger) PERSISTENT;
 
 isPostedAccountPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
-                                                               isPostedUserPriceChangeDetail(ledger);
+                                                               isPostedUserPriceChangeDetail(ledger) PERSISTENT;
 
 itemAccountPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
-                                                  itemUserPriceChangeDetail(ledger);
+                                                  itemUserPriceChangeDetail(ledger) PERSISTENT;
 
 departmentStoreAccountPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
-                                                             departmentStoreUserPriceChangeDetail(ledger);
+                                                             departmentStoreUserPriceChangeDetail(ledger) PERSISTENT;
 
 priceAccountLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger),
-                                                     retailPriceUserPriceChangeDetail(ledger);
+                                                     retailPriceUserPriceChangeDetail(ledger) PERSISTENT;
 
 @metaCodeItemDepartmentStoreLedger(accountPrice);
 
@@ -5673,19 +5672,19 @@ priceAccountLedgerDateTime 'Учетная цена' (item, departmentStore, dat
 
 // Цена розничная
 dateTimeRetailPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
-                                                                  dateTimeUserPriceChangeDetail(ledger);
+                                                                  dateTimeUserPriceChangeDetail(ledger) PERSISTENT;
 
 isPostedRetailPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
-                                                              isPostedUserPriceChangeDetail(ledger);
+                                                              isPostedUserPriceChangeDetail(ledger) PERSISTENT;
 
 itemRetailPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
-                                                 itemUserPriceChangeDetail(ledger);
+                                                 itemUserPriceChangeDetail(ledger) PERSISTENT;
 
 departmentStoreRetailPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
-                                                            departmentStoreUserPriceChangeDetail(ledger);
+                                                            departmentStoreUserPriceChangeDetail(ledger) PERSISTENT;
 
 priceRetailLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger),
-                                                    retailPriceUserPriceChangeDetail(ledger);
+                                                    retailPriceUserPriceChangeDetail(ledger) PERSISTENT;
 
 @metaCodeItemDepartmentStoreLedger(retailPrice);
 
@@ -5842,46 +5841,46 @@ convertPriceCollationSheet 'Пересчитать цены в сличител�
 
 datePriceChangeDocument 'Дата' (priceChangeDocument) = UNION EXCLUSIVE datePriceChangeShipment(priceChangeDocument),
                                                                        datePriceChangeStatement(priceChangeDocument),
-                                                                       dateUserPriceChange(priceChangeDocument);
+                                                                       dateUserPriceChange(priceChangeDocument) PERSISTENT;
 
 departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE departmentStorePriceChangeShipment(priceChangeDocument),
                                                                            departmentStorePriceChangeStatement(priceChangeDocument),
-                                                                           departmentStoreUserPriceChange(priceChangeDocument);
+                                                                           departmentStoreUserPriceChange(priceChangeDocument) PERSISTENT;
 nameDepartmentStorePriceChangeDocument 'Отдел магазина' (priceChangeDocument) = name(departmentStorePriceChangeDocument(priceChangeDocument));
 
 documentPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE priceChangeShipmentPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                 priceChangeStatementPriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                userPriceChangeUserPriceChangeDetail(priceChangeDocumentDetail);
+                                                                                userPriceChangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 itemPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE itemPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                             itemPriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                            itemUserPriceChangeDetail(priceChangeDocumentDetail);
+                                                                            itemUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 nameItemPriceChangeDocumentDetail 'Товар' (priceChangeDocumentDetail) = nameAttributeItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = UNION EXCLUSIVE quantityPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                           quantityPriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                          quantityUserPriceChangeDetail(priceChangeDocumentDetail);
+                                                                                          quantityUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldImporterPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                               oldImporterPriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                                              importerPriceUserPriceChangeDetail(priceChangeDocumentDetail);
+                                                                                                              importerPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 importerPriceChangeDocumentDetail 'Новая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                           importerPriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                                          importerPriceUserPriceChangeDetail(priceChangeDocumentDetail);
+                                                                                                          importerPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 oldDataRetailRangePriceChangeDocumentDetail 'Старый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldDataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                           oldDataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                                          dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail);
+                                                                                                          dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 dataRetailRangePriceChangeDocumentDetail 'Новый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE dataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                       dataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                                      dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail);
+                                                                                                      dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldRetailPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                          oldRetailPriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                                         oldRetailPriceUserPriceChangeDetail(priceChangeDocumentDetail);
+                                                                                                         oldRetailPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 retailPriceChangeDocumentDetail 'Новая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE retailPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                      retailPriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                                     retailPriceUserPriceChangeDetail(priceChangeDocumentDetail);
+                                                                                                     retailPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 FORM priceChangeDocuments 'Акты переоценки'
     OBJECTS pc=priceChangeDocument
