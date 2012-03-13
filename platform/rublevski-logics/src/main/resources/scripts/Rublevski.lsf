@@ -3658,6 +3658,8 @@ GROUP adverbGroup 'Итого' : baseGroup;
 
 castToString30 = FORMULA STRING[30] '$1 || CAST ($2 AS character(20))';
 
+@metaCodePostedObject (inventory) ;
+
 nameInventory 'Название инвентаризации' = DATA STRING[100] (inventory) IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 dateToInventory 'Остатки выставить на (утро) дату' = DATA DATE (inventory) IN inventGroup;
 timeToInventory 'Выставить остатки на время' = DATA TIME (inventory) IN inventGroup;
@@ -3932,6 +3934,32 @@ postListInventory 'Закрыть' (listInventory) = [ACTION (listInventory) SET
 unpostListInventory 'Открыть' (listInventory) = [ACTION (listInventory) SET objectClass(listInventory) <- CustomObjectClass.Rublevski_listInventory] (listInventory)
                                       IF listInventory IS listInventoryPosted TOOLBAR CONFIRM;
 
+//---------------------------- Изменение остатка инвентаризации ----------------------------//
+
+CLASS inventoryLedger 'Изменение остатка инвентаризации' : balanceItemLedger;
+TABLE inventoryLedgerTable (inventoryLedger);
+
+needToLedgerCollationSheetItem (collationSheet, item) = shortageQuantityCountedCollationSheetItem(collationSheet, item) != 0
+    AND isPostedInventory(inventoryCollationSheet(collationSheet)) AND includeCollationSheetItem(collationSheet, item);
+
+collationSheetInventoryLedger(inventoryLedger) = DATA collationSheet (inventoryLedger);
+itemInventoryLedger(inventoryLedger) = DATA item (inventoryLedger);
+
+uniqueItemInventoryLedgerByCollationSheetItem(collationSheet, item)  = GROUP UNIQUE inventoryLedger
+    BY collationSheetInventoryLedger(inventoryLedger), itemInventoryLedger(inventoryLedger)
+    WHERE inventoryLedger IS inventoryLedger;
+
+needToLedgerCollationSheetItem (collationSheet, item) => uniqueItemInventoryLedgerByCollationSheetItem(collationSheet, item) RESOLVE TRUE;
+
+isInventoryLedger(inventoryLedger) = inventoryLedger IS inventoryLedger;
+isInventoryLedger(inventoryLedger) => needToLedgerCollationSheetItem(collationSheetInventoryLedger(inventoryLedger), itemInventoryLedger(inventoryLedger)) RESOLVE FALSE;
+
+inventoryInventoryLedger(inventoryLedger) = inventoryCollationSheet(collationSheetInventoryLedger(inventoryLedger));
+
+dateTimeInventoryLedger(inventoryLedger) = dateTimeToInventory(inventoryInventoryLedger (inventoryLedger));
+isPostedInventoryLedger(inventoryLedger) = isPostedInventory(inventoryInventoryLedger(inventoryLedger));
+departmentStoreInventoryLedger(inventoryLedger) = departmentStoreCollationSheet(collationSheetInventoryLedger(inventoryLedger));
+quantityInventoryLedger(inventoryLedger) = shortageQuantityCountedCollationSheetItem(collationSheetInventoryLedger(inventoryLedger), itemInventoryLedger(inventoryLedger));
 
 //--------------------------------Формы по инвентаризации см. в конце-------------------//
 
@@ -5514,35 +5542,40 @@ dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateT
                                                                   dateTimeStatementDetail(ledger),
                                                                   dateTimeInnerFlowDetail(ledger),
                                                                   dateTimeWastageDetail(ledger),
-                                                                  dateTimeReturnSupplierDetail(ledger) PERSISTENT;
+                                                                  dateTimeReturnSupplierDetail(ledger),
+                                                                  dateTimeInventoryLedger(ledger) PERSISTENT;
 
 isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                               isPostedInnerArrivalDetail(ledger),
                                                               isPostedStatementDetail(ledger),
                                                               isPostedInnerFlowDetail(ledger),
                                                               isPostedWastageDetail(ledger),
-                                                              isPostedReturnSupplierDetail(ledger) PERSISTENT;
+                                                              isPostedReturnSupplierDetail(ledger),
+                                                              isPostedInventoryLedger(ledger) PERSISTENT;
 
 itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                  itemInnerArrivalDetail(ledger),
                                                  itemStatementDetail(ledger),
                                                  itemInnerFlowDetail(ledger),
                                                  itemWastageDetail(ledger),
-                                                 itemReturnSupplierDetail(ledger) PERSISTENT;
+                                                 itemReturnSupplierDetail(ledger),
+                                                 itemInventoryLedger(ledger) PERSISTENT;
 
 departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                             departmentStoreInnerArrivalDetail(ledger),
                                                             departmentStoreStatementDetail(ledger),
                                                             departmentStoreInnerFlowDetail(ledger),
                                                             departmentStoreWastageDetail(ledger),
-                                                            departmentStoreReturnSupplierDetail(ledger) PERSISTENT;
+                                                            departmentStoreReturnSupplierDetail(ledger),
+                                                            departmentStoreInventoryLedger(ledger) PERSISTENT;
 
 quantityBalanceItemLedger (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
                                                      quantityInnerArrivalDetail(ledger),
                                                     -quantityStatementDetail(ledger),
                                                     -quantityInnerFlowDetail(ledger),
                                                     -quantityWastageDetail(ledger),
-                                                    -quantityReturnSupplierDetail(ledger) PERSISTENT;
+                                                    -quantityReturnSupplierDetail(ledger),
+                                                     quantityInventoryLedger(ledger) PERSISTENT;
 
 currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
                                                           BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger);
@@ -6030,7 +6063,7 @@ DESIGN inventory FROM DEFAULT {
     }
 }
 
-@metaCodePostedObject (inventory) ;
+
 
 FORM inventories 'Инвентаризации'
     OBJECTS in=inventory
