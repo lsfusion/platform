@@ -6101,8 +6101,6 @@ FORM balanceItemDepartment 'Остатки по отделам'
     FILTERS inTradingNetworkStoreTypeStoreDepartment(tn, st, s, ds)
     ORDER BY depName
 
-    DIALOG departmentStore OBJECT ds
-
     OBJECTS i=item
     PROPERTIES(i) nameAttributeItem
 
