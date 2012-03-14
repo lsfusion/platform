@@ -5230,11 +5230,7 @@ sumSupplierVATReturnSupplierDetail (returnSupplierDetail) <- calcSumSupplierVATR
 sumSupplierReturnSupplierDetail 'Сумма с НДС' (returnSupplierDetail) = sumPriceReturnSupplierDetail(returnSupplierDetail) +
     UNION OVERRIDE 0 IF returnSupplierDetail IS returnSupplierDetail, sumSupplierVATReturnSupplierDetail(returnSupplierDetail);
 
-retailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
-dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = dataActingRateRangeDate
-    (retailRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN baseGroup;
 
-retailRangeShipmentDetail(shipmentDetail) <- overrideRateRangeItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 // Суммовые параметры для шарки документа
 
@@ -6330,6 +6326,7 @@ NAVIGATOR {
         NEW incomeShipments 'Поставки' {
             ADD shipments;
             ADD wastages;
+            ADD returnSuppliers;
         }
         NEW carryingInventories 'Инвентаризация' {
             ADD inventories;
@@ -6493,6 +6490,7 @@ NAVIGATOR {
             ADD statement;
             ADD numerator;
             ADD userPriceChange;
+            ADD returnSupplier;
         }
         ADD importData;
         ADD globalParameters;
