@@ -4518,10 +4518,9 @@ sumRetailVATShipmentDetail 'Сумма розничного НДС (за ед.)'
 
 nonRoundRetailPriceShipmentDetail 'Цена розничная (неокруглен.)'(shipmentDetail) = priceShipmentDetail(shipmentDetail) + sumMarkupShipmentDetail(shipmentDetail) + sumRetailVATShipmentDetail(shipmentDetail);
 
-retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = UNION OVERRIDE
-    roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail) + overPriceWareShipmentDetail(shipmentDetail)),
-    roundMinus1(importerPriceShipmentDetail(shipmentDetail) + overPriceWareShipmentDetail(shipmentDetail))
-    IF isFixPriceShipmentDetail(shipmentDetail);
+retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = IF isFixPriceShipmentDetail(shipmentDetail)
+    THEN roundMinus1(importerPriceShipmentDetail(shipmentDetail) + overPriceWareShipmentDetail(shipmentDetail))
+    ELSE roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail) + overPriceWareShipmentDetail(shipmentDetail));
 
 diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentDetail) = retailPriceShipmentDetail(shipmentDetail) - nonRoundRetailPriceShipmentDetail(shipmentDetail);
 
@@ -4961,10 +4960,14 @@ priceInnerArrivalDetail (innerArrivalDetail) <- priceItemInnerArrival(
     itemInnerArrivalDetail(innerArrivalDetail), innerArrivalInnerArrivalDetail(innerArrivalDetail))
     ON CHANGE itemInnerArrivalDetail (innerArrivalDetail);
 
+oldRetailPriceInnerArrivalDetail 'Цена розничная старая' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail);
+
 sumInnerArrivalDetail 'Сумма' (innerArrivalDetail) = round0(
     quantityInnerArrivalDetail(innerArrivalDetail) * priceInnerArrivalDetail (innerArrivalDetail)) IN baseGroup;
 
 importerPriceInnerArrivalDetail 'Цена изготовителя' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail);
+
+oldImporterPriceInnerArrivalDetail 'Старая цена изготовителя' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail);
 
 importerPriceItemInnerArrival 'Цена изготовителя (максим.)' (item, innerArrival) = importerPriceItemInnerFlow(
     item, innerFlowInnerArrival(innerArrival));
@@ -4975,6 +4978,12 @@ importerPriceInnerArrivalDetail (innerArrivalDetail) <- importerPriceItemInnerAr
 
 retailRangeInnerArrivalDetail(innerArrivalDetail) = DATA range (innerArrivalDetail) IN idGroup;
 dataRetailRangeInnerArrivalDetail 'НДС розничный,%' (innerArrivalDetail) = dataActingRateRange(retailRangeInnerArrivalDetail(innerArrivalDetail)) IN baseGroup;
+
+oldRetailRangeInnerArrivalDetail (innerArrivalDetail) = DATA range (innerArrivalDetail) IN idGroup;
+
+oldDataRetailRangeInnerArrivalDetail (innerArrivalDetail) =
+    dataActingRateRangeDate (oldRetailRangeInnerArrivalDetail (innerArrivalDetail),
+                            dateInnerArrival(innerArrivalInnerArrivalDetail(innerArrivalDetail)));
 
 toFillInnerArrivalDetailsInnerArrival 'Заполнить документ из расхода' =  ACTION (innerArrival) {
     FOR innerArrivalInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail)) == innerArrival DO {
@@ -4999,6 +5008,8 @@ quantityItemInnerFlowInnerArrival 'Количество в расходе' (item
 diffQuantityItemInnerArrival 'Расхождение' (item, innerArrival) =
     quantityItemInnerFlowInnerArrival(item, innerArrival) - quantityItemInnerArrival(item, innerArrival);
 
+balanceBeforeInnerArrivalInnerArrivalDetail 'Остаток до' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail);
+
 inInnerArrivalItem (item, innerArrival) = quantityItemInnerArrival(item, innerArrival) > 0;
 
 totalQuantityInnerArrival 'Общее количество' (innerArrival) = GROUP SUM quantityInnerArrivalDetail(innerArrivalDetail)
@@ -5006,6 +5017,60 @@ totalQuantityInnerArrival 'Общее количество' (innerArrival) = GRO
 
 totalSumArrivalFlow 'Общая сумма' (innerArrival) = GROUP SUM sumInnerArrivalDetail (innerArrivalDetail)
     IF innerArrivalInnerArrivalDetail (innerArrivalDetail) == innerArrival BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN waybillSum;
+
+// ---------------------------------- Дооценка на внутреннем перемещении (приход) ------------------------------------------
+
+CLASS priceChangeInnerArrival 'Переоценка на внутреннем перемещении' : priceChangeDocument;
+CLASS priceChangeInnerArrivalDetail 'Строка переоценки на внутреннем перемещении' : priceChangeDocumentDetail;
+
+needToPriceChangeInnerArrivalDetail (innerArrivalDetail) = oldRetailPriceInnerArrivalDetail(innerArrivalDetail) != priceInnerArrivalDetail(innerArrivalDetail) AND
+                                                   balanceBeforeInnerArrivalInnerArrivalDetail(innerArrivalDetail) != 0;
+
+needToPriceChangeInnerArrival (innerArrival) = GROUP SUM 1 IF needToPriceChangeInnerArrivalDetail(innerArrivalDetail)
+    BY innerArrivalInnerArrivalDetail(innerArrivalDetail);
+
+@metaCodeDetailAggregation(innerArrival, priceChangeInnerArrival, needToPriceChangeInnerArrival);
+
+// атрибуты документа переоценки
+
+datePriceChangeInnerArrival 'Дата' (priceChangeInnerArrival) = dateInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
+waybillPriceChangeInnerArrival 'Номер накладной' (priceChangeInnerArrival) = waybillInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
+seriesWaybillPriceChangeInnerArrival 'Серия накладной' (priceChangeInnerArrival) = seriesWaybillInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
+
+senderDepartmentPriceChangeInnerArrival (priceChangeInnerArrival) = senderDepartmentInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
+nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' (priceChangeInnerArrival) = name(senderDepartmentPriceChangeInnerArrival(priceChangeInnerArrival));
+
+departmentStorePriceChangeInnerArrival (priceChangeInnerArrival) = departmentStoreInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
+nameDepartmentStorePriceChangeInnerArrival 'Отдел-получатель' (priceChangeInnerArrival) = name(departmentStorePriceChangeInnerArrival(priceChangeInnerArrival));
+
+// атрибуты детализации документа переоценки
+
+itemPriceChangeInnerArrivalDetail (priceChangeInnerArrivalDetail) =
+    itemInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
+
+nameItemPriceChangeInnerArrivalDetail 'Товар' (priceChangeInnerArrivalDetail) =
+    nameAttributeItem(itemPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
+
+quantityPriceChangeInnerArrivalDetail 'Остаток' (priceChangeInnerArrivalDetail) =
+    balanceBeforeInnerArrivalInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
+
+oldImporterPriceChangeInnerArrivalDetail 'Старая цена изготовителя' (priceChangeInnerArrivalDetail) =
+    oldImporterPriceInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
+
+importerPriceChangeInnerArrivalDetail 'Новая цена изготовителя' (priceChangeInnerArrivalDetail) =
+    importerPriceInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
+
+oldDataRetailRangePriceChangeInnerArrivalDetail 'Старый НДС, %' (priceChangeInnerArrivalDetail) =
+    oldDataRetailRangeInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
+
+dataRetailRangePriceChangeInnerArrivalDetail 'Новый НДС, %' (priceChangeInnerArrivalDetail) =
+    dataRetailRangeInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
+
+oldRetailPriceChangeInnerArrivalDetail 'Старая розничная цена' (priceChangeInnerArrivalDetail) =
+    oldRetailPriceInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
+
+retailPriceChangeInnerArrivalDetail 'Новая розничная цена' (priceChangeInnerArrivalDetail) =
+    priceInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
 
 FORM innerArrival 'Приход из другого отдела'
     OBJECTS a=innerArrival FIXED PANEL
@@ -5550,6 +5615,10 @@ balanceBeforeShipmentShipmentDetail (shipmentDetail) <- balanceBItemLedgerDateTi
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
 
+balanceBeforeInnerArrivalInnerArrivalDetail(innerArrivalDetail) <- balanceBItemLedgerDateTime (
+                itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
+                ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
+
 oldImporterPriceShipmentDetail (shipmentDetail) <- priceImporterLedgerDateTime (
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
@@ -5580,6 +5649,18 @@ importerPriceInnerFlowDetail (innerFlowDetail) <- priceImporterLedgerDateTime(
 retailRangeInnerFlowDetail (innerFlowDetail) <- rangeRetailLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
                 ON CHANGE itemInnerFlowDetail(innerFlowDetail);
+
+oldRetailPriceInnerArrivalDetail (innerArrivalDetail) <- priceRetailLedgerDateTime(
+                itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
+                ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
+
+oldImporterPriceInnerArrivalDetail (innerArrivalDetail) <- priceImporterLedgerDateTime(
+                itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
+                ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
+
+oldRetailRangeInnerArrivalDetail (innerArrivalDetail) <- rangeRetailLedgerDateTime(
+                itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
+                ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
 
 // --------------------------- Формы списания ---------------------------------
 FORM writeOff 'Списание'
@@ -5733,6 +5814,7 @@ convertPriceCollationSheet 'Пересчитать цены в сличител�
 
 datePriceChangeDocument 'Дата' (priceChangeDocument) = UNION EXCLUSIVE datePriceChangeShipment(priceChangeDocument),
                                                                        datePriceChangeStatement(priceChangeDocument),
+                                                                       datePriceChangeInnerArrival(priceChangeDocument),
                                                                        dateUserPriceChange(priceChangeDocument) PERSISTENT;
 
 departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE departmentStorePriceChangeShipment(priceChangeDocument),
@@ -5742,15 +5824,18 @@ nameDepartmentStorePriceChangeDocument 'Отдел магазина' (priceChang
 
 documentPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE priceChangeShipmentPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                 priceChangeStatementPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                priceChangeInnerArrivalPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                 userPriceChangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 itemPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE itemPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                             itemPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                            itemPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                             itemUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 nameItemPriceChangeDocumentDetail 'Товар' (priceChangeDocumentDetail) = nameAttributeItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = UNION EXCLUSIVE quantityPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                           quantityPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                          quantityPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                           quantityUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldImporterPriceChangeShipmentDetail(priceChangeDocumentDetail),
