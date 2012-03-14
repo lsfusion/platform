@@ -1246,22 +1246,22 @@ GROUP orderDepartmentStoreGroup 'Заказ' : publicGroup;
 GROUP controlDepartmentStoreGroup 'Контроль остатков' : publicGroup;
 GROUP printDepartmentStoreGroup 'Печать' : publicGroup;
 
-CLASS departmentStore 'Отдел магазина' : stock, externalObject;
-CLASS kafeteria 'Кафетерий' : departmentStore;
-CLASS tradingFloar 'Торговый зал' : departmentStore;
-CLASS wholesaleStock 'Оптовый склад' : departmentStore;
-CLASS placeOfAcceptance 'Приемный пункт' : departmentStore;
-CLASS restaurant 'Ресторан' : departmentStore;
+CLASS departmentStore 'Отдел магазина123' : stock, externalObject;
+CLASS kafeteria 'Кафетерийrge' : departmentStore;
+CLASS tradingFloar 'Торговый зал234' : departmentStore;
+CLASS wholesaleStock 'Оптовый складer' : departmentStore;
+CLASS placeOfAcceptance 'Приемный пункт2324r' : departmentStore;
+CLASS restaurant 'Ресторанf5t4' : departmentStore;
 //CLASS stock 'Склад' : departmentStore; в дальнейшем будет распределительный центр
 CLASS manufactory 'Цех' : departmentStore;
 
 CLASS STATIC itemStatus 'Статус товара'
 {
-    notTransfer '0',
-    transfer '1',
-    delete '2',
-    requireTransfer '3',
-    requireDelete '4'
+    notTransfer '0ee',
+    transfer '1344',
+    delete '2dfff',
+    requireTransfer '33',
+    requireDelete '4qqq'
 };
 
 storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) AUTOSET;
@@ -3275,7 +3275,7 @@ nppCash 'Порядковый номер кассы в торговом объе
 CLASS STATIC feature 'Свойство для оборудования'
 {
     never 'HET,(пример: для годен это значит - печатаем в поле этикетки "Годен до")',
-    always 'ДА для ВСЕХ товаров поместить в состав',
+    always 'ДА, пожалуй',
     sometimes 'ДА (для товаров с признаком [Контролировать срок годности по товару?]'
 };
 

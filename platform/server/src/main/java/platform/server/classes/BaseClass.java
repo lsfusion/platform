@@ -8,6 +8,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.SingleClassExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
+import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
@@ -109,7 +110,7 @@ public class BaseClass extends AbstractCustomClass {
         usedSIds.put(objectClass.sID, objectClass);
         usedIds.add(objectClass.ID);
 
-        objectClass.fillIDs(session, name, classSID, usedSIds, usedIds);
+        Map<Object, String> modifiedNames = objectClass.fillIDs(session, name, classSID, usedSIds, usedIds);
 
         // пробежим по всем классам и заполним их ID
         for(CustomClass customClass : allClasses)
@@ -118,7 +119,12 @@ public class BaseClass extends AbstractCustomClass {
 
         for (CustomClass customClass : allClasses) // заполним все остальные StaticClass
             if (customClass instanceof StaticCustomClass)
-                ((StaticCustomClass) customClass).fillIDs(session, name, classSID, usedSIds, usedIds);
+                modifiedNames.putAll(((StaticCustomClass) customClass).fillIDs(session, name, classSID, usedSIds, usedIds));
+
+        // применение переименования классов вынесено сюда, поскольку objectClass.fillIDs() вызывается раньше проставления ID'шников - не срабатывает execute()
+        for (Object object : modifiedNames.keySet()) {
+            name.execute(modifiedNames.get(object), session, session.getDataObject(object, ObjectType.instance));
+        }
 
         int free = 0;
         for (CustomClass customClass : allClasses)
