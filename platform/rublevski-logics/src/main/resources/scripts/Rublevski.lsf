@@ -6117,7 +6117,7 @@ FORM balanceItemDepartment 'Остатки по отделам'
     FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==ds
 
     OBJECTS bil=balanceItemLedger
-    PROPERTIES(bil) dateTimeBalanceItemLedger, quantityBalanceItemLedger
+    PROPERTIES(bil) dateTimeBalanceItemLedger, quantityBalanceItemLedger READONLY
     FILTERS isPostedBalanceItemLedger(bil) AND itemBalanceItemLedger(bil)==i AND departmentStoreBalanceItemLedger(bil)==ds
 
     OBJECTS ipl=importerPriceLedger
@@ -6132,22 +6132,25 @@ FORM balanceItemDepartment 'Остатки по отделам'
 DESIGN balanceItemDepartment FROM DEFAULT {
     main{
         preferredSize = (1024, 768);
-        NEW ledger.box BEFORE functions.box{
-            title = 'Изменение цен';
-            tabbedPane = TRUE;
-            ADD bil.box;
-            ADD apl.box;
-            ADD rpl.box;
-            ADD ipl.box;
-            ADD rvl.box;
-        };
-
-        ADD i.box BEFORE ledger.box;
-        POSITION i.box TO THE LEFT ledger.box;
-        ADD treeStore.box BEFORE ds.box;
-        POSITION treeStore.box TO THE LEFT ds.box;
-        treeStore.tree {
-            fillHorizontal = 0.3;
+        NEW down.box BEFORE functions.box{
+            fillVertical = 3;
+            NEW ledger.box {
+                title = 'Изменение цен';
+                tabbedPane = TRUE;
+                ADD bil.box;
+                ADD apl.box;
+                ADD rpl.box;
+                ADD ipl.box;
+                ADD rvl.box;
+            };
+            ADD i.box BEFORE ledger.box;
+            POSITION i.box TO THE LEFT ledger.box;
+        }
+        NEW store.box BEFORE down.box{
+            fillVertical = 1;
+            ADD treeStore.box;
+            ADD ds.box;
+            POSITION treeStore.box TO THE LEFT ds.box;
         }
     }
 }
