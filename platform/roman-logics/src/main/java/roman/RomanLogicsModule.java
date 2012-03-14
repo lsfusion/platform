@@ -106,7 +106,7 @@ public class RomanLogicsModule extends LogicsModule {
         this.BL = BL;
     }
 
-    private static StringClass COMPOSITION_CLASS = StringClass.get(200);
+    public static StringClass COMPOSITION_CLASS = StringClass.get(200);
 
     private AbstractCustomClass article;
     ConcreteCustomClass articleComposite;
@@ -1098,6 +1098,7 @@ public class RomanLogicsModule extends LogicsModule {
 
     private LP countrySupplierOfOriginArticleSku;
     private LP nameCountrySupplierOfOriginArticleSku;
+    private AbstractCustomClass innerInvoice;
     private AbstractCustomClass directInvoice;
     private ConcreteCustomClass directBoxInvoice;
     private LP freightDirectInvoice;
@@ -1291,7 +1292,9 @@ public class RomanLogicsModule extends LogicsModule {
         invoice = addAbstractClass("invoice", "Инвойс", priceDocument, destinationDocument);
         boxInvoice = addConcreteClass("boxInvoice", "Инвойс по коробам", invoice);
 
-        directInvoice = addAbstractClass("directInvoice", "Инвойс (напрямую)", invoice);
+        innerInvoice = addAbstractClass("innerInvoice", "Внутренний инвойс", baseClass);
+
+        directInvoice = addAbstractClass("directInvoice", "Инвойс (напрямую)", invoice, innerInvoice);
         directBoxInvoice = addConcreteClass("directBoxInvoice", "Инвойс по коробам (напрямую)", boxInvoice, directInvoice);
 
         simpleInvoice = addConcreteClass("simpleInvoice", "Инвойс без коробов", invoice, list);
