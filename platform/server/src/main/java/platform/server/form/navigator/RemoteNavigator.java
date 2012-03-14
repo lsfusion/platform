@@ -102,13 +102,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     WeakIdentityHashSet<DataSession> sessions = new WeakIdentityHashSet<DataSession>();
 
-    public void changeCurrentUser(DataObject user) {
+    public void changeCurrentUser(DataObject user) throws SQLException {
         this.user = user;
         this.securityPolicy = getUserSecurityPolicy();
         updateEnvironmentProperty(BL.LM.currentUser.property, user);
     }
 
-    public void updateEnvironmentProperty(Property property, ObjectValue value) {
+    public void updateEnvironmentProperty(Property property, ObjectValue value) throws SQLException {
         PropertyChanges userChange = new PropertyChanges(property, new PropertyChange<PropertyInterface>(
                 new HashMap<PropertyInterface, KeyExpr>(), value.getExpr(), Where.TRUE));
         for (DataSession session : sessions)
@@ -251,7 +251,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             this.weakThis = new WeakReference<RemoteNavigator>(navigator);
         }
 
-        public void changeCurrentUser(DataObject user) {
+        public void changeCurrentUser(DataObject user) throws SQLException {
             weakThis.get().changeCurrentUser(user);
         }
 

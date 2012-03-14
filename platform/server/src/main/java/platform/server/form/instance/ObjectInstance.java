@@ -67,7 +67,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException;
 
-    public abstract boolean classChanged(Collection<CustomClass> changedClasses);
+    public abstract boolean classChanged(Collection<Property> changedProps);
 
     public abstract Type getType();
 

@@ -217,4 +217,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public String getCount(String field) {
         return "COUNT(" + field + ")";
     }
+
+    public boolean noDynamicSampling() {
+        return true;
+    }
 }

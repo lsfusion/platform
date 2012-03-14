@@ -777,6 +777,7 @@ public class CompiledQuery<K,V> {
                 List<String> fieldOrder = BaseUtils.mergeList(keyOrder, propOrder);
 
                 Map<String, String> keySelect = BaseUtils.join(group, BaseUtils.reverse(recKeys));
+                env.addVolatileStats();
                 if(useRecursionFunction) {
                     env.addNoReadOnly();
                     return "(" + getGroupSelect("recursion('" + recName +"'," +

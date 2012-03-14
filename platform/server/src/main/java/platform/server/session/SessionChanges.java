@@ -33,7 +33,7 @@ public interface SessionChanges {
     public ObjectValue getObjectValue(Object value, Type type) throws SQLException;
 
     // узнает список изменений произошедших без него
-    public Collection<Property> update(FormInstance<?> toUpdate, Collection<CustomClass> updateClasses) throws SQLException;
+    public Collection<Property> update(FormInstance<?> toUpdate) throws SQLException;
 
     public String apply(BusinessLogics<?> BL) throws SQLException;
 }

@@ -1053,8 +1053,12 @@ public abstract class LogicsModule {
         property.propertyCaption = form.addPropertyObject(addHideCaptionProp(property.propertyObject.property, ifProperty), objects);
     }
 
+    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLProp(AbstractGroup group, boolean persistent, PropertyMapImplement<L, P> implement, List<P> listInterfaces) {
+        return addProperty(group, persistent, new LP<L>(implement.property, BaseUtils.mapList(listInterfaces, BaseUtils.reverse(implement.mapping))));
+    }
+
     private <P extends PropertyInterface, L extends PropertyInterface> LP mapLProp(AbstractGroup group, boolean persistent, PropertyMapImplement<L, P> implement, LP<P> property) {
-        return addProperty(group, persistent, new LP<L>(implement.property, BaseUtils.mapList(property.listInterfaces, BaseUtils.reverse(implement.mapping))));
+        return mapLProp(group, persistent, implement, property.listInterfaces);
     }
 
     private <P extends PropertyInterface, L extends PropertyInterface> LP mapLGProp(AbstractGroup group, PropertyImplement<L, PropertyInterfaceImplement<P>> implement, List<PropertyInterfaceImplement<P>> listImplements) {
@@ -1106,10 +1110,7 @@ public abstract class LogicsModule {
         OrderedMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
                 new OrderedMap<PropertyInterfaceImplement<PropertyInterface>, Boolean>(listImplements.subList(partNum + 1, listImplements.size()), !ascending);
 
-        PropertyMapImplement<P, PropertyInterface> orderProperty;
-        orderProperty = (PropertyMapImplement<P, PropertyInterface>) DerivedProperty.createOProp(name, caption, partitionType, interfaces, mainProp, partitions, orders, includeLast);
-
-        return addProperty(group, persistent, new LP<P>(orderProperty.property, BaseUtils.mapList(interfaces, BaseUtils.reverse(orderProperty.mapping))));
+        return mapLProp(group, persistent, DerivedProperty.createOProp(name, caption, partitionType, interfaces, mainProp, partitions, orders, includeLast), interfaces);
     }
 
     protected <P extends PropertyInterface> LP addRProp(AbstractGroup group, String name, boolean persistent, String caption, Cycle cycle, List<Integer> resInterfaces, Map<Integer, Integer> mapPrev, Object... params) {
@@ -1165,22 +1166,39 @@ public abstract class LogicsModule {
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LP addUGProp(AbstractGroup group, String name, boolean persistent, boolean over, String caption, boolean ascending, LP<R> restriction, LP<L> ungroup, Object... params) {
-        List<LI> li = readLI(params);
+        return addUGProp(group, name, persistent, over, caption, restriction.listInterfaces.size(), ascending, ungroup, add(directLI(restriction), params));
+    }
 
-        Map<L, PropertyInterfaceImplement<R>> groupImplement = new HashMap<L, PropertyInterfaceImplement<R>>();
-        for (int i = 0; i < ungroup.listInterfaces.size(); i++)
-            groupImplement.put(ungroup.listInterfaces.get(i), li.get(i).map(restriction.listInterfaces));
-        OrderedMap<PropertyInterfaceImplement<R>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<R>, Boolean>(mapLI(li.subList(ungroup.listInterfaces.size(), li.size()), restriction.listInterfaces), ascending);
-        return mapLProp(group, persistent, DerivedProperty.createUGProp(name, caption, new PropertyImplement<L, PropertyInterfaceImplement<R>>(ungroup.property, groupImplement), orders, restriction.property, over), restriction);
+    protected <L extends PropertyInterface> LP addUGProp(AbstractGroup group, String name, boolean persistent, boolean over, String caption, int intCount, boolean ascending, LP<L> ungroup, Object... params) {
+        int partNum = ungroup.listInterfaces.size();
+        List<PropertyInterface> innerInterfaces = genInterfaces(intCount);
+        List<PropertyInterfaceImplement<PropertyInterface>> listImplements = readImplements(innerInterfaces, params);
+        PropertyInterfaceImplement<PropertyInterface> restriction = listImplements.get(0);
+        Map<L, PropertyInterfaceImplement<PropertyInterface>> groupImplement = new HashMap<L, PropertyInterfaceImplement<PropertyInterface>>();
+        for (int i = 0; i < partNum; i++)
+            groupImplement.put(ungroup.listInterfaces.get(i), listImplements.get(i+1));
+        OrderedMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
+                new OrderedMap<PropertyInterfaceImplement<PropertyInterface>, Boolean>(listImplements.subList(partNum + 1, listImplements.size()), !ascending);
+
+        return mapLProp(group, persistent, DerivedProperty.createUGProp(name, caption, innerInterfaces, new PropertyImplement<L, PropertyInterfaceImplement<PropertyInterface>>(ungroup.property, groupImplement), orders, restriction, over), innerInterfaces);
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LP addPGProp(AbstractGroup group, String name, boolean persistent, int roundlen, boolean roundfirst, String caption, LP<R> proportion, LP<L> ungroup, Object... params) {
-        List<LI> li = readLI(params);
+        return addPGProp(group, name, persistent, roundlen, roundfirst, caption, proportion.listInterfaces.size(), true, ungroup, add(add(directLI(proportion), params), getParams(proportion)));
+    }
 
-        Map<L, PropertyInterfaceImplement<R>> groupImplement = new HashMap<L, PropertyInterfaceImplement<R>>();
-        for (int i = 0; i < ungroup.listInterfaces.size(); i++)
-            groupImplement.put(ungroup.listInterfaces.get(i), li.get(i).map(proportion.listInterfaces));
-        return mapLProp(group, persistent, DerivedProperty.createPGProp(name, caption, roundlen, roundfirst, baseLM.baseClass, new PropertyImplement<L, PropertyInterfaceImplement<R>>(ungroup.property, groupImplement), proportion.property), proportion);
+    protected <L extends PropertyInterface> LP addPGProp(AbstractGroup group, String name, boolean persistent, int roundlen, boolean roundfirst, String caption, int intCount, boolean ascending, LP<L> ungroup, Object... params) {
+        int partNum = ungroup.listInterfaces.size();
+        List<PropertyInterface> innerInterfaces = genInterfaces(intCount);
+        List<PropertyInterfaceImplement<PropertyInterface>> listImplements = readImplements(innerInterfaces, params);
+        PropertyInterfaceImplement<PropertyInterface> proportion = listImplements.get(0);
+        Map<L, PropertyInterfaceImplement<PropertyInterface>> groupImplement = new HashMap<L, PropertyInterfaceImplement<PropertyInterface>>();
+        for (int i = 0; i < partNum; i++)
+            groupImplement.put(ungroup.listInterfaces.get(i), listImplements.get(i+1));
+        OrderedMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
+                new OrderedMap<PropertyInterfaceImplement<PropertyInterface>, Boolean>(listImplements.subList(partNum + 1, listImplements.size()), !ascending);
+
+        return mapLProp(group, persistent, DerivedProperty.createPGProp(name, caption, roundlen, roundfirst, baseLM.baseClass, innerInterfaces, new PropertyImplement<L, PropertyInterfaceImplement<PropertyInterface>>(ungroup.property, groupImplement), proportion, orders), innerInterfaces);
     }
 
     /*

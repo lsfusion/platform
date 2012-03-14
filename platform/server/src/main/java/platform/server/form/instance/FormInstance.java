@@ -82,7 +82,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     private List<Property> getHintsIncrementList() {
         if(hintsIncrementList==null) {
             hintsIncrementList = new ArrayList<Property>();
-            for(Property property : BL.getPropertyList(false))
+            for(Property property : BL.getPropertyList())
                 if(hintsIncrementTable.contains(property)) // чтобы в лексикографике был список
                     hintsIncrementList.add(property);
         }
@@ -126,6 +126,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     private <P extends PropertyInterface> void readIncrement(Property<P> property) throws SQLException {
         if(property.hasChanges(this))
             increment.add(property, property.readChangeTable(session.sql, this, BL.LM.baseClass, session.env));
+    }
+
+    public <P extends PropertyInterface> void dropIncrement(PropertyChanges changes) throws SQLException {
+        for(Property property : hintsIncrementTable)
+            if(property.hasChanges(changes)) // если зависит от changes - drop'аем
+                increment.remove(property, session.sql);
     }
 
     public Set<Property> getUpdateProperties(PropertyChanges propChanges) {
@@ -1082,9 +1088,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         // если изменились данные, применяем изменения
         Collection<Property> changedProps;
-        Collection<CustomClass> changedClasses = new HashSet<CustomClass>();
         if (dataChanged) {
-            changedProps = session.update(this, changedClasses);
+            changedProps = session.update(this);
 
             updateIncrementTableProps(changedProps);
         } else
@@ -1097,7 +1102,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 result.classViews.put(group, group.curClassView);
             }
 
-            Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, session.env, this, BL.LM.baseClass, refresh, result, changedProps, changedClasses);
+            Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, session.env, this, BL.LM.baseClass, refresh, result, changedProps);
             if(selectObjects!=null) // то есть нужно изменять объект
                 updateGroupObject = new GroupObjectValue(group, selectObjects);
 

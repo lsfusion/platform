@@ -356,6 +356,18 @@ public class SQLSession extends MutableObject {
         if(inTransaction==0)
             connection.setReadOnly(true);
     }
+    
+    private int volatileStats = 0;
+    public void pushVolatileStats(Connection connection) throws SQLException {
+        if(syntax.noDynamicSampling())
+            if(volatileStats++==0)
+                executeDDL("SET enable_nestloop=off");
+    }
+    public void popVolatileStats(Connection connection) throws SQLException {
+        if(syntax.noDynamicSampling())
+            if(--volatileStats==0)
+               executeDDL("SET enable_nestloop=on");
+    }
 
 
     private void executeDDL(String DDL) throws SQLException {

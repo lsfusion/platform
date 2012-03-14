@@ -14,17 +14,21 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
     public final static ExecuteEnvironment NOREADONLY = new ExecuteEnvironment(true);
 
     private boolean noReadOnly;
+    private boolean volatileStats;
 
     public ExecuteEnvironment() {
         this.noReadOnly = false;
+        this.volatileStats = false;
     }
 
     public ExecuteEnvironment(boolean noReadOnly) {
         this.noReadOnly = noReadOnly;
+        this.volatileStats = false;
     }
 
     void add(ExecuteEnvironment environment) {
         noReadOnly = noReadOnly || environment.noReadOnly;
+        volatileStats = volatileStats || environment.volatileStats;
     }
 
 
@@ -32,14 +36,22 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         noReadOnly = true;
     }
 
+    public void addVolatileStats() {
+        volatileStats = true;
+    }
+
     public void before(SQLSession sqlSession, Connection connection) throws SQLException {
         if(noReadOnly)
             sqlSession.pushNoReadOnly(connection);
+        if(volatileStats)
+            sqlSession.pushVolatileStats(connection);
     }
 
     public void after(SQLSession sqlSession, Connection connection) throws SQLException {
         if(noReadOnly)
             sqlSession.popNoReadOnly(connection);
+        if(volatileStats)
+            sqlSession.popVolatileStats(connection);
     }
 
     public ExecuteEnvironment translateValues(MapValuesTranslate translate) {

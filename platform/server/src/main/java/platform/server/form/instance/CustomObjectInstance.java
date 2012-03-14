@@ -8,12 +8,12 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
-import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.Property;
 import platform.server.session.SessionChanges;
 
 import java.lang.ref.WeakReference;
@@ -111,8 +111,8 @@ public class CustomObjectInstance extends ObjectInstance {
         }
     }
 
-    public boolean classChanged(Collection<CustomClass> changedClasses) {
-        return changedClasses.contains(gridClass);
+    public boolean classChanged(Collection<Property> changedProps) {
+        return changedProps.contains(gridClass.getProperty());
     }
 
     public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {

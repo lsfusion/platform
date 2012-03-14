@@ -10,6 +10,8 @@ import platform.server.logics.property.*;
 
 import java.util.*;
 
+import static platform.base.BaseUtils.toList;
+
 public class DerivedProperty {
 
     private static int ids = 0;
@@ -370,73 +372,32 @@ public class DerivedProperty {
 
     
     // строится partition с пустым order'ом
-    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createPProp(Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, GroupType type) {
-        GroupProperty<T> partitionGroup = type.createProperty(genID(), "sys", partitions, property);
+    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createPProp(Collection<T> innerInterfaces, PropertyInterfaceImplement<T> property, Collection<PropertyInterfaceImplement<T>> partitions, GroupType type) {
+        GroupProperty<T> partitionGroup = type.createProperty(genID(), "sys", innerInterfaces, property, partitions);
         return createJoin(new PropertyImplement<GroupProperty.Interface<T>, PropertyInterfaceImplement<T>>(partitionGroup,partitionGroup.getMapInterfaces()));
     }
 
     private static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createPProp(PropertyMapImplement<L, T> mapImplement, Collection<PropertyInterfaceImplement<T>> partitions, GroupType type) {
         // assert что все интерфейсы есть
-        return createPProp(mapImplement.property, mapImplements(partitions, BaseUtils.reverse(mapImplement.mapping)), type).map(mapImplement.mapping);
-    }
-
-    // строит процент в partition'е
-    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createPOProp(String sID, String caption, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders, boolean includeLast) {
-        PropertyMapImplement<?,T> orderSum = createOProp(property, partitions, orders, includeLast);
-
-        PropertyMapImplement<?,T> partitionSum = createPProp(property, partitions, GroupType.SUM);
-
-        return createFormula(sID, caption, property.interfaces, "(prm1*100)/prm2", formulaClass, BaseUtils.toList(orderSum, partitionSum)); // создаем процент
-    }
-
-    // получает первое свойство в порядке, остальное null'ы
-    private static <T extends PropertyInterface<T>> PropertyMapImplement<?,T> createFOProp(Property<T> property, BaseClass baseClass, Collection<PropertyInterfaceImplement<T>> partitions) {
-
-/*        List<PropertyInterfaceImplement<T>> listInterfaces = new ArrayList<PropertyInterfaceImplement<T>>(property.interfaces);
-
-        String[] sIDs = new String[listInterfaces.size()+1];
-        for(int i=0;i<listInterfaces.size()+1;i++)
-            sIDs[i] = genID();
-        List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> maxProps = createMGProp(sIDs, BaseUtils.genArray("sys", listInterfaces.size()+1), property, baseClass, listInterfaces, partitions, new ArrayList<Property>());
-
-        Collection<PropertyInterfaceImplement<T>> compareImplements = new ArrayList<PropertyInterfaceImplement<T>>();
-        for(int i=1;i<maxProps.size();i++) { // делаем JoinProperty - i1=m1(i1, i2,..., in) and i2=m2(i1, ..., in) and i3=m3(i1, ..., in) ... and in=mn(i1,...in) (теоретически можно конкатенацией все решить, но ключей не хватит)
-            PropertyMapImplement<?, T> maxJoin = createJoin(maxProps.get(i));
-
-            compareImplements.add(createCompare(property.interfaces, listInterfaces.get(i - 1), maxJoin, Compare.EQUALS));
-        }
-        return createAnd(property.interfaces, property.getImplement(), compareImplements);*/
-
-        ConcatenateProperty concatenate = new ConcatenateProperty(genID(), property.interfaces.size());
-        PropertyMapImplement<ConcatenateProperty.Interface, T> concImplement = new PropertyMapImplement<ConcatenateProperty.Interface, T>(concatenate, BaseUtils.buildMap(concatenate.interfaces, property.interfaces));
-
-        // concatenate property и проверяем
-        PropertyMapImplement<?, T> andImplement = createAnd(property.interfaces, concImplement, property.getImplement());
-
-        // делаем PProp на MAX по этому свойству
-        PropertyMapImplement<?, T> maxPartition = createPProp(andImplement, partitions, GroupType.MAX);
-
-        // делаем Compare с этим PProp, JoinProperty concatenate
-        return createCompare(property.interfaces, andImplement, maxPartition, Compare.EQUALS);
+        return createPProp(mapImplement.property.interfaces, mapImplement.property.getImplement(), mapImplements(partitions, BaseUtils.reverse(mapImplement.mapping)), type).map(mapImplement.mapping);
     }
 
     public static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createUGProp(PropertyImplement<L, PropertyInterfaceImplement<T>> group, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, Property<T> restriction, boolean over) {
-        return createUGProp(genID(), "sys", group, orders, restriction, over);
+        return createUGProp(genID(), "sys", restriction.interfaces, group, orders, restriction.getImplement(), over);
     }
-    public static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createUGProp(String sID, String caption, PropertyImplement<L, PropertyInterfaceImplement<T>> group, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, Property<T> restriction, boolean over) {
-        // assert'им что все порядки есть, иначе неправильно расписываться будет
-        assert BaseUtils.mergeSet(orders.keySet(),BaseUtils.reverse(group.mapping).keySet()).containsAll(restriction.interfaces);
-
+    public static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createUGProp(String sID, String caption, Collection<T> innerInterfaces, PropertyImplement<L, PropertyInterfaceImplement<T>> group, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, PropertyInterfaceImplement<T> restriction, boolean over) {
         Collection<PropertyInterfaceImplement<T>> partitions = group.mapping.values();
 
         // строим связное distribute св-во, узнаем все использованные интерфейсы, строим map
         PropertyMapImplement<?, T> distribute = createJoin(group);
 
         if(true) {
-            PartitionProperty<T> orderProperty = new PartitionProperty<T>(sID, caption, over ? PartitionType.DISTR_RESTRICT_OVER : PartitionType.DISTR_RESTRICT, restriction, partitions, orders, BaseUtils.<PropertyInterfaceImplement<T>>toList(distribute), true);
+            PartitionProperty<T> orderProperty = new PartitionProperty<T>(sID, caption, over ? PartitionType.DISTR_RESTRICT_OVER : PartitionType.DISTR_RESTRICT, innerInterfaces, toList(restriction, distribute), partitions, orders, true);
             return new PropertyMapImplement<PartitionProperty.Interface<T>, T>(orderProperty, orderProperty.getMapInterfaces());
         }
 
+        throw new RuntimeException("not supported");
+/*
         // нужно MIN2(огр., распр. - пред.) И распр. > пред. причем пред. подходит и null, остальные не null
         // кроме того у огр. и пред. есть все интерфейсы, а у распр. - не все
         // старый вариант : пока  MIN2(огр., распр. - пред.) И распр. > пред. (1) ИЛИ MIN2(огр., распр.) И пред. null (2)
@@ -471,10 +432,10 @@ public class DerivedProperty {
         PropertyMapImplement<?, T> compare = createCompare(restriction.interfaces, distribute, previous, Compare.GREATER);
 
         // MIN2(огр., распр. - пред.) И распр. > пред.
-        return createAnd(restriction.interfaces, min, compare);
+        return createAnd(restriction.interfaces, min, compare);*/
     }
 
-    public static <L extends PropertyInterface, T extends PropertyInterface<T>> PropertyMapImplement<?,T> createPGProp(String sID, String caption, int roundlen, boolean roundfirst, BaseClass baseClass, PropertyImplement<L, PropertyInterfaceImplement<T>> group, Property<T> proportion) {
+    public static <L extends PropertyInterface, T extends PropertyInterface<T>> PropertyMapImplement<?,T> createPGProp(String sID, String caption, int roundlen, boolean roundfirst, BaseClass baseClass, Collection<T> innerInterfaces, PropertyImplement<L, PropertyInterfaceImplement<T>> group, PropertyInterfaceImplement<T> proportion, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders) {
 
         Collection<PropertyInterfaceImplement<T>> partitions = group.mapping.values();
 
@@ -482,24 +443,23 @@ public class DerivedProperty {
         PropertyMapImplement<?, T> distribute = createJoin(group);
 
         if(roundfirst && true) {
-            OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<T>, Boolean>();
-            for(T propertyInterface : proportion.interfaces)
-                orders.put(propertyInterface, false);
-            PartitionProperty<T> orderProperty = new PartitionProperty<T>(sID, caption, PartitionType.DISTR_CUM_PROPORTION, proportion, partitions, orders, BaseUtils.<PropertyInterfaceImplement<T>>toList(distribute), false);
+            PartitionProperty<T> orderProperty = new PartitionProperty<T>(sID, caption, PartitionType.DISTR_CUM_PROPORTION, innerInterfaces, toList(proportion, distribute), partitions, orders, false);
             return new PropertyMapImplement<PartitionProperty.Interface<T>, T>(orderProperty, orderProperty.getMapInterfaces());
         }
 
         // общая сумма по пропорции в partition'е
-        PropertyMapImplement<?, T> propSum = createPProp(proportion, group.mapping.values(), GroupType.SUM);
+        PropertyMapImplement<?, T> propSum = createPProp(innerInterfaces, proportion, group.mapping.values(), GroupType.SUM);
 
         String distrSID = !roundfirst ? sID : genID();
         String distrCaption = !roundfirst ? caption : "sys";
         // округляем
-        PropertyMapImplement<?, T> distrRound = createFormula(distrSID, distrCaption, proportion.interfaces, "ROUND(CAST((prm1*prm2/prm3) as NUMERIC(15,3)),"+roundlen+")", formulaClass, BaseUtils.toList(distribute, proportion.getImplement(), propSum));
+        PropertyMapImplement<?, T> distrRound = createFormula(distrSID, distrCaption, innerInterfaces, "ROUND(CAST((prm1*prm2/prm3) as NUMERIC(15,3)),"+roundlen+")", formulaClass, toList(distribute, proportion, propSum));
 
         if (!roundfirst) return distrRound;
+        
+        throw new RuntimeException("not supported");
 
-        // строим partition полученного округления
+/*        // строим partition полученного округления
         PropertyMapImplement<?, T> totRound = createPProp(distrRound, group.mapping.values(), GroupType.SUM);
 
         // получаем сколько надо дораспределить
@@ -512,7 +472,7 @@ public class DerivedProperty {
         PropertyMapImplement<?, T> diffFirst = createAnd(proportion.interfaces, diffRound, proportionFirst);
 
         // делаем union с основным distrRound'ом
-        return createSum(sID, caption, proportion.interfaces, distrRound, diffFirst);
+        return createSum(sID, caption, proportion.interfaces, distrRound, diffFirst);*/
     }
 
     private static <T extends PropertyInterface> PropertyImplement<?, PropertyInterfaceImplement<T>> createMaxProp(String sID, String caption, Collection<T> interfaces, PropertyInterfaceImplement<T> implement, Collection<PropertyInterfaceImplement<T>> group, boolean min) {

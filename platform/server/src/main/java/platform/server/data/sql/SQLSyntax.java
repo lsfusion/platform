@@ -97,4 +97,6 @@ public interface SQLSyntax {
 
     String getCountDistinct(String field);
     String getCount(String field);
+
+    boolean noDynamicSampling();
 }

@@ -1643,16 +1643,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    public List<UserProperty> getDerivedProperties() {
-        // здесь нужно вернуть список stored или тех кто
-        List<UserProperty> result = new ArrayList<UserProperty>();
-        for (Property property : getPropertyList())
-            if (property.isDerived())
-                result.add((UserProperty)property);
-        return result;
-    }
-
-    @IdentityLazy
     public LinkedHashSet<Property> getConstraintDerivedDependProperties() {
         LinkedHashSet<Property> result = new LinkedHashSet<Property>();
         for (Property property : getPropertyList()) {
@@ -2191,7 +2181,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return LM.addProperty(null, new LP<ClassPropertyInterface>(new GarbageCollectorActionProperty(LM.genSID(), getString("logics.garbage.collector"))));
     }
 
-    public void updateEnvironmentProperty(Property property, ObjectValue value) {
+    public void updateEnvironmentProperty(Property property, ObjectValue value) throws SQLException {
         synchronized (navigators) {
             for (RemoteNavigator remoteNavigator : navigators.values()) {
                 remoteNavigator.updateEnvironmentProperty(property, value);
@@ -2199,7 +2189,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    private void updateRestartProperty() {
+    private void updateRestartProperty() throws SQLException {
         Boolean isRestarting = getRestartController().isPendingRestart() ? Boolean.TRUE : null;
         updateEnvironmentProperty(LM.isServerRestarting.property, ObjectValue.getValue(isRestarting, LogicalClass.instance));
     }

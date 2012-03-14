@@ -494,7 +494,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     @Message("message.form.update.group.keys")
     @ThisMessage
-    public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<Property> changedProps, Collection<CustomClass> changedClasses) throws SQLException {
+    public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<Property> changedProps) throws SQLException {
         if ((updated & UPDATED_CLASSVIEW) != 0) {
             result.classViews.put(this, curClassView);
         }
@@ -568,7 +568,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 }
         if (!updateKeys) // классы удалились\добавились
             for (ObjectInstance object : objects)
-                if (object.classChanged(changedClasses)) {  // || object.classUpdated() сомнительный or
+                if (object.classChanged(changedProps)) {  // || object.classUpdated() сомнительный or
                     updateKeys = true;
                     break;
                 }

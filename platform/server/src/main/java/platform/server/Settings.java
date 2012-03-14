@@ -256,7 +256,7 @@ public class Settings {
         this.splitIncrementApply = splitIncrementApply;
     }
 
-    private int statDegree = 100;
+    private int statDegree = 20;
 
     public int getStatDegree() {
         return statDegree;

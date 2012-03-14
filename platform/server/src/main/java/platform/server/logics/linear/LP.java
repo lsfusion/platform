@@ -236,11 +236,11 @@ public class LP<T extends PropertyInterface> {
         return new PropertyImplement<T, U>(property, propertyMapping);
     }
 
-    public MapDataChanges<T> getDataChanges(Expr expr, Where where, Modifier modifier, KeyExpr... keys) {
+    public PropertyChange<T> getChange(Expr expr, Where where, KeyExpr... keys) {
         Map<T, KeyExpr> mapKeys = new HashMap<T, KeyExpr>();
         for(int i=0;i<listInterfaces.size();i++)
             mapKeys.put(listInterfaces.get(i), keys[i]);
-        return property.getDataChanges(new PropertyChange<T>(mapKeys, expr, where), modifier, null);
+        return new PropertyChange<T>(mapKeys, expr, where);
     }
     /*
     public <L extends PropertyInterface> void follows(LP<L> lp, int... mapping) {

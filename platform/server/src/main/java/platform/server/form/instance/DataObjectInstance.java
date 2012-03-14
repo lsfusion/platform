@@ -2,13 +2,13 @@ package platform.server.form.instance;
 
 import platform.base.BaseUtils;
 import platform.server.classes.ConcreteClass;
-import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.type.Type;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.Property;
 import platform.server.session.SessionChanges;
 
 import java.sql.SQLException;
@@ -48,7 +48,7 @@ public class DataObjectInstance extends ObjectInstance {
         groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
     }
 
-    public boolean classChanged(Collection<CustomClass> changedClasses) {
+    public boolean classChanged(Collection<Property> changedProps) {
         return false;
     }
 

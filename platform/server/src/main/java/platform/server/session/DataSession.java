@@ -148,26 +148,18 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     public static class UpdateChanges {
 
         public final Set<Property> properties;
-        public final Set<CustomClass> addClasses;
-        public final Set<CustomClass> removeClasses;
 
         public UpdateChanges() {
             properties = new HashSet<Property>();
-            addClasses = new HashSet<CustomClass>();
-            removeClasses = new HashSet<CustomClass>();
         }
 
         public UpdateChanges(DataSession session, FormInstance<?> form) {
             assert form.session == session;
-            addClasses = new HashSet<CustomClass>(session.add.keySet());
-            removeClasses = new HashSet<CustomClass>(session.remove.keySet());
             properties = new HashSet<Property>(form.getUpdateProperties());
         }
 
         public void add(UpdateChanges changes) {
             properties.addAll(changes.properties);
-            addClasses.addAll(changes.addClasses);
-            removeClasses.addAll(changes.removeClasses);
         }
     }
 
@@ -295,14 +287,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
 
         newClasses.put(change,toClass);
 
-        if(groupLast) {
-            // по тем по кому не было restart'а new -> to
+        if(groupLast) // по тем по кому не было restart'а new -> to
             updateProperties(getFilterChanges(addClasses, removeClasses));
-            for(UpdateChanges incrementChange : incrementChanges.values()) {
-                incrementChange.addClasses.addAll(addClasses);
-                incrementChange.removeClasses.addAll(removeClasses);
-            }
-        }
     }
 
     public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, boolean groupLast) throws SQLException {
@@ -312,9 +298,12 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
             updateProperties(getFilterChanges(property));
     }
 
-    public void updateProperties(PropertyChanges changes) {
-        for(Map.Entry<FormInstance,UpdateChanges> incrementChange : incrementChanges.entrySet())
-            incrementChange.getValue().properties.addAll(((FormInstance<?>) incrementChange.getKey()).getUpdateProperties(changes));
+    public void updateProperties(PropertyChanges changes) throws SQLException {
+        for(Map.Entry<FormInstance,UpdateChanges> incrementChange : incrementChanges.entrySet()) {
+            FormInstance<?> formInstance = (FormInstance<?>) incrementChange.getKey();
+            incrementChange.getValue().properties.addAll(formInstance.getUpdateProperties(changes));
+            formInstance.dropIncrement(changes);
+        }
     }
 
     public <P extends PropertyInterface> List<ClientAction> execute(Property<P> property, PropertyChange<P> change, Modifier modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
@@ -379,7 +368,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     }
 
     // узнает список изменений произошедших без него
-    public Collection<Property> update(FormInstance<?> form, Collection<CustomClass> updateClasses) throws SQLException {
+    public Collection<Property> update(FormInstance<?> form) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
 
         UpdateChanges incrementChange = incrementChanges.get(form);
@@ -399,8 +388,6 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         }
         incrementChanges.put(form,new UpdateChanges());
 
-        updateClasses.addAll(incrementChange.addClasses);
-        updateClasses.addAll(incrementChange.removeClasses);
         return incrementChange.properties;
     }
 

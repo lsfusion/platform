@@ -31,8 +31,10 @@ import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.session.PropertyChange;
 import tmc.integration.exp.AbstractSaleExportTask;
 import tmc.integration.exp.CashRegController;
 import tmc.integration.exp.SaleExportTask;
@@ -1535,7 +1537,8 @@ public class VEDLogicsModule extends LogicsModule {
     LP sumRetailOrderArticle;
     LP sumPrevRetailOrderArticle;
     LP sumPrevRetailOrder;
-    public LP<?> articleQuantity, prevPrice, revalBalance;
+    public LP<?> prevPrice, revalBalance;
+    public LP articleQuantity;
     LP articleOrderQuantity;
     LP discountSumOrder, sumWithDiscountOrder, orderSaleDiff;
     LP orderSaleToDo, orderSaleToDoSum;
@@ -4511,7 +4514,8 @@ public class VEDLogicsModule extends LogicsModule {
             // сколько в документе, сколько на остатках, уменьшаем на разницу
             KeyExpr docKey = new KeyExpr("doc"); KeyExpr articleKey = new KeyExpr("article");
             Expr newQuantity = articleQuantity.getExpr(context.getModifier(), documentObject.getExpr(), articleKey).diff(freeIncOrderArticle.getExpr(context.getModifier(), documentObject.getExpr(), articleKey));
-            context.getSession().execute(articleQuantity.getDataChanges(newQuantity, newQuantity.getWhere().and(docKey.compare(documentObject, Compare.EQUALS)), context.getModifier(), docKey, articleKey), null, null);
+            PropertyChange change = articleQuantity.getChange(newQuantity, newQuantity.getWhere().and(docKey.compare(documentObject, Compare.EQUALS)), docKey, articleKey);
+            context.getSession().execute(articleQuantity.property, change, context.getModifier(), null, null);
 
             context.addAction(new MessageClientAction("Остатки были успешно обнулены", "Обнуление остатков"));
         }
