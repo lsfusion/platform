@@ -4102,8 +4102,8 @@ sumNDSSpecification 'Общая сумма НДС' (specification) = GROUP SUM t
 articleItemDetailSpec 'Артикул производителя/поставщика' (detailSpec) = articleItem(itemDetailSpec(detailSpec));
 nameCountryItemDetailSpec 'Страна производства/происхождения' (detailSpec) = nameCountryItem(itemDetailSpec(detailSpec));
 
-balanceDepartmentStoreItemDetailSpec 'Текущий остаток' (detailSpec) =
-    balanceDepartmentStoreItem(departmentStoreDetailSpec(detailSpec), itemDetailSpec(detailSpec));
+//balanceDepartmentStoreItemDetailSpec 'Текущий остаток' (detailSpec) =
+//    balanceDepartmentStoreItem(departmentStoreDetailSpec(detailSpec), itemDetailSpec(detailSpec));
 
 minReserveItemDepartmentDetailSpec 'Минимальнодопустимый товарный запас в днях' (detailSpec) =
     minReserveItemDepartmentOver(itemDetailSpec(detailSpec),
@@ -4118,34 +4118,12 @@ maxReserveItemDepartmentDetailSpec 'Максимальнодопустимый �
 quantityItemSpecification 'Количество товара в спецификации' (item, specification) = GROUP SUM quantityDetailSpec(detailSpec)
     BY itemDetailSpec(detailSpec), specificationDetailSpec(detailSpec);
 
-balanceItemSpecification 'Текущий остаток по товару' (item, specification) =
-    balanceDepartmentStoreItem(departmentStoreSpecification(specification), item);
-
-quantityItemDepartmentStore 'Количество выставленного товара на тек. момент' (departmentStore, item) = GROUP SUM
-    quantityDetailSpec(detailSpec) IF noOverdueSpecification(specificationDetailSpec(detailSpec))
-    BY departmentStoreDetailSpec(detailSpec), itemDetailSpec(detailSpec);
-
-availableQuantityItemDepartmentStore 'Доступное к-во, с учетом непросроченных с/ф' (departmentStore, item) =
-    balanceDepartmentStoreItem(departmentStore, item)-quantityItemDepartmentStore(departmentStore, item);
-
-availableQuantityItemByDetailSpec 'Доступное к-во, с учетом непросроченных с/ф' (detailSpec) =
-    availableQuantityItemDepartmentStore(departmentStoreDetailSpec(detailSpec), itemDetailSpec(detailSpec));
-
-NotNullAvailableQuantityItemByDetailSpec(detailSpec) = availableQuantityItemByDetailSpec(detailSpec) < 0;
-
-
 CONSTRAINT quantityDetailSpec(detailSpec) <= 0 MESSAGE 'Количество должно быть положительным';
 CONSTRAINT retailPriceDetailSpec(detailSpec) <= 0 MESSAGE 'Цена должна быть положительной';
-
-CONSTRAINT quantityDetailSpec(detailSpec) > balanceDepartmentStoreItemDetailSpec(detailSpec)
-    MESSAGE 'Количество в строке больше чем есть в остатках';
 
 CONSTRAINT specification IS specification AND NOT dateToSpecification(specification) MESSAGE 'Не задан срок действия с/ф';
 CONSTRAINT dateToSpecification(specification) < dateSpecification(specification) MESSAGE 'Дата действия с/ф не может быть меньше даты документа';
 
-CONSTRAINT balanceItemSpecification(item, specification) < quantityItemSpecification(item, specification)
-    MESSAGE 'Количество товара выбрано больше чем есть в остатках';
-          // можно поставить CONSTRAINT на то, чтобы не было никаких пустных значений для строки документа
 
 FORM objectiveAcquiring 'Цель приобретения'
     OBJECTS oa=objectiveAcquiring  FIXED PANEL
@@ -4219,9 +4197,6 @@ sumNDSStatement 'Общая сумма НДС' (statement) = GROUP SUM totalSumN
 quantityItemStatement 'Количество товара в отгрузке' (item, statement) = GROUP SUM quantityStatementDetail(statementDetail)
     BY itemStatementDetail(statementDetail), statementStatementDetail(statementDetail);
 
-balanceItemStatement 'Текущий остаток по товару' (item, statement) =
-    balanceDepartmentStoreItem(departmentStoreStatement(statement), item);
-
 priceByItemStatement(item, statement) = GROUP EQUAL retailPriceStatementDetail(statementDetail)
     BY itemStatementDetail(statementDetail), statementStatementDetail(statementDetail);
 
@@ -4231,8 +4206,8 @@ sumStatement 'Общая сумма' (statement) = GROUP SUM sumStatementDetail(
 articleItemStatementDetail 'Артикул производителя/поставщика' (statementDetail) = articleItem(itemStatementDetail(statementDetail));
 nameCountryItemStatementDetail 'Страна производства/происхождения' (statementDetail) = nameCountryItem(itemStatementDetail(statementDetail));
 
-balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) =
-    balanceDepartmentStoreItem(departmentStoreStatementDetail(statementDetail), itemStatementDetail(statementDetail));
+//balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) =
+//    balanceDepartmentStoreItem(departmentStoreStatementDetail(statementDetail), itemStatementDetail(statementDetail));
 
 minReserveItemDepartmentStatementDetail 'Минимальнодопустимый товарный запас в днях' (statementDetail) =
     minReserveItemDepartmentOver(itemStatementDetail(statementDetail),
@@ -4246,13 +4221,6 @@ maxReserveItemDepartmentStatementDetail 'Максимальнодопустим�
 
 CONSTRAINT quantityStatementDetail(statementDetail) <= 0 MESSAGE 'Количество должно быть положительным';
 CONSTRAINT retailPriceStatementDetail(statementDetail) <= 0 MESSAGE 'Цена должна быть положительной';
-
-CONSTRAINT quantityStatementDetail(statementDetail) > balanceDepartmentStoreItemStatementDetail(statementDetail)
-    MESSAGE 'Количество в строке больше чем есть в остатках';
-
-CONSTRAINT balanceItemStatement(item, statement) < quantityItemStatement(item, statement)
-    MESSAGE 'Количество товара выбрано больше чем есть в остатках';
-
 
 statusStatementSpecification 'Статус' (statement, specification) = CASE
     WHEN dateStatement(statement) > dateToSpecification(specification) THEN ('Просрочена' IF statement IS statement IF specification IS specification)
@@ -4335,171 +4303,6 @@ dataRetailRangePriceChangeStatementDetail 'Новый НДС, %' (priceChangeSta
                                     //  пока что НДС старый и новый равны   //
 oldRetailPriceChangeStatementDetail 'Старая розничная цена' (priceChangeStatementDetail) = oldRetailPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
 retailPriceChangeStatementDetail 'Новая розничная цена' (priceChangeStatementDetail) = retailPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
-
-
-FORM specificationForm 'Отгрузки по данной с/ф'
-    OBJECTS sp=specification FIXED PANEL
-    PROPERTIES (sp) READONLY numberSpecification, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification, nameCustomerSpecification,
-                    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
-
-    OBJECTS st=statement
-    PROPERTIES (st) READONLY waybillStatement, seriesWaybillStatement, dateStatement, nameCustomerStatement, nameDepartmentStoreStatement,
-                    noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement
-
-    FILTERS inStatementSpecification(st, sp)
-;
-
-showFormSpecificationForm 'Показать отгрузки по данной с/ф' (specification) = ACTION FORM specificationForm OBJECTS sp MODAL TOOLBAR;
-
-FORM specification 'Счет-фактура'
-    OBJECTS sp=specification FIXED PANEL
-    PROPERTIES (sp) numberSpecification, nameDepartmentStoreSpecification, dateSpecification, timeSpecification, dateToSpecification, nameCustomerSpecification,
-    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
-
-    OBJECTS d=detailSpec
-    PROPERTIES (d) numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
-                   retailPriceDetailSpec, dataActingRateRangeDetailSpec, sumNDSDetailSpec, totalSumNDSDetailSpec, sumDetailSpec, ADDOBJ, delete
-
-    PROPERTIES FORCE PANEL READONLY articleItemDetailSpec(d), nameCountryItemDetailSpec(d), balanceDepartmentStoreItemDetailSpec(d),
-                                    availableQuantityItemByDetailSpec(d) HIGHLIGHTIF NotNullAvailableQuantityItemByDetailSpec(d)
-
-
-
-
-    PROPERTIES addSpecificationDetailBarcode(sp) TODRAW d
-    FILTERS inSpecificationDetailSpec(sp, d)
-
-    EDIT specification OBJECT sp
-;
-
-DESIGN specification FROM DEFAULT{
-    main {
-        preferredSize = (1024, 768);
-
-        sp.waybillSum { caption = 'Суммы счет-фактуры'; };
-
-        d.panel {
-            childConstraints = TO THE BOTTOM;
-
-        POSITION PROPERTY (balanceDepartmentStoreItemDetailSpec(d)) TO THE LEFT PROPERTY (availableQuantityItemByDetailSpec(d));
-        }
-
-    }
-}
-
-FORM specifications 'Счет-фактуры'
-    OBJECTS sp=specification
-    PROPERTIES (sp) READONLY numberSpecification, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
-                    dateToSpecification, quantitySpecification, sumSpecification
-    PROPERTIES (sp) showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
-
-    PROPERTIES (sp) ADDFORM, EDITFORM, delete
-    ORDER BY        numberSpecification
-
-    OBJECTS d=detailSpec
-    PROPERTIES (d)  READONLY numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
-                    retailPriceDetailSpec, sumDetailSpec
-
-    FILTERS         inSpecificationDetailSpec(sp, d)
-
-    FILTERGROUP filters6
-            FILTER 'Просроченные с/ф' 'F10' overdueSpecification(sp)
-            FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp)
-;
-
-
-
-
-FORM specificationsStatement 'Счета'
-    OBJECTS st=statement FIXED PANEL
-    PROPERTIES (st) READONLY waybillStatement, dateStatement
-
-    OBJECTS sp=specification
-
-    PROPERTIES (st, sp) inStatementSpecification
-    PROPERTIES (sp)     READONLY numberSpecification, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
-                        dateToSpecification, quantitySpecification, sumSpecification, statusSpecification
-    PROPERTIES (st, sp) statusStatementSpecification
-
-    FILTERS isCustomerStatementSpecification (st, sp),
-            isDepartmentStoreStatementSpecification (st, sp)
-
-    FILTERGROUP filters6
-            FILTER 'Просроченные с/ф' 'F10' overdueSpecification(sp)
-            FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp)
-            FILTER 'Без отгрузок с/ф ' 'F8' noQuantityStatementsInSpecification(sp) DEFAULT
-;
-
-showFormSpecificationsStatement 'Заказы' (statement) = ACTION FORM specificationsStatement OBJECTS st MODAL SHORTCUT specificationsStatement DEFAULT;
-
-FORM statement 'Отгрузка из розницы'
-    OBJECTS st=statement FIXED PANEL
-    PROPERTIES (st) waybillStatement, seriesWaybillStatement, dateStatement, timeStatement, nameCustomerStatement,
-                    nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, showFormSpecificationsStatement,
-                    noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement
-
-    OBJECTS d=statementDetail
-    PROPERTIES (d)  numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail, quantityStatementDetail,
-                    retailPriceStatementDetail, dataActingRateRangeStatementDetail, sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail,
-                    oldRetailPriceStatementDetail HIGHLIGHTIF notEqualsPriceStatementDetail(d), noteStatementDetail READONLY, ADDOBJ, delete
-
-    PROPERTIES (d)  FORCE PANEL articleItemStatementDetail, nameCountryItemStatementDetail, balanceDepartmentStoreItemStatementDetail,
-                    oldDataRetailRangeStatementDetail, oldImporterPriceStatementDetail
-
-    PROPERTIES      addStatementDetailBarcode(st) TODRAW d
-
-    FILTERS         inStatementStatementDetail(st, d)
-
-    EDIT statement OBJECT st
-;
-
-DESIGN statement FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-
-        st.box {
-            childConstraints = TO THE RIGHTBOTTOM;
-            POSITION st.documentHeaderGroup TO THE LEFT st.specificationGroup;
-        }
-        d.panel {
-            NEW headerRow1 {
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(articleItemStatementDetail);
-                ADD PROPERTY(nameCountryItemStatementDetail);
-                ADD PROPERTY (balanceDepartmentStoreItemStatementDetail);
-            }
-            POSITION headerRow1 TO THE LEFT d.itemStatementDetailInfo;
-        }
-    }
-}
-
-
-FORM statements 'Отгрузки из розницы'
-    OBJECTS st=statement
-    PROPERTIES (st) READONLY objectClassName, waybillStatement, seriesWaybillStatement, dateStatement, nameCustomerStatement,
-                    nameDepartmentStoreStatement, quantityStatementDetailsStatement, totalQuantityStatement, sumStatement
-
-    PROPERTIES (st) ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
-                    postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
-
-    ORDER BY dateStatement
-
-    OBJECTS d=statementDetail
-    PROPERTIES (d)  READONLY numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail,
-                    quantityStatementDetail, retailPriceStatementDetail, sumStatementDetail, noteStatementDetail
-
-    FILTERS         inStatementStatementDetail(st, d)
-;
-
-DESIGN statements FROM DEFAULT {
-    PROPERTY(objectClassName) {
-        preferredCharWidth = 15;
-    }
-    PROPERTY (delete(st)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-}
 
 
 //---------------------------- Кассовые отчеты ----------------------------------------//
@@ -5802,6 +5605,31 @@ retailPriceStatementDetail (statementDetail) <- priceRetailLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
                 ON CHANGE itemStatementDetail(statementDetail);
 
+
+balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) = balanceBItemLedgerDateTime(
+                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail)) IN baseGroup;
+
+quantityItemByStatementDetail(statementDetail) = quantityItemStatement(itemStatementDetail(statementDetail), statementStatementDetail(statementDetail));
+highlightStatementDetail(statementDetail) =  quantityItemByStatementDetail(statementDetail) > balanceDepartmentStoreItemStatementDetail(statementDetail);
+
+balanceDepartmentStoreItemDetailSpec 'Текущий остаток' (detailSpec) = balanceBItemLedgerDateTime(
+                itemDetailSpec(detailSpec), departmentStoreDetailSpec(detailSpec), dateTimeDetailSpec(detailSpec));
+
+quantityItemByDetailSpec(detailSpec) = quantityItemSpecification( itemDetailSpec(detailSpec), specificationDetailSpec(detailSpec));
+highlightDetailSpec(detailSpec) =  quantityItemByDetailSpec(detailSpec) > balanceDepartmentStoreItemDetailSpec(detailSpec);
+
+quantityItemDepartmentStore 'Количество выставленного товара на тек. момент' (departmentStore, item) = GROUP SUM
+    quantityDetailSpec(detailSpec) IF noOverdueSpecification(specificationDetailSpec(detailSpec))
+    BY departmentStoreDetailSpec(detailSpec), itemDetailSpec(detailSpec);
+
+quantityExhibitedItemByDetailSpec(detailSpec) = quantityItemDepartmentStore(departmentStoreDetailSpec(detailSpec), itemDetailSpec(detailSpec));
+
+availableQuantityItemByDetailSpec 'Доступное к-во, с учетом непросроченных с/ф' (detailSpec) =
+    balanceDepartmentStoreItemDetailSpec(detailSpec)-quantityExhibitedItemByDetailSpec(detailSpec);
+
+NotNullAvailableQuantityItemByDetailSpec(detailSpec) = availableQuantityItemByDetailSpec(detailSpec) < 0;
+
+
 // --------------------------- Использование регистров (автоматическое заполнение): инвентаризация---------------//
 
 priceDetailPage(detailPage) <- priceAccountLedgerDateTime(
@@ -6112,6 +5940,173 @@ DESIGN inventories FROM DEFAULT {
     }
     POSITION in.historyGroup TO THE LEFT in.postedGroup;
 }
+
+//------------------------------------формы: Отпуск из розницы-------------------------//
+
+
+FORM specificationForm 'Отгрузки по данной с/ф'
+    OBJECTS sp=specification FIXED PANEL
+    PROPERTIES (sp) READONLY numberSpecification, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification, nameCustomerSpecification,
+                    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
+
+    OBJECTS st=statement
+    PROPERTIES (st) READONLY waybillStatement, seriesWaybillStatement, dateStatement, nameCustomerStatement, nameDepartmentStoreStatement,
+                    noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement
+
+    FILTERS inStatementSpecification(st, sp)
+;
+
+showFormSpecificationForm 'Показать отгрузки по данной с/ф' (specification) = ACTION FORM specificationForm OBJECTS sp MODAL TOOLBAR;
+
+FORM specification 'Счет-фактура'
+    OBJECTS sp=specification FIXED PANEL
+    PROPERTIES (sp) numberSpecification, nameDepartmentStoreSpecification, dateSpecification, timeSpecification, dateToSpecification, nameCustomerSpecification,
+    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
+
+    OBJECTS d=detailSpec
+    PROPERTIES (d) numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
+                   retailPriceDetailSpec, dataActingRateRangeDetailSpec, sumNDSDetailSpec, totalSumNDSDetailSpec, sumDetailSpec, ADDOBJ, delete
+
+    PROPERTIES FORCE PANEL READONLY articleItemDetailSpec(d), nameCountryItemDetailSpec(d), balanceDepartmentStoreItemDetailSpec(d)
+                   HIGHLIGHTIF highlightDetailSpec(d), availableQuantityItemByDetailSpec(d) HIGHLIGHTIF NotNullAvailableQuantityItemByDetailSpec(d)
+
+    PROPERTIES addSpecificationDetailBarcode(sp) TODRAW d
+    FILTERS inSpecificationDetailSpec(sp, d)
+
+    EDIT specification OBJECT sp
+;
+
+DESIGN specification FROM DEFAULT{
+    main {
+        preferredSize = (1024, 768);
+
+        sp.waybillSum { caption = 'Суммы счет-фактуры'; };
+
+        d.panel {
+            childConstraints = TO THE BOTTOM;
+
+        POSITION PROPERTY (balanceDepartmentStoreItemDetailSpec(d)) TO THE LEFT PROPERTY (availableQuantityItemByDetailSpec(d));
+        }
+
+    }
+}
+
+FORM specifications 'Счет-фактуры'
+    OBJECTS sp=specification
+    PROPERTIES (sp) READONLY numberSpecification, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
+                    dateToSpecification, quantitySpecification, sumSpecification
+    PROPERTIES (sp) showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
+
+    PROPERTIES (sp) ADDFORM, EDITFORM, delete
+    ORDER BY        numberSpecification
+
+    OBJECTS d=detailSpec
+    PROPERTIES (d)  READONLY numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
+                    retailPriceDetailSpec, sumDetailSpec
+
+    FILTERS         inSpecificationDetailSpec(sp, d)
+
+    FILTERGROUP filters6
+            FILTER 'Просроченные с/ф' 'F10' overdueSpecification(sp)
+            FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp)
+;
+
+
+
+
+FORM specificationsStatement 'Счета'
+    OBJECTS st=statement FIXED PANEL
+    PROPERTIES (st) READONLY waybillStatement, dateStatement
+
+    OBJECTS sp=specification
+
+    PROPERTIES (st, sp) inStatementSpecification
+    PROPERTIES (sp)     READONLY numberSpecification, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
+                        dateToSpecification, quantitySpecification, sumSpecification, statusSpecification
+    PROPERTIES (st, sp) statusStatementSpecification
+
+    FILTERS isCustomerStatementSpecification (st, sp),
+            isDepartmentStoreStatementSpecification (st, sp)
+
+    FILTERGROUP filters6
+            FILTER 'Просроченные с/ф' 'F10' overdueSpecification(sp)
+            FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp)
+            FILTER 'Без отгрузок с/ф ' 'F8' noQuantityStatementsInSpecification(sp) DEFAULT
+;
+
+showFormSpecificationsStatement 'Заказы' (statement) = ACTION FORM specificationsStatement OBJECTS st MODAL SHORTCUT specificationsStatement DEFAULT;
+
+FORM statement 'Отгрузка из розницы'
+    OBJECTS st=statement FIXED PANEL
+    PROPERTIES (st) waybillStatement, seriesWaybillStatement, dateStatement, timeStatement, nameCustomerStatement,
+                    nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, showFormSpecificationsStatement,
+                    noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement
+
+    OBJECTS d=statementDetail
+    PROPERTIES (d)  numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail, quantityStatementDetail,
+                    retailPriceStatementDetail, dataActingRateRangeStatementDetail, sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail,
+                    oldRetailPriceStatementDetail HIGHLIGHTIF notEqualsPriceStatementDetail(d), noteStatementDetail READONLY, ADDOBJ, delete
+
+    PROPERTIES (d)  FORCE PANEL articleItemStatementDetail, nameCountryItemStatementDetail, balanceDepartmentStoreItemStatementDetail HIGHLIGHTIF highlightStatementDetail(d),
+                    oldDataRetailRangeStatementDetail, oldImporterPriceStatementDetail
+
+    PROPERTIES      addStatementDetailBarcode(st) TODRAW d
+
+    FILTERS         inStatementStatementDetail(st, d)
+
+    EDIT statement OBJECT st
+;
+
+DESIGN statement FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+        st.box {
+            childConstraints = TO THE RIGHTBOTTOM;
+            POSITION st.documentHeaderGroup TO THE LEFT st.specificationGroup;
+        }
+        d.panel {
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(articleItemStatementDetail);
+                ADD PROPERTY(nameCountryItemStatementDetail);
+                ADD PROPERTY (balanceDepartmentStoreItemStatementDetail);
+            }
+            POSITION headerRow1 TO THE LEFT d.itemStatementDetailInfo;
+        }
+    }
+}
+
+
+FORM statements 'Отгрузки из розницы'
+    OBJECTS st=statement
+    PROPERTIES (st) READONLY objectClassName, waybillStatement, seriesWaybillStatement, dateStatement, nameCustomerStatement,
+                    nameDepartmentStoreStatement, quantityStatementDetailsStatement, totalQuantityStatement, sumStatement
+
+    PROPERTIES (st) ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
+                    postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
+
+    ORDER BY dateStatement
+
+    OBJECTS d=statementDetail
+    PROPERTIES (d)  READONLY numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail,
+                    quantityStatementDetail, retailPriceStatementDetail, sumStatementDetail, noteStatementDetail
+
+    FILTERS         inStatementStatementDetail(st, d)
+;
+
+DESIGN statements FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+    PROPERTY (delete(st)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
+
+
 
 //----------------------------------- Форма для остатков -------------------------------------------------//
 FORM balanceItemDepartment 'Остатки по отделам'
