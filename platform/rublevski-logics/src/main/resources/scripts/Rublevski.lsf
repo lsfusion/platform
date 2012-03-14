@@ -1447,9 +1447,8 @@ rateToRate (rt1, rt2) = UNION OVERRIDE dateFromRate(rt2) <= dateFromRate(rt1),
                                        dateToRate(rt1) < dateFromRate(rt2);
 
 
-CONSTRAINT rangeRate(rt1) == rangeRate(rt2) AND NOT rateToRate (rt1, rt2)  MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок';
+CONSTRAINT rangeRate(rt1) == rangeRate(rt2) AND NOT rateToRate (rt1, rt2)  MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок / или не задано: действует с';
 
- // todo: сделать проверку на то, что на дату для шкалы есть только одно значение ставки
 suppliersTaxNDSItem(item) = tax.taxNDS IF item IS item IN idGroup;
 nameSuppliersTaxNDSItem(item) = name(suppliersTaxNDSItem(item));
 
@@ -3845,7 +3844,8 @@ nameTypeOfAdditionCollationSheet 'Тип сличительной ведомос
 typeOfAdditionListInventory(listInventory) = typeOfAdditionDepartmentStoreInventoryOver(departmentStoreListInventory(listInventory), inventoryListInventory(listInventory)) IN idGroup;
 
 
-balanceCollationSheetItem 'Количество остаток' (collationSheet, item) = balanceDepartmentStoreItem(departmentStoreCollationSheet(collationSheet), item) IN baseGroup;
+//balanceCollationSheetItem 'Количество остаток' (collationSheet, item) = balanceDepartmentStoreItem(departmentStoreCollationSheet(collationSheet), item) IN baseGroup;
+balanceCollationSheetItem 'Количество остаток' (collationSheet, item) = DATA DOUBLE (collationSheet, item) IN baseGroup;
 
 //    нужно ли делать остаток с использованием WRITEONCHANGE ?????????
 
@@ -3872,11 +3872,10 @@ includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE
 
 //priceCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item) ON ASSIGN includeCollationSheetItem(collationSheet, item); //CHANGE item IS item AND collationSheet IS collationSheet;
 
-shortageQuantityCountedCollationSheetItem 'Количество недостача' (collationSheet, item) =
+shortageQuantityCountedCollationSheetItem 'Количество, излишек' (collationSheet, item) =
     (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, quantityCountedCollationSheetItem(collationSheet, item)) -
     (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, balanceCollationSheetItem(collationSheet, item));
-
-shortageTotalCollationSheetItem 'Сумма недостача' (collationSheet, item) =
+shortageTotalCollationSheetItem 'Сумма, излишек' (collationSheet, item) =
     (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalCollationSheetItem(collationSheet, item)) -
     (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalBalansCollationSheetItem(collationSheet, item));
 
@@ -5813,9 +5812,20 @@ priceCollationSheetItem(collationSheet, item) <- priceAccountLedgerDateTime(
                 item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)))
                 ON ASSIGN includeCollationSheetItem(collationSheet, item);
 
+//balanceCollationSheetItem(collationSheet, item) <- balanceAItemLedgerDateTime(
+//                item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)))
+//                ON ASSIGN includeCollationSheetItem(collationSheet, item);
+
 //priceAccountLedgerDateTimeDetailPage (detailPage) = priceAccountLedgerDateTime(skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeToInventory(inventoryDetailPage(detailPage)));
 //priceAccountLedgerDateTimeItemCollationSheet(item, collationSheet) = priceAccountLedgerDateTime(item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)));
 
+
+fillBalanceInventory 'Заполнить остатки' (inventory) = ACTION(inventory) {
+    SET balanceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet)==inventory  AND item IS item
+        <- balanceBItemLedgerDateTime(item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)));
+
+} CONFIRM;
+//  todo: зацикливается на includeCollationSheetItem, пока на action поставили - переделать потом
 
 convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
     SET priceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory <- priceAccountLedgerDateTime(
@@ -5920,16 +5930,26 @@ showFormNameDepartmentByInventory 'Подразделения для инвен�
 FORM collationSheetItem 'Товары для добавления в сличительную ведомость'
     OBJECTS cs=manyCollationSheet FIXED PANEL
     PROPERTIES (cs) READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet
-    TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES(g) READONLY name
+
+    TREE treeGroup a=STRING[3], g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY OBJVALUE(a), name(g)
+    FILTERS stringEqualsAll(a)
+    ORDER BY name
+
     OBJECTS i=item
-    PROPERTIES(i) READONLY nameAttributeItem, shortNameUnitOfMeasureItem
+    PROPERTIES(i) READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUnitOfMeasureItem
+
     PROPERTIES(cs, i) inManyCollationSheetItem
-    FILTERS  inItemGroupSku(g, i)
+
+    FILTERS hasParentOrNullItemGroupSku(i, g)
+    ORDER BY nameAttributeItem
 ;
 
 DESIGN collationSheetItem FROM DEFAULT {
     POSITION treeGroup.box TO THE LEFT i.box;
+        treeGroup.box{ fillHorizontal = 1.5;}
+        i.box{ fillHorizontal = 3.5;}
+
 }
 
 showFormItemByCollationSheet 'Добавить товар' (collationSheet) = [ACTION FORM collationSheetItem OBJECTS cs MODAL](collationSheet) AND collationSheet IS manyCollationSheet;
@@ -5970,7 +5990,8 @@ DESIGN listInventory FROM DEFAULT {
 FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
     PROPERTIES (in)  numberInventory READONLY, nameInventory, nameTypeOfAdditionInventory, dateToInventory, timeToInventory,
-                     noteInventory, infoInventory, nameDepartmentByInventory, showFormNameDepartmentByInventory, convertPriceInventory, dateTimeToInventory
+                     noteInventory, infoInventory, nameDepartmentByInventory, showFormNameDepartmentByInventory, convertPriceInventory,
+                     fillBalanceInventory, dateTimeToInventory
 
     TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageList
     PROPERTIES       READONLY name(ds),  nameListInventory(li), namePageList(pl)
@@ -5992,10 +6013,10 @@ FORM inventory 'Инвентаризация'
 
     PROPERTIES (cs)  READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
                      quantityCountedItemByCollationSheet, balanceItemByCollationSheet, shortageQuantityCountedItemByCollationSheet,
-                     totalItemByCollationSheet, totalBalansItemByCollationSheet, shortageTotalItemByCollationSheet, showFormItemByCollationSheet,
+                     totalItemByCollationSheet, totalBalansItemByCollationSheet, shortageTotalItemByCollationSheet,
                      sumListInventoryByCollationSheet, sumPageListByCollationSheet
 
-    PROPERTIES (cs)  setDataCollationSheet, convertPriceCollationSheet, delete
+    PROPERTIES (cs)  showFormItemByCollationSheet, setDataCollationSheet, convertPriceCollationSheet, delete
     OBJECTS          i=item
     PROPERTIES (i)   READONLY nameAttributeItem, barcodeBarcodeSku
 
@@ -6023,7 +6044,12 @@ DESIGN inventory FROM DEFAULT {
     main{
         in.box {
             POSITION in.inventoryGroup TO THE LEFT in.inventGroup;
-            ADD PROPERTY(convertPriceInventory(in)) IN in.inventGroup;
+                in.inventGroup {
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(fillBalanceInventory(in));
+                    ADD PROPERTY(convertPriceInventory(in));
+                    POSITION PROPERTY(fillBalanceInventory(in)) TO THE LEFT PROPERTY(convertPriceInventory(in));
+                }
         }
         NEW secondCase BEFORE functions.box{
                 tabbedPane = TRUE;
