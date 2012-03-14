@@ -455,10 +455,10 @@ nameWeightNumeratorItemGroup 'Нумератор штрих-кодов (для �
 
 childNumberItemGroup 'Кол-во непосредственных потомков' (itemGroup) = GROUP SUM 1 BY parentItemGroup(group) PERSISTENT;
 
-isLeafItemGroup 'Лист' (itemGroup) = itemGroup IS itemGroup AND NOT childNumberItemGroup(itemGroup);
+isLeafItemGroup 'Лист' (itemGroup) = itemGroup IS itemGroup AND NOT childNumberItemGroup(itemGroup) PERSISTENT;
 
 hasParentItemGroupLevel 'Уровень' (child, parent) = RECURSION 1l AND child IS itemGroup AND parent == child
-                                                                  STEP 2l AND parent == parentItemGroup($parent);
+                                                                  STEP 2l AND parent == parentItemGroup($parent) PERSISTENT;
 TABLE itemGroupStructure(itemGroup, itemGroup, LONG);
 
 hasParentItemGroup 'Уровень' (child, parent) = TRUE AND hasParentItemGroupLevel(child, parent);
@@ -470,8 +470,8 @@ hasParentAndLeafOrNullItemGroup (child, parent) = UNION OVERRIDE hasParentAndLea
 
 canonicalNameItemGroup 'Каноническое имя' (itemGroup) = castToString255(
                            [GROUP CONCAT name(parent), ' / ' BY child ORDER DESC hasParentItemGroupLevel(child, parent)](itemGroup))
-                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100;
 
+                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 //levelItemGroup 'Уровень' (itemGroup) = GROUP SUM 1 IF hasParentItemGroup(child, parent) BY child PERSISTENT;
 
 // формы за формами товара
@@ -637,8 +637,9 @@ itemGroupSku = DATA itemGroup(sku) IN idGroup AUTOSET;
 nameItemGroupSku 'Группа товара' (sku) = name(itemGroupSku(sku));
 canonicalNameItemGroupSku 'Группа товара' (sku) = canonicalNameItemGroup(itemGroupSku(sku)) IN baseGroup;
 
-hasParentItemGroupSku (sku, itemGroup) = hasParentItemGroup(itemGroupSku(sku), itemGroup);
-hasParentOrNullItemGroupSku (sku, itemGroup) = UNION OVERRIDE hasParentItemGroupSku(sku, itemGroup), sku IS sku AND NOT itemGroup;
+TABLE itemGroupSku (itemGroup, sku);
+
+hasParentItemGroupSku (itemGroup, sku) = hasParentItemGroup(itemGroupSku(sku), itemGroup);
 
 //descriptionGroup
 captionItem 'Название' = DATA STRING[100](item) IN descriptionGroup;
@@ -956,6 +957,8 @@ nameCashAttributeItem 'Наименование для касс' (item) = castTo
 nameScalesAttributeItem 'Наименование для весов' (item) = castToString255(
                 [GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameScalesItemAttribute(attribute)](item))
                 PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
+
+//nameAttributeItemItemGroup (itemGroup, item) = nameAttributeItem(item) AND hasParentItemGroupSku(itemGroup, item) PERSISTENT;
 
 // ---------------------------------------------------------------------------------------- //
 
@@ -1945,15 +1948,14 @@ DESIGN item FROM DEFAULT {
 inItemGroupSku(itemGroup, sku) = itemGroupSku(sku) == itemGroup;
 
 FORM items 'Товары'
-    TREE treeGroup a=STRING[3], g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY OBJVALUE(a), name(g)
-    FILTERS stringEqualsAll(a)
+    TREE treeGroup g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY name(g)
     ORDER BY name
 
     OBJECTS i=item
     PROPERTIES(i) READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUnitOfMeasureItem
     PROPERTIES(i) ADDFORM, EDITFORM, delete
-    FILTERS hasParentOrNullItemGroupSku(i, g)
+    FILTERS hasParentItemGroupSku(g, i)
     ORDER BY nameAttributeItem
 
     DIALOG item OBJECT i
@@ -2821,11 +2823,9 @@ fillInOrderSupplier 'Заполнить заказ рекомендованны�
 
 FORM orderSupplier 'Заказ поставщику'
 
-    TREE treeGroup a=STRING[3], g=itemGroup PARENT parentItemGroup
+    TREE treeGroup g=itemGroup PARENT parentItemGroup
 
-    FILTERS stringEqualsAll(a)
-
-    PROPERTIES READONLY OBJVALUE(a), name(g)
+    PROPERTIES READONLY name(g)
     ORDER BY name
 
     OBJECTS o=orderSupplier FIXED PANEL
@@ -2857,7 +2857,7 @@ FORM orderSupplier 'Заказ поставщику'
     FILTERGROUP filters1
         FILTER 'Показывать только заказанные позиции' 'F10' sumQuantityItemOrderSupplier(o, i) DEFAULT
 
-    FILTERS hasParentOrNullItemGroupSku(i, g)
+    FILTERS hasParentItemGroupSku(g, i)
     ORDER BY nameAttributeItem
 
     EDIT orderSupplier OBJECT o
@@ -3068,7 +3068,7 @@ FORM store 'Магазин'
     PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameCompanyStore
 
     OBJECTS d=departmentStore
-    PROPERTIES(d) READONLY name, defaultTradingSquareDepartmentStore
+    PROPERTIES(d) READONLY objectClassName, name, defaultTradingSquareDepartmentStore
     PROPERTIES(d)          ADDSESSIONFORM, EDITSESSIONFORM, delete
     FILTERS inStoreDepartment(s, d)
 
@@ -3102,7 +3102,7 @@ FORM stores 'Магазины'
     FILTERS inTradingNetworkStoreTypeStore(t, st, s)
 
     OBJECTS d=departmentStore
-    PROPERTIES(d) READONLY name
+    PROPERTIES(d) READONLY objectClassName, name
     FILTERS inStoreDepartment(s, d)
 ;
 
@@ -5816,9 +5816,8 @@ FORM collationSheetItem 'Товары для добавления в сличи�
     OBJECTS cs=manyCollationSheet FIXED PANEL
     PROPERTIES (cs) READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet
 
-    TREE treeGroup a=STRING[3], g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY OBJVALUE(a), name(g)
-    FILTERS stringEqualsAll(a)
+    TREE treeGroup g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY name(g)
     ORDER BY name
 
     OBJECTS i=item
@@ -5826,7 +5825,7 @@ FORM collationSheetItem 'Товары для добавления в сличи�
 
     PROPERTIES(cs, i) inManyCollationSheetItem
 
-    FILTERS hasParentOrNullItemGroupSku(i, g)
+    FILTERS hasParentItemGroupSku(g, i)
     ORDER BY nameAttributeItem
 ;
 
