@@ -4973,6 +4973,8 @@ seriesWaybillInnerArrival 'Серия накладной'(innerArrival) = series
 senderDepartmentInnerArrival 'Отдел-отправитель (ИД)' (innerArrival) = DATA departmentStore(innerArrival);
 nameSenderDepartmentInnerArrival 'Отдел-отправитель' (innerArrival) = name(senderDepartmentInnerArrival(innerArrival)) IN documentHeaderGroup;
 
+dateInnerArrival (innerArrival) <- dateInnerFlow(innerFlowInnerArrival(innerArrival)) ON CHANGE innerFlowInnerArrival(innerArrival);
+
 CONSTRAINT CHECKED recipientDepartmentInnerFlow(innerFlowInnerArrival(innerArrival)) != departmentStoreInnerArrival(innerArrival)
     MESSAGE 'Накладная с другого отдела';
 
@@ -5112,14 +5114,14 @@ retailPriceChangeInnerArrivalDetail 'Новая розничная цена' (pr
 FORM innerArrival 'Приход из другого отдела'
     OBJECTS a=innerArrival FIXED PANEL
     PROPERTIES (a) nameDepartmentStoreInnerArrival, waybillInnerArrival SHOWIF departmentStoreInnerArrival(a), seriesWaybillInnerArrival SHOWIF departmentStoreInnerArrival(a),
-                   dateInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), timeInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
+                   dateInnerArrival SHOWIF innerFlowInnerArrival(a), timeInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
                    cleanAllInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a), toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a),
                    noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), totalQuantityInnerArrival SHOWIF innerFlowInnerArrival(a),
                    totalSumArrivalFlow SHOWIF innerFlowInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) SHOWIF innerFlowInnerArrival(a) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
-                   quantityInnerArrivalDetail, priceInnerArrivalDetail READONLY, importerPriceInnerArrivalDetail READONLY,
+                   quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, priceInnerArrivalDetail READONLY, importerPriceInnerArrivalDetail READONLY,
                    dataRetailRangeInnerArrivalDetail READONLY,
                    sumInnerArrivalDetail READONLY, ADDOBJ, delete
 
@@ -5166,7 +5168,7 @@ DESIGN innerArrival FROM DEFAULT{
 
 FORM innerArrivals 'Приходы из других отделов'
     OBJECTS a=innerArrival
-    PROPERTIES (a) READONLY objectClassName, waybillInnerArrival, seriesWaybillInnerArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
+    PROPERTIES (a) READONLY objectClassName, waybillInnerArrival, seriesWaybillInnerArrival, dateInnerArrival, nameDepartmentStoreInnerArrival,
                             nameSenderDepartmentInnerArrival, totalQuantityInnerArrival, totalSumArrivalFlow
 
     PROPERTIES (a) ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
@@ -5852,8 +5854,15 @@ datePriceChangeDocument 'Дата' (priceChangeDocument) = UNION EXCLUSIVE dateP
                                                                        datePriceChangeInnerArrival(priceChangeDocument),
                                                                        dateUserPriceChange(priceChangeDocument) PERSISTENT;
 
+waybillPriceChangeDocument 'Номер накладной' (priceChangeDocument) = UNION EXCLUSIVE waybillPriceChangeShipment(priceChangeDocument),
+                                                                                     waybillPriceChangeInnerArrival(priceChangeDocument) PERSISTENT;
+
+seriesWaybillPriceChangeDocument 'Серия накладной' (priceChangeDocument) = UNION EXCLUSIVE seriesWaybillPriceChangeShipment(priceChangeDocument),
+                                                                                     seriesWaybillPriceChangeInnerArrival(priceChangeDocument) PERSISTENT;
+
 departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE departmentStorePriceChangeShipment(priceChangeDocument),
                                                                            departmentStorePriceChangeStatement(priceChangeDocument),
+                                                                           departmentStorePriceChangeInnerArrival(priceChangeDocument),
                                                                            departmentStoreUserPriceChange(priceChangeDocument) PERSISTENT;
 nameDepartmentStorePriceChangeDocument 'Отдел магазина' (priceChangeDocument) = name(departmentStorePriceChangeDocument(priceChangeDocument));
 
@@ -5875,29 +5884,36 @@ quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) =
 
 oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldImporterPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                               oldImporterPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                              oldImporterPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                               importerPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 importerPriceChangeDocumentDetail 'Новая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                           importerPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                          importerPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                           importerPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 oldDataRetailRangePriceChangeDocumentDetail 'Старый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldDataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                           oldDataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                          oldDataRetailRangePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                           dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 dataRetailRangePriceChangeDocumentDetail 'Новый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE dataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                       dataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                      dataRetailRangePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                       dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldRetailPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                          oldRetailPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                         oldRetailPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                          oldRetailPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 retailPriceChangeDocumentDetail 'Новая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE retailPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                      retailPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                     retailPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                      retailPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 FORM priceChangeDocuments 'Акты переоценки'
     OBJECTS pc=priceChangeDocument
     PROPERTIES(pc) READONLY objectClassName, datePriceChangeDocument, nameDepartmentStorePriceChangeDocument,
-                            waybillPriceChangeShipment, seriesWaybillPriceChangeShipment, nameSupplierPriceChangeShipment
+                            waybillPriceChangeDocument, seriesWaybillPriceChangeDocument, nameSupplierPriceChangeShipment,
+                            nameSenderDepartmentPriceChangeInnerArrival
 
     OBJECTS pcd=priceChangeDocumentDetail
     PROPERTIES(pcd) READONLY nameItemPriceChangeDocumentDetail, quantityPriceChangeDocumentDetail,
