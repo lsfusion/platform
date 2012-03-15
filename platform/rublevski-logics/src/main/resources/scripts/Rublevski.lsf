@@ -4450,6 +4450,7 @@ overSupplierMarkupShipmentDetail 'Оптовая надбавка/торгова
 dateFitToShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
 
 suppliersRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
+numberSuppliersRangeShipmentDetail 'НДС поставщика, номер' (shipmentDetail) = dataRange(suppliersRangeShipmentDetail(shipmentDetail));
 dataSuppliersRangeShipmentDetail 'НДС поставщика,%' (shipmentDetail) = dataActingRateRangeDate
     (suppliersRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN baseGroup;
 
@@ -4469,8 +4470,9 @@ sumSupplierShipmentDetail 'Сумма с НДС' (shipmentDetail) = sumPriceShip
     UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, sumSupplierVATShipmentDetail(shipmentDetail);
 
 retailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
+numberRetailRangeShipmentDetail 'НДС розничный, номер' (shipmentDetail) = dataRange(retailRangeShipmentDetail(shipmentDetail));
 dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = dataActingRateRangeDate
-    (retailRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN baseGroup;
+    (retailRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail));
 
 retailRangeShipmentDetail(shipmentDetail) <- overrideRateRangeItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
@@ -4699,8 +4701,8 @@ FORM shipment 'Поставка'
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, nameAttributeItemShipmentDetail, barcodeExSkuShipmentDetail, quantityShipmentDetail,
                     priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
-                    dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
-                    nameWareShipmentDetail, dataRetailRangeShipmentDetail,
+                    numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
+                    nameWareShipmentDetail, numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
                     retailMarkupShipmentDetail, oldRetailPriceShipmentDetail, retailPriceShipmentDetail, ADDOBJ, delete
     PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, importerPriceShipmentDetail, dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d),
                                priceWareShipmentDetail SHOWIF inWareShipmentDetail(d), controlExpiryShipmentDetail, isManufacturedShipmentDetail,
@@ -4940,7 +4942,7 @@ FORM innerFlows 'Расходы в другие отделы'
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) READONLY numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
-                    quantityInnerFlowDetail, priceInnerFlowDetail, sumInnerFlowDetail
+                    quantityInnerFlowDetail, priceInnerFlowDetail, importerPriceInnerFlowDetail, dataRetailRangeInnerFlowDetail, sumInnerFlowDetail
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 ;
 
@@ -5110,7 +5112,7 @@ retailPriceChangeInnerArrivalDetail 'Новая розничная цена' (pr
 FORM innerArrival 'Приход из другого отдела'
     OBJECTS a=innerArrival FIXED PANEL
     PROPERTIES (a) nameDepartmentStoreInnerArrival, waybillInnerArrival SHOWIF departmentStoreInnerArrival(a), seriesWaybillInnerArrival SHOWIF departmentStoreInnerArrival(a),
-                   dateInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
+                   dateInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), timeInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
                    cleanAllInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a), toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a),
                    noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), totalQuantityInnerArrival SHOWIF innerFlowInnerArrival(a),
                    totalSumArrivalFlow SHOWIF innerFlowInnerArrival(a)
@@ -5164,7 +5166,7 @@ DESIGN innerArrival FROM DEFAULT{
 
 FORM innerArrivals 'Приходы из других отделов'
     OBJECTS a=innerArrival
-    PROPERTIES (a) READONLY objectClassName, waybillInnerArrival, seriesWaybillInnerArrival, dateInnerArrival, nameDepartmentStoreInnerArrival,
+    PROPERTIES (a) READONLY objectClassName, waybillInnerArrival, seriesWaybillInnerArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
                             nameSenderDepartmentInnerArrival, totalQuantityInnerArrival, totalSumArrivalFlow
 
     PROPERTIES (a) ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),

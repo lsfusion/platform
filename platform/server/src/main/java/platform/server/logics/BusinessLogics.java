@@ -742,7 +742,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             synchronizeDB();
 
-            prereadCaches();
+            if (!"true".equals(System.getProperty(BusinessLogicsBootstrap.PLATFORM_SERVER_ISDEBUG))) {
+                prereadCaches();
+            }
 
             //setUserLoggableProperties();
             setPropertyNotifications();
@@ -814,10 +816,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         createModules();
         initModules();
 
-        synchronizeForms();
-        synchronizeGroupProperties();
-        synchronizeProperties();
-        synchronizeTables();
+        if (!"true".equals(System.getProperty(BusinessLogicsBootstrap.PLATFORM_SERVER_ISDEBUG))) {
+            synchronizeForms();
+            synchronizeGroupProperties();
+            synchronizeProperties();
+            synchronizeTables();
+        }
 
         initBaseAuthentication();
         initAuthentication();
