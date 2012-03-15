@@ -4526,6 +4526,7 @@ totalSumSupplierShipment 'Общая сумма с НДС' (shipment) =
     totalCleanSumSupplierShipment (shipment) +
     (UNION OVERRIDE 0 IF shipment IS shipment, totalSumWareShipment (shipment)) IN waybillSum;
 
+
 retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 
 retailMarkupShipmentDetail(shipmentDetail) <-
@@ -5332,8 +5333,7 @@ sumSupplierReturnSupplierDetail 'Сумма с НДС' (returnSupplierDetail) = 
     UNION OVERRIDE 0 IF returnSupplierDetail IS returnSupplierDetail, sumSupplierVATReturnSupplierDetail(returnSupplierDetail);
 
 
-
-// Суммовые параметры для шарки документа
+// Суммовые параметры для шапки документа
 
 totalQuantityReturnSupplier 'Общее количество' (returnSupplier) = GROUP SUM quantityReturnSupplierDetail(returnSupplierDetail)
                                                                   BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN waybillSum;
@@ -5344,12 +5344,13 @@ totalSumIncVATReturnSupplier 'Общая сумма НДС' (returnSupplier) = G
 totalSumSupplierReturnSupplier 'Общая сумма с НДС' (returnSupplier) = GROUP SUM sumSupplierReturnSupplierDetail(returnSupplierDetail)
                                                                       BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN waybillSum;
 
-
 isReturnSupplier (returnSupplier, returnSupplierDetail) = returnSupplierReturnSupplierDetail(returnSupplierDetail) == returnSupplier;
 
 CONSTRAINT CHECKED itemShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != itemReturnSupplierDetail(returnSupplierDetail)
     OR departmentStoreShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != departmentStoreReturnSupplierDetail(returnSupplierDetail)
     OR supplierShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != supplierReturnSupplierDetail(returnSupplierDetail)
+    OR shipmentShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
+       AND NOT shipmentShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) IS shipmentPosted
     MESSAGE 'Выберите партию этого товара';
 
 FORM returnSupplier 'Возврат поставщику'
