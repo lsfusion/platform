@@ -906,7 +906,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
 
         DBF itemsImportFile = new DBF(itemsPath);
-        totalRecordCount = itemsImportFile.getRecordCount();
+        totalRecordCount = itemsImportFile.getRecordCount() - startItem;
 
         data = new ArrayList<List<Object>>();
 
