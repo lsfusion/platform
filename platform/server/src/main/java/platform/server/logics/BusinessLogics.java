@@ -820,8 +820,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             synchronizeForms();
             synchronizeGroupProperties();
             synchronizeProperties();
-            synchronizeTables();
         }
+
+        synchronizeTables();
 
         initBaseAuthentication();
         initAuthentication();

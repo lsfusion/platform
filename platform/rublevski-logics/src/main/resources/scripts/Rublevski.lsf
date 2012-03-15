@@ -439,6 +439,7 @@ END
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 CLASS itemGroup 'Товарная группа' : named, externalObject;
 TABLE itemGroup(itemGroup);
+TABLE itemGroupItemGroup (itemGroup, itemGroup);
 
 parentItemGroup = DATA itemGroup (itemGroup); //AUTOSET;  --  пока не имеет смысла проставляет не ту группу
 inParentItemGroupItemGroup (child, parent) = parentItemGroup(child) == parent;
@@ -2025,10 +2026,9 @@ addItemGroup 'Добавить' = ACTION (itemGroup) NEWSESSION {
 } TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
 FORM itemGroups 'Товарные группы'
-    TREE treeGroups a=STRING[3], g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY OBJVALUE(a), name(g), extSID(g)
+    TREE treeGroups g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY name(g), extSID(g)
     PROPERTIES(g)       addItemGroup, EDITFORM
-    FILTERS stringEqualsAll(a)
     ORDER BY name
 
     OBJECTS cg=itemGroup
@@ -2147,6 +2147,7 @@ FORM employeesCommittees 'Комиссии'
 GROUP banksGroup 'Информация о банке' : baseGroup;
 
 CLASS bank 'Банк' : named, externalObject;
+TABLE bank (bank);
 
 MFOBank 'Код МФО' = DATA STRING[9] (bank) IN banksGroup;
 departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN banksGroup;
@@ -2170,6 +2171,7 @@ PROPERTIES(b) ADDFORM, EDITFORM, delete;
 GROUP accountGroup 'Банковская информация' : baseGroup;
 
 CLASS account 'Расчетный счет';
+TABLE account (account);
 
 bankAccount 'Банк (ИД)' = DATA bank (account) IN idGroup;
 
@@ -2208,6 +2210,7 @@ GROUP contactGroup 'Контактная информация' : publicGroup;
 GROUP docGroup 'Для договора' : publicGroup;
 
 CLASS ABSTRACT legalEntity 'Юридическое лицо' : named, externalObject;
+TABLE legalEntity (legalEntity);
 
 ownershipLegalEntity 'Форма собственности (ИД)' = DATA ownership (legalEntity) IN idGroup;
 
@@ -2306,9 +2309,15 @@ CONSTRAINT contract IS contract AND NOT formContract(contract)  MESSAGE 'оши�
 // ----------------------------------- Поставщик ------------------------------------------ //
 
 GROUP supplierGroup 'Информация о поставщике' : publicGroup;
+
 CLASS supplier 'Поставщик' : legalEntity;
+TABLE supplier (supplier);
+
 CLASS company 'Компания' : legalEntity;
+TABLE company (company);
+
 CLASS customer 'Покупатель' : legalEntity;
+TABLE customer (customer);
 
 companyContract 'Организация (ИД)' = DATA company (contract) IN idGroup;
 supplierContract 'Поставщик (ИД)' = DATA supplier (contract) IN idGroup;
@@ -3688,6 +3697,17 @@ TABLE accountPriceLedger (accountPriceLedger);
 CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
 TABLE retailPriceLedger (retailPriceLedger);
 
+//---------------------------- Суммовые регистры ----------------------------------------//
+
+CLASS ABSTRACT accountSumDocumentLedger 'Учетный документ';
+TABLE accountSumDocumentLedger (accountSumDocumentLedger);
+
+CLASS ABSTRACT incAccountSumDocumentLedger 'Учетный документ (приход)';
+CLASS ABSTRACT outAccountSumDocumentLedger 'Учетный документ (расход)';
+
+CLASS ABSTRACT incAccountSumHistoryDocumentLedger 'Учетный документ (приход, с историей)' : historyObject;
+CLASS ABSTRACT outAccountSumHistoryDocumentLedger 'Учетный документ (расход, с историей)' : historyObject;
+
 //---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
 
 CLASS ABSTRACT priceChangeDocument 'Акт переоценки';
@@ -4380,7 +4400,7 @@ CLASS batch 'Партия';
 
 CLASS ABSTRACT batchShipment 'Партия из прихода' : batch, balanceItemLedger, importerPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
 
-@metaCodeObjectWithPost(shipment, 'Поставка', 'Закрытая поставка', historyObject, batchShipment);
+@metaCodeObjectWithPost(shipment, 'Поставка', 'Закрытая поставка', incAccountSumHistoryDocumentLedger, batchShipment);
 
 GROUP waybillSum 'Суммы накладной': baseGroup;
 GROUP ordersInfo 'Заказы': baseGroup;
@@ -4561,6 +4581,9 @@ retailPriceShipmentDetail 'Новая розничная цена' (shipmentDeta
 
 diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentDetail) = retailPriceShipmentDetail(shipmentDetail) - nonRoundRetailPriceShipmentDetail(shipmentDetail);
 
+retailSumShipmentDetail 'Розничная сумма' (shipmentDetail) = quantityShipmentDetail(shipmentDetail) * retailPriceShipmentDetail(shipmentDetail);
+retailSumShipment 'Розничная сумма' (shipment) = GROUP SUM retailSumShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN waybillSum;
+
 quantityShipmentOrderItem 'Поставленное количество' (orderSupplier, item) = GROUP SUM quantityShipmentDetail (shipmentDetail) IF inShipmentOrder (shipmentShipmentDetail (shipmentDetail), orderSupplier) BY orderSupplier, itemShipmentDetail(shipmentDetail);
 
 //контроль цен поставки по заказам с учетом допустимых отклонений по поставщику
@@ -4695,7 +4718,7 @@ FORM shipment 'Поставка'
     PROPERTIES (s) waybillShipment, seriesWaybillShipment, dateShipment, timeShipment, nameSupplierShipment,
                    nameDepartmentStoreShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
-                   carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment,
+                   carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
                    noteShipment
 
     OBJECTS d=shipmentDetail
@@ -4777,7 +4800,7 @@ DESIGN shipment FROM DEFAULT{
 FORM shipments 'Поставки'
     OBJECTS s=shipment
     PROPERTIES (s) READONLY objectClassName, waybillShipment, seriesWaybillShipment, dateShipment, timeShipment, nameDepartmentStoreShipment,
-                            nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment
+                            nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment
     PROPERTIES (s) FORCE PANEL nameUserCreated, timeCreated, nameUserClosed, timeClosed
 
     PROPERTIES (s)          ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
@@ -5348,12 +5371,12 @@ totalSumSupplierReturnSupplier 'Общая сумма с НДС' (returnSupplier
 
 isReturnSupplier (returnSupplier, returnSupplierDetail) = returnSupplierReturnSupplierDetail(returnSupplierDetail) == returnSupplier;
 
-CONSTRAINT CHECKED itemShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != itemReturnSupplierDetail(returnSupplierDetail)
-    OR departmentStoreShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != departmentStoreReturnSupplierDetail(returnSupplierDetail)
-    OR supplierShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != supplierReturnSupplierDetail(returnSupplierDetail)
-    OR shipmentShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-       AND NOT shipmentShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) IS shipmentPosted
-    MESSAGE 'Выберите партию этого товара';
+//CONSTRAINT CHECKED itemShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != itemReturnSupplierDetail(returnSupplierDetail)
+//    OR departmentStoreShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != departmentStoreReturnSupplierDetail(returnSupplierDetail)
+//    OR supplierShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != supplierReturnSupplierDetail(returnSupplierDetail)
+//    OR shipmentShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
+//       AND NOT shipmentShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) IS shipmentPosted
+//    MESSAGE 'Выберите партию этого товара';
 
 FORM returnSupplier 'Возврат поставщику'
 OBJECTS r=returnSupplier FIXED PANEL
@@ -5512,7 +5535,7 @@ dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateT
                                                                   dateTimeInnerFlowDetail(ledger),
                                                                   dateTimeWastageDetail(ledger),
                                                                   dateTimeReturnSupplierDetail(ledger),
-                                                                  dateTimeInventoryLedger(ledger) PERSISTENT;
+                                                                  dateTimeInventoryLedger(ledger) PERSISTENT INDEXED;
 
 isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                               isPostedInnerArrivalDetail(ledger),
@@ -5575,16 +5598,22 @@ META metaCodeItemDepartmentStoreLedger(prefix)
 
     order###prefix##Ledger = LIST(dateTime###prefix##Ledger(ledger), ledger) PERSISTENT;
 
-    concatLedger###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX order###prefix##Ledger(ledger) AND
+    concatLedgerB###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX order###prefix##Ledger(ledger) AND
+        isPosted###prefix##Ledger(ledger) AND dateTime###prefix##Ledger(ledger) < (dateTime AS DATETIME)
+        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateTime;
+
+    ledgerB###prefix##DateTime (item, departmentStore, dateTime) = concatLedgerB###prefix##DateTime(item, departmentStore, dateTime)[2];
+
+    concatLedgerA###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX order###prefix##Ledger(ledger) AND
         isPosted###prefix##Ledger(ledger) AND dateTime###prefix##Ledger(ledger) <= (dateTime AS DATETIME)
         BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateTime;
 
-    ledger###prefix##DateTime (item, departmentStore, dateTime) = concatLedger###prefix##DateTime(item, departmentStore, dateTime)[2];
+    ledgerA###prefix##DateTime (item, departmentStore, dateTime) = concatLedgerA###prefix##DateTime(item, departmentStore, dateTime)[2];
 
 END
 
 // Цена изготовителя / импортера
-dateTimeImporterPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger) PERSISTENT;
+dateTimeImporterPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger) PERSISTENT INDEXED;
 isPostedImporterPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger) PERSISTENT;
 itemImporterPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger) PERSISTENT;
 departmentStoreImporterPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger) PERSISTENT;
@@ -5592,10 +5621,10 @@ priceImporterLedger 'Цена' (ledger) = UNION EXCLUSIVE importerPriceShipmentD
 
 @metaCodeItemDepartmentStoreLedger(importerPrice);
 
-priceImporterLedgerDateTime (item, departmentStore, dateTime) = priceImporterLedger(ledgerImporterPriceDateTime(item, departmentStore, dateTime));
+priceImporterBLedgerDateTime (item, departmentStore, dateTime) = priceImporterLedger(ledgerBImporterPriceDateTime(item, departmentStore, dateTime));
 
 // Розничный НДС
-dateTimeRetailVATLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger) PERSISTENT;
+dateTimeRetailVATLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger) PERSISTENT INDEXED;
 isPostedRetailVATLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger) PERSISTENT;
 itemRetailVATLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger) PERSISTENT;
 departmentStoreRetailVATLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger) PERSISTENT;
@@ -5604,13 +5633,13 @@ dataRetailLedger 'НДС, %' (ledger) = dataActingRateRangeDate(rangeRetailLedge
 
 @metaCodeItemDepartmentStoreLedger(retailVAT);
 
-rangeRetailLedgerDateTime (item, departmentStore, dateTime) = rangeRetailLedger(ledgerRetailVATDateTime(item, departmentStore, dateTime));
-dataRetailLedgerDateTime 'НДС, %' (item, departmentStore, dateTime) =
-            dataActingRateRangeDate(rangeRetailLedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
+rangeRetailBLedgerDateTime (item, departmentStore, dateTime) = rangeRetailLedger(ledgerBRetailVATDateTime(item, departmentStore, dateTime));
+dataRetailBLedgerDateTime 'НДС, %' (item, departmentStore, dateTime) =
+            dataActingRateRangeDate(rangeRetailBLedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
 
 // Цена учетная
 dateTimeAccountPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
-                                                                   dateTimeUserPriceChangeDetail(ledger) PERSISTENT;
+                                                                   dateTimeUserPriceChangeDetail(ledger) PERSISTENT INDEXED;
 
 isPostedAccountPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                                isPostedUserPriceChangeDetail(ledger) PERSISTENT;
@@ -5626,11 +5655,12 @@ priceAccountLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDeta
 
 @metaCodeItemDepartmentStoreLedger(accountPrice);
 
-priceAccountLedgerDateTime 'Учетная цена' (item, departmentStore, dateTime) = priceAccountLedger(ledgerAccountPriceDateTime(item, departmentStore, dateTime));
+priceAccountBLedgerDateTime 'Учетная цена (до)' (item, departmentStore, dateTime) = priceAccountLedger(ledgerBAccountPriceDateTime(item, departmentStore, dateTime));
+priceAccountALedgerDateTime 'Учетная цена (после)' (item, departmentStore, dateTime) = priceAccountLedger(ledgerAAccountPriceDateTime(item, departmentStore, dateTime));
 
 // Цена розничная
 dateTimeRetailPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
-                                                                  dateTimeUserPriceChangeDetail(ledger) PERSISTENT;
+                                                                  dateTimeUserPriceChangeDetail(ledger) PERSISTENT INDEXED;
 
 isPostedRetailPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                               isPostedUserPriceChangeDetail(ledger) PERSISTENT;
@@ -5646,7 +5676,7 @@ priceRetailLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetai
 
 @metaCodeItemDepartmentStoreLedger(retailPrice);
 
-priceRetailLedgerDateTime (item, departmentStore, dateTime) = priceRetailLedger(ledgerRetailPriceDateTime(item, departmentStore, dateTime));
+priceRetailBLedgerDateTime (item, departmentStore, dateTime) = priceRetailLedger(ledgerBRetailPriceDateTime(item, departmentStore, dateTime));
 
 // --------------------------- Использование регистров (автоматическое заполнение) ---------------------------------
 
@@ -5658,46 +5688,46 @@ balanceBeforeInnerArrivalInnerArrivalDetail(innerArrivalDetail) <- balanceBItemL
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
 
-oldImporterPriceShipmentDetail (shipmentDetail) <- priceImporterLedgerDateTime (
+oldImporterPriceShipmentDetail (shipmentDetail) <- priceImporterBLedgerDateTime (
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
 
-oldRetailRangeShipmentDetail (shipmentDetail) <- rangeRetailLedgerDateTime(
+oldRetailRangeShipmentDetail (shipmentDetail) <- rangeRetailBLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
 
-oldRetailPriceShipmentDetail (shipmentDetail) <- priceAccountLedgerDateTime(
+oldRetailPriceShipmentDetail (shipmentDetail) <- priceAccountBLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
 
-priceWriteOffDetail (writeOffDetail) <- priceAccountLedgerDateTime(
+priceWriteOffDetail (writeOffDetail) <- priceAccountBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
                 ON CHANGE itemWriteOffDetail(writeOffDetail);
 
-retailPriceItemWriteOffDetail 'Розничная цена' (writeOffDetail) = priceRetailLedgerDateTime (
+retailPriceItemWriteOffDetail 'Розничная цена' (writeOffDetail) = priceRetailBLedgerDateTime (
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail));
 
-priceInnerFlowDetail (innerFlowDetail) <- priceRetailLedgerDateTime(
+priceInnerFlowDetail (innerFlowDetail) <- priceRetailBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
                 ON CHANGE itemInnerFlowDetail(innerFlowDetail);
 
-importerPriceInnerFlowDetail (innerFlowDetail) <- priceImporterLedgerDateTime(
+importerPriceInnerFlowDetail (innerFlowDetail) <- priceImporterBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
                 ON CHANGE itemInnerFlowDetail(innerFlowDetail);
 
-retailRangeInnerFlowDetail (innerFlowDetail) <- rangeRetailLedgerDateTime(
+retailRangeInnerFlowDetail (innerFlowDetail) <- rangeRetailBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
                 ON CHANGE itemInnerFlowDetail(innerFlowDetail);
 
-oldRetailPriceInnerArrivalDetail (innerArrivalDetail) <- priceRetailLedgerDateTime(
+oldRetailPriceInnerArrivalDetail (innerArrivalDetail) <- priceRetailBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
 
-oldImporterPriceInnerArrivalDetail (innerArrivalDetail) <- priceImporterLedgerDateTime(
+oldImporterPriceInnerArrivalDetail (innerArrivalDetail) <- priceImporterBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
 
-oldRetailRangeInnerArrivalDetail (innerArrivalDetail) <- rangeRetailLedgerDateTime(
+oldRetailRangeInnerArrivalDetail (innerArrivalDetail) <- rangeRetailBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
 
@@ -5758,23 +5788,23 @@ DESIGN writeOffs FROM DEFAULT {
 
 // --------------------------- Использование регистров (автоматическое заполнение): выписка из розницы-------------//
 
-retailPriceDetailSpec (detailSpec) <- priceRetailLedgerDateTime(
+retailPriceDetailSpec (detailSpec) <- priceRetailBLedgerDateTime(
                 itemDetailSpec(detailSpec), departmentStoreDetailSpec(detailSpec), dateTimeDetailSpec(detailSpec))
                 ON CHANGE itemDetailSpec(detailSpec);
 
-oldImporterPriceStatementDetail (statementDetail) <- priceImporterLedgerDateTime (
+oldImporterPriceStatementDetail (statementDetail) <- priceImporterBLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
                 ON CHANGE itemStatementDetail(statementDetail);
 
-oldRetailRangeStatementDetail (statementDetail) <- rangeRetailLedgerDateTime(
+oldRetailRangeStatementDetail (statementDetail) <- rangeRetailBLedgerDateTime(
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
                 ON CHANGE itemStatementDetail(statementDetail);
 
-oldRetailPriceStatementDetail (statementDetail) <- priceRetailLedgerDateTime (
+oldRetailPriceStatementDetail (statementDetail) <- priceRetailBLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
                 ON CHANGE itemStatementDetail(statementDetail);
 
-retailPriceStatementDetail (statementDetail) <- priceRetailLedgerDateTime (
+retailPriceStatementDetail (statementDetail) <- priceRetailBLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
                 ON CHANGE itemStatementDetail(statementDetail);
 
@@ -5811,11 +5841,11 @@ NotNullAvailableQuantityItemByDetailSpec(detailSpec) = availableQuantityItemByDe
 
 // --------------------------- Использование регистров (автоматическое заполнение): инвентаризация---------------//
 
-priceDetailPage(detailPage) <- priceAccountLedgerDateTime(
+priceDetailPage(detailPage) <- priceAccountBLedgerDateTime(
                 skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeToInventory(inventoryDetailPage(detailPage)))
                 ON CHANGE skuBarcodeDetailPage(detailPage);
 
-priceCollationSheetItem(collationSheet, item) <- priceAccountLedgerDateTime(
+priceCollationSheetItem(collationSheet, item) <- priceAccountBLedgerDateTime(
                 item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)))
                 ON ASSIGN includeCollationSheetItem(collationSheet, item);
 
@@ -5827,10 +5857,10 @@ fillBalanceInventory 'Заполнить остатки' (inventory) = ACTION(in
 //  todo: зацикливается на includeCollationSheetItem, пока на action поставили - переделать потом
 
 convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
-    SET priceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory <- priceAccountLedgerDateTime(
+    SET priceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory <- priceAccountBLedgerDateTime(
             skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeToInventory(inventoryDetailPage(detailPage)))
             AND inventoryDetailPage(detailPage) == inventory;
-    SET priceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- priceAccountLedgerDateTime(
+    SET priceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- priceAccountBLedgerDateTime(
             item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)))
             AND inventoryCollationSheet(collationSheet) == inventory;
 } CONFIRM;
@@ -5838,10 +5868,10 @@ convertPriceInventory 'Пересчитать цены по всей инвен�
 // todo: какой-то баг, не всегда срабатывает action
 
 convertPriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION(collationSheet) {
-    SET priceDetailPage(detailPage) AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet <- priceAccountLedgerDateTime(
+    SET priceDetailPage(detailPage) AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet <- priceAccountBLedgerDateTime(
             skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeToInventory(inventoryDetailPage(detailPage)))
             AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet;
-    SET priceCollationSheetItem(collationSheet, item) <- priceAccountLedgerDateTime(
+    SET priceCollationSheetItem(collationSheet, item) <- priceAccountBLedgerDateTime(
             item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)));
 } CONFIRM;
 
@@ -5923,6 +5953,29 @@ FORM priceChangeDocuments 'Акты переоценки'
     FILTERS documentPriceChangeDocumentDetail(pcd) == pc
 ;
 
+//------------------------------------ Изменение учетных сумм ------------------------------------------//
+
+dateTimeAccountSumDocumentLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipment(ledger) PERSISTENT INDEXED;
+
+isPostedAccountSumDocumentLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipment(ledger) PERSISTENT;
+
+departmentStoreAccountSumDocumentLedger (ledger) = UNION EXCLUSIVE departmentStoreShipment(ledger) PERSISTENT;
+nameDepartmentStoreAccountSumDocumentLedger 'Отдел магазина' (ledger) = name(departmentStoreAccountSumDocumentLedger(ledger));
+
+//sumIncAccountSumDocumentLedger (ledger) = UNION
+
+//currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
+//                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger) PERSISTENT;
+//
+//без учета текущей даты/времени
+//balanceBItemLedgerDateTime (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
+//                                                                         -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) >= (dateTime AS DATETIME) AND isPostedBalanceItemLedger(ledger)
+//                                                                         BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
+//
+//с учетом текущей даты/времени
+//balanceAItemLedgerDateTime 'Остаток на дату' (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
+//                                                                         -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) > (dateTime AS DATETIME) AND isPostedBalanceItemLedger(ledger)
+//                                                                         BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
 
 //------------------------------------Формы для инвентаризации------------------------------------------//
 
@@ -6342,7 +6395,7 @@ FORM balanceItemDepartment 'Остатки по отделам'
 
     OBJECTS i=item
     PROPERTIES(i) nameAttributeItem
-    PROPERTIES(i, ds, t) priceAccountLedgerDateTime, balanceAItemLedgerDateTime
+    PROPERTIES(i, ds, t) priceAccountALedgerDateTime, balanceAItemLedgerDateTime
     FILTERGROUP filters
         FILTER 'Товары с остатком' 'F10' balanceAItemLedgerDateTime(i, ds, t) DEFAULT
 
