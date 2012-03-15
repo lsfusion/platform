@@ -982,6 +982,8 @@ dateBarcode 'Дата действия' = UNION OVERRIDE dateMaxGlobal() IF barc
 skuBarcode = DATA sku(barcode) IN baseGroup;
 nameSkuBarcode 'Товар штрих-кода' (barcode) = nameAttributeItem(skuBarcode(barcode)) IN recognizeGroup;
 
+hasParentOrNullItemGroupBarcode (itemGroup, barcode) = hasParentItemGroupSku(itemGroup, skuBarcode(barcode));
+
 barcodeToDate(barcode, date) = GROUP UNIQUE barcode BY barcodeEx(barcode), dateBarcode(barcode);
 
 barcodeStringDate 'Дата действия' (string, date) = GROUP MAX dateBarcode(barcode) IF barcodeEx(barcode) == string AND dateBarcode(barcode) <= date AND
@@ -1972,6 +1974,35 @@ DESIGN items FROM DEFAULT {
         defaultComponent = TRUE;
     }
 }
+
+
+
+FORM barcodeForm 'Товары по Ш-К'
+    TREE treeGroup g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY name(g)
+    ORDER BY name
+
+    OBJECTS b=barcode
+    PROPERTIES(b) READONLY barcodeEx, nameSkuBarcode, shortNameUnitOfMeasureBarcode
+    PROPERTIES(b) ADDFORM, EDITFORM, delete
+    FILTERS hasParentOrNullItemGroupBarcode(g, b)
+    ORDER BY nameSkuBarcode
+
+    DIALOG barcode OBJECT b
+;
+
+DESIGN barcodeForm FROM DEFAULT {
+    POSITION treeGroup.box TO THE LEFT b.box;
+
+    treeGroup.tree {
+        fillHorizontal = 0.4;
+    }
+
+    b.grid {
+        defaultComponent = TRUE;
+    }
+}
+
 
 FORM itemGroup 'Товарная группа'
     OBJECTS g=itemGroup FIXED PANEL
@@ -3773,6 +3804,10 @@ inCommitteeListInventoryEmployee 'Сотрудник комиссии' (listInve
 
 commonNameCommitteeListInventory 'Название комиссии' (listInventory) = commonName(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
 commonNameChairmanCommitteeListInventory 'Председатель комиссии' (listInventory) = commonNameChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
+
+commonNameEmployeeListInventory 'Члены комиссии' (listInventory) =
+     GROUP CONCAT commonName(employee) IF inCommitteeListInventoryEmployee(listInventory, employee), ', '
+     BY listInventory IN inventoryCommitteeGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 listInventoryPageList(pageList) = DATA listInventory (pageList) IN idGroup;
 nameListInventoryPageList 'Номер описи' (pageList) = nameListInventory(listInventoryPageList(pageList));
@@ -5752,9 +5787,15 @@ balanceDepartmentStoreItemDetailSpec 'Текущий остаток' (detailSpec
 quantityItemByDetailSpec(detailSpec) = quantityItemSpecification( itemDetailSpec(detailSpec), specificationDetailSpec(detailSpec));
 highlightDetailSpec(detailSpec) =  quantityItemByDetailSpec(detailSpec) > balanceDepartmentStoreItemDetailSpec(detailSpec);
 
+//noOverdueSpecificationDate 'Непросроченные с/ф' (specification, dateIn) = dateToSpecification(specification) >= dateIn AND dateIn AS DATE;
+
 quantityItemDepartmentStore 'Количество выставленного товара на тек. момент' (departmentStore, item) = GROUP SUM
     quantityDetailSpec(detailSpec) IF noOverdueSpecification(specificationDetailSpec(detailSpec))
     BY departmentStoreDetailSpec(detailSpec), itemDetailSpec(detailSpec);
+
+//quantityItemDepartmentStore 'Количество выставленного товара на тек. момент' (departmentStore, item) = GROUP SUM
+//    quantityDetailSpec(detailSpec) IF noOverdueSpecificationDate(specificationDetailSpec(detailSpec), dateSpecification(specificationDetailSpec(detailSpec)))
+//    BY departmentStoreDetailSpec(detailSpec), itemDetailSpec(detailSpec);
 
 quantityExhibitedItemByDetailSpec(detailSpec) = quantityItemDepartmentStore(departmentStoreDetailSpec(detailSpec), itemDetailSpec(detailSpec));
 
@@ -5773,14 +5814,6 @@ priceDetailPage(detailPage) <- priceAccountLedgerDateTime(
 priceCollationSheetItem(collationSheet, item) <- priceAccountLedgerDateTime(
                 item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)))
                 ON ASSIGN includeCollationSheetItem(collationSheet, item);
-
-//balanceCollationSheetItem(collationSheet, item) <- balanceAItemLedgerDateTime(
-//                item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)))
-//                ON ASSIGN includeCollationSheetItem(collationSheet, item);
-
-//priceAccountLedgerDateTimeDetailPage (detailPage) = priceAccountLedgerDateTime(skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeToInventory(inventoryDetailPage(detailPage)));
-//priceAccountLedgerDateTimeItemCollationSheet(item, collationSheet) = priceAccountLedgerDateTime(item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)));
-
 
 fillBalanceInventory 'Заполнить остатки' (inventory) = ACTION(inventory) {
     SET balanceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet)==inventory  AND item IS item
@@ -5922,7 +5955,7 @@ showFormItemByCollationSheet 'Добавить товар' (collationSheet) = [A
 FORM listInventory 'Опись'
     OBJECTS         li=listInventory FIXED PANEL
     PROPERTIES (li) nameListInventory, nameDepartmentStoreListInventory, nameInventoryListInventory, noteListInventory,
-                    commonNameCommitteeListInventory, commonNameChairmanCommitteeListInventory,
+                    commonNameCommitteeListInventory, commonNameChairmanCommitteeListInventory, commonNameEmployeeListInventory,
                     quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, sumPageListInventory
 
     OBJECTS         pl=pageList
@@ -5932,23 +5965,22 @@ FORM listInventory 'Опись'
     PROPERTIES (dp) nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage, priceDetailPage,
                     totalDetailPage, ADDOBJ, delete
 
-    OBJECTS         e=employee
-    PROPERTIES (e)  commonName
-
     FILTERS inListInventoryPageList(li, pl),
-        inPageListDetailPage(pl, dp),
-        inCommitteeListInventoryEmployee(li, e)
+            inPageListDetailPage(pl, dp)
+
 EDIT listInventory OBJECT li
 ;
 
 DESIGN listInventory FROM DEFAULT {
     main{
-       NEW firstCase BEFORE functions.box {
-            NEW x.box BEFORE dp.box;
-            ADD pl.box IN x.box;
-            ADD e.box IN x.box { title = 'Члены комиссии' ;}
-            POSITION pl.box TO THE LEFT e.box;
-       }
+        preferredSize = (1024, 768);
+
+        li.box{ childConstraints = TO THE BOTTOM;
+        POSITION li.inventoryCommitteeGroup TO THE LEFT li.adverbGroup;
+        }
+        POSITION dp.box TO THE BOTTOM pl.box;
+        dp.box { fillVertical = 2;}
+        pl.box {fillVertical =1;}
     }
 }
 
@@ -5956,7 +5988,7 @@ FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
     PROPERTIES (in)  numberInventory READONLY, nameInventory, nameTypeOfAdditionInventory, dateToInventory, timeToInventory,
                      noteInventory, infoInventory, nameDepartmentByInventory, showFormNameDepartmentByInventory, convertPriceInventory,
-                     fillBalanceInventory, dateTimeToInventory
+                     fillBalanceInventory
 
     TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageList
     PROPERTIES       READONLY name(ds),  nameListInventory(li), namePageList(pl)
@@ -6576,6 +6608,7 @@ NAVIGATOR {
             ADD numerator;
             ADD userPriceChange;
             ADD returnSupplier;
+            ADD barcodeForm;
         }
         ADD importData;
         ADD globalParameters;
