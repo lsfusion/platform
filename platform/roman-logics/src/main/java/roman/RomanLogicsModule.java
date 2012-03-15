@@ -328,6 +328,7 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass customCategoryOrigin;
     ConcreteCustomClass subCategory;
     ConcreteCustomClass typeDuty;
+    ConcreteCustomClass customStore;
 
     private LP typeInvoiceCategory;
     private LP nameTypeInvoiceCategory;
@@ -552,6 +553,9 @@ public class RomanLogicsModule extends LogicsModule {
     LP nameExporterFreight;
     LP addressOriginExporterFreight;
     LP addressExporterFreight;
+    public LP customStoreFreight;
+    public LP nameCustomStoreFreight;
+
     private LP inInvoiceFreight;
     private LP netWeightInvoicedFreight;
     public LP contractImporterFreight;
@@ -1380,6 +1384,8 @@ public class RomanLogicsModule extends LogicsModule {
         subCategory = addConcreteClass("subCategory", "Дополнительное деление", baseClass);
 
         typeDuty = addConcreteClass("typeDuty", "Тип пошлины", baseClass);
+
+        customStore = addConcreteClass("customStore", "Склад временного хранения", baseClass.named);
 
         creationSku = addConcreteClass("creationSku", "Операция создания товаров", baseLM.transaction);
         creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", baseLM.transaction);
@@ -2912,6 +2918,9 @@ public class RomanLogicsModule extends LogicsModule {
         nameExporterFreight = addJProp(baseGroup, "nameExporterFreight", "Экспортер", baseLM.name, exporterFreight, 1);
         addressOriginExporterFreight = addJProp(baseGroup, "addressOriginExporterFreight", "Адрес", addressOriginSubject, exporterFreight, 1);
         addressExporterFreight = addJProp(baseGroup, "addressExporterFreight", "Адрес", addressSubject, exporterFreight, 1);
+
+        customStoreFreight = addDProp(idGroup, "customStoreFreight", "СВХ (ИД)", customStore, freight);
+        nameCustomStoreFreight = addJProp(baseGroup, "nameCustomStoreFreight", "СВХ", baseLM.name, customStoreFreight, 1);
 
         inInvoiceFreight = addDProp(baseGroup, "inInvoiceFreight", "Вкл.", LogicalClass.instance, invoice, freight);
         netWeightInvoicedFreight = addSGProp(baseGroup, "netWeightInvoicedFreight", "Вес инвойсов", addJProp(baseLM.and1, netWeightDocument, 1, inInvoiceFreight, 1, 2), 2);
@@ -7708,7 +7717,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightCreateFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, tonnageDataFreight, volumeDataFreight, palletCountDataFreight, nameCurrencyFreight, sumFreightFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, nameCustomStoreFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, tonnageDataFreight, volumeDataFreight, palletCountDataFreight, nameCurrencyFreight, sumFreightFreight);
 //            addObjectActions(this, objFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
 
@@ -7744,7 +7753,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightListFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, formLogFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, tonnageDataFreight, netWeightInvoicedFreight, grossWeightFreight, volumeDataFreight, palletCountDataFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, nameCustomStoreFreight, formLogFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, tonnageDataFreight, netWeightInvoicedFreight, grossWeightFreight, volumeDataFreight, palletCountDataFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.GRID);
             setReadOnly(objFreight, true);
             setReadOnly(formLogFreight, false);
