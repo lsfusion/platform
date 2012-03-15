@@ -979,7 +979,10 @@ barcodeEx 'Штрих код' = DATA STRING[14] (barcode) IN recognizeGroup FIXE
 
 dateUserBarcode 'Дата действия' = DATA DATE (barcode) IN baseGroup;
 dateMaxGlobal 'Наименьшая дата' = DATA DATE() IN baseGroup;
-dateBarcode 'Дата действия' = UNION OVERRIDE dateMaxGlobal() IF barcode IS barcode, dateUserBarcode(barcode) IN baseGroup;
+dateCurBarcode(barcode) =  DATA DATE (barcode) IN baseGroup;
+//dateBarcode 'Дата действия' = UNION OVERRIDE dateMaxGlobal() IF barcode IS barcode, dateUserBarcode(barcode) IN baseGroup;
+dateBarcode 'Дата действия' = UNION OVERRIDE dateMaxGlobal() IF barcode IS barcode, dateCurBarcode(barcode) IF barcode IS barcode, dateUserBarcode(barcode) IN baseGroup;
+dateCurBarcode(barcode) <- currentDate() ON ASSIGN barcode IS barcode;
 
 skuBarcode = DATA sku(barcode) IN baseGroup;
 nameSkuBarcode 'Товар штрих-кода' (barcode) = nameAttributeItem(skuBarcode(barcode)) IN recognizeGroup;
@@ -1303,7 +1306,6 @@ inTradingNetworkStoreTypeStoreDepartment (tradingNetwork, storeType, store, depa
     storeTypeDepartmentStore(department) == storeType AND tradingNetwork AND NOT store,
     tradingNetworkDepartmentStore(department) == tradingNetwork AND NOT store AND NOT storeType,
     department IS departmentStore AND NOT store AND NOT storeType AND NOT tradingNetwork;
-
 
 FORM employee 'Сотрудник'
     OBJECTS e=employee FIXED PANEL
@@ -1748,6 +1750,11 @@ OBJECTS w=ware
 PROPERTIES(w) READONLY name, priceWare, dataActingRateRangeWare
 PROPERTIES(w) ADDFORM, EDITFORM, delete;
 
+FORM wareForm 'Посуда'
+OBJECTS w=ware
+PROPERTIES(w) barcodeBarcodeSku, name, priceWare, showFormpriceWare
+PROPERTIES(w) dataRangeWare, dataActingRateRangeWare, showFormRangeWare
+DIALOG ware OBJECT w;
 
 //toShowManufactured(item) =
 
@@ -5567,7 +5574,7 @@ quantityBalanceItemLedger 'Количество' (ledger) = UNION EXCLUSIVE quan
                                                     -quantityInnerFlowDetail(ledger),
                                                     -quantityWastageDetail(ledger),
                                                     -quantityReturnSupplierDetail(ledger),
-                                                     quantityInventoryLedger(ledger) PERSISTENT;
+                                                    -quantityInventoryLedger(ledger) PERSISTENT;
 
 currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
                                                           BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger) PERSISTENT;
@@ -6379,53 +6386,73 @@ DESIGN statements FROM DEFAULT {
 
 
 //----------------------------------- Форма для остатков -------------------------------------------------//
+
+storeDepStoreDepartment(store, depStore, department)=  UNION OVERRIDE
+    storeDepartmentStore(department) == store AND NOT depStore AS departmentStore,  // AND department AS departmentStore
+    department == depStore AND storeDepartmentStore(department)== storeDepartmentStore(depStore) AND store IS store;
+
 FORM balanceItemDepartment 'Остатки по отделам'
 
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
 
-    TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store
-    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s)
-    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, tn), inStoreTypeStore (st, s)
+    TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
+    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, tn), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
 
-    OBJECTS ds=departmentStore
-    PROPERTIES(ds) READONLY depName = name
-    FILTERS inTradingNetworkStoreTypeStoreDepartment(tn, st, s, ds)
-    ORDER BY depName
+    TREE treeGroups g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY name(g)
+    ORDER BY name
 
-    OBJECTS i=item
-    PROPERTIES(i) nameAttributeItem
-    PROPERTIES(i, ds, t) priceAccountALedgerDateTime, balanceAItemLedgerDateTime
+    OBJECTS           dsi=(dss=departmentStore, ii=item)
+    PROPERTIES        nameIt=nameAttributeItem(ii), nameDep=name(dss)  //  barcodeBarcodeSku
+    ORDER BY          nameDep
+    FILTERS           hasParentItemGroupSku(g, ii),
+                      inStoreDepartment(s, dss),
+                      storeDepStoreDepartment(s, ds, dss)
+
+    PROPERTIES(ii, dss, t) priceAccountALedgerDateTime, balanceAItemLedgerDateTime
     FILTERGROUP filters
-        FILTER 'Товары с остатком' 'F10' balanceAItemLedgerDateTime(i, ds, t) DEFAULT
+        FILTER 'Товары с остатком' 'F10' balanceAItemLedgerDateTime(ii, dss, t) DEFAULT
 
     OBJECTS apl=accountPriceLedger
     PROPERTIES (apl) dateTimeAccountPriceLedger, priceAccountLedger
-    FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==ds
+    FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==ii AND departmentStoreAccountPriceLedger(apl)==dss
 
     OBJECTS rpl=retailPriceLedger
     PROPERTIES (rpl) dateTimeRetailPriceLedger, priceRetailLedger
-    FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==ds
+    FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==ii AND departmentStoreRetailPriceLedger(rpl)==dss
 
     OBJECTS bil=balanceItemLedger
     PROPERTIES(bil) dateTimeBalanceItemLedger, quantityBalanceItemLedger READONLY
-    FILTERS isPostedBalanceItemLedger(bil) AND itemBalanceItemLedger(bil)==i AND departmentStoreBalanceItemLedger(bil)==ds
+    FILTERS isPostedBalanceItemLedger(bil) AND itemBalanceItemLedger(bil)==ii AND departmentStoreBalanceItemLedger(bil)==dss
 
     OBJECTS ipl=importerPriceLedger
     PROPERTIES(ipl) dateTimeImporterPriceLedger, priceImporterLedger
-    FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==ds
+    FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==ii AND departmentStoreImporterPriceLedger(ipl)==dss
 
     OBJECTS rvl=retailVATLedger
     PROPERTIES(rvl) dateTimeRetailVATLedger, dataRetailLedger
-    FILTERS isPostedRetailVATLedger(rvl) AND itemRetailVATLedger(rvl)==i AND departmentStoreRetailVATLedger(rvl)==ds
+    FILTERS isPostedRetailVATLedger(rvl) AND itemRetailVATLedger(rvl)==ii AND departmentStoreRetailVATLedger(rvl)==dss
 ;
 
 DESIGN balanceItemDepartment FROM DEFAULT {
     main{
         preferredSize = (1024, 768);
-        NEW down.box BEFORE functions.box{
-            fillVertical = 3;
-            NEW ledger.box {
+
+        NEW firstCase {
+                childConstraints = TO THE BOTTOM;
+                ADD t.box;
+                ADD treeStore.box {title = 'Магазины';};
+                ADD treeGroups.box {title = 'Товарные группы';};
+        }
+
+        NEW secondCase {
+                ADD dsi.box;
+        }
+        POSITION firstCase TO THE LEFT secondCase;
+
+        NEW ledger.box {
                 title = 'Изменение цен';
                 tabbedPane = TRUE;
                 ADD bil.box;
@@ -6433,16 +6460,10 @@ DESIGN balanceItemDepartment FROM DEFAULT {
                 ADD rpl.box;
                 ADD ipl.box;
                 ADD rvl.box;
-            };
-            ADD i.box BEFORE ledger.box;
-            POSITION i.box TO THE LEFT ledger.box;
         }
-        NEW store.box BEFORE down.box{
-            fillVertical = 1;
-            ADD treeStore.box;
-            ADD ds.box;
-            POSITION treeStore.box TO THE LEFT ds.box;
-        }
+        POSITION secondCase TO THE LEFT ledger.box;
+
+        ADD functions.box;
     }
 }
 //----------------------------------- Форма для общих параметров -------------------------------------------------//
@@ -6713,6 +6734,7 @@ NAVIGATOR {
             ADD userPriceChange;
             ADD returnSupplier;
             ADD barcodeForm;
+            ADD wareForm;
         }
         ADD importData;
         ADD globalParameters;
