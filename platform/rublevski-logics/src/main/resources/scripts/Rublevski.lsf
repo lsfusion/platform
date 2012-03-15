@@ -620,7 +620,7 @@ TABLE sku(sku);
 CLASS item 'Товар' : sku, externalObject;
 TABLE item(item);
 
-CLASS ware 'Посуда' : sku, named;
+CLASS ware 'Посуда' : sku, named, externalObject;
 
 CLASS brand 'Бренд' : named, externalObject;
 
@@ -6366,8 +6366,10 @@ importLSTDataAction 'Импортировать данные (LS Trade)' = ACTIO
 importLSTDirectory 'Папка' = DATA STRING[200] ();// IN lstradeGroup;
 importInactive 'Импортировать в том числе неактивные товары' = DATA BOOLEAN ();
 importGroupItems 'Импортировать группы товаров' = DATA BOOLEAN ();
+importWares 'Импортировать посуду' = DATA BOOLEAN ();
 importItems 'Импортировать товары' = DATA BOOLEAN ();
 importNumberItems 'Кол-во' = DATA INTEGER ();
+importNumberItemsAtATime 'Разбивать на пакеты по' = DATA INTEGER ();
 importPrices 'Импортировать цены товаров' = DATA BOOLEAN ();
 importAssortment 'Импортировать ассортимент' = DATA BOOLEAN();
 importCompanies 'Импортировать компании' = DATA BOOLEAN ();
@@ -6378,8 +6380,9 @@ importDepartmentStores 'Импортировать отделы магазина
 importBanks 'Импортировать банки' = DATA BOOLEAN();
 FORM importData 'Импорт данных'
     PROPERTIES() importDataAction, importUrl, importLogin, importPassword
-    PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importItems, importNumberItems,
-    importPrices, importAssortment, importCompanies, importSuppliers, importCustomers, importStores, importDepartmentStores, importBanks
+    PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importWares, importItems,
+    importNumberItems, importNumberItemsAtATime, importPrices, importAssortment, importCompanies, importSuppliers, importCustomers, importStores,
+    importDepartmentStores, importBanks
 ;
 
 //---------------------------- Настройка навигатора ----------------------------------------//
