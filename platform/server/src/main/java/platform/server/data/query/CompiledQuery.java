@@ -460,7 +460,8 @@ public class CompiledQuery<K,V> {
                     queryExprs.addAll(query.getExprs());
                     exprWhere = exprWhere.or(query.getWhere());
                 }
-                Where fullWhere = exprWhere.and(platform.server.data.expr.Expr.getWhere(group));
+                Where groupWhere = exprWhere.and(Expr.getWhere(group));
+                Where fullWhere = groupWhere;
 
                 StatKeys<Expr> statKeys = innerJoin.getStatKeys(keyStat); // определяем ключи которые надо протолкнуть
                 Set<Expr> groupExprs = innerJoin.getJoins().keySet();
@@ -475,15 +476,29 @@ public class CompiledQuery<K,V> {
                     }
                 }
 
-                Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
                 Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
-                String fromSelect = new Query<KeyExpr,Expr>(keys.toMap(),BaseUtils.toMap(queryExprs), fullWhere)
-                    .compile(syntax, subcontext).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, params, env);
+                Map<String, String> keySelect, propertySelect;
+                String fromSelect;
 
-                Map<String, String> keySelect = BaseUtils.join(group,fromPropertySelect);
-                Map<String,String> propertySelect = new HashMap<String, String>();
-                for(Map.Entry<GroupExpr.Query, String> expr : queries.entrySet())
-                    propertySelect.put(expr.getValue(),expr.getKey().getSource(fromPropertySelect, syntax, exprs.get(expr.getKey()).getType()));
+                if(fullWhere.isFalse()) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
+                    keySelect = new HashMap<String, String>();
+                    for(Map.Entry<String, Expr> expr : group.entrySet())
+                        keySelect.put(expr.getKey(), expr.getValue().getType(groupWhere).getCast(SQLSyntax.NULL, syntax, false));
+                    propertySelect = new HashMap<String, String>();
+                    for(Map.Entry<GroupExpr.Query, String> expr : queries.entrySet())
+                        propertySelect.put(expr.getValue(), exprs.get(expr.getKey()).getType().getCast(propertySelect.get(expr.getValue()), syntax, false));
+                    fromSelect = "empty";
+                } else {
+                    Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
+                    fromSelect = new Query<KeyExpr,Expr>(keys.toMap(),BaseUtils.toMap(queryExprs), fullWhere)
+                        .compile(syntax, subcontext).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, params, env);
+
+                    keySelect = BaseUtils.join(group,fromPropertySelect);
+                    propertySelect = new HashMap<String, String>();
+                    for(Map.Entry<GroupExpr.Query, String> expr : queries.entrySet())
+                        propertySelect.put(expr.getValue(), expr.getKey().getSource(fromPropertySelect, syntax, exprs.get(expr.getKey()).getType()));
+                }
+
 
                 Collection<String> havingSelect = new ArrayList<String>();
                 if(isSingle(innerJoin))
