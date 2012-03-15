@@ -6013,12 +6013,19 @@ FORM inventory 'Инвентаризация'
 
     OBJECTS          cs=collationSheet
 
-    PROPERTIES (cs)  READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
+    PROPERTIES (cs)  READONLY nameCollationSheet
+    PROPERTIES (cs)  setDataCollationSheet
+    PROPERTIES (cs)  READONLY nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
                      quantityCountedItemByCollationSheet, balanceItemByCollationSheet, shortageQuantityCountedItemByCollationSheet,
                      totalItemByCollationSheet, totalBalansItemByCollationSheet, shortageTotalItemByCollationSheet,
                      sumListInventoryByCollationSheet, sumPageListByCollationSheet
+    PROPERTIES (cs)  showFormItemByCollationSheet, convertPriceCollationSheet, delete
 
-    PROPERTIES (cs)  showFormItemByCollationSheet, setDataCollationSheet, convertPriceCollationSheet, delete
+
+    TREE treeGroup g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY name(g)
+    ORDER BY name
+
     OBJECTS          i=item
     PROPERTIES (i)   READONLY nameAttributeItem, barcodeBarcodeSku
 
@@ -6034,7 +6041,10 @@ FORM inventory 'Инвентаризация'
             inListInventoryPageList(li, pl),
             includeDepartmentStoreInventory(ds, in),
             inInventoryCollationSheet(in,cs),
-            includeCollationSheetItem(cs, i)
+            includeCollationSheetItem(cs, i),
+            hasParentItemGroupSku(g, i)
+
+    ORDER BY nameAttributeItem
 
     FILTERGROUP notEqualsPriceFilters
             FILTER 'Показать товар с разными ценами' 'F10' notEqualsPriceByCollationSheetItem(cs, i)
@@ -6085,11 +6095,19 @@ DESIGN inventory FROM DEFAULT {
 
                 NEW x.box { title = 'Сличительные ведомости';
                     fillVertical = 5;
+
                     ADD cs.box  { fillVertical = 1;};
-                    ADD i.box { fillVertical = 4;}
+
+                    NEW firstCase { title = 'Пересчитанный товар';
+                        fillVertical = 4;
+                        ADD treeGroup.box { title = 'Товарные группы';};
+                        ADD i.box;
+                        POSITION treeGroup.box TO THE LEFT i.box;
+                            treeGroup.box{ fillHorizontal = 1.5;}
+                            i.box{ fillHorizontal = 3.5;}
 
                     ADD PROPERTY(showFormItemByCollationSheet(cs)) IN i.panel;
-
+                    }
                 }
 
         }
