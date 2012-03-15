@@ -3834,6 +3834,7 @@ skuBarcodeDetailPage 'Товар (ИД)' (detailPage) =  skuBarcode(barcodeDetai
 nameAttributeItemDetailPage 'Товар' (detailPage) = nameAttributeItem(skuBarcodeDetailPage(detailPage)) IN recognizeGroup;
 
 quantityCountedDetailPage 'Количество посчитано' = DATA DOUBLE (detailPage) IN baseGroup;
+CONSTRAINT quantityCountedDetailPage(detailPage) < 0 MESSAGE 'Количество должно быть положительным';
 
 //accountPriceDetailPage 'Учетная цена' (detailPage) =
 //    accountPriceItemDepartmentVal(skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateToInventory(inventoryDetailPage(detailPage))) IN baseGroup;
@@ -3907,12 +3908,13 @@ includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE
 
 //priceCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item) ON ASSIGN includeCollationSheetItem(collationSheet, item); //CHANGE item IS item AND collationSheet IS collationSheet;
 
-shortageQuantityCountedCollationSheetItem 'Количество, излишек' (collationSheet, item) =
-    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, quantityCountedCollationSheetItem(collationSheet, item)) -
-    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, balanceCollationSheetItem(collationSheet, item));
-shortageTotalCollationSheetItem 'Сумма, излишек' (collationSheet, item) =
-    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalCollationSheetItem(collationSheet, item)) -
-    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalBalansCollationSheetItem(collationSheet, item));
+shortageQuantityCountedCollationSheetItem 'Количество, недостача' (collationSheet, item) =
+    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, balanceCollationSheetItem(collationSheet, item)) -
+    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, quantityCountedCollationSheetItem(collationSheet, item));
+
+shortageTotalCollationSheetItem 'Сумма, недостача' (collationSheet, item) =
+    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalBalansCollationSheetItem(collationSheet, item)) -
+    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalCollationSheetItem(collationSheet, item));
 
 quantityCountedItemByCollationSheet 'Количество посчитано по ведомости' (collationSheet) =
     GROUP SUM quantityCountedCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
@@ -3926,21 +3928,11 @@ balanceItemByCollationSheet 'Остаток' (collationSheet) =
 totalBalansItemByCollationSheet 'Сумма по учетным данным ' (collationSheet) =
     GROUP SUM totalBalansCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
 
-shortageQuantityCountedItemByCollationSheet 'Излишек/недостача (к-во) по ведомости' (collationSheet) =
+shortageQuantityCountedItemByCollationSheet 'Недостача (к-во) по ведомости' (collationSheet) =
     GROUP SUM shortageQuantityCountedCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
 
-shortageTotalItemByCollationSheet 'Излишек/недостача (сумма) по ведомости' (collationSheet) =
+shortageTotalItemByCollationSheet 'Недостача (сумма) по ведомости' (collationSheet) =
     GROUP SUM shortageTotalCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
-
-//convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
-//    SET priceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory <- accountPriceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory;
-//    SET priceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- accountPriceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory;
-//} CONFIRM;
-//
-//convertPriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION(collationSheet) {
-//    SET priceDetailPage(detailPage) AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet <- accountPriceDetailPage(detailPage) AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet;
-//    SET priceCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item);
-//} CONFIRM;
 
 priceByCollationSheetItem 'Цена из описи, за ед.' (collationSheet, item) = GROUP EQUAL priceDetailPage(detailPage) BY collationSheetListInventory(listInventoryDetailPage(detailPage)), skuBarcodeDetailPage(detailPage);
 
@@ -4000,7 +3992,14 @@ inventoryInventoryLedger(inventoryLedger) = inventoryCollationSheet(collationShe
 dateTimeInventoryLedger(inventoryLedger) = dateTimeToInventory(inventoryInventoryLedger (inventoryLedger));
 isPostedInventoryLedger(inventoryLedger) = isPostedInventory(inventoryInventoryLedger(inventoryLedger));
 departmentStoreInventoryLedger(inventoryLedger) = departmentStoreCollationSheet(collationSheetInventoryLedger(inventoryLedger));
-quantityInventoryLedger(inventoryLedger) = shortageQuantityCountedCollationSheetItem(collationSheetInventoryLedger(inventoryLedger), itemInventoryLedger(inventoryLedger));
+nameDepartmentStoreInventoryLedger 'Подразделение' (inventoryLedger) = name(departmentStoreInventoryLedger(inventoryLedger)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+quantityInventoryLedger 'Недостача, количество' (inventoryLedger) = shortageQuantityCountedCollationSheetItem(collationSheetInventoryLedger(inventoryLedger), itemInventoryLedger(inventoryLedger)) MINCHARWIDTH 12 PREFCHARWIDTH 12;
+shortageTotalInventoryLedger 'Недостача, сумма' (inventoryLedger) = shortageTotalCollationSheetItem(collationSheetInventoryLedger(inventoryLedger), itemInventoryLedger(inventoryLedger)) MINCHARWIDTH 12 PREFCHARWIDTH 12;
+
+nameAttributeItemInventoryLedger 'Товар' (inventoryLedger) = nameAttributeItem(itemInventoryLedger(inventoryLedger)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
+
+barcodeExInventoryLedger 'Щтрих-код' (inventoryLedger) =  barcodeEx(barcodeSku(itemInventoryLedger(inventoryLedger)));
+
 
 //--------------------------------Формы по инвентаризации см. в конце-------------------//
 
@@ -5961,7 +5960,7 @@ FORM listInventory 'Опись'
                     quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, sumPageListInventory
 
     OBJECTS         pl=pageList
-    PROPERTIES(pl)  namePageList, notePageList, quantityDetailPageList, quantityCountedPageList, totalPageList, ADDOBJ, delete
+    PROPERTIES(pl)  namePageList, notePageList FORCE PANEL, quantityDetailPageList, quantityCountedPageList, totalPageList, ADDOBJ, delete
 
     OBJECTS         dp=detailPage
     PROPERTIES (dp) nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage, priceDetailPage,
@@ -5980,9 +5979,12 @@ DESIGN listInventory FROM DEFAULT {
         li.box{ childConstraints = TO THE BOTTOM;
         POSITION li.inventoryCommitteeGroup TO THE LEFT li.adverbGroup;
         }
-        POSITION dp.box TO THE BOTTOM pl.box;
-        dp.box { fillVertical = 2;}
-        pl.box {fillVertical =1;}
+        POSITION pl.box TO THE LEFT dp.box;
+        pl.box {fillHorizontal = 1;
+            childConstraints = TO THE BOTTOM;
+        };
+        dp.box {fillHorizontal = 2;}
+
     }
 }
 
@@ -6099,6 +6101,13 @@ FORM inventories 'Инвентаризации'
                     dateToInventory, timeToInventory, timeCreated FORCE PANEL, nameUserCreated FORCE PANEL, hostnameComputerCreated FORCE PANEL, timeClosed, nameUserClosed, hostnameComputerClosed
     PROPERTIES(in)  ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL SHOWIF isDraftInventory(in),
                     postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)//(in) ADDFORM, EDITFORM, delete
+
+    OBJECTS il=inventoryLedger
+    PROPERTIES(il)  barcodeExInventoryLedger, nameAttributeItemInventoryLedger, quantityInventoryLedger, shortageTotalInventoryLedger, nameDepartmentStoreInventoryLedger
+    FILTERS         inventoryInventoryLedger(il)==in
+                    //quantityInventoryLedger(il)!=0
+
+    ORDER BY        nameDepartmentStoreInventoryLedger
 ;
 
 DESIGN inventories FROM DEFAULT {
@@ -6110,6 +6119,8 @@ DESIGN inventories FROM DEFAULT {
         askConfirm = TRUE;
     }
     POSITION in.historyGroup TO THE LEFT in.postedGroup;
+    ADD il.grid.box BEFORE in.historyGroup;
+    il.grid.box {title = 'Товары с недостачей (излишком)';};
 }
 
 //------------------------------------формы: Отпуск из розницы-------------------------//
