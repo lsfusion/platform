@@ -6382,8 +6382,97 @@ DESIGN statements FROM DEFAULT {
     }
 }
 
+//----------------------------------- Чеки -------------------------------------------------//
+@metaCodeObjectWithPost (bill, 'Чек', 'Закрытый чек', historyObject, object);
 
+numberBill 'Номер чека' (bill) = DATA INTEGER (bill) IN documentHeaderGroup;
 
+quantityBillDetail 'Количество продажи' (billDetail) = DATA DOUBLE (billDetail);
+priceBillDetail 'Цена продажи' (billDetail) = DATA DOUBLE (billDetail);
+sumBillDetail 'Сумма продажи' (billDetail) = priceBillDetail(billDetail)*quantityBillDetail(billDetail);
+discountSumBillDetail 'Сумма скидки' (billDetail) = DATA DOUBLE (billDetail);
+
+sumBill 'Сумма чека' (bill) = GROUP SUM sumBillDetail(billDetail) IF billBillDetail (billDetail) == bill
+    BY billBillDetail (billDetail) IN waybillSum;
+
+discountSumBill 'Сумма скидки в чеке' (bill) = GROUP SUM discountSumBillDetail(billDetail) IF billBillDetail (billDetail) == bill
+    BY billBillDetail (billDetail) IN waybillSum;
+
+quantityBill 'Общее количество в чеке' (bill) = GROUP SUM quantityBillDetail(billDetail) IF billBillDetail (billDetail) == bill
+    BY billBillDetail (billDetail) IN waybillSum;
+
+CLASS payment 'Оплата по чеку';
+CLASS STATIC paymentType 'Форма оплаты'{
+    cash 'Наличные',
+    card 'Карточка'
+};
+
+billPayment 'Чек (ИД)' (payment) = DATA bill (payment);
+numberBillPayment 'Чек' (payment) = numberBill(billPayment(payment));
+
+sumPayment 'Сумма платежа' (payment) = DATA DOUBLE(payment);
+paymentTypePayment 'Форма оплаты (ИД' (payment) = DATA paymentType(payment);
+namePaymentTypePayment 'Форма оплаты' (payment) = name(paymentTypePayment(payment));
+
+FORM bill 'Чек'
+    OBJECTS b=bill FIXED PANEL
+    PROPERTIES(b) numberBill, dateBill, timeBill, nameDepartmentStoreBill, sumBill, discountSumBill, quantityBill
+
+    OBJECTS d=billDetail
+    PROPERTIES(d) nameAttributeItemBillDetail, quantityBillDetail, priceBillDetail, sumBillDetail, discountSumBillDetail, ADDOBJ, delete
+
+    FILTERS billBillDetail(d)==b
+
+    OBJECTS p=payment
+    PROPERTIES(p)  namePaymentTypePayment, sumPayment, ADDOBJ, delete
+    PROPERTIES addBillDetailBarcode(b) TODRAW d
+
+    FILTERS billPayment(p)==b
+
+    EDIT bill OBJECT b
+;
+
+DESIGN bill FROM DEFAULT{
+    NEW row.box BEFORE functions.box{
+        ADD d.box{
+            title = 'Строка чека';
+            fillHorizontal = 3;
+        };
+        ADD p.box{
+            fillHorizontal = 1;
+        };
+    }
+};
+
+FORM bills 'Чеки'
+    OBJECTS b=bill
+    PROPERTIES(b) READONLY numberBill, dateBill, timeBill, nameDepartmentStoreBill, sumBill, discountSumBill,
+                           quantityBill
+
+    PROPERTIES(b) ADDFORM, EDITFORM, delete
+
+    OBJECTS d=billDetail
+    PROPERTIES(d) READONLY nameAttributeItemBillDetail, quantityBillDetail, priceBillDetail, sumBillDetail, discountSumBillDetail
+
+    FILTERS billBillDetail(d)==b
+
+    OBJECTS p=payment
+    PROPERTIES(p) READONLY namePaymentTypePayment, sumPayment
+
+    FILTERS billPayment(p)==b
+;
+
+DESIGN bills FROM DEFAULT{
+    NEW row.box BEFORE functions.box{
+        ADD d.box{
+            title = 'Строка чека';
+            fillHorizontal = 3;
+        };
+        ADD p.box{
+            fillHorizontal = 1;
+        };
+    }
+};
 
 //----------------------------------- Форма для остатков -------------------------------------------------//
 
@@ -6584,6 +6673,9 @@ NAVIGATOR {
             ADD specifications;
             ADD statements;
         }
+        NEW retailSale 'Розничные продажи'{
+            ADD bills;
+        }
         NEW priceManagement 'Управление ценами' {
             ADD userPriceChanges;
             ADD priceChangeDocuments;
@@ -6735,6 +6827,7 @@ NAVIGATOR {
             ADD returnSupplier;
             ADD barcodeForm;
             ADD wareForm;
+            ADD bill;
         }
         ADD importData;
         ADD globalParameters;
