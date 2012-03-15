@@ -20,13 +20,15 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
 
     private final Property<C> property; // что меняем
     private final PropertyImplement<D, PropertyInterfaceImplement<C>> value;
+    private final Collection<PropertyMapImplement<?,C>> where;
     private final Collection<PropertyMapImplement<?,C>> onChange;
     private final boolean valueChanged;
     private final boolean forceChanged;
 
-    public DerivedChange(Property<C> property, PropertyImplement<D, PropertyInterfaceImplement<C>> value, Collection<PropertyMapImplement<?,C>> onChange, boolean valueChanged, boolean forceChanged) {
+    public DerivedChange(Property<C> property, PropertyImplement<D, PropertyInterfaceImplement<C>> value, Collection<PropertyMapImplement<?,C>> where, Collection<PropertyMapImplement<?,C>> onChange, boolean valueChanged, boolean forceChanged) {
         this.property = property;
         this.value = value;
+        this.where = where;
         this.onChange = onChange;
         this.valueChanged = valueChanged;
         this.forceChanged = forceChanged;
@@ -34,7 +36,10 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
 
     private Set<Property> getDepends(boolean newDepends) {
         Set<Property> used = new HashSet<Property>();
-        if(valueChanged==newDepends) used.add(value.property);
+        if(valueChanged==newDepends) {
+            used.add(value.property);
+            FunctionProperty.fillDepends(used,where);
+        }
         FunctionProperty.fillDepends(used, BaseUtils.merge(value.mapping.values(), onChange));
         return used;
     }
@@ -61,6 +66,8 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
             implementExprs.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapIncrementExpr(mapKeys, newChanges, prevChanges, onChangeWhere, IncrementType.CHANGE));
 
         Where andWhere = Where.TRUE; // докинем дополнительные условия
+        for(PropertyMapImplement<?,C> propChange : where) // наплевать на изменения
+            andWhere = andWhere.and(propChange.mapExpr(mapKeys, valueChanged ? newChanges : prevChanges).getWhere());
         for(PropertyMapImplement<?,C> propChange : onChange)
             andWhere = andWhere.and(propChange.mapIncrementExpr(mapKeys, newChanges, prevChanges, onChangeWhere, forceChanged ? IncrementType.CHANGESET : IncrementType.CHANGE).getWhere());
 

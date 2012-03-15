@@ -364,12 +364,20 @@ public abstract class LogicsModule {
         return addDCProp(null, name, caption, derivedProp, params);
     }
 
+    protected <D extends PropertyInterface> LP addDCProp(String name, String caption, int whereNum, LP<D> derivedProp, Object... params) {
+        return addDCProp(null, name, caption, whereNum, derivedProp, params);
+    }
+
     protected <D extends PropertyInterface> LP addDCProp(String name, boolean persistent, String caption, LP<D> derivedProp, Object... params) {
         return addDCProp(null, name, persistent, caption, false, derivedProp, params);
     }
 
     protected <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String name, String caption, LP<D> derivedProp, Object... params) {
-        return addDCProp(group, name, false, caption, false, derivedProp, params);
+        return addDCProp(group, name, caption, 0, derivedProp, params);
+    }
+
+    protected <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String name, String caption, int whereNum,  LP<D> derivedProp, Object... params) {
+        return addDCProp(group, name, false, caption, false, whereNum, derivedProp, params);
     }
 
     protected <D extends PropertyInterface> LP addDCProp(String name, String caption, boolean forced, LP<D> derivedProp, Object... params) {
@@ -381,6 +389,10 @@ public abstract class LogicsModule {
     }
 
     protected <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String name, boolean persistent, String caption, boolean forced, LP<D> derivedProp, Object... params) {
+        return addDCProp(group, name, persistent, caption, forced, 0, derivedProp, params);
+    }
+
+    protected <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String name, boolean persistent, String caption, boolean forced, int whereNum, LP<D> derivedProp, Object... params) {
 
         // считываем override'ы с конца
         List<ValueClass> backClasses = new ArrayList<ValueClass>();
@@ -430,9 +442,9 @@ public abstract class LogicsModule {
         // выполняем само создание свойства
         LP derDataProp = addDProp(group, name, persistent, caption, valueClass, overrideClasses(commonClasses, overrideClasses));
         if (forced)
-            derDataProp.setDerivedForcedChange(defaultChanged, derivedProp, params);
+            derDataProp.setDerivedForcedChange(defaultChanged, whereNum, derivedProp, params);
         else
-            derDataProp.setDerivedChange(defaultChanged, derivedProp, params);
+            derDataProp.setDerivedChange(defaultChanged, whereNum, derivedProp, params);
         return derDataProp;
     }
 
@@ -1745,8 +1757,8 @@ public abstract class LogicsModule {
     }
 
     public LP addLProp(LP lp, ValueClass... classes) {
-        LP writeProp = addJProp(baseLM.and1, add(directLI(lp), new Object[]{addJProp(baseLM.equals2, 1, baseLM.currentSession), lp.listInterfaces.size() + 1}));
-        return addDCProp("LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log") + " " + lp.property, writeProp, add(new Object[]{true}, add(getParams(writeProp), add(directLI(lp), classes))));
+        return addDCProp("LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log") + " " + lp.property, 1, lp,
+                add(new Object[]{true}, add(getParams(lp), add(new Object[]{addJProp(baseLM.equals2, 1, baseLM.currentSession), lp.listInterfaces.size() + 1}, add(directLI(lp), classes)))));
     }
 
     // XOR

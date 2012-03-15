@@ -56,6 +56,10 @@ public class LP<T extends PropertyInterface> {
         setDerivedChange(valueChanged, valueProperty, null, params);
     }
 
+    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, int whereNum, LP<D> valueProperty, Object... params) {
+        setDerivedChange(valueChanged, valueProperty, whereNum, null, params);
+    }
+
     public <D extends PropertyInterface> void setDerivedChange(LP<D> valueProperty, BusinessLogics<?> BL, Object... params) {
         if(params[0] instanceof Boolean)
             setDerivedChange((Boolean)params[0], valueProperty, BL, Arrays.copyOfRange(params,1,params.length));
@@ -64,7 +68,11 @@ public class LP<T extends PropertyInterface> {
     }
 
     public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, LP<D> valueProperty, BusinessLogics<?> BL, Object... params) {
-        setDerivedChange(valueChanged, false, valueProperty, BL, params);
+        setDerivedChange(valueChanged, valueProperty, 0, BL, params);
+    }
+
+    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, LP<D> valueProperty, int whereNum, BusinessLogics<?> BL, Object... params) {
+        setDerivedChange(valueChanged, false, valueProperty, whereNum, BL, params);
     }
 
     public <D extends PropertyInterface> void setDerivedForcedChange(LP<D> valueProperty, Object... params) {
@@ -72,13 +80,22 @@ public class LP<T extends PropertyInterface> {
     }
 
     public <D extends PropertyInterface> void setDerivedForcedChange(boolean valueChanged, LP<D> valueProperty, Object... params) {
-        setDerivedChange(valueChanged, true, valueProperty, null, params);
+        setDerivedForcedChange(valueChanged, 0, valueProperty, params);
+    }
+
+    public <D extends PropertyInterface> void setDerivedForcedChange(boolean valueChanged, int whereNum, LP<D> valueProperty, Object... params) {
+        setDerivedChange(valueChanged, true, valueProperty, whereNum, null, params);
     }
 
     public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, boolean forceChanged, LP<D> valueProperty, BusinessLogics<?> BL, Object... params) {
+        setDerivedChange(valueChanged, forceChanged, valueProperty, 0, BL, params);
+    }
+    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, boolean forceChanged, LP<D> valueProperty, int whereNum, BusinessLogics<?> BL, Object... params) {
         List<PropertyInterfaceImplement<T>> defImplements = readImplements(listInterfaces, params);
-        DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(property, mapImplement(valueProperty, defImplements.subList(0, valueProperty.listInterfaces.size())),
-                BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(valueProperty.listInterfaces.size(), defImplements.size())),
+        int intValue = valueProperty.listInterfaces.size();
+        DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(property, mapImplement(valueProperty, defImplements.subList(0, intValue)),
+                BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue, intValue + whereNum)),
+                BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue + whereNum, defImplements.size())),
                 valueChanged, forceChanged);
 
         // запишем в DataProperty
