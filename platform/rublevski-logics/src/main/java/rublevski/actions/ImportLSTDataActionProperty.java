@@ -200,9 +200,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         try {
 
             int amountOfImportIterations = (int) Math.ceil((double) numberOfItems / numberOfItemsAtATime);
-
+            Integer rest = numberOfItems;
             for (int i = 0; i < amountOfImportIterations; i++) {
-                importPackOfItems(itemsPath, quantityPath, warePath, importInactive, context, numberOfItemsAtATime, i);
+                importPackOfItems(itemsPath, quantityPath, warePath, importInactive, context, rest>numberOfItemsAtATime? numberOfItemsAtATime : rest, i);
+                rest-=numberOfItemsAtATime;
                 System.gc();
             }
         } catch (xBaseJException e) {
