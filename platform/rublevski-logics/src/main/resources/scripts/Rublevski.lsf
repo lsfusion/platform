@@ -4416,7 +4416,11 @@ GROUP additionalInfo 'Дополнительно' : baseGroup;
 //шапка документа поставки
 waybillShipment 'Номер накладной' (shipment) = DATA STRING[7] (shipment) IN documentHeaderGroup FIXEDCHARWIDTH 7;
 
+waybillShipmentDetail 'Номер накладной' (shipmentDetail) = waybillShipment(shipmentShipmentDetail(shipmentDetail));
+
 seriesWaybillShipment 'Серия накладной' (shipment) = DATA STRING[2] (shipment) IN documentHeaderGroup FIXEDCHARWIDTH 4;
+
+seriesWaybillShipmentDetail 'Серия накладной' (shipmentDetail) = seriesWaybillShipment(shipmentShipmentDetail(shipmentDetail));
 
 supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipment) IN idGroup;
 
@@ -5283,10 +5287,10 @@ FORM wastages 'Списания отходов'
 castThreeObjectsToString100=
     FORMULA STRING[100] '\'№ \' || CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
 
-commonInfoShipmentDetail (batch) =
-    castThreeObjectsToString100(seriesWaybillShipment(shipmentShipmentDetail(batch)),
-    waybillShipment(shipmentShipmentDetail(batch)),
-    dateShipment(shipmentShipmentDetail(batch)));
+commonInfoShipmentDetail (batchShipment) =
+    castThreeObjectsToString100(seriesWaybillShipment(shipmentShipmentDetail(batchShipment)),
+    waybillShipment(shipmentShipmentDetail(batchShipment)),
+    dateShipment(shipmentShipmentDetail(batchShipment)));
 
 @metaCodeObjectWithPost(returnSupplier, 'Возврат поставщику', 'Закрытый возврат поставщику', historyObject, balanceItemLedger);
 
@@ -5332,7 +5336,7 @@ namebanRevaluationItemDepartmentReturnSupplierDetail 'Запрет на пере
 
 // количество/цены по строкам
 
-batchReturnSupplierDetail 'Партия (ИД)' = DATA batch (returnSupplierDetail) IN idGroup;
+batchReturnSupplierDetail 'Партия (ИД)' = DATA batchShipment (returnSupplierDetail) IN idGroup;
 
 commonInfoBatchReturnSupplierDetail 'Партия' (returnSupplierDetail) = commonInfoShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
 
@@ -5382,99 +5386,6 @@ CONSTRAINT CHECKED itemShipmentDetail(batchReturnSupplierDetail(returnSupplierDe
     OR supplierShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != supplierReturnSupplierDetail(returnSupplierDetail)
     OR isNotPostedShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
     MESSAGE 'Выберите партию этого товара';
-
-FORM commonInfoBatchReturnSupplierDetail 'Партии'
-    OBJECTS b=batch
-    PROPERTIES(b) READONLY quantityShipmentDetail, priceShipmentDetail,
-                           dataSuppliersRangeShipmentDetail,
-                           retailPriceShipmentDetail
-    DIALOG batch OBJECT b;
-;
-
-FORM returnSupplier 'Возврат поставщику'
-    OBJECTS r=returnSupplier FIXED PANEL
-    PROPERTIES(r) seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier, timeReturnSupplier,
-                  nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier,
-                  nameUserCreated READONLY, timeCreated READONLY, totalQuantityReturnSupplier,
-                  totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier
-
-    OBJECTS d=returnSupplierDetail
-    PROPERTIES(d) numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
-                  commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, priceReturnSupplierDetail,
-                  supplierMarkupReturnSupplierDetail
-    PROPERTIES(d) ADDOBJ, delete
-    PROPERTIES addReturnSupplierDetailBarcode(r) TODRAW d
-    PROPERTIES FORCE PANEL READONLY controlExpiryReturnSupplierDetail(d), isManufacturedReturnSupplierDetail(d),
-                                    isWeightReturnSupplierDetail(d), nameinActionItemDepartmentReturnSupplierDetail(d),
-                                    hintReturnSupplierDetail(d), nameCountryReturnSupplierDetail(d),
-                                    namebanRevaluationItemDepartmentReturnSupplierDetail(d)
-
-    FILTERS isReturnSupplier(r, d)
-
-    EDIT returnSupplier OBJECT r
-;
-
-FORM returnSuppliers 'Возвраты поставщику'
-
-    OBJECTS r=returnSupplier
-    PROPERTIES(r) READONLY objectClassName, seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier,
-                           nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, nameUserCreated,
-                           timeCreated, noteReturnSupplier
-    PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
-                  ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
-
-    OBJECTS d=returnSupplierDetail
-    PROPERTIES(d) READONLY numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
-                           quantityReturnSupplierDetail, priceReturnSupplierDetail
-
-    FILTERS isReturnSupplier(r, d)
-;
-
-DESIGN returnSupplier FROM DEFAULT {
-
-    NEW specification.box BEFORE functions.box{
-        tabbedPane = TRUE;
-        ADD d.box{
-            title = 'Спецификация';
-        };
-    };
-
-    NEW header.box BEFORE specification.box{
-        childConstraints = TO THE RIGHT;
-
-        NEW headerRow1 {
-            childConstraints = TO THE BOTTOM;
-            ADD r.documentHeaderGroup{
-                    NEW first {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(seriesWaybillReturnSupplier);
-                        ADD PROPERTY(waybillReturnSupplier);
-                        ADD PROPERTY(dateReturnSupplier);
-                        ADD PROPERTY(timeReturnSupplier);
-                    };
-                    NEW second{
-                        ADD PROPERTY(nameDepartmentStoreReturnSupplier);
-                        ADD PROPERTY(nameSupplierReturnSupplier);
-                    };
-            };
-            ADD r.waybillSum{
-                childConstraints = TO THE RIGHT;
-            };
-        };
-
-        NEW headerRow2 {
-            ADD r.historyGroup;
-            ADD PROPERTY(noteReturnSupplier);
-        };
-    };
-}
-
-DESIGN returnSuppliers FROM DEFAULT{
-    ADD PROPERTY(delete(r)){
-        panelLocation=TOOLBAR;
-        askConfirm=TRUE;
-    }
-}
 
 //----------------------------------------------- Переоценка товара ---------------------------------------------------//
 
@@ -5752,6 +5663,109 @@ oldImporterPriceInnerArrivalDetail (innerArrivalDetail) <- priceImporterBLedgerD
 oldRetailRangeInnerArrivalDetail (innerArrivalDetail) <- rangeRetailBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
+
+dataRetailReturnSupplierDetail 'Розничный НДС, %' (returnSupplierDetail) = dataRetailBLedgerDateTime(
+                itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
+                dateTimeReturnSupplierDetail(returnSupplierDetail));
+
+priceRetailReturnSupplierDetail 'Розничная цена' (returnSupplierDetail) = priceRetailBLedgerDateTime(
+                itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
+                dateTimeReturnSupplierDetail(returnSupplierDetail));
+
+//-----------------------------------Формы возврата поставщику-------------------------------------------------------
+
+FORM commonInfoBatchReturnSupplierDetail 'Партии'
+    OBJECTS b=batchShipment
+    PROPERTIES(b) READONLY seriesWaybillShipmentDetail, waybillShipmentDetail, dateShipmentDetail,
+                           quantityShipmentDetail, priceShipmentDetail, dataSuppliersRangeShipmentDetail,
+                           retailPriceShipmentDetail
+    DIALOG batchShipment OBJECT b;
+;
+
+FORM returnSupplier 'Возврат поставщику'
+    OBJECTS r=returnSupplier FIXED PANEL
+    PROPERTIES(r) seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier, timeReturnSupplier,
+                  nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier,
+                  nameUserCreated READONLY, timeCreated READONLY, totalQuantityReturnSupplier,
+                  totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier
+
+    OBJECTS d=returnSupplierDetail
+    PROPERTIES(d) numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
+                  commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, priceReturnSupplierDetail,
+                  supplierMarkupReturnSupplierDetail, dataRetailReturnSupplierDetail, priceRetailReturnSupplierDetail
+    PROPERTIES(d) ADDOBJ, delete
+    PROPERTIES addReturnSupplierDetailBarcode(r) TODRAW d
+    PROPERTIES FORCE PANEL READONLY controlExpiryReturnSupplierDetail(d), isManufacturedReturnSupplierDetail(d),
+                                    isWeightReturnSupplierDetail(d), nameinActionItemDepartmentReturnSupplierDetail(d),
+                                    hintReturnSupplierDetail(d), nameCountryReturnSupplierDetail(d),
+                                    namebanRevaluationItemDepartmentReturnSupplierDetail(d)
+
+    FILTERS isReturnSupplier(r, d)
+
+    EDIT returnSupplier OBJECT r
+;
+
+FORM returnSuppliers 'Возвраты поставщику'
+
+    OBJECTS r=returnSupplier
+    PROPERTIES(r) READONLY objectClassName, seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier,
+                           nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, nameUserCreated,
+                           timeCreated, noteReturnSupplier
+    PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
+                  ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
+
+    OBJECTS d=returnSupplierDetail
+    PROPERTIES(d) READONLY numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
+                           quantityReturnSupplierDetail, priceReturnSupplierDetail
+
+    FILTERS isReturnSupplier(r, d)
+;
+
+DESIGN returnSupplier FROM DEFAULT {
+
+    NEW specification.box BEFORE functions.box{
+        tabbedPane = TRUE;
+        ADD d.box{
+            title = 'Спецификация';
+        };
+    };
+
+    NEW header.box BEFORE specification.box{
+        childConstraints = TO THE RIGHT;
+
+        NEW headerRow1 {
+            childConstraints = TO THE BOTTOM;
+            ADD r.documentHeaderGroup{
+                    NEW first {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(seriesWaybillReturnSupplier);
+                        ADD PROPERTY(waybillReturnSupplier);
+                        ADD PROPERTY(dateReturnSupplier);
+                        ADD PROPERTY(timeReturnSupplier);
+                    };
+                    NEW second{
+                        ADD PROPERTY(nameDepartmentStoreReturnSupplier);
+                        ADD PROPERTY(nameSupplierReturnSupplier);
+                    };
+            };
+            ADD r.waybillSum{
+                childConstraints = TO THE RIGHT;
+            };
+        };
+
+        NEW headerRow2 {
+            ADD r.historyGroup;
+            ADD PROPERTY(noteReturnSupplier);
+        };
+    };
+}
+
+DESIGN returnSuppliers FROM DEFAULT{
+    ADD PROPERTY(delete(r)){
+        panelLocation=TOOLBAR;
+        askConfirm=TRUE;
+    }
+}
 
 // --------------------------- Формы списания ---------------------------------
 FORM writeOff 'Списание'
