@@ -6492,9 +6492,12 @@ DESIGN bills FROM DEFAULT{
 
 //----------------------------------- Форма для остатков -------------------------------------------------//
 
-storeDepStoreDepartment(store, depStore, department)=  UNION OVERRIDE
-    storeDepartmentStore(department) == store AND NOT depStore AS departmentStore,  // AND department AS departmentStore
-    department == depStore AND storeDepartmentStore(department)== storeDepartmentStore(depStore) AND store IS store;
+inTradingNetworkStoreTypeStoreDepartmentDepartment (tradingNetwork, storeType, store, department, depStore) = UNION OVERRIDE
+    department == depStore AND store  AND tradingNetwork AND storeType,
+    storeDepartmentStore(department) == store AND NOT depStore AND tradingNetwork AND storeType,
+    storeTypeDepartmentStore(department) == storeType AND NOT depStore AND tradingNetwork AND NOT store,
+    tradingNetworkDepartmentStore(department) == tradingNetwork AND NOT store AND NOT storeType AND NOT depStore,
+    department IS departmentStore AND NOT store AND NOT storeType AND NOT tradingNetwork AND NOT depStore;
 
 FORM balanceItemDepartment 'Остатки по отделам'
 
@@ -6509,36 +6512,36 @@ FORM balanceItemDepartment 'Остатки по отделам'
     PROPERTIES READONLY name(g)
     ORDER BY name
 
-    OBJECTS           dsi=(dss=departmentStore, ii=item)
-    PROPERTIES        nameIt=nameAttributeItem(ii), nameDep=name(dss)  //  barcodeBarcodeSku
+    OBJECTS           dsi=(dep=departmentStore, i=item)
+    PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  barcodeBarcodeSku
     ORDER BY          nameDep
-    FILTERS           hasParentItemGroupSku(g, ii),
-                      inStoreDepartment(s, dss),
-                      storeDepStoreDepartment(s, ds, dss)
+    FILTERS           hasParentItemGroupSku(g, i),
+                      inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
 
-    PROPERTIES(ii, dss, t) priceAccountALedgerDateTime, balanceAItemLedgerDateTime
+
+    PROPERTIES(i, dep, t) READONLY priceAccountALedgerDateTime, balanceAItemLedgerDateTime
     FILTERGROUP filters
-        FILTER 'Товары с остатком' 'F10' balanceAItemLedgerDateTime(ii, dss, t) DEFAULT
+        FILTER 'Товары с остатком' 'F10' balanceAItemLedgerDateTime(i, dep, t) DEFAULT
 
     OBJECTS apl=accountPriceLedger
     PROPERTIES (apl) dateTimeAccountPriceLedger, priceAccountLedger
-    FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==ii AND departmentStoreAccountPriceLedger(apl)==dss
+    FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
 
     OBJECTS rpl=retailPriceLedger
     PROPERTIES (rpl) dateTimeRetailPriceLedger, priceRetailLedger
-    FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==ii AND departmentStoreRetailPriceLedger(rpl)==dss
+    FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
 
     OBJECTS bil=balanceItemLedger
     PROPERTIES(bil) dateTimeBalanceItemLedger, quantityBalanceItemLedger READONLY
-    FILTERS isPostedBalanceItemLedger(bil) AND itemBalanceItemLedger(bil)==ii AND departmentStoreBalanceItemLedger(bil)==dss
+    FILTERS isPostedBalanceItemLedger(bil) AND itemBalanceItemLedger(bil)==i AND departmentStoreBalanceItemLedger(bil)==dep
 
     OBJECTS ipl=importerPriceLedger
     PROPERTIES(ipl) dateTimeImporterPriceLedger, priceImporterLedger
-    FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==ii AND departmentStoreImporterPriceLedger(ipl)==dss
+    FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
 
     OBJECTS rvl=retailVATLedger
     PROPERTIES(rvl) dateTimeRetailVATLedger, dataRetailLedger
-    FILTERS isPostedRetailVATLedger(rvl) AND itemRetailVATLedger(rvl)==ii AND departmentStoreRetailVATLedger(rvl)==dss
+    FILTERS isPostedRetailVATLedger(rvl) AND itemRetailVATLedger(rvl)==i AND departmentStoreRetailVATLedger(rvl)==dep
 ;
 
 DESIGN balanceItemDepartment FROM DEFAULT {
@@ -6546,6 +6549,7 @@ DESIGN balanceItemDepartment FROM DEFAULT {
         preferredSize = (1024, 768);
 
         NEW firstCase {
+                fillHorizontal = 1;
                 childConstraints = TO THE BOTTOM;
                 ADD t.box;
                 ADD treeStore.box {title = 'Магазины';};
@@ -6553,11 +6557,13 @@ DESIGN balanceItemDepartment FROM DEFAULT {
         }
 
         NEW secondCase {
+                fillHorizontal = 2;
                 ADD dsi.box;
         }
         POSITION firstCase TO THE LEFT secondCase;
 
         NEW ledger.box {
+                fillHorizontal = 1;
                 title = 'Изменение цен';
                 tabbedPane = TRUE;
                 ADD bil.box;
