@@ -937,13 +937,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(prop, mergeAllParams(paramProps));
     }
 
-    public LPWithParams addScriptedOProp(PartitionType partitionType, boolean isAscending, boolean useLast, int groupPropsCnt,
-                                         List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedOProp(" + partitionType + ", " + isAscending + ", " + useLast + ", " + groupPropsCnt + ", " + paramProps + ");");
+    public LPWithParams addScriptedPartitionProp(PartitionType partitionType, LP<?> ungroupProp, boolean strict, int precision, boolean isAscending,
+                                                 boolean useLast, int groupPropsCnt, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedPartitionProp(" + partitionType + ", " + ungroupProp + ", " + strict + ", " + precision + ", " +
+                                                        isAscending + ", " + useLast + ", " + groupPropsCnt + ", " + paramProps + ");");
+        checkPartitionWindowConsistence(partitionType, useLast);
+        checkPartitionUngroupConsistence(ungroupProp, groupPropsCnt);
 
         List<Object> resultParams = getParamsPlainList(paramProps);
-        LP prop = addOProp(null, genSID(), false, "", partitionType, isAscending, useLast, groupPropsCnt, resultParams.toArray());
-        return new LPWithParams(prop, mergeAllParams(paramProps));
+        List<Integer> usedParams = mergeAllParams(paramProps);
+        LP prop;
+        if (partitionType == PartitionType.SUM || partitionType == PartitionType.PREVIOUS) {
+            prop = addOProp(null, genSID(), false, "", partitionType, isAscending, useLast, groupPropsCnt, resultParams.toArray());
+        } else if (partitionType == PartitionType.DISTR_CUM_PROPORTION) {
+            prop = addPGProp(null, genSID(), false, precision, strict, "", usedParams.size(), isAscending, ungroupProp, resultParams.toArray());
+        } else {
+            prop = addUGProp(null, genSID(), false, strict, "", usedParams.size(), isAscending, ungroupProp, resultParams.toArray());
+        }
+        return new LPWithParams(prop, usedParams);
     }
 
     public LPWithParams addScriptedCCProp(List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
@@ -954,7 +965,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedDCCProp(LPWithParams ccProp, int index) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedDCCProp(" + ccProp + ", " + index + ");");
         checkDeconcatenateIndex(ccProp, index);
-        return addScriptedJProp(addDCCProp(index-1), Arrays.asList(ccProp));
+        return addScriptedJProp(addDCCProp(index - 1), Arrays.asList(ccProp));
     }
 
     public LP<?> addScriptedSFProp(String typeName, String formulaLiteral) throws ScriptingErrorLog.SemanticErrorException {
@@ -1695,6 +1706,18 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         } else {
             errLog.emitDeconcatError(parser);
+        }
+    }
+
+    private void checkPartitionWindowConsistence(PartitionType partitionType, boolean useLast) throws ScriptingErrorLog.SemanticErrorException {
+        if (!useLast && (partitionType != PartitionType.SUM && partitionType != PartitionType.PREVIOUS)) {
+            errLog.emitIllegalWindowPartitionError(parser);
+        }
+    }
+
+    private void checkPartitionUngroupConsistence(LP<?> ungroupProp, int groupPropCnt) throws ScriptingErrorLog.SemanticErrorException {
+        if (ungroupProp != null && ungroupProp.property.interfaces.size() != groupPropCnt) {
+            errLog.emitUngroupParamsCntPartitionError(parser, groupPropCnt);
         }
     }
 

@@ -135,12 +135,28 @@ storeSizeCode 'Размер склада (код)' (s) = CASE
                                           END;
 
 // Partition property
+// SUM, PREV partition property
 // Expression syntax:
 // PARTITION (SUM | PREV) propertyExpression
 // [BY propertyExpressionM1, ..., propertyExpressionMN]
 // [ORDER [DESC] propertyExpressionL1, ..., propertyExpressionLK]
 // [WINDOW EXCEPTLAST]
 testPartition(store, article) = PARTITION SUM incomeQuantity(store, article) BY store ORDER DESC name(article);
+
+// UNGROUP PROPORTION partition property
+// PARTITION UNGROUP propertyObject PROPORTION [STRICT] ROUND(precision) proportionPropertyExpression
+// [BY propertyExpressionM1, ..., propertyExpressionMN]
+// [ORDER [DESC] propertyExpressionL1, ..., propertyExpressionLK]
+testAmount(store) = 20.0 IF store IS store;
+testData(article) = DATA DOUBLE (article);
+testPropPartition(store, article) = PARTITION UNGROUP testAmount PROPORTION STRICT ROUND(2) testData(article) BY store ORDER name(article);
+
+// UNGROUP LIMIT partition property
+// PARTITION UNGROUP propertyObject LIMIT [STRICT] limitPropertyExpression
+// [BY propertyExpressionM1, ..., propertyExpressionMN]
+// [ORDER [DESC] propertyExpressionL1, ..., propertyExpressionLK]
+testLimitPartition(store, article) = PARTITION UNGROUP testAmount LIMIT STRICT testData(article) BY store ORDER DESC name(article);
+
 
 // Concatenation/Deconcatenation property
 // Expression syntax:

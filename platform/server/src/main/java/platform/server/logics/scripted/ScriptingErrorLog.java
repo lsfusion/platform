@@ -346,6 +346,14 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "expression is not a list");
     }
 
+    public void emitIllegalWindowPartitionError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "WINDOW allowed only in SUM and PREV types of PARTITION");
+    }
+
+    public void emitUngroupParamsCntPartitionError(LsfLogicsParser parser, int groupPropCnt) throws SemanticErrorException {
+        emitSimpleError(parser, format("UNGROUP property should have %d parameter(s)", groupPropCnt));
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

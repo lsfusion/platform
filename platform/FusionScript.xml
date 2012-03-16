@@ -117,6 +117,7 @@
       <keyword name="ISTRING" />
       <keyword name="LEFT" />
       <keyword name="LENGTH" />
+      <keyword name="LIMIT" />
       <keyword name="LIST" />
       <keyword name="LOGGABLE" />
       <keyword name="LONG" />
@@ -156,6 +157,7 @@
       <keyword name="PRINT" />
       <keyword name="PROPERTIES" />
       <keyword name="PROPERTY" />
+      <keyword name="PROPORTION" />
       <keyword name="READONLY" />
       <keyword name="READONLYIF" />
       <keyword name="RECURSION" />
@@ -165,6 +167,7 @@
       <keyword name="RETURN" />
       <keyword name="RIGHT" />
       <keyword name="RIGHTBOTTOM" />
+      <keyword name="ROUND" />
       <keyword name="RTF" />
       <keyword name="SELECTION" />
       <keyword name="SESSION" />
@@ -174,6 +177,7 @@
       <keyword name="SHOWIF" />
       <keyword name="STATIC" />
       <keyword name="STEP" />
+      <keyword name="STRICT" />
       <keyword name="STRING" />
       <keyword name="SUBJECT" />
       <keyword name="SUM" />
@@ -189,6 +193,7 @@
       <keyword name="TOP" />
       <keyword name="TREE" />
       <keyword name="TRUE" />
+      <keyword name="UNGROUP" />
       <keyword name="UNION" />
       <keyword name="UNIQUE" />
       <keyword name="UPDATE" />

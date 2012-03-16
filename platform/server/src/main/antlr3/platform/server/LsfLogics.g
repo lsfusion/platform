@@ -906,17 +906,33 @@ groupingType returns [GroupingType type]
 partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	List<LPWithParams> paramProps = new ArrayList<LPWithParams>();
+	LP<?> ungroupProp = null;
 	PartitionType type = null;
 	int groupExprCnt;
+	boolean strict = false;
+	int precision = 0;
 	boolean ascending = true;
 	boolean useLast = true;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedOProp(type, ascending, useLast, groupExprCnt, paramProps);
+		$property = self.addScriptedPartitionProp(type, ungroupProp, strict, precision, ascending, useLast, groupExprCnt, paramProps);
 	}
 }
-	:	'PARTITION' ('SUM' {type = PartitionType.SUM;} | 'PREV' {type = PartitionType.PREVIOUS;})
+	:	'PARTITION' 
+		(
+			(	'SUM'	{ type = PartitionType.SUM; } 
+			|	'PREV'	{ type = PartitionType.PREVIOUS; }
+			)
+		|	'UNGROUP'
+			ungroup=propertyObject { ungroupProp = $ungroup.property; }
+			(	'PROPORTION' { type = PartitionType.DISTR_CUM_PROPORTION; } 
+				('STRICT' { strict = true; })? 
+				'ROUND' '(' prec=intLiteral ')' { precision = $prec.val; }
+			|	'LIMIT' { type = PartitionType.DISTR_RESTRICT; } 
+				('STRICT' { strict = true; })? 
+			)
+		)
 		expr=propertyExpression[context, dynamic] { paramProps.add($expr.property); }
 		(	'BY'
 			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($exprList.props); }
