@@ -5284,10 +5284,10 @@ FORM wastages 'Списания отходов'
 castThreeObjectsToString100=
     FORMULA STRING[100] '\'№ \' || CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
 
-commonInfoShipmentDetail (shipmentDetail) =
-    castThreeObjectsToString100(seriesWaybillShipment(shipmentShipmentDetail(shipmentDetail)),
-    waybillShipment(shipmentShipmentDetail(shipmentDetail)),
-    dateShipment(shipmentShipmentDetail(shipmentDetail)));
+commonInfoShipmentDetail (batch) =
+    castThreeObjectsToString100(seriesWaybillShipment(shipmentShipmentDetail(batch)),
+    waybillShipment(shipmentShipmentDetail(batch)),
+    dateShipment(shipmentShipmentDetail(batch)));
 
 @metaCodeObjectWithPost(returnSupplier, 'Возврат поставщику', 'Закрытый возврат поставщику', historyObject, balanceItemLedger);
 
@@ -5333,7 +5333,7 @@ namebanRevaluationItemDepartmentReturnSupplierDetail 'Запрет на пере
 
 // количество/цены по строкам
 
-batchReturnSupplierDetail 'Партия (ИД)' = DATA shipmentDetail (returnSupplierDetail) IN idGroup;
+batchReturnSupplierDetail 'Партия (ИД)' = DATA batch (returnSupplierDetail) IN idGroup;
 
 commonInfoBatchReturnSupplierDetail 'Партия' (returnSupplierDetail) = commonInfoShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
 
@@ -5385,51 +5385,51 @@ CONSTRAINT CHECKED itemShipmentDetail(batchReturnSupplierDetail(returnSupplierDe
     MESSAGE 'Выберите партию этого товара';
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
-OBJECTS d=shipmentDetail
-PROPERTIES(d) READONLY quantityShipmentDetail, priceShipmentDetail,
-                       dataSuppliersRangeShipmentDetail,
-                       retailPriceShipmentDetail;
-
-showFormCommonInfoBatchReturnSupplierDetail 'Партии' (returnSupplierDetail) = ACTION FORM commonInfoBatchReturnSupplierDetail OBJECTS d
-                                                                                     MODAL SHORTCUT commonInfoBatchReturnSupplierDetail DEFAULT;
+    OBJECTS b=batch
+    PROPERTIES(b) READONLY quantityShipmentDetail, priceShipmentDetail,
+                           dataSuppliersRangeShipmentDetail,
+                           retailPriceShipmentDetail
+    DIALOG batch OBJECT b;
+;
 
 FORM returnSupplier 'Возврат поставщику'
-OBJECTS r=returnSupplier FIXED PANEL
-PROPERTIES(r) seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier, timeReturnSupplier,
-              nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier,
-              nameUserCreated READONLY, timeCreated READONLY, totalQuantityReturnSupplier,
-              totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier
+    OBJECTS r=returnSupplier FIXED PANEL
+    PROPERTIES(r) seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier, timeReturnSupplier,
+                  nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier,
+                  nameUserCreated READONLY, timeCreated READONLY, totalQuantityReturnSupplier,
+                  totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier
 
-OBJECTS d=returnSupplierDetail
-PROPERTIES(d) numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
-              commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, priceReturnSupplierDetail,
-              supplierMarkupReturnSupplierDetail, dataSuppliersRangeReturnSupplierDetail, sumSupplierVATReturnSupplierDetail,
-              sumSupplierReturnSupplierDetail, showFormCommonInfoBatchReturnSupplierDetail
-PROPERTIES(d) ADDOBJ, delete
-PROPERTIES addReturnSupplierDetailBarcode(r) TODRAW d
-PROPERTIES FORCE PANEL READONLY controlExpiryReturnSupplierDetail(d), isManufacturedReturnSupplierDetail(d),
-                                isWeightReturnSupplierDetail(d), nameinActionItemDepartmentReturnSupplierDetail(d),
-                                hintReturnSupplierDetail(d), nameCountryReturnSupplierDetail(d),
-                                namebanRevaluationItemDepartmentReturnSupplierDetail(d)
+    OBJECTS d=returnSupplierDetail
+    PROPERTIES(d) numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
+                  commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, priceReturnSupplierDetail,
+                  supplierMarkupReturnSupplierDetail
+    PROPERTIES(d) ADDOBJ, delete
+    PROPERTIES addReturnSupplierDetailBarcode(r) TODRAW d
+    PROPERTIES FORCE PANEL READONLY controlExpiryReturnSupplierDetail(d), isManufacturedReturnSupplierDetail(d),
+                                    isWeightReturnSupplierDetail(d), nameinActionItemDepartmentReturnSupplierDetail(d),
+                                    hintReturnSupplierDetail(d), nameCountryReturnSupplierDetail(d),
+                                    namebanRevaluationItemDepartmentReturnSupplierDetail(d)
 
-FILTERS isReturnSupplier(r, d)
+    FILTERS isReturnSupplier(r, d)
 
-EDIT returnSupplier OBJECT r;
+    EDIT returnSupplier OBJECT r
+;
 
 FORM returnSuppliers 'Возвраты поставщику'
 
-OBJECTS r=returnSupplier
-PROPERTIES(r) READONLY objectClassName, seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier,
-                       nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, nameUserCreated,
-                       timeCreated, noteReturnSupplier
-PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
-              ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
+    OBJECTS r=returnSupplier
+    PROPERTIES(r) READONLY objectClassName, seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier,
+                           nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, nameUserCreated,
+                           timeCreated, noteReturnSupplier
+    PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
+                  ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
 
-OBJECTS d=returnSupplierDetail
-PROPERTIES(d) READONLY numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
-                       quantityReturnSupplierDetail, priceReturnSupplierDetail
+    OBJECTS d=returnSupplierDetail
+    PROPERTIES(d) READONLY numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
+                           quantityReturnSupplierDetail, priceReturnSupplierDetail
 
-FILTERS isReturnSupplier(r, d);
+    FILTERS isReturnSupplier(r, d)
+;
 
 DESIGN returnSupplier FROM DEFAULT {
 
@@ -6851,6 +6851,7 @@ NAVIGATOR {
             ADD barcodeForm;
             ADD wareForm;
             ADD bill;
+            ADD commonInfoBatchReturnSupplierDetail;
         }
         ADD importData;
         ADD globalParameters;
