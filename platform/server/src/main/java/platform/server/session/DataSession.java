@@ -184,15 +184,13 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     // для отладки
     public static boolean reCalculateAggr = false;
 
-    private final List<DerivedChange<?,?>> notDeterministic;
-
     private final IsServerRestartingController isServerRestarting;
     public final UserController user;
     public final ComputerController computer;
 
     public DataObject applyObject = null;
 
-    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, AbstractGroup recognizeGroup, CustomClass transaction, LP<?> date, LP<?> currentDate, List<DerivedChange<?,?>> notDeterministic, SQLSession idSession) throws SQLException {
+    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, AbstractGroup recognizeGroup, CustomClass transaction, LP<?> date, LP<?> currentDate, SQLSession idSession) throws SQLException {
         this.sql = sql;
         this.isServerRestarting = isServerRestarting;
 
@@ -202,7 +200,6 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         this.recognizeGroup = recognizeGroup;
         this.transaction = transaction;
         this.date = date;
-        this.notDeterministic = notDeterministic;
         this.sessionClass = sessionClass;
         this.currentDate = currentDate;
 
@@ -213,7 +210,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     }
 
     public DataSession createSession() throws SQLException {
-        return new DataSession(sql, user, computer, isServerRestarting, baseClass, namedObject, sessionClass, name, recognizeGroup, transaction, date, currentDate, notDeterministic, idSession);
+        return new DataSession(sql, user, computer, isServerRestarting, baseClass, namedObject, sessionClass, name, recognizeGroup, transaction, date, currentDate, idSession);
     }
 
     public void restart(boolean cancel) throws SQLException {
@@ -313,18 +310,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     }
 
     public <P extends PropertyInterface> List<ClientAction> execute(MapDataChanges<P> mapChanges, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-
-        DataChanges dataChanges = mapChanges.changes;
-
-        // если идет изменение и есть недетерменированное производное изменение зависищее от него, то придется его "выполнить"
-        for(DerivedChange<?,?> derivedChange : notDeterministic) {
-            DataChanges derivedChanges = derivedChange.getDataChanges(dataChanges.add(modifier.getPropertyChanges()));
-            if(!derivedChanges.isEmpty())
-                mapChanges = mapChanges.add(new MapDataChanges<P>(derivedChanges));
-        }
-
         List<ClientAction> actions = new ArrayList<ClientAction>(); // сначала читаем изменения, чтобы не было каскадных непредсказуемых эффектов, потом изменяем
-        for(Map.Entry<UserProperty,Map<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>>> propRow : dataChanges.read(sql, env, baseClass).entrySet()) {
+        for(Map.Entry<UserProperty,Map<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>>> propRow : mapChanges.changes.read(sql, env, baseClass).entrySet()) {
             for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propRow.getValue().entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> row = iterator.next();
                 UserProperty property = propRow.getKey();

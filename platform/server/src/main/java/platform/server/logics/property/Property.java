@@ -223,13 +223,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     protected void fillDepends(Set<Property> depends, boolean derived) {
     }
 
-    public boolean notDeterministic() {
-        for (Property property : getDepends(false))
-            if (property.notDeterministic())
-                return true;
-        return false;
-    }
-
     public Set<Property> getDepends(boolean derived) {
         Set<Property> depends = new HashSet<Property>();
         fillDepends(depends, derived);

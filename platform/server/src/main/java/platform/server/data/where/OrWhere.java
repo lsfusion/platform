@@ -372,7 +372,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         for(int i=0;i<numWheres;i++)
             if(wheres[i] instanceof NotWhere && ((NotWhere) wheres[i]).where instanceof GreaterWhere) {
                 GreaterWhere greaterWhere = (GreaterWhere) ((NotWhere) wheres[i]).where;
-                if(!compare.add(equals.getEqual(greaterWhere.operator1),equals.getEqual(greaterWhere.operator2))) // противоречивы значит true;
+                if(!greaterWhere.orEquals && !compare.add(equals.getEqual(greaterWhere.operator1),equals.getEqual(greaterWhere.operator2))) // противоречивы значит true;
                     return true;
             }
 
@@ -385,11 +385,12 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                         if(compareWhere instanceof EqualsWhere) {
                             if(equal1.contains(compareWhere.operator2))
                                 return true;
-                        }
-                        else
-                            if((equal2 = equals.get(compareWhere.operator2))!=null && !equal1.equals(equal2) && (compare1 = compare.get(equal1))!=null &&
+                        } else {
+                            assert compareWhere instanceof GreaterWhere;
+                            if(!((GreaterWhere)compareWhere).orEquals && (equal2 = equals.get(compareWhere.operator2))!=null && !equal1.equals(equal2) && (compare1 = compare.get(equal1))!=null &&
                                     (compare2 = compare.get(equal2))!=null && compare1.greater.contains(compare2))
                                 return true;
+                        }
                     }
                 }
         }

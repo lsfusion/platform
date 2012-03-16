@@ -14,10 +14,6 @@ import java.util.*;
 
 public class DerivedChange<D extends PropertyInterface, C extends PropertyInterface> {
 
-    public boolean notDeterministic() {
-        return value.property.notDeterministic();
-    }
-
     private final Property<C> property; // что меняем
     private final PropertyImplement<D, PropertyInterfaceImplement<C>> value;
     private final Collection<PropertyMapImplement<?,C>> where;

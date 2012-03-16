@@ -99,11 +99,8 @@ public class LP<T extends PropertyInterface> {
                 valueChanged, forceChanged);
 
         // запишем в DataProperty
-        if(BL!=null && derivedChange.notDeterministic())
-            BL.notDeterministic.add(derivedChange);
-        else
-            for(UserProperty dataProperty : property.getDataChanges())
-                dataProperty.derivedChange = derivedChange;
+        for(UserProperty dataProperty : property.getDataChanges())
+            dataProperty.derivedChange = derivedChange;
     }
 
     public List<T> listGroupInterfaces;
@@ -365,6 +362,7 @@ public class LP<T extends PropertyInterface> {
     }
 
     public void setAutoset(boolean autoset) {
+        assert property.interfaces.size()==1;
         property.autoset = autoset;
     }
 

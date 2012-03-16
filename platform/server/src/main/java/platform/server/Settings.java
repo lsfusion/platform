@@ -416,4 +416,14 @@ public class Settings {
     public void setAutoAnalyzeTempStats(boolean autoAnalyzeTempStats) {
         this.autoAnalyzeTempStats = autoAnalyzeTempStats;
     }
+
+    private boolean useGreaterEquals = true;
+
+    public boolean isUseGreaterEquals() {
+        return useGreaterEquals;
+    }
+
+    public void setUseGreaterEquals(boolean useGreaterEquals) {
+        this.useGreaterEquals = useGreaterEquals;
+    }
 }

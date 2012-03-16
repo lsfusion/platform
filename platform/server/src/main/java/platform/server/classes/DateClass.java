@@ -91,7 +91,7 @@ public class DateClass extends DataClass<Date> {
     }
     
     public String getString(Object value, SQLSyntax syntax) {
-        return "'" + value + "'";
+        return "{d '" + value + "'}";
     }
 
     public static DateFormat getDateFormat() {

@@ -1520,10 +1520,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         return getRestartController().isPendingRestart();
                     }
                 },
-                LM.baseClass, LM.baseClass.named, LM.session, LM.name, LM.recognizeGroup, LM.transaction, LM.date, LM.currentDate, notDeterministic, getGlobalSql());
+                LM.baseClass, LM.baseClass.named, LM.session, LM.name, LM.recognizeGroup, LM.transaction, LM.date, LM.currentDate, getGlobalSql());
     }
-
-    public List<DerivedChange<?, ?>> notDeterministic = new ArrayList<DerivedChange<?, ?>>();
 
     public List<Property> getProperties() {
         return LM.rootGroup.getProperties();

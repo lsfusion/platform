@@ -25,8 +25,13 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
     // A=B = !(A>B) AND !(B>A) AND A AND B
     private Where getSymmetricWhere() {
         if(symmetricWhere==null) {
-            GreaterWhere backCompare = new GreaterWhere(operator2, operator1);
-            CompareWhere signCompare = this instanceof GreaterWhere ? new EqualsWhere(operator1, operator2) : new GreaterWhere(operator1, operator2);
+            GreaterWhere backCompare = new GreaterWhere(operator2, operator1, false);
+            CompareWhere signCompare;
+            if (this instanceof GreaterWhere) {
+                assert !((GreaterWhere)this).orEquals;
+                signCompare = new EqualsWhere(operator1, operator2);
+            } else
+                signCompare = new GreaterWhere(operator1, operator2, false);
 
             OrObjectWhere[] operators = getOperandWhere().getOr();
             OrObjectWhere[] symmetricOrs = new OrObjectWhere[operators.length+2];

@@ -521,11 +521,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         for (LP lp : BL.LM.lproperties) {
             Property property = lp.property;
-            if (property.autoset && property.getCommonClasses().interfaces.size() == 1 &&
-                    ((ValueClass) property.getCommonClasses().interfaces.values().iterator().next()).getType().equals(cls.getType()) &&
-                    property.getCommonClasses().value instanceof CustomClass) {
-                Integer obj = getClassListener().getObject((CustomClass) property.getCommonClasses().value);
-                lp.execute(obj, session, this, addObject);
+            if (property.autoset) {
+                Property.CommonClasses<?> propClasses = property.getCommonClasses();
+                ValueClass interfaceClass = BaseUtils.singleValue(propClasses.interfaces);
+                if (propClasses.value instanceof CustomClass && interfaceClass instanceof CustomClass&&
+                        cls.isChild((CustomClass)interfaceClass)) { // в общем то для оптимизации
+                    Integer obj = getClassListener().getObject((CustomClass) propClasses.value);
+                    if(obj!=null)
+                        lp.execute(obj, session, this, addObject);
+                }
             }
         }
 

@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.QuickMap;
 import platform.base.QuickSet;
 import platform.interop.Compare;
+import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.classes.sets.AndClassSet;
@@ -86,13 +87,19 @@ public abstract class BaseExpr extends Expr {
             case EQUALS:
                 return EqualsWhere.create(expr, this);
             case GREATER:
-                return GreaterWhere.create(expr, this);
+                return GreaterWhere.create(expr, this, false);
             case GREATER_EQUALS:
-                return GreaterWhere.create(expr, this).or(EqualsWhere.create(expr, this));
+                if(Settings.instance.isUseGreaterEquals())
+                    return GreaterWhere.create(expr, this, true);
+                else
+                    return GreaterWhere.create(expr, this, false).or(EqualsWhere.create(expr, this));
             case LESS:
-                return GreaterWhere.create(this, expr);
+                return GreaterWhere.create(this, expr, false);
             case LESS_EQUALS:
-                return GreaterWhere.create(this, expr).or(EqualsWhere.create(expr, this));
+                if(Settings.instance.isUseGreaterEquals())
+                    return GreaterWhere.create(this, expr, true);
+                else
+                    return GreaterWhere.create(this, expr, false).or(EqualsWhere.create(expr, this));
             case NOT_EQUALS: // оба заданы и не равно
                 return getWhere().and(expr.getWhere()).and(EqualsWhere.create(expr, this).not());
             case START_WITH:

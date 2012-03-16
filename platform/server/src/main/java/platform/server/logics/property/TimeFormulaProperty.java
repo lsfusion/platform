@@ -24,9 +24,4 @@ public class TimeFormulaProperty extends ValueFormulaProperty<PropertyInterface>
     protected Expr calculateExpr(Map<PropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return new TimeExpr(time);
     }
-
-    @Override
-    public boolean notDeterministic() {
-        return true;
-    }
 }

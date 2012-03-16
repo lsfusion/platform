@@ -339,6 +339,9 @@ public class MapCacheAspect {
     public <K extends PropertyInterface> IQuery<K, String> getQuery(Property<K> property, PropertyChanges propChanges, PropertyQueryType queryType, Map<K, ? extends Expr> interfaceValues, Map<Integer, Collection<CacheResult<QueryInterfaceImplement<K>, IQuery<K, String>>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         // assert что в interfaceValues только values
 
+        if(disableCaches)
+            return (IQuery<K, String>) thisJoinPoint.proceed();
+
         QueryInterfaceImplement<K> implement = new QueryInterfaceImplement<K>(property,propChanges,queryType,interfaceValues);
 
         Collection<CacheResult<QueryInterfaceImplement<K>, IQuery<K, String>>> hashCaches;

@@ -989,12 +989,11 @@ nameSkuBarcode 'Товар штрих-кода' (barcode) = nameAttributeItem(sk
 
 hasParentOrNullItemGroupBarcode (itemGroup, barcode) = hasParentItemGroupSku(itemGroup, skuBarcode(barcode));
 
-barcodeToDate(barcode, date) = GROUP UNIQUE barcode BY barcodeEx(barcode), dateBarcode(barcode);
+barcodeToDate(string, date) = GROUP UNIQUE barcode BY barcodeEx(barcode), dateBarcode(barcode) PERSISTENT;
 
-barcodeStringDate 'Дата действия' (string, date) = GROUP MAX dateBarcode(barcode) IF barcodeEx(barcode) == string AND dateBarcode(barcode) <= date AND
-                                                                                     date AS DATE AND string AS STRING[14] BY string, date IN baseGroup;
+barcodeStringDate 'Дата действия' (string, date) = GROUP MAX LIST(dateSet, barcodeToDate(string, dateSet)) IF dateSet <= date AND date AS DATE BY string, date IN baseGroup;
+valueBarcodeToDate 'Штрих-код на дату' (string, date) = barcodeStringDate(string, date)[2];
 
-valueBarcodeToDate 'Штрих-код на дату' (string, date) = barcodeToDate(string, barcodeStringDate(string, date));
 valueBarcodeToCurrentDate 'Штрих-код на тек. дату' (string) = valueBarcodeToDate(string, currentDate());
 
 skuBarcodeStringDate 'Товар (ИД)' (string, date) = skuBarcode(valueBarcodeToDate(string, date));
@@ -1569,7 +1568,7 @@ addNDSValue 'Добавить значение НДС' = ACTION (tax, number, va
        FOR ra == addedObject() DO {
           SET rangeRate(ra) <- rn AS range;
           SET dataRate(ra) <- value AS DOUBLE;
-          //SET dateFromRate(ra) <- 2001_01_01;
+          SET dateFromRate(ra) <- 2001_01_01;
        };
     };
 };
