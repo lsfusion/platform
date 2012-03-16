@@ -5838,6 +5838,12 @@ DESIGN returnSuppliers FROM DEFAULT{
     }
 }
 
+DESIGN commonInfoBatchReturnSupplierDetail FROM DEFAULT {
+    main {
+        preferredSize = (800, 500);
+    };
+}
+
 // --------------------------- Формы списания ---------------------------------
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
