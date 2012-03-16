@@ -5831,6 +5831,10 @@ DESIGN returnSupplier FROM DEFAULT {
             ADD PROPERTY(noteReturnSupplier);
         };
     };
+
+    ADD PROPERTY(delete(d)){
+        askConfirm=TRUE;
+    }
 }
 
 DESIGN returnSuppliers FROM DEFAULT{
