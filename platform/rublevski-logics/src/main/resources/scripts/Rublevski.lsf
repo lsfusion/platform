@@ -1475,8 +1475,7 @@ nameTaxSuppliersItem 'Налог' (item) = nameTaxRange(suppliersRangeItem(item)
 dataSuppliersRangeItem 'Шкала НДС' (item) = dataRange(suppliersRangeItem(item)) IN suppliersNDSGroup;
 dataActingRateSuppliersRangeItem 'НДС поставщика,%' (item) = dataActingRateRange(suppliersRangeItem(item)) IN suppliersNDSGroup;
 
-CONSTRAINT CHECKED suppliersTaxNDSItem(item) != taxRange(suppliersRangeItem(item))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
+CONSTRAINT CHECKED taxRange(suppliersRangeItemDate(item, date)) != tax.taxNDS  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 FORM addSuppliersRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE FIXED PANEL
@@ -2662,7 +2661,7 @@ CONSTRAINT priceSupplierItemOrderSupplier(orderSupplier, item) <= 0 MESSAGE 'Ц�
 //CONSTRAINT packQuantityItemOrderSupplier(orderSupplier, item) < minQuantityOrderSupplier(orderSupplier, item) AND packQuantityItemOrderSupplier(orderSupplier, item) != 0  MESSAGE 'Заказ должен быть больше минимального';
 
 castFiveObjectsToString100 =
-     FORMULA STRING[100] '\'№\' || CAST($1 AS TEXT) || \'  от \' || CAST($2 AS TEXT) || \'  Количество: \' || CAST($3 AS TEXT) || \'  Розн. цена: \' || CAST($4 AS TEXT) || \'(\' || CAST($5 AS TEXT) || \')\' ';
+     FORMULA STRING[200] '\'№\' || CAST($1 AS TEXT) || \'  от \' || CAST($2 AS TEXT) || \'  Количество: \' || CAST($3 AS TEXT) || \'  Розн. цена: \' || CAST($4 AS TEXT) || \'(\' || CAST($5 AS TEXT) || \')\' ';
 //если разбивать формулу на 2 строки выдает ошибку
 
 isItemInOrderSupplier 'Товар в заказе' (orderSupplier, item) = packQuantityItemOrderSupplier(orderSupplier, item) > 0;
@@ -3709,15 +3708,15 @@ TABLE retailPriceLedger (retailPriceLedger);
 CLASS ABSTRACT accountSumDocumentLedger 'Учетный документ';
 TABLE accountSumDocumentLedger (accountSumDocumentLedger);
 
-CLASS ABSTRACT incAccountSumDocumentLedger 'Учетный документ (приход)';
-CLASS ABSTRACT outAccountSumDocumentLedger 'Учетный документ (расход)';
+CLASS ABSTRACT incAccountSumDocumentLedger 'Учетный документ (приход)' : accountSumDocumentLedger;
+CLASS ABSTRACT outAccountSumDocumentLedger 'Учетный документ (расход)' : accountSumDocumentLedger;
 
-CLASS ABSTRACT incAccountSumHistoryDocumentLedger 'Учетный документ (приход, с историей)' : historyObject;
-CLASS ABSTRACT outAccountSumHistoryDocumentLedger 'Учетный документ (расход, с историей)' : historyObject;
+CLASS ABSTRACT incAccountSumHistoryDocumentLedger 'Учетный документ (приход, с историей)' : incAccountSumDocumentLedger, historyObject;
+CLASS ABSTRACT outAccountSumHistoryDocumentLedger 'Учетный документ (расход, с историей)' : outAccountSumDocumentLedger, historyObject;
 
 //---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
 
-CLASS ABSTRACT priceChangeDocument 'Акт переоценки';
+CLASS ABSTRACT priceChangeDocument 'Акт переоценки' : incAccountSumDocumentLedger;
 TABLE priceChangeDocument (priceChangeDocument);
 
 CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки';
@@ -4003,7 +4002,7 @@ storeByInventory(inventory) = GROUP EQUAL storeDepartmentStore(departmentStore) 
 nameStoreByInventory 'Магазин' (inventory) = name(storeByInventory(inventory)) IN inventoryGroup;
 
 castInventoryObjectsToString100=
-    FORMULA STRING[100] '\'Инвентаризация № \' || CAST($1 AS TEXT) ||  \' по магазину \' || CAST($2 AS TEXT) || \' от \'|| CAST($3 AS TEXT)';
+    FORMULA STRING[200] '\'Инвентаризация № \' || CAST($1 AS TEXT) ||  \' по магазину \' || CAST($2 AS TEXT) || \' от \'|| CAST($3 AS TEXT)';
 
 castInfoInventoryToString100 'Название документа' (inventory) = castInventoryObjectsToString100(
     numberInventory(inventory), nameStoreByInventory(inventory), dateToInventory(inventory));
@@ -4313,7 +4312,7 @@ toFillStatementDetailsStatement 'Заполнить отгрузку на осн
 } IN specificationGroup CONFIRM;
 
 castStatementObjectsToString100=
-    FORMULA STRING[100] '\'Отгрузка из розницы, покупатель \' || CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Отгрузка из розницы, покупатель \' || CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
 
 castInfoStatementToString100 'Название документа' (statement) = castStatementObjectsToString100(
     nameCustomerStatement(statement), seriesWaybillStatement(statement), waybillStatement(statement), dateStatement(statement));
@@ -4336,7 +4335,9 @@ needToPriceChangeStatement (statement) = GROUP SUM 1 IF needToPriceChangeStateme
 
 //// атрибуты документа переоценки
 
+dateTimePriceChangeStatement 'Дата/время' (priceChangeStatement) = dateTimeStatement(statementPriceChangeStatement(priceChangeStatement));
 datePriceChangeStatement 'Дата' (priceChangeStatement) = dateStatement(statementPriceChangeStatement(priceChangeStatement));
+isPostedPriceChangeStatement 'Закрыт' (priceChangeStatement) = isPostedStatement(statementPriceChangeStatement(priceChangeStatement));
 waybillPriceChangeStatement 'Номер накладной' (priceChangeStatement) = waybillStatement(statementPriceChangeStatement(priceChangeStatement));
 seriesWaybillPriceChangeStatement 'Серия накладной' (priceChangeStatement) = seriesWaybillStatement(statementPriceChangeStatement(priceChangeStatement));
 
@@ -4680,7 +4681,7 @@ percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShip
     ON CHANGE itemShipmentDetail(shipmentDetail);
 
 castShipmentObjectsToString100=
-    FORMULA STRING[100] '\'Приход, поставщик \' || CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Приход, поставщик \' || CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
 
 castInfoShipmentToString100 'Название документа' (shipment) = castShipmentObjectsToString100(
     nameSupplierShipment(shipment), seriesWaybillShipment(shipment), waybillShipment(shipment), dateShipment(shipment));
@@ -4702,7 +4703,9 @@ needToPriceChangeShipment (shipment) = GROUP SUM 1 IF needToPriceChangeShipmentD
 
 // атрибуты документа переоценки
 
+dateTimePriceChangeShipment 'Дата/время' (priceChangeShipment) = dateTimeShipment(shipmentPriceChangeShipment(priceChangeShipment));
 datePriceChangeShipment 'Дата' (priceChangeShipment) = dateShipment(shipmentPriceChangeShipment(priceChangeShipment));
+isPostedPriceChangeShipment 'Закрыт' (priceChangeShipment) = isPostedShipment(shipmentPriceChangeShipment(priceChangeShipment));
 waybillPriceChangeShipment 'Номер накладной' (priceChangeShipment) = waybillShipment(shipmentPriceChangeShipment(priceChangeShipment));
 seriesWaybillPriceChangeShipment 'Серия накладной' (priceChangeShipment) = seriesWaybillShipment(shipmentPriceChangeShipment(priceChangeShipment));
 
@@ -4859,7 +4862,7 @@ DESIGN shipments FROM DEFAULT {
 }
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
-@metaCodeObjectWithPost (writeOff, 'Списание', 'Закрытое списание', historyObject, object);
+@metaCodeObjectWithPost (writeOff, 'Списание', 'Закрытое списание', outAccountSumHistoryDocumentLedger, object);
 CLASS reasonOff 'Причина списания' : named;
 
 numberWriteOff 'Номер документа' = DATA INTEGER (writeOff) IN documentHeaderGroup;
@@ -4878,10 +4881,10 @@ quantityWriteOffDetail 'Кол-во для строки списания' = DATA
 quantityWriteOff 'Общее кол-во' (writeOff) = GROUP SUM quantityWriteOffDetail(writeOffDetail)
                                                     BY writeOffWriteOffDetail(writeOffDetail) IN waybillSum;
 
-priceWriteOffDetail 'Цена учётная' = DATA DOUBLE (writeOffDetail) IN baseGroup;
+accountPriceWriteOffDetail 'Цена учётная' = DATA DOUBLE (writeOffDetail) IN baseGroup;
 
-sumWriteOffDetail 'Сумма' (writeOffDetail) = priceWriteOffDetail(writeOffDetail)*quantityWriteOffDetail(writeOffDetail);
-sumWriteOff 'Общая сумма' (writeOff) = GROUP SUM sumWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN waybillSum;
+accountSumWriteOffDetail 'Сумма' (writeOffDetail) = accountPriceWriteOffDetail(writeOffDetail)*quantityWriteOffDetail(writeOffDetail);
+accountSumWriteOff 'Общая сумма' (writeOff) = GROUP SUM accountSumWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN waybillSum;
 
 articleItemWriteOff 'Артикул производителя/поставщика' (writeOffDetail) = articleItem(itemWriteOffDetail(writeOffDetail));
 nameCountryItemWriteOff 'Страна' (writeOffDetail) = nameCountryItem(itemWriteOffDetail(writeOffDetail));
@@ -4893,7 +4896,7 @@ maxReserveItemDepartmentWriteOff 'Максимальнодопустимы то�
     maxReserveItemDepartmentOver(itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail),
                                  dateWriteOffDetail(writeOffDetail));
 CONSTRAINT quantityWriteOffDetail(writeOffDetail) <= 0 MESSAGE 'Количество должно быть положительным';
-CONSTRAINT priceWriteOffDetail(writeOffDetail) <= 0 MESSAGE 'Цена должна быть положительной';
+CONSTRAINT accountPriceWriteOffDetail(writeOffDetail) <= 0 MESSAGE 'Цена должна быть положительной';
 
 dateLastShipment 'Дата последней поставки' (writeOffDetail) = GROUP MAX dateShipmentDetail(shipmentDetail)
     IF (dateShipmentDetail(shipmentDetail) < dateWriteOffDetail(writeOffDetail)
@@ -4922,8 +4925,7 @@ priceItemInnerFlow 'Цена (максим.)' (item, innerFlow) = GROUP MAX pric
     IF innerFlowInnerFlowDetail(innerFlowDetail) == innerFlow
     BY itemInnerFlowDetail(innerFlowDetail), innerFlowInnerFlowDetail(innerFlowDetail);
 
-sumInnerFlowDetail 'Сумма' (innerFlowDetail) = round0(
-    quantityInnerFlowDetail(innerFlowDetail) * priceInnerFlowDetail (innerFlowDetail)) IN baseGroup;
+accountSumInnerFlowDetail 'Сумма' (innerFlowDetail) = quantityInnerFlowDetail(innerFlowDetail) * priceInnerFlowDetail (innerFlowDetail) IN baseGroup;
 
 importerPriceInnerFlowDetail 'Цена изготовителя' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail);
 
@@ -4939,11 +4941,11 @@ quantityItemInnerFlow 'Количество в расходе' (item, innerFlow)
 totalQuantityInnerFlow 'Общее количество' (innerFlow) = GROUP SUM quantityInnerFlowDetail(innerFlowDetail)
     BY innerFlowInnerFlowDetail(innerFlowDetail) IN waybillSum;
 
-totalSumInnerFlow 'Общая сумма' (innerFlow) = GROUP SUM sumInnerFlowDetail (innerFlowDetail)
+accountSumInnerFlow 'Общая сумма' (innerFlow) = GROUP SUM accountSumInnerFlowDetail (innerFlowDetail)
     IF innerFlowInnerFlowDetail (innerFlowDetail) == innerFlow BY innerFlowInnerFlowDetail(innerFlowDetail) IN waybillSum;
 
 castInnerFlowObjectsToString100=
-    FORMULA STRING[100] '\'Внутренний расход, отдел-получатель \'|| CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Внутренний расход, отдел-получатель \'|| CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
 
 castInfoInnerFlowToString100 'Название документа' (innerFlow) = castInnerFlowObjectsToString100(
     nameRecipientDepartmentInnerFlow(innerFlow), seriesWaybillInnerFlow(innerFlow), waybillInnerFlow(innerFlow), dateInnerFlow(innerFlow));
@@ -4954,13 +4956,13 @@ fullInfoInnerFlowDetail 'Название документа' (innerFlowDetail) 
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
     PROPERTIES (f) waybillInnerFlow, seriesWaybillInnerFlow, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
-                   nameRecipientDepartmentInnerFlow, noteInnerFlow, totalQuantityInnerFlow, totalSumInnerFlow
+                   nameRecipientDepartmentInnerFlow, noteInnerFlow, totalQuantityInnerFlow, accountSumInnerFlow
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
                    quantityInnerFlowDetail, priceInnerFlowDetail, importerPriceInnerFlowDetail READONLY,
                    dataRetailRangeInnerFlowDetail READONLY,
-                   sumInnerFlowDetail, ADDOBJ, delete
+                   accountSumInnerFlowDetail, ADDOBJ, delete
 
     PROPERTIES addInnerFlowDetailBarcode(f) TODRAW d
     FILTERS inInnerFlowInnerFlowDetail(f, d)
@@ -5000,14 +5002,14 @@ FORM innerFlows 'Расходы в другие отделы'
     OBJECTS f=innerFlow
     PROPERTIES (f) READONLY objectClassName, waybillInnerFlow, seriesWaybillInnerFlow, dateInnerFlow, nameDepartmentStoreInnerFlow,
                             nameRecipientDepartmentInnerFlow, quantityInnerFlowDetailsInnerFlow,
-                            totalQuantityInnerFlow, totalSumInnerFlow
+                            totalQuantityInnerFlow, accountSumInnerFlow
 
     PROPERTIES (f) ADDFORM, EDITFORM SHOWIF isDraftInnerFlow(f), delete FORCE PANEL SHOWIF isDraftInnerFlow(f),
                    postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) READONLY numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
-                    quantityInnerFlowDetail, priceInnerFlowDetail, importerPriceInnerFlowDetail, dataRetailRangeInnerFlowDetail, sumInnerFlowDetail
+                    quantityInnerFlowDetail, priceInnerFlowDetail, importerPriceInnerFlowDetail, dataRetailRangeInnerFlowDetail, accountSumInnerFlowDetail
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 ;
 
@@ -5022,7 +5024,7 @@ DESIGN innerFlows FROM DEFAULT {
 }
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
-@metaCodeObjectWithPost (innerArrival, 'Приход в отдел', 'Закрытый приход в отдел', historyObject, balanceItemLedger);
+@metaCodeObjectWithPost (innerArrival, 'Приход в отдел', 'Закрытый приход в отдел', incAccountSumHistoryDocumentLedger, balanceItemLedger);
 
 innerFlowInnerArrival 'Накладная отгрузки с отдела-отправителя (ИД)' (innerArrival) = DATA innerFlowPosted (innerArrival);
 
@@ -5066,8 +5068,8 @@ priceInnerArrivalDetail (innerArrivalDetail) <- priceItemInnerArrival(
 
 oldRetailPriceInnerArrivalDetail 'Цена розничная старая' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail);
 
-sumInnerArrivalDetail 'Сумма' (innerArrivalDetail) = round0(
-    quantityInnerArrivalDetail(innerArrivalDetail) * priceInnerArrivalDetail (innerArrivalDetail)) IN baseGroup;
+accountSumInnerArrivalDetail 'Сумма' (innerArrivalDetail) =
+    quantityInnerArrivalDetail(innerArrivalDetail) * priceInnerArrivalDetail (innerArrivalDetail) IN baseGroup;
 
 importerPriceInnerArrivalDetail 'Цена изготовителя' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail);
 
@@ -5119,8 +5121,8 @@ inInnerArrivalItem (item, innerArrival) = quantityItemInnerArrival(item, innerAr
 totalQuantityInnerArrival 'Общее количество' (innerArrival) = GROUP SUM quantityInnerArrivalDetail(innerArrivalDetail)
     BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN waybillSum;
 
-totalSumArrivalFlow 'Общая сумма' (innerArrival) = GROUP SUM sumInnerArrivalDetail (innerArrivalDetail)
-    IF innerArrivalInnerArrivalDetail (innerArrivalDetail) == innerArrival BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN waybillSum;
+accountSumInnerArrival 'Общая сумма' (innerArrival) = GROUP SUM accountSumInnerArrivalDetail (innerArrivalDetail)
+    BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN waybillSum;
 
 // ---------------------------------- Дооценка на внутреннем перемещении (приход) ------------------------------------------
 
@@ -5137,7 +5139,9 @@ needToPriceChangeInnerArrival (innerArrival) = GROUP SUM 1 IF needToPriceChangeI
 
 // атрибуты документа переоценки
 
+dateTimePriceChangeInnerArrival 'Дата/время' (priceChangeInnerArrival) = dateTimeInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 datePriceChangeInnerArrival 'Дата' (priceChangeInnerArrival) = dateInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
+isPostedPriceChangeInnerArrival 'Закрыт' (priceChangeInnerArrival) = isPostedInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 waybillPriceChangeInnerArrival 'Номер накладной' (priceChangeInnerArrival) = waybillInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 seriesWaybillPriceChangeInnerArrival 'Серия накладной' (priceChangeInnerArrival) = seriesWaybillInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 
@@ -5177,7 +5181,7 @@ retailPriceChangeInnerArrivalDetail 'Новая розничная цена' (pr
     priceInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
 
 castInnerArrivalObjectsToString100=
-    FORMULA STRING[100] '\'Внутренний приход, отдел-отправитель \'|| CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Внутренний приход, отдел-отправитель \'|| CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
 
 castInfoInnerArrivalToString100 'Название документа' (innerArrival) = castInnerArrivalObjectsToString100(
     nameSenderDepartmentInnerArrival(innerArrival), seriesWaybillInnerArrival(innerArrival), waybillInnerArrival(innerArrival), dateInnerArrival(innerArrival));
@@ -5191,13 +5195,13 @@ FORM innerArrival 'Приход из другого отдела'
                    dateInnerArrival SHOWIF innerFlowInnerArrival(a), timeInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
                    cleanAllInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a), toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a),
                    noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), totalQuantityInnerArrival SHOWIF innerFlowInnerArrival(a),
-                   totalSumArrivalFlow SHOWIF innerFlowInnerArrival(a)
+                   accountSumInnerArrival SHOWIF innerFlowInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) SHOWIF innerFlowInnerArrival(a) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
                    quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, priceInnerArrivalDetail READONLY, importerPriceInnerArrivalDetail READONLY,
                    dataRetailRangeInnerArrivalDetail READONLY,
-                   sumInnerArrivalDetail READONLY, ADDOBJ, delete
+                   accountSumInnerArrivalDetail READONLY, ADDOBJ, delete
 
     PROPERTIES addInnerArrivalDetailBarcode(a) TODRAW d
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
@@ -5242,15 +5246,15 @@ DESIGN innerArrival FROM DEFAULT{
 
 FORM innerArrivals 'Приходы из других отделов'
     OBJECTS a=innerArrival
-    PROPERTIES (a) READONLY objectClassName, waybillInnerArrival, seriesWaybillInnerArrival, dateInnerArrival, nameDepartmentStoreInnerArrival,
-                            nameSenderDepartmentInnerArrival, totalQuantityInnerArrival, totalSumArrivalFlow
+    PROPERTIES (a) READONLY objectClassName, waybillInnerArrival, seriesWaybillInnerArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
+                            nameSenderDepartmentInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival
 
     PROPERTIES (a) ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
                    postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) READONLY numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
-                   quantityInnerArrivalDetail, priceInnerArrivalDetail, sumInnerArrivalDetail
+                   quantityInnerArrivalDetail, priceInnerArrivalDetail, accountSumInnerArrivalDetail
 
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
 ;
@@ -5313,7 +5317,7 @@ totalSumWastage 'Общая сумма' (wastage) = GROUP SUM sumWastageDetail (
     IF  wastageWastageDetail(wastageDetail) == wastage BY wastageWastageDetail(wastageDetail) IN waybillSum;
 
 castWastageObjectsToString100=
-    FORMULA STRING[100] '\'Списание отходов, поставщик \' || CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Списание отходов, поставщик \' || CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
 
 castInfoWastageToString100 'Название документа' (wastage) = castWastageObjectsToString100(
     nameSupplierWastage(wastage), seriesWaybillWastage(wastage), waybillWastage(wastage), dateWastage(wastage));
@@ -5334,7 +5338,7 @@ FORM wastages 'Списания отходов'
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
 castThreeObjectsToString100=
-    FORMULA STRING[100] '\'№ \' || CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
+    FORMULA STRING[200] '\'№ \' || CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
 
 commonInfoShipmentDetail (batchShipment) =
     castThreeObjectsToString100(seriesWaybillShipment(shipmentShipmentDetail(batchShipment)),
@@ -5437,7 +5441,7 @@ CONSTRAINT CHECKED itemShipmentDetail(batchReturnSupplierDetail(returnSupplierDe
     MESSAGE 'Выберите партию этого товара';
 
 castReturnSupplierObjectsToString100=
-    FORMULA STRING[100] '\'Возврат, поставщик \' || CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Возврат, поставщик \' || CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
 
 castInfoReturnSupplierToString100 'Название документа' (returnSupplier) = castReturnSupplierObjectsToString100(
     nameSupplierReturnSupplier(returnSupplier), seriesWaybillReturnSupplier(returnSupplier), waybillReturnSupplier(returnSupplier), dateReturnSupplier(returnSupplier));
@@ -5700,7 +5704,7 @@ oldRetailPriceShipmentDetail (shipmentDetail) <- priceAccountBLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
 
-priceWriteOffDetail (writeOffDetail) <- priceAccountBLedgerDateTime(
+accountPriceWriteOffDetail (writeOffDetail) <- priceAccountBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
                 ON CHANGE itemWriteOffDetail(writeOffDetail);
 
@@ -5838,11 +5842,11 @@ DESIGN returnSuppliers FROM DEFAULT{
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
     PROPERTIES (w) numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff, timeWriteOff, nameReasonOffWriteOff,
-                   noteWriteOff, quantityWriteOff, sumWriteOff
+                   noteWriteOff, quantityWriteOff, accountSumWriteOff
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail,
-                   priceWriteOffDetail, ADDOBJ, delete
+                   accountPriceWriteOffDetail, accountSumWriteOffDetail, ADDOBJ, delete
 
     PROPERTIES FORCE PANEL READONLY articleItemWriteOff(d), nameCountryItemWriteOff(d), retailPriceItemWriteOffDetail(d),
                                     balanceDepartmentStoreItemWriteOff(d), minReserveItemDepartmentWriteOff(d),
@@ -5867,7 +5871,7 @@ DESIGN writeOff FROM DEFAULT{
 FORM writeOffs 'Списания'
     OBJECTS w=writeOff
     PROPERTIES (w) READONLY objectClassName, numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff,
-                            nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, quantityWriteOffDetailsWriteOff, sumWriteOff
+                            nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, quantityWriteOffDetailsWriteOff, accountSumWriteOff
 
     PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWriteOff(w), delete FORCE PANEL SHOWIF isDraftWriteOff(w),
                    postWriteOff SHOWIF isDraftWriteOff(w), unpostWriteOff SHOWIF isPostedWriteOff(w)
@@ -5875,7 +5879,7 @@ FORM writeOffs 'Списания'
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail,
-                   priceWriteOffDetail
+                   accountPriceWriteOffDetail, accountSumWriteOffDetail
     FILTERS inWriteOffWriteOffDetail(w, d)
 ;
 
@@ -5982,10 +5986,17 @@ convertPriceCollationSheet 'Пересчитать цены в сличител�
 
 //---------------------------- Переоценка (конкретная реализация) ----------------------------------------//
 
-datePriceChangeDocument 'Дата' (priceChangeDocument) = UNION EXCLUSIVE datePriceChangeShipment(priceChangeDocument),
-                                                                       datePriceChangeStatement(priceChangeDocument),
-                                                                       datePriceChangeInnerArrival(priceChangeDocument),
-                                                                       dateUserPriceChange(priceChangeDocument) PERSISTENT;
+dateTimePriceChangeDocument 'Дата/время' (priceChangeDocument) = UNION EXCLUSIVE dateTimePriceChangeShipment(priceChangeDocument),
+                                                                                 dateTimePriceChangeStatement(priceChangeDocument),
+                                                                                 dateTimePriceChangeInnerArrival(priceChangeDocument),
+                                                                                 dateTimeUserPriceChange(priceChangeDocument) PERSISTENT;
+
+datePriceChangeDocument 'Дата' (priceChangeDocument) = dateInTime(dateTimePriceChangeDocument(priceChangeDocument)) PERSISTENT;
+
+isPostedPriceChangeDocument 'Закрыт' (priceChangeDocument) = UNION EXCLUSIVE isPostedPriceChangeShipment(priceChangeDocument),
+                                                                             isPostedPriceChangeStatement(priceChangeDocument),
+                                                                             isPostedPriceChangeInnerArrival(priceChangeDocument),
+                                                                             isPostedUserPriceChange(priceChangeDocument) PERSISTENT;
 
 waybillPriceChangeDocument 'Номер накладной' (priceChangeDocument) = UNION EXCLUSIVE waybillPriceChangeShipment(priceChangeDocument),
                                                                                      waybillPriceChangeInnerArrival(priceChangeDocument) PERSISTENT;
@@ -6042,11 +6053,23 @@ retailPriceChangeDocumentDetail 'Новая розничная цена' (priceC
                                                                                                      retailPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                      retailPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
+oldRetailSumChangeDocumentDetail 'Старая розничная сумма' (priceChangeDocumentDetail) =
+                quantityPriceChangeDocumentDetail(priceChangeDocumentDetail) * oldRetailPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+retailSumChangeDocumentDetail 'Новая розничная сумма' (priceChangeDocumentDetail) =
+                quantityPriceChangeDocumentDetail(priceChangeDocumentDetail) * retailPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+accountSumChangeDocumentDetail 'Сумма переоценки' (priceChangeDocumentDetail) =
+                retailSumChangeDocumentDetail(priceChangeDocumentDetail) - oldRetailSumChangeDocumentDetail(priceChangeDocumentDetail);
+
+accountSumChangeDocument 'Сумма переоценки' (priceChangeDocument) = GROUP SUM accountSumChangeDocumentDetail(priceChangeDocumentDetail)
+                                                                          BY  documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
 FORM priceChangeDocuments 'Акты переоценки'
     OBJECTS pc=priceChangeDocument
-    PROPERTIES(pc) READONLY objectClassName, datePriceChangeDocument, nameDepartmentStorePriceChangeDocument,
+    PROPERTIES(pc) READONLY objectClassName, isPostedPriceChangeDocument FORCE GRID, dateTimePriceChangeDocument, nameDepartmentStorePriceChangeDocument,
                             waybillPriceChangeDocument, seriesWaybillPriceChangeDocument, nameSupplierPriceChangeShipment,
-                            nameSenderDepartmentPriceChangeInnerArrival
+                            nameSenderDepartmentPriceChangeInnerArrival, accountSumChangeDocument
 
     OBJECTS pcd=priceChangeDocumentDetail
     PROPERTIES(pcd) READONLY nameItemPriceChangeDocumentDetail, quantityPriceChangeDocumentDetail,
@@ -6058,27 +6081,83 @@ FORM priceChangeDocuments 'Акты переоценки'
 
 //------------------------------------ Изменение учетных сумм ------------------------------------------//
 
-dateTimeAccountSumDocumentLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipment(ledger) PERSISTENT INDEXED;
+dateTimeAccountSumDocumentLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipment(ledger),
+                                                                         dateTimeInnerArrival(ledger),
+                                                                         dateTimePriceChangeDocument(ledger),
+                                                                         dateTimeWriteOff(ledger) PERSISTENT INDEXED;
+dateAccountSumDocumentLedger 'Дата' (ledger) = dateInTime(dateTimeAccountSumDocumentLedger(ledger)) PERSISTENT;
 
-isPostedAccountSumDocumentLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipment(ledger) PERSISTENT;
+isPostedAccountSumDocumentLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipment(ledger),
+                                                                     isPostedInnerArrival(ledger),
+                                                                     isPostedPriceChangeDocument(ledger),
+                                                                     isPostedWriteOff(ledger) PERSISTENT;
 
-departmentStoreAccountSumDocumentLedger (ledger) = UNION EXCLUSIVE departmentStoreShipment(ledger) PERSISTENT;
+departmentStoreAccountSumDocumentLedger (ledger) = UNION EXCLUSIVE departmentStoreShipment(ledger),
+                                                                   departmentStoreInnerArrival(ledger),
+                                                                   departmentStorePriceChangeDocument(ledger),
+                                                                   departmentStoreWriteOff(ledger) PERSISTENT;
 nameDepartmentStoreAccountSumDocumentLedger 'Отдел магазина' (ledger) = name(departmentStoreAccountSumDocumentLedger(ledger));
 
-//sumIncAccountSumDocumentLedger (ledger) = UNION
+sumIncAccountDocumentLedger 'Сумма прихода' (ledger) = UNION EXCLUSIVE retailSumShipment(ledger),
+                                                                       accountSumInnerArrival(ledger),
+                                                                       accountSumChangeDocument(ledger) PERSISTENT;
+sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSIVE accountSumWriteOff(ledger) PERSISTENT;
 
-//currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
-//                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger) PERSISTENT;
-//
+sumAccountDocumentLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumIncAccountDocumentLedger(ledger), -sumOutAccountDocumentLedger(ledger) PERSISTENT;
+
+currentSumAccountDocumentLedger 'Текущий остаток по документам' (departmentStore) = GROUP SUM sumAccountDocumentLedger (ledger) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                                           BY departmentStoreAccountSumDocumentLedger(ledger) PERSISTENT;
+
 //без учета текущей даты/времени
-//balanceBItemLedgerDateTime (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
-//                                                                         -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) >= (dateTime AS DATETIME) AND isPostedBalanceItemLedger(ledger)
-//                                                                         BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
-//
+sumAccountBDocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateTimeAccountSumDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                         BY departmentStoreAccountSumDocumentLedger(ledger), dateTime](departmentStore, dateTime);
+
+sumAccountBDocumentLedgerDate 'Остаток на начало' (departmentStore, date) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND date IS DATE,
+                                                                            -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) >= (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                            BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date);
+
 //с учетом текущей даты/времени
-//balanceAItemLedgerDateTime 'Остаток на дату' (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
-//                                                                         -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) > (dateTime AS DATETIME) AND isPostedBalanceItemLedger(ledger)
-//                                                                         BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
+sumAccountADocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateTimeAccountSumDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                         BY departmentStoreAccountSumDocumentLedger(ledger), dateTime](departmentStore, dateTime);
+
+sumAccountADocumentLedgerDate 'Остаток на конец' (departmentStore, date) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND date IS DATE,
+                                                                           -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) > (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                           BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date);
+
+FORM sumAccountDocumentLedger 'Товарный отчет'
+    OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
+            ds = departmentStore FIXED PANEL
+    PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo), name(ds) READONLY
+
+    PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountADocumentLedgerDate(ds, dtTo)
+
+    OBJECTS il = incAccountSumDocumentLedger
+    PROPERTIES(il) READONLY iDateTime = dateTimeAccountSumDocumentLedger, objectClassName, sumIncAccountDocumentLedger
+    FILTERS isPostedAccountSumDocumentLedger(il),
+            departmentStoreAccountSumDocumentLedger(il) == ds,
+            dateAccountSumDocumentLedger(il) >= dtFrom,
+            dateAccountSumDocumentLedger(il) <= dtTo
+    ORDER BY iDateTime
+
+    OBJECTS ol = outAccountSumDocumentLedger
+    PROPERTIES(ol) READONLY oDateTime = dateTimeAccountSumDocumentLedger, objectClassName, sumOutAccountDocumentLedger
+    FILTERS isPostedAccountSumDocumentLedger(ol),
+            departmentStoreAccountSumDocumentLedger(ol) == ds,
+            dateAccountSumDocumentLedger(ol) >= dtFrom,
+            dateAccountSumDocumentLedger(ol) <= dtTo
+    ORDER BY oDateTime
+;
+
+DESIGN sumAccountDocumentLedger FROM DEFAULT {
+    PROPERTY(objFrom) {
+        caption = 'Дата (с)';
+    }
+    PROPERTY(objTo) {
+        caption = 'Дата (по)';
+    }
+}
 
 //------------------------------------Формы для инвентаризации------------------------------------------//
 
@@ -6781,14 +6860,12 @@ NAVIGATOR {
         }
         NEW priceManagement 'Управление ценами' {
             ADD userPriceChanges;
-            ADD priceChangeDocuments;
         }
     }
     NEW accountInfo 'Сводная информация' TO formsToolbar{
-
-        NEW accountBalance 'Остатки'{
-            ADD balanceItemDepartment 'Остатки на дату';
-       }
+        ADD balanceItemDepartment;
+        ADD sumAccountDocumentLedger;
+        ADD priceChangeDocuments;
     }
 
     ADD adminElement TO formsTree {
