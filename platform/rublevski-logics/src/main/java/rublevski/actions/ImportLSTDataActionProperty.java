@@ -82,6 +82,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             if (rublevskiLM.getLPByName("importBanks").read(context) != null)
                 importBanks(path + "//_sprbank.dbf", context);
+
+            if (rublevskiLM.getLPByName("importRateWastes").read(context) != null)
+                importRateWastes(path + "//_strugrt.dbf", context);
         }
 
     }
@@ -202,8 +205,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             int amountOfImportIterations = (int) Math.ceil((double) numberOfItems / numberOfItemsAtATime);
             Integer rest = numberOfItems;
             for (int i = 0; i < amountOfImportIterations; i++) {
-                importPackOfItems(itemsPath, quantityPath, warePath, importInactive, context, rest>numberOfItemsAtATime? numberOfItemsAtATime : rest, i);
-                rest-=numberOfItemsAtATime;
+                importPackOfItems(itemsPath, quantityPath, warePath, importInactive, context, rest > numberOfItemsAtATime ? numberOfItemsAtATime : rest, i);
+                rest -= numberOfItemsAtATime;
                 System.gc();
             }
         } catch (xBaseJException e) {
@@ -235,12 +238,13 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportField isLoafCutItemField = new ImportField(rublevskiLM.getLPByName("isLoafCutItem"));
         ImportField isWeightItemField = new ImportField(rublevskiLM.getLPByName("isWeightItem"));
         ImportField compositionField = new ImportField(rublevskiLM.getLPByName("compositionScalesItem"));
-        ImportField dataSuppliersRangeItemField = new ImportField(rublevskiLM.getLPByName("dataSuppliersRangeItemDate"));
-        ImportField dataRetailRangeItemField = new ImportField(rublevskiLM.getLPByName("dataRetailRangeItemDate"));
+        ImportField dataSuppliersRangeItemField = new ImportField(rublevskiLM.getLPByName("dataRate"));
+        ImportField dataRetailRangeItemField = new ImportField(rublevskiLM.getLPByName("dataRate"));
         ImportField quantityPackItemField = new ImportField(rublevskiLM.getLPByName("quantityPackItem"));
         ImportField wareIDField = new ImportField(BL.LM.extSID);
         ImportField priceWareField = new ImportField(rublevskiLM.getLPByName("priceWareDate"));
-        ImportField ndsWareField = new ImportField(rublevskiLM.getLPByName("dataActingRateRangeWareDate"));
+        ImportField ndsWareField = new ImportField(rublevskiLM.getLPByName("dataRate"));
+        ImportField rateWasteIDField = new ImportField(BL.LM.extSID);
 
         ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("item"),
                 BL.LM.extSIDToObject.getMapping(itemIDField));
@@ -271,6 +275,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
         ImportKey<?> rangeKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("range"),
                 rublevskiLM.getLPByName("dataActingRateRangeToRange").getMapping(ndsWareField));
+
+        ImportKey<?> rateWasteKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("rateWaste"),
+                BL.LM.extSIDToObject.getMapping(rateWasteIDField));
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -318,17 +325,21 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 BL.LM.object(rublevskiLM.getClassByName("ware")).getMapping(wareKey)));
 
         props.add(new ImportProperty(priceWareField, rublevskiLM.getLPByName("priceWareDate").getMapping(wareKey, dateField)));
-        props.add(new ImportProperty(ndsWareField, rublevskiLM.getLPByName(/*"dataActingRateRangeWareDate"*/"rangeWareDate").getMapping(wareKey, dateField, rangeKey),
+        props.add(new ImportProperty(ndsWareField, rublevskiLM.getLPByName("rangeWareDate").getMapping(wareKey, dateField, rangeKey),
                 BL.LM.object(rublevskiLM.getClassByName("range")).getMapping(rangeKey)));
+
+        props.add(new ImportProperty(rateWasteIDField, rublevskiLM.getLPByName("rateWasteItem").getMapping(itemKey),
+                BL.LM.object(rublevskiLM.getClassByName("rateWaste")).getMapping(rateWasteKey)));
 
         ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, unitOfMeasureIDField,
                 nameUnitOfMeasureField, nameBrandField, brandIDField, countryIDField, nameCountryField, barcodeField, dateField,
                 importerPriceField, percentWholesaleMarkItemField, isFixPriceItemField, isLoafCutItemField, isWeightItemField,
-                compositionField, dataSuppliersRangeItemField, dataRetailRangeItemField, quantityPackItemField, wareIDField, priceWareField, ndsWareField), data);
+                compositionField, dataSuppliersRangeItemField, dataRetailRangeItemField, quantityPackItemField, wareIDField,
+                priceWareField, ndsWareField, rateWasteIDField), data);
 
         DataSession session = BL.createSession();
         IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, unitOfMeasureKey,
-                brandKey, countryKey, barcodeKey, supplierRangeKey, retailRangeKey, wareKey, rangeKey), props);
+                brandKey, countryKey, barcodeKey, supplierRangeKey, retailRangeKey, wareKey, rangeKey, rateWasteKey), props);
         service.synchronize(true, false);
         if (session.hasChanges()) {
             String result = session.apply(BL);
@@ -813,6 +824,46 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
+    private void importRateWastes(String path, ExecutionContext context) throws SQLException {
+
+        try {
+            List<List<Object>> data = importRateWastesFromDBF(path);
+
+            ImportField rateWasteIDField = new ImportField(BL.LM.extSID);
+            ImportField nameRateWasteField = new ImportField(BL.LM.name);
+            ImportField percentRateWasteField = new ImportField(rublevskiLM.getLPByName("percentRateWaste"));
+
+            ImportKey<?> rateWasteKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("rateWaste"),
+                    BL.LM.extSIDToObject.getMapping(rateWasteIDField));
+
+            List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+
+            props.add(new ImportProperty(rateWasteIDField, BL.LM.extSID.getMapping(rateWasteKey)));
+            props.add(new ImportProperty(nameRateWasteField, BL.LM.name.getMapping(rateWasteKey)));
+            props.add(new ImportProperty(percentRateWasteField, rublevskiLM.getLPByName("percentRateWaste").getMapping(rateWasteKey)));
+
+            ImportTable table = new ImportTable(Arrays.asList(rateWasteIDField, nameRateWasteField, percentRateWasteField), data);
+
+            DataSession session = BL.createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(rateWasteKey), props);
+            service.synchronize(true, false);
+            if (session.hasChanges()) {
+                String result = session.apply(BL);
+                if (result != null)
+                    context.addAction(new MessageClientAction(result, "Ошибка"));
+            }
+            session.close();
+
+        } catch (xBaseJException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     private List<List<Object>> data;
 
     private List<List<Object>> importItemGroupsFromDBF(String path, Boolean parents) throws IOException, xBaseJException {
@@ -911,12 +962,13 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
         data = new ArrayList<List<Object>>();
 
-        int recordCount = (numberOfItems != 0 && numberOfItems < totalRecordCount) ? numberOfItems : totalRecordCount;
-
         Set<String> barcodes = new HashSet<String>();
 
-        for (int j = 0; j < startItem; j++)
+        for (int j = 0; j < startItem; j++)  {
             itemsImportFile.read();
+        }
+
+        int recordCount = (numberOfItems != 0 && numberOfItems < totalRecordCount) ? numberOfItems : totalRecordCount;
 
         for (int i = 0; i < recordCount; i++) {
             itemsImportFile.read();
@@ -937,7 +989,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 String unitOfMeasure = new String(itemsImportFile.getField("K_IZM").getBytes(), "Cp1251").trim();
                 String brand = new String(itemsImportFile.getField("BRAND").getBytes(), "Cp1251").trim();
                 String country = new String(itemsImportFile.getField("MANFR").getBytes(), "Cp1251").trim();
-                Date date = new java.sql.Date(DateUtils.parseDate(new String(itemsImportFile.getField("P_TIME").getBytes(), "Cp1251").trim(), new String[]{"yyyyMMdd"}).getTime());
+                String dateString = new String(itemsImportFile.getField("P_TIME").getBytes(), "Cp1251").trim();
+                Date date = "".equals(dateString) ? null : new java.sql.Date(DateUtils.parseDate(dateString, new String[]{"yyyyMMdd"}).getTime());
                 Double importerPrice = new Double(new String(itemsImportFile.getField("N_IZG").getBytes(), "Cp1251").trim());
                 Double percentWholesaleMarkItem = new Double(new String(itemsImportFile.getField("N_OPT").getBytes(), "Cp1251").trim());
                 Boolean isFixPriceItem = "T".equals(new String(itemsImportFile.getField("LFIXEDPRC").getBytes(), "Cp1251").substring(0, 1));
@@ -952,12 +1005,14 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 Double quantityPackItem = quantities.containsKey(itemID) ? quantities.get(itemID) : null;
                 Boolean isWare = "T".equals(new String(itemsImportFile.getField("LGRMSEC").getBytes(), "Cp1251").substring(0, 1));
                 String wareID = new String(itemsImportFile.getField("K_GRMSEC").getBytes(), "Cp1251").trim();
+                String rateWasteID = "RW_" + new String(itemsImportFile.getField("K_VGRTOV").getBytes(), "Cp1251").trim();
 
-                if (!"".equals(k_grtov) && (!inactiveItem || importInactive) && !isWare)
+                if (!"".equals(k_grtov) && (!inactiveItem || importInactive) && !isWare && !"RW_".equals(rateWasteID))
                     data.add(Arrays.asList((Object) itemID, k_grtov, pol_naim, "U_" + unitOfMeasure, unitOfMeasure, brand, "B_" + brand, "C_" + country, country, barcode,
                             date, importerPrice, percentWholesaleMarkItem, isFixPriceItem ? isFixPriceItem : null, isLoafCutItem ? isLoafCutItem : null, isWeightItem ? isWeightItem : null,
-                            "".equals(composition) ? null : composition, suppliersRange, retailRange, quantityPackItem,
-                            wareID, wares.containsKey(itemID) ? wares.get(itemID)[0] : null, wares.containsKey(itemID) ? wares.get(itemID)[1] : null));
+                            "".equals(composition) ? null : composition, suppliersRange, retailRange, quantityPackItem, wareID,
+                            wares.containsKey(itemID) ? wares.get(itemID)[0] : null, wares.containsKey(itemID) ? wares.get(itemID)[1] : null,
+                            rateWasteID));
             } catch (ParseException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -1121,6 +1176,24 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             String mfo = new String(importFile.getField("K_MFO").getBytes(), "Cp1251").trim();
             String cbu = new String(importFile.getField("CBU").getBytes(), "Cp1251").trim();
             data.add(Arrays.asList((Object) ("BANK_" + k_bank), name, address, department, mfo, cbu));
+        }
+        return data;
+    }
+
+    private List<List<Object>> importRateWastesFromDBF(String path) throws IOException, xBaseJException {
+
+        DBF importFile = new DBF(path);
+        int recordCount = importFile.getRecordCount();
+
+        data = new ArrayList<List<Object>>();
+
+        for (int i = 0; i < recordCount; i++) {
+
+            importFile.read();
+            String rateWasteID = new String(importFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
+            String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
+            Double coef = new Double(new String(importFile.getField("KOEFF").getBytes(), "Cp1251").trim());
+            data.add(Arrays.asList((Object) ("RW_" + rateWasteID), name, coef));
         }
         return data;
     }

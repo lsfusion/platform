@@ -590,7 +590,7 @@ OBJECTS n=numberInPack FIXED PANEL
 PROPERTIES(n) name;
 
 //---------------------------------- Норма отходов ------------------------------------//
-CLASS rateWaste 'Норма отходов' : named;
+CLASS rateWaste 'Норма отходов' : named, externalObject;
 
 percentRateWaste 'Норма,%' = DATA DOUBLE (rateWaste) IN baseGroup;
 
@@ -6609,11 +6609,12 @@ importCustomers 'Импортировать покупателей' = DATA BOOLE
 importStores 'Импортировать магазины' = DATA BOOLEAN ();
 importDepartmentStores 'Импортировать отделы магазина' = DATA BOOLEAN();
 importBanks 'Импортировать банки' = DATA BOOLEAN();
+importRateWastes 'Импортировать нормы отходов' = DATA BOOLEAN();
 FORM importData 'Импорт данных'
     PROPERTIES() importDataAction, importUrl, importLogin, importPassword
     PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importWares, importItems,
     importNumberItems, importNumberItemsAtATime, importPrices, importAssortment, importCompanies, importSuppliers, importCustomers, importStores,
-    importDepartmentStores, importBanks
+    importDepartmentStores, importBanks, importRateWastes
 ;
 
 //---------------------------- Настройка навигатора ----------------------------------------//
