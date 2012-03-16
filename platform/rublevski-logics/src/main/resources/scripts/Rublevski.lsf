@@ -4004,10 +4004,10 @@ storeByInventory(inventory) = GROUP EQUAL storeDepartmentStore(departmentStore) 
 nameStoreByInventory 'Магазин' (inventory) = name(storeByInventory(inventory)) IN inventoryGroup;
 
 castInventoryObjectsToString100=
-    FORMULA STRING[200] '\'Инвентаризация № \' || CAST($1 AS TEXT) ||  \' по магазину \' || CAST($2 AS TEXT) || \' от \'|| CAST($3 AS TEXT)';
+    FORMULA STRING[200] '\'Инвентаризация \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)';
 
-castInfoInventoryToString100 'Название документа' (inventory) = castInventoryObjectsToString100(
-    numberInventory(inventory), nameStoreByInventory(inventory), dateToInventory(inventory));
+descriptionInventory 'Название документа' (inventory) = castInventoryObjectsToString100(
+    numberInventory(inventory), dateToInventory(inventory));
 
 //---------------------------- Изменение остатка инвентаризации ----------------------------//
 
@@ -4032,7 +4032,7 @@ nameAttributeItemInventoryLedger 'Товар' (inventoryLedger) = nameAttributeI
 
 barcodeExInventoryLedger 'Щтрих-код' (inventoryLedger) =  barcodeEx(barcodeSku(itemInventoryLedger(inventoryLedger)));
 
-fullInfoInventoryLedger 'Название документа' (inventoryLedger) = castInfoInventoryToString100(inventoryInventoryLedger(inventoryLedger));
+descriptionInventoryLedger 'Название документа' (inventoryLedger) = descriptionInventory(inventoryInventoryLedger(inventoryLedger));
 
 //--------------------------------Формы по инвентаризации см. в конце-------------------//
 
@@ -4314,12 +4314,12 @@ toFillStatementDetailsStatement 'Заполнить отгрузку на осн
 } IN specificationGroup CONFIRM;
 
 castStatementObjectsToString100=
-    FORMULA STRING[200] '\'Отгрузка из розницы, покупатель \' || CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Выписка из розницы \' || CAST($1 AS TEXT) || \' - \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
 
-castInfoStatementToString100 'Название документа' (statement) = castStatementObjectsToString100(
-    nameCustomerStatement(statement), seriesWaybillStatement(statement), waybillStatement(statement), dateStatement(statement));
+descriptionStatement 'Название документа' (statement) = castStatementObjectsToString100(
+    waybillStatement(statement), seriesWaybillStatement(statement), dateStatement(statement), nameCustomerStatement(statement));
 
-fullInfoStatementDetail 'Название документа' (statementDetail) = castInfoStatementToString100(statementStatementDetail(statementDetail));
+descriptionStatementDetail 'Название документа' (statementDetail) = descriptionStatement(statementStatementDetail(statementDetail));
 
 // ---------------------------------- Переоценка при реализации из розницы ------------------------------------------
 
@@ -4683,12 +4683,12 @@ percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShip
     ON CHANGE itemShipmentDetail(shipmentDetail);
 
 castShipmentObjectsToString100=
-    FORMULA STRING[200] '\'Приход, поставщик \' || CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Приход \' || CAST($1 AS TEXT) || \' - \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
 
-castInfoShipmentToString100 'Название документа' (shipment) = castShipmentObjectsToString100(
-    nameSupplierShipment(shipment), seriesWaybillShipment(shipment), waybillShipment(shipment), dateShipment(shipment));
+descriptionShipment 'Название документа' (shipment) = castShipmentObjectsToString100(
+    waybillShipment(shipment), seriesWaybillShipment(shipment), dateShipment(shipment), nameSupplierShipment(shipment));
 
-fullInfoShipmentDetail 'Название документа' (shipmentDetail) = castInfoShipmentToString100(shipmentShipmentDetail(shipmentDetail));
+descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
 
 
 // ---------------------------------- Дооценка на приходе ------------------------------------------
@@ -4947,12 +4947,12 @@ accountSumInnerFlow 'Общая сумма' (innerFlow) = GROUP SUM accountSumIn
     IF innerFlowInnerFlowDetail (innerFlowDetail) == innerFlow BY innerFlowInnerFlowDetail(innerFlowDetail) IN waybillSum;
 
 castInnerFlowObjectsToString100=
-    FORMULA STRING[200] '\'Внутренний расход, отдел-получатель \'|| CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Расход в отдел \' || CAST($1 AS TEXT) || \' - \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
 
-castInfoInnerFlowToString100 'Название документа' (innerFlow) = castInnerFlowObjectsToString100(
-    nameRecipientDepartmentInnerFlow(innerFlow), seriesWaybillInnerFlow(innerFlow), waybillInnerFlow(innerFlow), dateInnerFlow(innerFlow));
+descriptionInnerFlow 'Название документа' (innerFlow) = castInnerFlowObjectsToString100(
+    waybillInnerFlow(innerFlow), seriesWaybillInnerFlow(innerFlow), dateInnerFlow(innerFlow), nameRecipientDepartmentInnerFlow(innerFlow));
 
-fullInfoInnerFlowDetail 'Название документа' (innerFlowDetail) = castInfoInnerFlowToString100(innerFlowInnerFlowDetail(innerFlowDetail));
+descriptionInnerFlowDetail 'Название документа' (innerFlowDetail) = descriptionInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail));
 
 
 FORM innerFlow 'Расход в другой отдел'
@@ -5183,12 +5183,12 @@ retailPriceChangeInnerArrivalDetail 'Новая розничная цена' (pr
     priceInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
 
 castInnerArrivalObjectsToString100=
-    FORMULA STRING[200] '\'Внутренний приход, отдел-отправитель \'|| CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Приход в отдел \'|| CAST($1 AS TEXT) || \' - \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
 
-castInfoInnerArrivalToString100 'Название документа' (innerArrival) = castInnerArrivalObjectsToString100(
-    nameSenderDepartmentInnerArrival(innerArrival), seriesWaybillInnerArrival(innerArrival), waybillInnerArrival(innerArrival), dateInnerArrival(innerArrival));
+descriptionInnerArrival 'Название документа' (innerArrival) = castInnerArrivalObjectsToString100(
+    waybillInnerArrival(innerArrival), seriesWaybillInnerArrival(innerArrival), dateInnerArrival(innerArrival), nameSenderDepartmentInnerArrival(innerArrival));
 
-fullInfoInnerArrivalDetail 'Название документа' (innerArrivalDetail) = castInfoInnerArrivalToString100(innerArrivalInnerArrivalDetail(innerArrivalDetail));
+descriptionInnerArrivalDetail 'Название документа' (innerArrivalDetail) = descriptionInnerArrival(innerArrivalInnerArrivalDetail(innerArrivalDetail));
 
 
 FORM innerArrival 'Приход из другого отдела'
@@ -5319,12 +5319,12 @@ totalSumWastage 'Общая сумма' (wastage) = GROUP SUM sumWastageDetail (
     IF  wastageWastageDetail(wastageDetail) == wastage BY wastageWastageDetail(wastageDetail) IN waybillSum;
 
 castWastageObjectsToString100=
-    FORMULA STRING[200] '\'Списание отходов, поставщик \' || CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Списание отходов \' || CAST($1 AS TEXT) || \' - \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
 
-castInfoWastageToString100 'Название документа' (wastage) = castWastageObjectsToString100(
-    nameSupplierWastage(wastage), seriesWaybillWastage(wastage), waybillWastage(wastage), dateWastage(wastage));
+descriptionWastage 'Название документа' (wastage) = castWastageObjectsToString100(
+    waybillWastage(wastage), seriesWaybillWastage(wastage), dateWastage(wastage), nameSupplierWastage(wastage));
 
-fullInfoWastageDetail 'Название документа' (wastageDetail) = castInfoWastageToString100(wastageWastageDetail(wastageDetail));
+descriptionWastageDetail 'Название документа' (wastageDetail) = descriptionWastage(wastageWastageDetail(wastageDetail));
 
 FORM wastages 'Списания отходов'
 
@@ -5443,12 +5443,12 @@ CONSTRAINT CHECKED itemShipmentDetail(batchReturnSupplierDetail(returnSupplierDe
     MESSAGE 'Выберите партию этого товара';
 
 castReturnSupplierObjectsToString100=
-    FORMULA STRING[200] '\'Возврат, поставщик \' || CAST($1 AS TEXT) || \' серия \' || CAST($2 AS TEXT) ||  \' № \' || CAST($3 AS TEXT) || \' от \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Возврат поставщику \' || CAST($1 AS TEXT) || \' - \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
 
-castInfoReturnSupplierToString100 'Название документа' (returnSupplier) = castReturnSupplierObjectsToString100(
-    nameSupplierReturnSupplier(returnSupplier), seriesWaybillReturnSupplier(returnSupplier), waybillReturnSupplier(returnSupplier), dateReturnSupplier(returnSupplier));
+descriptionReturnSupplier 'Название документа' (returnSupplier) = castReturnSupplierObjectsToString100(
+    waybillReturnSupplier(returnSupplier), seriesWaybillReturnSupplier(returnSupplier), dateReturnSupplier(returnSupplier), nameSupplierReturnSupplier(returnSupplier));
 
-fullInfoReturnSupplierDetail 'Название документа' (returnSupplierDetail) = castInfoReturnSupplierToString100(returnSupplierReturnSupplierDetail(returnSupplierDetail));
+descriptionReturnSupplierDetail 'Название документа' (returnSupplierDetail) = descriptionReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
 
 
 //----------------------------------------------- Переоценка товара ---------------------------------------------------//
@@ -5565,13 +5565,13 @@ quantityBalanceItemLedger 'Количество' (ledger) = UNION EXCLUSIVE quan
                                                     -quantityReturnSupplierDetail(ledger),
                                                     -quantityInventoryLedger(ledger) PERSISTENT;
 
-fullInfoDocumentLedger 'Название документа' (ledger) = UNION EXCLUSIVE fullInfoShipmentDetail(ledger),
-                                                            fullInfoInnerArrivalDetail(ledger),
-                                                            fullInfoStatementDetail(ledger),
-                                                            fullInfoInnerFlowDetail(ledger),
-                                                            fullInfoWastageDetail(ledger),
-                                                            fullInfoReturnSupplierDetail(ledger),
-                                                            fullInfoInventoryLedger(ledger) PERSISTENT;
+descriptionLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
+                                                            descriptionInnerArrivalDetail(ledger),
+                                                            descriptionStatementDetail(ledger),
+                                                            descriptionInnerFlowDetail(ledger),
+                                                            descriptionWastageDetail(ledger),
+                                                            descriptionReturnSupplierDetail(ledger),
+                                                            descriptionInventoryLedger(ledger) PERSISTENT;
 
 
 currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
@@ -6693,23 +6693,23 @@ FORM balanceItemDepartment 'Остатки по отделам'
         FILTER 'Товары с остатком' 'F10' balanceAItemLedgerDateTime(i, dep, t) DEFAULT
 
     OBJECTS apl=accountPriceLedger
-    PROPERTIES (apl) fullInfoDocumentLedger, dateTimeAccountPriceLedger, priceAccountLedger
+    PROPERTIES (apl) descriptionLedger, dateTimeAccountPriceLedger, priceAccountLedger
     FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
 
     OBJECTS rpl=retailPriceLedger
-    PROPERTIES (rpl) fullInfoDocumentLedger, dateTimeRetailPriceLedger, priceRetailLedger
+    PROPERTIES (rpl) descriptionLedger, dateTimeRetailPriceLedger, priceRetailLedger
     FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
 
     OBJECTS bil=balanceItemLedger
-    PROPERTIES(bil) fullInfoDocumentLedger, dateTimeBalanceItemLedger, quantityBalanceItemLedger READONLY
+    PROPERTIES(bil) descriptionLedger, dateTimeBalanceItemLedger, quantityBalanceItemLedger READONLY
     FILTERS isPostedBalanceItemLedger(bil) AND itemBalanceItemLedger(bil)==i AND departmentStoreBalanceItemLedger(bil)==dep
 
     OBJECTS ipl=importerPriceLedger
-    PROPERTIES(ipl) fullInfoDocumentLedger, dateTimeImporterPriceLedger, priceImporterLedger
+    PROPERTIES(ipl) descriptionLedger, dateTimeImporterPriceLedger, priceImporterLedger
     FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
 
     OBJECTS rvl=retailVATLedger
-    PROPERTIES(rvl) fullInfoDocumentLedger, dateTimeRetailVATLedger, dataRetailLedger
+    PROPERTIES(rvl) descriptionLedger, dateTimeRetailVATLedger, dataRetailLedger
     FILTERS isPostedRetailVATLedger(rvl) AND itemRetailVATLedger(rvl)==i AND departmentStoreRetailVATLedger(rvl)==dep
 ;
 
@@ -6727,21 +6727,22 @@ DESIGN balanceItemDepartment FROM DEFAULT {
 
         NEW secondCase {
                 fillHorizontal = 2;
-                ADD dsi.box;
+                childConstraints = TO THE BOTTOM;
+                ADD dsi.box {fillVertical = 2;}
+
+                NEW ledger.box {
+                    fillVertical = 1;
+                    title = 'Изменение цен';
+                    tabbedPane = TRUE;
+                    ADD bil.box;
+                    ADD apl.box;
+                    ADD rpl.box;
+                    ADD ipl.box;
+                    ADD rvl.box;
+                }
+
         }
         POSITION firstCase TO THE LEFT secondCase;
-
-        NEW ledger.box {
-                fillHorizontal = 1;
-                title = 'Изменение цен';
-                tabbedPane = TRUE;
-                ADD bil.box;
-                ADD apl.box;
-                ADD rpl.box;
-                ADD ipl.box;
-                ADD rvl.box;
-        }
-        POSITION secondCase TO THE LEFT ledger.box;
 
         ADD functions.box;
     }
