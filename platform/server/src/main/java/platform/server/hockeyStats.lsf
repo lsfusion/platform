@@ -74,23 +74,26 @@ points 'PTS' (team) = gamesWon(team) * 3 + (gamesWonSO(team) + gamesWonOT(team))
 
 hostGoalsScored(team) = GROUP SUM hostGoals(game) BY hostTeam(game);
 guestGoalsScored(team) = GROUP SUM guestGoals(game) BY guestTeam(game);
-goalsScored 'GF' (team) = UNION SUM hostGoalsScored(team), guestGoalsScored(team);
+goalsScored 'GF' (team) = UNION OVERRIDE 0 IF team IS Team, UNION SUM hostGoalsScored(team), guestGoalsScored(team);
 
 hostGoalsConceded(team) = GROUP SUM guestGoals(game) BY hostTeam(game);
 guestGoalsConceded(team) = GROUP SUM hostGoals(game) BY guestTeam(game);
-goalsConceded 'GA' (team) = UNION SUM hostGoalsConceded(team), guestGoalsConceded(team);
+goalsConceded 'GA' (team) = UNION OVERRIDE 0 IF team IS Team, UNION SUM hostGoalsConceded(team), guestGoalsConceded(team);
 
 extendedGame(game) = gameResult(game) != GameResult.win;
 
-place 'PL' (team) = PARTITION SUM 1 ORDER DESC points(team);
-//, gamesWon(team), gamesWonOT(team), gamesWonSO(team),
-//                                               goalsScored(team) - goalsConceded(team), goalsScored(team);
+place 'PL' (team) = PARTITION SUM 1 ORDER DESC points(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team),
+                                               goalsScored(team) - goalsConceded(team), goalsScored(team);
 
 conferencePlace 'Conf. PL' (team) = PARTITION SUM 1 BY conference(team)
-                                              ORDER DESC points(team);
-                                              //, gamesWon(team), gamesWonOT(team), gamesWonSO(team),
-                                              //           goalsScored(team) - goalsConceded(team), goalsScored(team);
+                                              ORDER DESC points(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team),
+                                                         goalsScored(team) - goalsConceded(team), goalsScored(team);
 
+
+//proportion(team) = DATA DOUBLE (Team);
+//ungroupProp(conference) = 10.0 IF conference IS Conference;
+//partitionPropTest(team) = PARTITION UNGROUP ungroupProp PROPORTION STRICT ROUND(2) proportion(team) BY conference(team) ORDER points(team);
+//limitPropTest(team) = PARTITION UNGROUP ungroupProp LIMIT proportion(team) BY conference(team) ORDER points(team), team;
 
 CONSTRAINT CHECKED hostTeam(team) == guestTeam(team) MESSAGE 'Home and Visitor teams should be different';
 CONSTRAINT extendedGame(game) AND hostGoals(game) > guestGoals(game) + 1 MESSAGE 'Overtime is impossible';
@@ -102,5 +105,6 @@ FORM MainForm 'Scoreboard'
 OBJECTS game=Game, team=Team
 PROPERTIES(game) gameDate, hostTeamName, hostGoals, guestGoals, guestTeamName, gameResultName
 PROPERTIES(team) place, conferencePlace, teamName, gamesPlayed, gamesWon, gamesWonOT, gamesWonSO,
-                 gamesLostSO, gamesLostOT, gamesLost, goalsScored, goalsConceded, points
+                 gamesLostSO, gamesLostOT, gamesLost, goalsScored, goalsConceded, points //,
+//                 proportion, partitionPropTest, limitPropTest
 PROPERTIES ADDOBJ(game), ADDOBJ(team);
