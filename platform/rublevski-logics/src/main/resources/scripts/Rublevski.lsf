@@ -3193,7 +3193,7 @@ DESIGN stores FROM DEFAULT {
 
 //---------------------------- Модели оборудования ----------------------------------------//
 CLASS ABSTRACT model 'Модель' : named;
-CLASS cashModel 'Модель касс' : model;
+CLASS cashRegisterModel 'Модель касс' : model;
 CLASS scalesModel 'Модель весов' : model;
 CLASS checkModel 'Модель прайс чекеров' : model;
 
@@ -3205,9 +3205,9 @@ useModel 'Модель используется' = DATA BOOLEAN (model) IN baseG
 lettersModel 'Преобразовать наименование товара В ЗАГЛАВНЫЕ БУКВЫ' = DATA BOOLEAN (model) IN baseGroup;
 
 
-frontOfficeCashModel 'Модель касс (ИД)' = DATA frontOffice (cashModel) IN idGroup;
-nameFrontOfficeCashModel 'Версия фронт офиса на кассе' (cashModel) = nameFrontOffice(frontOfficeCashModel(cashModel)) IN baseGroup;
-dateToCashModel 'Дата, до которой модель внесена в реестр' = DATA DATE (cashModel) IN baseGroup;
+frontOfficeCashRegisterModel 'Модель касс (ИД)' = DATA frontOffice (cashRegisterModel) IN idGroup;
+nameFrontOfficeCashRegisterModel 'Версия фронт офиса на кассе' (cashRegisterModel) = nameFrontOffice(frontOfficeCashRegisterModel(cashRegisterModel)) IN baseGroup;
+dateToCashRegisterModel 'Дата, до которой модель внесена в реестр' = DATA DATE (cashRegisterModel) IN baseGroup;
 maxProductModel 'MAX допустимое колич.товаров' = DATA INTEGER (model) IN baseGroup;
 
 CLASS flash 'Прошивка';
@@ -3254,10 +3254,10 @@ OBJECTS ch=checkModel FIXED PANEL
 PROPERTIES(ch) name, nameModelCheckModel, noteModel, useModel, maxProductModel
 EDIT checkModel OBJECT ch;
 
-FORM cashModel 'Модель касс'
-OBJECTS c=cashModel FIXED PANEL
-PROPERTIES(c) name, nameFrontOfficeCashModel, noteModel, useModel, dateToCashModel, lettersModel
-EDIT cashModel OBJECT c;
+FORM cashRegisterModel 'Модель касс'
+OBJECTS c=cashRegisterModel FIXED PANEL
+PROPERTIES(c) name, nameFrontOfficeCashRegisterModel, noteModel, useModel, dateToCashRegisterModel, lettersModel
+EDIT cashRegisterModel OBJECT c;
 
 FORM scalesModel 'Модель весов'
 OBJECTS s=scalesModel FIXED PANEL
@@ -3270,7 +3270,7 @@ EDIT scalesModel OBJECT s;
 
 CLASS ABSTRACT groupMachinery 'Группы оборудования';
 CLASS groupScales 'Группы весов' : groupMachinery;
-CLASS groupCash 'Группы касс' : groupMachinery;
+CLASS groupCashRegister 'Группы касс' : groupMachinery;
 CLASS groupCheck 'Группы прайс чекеров' : groupMachinery;
 
 nameGroupMachinery 'Наименование группы' = DATA STRING[200] (groupMachinery) IN baseGroup;
@@ -3285,13 +3285,13 @@ nameDepartmentStoreGroupMachinery 'Подразделение' (groupMachinery) 
 
 //---------------------------- типы оборудования  ----------------------------------------//
 CLASS ABSTRACT machinery 'Оборудование';
-CLASS cash 'Касса' : machinery;
+CLASS cashRegister 'Касса' : machinery;
 CLASS scales 'Весы' : machinery;
 CLASS check 'Прайс чекер' : machinery;
 
 
-groupCashCash 'Группа ИД' = DATA groupCash (cash) IN idGroup;
-isGroupCashCash (groupCash, cash) = groupCashCash(cash) == groupCash;
+groupCashRegisterCashRegister 'Группа ИД' = DATA groupCashRegister (cashRegister) IN idGroup;
+isGroupCashRegisterCashRegister (groupCashRegister, cashRegister) = groupCashRegisterCashRegister(cashRegister) == groupCashRegister;
 
 groupScalesScales 'Группа ИД' = DATA groupScales (scales) IN idGroup;
 isGroupScalesScales (groupScales, scales) = groupScalesScales(scales) == groupScales;
@@ -3299,24 +3299,24 @@ isGroupScalesScales (groupScales, scales) = groupScalesScales(scales) == groupSc
 groupCheckCheck 'Группа ИД' = DATA groupCheck (check) IN idGroup;
 isGroupCheckCheck (groupCheck, check) = groupCheckCheck(check) == groupCheck;
 
-nameGroupMachineryCash 'Наименование группы' (cash) = nameGroupMachinery(groupCashCash(cash)) IN baseGroup;
+nameGroupMachineryCashRegister 'Наименование группы' (cashRegister) = nameGroupMachinery(groupCashRegisterCashRegister(cashRegister)) IN baseGroup;
 nameGroupMachineryScales 'Наименование группы' (scales) = nameGroupMachinery(groupScalesScales(scales)) IN baseGroup;
 nameGroupMachineryCheck 'Наименование группы' (check) = nameGroupMachinery(groupCheckCheck(check)) IN baseGroup;
 
-dataGroupMachineryMachinery 'Наименование группы' (machinery) = UNION EXCLUSIVE nameGroupMachineryCash(machinery), nameGroupMachineryScales(machinery), nameGroupMachineryCheck(machinery);
+dataGroupMachineryMachinery 'Наименование группы' (machinery) = UNION EXCLUSIVE nameGroupMachineryCashRegister(machinery), nameGroupMachineryScales(machinery), nameGroupMachineryCheck(machinery);
 
 descriptionMachinery 'Описание' = DATA STRING[200] (machinery) IN baseGroup;
 portMachinery 'Адрес/порт' = DATA STRING[100] (machinery) IN baseGroup;
 useMachinery 'Оборудование используется' = DATA BOOLEAN (machinery) IN baseGroup;
 
-cashModelCash 'Модель ИД' = DATA cashModel (cash) IN idGroup;
-numberCash 'Регистрационный номер кассы' = DATA STRING[100] (cash) IN baseGroup;
-directoryCash 'Директория обмена с кассой' = DATA STRING[100] (cash) IN baseGroup;
-nameCashModelCash 'Модель кассы' (cash) = name(cashModelCash(cash)) IN baseGroup;
-statusCash 'Статус кассы (на момент посл.передачи)' = DATA STRING[200] (cash) IN baseGroup;
-resultCash 'Результат передачи на кассу товаров' = DATA STRING[200] (cash) IN baseGroup;
-dateCash 'Дата фискализации кассового аппарата' = DATA DATE (cash) IN baseGroup;
-nppCash 'Порядковый номер кассы в торговом объекте ' = DATA INTEGER (cash) IN baseGroup;
+cashRegisterModelCashRegister 'Модель ИД' = DATA cashRegisterModel (cashRegister) IN idGroup;
+numberCashRegister 'Регистрационный номер кассы' = DATA STRING[100] (cashRegister) IN baseGroup;
+directoryCashRegister 'Директория обмена с кассой' = DATA STRING[100] (cashRegister) IN baseGroup;
+nameCashRegisterModelCashRegister 'Модель кассы' (cashRegister) = name(cashRegisterModelCashRegister(cashRegister)) IN baseGroup;
+statusCashRegister 'Статус кассы (на момент посл.передачи)' = DATA STRING[200] (cashRegister) IN baseGroup;
+resultCashRegister 'Результат передачи на кассу товаров' = DATA STRING[200] (cashRegister) IN baseGroup;
+dateCashRegister 'Дата фискализации кассового аппарата' = DATA DATE (cashRegister) IN baseGroup;
+nppCashRegister 'Порядковый номер кассы в торговом объекте ' = DATA INTEGER (cashRegister) IN baseGroup;
 
 CLASS STATIC feature 'Свойство для оборудования'
 {
@@ -3346,11 +3346,11 @@ OBJECTS m=machinery
 PROPERTIES(m) READONLY objectClassName, descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery
 PROPERTIES(m) ADDFORM, EDITFORM, delete;
 
-FORM cash 'Касса'
-OBJECTS c=cash FIXED PANEL
-PROPERTIES(c) numberCash, descriptionMachinery, nameGroupMachineryCash, portMachinery, useMachinery, directoryCash, nameCashModelCash,
-              dateCash, nppCash, statusCash, resultCash
-EDIT cash OBJECT c;
+FORM cashRegister 'Касса'
+OBJECTS c=cashRegister FIXED PANEL
+PROPERTIES(c) numberCashRegister, descriptionMachinery, nameGroupMachineryCashRegister, portMachinery, useMachinery, directoryCashRegister, nameCashRegisterModelCashRegister,
+              dateCashRegister, nppCashRegister, statusCashRegister, resultCashRegister
+EDIT cashRegister OBJECT c;
 
 FORM scales 'Весы'
 OBJECTS s=scales FIXED PANEL
@@ -3381,24 +3381,25 @@ PROPERTIES(s)   READONLY numberScales, descriptionMachinery, nameGroupMachineryS
                 dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales
 FILTERS isGroupScalesScales(grs, s);
 
-FORM groupCash 'Группа касс'
-OBJECTS grc=groupCash FIXED PANEL
-OBJECTS c=cash
+FORM groupCashRegister 'Группа касс'
+OBJECTS grc=groupCashRegister FIXED PANEL
+OBJECTS c=cashRegister
 PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
-PROPERTIES(c)   numberCash, descriptionMachinery, nameGroupMachineryCash, portMachinery, useMachinery, directoryCash, nameCashModelCash,
-                dateCash, nppCash, statusCash, resultCash, ADDOBJ, delete
+PROPERTIES(c)   numberCashRegister, descriptionMachinery, nameGroupMachineryCashRegister, portMachinery, useMachinery, directoryCashRegister, nameCashRegisterModelCashRegister,
+                dateCashRegister, nppCashRegister, statusCashRegister, resultCashRegister, ADDOBJ, delete
 FILTERGROUP filters2
-    FILTER 'Показывать только для данной группы' 'F10' isGroupCashCash(grc, c) DEFAULT
-EDIT groupCash OBJECT grc;
+    FILTER 'Показывать только для данной группы' 'F10' isGroupCashRegisterCashRegister(grc, c) DEFAULT
+EDIT groupCashRegister OBJECT grc;
 
 
-FORM groupsCash 'Группы касс'
-OBJECTS grc=groupCash, c=cash
+FORM groupsCashRegister 'Группы касс'
+OBJECTS grc=groupCashRegister, c=cashRegister
 PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
 PROPERTIES(grc)  ADDFORM, EDITFORM, delete
-PROPERTIES(c)    READONLY numberCash, descriptionMachinery, nameGroupMachineryCash, portMachinery, useMachinery, directoryCash, nameCashModelCash,
-                 dateCash, nppCash, statusCash, resultCash
-FILTERS isGroupCashCash(grc, c);
+PROPERTIES(c)    READONLY numberCashRegister, descriptionMachinery, nameGroupMachineryCashRegister, portMachinery,
+                 useMachinery, directoryCashRegister, nameCashRegisterModelCashRegister,
+                 dateCashRegister, nppCashRegister, statusCashRegister, resultCashRegister
+FILTERS isGroupCashRegisterCashRegister(grc, c);
 
 FORM groupCheck 'Группа прайс чекеров'
 OBJECTS grch=groupCheck FIXED PANEL
@@ -3426,9 +3427,9 @@ sidGroupUser 'Идентификатор' = DATA STRING[20] (groupUser) IN baseG
 groupUserEmployee(employee) = DATA groupUser (employee)  IN idGroup;
 nameGroupUserEmployee 'Наименование группы' (employee) = nameGroupUser(groupUserEmployee(employee)) IN baseGroup;
 
-includedEmployeeCash 'Подключить'  = DATA BOOLEAN (employee, cash) IN baseGroup;
-dateFromEmployeeCash 'Дата с'  = DATA DATE (employee, cash) IN baseGroup;
-dateToEmployeeCash 'Дата по'  = DATA DATE (employee, cash) IN baseGroup;
+includedEmployeeCashRegister 'Подключить'  = DATA BOOLEAN (employee, cashRegister) IN baseGroup;
+dateFromEmployeeCashRegister 'Дата с'  = DATA DATE (employee, cashRegister) IN baseGroup;
+dateToEmployeeCashRegister 'Дата по'  = DATA DATE (employee, cashRegister) IN baseGroup;
 
 CLASS STATIC typeAction 'Тип действия'
 {
@@ -3446,31 +3447,32 @@ dateToEmployeeDepartmentStore 'Окончание доступа'  = DATA DATE (
 
 isGroupUserEmployee(groupUser, employee) =  groupUserEmployee(employee) == groupUser;
 
-departmentStoreCash(cash) = departmentStoreGroupMachinery(groupCashCash(cash)) IN idGroup;
-nameDepartmentStoreCash 'Наименование отдела' (cash) = name(departmentStoreCash(cash)) IN baseGroup;
-nameStoreDepartmentStoreCash 'Наименование магазина' (cash) = name(storeDepartmentStore(departmentStoreCash(cash)))  IN baseGroup;
+departmentStoreCashRegister(cashRegister) = departmentStoreGroupMachinery(groupCashRegisterCashRegister(cashRegister)) IN idGroup;
+nameDepartmentStoreCashRegister 'Наименование отдела' (cashRegister) = name(departmentStoreCashRegister(cashRegister)) IN baseGroup;
+nameStoreDepartmentStoreCashRegister 'Наименование магазина' (cashRegister) = name(storeDepartmentStore(departmentStoreCashRegister(cashRegister)))  IN baseGroup;
 
 CONSTRAINT  groupUserEmployee(employee) AND NOT nameActionEmployee(employee) MESSAGE 'Для сотрудника не выбран доступ к подразделениям';
 // todo: надо сделать проверку для сотрудника на доступ к подразделению//
 
 
 FORM groupUser 'Группa пользователей'
-OBJECTS gru=groupUser FIXED PANEL
-OBJECTS e=employee, c=cash, d=departmentStore
-PROPERTIES(gru)  nameGroupUser, sidGroupUser
-PROPERTIES(e)    nameGroupUserEmployee, userFirstName, userLastName, phoneEmployee, nameActionEmployee, nameEmployeeSystemEmployee,
-                 shortNameLanguageEmployee, numberEmployee, passwordEmployee, dataEmployee
-PROPERTIES(c)    READONLY nameStoreDepartmentStoreCash, nameDepartmentStoreCash, nameGroupMachineryCash, numberCash, nppCash
-PROPERTIES(e, c) includedEmployeeCash, dateFromEmployeeCash, dateToEmployeeCash
-PROPERTIES(d)    READONLY nameStoreDepartmentStore, name
-PROPERTIES(e, d) dateFromEmployeeDepartmentStore, dateToEmployeeDepartmentStore, inEmployeeDepartmentStore
-FILTERGROUP filters1
-    FILTER 'Показывать кассы только для данного пользователя' 'F10' includedEmployeeCash(e, c) DEFAULT
-FILTERGROUP filters2
-    FILTER 'Показывать сотрудников только для данной группы пользователей' 'F9' isGroupUserEmployee(gru, e) DEFAULT
-FILTERGROUP filters3
-    FILTER 'Показывать подразделения только для данного пользователя' 'F8' inEmployeeDepartmentStore(e, d) DEFAULT
-EDIT groupUser OBJECT gru;
+    OBJECTS gru=groupUser FIXED PANEL
+    OBJECTS e=employee, c=cashRegister, d=departmentStore
+    PROPERTIES(gru)  nameGroupUser, sidGroupUser
+    PROPERTIES(e)    nameGroupUserEmployee, userFirstName, userLastName, phoneEmployee, nameActionEmployee, nameEmployeeSystemEmployee,
+                     shortNameLanguageEmployee, numberEmployee, passwordEmployee, dataEmployee
+    PROPERTIES(c)    READONLY nameStoreDepartmentStoreCashRegister, nameDepartmentStoreCashRegister, nameGroupMachineryCashRegister, numberCashRegister, nppCashRegister
+    PROPERTIES(e, c) includedEmployeeCashRegister, dateFromEmployeeCashRegister, dateToEmployeeCashRegister
+    PROPERTIES(d)    READONLY nameStoreDepartmentStore, name
+    PROPERTIES(e, d) dateFromEmployeeDepartmentStore, dateToEmployeeDepartmentStore, inEmployeeDepartmentStore
+    FILTERGROUP filters1
+        FILTER 'Показывать кассы только для данного пользователя' 'F10' includedEmployeeCashRegister(e, c) DEFAULT
+    FILTERGROUP filters2
+        FILTER 'Показывать сотрудников только для данной группы пользователей' 'F9' isGroupUserEmployee(gru, e) DEFAULT
+    FILTERGROUP filters3
+        FILTER 'Показывать подразделения только для данного пользователя' 'F8' inEmployeeDepartmentStore(e, d) DEFAULT
+    EDIT groupUser OBJECT gru
+    ;
 
 DESIGN groupUser FROM DEFAULT {
     main{
@@ -3487,15 +3489,15 @@ DESIGN groupUser FROM DEFAULT {
 }
 
 FORM groupsUser 'Группы пользователей'
-OBJECTS gru=groupUser, e=employee, c=cash, d=departmentStore
+OBJECTS gru=groupUser, e=employee, c=cashRegister, d=departmentStore
 PROPERTIES(gru)  READONLY nameGroupUser, sidGroupUser
 PROPERTIES(gru)  ADDFORM, EDITFORM, delete
 PROPERTIES(e)    READONLY userFirstName, userLastName, phoneEmployee, nameActionEmployee
-PROPERTIES(c)    READONLY nameStoreDepartmentStoreCash, nameDepartmentStoreCash, numberCash, nameGroupMachineryCash, nppCash
-PROPERTIES(e, c) includedEmployeeCash, dateFromEmployeeCash, dateToEmployeeCash
+PROPERTIES(c)    READONLY nameStoreDepartmentStoreCashRegister, nameDepartmentStoreCashRegister, numberCashRegister, nameGroupMachineryCashRegister, nppCashRegister
+PROPERTIES(e, c) includedEmployeeCashRegister, dateFromEmployeeCashRegister, dateToEmployeeCashRegister
 PROPERTIES(d)    READONLY nameStoreDepartmentStore, name
 PROPERTIES(e, d) READONLY dateFromEmployeeDepartmentStore, dateToEmployeeDepartmentStore, inEmployeeDepartmentStore
-FILTERS includedEmployeeCash(e, c),
+FILTERS includedEmployeeCashRegister(e, c),
         isGroupUserEmployee(gru, e),
         inEmployeeDepartmentStore(e, d);
 
@@ -4394,10 +4396,10 @@ endDateCashReport 'Дата окончания' (cashReport) = DATA DATE (cashRe
 reportCashDocument 'Отчет документа (ИД)' (cashDocument) = DATA cashReport (cashDocument) IN idGroup;
 numberCashDocument 'Номер документа' (cashDocument) = DATA INTEGER (cashDocument) IN baseGroup;
 sumCashDocument 'Сумма документа' (cashDocument) = DATA DOUBLE (cashDocument) IN baseGroup;
-cashIncomeCashOrder 'Выручка кассы (ИД)' (incomeCashOrder) = DATA cash(incomeCashOrder) IN idGroup;
-numberCashIncomeCashOrder 'Выручка кассы' (incomeCashOrder) = numberCash(cashIncomeCashOrder(incomeCashOrder)) IN baseGroup;
+cashRegisterIncomeCashOrder 'Выручка кассы (ИД)' (incomeCashOrder) = DATA cashRegister(incomeCashOrder) IN idGroup;
+numberCashRegisterIncomeCashOrder 'Выручка кассы' (incomeCashOrder) = numberCashRegister(cashRegisterIncomeCashOrder(incomeCashOrder)) IN baseGroup;
 dopInfoCashDocument 'Описание' (cashDocument) = DATA STRING[10] (cashDocument) IN baseGroup;
-infoCashDocument 'Основание документа' (cashDocument) = UNION EXCLUSIVE numberCashIncomeCashOrder(cashDocument) IF cashDocument IS incomeCashOrder, dopInfoCashDocument (cashDocument);
+infoCashDocument 'Основание документа' (cashDocument) = UNION EXCLUSIVE numberCashRegisterIncomeCashOrder(cashDocument) IF cashDocument IS incomeCashOrder, dopInfoCashDocument (cashDocument);
 
 inCashReportDocument 'Документ в текущем кассовом отчете' (cashReport, cashDocument) = reportCashDocument(cashDocument)==cashReport;
 
@@ -6568,6 +6570,8 @@ DESIGN statements FROM DEFAULT {
 
 numberBill 'Номер чека' (bill) = DATA INTEGER (bill) IN documentHeaderGroup;
 
+cashRegisterBill 'Касса (ИД)' (bill) = DATA cashRegister (bill);
+
 quantityBillDetail 'Количество продажи' (billDetail) = DATA DOUBLE (billDetail);
 priceBillDetail 'Цена продажи' (billDetail) = DATA DOUBLE (billDetail);
 sumBillDetail 'Сумма продажи' (billDetail) = priceBillDetail(billDetail)*quantityBillDetail(billDetail);
@@ -6820,7 +6824,7 @@ NAVIGATOR {
             ADD banks;
         }
         NEW equipment 'Оборудование' {
-            ADD groupsCash;
+            ADD groupsCashRegister;
             ADD groupsScales;
             ADD groupsCheck;
             ADD machineries;
@@ -6896,7 +6900,7 @@ NAVIGATOR {
             ADD supplier;
             ADD customer;
             ADD company;
-            ADD cashModel;
+            ADD cashRegisterModel;
             ADD scalesModel;
             ADD checkModel;
             ADD assortment;
@@ -6957,13 +6961,13 @@ NAVIGATOR {
             ADD addNamebanSupplierItemDepartment;
             ADD namebanSupplierItemDepartment;
             ADD preliminaryOrder;
-            ADD cash;
+            ADD cashRegister;
             ADD scales;
             ADD check;
             ADD tax;
             ADD cutting;
             ADD recipe;
-            ADD groupCash;
+            ADD groupCashRegister;
             ADD groupScales;
             ADD groupCheck;
             ADD component;
