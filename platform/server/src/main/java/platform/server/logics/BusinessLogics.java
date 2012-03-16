@@ -2,6 +2,7 @@ package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
+import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.InitializingBean;
 import platform.base.*;
 import platform.interop.Compare;
@@ -1930,8 +1931,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (!keep) {
                 if (isDataProperty && !moved) {
                     String newName = sID + "_deleted";
-                    sql.renameColumn(prevTable.name, sID, newName);
-                    columnsToDrop.put(newName, prevTable.name);
+                    try {
+                        sql.renameColumn(prevTable.name, sID, newName);
+                        columnsToDrop.put(newName, prevTable.name);
+                    } catch (PSQLException e) { // колонка с новым именем (с '_deleted') уже существует
+                        sql.dropColumn(prevTable.name, sID);
+                        ImplementTable table = implementTables.get(prevTable.name);
+                        if (table != null) packTables.add(table);
+                    }
                 } else {
                     sql.dropColumn(prevTable.name, sID);
                     ImplementTable table = implementTables.get(prevTable.name); // надо упаковать таблицу если удалили колонку
