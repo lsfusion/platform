@@ -4458,7 +4458,6 @@ namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоце
 
 supplierShipmentDetail 'Поставщик (ИД)' (shipmentDetail) = supplierShipment(shipmentShipmentDetail(shipmentDetail));
 
-
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
 
@@ -4703,6 +4702,7 @@ dataRetailRangePriceChangeShipmentDetail 'Новый НДС, %' (priceChangeShip
 
 oldRetailPriceChangeShipmentDetail 'Старая розничная цена' (priceChangeShipmentDetail) = oldRetailPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 retailPriceChangeShipmentDetail 'Новая розничная цена' (priceChangeShipmentDetail) = retailPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+
 
 FORM ordersShipment 'Заказы'
     OBJECTS s=shipment FIXED PANEL
@@ -5365,7 +5365,6 @@ sumSupplierVATReturnSupplierDetail (returnSupplierDetail) <- calcSumSupplierVATR
 sumSupplierReturnSupplierDetail 'Сумма с НДС' (returnSupplierDetail) = sumPriceReturnSupplierDetail(returnSupplierDetail) +
     UNION OVERRIDE 0 IF returnSupplierDetail IS returnSupplierDetail, sumSupplierVATReturnSupplierDetail(returnSupplierDetail);
 
-
 // Суммовые параметры для шапки документа
 
 totalQuantityReturnSupplier 'Общее количество' (returnSupplier) = GROUP SUM quantityReturnSupplierDetail(returnSupplierDetail)
@@ -5385,18 +5384,29 @@ CONSTRAINT CHECKED itemShipmentDetail(batchReturnSupplierDetail(returnSupplierDe
     OR isNotPostedShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
     MESSAGE 'Выберите партию этого товара';
 
+FORM commonInfoBatchReturnSupplierDetail 'Партии'
+OBJECTS d=shipmentDetail
+PROPERTIES(d) READONLY quantityShipmentDetail, priceShipmentDetail,
+                       dataSuppliersRangeShipmentDetail,
+                       retailPriceShipmentDetail;
+
+showFormCommonInfoBatchReturnSupplierDetail 'Партии' (returnSupplierDetail) = ACTION FORM commonInfoBatchReturnSupplierDetail OBJECTS d
+                                                                                     MODAL SHORTCUT commonInfoBatchReturnSupplierDetail DEFAULT;
+
 FORM returnSupplier 'Возврат поставщику'
 OBJECTS r=returnSupplier FIXED PANEL
-PROPERTIES(r) seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier,
+PROPERTIES(r) seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier, timeReturnSupplier,
               nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier,
               nameUserCreated READONLY, timeCreated READONLY, totalQuantityReturnSupplier,
               totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier
 
 OBJECTS d=returnSupplierDetail
 PROPERTIES(d) numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
-              commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, priceReturnSupplierDetail, supplierMarkupReturnSupplierDetail,
-              dataSuppliersRangeReturnSupplierDetail, sumSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail
-PROPERTIES(d) ADDOBJ, delete FORCE PANEL
+              commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, priceReturnSupplierDetail,
+              supplierMarkupReturnSupplierDetail, dataSuppliersRangeReturnSupplierDetail, sumSupplierVATReturnSupplierDetail,
+              sumSupplierReturnSupplierDetail, showFormCommonInfoBatchReturnSupplierDetail
+PROPERTIES(d) ADDOBJ, delete
+PROPERTIES addReturnSupplierDetailBarcode(r) TODRAW d
 PROPERTIES FORCE PANEL READONLY controlExpiryReturnSupplierDetail(d), isManufacturedReturnSupplierDetail(d),
                                 isWeightReturnSupplierDetail(d), nameinActionItemDepartmentReturnSupplierDetail(d),
                                 hintReturnSupplierDetail(d), nameCountryReturnSupplierDetail(d),
@@ -5436,7 +5446,17 @@ DESIGN returnSupplier FROM DEFAULT {
         NEW headerRow1 {
             childConstraints = TO THE BOTTOM;
             ADD r.documentHeaderGroup{
-                POSITION PROPERTY(nameSupplierReturnSupplier) TO THE BOTTOM PROPERTY(nameDepartmentStoreReturnSupplier);
+                    NEW first {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(seriesWaybillReturnSupplier);
+                        ADD PROPERTY(waybillReturnSupplier);
+                        ADD PROPERTY(dateReturnSupplier);
+                        ADD PROPERTY(timeReturnSupplier);
+                    };
+                    NEW second{
+                        ADD PROPERTY(nameDepartmentStoreReturnSupplier);
+                        ADD PROPERTY(nameSupplierReturnSupplier);
+                    };
             };
             ADD r.waybillSum{
                 childConstraints = TO THE RIGHT;
@@ -5448,11 +5468,6 @@ DESIGN returnSupplier FROM DEFAULT {
             ADD PROPERTY(noteReturnSupplier);
         };
     };
-
-    ADD PROPERTY(delete(d)){
-        panelLocation=TOOLBAR;
-        askConfirm=TRUE;
-    }
 }
 
 DESIGN returnSuppliers FROM DEFAULT{
@@ -5618,6 +5633,7 @@ META metaCodeItemDepartmentStoreLedger(prefix)
     ledgerA###prefix##DateTime (item, departmentStore, dateTime) = concatLedgerA###prefix##DateTime(item, departmentStore, dateTime)[2];
 
 END
+
 
 // Цена изготовителя / импортера
 dateTimeImporterPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger) PERSISTENT INDEXED;
