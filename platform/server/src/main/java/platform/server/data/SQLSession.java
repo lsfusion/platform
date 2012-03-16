@@ -31,7 +31,7 @@ public class SQLSession extends MutableObject {
 
     private ConnectionPool connectionPool;
 
-    private Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
         return privateConnection !=null ? privateConnection : connectionPool.getCommon(this);
     }
 

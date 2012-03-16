@@ -59,6 +59,7 @@ import java.io.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.jar.Attributes;
@@ -1931,10 +1932,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (!keep) {
                 if (isDataProperty && !moved) {
                     String newName = sID + "_deleted";
+                    Savepoint savepoint = sql.getConnection().setSavepoint();
                     try {
+                        savepoint = sql.getConnection().setSavepoint();
                         sql.renameColumn(prevTable.name, sID, newName);
                         columnsToDrop.put(newName, prevTable.name);
                     } catch (PSQLException e) { // колонка с новым именем (с '_deleted') уже существует
+                        sql.getConnection().rollback(savepoint);
                         sql.dropColumn(prevTable.name, sID);
                         ImplementTable table = implementTables.get(prevTable.name);
                         if (table != null) packTables.add(table);
