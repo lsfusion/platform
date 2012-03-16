@@ -521,26 +521,31 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     updateKeys |= (filt.isInInterface(this) ? filters.add(filt) : filters.remove(filt));
 
         // порядки
-        OrderedMap<OrderInstance, Boolean> newOrders = new OrderedMap<OrderInstance, Boolean>();
-        if ((updated & UPDATED_ORDER) != 0) {
-            for (Map.Entry<OrderInstance, Boolean> setOrder : getSetOrders().entrySet())
-                if (setOrder.getKey().isInInterface(this))
-                    newOrders.put(setOrder.getKey(), setOrder.getValue());
-            updateKeys |= !orders.equals(newOrders);
-        } else { // значит setOrders не изменился
-            for (Map.Entry<OrderInstance, Boolean> setOrder : getSetOrders().entrySet()) {
-                OrderInstance orderInstance = setOrder.getKey();
+        if(OrderInstance.ignoreInInterface) {
+            updateKeys |= (updated & UPDATED_ORDER) != 0;
+            orders = getSetOrders();
+        } else {
+            OrderedMap<OrderInstance, Boolean> newOrders = new OrderedMap<OrderInstance, Boolean>();
+            if ((updated & UPDATED_ORDER) != 0) {
+                for (Map.Entry<OrderInstance, Boolean> setOrder : getSetOrders().entrySet())
+                    if (setOrder.getKey().isInInterface(this))
+                        newOrders.put(setOrder.getKey(), setOrder.getValue());
+                updateKeys |= !orders.equals(newOrders);
+            } else { // значит setOrders не изменился
+                for (Map.Entry<OrderInstance, Boolean> setOrder : getSetOrders().entrySet()) {
+                    OrderInstance orderInstance = setOrder.getKey();
 
-                boolean isInInterface = orders.containsKey(orderInstance);
-                if ((refresh || orderInstance.classUpdated(Collections.singleton(this))) && !(orderInstance.isInInterface(this) == isInInterface)) {
-                    isInInterface = !isInInterface;
-                    updateKeys = true;
+                    boolean isInInterface = orders.containsKey(orderInstance);
+                    if ((refresh || orderInstance.classUpdated(Collections.singleton(this))) && !(orderInstance.isInInterface(this) == isInInterface)) {
+                        isInInterface = !isInInterface;
+                        updateKeys = true;
+                    }
+                    if (isInInterface)
+                        newOrders.put(orderInstance, setOrder.getValue());
                 }
-                if (isInInterface)
-                    newOrders.put(orderInstance, setOrder.getValue());
             }
+            orders = newOrders;
         }
-        orders = newOrders;
 
         if (!updateKeys) // изменились "верхние" объекты для фильтров
             for (FilterInstance filt : filters)
