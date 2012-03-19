@@ -119,6 +119,7 @@
       <keyword name="LENGTH" />
       <keyword name="LIMIT" />
       <keyword name="LIST" />
+      <keyword name="LOADFILE" />
       <keyword name="LOGGABLE" />
       <keyword name="LONG" />
       <keyword name="MAX" />
@@ -142,6 +143,7 @@
       <keyword name="OBJVALUE" />
       <keyword name="OLD" />
       <keyword name="ON" />
+      <keyword name="OPENFILE" />
       <keyword name="OR" />
       <keyword name="ORDER" />
       <keyword name="OVERRIDE" />

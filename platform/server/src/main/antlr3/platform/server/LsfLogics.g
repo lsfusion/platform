@@ -1336,6 +1336,7 @@ customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams pro
 	|	actPDB=customActionPropertyDefinitionBody { $property.property = $actPDB.property; }
 	|   msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
 	|   mailPDB=emailActionPropertyDefinitionBody[context, dynamic] { $property = $mailPDB.property; }
+	|	filePDB=fileActionPropertyDefinitionBody[context, dynamic] { $property = $filePDB.property; }
 	;
 
 			
@@ -1444,6 +1445,19 @@ messageActionPropertyDefinitionBody[List<String> context, boolean dynamic] retur
 	}
 }
 	:	'MESSAGE' pe=propertyExpression[context, dynamic] ('LENGTH' len=uintLiteral { length = $len.val; } )?
+	;
+
+fileActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property] 
+@init {
+	boolean loadFile = false;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedFAProp(loadFile, $pe.property);
+	}
+}
+	:	('LOADFILE' { loadFile = true; } | 'OPENFILE' { loadFile = false; }) 
+		pe=propertyExpression[context, dynamic]	
 	;
 
 listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]

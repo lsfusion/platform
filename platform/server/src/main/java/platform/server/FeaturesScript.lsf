@@ -255,6 +255,10 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // MESSAGE propertyExpr [ LENGTH n ]
 // Default length = 2000
 
+// File open/load action
+// statement syntax:
+// [OPENFILE | LOADFILE] propertyExpression
+
 // Email action
 // statement syntax:
 // EMAIL

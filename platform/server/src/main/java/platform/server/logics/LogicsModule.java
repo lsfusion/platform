@@ -2010,8 +2010,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addOFAProp(AbstractGroup group, String caption, LP lp) { // обернем сразу в and
-        LP<ClassPropertyInterface> openAction = new LP<ClassPropertyInterface>(new BaseLogicsModule.OpenActionProperty(genSID(), caption, lp));
-        return addJProp(group, caption, baseLM.and1, getUParams(new LP[]{openAction, lp}, 0));
+        return addProperty(group, new LP<ClassPropertyInterface>(new BaseLogicsModule.OpenActionProperty(genSID(), caption, lp)));
     }
 
 

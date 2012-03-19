@@ -609,6 +609,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(caseProp, mergeAllParams(caseParamProps));
     }
 
+    public LPWithParams addScriptedFAProp(boolean loadFile, LPWithParams property) {
+        LP<?> res;
+        if (loadFile) {
+            res = addLFAProp(property.property);
+        } else {
+            res = addOFAProp(property.property);
+        }
+        return new LPWithParams(res, property.usedParams);
+    }
 
     public LP addScriptedCustomActionProp(String javaClassName) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedCustomActionProp(" + javaClassName + ");");
