@@ -14,7 +14,7 @@ dateValidityCertificate 'Действует до' = DATA DATE (certificate) IN b
 
 FORM certificate 'Сертификат'
     OBJECTS c=certificate FIXED PANEL
-    PROPERTIES(c) sidCertificate, dateIssueCertificate, dateValidityCertificate
+    PROPERTIES(c) sidCertificate, objectClassName, dateIssueCertificate, dateValidityCertificate
     EDIT certificate OBJECT c
 ;
 
@@ -87,6 +87,10 @@ dateCorrectionDeclaration 'Дата оплаты КТС' = DATA DATE (declaratio
 
 declarationInnerInvoice 'Декларация инвойса (ИД)' = DATA declaration(innerInvoice) IN idGroup;
 sidDeclarationInnerInvoice 'Декларация инвойса' (innerInvoice) = sidDeclaration(declarationInnerInvoice(innerInvoice)) IN baseGroup;
+
+inDeclarationInnerInvoice 'Инвойс в декларации' (declaration, innerInvoice) = declarationInnerInvoice(innerInvoice) == declaration;
+
+forDeclaration(declaration, innerInvoice) = inDeclarationInnerInvoice(declaration, innerInvoice) OR declaration AS declaration AND NOT declarationInnerInvoice(innerInvoice);
 
 CONSTRAINT CHECKED customStoreDeclaration(declarationInnerInvoice(innerInvoice)) != customStoreInnerInvoice(innerInvoice)
     MESSAGE 'Инвойс для другого СВХ';
@@ -169,21 +173,21 @@ quantityCertificatedDeclarationDetail 'Кол-во для экспертизы' 
 
 certificateDeclarationDetail 'Сертификат партии (ИД)' = DATA certificate(declarationDetail) IN idGroup;
 temporalCertificateDeclarationDetail 'Временный сертификат партии (ИД)' = DATA temporalCertificate(declarationDetail) IN idGroup;
-permanentCertificateDeclarationDetail 'Постоянный сертификат партии (ИД)' = DATA temporalCertificate(declarationDetail) IN idGroup;
+permanentCertificateDeclarationDetail 'Постоянный сертификат партии (ИД)' = DATA permanentCertificate(declarationDetail) IN idGroup;
+
+certificatePreparedDeclarationDetail 'Сертификат партии (ИД)' (declarationDetail) = UNION OVERRIDE temporalCertificateDeclarationDetail(declarationDetail),
+                                                                                                   permanentCertificateDeclarationDetail(declarationDetail) IN idGroup;
 
 sidTemporalCertificateDeclarationDetail 'Временный сертификат партии' (declarationDetail) = sidCertificate(temporalCertificateDeclarationDetail(declarationDetail)) IN baseGroup;
 sidPermanentCertificateDeclarationDetail 'Постоянный сертификат партии' (declarationDetail) = sidCertificate(permanentCertificateDeclarationDetail(declarationDetail)) IN baseGroup;
 
 sidCertificateDeclarationDetail 'Сертификат партии' (declarationDetail) = sidCertificate(certificateDeclarationDetail(declarationDetail)) IN baseGroup;
 
-isCertificateDeclarationDetail 'Отсутствие сертификата' (declarationDetail) = certificatedDeclarationDetail(declarationDetail) AND
-                                                                              NOT certificateDeclarationDetail(declarationDetail);
-
-isTemporalCertificateDeclarationDetail 'Отсутствие временного сертификата' (declarationDetail) = certificatedDeclarationDetail(declarationDetail) AND
-                                                                                                 NOT temporalCertificateDeclarationDetail(declarationDetail);
+isCertificatePreparedDeclarationDetail 'Отсутствие сертификата' (declarationDetail) = certificatedDeclarationDetail(declarationDetail) AND
+                                                                              NOT certificatePreparedDeclarationDetail(declarationDetail);
 
 quantityNoCertificateDeclaration 'Кол-во без сертификатов' (declaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
-                                                                                  IF isCertificateDeclarationDetail(declarationDetail)
+                                                                                  IF isCertificatePreparedDeclarationDetail(declarationDetail)
                                                                                   BY declarationDeclarationDetail(declarationDetail);
 
 CONSTRAINT quantityNoCertificateDeclaration(declaration)>0 AND declaration IS registeredDeclaration
@@ -251,7 +255,7 @@ sumRegistrationDataDeclaration (declaration) <- sumRegistrationDeclaration(decla
 rateSumRegistrationDeclaration 'За оформление (конверт.)' (declaration) = round0(sumRegistrationDataDeclaration(declaration) *
                                                                       rateExchangeDeclaration(declaration)) IN baseGroup;
 
-totalCustomSum 'Сумма платежей' (declaration) = dutyDeclaration(declaration) + NDSDeclaration(declaration) + rateSumRegistrationDeclaration(declaration) IN baseGroup;
+totalCustomSum 'Сумма платежей' (declaration) = UNION SUM dutyDeclaration(declaration), NDSDeclaration(declaration), rateSumRegistrationDeclaration(declaration) IN baseGroup;
 
 // корректировка таможенной стоимости
 declarationCorrection 'Декларация КТС (ИД)' = DATA declaration(correction) IN idGroup;
@@ -320,6 +324,11 @@ FORM declaration 'Декларация'
                   dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion,
                   diffNDSDeclararion, diffDeclaration, quantityNoCertificateDeclaration, expenseCertificateDeclaration
 
+    OBJECTS c=correction
+    PROPERTIES(c) date, ADDOBJ, delete
+    FILTERS inDeclarationCorrection(d, c)
+
+
     OBJECTS dd=declarationDetail
     PROPERTIES (dd) numberDeclarationDetail, barcodeSkuDeclarationDetail, sidArticleDeclarationDetail, mainCompositionDeclarationDetail,
                     nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail, netWeightDeclarationDetail,
@@ -330,8 +339,21 @@ FORM declaration 'Декларация'
                     correctionDutyDataDeclarationDetail, diffDutyDeclarationDetail, ADDOBJ, delete
 
     FILTERS inDeclarationDeclarationDetail(d, dd)
+    PROPERTIES (c, dd) priceCorrectionDeclarationDetail
     EDIT declaration OBJECT d
 ;
+
+
+DESIGN declaration FROM DEFAULT{
+    main {
+        POSITION d.box TO THE LEFT c.box;
+
+        c.grid {
+            fillHorizontal = 0.4;
+            fillVertical = 0.3;
+        };
+    };
+};
 
 FORM declarations 'Декларации'
     OBJECTS d=declaration
@@ -341,32 +363,35 @@ FORM declarations 'Декларации'
                            quantityNoCertificateDeclaration, expenseCertificateDeclaration
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 
+    OBJECTS ii=innerInvoice
+    PROPERTIES (ii) sidInnerInvoice
+    PROPERTIES (d, ii) inDeclarationInnerInvoice
+
     OBJECTS dd=declarationDetail
     PROPERTIES (dd) numberDeclarationDetail, barcodeSkuDeclarationDetail, sidArticleDeclarationDetail, mainCompositionDeclarationDetail,
                     nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail, netWeightDeclarationDetail,
                     quantityDeclarationDetail, priceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
                     rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail,
                     certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
-                    sidTemporalCertificateDeclarationDetail HIGHLIGHTIF isTemporalCertificateDeclarationDetail(dd),
-                    sidPermanentCertificateDeclarationDetail, correctionPriceDeclarationDetail, correctionDutyDeclarationDetail,
+                    sidTemporalCertificateDeclarationDetail HIGHLIGHTIF isCertificatePreparedDeclarationDetail(dd),
+                    sidPermanentCertificateDeclarationDetail HIGHLIGHTIF isCertificatePreparedDeclarationDetail(dd),
+                    correctionPriceDeclarationDetail, correctionDutyDeclarationDetail,
                     correctionDutyDataDeclarationDetail, diffDutyDeclarationDetail
     FILTERS inDeclarationDeclarationDetail(d, dd)
-
-    OBJECTS c=correction
-    PROPERTIES(c) date, ADDOBJ, delete
-    PROPERTIES (c, dd) priceCorrectionDeclarationDetail
-    FILTERS inDeclarationCorrection(d, c)
-
+    FILTERS forDeclaration(d, ii)
 ;
 
 DESIGN declarations FROM DEFAULT {
+    POSITION d.box TO THE LEFT ii.box;
     d.grid {
-        fillVertical = 0.5;
+        fillVertical = 0.3;
     }
 
-    c.grid {
-        fillVertical = 0.4;
+    ii.grid {
+        fillVertical = 0.3;
+        fillHorizontal = 0.5;
     }
+
 }
 
 
@@ -386,11 +411,14 @@ NAVIGATOR {
 
     customs 'Для таможни' {
         ADD customStores;
-        ADD certificate;
         ADD certificates;
         ADD declaration;
         ADD declarations;
         ADD innerInvoices;
 
      }
+
+    adminElement {
+        ADD certificate;
+    }
 }

@@ -684,6 +684,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP quantityStockSku;
     private LP quantityFreightUnitSku;
     private LP quantityStock;
+    private LP quantityFreightDestination;
     private LP quantityStockArticle;
     private LP quantityStockBrandSupplier;
     private LP quantityFreightUnitBrandSupplier;
@@ -2752,6 +2753,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityStockArticle = addSGProp(baseGroup, "quantityStockArticle", true, "Кол-во по артикулу", quantityStockSku, 1, articleSku, 2);
 
+        quantityFreightDestination = addSGProp(baseGroup, "quantityFreightDestination", "Кол-во в магазин", quantityStock, freightFreightBox, 1, destinationFreightBox, 1);
+
         freightShippedFreightBox = addJProp(baseGroup, "freightShippedFreightBox", is(freightShipped), freightFreightBox, 1);
 
         sumInInvoiceStockSku = addJProp(baseGroup, "sumInInvoiceStockSku", "Сумма в коробе", baseLM.multiplyDouble2, addJProp(baseLM.andNot1, quantityInvoiceStockSku, 1, 2, 3, freightShippedFreightBox, 2), 1, 2, 3, priceInInvoiceStockSku, 1, 2, 3);
@@ -3653,7 +3656,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         shipment.add(actionFreight);
 
-        NavigatorElement customs = addNavigatorElement(baseLM.baseElement, "customs", "Для таможни");
+        NavigatorElement customs = addNavigatorElement(baseLM.baseElement, "customs", "Таможенное оформление");
         customs.window = leftToolbar;
 
         NavigatorElement settings = addNavigatorElement(baseLM.baseElement, "settings", "Настройки");
@@ -6940,6 +6943,8 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objFreightUnit;
         private ObjectEntity objBrand;
 
+        private PropertyDrawEntity nameBrand;
+
         private GroupObjectEntity gobjFreightImporter;
 
         private ListFreightUnitFreightFormEntity(NavigatorElement parent, String sID, String caption) {
@@ -6960,9 +6965,10 @@ public class RomanLogicsModule extends LogicsModule {
 
             gobjFreightImporter.initClassView = ClassViewType.PANEL;
 
-            objBrand = addSingleGroupObject(4, "brand", brandSupplier, "Бренд", baseLM.name);
+            objBrand = addSingleGroupObject(4, "brand", brandSupplier, "Бренд");
+            nameBrand = addPropertyDraw(baseLM.name, objBrand);
 
-            objFreightUnit = addSingleGroupObject(5, "freightBox", freightUnit, "Короб", baseLM.barcode);
+            objFreightUnit = addSingleGroupObject(5, "freightBox", freightUnit, "Короб", baseLM.barcode, nameDestinationFreightBox);
 
             addPropertyDraw(quantityFreightUnitBrandSupplier, objFreightUnit, objBrand);
 
@@ -7562,10 +7568,13 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objTypeInvoice;
         private ObjectEntity objTransitDocument;
         private ObjectEntity objBrand;
+        private ObjectEntity objDestination;
+        private ObjectEntity objFreightBox;
 
         private GroupObjectEntity gobjFreightImporterTypeInvoice;
 
         private PropertyDrawEntity nameBrand;
+        private PropertyDrawEntity nameDestination;
 
         private FreightReportFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
             super(parent, sID, caption);
@@ -7589,21 +7598,32 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(objImporter, objFreight, sumCustomImporterFreight);
 
-            objTransitDocument = addSingleGroupObject(transitDocument, "Транзитный документ", sidTransitDocument, nameSellerTransitDocument, nameTypeTransitTransitDocument, dateRepaymentTransitDocument, dateClosingTransitDocument);
+            objDestination = addSingleGroupObject(destination, "Магазин");
+            nameDestination = addPropertyDraw(baseLM.name, objDestination);
 
             objBrand = addSingleGroupObject(brandSupplier, "Бренд");
             nameBrand = addPropertyDraw(baseLM.name, objBrand);
 
+            objTransitDocument = addSingleGroupObject(transitDocument, "Транзитный документ", sidTransitDocument, nameSellerTransitDocument, nameTypeTransitTransitDocument, dateRepaymentTransitDocument, dateClosingTransitDocument);
+
+            objFreightBox = addSingleGroupObject(freightBox, "Короб", baseLM.barcode, quantityStock);
+
             addPropertyDraw(objFreight, objBrand, stockNumberFreightBrandSupplier, quantityFreightBrandSupplier, sumInFreightBrandSupplier, sumInOutFreightBrandSupplier);
             addPropertyDraw(objImporter, objFreight, objBrand, averagePercentImporterFreightBrandSupplier);
 
+            addPropertyDraw(objFreight, objDestination, quantityFreightDestination);
+
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(sidImporterFreightTypeInvoice, objImporter, objFreight, objTypeInvoice)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightDestination, objFreight, objDestination)));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(importerTransitDocument, objTransitDocument), Compare.EQUALS, objImporter));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(freightTransitDocument, objTransitDocument), Compare.EQUALS, objFreight));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight), Compare.GREATER, addPropertyObject(baseLM.vzero)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(quantityFreightBrandSupplier, objFreight, objBrand), Compare.GREATER, addPropertyObject(baseLM.vzero)));
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(freightFreightBox, objFreightBox), Compare.EQUALS, objFreight));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(destinationFreightBox, objFreightBox), Compare.EQUALS, objDestination));
 
         }
 
@@ -7624,9 +7644,12 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(getPropertyDraw(baseLM.name, objImporter)).setPreferredCharWidth(20);
             design.get(getPropertyDraw(baseLM.name, objBrand)).setPreferredCharWidth(20);
 
-            design.addIntersection(design.getGroupObjectContainer(objTransitDocument.groupTo), design.getGroupObjectContainer(objBrand.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            //design.addIntersection(design.getGroupObjectContainer(objTransitDocument.groupTo), design.getGroupObjectContainer(objBrand.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.getGroupObjectContainer(objTransitDocument.groupTo), design.getGroupObjectContainer(objFreightBox.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.getGroupObjectContainer(objBrand.groupTo), design.getGroupObjectContainer(objFreightBox.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.getGroupObjectContainer(objDestination.groupTo), design.getGroupObjectContainer(objFreightBox.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.get(gobjFreightImporterTypeInvoice).grid.constraints.fillVertical = 2;
+            design.get(gobjFreightImporterTypeInvoice).grid.constraints.fillVertical = 1;
             design.get(objTransitDocument.groupTo).grid.constraints.fillVertical = 1;
             design.get(objBrand.groupTo).grid.constraints.fillVertical = 1;
 

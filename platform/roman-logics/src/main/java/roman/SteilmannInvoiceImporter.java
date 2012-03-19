@@ -46,7 +46,8 @@ public class SteilmannInvoiceImporter extends SingleSheetImporter {
             case E:
                  Date sDate = new Date(Integer.parseInt(value.substring(4, 8)) - 1900, Integer.parseInt(value.substring(2, 4)) - 1, Integer.parseInt(value.substring(0, 2)));
                  return DateClass.format(sDate);
-
+            case J:
+                 return value.substring(0, 6);
             case P:
                 switch (part) {
                     case 0: return value.substring(0, Math.min(10, value.length())); // customs code
