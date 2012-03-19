@@ -11,11 +11,7 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.KeyStrokes;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableCellEditor;
-import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.rmi.RemoteException;
@@ -171,8 +167,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
                 table.setValueAt(getCellEditorValue(), row, column);
             }
         } else {
-            editPerformed = true;
-            ((CellTableInterface) table).invokeDefaultAction();  //вызываем default actionProperty, вынесенное в shortcut
+            editPerformed = ((CellTableInterface) table).invokeDefaultAction(property);  //вызываем default actionProperty, вынесенное в shortcut
         }
 
         if (comp == null) {

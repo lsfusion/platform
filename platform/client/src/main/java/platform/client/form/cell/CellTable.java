@@ -157,5 +157,7 @@ public abstract class CellTable extends SingleCellTable
         return super.getAbstractCellEditor(0, 0);
     }
 
-    public void invokeDefaultAction() {}
+    public boolean invokeDefaultAction(ClientPropertyDraw property) {
+        return false;
+    }
 }

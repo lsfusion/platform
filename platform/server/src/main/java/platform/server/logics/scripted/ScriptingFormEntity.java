@@ -227,6 +227,10 @@ public class ScriptingFormEntity extends FormEntity {
             property.readOnly = options.getReadOnly();
         }
 
+        if (options.getSelector() != null) {
+            property.setSelector(options.getSelector());
+        }
+
         if (options.getColumns() != null) {
             property.columnGroupObjects = options.getColumns();
         }

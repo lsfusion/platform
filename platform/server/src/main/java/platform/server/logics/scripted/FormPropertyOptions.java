@@ -10,6 +10,7 @@ import static platform.base.BaseUtils.nvl;
 
 public class FormPropertyOptions {
     private Boolean readOnly;
+    private Boolean selector;
     private List<GroupObjectEntity> columns;
     private MappedProperty showIf;
     private PropertyObjectEntity readOnlyIf;
@@ -25,6 +26,14 @@ public class FormPropertyOptions {
 
     public void setReadOnly(Boolean readOnly) {
         this.readOnly = readOnly;
+    }
+
+    public Boolean getSelector() {
+        return selector;
+    }
+
+    public void setSelector(Boolean selector) {
+        this.selector = selector;
     }
 
     public List<GroupObjectEntity> getColumns() {
@@ -95,6 +104,7 @@ public class FormPropertyOptions {
         FormPropertyOptions merged = new FormPropertyOptions();
 
         merged.setReadOnly(nvl(overrides.getReadOnly(), readOnly));
+        merged.setSelector(nvl(overrides.getSelector(), selector));
         merged.setColumns(nvl(overrides.getColumns(), columns));
         merged.setShowIf(nvl(overrides.getShowIf(), showIf));
         merged.setReadOnlyIf(nvl(overrides.getReadOnlyIf(), readOnlyIf));

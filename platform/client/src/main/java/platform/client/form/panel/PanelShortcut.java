@@ -157,14 +157,30 @@ public class PanelShortcut extends JPopupMenu {
         }
     }
 
-    public void invokeDefaultAction() {
+    public boolean hasDefaultAction(ClientPropertyDraw currentProperty) {
+        setCurrentProperty(currentProperty);
         for (ClientPropertyDraw property : sortProperties().values()) {
             if (((ClientShortcutPanelLocation) property.panelLocation).isDefault() && property.baseType instanceof ClientActionClass) {
-                PropertyController propertyController = panel.getProperties().get(property).values().iterator().next();
+                final PropertyController propertyController = panel.getProperties().get(property).values().iterator().next();
                 if (propertyController != null) {
-                    ((ButtonCellView) propertyController.getView()).doClick();
+                    return true;
                 }
             }
         }
+        return false;
+    }
+
+    public boolean invokeDefaultAction(ClientPropertyDraw currentProperty) {
+        setCurrentProperty(currentProperty);
+        for (ClientPropertyDraw property : sortProperties().values()) {
+            if (((ClientShortcutPanelLocation) property.panelLocation).isDefault() && property.baseType instanceof ClientActionClass) {
+                final PropertyController propertyController = panel.getProperties().get(property).values().iterator().next();
+                if (propertyController != null) {
+                    ((ButtonCellView) propertyController.getView()).doClick();
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

@@ -328,7 +328,7 @@ OBJECTS document, article
 // Property list syntax:
 // PROPERTIES [alias1=]propName1(param1, ..., paramN1), ..., [aliasN=]propNameK(param1, ..., paramNK)
 // Special properties: SELECTION, OBJVALUE, ADDOBJ
-// Property options:    [READONLY] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [HIGHLIGHTIF <mappedProperty>]
+// Property options:    [READONLY] [EDITABLE] [SELECTOR] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [HIGHLIGHTIF <mappedProperty>]
 //                      [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
 
 PROPERTIES store(document), name(article), storeName(document), documentTypeString(document)

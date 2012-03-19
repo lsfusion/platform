@@ -84,7 +84,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public boolean isReadOnly() {
-        return entity.readOnly && !isSingleSimplePanel();
+        return entity.readOnly && !entity.isSelector();
     }
 
     private boolean isSingleSimplePanel() { // дебильновато но временно так
@@ -99,7 +99,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         PropertyObjectInstance<?> change = propertyObject.getChangeInstance(aggProp, aggValue, form.session, form);
 
         // если readOnly свойство лежит в groupObject в виде панели с одним входом, то показываем диалог выбора объекта
-        if (entity.readOnly && isSingleSimplePanel()) {
+        if (entity.isSelector() && isSingleSimplePanel()) {
             ObjectInstance singleObject = BaseUtils.single(toDraw.objects);
             ObjectValueProperty objectValueProperty = BL.getObjectValueProperty(singleObject.getBaseClass());
 

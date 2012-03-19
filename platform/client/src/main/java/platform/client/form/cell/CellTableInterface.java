@@ -20,5 +20,5 @@ public interface CellTableInterface {
 
     ClientFormController getForm();
 
-    void invokeDefaultAction();
+    boolean invokeDefaultAction(ClientPropertyDraw property);
 }

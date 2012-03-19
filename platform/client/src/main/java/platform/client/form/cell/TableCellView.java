@@ -101,8 +101,8 @@ public class TableCellView extends JPanel implements CellView {
             }
 
             @Override
-            public void invokeDefaultAction() {
-                form.controllers.get(key.groupObject).invokeDefaultAction(key);
+            public boolean invokeDefaultAction(ClientPropertyDraw property) {
+                return form.controllers.get(property.groupObject).invokeDefaultAction(property);
             }
         };
 

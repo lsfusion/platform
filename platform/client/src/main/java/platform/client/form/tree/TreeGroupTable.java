@@ -639,5 +639,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
     }
 
-    public void invokeDefaultAction() {}
+    public boolean invokeDefaultAction(ClientPropertyDraw property) {
+        return false;
+    }
 }

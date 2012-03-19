@@ -845,20 +845,25 @@ public abstract class GridTable extends ClientFormTable
         return true;
     }
 
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        return super.isCellEditable(row, column) || hasDefaultAction(getProperty(row, column));
+    }
+
     public void buildShortcut(Component invoker, Point point) {
         if (rowAtPoint(point) != -1) {
-            changeSelection(rowAtPoint(point), columnAtPoint(point), false , false);
+            changeSelection(rowAtPoint(point), columnAtPoint(point), false, false);
             requestFocusInWindow();
             groupObjectController.showShortcut(invoker, point, getCurrentProperty());
         }
     }
 
-    public void invokeDefaultAction() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                groupObjectController.invokeDefaultAction(getCurrentProperty());
-            }
-        });
+    public boolean hasDefaultAction(ClientPropertyDraw property) {
+        return groupObjectController.hasDefaultAction(property);
+    }
+
+    public boolean invokeDefaultAction(ClientPropertyDraw property) {
+        return groupObjectController.invokeDefaultAction(property);
     }
 
     private void moveToFocusableCellIfNeeded() {

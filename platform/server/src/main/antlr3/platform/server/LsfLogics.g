@@ -462,6 +462,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 }
 	:	(	'READONLY' { $options.setReadOnly(true); }
 		|	'EDITABLE' { $options.setReadOnly(false); }
+		|	'SELECTOR' { $options.setSelector(true); }
 		|	'COLUMNS' '(' ids=nonEmptyIdList ')' { $options.setColumns(getGroupObjectsList($ids.ids)); }
 		|	'SHOWIF' mappedProp=formMappedProperty { $options.setShowIf(getPropertyWithMapping($mappedProp.name, $mappedProp.mapping)); }
 		|	'READONLYIF' propObj=formPropertyObject { $options.setReadOnlyIf($propObj.property); }

@@ -20,6 +20,7 @@ import java.util.List;
 public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, ServerIdentitySerializable {
 
     public boolean readOnly;
+    private boolean selector;
 
     public PropertyObjectEntity<P> propertyObject;
     
@@ -69,6 +70,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public void setPropertyHighlight(PropertyObjectEntity propertyHighlight) {
         this.propertyHighlight = propertyHighlight;
+    }
+
+    public boolean isSelector() {
+        return selector;
+    }
+
+    public void setSelector(boolean selector) {
+        this.selector = selector;
+        if (selector)
+            readOnly = true;
     }
 
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView defaultView) {

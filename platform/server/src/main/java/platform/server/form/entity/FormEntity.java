@@ -1022,6 +1022,54 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         property.readOnly = readOnly;
     }
 
+    public void setSelector(PropertyDrawEntity property, boolean selector) {
+        property.setSelector(selector);
+    }
+
+    public void setSelector(ObjectEntity objectEntity, boolean selector) {
+        for (PropertyDrawEntity property : getProperties(objectEntity.groupTo)) {
+            setSelector(property, selector);
+        }
+    }
+
+    public void setSelector(boolean selector, GroupObjectEntity groupObject) {
+        for (PropertyDrawEntity propertyView : getProperties(groupObject)) {
+            setSelector(propertyView, selector);
+        }
+    }
+
+    public void setSelector(boolean selector) {
+        for (PropertyDrawEntity propertyView : propertyDraws) {
+            setSelector(propertyView, selector);
+        }
+    }
+
+    public void setSelector(AbstractNode property, boolean selector) {
+        for (PropertyDrawEntity propertyView : getProperties(property)) {
+            setSelector(propertyView, selector);
+        }
+    }
+
+    public void setSelector(Property property, boolean selector, GroupObjectEntity groupObject) {
+        for (PropertyDrawEntity propertyView : getProperties(property, groupObject)) {
+            setSelector(propertyView, selector);
+        }
+    }
+
+    public void setSelector(LP property, boolean selector) {
+        setSelector(property.property, selector);
+    }
+
+    public void setSelector(LP property, boolean selector, GroupObjectEntity groupObject) {
+        setSelector(property.property, selector, groupObject);
+    }
+
+    public void setSelector(AbstractGroup group, boolean selector, GroupObjectEntity groupObject) {
+        for (PropertyDrawEntity property : getProperties(group, groupObject)) {
+            setSelector(property, selector);
+        }
+    }
+
     public void addDefaultOrder(LP lp, boolean ascending) {
         addDefaultOrder(getPropertyDraw(lp), ascending);
     }
