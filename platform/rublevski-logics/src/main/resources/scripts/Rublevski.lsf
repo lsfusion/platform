@@ -1751,7 +1751,7 @@ PROPERTIES(w) ADDFORM, EDITFORM, delete;
 FORM wareForm 'Посуда'
 OBJECTS w=ware
 PROPERTIES(w) barcodeBarcodeSku, name, priceWare, showFormpriceWare
-PROPERTIES(w) dataRangeWare, dataActingRateRangeWare, showFormRangeWare
+PROPERTIES(w) dataRangeWare, dataActingRateRangeWare, showFormRangeWare, ADDFORM, EDITFORM, delete
 DIALOG ware OBJECT w;
 
 //toShowManufactured(item) =
@@ -3730,7 +3730,7 @@ CLASS inventory 'Инвентаризация (открытая)' : historyObjec
 CLASS inventoryPosted 'Инвентаризация (закрытая)' : inventory, postedObject;
 CLASS listInventory 'Опись (открытая)';
 CLASS listInventoryPosted 'Опись (закрытая)' : listInventory, postedObject;
-CLASS ABSTRACT collationSheet 'Сличительная ведомость';
+CLASS ABSTRACT collationSheet 'Сличительная ведомость' : outAccountSumDocumentLedger;
 CLASS registerCollationSheet 'Сличительная ведомость по описи' : collationSheet;
 CLASS remainsCollationSheet 'Сличительная ведомость по остаткам' : collationSheet;
 CLASS manyCollationSheet 'Сличительная ведомость по множеству товаров' : collationSheet;
@@ -4201,7 +4201,7 @@ FORM objectiveAcquiring 'Цель приобретения'
 
 GROUP specificationGroup 'Счет-фактуры' : publicGroup;
 
-@metaCodeObjectWithPost(statement, 'Выписка из розницы', 'Закрытая выписка из розницы', historyObject, balanceItemLedger);
+@metaCodeObjectWithPost(statement, 'Выписка из розницы', 'Закрытая выписка из розницы', outAccountSumHistoryDocumentLedger, balanceItemLedger);
 
                       //    шапка документа поставки
 waybillStatement 'Номер накладной' (statement) = DATA STRING[7] (statement) IN documentHeaderGroup FIXEDCHARWIDTH 7;
@@ -4342,6 +4342,7 @@ datePriceChangeStatement 'Дата' (priceChangeStatement) = dateStatement(state
 isPostedPriceChangeStatement 'Закрыт' (priceChangeStatement) = isPostedStatement(statementPriceChangeStatement(priceChangeStatement));
 waybillPriceChangeStatement 'Номер накладной' (priceChangeStatement) = waybillStatement(statementPriceChangeStatement(priceChangeStatement));
 seriesWaybillPriceChangeStatement 'Серия накладной' (priceChangeStatement) = seriesWaybillStatement(statementPriceChangeStatement(priceChangeStatement));
+descriptionPriceChangeStatement 'Название документа' (priceChangeStatement) = descriptionStatement(statementPriceChangeStatement(priceChangeStatement));
 
 customerPriceChangeStatement (priceChangeStatement) = customerStatement(statementPriceChangeStatement(priceChangeStatement));
 nameCustomerPriceChangeStatement 'Покупатель' (priceChangeStatement) = name(customerPriceChangeStatement(priceChangeStatement));
@@ -4710,6 +4711,7 @@ datePriceChangeShipment 'Дата' (priceChangeShipment) = dateShipment(shipment
 isPostedPriceChangeShipment 'Закрыт' (priceChangeShipment) = isPostedShipment(shipmentPriceChangeShipment(priceChangeShipment));
 waybillPriceChangeShipment 'Номер накладной' (priceChangeShipment) = waybillShipment(shipmentPriceChangeShipment(priceChangeShipment));
 seriesWaybillPriceChangeShipment 'Серия накладной' (priceChangeShipment) = seriesWaybillShipment(shipmentPriceChangeShipment(priceChangeShipment));
+descriptionPriceChangeShipment 'Название документа' (priceChangeShipment) = descriptionShipment(shipmentPriceChangeShipment(priceChangeShipment));
 
 supplierPriceChangeShipment (priceChangeShipment) = supplierShipment(shipmentPriceChangeShipment(priceChangeShipment));
 nameSupplierPriceChangeShipment 'Поставщик' (priceChangeShipment) = name(supplierPriceChangeShipment(priceChangeShipment));
@@ -4864,7 +4866,7 @@ DESIGN shipments FROM DEFAULT {
 }
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
-@metaCodeObjectWithPost (writeOff, 'Списание', 'Закрытое списание', outAccountSumHistoryDocumentLedger, object);
+@metaCodeObjectWithPost (writeOff, 'Списание', 'Закрытое списание', outAccountSumHistoryDocumentLedger, balanceItemLedger);
 CLASS reasonOff 'Причина списания' : named;
 
 numberWriteOff 'Номер документа' = DATA INTEGER (writeOff) IN documentHeaderGroup;
@@ -4910,8 +4912,17 @@ FORM reasonOff 'Причина списания'
     PROPERTIES(r) name
 ;
 
+castWriteOffObjectsToString100=
+    FORMULA STRING[200] '\'Списание \' || CAST($1 AS TEXT) || \' акт \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)';
+
+descriptionWriteOff 'Название документа' (writeOff) = castWriteOffObjectsToString100(
+    numberWriteOff(writeOff), numberActWriteOff(writeOff), dateWriteOff(writeOff));
+
+descriptionWriteOffDetail 'Название документа' (writeOffDetail) = descriptionWriteOff(writeOffWriteOffDetail(writeOffDetail));
+
+
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
-@metaCodeObjectWithPost (innerFlow, 'Расход в отдел', 'Закрытый расход в отдел', historyObject, balanceItemLedger);
+@metaCodeObjectWithPost (innerFlow, 'Расход в отдел', 'Закрытый расход в отдел', outAccountSumHistoryDocumentLedger, balanceItemLedger);
 
 recipientDepartmentInnerFlow 'Отдел-получатель (ИД)' (innerFlow) = DATA departmentStore(innerFlow);
 nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentHeaderGroup;
@@ -5189,6 +5200,7 @@ descriptionInnerArrival 'Название документа' (innerArrival) = c
     waybillInnerArrival(innerArrival), seriesWaybillInnerArrival(innerArrival), dateInnerArrival(innerArrival), nameSenderDepartmentInnerArrival(innerArrival));
 
 descriptionInnerArrivalDetail 'Название документа' (innerArrivalDetail) = descriptionInnerArrival(innerArrivalInnerArrivalDetail(innerArrivalDetail));
+//descriptionPriceChangeInnerArrival 'Название документа' (priceChangeInnerArrival) = descriptionInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 
 
 FORM innerArrival 'Приход из другого отдела'
@@ -5276,7 +5288,7 @@ needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDet
 needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 
 
-CLASS wastage 'Списание отходов' : historyObject;
+CLASS wastage 'Списание отходов' : outAccountSumHistoryDocumentLedger;
 CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
 CLASS wastageDetail 'Строка документа': balanceItemLedger;
 
@@ -5295,6 +5307,7 @@ supplierWastage 'Поставщик (ИД)' (wastage) = supplierShipment(shipmen
 nameSupplierWastage 'Поставщик' (wastage) = name(supplierWastage(wastage));
 
 dateTimeWastageDetail (wastageDetail) = dateTimeShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+dateTimeWastage 'Дата/время документа' (wastage) = dateTimeShipment(shipmentWastage(wastage));
 
 departmentStoreWastageDetail (wastageDetail) = departmentStoreShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 
@@ -5347,7 +5360,7 @@ commonInfoShipmentDetail (batchShipment) =
     waybillShipment(shipmentShipmentDetail(batchShipment)),
     dateShipment(shipmentShipmentDetail(batchShipment)));
 
-@metaCodeObjectWithPost(returnSupplier, 'Возврат поставщику', 'Закрытый возврат поставщику', historyObject, balanceItemLedger);
+@metaCodeObjectWithPost(returnSupplier, 'Возврат поставщику', 'Закрытый возврат поставщику', outAccountSumHistoryDocumentLedger, balanceItemLedger);
 
 // шапка документа "Возврат поставщику"
 waybillReturnSupplier 'Номер накладной' (returnSupplier) = DATA STRING[7] (returnSupplier) IN documentHeaderGroup FIXEDCHARWIDTH 7;
@@ -5480,6 +5493,8 @@ descriptionUserPriceChange 'Название документа' (userPriceChang
 
 descriptionUserPriceChangeUserPriceChangeDetail 'Название документа' (userPriceChangeDetail) = descriptionUserPriceChange(userPriceChangeUserPriceChangeDetail(userPriceChangeDetail));
 
+descriptionPriceChangeInnerArrival 'Название документа' (priceChangeInnerArrival) = descriptionInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
+
 FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
     PROPERTIES (u) numberUserPriceChange, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
@@ -5535,6 +5550,7 @@ TABLE itemDepartmentStore (item, departmentStore);
 
 dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
                                                                   dateTimeInnerArrivalDetail(ledger),
+                                                                  dateTimeWriteOffDetail(ledger),
                                                                   dateTimeStatementDetail(ledger),
                                                                   dateTimeInnerFlowDetail(ledger),
                                                                   dateTimeWastageDetail(ledger),
@@ -5543,6 +5559,7 @@ dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateT
 
 isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                               isPostedInnerArrivalDetail(ledger),
+                                                              isPostedWriteOffDetail(ledger),
                                                               isPostedStatementDetail(ledger),
                                                               isPostedInnerFlowDetail(ledger),
                                                               isPostedWastageDetail(ledger),
@@ -5551,6 +5568,7 @@ isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShip
 
 itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                  itemInnerArrivalDetail(ledger),
+                                                 itemWriteOffDetail(ledger),
                                                  itemStatementDetail(ledger),
                                                  itemInnerFlowDetail(ledger),
                                                  itemWastageDetail(ledger),
@@ -5559,6 +5577,7 @@ itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
 
 departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                             departmentStoreInnerArrivalDetail(ledger),
+                                                            departmentStoreWriteOffDetail(ledger),
                                                             departmentStoreStatementDetail(ledger),
                                                             departmentStoreInnerFlowDetail(ledger),
                                                             departmentStoreWastageDetail(ledger),
@@ -5567,6 +5586,7 @@ departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipm
 
 quantityBalanceItemLedger 'Количество' (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
                                                      quantityInnerArrivalDetail(ledger),
+                                                    -quantityWriteOffDetail(ledger),
                                                     -quantityStatementDetail(ledger),
                                                     -quantityInnerFlowDetail(ledger),
                                                     -quantityWastageDetail(ledger),
@@ -5575,6 +5595,7 @@ quantityBalanceItemLedger 'Количество' (ledger) = UNION EXCLUSIVE quan
 
 descriptionLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
                                                             descriptionInnerArrivalDetail(ledger),
+                                                            descriptionWriteOffDetail(ledger),
                                                             descriptionStatementDetail(ledger),
                                                             descriptionInnerFlowDetail(ledger),
                                                             descriptionWastageDetail(ledger),
@@ -6012,6 +6033,11 @@ dateTimePriceChangeDocument 'Дата/время' (priceChangeDocument) = UNION 
                                                                                  dateTimePriceChangeInnerArrival(priceChangeDocument),
                                                                                  dateTimeUserPriceChange(priceChangeDocument) PERSISTENT;
 
+descriptionPriceChangeDocument 'Название документа' (priceChangeDocument) = UNION EXCLUSIVE descriptionPriceChangeShipment(priceChangeDocument),
+                                                                                            descriptionPriceChangeStatement(priceChangeDocument),
+                                                                                            descriptionPriceChangeInnerArrival(priceChangeDocument),
+                                                                                            descriptionUserPriceChange(priceChangeDocument) PERSISTENT;
+
 datePriceChangeDocument 'Дата' (priceChangeDocument) = dateInTime(dateTimePriceChangeDocument(priceChangeDocument)) PERSISTENT;
 
 isPostedPriceChangeDocument 'Закрыт' (priceChangeDocument) = UNION EXCLUSIVE isPostedPriceChangeShipment(priceChangeDocument),
@@ -6105,24 +6131,63 @@ FORM priceChangeDocuments 'Акты переоценки'
 dateTimeAccountSumDocumentLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipment(ledger),
                                                                          dateTimeInnerArrival(ledger),
                                                                          dateTimePriceChangeDocument(ledger),
-                                                                         dateTimeWriteOff(ledger) PERSISTENT INDEXED;
+                                                                         dateTimeWriteOff(ledger),
+                                                                         dateTimeStatement(ledger),
+                                                                         dateTimeInnerFlow(ledger),
+                                                                         dateTimeWastage(ledger),
+                                                                         dateTimeReturnSupplier(ledger),
+                                                                         dateTimeToInventory(inventoryCollationSheet(ledger)) PERSISTENT INDEXED;
+
+descriptionDocumentLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipment(ledger),
+                                                                          descriptionInnerArrival(ledger),
+                                                                          descriptionPriceChangeDocument(ledger),
+                                                                          descriptionWriteOff(ledger),
+                                                                          descriptionStatement(ledger),
+                                                                          descriptionInnerFlow(ledger),
+                                                                          descriptionWastage(ledger),
+                                                                          descriptionReturnSupplier(ledger),
+                                                                          descriptionInventory(inventoryCollationSheet(ledger)) PERSISTENT;
+                                                                          //descriptionUserPriceChange(ledger) PERSISTENT;
+
+
 dateAccountSumDocumentLedger 'Дата' (ledger) = dateInTime(dateTimeAccountSumDocumentLedger(ledger)) PERSISTENT;
 
 isPostedAccountSumDocumentLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipment(ledger),
                                                                      isPostedInnerArrival(ledger),
                                                                      isPostedPriceChangeDocument(ledger),
-                                                                     isPostedWriteOff(ledger) PERSISTENT;
+                                                                     isPostedWriteOff(ledger),
+                                                                     isPostedStatement(ledger),
+                                                                     isPostedInnerFlow(ledger),
+                                                                     isPostedWastage(ledger),
+                                                                     isPostedReturnSupplier(ledger),
+                                                                     isPostedInventory(inventoryCollationSheet(ledger)) PERSISTENT;
 
 departmentStoreAccountSumDocumentLedger (ledger) = UNION EXCLUSIVE departmentStoreShipment(ledger),
                                                                    departmentStoreInnerArrival(ledger),
                                                                    departmentStorePriceChangeDocument(ledger),
-                                                                   departmentStoreWriteOff(ledger) PERSISTENT;
+                                                                   departmentStoreWriteOff(ledger),
+                                                                   departmentStoreStatement(ledger),
+                                                                   departmentStoreInnerFlow(ledger),
+                                                                   departmentStoreWastage(ledger),
+                                                                   departmentStoreReturnSupplier(ledger),
+                                                                   departmentStoreCollationSheet(ledger) PERSISTENT;
+                                                                   //инвентаризация    departmentStoreInventoryLedger
+//departmentStoreInventoryLedger(inventoryLedger) = departmentStoreCollationSheet(collationSheetInventoryLedger(inventoryLedger));
+
+
+
+
 nameDepartmentStoreAccountSumDocumentLedger 'Отдел магазина' (ledger) = name(departmentStoreAccountSumDocumentLedger(ledger));
 
 sumIncAccountDocumentLedger 'Сумма прихода' (ledger) = UNION EXCLUSIVE retailSumShipment(ledger),
                                                                        accountSumInnerArrival(ledger),
                                                                        accountSumChangeDocument(ledger) PERSISTENT;
-sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSIVE accountSumWriteOff(ledger) PERSISTENT;
+sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSIVE accountSumWriteOff(ledger),
+                                                                       accountSumInnerFlow(ledger),
+                                                                       sumStatement(ledger),
+                                                                       totalSumWastage(ledger),
+                                                                       totalSumSupplierReturnSupplier(ledger),
+                                                                       shortageTotalItemByCollationSheet(ledger) PERSISTENT;
 
 sumAccountDocumentLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumIncAccountDocumentLedger(ledger), -sumOutAccountDocumentLedger(ledger) PERSISTENT;
 
@@ -6155,7 +6220,7 @@ FORM sumAccountDocumentLedger 'Товарный отчет'
     PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountADocumentLedgerDate(ds, dtTo)
 
     OBJECTS il = incAccountSumDocumentLedger
-    PROPERTIES(il) READONLY iDateTime = dateTimeAccountSumDocumentLedger, objectClassName, sumIncAccountDocumentLedger
+    PROPERTIES(il) READONLY iDateTime = dateTimeAccountSumDocumentLedger, objectClassName, descriptionDocumentLedger, sumIncAccountDocumentLedger
     FILTERS isPostedAccountSumDocumentLedger(il),
             departmentStoreAccountSumDocumentLedger(il) == ds,
             dateAccountSumDocumentLedger(il) >= dtFrom,
@@ -6163,7 +6228,7 @@ FORM sumAccountDocumentLedger 'Товарный отчет'
     ORDER BY iDateTime
 
     OBJECTS ol = outAccountSumDocumentLedger
-    PROPERTIES(ol) READONLY oDateTime = dateTimeAccountSumDocumentLedger, objectClassName, sumOutAccountDocumentLedger
+    PROPERTIES(ol) READONLY oDateTime = dateTimeAccountSumDocumentLedger, objectClassName, descriptionDocumentLedger, sumOutAccountDocumentLedger
     FILTERS isPostedAccountSumDocumentLedger(ol),
             departmentStoreAccountSumDocumentLedger(ol) == ds,
             dateAccountSumDocumentLedger(ol) >= dtFrom,
@@ -6396,6 +6461,7 @@ FORM inventories 'Инвентаризации'
     OBJECTS il=inventoryLedger
     PROPERTIES(il)  barcodeExInventoryLedger, nameAttributeItemInventoryLedger, quantityInventoryLedger, shortageTotalInventoryLedger, nameDepartmentStoreInventoryLedger
     FILTERS         inventoryInventoryLedger(il)==in
+                  //  inInventoryCollationSheet(in,cs)
                     //quantityInventoryLedger(il)!=0
 
     ORDER BY        nameDepartmentStoreInventoryLedger
@@ -6708,22 +6774,27 @@ FORM balanceItemDepartment 'Остатки по отделам'
     OBJECTS apl=accountPriceLedger
     PROPERTIES (apl) descriptionLedger, dateTimeAccountPriceLedger, priceAccountLedger
     FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
+    ORDER BY dateTimeAccountPriceLedger DESC
 
     OBJECTS rpl=retailPriceLedger
     PROPERTIES (rpl) descriptionLedger, dateTimeRetailPriceLedger, priceRetailLedger
     FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
+    ORDER BY dateTimeRetailPriceLedger DESC
 
     OBJECTS bil=balanceItemLedger
     PROPERTIES(bil) descriptionLedger, dateTimeBalanceItemLedger, quantityBalanceItemLedger READONLY
     FILTERS isPostedBalanceItemLedger(bil) AND itemBalanceItemLedger(bil)==i AND departmentStoreBalanceItemLedger(bil)==dep
+    ORDER BY dateTimeBalanceItemLedger DESC
 
     OBJECTS ipl=importerPriceLedger
     PROPERTIES(ipl) descriptionLedger, dateTimeImporterPriceLedger, priceImporterLedger
     FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
+    ORDER BY dateTimeImporterPriceLedger DESC
 
     OBJECTS rvl=retailVATLedger
     PROPERTIES(rvl) descriptionLedger, dateTimeRetailVATLedger, dataRetailLedger
     FILTERS isPostedRetailVATLedger(rvl) AND itemRetailVATLedger(rvl)==i AND departmentStoreRetailVATLedger(rvl)==dep
+    ORDER BY dateTimeRetailVATLedger DESC
 ;
 
 DESIGN balanceItemDepartment FROM DEFAULT {
