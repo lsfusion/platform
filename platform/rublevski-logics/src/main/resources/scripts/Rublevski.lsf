@@ -5472,6 +5472,14 @@ dataRetailRangeUserPriceChangeDetail 'НДС, %' (userPriceChangeDetail) = dataA
 oldRetailPriceUserPriceChangeDetail 'Старая розничная цена' = DATA DOUBLE (userPriceChangeDetail);
 retailPriceUserPriceChangeDetail 'Новая розничная цена' = DATA DOUBLE (userPriceChangeDetail);
 
+castUserPriceChangeToString100=
+    FORMULA STRING[200] '\'Акт переоценки \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)';
+
+descriptionUserPriceChange 'Название документа' (userPriceChange) = castUserPriceChangeToString100(
+    numberUserPriceChange(userPriceChange), dateUserPriceChange(userPriceChange));
+
+descriptionUserPriceChangeUserPriceChangeDetail 'Название документа' (userPriceChangeDetail) = descriptionUserPriceChange(userPriceChangeUserPriceChangeDetail(userPriceChangeDetail));
+
 FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
     PROPERTIES (u) numberUserPriceChange, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
@@ -5571,7 +5579,8 @@ descriptionLedger 'Название документа' (ledger) = UNION EXCLUSI
                                                             descriptionInnerFlowDetail(ledger),
                                                             descriptionWastageDetail(ledger),
                                                             descriptionReturnSupplierDetail(ledger),
-                                                            descriptionInventoryLedger(ledger) PERSISTENT;
+                                                            descriptionInventoryLedger(ledger),
+                                                            descriptionUserPriceChangeUserPriceChangeDetail(ledger) PERSISTENT;
 
 
 currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
