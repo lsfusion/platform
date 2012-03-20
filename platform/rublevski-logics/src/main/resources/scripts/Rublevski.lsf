@@ -428,6 +428,7 @@ META metaCodeDoublePropsAggregation (prim1Property, prim2Property, aggrObject, a
 
 END
 
+
 META metaCodeDetailAggregation (primObject, aggrObject, aggrProperty)
 
     @metaCodeSingleAggregation(primObject, aggrObject, aggrProperty);
@@ -4711,7 +4712,6 @@ descriptionShipment 'Название документа' (shipment) = castShipm
 
 descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
 
-
 // ---------------------------------- Дооценка на приходе ------------------------------------------
 
 CLASS priceChangeShipment 'Переоценка на приходе' : priceChangeDocument;
@@ -5431,15 +5431,15 @@ quantityReturnSupplierDetail 'Количество' (returnSupplierDetail) = DAT
 
 priceReturnSupplierDetail 'Цена товара' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
 priceReturnSupplierDetail (returnSupplierDetail) <- priceShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                    ON CHANGE commonInfoBatchReturnSupplierDetail(returnSupplierDetail);
+                                                    ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
 supplierMarkupReturnSupplierDetail 'Оптовая надбавка/торговая скидка, %' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
 supplierMarkupReturnSupplierDetail (returnSupplierDetail) <- overSupplierMarkupShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                             ON CHANGE commonInfoBatchReturnSupplierDetail(returnSupplierDetail);
+                                                             ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
 dataSuppliersRangeReturnSupplierDetail 'НДС поставщика, %' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
 dataSuppliersRangeReturnSupplierDetail (returnSupplierDetail) <- dataSuppliersRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                                                     ON CHANGE commonInfoBatchReturnSupplierDetail(returnSupplierDetail);
+                                                                                     ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
 sumPriceReturnSupplierDetail 'Сумма без НДС' (returnSupplierDetail) =
     priceReturnSupplierDetail(returnSupplierDetail) * quantityReturnSupplierDetail(returnSupplierDetail);
@@ -5893,6 +5893,18 @@ priceRetailReturnSupplierDetail 'Розничная цена' (returnSupplierDet
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
                 dateTimeReturnSupplierDetail(returnSupplierDetail));
 
+// ---------------------------------- Переоценка на возврате ------------------------------------------
+
+CLASS priceChangeReturnSupplier 'Переоценка на возврате' : priceChangeDocument;
+CLASS priceChangeReturnSupplierDetail 'Строка переоценки на возврате' : priceChangeDocumentDetail;
+
+needToPriceChangeReturnSupplierDetail (returnSupplierDetail) = priceReturnSupplierDetail(returnSupplierDetail) != priceRetailReturnSupplierDetail(returnSupplierDetail);
+
+needToPriceChangeReturnSupplier (returnSupplier) = GROUP SUM 1 IF needToPriceChangeReturnSupplierDetail(returnSupplierDetail)
+                                                   BY returnSupplierReturnSupplierDetail(returnSupplierDetail);
+
+@metaCodeDetailAggregation(returnSupplier, priceChangeReturnSupplier, needToPriceChangeReturnSupplier);
+
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
@@ -6176,6 +6188,7 @@ departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE depar
 nameDepartmentStorePriceChangeDocument 'Отдел магазина' (priceChangeDocument) = name(departmentStorePriceChangeDocument(priceChangeDocument));
 
 documentPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE priceChangeShipmentPriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                priceChangeReturnSupplierPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                 priceChangeStatementPriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                 priceChangeInnerArrivalPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                 userPriceChangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
