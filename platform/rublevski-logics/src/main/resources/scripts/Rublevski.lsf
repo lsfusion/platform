@@ -5667,6 +5667,7 @@ TABLE itemDepartmentStore (item, departmentStore);
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
 dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
+                                                                  dateTimeReturnSupplierDetail(ledger),
                                                                   dateTimeInnerArrivalDetail(ledger),
                                                                   dateTimeWriteOffDetail(ledger),
                                                                   dateTimeStatementDetail(ledger),
@@ -5677,6 +5678,7 @@ dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateT
                                                                   dateTimeBillDetail(ledger) PERSISTENT INDEXED;
 
 isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
+                                                              isPostedReturnSupplierDetail(ledger),
                                                               isPostedInnerArrivalDetail(ledger),
                                                               isPostedWriteOffDetail(ledger),
                                                               isPostedStatementDetail(ledger),
@@ -5687,6 +5689,7 @@ isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShip
                                                               isPostedBillDetail(ledger) PERSISTENT;
 
 itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
+                                                 itemReturnSupplierDetail(ledger),
                                                  itemInnerArrivalDetail(ledger),
                                                  itemWriteOffDetail(ledger),
                                                  itemStatementDetail(ledger),
@@ -5697,6 +5700,7 @@ itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                  itemBillDetail(ledger) PERSISTENT;
 
 departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
+                                                            departmentStoreReturnSupplierDetail(ledger),
                                                             departmentStoreInnerArrivalDetail(ledger),
                                                             departmentStoreWriteOffDetail(ledger),
                                                             departmentStoreStatementDetail(ledger),
@@ -5707,6 +5711,7 @@ departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipm
                                                             departmentStoreBillDetail(ledger) PERSISTENT;
 
 quantityBalanceItemLedger 'Количество' (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
+                                                    -quantityReturnSupplierDetail(ledger),
                                                      quantityInnerArrivalDetail(ledger),
                                                     -quantityWriteOffDetail(ledger),
                                                     -quantityStatementDetail(ledger),
@@ -5717,6 +5722,7 @@ quantityBalanceItemLedger 'Количество' (ledger) = UNION EXCLUSIVE quan
                                                     -quantityBillDetail(ledger) PERSISTENT;
 
 descriptionLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
+                                                            descriptionReturnSupplierDetail(ledger),
                                                             descriptionInnerArrivalDetail(ledger),
                                                             descriptionWriteOffDetail(ledger),
                                                             descriptionStatementDetail(ledger),
