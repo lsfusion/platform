@@ -501,6 +501,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setEchoSymbols(true);
     }
 
+    public void setAggProp(LP<?> property) {
+        property.property.aggProp = true;
+    }
+
     private <T extends LP<?>> void changePropertyName(T lp, String name) {
         removeModuleLP(lp);
         setPropertySID(lp, transformNameToSID(name), false);

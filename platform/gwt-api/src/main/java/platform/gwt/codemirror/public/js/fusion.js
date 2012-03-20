@@ -8,7 +8,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
     }
 
     var types = words("INTEGER DOUBLE LONG BOOLEAN DATE DATETIME TEXT STRING ISTRING TIME");
-    var keywords = words("ABSTRACT ACTION ADD ADDFORM ADDOBJ ADDSESSIONFORM AFTER " + 
+    var keywords = words("ABSTRACT ACTION ADD ADDFORM ADDOBJ ADDSESSIONFORM AFTER AGGPROP " +
                            "ALL AND APPLY AS ASC ASSIGN ATTACH AUTOAPPLY AUTOSET BCC " + 
                            "BEFORE BOTTOM BREAK BY CASCADE CASE CC CENTER CHANGE CHECK " + 
                            "CHECKED CLASS COLUMNS CONCAT CONFIRM CONSTRAINT CUSTOM " + 

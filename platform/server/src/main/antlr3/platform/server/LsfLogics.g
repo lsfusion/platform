@@ -1119,6 +1119,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		|	loggableSetting { isLoggable = true; }
 		|	echoSymbolsSetting [property]
 		|	indexSetting [propertyName]
+		|	aggPropSetting [property]
 		)*
 	;
 
@@ -1256,6 +1257,15 @@ indexSetting [String propName]
 	}
 }
 	:	'INDEXED'
+	;
+
+aggPropSetting [LP property]
+@after {
+	if (inPropParseState()) {
+		self.setAggProp(property);
+	}
+}
+	:	'AGGPROP'
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
