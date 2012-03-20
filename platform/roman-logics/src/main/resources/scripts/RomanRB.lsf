@@ -3,6 +3,50 @@ MODULE RB;
 IMPORT BaseLogicsModule;
 IMPORT RomanLogicsModule;
 
+META metaCodeSingleAggregation (primObject, aggrObject, aggrProperty)
+
+    primObject###aggrObject = DATA primObject (aggrObject);
+
+    @metaCodeSinglePropsAggregation (primObject###aggrObject, aggrObject, aggrProperty);
+
+END
+
+META metaCodeSinglePropsAggregation (primProperty, aggrObject, aggrProperty)
+
+    unique###aggrObject (primObject) =
+        GROUP UNIQUE aggrObject BY primProperty(aggrObject)
+        WHERE aggrObject IS aggrObject;
+
+    aggrProperty(primObject) => unique###aggrObject(primObject) RESOLVE TRUE;
+
+    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
+    is###aggrObject(aggrObject) => aggrProperty(primProperty(aggrObject)) RESOLVE FALSE;
+
+END
+
+META metaCodeDoubleAggregation (prim1Object, prim2Object, aggrObject, aggrProperty)
+
+    prim1Object###aggrObject = DATA prim1Object (aggrObject);
+    prim2Object###aggrObject = DATA prim2Object (aggrObject);
+
+    @metaCodeDoublePropsAggregation(prim1Object###aggrObject, prim2Object###aggrObject, aggrObject, aggrProperty);
+
+END
+
+META metaCodeDoublePropsAggregation (prim1Property, prim2Property, aggrObject, aggrProperty)
+
+    unique###aggrObject (prim1Object, prim2Object) =
+        GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
+        WHERE aggrObject IS aggrObject;
+
+    aggrProperty(prim1Object, prim2Object) => unique###aggrObject(prim1Object, prim2Object) RESOLVE TRUE;
+
+    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
+    is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject)) RESOLVE FALSE;
+
+END
+
+
 //--------------------------------- Сертификаты --------------------------------------------------------------------//
 CLASS ABSTRACT certificate 'Сертификат';
 CLASS temporalCertificate 'Временный сертификат' : certificate;
@@ -20,14 +64,18 @@ FORM certificate 'Сертификат'
 
 FORM certificates 'Сертификаты'
     OBJECTS c=certificate
-    PROPERTIES(c) READONLY sidCertificate, dateIssueCertificate, dateValidityCertificate
+    PROPERTIES(c) READONLY sidCertificate, objectClassName, dateIssueCertificate, dateValidityCertificate
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
 //--------------------------------- Инвойсы -------------------------------------------------------------------------//
 CLASS formedInvoice 'Инвойс от STX' : innerInvoice;
 
-freightFormedInvoice 'Фрахт инвойса (ИД)' = DATA freight(formedInvoice) IN idGroup;
+includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importer, freight) AND freight IS freightArrived;
+
+@metaCodeDoubleAggregation(importer, freight, formedInvoice, includeImporterFreight);
+
+//freightFormedInvoice 'Фрахт инвойса (ИД)' = DATA freight(formedInvoice) IN idGroup;
 freightInnerInvoice 'Фрахт инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE freightFormedInvoice(innerInvoice),
                                                                           freightDirectInvoice(innerInvoice) IN idGroup;
 dateFreightInnerInvoice 'Фрахт инвойса' (innerInvoice) = dateArrivalFreight(freightInnerInvoice(innerInvoice)) IN baseGroup;
@@ -35,7 +83,7 @@ dateFreightInnerInvoice 'Фрахт инвойса' (innerInvoice) = dateArrival
 customStoreInnerInvoice 'СВХ (ИД)' (innerInvoice) = customStoreFreight(freightInnerInvoice(innerInvoice)) IN idGroup;
 nameCustomStoreInnerInvoice 'СВХ' (innerInvoice) = name(customStoreInnerInvoice(innerInvoice)) IN baseGroup;
 
-importerFormedInvoice 'Импортер инвойса (ИД)' = DATA importer(formedInvoice) IN idGroup;
+//importerFormedInvoice 'Импортер инвойса (ИД)' = DATA importer(formedInvoice) IN idGroup;
 importerInnerInvoice 'Импортер инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE importerFormedInvoice(innerInvoice),
                                                                               importerDirectInvoice(innerInvoice) IN idGroup;
 nameImporterInnerInvoice 'Импортер инвойса' (innerInvoice) = name(importerInnerInvoice(innerInvoice)) IN baseGroup;
@@ -45,13 +93,12 @@ sidFormedInvoice 'Номер инвойса' (formedInvoice) = sidImporterFreigh
 
 sidInnerInvoice 'Номер инвойса' (innerInvoice) = UNION EXCLUSIVE sidFormedInvoice(innerInvoice), sidDocument(innerInvoice) IN baseGroup;
 
-uniqueFormedInvoiceImporterFreight (importer, freight) = GROUP UNIQUE formedInvoice
-                                                                   BY importerFormedInvoice(formedInvoice),
-                                                                      freightFormedInvoice(formedInvoice)
-                                                                WHERE formedInvoice IS formedInvoice;
+//uniqueFormedInvoiceImporterFreight (importer, freight) = GROUP UNIQUE formedInvoice
+//                                                                   BY importerFormedInvoice(formedInvoice),
+//                                                                      freightFormedInvoice(formedInvoice)
+//                                                                WHERE formedInvoice IS formedInvoice;
 
-includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importer, freight) AND freight IS freightArrived;
-includeImporterFreight(importer, freight) => uniqueFormedInvoiceImporterFreight(importer, freight) RESOLVE TRUE;
+//includeImporterFreight(importer, freight) => uniqueFormedInvoiceImporterFreight(importer, freight) RESOLVE TRUE;
 
 quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityProxyImporterFreightSku(importerFormedInvoice(formedInvoice),
                                                                                                    freightFormedInvoice(formedInvoice),
@@ -104,29 +151,26 @@ innerInvoiceDeclarationSku 'Инвойс для декларации' (declarati
 quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)
                                                                          BY declarationInnerInvoice(innerInvoice), sku IN baseGroup;
 
-//quantityDirectDeclarationSku 'Кол-во в декларации (напр.)' (declaration, sku) = GROUP SUM quantityDocumentSku(innerInvoice, sku)
-//                                                                                       BY declarationInnerInvoice(innerInvoice), sku IN baseGroup;
+//uniqueDeclarationDetailDeclarationSku (declaration, sku) = GROUP UNIQUE declarationDetail
+//                                                                     BY declarationDeclarationDetail(declarationDetail),
+//                                                                        skuDeclarationDetail(declarationDetail)
+//                                                                  WHERE declarationDetail IS declarationDetail;
 
+//quantityDeclarationSku(declaration, sku) => uniqueDeclarationDetailDeclarationSku(declaration, sku) RESOLVE TRUE;
 
-declarationDeclarationDetail 'Декларация позиции' = DATA declaration(declarationDetail) IN idGroup;
+@metaCodeDoubleAggregation(declaration, sku, declarationDetail, quantityDeclarationSku);
+
+//declarationDeclarationDetail 'Декларация позиции' = DATA declaration(declarationDetail) IN idGroup;
 dateDeclarationDetail 'Дата декларации' (declarationDetail) = date(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
 
 numberDeclarationDetail 'Номер строки' (declarationDetail) =
         PARTITION SUM 1 IF declarationDetail IS declarationDetail BY declarationDeclarationDetail(declarationDetail)
         ORDER declarationDetail;
 
-skuDeclarationDetail 'Товар позиции (ИД)' = DATA sku(declarationDetail) IN idGroup;
+//skuDeclarationDetail 'Товар позиции (ИД)' = DATA sku(declarationDetail) IN idGroup;
 barcodeSkuDeclarationDetail 'Штрих-код' = barcode(skuDeclarationDetail(declarationDetail)) IN baseGroup;
 
 inDeclarationDeclarationDetail (declaration, declarationDetail) = declarationDeclarationDetail(declarationDetail)==declaration;
-
-uniqueDeclarationDetailDeclarationSku (declaration, sku) = GROUP UNIQUE declarationDetail
-                                                                     BY declarationDeclarationDetail(declarationDetail),
-                                                                        skuDeclarationDetail(declarationDetail)
-                                                                  WHERE declarationDetail IS declarationDetail;
-
-quantityDeclarationSku(declaration, sku) => uniqueDeclarationDetailDeclarationSku(declaration, sku) RESOLVE TRUE;
-//uniqueDeclarationDetailDeclarationSku(declaration, sku) => quantityDeclarationSku(declaration, sku) RESOLVE FALSE;
 
 quantityDeclarationDetail 'Кол-во' (declarationDetail) = quantityDeclarationSku(declarationDeclarationDetail(declarationDetail),
                                                                                 skuDeclarationDetail(declarationDetail)
@@ -184,13 +228,13 @@ sidPermanentCertificateDeclarationDetail 'Постоянный сертифик�
 sidCertificateDeclarationDetail 'Сертификат партии' (declarationDetail) = sidCertificate(certificateDeclarationDetail(declarationDetail)) IN baseGroup;
 
 isCertificatePreparedDeclarationDetail 'Отсутствие сертификата' (declarationDetail) = certificatedDeclarationDetail(declarationDetail) AND
-                                                                              NOT certificatePreparedDeclarationDetail(declarationDetail);
+                                                                                      NOT certificatePreparedDeclarationDetail(declarationDetail);
 
 quantityNoCertificateDeclaration 'Кол-во без сертификатов' (declaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
                                                                                   IF isCertificatePreparedDeclarationDetail(declarationDetail)
                                                                                   BY declarationDeclarationDetail(declarationDetail);
 
-CONSTRAINT quantityNoCertificateDeclaration(declaration)>0 AND declaration IS registeredDeclaration
+CONSTRAINT quantityNoCertificateDeclaration(declaration)>0 AND declaration IS preparedDeclaration
    MESSAGE 'Не у всех товаров требующих сертификации заданы сертификаты';
 
 // Для таможенных платежей
@@ -203,6 +247,10 @@ rateExchangeDeclarationDetail 'Курс обмена' (declarationDetail) = rate
 priceDeclarationDetail 'Цена товара' (declarationDetail) = priceFullImporterFreightSku(importerDeclarationDetail(declarationDetail),
                                                                                        freightDeclarationDetail(declarationDetail),
                                                                                        skuDeclarationDetail(declarationDetail));
+
+priceManagerialDeclarationDetail 'Цена товара' (declarationDetail) = priceInFullImporterFreightSku(importerDeclarationDetail(declarationDetail),
+                                                                                                   freightDeclarationDetail(declarationDetail),
+                                                                                                   skuDeclarationDetail(declarationDetail));
 
 priceRateDeclarationDetail 'Цена товара (конверт.)' (declarationDetail) = round0(priceDeclarationDetail(declarationDetail) *
                                                                                  rateExchangeDeclarationDetail(declarationDetail)) IN baseGroup;
@@ -250,7 +298,7 @@ sumRegistrationDeclaration 'За оформление (расч.)' (declaration)
                                                                           BY declarationDeclarationDetail(declarationDetail) IN baseGroup;
 
 sumRegistrationDataDeclaration 'За оформление' = DATA DOUBLE(declaration) IN baseGroup;
-sumRegistrationDataDeclaration (declaration) <- sumRegistrationDeclaration(declaration) ON CHANGE date(declaration);
+sumRegistrationDataDeclaration (declaration) <- sumRegistrationDeclaration(declaration) ON ASSIGN declaration IS preparedDeclaration;;
 
 rateSumRegistrationDeclaration 'За оформление (конверт.)' (declaration) = round0(sumRegistrationDataDeclaration(declaration) *
                                                                       rateExchangeDeclaration(declaration)) IN baseGroup;
@@ -264,8 +312,6 @@ inDeclarationCorrection (declaration, correction) = declarationCorrection(correc
 priceCorrectionDeclarationDetail 'Скорректированная стоимость' = DATA DOUBLE(correction, declarationDetail) IN baseGroup;
 
 correctionPriceDeclarationDetail 'Скорректированная стоимость' (declarationDetail) = GROUP MAX priceCorrectionDeclarationDetail(correction, declarationDetail) BY declarationDetail;
-
-//correctionPriceDeclarationDetail 'Скорректированная стоимость' = DATA DOUBLE(declarationDetail) IN baseGroup;
 
 correctionDutyDeclarationDetail 'Скорректированная пошлина (расч.)' (declarationDetail) = (UNION MAX
                                 netWeightDeclarationDetail(declarationDetail) * dutySumCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty()),
@@ -319,15 +365,19 @@ FORM customStores 'Склады временного хранения'
 
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
-    PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration, rateExchangeDeclaration, nameImporterDeclaration,
-                  dateCorrectionDeclaration, sumRegistrationDataDeclaration, rateSumRegistrationDeclaration,
+    PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
+                  rateExchangeDeclaration, nameImporterDeclaration, rateSumRegistrationDeclaration,
                   dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion,
-                  diffNDSDeclararion, diffDeclaration, quantityNoCertificateDeclaration, expenseCertificateDeclaration
+                  diffNDSDeclararion, diffDeclaration, expenseCertificateDeclaration
+
+    OBJECTS ii=innerInvoice
+    PROPERTIES (ii) sidInnerInvoice
+    PROPERTIES (d, ii) inDeclarationInnerInvoice
+    FILTERS forDeclaration(d, ii)
 
     OBJECTS c=correction
     PROPERTIES(c) date, ADDOBJ, delete
     FILTERS inDeclarationCorrection(d, c)
-
 
     OBJECTS dd=declarationDetail
     PROPERTIES (dd) numberDeclarationDetail, barcodeSkuDeclarationDetail, sidArticleDeclarationDetail, mainCompositionDeclarationDetail,
@@ -346,26 +396,37 @@ FORM declaration 'Декларация'
 
 DESIGN declaration FROM DEFAULT{
     main {
-        POSITION d.box TO THE LEFT c.box;
+        NEW document.box BEFORE dd.box {
+            tabbedPane = TRUE;
+            ADD ii.box;
+            ADD c.box;
+        }
+
+        POSITION d.box TO THE LEFT document.box;
+
+        ii.grid {
+            fillHorizontal = 0.3;
+        };
 
         c.grid {
-            fillHorizontal = 0.4;
-            fillVertical = 0.3;
+            fillHorizontal = 0.3;
+        };
+
+        dd.grid {
+            fillVertical = 3;
         };
     };
 };
 
+
+
 FORM declarations 'Декларации'
     OBJECTS d=declaration
-    PROPERTIES(d) READONLY objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration, rateExchangeDeclaration, nameImporterDeclaration,
-                           dateCorrectionDeclaration, sumRegistrationDataDeclaration, rateSumRegistrationDeclaration,
+    PROPERTIES(d) READONLY objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
+                           rateExchangeDeclaration, nameImporterDeclaration, rateSumRegistrationDeclaration,
                            dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion, diffNDSDeclararion, diffDeclaration,
-                           quantityNoCertificateDeclaration, expenseCertificateDeclaration
+                           expenseCertificateDeclaration
     PROPERTIES(d) ADDFORM, EDITFORM, delete
-
-    OBJECTS ii=innerInvoice
-    PROPERTIES (ii) sidInnerInvoice
-    PROPERTIES (d, ii) inDeclarationInnerInvoice
 
     OBJECTS dd=declarationDetail
     PROPERTIES (dd) numberDeclarationDetail, barcodeSkuDeclarationDetail, sidArticleDeclarationDetail, mainCompositionDeclarationDetail,
@@ -378,20 +439,12 @@ FORM declarations 'Декларации'
                     correctionPriceDeclarationDetail, correctionDutyDeclarationDetail,
                     correctionDutyDataDeclarationDetail, diffDutyDeclarationDetail
     FILTERS inDeclarationDeclarationDetail(d, dd)
-    FILTERS forDeclaration(d, ii)
 ;
 
 DESIGN declarations FROM DEFAULT {
-    POSITION d.box TO THE LEFT ii.box;
     d.grid {
         fillVertical = 0.3;
     }
-
-    ii.grid {
-        fillVertical = 0.3;
-        fillHorizontal = 0.5;
-    }
-
 }
 
 
@@ -409,7 +462,7 @@ FORM innerInvoices 'Инвойсы'
 
 NAVIGATOR {
 
-    customs 'Для таможни' {
+    customs {
         ADD customStores;
         ADD certificates;
         ADD declaration;

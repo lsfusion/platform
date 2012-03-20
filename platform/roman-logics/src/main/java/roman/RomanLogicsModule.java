@@ -906,6 +906,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP priceFreightImporterFreightSku;
     private LP priceInsuranceImporterFreightSku;
     private LP priceFullImporterFreightSku;
+    private LP priceInFullImporterFreightSku;
     private LP priceFullKgImporterFreightSku;
     private LP sumFullImporterFreightArticle;
     private LP priceFullKgImporterFreightArticle;
@@ -3302,6 +3303,8 @@ public class RomanLogicsModule extends LogicsModule {
         priceInsuranceImporterFreightSku = addJProp(baseGroup, "priceInsuranceImporterFreightSku", "Цена за страховку", baseLM.divideDouble2, insuranceImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
 
         priceFullImporterFreightSku = addJProp(baseGroup, "priceFullImporterFreightSku", true, "Цена с расходами", baseLM.and1, addSUProp(Union.SUM, priceInvoiceImporterFreightSku, priceFreightImporterFreightSku, priceInsuranceImporterFreightSku), 1, 2, 3, is(freightPriced), 2);
+        priceInFullImporterFreightSku = addJProp(baseGroup, "priceInFullImporterFreightSku", true, "Цена поставщика с расходами", baseLM.and1, addSUProp(Union.SUM, priceInImporterFreightSku, priceFreightImporterFreightSku, priceInsuranceImporterFreightSku), 1, 2, 3, is(freightPriced), 2);
+
         priceFullKgImporterFreightSku = addJProp(baseGroup, "priceFullKgImporterFreightSku", "Цена за кг", baseLM.divideDouble2, priceFullImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
 
         sumFullImporterFreightArticle = addSGProp(baseGroup, "sumFullImporterFreightArticle", true, "Сумма", addJProp(baseLM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, priceFullImporterFreightSku, 1, 2, 3), 1, 2, articleSku, 3);
@@ -4216,7 +4219,7 @@ public class RomanLogicsModule extends LogicsModule {
             CompareFilterEntity invoiceSupplierFilter = new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier);
             addFixedFilter(invoiceSupplierFilter);
 
-            setReadOnly(objSupplier, true);
+            setSelector(objSupplier, true);
 
             //addDefaultOrder(numberListArticle, true);
         }
@@ -4527,7 +4530,7 @@ public class RomanLogicsModule extends LogicsModule {
                     objInvoice
             ).forceViewType = ClassViewType.PANEL;*/
 
-            setReadOnly(objSupplier, true);
+            setSelector(objSupplier, true);
             setReadOnly(importInvoiceActionGroup, false, objSupplier.groupTo);
 
             //addDefaultOrder(numberListArticle, true);
@@ -4606,7 +4609,7 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objOrder), Compare.EQUALS, objSupplier));
 
-            setReadOnly(objSupplier, true);
+            setSelector(objSupplier, true);
 
         }
 
@@ -4979,11 +4982,11 @@ public class RomanLogicsModule extends LogicsModule {
             setReadOnly(barcodeSupplierBoxShipmentDetail, false, objShipmentDetail.groupTo);
             setReadOnly(barcodeStockShipmentDetail, false, objShipmentDetail.groupTo);
 
-            setReadOnly(objSupplier, true);
-            setReadOnly(objShipment, true);
+            setSelector(objSupplier, true);
+            setSelector(objShipment, true);
 
             if (box) {
-                setReadOnly(objSupplierBox, true);
+                setSelector(objSupplierBox, true);
 
                 findItemBox = addPropertyDraw(addMFAProp(null, "Поиск по артикулу",
                             findItemFormBox,
@@ -5179,7 +5182,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.objectValue, baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, descriptionFreight, tonnageDataFreight, grossWeightFreight, volumeDataFreight, palletCountDataFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objFreight, true);
+            setSelector(objFreight, true);
 
             PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(diffPalletFreight, objFreight);
             getPropertyDraw(palletCountDataFreight).setPropertyHighlight(diffPalletFreightProperty);
@@ -5233,7 +5236,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, nameRouteCreationPalletPallet, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objPallet, true);
+            setSelector(objPallet, true);
             setReadOnly(grossWeightPallet, false);
 
             objBox = addSingleGroupObject(freightBox, "Короб для транспортировки", baseLM.barcode, nameRouteCreationFreightBoxFreightBox, quantityStock, netWeightStock);
@@ -8168,7 +8171,7 @@ public class RomanLogicsModule extends LogicsModule {
             addObjectActions(this, objPricat);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierPricat, objPricat), Compare.EQUALS, objSupplier));
-            setReadOnly(objSupplier, true);
+            setSelector(objSupplier, true);
             setReadOnly(importPricatSupplier, false, objSupplier.groupTo);
             setReadOnly(hugoBossImportPricat, false, objSupplier.groupTo);
             setReadOnly(gerryWeberImportPricat, false, objSupplier.groupTo);
