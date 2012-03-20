@@ -9,6 +9,7 @@ import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.*;
 import platform.server.data.query.ExprEnumerator;
+import platform.server.data.query.ExprOrderTopJoin;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.innerjoins.KeyEqual;
@@ -239,7 +240,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             else
                 it++;
         }
-        result.add(new WhereJoins(current.toArray(new WhereJoin[current.size()])).getWhere(reducedUpWheres));
+        result.add(new WhereJoins(current.toArray(new WhereJoin[current.size()])).getWhere(reducedUpWheres, false));
 
         return resultStat;
     }
@@ -319,10 +320,11 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return result;
     }
 
-    public Where getWhere(Map<WhereJoin, Where> upWheres) {
+    public Where getWhere(Map<WhereJoin, Where> upWheres, boolean skipKeyTop) {
         Where result = Where.TRUE;
         for (WhereJoin where : wheres)
-            result = result.and(upWheres.get(where));
+            if(!(skipKeyTop && where instanceof ExprOrderTopJoin && ((ExprOrderTopJoin)where).isKey()))
+                result = result.and(upWheres.get(where));
         return result;
     }
 

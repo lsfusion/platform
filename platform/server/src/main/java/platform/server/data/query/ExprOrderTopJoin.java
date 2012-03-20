@@ -5,6 +5,7 @@ import platform.interop.Compare;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
@@ -16,6 +17,7 @@ public class ExprOrderTopJoin extends ExprJoin<ExprOrderTopJoin> {
 
     private final Compare compare;
     private final Expr compareExpr;
+    private boolean key;
 
     @Override
     public String toString() {
@@ -43,5 +45,9 @@ public class ExprOrderTopJoin extends ExprJoin<ExprOrderTopJoin> {
 
     public boolean twins(TwinImmutableInterface o) {
         return super.twins(o) && compare.equals(((ExprOrderTopJoin)o).compare) && compareExpr.equals(((ExprOrderTopJoin)o).compareExpr);
+    }
+
+    public boolean isKey() {
+        return baseExpr instanceof KeyExpr;
     }
 }

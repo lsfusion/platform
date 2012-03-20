@@ -281,7 +281,7 @@ public class CompiledQuery<K,V> {
         }
 
         public void fillInnerJoins() { // заполним Inner Joins, чтобы чтобы keySelect'ы были
-            whereJoins.getWhere(upWheres).getSource(this);
+            whereJoins.getWhere(upWheres, true).getSource(this);
         }
 
         int aliasNum=0;
