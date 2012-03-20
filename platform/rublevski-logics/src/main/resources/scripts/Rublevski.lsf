@@ -14,7 +14,7 @@ CLASS STATIC yesNo 'Логическое' {
     no 'НЕТ'
 };
 
-classSIDToYesNo (string) = GROUP UNIQUE yesNo BY classSID (yesNo) WHERE yesNo IS yesNo;
+classSIDToYesNo 'Да/нет по ИД'(string) = GROUP UNIQUE yesNo BY classSID (yesNo) WHERE yesNo IS yesNo;
 
 CLASS language 'Язык' : doubleNamed;
 
@@ -395,7 +395,7 @@ END
 
 META metaCodeSinglePropsAggregation (primProperty, aggrObject, aggrProperty)
 
-    unique###aggrObject (primObject) =
+    unique###aggrObject 'Одиночная агрегация' (primObject) =
         GROUP UNIQUE aggrObject BY primProperty(aggrObject)
         WHERE aggrObject IS aggrObject;
 
@@ -417,7 +417,7 @@ END
 
 META metaCodeDoublePropsAggregation (prim1Property, prim2Property, aggrObject, aggrProperty)
 
-    unique###aggrObject (prim1Object, prim2Object) =
+    unique###aggrObject 'Двойная агрегация' (prim1Object, prim2Object) =
         GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
         WHERE aggrObject IS aggrObject;
 
@@ -641,7 +641,7 @@ canonicalNameItemGroupSku 'Группа товара' (sku) = canonicalNameItemG
 
 TABLE itemGroupSku (itemGroup, sku);
 
-hasParentItemGroupSku (itemGroup, sku) = hasParentItemGroup(itemGroupSku(sku), itemGroup);
+hasParentItemGroupSku (itemGroup, sku) = hasParentItemGroup(itemGroupSku(sku), itemGroup) PERSISTENT;
 
 //descriptionGroup
 captionItem 'Название' = DATA STRING[100](item) IN descriptionGroup;
@@ -698,7 +698,7 @@ nameCountryItem 'Страна' = name(countryItem(item)) IN headGroup;
 @metaCodeShowItemAttribute(Country, 'Показывать страну', displayGroup);
 
 extSIDCountry 'Внешний код страны' = DATA STRING[60] (country);
-extSIDToCountry (string) = GROUP UNIQUE country BY extSIDCountry (country) WHERE country IS country;
+extSIDToCountry 'Страна по коду' (string) = GROUP UNIQUE country BY extSIDCountry (country) WHERE country IS country;
 
 isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN manufactoryGroup;
 hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN documentGroup;
@@ -960,7 +960,7 @@ nameScalesAttributeItem 'Наименование для весов' (item) = ca
                 [GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameScalesItemAttribute(attribute)](item))
                 PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
 
-//nameAttributeItemItemGroup (itemGroup, item) = nameAttributeItem(item) AND hasParentItemGroupSku(itemGroup, item) PERSISTENT;
+nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAttributeItem(item) AND hasParentItemGroupSku(itemGroup, item) PERSISTENT INDEXED;
 
 // ---------------------------------------------------------------------------------------- //
 
@@ -978,18 +978,14 @@ TABLE barcode (barcode);
 barcodeEx 'Штрих код' = DATA STRING[14] (barcode) IN recognizeGroup FIXEDCHARWIDTH 14 INDEXED;
 
 dateUserBarcode 'Дата действия' = DATA DATE (barcode) IN baseGroup;
-dateMaxGlobal 'Наименьшая дата' = DATA DATE() IN baseGroup;
-dateCurBarcode(barcode) =  DATA DATE (barcode) IN baseGroup;
-//dateBarcode 'Дата действия' = UNION OVERRIDE dateMaxGlobal() IF barcode IS barcode, dateUserBarcode(barcode) IN baseGroup;
-dateBarcode 'Дата действия' = UNION OVERRIDE dateMaxGlobal() IF barcode IS barcode, dateCurBarcode(barcode) IF barcode IS barcode, dateUserBarcode(barcode) IN baseGroup;
-dateCurBarcode(barcode) <- currentDate() ON ASSIGN barcode IS barcode;
+dateBarcode 'Дата действия' = UNION OVERRIDE 2001_01_01 IF barcode IS barcode, dateUserBarcode(barcode) IN baseGroup PERSISTENT;
 
 skuBarcode = DATA sku(barcode) IN baseGroup;
 nameSkuBarcode 'Товар штрих-кода' (barcode) = nameAttributeItem(skuBarcode(barcode)) IN recognizeGroup;
 
 hasParentOrNullItemGroupBarcode (itemGroup, barcode) = hasParentItemGroupSku(itemGroup, skuBarcode(barcode));
 
-barcodeToDate(string, date) = GROUP UNIQUE barcode BY barcodeEx(barcode), dateBarcode(barcode) PERSISTENT;
+barcodeToDate 'Штрих-код на дату' (string, date) = GROUP UNIQUE barcode BY barcodeEx(barcode), dateBarcode(barcode) PERSISTENT;
 
 barcodeStringDate 'Дата действия' (string, date) = GROUP MAX LIST(dateSet, barcodeToDate(string, dateSet)) IF dateSet <= date AND date AS DATE BY string, date IN baseGroup;
 valueBarcodeToDate 'Штрих-код на дату' (string, date) = barcodeStringDate(string, date)[2];
@@ -1191,7 +1187,7 @@ inStoreTypeStore (storeType, store) = storeTypeStore (store) == storeType;
 
 tradingNetworkStoreType 'Торговая сеть формата магазина (ИД)' = DATA tradingNetwork (storeType);
 nameTradingNetworkStoreType 'Торговая сеть формата магазина' (storeType) = name(tradingNetworkStoreType(storeType)) IN baseGroup;
-nameToStoreType (name, tradingNetwork) = GROUP UNIQUE storeType BY name (storeType), tradingNetworkStoreType(storeType);
+nameToStoreType 'Формат магазина по имени и торговой сети' (name, tradingNetwork) = GROUP UNIQUE storeType BY name (storeType), tradingNetworkStoreType(storeType);
 
 tradingNetworkStore 'Торговая сеть магазина (ИД)' (store) = tradingNetworkStoreType(storeTypeStore(store));
 nameTradingNetworkStore 'Торговая сеть магазина' (store) = name(tradingNetworkStore(store)) IN baseGroup;
@@ -1253,6 +1249,8 @@ GROUP controlDepartmentStoreGroup 'Контроль остатков' : publicGr
 GROUP printDepartmentStoreGroup 'Печать' : publicGroup;
 
 CLASS departmentStore 'Отдел магазина' : stock, externalObject;
+TABLE departmentStore (departmentStore);
+
 CLASS kafeteria 'Кафетерий' : departmentStore;
 CLASS tradingFloar 'Торговый зал' : departmentStore;
 CLASS wholesaleStock 'Оптовый склад' : departmentStore;
@@ -1432,7 +1430,7 @@ CONSTRAINT range IS range AND NOT rangeTypeRange(range)  MESSAGE 'ошибка: 
 CONSTRAINT rate IS rate AND NOT dataRate(rate)  MESSAGE 'ошибка: Не указано значение ставки';
 
 inTaxNDSRangeStore(range, store) = inRangeStore(range, store) AND tax.taxNDS == taxRange(range);
-rangeToTaxStore (tax, store) = GROUP UNIQUE range BY taxRange(range), store WHERE inTaxNDSRangeStore(range, store);
+rangeToTaxStore 'Шкала по налогу и складу' (tax, store) = GROUP UNIQUE range BY taxRange(range), store WHERE inTaxNDSRangeStore(range, store);
 
 inRangeRate(range, rate) = rangeRate(rate) == range;
 inTaxRange(tax, range) = taxRange(range) == tax;
@@ -1554,7 +1552,7 @@ inCompanyStore (company, store) = companyStore(store) == company;
 isInCompanyStore (company, store)  = UNION OVERRIDE  companyStore(store) == company, store IS store AND NOT company;
 
 
-dataActingRateRangeToRange (range) = GROUP UNIQUE range BY dataActingRateRange (range);
+dataActingRateRangeToRange 'Шкала по значению' (doubleValue) = GROUP UNIQUE range BY dataActingRateRange (range);
 
 toShowAddNDSValue(tax) = tax == tax.taxNDS;
 addNDSValue 'Добавить значение НДС' = ACTION (tax, number, value) {
@@ -1711,7 +1709,7 @@ nameTaxWare 'Налог' (ware) = nameTaxRange(rangeWare(ware)) IN baseGroup;
 dataRangeWare 'Шкала НДС' (ware) = dataRange(rangeWare(ware)) IN baseGroup;
 dataActingRateRangeWare 'НДС,%' (ware) = dataActingRateRange(rangeWare(ware)) IN baseGroup;
 
-CONSTRAINT CHECKED taxNDSWare(ware) != taxRange(rangeWare(ware))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT CHECKED taxRange(rangeWareDate(ware, date)) != tax.taxNDS  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 
 FORM addRangeWare 'Добавить Шкалу'
@@ -1962,10 +1960,10 @@ FORM items 'Товары'
     ORDER BY name
 
     OBJECTS i=item
-    PROPERTIES(i) READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUnitOfMeasureItem
+    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUnitOfMeasureItem(i) READONLY
     PROPERTIES(i) ADDFORM, EDITFORM, delete
-    FILTERS hasParentItemGroupSku(g, i)
-    ORDER BY nameAttributeItem
+    FILTERS nameAttributeItemGroupItem(g, i)
+    ORDER BY nameAttributeItemGroupItem
 
     DIALOG item OBJECT i
 ;
@@ -2182,7 +2180,7 @@ TABLE account (account);
 bankAccount 'Банк (ИД)' = DATA bank (account) IN idGroup;
 
 dataAccount 'Номер расчетного счета'  = DATA STRING[13] (account) IN accountGroup FIXEDCHARWIDTH 13;
-dataAccountToAccount (string) = GROUP UNIQUE account BY dataAccount (account) WHERE account IS account;
+dataAccountToAccount 'Расчетный счет по номеру' (string) = GROUP UNIQUE account BY dataAccount (account) WHERE account IS account;
 nameBankAccount 'Наименование банка' (account) = name(bankAccount(account)) IN accountGroup;
 addressBankAccount 'Адрес банка' (account) = addressBank(bankAccount(account)) IN accountGroup;
 MFOBankAccount 'Код МФО банка' (account) = MFOBank(bankAccount(account)) IN accountGroup;
@@ -2624,7 +2622,7 @@ nameSupplierOrderSupplier 'Поставщик заказа' (orderSupplier) = na
 
 preliminaryOrderOrderSupplier 'Предварительный заказ заказа' = DATA preliminaryOrder (orderSupplier);
 
-preliminaryOrderToOrderSupplier (preliminaryOrder) = GROUP UNIQUE orderSupplier BY preliminaryOrderOrderSupplier(orderSupplier);
+preliminaryOrderToOrderSupplier 'Заказ по предварительному заказу' (preliminaryOrder) = GROUP UNIQUE orderSupplier BY preliminaryOrderOrderSupplier(orderSupplier);
 dataOrderPreliminaryOrder 'Номер заказа для предварительного заказа' (preliminaryOrder) = dataOrderSupplier(preliminaryOrderToOrderSupplier(preliminaryOrder));
 
 completePercentageOrderSupplier 'Процент выполнения' (orderSupplier) = DATA DOUBLE (orderSupplier) IN orderSupplierGroup;
@@ -2879,12 +2877,14 @@ FORM orderSupplier 'Заказ поставщику'
     PROPERTIES(o)          dataOrderSupplier READONLY, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
                            quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
                            nameSupplierOrderSupplier, fullSumOrderSupplier, // timeCreated, nameUserCreated,
-                           allowablePercentOrderSupplier READONLY
+                           allowablePercentOrderSupplier
     PROPERTIES(o) READONLY completePercentageOrderSupplier
 
     OBJECTS i=item
 
-    PROPERTIES(i) READONLY nameAttributeItem, barcodeBarcodeSku
+    PROPERTIES             nameAttributeItemGroupItem(g, i) READONLY, barcodeBarcodeSku(i) READONLY
+    FILTERS                nameAttributeItemGroupItem(g, i)
+    ORDER BY               nameAttributeItemGroupItem
 
     PROPERTIES(o, i)       topItem, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
 
@@ -2902,9 +2902,6 @@ FORM orderSupplier 'Заказ поставщику'
 
     FILTERGROUP filters1
         FILTER 'Показывать только заказанные позиции' 'F10' sumQuantityItemOrderSupplier(o, i) DEFAULT
-
-    FILTERS hasParentItemGroupSku(g, i)
-    ORDER BY nameAttributeItem
 
     EDIT orderSupplier OBJECT o
 ;
@@ -2988,17 +2985,23 @@ isSupplierDepartmentStore (departmentStore, supplier, preliminaryOrder) =
 showFormGenTimeTablePreliminaryOrder 'Показать генерацию графика' (preliminaryOrder) = showFormGenTimeTable(genTimeTablePreliminaryOrder(preliminaryOrder));
 
 FORM timeTableDate 'График поставок'
-    OBJECTS t=DATE FIXED PANEL, d=departmentStore FIXED PANEL, s=supplier, p=preliminaryOrder
+
+    OBJECTS t=DATE FIXED PANEL
     PROPERTIES(t) OBJVALUE
-    PROPERTIES(d) READONLY name
-    PROPERTIES createGenTimeTable()
+
+    OBJECTS d=departmentStore FIXED PANEL
+    PROPERTIES name(d) SELECTOR, createGenTimeTable()
+
+    OBJECTS s=supplier
     PROPERTIES(s) READONLY name
+
+    OBJECTS p=preliminaryOrder
     PROPERTIES(p) showFormGenTimeTablePreliminaryOrder
     PROPERTIES(p) READONLY dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder, dataOrderPreliminaryOrder
     PROPERTIES(p) nextDateOrder, createOrderSupplier
     PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL
-    ORDER BY dateOrderPreliminaryOrder
     PROPERTIES(s, d, t) READONLY quantityOrderOrderSupplier, quantitySupplyOrderSupplier, quantityOrderPreliminaryOrder, quantitySupplyPreliminaryOrder
+
     FILTERS isSupplierDepartmentStore(d, s, p)
     FILTERGROUP filters
         FILTER 'С предварительным заказом на дату заказа' 'F10' quantityOrderPreliminaryOrder(s, d, t)
@@ -3006,7 +3009,9 @@ FORM timeTableDate 'График поставок'
         FILTER 'С заказом на дату заказа' 'F10' quantityOrderOrderSupplier(s, d, t)
         FILTER 'С заказом на дату поставки' 'F10' quantitySupplyOrderSupplier(s, d, t)
     FILTERGROUP filters2
-        FILTER 'Отображать заказы после даты' 'F10' isOrderDatePreliminaryOrder(p, t) DEFAULT;
+        FILTER 'Отображать заказы после даты' 'F10' isOrderDatePreliminaryOrder(p, t) DEFAULT
+
+    ORDER BY dateOrderPreliminaryOrder
 ;
 
 DESIGN timeTableDate FROM DEFAULT {
@@ -3539,7 +3544,7 @@ captionItemDetailCutting 'Наименование товара' (detailCutting)
 factorDetailCutting 'Рассчетный коэффициент цены' = DATA DOUBLE (detailCutting) IN cutGroup;
 percGoodsDetailCutting '% выхода товара' = DATA DOUBLE (detailCutting) IN cutGroup;
 
-uniqueDetailCuttingCutting(cutting, item) = GROUP UNIQUE detailCutting BY cuttingDetailCutting(detailCutting), itemDetailCutting(detailCutting);
+uniqueDetailCuttingCutting 'Компонента по карте переработки и товару' (cutting, item) = GROUP UNIQUE detailCutting BY cuttingDetailCutting(detailCutting), itemDetailCutting(detailCutting);
 isCuttingDetailCutting(cutting, detailCutting) = cuttingDetailCutting(detailCutting) == cutting;
 
 inItemCutting 'Вкл.' = DATA BOOLEAN (item, cutting) IN cutGroup;
@@ -3727,10 +3732,16 @@ TABLE priceChangeDocumentDetail (priceChangeDocumentDetail);
 //---------------------------- Проведение инвентаризации ----------------------------------------//
 
 CLASS inventory 'Инвентаризация (открытая)' : historyObject;
+TABLE inventory (inventory);
 CLASS inventoryPosted 'Инвентаризация (закрытая)' : inventory, postedObject;
+
 CLASS listInventory 'Опись (открытая)';
+TABLE listInventory (listInventory);
 CLASS listInventoryPosted 'Опись (закрытая)' : listInventory, postedObject;
+
 CLASS ABSTRACT collationSheet 'Сличительная ведомость' : outAccountSumDocumentLedger;
+TABLE collationSheet (collationSheet);
+
 CLASS registerCollationSheet 'Сличительная ведомость по описи' : collationSheet;
 CLASS remainsCollationSheet 'Сличительная ведомость по остаткам' : collationSheet;
 CLASS manyCollationSheet 'Сличительная ведомость по множеству товаров' : collationSheet;
@@ -3788,7 +3799,7 @@ setDataCollationSheet(collationSheet) <- TRUE ON ASSIGN collationSheet IS collat
 
 
 includeDepartmentStoreInventory 'Включить в инвентаризацию' = DATA BOOLEAN (departmentStore, inventory) IN inventoryGroup;
-uniqueCollationSheetDepartmentStoreInventory (departmentStore, inventory) =
+uniqueCollationSheetDepartmentStoreInventory 'Сличительная ведомость по скалду и инвентаризации' (departmentStore, inventory) =
     GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet);
 
 typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) = DATA typeOfAddition (departmentStore, inventory) IN inventoryGroup;
@@ -5041,7 +5052,7 @@ DESIGN innerFlows FROM DEFAULT {
 
 innerFlowInnerArrival 'Накладная отгрузки с отдела-отправителя (ИД)' (innerArrival) = DATA innerFlowPosted (innerArrival);
 
-innerArrivalInnerFlow (innerFlow) = GROUP UNIQUE innerArrival BY innerFlowInnerArrival (innerArrival);
+innerArrivalInnerFlow 'Приход отдел по расходу' (innerFlow) = GROUP UNIQUE innerArrival BY innerFlowInnerArrival (innerArrival);
 
 isArrivedInnerFlow (innerFlow) = innerFlow IS innerFlow AND innerArrivalInnerFlow (innerFlow);
 
@@ -5292,8 +5303,6 @@ CLASS wastage 'Списание отходов' : outAccountSumHistoryDocumentLe
 CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
 CLASS wastageDetail 'Строка документа': balanceItemLedger;
 
-@metaCodePostedObject (wastage);
-
 @metaCodeDetailAggregation (shipment, wastage, needToWasteShipment);
 
 dateWastage 'Дата документа' (wastage) = dateShipment(shipmentWastage(wastage));
@@ -5311,6 +5320,7 @@ dateTimeWastage 'Дата/время документа' (wastage) = dateTimeShi
 
 departmentStoreWastageDetail (wastageDetail) = departmentStoreShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 
+isPostedWastage 'Закрыт' (wastage) = isPostedShipment(shipmentWastage(wastage));
 isPostedWastageDetail 'Закрыт' (wastageDetail) = isPostedWastage(wastageWastageDetail(wastageDetail));
 
 itemWastageDetail 'Товар (ИД)' (wastageDetail) = itemShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
@@ -6291,7 +6301,7 @@ sumAccountADocumentLedgerDate 'Остаток на конец' (departmentStore,
 FORM sumAccountDocumentLedger 'Товарный отчет'
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
             ds = departmentStore FIXED PANEL
-    PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo), name(ds) READONLY
+    PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo), name(ds) SELECTOR
 
     PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountADocumentLedgerDate(ds, dtTo)
 
@@ -6813,7 +6823,6 @@ FORM balanceItemDepartment 'Остатки по отделам'
 
     TREE treeGroups g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY name(g)
-    ORDER BY name
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  barcodeBarcodeSku
@@ -6886,10 +6895,6 @@ DESIGN balanceItemDepartment FROM DEFAULT {
         ADD functions.box;
     }
 }
-//----------------------------------- Форма для общих параметров -------------------------------------------------//
-FORM globalParameters 'Параметры'
-    PROPERTIES () dateMaxGlobal
-;
 
 //---------------------------------------------- Импорт данных -----------------------------------------------------//
 
@@ -7161,8 +7166,6 @@ NAVIGATOR {
             ADD commonInfoBatchReturnSupplierDetail;
         }
         ADD importData;
-        ADD globalParameters;
-
     }
 
     catalogElement {

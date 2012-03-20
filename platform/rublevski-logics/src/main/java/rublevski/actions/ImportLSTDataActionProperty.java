@@ -84,7 +84,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 importBanks(path + "//_sprbank.dbf", context);
 
             if (rublevskiLM.getLPByName("importRateWastes").read(context) != null)
-                importRateWastes(path + "//_strugrt.dbf", context);
+                importRateWastes(path + "//_sprvgrt.dbf", context);
         }
 
     }
@@ -220,6 +220,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
     private void importPackOfItems(String itemsPath, String quantityPath, String warePath, Boolean importInactive, ExecutionContext context, Integer numberOfItemsAtATime, int i) throws SQLException, IOException, xBaseJException {
         List<List<Object>> data = importItemsFromDBF(itemsPath, quantityPath, warePath, importInactive, numberOfItemsAtATime, numberOfItemsAtATime * i);
+        if (data == null) return;
 
         ImportField itemIDField = new ImportField(BL.LM.extSID);
         ImportField itemGroupIDField = new ImportField(BL.LM.extSID);
@@ -959,6 +960,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
         DBF itemsImportFile = new DBF(itemsPath);
         totalRecordCount = itemsImportFile.getRecordCount() - startItem;
+        if (totalRecordCount <= 0) {
+            return null;
+        }
 
         data = new ArrayList<List<Object>>();
 
@@ -1007,12 +1011,12 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 String wareID = new String(itemsImportFile.getField("K_GRMSEC").getBytes(), "Cp1251").trim();
                 String rateWasteID = "RW_" + new String(itemsImportFile.getField("K_VGRTOV").getBytes(), "Cp1251").trim();
 
-                if (!"".equals(k_grtov) && (!inactiveItem || importInactive) && !isWare && !"RW_".equals(rateWasteID))
+                if (!"".equals(k_grtov) && (!inactiveItem || importInactive) && !isWare)
                     data.add(Arrays.asList((Object) itemID, k_grtov, pol_naim, "U_" + unitOfMeasure, unitOfMeasure, brand, "B_" + brand, "C_" + country, country, barcode,
                             date, importerPrice, percentWholesaleMarkItem, isFixPriceItem ? isFixPriceItem : null, isLoafCutItem ? isLoafCutItem : null, isWeightItem ? isWeightItem : null,
                             "".equals(composition) ? null : composition, suppliersRange, retailRange, quantityPackItem, wareID,
                             wares.containsKey(itemID) ? wares.get(itemID)[0] : null, wares.containsKey(itemID) ? wares.get(itemID)[1] : null,
-                            rateWasteID));
+                            "RW_".equals(rateWasteID) ? null : rateWasteID));
             } catch (ParseException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -1063,7 +1067,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             String departmentStore = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
             Double price = new Double(new String(importFile.getField("N_CENU").getBytes(), "Cp1251").trim());
 
-            data.add(Arrays.asList((Object) item, supplier, "СК" + departmentStore.substring(2, departmentStore.length()), "yes", price));
+            if (departmentStore.length() >= 2) {
+                data.add(Arrays.asList((Object) item, supplier, "СК" + departmentStore.substring(2, departmentStore.length()), "yes", price));
+            }
         }
         return data;
     }

@@ -1,5 +1,6 @@
 package platform.server.logics.property.actions.flow;
 
+import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -35,5 +36,10 @@ public class JoinActionProperty extends KeepContextActionProperty {
         }
         ((ActionProperty) action.property).execute(context.override(readValues));
         return FlowResult.FINISH;
+    }
+
+    @Override
+    public DataClass getValueClass() {
+        return ((ActionProperty) action.property).getValueClass();
     }
 }
