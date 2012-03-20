@@ -311,6 +311,8 @@ public class Settings {
     private int limitClassWhereCount = 40;
     private int limitClassWhereComplexity = 400;
     private int limitWhereJoinPack = 300;
+
+    private boolean noExclusiveCompile = true;
     private int limitExclusiveCount = 7; // когда вообще не пытаться строить exclusive (count)
     private int limitExclusiveComplexity = 100; // когда вообще не пытаться строить exclusive (complexity)
     private int limitExclusiveSimpleCount = 10; // когда строить exclusive без рекурсии (count)
@@ -322,6 +324,15 @@ public class Settings {
     private int limitHintIncrementStat = 1000;
     private int limitHintNoUpdateComplexity = 2000;
     private int limitWrapComplexity = 200;
+
+    public boolean isNoExclusiveCompile() {
+        return noExclusiveCompile;
+    }
+
+    public void setNoExclusiveCompile(boolean noExclusiveCompile) {
+        this.noExclusiveCompile = noExclusiveCompile;
+    }
+
 
     public int getLimitWhereJoinsCount() {
         return limitWhereJoinsCount;

@@ -177,6 +177,7 @@ public class CompiledQuery<K,V> {
             propertyReaders.put(property.getKey(),query.where.isFalse()?NullReader.instance:property.getValue().getReader(query.where));
 
         boolean useFJ = syntax.useFJ();
+        noExclusive = noExclusive || Settings.instance.isNoExclusiveCompile();
         Result<Boolean> unionAll = new Result<Boolean>();
         Collection<GroupJoinsWhere> queryJoins = GroupJoinsWhere.pack(query.getWhereJoins(!useFJ && !noExclusive, unionAll));
         union = !useFJ && queryJoins.size() >= 2 && (unionAll.result || !Settings.instance.isUseFJInsteadOfUnion());

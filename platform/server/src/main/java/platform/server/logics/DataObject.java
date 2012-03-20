@@ -127,8 +127,12 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public Where order(Expr expr, boolean desc, Where orderWhere) {
-        Where greater = expr.compare(this,Compare.GREATER);
-        return (desc?greater.not():greater).or(expr.compare(this,Compare.EQUALS).and(orderWhere));
+        if(orderWhere.isTrue()) // оптимизация для SQL серверов
+            return expr.compare(this, desc ? Compare.LESS_EQUALS : Compare.GREATER_EQUALS);
+        else {
+            Where greater = expr.compare(this,Compare.GREATER);
+            return (desc?greater.not():greater).or(expr.compare(this,Compare.EQUALS).and(orderWhere));
+        }
     }
 
     public AndClassSet getClassSet(Set<GroupObjectInstance> gridGroups) {
