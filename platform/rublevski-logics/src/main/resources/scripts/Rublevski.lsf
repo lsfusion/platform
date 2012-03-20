@@ -2580,6 +2580,15 @@ FORM customers 'Покупатели'
     PROPERTIES(cu) ADDFORM, EDITFORM, delete
 ;
 
+//--------------------------------------Дисконтные карточки------------------------------------------------------------------//
+CLASS discountCard 'Дисконтная карта';
+
+numberDiscountCard 'Номер дисконтной карты' (discountCard) = DATA INTEGER (discountCard);
+customerDiscountCard (discountCard) = DATA customer(discountCard);
+nameCustomerDiscountCard 'Держатель дисконтной карты' (discountCard) = name(customerDiscountCard(discountCard));
+
+
+
 //---------------------------- по поставщикам и товарам ----------------------------------------
 
 //--------------------------------------Заказ------------------------------------------------------------------//
@@ -5481,6 +5490,8 @@ numberBill 'Номер чека' (bill) = DATA INTEGER (bill) IN documentHeaderG
 cashRegisterBill 'Касса (ИД)' (bill) = DATA cashRegister (bill);
 numberCashRegisterBill 'Касса ' (bill) = numberCashRegister(cashRegisterBill(bill)) IN documentHeaderGroup;
 
+barcodeExBillDetail 'Штрих-код' (billDetail) = DATA STRING[14] (billDetail);
+
 quantityBillDetail 'Количество продажи' (billDetail) = DATA DOUBLE (billDetail);
 priceBillDetail 'Цена продажи' (billDetail) = DATA DOUBLE (billDetail);
 sumBillDetail 'Сумма продажи' (billDetail) = priceBillDetail(billDetail)*quantityBillDetail(billDetail);
@@ -5545,6 +5556,26 @@ departmentStoreZReport (zReport) = DATA departmentStore(zReport);
 nameDepartmentStoreZReport 'Отдел Z-отчета' (zReport) = name(departmentStoreZReport(zReport));
 
 departmentStoreBill (bill) <- departmentStoreZReport(zReportBill(bill)) ON CHANGE zReportBill(bill);
+
+addBillDetailBarcodeFill 'Добавить строку по штрих-коду' = ACTION (bill) {
+    FORM barcodeInput MODAL;
+
+    IF formResult() == formResult.ok THEN {
+         SET tmpSku() <- skuBarcodeStringDate(chosenString('barcode'), dateBill(bill));
+         IF tmpSku() IS item THEN {
+             ADDOBJ billDetail;
+             FOR o == addedObject() DO {
+                 SET billBillDetail(o) <- bill AS bill;
+                 SET itemBillDetail(o) <- tmpSku();
+                 SET barcodeExBillDetail(o) <- chosenString('barcode');
+            //   SET quantity###object##Detail(o) <- amountBarcode(valueBarcodeToDate(chosenString('barcode'), date###object(object)));
+            };
+        } ELSE
+        MESSAGE 'Не найден штрих-код';
+    };
+
+}TOOLBAR EDITKEY 'F4';
+
 //----------------------------------------------- Переоценка товара ---------------------------------------------------//
 
 CLASS ABSTRACT abstractUserPriceChangeDetail : priceChangeDocumentDetail, accountPriceLedger, retailPriceLedger;
@@ -5687,7 +5718,8 @@ descriptionLedger 'Название документа' (ledger) = UNION EXCLUSI
                                                             descriptionWastageDetail(ledger),
                                                             descriptionReturnSupplierDetail(ledger),
                                                             descriptionInventoryLedger(ledger),
-                                                            descriptionUserPriceChangeUserPriceChangeDetail(ledger) PERSISTENT;
+                                                            descriptionUserPriceChangeUserPriceChangeDetail(ledger),
+                                                            descriptionBillDetail(ledger) PERSISTENT;
 
 
 currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
@@ -6741,13 +6773,13 @@ FORM bill 'Чек'
     FILTERS zReportBill(b)==z
 
     OBJECTS d=billDetail
-    PROPERTIES(d) nameAttributeItemBillDetail, quantityBillDetail, priceBillDetail, sumBillDetail, discountSumBillDetail, ADDOBJ, delete
+    PROPERTIES(d) barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, priceBillDetail, sumBillDetail, discountSumBillDetail, ADDOBJ, delete
 
     FILTERS billBillDetail(d)==b
 
     OBJECTS p=payment
-    PROPERTIES(p)  namePaymentTypePayment, namePaymentMeansPayment, sumPayment, ADDOBJ, delete
-    PROPERTIES addBillDetailBarcode(b) TODRAW d
+    PROPERTIES(p) namePaymentTypePayment, namePaymentMeansPayment, sumPayment, ADDOBJ, delete
+    PROPERTIES addBillDetailBarcodeFill (b) TODRAW d
 
     FILTERS billPayment(p)==b
 
@@ -6769,7 +6801,7 @@ DESIGN bill FROM DEFAULT{
 
 FORM bills 'Чеки'
     OBJECTS z=zReport
-    PROPERTIES (z) READONLY numberCashRegisterZReport, nameDepartmentStoreZReport, dateOpenZReport, numberZReport
+    PROPERTIES (z) READONLY objectClassName, numberCashRegisterZReport, nameDepartmentStoreZReport, dateOpenZReport, numberZReport
     PROPERTIES (z) ADDFORM, EDITFORM SHOWIF isDraftZReport(z), delete FORCE PANEL SHOWIF isDraftZReport(z),
                         postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
@@ -6780,7 +6812,7 @@ FORM bills 'Чеки'
     FILTERS zReportBill(b)==z
 
     OBJECTS d=billDetail
-    PROPERTIES(d) READONLY nameAttributeItemBillDetail, quantityBillDetail, priceBillDetail, sumBillDetail, discountSumBillDetail
+    PROPERTIES(d) READONLY barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, priceBillDetail, sumBillDetail, discountSumBillDetail
 
     FILTERS billBillDetail(d)==b
 
@@ -6791,6 +6823,13 @@ FORM bills 'Чеки'
 ;
 
 DESIGN bills FROM DEFAULT{
+        PROPERTY(objectClassName) {
+            preferredCharWidth = 15;
+        }
+        PROPERTY (delete(z)) {
+            panelLocation = TOOLBAR;
+            askConfirm = TRUE;
+        }
     NEW row.box BEFORE functions.box{
         ADD d.box{
             title = 'Строка чека';
