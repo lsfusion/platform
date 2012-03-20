@@ -4460,6 +4460,12 @@ seriesWaybillShipment 'Серия накладной' (shipment) = DATA STRING[2
 
 seriesWaybillShipmentDetail 'Серия накладной' (shipmentDetail) = seriesWaybillShipment(shipmentShipmentDetail(shipmentDetail));
 
+sidShipmentDetail 'Уникальный номер накладной' (shipmentDetail) = DATA STRING[50] (shipmentDetail) IN documentHeaderGroup;
+
+sidWaybillSeriesWaybillToShipmentDetail (sid, waybill, seriesWaybill) = GROUP UNIQUE shipmentDetail BY sidShipmentDetail (shipmentDetail), waybillShipmentDetail (shipmentDetail), seriesWaybillShipmentDetail (shipmentDetail) WHERE shipmentDetail IS shipmentDetail;
+
+waybillSeriesWaybillToShipment (waybill, series) = GROUP UNIQUE shipment BY waybillShipment(shipment), seriesWaybillShipment(shipment) WHERE shipment IS shipment;
+
 supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipment) IN idGroup;
 
 nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN documentHeaderGroup
@@ -6961,7 +6967,7 @@ importPassword 'Пароль' = DATA STRING[200] ();// IN formularGroup;
 
 importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'rublevski.actions.ImportLSTDataActionProperty';// IN lstradeGroup;
 importLSTDirectory 'Папка' = DATA STRING[200] ();// IN lstradeGroup;
-importInactive 'Импортировать в том числе неактивные товары' = DATA BOOLEAN ();
+importInactive 'Импортировать в том числе неактивные' = DATA BOOLEAN ();
 importGroupItems 'Импортировать группы товаров' = DATA BOOLEAN ();
 importWares 'Импортировать посуду' = DATA BOOLEAN ();
 importItems 'Импортировать товары' = DATA BOOLEAN ();
@@ -6969,6 +6975,8 @@ importNumberItems 'Кол-во' = DATA INTEGER ();
 importNumberItemsAtATime 'Разбивать на пакеты по' = DATA INTEGER ();
 importPrices 'Импортировать цены товаров' = DATA BOOLEAN ();
 importAssortment 'Импортировать ассортимент' = DATA BOOLEAN();
+importShipment 'Импортировать документы прихода' = DATA BOOLEAN ();
+importNumberShipments 'Кол-во' = DATA INTEGER ();
 importCompanies 'Импортировать компании' = DATA BOOLEAN ();
 importSuppliers 'Импортировать поставщиков' = DATA BOOLEAN ();
 importCustomers 'Импортировать покупателей' = DATA BOOLEAN ();
@@ -6979,8 +6987,8 @@ importRateWastes 'Импортировать нормы отходов' = DATA B
 FORM importData 'Импорт данных'
     PROPERTIES() importDataAction, importUrl, importLogin, importPassword
     PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importWares, importItems,
-    importNumberItems, importNumberItemsAtATime, importPrices, importAssortment, importCompanies, importSuppliers, importCustomers, importStores,
-    importDepartmentStores, importBanks, importRateWastes
+    importNumberItems, importNumberItemsAtATime, importPrices, importAssortment, importShipment, importNumberShipments,
+    importCompanies, importSuppliers, importCustomers, importStores, importDepartmentStores, importBanks, importRateWastes
 ;
 
 //---------------------------- Настройка навигатора ----------------------------------------//
