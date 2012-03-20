@@ -24,6 +24,7 @@ import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
+import platform.server.data.type.ParseException;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.FilterEntity;
@@ -675,7 +676,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 }
                 if (!(propertyObjectInstance.getType() instanceof ActionClass)
                         && !property.isReadOnly() && securityPolicy.property.change.checkPermission(property.getPropertyObjectInstance().property)) {
-                    propertyObjectInstance.property.execute(BaseUtils.join(propertyObjectInstance.mapping, key), session, value, this);
+                    Object parsedValue;
+                    try {
+                        parsedValue = propertyObjectInstance.getType().parseString((String) value);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                    propertyObjectInstance.property.execute(BaseUtils.join(propertyObjectInstance.mapping, key), session, parsedValue, this);
                     dataChanged = true;
                 }
             }
