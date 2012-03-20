@@ -552,31 +552,39 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
             property.getIncrementExpr(changed.mapKeys, incrementApply, incrementApply.applyStart, changedWhere, IncrementType.SET);
             changed.and(changedWhere.toWhere()); // только на измененные смотрим
 
-            // сюда надо name'ы вставить
-            List<List<String>> propCaptions = new ArrayList<List<String>>();
-            for (int i = 0; i < property.interfaces.size(); i++) {
-                propCaptions.add(new ArrayList<String>());
-            }
-
-            Property.CommonClasses<?> classes = property.getCommonClasses();
-            int interfaceIndex = 0;
-            for(T propertyInterface : property.interfaces) {
-                ValueClass valueClass = classes.interfaces.get(propertyInterface);
-                for (Property nameProp : recognizeGroup.getProperties()) {
-                    List<ValueClassWrapper> wrapper = Arrays.asList(new ValueClassWrapper(valueClass));
-                    if (!nameProp.getProperties(Arrays.asList(wrapper), true).isEmpty()) {
-                        Expr nameExpr = nameProp.getExpr(Collections.singletonMap(BaseUtils.single(nameProp.interfaces), changed.mapKeys.get(propertyInterface)), incrementApply);
-                        changed.properties.put("int" + propertyInterface.ID + "_" + propCaptions.get(interfaceIndex).size(), nameExpr);
-                        propCaptions.get(interfaceIndex).add(nameProp.caption);
-                    }
-                }
-                interfaceIndex++;
-            }
-
-            OrderedMap<Map<T, Object>, Map<String, Object>> result = changed.execute(sql, new OrderedMap<String, Boolean>(), 30, env);
+            OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>> result = changed.executeClasses(sql, new OrderedMap<String, Boolean>(), 30, baseClass, env);
             if (result.size() > 0) {
+                NoPropertyTableUsage keysTable = new NoPropertyTableUsage<T>(new ArrayList<T>(property.interfaces), property.interfaceTypeGetter);
+                keysTable.writeKeys(sql, result.keyList());
+                Map keysMap = keysTable.getMapKeys();
+
+                // сюда надо name'ы вставить
+                List<List<String>> propCaptions = new ArrayList<List<String>>();
+                for (int i = 0; i < property.interfaces.size(); i++) {
+                    propCaptions.add(new ArrayList<String>());
+                }
+
+                Query<T,String> detailed = new Query<T,String>(keysMap);
+                detailed.and(keysTable.getWhere(keysMap));
+
+                Property.CommonClasses<?> classes = property.getCommonClasses();
+                int interfaceIndex = 0;
+                for(T propertyInterface : property.interfaces) {
+                    ValueClass valueClass = classes.interfaces.get(propertyInterface);
+                    for (Property nameProp : recognizeGroup.getProperties()) {
+                        List<ValueClassWrapper> wrapper = Arrays.asList(new ValueClassWrapper(valueClass));
+                        if (!nameProp.getProperties(Arrays.asList(wrapper), true).isEmpty()) {
+                            Expr nameExpr = nameProp.getExpr(Collections.singletonMap(BaseUtils.single(nameProp.interfaces), detailed.mapKeys.get(propertyInterface)), incrementApply);
+                            detailed.properties.put("int" + propertyInterface.ID + "_" + propCaptions.get(interfaceIndex).size(), nameExpr);
+                            propCaptions.get(interfaceIndex).add(nameProp.caption);
+                        }
+                    }
+                    interfaceIndex++;
+                }
+                OrderedMap<Map<T, Object>, Map<String, Object>> detailedResult = detailed.execute(sql, env);
+
                 String resultString = property.toString() + '\n';
-                for (Map.Entry<Map<T,Object>, Map<String,Object>> row : result.entrySet()) {
+                for (Map.Entry<Map<T,Object>, Map<String,Object>> row : detailedResult.entrySet()) {
                     String infoStr = "";
                     int ifaceIndex = 0;
                     for (T propertyInterface : property.interfaces) {
