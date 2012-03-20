@@ -10,6 +10,7 @@ import platform.server.classes.ObjectValueClassSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.ObjectClassSet;
 import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.SingleClassExpr;
 import platform.server.data.expr.query.Stat;
@@ -23,6 +24,8 @@ import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.MapWhere;
 import platform.server.data.where.classes.ClassExprWhere;
+
+import java.util.Set;
 
 public class IsClassWhere extends DataWhere {
 
@@ -87,10 +90,10 @@ public class IsClassWhere extends DataWhere {
         BaseClass baseClass = classes.getBaseClass();
         return new Stat((double) (classes.getCount() * baseClass.objectClass.getCount()) / (double) baseClass.getCount());
     }
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
         if(classes instanceof ObjectValueClassSet)
-            return new GroupJoinsWheres(new ExprJoin(classExpr, getClassStat((ObjectValueClassSet)classes)), this);
-        return expr.getWhere().groupJoinsWheres(keepStat, keyStat).and(new GroupJoinsWheres(this));
+            return new GroupJoinsWheres(new ExprStatJoin(classExpr, getClassStat((ObjectValueClassSet)classes)), this);
+        return expr.getWhere().groupJoinsWheres(keepStat, keyStat, orderTop).and(new GroupJoinsWheres(this));
     }
     public ClassExprWhere calculateClassWhere() {
         return expr.getClassWhere(classes).and(expr.getWhere().getClassWhere());

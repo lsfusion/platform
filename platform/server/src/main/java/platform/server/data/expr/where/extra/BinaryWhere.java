@@ -10,7 +10,10 @@ import platform.server.caches.ParamLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.NotNullExprSet;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.query.CompileSource;
+import platform.server.data.query.ExprOrderTopJoin;
+import platform.server.data.query.ExprStatJoin;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.KeyStat;
@@ -19,8 +22,7 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.*;
 import platform.server.data.where.classes.ClassExprWhere;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Set;
 
 public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWhere {
 
@@ -66,8 +68,20 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return packOperator1.compare(packOperator2, getCompare());
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
-        return getOperandWhere().groupJoinsWheres(keepStat, keyStat).and(new GroupJoinsWheres(this));
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
+        if(operator1.isValue()) {
+            if(orderTop.contains(operator2))
+                return new GroupJoinsWheres(new ExprOrderTopJoin(operator2, getCompare().reverse(), operator1), this);
+            if((BinaryWhere)this instanceof EqualsWhere)
+                return new GroupJoinsWheres(new ExprStatJoin(operator2, Stat.ONE), this);
+        }
+        if(operator2.isValue()) {
+            if(orderTop.contains(operator1))
+                return new GroupJoinsWheres(new ExprOrderTopJoin(operator1, getCompare(), operator2), this);
+            if((BinaryWhere)this instanceof EqualsWhere)
+                return new GroupJoinsWheres(new ExprStatJoin(operator1, Stat.ONE), this);
+        }
+        return getOperandWhere().groupJoinsWheres(keepStat, keyStat, orderTop).and(new GroupJoinsWheres(this));
     }
 
     @IdentityLazy

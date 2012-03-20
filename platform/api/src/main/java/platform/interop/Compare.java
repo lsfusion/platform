@@ -65,6 +65,24 @@ public enum Compare {
         outStream.writeByte(serialize());
     }
 
+    public Compare reverse() {
+        switch(this) {
+            case EQUALS:
+                return EQUALS;
+            case GREATER:
+                return LESS;
+            case LESS:
+                return GREATER;
+            case GREATER_EQUALS:
+                return LESS_EQUALS;
+            case LESS_EQUALS:
+                return GREATER_EQUALS;
+            case NOT_EQUALS:
+                return NOT_EQUALS;
+        }
+        throw new RuntimeException("not supported yet");
+    }
+
     @Override
     public String toString() {
         switch (this) {

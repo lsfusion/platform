@@ -20,25 +20,12 @@ import platform.server.data.where.Where;
 import java.util.Collections;
 import java.util.Map;
 
-public class ExprJoin extends AbstractOuterContext<ExprJoin> implements WhereJoin<Integer, ExprJoin> {
+public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterContext<T> implements WhereJoin<Integer, T> {
 
-    private final BaseExpr baseExpr;
-    private final Stat stat;
+    protected final BaseExpr baseExpr;
 
-    @Override
-    public String toString() {
-        return baseExpr + " - " + stat.toString();
-    }
-
-    protected Stat getStat() {
-        return stat;
-    }
-
-    public ExprJoin(BaseExpr baseExpr, Stat stat) {
+    public ExprJoin(BaseExpr baseExpr) {
         this.baseExpr = baseExpr;
-        this.stat = stat;
-
-//        assert !baseExpr.hasOr();
     }
 
     public NotNullExprSet getExprFollows(boolean recursive) {
@@ -54,20 +41,12 @@ public class ExprJoin extends AbstractOuterContext<ExprJoin> implements WhereJoi
         return Collections.singletonMap(0, (BaseExpr)baseExpr);
     }
 
-    public StatKeys<Integer> getStatKeys(KeyStat keyStat) {
-        return new StatKeys<Integer>(Collections.singleton(0), getStat());
-    }
-
     protected int hash(HashContext hashContext) {
-        return 31 * (31 * baseExpr.hashOuter(hashContext) + stat.hashCode()) + 5;
-    }
-
-    protected ExprJoin translate(MapTranslate translator) {
-        return new ExprJoin(baseExpr.translateOuter(translator), stat);
+        return baseExpr.hashOuter(hashContext);
     }
 
     public boolean twins(TwinImmutableInterface o) {
-        return baseExpr.equals(((ExprJoin)o).baseExpr) && stat.equals(((ExprJoin)o).stat);
+        return baseExpr.equals(((ExprJoin)o).baseExpr);
     }
 
     public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres) {

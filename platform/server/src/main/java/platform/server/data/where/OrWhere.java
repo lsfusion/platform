@@ -5,6 +5,7 @@ import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.expr.where.extra.GreaterWhere;
@@ -18,6 +19,8 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.where.classes.PackClassWhere;
+
+import java.util.Set;
 
 
 public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhere<AndWhere> {
@@ -476,10 +479,10 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
+    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
         GroupJoinsWheres result = new GroupJoinsWheres();
         for(Where where : wheres)
-            result.or(where.groupJoinsWheres(keepStat, keyStat));
+            result.or(where.groupJoinsWheres(keepStat, keyStat, orderTop));
         return result;
     }
     public KeyEquals calculateKeyEquals() {

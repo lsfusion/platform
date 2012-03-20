@@ -8,13 +8,15 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprJoin;
+import platform.server.data.query.ExprStatJoin;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
+
+import java.util.Set;
 
 public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
@@ -67,15 +69,6 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
         if(operator2 instanceof KeyExpr && !operator1.hasKey((KeyExpr) operator2))
             return new KeyEquals((KeyExpr) operator2, operator1);
         return super.calculateKeyEquals();
-    }
-
-    @Override
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
-        if(operator1.isValue()) // && !operator2.hasOr()
-            return new GroupJoinsWheres(new ExprJoin(operator2, Stat.ONE), this);
-        if(operator2.isValue()) // && !operator1.hasOr()
-            return new GroupJoinsWheres(new ExprJoin(operator1, Stat.ONE), this);
-        return super.groupJoinsWheres(keepStat, keyStat);
     }
 
     @Override

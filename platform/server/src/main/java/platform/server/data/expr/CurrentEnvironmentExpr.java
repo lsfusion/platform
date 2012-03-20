@@ -15,9 +15,10 @@ import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
+
+import java.util.Set;
 
 public class CurrentEnvironmentExpr extends NotNullExpr {
 
@@ -65,7 +66,7 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
             return new ClassExprWhere(CurrentEnvironmentExpr.this, paramClass);
         }
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
             return new GroupJoinsWheres(this);
         }
     }

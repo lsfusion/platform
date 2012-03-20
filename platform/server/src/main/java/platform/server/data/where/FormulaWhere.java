@@ -8,6 +8,7 @@ import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.KeyStat;
@@ -120,10 +121,10 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return checkTrue;
     }
 
-    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat);
+    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop);
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
-        GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat);
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
+        GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat, orderTop);
         if(result.size > Settings.instance.getLimitWhereJoinsCount() || result.getComplexity(true) > Settings.instance.getLimitWhereJoinsComplexity())
             result = result.compileMeans(keepStat, keyStat);
         return result;

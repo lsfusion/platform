@@ -99,4 +99,6 @@ public interface SQLSyntax {
     String getCount(String field);
 
     boolean noDynamicSampling();
+
+    boolean orderTopTrouble();
 }

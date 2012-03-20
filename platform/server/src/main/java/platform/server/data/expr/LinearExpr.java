@@ -1,6 +1,5 @@
 package platform.server.data.expr;
 
-import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.IdentityLazy;
@@ -11,7 +10,6 @@ import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.*;
 import platform.server.data.query.CompileSource;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
@@ -47,8 +45,8 @@ public class LinearExpr extends UnionExpr {
     
     public class NotNull extends NotNullExpr.NotNull {
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
-            return getCommonWhere().groupJoinsWheres(keepStat, keyStat).and(new GroupJoinsWheres(this));
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
+            return getCommonWhere().groupJoinsWheres(keepStat, keyStat, orderTop).and(new GroupJoinsWheres(this));
         }
 
         public ClassExprWhere calculateClassWhere() {

@@ -16,6 +16,8 @@ import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.MeanClassWheres;
 
+import java.util.Set;
+
 
 // аспект который заодно транслирует ManualLazy операции
 @Aspect
@@ -67,9 +69,9 @@ public class AfterTranslateAspect {
             return thisJoinPoint.proceed();
     }
 
-    @Around("execution(platform.base.Pair platform.server.data.where.AbstractWhere.getWhereJoins(boolean, platform.base.QuickSet)) && target(where) && args(tryExclusive,keepStat)")
-    public Object callGetWhereJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean tryExclusive, QuickSet keepStat) throws Throwable {
-        if(keepStat.equals(where.getOuterKeys()))
+    @Around("execution(platform.base.Pair platform.server.data.where.AbstractWhere.getWhereJoins(boolean, platform.base.QuickSet, java.util.Set)) && target(where) && args(tryExclusive,keepStat,orderTop)")
+    public Object callGetWhereJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean tryExclusive, QuickSet keepStat, Set orderTop) throws Throwable {
+        if(keepStat.equals(where.getOuterKeys()) && orderTop.isEmpty())
             return CacheAspect.callMethod(where, thisJoinPoint);
         return thisJoinPoint.proceed();
     }

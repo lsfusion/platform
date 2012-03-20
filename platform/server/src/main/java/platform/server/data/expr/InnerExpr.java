@@ -2,7 +2,6 @@ package platform.server.data.expr;
 
 import platform.base.QuickSet;
 import platform.base.Result;
-import platform.server.caches.ManualLazy;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
@@ -11,12 +10,12 @@ import platform.server.data.query.stat.BaseJoin;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.JoinData;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class InnerExpr extends NotNullExpr implements JoinData {
 
@@ -38,7 +37,7 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
 
     public abstract class NotNull extends NotNullExpr.NotNull {
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat) {
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
             return new GroupJoinsWheres(InnerExpr.this.getInnerJoin(), this);
         }
     }

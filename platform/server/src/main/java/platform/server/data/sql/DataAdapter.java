@@ -221,4 +221,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public boolean noDynamicSampling() {
         return true;
     }
+
+    public boolean orderTopTrouble() {
+        throw new RuntimeException("unknown");
+    }
 }

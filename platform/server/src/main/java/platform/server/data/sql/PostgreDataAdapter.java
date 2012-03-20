@@ -175,4 +175,8 @@ public class PostgreDataAdapter extends DataAdapter {
     public boolean supportGroupNumbers() {
         return true;
     }
+
+    public boolean orderTopTrouble() {
+        return true;
+    }
 }
