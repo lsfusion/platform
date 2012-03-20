@@ -799,6 +799,9 @@ hoursExpiryPackItem 'Срок годности в часах с момента �
 
 rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) IN idGroup;
 
+imageItem 'Изображение' = DATA IMAGEFILE (item);
+loadImageItem 'Загрузить изображение' (item) = ACTION LOADFILE imageItem(item);
+
 // ----------------------------------- Атрибуты ------------------------------------------ //
 
 CLASS ABSTRACT itemAttribute 'Атрибут товара' : named;
@@ -1804,7 +1807,9 @@ FORM item 'Товар'
 
                   netWeightItem, quantityPackItem, minQuantityOrderItem, minReserveItem, nameNumberInPackItem,
 
-                  bonusReturnItem, nameReturnItem, hintItem, bonusItem
+                  bonusReturnItem, nameReturnItem, hintItem, bonusItem,
+
+                  imageItem, loadImageItem
 
     OBJECTS b=barcode
     PROPERTIES(b)       barcodeEx, dateBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode,
@@ -1824,7 +1829,7 @@ FORM item 'Товар'
     FILTERS inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
 
     PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
-    PROPERTIES (sp) READONLY name
+    PROPERTIES (sp) SELECTOR name
     PROPERTIES      nameisSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF nameisSupplierItemDepartmentDate(sp, i, d, dt), showFormNameisSupplierItemDepartmentOver(sp, i, d),
                     namebanSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF namebanSupplierItemDepartmentDate(sp, i, d, dt), showFormNamebanSupplierItemDepartmentOver(sp, i, d),
                     priceSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF priceSupplierItemDepartmentDate(sp, i, d, dt), showFormpriceSupplierItemDepartmentOver(sp, i, d),
@@ -1948,6 +1953,18 @@ DESIGN item FROM DEFAULT {
                 d.grid.box {
                     fillHorizontal = 3;
                 };
+            }
+
+            NEW itemImage {
+                title = 'Изображение';
+                ADD PROPERTY(imageItem);
+                PROPERTY(imageItem) {
+                    caption = '';
+                    fillVertical = 1.0;
+                    fillHorizontal = 1.0;
+                }
+
+                ADD PROPERTY(loadImageItem);
             }
        }
     }

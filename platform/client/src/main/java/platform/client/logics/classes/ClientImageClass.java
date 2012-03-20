@@ -9,6 +9,7 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
+import java.awt.*;
 import java.text.Format;
 
 public class ClientImageClass extends ClientFileClass {
@@ -24,6 +25,16 @@ public class ClientImageClass extends ClientFileClass {
 
     public byte getTypeId() {
         return Data.IMAGE;
+    }
+
+    @Override
+    public int getMaximumHeight(FontMetrics fontMetrics) {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public int getMaximumWidth(int maxCharWidth, FontMetrics fontMetrics) {
+        return Integer.MAX_VALUE;
     }
 
     public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
