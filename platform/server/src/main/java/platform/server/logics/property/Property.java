@@ -1007,10 +1007,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return this instanceof UserProperty && ((UserProperty)this).derivedChange != null;
     }
 
-    public boolean isExecuteDerived() {
-        return this instanceof ExecuteProperty && ((ExecuteProperty)this).derivedChange != null;
-    }
-
     public Set<Property> getChangeProps() {
         return new HashSet<Property>();
     }

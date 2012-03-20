@@ -1625,13 +1625,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         QuickMap<Property, LinksIn> linksMap = new SimpleMap<Property, LinksIn>();
         QuickSet<Property> checked = new QuickSet<Property>();
         for (Property property : getProperties())
-            if(property.isFalse) // сначала чтобы constraint'ы были
-                fillLinks(property, linksMap, true, checked);
-        if(!onlyCheck)
-            for (Property property : getProperties())
-                if(!property.isFalse)
-                    fillLinks(property, linksMap, false, checked);
-        
+            if(!onlyCheck || property.isFalse)
+                fillLinks(property, linksMap, property.isFalse, checked);
+
         SortedSet<LinksIn> sortedLinks = new TreeSet<LinksIn>();
         for(int i=0;i<linksMap.size;i++)
             sortedLinks.add(linksMap.getValue(i));
@@ -1678,7 +1674,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    private Map<Property, List<Property>> getMapAppliedDepends() {
+    private Map<Property, List<Property>>  getMapAppliedDepends() {
         Map<Property, Set<Property>> mapDepends = new HashMap<Property, Set<Property>>();
         for(Property property : getStoredProperties()) {
             mapDepends.put(property, new HashSet<Property>());
@@ -1711,18 +1707,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public List<AggregateProperty> getAggregateStoredProperties() {
         List<AggregateProperty> result = new ArrayList<AggregateProperty>();
-        for (Property property : getPropertyList())
-            if (property.isStored() && property instanceof AggregateProperty)
+        for (Property property : getStoredProperties())
+            if (property instanceof AggregateProperty)
                 result.add((AggregateProperty) property);
-        return result;
-    }
-
-    @IdentityLazy
-    public List<ExecuteProperty> getExecuteDerivedProperties() {
-        List<ExecuteProperty> result = new ArrayList<ExecuteProperty>();
-        for (Property property : getPropertyList())
-            if (property instanceof ExecuteProperty && ((ExecuteProperty) property).derivedChange != null)
-                result.add((ExecuteProperty) property);
         return result;
     }
 
@@ -1828,7 +1815,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
-        Collection<Property> storedProperties = new ArrayList<Property>(getStoredProperties());
+        List<Property> storedProperties = new ArrayList<Property>(getStoredProperties());
         // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
         outDB.writeInt(storedProperties.size());
         for (Property<?> property : storedProperties) {
@@ -1951,7 +1938,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
-        Collection<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
+        List<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
         for (Property property : storedProperties) { // добавляем оставшиеся
             sql.addColumn(property.mapTable.table.name, property.field);
             if (struct != null && property instanceof AggregateProperty) // если все свойства "новые" то ничего перерасчитывать не надо
@@ -2150,19 +2137,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return message;
     }
 
-    public void recalculateAggregations(SQLSession session, Collection<AggregateProperty> recalculateProperties) throws SQLException {
-
-        for (Property property : getPropertyList())
-            if (property instanceof AggregateProperty) {
-                AggregateProperty dependProperty = (AggregateProperty) property;
-                if (recalculateProperties.contains(dependProperty))
-                    dependProperty.recalculateAggregation(session);
-            }
+    public void recalculateAggregations(SQLSession session, List<AggregateProperty> recalculateProperties) throws SQLException {
+        for (AggregateProperty property : recalculateProperties)
+            property.recalculateAggregation(session);
     }
 
     public void recalculateAggregationTableColumn(SQLSession session, String propertySID) throws SQLException {
-        for (Property property : getPropertyList())
-            if (property.isStored() && property instanceof AggregateProperty && property.getSID().equals(propertySID)) {
+        for (Property property : getAggregateStoredProperties())
+            if (property.getSID().equals(propertySID)) {
                 AggregateProperty aggregateProperty = (AggregateProperty) property;
                 aggregateProperty.recalculateAggregation(session);
             }

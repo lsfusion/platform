@@ -4,7 +4,6 @@ import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.form.instance.*;
@@ -28,11 +27,15 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     public Compare compare;
     public CompareValue value;
 
+    public CompareFilterInstance(PropertyObjectInstance<P> property,Compare compare, CompareValue value) {
+        this(property, compare, value, false);
+    }
+
     // не можем хранить ссылку на Entity, так как этот Instance может создаваться на стороне клиента и не иметь Entity
-    public CompareFilterInstance(PropertyObjectInstance<P> iProperty,Compare iCompare, CompareValue iValue) {
-        super(iProperty);
-        compare = iCompare;
-        value = iValue;
+    public CompareFilterInstance(PropertyObjectInstance<P> property,Compare compare, CompareValue value, boolean resolve) {
+        super(property, resolve);
+        this.compare = compare;
+        this.value = value;
     }
 
     public CompareFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException {
@@ -90,6 +93,9 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
 
     @Override
     public void resolveAdd(DataSession session, Modifier modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
+
+        if(!resolveAdd)
+            return;
 
         if(compare!=Compare.EQUALS)
             return;

@@ -2,7 +2,6 @@ package platform.server.form.entity.filter;
 
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
-import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -14,13 +13,11 @@ import java.util.Set;
 public abstract class PropertyFilterEntity<P extends PropertyInterface> extends FilterEntity {
 
     public PropertyObjectEntity<P> property;
+    public final boolean resolveAdd;
 
-    public PropertyFilterEntity() {
-        
-    }
-    
-    public PropertyFilterEntity(PropertyObjectEntity<P> iProperty) {
-        property = iProperty;
+    public PropertyFilterEntity(PropertyObjectEntity<P> property, boolean resolveAdd) {
+        this.property = property;
+        this.resolveAdd = resolveAdd;
     }
 
     protected void fillObjects(Set<ObjectEntity> objects) {

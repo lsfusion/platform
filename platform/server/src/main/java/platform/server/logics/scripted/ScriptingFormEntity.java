@@ -290,7 +290,7 @@ public class ScriptingFormEntity extends FormEntity {
     public void addScriptedFilters(List<LP<?>> properties, List<List<String>> mappings) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i)))));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i))), true));
         }
     }
 
@@ -310,7 +310,7 @@ public class ScriptingFormEntity extends FormEntity {
             }
 
             regularFilterGroup.addFilter(
-                    new RegularFilterEntity(genID(), new NotNullFilterEntity(addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i)))), caption, keyStroke),
+                    new RegularFilterEntity(genID(), new NotNullFilterEntity(addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i))), true), caption, keyStroke),
                     setDefault
             );
         }

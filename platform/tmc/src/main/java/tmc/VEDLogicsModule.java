@@ -493,8 +493,8 @@ public class VEDLogicsModule extends LogicsModule {
 
         orderRetail = addAbstractClass("orderRetail", "Розничная операция", baseClass);
 
-        //orderSaleRetail = addAbstractClass("orderSaleRetail", "Реализация через кассу", order, orderRetail);
-        orderSaleRetail = addAbstractClass("orderSaleRetail", "Реализация через кассу", baseLM.transaction, orderRetail);
+        orderSaleRetail = addAbstractClass("orderSaleRetail", "Реализация через кассу", order, orderRetail);
+//        orderSaleRetail = addAbstractClass("orderSaleRetail", "Реализация через кассу", baseLM.transaction, orderRetail);
 
         orderSaleWhole = addConcreteClass("orderSaleWhole", "Оптовый заказ", orderWarehouseOut, orderExtOutWhole, orderSale);
         invoiceSaleWhole = addConcreteClass("invoiceSaleWhole", "Выписанный оптовый заказ", orderSaleWhole, shipmentDocumentOut);
@@ -1046,7 +1046,7 @@ public class VEDLogicsModule extends LogicsModule {
 
         LP orderClientSaleSum = addDProp("orderClientSaleSum", "Нак. сумма", DoubleClass.instance, orderSaleArticleRetail);
         LP orderClientInitialSum = addDCProp("orderClientInitialSum", "Нак. сумма", clientInitialSum, true, subjectIncOrder, 1);
-        orderClientSum = addSUProp(baseGroup, "Нак. сумма", Union.SUM, addCProp(DoubleClass.instance, 0, orderSaleArticleRetail), orderClientSaleSum, orderClientInitialSum);
+        orderClientSum = addSUProp(baseGroup, "Нак. сумма", Union.SUM, orderClientSaleSum, orderClientInitialSum);
         orderHour = addDCProp(baseGroup, "orderHour", "Час", baseLM.currentHour, is(orderSale), 1, orderSaleArticleRetail);
         orderMinute = addDCProp(baseGroup, "orderMinute", "Минута", baseLM.currentMinute, is(orderSale), 1, orderSaleArticleRetail);
 
@@ -1067,7 +1067,7 @@ public class VEDLogicsModule extends LogicsModule {
         weightOrderArticle = addJProp("weightOrderArticle", "Вес поз.", multiplyDouble2, articleQuantity, 1, 2, weightArticle, 2);
         transOrderArticle = addJProp("transOrderArticle", "Кол-во гр. мест", multiplyDouble2, articleQuantity, 1, 2, coeffTransArticle, 2);
 
-        LP orderActionClientSum = addSUProp(Union.SUM, addJProp(baseLM.and1, orderClientSum, 1, is(articleAction), 2), addJProp(baseLM.and1, addSGProp(sumOrderArticle, 1), 1, articleActionWithCheck, 2));
+        LP orderActionClientSum = addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, orderSaleArticleRetail, articleAction), addSUProp(Union.SUM, addJProp(baseLM.and1, orderClientSum, 1, is(articleAction), 2), addJProp(baseLM.and1, addSGProp(sumOrderArticle, 1), 1, articleActionWithCheck, 2)));
         LP articleActionActive = addJProp(and(false, false, false, false, true, true, true, true, true), articleQuantity, 1, 2, is(orderSaleArticleRetail), 1, is(articleAction), 3, inAction, 3, 2, isStarted, 3,
                 addJProp(baseLM.less2, articleQuantity, 1, 2, articleActionQuantity, 3), 1, 2, 3,
                 addJProp(and(false, true), articleActionBirthDay, 2, is(orderSaleArticleRetail), 1, orderBirthDay, 1), 1, 3,
@@ -1182,7 +1182,7 @@ public class VEDLogicsModule extends LogicsModule {
         sumWithDiscountCouponOrderArticle = addPGProp(privateGroup, "sumWithDiscountCouponOrderArticle", false, -1, true, "Сумма без куп.", sumWithDiscountOrderArticle, sumWithDiscountCouponOrder, 1);
         sumDiscountPayCouponOrder = addSUProp(documentObligationGroup, "sumDiscountPayCouponOrder", true, "Сумма серт.", Union.SUM, discountSumOrder, orderSalePayCoupon);
 
-        LP clientSaleSum = addSGProp(sumWithDiscountObligationOrder, subjectIncOrder, 1);
+        LP clientSaleSum = addSGProp("clientSaleSum", true, "Нак. сумма", sumWithDiscountObligationOrder, subjectIncOrder, 1);
         orderClientSaleSum.setDerivedChange(clientSaleSum, subjectIncOrder, 1);
         clientSum = addSUProp(baseGroup, "clientSum", true, "Нак. сумма", Union.SUM, clientSaleSum, clientInitialSum);
         accumulatedClientSum = addJProp("Накопленная сумма", clientSum, subjectIncOrder, 1);

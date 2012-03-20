@@ -16,12 +16,8 @@ public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     public CustomClass isClass;
 
-    public IsClassFilterEntity() {
-        
-    }
-    
-    public IsClassFilterEntity(PropertyObjectEntity<P> iProperty, CustomClass isClass) {
-        super(iProperty);
+    public IsClassFilterEntity(PropertyObjectEntity<P> iProperty, CustomClass isClass, boolean resolveAdd) {
+        super(iProperty, resolveAdd);
         this.isClass = isClass;
     }
 
@@ -45,7 +41,7 @@ public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     @Override
     public FilterEntity getRemappedFilter(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
-        return new IsClassFilterEntity<P>(property.getRemappedEntity(oldObject, newObject, instanceFactory), isClass);
+        return new IsClassFilterEntity<P>(property.getRemappedEntity(oldObject, newObject, instanceFactory), isClass, resolveAdd);
     }
 
 

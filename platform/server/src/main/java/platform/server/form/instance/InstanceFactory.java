@@ -106,15 +106,15 @@ public class InstanceFactory {
     public final PropertyObjectInterfaceInstance computer;
 
     public <P extends PropertyInterface> FilterInstance getInstance(CompareFilterEntity<P> entity) {
-        return new CompareFilterInstance<P>(getInstance(entity.property), entity.compare, entity.value.getInstance(this));
+        return new CompareFilterInstance<P>(getInstance(entity.property), entity.compare, entity.value.getInstance(this), entity.resolveAdd);
     }
 
     public <P extends PropertyInterface> FilterInstance getInstance(IsClassFilterEntity<P> entity) {
-        return new IsClassFilterInstance<P>(getInstance(entity.property), entity.isClass);
+        return new IsClassFilterInstance<P>(getInstance(entity.property), entity.isClass, entity.resolveAdd);
     }
 
     public <P extends PropertyInterface> FilterInstance getInstance(NotNullFilterEntity<P> entity) {
-        return new NotNullFilterInstance<P>(getInstance(entity.property), entity.checkChange);
+        return new NotNullFilterInstance<P>(getInstance(entity.property), entity.checkChange, entity.resolveAdd);
     }
 
     public FilterInstance getInstance(NotFilterEntity entity) {

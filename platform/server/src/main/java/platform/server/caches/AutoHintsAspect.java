@@ -31,7 +31,7 @@ public class AutoHintsAspect {
     public static ThreadLocal<FormInstance> catchAutoHint = new ThreadLocal<FormInstance>();
     
     public Object callAutoHint(ProceedingJoinPoint thisJoinPoint, Property property, Modifier modifier) throws Throwable {
-        if(modifier instanceof FormInstance) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
+        if(!Settings.instance.isDisableAutoHints() && modifier instanceof FormInstance) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
             FormInstance formInstance = (FormInstance) modifier;
             catchAutoHint.set(formInstance);
             Object result;

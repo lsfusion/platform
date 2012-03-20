@@ -426,4 +426,24 @@ public class Settings {
     public void setUseGreaterEquals(boolean useGreaterEquals) {
         this.useGreaterEquals = useGreaterEquals;
     }
+
+    private boolean disableAutoHints = false;
+
+    public boolean isDisableAutoHints() {
+        return disableAutoHints;
+    }
+
+    public void setDisableAutoHints(boolean disableAutoHints) {
+        this.disableAutoHints = disableAutoHints;
+    }
+
+    private boolean disableWrapComplexity = false;
+
+    public boolean isDisableWrapComplexity() {
+        return disableWrapComplexity;
+    }
+
+    public void setDisableWrapComplexity(boolean disableWrapComplexity) {
+        this.disableWrapComplexity = disableWrapComplexity;
+    }
 }

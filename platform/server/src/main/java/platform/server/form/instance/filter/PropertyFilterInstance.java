@@ -1,17 +1,18 @@
 package platform.server.form.instance.filter;
 
-import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.where.Where;
 import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -19,14 +20,17 @@ import java.util.Set;
 public abstract class PropertyFilterInstance<P extends PropertyInterface> extends FilterInstance {
 
     public PropertyObjectInstance<P> property;
+    public final boolean resolveAdd;
 
-    public PropertyFilterInstance(PropertyObjectInstance<P> iProperty) {
-        property = iProperty;
+    public PropertyFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd) {
+        this.property = property;
+        this.resolveAdd = resolveAdd;
     }
 
     public PropertyFilterInstance(DataInputStream inStream, FormInstance form) throws IOException {
         super(inStream,form);
         property = ((PropertyDrawInstance<P>)form.getPropertyDraw(inStream.readInt())).propertyObject;
+        resolveAdd = false;
     }
 
     public GroupObjectInstance getApplyObject() {

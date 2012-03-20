@@ -18,8 +18,8 @@ public class IsClassFilterInstance<P extends PropertyInterface> extends Property
 
     final CustomClass isClass;
 
-    public IsClassFilterInstance(PropertyObjectInstance<P> iProperty, CustomClass isClass) {
-        super(iProperty);
+    public IsClassFilterInstance(PropertyObjectInstance<P> property, CustomClass isClass, boolean resolveAdd) {
+        super(property, resolveAdd);
         this.isClass = isClass;
     }
 

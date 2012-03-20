@@ -22,18 +22,18 @@ public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     public OrderEntity<?> value;
 
-    public CompareFilterEntity() {
-
-    }
-    
-    public CompareFilterEntity(PropertyObjectEntity<P> iProperty, Compare iCompare, OrderEntity<?> iValue) {
-        super(iProperty);
-        value = iValue;
-        compare = iCompare;
+    public CompareFilterEntity(PropertyObjectEntity<P> property, Compare compare, OrderEntity<?> value) {
+        this(property, compare, value, true);
     }
 
-    public CompareFilterEntity(PropertyObjectEntity<P> iProperty, Compare iCompare, Object iValue) {
-        this(iProperty, iCompare, new DataObject(iValue, (DataClass) iProperty.property.getType()));
+    public CompareFilterEntity(PropertyObjectEntity<P> property, Compare compare, Object value) {
+        this(property, compare, new DataObject(value, (DataClass) property.property.getType()));
+    }
+
+    public CompareFilterEntity(PropertyObjectEntity<P> property, Compare compare, OrderEntity<?> value, boolean resolveAdd) {
+        super(property, resolveAdd);
+        this.value = value;
+        this.compare = compare;
     }
 
     public FilterInstance getInstance(InstanceFactory instanceFactory) {
@@ -48,7 +48,7 @@ public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     @Override
     public FilterEntity getRemappedFilter(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
-        return new CompareFilterEntity<P>(property.getRemappedEntity(oldObject, newObject, instanceFactory), compare, value.getRemappedEntity(oldObject, newObject, instanceFactory));
+        return new CompareFilterEntity<P>(property.getRemappedEntity(oldObject, newObject, instanceFactory), compare, value.getRemappedEntity(oldObject, newObject, instanceFactory), resolveAdd);
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

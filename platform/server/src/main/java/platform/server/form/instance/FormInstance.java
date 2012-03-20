@@ -236,8 +236,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             instance.groupTo.addSeek(instance, mapObject.getValue(), false);
         }
 
-        addObjectOnTransaction(FormEventType.INIT);
-
         //устанавливаем фильтры и порядки по умолчанию...
         for (RegularFilterGroupInstance filterGroup : regularFilterGroups) {
             int defaultInd = filterGroup.entity.defaultFilter;
@@ -258,6 +256,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             }
             wasOrder.add(toDraw);
         }
+
+        applyFilters();
+        addObjectOnTransaction(FormEventType.INIT);
 
         if(!interactive) {
             endApply();
@@ -512,12 +513,22 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return session.addObject(cls, this);
     }
 
+    // временно
+    private boolean checkFilters(GroupObjectInstance groupTo) {
+        Set<FilterInstance> filters = new HashSet<FilterInstance>();
+        for(FilterInstance filter : groupTo.getSetFilters())
+            if (!FilterInstance.ignoreInInterface || filter.isInInterface(groupTo))
+                filters.add(filter);
+        if(!filters.equals(groupTo.filters))
+            return false;
+        return true;
+    }
     private void resolveAdd(CustomObjectInstance object, ConcreteCustomClass cls, DataObject addObject) throws SQLException {
 
         // резолвим все фильтры
-        for (FilterInstance filter : object.groupTo.getSetFilters())
-            if (!FilterInstance.ignoreInInterface || filter.isInInterface(object.groupTo)) // если ignoreInInterface проверить что в интерфейсе
-                filter.resolveAdd(session, this, object, addObject);
+        assert checkFilters(object.groupTo);
+        for (FilterInstance filter : object.groupTo.filters)
+            filter.resolveAdd(session, this, object, addObject);
 
         for (LP lp : BL.LM.lproperties) {
             Property property = lp.property;

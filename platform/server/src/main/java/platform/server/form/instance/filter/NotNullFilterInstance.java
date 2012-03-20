@@ -28,7 +28,11 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
     }
 
     public NotNullFilterInstance(PropertyObjectInstance<P> property, boolean checkChange) {
-        super(property);
+        this(property, checkChange, false);
+    }
+
+    public NotNullFilterInstance(PropertyObjectInstance<P> property, boolean checkChange, boolean resolveAdd) {
+        super(property, resolveAdd);
         this.checkChange = checkChange;
     }
 
@@ -50,6 +54,9 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
 
     @Override
     public void resolveAdd(DataSession session, Modifier modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
+
+        if(!resolveAdd)
+            return;
 
         if (!hasObjectInInterface(object))
             return;
