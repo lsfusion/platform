@@ -66,7 +66,7 @@ public final class Log {
         LogPanel logPanel = getLogPanel();
         if (logPanel != null) {
             logPanel.setTemporaryBackground(Color.green);
-        } else if (Main.module.isFull()) {
+        } else if (!Main.module.isFull()) {
             JOptionPane.showMessageDialog(SwingUtils.getActiveWindow(), message, Main.getMainTitle(), JOptionPane.INFORMATION_MESSAGE);
         }
     }
