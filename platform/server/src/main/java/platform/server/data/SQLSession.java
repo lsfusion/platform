@@ -471,7 +471,8 @@ public class SQLSession extends MutableObject {
         env.before(this, connection);
 
         if(explainAnalyzeMode) {
-            executeExplain(getStatement("EXPLAIN ANALYZE " + select, paramObjects, connection, syntax));
+            System.out.println(select);
+            executeExplain(getStatement("EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS) " + select, paramObjects, connection, syntax));
         }
 
         PreparedStatement statement = getStatement(select, paramObjects, connection, syntax);
