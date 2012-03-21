@@ -62,10 +62,12 @@ public final class Log {
         }
     }
 
-    private static void provideSuccessFeedback() {
+    private static void provideSuccessFeedback(String message) {
         LogPanel logPanel = getLogPanel();
         if (logPanel != null) {
             logPanel.setTemporaryBackground(Color.green);
+        } else if (Main.module.isFull()) {
+            JOptionPane.showMessageDialog(SwingUtils.getActiveWindow(), message, Main.getMainTitle(), JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -79,7 +81,7 @@ public final class Log {
 
     public static void message(String message) {
         printmsg(message);
-        provideSuccessFeedback();
+        provideSuccessFeedback(message);
     }
 
     public static void error(String message) {
