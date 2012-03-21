@@ -7202,6 +7202,55 @@ DESIGN balanceItemDepartment FROM DEFAULT {
     }
 }
 
+//---------------------------------------------- Форма поставки товаров в отдел -------------------------------------//
+
+FORM isSupplierItemDepartmentStore 'Ассортимент товаров в подразделении'
+
+    OBJECTS t=DATE FIXED PANEL
+    PROPERTIES(t) OBJVALUE
+
+    TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
+    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, tn), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+
+    TREE treeGroups g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY name(g)
+
+    OBJECTS           sp=supplier
+    PROPERTIES(sp)    READONLY name
+
+    OBJECTS           dsi=(dep=departmentStore, i=item)
+    PROPERTIES        READONLY nameDep=name(dep), nameIt=nameAttributeItem(i), barcodeBarcodeSku(i)
+    ORDER BY          nameDep
+    PROPERTIES(sp, i, dep, t) nameisSupplierItemDepartmentOver, priceSupplierItemDepartmentOver
+    FILTERS           inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
+    FILTERS           hasParentItemGroupSku(g, i);
+
+DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW firstCase {
+                fillHorizontal = 1;
+                childConstraints = TO THE BOTTOM;
+                ADD t.box;
+                ADD treeStore.box {title = 'Магазины';};
+                ADD treeGroups.box {title = 'Товарные группы';};
+        }
+
+        NEW secondCase {
+                fillHorizontal = 2;
+                childConstraints = TO THE BOTTOM;
+                ADD sp.box;
+                ADD dsi.box {fillVertical = 2;}
+
+        }
+        POSITION firstCase TO THE LEFT secondCase;
+
+        ADD functions.box;
+    }
+}
+
 //---------------------------------------------- Импорт данных -----------------------------------------------------//
 
 //GROUP formularGroup 'Formular' : baseGroup;
@@ -7329,6 +7378,7 @@ NAVIGATOR {
         ADD balanceItemDepartment;
         ADD sumAccountDocumentLedger;
         ADD priceChangeDocuments;
+        ADD isSupplierItemDepartmentStore;
     }
 
     ADD adminElement TO formsTree {
