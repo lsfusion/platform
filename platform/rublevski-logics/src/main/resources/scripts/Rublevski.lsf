@@ -2601,11 +2601,25 @@ FORM customers 'Покупатели'
 //--------------------------------------Дисконтные карточки------------------------------------------------------------------//
 CLASS discountCard 'Дисконтная карта';
 
-numberDiscountCard 'Номер дисконтной карты' (discountCard) = DATA INTEGER (discountCard);
+numberDiscountCard 'Номер дисконтной карты' (discountCard) = //DATA INTEGER (discountCard);
+        PARTITION SUM 1 IF discountCard IS discountCard
+        ORDER discountCard IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
+
 customerDiscountCard (discountCard) = DATA customer(discountCard);
 nameCustomerDiscountCard 'Держатель дисконтной карты' (discountCard) = name(customerDiscountCard(discountCard));
 
+FORM discountCard 'Дисконтная карта'
+    OBJECTS d=discountCard FIXED PANEL
+    PROPERTIES(d) numberDiscountCard, nameCustomerDiscountCard
 
+    EDIT discountCard OBJECT d
+;
+
+FORM discountCards 'Дисконтные карты'
+    OBJECTS d=discountCard
+    PROPERTIES(d) READONLY numberDiscountCard, nameCustomerDiscountCard
+    PROPERTIES(d) ADDFORM, EDITFORM, delete
+;
 
 //---------------------------- по поставщикам и товарам ----------------------------------------
 
@@ -4683,8 +4697,11 @@ priceOrderItemShipment 'Цена товара в заказах поставки
 
 maxAllowPriceItemShipment 'Максимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 + [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
 minAllowPriceItemShipment 'Минимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 - [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
-CONSTRAINT priceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MESSAGE 'Цена поставки больше цены заказа';
-CONSTRAINT priceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) MESSAGE 'Цена поставки меньше цены заказа';
+CONSTRAINT priceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail))
+    AND isPostedShipmentDetail (shipmentDetail) MESSAGE 'Цена поставки больше цены заказа';
+
+CONSTRAINT priceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail))
+    AND isPostedShipmentDetail (shipmentDetail) MESSAGE 'Цена поставки меньше цены заказа';
 
 //старые ценовые параметры для переоценок
 oldRetailPriceShipmentDetail 'Старая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
@@ -5403,13 +5420,10 @@ isPostedWastageDetail 'Закрыт' (wastageDetail) = isPostedWastage(wastageWa
 itemWastageDetail 'Товар (ИД)' (wastageDetail) = itemShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 nameAttributeItemWastageDetail 'Товар' (wastageDetail) = nameAttributeItem (itemWastageDetail(wastageDetail));
 
-quantityWastageDetail 'Количество' (wastageDetail) = DATA DOUBLE (wastageDetail);
-
 percentRateWasteWastageDetail 'Процент списания' (wastageDetail) = percentRateWasteShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 
-quantityWastageDetail(wastageDetail) <-
-    percentRateWasteWastageDetail (wastageDetail)* quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail))/100
-    ON ASSIGN wastageDetail IS wastageDetail;
+quantityWastageDetail 'Количество списания '(wastageDetail) =
+    percentRateWasteWastageDetail (wastageDetail)* quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail))/100;
 
 priceWastageDetail 'Цена' (wastageDetail) = retailPriceShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 
@@ -5555,9 +5569,6 @@ descriptionReturnSupplierDetail 'Название документа' (returnSup
 
 numberBill 'Номер чека' (bill) = DATA INTEGER (bill) IN documentHeaderGroup;
 
-cashRegisterBill 'Касса (ИД)' (bill) = DATA cashRegister (bill);
-numberCashRegisterBill 'Касса ' (bill) = numberCashRegister(cashRegisterBill(bill)) IN documentHeaderGroup;
-
 barcodeExBillDetail 'Штрих-код' (billDetail) = DATA STRING[14] (billDetail);
 
 quantityBillDetail 'Количество продажи' (billDetail) = DATA DOUBLE (billDetail);
@@ -5566,13 +5577,19 @@ sumBillDetail 'Сумма продажи' (billDetail) = priceBillDetail(billDet
 discountSumBillDetail 'Сумма скидки' (billDetail) = DATA DOUBLE (billDetail);
 
 sumBill 'Сумма чека' (bill) = GROUP SUM sumBillDetail(billDetail) IF billBillDetail (billDetail) == bill
-    BY billBillDetail (billDetail) IN waybillSum;
+    BY billBillDetail (billDetail) IN waybillSum PERSISTENT;
 
 discountSumBill 'Сумма скидки в чеке' (bill) = GROUP SUM discountSumBillDetail(billDetail) IF billBillDetail (billDetail) == bill
     BY billBillDetail (billDetail) IN waybillSum;
 
-quantityBill 'Общее количество в чеке' (bill) = GROUP SUM quantityBillDetail(billDetail) IF billBillDetail (billDetail) == bill
+quantityDetailsBill 'Количество строк в чеке' (bill) = GROUP SUM 1 IF billBillDetail (billDetail) == bill
     BY billBillDetail (billDetail) IN waybillSum;
+
+quantityItemBill 'Количество по товару в чеке' (item, bill) = GROUP SUM quantityBillDetail(billDetail)
+    BY itemBillDetail(billDetail), billBillDetail(billDetail);
+
+quantityPositionsBill 'Количество позиций в чеке' (bill) = GROUP SUM 1 IF quantityItemBill (item, bill)
+    BY bill IN waybillSum;
 
 CLASS payment 'Оплата по чеку';
 CLASS STATIC paymentMeans 'Форма оплаты'{
@@ -5587,7 +5604,16 @@ namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = name(payme
 billPayment 'Чек (ИД)' (payment) = DATA bill (payment);
 numberBillPayment 'Чек' (payment) = numberBill(billPayment(payment));
 
+discountCardBill (bill) = DATA discountCard(bill);
+numberDiscountCardBill 'Номер дисконтной карты' (bill) = numberDiscountCard(discountCardBill(bill));
+nameCustomerDiscountCardBill 'Держатель дисконтной карты' (bill) = nameCustomerDiscountCard(discountCardBill(bill));
+
 sumPayment 'Сумма платежа' (payment) = DATA DOUBLE(payment);
+
+totalSumPaymentBill (bill) = GROUP SUM sumPayment(payment)
+    BY billPayment(payment);
+
+CONSTRAINT sumBill (bill) != UNION OVERRIDE 0 IF bill IS bill, totalSumPaymentBill(bill) MESSAGE 'Сумма платежей по чеку не соответствует сумме чека';
 
 paymentTypePayment 'Тип платежа (ИД' (payment) = DATA paymentType(payment);
 namePaymentTypePayment 'Тип платежа' (payment) = name(paymentTypePayment(payment));
@@ -5603,7 +5629,7 @@ descriptionBill 'Название документа' (bill) = castBillObjectsTo
 
 descriptionBillDetail (billDetail) = descriptionBill(billBillDetail(billDetail));
 
-CLASS zReport 'Z-отчет (открытый)' : historyObject;
+CLASS zReport 'Z-отчет (открытый)' : outAccountSumHistoryDocumentLedger;
 CLASS zReportPosted 'Z-отчет (закрытый)' : zReport, postedObject;
 
 @metaCodePostedObject(zReport);
@@ -5613,6 +5639,9 @@ numberZReport 'Номер Z-отчета' (zReport) = DATA INTEGER(zReport);
 
 zReportBill(bill) = DATA zReport(bill);
 numberZReportBill(bill) = numberZReport(zReportBill(bill));
+dateTimeZReport (zReport) = GROUP MAX dateTimeBill(bill) BY zReportBill(bill);
+
+zReportBillDetail (billDetail) = zReportBill(billBillDetail(billDetail));
 
 isPostedZReportBill(bill) = isPostedZReport(zReportBill(bill));
 isPostedZReportBill(bill) => isPostedBill(bill) RESOLVE TRUE;
@@ -5620,10 +5649,30 @@ isPostedZReportBill(bill) => isPostedBill(bill) RESOLVE TRUE;
 cashRegisterZReport (zReport) = DATA cashRegister(zReport);
 numberCashRegisterZReport 'Касса Z-отчета' (zReport) = numberCashRegister(cashRegisterZReport(zReport));
 
+cashRegisterBill 'Касса (ИД)' (bill) = cashRegisterZReport(zReportBill(bill));
+numberCashRegisterBill 'Касса ' (bill) = numberCashRegister(cashRegisterBill(bill)) IN documentHeaderGroup;
+
 departmentStoreZReport (zReport) = DATA departmentStore(zReport);
 nameDepartmentStoreZReport 'Отдел Z-отчета' (zReport) = name(departmentStoreZReport(zReport));
 
 departmentStoreBill (bill) <- departmentStoreZReport(zReportBill(bill)) ON CHANGE zReportBill(bill);
+
+castZReportObjectsToString100=
+    FORMULA STRING[200] '\'Продажа по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)';
+
+descriptionZReport (zReport) = castZReportObjectsToString100 (numberCashRegisterZReport(zReport),
+    nameDepartmentStoreZReport(zReport), dateOpenZReport(zReport));
+
+sumZReport 'Сумма Z-отчета' (zReport) = GROUP SUM sumBill(bill) BY zReportBill(bill) PERSISTENT;
+discountSumZReport 'Сумма скидок Z-отчета' (zReport) = GROUP SUM discountSumBill(bill) BY zReportBill(bill) PERSISTENT;
+
+quantityBillsZReport 'Количество чеков' (zReport) = GROUP SUM 1 IF zReportBill(bill)==zReport BY zReportBill(bill);
+
+quantityZReportBill 'Количество по товару в Z-отчете' (item, zReport) = GROUP SUM quantityBillDetail(billDetail)
+    BY itemBillDetail(billDetail), zReportBillDetail(billDetail);
+
+quantityPositionsZReport 'Количество товаров в Z-отчете' (zReport) = GROUP SUM 1 IF quantityZReportBill (item, zReport)
+    BY zReport IN waybillSum;
 
 addBillDetailBarcodeFill 'Добавить строку по штрих-коду' = ACTION (bill) {
     FORM barcodeInput MODAL;
@@ -5644,6 +5693,35 @@ addBillDetailBarcodeFill 'Добавить строку по штрих-коду
 
 }TOOLBAR EDITKEY 'F4';
 
+@metaCodeSingleAggregation(zReport, incomeCashOrder, isPostedZReport);
+
+sumCashDocument (incomeCashOrder) <- sumZReport(zReportIncomeCashOrder(incomeCashOrder)) ON ASSIGN incomeCashOrder IS incomeCashOrder;
+cashRegisterIncomeCashOrder (incomeCashOrder) <- cashRegisterZReport(zReportIncomeCashOrder(incomeCashOrder)) ON ASSIGN incomeCashOrder IS incomeCashOrder;
+
+// документ скидок для товарного отчета
+CLASS saleDiscountDocument 'Скидка по продаже через кассы' : outAccountSumHistoryDocumentLedger;
+
+needToSaleDiscountDocument (zReport) = TRUE IF discountSumZReport(zReport);
+
+@metaCodeSingleAggregation(zReport, saleDiscountDocument, needToSaleDiscountDocument);
+
+dateSaleDiscountDocument 'Дата' (saleDiscountDocument) = dateOpenZReport(zReportSaleDiscountDocument(saleDiscountDocument));
+dateTimeSaleDiscountDocument 'Дата/время' (saleDiscountDocument) = dateTimeZReport(zReportSaleDiscountDocument(saleDiscountDocument));
+
+departmentStoreSaleDiscountDocument (saleDiscountDocument) = departmentStoreZReport(zReportSaleDiscountDocument(saleDiscountDocument));
+nameDepartmentStoreSaleDiscountDocument 'Отдел' (saleDiscountDocument) = name(departmentStoreSaleDiscountDocument(saleDiscountDocument));
+
+numberCashRegisterSaleDiscountDocument (saleDiscountDocument) = numberCashRegisterZReport(zReportSaleDiscountDocument(saleDiscountDocument));
+
+sumSaleDiscountDocument (saleDiscountDocument) = discountSumZReport(zReportSaleDiscountDocument(saleDiscountDocument));
+
+castSaleDiscountDocumentObjectsToString100=
+    FORMULA STRING[200] '\'Скидка по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)';
+
+descriptionSaleDiscountDocument (saleDiscountDocument) = castZReportObjectsToString100 (numberCashRegisterSaleDiscountDocument(saleDiscountDocument),
+    nameDepartmentStoreSaleDiscountDocument(saleDiscountDocument), dateSaleDiscountDocument(saleDiscountDocument));
+
+isPostedSaleDiscountDocument (saleDiscountDocument) = isPostedZReport(zReportSaleDiscountDocument(saleDiscountDocument));
 //----------------------------------------------- Переоценка товара ---------------------------------------------------//
 
 CLASS ABSTRACT abstractUserPriceChangeDetail : priceChangeDocumentDetail, importerPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
@@ -6521,7 +6599,9 @@ dateTimeAccountSumDocumentLedger 'Дата/время' (ledger) = UNION EXCLUSIV
                                                                          dateTimeInnerFlow(ledger),
                                                                          dateTimeWastage(ledger),
                                                                          dateTimeReturnSupplier(ledger),
-                                                                         dateTimeToInventory(inventoryCollationSheet(ledger)) PERSISTENT INDEXED;
+                                                                         dateTimeToInventory(inventoryCollationSheet(ledger)),
+                                                                         dateTimeZReport(ledger),
+                                                                         dateTimeSaleDiscountDocument(ledger) PERSISTENT INDEXED;
 
 descriptionDocumentLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipment(ledger),
                                                                           descriptionInnerArrival(ledger),
@@ -6531,7 +6611,9 @@ descriptionDocumentLedger 'Название документа' (ledger) = UNION
                                                                           descriptionInnerFlow(ledger),
                                                                           descriptionWastage(ledger),
                                                                           descriptionReturnSupplier(ledger),
-                                                                          descriptionInventory(inventoryCollationSheet(ledger)) PERSISTENT;
+                                                                          descriptionInventory(inventoryCollationSheet(ledger)),
+                                                                          descriptionZReport(ledger),
+                                                                          descriptionSaleDiscountDocument(ledger) PERSISTENT;
                                                                           //descriptionUserPriceChange(ledger) PERSISTENT;
 
 
@@ -6545,7 +6627,9 @@ isPostedAccountSumDocumentLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPos
                                                                      isPostedInnerFlow(ledger),
                                                                      isPostedWastage(ledger),
                                                                      isPostedReturnSupplier(ledger),
-                                                                     isPostedInventory(inventoryCollationSheet(ledger)) PERSISTENT;
+                                                                     isPostedInventory(inventoryCollationSheet(ledger)),
+                                                                     isPostedZReport(ledger),
+                                                                     isPostedSaleDiscountDocument(ledger) PERSISTENT;
 
 departmentStoreAccountSumDocumentLedger (ledger) = UNION EXCLUSIVE departmentStoreShipment(ledger),
                                                                    departmentStoreInnerArrival(ledger),
@@ -6555,7 +6639,9 @@ departmentStoreAccountSumDocumentLedger (ledger) = UNION EXCLUSIVE departmentSto
                                                                    departmentStoreInnerFlow(ledger),
                                                                    departmentStoreWastage(ledger),
                                                                    departmentStoreReturnSupplier(ledger),
-                                                                   departmentStoreCollationSheet(ledger) PERSISTENT;
+                                                                   departmentStoreCollationSheet(ledger),
+                                                                   departmentStoreZReport(ledger),
+                                                                   departmentStoreSaleDiscountDocument(ledger)PERSISTENT;
                                                                    //инвентаризация    departmentStoreInventoryLedger
 //departmentStoreInventoryLedger(inventoryLedger) = departmentStoreCollationSheet(collationSheetInventoryLedger(inventoryLedger));
 
@@ -6572,7 +6658,9 @@ sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSI
                                                                        sumStatement(ledger),
                                                                        totalSumWastage(ledger),
                                                                        totalSumSupplierReturnSupplier(ledger),
-                                                                       shortageTotalItemByCollationSheet(ledger) PERSISTENT;
+                                                                       shortageTotalItemByCollationSheet(ledger),
+                                                                       sumZReport(ledger),
+                                                                       sumSaleDiscountDocument(ledger) PERSISTENT;
 
 sumAccountDocumentLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumIncAccountDocumentLedger(ledger), -sumOutAccountDocumentLedger(ledger) PERSISTENT;
 
@@ -7031,12 +7119,14 @@ DESIGN statements FROM DEFAULT {
 
 //----------------------------------- Формы чеков -------------------------------------------------//
 
-FORM bill 'Чек'
+FORM bill 'Z-отчет'
     OBJECTS z=zReport FIXED PANEL
-    PROPERTIES (z) numberCashRegisterZReport, nameDepartmentStoreZReport, dateOpenZReport, numberZReport
+    PROPERTIES (z) numberCashRegisterZReport, nameDepartmentStoreZReport, dateOpenZReport, numberZReport,
+                    quantityBillsZReport, quantityPositionsZReport, sumZReport, discountSumZReport
 
     OBJECTS b=bill
-    PROPERTIES(b) numberBill, dateBill, timeBill, numberCashRegisterBill, nameDepartmentStoreBill READONLY, sumBill, discountSumBill, quantityBill, ADDOBJ, delete
+    PROPERTIES(b) numberBill, dateBill, timeBill, numberCashRegisterBill, nameDepartmentStoreBill READONLY,
+                  numberDiscountCardBill, nameCustomerDiscountCardBill, sumBill, discountSumBill, quantityDetailsBill, quantityPositionsBill, ADDOBJ, delete
     FILTERS zReportBill(b)==z
 
     OBJECTS d=billDetail
@@ -7068,13 +7158,14 @@ DESIGN bill FROM DEFAULT{
 
 FORM bills 'Чеки'
     OBJECTS z=zReport
-    PROPERTIES (z) READONLY objectClassName, numberCashRegisterZReport, nameDepartmentStoreZReport, dateOpenZReport, numberZReport
+    PROPERTIES (z) READONLY objectClassName, numberCashRegisterZReport, nameDepartmentStoreZReport, dateOpenZReport,
+                            numberZReport, quantityBillsZReport, quantityPositionsZReport, sumZReport, discountSumZReport
     PROPERTIES (z) ADDFORM, EDITFORM SHOWIF isDraftZReport(z), delete FORCE PANEL SHOWIF isDraftZReport(z),
                         postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
     OBJECTS b=bill
-    PROPERTIES(b) READONLY numberBill, dateBill, timeBill, numberCashRegisterBill, nameDepartmentStoreBill, sumBill, discountSumBill,
-                           quantityBill
+    PROPERTIES(b) READONLY numberBill, dateBill, timeBill, numberCashRegisterBill, nameDepartmentStoreBill,
+                           numberDiscountCardBill, nameCustomerDiscountCardBill, sumBill, discountSumBill, quantityDetailsBill, quantityPositionsBill
 
     FILTERS zReportBill(b)==z
 
@@ -7323,6 +7414,7 @@ NAVIGATOR {
         NEW contragents 'Контрагенты'{
             ADD suppliers;
             ADD customers;
+            ADD discountCards;
             ADD banks;
         }
         NEW equipment 'Оборудование' {
@@ -7522,6 +7614,7 @@ NAVIGATOR {
             ADD wareForm;
             ADD bill;
             ADD commonInfoBatchReturnSupplierDetail;
+            ADD discountCard;
         }
         ADD importData;
     }
