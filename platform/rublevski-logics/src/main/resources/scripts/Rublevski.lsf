@@ -5809,8 +5809,8 @@ FORM userPriceChanges 'Переоценки товаров'
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) numberUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
                    importerPriceUserPriceChangeDetail, numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
-                   oldRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail,
-                   ADDOBJ, delete
+                   oldRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, oldPriceWareUserPriceChangeDetail, priceWareUserPriceChangeDetail
+                 //  ADDOBJ, delete
 
     FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
 ;
@@ -5989,6 +5989,7 @@ priceWareWarePriceLedger 'Цена' (ledger) = UNION EXCLUSIVE priceWareShipment
                                                            priceWareInnerArrivalDetail(ledger),
                                                            priceWareUserPriceChangeDetail(ledger) PERSISTENT;
 
+nameWareWarePriceLedger 'Посуда' (ledger) = name(wareWarePriceLedger(ledger));
 @metaCodeItemDepartmentStoreLedger(warePrice);
 
 priceWareBLedgerDateTime (item, departmentStore, dateTime) = priceWareWarePriceLedger(ledgerBWarePriceDateTime(item, departmentStore, dateTime));
@@ -7256,6 +7257,11 @@ FORM balanceItemDepartment 'Остатки по отделам'
     PROPERTIES(rvl) descriptionLedger, dateTimeRetailVATLedger, dataRetailLedger
     FILTERS isPostedRetailVATLedger(rvl) AND itemRetailVATLedger(rvl)==i AND departmentStoreRetailVATLedger(rvl)==dep
     ORDER BY dateTimeRetailVATLedger DESC
+
+    OBJECTS wpl= warePriceLedger
+    PROPERTIES(wpl) descriptionLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, priceWareWarePriceLedger
+    FILTERS isPostedWarePriceLedger(wpl) AND itemWarePriceLedger(wpl)==i AND departmentStoreWarePriceLedger(wpl)==dep
+    ORDER BY dateTimeWarePriceLedger DESC
 ;
 
 DESIGN balanceItemDepartment FROM DEFAULT {
@@ -7284,6 +7290,7 @@ DESIGN balanceItemDepartment FROM DEFAULT {
                     ADD rpl.box;
                     ADD ipl.box;
                     ADD rvl.box;
+                    ADD wpl.box;
                 }
 
         }
