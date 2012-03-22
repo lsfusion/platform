@@ -661,13 +661,13 @@ propertyStatement
 	List<String> context = new ArrayList<String>();
 	boolean dynamic = true;
 }
-	:	declaration=propertyDeclaration { if ($declaration.paramNames != null) { context = $declaration.paramNames; dynamic = false; }}
+	:	declaration=propertyDeclaration { if ($declaration.paramNames != null) { context = $declaration.paramNames; dynamic = false; } }
 		'=' 
 		(	def=expressionUnfriendlyPD[context, dynamic, false] { property = $def.property; }
 		|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); property = $expr.property.property; } }
 		)
 		settings=commonPropertySettings[property, $declaration.name, $declaration.caption, context]
-		';'
+		( {!self.semicolonNeeded()}?=>  | ';')
 	;
 
 
@@ -1295,11 +1295,11 @@ actionPropertyDefinition[List<String> context, boolean dynamic] returns [LP prop
 		)?
 		pdb=actionPropertyDefinitionBody[localContext, localDynamic] { if (inPropParseState()) $property = $pdb.property.property; }
 	;
-	
+
 actionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	extPDB=extendContextActionPDB[context, dynamic] { $property = $extPDB.property; }
-	|	keepPDB=keepContextActionPDB[context, dynamic] { $property = $keepPDB.property; }
-	|	trivPDB=customActionPDB[context, dynamic] { $property = $trivPDB.property; }
+	|	keepPDB=keepContextActionPDB[context, dynamic] 	{ $property = $keepPDB.property; }
+	|	trivPDB=customActionPDB[context, dynamic] 		{ $property = $trivPDB.property; }
 	;
 
 extendContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -1364,9 +1364,9 @@ formActionPropertyDefinitionBody returns [LP property]
 }
 	:	'FORM' formName=compoundID 
 		('OBJECTS' list=nonEmptyIdList { objects = $list.ids; })? 
-		('SET' exprList=nonEmptyPropertyExpressionList[objects, false])? 
+		('INIT' exprList=nonEmptyPropertyExpressionList[objects, false])?
 		('CLASS' className=classId)?
-		('NEWSESSION' { newSession = true; })? 
+		('NEWSESSION' { newSession = true; })?
 		('MODAL' { isModal = true; })?
 		('CHECK' { checkOnOk = true; })?
 	;
@@ -1483,9 +1483,10 @@ listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 }
 	:	('NEWSESSION' { newSession = true; } ('AUTOAPPLY' {doApply = true; } )? )?
 		'{'
-			(	PDB=actionPropertyDefinitionBody[context, dynamic] ';' { props.add($PDB.property); }
-		    |   emptyStatement
-		    )*
+			(	PDB=actionPropertyDefinitionBody[context, dynamic] { props.add($PDB.property); }
+				( {!self.semicolonNeeded()}?=>  | ';')
+			|	emptyStatement
+			)*
 		'}'
 	;
 

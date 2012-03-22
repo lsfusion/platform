@@ -2787,7 +2787,7 @@ tmpDate = SESSION DATA DATE();
 tmpDateS = SESSION DATA DATE();
 
 createGenTimeTable 'Создать график поставок' = ACTION () NEWSESSION {
-    FORM genTimeTable SET [ACTION ADDOBJ genTimeTable]() MODAL;
+    FORM genTimeTable INIT [ACTION ADDOBJ genTimeTable]() MODAL;
 
     IF formResult() == formResult.ok THEN {
 

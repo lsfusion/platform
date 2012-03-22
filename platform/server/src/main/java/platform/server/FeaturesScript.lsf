@@ -239,7 +239,7 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // statement syntax:
 // FORM formName
 // [OBJECTS object1, ..., objectN]
-// [SET propertyExpr1, ..., propertyExprM]
+// [INIT propertyExpr1, ..., propertyExprM]
 // [CLASS className]
 // [NEWSESSION] [MODAL] [CHECK]
 

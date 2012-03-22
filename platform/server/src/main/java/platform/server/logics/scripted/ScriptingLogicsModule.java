@@ -1738,6 +1738,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public boolean semicolonNeeded() {
+        return !("}".equals(parser.input.LT(-1).getText()));
+    }
+
     private void parseStep(State state) {
         try {
             LsfLogicsLexer lexer = new LsfLogicsLexer(createStream());
