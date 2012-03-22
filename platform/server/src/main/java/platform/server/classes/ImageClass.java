@@ -30,6 +30,6 @@ public class ImageClass extends FileClass {
     }
 
     public String getExtensions() {
-        return "jpg,jpeg,bmp,png";
+        return "jpg, jpeg, bmp, png";
     }
 }
