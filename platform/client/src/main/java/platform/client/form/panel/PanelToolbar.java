@@ -4,6 +4,7 @@ import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.cell.PropertyController;
+import platform.client.form.queries.FilterView;
 import platform.client.form.queries.ToolbarGridButton;
 import platform.client.logics.ClientRegularFilterGroup;
 import platform.interop.ClassViewType;
@@ -20,6 +21,8 @@ public class PanelToolbar {
 
     private ClientFormLayout formLayout;
     private Set<Component> components = new HashSet<Component>();
+    
+    private Map<Component, Integer> movableComponents = new HashMap<Component, Integer>();
 
     private JPanel leftContainer;
     private JPanel rightContainer;
@@ -78,13 +81,16 @@ public class PanelToolbar {
             rightContainer.add(component);
         } else {
             leftContainer.add(component);
+            if (component instanceof FilterView) {
+                movableComponents.put(component, leftContainer.getComponentZOrder(component));
+            }
         }
     }
 
     public void moveComponent(Component component, int destination) {
         if (destination == SwingConstants.LEFT) {
             bottomContainer.remove(component);
-            leftContainer.add(component, 0);
+            leftContainer.add(component, movableComponents.containsKey(component) ? movableComponents.get(component) : 0);
         } else if (destination == SwingConstants.BOTTOM) {
             leftContainer.remove(component);
             bottomContainer.add(component);

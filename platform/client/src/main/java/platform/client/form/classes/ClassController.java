@@ -28,6 +28,10 @@ public class ClassController {
         this.form = iform;
     }
 
+    public ClassContainer getClassContainer() {
+        return classContainer;
+    }
+
     public void addView(ClientFormLayout formLayout) {
 
         // создаем дерево для отображения классов
@@ -56,7 +60,6 @@ public class ClassController {
                 object.classChooser.constraints.fillHorizontal = 0.95 * object.classChooser.constraints.fillHorizontal + 0.05;
             }
         };
-        classContainer.setVisible(false); // по умолчанию компонент невидим
 
         formLayout.add(object.classChooser, classContainer);
     }

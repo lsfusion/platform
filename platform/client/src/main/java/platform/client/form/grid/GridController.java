@@ -5,19 +5,14 @@ import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectController;
+import platform.client.form.classes.ClassContainer;
 import platform.client.form.queries.*;
-import platform.client.logics.ClientFormChanges;
-import platform.client.logics.ClientGrid;
-import platform.client.logics.ClientGroupObjectValue;
-import platform.client.logics.ClientPropertyDraw;
+import platform.client.logics.*;
 import platform.client.logics.classes.ClientIntegralClass;
 import platform.interop.Order;
-import platform.interop.form.FormColumnUserPreferences;
-import platform.interop.form.FormUserPreferences;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
-import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,14 +20,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class GridController {
 
@@ -73,6 +64,35 @@ public class GridController {
             }
         };
         table = view.getTable();
+        
+        boolean hasClassChoosers = false;
+        for (final ClientObject object : key.groupObject.objects) {
+            if (object.classChooser.show) {
+                ToolbarGridButton classButton = new ToolbarGridButton("/images/side_expand.gif", ClientResourceBundle.getString("form.tree.show", object.caption)) {
+                    ActionListener collapseListener = new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            setVisible(true);
+                        }
+                    };
+
+                    public void addListener() {
+                        addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                ClassContainer container = groupObjectController.getObjectsMap().get(object).classController.getClassContainer(); 
+                                container.expandTree();
+                                setVisible(false);
+                                if (!Arrays.asList(container.getCollapseButton().getActionListeners()).contains(collapseListener))
+                                    container.getCollapseButton().addActionListener(collapseListener);
+                            }
+                        });
+                    }
+                };
+                groupObjectController.addToToolbar(classButton);
+                hasClassChoosers = true;
+            }
+        }
+        if (hasClassChoosers)
+            groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
 
         if (key.showFind) {
             FindController findController = new FindController(groupObjectController) {

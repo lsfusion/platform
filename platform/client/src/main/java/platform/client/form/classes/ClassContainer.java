@@ -10,19 +10,17 @@ import java.awt.event.ActionListener;
 
 public abstract class ClassContainer extends JPanel {
 
-    private JScrollPane pane;
-
-    private JButton expandButton;
-    private JPanel buttonContainer;
+    private JButton collapseButton;
+    public boolean isExpanded;
 
     public ClassContainer(ClassTree view) {
         Dimension BUTTON_SIZE = new Dimension(20, 20);
         setLayout(new BorderLayout());
 
-        pane = new JScrollPane(view);
+        JScrollPane pane = new JScrollPane(view);
         add(pane, BorderLayout.CENTER);
 
-        JButton collapseButton = new FlatRolloverButton(new ImageIcon(ComponentDesign.class.getResource("/images/side_hide.png")));
+        collapseButton = new FlatRolloverButton(new ImageIcon(ComponentDesign.class.getResource("/images/side_hide.gif")));
         collapseButton.setMinimumSize(BUTTON_SIZE);
         collapseButton.setPreferredSize(BUTTON_SIZE);
         collapseButton.setMaximumSize(BUTTON_SIZE);
@@ -34,23 +32,6 @@ public abstract class ClassContainer extends JPanel {
         });
         collapseButton.setFocusable(false);
         collapseButton.setFont(getFont().deriveFont(Font.BOLD));
-
-        expandButton = new FlatRolloverButton(new ImageIcon(ComponentDesign.class.getResource("/images/side_expand.png")));
-        expandButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                expandTree();
-            }
-        });
-
-        Insets insets = expandButton.getInsets();
-        insets.left = 0; insets.right = 0;
-        expandButton.setMargin(insets); // экономим на спичках
-        expandButton.setFocusable(false);
-        expandButton.setFont(getFont().deriveFont(Font.BOLD));
-        expandButton.setVisible(false); // по умолчанию невидима
-
-        add(expandButton, BorderLayout.EAST);
 
         JButton widthDecButton = new FlatRolloverButton(new ImageIcon(ComponentDesign.class.getResource("/images/expand_dec.png")));
         widthDecButton.setMinimumSize(BUTTON_SIZE);
@@ -80,7 +61,7 @@ public abstract class ClassContainer extends JPanel {
         widthIncButton.setFocusable(false);
         widthIncButton.setFont(getFont().deriveFont(Font.BOLD));
 
-        buttonContainer = new JPanel();
+        JPanel buttonContainer = new JPanel();
         buttonContainer.setLayout(new BoxLayout(buttonContainer, BoxLayout.X_AXIS));
         buttonContainer.add(collapseButton);
         buttonContainer.add(Box.createHorizontalGlue());
@@ -89,37 +70,29 @@ public abstract class ClassContainer extends JPanel {
 
         add(buttonContainer, BorderLayout.SOUTH);
 
-        // по умолчанию показываем дерево свернутым
+        // по умолчанию прячем дерево
         collapseTree();
     }
 
-    private Dimension maxSize;
-
-    private void expandTree() {
-
-        expandButton.setVisible(false);
-
-        pane.setVisible(true);
-        buttonContainer.setVisible(true);
-
-        setMaximumSize(maxSize);
-
+    public void expandTree() {
+        isExpanded = true;
+        setVisible(true);
         needToBeRevalidated();
     }
 
     protected void collapseTree() {
-
-        expandButton.setVisible(true);
-        pane.setVisible(false);
-        buttonContainer.setVisible(false);
-
-        maxSize = getMaximumSize();
-
-        Dimension newMaxSize = new Dimension(maxSize);
-        newMaxSize.width = expandButton.getMinimumSize().width;
-        setMaximumSize(newMaxSize);
-
+        isExpanded = false;
+        setVisible(false);
         needToBeRevalidated();
+    }
+    
+    public JButton getCollapseButton() {
+        return collapseButton;
+    }
+
+    @Override
+    public void setVisible(boolean aFlag) {
+        super.setVisible(aFlag && isExpanded);
     }
 
     protected abstract void needToBeRevalidated();

@@ -339,6 +339,10 @@ public class GroupObjectController extends AbstractGroupObjectController {
         return getGroupObject();
     }
 
+    public Map<ClientObject, ObjectController> getObjectsMap() {
+        return objects;
+    }
+
     public List<ClientPropertyDraw> getGroupObjectProperties() {
         ArrayList<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
         for (ClientPropertyDraw property : getPropertyDraws()) {

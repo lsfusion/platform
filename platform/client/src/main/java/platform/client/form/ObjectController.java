@@ -9,7 +9,7 @@ import platform.interop.ClassViewType;
 
 import java.io.IOException;
 
-class ObjectController {
+public class ObjectController {
 
     // объект, при помощи которого будет происходить общение с внешним миром
     private final ClientFormController form;
@@ -41,7 +41,7 @@ class ObjectController {
         this.classView = classView;
 
         if (classView.equals(ClassViewType.GRID)) {
-            
+
             if (classController != null)
                 classController.showViews();
         } else {
