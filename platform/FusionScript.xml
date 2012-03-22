@@ -139,6 +139,7 @@
       <keyword name="NOT" />
       <keyword name="NOTHING" />
       <keyword name="NULL" />
+      <keyword name="NUMERIC" />
       <keyword name="OBJECT" />
       <keyword name="OBJECTS" />
       <keyword name="OBJVALUE" />

@@ -149,6 +149,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else if (name.startsWith("ISTRING[")) {
             name = name.substring("ISTRING[".length(), name.length() - 1);
             return InsensitiveStringClass.get(Integer.parseInt(name));
+        } else if (name.startsWith("NUMERIC[")) {
+            String length = name.substring("NUMERIC[".length(), name.indexOf(","));
+            String precision = name.substring(name.indexOf(",") + 1, name.length() - 1);
+            return NumericClass.get(Integer.parseInt(length), Integer.parseInt(precision));
         }
         return null;
     }
