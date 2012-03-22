@@ -5554,7 +5554,39 @@ descriptionReturnSupplier 'Название документа' (returnSupplier)
 descriptionReturnSupplierDetail 'Название документа' (returnSupplierDetail) = descriptionReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
 
 //----------------------------------------------- Чеки ---------------------------------------------------//
-@metaCodeObjectWithPost (bill, 'Чек', 'Закрытый чек', historyObject, balanceItemLedger);
+
+CLASS bill 'Чек' : historyObject;
+TABLE bill (bill);
+
+CLASS billDetail 'Строка чека' : balanceItemLedger;
+TABLE billDetail (billDetail);
+
+dateBill 'Дата документа' (bill) = DATA DATE (bill) IN documentHeaderGroup;
+dateBill (bill) <- currentDate() ON ASSIGN bill AS bill;
+
+timeBill 'Время документа' (bill) = DATA TIME (bill) IN documentHeaderGroup;
+timeBill (bill) <- currentTime() ON ASSIGN bill AS bill;
+
+dateTimeBill 'Дата/время документа' (bill) = toDateTime(dateBill(bill), timeBill(bill));
+
+departmentStoreBill 'Отдел документа (ИД)' (bill) = DATA departmentStore(bill) IN idGroup;
+nameDepartmentStoreBill 'Отдел документа' (bill) = name(departmentStoreBill(bill)) IN documentHeaderGroup
+    MINCHARWIDTH 20 PREFCHARWIDTH 40;
+
+billBillDetail 'Строка документа' = DATA bill (billDetail) IN idGroup;
+
+dateTimeBillDetail (billDetail) = dateTimeBill(billBillDetail(billDetail));
+
+departmentStoreBillDetail (billDetail) = departmentStoreBill(billBillDetail(billDetail));
+
+numberBillDetail 'Номер строки' (billDetail) =
+    PARTITION SUM 1 IF billDetail IS billDetail BY billBillDetail(billDetail)
+    ORDER billDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
+
+itemBillDetail 'Товар строки документа (ИД)' (billDetail) = DATA item (billDetail) IN idGroup;
+
+nameAttributeItemBillDetail 'Товар строки документа' (billDetail) =
+    nameAttributeItem(itemBillDetail(billDetail)) IN recognizeGroup;
 
 numberBill 'Номер чека' (bill) = DATA INTEGER (bill) IN documentHeaderGroup;
 
@@ -5571,7 +5603,7 @@ sumBill 'Сумма чека' (bill) = GROUP SUM sumBillDetail(billDetail) IF bi
 discountSumBill 'Сумма скидки в чеке' (bill) = GROUP SUM discountSumBillDetail(billDetail) IF billBillDetail (billDetail) == bill
     BY billBillDetail (billDetail) IN waybillSum;
 
-quantityDetailsBill 'Количество строк в чеке' (bill) = GROUP SUM 1 IF billBillDetail (billDetail) == bill
+quantityBillDetailsBill 'Количество строк в чеке' (bill) = GROUP SUM 1 IF billBillDetail (billDetail) == bill
     BY billBillDetail (billDetail) IN waybillSum;
 
 quantityItemBill 'Количество по товару в чеке' (item, bill) = GROUP SUM quantityBillDetail(billDetail)
@@ -5632,8 +5664,8 @@ dateTimeZReport (zReport) = GROUP MAX dateTimeBill(bill) BY zReportBill(bill);
 
 zReportBillDetail (billDetail) = zReportBill(billBillDetail(billDetail));
 
-isPostedZReportBill(bill) = isPostedZReport(zReportBill(bill));
-isPostedZReportBill(bill) => isPostedBill(bill) RESOLVE TRUE;
+isPostedBill(bill) = isPostedZReport(zReportBill(bill));
+isPostedBillDetail (billDetail) = isPostedBill(billBillDetail(billDetail));
 
 cashRegisterZReport (zReport) = DATA cashRegister(zReport);
 numberCashRegisterZReport 'Касса Z-отчета' (zReport) = numberCashRegister(cashRegisterZReport(zReport));
@@ -7116,7 +7148,7 @@ FORM bill 'Z-отчет'
 
     OBJECTS b=bill
     PROPERTIES(b) numberBill, dateBill, timeBill, numberCashRegisterBill, nameDepartmentStoreBill READONLY,
-                  numberDiscountCardBill, nameCustomerDiscountCardBill, sumBill, discountSumBill, quantityDetailsBill, quantityPositionsBill, ADDOBJ, delete
+                  numberDiscountCardBill, nameCustomerDiscountCardBill, sumBill, discountSumBill, quantityBillDetailsBill, quantityPositionsBill, ADDOBJ, delete
     FILTERS zReportBill(b)==z
 
     OBJECTS d=billDetail
@@ -7155,7 +7187,7 @@ FORM bills 'Чеки'
 
     OBJECTS b=bill
     PROPERTIES(b) READONLY numberBill, dateBill, timeBill, numberCashRegisterBill, nameDepartmentStoreBill,
-                           numberDiscountCardBill, nameCustomerDiscountCardBill, sumBill, discountSumBill, quantityDetailsBill, quantityPositionsBill
+                           numberDiscountCardBill, nameCustomerDiscountCardBill, sumBill, discountSumBill, quantityBillDetailsBill, quantityPositionsBill
 
     FILTERS zReportBill(b)==z
 
