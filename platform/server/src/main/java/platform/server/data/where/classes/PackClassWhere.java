@@ -17,7 +17,7 @@ import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 
-import java.util.Set;
+import java.util.List;
 
 // упрощенный Where
 public class PackClassWhere extends DataWhere {
@@ -70,7 +70,7 @@ public class PackClassWhere extends DataWhere {
         throw new RuntimeException("Not supported");
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop) {
         throw new RuntimeException("Not supported");
     }
     public ClassExprWhere calculateClassWhere() {

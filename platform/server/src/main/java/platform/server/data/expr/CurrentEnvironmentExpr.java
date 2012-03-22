@@ -18,7 +18,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
-import java.util.Set;
+import java.util.List;
 
 public class CurrentEnvironmentExpr extends NotNullExpr {
 
@@ -66,7 +66,7 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
             return new ClassExprWhere(CurrentEnvironmentExpr.this, paramClass);
         }
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop) {
             return new GroupJoinsWheres(this);
         }
     }

@@ -13,7 +13,6 @@ import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 
 import java.util.Collection;
@@ -102,5 +101,9 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
     @Override
     protected QuickSet<KeyExpr> getKeys() {
         return new QuickSet<KeyExpr>(this);
+    }
+
+    public boolean isTableIndexed() {
+        return true;
     }
 }

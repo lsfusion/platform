@@ -16,6 +16,7 @@ import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 
+import java.util.List;
 import java.util.Set;
 
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
@@ -121,9 +122,9 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return checkTrue;
     }
 
-    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop);
+    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop);
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop) {
         GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat, orderTop);
         if(result.size > Settings.instance.getLimitWhereJoinsCount() || result.getComplexity(true) > Settings.instance.getLimitWhereJoinsComplexity())
             result = result.compileMeans(keepStat, keyStat);

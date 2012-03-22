@@ -28,17 +28,9 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
         this.baseExpr = baseExpr;
     }
 
-    public NotNullExprSet getExprFollows(boolean recursive) {
-        return InnerExpr.getExprFollows(this, recursive);
-    }
-
     @Override
     public QuickSet<OuterContext> calculateOuterDepends() {
         return new QuickSet<OuterContext>(baseExpr);
-    }
-
-    public Map<Integer, BaseExpr> getJoins() {
-        return Collections.singletonMap(0, (BaseExpr)baseExpr);
     }
 
     protected int hash(HashContext hashContext) {
@@ -49,8 +41,16 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
         return baseExpr.equals(((ExprJoin)o).baseExpr);
     }
 
-    public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres) {
+    public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres) { // все равно использует getExprFollows
         return InnerExpr.getFollowJoins(this, upWheres);
+    }
+
+    public NotNullExprSet getExprFollows(boolean recursive) {
+        return InnerExpr.getExprFollows(this, recursive);
+    }
+
+    public Map<Integer, BaseExpr> getJoins() {
+        return Collections.singletonMap(0, (BaseExpr)baseExpr);
     }
 
     public InnerJoins getInnerJoins() {

@@ -222,4 +222,8 @@ public abstract class BaseExpr extends Expr {
             result = result.and(baseExpr.getNotNullWhere());
         return result;
     }
+
+    public boolean isTableIndexed() {
+        return false;
+    }
 }

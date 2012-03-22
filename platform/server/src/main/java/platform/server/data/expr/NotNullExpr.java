@@ -78,7 +78,6 @@ public abstract class NotNullExpr extends VariableClassExpr {
             return new DataWhereSet(getExprFollows(false, true));
         }
 
-        @Override
         public boolean twins(TwinImmutableInterface o) {
             return getExpr().equals(((NotNull) o).getExpr());
         }

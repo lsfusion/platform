@@ -6,6 +6,8 @@ import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.where.extra.BinaryWhere;
+import platform.server.data.query.ExprJoin;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
@@ -16,7 +18,7 @@ import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 
-import java.util.Set;
+import java.util.List;
 
 public class NotWhere extends ObjectWhere {
 
@@ -70,7 +72,10 @@ public class NotWhere extends ObjectWhere {
         where.fillDataJoinWheres(joins, andWhere);
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop) {
+        ExprJoin exprJoin;
+        if(where instanceof BinaryWhere && (exprJoin=((BinaryWhere)where).groupJoinsWheres(orderTop, true))!=null)
+            return new GroupJoinsWheres(exprJoin, this);
         return new GroupJoinsWheres(this);
     }
 

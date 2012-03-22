@@ -193,7 +193,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     // 2-й параметр чисто для оптимизации пока
-    public <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, Set<Expr> orderTop) {
+    public <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop) {
         return getKeyEquals().getWhereJoins(tryExclusive, keepStat, orderTop);
     }
 

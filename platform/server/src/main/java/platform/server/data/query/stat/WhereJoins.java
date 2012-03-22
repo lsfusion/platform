@@ -323,7 +323,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
     public Where getWhere(Map<WhereJoin, Where> upWheres, boolean skipKeyTop) {
         Where result = Where.TRUE;
         for (WhereJoin where : wheres)
-            if(!(skipKeyTop && where instanceof ExprOrderTopJoin && ((ExprOrderTopJoin)where).isKey()))
+            if(!(skipKeyTop && where instanceof ExprOrderTopJoin && ((ExprOrderTopJoin)where).givesNoKeys()))
                 result = result.and(upWheres.get(where));
         return result;
     }

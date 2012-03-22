@@ -9,10 +9,10 @@ import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.stat.KeyStat;
 
-import java.util.Set;
+import java.util.List;
 
 
-abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<ObjectWhere>,AndObjectWhere<ObjectWhere> {
+public abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<ObjectWhere>,AndObjectWhere<ObjectWhere> {
 
     public abstract ObjectWhere not();
 
@@ -86,5 +86,5 @@ abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<Object
         return new KeyEquals(this);  // в operator'ах никаких equals быть не может
     }
 
-    public abstract <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop);
+    public abstract <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop);
 }

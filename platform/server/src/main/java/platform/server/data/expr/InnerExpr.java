@@ -12,10 +12,7 @@ import platform.server.data.where.MapWhere;
 import platform.server.data.query.JoinData;
 import platform.server.data.where.Where;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public abstract class InnerExpr extends NotNullExpr implements JoinData {
 
@@ -37,7 +34,7 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
 
     public abstract class NotNull extends NotNullExpr.NotNull {
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop) {
             return new GroupJoinsWheres(InnerExpr.this.getInnerJoin(), this);
         }
     }

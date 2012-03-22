@@ -80,7 +80,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, Set<Expr> orderTop);
+    <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop);
     <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keys, boolean exclusive, GroupStatType type, boolean noWhere);
     <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> keys);
     <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(boolean notExclusive, QuickSet<K> exprs, GroupStatType type, boolean noWhere);
@@ -88,7 +88,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     // группировки в ДНФ, protected по сути
     KeyEquals getKeyEquals();
-    <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop);
+    <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop);
     MeanClassWheres groupMeanClassWheres();
 
     abstract public ClassExprWhere getClassWhere();

@@ -22,7 +22,7 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
                 public Type getKeyType(KeyExpr expr) {
                     return ObjectType.instance;
                 }
-            }, values.mapString(), BusinessLogics.debugSyntax);
+            }, Where.FALSE, values.mapString(), BusinessLogics.debugSyntax);
             keySelect.putAll(keys.mapString());
         }
 

@@ -45,7 +45,7 @@ public class LinearExpr extends UnionExpr {
     
     public class NotNull extends NotNullExpr.NotNull {
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop) {
             return getCommonWhere().groupJoinsWheres(keepStat, keyStat, orderTop).and(new GroupJoinsWheres(this));
         }
 

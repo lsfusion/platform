@@ -128,7 +128,7 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
         return where;
     }
 
-    public <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(QuickSet<K> keepStat, Set<Expr> orderTop) {
+    public <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(QuickSet<K> keepStat, List<Expr> orderTop) {
         Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>();
         for(int i=0;i<size;i++) {
             KeyEqual keyEqual = getKey(i); // keyEqual закидывается в статистику так как keepStat не всегда translate'ся
@@ -163,7 +163,7 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
         return result;
     }
 
-    public <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, Set<Expr> orderTop) {
+    public <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop) {
         Collection<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat, orderTop);
         if(!tryExclusive || whereJoins.size()<=1 || whereJoins.size() > Settings.instance.getLimitExclusiveCount())
             return new Pair<Collection<GroupJoinsWhere>, Boolean>(whereJoins, false);
@@ -190,7 +190,7 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
 
     public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keepStat) {
         Collection<GroupStatWhere<K>> statJoins = new ArrayList<GroupStatWhere<K>>();
-        for(GroupJoinsWhere whereJoin : getWhereJoins(keepStat, new HashSet<Expr>()))
+        for(GroupJoinsWhere whereJoin : getWhereJoins(keepStat, new ArrayList<Expr>()))
             statJoins.add(new GroupStatWhere<K>(whereJoin.keyEqual, whereJoin.getStatKeys(keepStat), whereJoin.where));
         return statJoins;
     }

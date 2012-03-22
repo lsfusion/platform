@@ -282,7 +282,7 @@ public class Query<K,V> extends IQuery<K,V> {
         return new CompiledQuery<K,V>(this, syntax, orders, selectTop, subcontext, noExclusive);
     }
 
-    public Collection<GroupJoinsWhere> getWhereJoins(boolean tryExclusive, Result<Boolean> isExclusive, Set<Expr> orderTop) {
+    public Collection<GroupJoinsWhere> getWhereJoins(boolean tryExclusive, Result<Boolean> isExclusive, List<Expr> orderTop) {
         Pair<Collection<GroupJoinsWhere>,Boolean> whereJoinsExcl = where.getWhereJoins(tryExclusive, getKeys(), orderTop);
         isExclusive.set(whereJoinsExcl.second);
         return whereJoinsExcl.first;

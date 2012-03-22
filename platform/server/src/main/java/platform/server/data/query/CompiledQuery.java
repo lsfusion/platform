@@ -99,8 +99,8 @@ public class CompiledQuery<K,V> {
 
     private static class FullSelect extends CompileSource {
 
-        private FullSelect(KeyType keyType, Map<Value, String> params, SQLSyntax syntax) {
-            super(keyType, params, syntax);
+        private FullSelect(KeyType keyType, Where fullWhere, Map<Value, String> params, SQLSyntax syntax) {
+            super(keyType, fullWhere, params, syntax);
         }
 
         public final Map<JoinData,String> joinData = new HashMap<JoinData, String>();
@@ -180,7 +180,7 @@ public class CompiledQuery<K,V> {
         noExclusive = noExclusive || Settings.instance.isNoExclusiveCompile();
         Result<Boolean> unionAll = new Result<Boolean>();
         Collection<GroupJoinsWhere> queryJoins = GroupJoinsWhere.pack(query.getWhereJoins(!useFJ && !noExclusive, unionAll, 
-                                top > 0 && syntax.orderTopTrouble() ? new HashSet<Expr>(filterKeys(query.properties, orders.keySet()).values()) : new HashSet<Expr>()));
+                                top > 0 && syntax.orderTopTrouble() ? mapList(orders.keyList(), query.properties) : new ArrayList<Expr>()));
         union = !useFJ && queryJoins.size() >= 2 && (unionAll.result || !Settings.instance.isUseFJInsteadOfUnion());
         if (union) { // сложный UNION запрос
             Map<V, Type> castTypes = new HashMap<V, Type>();
@@ -219,7 +219,7 @@ public class CompiledQuery<K,V> {
                     from = fillInnerSelect(query.mapKeys, innerJoin, query.properties, keySelect, propertySelect, whereSelect, params, syntax, subcontext, env);
                     orders = getOrdersNotNull(orders, query.properties, ordersNotNull);
                 } else { // "сложный" запрос с full join'ами
-                    from = fillFullSelect(query.mapKeys, queryJoins, query.properties, orders, top, keySelect, propertySelect, params, syntax, subcontext, env);
+                    from = fillFullSelect(query.mapKeys, queryJoins, query.where, query.properties, orders, top, keySelect, propertySelect, params, syntax, subcontext, env);
                 }
             }
 
@@ -271,8 +271,8 @@ public class CompiledQuery<K,V> {
         final SubQueryContext subcontext;
         final KeyStat keyStat;
 
-        public InnerSelect(KeyType keyType, KeyStat keyStat, WhereJoins whereJoins, Map<WhereJoin, Where> upWheres, SQLSyntax syntax, Map<Value, String> params, SubQueryContext subcontext) {
-            super(keyType, params, syntax);
+        public InnerSelect(KeyType keyType, KeyStat keyStat, Where fullWhere, WhereJoins whereJoins, Map<WhereJoin, Where> upWheres, SQLSyntax syntax, Map<Value, String> params, SubQueryContext subcontext) {
+            super(keyType, fullWhere, params, syntax);
 
             this.keyStat = keyStat;
             this.subcontext = subcontext;
@@ -945,7 +945,7 @@ public class CompiledQuery<K,V> {
     }
 
     private static <K,AV> String fillSingleSelect(Map<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, Map<AV, Expr> compiledProps, Map<K, String> keySelect, Map<AV, String> propertySelect, Map<Value,String> params, SQLSyntax syntax, SubQueryContext subcontext, ExecuteEnvironment env) {
-        return fillFullSelect(mapKeys, Collections.singleton(innerSelect), compiledProps, new OrderedMap<AV, Boolean>(), 0, keySelect, propertySelect, params, syntax, subcontext, env);
+        return fillFullSelect(mapKeys, Collections.singleton(innerSelect), innerSelect.getFullWhere(), compiledProps, new OrderedMap<AV, Boolean>(), 0, keySelect, propertySelect, params, syntax, subcontext, env);
 
 /*        FullSelect FJSelect = new FullSelect(innerSelect.where, params,syntax); // для keyType'а берем первый where
 
@@ -978,7 +978,7 @@ public class CompiledQuery<K,V> {
 
     private static <K,AV> String fillInnerSelect(Map<K, KeyExpr> mapKeys, final GroupJoinsWhere innerSelect, Map<AV, Expr> compiledProps, Map<K, String> keySelect, Map<AV, String> propertySelect, Collection<String> whereSelect, Map<Value, String> params, SQLSyntax syntax, SubQueryContext subcontext, ExecuteEnvironment env) {
 
-        final InnerSelect compile = new InnerSelect(innerSelect.where, innerSelect.where,innerSelect.joins,innerSelect.upWheres,syntax,params, subcontext);
+        final InnerSelect compile = new InnerSelect(innerSelect.where, innerSelect.where, innerSelect.where,innerSelect.joins,innerSelect.upWheres,syntax,params, subcontext);
 
         if(Settings.instance.getInnerGroupExprs() > 0) { // если не одни joinData
             final Set<GroupExpr> groupExprs = new HashSet<GroupExpr>(); final Counter repeats = new Counter();
@@ -1009,8 +1009,8 @@ public class CompiledQuery<K,V> {
         return compile.getFrom(innerSelect.where, whereSelect, env);
     }
 
-    private static <K,AV> String fillFullSelect(Map<K, KeyExpr> mapKeys, Collection<GroupJoinsWhere> innerSelects, Map<AV, Expr> compiledProps, OrderedMap<AV,Boolean> orders, int top, Map<K, String> keySelect, Map<AV, String> propertySelect, Map<Value,String> params, SQLSyntax syntax, SubQueryContext subcontext, ExecuteEnvironment env) {
-        FullSelect FJSelect = new FullSelect(innerSelects.iterator().next().getFullWhere(), params,syntax); // для keyType'а берем первый where
+    private static <K,AV> String fillFullSelect(Map<K, KeyExpr> mapKeys, Collection<GroupJoinsWhere> innerSelects, Where fullWhere, Map<AV, Expr> compiledProps, OrderedMap<AV, Boolean> orders, int top, Map<K, String> keySelect, Map<AV, String> propertySelect, Map<Value, String> params, SQLSyntax syntax, SubQueryContext subcontext, ExecuteEnvironment env) {
+        FullSelect FJSelect = new FullSelect(fullWhere, fullWhere, params,syntax); // для keyType'а берем первый where
 
         // создаем And подзапросыs
         Collection<AndJoinQuery> andProps = new ArrayList<AndJoinQuery>();

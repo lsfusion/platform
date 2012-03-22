@@ -25,7 +25,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.MapWhere;
 import platform.server.data.where.classes.ClassExprWhere;
 
-import java.util.Set;
+import java.util.List;
 
 public class IsClassWhere extends DataWhere {
 
@@ -90,7 +90,7 @@ public class IsClassWhere extends DataWhere {
         BaseClass baseClass = classes.getBaseClass();
         return new Stat((double) (classes.getCount() * baseClass.objectClass.getCount()) / (double) baseClass.getCount());
     }
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<Expr> orderTop) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop) {
         if(classes instanceof ObjectValueClassSet)
             return new GroupJoinsWheres(new ExprStatJoin(classExpr, getClassStat((ObjectValueClassSet)classes)), this);
         return expr.getWhere().groupJoinsWheres(keepStat, keyStat, orderTop).and(new GroupJoinsWheres(this));

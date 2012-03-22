@@ -9,6 +9,7 @@ import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.query.stat.WhereJoins;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.DataWhere;
+import platform.server.data.where.ObjectWhere;
 import platform.server.data.where.Where;
 import platform.server.Settings;
 
@@ -25,7 +26,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             this(new HashMap<WhereJoin, Where>(), where);
         }
 
-        public Value(WhereJoin join, DataWhere where) {
+        public Value(WhereJoin join, ObjectWhere where) {
             this(Collections.singletonMap(join, (Where)where), where);
         }
 
@@ -128,7 +129,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         this(new WhereJoins(), new Value(where));
     }
 
-    public GroupJoinsWheres(WhereJoin join, DataWhere where) {
+    public GroupJoinsWheres(WhereJoin join, ObjectWhere where) {
         this(new WhereJoins(join), new Value(join, where));
     }
 

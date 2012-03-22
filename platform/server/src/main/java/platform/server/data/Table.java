@@ -399,7 +399,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return exprFJ + " IS NOT NULL";
             }
 
-            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, Set<platform.server.data.expr.Expr> orderTop) {
+            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<platform.server.data.expr.Expr> orderTop) {
                 return new GroupJoinsWheres(Join.this, this);
             }
             public ClassExprWhere calculateClassWhere() {
@@ -499,6 +499,11 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
             public Stat getStatValue(KeyStat keyStat) {
                 return getStatProps().get(property);
+            }
+
+            @Override
+            public boolean isTableIndexed() {
+                return true;
             }
         }
 
