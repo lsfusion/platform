@@ -1548,7 +1548,10 @@ DESIGN retailRangeItem FROM DEFAULT {
 
 showFormRetailRangeItem 'Шкала' (item) = ACTION FORM retailRangeItem OBJECTS i MODAL SHORTCUT dataRetailRangeItem DEFAULT;
 
-overrideRateRangeItem 'НДС (ИД)' (item) = UNION OVERRIDE retailRangeItem(item), suppliersRangeItem(item) IN idGroup;
+overrideRateRangeItemVal 'НДС (ИД)' (item, date) = UNION OVERRIDE retailRangeItemVal(item, date), suppliersRangeItemVal(item, date) IN idGroup;
+
+overrideRateRangeItem 'НДС (ИД)' (item) = UNION OVERRIDE retailRangeItem(item), suppliersRangeItem(item) IN idGroup; // на текущую дату
+
 dataOverrideRateRangeItem 'Значение НДС' (item) = dataActingRateRange(overrideRateRangeItem(item)) IN retailGroup;
 toShowDataRangeItem(item) = TRUE IF item IS item AND dataActingRateSuppliersRangeItem(item); // dataSuppliersRateRangeItem(item);
 
@@ -4190,9 +4193,6 @@ quantitySpecification 'Общее кол-во' (specification) = GROUP SUM quant
 departmentStoreDetailSpec(detailSpec) = departmentStoreSpecification(specificationDetailSpec(detailSpec));
 
 retailPriceDetailSpec 'Цена товара (розн.)' = DATA DOUBLE (detailSpec) IN baseGroup;
-//retailPriceDetailSpec(detailSpec) <- retailPriceItemDepartmentVal (itemDetailSpec(detailSpec),
-//                                                                   departmentStoreDetailSpec(detailSpec),
-//                                                                   dateSpecification(specificationDetailSpec(detailSpec))) ON CHANGE itemDetailSpec(detailSpec);
 
 sumDetailSpec 'Сумма' (detailSpec) = round0(retailPriceDetailSpec(detailSpec)*quantityDetailSpec(detailSpec));
 sumSpecification 'Общая сумма' (specification) = GROUP SUM sumDetailSpec(detailSpec) BY specificationDetailSpec(detailSpec) IN waybillSum;
@@ -4213,19 +4213,8 @@ totalSumNDSDetailSpec 'Сумма НДС' (detailSpec) = round0(dataActingRateRa
 sumNDSSpecification 'Общая сумма НДС' (specification) = GROUP SUM totalSumNDSDetailSpec(detailSpec)
     BY specificationDetailSpec(detailSpec) IN waybillSum;
 
-//oldImporterPriceDetailSpec 'Цена изготовителя/импортера' (detailSpec) = DATA DOUBLE (detailSpec) IN itemDetailSpecInfo;
-//oldImporterPriceDetailSpec (detailSpec) <- importerPriceItemVal (itemDetailSpec(detailSpec),
-//   dateSpecification(specificationDetailSpec(detailSpec))) ON CHANGE itemDetailSpec(detailSpec);
-
-//retailRangeDetailSpec(detailSpec) = DATA range (detailSpec) IN idGroup;
-//dataRetailRangeDetailSpec 'НДС розничный,%' (detailSpec) = dataActingRateRange(retailRangeDetailSpec(detailSpec)) IN itemDetailSpecInfo;
-//retailRangeDetailSpec(detailSpec) <- overrideRateRangeItem(itemDetailSpec(detailSpec)) ON CHANGE itemDetailSpec(detailSpec);
-
 articleItemDetailSpec 'Артикул производителя/поставщика' (detailSpec) = articleItem(itemDetailSpec(detailSpec));
 nameCountryItemDetailSpec 'Страна производства/происхождения' (detailSpec) = nameCountryItem(itemDetailSpec(detailSpec));
-
-//balanceDepartmentStoreItemDetailSpec 'Текущий остаток' (detailSpec) =
-//    balanceDepartmentStoreItem(departmentStoreDetailSpec(detailSpec), itemDetailSpec(detailSpec));
 
 minReserveItemDepartmentDetailSpec 'Минимальнодопустимый товарный запас в днях' (detailSpec) =
     minReserveItemDepartmentOver(itemDetailSpec(detailSpec),
@@ -4571,7 +4560,7 @@ dataSuppliersRangeShipmentDetail 'НДС поставщика,%' (shipmentDetail
 
 CONSTRAINT CHECKED  taxRange(suppliersRangeShipmentDetail(shipmentDetail)) != taxNDSShipmentDetail(shipmentDetail) MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
-suppliersRangeShipmentDetail(shipmentDetail) <- suppliersRangeItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+suppliersRangeShipmentDetail(shipmentDetail) <- suppliersRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 sumPriceShipmentDetail 'Сумма без НДС' (shipmentDetail) = priceShipmentDetail(shipmentDetail) * quantityShipmentDetail(shipmentDetail);
 calcSumSupplierVATShipmentDetail 'Сумма НДС (расчетная)' (shipmentDetail) = sumPriceShipmentDetail(shipmentDetail) * dataSuppliersRangeShipmentDetail(shipmentDetail)/100;
@@ -4594,7 +4583,7 @@ dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = d
 CONSTRAINT CHECKED  taxRange(retailRangeShipmentDetail(shipmentDetail)) != taxNDSShipmentDetail(shipmentDetail) MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 
-retailRangeShipmentDetail(shipmentDetail) <- overrideRateRangeItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+retailRangeShipmentDetail(shipmentDetail) <- overrideRateRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 wareShipmentDetail 'Посуда (ИД)' (shipmentDetail) = DATA ware(shipmentDetail) IN idGroup;
 nameWareShipmentDetail 'Посуда' (shipmentDetail) = name(wareShipmentDetail(shipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
@@ -4616,7 +4605,7 @@ wareRangeShipmentDetail 'Шкала НДС по посуде' (shipmentDetail) =
 dataWareRangeShipmentDetail 'НДС по посуде' (shipmentDetail) =
     dataActingRateRange(wareRangeShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo MINCHARWIDTH 4 PREFCHARWIDTH 4;
 
-wareRangeShipmentDetail (shipmentDetail) <- rangeWare (wareShipmentDetail (shipmentDetail))
+wareRangeShipmentDetail (shipmentDetail) <- rangeWareVal (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
     ON CHANGE itemShipmentDetail(shipmentDetail);
 
 CONSTRAINT CHECKED  taxRange(wareRangeShipmentDetail(shipmentDetail)) != taxNDSShipmentDetail(shipmentDetail) MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
