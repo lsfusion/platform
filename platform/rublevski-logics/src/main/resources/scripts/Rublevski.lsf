@@ -3568,15 +3568,19 @@ DESIGN groupsUser FROM DEFAULT {
  //---------------------------- Карты проработки (разруба) ----------------------------------------//
 GROUP cutGroup 'Разделка' : baseGroup;
 GROUP actGroup 'Акт' : publicGroup;
+GROUP contractorGroup 'Контрагент' : publicGroup;
 
 CLASS cutting 'Карта пророботки (разделки)' : named;
 CLASS detailCutting 'Компонента';
 
 CLASS actOfStudy 'Акт пророботки (разделки)' : historyObject;
+CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStudy, postedObject;
+TABLE actOfStudy (actOfStudy);
+
 CLASS studyInputDetail 'Товар';
 CLASS studyOutputDetail 'Полуфабрикаты';
 
-
+@metaCodePostedObject (actOfStudy);
       //      ??????????????????? не понятно что делать с процентом надбавок ??????????????????????   //
 
 sidCutting 'Номер карты (из сборника и прочее)' = DATA INTEGER (cutting) IN cutGroup;
@@ -3611,6 +3615,16 @@ inItemCutting 'Вкл.' = DATA BOOLEAN (item, cutting) IN cutGroup;
 departmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idGroup;
 nameDepartmentStoreActOfStudy 'Подразделение' (actOfStudy) = name(departmentStoreActOfStudy(actOfStudy));
 numberActOfStudy 'Номер акта' = DATA STRING[10] (actOfStudy) IN baseGroup;
+
+contractorDepartmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idGroup;
+nameContractorDepartmentStoreActOfStudy 'Подразделение-контрагент' (actOfStudy) = name(contractorDepartmentStoreActOfStudy(actOfStudy)) IN contractorGroup;
+
+waybillOutputActOfStudy 'Номер расходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 7;
+waybillInputActOfStudy 'Номер приходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 7;
+
+seriesOutputActOfStudy 'Серия расходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 4;
+seriesInputActOfStudy 'Серия приходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 4;
+
 
 actOfStudyStudyInputDetail = DATA actOfStudy (studyInputDetail) IN idGroup;
 
@@ -3658,6 +3672,8 @@ retailPriceStudyInputDetailStudyOutputDetail (studyOutputDetail) = retailPriceSt
 
 quantityStudyOutputDetail 'Количество выхода п/ф' (studyOutputDetail) =  [X*Y/100]
     (percGoodsStudyOutputDetail(studyOutputDetail), quantityStudyInputDetailStudyOutputDetail(studyOutputDetail));
+
+actualQuantityStudyOutputDetail 'Фактический выхода п/ф'(studyOutputDetail) = DATA DOUBLE (studyOutputDetail);
 
 notRoundRetailPriceStudyOutputDetail 'Цена' (studyOutputDetail) = factorStudyOutputDetail(studyOutputDetail)* retailPriceStudyInputDetailStudyOutputDetail(studyOutputDetail);
 retailPriceStudyOutputDetail 'Розничная цена' (studyOutputDetail) = roundMinus1(notRoundRetailPriceStudyOutputDetail(studyOutputDetail));
@@ -3799,7 +3815,8 @@ FORM actOfStudy 'Акт проработки'
 
     OBJECTS a=actOfStudy FIXED PANEL
 
-    PROPERTIES(a)      name, numberActOfStudy, nameDepartmentStoreActOfStudy, timeCreated, nameUserCreated, hostnameComputerCreated
+    PROPERTIES(a)      name, numberActOfStudy, nameDepartmentStoreActOfStudy, timeCreated, nameContractorDepartmentStoreActOfStudy,
+                       waybillOutputActOfStudy, seriesOutputActOfStudy, waybillInputActOfStudy, seriesInputActOfStudy
 
     OBJECTS sid=studyInputDetail
     OBJECTS sod=studyOutputDetail
@@ -3812,7 +3829,7 @@ FORM actOfStudy 'Акт проработки'
                     cleanAllStudyInputDetail FORCE PANEL, ADDOBJ, delete
 
     PROPERTIES(sod) READONLY captionItemStudyOutputDetail, shortNameUnitOfMeasureItemStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
-                    quantityStudyOutputDetail, retailPriceStudyOutputDetail, totalStudyOutputDetail
+                    quantityStudyOutputDetail, actualQuantityStudyOutputDetail, retailPriceStudyOutputDetail, totalStudyOutputDetail
 
     FILTERS         actOfStudyStudyInputDetail(sid)==a,
                     isStudyInputDetailStudyOutputDetail(sid, sod)
@@ -3829,16 +3846,32 @@ DESIGN actOfStudy FROM DEFAULT {
 }
 
 
+//    PROPERTIES(in)  ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL SHOWIF isDraftInventory(in),
+//                    postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)
+
 
 
 FORM actOfStudies 'Акты проработки'
 
     OBJECTS a=actOfStudy
-    PROPERTIES(a)      READONLY numberActOfStudy, nameDepartmentStoreActOfStudy, timeCreated, nameUserCreated, hostnameComputerCreated
-    PROPERTIES(a)      ADDFORM, EDITFORM, delete
+    PROPERTIES(a)      READONLY objectClassName, numberActOfStudy, nameDepartmentStoreActOfStudy, timeCreated FORCE PANEL,
+                       nameUserCreated FORCE PANEL, hostnameComputerCreated FORCE PANEL, timeClosed, nameUserClosed, hostnameComputerClosed
+    PROPERTIES(a)      ADDFORM, EDITFORM SHOWIF isDraftActOfStudy(a), delete FORCE PANEL SHOWIF isDraftActOfStudy(a),
+                       postActOfStudy SHOWIF isDraftActOfStudy(a), unpostActOfStudy SHOWIF isPostedActOfStudy(a)
 ;
 
-
+DESIGN actOfStudies FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 25;
+    }
+    PROPERTY (delete(a)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+    POSITION a.historyGroup TO THE LEFT a.postedGroup;
+//    ADD il.grid.box BEFORE in.historyGroup;
+//    il.grid.box {title = 'Товары с недостачей (излишком)';};
+}
 
 
 
