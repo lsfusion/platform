@@ -68,7 +68,7 @@ public class GridController {
         boolean hasClassChoosers = false;
         for (final ClientObject object : key.groupObject.objects) {
             if (object.classChooser.show) {
-                ToolbarGridButton classButton = new ToolbarGridButton("/images/side_expand.gif", ClientResourceBundle.getString("form.tree.show", object.caption)) {
+                ToolbarGridButton classButton = new ToolbarGridButton("/images/side_expand.png", ClientResourceBundle.getString("form.tree.show", object.caption)) {
                     ActionListener collapseListener = new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             setVisible(true);
