@@ -7,18 +7,15 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.OrderInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,25 +32,28 @@ public class DeleteObjectActionProperty extends CustomActionProperty {
     public void execute(ExecutionContext context) throws SQLException {
         // после удаления выбираем соседний объект
         DataObject nearObject = null;
-        List<Map<ObjectInstance, DataObject>> keys = ((CustomObjectInstance) context.getSingleObjectInstance()).groupTo.keys.keyList();
-        for (Map<ObjectInstance, DataObject> key : keys) {
-            if (key.values().contains(context.getSingleKeyValue()) && nearObject == null) {
-                int index = keys.indexOf(key);
-                if (keys.size() == 1)
-                    continue;
-                index = index == keys.size() - 1 ? index - 1 : index + 1;
-                nearObject = keys.get(index).get(context.getSingleObjectInstance());
+        PropertyObjectInterfaceInstance objectInstance = context.getSingleObjectInstance();
+        if (objectInstance != null) {
+            List<Map<ObjectInstance, DataObject>> keys = ((CustomObjectInstance) objectInstance).groupTo.keys.keyList();
+            for (Map<ObjectInstance, DataObject> key : keys) {
+                if (key.values().contains(context.getSingleKeyValue()) && nearObject == null) {
+                    int index = keys.indexOf(key);
+                    if (keys.size() == 1)
+                        continue;
+                    index = index == keys.size() - 1 ? index - 1 : index + 1;
+                    nearObject = keys.get(index).get(objectInstance);
+                }
             }
         }
 
-        if (context.isInFormSession() && context.getSingleObjectInstance() != null) {
-            context.getFormInstance().changeClass((CustomObjectInstance) context.getSingleObjectInstance(), context.getSingleKeyValue(), -1);
+        if (context.isInFormSession() && objectInstance != null) {
+            context.getFormInstance().changeClass((CustomObjectInstance) objectInstance, context.getSingleKeyValue(), -1);
         } else {
             context.getSession().changeClass(context.getSingleKeyValue(), null, context.isGroupLast());
         }
 
         if (nearObject != null)
-            ((CustomObjectInstance) context.getSingleObjectInstance()).groupTo.addSeek(context.getSingleObjectInstance(), nearObject, false);
+            ((CustomObjectInstance) objectInstance).groupTo.addSeek(objectInstance, nearObject, false);
     }
 
     @Override
