@@ -3567,45 +3567,142 @@ DESIGN groupsUser FROM DEFAULT {
 
  //---------------------------- Карты проработки (разруба) ----------------------------------------//
 GROUP cutGroup 'Разделка' : baseGroup;
+GROUP actGroup 'Акт' : publicGroup;
+
 CLASS cutting 'Карта пророботки (разделки)' : named;
 CLASS detailCutting 'Компонента';
 
+CLASS actOfStudy 'Акт пророботки (разделки)' : historyObject;
+CLASS studyInputDetail 'Товар';
+CLASS studyOutputDetail 'Полуфабрикаты';
+
+
+      //      ??????????????????? не понятно что делать с процентом надбавок ??????????????????????   //
+
 sidCutting 'Номер карты (из сборника и прочее)' = DATA INTEGER (cutting) IN cutGroup;
 dateCutting 'Дата создания' = DATA DATE (cutting) IN cutGroup;
+
+dateCutting(cutting) <- currentDate() ON ASSIGN cutting IS cutting;
 useCutting 'Используется' = DATA BOOLEAN (cutting) IN cutGroup;
 //             номер из сборника.....
 descriptionCutting 'Описание' = DATA STRING[200] (cutting) IN cutGroup;
-percAllowancesCutting 'Процент надбавок' = DATA DOUBLE (cutting) IN cutGroup;
-percLossesCutting 'Процент потерь' = DATA DOUBLE (cutting) IN cutGroup;
-percSweepsCutting 'Процент зачисток' = DATA DOUBLE (cutting) IN cutGroup;
-InDepartmentStoreCutting 'В каких подразделениях разрешено использовать карту' = DATA BOOLEAN (departmentStore, cutting) IN baseGroup;
+percAllowancesCutting 'Процент надбавок, %' = DATA DOUBLE (cutting) IN cutGroup;
+percLossesCutting 'Процент потерь, %' = DATA DOUBLE (cutting) IN cutGroup;
+percSweepsCutting 'Процент зачисток, %' = DATA DOUBLE (cutting) IN cutGroup;
+inDepartmentStoreCutting 'В каких подразделениях разрешено использовать карту' = DATA BOOLEAN (departmentStore, cutting) IN baseGroup;
 
 cuttingDetailCutting 'Строка ИД' = DATA cutting (detailCutting) IN idGroup;
 sidCuttingDetailCutting 'Номер карты' (detailCutting) =  sidCutting(cuttingDetailCutting(detailCutting)) IN cutGroup;
 itemDetailCutting 'Товар ИД' = DATA item (detailCutting) IN idGroup;
 shortNameUnitOfMeasureItemDetailCutting 'Ед.изм.' (detailCutting) = shortNameUnitOfMeasureItem(itemDetailCutting(detailCutting)) IN cutGroup;
-captionItemDetailCutting 'Наименование товара' (detailCutting) = captionItem (itemDetailCutting(detailCutting)) IN cutGroup;
+captionItemDetailCutting 'Наименование компонента' (detailCutting) = captionItem (itemDetailCutting(detailCutting)) IN cutGroup;
 factorDetailCutting 'Рассчетный коэффициент цены' = DATA DOUBLE (detailCutting) IN cutGroup;
-percGoodsDetailCutting '% выхода товара' = DATA DOUBLE (detailCutting) IN cutGroup;
+percGoodsDetailCutting '% выхода компонента (п/ф)' = DATA DOUBLE (detailCutting) IN cutGroup;
+
+notTotalPercGoodsDetailCutting (cutting) = GROUP SUM percGoodsDetailCutting(detailCutting) BY cuttingDetailCutting(detailCutting);
+totalPercGoodsDetailCutting 'Итого по карте проработки (разделки)' (cutting) = notTotalPercGoodsDetailCutting(cutting)+ percLossesCutting(cutting)+ percSweepsCutting(cutting);
+highlightCutting(cutting) = totalPercGoodsDetailCutting(cutting) > 100;
 
 uniqueDetailCuttingCutting 'Компонента по карте переработки и товару' (cutting, item) = GROUP UNIQUE detailCutting BY cuttingDetailCutting(detailCutting), itemDetailCutting(detailCutting);
 isCuttingDetailCutting(cutting, detailCutting) = cuttingDetailCutting(detailCutting) == cutting;
 
 inItemCutting 'Вкл.' = DATA BOOLEAN (item, cutting) IN cutGroup;
 
+departmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idGroup;
+nameDepartmentStoreActOfStudy 'Подразделение' (actOfStudy) = name(departmentStoreActOfStudy(actOfStudy));
+numberActOfStudy 'Номер акта' = DATA STRING[10] (actOfStudy) IN baseGroup;
+
+actOfStudyStudyInputDetail = DATA actOfStudy (studyInputDetail) IN idGroup;
+
+departmentStoreStudyInputDetail (studyInputDetail) = departmentStoreActOfStudy(actOfStudyStudyInputDetail(studyInputDetail));
+dateTimeStudyInputDetail (studyInputDetail) = timeCreated(actOfStudyStudyInputDetail(studyInputDetail));
+
+itemStudyInputDetail = DATA item (studyInputDetail) IN idGroup;
+nameAttributeItemStudyInputDetail 'Товар' (studyInputDetail) = nameAttributeItem(itemStudyInputDetail(studyInputDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+counterStudyInputDetail 'Порядковый номер' (studyInputDetail) = PARTITION SUM 1 IF studyInputDetail IS studyInputDetail
+    BY actOfStudyStudyInputDetail(studyInputDetail) ORDER studyInputDetail IN baseGroup;
+
+cuttingStudyInputDetail = DATA cutting (studyInputDetail) IN idGroup;
+sidCuttingStudyInputDetail 'Номер карты' (studyInputDetail) = sidCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
+dateCuttingStudyInputDetail 'Дата создания карты' (studyInputDetail) = dateCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
+descriptionCuttingStudyInputDetail 'Описание' (studyInputDetail) = descriptionCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+percAllowancesCuttingStudyInputDetail 'Процент надбавок, %' (studyInputDetail) = percAllowancesCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
+percLossesCuttingStudyInputDetail 'Процент потерь, %' (studyInputDetail) = percLossesCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
+percSweepsCuttingStudyInputDetail 'Процент зачисток, %' (studyInputDetail) = percSweepsCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
+
+quantityStudyInputDetail 'Количество для разруба' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
+retailPriceStudyInputDetail 'Цена за ед.' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
+totalStudyInputDetail 'Сумма' (studyInputDetail) = retailPriceStudyInputDetail(studyInputDetail)*quantityStudyInputDetail(studyInputDetail);
+
+inDepartmentStoreCuttingByStudyInputDetail(studyInputDetail) = inDepartmentStoreCutting(departmentStoreStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail));
+inItemCuttingByStudyInputDetail (studyInputDetail) = inItemCutting(itemStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail));
+useCuttingStudyInputDetail 'Используется' (studyInputDetail) = useCutting(cuttingStudyInputDetail(studyInputDetail));
+
+useCuttingByStudyInputDetail 'Пригодная карта для товара, подразделения и исп-ся' (studyInputDetail) =
+    inItemCutting(itemStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail)) AND
+    inDepartmentStoreCutting(departmentStoreStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail)) AND
+    useCuttingStudyInputDetail(studyInputDetail);
+
+studyInputDetailStudyOutputDetail = DATA studyInputDetail (studyOutputDetail) IN idGroup;
+
+itemStudyOutputDetail 'Товар' = DATA item (studyOutputDetail) IN idGroup;
+shortNameUnitOfMeasureItemStudyOutputDetail 'Ед.изм.' (studyOutputDetail) = shortNameUnitOfMeasureItem(itemStudyOutputDetail(studyOutputDetail)) IN actGroup;
+captionItemStudyOutputDetail 'Наименование компонента' (studyOutputDetail) = captionItem (itemStudyOutputDetail(studyOutputDetail)) IN actGroup;
+factorStudyOutputDetail 'Рассчетный коэффициент цены' = DATA DOUBLE (studyOutputDetail) IN actGroup;
+percGoodsStudyOutputDetail '% выхода компонента (п/ф)' = DATA DOUBLE (studyOutputDetail) IN actGroup;
+
+quantityStudyInputDetailStudyOutputDetail (studyOutputDetail) = quantityStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
+retailPriceStudyInputDetailStudyOutputDetail (studyOutputDetail) = retailPriceStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
+
+quantityStudyOutputDetail 'Количество выхода п/ф' (studyOutputDetail) =  [X*Y/100]
+    (percGoodsStudyOutputDetail(studyOutputDetail), quantityStudyInputDetailStudyOutputDetail(studyOutputDetail));
+
+notRoundRetailPriceStudyOutputDetail 'Цена' (studyOutputDetail) = factorStudyOutputDetail(studyOutputDetail)* retailPriceStudyInputDetailStudyOutputDetail(studyOutputDetail);
+retailPriceStudyOutputDetail 'Розничная цена' (studyOutputDetail) = roundMinus1(notRoundRetailPriceStudyOutputDetail(studyOutputDetail));
+totalStudyOutputDetail 'Сумма' (studyOutputDetail)= retailPriceStudyOutputDetail(studyOutputDetail) * quantityStudyOutputDetail(studyOutputDetail);
+
+//isDetailCuttingStudyOutputDetail (detailCutting, studyOutputDetail) = cuttingDetailCutting(detailCutting) == cuttingStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
+isStudyInputDetailStudyOutputDetail (studyInputDetail, studyOutputDetail) = studyInputDetailStudyOutputDetail(studyOutputDetail) == studyInputDetail;
+
+
+toFillStudyOutputDetailsStudyInputDetail 'Заполнить данные для п/ф' (studyInputDetail) =  ACTION (studyInputDetail) {
+    FOR cuttingDetailCutting(detailCutting) == cuttingStudyInputDetail(studyInputDetail) DO {
+        ADDOBJ studyOutputDetail;
+        FOR sod == addedObject() DO {
+            SET itemStudyOutputDetail(sod) <- itemDetailCutting(detailCutting);
+            SET factorStudyOutputDetail(sod) <- factorDetailCutting(detailCutting);
+            SET percGoodsStudyOutputDetail(sod) <- percGoodsDetailCutting(detailCutting);
+        };
+    }
+} CONFIRM;
+
+showNotStudyInputDetailStudyOutputDetail(studyInputDetail, studyOutputDetail) = studyInputDetail IS studyInputDetail AND NOT studyInputDetailStudyOutputDetail(studyOutputDetail);
+
+
+cleanAllStudyInputDetail 'Очистить документ' = ACTION (studyInputDetail) {
+    FOR studyInputDetailStudyOutputDetail(studyOutputDetail) == studyInputDetail DO {
+        EXEC delete(studyOutputDetail AS studyOutputDetail);
+    }
+} CONFIRM;
+
+
 FORM cutting 'Карта проработки'
 OBJECTS c=cutting FIXED PANEL
 OBJECTS d=detailCutting, dep=departmentStore, i=item
 PROPERTIES(c)      sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting, percSweepsCutting
+PROPERTIES(c)         totalPercGoodsDetailCutting TODRAW d FORCE PANEL  HIGHLIGHTIF highlightCutting(c)
+
 PROPERTIES(d)      captionItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting, ADDOBJ, delete
 PROPERTIES(dep)    nameStoreDepartmentStore, name
 PROPERTIES(i)      nameAttributeItem, shortNameUnitOfMeasureItem, nameBrandItem
-PROPERTIES(dep, c) InDepartmentStoreCutting
+PROPERTIES(dep, c) inDepartmentStoreCutting
 PROPERTIES(i, c)   inItemCutting
 
 FILTERS isCuttingDetailCutting(c, d)
 FILTERGROUP filters7
-    FILTER 'Показывать подразделения только для данной карты' 'F10' InDepartmentStoreCutting(dep, c) DEFAULT
+    FILTER 'Показывать подразделения только для данной карты' 'F10' inDepartmentStoreCutting(dep, c) DEFAULT
 FILTERGROUP filters8
     FILTER 'Показывать товар только для данной карты' 'F9' inItemCutting(i, c) DEFAULT
 
@@ -3613,6 +3710,8 @@ EDIT cutting OBJECT c;
 
 DESIGN cutting FROM DEFAULT {
     main{
+       preferredSize = (1024, 768);
+
        NEW cut.box BEFORE functions.box{
             tabbedPane = TRUE;
             ADD d.box;
@@ -3636,12 +3735,12 @@ FORM cuttings 'Карты проработки'
     OBJECTS i=item
     PROPERTIES(i)      READONLY nameAttributeItem, shortNameUnitOfMeasureItem, nameBrandItem
 
-    PROPERTIES(dep, c) READONLY InDepartmentStoreCutting
+    PROPERTIES(dep, c) READONLY inDepartmentStoreCutting
 
     PROPERTIES(i, c) READONLY inItemCutting
 
     FILTERS   isCuttingDetailCutting(c, d),
-              InDepartmentStoreCutting(dep, c),
+              inDepartmentStoreCutting(dep, c),
               inItemCutting(i, c)
     ORDER BY           nameStoreDepartmentStore, sidCutting, captionItemDetailCutting, name
 ;
@@ -3662,6 +3761,86 @@ DESIGN cuttings FROM DEFAULT {
        }
    }
 }
+
+FORM sidCuttingStudyInputDetail 'Возможные карты проработки'
+    OBJECTS dep=departmentStore FIXED PANEL, i=item FIXED PANEL
+
+    PROPERTIES         READONLY depName = name(dep)
+    PROPERTIES         READONLY nameAttributeItem(i)
+
+    OBJECTS c=cutting
+    PROPERTIES(c)      READONLY sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting,
+                       percSweepsCutting, totalPercGoodsDetailCutting
+
+    FILTERS            inDepartmentStoreCutting(dep, c),
+                       inItemCutting(i, c),
+                       useCutting(c)
+;
+
+DESIGN sidCuttingStudyInputDetail FROM DEFAULT {
+    PROPERTY(depName) {
+        focusable = FALSE;
+    }
+    PROPERTY(nameAttributeItem) {
+        focusable = FALSE;
+    }
+}
+
+showSidCuttingStudyInputDetail 'Карта проработки' = ACTION (detail) {
+    EXEC [ACTION FORM sidCuttingStudyInputDetail OBJECTS dep, i MODAL](departmentStoreStudyInputDetail(detail), itemStudyInputDetail(detail));//  DEFAULT;        //sidCuttingStudyInputDetail
+    IF formResult() == formResult.ok THEN {
+        SET cuttingStudyInputDetail(detail) <- chosenObject('c');
+    }
+} SHORTCUT sidCuttingStudyInputDetail DEFAULT;
+
+
+
+FORM actOfStudy 'Акт проработки'
+
+    OBJECTS a=actOfStudy FIXED PANEL
+
+    PROPERTIES(a)      name, numberActOfStudy, nameDepartmentStoreActOfStudy, timeCreated, nameUserCreated, hostnameComputerCreated
+
+    OBJECTS sid=studyInputDetail
+    OBJECTS sod=studyOutputDetail
+
+    PROPERTIES(sid) nameAttributeItemStudyInputDetail, showSidCuttingStudyInputDetail
+    PROPERTIES(sid) READONLY sidCuttingStudyInputDetail, dateCuttingStudyInputDetail, descriptionCuttingStudyInputDetail,
+                    percAllowancesCuttingStudyInputDetail, percLossesCuttingStudyInputDetail, percSweepsCuttingStudyInputDetail,
+                    retailPriceStudyInputDetail
+    PROPERTIES(sid) quantityStudyInputDetail, totalStudyInputDetail, toFillStudyOutputDetailsStudyInputDetail FORCE PANEL SHOWIF showNotStudyInputDetailStudyOutputDetail(sid,sod),
+                    cleanAllStudyInputDetail FORCE PANEL, ADDOBJ, delete
+
+    PROPERTIES(sod) READONLY captionItemStudyOutputDetail, shortNameUnitOfMeasureItemStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
+                    quantityStudyOutputDetail, retailPriceStudyOutputDetail, totalStudyOutputDetail
+
+    FILTERS         actOfStudyStudyInputDetail(sid)==a,
+                    isStudyInputDetailStudyOutputDetail(sid, sod)
+//                  inDepartmentStoreCuttingByStudyInputDetail(sid) AND inItemCuttingByStudyInputDetail(sid) AND useCuttingStudyInputDetail(sid)
+
+    EDIT actOfStudy OBJECT a
+;
+
+DESIGN actOfStudy FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+    }
+
+}
+
+
+
+
+FORM actOfStudies 'Акты проработки'
+
+    OBJECTS a=actOfStudy
+    PROPERTIES(a)      READONLY numberActOfStudy, nameDepartmentStoreActOfStudy, timeCreated, nameUserCreated, hostnameComputerCreated
+    PROPERTIES(a)      ADDFORM, EDITFORM, delete
+;
+
+
+
+
 
 //---------------------------- Рецепты блюд ----------------------------------------//
 CLASS recipe 'Рецепт' : named;
@@ -4423,7 +4602,7 @@ nameItemPriceChangeStatementDetail 'Товар' (priceChangeStatementDetail) = n
 quantityPriceChangeStatementDetail 'Количество' (priceChangeStatementDetail) = quantityStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
 
 oldImporterPriceChangeStatementDetail 'Старая цена изготовителя' (priceChangeStatementDetail) = oldImporterPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
-importerPriceChangeStatementDetail 'Новая цена изготовителя' (priceChangeStatementDetail) = oldImporterPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
+//importerPriceChangeStatementDetail 'Новая цена изготовителя' (priceChangeStatementDetail) = oldImporterPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
                                      //  пока что цена изготовителя старая и новая равны   //
 oldDataRetailRangePriceChangeStatementDetail 'Старый НДС, %' (priceChangeStatementDetail) = oldDataRetailRangeStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
                                     //  пока что НДС старый и новый равны   //
@@ -4845,7 +5024,7 @@ FORM shipment 'Поставка'
                                priceWareShipmentDetail SHOWIF inWareShipmentDetail(d), controlExpiryShipmentDetail, isManufacturedShipmentDetail,
                                isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail, hintShipmentDetail,
                                nameCountryShipmentDetail, namebanRevaluationItemDepartmentShipmentDetail,
-                               oldImporterPriceShipmentDetail, oldDataRetailRangeShipmentDetail, oldPriceWarePriceChangeShipmentDetail SHOWIF inWareShipmentDetail(d)
+                               oldImporterPriceShipmentDetail, oldDataRetailRangeShipmentDetail, oldPriceWareShipmentDetail SHOWIF inWareShipmentDetail(d)
 
     PROPERTIES addShipmentDetailBarcode(s) TODRAW d
 
@@ -6360,7 +6539,11 @@ DESIGN writeOffs FROM DEFAULT {
 
 retailPriceDetailSpec (detailSpec) <- priceRetailBLedgerDateTime(
                 itemDetailSpec(detailSpec), departmentStoreDetailSpec(detailSpec), dateTimeDetailSpec(detailSpec))
-                ON CHANGE itemDetailSpec(detailSpec);
+                ON CHANGE itemDetailSpec(detailSpec);    
+                                
+retailPriceStudyInputDetail (studyInputDetail) <- priceRetailBLedgerDateTime(
+                itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
+                ON CHANGE itemStudyInputDetail(studyInputDetail);                                    
 
 oldImporterPriceStatementDetail (statementDetail) <- priceImporterBLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
@@ -6528,7 +6711,7 @@ oldImporterPriceChangeDocumentDetail 'Старая цена изготовите
                                                                                                               oldImporterPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                               importerPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 importerPriceChangeDocumentDetail 'Новая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                                          importerPriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                          oldImporterPriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                           importerPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                           importerPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
@@ -7493,6 +7676,9 @@ NAVIGATOR {
         NEW priceManagement 'Управление ценами' {
             ADD userPriceChanges;
         }
+        NEW production 'Производство'{
+            ADD actOfStudies;
+        }
     }
     NEW accountInfo 'Сводная информация' TO formsToolbar{
         ADD balanceItemDepartment;
@@ -7643,6 +7829,8 @@ NAVIGATOR {
             ADD bill;
             ADD commonInfoBatchReturnSupplierDetail;
             ADD discountCard;
+            ADD actOfStudy;
+            ADD sidCuttingStudyInputDetail;
         }
         ADD importData;
     }
