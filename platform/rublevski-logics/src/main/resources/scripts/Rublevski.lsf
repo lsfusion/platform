@@ -7617,6 +7617,8 @@ DESIGN balanceItemDepartment FROM DEFAULT {
 
 //---------------------------------------------- Форма поставки товаров в отдел -------------------------------------//
 
+inSupplierItemDepartmentOver(sp, i, dep, t) = isSupplierItemDepartmentOver(sp, i, dep, t) == yesNo.yes;
+
 FORM isSupplierItemDepartmentStore 'Ассортимент товаров в подразделении'
 
     OBJECTS t=DATE FIXED PANEL
@@ -7639,7 +7641,7 @@ FORM isSupplierItemDepartmentStore 'Ассортимент товаров в п�
     FILTERS           inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     FILTERS           hasParentItemGroupSku(g, i)
     FILTERGROUP filters10
-        FILTER 'Показывать поставляемые товары' 'F10' isSupplierItemDepartmentOver(sp, i, dep, t) DEFAULT;
+        FILTER 'Показывать поставляемые товары' 'F10' inSupplierItemDepartmentOver(sp, i, dep, t) DEFAULT;
 
 DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
     main{
