@@ -4794,7 +4794,6 @@ dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = d
 
 CONSTRAINT CHECKED  taxRange(retailRangeShipmentDetail(shipmentDetail)) != taxNDSShipmentDetail(shipmentDetail) MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
-
 retailRangeShipmentDetail(shipmentDetail) <- overrideRateRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 wareShipmentDetail 'Посуда (ИД)' (shipmentDetail) = DATA ware(shipmentDetail) IN idGroup;
@@ -4998,6 +4997,7 @@ nameSupplierPriceChangeShipment 'Поставщик' (priceChangeShipment) = nam
 
 departmentStorePriceChangeShipment (priceChangeShipment) = departmentStoreShipment(shipmentPriceChangeShipment(priceChangeShipment));
 nameDepartmentStorePriceChangeShipment 'Отдел магазина' (priceChangeShipment) = name(departmentStorePriceChangeShipment(priceChangeShipment));
+
 
 // атрибуты детализации документа переоценки
 
@@ -5724,6 +5724,13 @@ dataSuppliersRangeReturnSupplierDetail 'НДС поставщика, %' (returnS
 dataSuppliersRangeReturnSupplierDetail (returnSupplierDetail) <- dataSuppliersRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                                                      ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
+wareReturnSupplierDetail 'Посуда (ИД)' (returnSupplierDetail) = wareShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
+nameWareReturnSupplierDetail 'Посуда ' (returnSupplierDetail) = nameWareShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
+
+priceWareReturnSupplierDetail 'Цена посуды' (returnSupplierDetail) = priceWareShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
+
+dataWareRangeReturnSupplierDetail 'НДС по посуде' (returnSupplierDetail) = dataWareRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
+
 sumPriceReturnSupplierDetail 'Сумма без НДС' (returnSupplierDetail) =
     priceReturnSupplierDetail(returnSupplierDetail) * quantityReturnSupplierDetail(returnSupplierDetail);
 
@@ -6173,6 +6180,7 @@ META metaCodeItemDepartmentStoreLedger(prefix)
 
 END
 
+
 // Цена изготовителя / импортера
 dateTimeImporterPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
                                                                     dateTimeInnerArrivalDetail(ledger),
@@ -6408,6 +6416,62 @@ needToPriceChangeReturnSupplier (returnSupplier) = GROUP SUM 1 IF needToPriceCha
 
 @metaCodeDetailAggregation(returnSupplier, priceChangeReturnSupplier, needToPriceChangeReturnSupplier);
 
+// атрибуты документа переоценки
+
+dateTimePriceChangeReturnSupplier 'Дата/время' (priceChangeReturnSupplier) = dateTimeReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+datePriceChangeReturnSupplier 'Дата' (priceChangeReturnSupplier) = dateReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+isPostedPriceChangeReturnSupplier 'Закрыт' (priceChangeReturnSupplier) = isPostedReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+waybillPriceChangeReturnSupplier 'Номер накладной' (priceChangeReturnSupplier) = waybillReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+seriesWaybillPriceChangeReturnSupplier 'Серия накладной' (priceChangeReturnSupplier) = seriesWaybillReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+descriptionPriceChangeReturnSupplier 'Название документа' (priceChangeReturnSupplier) = descriptionReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+
+supplierPriceChangeReturnSupplier (priceChangeReturnSupplier) = supplierReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+nameSupplierPriceChangeReturnSupplier 'Поставщик' (priceChangeReturnSupplier) = name(supplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+
+departmentStorePriceChangeReturnSupplier (priceChangeReturnSupplier) = departmentStoreReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+nameDepartmentStorePriceChangeReturnSupplier 'Отдел магазина' (priceChangeReturnSupplier) = name(departmentStorePriceChangeReturnSupplier(priceChangeReturnSupplier));
+
+// атрибуты детализации документа переоценки
+
+itemPriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) =
+    itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+nameItemPriceChangReturnSupplierDetail 'Товар' (priceChangeReturnSupplierDetail) =
+    nameAttributeItem(itemPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+
+quantityPriceChangeReturnSupplierDetail 'Остаток' (priceChangeReturnSupplierDetail) =
+    quantityReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+
+oldImporterPriceChangeReturnSupplierDetail 'Старая цена изготовителя' (priceChangeReturnSupplierDetail) =
+    priceImporterBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
+                                 departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
+                                 dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
+importerPriceChangeReturnSupplierDetail 'Новая цена изготовителя' (priceChangeReturnSupplierDetail) =
+    priceReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+
+oldDataRetailRangePriceChangeReturnSupplierDetail 'Старый НДС, %' (priceChangeReturnSupplierDetail) =
+    dataRetailReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+dataRetailRangePriceChangeReturnSupplierDetail 'Новый НДС, %' (priceChangeReturnSupplierDetail) =
+    dataRetailRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
+
+oldRetailPriceChangeReturnSupplierDetail 'Старая розничная цена' (priceChangeReturnSupplierDetail) =
+    priceRetailReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+retailPriceChangeReturnSupplierDetail 'Новая розничная цена' (priceChangeReturnSupplierDetail) =
+    retailPriceShipmentDetail(batchReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
+
+warePriceChangeReturnSupplierDetail 'Новая посуда' (priceChangeReturnSupplierDetail) =
+    wareReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+priceWarePriceChangeReturnSupplierDetail 'Новая цена посуды' (priceChangeReturnSupplierDetail) =
+    priceWareReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+
+oldWarePriceChangeReturnSupplierDetail 'Старая посуда' (priceChangeReturnSupplierDetail) =
+    wareBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
+                        departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
+                        dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
+oldPriceWarePriceChangeReturnSupplierDetail 'Старая цена посуды' (priceChangeReturnSupplierDetail) =
+    priceWareBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
+                             departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
+                             dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
+
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
@@ -6428,13 +6492,15 @@ FORM returnSupplier 'Возврат поставщику'
     OBJECTS d=returnSupplierDetail
     PROPERTIES(d) numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
                   commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, priceReturnSupplierDetail,
-                  supplierMarkupReturnSupplierDetail, dataRetailReturnSupplierDetail, priceRetailReturnSupplierDetail
+                  supplierMarkupReturnSupplierDetail, nameWareReturnSupplierDetail, dataRetailReturnSupplierDetail,
+                  priceRetailReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
     PROPERTIES addReturnSupplierDetailBarcode(r) TODRAW d
     PROPERTIES FORCE PANEL READONLY controlExpiryReturnSupplierDetail(d), isManufacturedReturnSupplierDetail(d),
                                     isWeightReturnSupplierDetail(d), nameinActionItemDepartmentReturnSupplierDetail(d),
                                     hintReturnSupplierDetail(d), nameCountryReturnSupplierDetail(d),
-                                    namebanRevaluationItemDepartmentReturnSupplierDetail(d)
+                                    namebanRevaluationItemDepartmentReturnSupplierDetail(d), priceWareReturnSupplierDetail(d),
+                                    dataWareRangeReturnSupplierDetail(d)
 
     FILTERS isReturnSupplier(r, d)
 
@@ -6572,11 +6638,11 @@ DESIGN writeOffs FROM DEFAULT {
 
 retailPriceDetailSpec (detailSpec) <- priceRetailBLedgerDateTime(
                 itemDetailSpec(detailSpec), departmentStoreDetailSpec(detailSpec), dateTimeDetailSpec(detailSpec))
-                ON CHANGE itemDetailSpec(detailSpec);    
-                                
+                ON CHANGE itemDetailSpec(detailSpec);
+
 retailPriceStudyInputDetail (studyInputDetail) <- priceRetailBLedgerDateTime(
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                ON CHANGE itemStudyInputDetail(studyInputDetail);                                    
+                ON CHANGE itemStudyInputDetail(studyInputDetail);
 
 oldImporterPriceStatementDetail (statementDetail) <- priceImporterBLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
@@ -6729,39 +6795,51 @@ documentPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE 
                                                                                 userPriceChangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 itemPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE itemPriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                            itemPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                             itemPriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                             itemPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                             itemUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 nameItemPriceChangeDocumentDetail 'Товар' (priceChangeDocumentDetail) = nameAttributeItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = UNION EXCLUSIVE quantityPriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                          quantityPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                           quantityPriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                           quantityPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                           quantityUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldImporterPriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                              oldImporterPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                               oldImporterPriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                               oldImporterPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                               importerPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 importerPriceChangeDocumentDetail 'Новая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPriceChangeShipmentDetail(priceChangeDocumentDetail),
+<<<<<<< .mine
+                                                                                                          importerPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
+                                                                                                          importerPriceChangeStatementDetail(priceChangeDocumentDetail),
+=======
                                                                                                           oldImporterPriceChangeStatementDetail(priceChangeDocumentDetail),
+>>>>>>> .r3833
                                                                                                           importerPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                           importerPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 oldDataRetailRangePriceChangeDocumentDetail 'Старый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldDataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                          oldDataRetailRangePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                           oldDataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                           oldDataRetailRangePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                           dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 dataRetailRangePriceChangeDocumentDetail 'Новый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE dataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                      dataRetailRangePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                       oldDataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                       dataRetailRangePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                       dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldRetailPriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                         oldRetailPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                          oldRetailPriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                          oldRetailPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                          oldRetailPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 retailPriceChangeDocumentDetail 'Новая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE retailPriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                     retailPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                      retailPriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                      retailPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                      retailPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
@@ -6780,12 +6858,14 @@ accountSumChangeDocument 'Сумма переоценки' (priceChangeDocument)
 
 //nameWarePriceChangeDocumentDetail 'Новая посуда' (priceChangeDocumentDetail) = UNION EXCLUSIVE
 //                                                                            nameWarePriceChangeShipmentDetail(priceChangeDocumentDetail),
+//                                                                            nameWarePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
 //                                                                            nameWarePriceChangeStatementDetail(priceChangeDocumentDetail),
 //                                                                            nameWarePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
 //                                                                            nameWareUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 //
 //oldNameWarePriceChangeDocumentDetail 'Старая посуда' (priceChangeDocumentDetail) = UNION EXCLUSIVE
 //                                                                            oldNameWarePriceChangeShipmentDetail(priceChangeDocumentDetail),
+//                                                                            oldNameWarePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
 //                                                                            oldNameWarePriceChangeStatementDetail(priceChangeDocumentDetail),
 //                                                                            oldNameWarePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
 //                                                                            oldNameWareUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
@@ -6793,12 +6873,14 @@ accountSumChangeDocument 'Сумма переоценки' (priceChangeDocument)
 
 priceWarePriceChangeDocumentDetail 'Новая цена посуды' (priceChangeDocumentDetail) = UNION EXCLUSIVE
                                                                                             priceWarePriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                            priceWarePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                             oldPriceWarePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                             priceWarePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                             priceWareUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 oldPriceWarePriceChangeDocumentDetail 'Старая цена посуды' (priceChangeDocumentDetail) = UNION EXCLUSIVE
                                                                                             oldPriceWarePriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                            oldPriceWarePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                             oldPriceWarePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                             oldPriceWarePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                             oldPriceWareUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
@@ -7559,7 +7641,9 @@ FORM isSupplierItemDepartmentStore 'Ассортимент товаров в п�
     ORDER BY          nameDep
     PROPERTIES(sp, i, dep, t) nameisSupplierItemDepartmentOver, priceSupplierItemDepartmentOver
     FILTERS           inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
-    FILTERS           hasParentItemGroupSku(g, i);
+    FILTERS           hasParentItemGroupSku(g, i)
+    FILTERGROUP filters10
+        FILTER 'Показывать поставляемые товары' 'F10' isSupplierItemDepartmentOver(sp, i, dep, t) DEFAULT;
 
 DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
     main{
@@ -7688,6 +7772,7 @@ NAVIGATOR {
             ADD shipments;
             ADD wastages;
             ADD returnSuppliers;
+            ADD isSupplierItemDepartmentStore;
         }
         NEW carryingInventories 'Инвентаризация' {
             ADD inventories;
@@ -7717,7 +7802,6 @@ NAVIGATOR {
         ADD balanceItemDepartment;
         ADD sumAccountDocumentLedger;
         ADD priceChangeDocuments;
-        ADD isSupplierItemDepartmentStore;
     }
 
     ADD adminElement TO formsTree {
