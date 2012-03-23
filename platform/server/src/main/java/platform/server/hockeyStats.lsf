@@ -95,7 +95,7 @@ conferencePlace 'Conf. PL' (team) = PARTITION SUM 1 BY conference(team)
 //partitionPropTest(team) = PARTITION UNGROUP ungroupProp PROPORTION STRICT ROUND(2) proportion(team) BY conference(team) ORDER points(team);
 //limitPropTest(team) = PARTITION UNGROUP ungroupProp LIMIT proportion(team) BY conference(team) ORDER points(team), team;
 
-CONSTRAINT CHECKED hostTeam(team) == guestTeam(team) MESSAGE 'Home and Visitor teams should be different';
+CONSTRAINT hostTeam(team) == guestTeam(team) CHECKED BY hostTeam, guestTeam MESSAGE 'Home and Visitor teams should be different';
 CONSTRAINT extendedGame(game) AND hostGoals(game) > guestGoals(game) + 1 MESSAGE 'Overtime is impossible';
 CONSTRAINT extendedGame(game) AND guestGoals(game) > hostGoals(game) + 1 MESSAGE 'Overtime is impossible';
 CONSTRAINT hostGoals(game) == guestGoals(game) MESSAGE 'The game cannot end in a draw';

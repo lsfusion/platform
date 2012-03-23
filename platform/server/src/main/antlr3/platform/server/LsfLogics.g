@@ -1561,14 +1561,18 @@ forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams prop
 constraintStatement 
 @init {
 	boolean checked = false;
+	List<String> propNames = null;
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedConstraint($expr.property.property, checked, $message.text);
+		self.addScriptedConstraint($expr.property.property, checked, propNames, $message.text);
 	}
 }
-	:	'CONSTRAINT' ('CHECKED' { checked = true; })?
+	:	'CONSTRAINT' 
 		expr=propertyExpression[new ArrayList<String>(), true] { if (inPropParseState()) self.checkNecessaryProperty($expr.property); }
+		('CHECKED' { checked = true; } 
+			('BY' list=nonEmptyCompoundIdList { propNames = $list.ids; })? 
+		)?
 		'MESSAGE' message=STRING_LITERAL
 		';'
 	;

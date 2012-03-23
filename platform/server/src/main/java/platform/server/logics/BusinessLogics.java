@@ -38,6 +38,7 @@ import platform.server.form.entity.LogFormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.PropertyObjectInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.*;
 import platform.server.integration.*;
@@ -1728,13 +1729,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public List<Property> getCheckConstrainedProperties() {
         List<Property> result = new ArrayList<Property>();
         for (Property property : getConstrainedProperties()) {
-            if (property.checkChange) {
+            if (property.checkChange != Property.CheckType.CHECK_NO) {
                 result.add(property);
             }
         }
         return result;
     }
-
+    
+    public List<Property> getCheckConstrainedProperties(PropertyObjectInstance<?> changingProp) {
+        List<Property> result = new ArrayList<Property>();
+        for (Property property : getCheckConstrainedProperties()) {
+            if (property.checkChange == Property.CheckType.CHECK_ALL ||
+                property.checkChange == Property.CheckType.CHECK_SOME && property.checkProperties.contains(changingProp.property)) {
+                result.add(property);
+            }
+        }
+        return result;
+    }
 
     public void fillIDs() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         DataSession session = createSession();

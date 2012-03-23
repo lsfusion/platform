@@ -1295,7 +1295,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         PropertyValueImplement<P> implement = changeProperty.getValueImplement();
 
-        for (MaxChangeProperty<?, P> constrainedProperty : implement.property.getMaxChangeProperties(BL.getCheckConstrainedProperties())) {
+        for (MaxChangeProperty<?, P> constrainedProperty : implement.property.getMaxChangeProperties(BL.getCheckConstrainedProperties(changeProperty))) {
             pullProps.add(constrainedProperty);
             fixedFilters.add(new NotFilterEntity(new NotNullFilterEntity<MaxChangeProperty.Interface<P>>(
                             constrainedProperty.getPropertyObjectEntity(implement.mapping, editForm.object))));

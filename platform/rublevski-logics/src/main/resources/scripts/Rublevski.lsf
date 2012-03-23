@@ -1028,7 +1028,7 @@ barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku) IN 
 
 primarySkuBarcode 'Основной штрих-код' (sku, barcode) = barcodeSku(sku) == barcode;
 
-CONSTRAINT CHECKED skuBarcode(barcodeSku(item)) != item MESSAGE 'Товар основного штрих-кода должен совпадать с товаром';
+CONSTRAINT skuBarcode(barcodeSku(item)) != item CHECKED MESSAGE 'Товар основного штрих-кода должен совпадать с товаром';
 
 barcodeBarcodeSku 'Основной штрих-код' = barcodeEx(barcodeSku(sku)) IN baseGroup PERSISTENT;
 //barcodeToBarcode (barcode) = GROUP UNIQUE barcode BY barcodeEx(barcode);
@@ -1128,7 +1128,7 @@ dayLastOrderGenTimeTable 'Дата последнего заказа' = DATA DAT
 stringNumberGenTimeTable 'Числа месяца поставок (указывать через запятую)' = DATA STRING[100] (genTimeTable);
 transferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья (ИД)' = DATA DOW (genTimeTable);
 nameTransferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья' (genTimeTable) = name(transferDayGenTimeTable(genTimeTable));
-CONSTRAINT CHECKED transferDayGenTimeTable(genTimeTable) != DOW.friday AND transferDayGenTimeTable(genTimeTable) != DOW.monday MESSAGE 'Выберите день с ПН по ПТ';
+CONSTRAINT transferDayGenTimeTable(genTimeTable) != DOW.friday AND transferDayGenTimeTable(genTimeTable) != DOW.monday CHECKED MESSAGE 'Выберите день с ПН по ПТ';
 
 //свойства "По дням недели и месяца"
 inMonthGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, month);
@@ -1477,7 +1477,7 @@ nameTaxSuppliersItem 'Налог' (item) = nameTaxRange(suppliersRangeItem(item)
 dataSuppliersRangeItem 'Шкала НДС' (item) = dataRange(suppliersRangeItem(item)) IN suppliersNDSGroup;
 dataActingRateSuppliersRangeItem 'НДС поставщика,%' (item) = dataActingRateRange(suppliersRangeItem(item)) IN suppliersNDSGroup;
 
-CONSTRAINT CHECKED taxRange(suppliersRangeItemDate(item, date)) != tax.taxNDS  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(suppliersRangeItemDate(item, date)) != tax.taxNDS CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 FORM addSuppliersRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE FIXED PANEL
@@ -1523,7 +1523,7 @@ dataActingRateRetailRangeItem 'Розничный НДС' (item) = dataActingRat
 
 //retailRangeItem(item) = DATA range (item) IN idGroup;
 //dataRetailRateRangeItem 'Розничный НДС' (item) = dataActingRateRange(retailRangeItem(item)) IN retailGroup;
-CONSTRAINT CHECKED retailTaxNDSItem(item) != taxRange(retailRangeItem(item))  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT retailTaxNDSItem(item) != taxRange(retailRangeItem(item)) CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 FORM addRetailRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE FIXED PANEL
@@ -1716,7 +1716,7 @@ nameTaxWare 'Налог' (ware) = nameTaxRange(rangeWare(ware)) IN baseGroup;
 dataRangeWare 'Шкала НДС' (ware) = dataRange(rangeWare(ware)) IN baseGroup;
 dataActingRateRangeWare 'НДС,%' (ware) = dataActingRateRange(rangeWare(ware)) IN baseGroup;
 
-CONSTRAINT CHECKED taxRange(rangeWareDate(ware, date)) != tax.taxNDS  MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(rangeWareDate(ware, date)) != tax.taxNDS CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 
 FORM addRangeWare 'Добавить Шкалу'
@@ -2127,8 +2127,8 @@ chairmanCommittee 'Председатель комиссии (ИД)' = DATA empl
 commonNameChairmanCommittee 'Председатель комиссии' (committee) = commonName(chairmanCommittee(committee)) IN baseGroup;
 departmentStoreCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (committee);
 nameDepartmentStoreCommittee 'Отдел комиссии' (committee) = commonName(departmentStoreCommittee(committee)) IN baseGroup;
-CONSTRAINT CHECKED chairmanCommittee(committee) IF committee IS revaluationCommittee AND NOT departmentStoreEmployee(departmentStoreCommittee(committee), chairmanCommittee(committee))  MESSAGE 'Отдел комиссии должен соответствовать отделу председателя комиссии';
-CONSTRAINT CHECKED departmentStoreCommittee(revaluationCommitteeDepartmentStore(departmentStore)) != departmentStore MESSAGE 'Отдел комиссии должен соответствовать текущему отделу';
+CONSTRAINT chairmanCommittee(committee) IF committee IS revaluationCommittee AND NOT departmentStoreEmployee(departmentStoreCommittee(committee), chairmanCommittee(committee)) CHECKED MESSAGE 'Отдел комиссии должен соответствовать отделу председателя комиссии';
+CONSTRAINT departmentStoreCommittee(revaluationCommitteeDepartmentStore(departmentStore)) != departmentStore CHECKED MESSAGE 'Отдел комиссии должен соответствовать текущему отделу';
 CONSTRAINT committee IS committee AND NOT chairmanCommittee(committee) MESSAGE 'Ошибка: не задан председатель комиссии';
 
 inCommitteeEmployee 'Является членом комиссии' (committee, employee) = DATA BOOLEAN (committee, employee);
@@ -2258,7 +2258,7 @@ defaultAccountLegalEntity(legalEntity) = GROUP MAX account AS account BY legalEn
 overrideAccountLegalEntity 'Основной р/сч.' (legalEntity) = UNION OVERRIDE defaultAccountLegalEntity(legalEntity), userAccountLegalEntity(legalEntity);
 dataOverrideAccountLegalEntity 'Основной р/сч.' (legalEntity) = dataAccount(overrideAccountLegalEntity(legalEntity)) IN lawGroup;
 
-CONSTRAINT CHECKED legalEntity != legalEntityAccount(userAccountLegalEntity(legalEntity)) MESSAGE 'ошибка: Р/сч. по умолчанию должен соответствовать р/сч. Ю.Л.';
+CONSTRAINT legalEntity != legalEntityAccount(userAccountLegalEntity(legalEntity)) CHECKED MESSAGE 'ошибка: Р/сч. по умолчанию должен соответствовать р/сч. Ю.Л.';
 equalsLegalEntityAccount 'Основной р/сч.' (legalEntity, account) = userAccountLegalEntity(legalEntity) == account;
 
 legalEntityLicense 'ЮЛ (ИД)' = DATA legalEntity (license) IN idGroup;
@@ -2274,7 +2274,7 @@ dataActingLicenseLegalEntity 'Действующая лицензия' (legalEnt
 //overrideLicenseLegalEntity 'Действующая' (legalEntity) = UNION OVERRIDE defaultLicenseLegalEntity(legalEntity) IF dateFromLicense(defaultLicenseLegalEntity(legalEntity)) < currentDate() AND dateToLicense(defaultLicenseLegalEntity(legalEntity)) > currentDate(),
 //                                                                        userLicenseLegalEntity(legalEntity) IF dateFromLicense(userLicenseLegalEntity(legalEntity)) < currentDate() AND dateToLicense(userLicenseLegalEntity(legalEntity)) > currentDate();
                         // работает как то не так, надо проверить //
-//CONSTRAINT CHECKED legalEntity != legalEntityLicense(userLicenseLegalEntity(legalEntity)) MESSAGE 'ошибка: Лицензия по умолчанию должен соответствовать лицензии Ю.Л.';
+//CONSTRAINT legalEntity != legalEntityLicense(userLicenseLegalEntity(legalEntity)) CHECKED MESSAGE 'ошибка: Лицензия по умолчанию должен соответствовать лицензии Ю.Л.';
 //CONSTRAINT  dateFromLicense(overrideLicenseLegalEntity(legalEntity)) > currentDate() MESSAGE 'ошибка: действие лицензии еще не началось';
 //CONSTRAINT  dateToLicense(overrideLicenseLegalEntity(legalEntity)) < currentDate() MESSAGE 'ошибка: действие выбранной лицензии уже окончилось';
 //equalsLegalEntityLicense 'Действующая' (legalEntity, license) = userLicenseLegalEntity(legalEntity) == license IN lawGroup;
@@ -2384,7 +2384,7 @@ defaultContractSupplier(supplier) = GROUP MAX contract AS contract BY supplierCo
 
 overrideContractSupplier 'Основной договор' (supplier) = UNION OVERRIDE defaultContractSupplier(supplier), userContractSupplier(supplier);
 dataOverrideContractSupplier 'Основной договор' (supplier) = dataContract(overrideContractSupplier(supplier)) IN lawGroup;
-CONSTRAINT CHECKED supplier != supplierContract(userContractSupplier(supplier)) MESSAGE 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
+CONSTRAINT supplier != supplierContract(userContractSupplier(supplier)) CHECKED MESSAGE 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
 equalsSupplierContract 'Основной договор' (supplier, contract) = userContractSupplier(supplier) == contract;
 
 inSupplierContract(supplier, contract) = supplierContract(contract) == supplier;
@@ -2405,8 +2405,8 @@ actingContractCompanySupplier(company, supplier) = GROUP MAX actingContract(cont
 
 overrideContractCompanySupplier 'Основной договор' (company, supplier) = UNION OVERRIDE actingContractCompanySupplier(company, supplier), userContractCompanySupplier(company, supplier);
 dataOverrideContractCompanySupplier 'Основной договор' (company, supplier) = dataContract(overrideContractCompanySupplier(company, supplier)) IN lawGroup;
-CONSTRAINT CHECKED supplier != supplierContract(userContractCompanySupplier(company, supplier)) MESSAGE 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
-CONSTRAINT CHECKED company != companyContract(userContractCompanySupplier(company, supplier)) MESSAGE 'ошибка: Договор по умолчанию для компании должен соответствовать договорам компании';
+CONSTRAINT supplier != supplierContract(userContractCompanySupplier(company, supplier)) CHECKED MESSAGE 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
+CONSTRAINT company != companyContract(userContractCompanySupplier(company, supplier)) CHECKED MESSAGE 'ошибка: Договор по умолчанию для компании должен соответствовать договорам компании';
 equalsCompanySupplierContract 'Основной договор' (company, supplier, contract) = userContractCompanySupplier(company, supplier) == contract;
 
 
@@ -3880,7 +3880,7 @@ CLASS recipe 'Рецепт' : named;
 CLASS recipeDetail 'Сырье рецепта';
 
 dishRecipe  'Блюдо (ИД)' = DATA item (recipe) IN idGroup;
-CONSTRAINT CHECKED dishRecipe (recipe) AND NOT isManufacturedItem(dishRecipe(recipe)) MESSAGE 'Блюдо должно производиться';
+CONSTRAINT dishRecipe (recipe) AND NOT isManufacturedItem(dishRecipe(recipe)) CHECKED MESSAGE 'Блюдо должно производиться';
 captionDishRecipe 'Блюдо' = captionItem (dishRecipe(recipe)) IN baseGroup;
 
 beginDateRecipe 'Используется с' = DATA DATE (recipe) IN baseGroup;
@@ -4770,7 +4770,7 @@ numberSuppliersRangeShipmentDetail 'НДС поставщика, номер' (sh
 dataSuppliersRangeShipmentDetail 'НДС поставщика,%' (shipmentDetail) = dataActingRateRangeDate
     (suppliersRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN baseGroup;
 
-CONSTRAINT CHECKED  taxRange(suppliersRangeShipmentDetail(shipmentDetail)) != taxNDSShipmentDetail(shipmentDetail) MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(suppliersRangeShipmentDetail(shipmentDetail)) != taxNDSShipmentDetail(shipmentDetail) CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 suppliersRangeShipmentDetail(shipmentDetail) <- suppliersRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
@@ -4792,7 +4792,7 @@ numberRetailRangeShipmentDetail 'НДС розничный, номер' (shipmen
 dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = dataActingRateRangeDate
     (retailRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail));
 
-CONSTRAINT CHECKED  taxRange(retailRangeShipmentDetail(shipmentDetail)) != taxNDSShipmentDetail(shipmentDetail) MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(retailRangeShipmentDetail(shipmentDetail)) != taxNDSShipmentDetail(shipmentDetail) CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 retailRangeShipmentDetail(shipmentDetail) <- overrideRateRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
@@ -4819,7 +4819,7 @@ dataWareRangeShipmentDetail 'НДС по посуде' (shipmentDetail) =
 wareRangeShipmentDetail (shipmentDetail) <- rangeWareVal (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
     ON CHANGE itemShipmentDetail(shipmentDetail);
 
-CONSTRAINT CHECKED  taxRange(wareRangeShipmentDetail(shipmentDetail)) != taxNDSShipmentDetail(shipmentDetail) MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(wareRangeShipmentDetail(shipmentDetail)) != taxNDSShipmentDetail(shipmentDetail) CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 
 sumVatWareShipmentDetail 'Сумма НДС по посуде, за ед.' (shipmentDetail) =
@@ -5346,10 +5346,10 @@ nameSenderDepartmentInnerArrival 'Отдел-отправитель' (innerArriv
 
 dateInnerArrival (innerArrival) <- dateInnerFlow(innerFlowInnerArrival(innerArrival)) ON CHANGE innerFlowInnerArrival(innerArrival);
 
-CONSTRAINT CHECKED recipientDepartmentInnerFlow(innerFlowInnerArrival(innerArrival)) != departmentStoreInnerArrival(innerArrival)
+CONSTRAINT recipientDepartmentInnerFlow(innerFlowInnerArrival(innerArrival)) != departmentStoreInnerArrival(innerArrival) CHECKED
     MESSAGE 'Накладная с другого отдела';
 
-CONSTRAINT CHECKED innerFlowInnerArrival(p1) == innerFlowInnerArrival(p2) AND p1 != p2 MESSAGE 'Накладная задействована в другом приходе';
+CONSTRAINT innerFlowInnerArrival(p1) == innerFlowInnerArrival(p2) AND p1 != p2 CHECKED MESSAGE 'Накладная задействована в другом приходе';
 
 senderDepartmentInnerArrival (innerArrival) <- departmentStoreInnerFlow(innerFlowInnerArrival(innerArrival))
     ON CHANGE innerFlowInnerArrival(innerArrival);
@@ -5758,11 +5758,11 @@ totalSumSupplierReturnSupplier 'Общая сумма с НДС' (returnSupplier
 
 isReturnSupplier (returnSupplier, returnSupplierDetail) = returnSupplierReturnSupplierDetail(returnSupplierDetail) == returnSupplier;
 
-CONSTRAINT CHECKED itemShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != itemReturnSupplierDetail(returnSupplierDetail)
+CONSTRAINT itemShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != itemReturnSupplierDetail(returnSupplierDetail)
     OR departmentStoreShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != departmentStoreReturnSupplierDetail(returnSupplierDetail)
     OR supplierShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != supplierReturnSupplierDetail(returnSupplierDetail)
     OR isNotPostedShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-    MESSAGE 'Выберите партию этого товара';
+    CHECKED MESSAGE 'Выберите партию этого товара';
 
 castReturnSupplierObjectsToString100=
     FORMULA STRING[200] '\'Возврат поставщику \' || CAST($1 AS TEXT) || \' - \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
@@ -5981,7 +5981,7 @@ retailRangeUserPriceChangeDetail 'НДС' = DATA range (userPriceChangeDetail);
 numberRetailRangeUserPriceChangeDetail 'НДС, номер' (userPriceChangeDetail) = dataRange(retailRangeUserPriceChangeDetail(userPriceChangeDetail));
 dataRetailRangeUserPriceChangeDetail 'НДС, %' (userPriceChangeDetail) = dataActingRateRangeDate(retailRangeUserPriceChangeDetail(userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail));
 
-CONSTRAINT CHECKED  taxRange(retailRangeUserPriceChangeDetail(userPriceChangeDetail)) != taxNDSUserPriceChangeDetail(userPriceChangeDetail) MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(retailRangeUserPriceChangeDetail(userPriceChangeDetail)) != taxNDSUserPriceChangeDetail(userPriceChangeDetail) CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 oldImporterPriceUserPriceChangeDetail 'Старая цена изготовителя' = DATA DOUBLE (userPriceChangeDetail);
 oldRetailRangeUserPriceChangeDetail 'НДС' = DATA range (userPriceChangeDetail);

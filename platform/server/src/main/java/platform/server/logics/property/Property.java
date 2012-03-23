@@ -533,8 +533,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public abstract boolean isStored();
 
     public boolean isFalse = false;
-    public boolean checkChange = true;
-
+    public enum CheckType { CHECK_NO, CHECK_ALL, CHECK_SOME }
+    public CheckType checkChange = CheckType.CHECK_NO;
+    public List<Property<?>> checkProperties = null;
+    
     public Map<T, T> getIdentityInterfaces() {
         return BaseUtils.toMap(new HashSet<T>(interfaces));
     }
@@ -730,7 +732,15 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public void setConstraint(boolean checkChange) {
         isFalse = true;
-        this.checkChange = checkChange;
+        this.checkChange = (checkChange ? CheckType.CHECK_ALL : CheckType.CHECK_NO);
+    }
+    
+    public void setConstraint(CheckType type, List<Property<?>> checkProperties) {
+        assert type != CheckType.CHECK_SOME || checkProperties != null;
+
+        isFalse = true;
+        this.checkChange = type;
+        this.checkProperties = checkProperties;
     }
 
     // используется если создаваемый WhereBuilder нужен только если задан changed 

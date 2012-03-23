@@ -1186,13 +1186,22 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(mainProp, asList(property)).property;
     }
 
-    public void addScriptedConstraint(LP<?> property, boolean checked, String message) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedConstraint(" + property + ", " + checked + ", " + message + ");");
+    public void addScriptedConstraint(LP<?> property, boolean checked, List<String> propNames, String message) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedConstraint(" + property + ", " + checked + ", " + propNames + ", " + message + ");");
         if (!property.property.check()) {
             errLog.emitConstraintPropertyAlwaysNullError(parser);
         }
         property.property.caption = transformStringLiteral(message);
-        addConstraint(property, checked);
+        List<Property<?>> checkedProps = null;
+        Property.CheckType type = (checked ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO);
+        if (checked && propNames != null) {
+            checkedProps = new ArrayList<Property<?>>();
+            for (String propName : propNames) {
+                checkedProps.add(findLPByCompoundName(propName).property);
+            }
+            type = Property.CheckType.CHECK_SOME;
+        }
+        addConstraint(property, type, checkedProps);
     }
 
     public void addScriptedFollows(String mainPropName, List<String> namedParams, List<Integer> options, List<LPWithParams> props) throws ScriptingErrorLog.SemanticErrorException {

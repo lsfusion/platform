@@ -2243,6 +2243,10 @@ public abstract class LogicsModule {
         lp.property.setConstraint(checkChange);
     }
 
+    protected void addConstraint(LP<?> lp, Property.CheckType type, List<Property<?>> checkProps) {
+        lp.property.setConstraint(type, checkProps);
+    }
+    
     protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LP<T> first, LP<L> second, int... mapping) {
         follows(first, PropertyFollows.RESOLVE_ALL, second, mapping);
     }

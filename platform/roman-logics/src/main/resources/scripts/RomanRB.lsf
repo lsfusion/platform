@@ -143,10 +143,10 @@ inDeclarationInnerInvoice 'Инвойс в декларации' (declaration, i
 
 forDeclaration(declaration, innerInvoice) = inDeclarationInnerInvoice(declaration, innerInvoice) OR declaration AS declaration AND NOT declarationInnerInvoice(innerInvoice);
 
-CONSTRAINT CHECKED customStoreDeclaration(declarationInnerInvoice(innerInvoice)) != customStoreInnerInvoice(innerInvoice)
+CONSTRAINT customStoreDeclaration(declarationInnerInvoice(innerInvoice)) != customStoreInnerInvoice(innerInvoice) CHECKED
     MESSAGE 'Инвойс для другого СВХ';
 
-CONSTRAINT CHECKED importerDeclaration(declarationInnerInvoice(innerInvoice)) != importerInnerInvoice(innerInvoice)
+CONSTRAINT importerDeclaration(declarationInnerInvoice(innerInvoice)) != importerInnerInvoice(innerInvoice) CHECKED
     MESSAGE 'Инвойс для другого импортёра';
 
 innerInvoiceDeclarationSku 'Инвойс для декларации' (declaration, sku) = GROUP MAX innerInvoice IF quantityInnerInvoiceSku(innerInvoice, sku)

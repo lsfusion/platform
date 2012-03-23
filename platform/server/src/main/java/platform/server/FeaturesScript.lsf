@@ -294,8 +294,8 @@ createNewStore 'Добавить большой склад' = ACTION () {
 
 ///////////////CONSTRAINT STATEMENT//////////////
 // Syntax:
-// CONSTRAINT [CHECKED] propertyExpression MESSAGE 'message';
-CONSTRAINT CHECKED foo(store, article) > 1000 MESSAGE 'ошибка: >1000';
+// CONSTRAINT propertyExpression [CHECKED [BY propertyName1, ..., propertyNameN]] propertyExpression MESSAGE 'message';
+CONSTRAINT foo(store, article) > 1000 CHECKED MESSAGE 'ошибка: >1000';
 
 
 ////////////////FOLLOWS STATEMENT////////////////
