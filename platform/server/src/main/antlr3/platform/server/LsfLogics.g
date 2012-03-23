@@ -1483,8 +1483,8 @@ listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 }
 	:	('NEWSESSION' { newSession = true; } ('AUTOAPPLY' {doApply = true; } )? )?
 		'{'
-			(	PDB=actionPropertyDefinitionBody[context, dynamic] { props.add($PDB.property); }
-				( {!self.semicolonNeeded()}?=>  | ';')
+			(	(PDB=actionPropertyDefinitionBody[context, dynamic] { props.add($PDB.property); }
+				( {!self.semicolonNeeded()}?=>  | ';'))
 			|	emptyStatement
 			)*
 		'}'

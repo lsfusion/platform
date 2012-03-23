@@ -68,6 +68,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final Set<String> importedModules = new HashSet<String>();
     private final ScriptingErrorLog errLog;
     private LsfLogicsParser parser;
+    private Stack<LsfLogicsParser> parsers = new Stack<LsfLogicsParser>();
 
     public enum State {GROUP, CLASS, PROP, TABLE, INDEX}
     public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, LONG, DATE, NULL }
@@ -1129,7 +1130,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             subParser.self = this;
             subParser.parseState = currentState;
 
+            parsers.push(subParser);
             subParser.statements();
+            parsers.pop();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -1739,7 +1742,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public boolean semicolonNeeded() {
-        return !("}".equals(parser.input.LT(-1).getText()));
+        return !("}".equals(parsers.peek().input.LT(-1).getText()));
     }
 
     private void parseStep(State state) {
@@ -1754,7 +1757,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             lexer.parseState = state;
 
             currentState = state;
+            parsers.push(parser);
             parser.script();
+            parsers.pop();
             currentState = null;
 
 //            arithLexer lexer = new arithLexer(createStream());
