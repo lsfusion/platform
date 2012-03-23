@@ -6813,12 +6813,8 @@ oldImporterPriceChangeDocumentDetail 'Старая цена изготовите
                                                                                                               oldImporterPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                               importerPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 importerPriceChangeDocumentDetail 'Новая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPriceChangeShipmentDetail(priceChangeDocumentDetail),
-<<<<<<< .mine
                                                                                                           importerPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
-                                                                                                          importerPriceChangeStatementDetail(priceChangeDocumentDetail),
-=======
                                                                                                           oldImporterPriceChangeStatementDetail(priceChangeDocumentDetail),
->>>>>>> .r3833
                                                                                                           importerPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                           importerPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
