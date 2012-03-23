@@ -9,9 +9,9 @@ import platform.base.identity.IdentityObject;
 import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
+import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view.GGrid;
 import platform.gwt.view.GGroupObject;
 import platform.interop.ClassViewType;
 import platform.interop.form.layout.AbstractGroupObject;
@@ -89,7 +89,7 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
         return getKeysObjectsList(classViews, controllers);
     }
 
-    public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
+    public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
         controller.updateRowHighlightValues(readKeys);
     }
 

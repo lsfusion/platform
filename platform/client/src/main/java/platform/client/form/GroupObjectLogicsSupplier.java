@@ -9,6 +9,7 @@ import platform.interop.Order;
 import java.awt.*;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public interface GroupObjectLogicsSupplier extends LogicsSupplier {
 
@@ -37,4 +38,12 @@ public interface GroupObjectLogicsSupplier extends LogicsSupplier {
     void removePropertyFromShortcut(PropertyController property);
 
     void showShortcut(Component component, Point point, ClientPropertyDraw currentProperty);
+
+    void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions);
+
+    void updateRowHighlightValues(Map<ClientGroupObjectValue, Object> rowHighlights);
+
+    void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values);
+
+    void updateCellHighlightValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellHighlights);
 }

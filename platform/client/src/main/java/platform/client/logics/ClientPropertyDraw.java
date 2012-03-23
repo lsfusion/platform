@@ -445,7 +445,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return result;
     }
 
-    public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
+    public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
         controller.updateDrawPropertyValues(this, readKeys);
     }
 
@@ -582,7 +582,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.shouldBeDrawn(form);
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
             controller.updateDrawPropertyCaptions(ClientPropertyDraw.this, readKeys);
         }
     }
@@ -600,7 +600,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return false;
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
         }
     }
 
@@ -621,7 +621,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.shouldBeDrawn(form);
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
             controller.updateCellHighlightValues(ClientPropertyDraw.this, readKeys);
         }
     }

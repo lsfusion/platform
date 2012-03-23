@@ -111,6 +111,9 @@ public class TreeGroupController extends AbstractGroupObjectController {
                         }
                     }
                 }
+                if (propertyRead.getGroupObject() == group && propertyRead.shouldBeDrawn(form)) {
+                    propertyRead.update(readProperty.getValue(), this);
+                }
             }
 
             if (fc.objects.containsKey(group)) {
@@ -192,5 +195,27 @@ public class TreeGroupController extends AbstractGroupObjectController {
     @Override
     public void updateToolbar() {
         panelToolbar.update(ClassViewType.GRID);
+    }
+
+    public void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
+        if (panelProperties.contains(property)) {
+            panel.updatePropertyCaptions(property, captions);
+        }
+    }
+
+    public void updateRowHighlightValues(Map<ClientGroupObjectValue, Object> rowHighlights) {
+        panel.updateRowHighlightValue(BaseUtils.singleValue(rowHighlights));
+    }
+
+    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (panelProperties.contains(property)) {
+            panel.updatePropertyValues(property, values);
+        }
+    }
+
+    public void updateCellHighlightValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellHighlights) {
+        if (panelProperties.contains(property)) {
+            panel.updateCellHighlightValue(property, cellHighlights);
+        }
     }
 }
