@@ -333,6 +333,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP typeInvoiceCategory;
     private LP nameTypeInvoiceCategory;
     private LP categoryArticle;
+    private LP sidUnitOfMeasure;
     private LP unitOfMeasureDataArticle;
     private LP unitOfMeasureCategoryArticle;
     private LP nameOriginUnitOfMeasureArticleSku;
@@ -1935,6 +1936,8 @@ public class RomanLogicsModule extends LogicsModule {
                    addJProp(relationCustomCategory10CustomCategoryOrigin, customCategory10Article, 1, customCategoryOriginArticle, 1), 1), true);*/
 
         // unitOfMeasure
+        sidUnitOfMeasure = addDProp(baseGroup, "sidUnitOfMeasure", "Код единицы измерения", StringClass.get(5), unitOfMeasure);
+
         unitOfMeasureCategory = addDProp(idGroup, "unitOfMeasureCategory", "Единица измерения (ИД)", unitOfMeasure, category);
         nameUnitOfMeasureCategory = addJProp(baseGroup, "nameUnitOfMeasureCategory", "Единица измерения", baseLM.name, unitOfMeasureCategory, 1);
         unitOfMeasureCategoryArticle = addJProp(idGroup, "unitOfMeasureCategoryArticle", "Единица измерения (ИД)", unitOfMeasureCategory, categoryArticle, 1);

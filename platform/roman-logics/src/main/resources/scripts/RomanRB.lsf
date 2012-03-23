@@ -80,6 +80,8 @@ freightInnerInvoice 'Фрахт инвойса (ИД)' (innerInvoice) = UNION EX
                                                                           freightDirectInvoice(innerInvoice) IN idGroup;
 dateFreightInnerInvoice 'Фрахт инвойса' (innerInvoice) = dateArrivalFreight(freightInnerInvoice(innerInvoice)) IN baseGroup;
 
+freightArrivedInnerInvoice 'Прибыл фрахт инвойса' (innerInvoice) = freightInnerInvoice(innerInvoice) IS freightArrived;
+
 customStoreInnerInvoice 'СВХ (ИД)' (innerInvoice) = customStoreFreight(freightInnerInvoice(innerInvoice)) IN idGroup;
 nameCustomStoreInnerInvoice 'СВХ' (innerInvoice) = name(customStoreInnerInvoice(innerInvoice)) IN baseGroup;
 
@@ -188,10 +190,24 @@ importerDeclarationDetail 'Импортёр позиции (ИД)' (declarationD
 
 articleDeclarationDetail 'Артикул товара (ИД)' (declarationDetail) = articleSku(skuDeclarationDetail(declarationDetail)) IN idGroup;
 sidArticleDeclarationDetail 'Артикул товара' (declarationDetail) = sidArticle(articleDeclarationDetail(declarationDetail));
-nameCategoryArticleDeclarationDetail 'Ном. группа товара' (declarationDetail) = nameCategoryArticle(articleDeclarationDetail(declarationDetail));
 
-netWeightDeclarationDetail 'Вес товара' (declarationDetail) = netWeightFreightSku(freightDeclarationDetail(declarationDetail),
-                                                                                  skuDeclarationDetail(declarationDetail));
+categoryArticleDeclarationDetail 'Ном. группа (ИД)' (declarationDetail) = categoryArticle(articleDeclarationDetail(declarationDetail));
+nameCategoryArticleDeclarationDetail 'Ном. группа' (declarationDetail) = name(categoryArticleDeclarationDetail(declarationDetail));
+
+brandArticleDeclarationDetail 'Бренд (ИД)' (declarationDetail) = brandSupplierArticle(articleDeclarationDetail(declarationDetail));
+nameBrandArticleDeclarationDetail 'Бренд' (declarationDetail) = name(brandArticleDeclarationDetail(declarationDetail));
+
+netWeightDeclarationDetail 'Вес нетто товара' (declarationDetail) = netWeightFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                        skuDeclarationDetail(declarationDetail));
+
+sumNetWeightDeclarationDetail 'Суммарный вес нетто' (declarationDetail) = netWeightDeclarationDetail(declarationDetail) *
+                                                                          quantityDeclarationDetail(declarationDetail) IN baseGroup;
+
+grossWeightDeclarationDetail 'Вес брутто товара' (declarationDetail) = grossWeightFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                             skuDeclarationDetail(declarationDetail));
+
+sumGrossWeightDeclarationDetail 'Суммарный вес брутто' (declarationDetail) = grossWeightDeclarationDetail(declarationDetail) *
+                                                                             quantityDeclarationDetail(declarationDetail) IN baseGroup;
 
 mainCompositionDeclarationDetail 'Состав товара' (declarationDetail) = mainCompositionFreightSku(freightDeclarationDetail(declarationDetail),
                                                                                                  skuDeclarationDetail(declarationDetail));
@@ -292,8 +308,7 @@ rateNDSDeclarationDetail 'НДС товара (конверт.)' (declarationDet
 NDSDeclaration 'НДС декларации' (declaration) = GROUP SUM rateNDSDeclarationDetail(declarationDetail) * quantityDeclarationDetail(declarationDetail)
                                                        BY declarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
 
-// за оформление //-----------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------------
+// за оформление
 sumRegistrationDeclarationDetail 'За оформление' (declarationDetail) = dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyRegistration()) IN baseGroup;
 
 sumRegistrationDeclaration 'За оформление (расч.)' (declaration) = GROUP MAX sumRegistrationDeclarationDetail(declarationDetail)
@@ -384,6 +399,15 @@ priceManagerialCustomDeclarationDetail 'Цена с расходами (УУ)' (
                                                                                                correctionNDSDataDeclarationDetail(declarationDetail),
                                                                                                registrationDeclarationDetail(declarationDetail) PERSISTENT;
 
+// для экспорта в Декларант
+quantityGroupDeclaration 'Кол-во' = GROUP SUM quantityDeclarationDetail(declarationDetail)
+                                           BY declarationDeclarationDetail(declarationDetail),
+                                              articleDeclarationDetail(declarationDetail),
+                                              customCategory10DeclarationDetail(declarationDetail),
+                                              mainCompositionDeclarationDetail(declarationDetail),
+                                              countryDeclarationDetail(declarationDetail) IN baseGroup;
+
+
 FORM customStores 'Склады временного хранения'
     OBJECTS c=customStore
     PROPERTIES(c) name, ADDOBJ, delete
@@ -400,15 +424,17 @@ FORM declaration 'Декларация'
     OBJECTS ii=innerInvoice
     PROPERTIES (ii) sidInnerInvoice
     PROPERTIES (d, ii) inDeclarationInnerInvoice
-    FILTERS forDeclaration(d, ii)
+    FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
 
     OBJECTS c=correction
     PROPERTIES(c) date, ADDOBJ, delete
     FILTERS inDeclarationCorrection(d, c)
 
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) numberDeclarationDetail, barcodeSkuDeclarationDetail, sidArticleDeclarationDetail, mainCompositionDeclarationDetail,
-                    nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail, netWeightDeclarationDetail,
+    PROPERTIES (dd) numberDeclarationDetail, barcodeSkuDeclarationDetail, nameBrandArticleDeclarationDetail, sidArticleDeclarationDetail,
+                    nameCategoryArticleDeclarationDetail, mainCompositionDeclarationDetail,
+                    nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
+                    netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                     quantityDeclarationDetail, priceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
                     rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail,
                     certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
@@ -435,16 +461,16 @@ DESIGN declaration FROM DEFAULT{
 
         ii.grid {
             fillHorizontal = 0.3;
-        };
+        }
 
         c.grid {
             fillHorizontal = 0.3;
-        };
+        }
 
         dd.grid {
             fillVertical = 3;
-        };
-    };
+        }
+    }
 };
 
 
@@ -458,8 +484,10 @@ FORM declarations 'Декларации'
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 
     OBJECTS dd=declarationDetail
-    PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeSkuDeclarationDetail, sidArticleDeclarationDetail, mainCompositionDeclarationDetail,
-                            nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail, netWeightDeclarationDetail,
+    PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeSkuDeclarationDetail, nameBrandArticleDeclarationDetail,
+                            sidArticleDeclarationDetail, nameCategoryArticleDeclarationDetail, mainCompositionDeclarationDetail,
+                            nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
+                            netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                             quantityDeclarationDetail, priceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
                             rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail,
                             certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
@@ -477,10 +505,12 @@ DESIGN declarations FROM DEFAULT {
 }
 
 
-FORM innerInvoices 'Инвойсы'
+FORM innerInvoices 'Инвойсы РБ'
     OBJECTS i=innerInvoice
     PROPERTIES(i) READONLY nameCustomStoreInnerInvoice, sidInnerInvoice, nameImporterInnerInvoice, dateFreightInnerInvoice
     PROPERTIES(i) sidDeclarationInnerInvoice, delete
+    FILTERS freightArrivedInnerInvoice(i)
+
 
     OBJECTS s=sku
     PROPERTIES(s) READONLY barcode, sidArticleSku
