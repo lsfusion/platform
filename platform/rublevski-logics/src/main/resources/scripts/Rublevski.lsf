@@ -5880,12 +5880,18 @@ dataSuppliersRangeReturnSupplierDetail 'НДС поставщика, %' (returnS
 dataSuppliersRangeReturnSupplierDetail (returnSupplierDetail) <- dataSuppliersRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                                                      ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
-wareReturnSupplierDetail 'Посуда (ИД)' (returnSupplierDetail) = wareShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
-nameWareReturnSupplierDetail 'Посуда ' (returnSupplierDetail) = nameWareShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
+wareReturnSupplierDetail 'Посуда (ИД)' (returnSupplierDetail) = DATA ware (returnSupplierDetail);
+wareReturnSupplierDetail (returnSupplierDetail) <- wareShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
+                                                   ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+nameWareReturnSupplierDetail 'Посуда ' (returnSupplierDetail) = name(wareReturnSupplierDetail(returnSupplierDetail));
 
-priceWareReturnSupplierDetail 'Цена посуды' (returnSupplierDetail) = priceWareShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
+priceWareReturnSupplierDetail 'Цена посуды' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail);
+priceWareReturnSupplierDetail (returnSupplierDetail) <- priceWareShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
+                                                        ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
-dataWareRangeReturnSupplierDetail 'НДС по посуде' (returnSupplierDetail) = dataWareRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
+dataWareRangeReturnSupplierDetail 'НДС по посуде' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail);
+dataWareRangeReturnSupplierDetail (returnSupplierDetail) <- dataWareRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
+                                                            ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
 sumPriceReturnSupplierDetail 'Сумма без НДС' (returnSupplierDetail) =
     priceReturnSupplierDetail(returnSupplierDetail) * quantityReturnSupplierDetail(returnSupplierDetail);
@@ -6564,13 +6570,20 @@ oldWareInnerArrivalDetail (innerArrivalDetail) <- wareBLedgerDateTime(
                 ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
 
 
-dataRetailReturnSupplierDetail 'Розничный НДС, %' (returnSupplierDetail) = dataRetailBLedgerDateTime(
+dataRetailReturnSupplierDetail 'Розничный НДС, %' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail);
+dataRetailReturnSupplierDetail (returnSupplierDetail) <- dataRetailBLedgerDateTime(
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail));
+                dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
 
-priceRetailReturnSupplierDetail 'Розничная цена' (returnSupplierDetail) = priceRetailBLedgerDateTime(
+priceRetailReturnSupplierDetail 'Розничная цена' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail);
+priceRetailReturnSupplierDetail (returnSupplierDetail) <- priceRetailBLedgerDateTime(
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail));
+                dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
+
+retailSumReturnSupplierDetail 'Розничная сумма' (returnSupplierDetail) =
+    quantityReturnSupplierDetail(returnSupplierDetail) * priceRetailReturnSupplierDetail(returnSupplierDetail);
+retailSumReturnSupplier 'Розничная сумма' (returnSupplier) = GROUP SUM retailSumReturnSupplierDetail(shipmentDetail)
+                                                             BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN waybillSum;
 
 // ---------------------------------- Переоценка на возврате ------------------------------------------
 
@@ -6609,10 +6622,13 @@ nameItemPriceChangReturnSupplierDetail 'Товар' (priceChangeReturnSupplierDe
 quantityPriceChangeReturnSupplierDetail 'Остаток' (priceChangeReturnSupplierDetail) =
     quantityReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
 
-oldImporterPriceChangeReturnSupplierDetail 'Старая цена изготовителя' (priceChangeReturnSupplierDetail) =
+oldImporterPriceChangeReturnSupplierDetail 'Старая цена изготовителя' (priceChangeReturnSupplierDetail) = DATA DOUBLE (priceChangeReturnSupplierDetail);
+oldImporterPriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
     priceImporterBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                                  departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
-                                 dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
+                                 dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
+                                 ON CHANGE itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+
 importerPriceChangeReturnSupplierDetail 'Новая цена изготовителя' (priceChangeReturnSupplierDetail) =
     priceReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
 
@@ -6631,14 +6647,19 @@ warePriceChangeReturnSupplierDetail 'Новая посуда' (priceChangeReturn
 priceWarePriceChangeReturnSupplierDetail 'Новая цена посуды' (priceChangeReturnSupplierDetail) =
     priceWareReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
 
-oldWarePriceChangeReturnSupplierDetail 'Старая посуда' (priceChangeReturnSupplierDetail) =
+oldWarePriceChangeReturnSupplierDetail 'Старая посуда' (priceChangeReturnSupplierDetail) = DATA ware (priceChangeReturnSupplierDetail);
+oldWarePriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
     wareBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                         departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
-                        dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
-oldPriceWarePriceChangeReturnSupplierDetail 'Старая цена посуды' (priceChangeReturnSupplierDetail) =
+                        dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
+                        ON CHANGE itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+
+oldPriceWarePriceChangeReturnSupplierDetail 'Старая цена посуды' (priceChangeReturnSupplierDetail) = DATA DOUBLE (priceChangeReturnSupplierDetail);
+oldPriceWarePriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
     priceWareBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                              departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
-                             dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
+                             dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
+                             ON CHANGE itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
 
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
@@ -6655,12 +6676,12 @@ FORM returnSupplier 'Возврат поставщику'
     PROPERTIES(r) seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier, timeReturnSupplier,
                   nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier,
                   nameUserCreated READONLY, timeCreated READONLY, totalQuantityReturnSupplier,
-                  totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier
+                  totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier, retailSumReturnSupplier
 
     OBJECTS d=returnSupplierDetail
     PROPERTIES(d) numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
                   commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, priceReturnSupplierDetail,
-                  supplierMarkupReturnSupplierDetail, nameWareReturnSupplierDetail, dataRetailReturnSupplierDetail,
+                  supplierMarkupReturnSupplierDetail, nameWareReturnSupplierDetail READONLY, dataRetailReturnSupplierDetail,
                   priceRetailReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
     PROPERTIES addReturnSupplierDetailBarcode(r) TODRAW d
@@ -6949,11 +6970,13 @@ convertPriceCollationSheet 'Пересчитать цены в сличител�
 //---------------------------- Переоценка (конкретная реализация) ----------------------------------------//
 
 dateTimePriceChangeDocument 'Дата/время' (priceChangeDocument) = UNION EXCLUSIVE dateTimePriceChangeShipment(priceChangeDocument),
+                                                                                 dateTimePriceChangeReturnSupplier(priceChangeDocument),
                                                                                  dateTimePriceChangeStatement(priceChangeDocument),
                                                                                  dateTimePriceChangeInnerArrival(priceChangeDocument),
                                                                                  dateTimeUserPriceChange(priceChangeDocument) PERSISTENT;
 
 descriptionPriceChangeDocument 'Название документа' (priceChangeDocument) = UNION EXCLUSIVE descriptionPriceChangeShipment(priceChangeDocument),
+                                                                                            descriptionPriceChangeReturnSupplier(priceChangeDocument),
                                                                                             descriptionPriceChangeStatement(priceChangeDocument),
                                                                                             descriptionPriceChangeInnerArrival(priceChangeDocument),
                                                                                             descriptionUserPriceChange(priceChangeDocument) PERSISTENT;
@@ -6961,17 +6984,21 @@ descriptionPriceChangeDocument 'Название документа' (priceChang
 datePriceChangeDocument 'Дата' (priceChangeDocument) = dateInTime(dateTimePriceChangeDocument(priceChangeDocument)) PERSISTENT;
 
 isPostedPriceChangeDocument 'Закрыт' (priceChangeDocument) = UNION EXCLUSIVE isPostedPriceChangeShipment(priceChangeDocument),
+                                                                             isPostedPriceChangeReturnSupplier(priceChangeDocument),
                                                                              isPostedPriceChangeStatement(priceChangeDocument),
                                                                              isPostedPriceChangeInnerArrival(priceChangeDocument),
                                                                              isPostedUserPriceChange(priceChangeDocument) PERSISTENT;
 
 waybillPriceChangeDocument 'Номер накладной' (priceChangeDocument) = UNION EXCLUSIVE waybillPriceChangeShipment(priceChangeDocument),
+                                                                                     waybillPriceChangeReturnSupplier(priceChangeDocument),
                                                                                      waybillPriceChangeInnerArrival(priceChangeDocument) PERSISTENT;
 
 seriesWaybillPriceChangeDocument 'Серия накладной' (priceChangeDocument) = UNION EXCLUSIVE seriesWaybillPriceChangeShipment(priceChangeDocument),
+                                                                                     seriesWaybillPriceChangeReturnSupplier(priceChangeDocument),
                                                                                      seriesWaybillPriceChangeInnerArrival(priceChangeDocument) PERSISTENT;
 
 departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE departmentStorePriceChangeShipment(priceChangeDocument),
+                                                                           departmentStorePriceChangeReturnSupplier(priceChangeDocument),
                                                                            departmentStorePriceChangeStatement(priceChangeDocument),
                                                                            departmentStorePriceChangeInnerArrival(priceChangeDocument),
                                                                            departmentStoreUserPriceChange(priceChangeDocument) PERSISTENT;
@@ -7082,7 +7109,7 @@ oldPriceWarePriceChangeDocumentDetail 'Старая цена посуды' (pric
 FORM priceChangeDocuments 'Акты переоценки'
     OBJECTS pc=priceChangeDocument
     PROPERTIES(pc) READONLY objectClassName, isPostedPriceChangeDocument FORCE GRID, dateTimePriceChangeDocument, nameDepartmentStorePriceChangeDocument,
-                            waybillPriceChangeDocument, seriesWaybillPriceChangeDocument, nameSupplierPriceChangeShipment,
+                            waybillPriceChangeDocument, seriesWaybillPriceChangeDocument, nameSupplierPriceChangeShipment, nameSupplierPriceChangeReturnSupplier,
                             nameSenderDepartmentPriceChangeInnerArrival, accountSumChangeDocument
 
     OBJECTS pcd=priceChangeDocumentDetail
@@ -7097,6 +7124,7 @@ FORM priceChangeDocuments 'Акты переоценки'
 //------------------------------------ Изменение учетных сумм ------------------------------------------//
 
 dateTimeAccountSumDocumentLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipment(ledger),
+                                                                         dateTimeReturnSupplier(ledger),
                                                                          dateTimeInnerArrival(ledger),
                                                                          dateTimePriceChangeDocument(ledger),
                                                                          dateTimeWriteOff(ledger),
@@ -7111,6 +7139,7 @@ dateTimeAccountSumDocumentLedger 'Дата/время' (ledger) = UNION EXCLUSIV
                                                                          dateTimeConsumption(ledger) PERSISTENT INDEXED;
 
 descriptionDocumentLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipment(ledger),
+                                                                          descriptionReturnSupplier(ledger),
                                                                           descriptionInnerArrival(ledger),
                                                                           descriptionPriceChangeDocument(ledger),
                                                                           descriptionWriteOff(ledger),
@@ -7129,6 +7158,7 @@ descriptionDocumentLedger 'Название документа' (ledger) = UNION
 dateAccountSumDocumentLedger 'Дата' (ledger) = dateInTime(dateTimeAccountSumDocumentLedger(ledger)) PERSISTENT;
 
 isPostedAccountSumDocumentLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipment(ledger),
+                                                                     isPostedReturnSupplier(ledger),
                                                                      isPostedInnerArrival(ledger),
                                                                      isPostedPriceChangeDocument(ledger),
                                                                      isPostedWriteOff(ledger),
@@ -7143,6 +7173,7 @@ isPostedAccountSumDocumentLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPos
                                                                      isPostedConsumption(ledger) PERSISTENT;
 
 departmentStoreAccountSumDocumentLedger (ledger) = UNION EXCLUSIVE departmentStoreShipment(ledger),
+                                                                   departmentStoreReturnSupplier(ledger),
                                                                    departmentStoreInnerArrival(ledger),
                                                                    departmentStorePriceChangeDocument(ledger),
                                                                    departmentStoreWriteOff(ledger),
@@ -7168,6 +7199,7 @@ sumIncAccountDocumentLedger 'Сумма прихода' (ledger) = UNION EXCLUSI
                                                                        accountSumChangeDocument(ledger),
                                                                        subtotalParish(ledger) PERSISTENT;
 sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSIVE accountSumWriteOff(ledger),
+                                                                       retailSumReturnSupplier(ledger),
                                                                        accountSumInnerFlow(ledger),
                                                                        sumStatement(ledger),
                                                                        totalSumWastage(ledger),
