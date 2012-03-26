@@ -1341,7 +1341,7 @@ customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams pro
 		$property = self.wrapWithFlowAction(property);
 	}
 }
-	:	formPDB=formActionPropertyDefinitionBody { $property.property = $formPDB.property; }
+	:	formPDB=formActionPropertyDefinitionBody[context, dynamic] { $property = $formPDB.property; }
 	|	addPDB=addObjectActionPropertyDefinitionBody { $property.property = $addPDB.property; }
 	|	actPDB=customActionPropertyDefinitionBody { $property.property = $actPDB.property; }
 	|   msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
@@ -1350,20 +1350,21 @@ customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams pro
 	;
 
 			
-formActionPropertyDefinitionBody returns [LP property]
+formActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	boolean newSession = false;
 	boolean isModal = false;
 	boolean checkOnOk = false;
 	List<String> objects = new ArrayList<String>();
-}
+	List<LPWithParams> mapping = new ArrayList<LPWithParams>();
+	}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, $exprList.props, $className.sid, newSession, isModal, checkOnOk);	
+		$property = self.addScriptedFAProp($formName.sid, objects, mapping, $exprList.props, $className.sid, newSession, isModal, checkOnOk);	
 	}
 }
 	:	'FORM' formName=compoundID 
-		('OBJECTS' list=nonEmptyIdList { objects = $list.ids; })? 
+		('OBJECTS' list=formActionObjectList[context, dynamic] { objects = $list.objects; mapping = $list.exprs; })? 
 		('INIT' exprList=nonEmptyPropertyExpressionList[objects, false])?
 		('CLASS' className=classId)?
 		('NEWSESSION' { newSession = true; })?
@@ -1371,6 +1372,11 @@ formActionPropertyDefinitionBody returns [LP property]
 		('CHECK' { checkOnOk = true; })?
 	;
 
+formActionObjectList[List<String> context, boolean dynamic] returns [List<String> objects = new ArrayList<String>(), List<LPWithParams> exprs = new ArrayList<LPWithParams>()]
+	:	objName=ID { $objects.add($objName.text); } ('=' expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); })? 
+		(',' objName=ID { $objects.add($objName.text); } ('=' expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); })?)*
+	;
+	
 customActionPropertyDefinitionBody returns [LP property]
 @after {
 	if (inPropParseState()) {
@@ -1463,7 +1469,7 @@ fileActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp(loadFile, $pe.property);
+		$property = self.addScriptedFileAProp(loadFile, $pe.property);
 	}
 }
 	:	('LOADFILE' { loadFile = true; } | 'OPENFILE' { loadFile = false; }) 

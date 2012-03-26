@@ -354,6 +354,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("UNGROUP property should have %d parameter(s)", groupPropCnt));
     }
 
+    public void emitFormActionObjectsMappingError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "all objects should have mapping");
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

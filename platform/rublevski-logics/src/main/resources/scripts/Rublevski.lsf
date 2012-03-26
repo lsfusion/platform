@@ -2083,7 +2083,7 @@ addItemGroup 'Добавить' = ACTION (itemGroup) NEWSESSION {
     ADDOBJ itemGroup;
     FOR g == addedObject() DO {
         SET parentItemGroup(g) <- itemGroup AS itemGroup;
-        EXEC [ACTION FORM itemGroup OBJECTS g MODAL](addedObject());
+        FORM itemGroup OBJECTS g=addedObject() MODAL;
         IF formResult() == formResult.ok THEN
             EXEC apply();
     };
@@ -3889,7 +3889,7 @@ DESIGN sidCuttingStudyInputDetail FROM DEFAULT {
 }
 
 showSidCuttingStudyInputDetail 'Карта проработки' = ACTION (detail) {
-    EXEC [ACTION FORM sidCuttingStudyInputDetail OBJECTS dep, i MODAL](departmentStoreStudyInputDetail(detail), itemStudyInputDetail(detail));//  DEFAULT;        //sidCuttingStudyInputDetail
+    FORM sidCuttingStudyInputDetail OBJECTS dep=departmentStoreStudyInputDetail(detail), i=itemStudyInputDetail(detail) MODAL;//  DEFAULT;        //sidCuttingStudyInputDetail
     IF formResult() == formResult.ok THEN {
         SET cuttingStudyInputDetail(detail) <- chosenObject('c');
     }

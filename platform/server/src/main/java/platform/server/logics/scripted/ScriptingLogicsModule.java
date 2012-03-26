@@ -618,7 +618,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(caseProp, mergeAllParams(caseParamProps));
     }
 
-    public LPWithParams addScriptedFAProp(boolean loadFile, LPWithParams property) {
+    public LPWithParams addScriptedFileAProp(boolean loadFile, LPWithParams property) {
+        scriptLogger.info("addScriptedFileAProp(" + loadFile + ", " + property + ");");
         LP<?> res;
         if (loadFile) {
             res = addLFAProp(property.property);
@@ -1067,10 +1068,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new java.sql.Date(Integer.parseInt(text.substring(0, 4)) - 1900, Integer.parseInt(text.substring(5, 7)) - 1, Integer.parseInt(text.substring(8, 10)));
     }
 
-    public LP<?> addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> props, String className, boolean newSession, boolean isModal, boolean checkOnOk) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + props + ", " + className + ", " + newSession + ", " + isModal + ");");
+    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, List<LPWithParams> props, String className, boolean newSession, boolean isModal, boolean checkOnOk) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + mapping + ", " + props + ", " + className + ", " + newSession + ", " + isModal + ");");
 
         FormEntity form = findFormByCompoundName(formName);
+        checkFormActionObjectsMapping(objectNames, mapping);
 
         DataClass cls = null;
         if (className != null) {
@@ -1094,7 +1096,11 @@ public class ScriptingLogicsModule extends LogicsModule {
                 propObjects[i] = form.addPropertyObject(props.get(i).property, params);
             }
         }
-        return addFAProp(null, genSID(), "", form, objects, propObjects, new OrderEntity[propObjects.length], cls, newSession, isModal, checkOnOk);
+        LPWithParams res = new LPWithParams(addFAProp(null, genSID(), "", form, objects, propObjects, new OrderEntity[propObjects.length], cls, newSession, isModal, checkOnOk), new ArrayList<Integer>());
+        if (mapping.size() > 0) {
+            res = addScriptedJoinAProp(res.property, mapping);
+        }
+        return res;
     }
 
     public ObjectEntity findObjectEntity(FormEntity form, String objectName) throws ScriptingErrorLog.SemanticErrorException {
@@ -1747,6 +1753,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkPartitionUngroupConsistence(LP<?> ungroupProp, int groupPropCnt) throws ScriptingErrorLog.SemanticErrorException {
         if (ungroupProp != null && ungroupProp.property.interfaces.size() != groupPropCnt) {
             errLog.emitUngroupParamsCntPartitionError(parser, groupPropCnt);
+        }
+    }
+
+    private void checkFormActionObjectsMapping(List<String> objects, List<LPWithParams> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        if (objects.size() != mapping.size() && mapping.size() > 0) {
+            errLog.emitFormActionObjectsMappingError(parser);
         }
     }
 
