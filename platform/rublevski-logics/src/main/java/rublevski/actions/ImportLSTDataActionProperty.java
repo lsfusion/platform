@@ -405,8 +405,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField departmentStoreIDField = new ImportField(BL.LM.extSID);
             ImportField supplierIDField = new ImportField(BL.LM.extSID);
 
-            ImportField waybillShipmentField = new ImportField(rublevskiLM.getLPByName("waybillShipment"));
-            ImportField seriesWaybillShipmentField = new ImportField(rublevskiLM.getLPByName("seriesWaybillShipment"));
+            ImportField waybillShipmentField = new ImportField(rublevskiLM.getLPByName("numberObject"));
+            ImportField seriesWaybillShipmentField = new ImportField(rublevskiLM.getLPByName("seriesObject"));
             ImportField dateShipmentField = new ImportField(rublevskiLM.getLPByName("dateShipment"));
 
             ImportField itemIDField = new ImportField(BL.LM.extSID);
@@ -419,7 +419,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField dataRetailRangeField = new ImportField(rublevskiLM.getLPByName("dataRate"));
 
             ImportKey<?> shipmentKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("shipment"),
-                    rublevskiLM.getLPByName("waybillSeriesWaybillToShipment").getMapping(waybillShipmentField, seriesWaybillShipmentField));
+                    rublevskiLM.getLPByName("numberSeriesToShipment").getMapping(waybillShipmentField, seriesWaybillShipmentField));
 
             ImportKey<?> supplierKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("supplier"),
                     BL.LM.extSIDToObject.getMapping(supplierIDField));
@@ -428,7 +428,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                     BL.LM.extSIDToObject.getMapping(departmentStoreIDField));
 
             ImportKey<?> shipmentDetailKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("shipmentDetail"),
-                    rublevskiLM.getLPByName("sidWaybillSeriesWaybillToShipmentDetail").getMapping(shipmentDetailIDField, waybillShipmentField, seriesWaybillShipmentField));
+                    rublevskiLM.getLPByName("sidNumberSeriesToShipmentDetail").getMapping(shipmentDetailIDField, waybillShipmentField, seriesWaybillShipmentField));
 
             ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("item"),
                     BL.LM.extSIDToObject.getMapping(itemIDField));
@@ -442,8 +442,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-            props.add(new ImportProperty(waybillShipmentField, rublevskiLM.getLPByName("waybillShipment").getMapping(shipmentKey)));
-            props.add(new ImportProperty(seriesWaybillShipmentField, rublevskiLM.getLPByName("seriesWaybillShipment").getMapping(shipmentKey)));
+            props.add(new ImportProperty(waybillShipmentField, rublevskiLM.getLPByName("numberObject").getMapping(shipmentKey)));
+            props.add(new ImportProperty(seriesWaybillShipmentField, rublevskiLM.getLPByName("seriesObject").getMapping(shipmentKey)));
             props.add(new ImportProperty(dateShipmentField, rublevskiLM.getLPByName("dateShipment").getMapping(shipmentKey)));
             props.add(new ImportProperty(departmentStoreIDField, rublevskiLM.getLPByName("departmentStoreShipment").getMapping(shipmentKey),
                     BL.LM.object(rublevskiLM.getClassByName("departmentStore")).getMapping(departmentStoreKey)));

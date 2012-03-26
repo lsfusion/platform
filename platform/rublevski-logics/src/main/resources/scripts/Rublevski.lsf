@@ -22,6 +22,8 @@ stringEqualsAll(string) = string == 'Все';
 dateDiffersCurrent(date) = date != currentDate();
 
 CLASS ABSTRACT postedObject 'Объект с возможностью закрытия';
+TABLE postedObject (postedObject);
+
 GROUP postedGroup 'Информация о закрытии' : baseGroup;
 
 timeClosed 'Время закрытия' = DATA DATETIME (postedObject) IN postedGroup;
@@ -40,6 +42,8 @@ GROUP documentHeaderGroup 'Шапка документа' : baseGroup;
 // ----------------------------------- Нумераторы ------------------------------------------ //
 
 CLASS numerator 'Нумератор' : named;
+
+seriesNumerator 'Серия' = DATA STRING[2] (numerator) IN recognizeGroup;
 
 minValueNumerator 'Мин. значение' = DATA LONG (numerator) IN recognizeGroup;
 maxValueNumerator 'Макс. значение' = DATA LONG (numerator) IN recognizeGroup;
@@ -64,14 +68,43 @@ incrementValueNumerator 'Увеличить значение' = ACTION (numerato
 
 FORM numerator 'Нумератор'
     OBJECTS n = numerator
-    PROPERTIES(n) name, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
+    PROPERTIES(n) name, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
+
+    EDIT numerator OBJECT n
 ;
 
 FORM numerators 'Нумераторы'
     OBJECTS n = numerator
-    PROPERTIES(n) READONLY name, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
+    PROPERTIES(n) READONLY name, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
     PROPERTIES(n)          ADDFORM, EDITFORM, delete
+
+    DIALOG numerator OBJECT n
 ;
+
+GROUP numberedGroup 'Нумератор' : baseGroup;
+
+CLASS ABSTRACT numberedObject 'Нумерованный объект';
+TABLE numberedObject (numberedObject);
+
+numberObject 'Номер' = DATA STRING[18] (numberedObject) IN numberedGroup MINCHARWIDTH 7;
+seriesObject 'Серия' = DATA STRING[2] (numberedObject) IN numberedGroup FIXEDCHARWIDTH 2;
+
+seriesNumberObject 'Серия/Номер' (numberedObject) = [FORMULA STRING[21] '$1 || $2']
+                                                    (seriesObject(numberedObject), numberObject(numberedObject));
+
+CLASS ABSTRACT numeratedObject 'Нумерируемый объект' : numberedObject;
+
+numeratorObject 'Нумератор (ИД)' = DATA numerator (numeratedObject);
+nameNumeratorObject 'Нумератор' (numeratedObject) = name(numeratorObject(numeratedObject)) IN numberedGroup;
+
+setValueNumeratedObject 'Сгенерировать номер' = ACTION (numeratedObject) {
+    SET numberObject(numeratedObject) <- curStringValueNumerator(numeratorObject(numeratedObject));
+    SET seriesObject(numeratedObject) <- seriesNumerator(numeratorObject(numeratedObject));
+    EXEC incrementValueNumerator(numeratorObject(numeratedObject));
+} IN numberedGroup SHORTCUT numberObject;
+
+// todo : не работает
+setValueNumeratedObject(numeratedObject) <- TRUE ON CHANGE numeratorObject(numeratedObject);
 
 // ----------------------------------- Шаблоны ------------------------------------------ //
 
@@ -309,11 +342,17 @@ END
 META metaCodeObjectWithPost (object, caption, captionPosted, documentClass, detailClass)
 
     CLASS object caption : documentClass;
+    CLASS object##Detail 'Строка документа' : detailClass;
+
+    @metaCodeObjectWithPostEx(object, captionPosted);
+END
+
+META metaCodeObjectWithPostEx (object, captionPosted)
+
     TABLE object (object);
 
     CLASS object##Posted captionPosted : object, postedObject;
 
-    CLASS object##Detail 'Строка документа' : detailClass;
     TABLE object##Detail (object##Detail);
 
     date###object 'Дата документа' (object) = DATA DATE (object) IN documentHeaderGroup;
@@ -956,7 +995,7 @@ numberInNameScalesItemAttribute 'Порядковый номер в наимен
 
 nameAttributeItem 'Наименование' (item) = castToString255(
                 [GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameItemAttribute(attribute)](item))
-                IN recognizeGroup PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80 INDEXED;
+                IN recognizeGroup PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80 INDEXED AGGPROP;
 nameCashAttributeItem 'Наименование для касс' (item) = castToString255(
                 [GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameCashItemAttribute(attribute)](item))
                 PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
@@ -4057,9 +4096,6 @@ TABLE accountSumDocumentLedger (accountSumDocumentLedger);
 CLASS ABSTRACT incAccountSumDocumentLedger 'Учетный документ (приход)' : accountSumDocumentLedger;
 CLASS ABSTRACT outAccountSumDocumentLedger 'Учетный документ (расход)' : accountSumDocumentLedger;
 
-CLASS ABSTRACT incAccountSumHistoryDocumentLedger 'Учетный документ (приход, с историей)' : incAccountSumDocumentLedger, historyObject;
-CLASS ABSTRACT outAccountSumHistoryDocumentLedger 'Учетный документ (расход, с историей)' : outAccountSumDocumentLedger, historyObject;
-
 //---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
 
 CLASS ABSTRACT priceChangeDocument 'Акт переоценки' : incAccountSumDocumentLedger;
@@ -4146,7 +4182,7 @@ departmentStoreConsumptionDetail(consumptionDetail) = departmentStoreConsumption
 
 //---------------------------- Проведение инвентаризации ----------------------------------------//
 
-CLASS inventory 'Инвентаризация (открытая)' : historyObject;
+CLASS inventory 'Инвентаризация (открытая)' : historyObject, numeratedObject;
 TABLE inventory (inventory);
 CLASS inventoryPosted 'Инвентаризация (закрытая)' : inventory, postedObject;
 
@@ -4180,20 +4216,14 @@ castToString30 = FORMULA STRING[30] '$1 || CAST ($2 AS character(20))';
 @metaCodePostedObject (inventory) ;
 
 nameInventory 'Название инвентаризации' = DATA STRING[100] (inventory) IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-dateToInventory 'Остатки выставить на (утро) дату' = DATA DATE (inventory) IN inventGroup;
-timeToInventory 'Выставить остатки на время' = DATA TIME (inventory) IN inventGroup;
+dateInventory 'Остатки выставить на (утро) дату' = DATA DATE (inventory) IN inventGroup;
+timeInventory 'Выставить остатки на время' = DATA TIME (inventory) IN inventGroup;
 noteInventory 'Примечание (основание)' = DATA STRING[500] (inventory) IN inventGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 infoInventory 'Дополнительная информация по инвентаризации' = DATA STRING[500] (inventory) IN inventGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 typeOfAdditionInventory(inventory) = DATA typeOfAddition (inventory) IN idGroup;
 nameTypeOfAdditionInventory 'Тип сличительной ведомости' (inventory) = name(typeOfAdditionInventory(inventory)) IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
-dateTimeToInventory 'Выставить остатки на дату/время' (inventory) = toDateTime(dateToInventory(inventory), timeToInventory(inventory));
-
-numberInventory 'Номер инвентаризации' (inventory) = DATA INTEGER (inventory) IN inventoryGroup;
-maxNumberInventory = UNION OVERRIDE 0, [GROUP MAX numberInventory(inventory)]();
-nextNumberInventory = maxNumberInventory() + 1;
-
-numberInventory(inventory) <- OLD nextNumberInventory() ON ASSIGN inventory IS inventory;
+dateTimeInventory 'Выставить остатки на дату/время' (inventory) = toDateTime(dateInventory(inventory), timeInventory(inventory));
 
 departmentStoreCollationSheet(collationSheet) = DATA departmentStore (collationSheet) IN idGroup;
 inventoryCollationSheet(collationSheet) = DATA inventory (collationSheet) IN idGroup;
@@ -4202,16 +4232,12 @@ nameInventoryCollationSheet 'Название инвентаризации' (col
 inInventoryCollationSheet(inventory, collationSheet) = inventoryCollationSheet(collationSheet) == inventory;
 inDepartmentStoreCollationSheet(departmentStore, collationSheet) = departmentStoreCollationSheet(collationSheet) == departmentStore;
 
-dataCollationSheet 'Номер сличительной ведомости' (collationSheet) = DATA INTEGER (collationSheet) IN baseGroup;
-maxDataCollationSheet = UNION OVERRIDE 0, [GROUP MAX dataCollationSheet(collationSheet)]();
-nextDataCollationSheet = maxDataCollationSheet() + 1;
-nameCollationSheet 'Номер (название сличит. ведомости)' (collationSheet) = castToString30('Сличительная ведомость ', dataCollationSheet(collationSheet)) IN collationSheetGroup;
+counterCollationSheet (collationSheet) = PARTITION SUM 1 IF collationSheet IS collationSheet
+    BY inventoryCollationSheet(collationSheet) ORDER collationSheet;
 
-setDataCollationSheet 'Создать номер' (collationSheet) = ACTION SET dataCollationSheet (collationSheet) <- nextDataCollationSheet();
-setDataCollationSheet(collationSheet) <- TRUE ON ASSIGN collationSheet IS collationSheet;
-
-  // todo : пока не работает, обязательно переделать.....
-
+nameCollationSheet 'Внутренний номер' (collationSheet) = [FORMULA STRING[30] '$1 || \'-\' || CAST ($2 AS character(20))'](
+        seriesNumberObject(inventoryCollationSheet(collationSheet)),
+        counterCollationSheet(collationSheet)) IN collationSheetGroup;
 
 includeDepartmentStoreInventory 'Включить в инвентаризацию' = DATA BOOLEAN (departmentStore, inventory) IN inventoryGroup;
 uniqueCollationSheetDepartmentStoreInventory 'Сличительная ведомость по скалду и инвентаризации' (departmentStore, inventory) =
@@ -4429,11 +4455,11 @@ storeByInventory(inventory) = GROUP EQUAL storeDepartmentStore(departmentStore) 
 //nameStoreByInventory 'Магазин' (inventory) = name(storeDepartmentStore(departmentByInventory(inventory))) IN inventoryGroup;
 nameStoreByInventory 'Магазин' (inventory) = name(storeByInventory(inventory)) IN inventoryGroup;
 
-castInventoryObjectsToString100=
-    FORMULA STRING[200] '\'Инвентаризация \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)';
+dateCollationSheet 'Дата сличительной ведомости' (collationSheet) = dateInventory(inventoryCollationSheet(collationSheet));
 
-descriptionInventory 'Название документа' (inventory) = castInventoryObjectsToString100(
-    numberInventory(inventory), dateToInventory(inventory));
+descriptionCollationSheet 'Название документа' (collationSheet) =
+    [FORMULA STRING[200] '\'Сличительная ведомость \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
+    nameCollationSheet(collationSheet), dateCollationSheet(collationSheet));
 
 //---------------------------- Изменение остатка инвентаризации ----------------------------//
 
@@ -4447,7 +4473,7 @@ needToLedgerCollationSheetItem (collationSheet, item) = shortageQuantityCountedC
 
 inventoryInventoryLedger(inventoryLedger) = inventoryCollationSheet(collationSheetInventoryLedger(inventoryLedger));
 
-dateTimeInventoryLedger(inventoryLedger) = dateTimeToInventory(inventoryInventoryLedger (inventoryLedger));
+dateTimeInventoryLedger(inventoryLedger) = dateTimeInventory(inventoryInventoryLedger (inventoryLedger));
 isPostedInventoryLedger(inventoryLedger) = isPostedInventory(inventoryInventoryLedger(inventoryLedger));
 departmentStoreInventoryLedger(inventoryLedger) = departmentStoreCollationSheet(collationSheetInventoryLedger(inventoryLedger));
 nameDepartmentStoreInventoryLedger 'Подразделение' (inventoryLedger) = name(departmentStoreInventoryLedger(inventoryLedger)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
@@ -4458,7 +4484,7 @@ nameAttributeItemInventoryLedger 'Товар' (inventoryLedger) = nameAttributeI
 
 barcodeExInventoryLedger 'Щтрих-код' (inventoryLedger) =  barcodeEx(barcodeSku(itemInventoryLedger(inventoryLedger)));
 
-descriptionInventoryLedger 'Название документа' (inventoryLedger) = descriptionInventory(inventoryInventoryLedger(inventoryLedger));
+descriptionInventoryLedger 'Название документа' (inventoryLedger) = descriptionCollationSheet(collationSheetInventoryLedger(inventoryLedger));
 
 //--------------------------------Формы по инвентаризации см. в конце-------------------//
 
@@ -4468,18 +4494,11 @@ descriptionInventoryLedger 'Название документа' (inventoryLedge
 GROUP customerGroup 'Покупатель' : publicGroup;
 GROUP itemDetailSpecInfo 'Информация по товару' : baseGroup;
 
-CLASS specification 'Счет-фактура': historyObject;
+CLASS specification 'Счет-фактура': historyObject, numeratedObject;
 CLASS objectiveAcquiring 'Цель приобретения' : named;
 
 CLASS detailSpec 'Строка документа';
 TABLE detailSpec (detailSpec);
-
-
-numberSpecification 'Номер счет-фактуры' = DATA INTEGER (specification) IN documentHeaderGroup;
-
-maxNumberSpecification = UNION OVERRIDE 0, [GROUP MAX numberSpecification(specification)]();
-nextNumberSpecification = maxNumberSpecification() + 1;
-numberSpecification(specification) <- OLD nextNumberSpecification() ON ASSIGN specification IS specification;
 
 customerSpecification(specification) = DATA customer (specification) IN idGroup;
 nameCustomerSpecification 'Покупатель' (specification) = name(customerSpecification(specification)) IN customerGroup;
@@ -4613,23 +4632,19 @@ FORM objectiveAcquiring 'Цель приобретения'
 
 GROUP specificationGroup 'Счет-фактуры' : publicGroup;
 
-@metaCodeObjectWithPost(statement, 'Выписка из розницы', 'Закрытая выписка из розницы', outAccountSumHistoryDocumentLedger, balanceItemLedger);
+CLASS statement 'Выписка из розницы' : outAccountSumDocumentLedger, historyObject, numberedObject;
+CLASS statementDetail 'Строка выписки из розницы' : balanceItemLedger;
+@metaCodeObjectWithPostEx(statement, 'Закрытая выписка из розницы');
 
-                      //    шапка документа поставки
-waybillStatement 'Номер накладной' (statement) = DATA STRING[7] (statement) IN documentHeaderGroup FIXEDCHARWIDTH 7;
-
-seriesWaybillStatement 'Серия накладной' (statement) = DATA STRING[2] (statement) IN documentHeaderGroup FIXEDCHARWIDTH 4;
-
+//    шапка документа поставки
 customerStatement 'Покупатель (ИД)' (statement) = DATA customer (statement) IN idGroup;
-
 nameCustomerStatement 'Покупатель' (statement) = name(customerStatement(statement)) IN documentHeaderGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40;
-
 
 inStatementSpecification 'Включить в накладную' (statement, specification) = DATA BOOLEAN (statement, specification)
     IN idGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-specificationsStatement 'Ввести на основании с/ф' (statement) = GROUP CONCAT castToString255(numberSpecification(specification))
+specificationsStatement 'Ввести на основании с/ф' (statement) = GROUP CONCAT castToString255(seriesNumberObject(specification))
     IF inStatementSpecification(statement, specification), ', ' BY statement IN specificationGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
 isCustomerStatementSpecification 'Заявка покупателя' (statement, specification) = customerStatement(statement)== customerSpecification(specification);
@@ -4707,7 +4722,7 @@ statusStatementSpecification 'Статус' (statement, specification) = CASE
     END  MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 castToStringFour = FORMULA STRING[40] '$1 || CAST ($2 AS character(20)) || $3 || $4 || CAST ($5 AS character(20))';
-infoDetailSpec(detailSpec) = castToStringFour('Счет-фактура № ', numberSpecification(specificationDetailSpec(detailSpec)), ' от ', ' ', dateSpecification(specificationDetailSpec(detailSpec)));
+infoDetailSpec(detailSpec) = castToStringFour('Счет-фактура № ', seriesNumberObject(specificationDetailSpec(detailSpec)), ' от ', ' ', dateSpecification(specificationDetailSpec(detailSpec)));
 
 noteStatementDetail 'Примечание' = DATA STRING[40] (statementDetail) IN baseGroup;
 
@@ -4731,10 +4746,10 @@ oldWareStatementDetail 'Посуда' (statementDetail) = DATA ware(statementDet
 oldPriceWareStatementDetail 'Цена посуды' (statementDetail) = DATA DOUBLE (statementDetail) IN pricingStatementDetailInfo;
 
 castStatementObjectsToString100=
-    FORMULA STRING[200] '\'Выписка из розницы \' || CAST($1 AS TEXT) || \' - \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Выписка из розницы \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
 
 descriptionStatement 'Название документа' (statement) = castStatementObjectsToString100(
-    waybillStatement(statement), seriesWaybillStatement(statement), dateStatement(statement), nameCustomerStatement(statement));
+    seriesNumberObject(statement), dateStatement(statement), nameCustomerStatement(statement));
 
 descriptionStatementDetail 'Название документа' (statementDetail) = descriptionStatement(statementStatementDetail(statementDetail));
 
@@ -4757,8 +4772,8 @@ needToPriceChangeStatement (statement) = GROUP SUM 1 IF needToPriceChangeStateme
 dateTimePriceChangeStatement 'Дата/время' (priceChangeStatement) = dateTimeStatement(statementPriceChangeStatement(priceChangeStatement));
 datePriceChangeStatement 'Дата' (priceChangeStatement) = dateStatement(statementPriceChangeStatement(priceChangeStatement));
 isPostedPriceChangeStatement 'Закрыт' (priceChangeStatement) = isPostedStatement(statementPriceChangeStatement(priceChangeStatement));
-waybillPriceChangeStatement 'Номер накладной' (priceChangeStatement) = waybillStatement(statementPriceChangeStatement(priceChangeStatement));
-seriesWaybillPriceChangeStatement 'Серия накладной' (priceChangeStatement) = seriesWaybillStatement(statementPriceChangeStatement(priceChangeStatement));
+numberPriceChangeStatement 'Номер накладной' (priceChangeStatement) = numberObject(statementPriceChangeStatement(priceChangeStatement));
+seriesPriceChangeStatement 'Серия накладной' (priceChangeStatement) = seriesObject(statementPriceChangeStatement(priceChangeStatement));
 descriptionPriceChangeStatement 'Название документа' (priceChangeStatement) = descriptionStatement(statementPriceChangeStatement(priceChangeStatement));
 
 customerPriceChangeStatement (priceChangeStatement) = customerStatement(statementPriceChangeStatement(priceChangeStatement));
@@ -4842,26 +4857,25 @@ CLASS batch 'Партия';
 
 CLASS ABSTRACT batchShipment 'Партия из прихода' : batch, balanceItemLedger, importerPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger, warePriceLedger;
 
-@metaCodeObjectWithPost(shipment, 'Поставка', 'Закрытая поставка', incAccountSumHistoryDocumentLedger, batchShipment);
+CLASS shipment 'Поставка' : incAccountSumDocumentLedger, historyObject, numberedObject;
+CLASS shipmentDetail 'Строка поставки' : batchShipment;
+@metaCodeObjectWithPostEx(shipment, 'Закрытая поставка');
 
 GROUP waybillSum 'Суммы накладной': baseGroup;
 GROUP ordersInfo 'Заказы': baseGroup;
 GROUP additionalInfo 'Дополнительно' : baseGroup;
 
 //шапка документа поставки
-waybillShipment 'Номер накладной' (shipment) = DATA STRING[7] (shipment) IN documentHeaderGroup FIXEDCHARWIDTH 7;
-
-waybillShipmentDetail 'Номер накладной' (shipmentDetail) = waybillShipment(shipmentShipmentDetail(shipmentDetail));
-
-seriesWaybillShipment 'Серия накладной' (shipment) = DATA STRING[2] (shipment) IN documentHeaderGroup FIXEDCHARWIDTH 4;
-
-seriesWaybillShipmentDetail 'Серия накладной' (shipmentDetail) = seriesWaybillShipment(shipmentShipmentDetail(shipmentDetail));
+numberObjectDetail 'Номер накладной' (shipmentDetail) = numberObject(shipmentShipmentDetail(shipmentDetail));
+seriesObjectDetail 'Серия накладной' (shipmentDetail) = seriesObject(shipmentShipmentDetail(shipmentDetail));
 
 sidShipmentDetail 'Уникальный номер накладной' (shipmentDetail) = DATA STRING[50] (shipmentDetail) IN documentHeaderGroup;
 
-sidWaybillSeriesWaybillToShipmentDetail (sid, waybill, seriesWaybill) = GROUP UNIQUE shipmentDetail BY sidShipmentDetail (shipmentDetail), waybillShipmentDetail (shipmentDetail), seriesWaybillShipmentDetail (shipmentDetail) WHERE shipmentDetail IS shipmentDetail;
+sidNumberSeriesToShipmentDetail (sid, number, series) = GROUP UNIQUE shipmentDetail
+            BY sidShipmentDetail (shipmentDetail), numberObjectDetail (shipmentDetail), seriesObjectDetail (shipmentDetail)
+            WHERE shipmentDetail IS shipmentDetail;
 
-waybillSeriesWaybillToShipment (waybill, series) = GROUP UNIQUE shipment BY waybillShipment(shipment), seriesWaybillShipment(shipment) WHERE shipment IS shipment;
+numberSeriesToShipment (number, series) = GROUP UNIQUE shipment BY numberObject(shipment), seriesObject(shipment) WHERE shipment IS shipment;
 
 supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipment) IN idGroup;
 
@@ -5120,10 +5134,10 @@ percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShip
     ON CHANGE itemShipmentDetail(shipmentDetail);
 
 castShipmentObjectsToString100=
-    FORMULA STRING[200] '\'Приход \' || CAST($1 AS TEXT) || \' - \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Приход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
 
 descriptionShipment 'Название документа' (shipment) = castShipmentObjectsToString100(
-    waybillShipment(shipment), seriesWaybillShipment(shipment), dateShipment(shipment), nameSupplierShipment(shipment));
+    seriesNumberObject(shipment), dateShipment(shipment), nameSupplierShipment(shipment));
 
 descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
 
@@ -5144,8 +5158,8 @@ needToPriceChangeShipment (shipment) = GROUP SUM 1 IF needToPriceChangeShipmentD
 dateTimePriceChangeShipment 'Дата/время' (priceChangeShipment) = dateTimeShipment(shipmentPriceChangeShipment(priceChangeShipment));
 datePriceChangeShipment 'Дата' (priceChangeShipment) = dateShipment(shipmentPriceChangeShipment(priceChangeShipment));
 isPostedPriceChangeShipment 'Закрыт' (priceChangeShipment) = isPostedShipment(shipmentPriceChangeShipment(priceChangeShipment));
-waybillPriceChangeShipment 'Номер накладной' (priceChangeShipment) = waybillShipment(shipmentPriceChangeShipment(priceChangeShipment));
-seriesWaybillPriceChangeShipment 'Серия накладной' (priceChangeShipment) = seriesWaybillShipment(shipmentPriceChangeShipment(priceChangeShipment));
+numberPriceChangeShipment 'Номер накладной' (priceChangeShipment) = numberObject(shipmentPriceChangeShipment(priceChangeShipment));
+seriesPriceChangeShipment 'Серия накладной' (priceChangeShipment) = seriesObject(shipmentPriceChangeShipment(priceChangeShipment));
 descriptionPriceChangeShipment 'Название документа' (priceChangeShipment) = descriptionShipment(shipmentPriceChangeShipment(priceChangeShipment));
 
 supplierPriceChangeShipment (priceChangeShipment) = supplierShipment(shipmentPriceChangeShipment(priceChangeShipment));
@@ -5180,7 +5194,7 @@ oldPriceWarePriceChangeShipmentDetail 'Старая цена посуды' (pric
 
 FORM ordersShipment 'Заказы'
     OBJECTS s=shipment FIXED PANEL
-    PROPERTIES (s) READONLY waybillShipment, dateShipment
+    PROPERTIES (s) READONLY seriesNumberObject, dateShipment
 
     OBJECTS o=orderSupplier
 
@@ -5197,7 +5211,7 @@ showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OB
 
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
-    PROPERTIES (s) waybillShipment, seriesWaybillShipment, dateShipment, timeShipment, nameSupplierShipment,
+    PROPERTIES (s) numberObject, seriesObject, dateShipment, timeShipment, nameSupplierShipment,
                    nameDepartmentStoreShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
                    carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
@@ -5254,8 +5268,8 @@ DESIGN shipment FROM DEFAULT{
                         childConstraints = TO THE RIGHT;
                         ADD PROPERTY(dateShipment);
                         ADD PROPERTY(timeShipment);
-                        ADD PROPERTY(waybillShipment);
-                        ADD PROPERTY(seriesWaybillShipment);
+                        ADD PROPERTY(numberObject);
+                        ADD PROPERTY(seriesObject);
                     };
                     NEW docHeadRow2 {
                         childConstraints = TO THE RIGHT;
@@ -5281,7 +5295,7 @@ DESIGN shipment FROM DEFAULT{
 
 FORM shipments 'Поставки'
     OBJECTS s=shipment
-    PROPERTIES (s) READONLY objectClassName, waybillShipment, seriesWaybillShipment, dateShipment, timeShipment, nameDepartmentStoreShipment,
+    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment
     PROPERTIES (s) FORCE PANEL nameUserCreated, timeCreated, nameUserClosed, timeClosed
 
@@ -5308,14 +5322,11 @@ DESIGN shipments FROM DEFAULT {
 }
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
-@metaCodeObjectWithPost (writeOff, 'Списание', 'Закрытое списание', outAccountSumHistoryDocumentLedger, balanceItemLedger);
+CLASS writeOff 'Списание' : outAccountSumDocumentLedger, historyObject, numeratedObject;
+CLASS writeOffDetail 'Строка списания' : balanceItemLedger;
+@metaCodeObjectWithPostEx (writeOff, 'Закрытое списание');
+
 CLASS reasonOff 'Причина списания' : named;
-
-numberWriteOff 'Номер документа' = DATA INTEGER (writeOff) IN documentHeaderGroup;
-maxNumberWriteOff = UNION OVERRIDE 0, [GROUP MAX numberWriteOff(writeOff)]();
-nextNumberWriteOff = maxNumberWriteOff() + 1;
-
-numberWriteOff(writeOff) <- OLD nextNumberWriteOff() ON ASSIGN writeOff IS writeOff;
 
 numberActWriteOff 'Номер акта' = DATA STRING[10] (writeOff) IN documentHeaderGroup;
 
@@ -5358,19 +5369,18 @@ castWriteOffObjectsToString100=
     FORMULA STRING[200] '\'Списание \' || CAST($1 AS TEXT) || \' акт \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)';
 
 descriptionWriteOff 'Название документа' (writeOff) = castWriteOffObjectsToString100(
-    numberWriteOff(writeOff), numberActWriteOff(writeOff), dateWriteOff(writeOff));
+    seriesNumberObject(writeOff), numberActWriteOff(writeOff), dateWriteOff(writeOff));
 
 descriptionWriteOffDetail 'Название документа' (writeOffDetail) = descriptionWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
 
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
-@metaCodeObjectWithPost (innerFlow, 'Расход в отдел', 'Закрытый расход в отдел', outAccountSumHistoryDocumentLedger, balanceItemLedger);
+CLASS innerFlow 'Расход в отдел' : outAccountSumDocumentLedger, historyObject, numberedObject;
+CLASS innerFlowDetail 'Строка расхода в отдел' : balanceItemLedger;
+@metaCodeObjectWithPostEx (innerFlow, 'Закрытый расход в отдел');
 
 recipientDepartmentInnerFlow 'Отдел-получатель (ИД)' (innerFlow) = DATA departmentStore(innerFlow);
 nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentHeaderGroup;
-
-waybillInnerFlow 'Номер накладной' (innerFlow) = DATA STRING[7] (innerFlow) IN documentHeaderGroup FIXEDCHARWIDTH 7;
-seriesWaybillInnerFlow 'Серия накладной' (innerFlow) = DATA STRING[2] (innerFlow) IN documentHeaderGroup FIXEDCHARWIDTH 4;
 
 quantityInnerFlowDetail 'Количество' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
 
@@ -5400,10 +5410,10 @@ accountSumInnerFlow 'Общая сумма' (innerFlow) = GROUP SUM accountSumIn
     IF innerFlowInnerFlowDetail (innerFlowDetail) == innerFlow BY innerFlowInnerFlowDetail(innerFlowDetail) IN waybillSum;
 
 castInnerFlowObjectsToString100=
-    FORMULA STRING[200] '\'Расход в отдел \' || CAST($1 AS TEXT) || \' - \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Расход в отдел \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
 
 descriptionInnerFlow 'Название документа' (innerFlow) = castInnerFlowObjectsToString100(
-    waybillInnerFlow(innerFlow), seriesWaybillInnerFlow(innerFlow), dateInnerFlow(innerFlow), nameRecipientDepartmentInnerFlow(innerFlow));
+    seriesNumberObject(innerFlow), dateInnerFlow(innerFlow), nameRecipientDepartmentInnerFlow(innerFlow));
 
 descriptionInnerFlowDetail 'Название документа' (innerFlowDetail) = descriptionInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail));
 
@@ -5413,7 +5423,7 @@ oldPriceWareInnerFlowDetail 'Цена посуды' (innerFlowDetail) = DATA DOU
 
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
-    PROPERTIES (f) waybillInnerFlow, seriesWaybillInnerFlow, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
+    PROPERTIES (f) numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
                    nameRecipientDepartmentInnerFlow, noteInnerFlow, totalQuantityInnerFlow, accountSumInnerFlow
 
     OBJECTS d=innerFlowDetail
@@ -5458,7 +5468,7 @@ DESIGN innerFlow FROM DEFAULT{
 
 FORM innerFlows 'Расходы в другие отделы'
     OBJECTS f=innerFlow
-    PROPERTIES (f) READONLY objectClassName, waybillInnerFlow, seriesWaybillInnerFlow, dateInnerFlow, nameDepartmentStoreInnerFlow,
+    PROPERTIES (f) READONLY objectClassName, numberObject, seriesObject, dateInnerFlow, nameDepartmentStoreInnerFlow,
                             nameRecipientDepartmentInnerFlow, quantityInnerFlowDetailsInnerFlow,
                             totalQuantityInnerFlow, accountSumInnerFlow
 
@@ -5482,9 +5492,9 @@ DESIGN innerFlows FROM DEFAULT {
 }
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
-CLASS ABSTRACT abstractInnerArrivalDetail : importerPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger, balanceItemLedger;
-
-@metaCodeObjectWithPost (innerArrival, 'Приход в отдел', 'Закрытый приход в отдел', incAccountSumHistoryDocumentLedger, abstractInnerArrivalDetail);  // balanceItemLedger
+CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, historyObject;
+CLASS innerArrivalDetail 'Строка прихода в отдел' : importerPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger, balanceItemLedger;
+@metaCodeObjectWithPostEx (innerArrival, 'Закрытый приход в отдел');
 
 innerFlowInnerArrival 'Накладная отгрузки с отдела-отправителя (ИД)' (innerArrival) = DATA innerFlowPosted (innerArrival);
 
@@ -5494,8 +5504,9 @@ isArrivedInnerFlow (innerFlow) = innerFlow IS innerFlow AND innerArrivalInnerFlo
 
 innerFlowInnerArrivalDetail (innerArrivalDetail) = innerFlowInnerArrival(innerArrivalInnerArrivalDetail(innerArrivalDetail));
 
-waybillInnerArrival 'Накладная отгрузки с отдела-отправителя' (innerArrival) = waybillInnerFlow(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup;
-seriesWaybillInnerArrival 'Серия накладной'(innerArrival) = seriesWaybillInnerFlow(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup;
+numberArrival 'Накладная отгрузки с отдела-отправителя' (innerArrival) = numberObject(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup;
+seriesArrival 'Серия накладной' (innerArrival) = seriesObject(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup;
+seriesNumberArrival 'Серия/Номер' (innerArrival) = seriesNumberObject(innerFlowInnerArrival(innerArrival));
 
 senderDepartmentInnerArrival 'Отдел-отправитель (ИД)' (innerArrival) = DATA departmentStore(innerArrival);
 nameSenderDepartmentInnerArrival 'Отдел-отправитель' (innerArrival) = name(senderDepartmentInnerArrival(innerArrival)) IN documentHeaderGroup;
@@ -5508,12 +5519,6 @@ CONSTRAINT recipientDepartmentInnerFlow(innerFlowInnerArrival(innerArrival)) != 
 CONSTRAINT innerFlowInnerArrival(p1) == innerFlowInnerArrival(p2) AND p1 != p2 CHECKED MESSAGE 'Накладная задействована в другом приходе';
 
 senderDepartmentInnerArrival (innerArrival) <- departmentStoreInnerFlow(innerFlowInnerArrival(innerArrival))
-    ON CHANGE innerFlowInnerArrival(innerArrival);
-
-waybillInnerArrival (innerArrival) <- waybillInnerFlow(innerFlowInnerArrival(innerArrival))
-    ON CHANGE innerFlowInnerArrival(innerArrival);
-
-seriesWaybillInnerArrival (innerArrival) <- seriesWaybillInnerFlow(innerFlowInnerArrival(innerArrival))
     ON CHANGE innerFlowInnerArrival(innerArrival);
 
 quantityInnerArrivalDetail 'Количество' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN baseGroup;
@@ -5612,8 +5617,8 @@ needToPriceChangeInnerArrival (innerArrival) = GROUP SUM 1 IF needToPriceChangeI
 dateTimePriceChangeInnerArrival 'Дата/время' (priceChangeInnerArrival) = dateTimeInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 datePriceChangeInnerArrival 'Дата' (priceChangeInnerArrival) = dateInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 isPostedPriceChangeInnerArrival 'Закрыт' (priceChangeInnerArrival) = isPostedInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
-waybillPriceChangeInnerArrival 'Номер накладной' (priceChangeInnerArrival) = waybillInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
-seriesWaybillPriceChangeInnerArrival 'Серия накладной' (priceChangeInnerArrival) = seriesWaybillInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
+numberPriceChangeInnerArrival 'Номер накладной' (priceChangeInnerArrival) = numberArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
+seriesPriceChangeInnerArrival 'Серия накладной' (priceChangeInnerArrival) = seriesArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 
 senderDepartmentPriceChangeInnerArrival (priceChangeInnerArrival) = senderDepartmentInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' (priceChangeInnerArrival) = name(senderDepartmentPriceChangeInnerArrival(priceChangeInnerArrival));
@@ -5651,10 +5656,10 @@ retailPriceChangeInnerArrivalDetail 'Новая розничная цена' (pr
     priceInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
 
 castInnerArrivalObjectsToString100=
-    FORMULA STRING[200] '\'Приход в отдел \'|| CAST($1 AS TEXT) || \' - \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Приход в отдел \'|| CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
 
 descriptionInnerArrival 'Название документа' (innerArrival) = castInnerArrivalObjectsToString100(
-    waybillInnerArrival(innerArrival), seriesWaybillInnerArrival(innerArrival), dateInnerArrival(innerArrival), nameSenderDepartmentInnerArrival(innerArrival));
+    seriesNumberArrival(innerArrival), dateInnerArrival(innerArrival), nameSenderDepartmentInnerArrival(innerArrival));
 
 descriptionInnerArrivalDetail 'Название документа' (innerArrivalDetail) = descriptionInnerArrival(innerArrivalInnerArrivalDetail(innerArrivalDetail));
 
@@ -5667,7 +5672,7 @@ oldPriceWarePriceChangeInnerArrivalDetail 'Старая цена посуды' (
 
 FORM innerArrival 'Приход из другого отдела'
     OBJECTS a=innerArrival FIXED PANEL
-    PROPERTIES (a) nameDepartmentStoreInnerArrival, waybillInnerArrival SHOWIF departmentStoreInnerArrival(a), seriesWaybillInnerArrival SHOWIF departmentStoreInnerArrival(a),
+    PROPERTIES (a) nameDepartmentStoreInnerArrival, numberArrival SHOWIF departmentStoreInnerArrival(a), seriesArrival SHOWIF departmentStoreInnerArrival(a),
                    dateInnerArrival SHOWIF innerFlowInnerArrival(a), timeInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
                    cleanAllInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a), toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a),
                    noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), totalQuantityInnerArrival SHOWIF innerFlowInnerArrival(a),
@@ -5722,7 +5727,7 @@ DESIGN innerArrival FROM DEFAULT{
 
 FORM innerArrivals 'Приходы из других отделов'
     OBJECTS a=innerArrival
-    PROPERTIES (a) READONLY objectClassName, waybillInnerArrival, seriesWaybillInnerArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
+    PROPERTIES (a) READONLY objectClassName, numberArrival, seriesArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
                             nameSenderDepartmentInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival
 
     PROPERTIES (a) ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
@@ -5750,15 +5755,16 @@ needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDet
 needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 
 
-CLASS wastage 'Списание отходов' : outAccountSumHistoryDocumentLedger;
+CLASS wastage 'Списание отходов' : outAccountSumDocumentLedger, historyObject;
 CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
 CLASS wastageDetail 'Строка документа': balanceItemLedger;
 
 @metaCodeDetailAggregation (shipment, wastage, needToWasteShipment);
 
 dateWastage 'Дата документа' (wastage) = dateShipment(shipmentWastage(wastage));
-waybillWastage 'Документ для списания' (wastage) = waybillShipment(shipmentWastage(wastage));
-seriesWaybillWastage 'Серия накладной для списания' (wastage) = seriesWaybillShipment(shipmentWastage(wastage));
+numberWastage 'Номер документа' (wastage) = numberObject(shipmentWastage(wastage));
+seriesWastage 'Серия документа' (wastage) = seriesObject(shipmentWastage(wastage));
+seriesNumberWastage 'Серия/номер документа' (wastage) = seriesNumberObject(shipmentWastage(wastage));
 
 departmentStoreWastage 'Отдел документа (ИД)' (wastage) = departmentStoreShipment (shipmentWastage(wastage));
 nameDepartmentStoreWastage 'Отдел документа' (wastage) = name(departmentStoreWastage (wastage));
@@ -5790,17 +5796,17 @@ totalSumWastage 'Общая сумма' (wastage) = GROUP SUM sumWastageDetail (
     IF  wastageWastageDetail(wastageDetail) == wastage BY wastageWastageDetail(wastageDetail) IN waybillSum;
 
 castWastageObjectsToString100=
-    FORMULA STRING[200] '\'Списание отходов \' || CAST($1 AS TEXT) || \' - \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Списание отходов \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
 
 descriptionWastage 'Название документа' (wastage) = castWastageObjectsToString100(
-    waybillWastage(wastage), seriesWaybillWastage(wastage), dateWastage(wastage), nameSupplierWastage(wastage));
+    seriesNumberWastage(wastage), dateWastage(wastage), nameSupplierWastage(wastage));
 
 descriptionWastageDetail 'Название документа' (wastageDetail) = descriptionWastage(wastageWastageDetail(wastageDetail));
 
 FORM wastages 'Списания отходов'
 
     OBJECTS w=wastage
-    PROPERTIES (w) READONLY dateWastage, waybillWastage, nameDepartmentStoreWastage, nameSupplierWastage, totalSumWastage
+    PROPERTIES (w) READONLY dateWastage, seriesNumberWastage, nameDepartmentStoreWastage, nameSupplierWastage, totalSumWastage
 
     OBJECTS d=wastageDetail
     PROPERTIES (d) READONLY nameAttributeItemWastageDetail, quantityWastageDetail, priceWastageDetail, sumWastageDetail
@@ -5810,21 +5816,11 @@ FORM wastages 'Списания отходов'
 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
-castThreeObjectsToString100=
-    FORMULA STRING[200] '\'№ \' || CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
-
-commonInfoShipmentDetail (batchShipment) =
-    castThreeObjectsToString100(seriesWaybillShipment(shipmentShipmentDetail(batchShipment)),
-    waybillShipment(shipmentShipmentDetail(batchShipment)),
-    dateShipment(shipmentShipmentDetail(batchShipment)));
-
-@metaCodeObjectWithPost(returnSupplier, 'Возврат поставщику', 'Закрытый возврат поставщику', outAccountSumHistoryDocumentLedger, balanceItemLedger);
+CLASS returnSupplier 'Возврат поставщику' : outAccountSumDocumentLedger, historyObject, numberedObject;
+CLASS returnSupplierDetail 'Строка возврата поставщику' : balanceItemLedger;
+@metaCodeObjectWithPostEx(returnSupplier, 'Закрытый возврат поставщику');
 
 // шапка документа "Возврат поставщику"
-waybillReturnSupplier 'Номер накладной' (returnSupplier) = DATA STRING[7] (returnSupplier) IN documentHeaderGroup FIXEDCHARWIDTH 7;
-
-seriesWaybillReturnSupplier 'Серия накладной' (returnSupplier) = DATA STRING[2] (returnSupplier) IN documentHeaderGroup FIXEDCHARWIDTH 4;
-
 supplierReturnSupplier 'Поставщик (ИД)' (returnSupplier) = DATA supplier (returnSupplier) IN idGroup;
 
 supplierReturnSupplierDetail 'Поставщик (ИД)' (returnSupplierDetail) = supplierReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
@@ -5864,7 +5860,7 @@ namebanRevaluationItemDepartmentReturnSupplierDetail 'Запрет на пере
 
 batchReturnSupplierDetail 'Партия (ИД)' = DATA batchShipment (returnSupplierDetail) IN idGroup;
 
-commonInfoBatchReturnSupplierDetail 'Партия' (returnSupplierDetail) = commonInfoShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
+commonInfoBatchReturnSupplierDetail 'Партия' (returnSupplierDetail) = descriptionShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
 
 quantityReturnSupplierDetail 'Количество' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
 
@@ -5927,10 +5923,10 @@ CONSTRAINT itemShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) !
     CHECKED MESSAGE 'Выберите партию этого товара';
 
 castReturnSupplierObjectsToString100=
-    FORMULA STRING[200] '\'Возврат поставщику \' || CAST($1 AS TEXT) || \' - \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
+    FORMULA STRING[200] '\'Возврат поставщику \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
 
 descriptionReturnSupplier 'Название документа' (returnSupplier) = castReturnSupplierObjectsToString100(
-    waybillReturnSupplier(returnSupplier), seriesWaybillReturnSupplier(returnSupplier), dateReturnSupplier(returnSupplier), nameSupplierReturnSupplier(returnSupplier));
+    seriesNumberObject(returnSupplier), dateReturnSupplier(returnSupplier), nameSupplierReturnSupplier(returnSupplier));
 
 descriptionReturnSupplierDetail 'Название документа' (returnSupplierDetail) = descriptionReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
 
@@ -6031,7 +6027,7 @@ descriptionBill 'Название документа' (bill) = castBillObjectsTo
 
 descriptionBillDetail (billDetail) = descriptionBill(billBillDetail(billDetail));
 
-CLASS zReport 'Z-отчет (открытый)' : outAccountSumHistoryDocumentLedger;
+CLASS zReport 'Z-отчет (открытый)' : outAccountSumDocumentLedger, historyObject;
 CLASS zReportPosted 'Z-отчет (закрытый)' : zReport, postedObject;
 
 @metaCodePostedObject(zReport);
@@ -6101,7 +6097,7 @@ sumCashDocument (incomeCashOrder) <- sumZReport(zReportIncomeCashOrder(incomeCas
 cashRegisterIncomeCashOrder (incomeCashOrder) <- cashRegisterZReport(zReportIncomeCashOrder(incomeCashOrder)) ON ASSIGN incomeCashOrder IS incomeCashOrder;
 
 // документ скидок для товарного отчета
-CLASS saleDiscountDocument 'Скидка по продаже через кассы' : outAccountSumHistoryDocumentLedger;
+CLASS saleDiscountDocument 'Скидка по продаже через кассы' : outAccountSumDocumentLedger;
 
 needToSaleDiscountDocument (zReport) = TRUE IF discountSumZReport(zReport);
 
@@ -6126,14 +6122,9 @@ descriptionSaleDiscountDocument (saleDiscountDocument) = castZReportObjectsToStr
 isPostedSaleDiscountDocument (saleDiscountDocument) = isPostedZReport(zReportSaleDiscountDocument(saleDiscountDocument));
 //----------------------------------------------- Переоценка товара ---------------------------------------------------//
 
-CLASS ABSTRACT abstractUserPriceChangeDetail : priceChangeDocumentDetail, importerPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
-@metaCodeObjectWithPost (userPriceChange, 'Переоценка товаров', 'Закрытая переоценка товаров', priceChangeDocument, abstractUserPriceChangeDetail);
-
-numberUserPriceChange 'Номер документа' = DATA INTEGER (userPriceChange) IN documentHeaderGroup;
-maxNumberUserPriceChange = UNION OVERRIDE 0, [GROUP MAX numberUserPriceChange(userPriceChange)]();
-nextNumberUserPriceChange = maxNumberUserPriceChange() + 1;
-
-numberUserPriceChange(userPriceChange) <- OLD nextNumberUserPriceChange() ON ASSIGN userPriceChange IS userPriceChange;
+CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject;
+CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
+@metaCodeObjectWithPostEx (userPriceChange, 'Закрытая переоценка товаров');
 
 quantityUserPriceChangeDetail 'Кол-во переоценки' = DATA DOUBLE (userPriceChangeDetail);
 
@@ -6158,7 +6149,7 @@ castUserPriceChangeToString100=
     FORMULA STRING[200] '\'Акт переоценки \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)';
 
 descriptionUserPriceChange 'Название документа' (userPriceChange) = castUserPriceChangeToString100(
-    numberUserPriceChange(userPriceChange), dateUserPriceChange(userPriceChange));
+    seriesNumberObject(userPriceChange), dateUserPriceChange(userPriceChange));
 
 descriptionUserPriceChangeUserPriceChangeDetail 'Название документа' (userPriceChangeDetail) = descriptionUserPriceChange(userPriceChangeUserPriceChangeDetail(userPriceChangeDetail));
 
@@ -6179,7 +6170,8 @@ oldPriceWareUserPriceChangeDetail 'Старая цена посуды' (userPric
 
 FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
-    PROPERTIES (u) numberUserPriceChange, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
+    PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
+                   dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
 
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) numberUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
@@ -6203,7 +6195,7 @@ DESIGN userPriceChange FROM DEFAULT {
 FORM userPriceChanges 'Переоценки товаров'
 
     OBJECTS u=userPriceChange
-    PROPERTIES (u) READONLY objectClassName, numberUserPriceChange, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
+    PROPERTIES (u) READONLY objectClassName, seriesNumberObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
 
     PROPERTIES (u) ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
                    postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
@@ -6238,7 +6230,6 @@ dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateT
                                                                   dateTimeStatementDetail(ledger),
                                                                   dateTimeInnerFlowDetail(ledger),
                                                                   dateTimeWastageDetail(ledger),
-                                                                  dateTimeReturnSupplierDetail(ledger),
                                                                   dateTimeInventoryLedger(ledger),
                                                                   dateTimeBillDetail(ledger),
                                                                   dateTimeParishDetail(ledger),
@@ -6251,7 +6242,6 @@ isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShip
                                                               isPostedStatementDetail(ledger),
                                                               isPostedInnerFlowDetail(ledger),
                                                               isPostedWastageDetail(ledger),
-                                                              isPostedReturnSupplierDetail(ledger),
                                                               isPostedInventoryLedger(ledger),
                                                               isPostedBillDetail(ledger),
                                                               isPostedParishDetail(ledger),
@@ -6264,7 +6254,6 @@ itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                  itemStatementDetail(ledger),
                                                  itemInnerFlowDetail(ledger),
                                                  itemWastageDetail(ledger),
-                                                 itemReturnSupplierDetail(ledger),
                                                  itemInventoryLedger(ledger),
                                                  itemBillDetail(ledger),
                                                  itemParishDetail(ledger),
@@ -6277,7 +6266,6 @@ departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipm
                                                             departmentStoreStatementDetail(ledger),
                                                             departmentStoreInnerFlowDetail(ledger),
                                                             departmentStoreWastageDetail(ledger),
-                                                            departmentStoreReturnSupplierDetail(ledger),
                                                             departmentStoreInventoryLedger(ledger),
                                                             departmentStoreBillDetail(ledger),
                                                             departmentStoreParishDetail(ledger),
@@ -6290,7 +6278,6 @@ quantityBalanceItemLedger 'Количество' (ledger) = UNION EXCLUSIVE quan
                                                     -quantityStatementDetail(ledger),
                                                     -quantityInnerFlowDetail(ledger),
                                                     -quantityWastageDetail(ledger),
-                                                    -quantityReturnSupplierDetail(ledger),
                                                     -quantityInventoryLedger(ledger),
                                                     -quantityBillDetail(ledger),
                                                      quantityParishDetail(ledger),
@@ -6303,12 +6290,11 @@ descriptionLedger 'Название документа' (ledger) = UNION EXCLUSI
                                                             descriptionStatementDetail(ledger),
                                                             descriptionInnerFlowDetail(ledger),
                                                             descriptionWastageDetail(ledger),
-                                                            descriptionReturnSupplierDetail(ledger),
-                                                            descriptionInventoryLedger(ledger),
-                                                            descriptionUserPriceChangeUserPriceChangeDetail(ledger),
-                                                            descriptionBillDetail(ledger),
-                                                            descriptionParishDetail(ledger),
-                                                            descriptionConsumptionDetail(ledger) PERSISTENT;
+                                                            descriptionInventoryLedger(ledger) PERSISTENT;
+//                                                            descriptionUserPriceChangeUserPriceChangeDetail(ledger),
+//                                                            descriptionBillDetail(ledger),
+//                                                            descriptionParishDetail(ledger),
+//                                                            descriptionConsumptionDetail(ledger) PERSISTENT;
 
 
 currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
@@ -6602,8 +6588,8 @@ needToPriceChangeReturnSupplier (returnSupplier) = GROUP SUM 1 IF needToPriceCha
 dateTimePriceChangeReturnSupplier 'Дата/время' (priceChangeReturnSupplier) = dateTimeReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 datePriceChangeReturnSupplier 'Дата' (priceChangeReturnSupplier) = dateReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 isPostedPriceChangeReturnSupplier 'Закрыт' (priceChangeReturnSupplier) = isPostedReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-waybillPriceChangeReturnSupplier 'Номер накладной' (priceChangeReturnSupplier) = waybillReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-seriesWaybillPriceChangeReturnSupplier 'Серия накладной' (priceChangeReturnSupplier) = seriesWaybillReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+numberPriceChangeReturnSupplier 'Номер накладной' (priceChangeReturnSupplier) = numberObject(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+seriesPriceChangeReturnSupplier 'Серия накладной' (priceChangeReturnSupplier) = seriesObject(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 descriptionPriceChangeReturnSupplier 'Название документа' (priceChangeReturnSupplier) = descriptionReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 
 supplierPriceChangeReturnSupplier (priceChangeReturnSupplier) = supplierReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
@@ -6665,7 +6651,7 @@ oldPriceWarePriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
     OBJECTS b=batchShipment
-    PROPERTIES(b) READONLY seriesWaybillShipmentDetail, waybillShipmentDetail, dateShipmentDetail,
+    PROPERTIES(b) READONLY seriesObjectDetail, numberObjectDetail, dateShipmentDetail,
                            quantityShipmentDetail, priceShipmentDetail, dataSuppliersRangeShipmentDetail,
                            retailPriceShipmentDetail
     DIALOG batchShipment OBJECT b;
@@ -6673,7 +6659,7 @@ FORM commonInfoBatchReturnSupplierDetail 'Партии'
 
 FORM returnSupplier 'Возврат поставщику'
     OBJECTS r=returnSupplier FIXED PANEL
-    PROPERTIES(r) seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier, timeReturnSupplier,
+    PROPERTIES(r) numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
                   nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier,
                   nameUserCreated READONLY, timeCreated READONLY, totalQuantityReturnSupplier,
                   totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier, retailSumReturnSupplier
@@ -6699,7 +6685,7 @@ FORM returnSupplier 'Возврат поставщику'
 FORM returnSuppliers 'Возвраты поставщику'
 
     OBJECTS r=returnSupplier
-    PROPERTIES(r) READONLY objectClassName, seriesWaybillReturnSupplier, waybillReturnSupplier, dateReturnSupplier,
+    PROPERTIES(r) READONLY objectClassName, seriesObject, numberObject, dateReturnSupplier,
                            nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, nameUserCreated,
                            timeCreated, noteReturnSupplier
     PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
@@ -6729,8 +6715,8 @@ DESIGN returnSupplier FROM DEFAULT {
             ADD r.documentHeaderGroup{
                     NEW first {
                         childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(seriesWaybillReturnSupplier);
-                        ADD PROPERTY(waybillReturnSupplier);
+                        ADD PROPERTY(numberObject);
+                        ADD PROPERTY(seriesObject);
                         ADD PROPERTY(dateReturnSupplier);
                         ADD PROPERTY(timeReturnSupplier);
                     };
@@ -6771,8 +6757,8 @@ DESIGN commonInfoBatchReturnSupplierDetail FROM DEFAULT {
 // --------------------------- Формы списания ---------------------------------
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
-    PROPERTIES (w) numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff, timeWriteOff, nameReasonOffWriteOff,
-                   noteWriteOff, quantityWriteOff, accountSumWriteOff
+    PROPERTIES (w) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreWriteOff, numberActWriteOff,
+                   dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, accountSumWriteOff
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail,
@@ -6792,15 +6778,15 @@ DESIGN writeOff FROM DEFAULT{
 
     main {
         preferredSize = (1024, 768);
-            d.panel{
-                childConstraints = TO THE BOTTOM;
-            }
+        d.panel{
+            childConstraints = TO THE BOTTOM;
         }
+    }
 }
 
 FORM writeOffs 'Списания'
     OBJECTS w=writeOff
-    PROPERTIES (w) READONLY objectClassName, numberWriteOff, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff,
+    PROPERTIES (w) READONLY objectClassName, seriesNumberObject, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff,
                             nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, quantityWriteOffDetailsWriteOff, accountSumWriteOff
 
     PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWriteOff(w), delete FORCE PANEL SHOWIF isDraftWriteOff(w),
@@ -6932,26 +6918,26 @@ NotNullAvailableQuantityItemByDetailSpec(detailSpec) = availableQuantityItemByDe
 // --------------------------- Использование регистров (автоматическое заполнение): инвентаризация---------------//
 
 priceDetailPage(detailPage) <- priceAccountBLedgerDateTime(
-                skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeToInventory(inventoryDetailPage(detailPage)))
+                skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeInventory(inventoryDetailPage(detailPage)))
                 ON CHANGE skuBarcodeDetailPage(detailPage);
 
 priceCollationSheetItem(collationSheet, item) <- priceAccountBLedgerDateTime(
-                item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)))
+                item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
                 ON ASSIGN includeCollationSheetItem(collationSheet, item);
 
 fillBalanceInventory 'Заполнить остатки' (inventory) = ACTION(inventory) {
     SET balanceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet)==inventory  AND item IS item
-        <- balanceBItemLedgerDateTime(item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)));
+        <- balanceBItemLedgerDateTime(item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
 
 } CONFIRM;
 //  todo: зацикливается на includeCollationSheetItem, пока на action поставили - переделать потом
 
 convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
     SET priceDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory <- priceAccountBLedgerDateTime(
-            skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeToInventory(inventoryDetailPage(detailPage)))
+            skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeInventory(inventoryDetailPage(detailPage)))
             AND inventoryDetailPage(detailPage) == inventory;
     SET priceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- priceAccountBLedgerDateTime(
-            item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)))
+            item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
             AND inventoryCollationSheet(collationSheet) == inventory;
 } CONFIRM;
 
@@ -6959,10 +6945,10 @@ convertPriceInventory 'Пересчитать цены по всей инвен�
 
 convertPriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION(collationSheet) {
     SET priceDetailPage(detailPage) AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet <- priceAccountBLedgerDateTime(
-            skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeToInventory(inventoryDetailPage(detailPage)))
+            skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeInventory(inventoryDetailPage(detailPage)))
             AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet;
     SET priceCollationSheetItem(collationSheet, item) <- priceAccountBLedgerDateTime(
-            item, departmentStoreCollationSheet(collationSheet), dateTimeToInventory(inventoryCollationSheet(collationSheet)));
+            item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
 } CONFIRM;
 
 
@@ -6989,13 +6975,13 @@ isPostedPriceChangeDocument 'Закрыт' (priceChangeDocument) = UNION EXCLUSI
                                                                              isPostedPriceChangeInnerArrival(priceChangeDocument),
                                                                              isPostedUserPriceChange(priceChangeDocument) PERSISTENT;
 
-waybillPriceChangeDocument 'Номер накладной' (priceChangeDocument) = UNION EXCLUSIVE waybillPriceChangeShipment(priceChangeDocument),
-                                                                                     waybillPriceChangeReturnSupplier(priceChangeDocument),
-                                                                                     waybillPriceChangeInnerArrival(priceChangeDocument) PERSISTENT;
+numberPriceChangeDocument 'Номер накладной' (priceChangeDocument) = UNION EXCLUSIVE numberPriceChangeShipment(priceChangeDocument),
+                                                                                    numberPriceChangeReturnSupplier(priceChangeDocument),
+                                                                                    numberPriceChangeInnerArrival(priceChangeDocument) PERSISTENT;
 
-seriesWaybillPriceChangeDocument 'Серия накладной' (priceChangeDocument) = UNION EXCLUSIVE seriesWaybillPriceChangeShipment(priceChangeDocument),
-                                                                                     seriesWaybillPriceChangeReturnSupplier(priceChangeDocument),
-                                                                                     seriesWaybillPriceChangeInnerArrival(priceChangeDocument) PERSISTENT;
+seriesPriceChangeDocument 'Серия накладной' (priceChangeDocument) = UNION EXCLUSIVE seriesPriceChangeShipment(priceChangeDocument),
+                                                                                    seriesPriceChangeReturnSupplier(priceChangeDocument),
+                                                                                    seriesPriceChangeInnerArrival(priceChangeDocument) PERSISTENT;
 
 departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE departmentStorePriceChangeShipment(priceChangeDocument),
                                                                            departmentStorePriceChangeReturnSupplier(priceChangeDocument),
@@ -7109,7 +7095,7 @@ oldPriceWarePriceChangeDocumentDetail 'Старая цена посуды' (pric
 FORM priceChangeDocuments 'Акты переоценки'
     OBJECTS pc=priceChangeDocument
     PROPERTIES(pc) READONLY objectClassName, isPostedPriceChangeDocument FORCE GRID, dateTimePriceChangeDocument, nameDepartmentStorePriceChangeDocument,
-                            waybillPriceChangeDocument, seriesWaybillPriceChangeDocument, nameSupplierPriceChangeShipment, nameSupplierPriceChangeReturnSupplier,
+                            numberPriceChangeDocument, seriesPriceChangeDocument, nameSupplierPriceChangeShipment, nameSupplierPriceChangeReturnSupplier,
                             nameSenderDepartmentPriceChangeInnerArrival, accountSumChangeDocument
 
     OBJECTS pcd=priceChangeDocumentDetail
@@ -7132,7 +7118,7 @@ dateTimeAccountSumDocumentLedger 'Дата/время' (ledger) = UNION EXCLUSIV
                                                                          dateTimeInnerFlow(ledger),
                                                                          dateTimeWastage(ledger),
                                                                          dateTimeReturnSupplier(ledger),
-                                                                         dateTimeToInventory(inventoryCollationSheet(ledger)),
+                                                                         dateTimeInventory(inventoryCollationSheet(ledger)),
                                                                          dateTimeZReport(ledger),
                                                                          dateTimeSaleDiscountDocument(ledger),
                                                                          dateTimeParish(ledger),
@@ -7147,7 +7133,7 @@ descriptionDocumentLedger 'Название документа' (ledger) = UNION
                                                                           descriptionInnerFlow(ledger),
                                                                           descriptionWastage(ledger),
                                                                           descriptionReturnSupplier(ledger),
-                                                                          descriptionInventory(inventoryCollationSheet(ledger)),
+                                                                          descriptionCollationSheet(ledger),
                                                                           descriptionZReport(ledger),
                                                                           descriptionSaleDiscountDocument(ledger),
                                                                           descriptionParish(ledger),
@@ -7269,7 +7255,7 @@ DESIGN sumAccountDocumentLedger FROM DEFAULT {
 
 FORM nameDepartmentByInventory 'Подразделения для инвентаризации'
     OBJECTS in=inventory FIXED PANEL
-    PROPERTIES (in) READONLY numberInventory, nameInventory, dateToInventory
+    PROPERTIES (in) READONLY seriesNumberObject, nameInventory, dateInventory
 
     TREE treeStore t=tradingNetwork, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY name(t), name(st), name(s), name(ds)
@@ -7348,7 +7334,8 @@ DESIGN listInventory FROM DEFAULT {
 
 FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
-    PROPERTIES (in)  numberInventory READONLY, nameInventory, nameTypeOfAdditionInventory, dateToInventory, timeToInventory,
+    PROPERTIES (in)  nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
+                     nameInventory, nameTypeOfAdditionInventory, dateInventory, timeInventory,
                      noteInventory, infoInventory, nameDepartmentByInventory, showFormNameDepartmentByInventory, convertPriceInventory,
                      fillBalanceInventory
 
@@ -7371,7 +7358,6 @@ FORM inventory 'Инвентаризация'
     OBJECTS          cs=collationSheet
 
     PROPERTIES (cs)  READONLY nameCollationSheet
-    PROPERTIES (cs)  setDataCollationSheet
     PROPERTIES (cs)  READONLY nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
                      quantityCountedItemByCollationSheet, balanceItemByCollationSheet, shortageQuantityCountedItemByCollationSheet,
                      totalItemByCollationSheet, totalBalansItemByCollationSheet, shortageTotalItemByCollationSheet,
@@ -7473,8 +7459,8 @@ DESIGN inventory FROM DEFAULT {
 
 FORM inventories 'Инвентаризации'
     OBJECTS in=inventory
-    PROPERTIES (in) READONLY objectClassName, numberInventory, nameInventory, nameDepartmentByInventory, noteInventory,
-                    dateToInventory, timeToInventory, timeCreated FORCE PANEL, nameUserCreated FORCE PANEL, hostnameComputerCreated FORCE PANEL, timeClosed, nameUserClosed, hostnameComputerClosed
+    PROPERTIES (in) READONLY objectClassName, seriesNumberObject, nameInventory, nameDepartmentByInventory, noteInventory,
+                    dateInventory, timeInventory, timeCreated FORCE PANEL, nameUserCreated FORCE PANEL, hostnameComputerCreated FORCE PANEL, timeClosed, nameUserClosed, hostnameComputerClosed
     PROPERTIES(in)  ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL SHOWIF isDraftInventory(in),
                     postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)//(in) ADDFORM, EDITFORM, delete
 
@@ -7505,12 +7491,12 @@ DESIGN inventories FROM DEFAULT {
 
 FORM specificationForm 'Отгрузки по данной с/ф'
     OBJECTS sp=specification FIXED PANEL
-    PROPERTIES (sp) READONLY numberSpecification, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification, nameCustomerSpecification,
-                    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
+    PROPERTIES (sp) READONLY seriesNumberObject, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification, nameCustomerSpecification,
+                             nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
 
     OBJECTS st=statement
-    PROPERTIES (st) READONLY waybillStatement, seriesWaybillStatement, dateStatement, nameCustomerStatement, nameDepartmentStoreStatement,
-                    noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement
+    PROPERTIES (st) READONLY seriesNumberObject, dateStatement, nameCustomerStatement, nameDepartmentStoreStatement,
+                             noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement
 
     FILTERS inStatementSpecification(st, sp)
 ;
@@ -7519,8 +7505,9 @@ showFormSpecificationForm 'Показать отгрузки по данной �
 
 FORM specification 'Счет-фактура'
     OBJECTS sp=specification FIXED PANEL
-    PROPERTIES (sp) numberSpecification, nameDepartmentStoreSpecification, dateSpecification, timeSpecification, dateToSpecification, nameCustomerSpecification,
-    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
+    PROPERTIES (sp) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreSpecification,
+                    dateSpecification, timeSpecification, dateToSpecification, nameCustomerSpecification,
+                    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
 
     OBJECTS d=detailSpec
     PROPERTIES (d) numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
@@ -7552,12 +7539,12 @@ DESIGN specification FROM DEFAULT{
 
 FORM specifications 'Счет-фактуры'
     OBJECTS sp=specification
-    PROPERTIES (sp) READONLY numberSpecification, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
-                    dateToSpecification, quantitySpecification, sumSpecification
-    PROPERTIES (sp) showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
+    PROPERTIES (sp) READONLY seriesNumberObject, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
+                             dateToSpecification, quantitySpecification, sumSpecification
+    PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
 
-    PROPERTIES (sp) ADDFORM, EDITFORM, delete
-    ORDER BY        numberSpecification
+    PROPERTIES (sp)          ADDFORM, EDITFORM, delete
+    ORDER BY                 seriesNumberObject
 
     OBJECTS d=detailSpec
     PROPERTIES (d)  READONLY numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
@@ -7575,13 +7562,13 @@ FORM specifications 'Счет-фактуры'
 
 FORM specificationsStatement 'Счета'
     OBJECTS st=statement FIXED PANEL
-    PROPERTIES (st) READONLY waybillStatement, dateStatement
+    PROPERTIES (st) READONLY seriesNumberObject, dateStatement
 
     OBJECTS sp=specification
 
     PROPERTIES (st, sp) inStatementSpecification
-    PROPERTIES (sp)     READONLY numberSpecification, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
-                        dateToSpecification, quantitySpecification, sumSpecification, statusSpecification
+    PROPERTIES (sp)     READONLY seriesNumberObject, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
+                                 dateToSpecification, quantitySpecification, sumSpecification, statusSpecification
     PROPERTIES (st, sp) statusStatementSpecification
 
     FILTERS isCustomerStatementSpecification (st, sp),
@@ -7597,7 +7584,7 @@ showFormSpecificationsStatement 'Заказы' (statement) = ACTION FORM specifi
 
 FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
-    PROPERTIES (st) waybillStatement, seriesWaybillStatement, dateStatement, timeStatement, nameCustomerStatement,
+    PROPERTIES (st) numberObject, seriesObject, dateStatement, timeStatement, nameCustomerStatement,
                     nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, showFormSpecificationsStatement,
                     noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement
 
@@ -7639,7 +7626,7 @@ DESIGN statement FROM DEFAULT {
 
 FORM statements 'Отгрузки из розницы'
     OBJECTS st=statement
-    PROPERTIES (st) READONLY objectClassName, waybillStatement, seriesWaybillStatement, dateStatement, nameCustomerStatement,
+    PROPERTIES (st) READONLY objectClassName, seriesNumberObject, dateStatement, nameCustomerStatement,
                     nameDepartmentStoreStatement, quantityStatementDetailsStatement, totalQuantityStatement, sumStatement
 
     PROPERTIES (st) ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),

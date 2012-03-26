@@ -8,7 +8,11 @@ import platform.server.logics.property.PropertyInterface;
 
 public class NotNullFilterEntity<P extends PropertyInterface> extends PropertyFilterEntity<P> {
 
-    public final boolean checkChange;
+    public boolean checkChange;
+
+    // нельзя удалять - используется при сериализации
+    public NotNullFilterEntity() {
+    }
 
     public NotNullFilterEntity(PropertyObjectEntity<P> property) {
         this(property, false, false);

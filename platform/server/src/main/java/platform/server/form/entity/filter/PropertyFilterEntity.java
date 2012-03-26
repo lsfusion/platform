@@ -13,7 +13,11 @@ import java.util.Set;
 public abstract class PropertyFilterEntity<P extends PropertyInterface> extends FilterEntity {
 
     public PropertyObjectEntity<P> property;
-    public final boolean resolveAdd;
+    public boolean resolveAdd;
+
+    // нельзя удалять - используется при сериализации
+    protected PropertyFilterEntity() {
+    }
 
     public PropertyFilterEntity(PropertyObjectEntity<P> property, boolean resolveAdd) {
         this.property = property;
