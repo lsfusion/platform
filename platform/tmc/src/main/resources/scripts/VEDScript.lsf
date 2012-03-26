@@ -1,0 +1,4 @@
+MODULE VEDScript;
+
+IMPORT BaseLogicsModule;
+IMPORT VEDLogicsModule;

@@ -7,6 +7,7 @@ import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.scheduler.Scheduler;
+import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 import tmc.integration.PanelExternalScreen;
 import tmc.integration.PanelExternalScreenParameters;
@@ -35,6 +36,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         super.createModules();
         VEDLM = new VEDLogicsModule(LM, this, logger);
         addLogicsModule(VEDLM);
+        ScriptingLogicsModule VEDScript = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/VEDScript.lsf"), LM, this);
+        addLogicsModule(VEDScript);
     }
 
     PanelExternalScreen panelScreen;
