@@ -1,17 +1,22 @@
 package platform.server.integration;
 
-import jxl.*;
-import jxl.read.biff.BiffException;
+import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import platform.server.classes.DateClass;
 import platform.server.classes.DoubleClass;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.TimeZone;
+
+import org.xml.sax.SAXException;
 
 /**
  * User: DAle
@@ -20,39 +25,40 @@ import java.util.TimeZone;
  */
 
 public class ExcelInputTable implements ImportInputTable {
-    private jxl.Sheet sheet;
+    private Sheet sheet;
 
-    public ExcelInputTable(File file) throws BiffException, IOException {
-        this(file, 0);
-    }
-
-    public ExcelInputTable(File file, int sheetNumber) throws BiffException, IOException {
-        sheet = Workbook.getWorkbook(file).getSheet(sheetNumber);
-    }
-
-
-    public ExcelInputTable(InputStream stream) throws BiffException, IOException {
+    public ExcelInputTable(InputStream stream) throws IOException, OpenXML4JException, SAXException {
         this(stream, 0);
     }
 
-    public ExcelInputTable(InputStream stream, int sheetNumber) throws BiffException, IOException {
-        sheet = Workbook.getWorkbook(stream).getSheet(sheetNumber);
+    public ExcelInputTable(InputStream stream, int sheetNumber) throws IOException, OpenXML4JException, SAXException {
+        sheet = WorkbookFactory.create(stream).getSheetAt(sheetNumber);
     }
 
-    public ExcelInputTable(jxl.Sheet sheet) {
+    public ExcelInputTable(Sheet sheet) {
         this.sheet = sheet;
     }
 
     public String getCellString(int row, int column) {
-        return sheet.getCell(column, row).getContents();
+        if (sheet.getRow(row) != null) {
+            Cell cell = sheet.getRow(row).getCell(column);
+            if (cell != null) {
+                if (cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC)
+                    return new DecimalFormat("#").format(sheet.getRow(row).getCell(column).getNumericCellValue());
+                else
+                    return sheet.getRow(row).getCell(column).getStringCellValue();
+            } else
+                return "";
+        }
+        return "";
     }
 
     public String getCellString(ImportField field, int row, int column) throws ParseException {
-        Cell cell = sheet.getCell(column, row);
-        if (field.getType() == DoubleClass.instance && cell.getType() == CellType.NUMBER) {
-            return String.valueOf(((NumberCell) cell).getValue());
-        } else if (field.getType() == DateClass.instance && cell.getType() == CellType.DATE) {
-            Date date = ((DateCell) cell).getDate();
+        Cell cell = sheet.getRow(row).getCell(column);
+        if (field.getType() == DoubleClass.instance && cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC) {
+            return new DecimalFormat("#").format(sheet.getRow(row).getCell(column).getNumericCellValue());
+        } else if (field.getType() == DateClass.instance && cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC) {
+            Date date = cell.getDateCellValue();
             DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
             format.setTimeZone(TimeZone.getTimeZone("GMT"));
             return format.format(date);
@@ -62,11 +68,11 @@ public class ExcelInputTable implements ImportInputTable {
     }
 
     public int rowsCnt() {
-        return sheet.getRows();
+        return sheet.getPhysicalNumberOfRows();
     }
 
     public int columnsCnt() {
-        return sheet.getColumns();
+        return sheet.getRow(0).getPhysicalNumberOfCells();
     }
 
 }

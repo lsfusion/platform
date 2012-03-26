@@ -1,5 +1,6 @@
 package platform.server.data.query.innerjoins;
 
+import org.antlr.analysis.SemanticContext;
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
 import platform.base.TwinImmutableObject;
@@ -20,7 +21,7 @@ public abstract class GroupWhere<T extends GroupWhere<T>> extends TwinImmutableO
         this.keyEqual = keyEqual;
         this.where = where;
 
-        assert where.getKeyEquals().getSingleKey().isEmpty();
+        assert where.isFalse() || where.getKeyEquals().getSingleKey().isEmpty();
     }
 
     public long getComplexity(boolean outer) {

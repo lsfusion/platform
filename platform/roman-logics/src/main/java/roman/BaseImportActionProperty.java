@@ -23,7 +23,7 @@ public abstract class BaseImportActionProperty extends CustomActionProperty {
     protected FileActionClass valueClass;
 
     public BaseImportActionProperty(RomanLogicsModule LM, String caption, ValueClass supplierClass) {
-        this(LM, caption, supplierClass, "xls");
+        this(LM, caption, supplierClass, "xls xlsx");
     }
 
     public BaseImportActionProperty(RomanLogicsModule LM, String caption, ValueClass supplierClass, String extensions) {

@@ -17,7 +17,8 @@ import java.util.Map;
 public abstract class SingleSheetImporter {
     public final static int A = 0, B = 1, C = 2, D = 3, E = 4, F = 5, G = 6, H = 7, I = 8, J = 9, K = 10, L = 11, M = 12,
             N = 13, O = 14, P = 15, Q = 16, R = 17, S = 18, T = 19, U = 20, V = 21, W = 22, X = 23, Y = 24, Z = 25,
-            AA = 26, AB = 27, AC = 28, AD = 29, AE = 30, AF = 31, AG = 32, AH = 33, AI = 34, AJ = 35, AX = 49;
+            AA = 26, AB = 27, AC = 28, AD = 29, AE = 30, AF = 31, AG = 32, AH = 33, AI = 34, AJ = 35, AO = 40,
+            AQ = 42, AS = 44, AX = 49;
 
     protected ImportInputTable inputTable;
     protected OrderedMap<ImportField, Pair<Integer, Integer>> fieldPosition = new OrderedMap<ImportField, Pair<Integer, Integer>>();
@@ -59,6 +60,10 @@ public abstract class SingleSheetImporter {
 
     protected String getCellString(ImportField field, int row, int column) throws ParseException {
         return inputTable.getCellString(field, row, column);
+    }
+
+    protected String getCellString(int row, int column) throws ParseException {
+        return inputTable.getCellString(row, column);
     }
 
 

@@ -110,7 +110,7 @@ public class RomanLogicsModule extends LogicsModule {
 
     private AbstractCustomClass article;
     ConcreteCustomClass articleComposite;
-    private ConcreteCustomClass articleSingle;
+    public ConcreteCustomClass articleSingle;
     ConcreteCustomClass item;
     protected AbstractCustomClass sku;
     private ConcreteCustomClass pallet;
@@ -119,7 +119,7 @@ public class RomanLogicsModule extends LogicsModule {
     public LP itemSupplierArticleSIDColorSIDSizeSID;
     public LP round2;
     private LP articleSku;
-    private ConcreteCustomClass order;
+    public ConcreteCustomClass order;
     private ConcreteCustomClass typeInvoice;
     private AbstractCustomClass invoice;
     protected AbstractCustomClass shipment;
@@ -140,8 +140,8 @@ public class RomanLogicsModule extends LogicsModule {
     LP supplierDocument;
     private LP nameSupplierDocument;
     LP sidDocument;
-    private LP dateFromOrder;
-    private LP dateToOrder;
+    public LP dateFromOrder;
+    public LP dateToOrder;
     LP documentSIDSupplier;
     private LP sumSimpleInvoice;
     private LP sumInvoicedDocument;
@@ -161,8 +161,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP dateToDataOrderArticle;
     private LP dateFromOrderOrderArticle;
     private LP dateToOrderOrderArticle;
-    private LP dateFromOrderArticle;
-    private LP dateToOrderArticle;
+    public LP dateFromOrderArticle;
+    public LP dateToOrderArticle;
     private LP dateFromOrderArticleSku;
     private LP dateToOrderArticleSku;
     LP priceDocumentArticle;
@@ -1164,8 +1164,10 @@ public class RomanLogicsModule extends LogicsModule {
     private LP womenSecretImportInvoice;
     private LP topazImportInvoice;
     private LP aprioriImportInvoice;
+    public LP mexxImportOrder;
 
     private AbstractGroup importInvoiceActionGroup;
+    private AbstractGroup importOrderActionGroup;
     private LP skuPrintFA;
     private LP printCreateSkuForm;
     private LP printCreatePalletForm;
@@ -1510,6 +1512,7 @@ public class RomanLogicsModule extends LogicsModule {
         supplierAttributeGroup = addAbstractGroup ("supplierAttributeGroup", "Атрибуты поставщика", publicGroup);
         intraAttributeGroup = addAbstractGroup("intraAttributeGroup", "Внутренние атрибуты", publicGroup);
         importInvoiceActionGroup = addAbstractGroup("importInvoiceActionGroup","Импорт инвойсов", actionGroup, false);
+        importOrderActionGroup = addAbstractGroup("importOrderActionGroup","Импорт заказов", actionGroup, false);
     }
 
     @Override
@@ -1681,6 +1684,8 @@ public class RomanLogicsModule extends LogicsModule {
         womenSecretImportInvoice = addAProp(importInvoiceActionGroup, new WomenSecretImportInvoiceActionProperty(this));
         topazImportInvoice = addAProp(importInvoiceActionGroup, new TopazImportInvoiceActionProperty(BL));
         aprioriImportInvoice = addAProp(importInvoiceActionGroup, new AprioriImportInvoiceActionProperty(this));
+
+        mexxImportOrder = addAProp(importOrderActionGroup, new MexxImportOrderActionProperty(this));
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
@@ -4186,7 +4191,7 @@ public class RomanLogicsModule extends LogicsModule {
         private OrderFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameCurrencySupplier);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameCurrencySupplier, importOrderActionGroup, true);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objOrder = addSingleGroupObject(order, "Заказ", baseLM.date, sidDocument, dateFromOrder, dateToOrder, nameCurrencyDocument, sumDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
@@ -4223,6 +4228,8 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(invoiceSupplierFilter);
 
             setSelector(objSupplier, true);
+            setSelector(importOrderActionGroup, false, objSupplier.groupTo);
+            setReadOnly(importOrderActionGroup, false, objSupplier.groupTo);
 
             //addDefaultOrder(numberListArticle, true);
         }
@@ -4534,6 +4541,7 @@ public class RomanLogicsModule extends LogicsModule {
             ).forceViewType = ClassViewType.PANEL;*/
 
             setSelector(objSupplier, true);
+            setSelector(importInvoiceActionGroup, false, objSupplier.groupTo);
             setReadOnly(importInvoiceActionGroup, false, objSupplier.groupTo);
 
             //addDefaultOrder(numberListArticle, true);

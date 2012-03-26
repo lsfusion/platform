@@ -1,6 +1,7 @@
 package roman;
 
 import jxl.read.biff.BiffException;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import platform.server.classes.DataClass;
 import platform.server.classes.FileActionClass;
 import platform.server.integration.ImportInputTable;
@@ -27,7 +28,7 @@ public class TopazImportInvoiceActionProperty extends ImportBoxInvoiceActionProp
     ;
 
     @Override
-    protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
+    protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException, InvalidFormatException {
         TopazInputTable invoiceTable = new TopazInputTable(inFile);
         return new InvoicePricatMergeInputTable(BL, invoiceTable,
                 ResultField.ARTICLE, ResultField.BARCODE, ResultField.QUANTITY, ResultField.COMPOSITION,

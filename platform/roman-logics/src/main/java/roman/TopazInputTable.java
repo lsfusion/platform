@@ -2,6 +2,9 @@ package roman;
 
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import platform.server.integration.ExcelInputTable;
 import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
@@ -22,10 +25,9 @@ public class TopazInputTable implements ImportInputTable {
     public final static int barcodeColumn = B;
     public final static int lastColumn = G;
 
-    public TopazInputTable(InputStream stream) throws BiffException, IOException {
-        Workbook book = Workbook.getWorkbook(stream);
+    public TopazInputTable(InputStream stream) throws BiffException, IOException, InvalidFormatException {
 
-        ExcelInputTable invoiceTable = new ExcelInputTable(book.getSheet(0));
+        ExcelInputTable invoiceTable = new ExcelInputTable(WorkbookFactory.create(stream).getSheetAt(0));
 
         String invoiceSID = invoiceTable.getCellString(2, A).trim();
 

@@ -1,7 +1,9 @@
 package roman;
 
-import jxl.Workbook;
 import jxl.read.biff.BiffException;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import platform.server.integration.ExcelInputTable;
 import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
@@ -31,12 +33,12 @@ public class WomenSecretInputTable implements ImportInputTable {
     public final static int lastInvoiceColumn = L;
     public final static int resultBarcodeColumn = lastInvoiceColumn + 3 + lastMainColumn;
 
-    public WomenSecretInputTable(InputStream stream) throws BiffException, IOException {
-        Workbook book = Workbook.getWorkbook(stream);
+    public WomenSecretInputTable(InputStream stream) throws BiffException, IOException, InvalidFormatException {
+        Workbook book = WorkbookFactory.create(stream);
         int sheetNumber = book.getNumberOfSheets();
         for (int i = 0; i * 2 < sheetNumber; i++) {
-            ExcelInputTable invoiceTable = new ExcelInputTable(book.getSheet(i * 2));
-            ExcelInputTable mainTable = new ExcelInputTable(book.getSheet(i * 2 + 1));
+            ExcelInputTable invoiceTable = new ExcelInputTable(book.getSheetAt(i * 2));
+            ExcelInputTable mainTable = new ExcelInputTable(book.getSheetAt(i * 2 + 1));
 
 
             String invoiceID = invoiceTable.getCellString(6, B);

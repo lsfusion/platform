@@ -11,29 +11,26 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
 
-/**
- * User: DAle
- * Date: 25.02.11
- * Time: 16:01
- */
+public abstract class ImportOrderActionProperty extends BaseImportActionProperty {
 
-public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionProperty {
+    protected ImportField orderSIDField, dateOrderField, barCodeField, dateFromOrderField, dateToOrderField,
+            dateFromOrderArticleField, dateToOrderArticleField, colorCodeField, sidField, colorNameField, sizeField,
+            themeCodeField, themeNameField, seasonField, genderField, compositionField, countryField, customCodeField,
+            customCode6Field, unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField;
 
-    protected ImportField invoiceSIDField, dateInvoiceField, boxNumberField, barCodeField, itemSupplierArticleColorSizeField,
-            colorCodeField, sidField, colorNameField, sizeField, themeCodeField, themeNameField, seasonField, genderField, compositionField, countryField, customCodeField,
-            customCode6Field, unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField, sidDestinationDataSupplierBoxField;
-
-    public ImportBoxInvoiceActionProperty(RomanLogicsModule RomanLM, ValueClass supplierClass) {
-        super(RomanLM, "Импортировать инвойс", supplierClass);
+    public ImportOrderActionProperty(RomanLogicsModule RomanLM, ValueClass supplierClass) {
+        super(RomanLM, "Импортировать заказ", supplierClass);
     }
 
-    public ImportBoxInvoiceActionProperty(RomanLogicsModule RomanLM, ValueClass supplierClass, String extensions) {
-        super(RomanLM, "Импортировать инвойс", supplierClass, extensions);
+    public ImportOrderActionProperty(RomanLogicsModule RomanLM, ValueClass supplierClass, String extensions) {
+        super(RomanLM, "Импортировать заказ", supplierClass, extensions);
     }
 
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException, ParseException, SAXException, OpenXML4JException {
@@ -43,13 +40,15 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
     protected abstract SingleSheetImporter createImporter(ImportInputTable inputTable);
 
     private void initFields() {
-        invoiceSIDField = new ImportField(LM.sidDocument);
-        dateInvoiceField = new ImportField(LM.baseLM.date);
-        boxNumberField = new ImportField(LM.sidSupplierBox);
+        orderSIDField = new ImportField(LM.sidDocument);
+        dateOrderField = new ImportField(LM.baseLM.date);
+        dateFromOrderField = new ImportField(LM.dateFromOrder);
+        dateToOrderField = new ImportField(LM.dateToOrder);
+        dateFromOrderArticleField = new ImportField(LM.dateFromOrderArticle);
+        dateToOrderArticleField = new ImportField(LM.dateToOrderArticle);
         barCodeField = new ImportField(LM.baseLM.barcode);
-        itemSupplierArticleColorSizeField = new ImportField(LM.baseLM.barcode);  //если нет баркода
-        colorCodeField = new ImportField(LM.sidColorSupplier);
         sidField = new ImportField(LM.sidArticle);
+        colorCodeField = new ImportField(LM.sidColorSupplier);
         colorNameField = new ImportField(LM.baseLM.name);
         sizeField = new ImportField(LM.sidSizeSupplier);
         themeCodeField = new ImportField(LM.sidThemeSupplier);
@@ -66,17 +65,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         originalNameField = new ImportField(LM.originalNameArticle);
         numberSkuField = new ImportField(LM.numberDataListSku);
         RRPField = new ImportField(LM.RRPDocumentArticle);
-        sidDestinationDataSupplierBoxField = new ImportField(LM.sidDestinationDataSupplierBox);
     }
-
-    protected boolean isSimpleInvoice() {
-        return false;
-    }
-
-    protected boolean hasBarCode() {
-        return true;
-    }
-
 
     public void execute(ExecutionContext context) throws SQLException {
         DataObject supplier = context.getKeyValue(supplierInterface);
@@ -87,32 +76,13 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
-        ImportKey<?> invoiceKey;
+        ImportKey<?> orderKey = new ImportKey(LM.order, LM.documentSIDSupplier.getMapping(orderSIDField, supplier));
 
-        if (!isSimpleInvoice()) {
-            invoiceKey = new ImportKey(LM.boxInvoice, LM.documentSIDSupplier.getMapping(invoiceSIDField, supplier));
-        } else {
-            invoiceKey = new ImportKey(LM.simpleInvoice, LM.documentSIDSupplier.getMapping(invoiceSIDField, supplier));
-        }
-        properties.add(new ImportProperty(invoiceSIDField, LM.sidDocument.getMapping(invoiceKey)));
-        properties.add(new ImportProperty(dateInvoiceField, LM.baseLM.date.getMapping(invoiceKey)));
-        properties.add(new ImportProperty(supplier, LM.supplierDocument.getMapping(invoiceKey)));
-
-        ImportKey<?> boxKey = null;
-        ImportKey<?> destinationKey = null;
-        if (!isSimpleInvoice()) {
-            boxKey = new ImportKey(LM.supplierBox, LM.supplierBoxSIDSupplier.getMapping(boxNumberField, supplier));
-            properties.add(new ImportProperty(invoiceSIDField, LM.boxInvoiceSupplierBox.getMapping(boxKey), LM.object(LM.boxInvoice).getMapping(invoiceKey)));
-            properties.add(new ImportProperty(boxNumberField, LM.sidSupplierBox.getMapping(boxKey)));
-            if (hasBarCode()) {
-                properties.add(new ImportProperty(boxNumberField, LM.baseLM.barcode.getMapping(boxKey)));
-            } else {
-                properties.add(new ImportProperty(boxNumberField, LM.itemSupplierArticleSIDColorSIDSizeSID.getMapping(boxKey, sidField, colorCodeField, sizeField)));
-            }
-            destinationKey = new ImportKey(LM.store, LM.destinationSIDSupplier.getMapping(sidDestinationDataSupplierBoxField, supplier));
-            properties.add(new ImportProperty(sidDestinationDataSupplierBoxField, LM.sidDestinationSupplier.getMapping(destinationKey, supplier)));
-            properties.add(new ImportProperty(sidDestinationDataSupplierBoxField, LM.destinationDataSupplierBox.getMapping(boxKey), LM.object(LM.destination).getMapping(destinationKey)));
-        }
+        properties.add(new ImportProperty(orderSIDField, LM.sidDocument.getMapping(orderKey)));
+        properties.add(new ImportProperty(dateOrderField, LM.baseLM.date.getMapping(orderKey)));
+        properties.add(new ImportProperty(dateFromOrderField, LM.dateFromOrder.getMapping(orderKey)));
+        properties.add(new ImportProperty(dateToOrderField, LM.dateToOrder.getMapping(orderKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierDocument.getMapping(orderKey)));
 
         ImportKey<?> articleKey = new ImportKey(LM.articleComposite, LM.articleSIDSupplier.getMapping(sidField, supplier));
         properties.add(new ImportProperty(sidField, LM.sidArticle.getMapping(articleKey)));
@@ -121,14 +91,8 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(unitNetWeightField, LM.netWeightArticle.getMapping(articleKey)));
         properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
 
-        ImportKey<?> itemKey = null;
-        if (hasBarCode()) {
-            itemKey = new ImportKey(LM.item, LM.baseLM.barcodeToObject.getMapping(barCodeField));
-            properties.add(new ImportProperty(barCodeField, LM.baseLM.barcode.getMapping(itemKey)));
-        } else {
-            itemKey = new ImportKey(LM.item, LM.itemSupplierArticleSIDColorSIDSizeSID.getMapping(supplier, sidField, colorCodeField, sizeField));
-        }
-
+        ImportKey<?> itemKey = new ImportKey(LM.item, LM.baseLM.barcodeToObject.getMapping(barCodeField));
+        properties.add(new ImportProperty(barCodeField, LM.baseLM.barcode.getMapping(itemKey)));
         properties.add(new ImportProperty(unitNetWeightField, LM.netWeightDataSku.getMapping(itemKey)));
         properties.add(new ImportProperty(sidField, LM.articleCompositeItem.getMapping(itemKey), LM.object(LM.articleComposite).getMapping(articleKey)));
 
@@ -136,6 +100,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(countryField, LM.baseLM.name.getMapping(countryKey)));
         properties.add(new ImportProperty(supplier, LM.supplierCountrySupplier.getMapping(countryKey)));
         properties.add(new ImportProperty(countryField, LM.countrySupplierOfOriginArticle.getMapping(articleKey), LM.object(LM.countrySupplier).getMapping(countryKey)));
+
 
         ImportKey<?> customCategoryKey = new ImportKey(LM.customCategoryOrigin, LM.sidToCustomCategoryOrigin.getMapping(customCodeField));
         properties.add(new ImportProperty(customCodeField, LM.sidCustomCategoryOrigin.getMapping(customCategoryKey)));
@@ -145,8 +110,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
         ImportKey<?> customCategory6Key = new ImportKey(LM.customCategory6, LM.sidToCustomCategory6.getMapping(customCode6Field));
         properties.add(new ImportProperty(customCode6Field, LM.sidCustomCategory6.getMapping(customCategory6Key)));
-        //properties.add(new ImportProperty(customCode6Field, LM.customCategory6Article.getMapping(articleKey),
-        //        LM.object(LM.customCategory6).getMapping(customCategory6Key)));
+
 
         ImportKey<?> colorKey = new ImportKey(LM.colorSupplier, LM.colorSIDSupplier.getMapping(colorCodeField, supplier));
         properties.add(new ImportProperty(colorCodeField, LM.sidColorSupplier.getMapping(colorKey)));
@@ -175,20 +139,16 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(supplier, LM.supplierGenderSupplier.getMapping(genderKey)));
         properties.add(new ImportProperty(genderField, LM.genderSupplierArticle.getMapping(articleKey), LM.object(LM.genderSupplier).getMapping(genderKey)));
 
+        properties.add(new ImportProperty(unitPriceField, LM.priceDataDocumentItem.getMapping(orderKey, itemKey)));
+        properties.add(new ImportProperty(RRPField, LM.RRPDocumentArticle.getMapping(orderKey, articleKey)));
+        properties.add(new ImportProperty(unitPriceField, LM.priceDocumentArticle.getMapping(orderKey, articleKey)));
+        properties.add(new ImportProperty(dateFromOrderArticleField, LM.dateFromOrderArticle.getMapping(orderKey, articleKey)));
+        properties.add(new ImportProperty(dateToOrderArticleField, LM.dateToOrderArticle.getMapping(orderKey, articleKey)));
 
-        if (!isSimpleInvoice()) {
-            properties.add(new ImportProperty(numberSkuField, LM.numberListArticle.getMapping(boxKey, articleKey)));
-            properties.add(new ImportProperty(numberSkuField, LM.numberDataListSku.getMapping(boxKey, itemKey)));
-            properties.add(new ImportProperty(unitQuantityField, LM.quantityDataListSku.getMapping(boxKey, itemKey), GroupType.SUM));
-        } else {
-            properties.add(new ImportProperty(numberSkuField, LM.numberListArticle.getMapping(invoiceKey, articleKey)));
-            properties.add(new ImportProperty(numberSkuField, LM.numberDataListSku.getMapping(invoiceKey, itemKey)));
-            properties.add(new ImportProperty(unitQuantityField, LM.quantityDataListSku.getMapping(invoiceKey, itemKey), GroupType.SUM));
-        }
+        properties.add(new ImportProperty(numberSkuField, LM.numberListArticle.getMapping(orderKey, articleKey)));
+        properties.add(new ImportProperty(numberSkuField, LM.numberDataListSku.getMapping(orderKey, itemKey)));
+        properties.add(new ImportProperty(unitQuantityField, LM.quantityDataListSku.getMapping(orderKey, itemKey), GroupType.SUM));
 
-        properties.add(new ImportProperty(unitPriceField, LM.priceDataDocumentItem.getMapping(invoiceKey, itemKey)));
-        properties.add(new ImportProperty(RRPField, LM.RRPDocumentArticle.getMapping(invoiceKey, articleKey)));
-        properties.add(new ImportProperty(unitPriceField, LM.priceDocumentArticle.getMapping(invoiceKey, articleKey)));
 
         for (byte[] file : fileList) {
             ImportTable table;
@@ -216,15 +176,59 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
                 }
             }
 
-            ImportKey<?>[] keysArray;
-            if (!isSimpleInvoice()) {
-                keysArray = new ImportKey<?>[]{invoiceKey, boxKey, destinationKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
-            } else {
-                keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
+            Integer dateFromIndex = -1;
+            Integer dateToIndex = -1;
+            Integer orderSIDIndex = -1;
+            for (int i = 0; i < table.fields.size(); i++) {
+                if (table.fields.get(i).equals(dateFromOrderField))
+                    dateFromIndex = i;
+                else if (table.fields.get(i).equals(dateToOrderField))
+                    dateToIndex = i;
+                else if (table.fields.get(i).equals(orderSIDField))
+                    orderSIDIndex = i;
             }
-            new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(false, false);
+            Map<String, Date> dateFromMin = new HashMap<String, Date>();
+            Map<String, Date> dateToMax = new HashMap<String, Date>();
+            if ((dateFromIndex != -1 && dateToIndex != -1)) {
+                for (List<Object> editingRow : table.data) {
+                    if (editingRow.get(dateFromIndex) != null) {
+                        String orderSID = (String) editingRow.get(orderSIDIndex);
+                        Date dateFrom = (Date) editingRow.get(dateFromIndex);
+                        Date dateMin = dateFromMin.get(orderSID);
+                        if (dateMin != null) {
+                            if (dateFrom.before(dateMin))
+                                dateFromMin.put(orderSID, dateFrom);
+                        } else
+                            dateFromMin.put(orderSID, dateFrom);
+                    }
+                    if (editingRow.get(dateToIndex) != null) {
+                        Date dateTo = (Date) editingRow.get(dateToIndex);
+                        String orderSID = (String) editingRow.get(orderSIDIndex);
+                        Date dateMax = dateToMax.get(orderSID);
+                        if (dateMax != null) {
+                            if (dateTo.after(dateMax))
+                                dateToMax.put(orderSID, dateTo);
+                        } else
+                            dateToMax.put(orderSID, dateTo);
+                    }
+                }
+                    for (List<Object> editingRow : table.data) {
+                        String orderSID = (String) editingRow.get(orderSIDIndex);
+                        if(dateFromMin.containsKey(orderSID))
+                          editingRow.set(dateFromIndex, dateFromMin.get(orderSID));
+                        if(dateToMax.containsKey(orderSID))
+                        editingRow.set(dateToIndex, dateToMax.get(orderSID));
+                    }
+            }
+            ImportKey<?>[] keysArray = new ImportKey<?>[]{orderKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
+
+            new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(true, false);
         }
 
-        context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+        context.addAction(new
+
+                MessageClientAction("Данные были успешно приняты", "Импорт")
+
+        );
     }
 }

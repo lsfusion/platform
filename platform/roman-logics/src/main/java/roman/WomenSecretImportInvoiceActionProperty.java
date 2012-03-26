@@ -1,6 +1,7 @@
 package roman;
 
 import jxl.read.biff.BiffException;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
@@ -28,7 +29,7 @@ public class WomenSecretImportInvoiceActionProperty extends ImportBoxInvoiceActi
     }
 
     @Override
-    protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
+    protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException, InvalidFormatException {
         return new WomenSecretInputTable(inFile);
     }
 
