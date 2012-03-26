@@ -10,6 +10,7 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.SourceJoin;
@@ -58,8 +59,8 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     }
 
     <K> Map<K, Expr> followTrue(Map<K, ? extends Expr> map, boolean pack);
-    List<Expr> followFalse(List<Expr> list);
-    <K> OrderedMap<Expr, K> followFalse(OrderedMap<Expr, K> map);
+    List<Expr> followFalse(List<Expr> list, boolean pack);
+    <K> OrderedMap<Expr, K> followFalse(OrderedMap<Expr, K> map, boolean pack);
 
     Where not();
 
@@ -83,6 +84,8 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop);
     <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keys, boolean exclusive, GroupStatType type, boolean noWhere);
     <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> keys);
+    <K extends BaseExpr> StatKeys<K> getStatKeys(Collection<K> keys);
+    <K extends BaseExpr> Stat getStatRows();
     <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(boolean notExclusive, QuickSet<K> exprs, GroupStatType type, boolean noWhere);
     <K extends Expr> StatKeys<K> getStatExprs(QuickSet<K> keys);
 

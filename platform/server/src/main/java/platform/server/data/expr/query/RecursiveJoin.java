@@ -106,7 +106,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     }
 
     private StatKeys<KeyExpr> getStatKeys(Where where) {
-        return where.getStatKeys(new QuickSet<KeyExpr>(group.keySet()));
+        return where.getStatKeys(group.keySet());
     }
 
     @IdentityLazy

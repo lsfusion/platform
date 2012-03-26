@@ -32,13 +32,17 @@ public class Stat {
         deg = (int) Math.round((double)countDeg * (Math.log10(count) / Math.log10(Settings.instance.getStatDegree())));
     }
 
-    private Stat(int count, boolean isDeg) {
+    public Stat(int count, boolean isDeg) {
         assert isDeg;
         deg = count;
     }
 
     public boolean less(Stat stat) {
         return deg < stat.deg;
+    }
+
+    public boolean lessEquals(Stat stat) {
+        return deg <= stat.deg;
     }
 
     public boolean isMin() {

@@ -207,8 +207,8 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
             Collection<GroupStatWhere<K>> exclJoins = new ArrayList<GroupStatWhere<K>>();
             Where prevWhere = Where.FALSE;
             for(GroupStatWhere<K> statJoin : sortedStatJoins) {
-                exclJoins.add(new GroupStatWhere<K>(statJoin.keyEqual, statJoin.stats, statJoin.where.and(prevWhere.not())));
-                prevWhere.or(statJoin.getFullWhere());
+                exclJoins.add(new GroupStatWhere<K>(statJoin.keyEqual, statJoin.stats, statJoin.where.and(prevWhere.translateQuery(statJoin.keyEqual.getTranslator()).not())));
+                prevWhere = prevWhere.or(statJoin.getFullWhere());
             }
             return exclJoins;
         } else { // иначе запускаем рекурсию

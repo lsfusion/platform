@@ -2849,7 +2849,7 @@ public class VEDLogicsModule extends LogicsModule {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)), !toAdd);
             if (!fixFilters)
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
-                        documentFreeFilter,
+                        new OrFilterEntity(documentFilter, documentFreeFilter),
                         "Дост. кол-во",
                         KeyStroke.getKeyStroke(KeyEvent.VK_F9, InputEvent.SHIFT_DOWN_MASK)), toAdd);
             addRegularFilterGroup(filterGroup);
@@ -2875,7 +2875,7 @@ public class VEDLogicsModule extends LogicsModule {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), !toAdd);
             if (!fixFilters)
                 articleFilterGroup.addFilter(new RegularFilterEntity(genID(),
-                        articleFreeFilter,
+                        new OrFilterEntity(articleFilter, articleFreeFilter),
                         "Дост. кол-во",
                         KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), toAdd);
 

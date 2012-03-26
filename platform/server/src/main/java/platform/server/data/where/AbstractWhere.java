@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.base.QuickSet;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.data.expr.BaseExpr;
@@ -69,17 +70,17 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return result;
     }
 
-    public List<Expr> followFalse(List<Expr> list) {
+    public List<Expr> followFalse(List<Expr> list, boolean pack) {
         List<Expr> result = new ArrayList<Expr>();
         for(Expr item : list)
-            result.add(item.followFalse(this, false));
+            result.add(item.followFalse(this, pack));
         return result;
     }
 
-    public <K> OrderedMap<Expr, K> followFalse(OrderedMap<Expr, K> map) {
+    public <K> OrderedMap<Expr, K> followFalse(OrderedMap<Expr, K> map, boolean pack) {
         OrderedMap<Expr, K> result = new OrderedMap<Expr, K>();
         for(Map.Entry<Expr, K> entry : map.entrySet())
-            result.put(entry.getKey().followFalse(this, false),entry.getValue());
+            result.put(entry.getKey().followFalse(this, pack),entry.getValue());
         return result;
     }
 
@@ -223,6 +224,15 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         for(GroupStatWhere<K> groupJoin : getStatJoins(groups, false, GroupStatType.ALL, true))
             result = result.or(groupJoin.stats);
         return result;
+    }
+
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(Collection<K> groups) { // assertion что where keys входят в это where
+        return getStatKeys(new QuickSet<K>(groups));
+    }
+
+    @IdentityLazy
+    public Stat getStatRows() {
+        return getStatKeys(getOuterKeys()).rows;
     }
 
     public <K extends Expr> StatKeys<K> getStatExprs(QuickSet<K> groups) {

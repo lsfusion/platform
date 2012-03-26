@@ -14,11 +14,13 @@ import platform.server.data.query.InnerJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.Where;
-import platform.server.data.where.WhereBuilder;
 
 import java.util.*;
+
+import static platform.base.BaseUtils.toMap;
 
 public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWheres.Interface<WhereJoins>, OuterContext<WhereJoins> {
 
@@ -114,6 +116,11 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> groups, KeyStat keyStat) {
+        return getStatKeys(groups, null, keyStat);        
+    }
+
+    // assert что rows >= result
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> groups, Result<Stat> rows, KeyStat keyStat) {
         Map<BaseJoin, Stat> statJoins = new HashMap<BaseJoin, Stat>();
         Map<BaseExpr, Stat> propStats = new HashMap<BaseExpr, Stat>();
 
@@ -202,14 +209,22 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         DistinctKeys<K> distinct = new DistinctKeys<K>();
         for(K group : groups) // для groups, берем min(из статистики значения, статистики его join'а)
             distinct.add(group, getPropStat(group, statJoins, keyStat, propStats).min(rowStat));
+        
+        if(rows!=null)
+            rows.set(rowStat);
         return new StatKeys<K>(distinct.getMax().min(rowStat), distinct); // возвращаем min(суммы groups, расчитанного результата)
     }
 
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> groups, Map<WhereJoin, Where> upWheres, WhereBuilder result, KeyStat stat) {
+    public <K extends BaseExpr> Where getPushWhere(QuickSet<K> groups, Map<WhereJoin, Where> upWheres, KeyStat stat, Stat currentStat, Stat currentJoinStat) {
         // нужно попытаться опускаться ниже, устраняя "избыточные" WhereJoin'ы или InnerJoin'ы
 
-        StatKeys<K> resultStat = getStatKeys(groups, stat);
-        List<WhereJoin> current = BaseUtils.toList(wheres);
+        List<WhereJoin> current;
+        Result<Stat> rows = new Result<Stat>();
+        Stat resultStat = getStatKeys(groups, rows, stat).rows;
+        if(resultStat.less(currentJoinStat) && rows.result.lessEquals(currentStat)) {
+            currentJoinStat = resultStat; currentStat = rows.result; current = BaseUtils.toList(wheres);
+        } else // если ключей больше чем в исходном или статистика увеличилась
+            return null;
 
         Map<WhereJoin, Where> reducedUpWheres = new HashMap<WhereJoin, Where>(upWheres);
         int it = 0;
@@ -233,16 +248,16 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
                 }
             }
 
-            StatKeys<K> reducedStat = new WhereJoins(reduced.toArray(new WhereJoin[reduced.size()])).getStatKeys(groups, stat);
-//            assert !reducedStat.rows.less(resultStat.rows); // вообще это не правильный assertion, потому как если уходит ключ статистика может уменьшиться
-            if(reducedStat.rows.equals(resultStat.rows))
-                current = reduced;
-            else
+            WhereJoins reducedJoins = new WhereJoins(reduced.toArray(new WhereJoin[reduced.size()]));
+            rows = new Result<Stat>();
+            Stat reducedStat = reducedJoins.getStatKeys(groups, rows, stat).rows;
+//            assert !reducedJoins.getStatKeys(groups, stat).rows.less(resultStat.rows); // вообще это не правильный assertion, потому как если уходит ключ статистика может уменьшиться
+            if(reducedStat.lessEquals(currentJoinStat) && rows.result.lessEquals(currentStat)) { // сколько сгруппировать надо
+                currentJoinStat = reducedStat; currentStat = rows.result; current = reduced;
+            } else
                 it++;
         }
-        result.add(new WhereJoins(current.toArray(new WhereJoin[current.size()])).getWhere(reducedUpWheres, false));
-
-        return resultStat;
+        return new WhereJoins(current.toArray(new WhereJoin[current.size()])).getWhere(reducedUpWheres, false);
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> groups, final KeyStat keyStat, final KeyEqual keyEqual) {
@@ -252,7 +267,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             return getStatKeys(groups, keyStat);
     }
 
-    public WhereJoins removeJoin(WhereJoin join, Map<WhereJoin, Where> upWheres, Map<WhereJoin, Where> upFitWheres) {
+    public WhereJoins removeJoin(WhereJoin<?, ?> join, Map<WhereJoin, Where> upWheres, Map<WhereJoin, Where> upFitWheres) {
         List<WhereJoin> fitWheres = new ArrayList<WhereJoin>();
         for(WhereJoin where : wheres) {
             if(!containsAll(where, join)) { // не интересуют те из которых следует этот join (потому как рекурсия будет)
@@ -263,13 +278,30 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return new WhereJoins(fitWheres.toArray(new WhereJoin[fitWheres.size()]));
     }
 
+    public <K extends Expr> Where getGroupPushWhere(Map<K, BaseExpr> joinMap, Map<WhereJoin, Where> upWheres, QueryJoin<K, ?, ?, ?> skipJoin, KeyStat keyStat, Stat currentStat, Stat currentJoinStat) {
+        Where pushWhere = getPushWhere(joinMap, upWheres, skipJoin, keyStat, currentStat, currentJoinStat);
+        if(pushWhere!=null)
+            return GroupExpr.create(joinMap, pushWhere, BaseUtils.toMap(joinMap.keySet())).getWhere();
+        else
+            return null;
+    }
+
+
+    public Where getPartitionPushWhere(Map<KeyExpr, BaseExpr> joinMap, Set<Expr> partitions, Map<WhereJoin, Where> upWheres, QueryJoin<KeyExpr, ?, ?, ?> skipJoin, KeyStat keyStat, Stat currentStat, Stat currentJoinStat) {
+        Where pushWhere = getPushWhere(joinMap, upWheres, skipJoin, keyStat, currentStat, currentJoinStat);
+        if(pushWhere!=null)
+            return GroupExpr.create(new QueryTranslator(joinMap).translate(toMap(partitions)), pushWhere, BaseUtils.toMap(partitions)).getWhere();
+        else
+            return null;
+    }
+    
     // получает подможнство join'ов которое дает joinKeys, пропуская skipJoin. тут же алгоритм по определению достаточных ключей
-    public <K extends Expr> StatKeys<K> getStatKeys(Set<K> joinKeys, Map<WhereJoin, Where> upWheres, QueryJoin<K, ?, ?, ?> skipJoin, WhereBuilder result, KeyStat keyStat) {
+    public <K extends Expr> Where getPushWhere(Map<K, BaseExpr> joinKeys, Map<WhereJoin, Where> upWheres, QueryJoin<K, ?, ?, ?> skipJoin, KeyStat keyStat, Stat currentStat, Stat currentJoinStat) {
         // joinKeys из skipJoin.getJoins()
 
-        Map<BaseExpr, K> groupKeys = BaseUtils.reverse(BaseUtils.filterKeys(skipJoin.getJoins(), joinKeys), true);
+        assert joinKeys.equals(BaseUtils.filterKeys(skipJoin.getJoins(), joinKeys.keySet()));
         Map<WhereJoin, Where> upFitWheres = new HashMap<WhereJoin, Where>();
-        return removeJoin(skipJoin, upWheres, upFitWheres).getStatKeys(new QuickSet<BaseExpr>(groupKeys.keySet()), upFitWheres, result, keyStat).map(groupKeys);
+        return removeJoin(skipJoin, upWheres, upFitWheres).getPushWhere(new QuickSet<BaseExpr>(joinKeys.values()), upFitWheres, keyStat, currentStat, currentJoinStat);
     }
 
     // может как MeanUpWheres сделать

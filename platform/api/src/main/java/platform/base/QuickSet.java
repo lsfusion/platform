@@ -279,6 +279,19 @@ public class QuickSet<T> implements Iterable<T> {
         return result;
     }
 
+    public QuickSet<T> remove(QuickSet<T> remove) {
+        if(remove.size==0 || size==0) return this;
+
+        QuickSet<T> result = new QuickSet<T>();
+        for(int i=0;i<size;i++) {
+            T where = get(i);
+            int hash = htable[indexes[i]];
+            if(!remove.contains(where, hash))
+                result.add(where, hash);
+        }
+        return result;
+    }
+
     public Map<T, String> mapString() {
         Map<T, String> result = new HashMap<T, String>();
         for (T element : this)

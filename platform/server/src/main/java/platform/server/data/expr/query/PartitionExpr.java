@@ -18,6 +18,8 @@ import platform.server.data.where.classes.ClassExprWhere;
 
 import java.util.*;
 
+import static platform.base.BaseUtils.toMap;
+
 public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExpr.Query, PartitionJoin, PartitionExpr, PartitionExpr.QueryInnerContext> {
 
     public static class Query extends AggrExpr.Query<PartitionType, Query> {
@@ -131,18 +133,6 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     @Override
     public String toString() {
         return "ORDER(" + query + "," + group + ")";
-    }
-
-    // проталкивает внутрь partition'а Where
-    public static Where getPartitionWhere(boolean cached, Where trueWhere, Map<KeyExpr, BaseExpr> group, Set<Expr> partitions) {
-        Map<Object, Expr> partitionMap = BaseUtils.toObjectMap(partitions);
-        if(cached) {
-            platform.server.data.query.Query<KeyExpr,Object> mapQuery = new platform.server.data.query.Query<KeyExpr,Object>(BaseUtils.toMap(group.keySet())); // для кэша через Query
-            mapQuery.properties.putAll(partitionMap);
-            Join<Object> joinQuery = mapQuery.join(group);
-            return GroupExpr.create(joinQuery.getExprs(),trueWhere,partitionMap).getWhere();
-        } else
-            return GroupExpr.create(new QueryTranslator(group).translate(partitionMap),trueWhere,partitionMap).getWhere();
     }
 
     @Override

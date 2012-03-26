@@ -90,7 +90,7 @@ public class AutoHintsAspect {
                     Map<?, KeyExpr> mapKeys = result.getMapKeys();
                     Expr prevExpr = property.getExpr(mapKeys);
                     if(whereComplexity > Settings.instance.getLimitHintIncrementComplexity() || exprComplexity > prevExpr.getComplexity(false) * Settings.instance.getLimitGrowthIncrementComplexity()) {
-                        if (changed.getStatKeys(new QuickSet<KeyExpr>(mapKeys.values())).rows.less(new Stat(Settings.instance.getLimitHintIncrementStat())))
+                        if (changed.getStatKeys(mapKeys.values()).rows.lessEquals(new Stat(Settings.instance.getLimitHintIncrementStat())))
                             throw new AutoHintException(property, true);
                         if(complexity > Settings.instance.getLimitHintNoUpdateComplexity()) {
                             System.out.println("AUTO HINT NOUPDATE" + property);
