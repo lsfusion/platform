@@ -136,7 +136,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         return where.getStatKeys(getInner().getInnerKeys().remove(pushedKeys));
     }
     private boolean checkNoKeys() {
-        return getStatGroup().rows.lessEquals(new Stat(Integer.MAX_VALUE / 20));
+        return getStatGroup().rows.lessEquals(new Stat(Long.MAX_VALUE));
     }
     protected GroupExpr(Query query, Map<Expr, BaseExpr> group) {
         super(query, group);

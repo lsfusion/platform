@@ -2,11 +2,15 @@ package platform.server.data.query;
 
 import platform.base.AddSet;
 import platform.base.BaseUtils;
+import platform.base.Result;
+import platform.server.data.expr.query.QueryJoin;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.query.stat.WhereJoins;
 import platform.server.data.where.Where;
 
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class InnerJoins extends AddSet<InnerJoin, InnerJoins> implements Iterable<InnerJoin> {
@@ -38,6 +42,10 @@ public class InnerJoins extends AddSet<InnerJoin, InnerJoins> implements Iterabl
         super(wheres);
     }
 
+    public InnerJoins(Collection<InnerJoin> wheres) {
+        super(wheres.toArray(new InnerJoin[wheres.size()]));
+    }
+
     protected InnerJoins createThis(InnerJoin[] wheres) {
         return new InnerJoins(wheres);
     }
@@ -64,4 +72,9 @@ public class InnerJoins extends AddSet<InnerJoin, InnerJoins> implements Iterabl
     public Map<InnerJoin, Where> andUpWheres(Map<InnerJoin, Where> up1, Map<InnerJoin, Where> up2) {
         return WhereJoins.andUpWheres(wheres, up1, up2);
     }
+
+    public WhereJoins removeJoin(WhereJoin removeJoin, Map<WhereJoin, Where> upWheres, Result<Map<WhereJoin, Where>> resultWheres) {
+        return WhereJoins.removeJoin(removeJoin, wheres, upWheres, resultWheres);
+    }
+
 }

@@ -17,6 +17,8 @@ import platform.server.data.where.Where;
 
 import java.util.*;
 
+import static platform.base.BaseUtils.filterKeys;
+import static platform.base.BaseUtils.immutableCast;
 import static platform.base.BaseUtils.toMap;
 
 public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWheres.Interface<WhereJoins>, OuterContext<WhereJoins> {
@@ -26,6 +28,10 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
 
     public WhereJoins(WhereJoin[] wheres) {
         super(wheres);
+    }
+
+    public WhereJoins(Collection<WhereJoin> wheres) {
+        super(wheres.toArray(new WhereJoin[wheres.size()]));
     }
 
     public WhereJoins(WhereJoin where) {
@@ -245,7 +251,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
                 }
             }
 
-            WhereJoins reducedJoins = new WhereJoins(reduced.toArray(new WhereJoin[reduced.size()]));
+            WhereJoins reducedJoins = new WhereJoins(reduced);
             rows = new Result<Stat>();
             Stat reducedStat = reducedJoins.getStatKeys(groups, rows, stat).rows;
 //            assert !reducedJoins.getStatKeys(groups, stat).rows.less(resultStat.rows); // вообще это не правильный assertion, потому как если уходит ключ статистика может уменьшиться
@@ -268,15 +274,46 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             return getStatKeys(groups, keyStat);
     }
 
-    public WhereJoins removeJoin(WhereJoin<?, ?> join, Map<WhereJoin, Where> upWheres, Map<WhereJoin, Where> upFitWheres) {
-        List<WhereJoin> fitWheres = new ArrayList<WhereJoin>();
-        for(WhereJoin where : wheres) {
-            if(!containsAll(where, join)) { // не интересуют те из которых следует этот join (потому как рекурсия будет)
-                fitWheres.add(where);
-                upFitWheres.put(where, upWheres.get(where));
+    public static <T extends WhereJoin> WhereJoins removeJoin(WhereJoin removeJoin, WhereJoin[] wheres, Map<WhereJoin, Where> upWheres, Result<Map<WhereJoin, Where>> resultWheres) {
+        WhereJoins result = null;
+        Map<WhereJoin, Where> resultUpWheres = null;
+        Collection<WhereJoin> keepWheres = new ArrayList<WhereJoin>();
+        for(WhereJoin whereJoin : wheres) {
+            WhereJoins removeJoins;
+            Result<Map<WhereJoin, Where>> removeUpWheres = new Result<Map<WhereJoin, Where>>();
+
+            if(BaseUtils.hashEquals(removeJoin, whereJoin)) {
+                removeJoins = new WhereJoins();
+                removeUpWheres.set(new HashMap<WhereJoin, Where>());
+            } else {
+                Result<Map<InnerJoin, Where>> joinUpWheres = new Result<Map<InnerJoin, Where>>();
+                removeJoins = whereJoin.getJoinFollows(joinUpWheres).removeJoin(removeJoin,
+                        BaseUtils.<Map<WhereJoin,Where>>immutableCast(joinUpWheres.result), removeUpWheres);
             }
+            
+            if(removeJoins!=null) { // вырезали, придется выкидывать целиком join, оставлять sibling'ом
+                if(result==null) {
+                    result = removeJoins;
+                    resultUpWheres = removeUpWheres.result;
+                } else {
+                    result = result.and(removeJoins);
+                    resultUpWheres = result.andUpWheres(resultUpWheres, removeUpWheres.result);
+                }
+            } else
+                keepWheres.add(whereJoin);
         }
-        return new WhereJoins(fitWheres.toArray(new WhereJoin[fitWheres.size()]));
+
+        if(result!=null) {
+            result = result.and(new WhereJoins(keepWheres));
+            resultWheres.set(result.andUpWheres(resultUpWheres, filterKeys(upWheres, keepWheres)));
+            return result;
+        }
+        return null;
+    }
+
+    // устраняет сам join чтобы при проталкивании не было рекурсии
+    public WhereJoins removeJoin(WhereJoin join, Map<WhereJoin, Where> upWheres, Result<Map<WhereJoin, Where>> resultWheres) {
+        return removeJoin(join, wheres, upWheres, resultWheres);
     }
 
     public <K extends Expr> Where getGroupPushWhere(Map<K, BaseExpr> joinMap, Map<WhereJoin, Where> upWheres, QueryJoin<K, ?, ?, ?> skipJoin, KeyStat keyStat, Stat currentStat, Stat currentJoinStat) {
@@ -301,8 +338,13 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         // joinKeys из skipJoin.getJoins()
 
         assert joinKeys.equals(BaseUtils.filterKeys(skipJoin.getJoins(), joinKeys.keySet()));
-        Map<WhereJoin, Where> upFitWheres = new HashMap<WhereJoin, Where>();
-        return removeJoin(skipJoin, upWheres, upFitWheres).getPushWhere(new QuickSet<BaseExpr>(joinKeys.values()), upFitWheres, keyStat, currentStat, currentJoinStat);
+        Result<Map<WhereJoin, Where>> upFitWheres = new Result<Map<WhereJoin, Where>>();
+        WhereJoins removedJoins = removeJoin(skipJoin, upWheres, upFitWheres);
+        if(removedJoins==null) {
+            removedJoins = this;
+            upFitWheres.set(upWheres);
+        }
+        return removedJoins.getPushWhere(new QuickSet<BaseExpr>(joinKeys.values()), upFitWheres.result, keyStat, currentStat, currentJoinStat);
     }
 
     // может как MeanUpWheres сделать
