@@ -1165,6 +1165,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP topazImportInvoice;
     private LP aprioriImportInvoice;
     public LP mexxImportOrder;
+    public LP dieselImportOrder;
 
     private AbstractGroup importInvoiceActionGroup;
     private AbstractGroup importOrderActionGroup;
@@ -1686,6 +1687,7 @@ public class RomanLogicsModule extends LogicsModule {
         aprioriImportInvoice = addAProp(importInvoiceActionGroup, new AprioriImportInvoiceActionProperty(this));
 
         mexxImportOrder = addAProp(importOrderActionGroup, new MexxImportOrderActionProperty(this));
+        dieselImportOrder = addAProp(importOrderActionGroup, new DieselImportOrderActionProperty(this));
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);

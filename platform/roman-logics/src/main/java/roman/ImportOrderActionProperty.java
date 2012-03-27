@@ -67,6 +67,10 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
         RRPField = new ImportField(LM.RRPDocumentArticle);
     }
 
+    protected boolean hasBarCode() {
+        return true;
+    }
+
     public void execute(ExecutionContext context) throws SQLException {
         DataObject supplier = context.getKeyValue(supplierInterface);
 
@@ -91,8 +95,14 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
         properties.add(new ImportProperty(unitNetWeightField, LM.netWeightArticle.getMapping(articleKey)));
         properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
 
-        ImportKey<?> itemKey = new ImportKey(LM.item, LM.baseLM.barcodeToObject.getMapping(barCodeField));
-        properties.add(new ImportProperty(barCodeField, LM.baseLM.barcode.getMapping(itemKey)));
+        ImportKey<?> itemKey = null;
+        if (hasBarCode()) {
+            itemKey = new ImportKey(LM.item, LM.baseLM.barcodeToObject.getMapping(barCodeField));
+            properties.add(new ImportProperty(barCodeField, LM.baseLM.barcode.getMapping(itemKey)));
+        } else {
+            itemKey = new ImportKey(LM.item, LM.itemSupplierArticleSIDColorSIDSizeSID.getMapping(supplier, sidField, colorCodeField, sizeField));
+        }
+
         properties.add(new ImportProperty(unitNetWeightField, LM.netWeightDataSku.getMapping(itemKey)));
         properties.add(new ImportProperty(sidField, LM.articleCompositeItem.getMapping(itemKey), LM.object(LM.articleComposite).getMapping(articleKey)));
 

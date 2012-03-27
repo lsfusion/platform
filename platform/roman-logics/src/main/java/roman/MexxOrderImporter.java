@@ -28,41 +28,41 @@ public class MexxOrderImporter extends SingleSheetImporter {
             return super.getCellString(field, row, column);
         else if (column == LAST_COLUMN + 1) {
             return String.valueOf(currentRow + 1);
-        }
-        else if (column == LAST_COLUMN + 2) {
-            int year = 2012;
-            int month = 1;
-            if (super.getCellString(row, I) != "")
-                year = Integer.valueOf(super.getCellString(row, I));
-            if (super.getCellString(row, L) != "")
-                month = BaseUtils.getNumberOfMonthEnglish(super.getCellString(row, L));
-            return String.valueOf(BaseUtils.getLastDateInMonth(year, month).getTime());
+        } else if (column == LAST_COLUMN + 2) {
+            if ("".equals(super.getCellString(row, I)) || "".equals(super.getCellString(row, L))) {
+                return "";
+            } else {
+                int year = Integer.valueOf(super.getCellString(row, I));
+                int month = BaseUtils.getNumberOfMonthEnglish(super.getCellString(row, L));
+                return String.valueOf(BaseUtils.getLastDateInMonth(year, month).getTime());
+            }
         }
         return "";
     }
 
     @Override
     protected String transformValue(int row, int column, int part, String value) {
-            value = value.trim();
+        value = value.trim();
 
-            switch (column) {
-                case AS:
-                    switch (part) {
-                        case 0:
-                            java.sql.Date date = new java.sql.Date(Long.valueOf(value));
-                            return DateClass.format(new java.sql.Date(date.getYear() + 1900, date.getMonth(), 1));
-                        case 1:
-                            date = new java.sql.Date(Long.valueOf(value));
-                            return DateClass.format(date);
-                        case 2:
-                            date = new java.sql.Date(Long.valueOf(value));
-                            return DateClass.format(new java.sql.Date(date.getYear() + 1900, date.getMonth(), 1));
-                        case 3:
-                            date = new java.sql.Date(Long.valueOf(value));
-                            return DateClass.format(date);
-                    }
-                default:
-                    return value;
-            }
+        switch (column) {
+            case AS:
+                if(!"".equals(value))
+                switch (part) {
+                    case 0:
+                        java.sql.Date date = new java.sql.Date(Long.valueOf(value));
+                        return DateClass.format(new java.sql.Date(date.getYear() + 1900, date.getMonth(), 1));
+                    case 1:
+                        date = new java.sql.Date(Long.valueOf(value));
+                        return DateClass.format(date);
+                    case 2:
+                        date = new java.sql.Date(Long.valueOf(value));
+                        return DateClass.format(new java.sql.Date(date.getYear() + 1900, date.getMonth(), 1));
+                    case 3:
+                        date = new java.sql.Date(Long.valueOf(value));
+                        return DateClass.format(date);
+                }
+            default:
+                return value;
+        }
     }
 }

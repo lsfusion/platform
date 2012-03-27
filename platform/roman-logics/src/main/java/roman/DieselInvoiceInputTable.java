@@ -17,11 +17,11 @@ import java.util.*;
 
 import static platform.server.integration.SingleSheetImporter.*;
 
-public class DieselInputTable implements ImportInputTable {
+public class DieselInvoiceInputTable implements ImportInputTable {
     jxl.Sheet sheet;
     private List<List<String>> data = new ArrayList<List<String>>();
 
-    public DieselInputTable(InputStream stream) throws BiffException, IOException {
+    public DieselInvoiceInputTable(InputStream stream) throws BiffException, IOException {
 
         Workbook Wb = Workbook.getWorkbook(stream);
         sheet = Wb.getSheet(0);

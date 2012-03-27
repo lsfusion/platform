@@ -20,7 +20,7 @@ public class DieselImportInvoiceActionProperty extends ImportBoxInvoiceActionPro
 
     @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException, ParseException {
-        return new DieselInputTable(inFile);
+        return new DieselInvoiceInputTable(inFile);
     }
 
 
