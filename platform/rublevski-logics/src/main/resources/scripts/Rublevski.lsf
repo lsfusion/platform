@@ -1067,7 +1067,7 @@ barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku) IN 
 
 primarySkuBarcode 'Основной штрих-код' (sku, barcode) = barcodeSku(sku) == barcode;
 
-CONSTRAINT skuBarcode(barcodeSku(item)) != item CHECKED MESSAGE 'Товар основного штрих-кода должен совпадать с товаром';
+CONSTRAINT skuBarcode(barcodeSku(item)) != item CHECKED BY userBarcodeSku MESSAGE 'Товар основного штрих-кода должен совпадать с товаром';
 
 barcodeBarcodeSku 'Основной штрих-код' = barcodeEx(barcodeSku(sku)) IN baseGroup PERSISTENT;
 //barcodeToBarcode (barcode) = GROUP UNIQUE barcode BY barcodeEx(barcode);
@@ -1516,7 +1516,7 @@ nameTaxSuppliersItem 'Налог' (item) = nameTaxRange(suppliersRangeItem(item)
 dataSuppliersRangeItem 'Шкала НДС' (item) = dataRange(suppliersRangeItem(item)) IN suppliersNDSGroup;
 dataActingRateSuppliersRangeItem 'НДС поставщика,%' (item) = dataActingRateRange(suppliersRangeItem(item)) IN suppliersNDSGroup;
 
-CONSTRAINT taxRange(suppliersRangeItemDate(item, date)) != tax.taxNDS CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(suppliersRangeItemDate(item, date)) != tax.taxNDS CHECKED BY suppliersRangeItemDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 FORM addSuppliersRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE FIXED PANEL
@@ -1542,9 +1542,6 @@ DESIGN suppliersRangeItem FROM DEFAULT {
 
 showFormSuppliersRangeItem 'Шкала' (item) = ACTION FORM suppliersRangeItem OBJECTS i MODAL SHORTCUT dataSuppliersRangeItem DEFAULT;
 
-retailTaxNDSItem(item) = tax.taxNDS IF item IS item IN idGroup;
-nameRetailTaxNDSItem(item) = name(retailTaxNDSItem(item));
-
 retailRangeItemDate 'Шкала' (item, date) = DATA range (item, DATE) IN idGroup;
 dataRetailRangeItemDate 'Шкала' (item, date) = dataRange(retailRangeItemDate(item, date)) IN retailNDSGroup;
 
@@ -1560,9 +1557,7 @@ nameTaxRetailItem 'Налог' (item) = nameTaxRange(retailRangeItem(item)) IN b
 dataRetailRangeItem 'Шкала НДС' (item) = dataRange(retailRangeItem(item)) IN retailNDSGroup;
 dataActingRateRetailRangeItem 'Розничный НДС' (item) = dataActingRateRange(retailRangeItem(item)) IN retailNDSGroup;
 
-//retailRangeItem(item) = DATA range (item) IN idGroup;
-//dataRetailRateRangeItem 'Розничный НДС' (item) = dataActingRateRange(retailRangeItem(item)) IN retailGroup;
-CONSTRAINT retailTaxNDSItem(item) != taxRange(retailRangeItem(item)) CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(retailRangeItem(item)) != tax.taxNDS CHECKED BY retailRangeItem MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 FORM addRetailRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE FIXED PANEL
@@ -4650,10 +4645,9 @@ curRetailPriceStatementDetail 'Текущая розничная цена' (stat
 
 
 
-taxNDSStatementDetail(statementDetail) = tax.taxNDS IF statementDetail IS statementDetail IN idGroup;
 rangeStatementDetail (statementDetail) = DATA range (statementDetail) IN idGroup;
 dataActingRateRangeStatementDetail 'Ставка НДС расчетная' (statementDetail) = dataActingRateRangeDate(rangeStatementDetail(statementDetail),  dateStatement(statementStatementDetail(statementDetail))) IN waybillSum;
-rangeStatementDetail (statementDetail) <- rangeToTaxStore(taxNDSStatementDetail(statementDetail),
+rangeStatementDetail (statementDetail) <- rangeToTaxStore(tax.taxNDS,
                                           storeDepartmentStore(departmentStoreStatementDetail(statementDetail))) ON ASSIGN statementDetail IS statementDetail;
 numberRangeStatementDetail 'НДС номер' (statementDetail) = dataRange(rangeStatementDetail(statementDetail));
 
@@ -4906,14 +4900,12 @@ overSupplierMarkupShipmentDetail 'Оптовая надбавка/торгова
         UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, supplierMarkupShipmentDetail(shipmentDetail);
 dateFitToShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
 
-taxNDSShipmentDetail(shipmentDetail) = tax.taxNDS IF shipmentDetail IS shipmentDetail;
-
 suppliersRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
 numberSuppliersRangeShipmentDetail 'НДС поставщика, номер' (shipmentDetail) = dataRange(suppliersRangeShipmentDetail(shipmentDetail));
 dataSuppliersRangeShipmentDetail 'НДС поставщика,%' (shipmentDetail) = dataActingRateRangeDate
     (suppliersRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN baseGroup;
 
-CONSTRAINT taxRange(suppliersRangeShipmentDetail(shipmentDetail)) != taxNDSShipmentDetail(shipmentDetail) CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(suppliersRangeShipmentDetail(shipmentDetail)) != tax.taxNDS CHECKED BY suppliersRangeShipmentDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 suppliersRangeShipmentDetail(shipmentDetail) <- suppliersRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
@@ -4935,7 +4927,7 @@ numberRetailRangeShipmentDetail 'НДС розничный, номер' (shipmen
 dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = dataActingRateRangeDate
     (retailRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail));
 
-CONSTRAINT taxRange(retailRangeShipmentDetail(shipmentDetail)) != taxNDSShipmentDetail(shipmentDetail) CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(retailRangeShipmentDetail(shipmentDetail)) != tax.taxNDS CHECKED BY retailRangeShipmentDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 retailRangeShipmentDetail(shipmentDetail) <- overrideRateRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
@@ -4962,7 +4954,8 @@ dataWareRangeShipmentDetail 'НДС по посуде' (shipmentDetail) =
 wareRangeShipmentDetail (shipmentDetail) <- rangeWareVal (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
     ON CHANGE itemShipmentDetail(shipmentDetail);
 
-CONSTRAINT taxRange(wareRangeShipmentDetail(shipmentDetail)) != taxNDSShipmentDetail(shipmentDetail) CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(wareRangeShipmentDetail(shipmentDetail)) != tax.taxNDS CHECKED BY wareRangeShipmentDetail
+    MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 
 sumVatWareShipmentDetail 'Сумма НДС по посуде, за ед.' (shipmentDetail) =
@@ -5488,10 +5481,10 @@ nameSenderDepartmentInnerArrival 'Отдел-отправитель' (innerArriv
 
 dateInnerArrival (innerArrival) <- dateInnerFlow(innerFlowInnerArrival(innerArrival)) ON CHANGE innerFlowInnerArrival(innerArrival);
 
-CONSTRAINT recipientDepartmentInnerFlow(innerFlowInnerArrival(innerArrival)) != departmentStoreInnerArrival(innerArrival) CHECKED
+CONSTRAINT recipientDepartmentInnerFlow(innerFlowInnerArrival(innerArrival)) != departmentStoreInnerArrival(innerArrival) CHECKED BY innerFlowInnerArrival
     MESSAGE 'Накладная с другого отдела';
 
-CONSTRAINT innerFlowInnerArrival(p1) == innerFlowInnerArrival(p2) AND p1 != p2 CHECKED MESSAGE 'Накладная задействована в другом приходе';
+CONSTRAINT innerFlowInnerArrival(p1) == innerFlowInnerArrival(p2) AND p1 != p2 CHECKED BY innerFlowInnerArrival MESSAGE 'Накладная задействована в другом приходе';
 
 senderDepartmentInnerArrival (innerArrival) <- departmentStoreInnerFlow(innerFlowInnerArrival(innerArrival))
     ON CHANGE innerFlowInnerArrival(innerArrival);
@@ -5900,7 +5893,7 @@ CONSTRAINT itemShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) !
     OR departmentStoreShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != departmentStoreReturnSupplierDetail(returnSupplierDetail)
     OR supplierShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != supplierReturnSupplierDetail(returnSupplierDetail)
     OR isNotPostedShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-    CHECKED MESSAGE 'Выберите партию этого товара';
+    CHECKED BY batchReturnSupplierDetail MESSAGE 'Выберите партию этого товара';
 
 castReturnSupplierObjectsToString100=
     FORMULA STRING[200] '\'Возврат поставщику \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
@@ -6108,13 +6101,12 @@ CLASS userPriceChangeDetail 'Строка переоценки товаров' :
 
 quantityUserPriceChangeDetail 'Кол-во переоценки' = DATA DOUBLE (userPriceChangeDetail);
 
-taxNDSUserPriceChangeDetail = tax.taxNDS IF userPriceChangeDetail IS userPriceChangeDetail IN idGroup;
 importerPriceUserPriceChangeDetail 'Цена изготовителя' = DATA DOUBLE (userPriceChangeDetail);
 retailRangeUserPriceChangeDetail 'НДС' = DATA range (userPriceChangeDetail);
 numberRetailRangeUserPriceChangeDetail 'НДС, номер' (userPriceChangeDetail) = dataRange(retailRangeUserPriceChangeDetail(userPriceChangeDetail));
 dataRetailRangeUserPriceChangeDetail 'НДС, %' (userPriceChangeDetail) = dataActingRateRangeDate(retailRangeUserPriceChangeDetail(userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail));
 
-CONSTRAINT taxRange(retailRangeUserPriceChangeDetail(userPriceChangeDetail)) != taxNDSUserPriceChangeDetail(userPriceChangeDetail) CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(retailRangeUserPriceChangeDetail(userPriceChangeDetail)) != tax.taxNDS CHECKED BY retailRangeUserPriceChangeDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 curImporterPriceUserPriceChangeDetail 'Текущая цена изготовителя' = DATA DOUBLE (userPriceChangeDetail);
 curRetailRangeUserPriceChangeDetail 'Текущий НДС' = DATA range (userPriceChangeDetail);
