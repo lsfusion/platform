@@ -4604,6 +4604,8 @@ FORM objectiveAcquiring 'Цель приобретения'
 //---------------------------- Документ на отгрузку из розницы ----------------------------------------//
 
 GROUP specificationGroup 'Счет-фактуры' : publicGroup;
+GROUP itemStatementDetailInfo 'Информация по товару' : publicGroup;
+GROUP pricingStatementDetailInfo 'Дополнительные ценовые параметры': publicGroup;
 
 CLASS statement 'Выписка из розницы' : outAccountSumDocumentLedger, historyObject, numberedObject;
 CLASS statementDetail 'Строка выписки из розницы' : balanceItemLedger;
@@ -4634,7 +4636,6 @@ statusSpecification 'Расход' (specification) = CASE
 
 
 //количество-цены по строкам
-GROUP pricingStatementDetailInfo 'Дополнительные ценовые параметры': publicGroup;
 
 quantityStatementDetail 'Количество' (statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
 retailPriceStatementDetail 'Цена товара (розн.)'(statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
@@ -4645,7 +4646,7 @@ sumStatementDetail 'Сумма' (statementDetail) = round0(retailPriceStatementD
 //                                                                   departmentStoreStatementDetail(statementDetail),
 //                                                                   dateStatement(statementStatementDetail(statementDetail))) ON CHANGE itemStatementDetail(statementDetail);
 
-curRetailPriceStatementDetail 'Текущая розничная цена' (statementDetail) = DATA DOUBLE (statementDetail) IN itemStatementDetailInfo;
+curRetailPriceStatementDetail 'Текущая розничная цена' (statementDetail) = DATA DOUBLE (statementDetail) IN pricingStatementDetailInfo;
 
 
 
@@ -4654,7 +4655,7 @@ rangeStatementDetail (statementDetail) = DATA range (statementDetail) IN idGroup
 dataActingRateRangeStatementDetail 'Ставка НДС расчетная' (statementDetail) = dataActingRateRangeDate(rangeStatementDetail(statementDetail),  dateStatement(statementStatementDetail(statementDetail))) IN waybillSum;
 rangeStatementDetail (statementDetail) <- rangeToTaxStore(taxNDSStatementDetail(statementDetail),
                                           storeDepartmentStore(departmentStoreStatementDetail(statementDetail))) ON ASSIGN statementDetail IS statementDetail;
-
+numberRangeStatementDetail 'НДС номер' (statementDetail) = dataRange(rangeStatementDetail(statementDetail));
 
 sumNDSStatementDetail 'НДС за ед.' (statementDetail) = round0(dataActingRateRangeStatementDetail(statementDetail)*retailPriceStatementDetail(statementDetail)/100) IN baseGroup;
 totalSumNDSStatementDetail 'Сумма НДС' (statementDetail) = round0(dataActingRateRangeStatementDetail(statementDetail)*sumStatementDetail(statementDetail)/100) IN baseGroup;
@@ -4670,21 +4671,21 @@ priceByItemStatement(item, statement) = GROUP EQUAL retailPriceStatementDetail(s
 totalQuantityStatement 'Общее количество' (statement) = GROUP SUM quantityStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN waybillSum;
 sumStatement 'Общая сумма' (statement) = GROUP SUM sumStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN waybillSum;
 
-articleItemStatementDetail 'Артикул производителя/поставщика' (statementDetail) = articleItem(itemStatementDetail(statementDetail));
-nameCountryItemStatementDetail 'Страна производства/происхождения' (statementDetail) = nameCountryItem(itemStatementDetail(statementDetail));
+articleItemStatementDetail 'Артикул производителя/поставщика' (statementDetail) = articleItem(itemStatementDetail(statementDetail)) IN itemStatementDetailInfo;
+nameCountryItemStatementDetail 'Страна производства/происхождения' (statementDetail) = nameCountryItem(itemStatementDetail(statementDetail)) IN itemStatementDetailInfo;
 
 //balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) =
 //    balanceDepartmentStoreItem(departmentStoreStatementDetail(statementDetail), itemStatementDetail(statementDetail));
 
-minReserveItemDepartmentStatementDetail 'Минимальнодопустимый товарный запас в днях' (statementDetail) =
-    minReserveItemDepartmentOver(itemStatementDetail(statementDetail),
-    departmentStoreStatementDetail(statementDetail),
-    dateStatement(statementStatementDetail(statementDetail)));
-
-maxReserveItemDepartmentStatementDetail 'Максимальнодопустимый товарный запас в днях' (statementDetail) =
-    maxReserveItemDepartmentOver(itemStatementDetail(statementDetail),
-    departmentStoreStatementDetail(statementDetail),
-    dateStatement(statementStatementDetail(statementDetail)));
+//minReserveItemDepartmentStatementDetail 'Минимальнодопустимый товарный запас в днях' (statementDetail) =
+//    minReserveItemDepartmentOver(itemStatementDetail(statementDetail),
+//    departmentStoreStatementDetail(statementDetail),
+//    dateStatement(statementStatementDetail(statementDetail)));
+//
+//maxReserveItemDepartmentStatementDetail 'Максимальнодопустимый товарный запас в днях' (statementDetail) =
+//    maxReserveItemDepartmentOver(itemStatementDetail(statementDetail),
+//    departmentStoreStatementDetail(statementDetail),
+//    dateStatement(statementStatementDetail(statementDetail)));
 
 CONSTRAINT quantityStatementDetail(statementDetail) <= 0 MESSAGE 'Количество должно быть положительным';
 CONSTRAINT retailPriceStatementDetail(statementDetail) <= 0 MESSAGE 'Цена должна быть положительной';
@@ -4714,6 +4715,7 @@ toFillStatementDetailsStatement 'Заполнить отгрузку на осн
 } IN specificationGroup CONFIRM;
 
 wareStatementDetail 'Текущая посуда' (statementDetail) = DATA ware(statementDetail) IN idGroup;
+nameWareStatementDetail 'Текущая посуда' (statementDetail) = name(wareStatementDetail(statementDetail)) IN pricingStatementDetailInfo;
 //wareStatementDetail(statementDetail) <- wareItem(itemStatementDetail(statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
 
 priceWareStatementDetail 'Текущая цена посуды' (statementDetail) = DATA DOUBLE (statementDetail) IN pricingStatementDetailInfo;
@@ -4727,8 +4729,6 @@ descriptionStatement 'Название документа' (statement) = castSta
 descriptionStatementDetail 'Название документа' (statementDetail) = descriptionStatement(statementStatementDetail(statementDetail));
 
 // ---------------------------------- Переоценка при реализации из розницы ------------------------------------------
-
-GROUP itemStatementDetailInfo 'Информация по товару' : publicGroup;
 
 CLASS priceChangeStatement 'Переоценка при отгрузке из розницы' : priceChangeDocument;
 CLASS priceChangeStatementDetail 'Строка переоценки при отгрузке из розницы' : priceChangeDocumentDetail;
@@ -4764,10 +4764,10 @@ notEqualsPriceStatementDetail(statementDetail)  = retailPriceStatementDetail(sta
 
 retailRangeStatementDetail(statementDetail) = DATA range (statementDetail) IN idGroup;
 dataRetailRangeStatementDetail 'Текущий НДС розничный,%' (statementDetail) =
-   dataActingRateRangeDate(retailRangeStatementDetail(statementDetail),  dateStatement(statementStatementDetail(statementDetail))) IN itemStatementDetailInfo;
+   dataActingRateRangeDate(retailRangeStatementDetail(statementDetail),  dateStatement(statementStatementDetail(statementDetail))) IN pricingStatementDetailInfo;
 //retailRangeStatementDetail(statementDetail) <- overrideRateRangeItem(itemStatementDetail(statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
 
-importerPriceStatementDetail 'Текущая цена изготовителя/импортера' (statementDetail) = DATA DOUBLE (statementDetail) IN itemStatementDetailInfo;
+importerPriceStatementDetail 'Текущая цена изготовителя/импортера' (statementDetail) = DATA DOUBLE (statementDetail) IN pricingStatementDetailInfo;
 //importerPriceStatementDetail (statementDetail) <- importerPriceItemVal ( itemStatementDetail(statementDetail),
 //    dateStatementDetail(statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
 
@@ -4946,7 +4946,7 @@ wareShipmentDetail(shipmentDetail) <- wareItem(itemShipmentDetail(shipmentDetail
 
 inWareShipmentDetail 'Товар в посуде' (shipmentDetail) = inWareItem(itemShipmentDetail(shipmentDetail));
 
-priceWareShipmentDetail 'Цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
+priceWareShipmentDetail 'Цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 
 priceWareShipmentDetail (shipmentDetail) <- priceWareVal (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
                                             ON CHANGE itemShipmentDetail(shipmentDetail);
@@ -5047,20 +5047,21 @@ CONSTRAINT priceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (ite
     AND isPostedShipmentDetail (shipmentDetail) MESSAGE 'Цена поставки меньше цены заказа';
 
 //старые ценовые параметры для переоценок
-curRetailPriceShipmentDetail 'Текущая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+curRetailPriceShipmentDetail 'Текущая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
 
 curRetailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
-curDataRetailRangeShipmentDetail 'Текущий НДС розничный,%' (shipmentDetail) = dataActingRateRange(curRetailRangeShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
+curDataRetailRangeShipmentDetail 'Текущий НДС розничный,%' (shipmentDetail) = dataActingRateRange(curRetailRangeShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo;
 
-oldPriceShipmentDetail 'Старая цена поставщика'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-oldPriceShipmentDetail(shipmentDetail) <- priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail),
-    itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail),
-    subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
+//oldPriceShipmentDetail 'Старая цена поставщика'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+//oldPriceShipmentDetail(shipmentDetail) <- priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail),
+//    itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail),
+//    subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
-curImporterPriceShipmentDetail 'Текущая цена изготовителя/импортера' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN itemShipmentDetailInfo;
+curImporterPriceShipmentDetail 'Текущая цена изготовителя/импортера' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
 
-curPriceWareShipmentDetail 'Текущая цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN itemShipmentDetailInfo;
+curPriceWareShipmentDetail 'Текущая цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
 curWareShipmentDetail = DATA ware (shipmentDetail) IN idGroup;
+curNameWareShipmentDetail 'Текущая посуда' (shipmentDetail) = name(curWareShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo;
 
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
 sumQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM
@@ -5194,13 +5195,14 @@ FORM shipment 'Поставка'
     PROPERTIES (d)  numberShipmentDetail, nameAttributeItemShipmentDetail, barcodeExSkuShipmentDetail, quantityShipmentDetail,
                     priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
                     numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
-                    nameWareShipmentDetail, numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
+                    nameWareShipmentDetail, priceWareShipmentDetail, numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
                     retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail, ADDOBJ, delete
-    PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, importerPriceShipmentDetail, dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d),
-                               priceWareShipmentDetail SHOWIF inWareShipmentDetail(d), controlExpiryShipmentDetail, isManufacturedShipmentDetail,
-                               isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail, hintShipmentDetail,
-                               nameCountryShipmentDetail, namebanRevaluationItemDepartmentShipmentDetail,
-                               curImporterPriceShipmentDetail, curDataRetailRangeShipmentDetail, curPriceWareShipmentDetail SHOWIF inWareShipmentDetail(d)
+    PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, importerPriceShipmentDetail,
+                               controlExpiryShipmentDetail, isManufacturedShipmentDetail, isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail,
+                               hintShipmentDetail, nameCountryShipmentDetail, namebanRevaluationItemDepartmentShipmentDetail,
+                               curImporterPriceShipmentDetail, curDataRetailRangeShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
+                               dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curPriceWareShipmentDetail SHOWIF inWareShipmentDetail(d)
+
 
     PROPERTIES addShipmentDetailBarcode(s) TODRAW d
 
@@ -5292,6 +5294,8 @@ DESIGN shipments FROM DEFAULT {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
+    POSITION s.historyGroup TO THE LEFT s.postedGroup;
+    ADD d.grid.box BEFORE s.historyGroup;
 }
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
@@ -6947,7 +6951,7 @@ curWareUserPriceChangeDetail (userPriceChangeDetail) <- wareBLedgerDateTime(
 
 
 balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) = balanceBItemLedgerDateTime(
-                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail)) IN baseGroup;
+                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail)) IN itemStatementDetailInfo;
 
 quantityItemByStatementDetail(statementDetail) = quantityItemStatement(itemStatementDetail(statementDetail), statementStatementDetail(statementDetail));
 highlightStatementDetail(statementDetail) =  quantityItemByStatementDetail(statementDetail) > balanceDepartmentStoreItemStatementDetail(statementDetail);
@@ -7654,11 +7658,13 @@ FORM statement 'Отгрузка из розницы'
 
     OBJECTS d=statementDetail
     PROPERTIES (d)  numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail, quantityStatementDetail,
-                    retailPriceStatementDetail, dataActingRateRangeStatementDetail, sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail,
-                    curRetailPriceStatementDetail HIGHLIGHTIF notEqualsPriceStatementDetail(d), noteStatementDetail READONLY, ADDOBJ, delete
+                    retailPriceStatementDetail, numberRangeStatementDetail, dataActingRateRangeStatementDetail, sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail,
+                    noteStatementDetail READONLY, ADDOBJ, delete
 
-    PROPERTIES (d)  FORCE PANEL articleItemStatementDetail, nameCountryItemStatementDetail, balanceDepartmentStoreItemStatementDetail HIGHLIGHTIF highlightStatementDetail(d),
-                    dataRetailRangeStatementDetail, importerPriceStatementDetail
+    PROPERTIES (d)  FORCE PANEL importerPriceStatementDetail, dataRetailRangeStatementDetail, curRetailPriceStatementDetail HIGHLIGHTIF notEqualsPriceStatementDetail(d),
+                                nameWareStatementDetail, priceWareStatementDetail, articleItemStatementDetail, nameCountryItemStatementDetail,
+                                balanceDepartmentStoreItemStatementDetail HIGHLIGHTIF highlightStatementDetail(d)
+
 
     PROPERTIES      inputMultipleItemsStatement(st) TODRAW d, addStatementDetailBarcode(st) TODRAW d
 
@@ -7672,17 +7678,18 @@ DESIGN statement FROM DEFAULT {
         preferredSize = (1024, 768);
 
         st.box {
-            childConstraints = TO THE RIGHTBOTTOM;
+//            childConstraints = TO THE RIGHTBOTTOM;
             POSITION st.documentHeaderGroup TO THE LEFT st.specificationGroup;
         }
         d.panel {
-            NEW headerRow1 {
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(articleItemStatementDetail);
-                ADD PROPERTY(nameCountryItemStatementDetail);
-                ADD PROPERTY (balanceDepartmentStoreItemStatementDetail);
-            }
-            POSITION headerRow1 TO THE LEFT d.itemStatementDetailInfo;
+//            childConstraints = TO THE RIGHTBOTTOM;
+//            NEW headerRow1 {
+//                childConstraints = TO THE BOTTOM;
+//                ADD PROPERTY(articleItemStatementDetail);
+//                ADD PROPERTY(nameCountryItemStatementDetail);
+//                ADD PROPERTY (balanceDepartmentStoreItemStatementDetail);
+//            }
+            POSITION d.pricingStatementDetailInfo TO THE LEFT d.itemStatementDetailInfo;
         }
     }
 }
@@ -7690,19 +7697,20 @@ DESIGN statement FROM DEFAULT {
 
 FORM statements 'Отгрузки из розницы'
     OBJECTS st=statement
-    PROPERTIES (st) READONLY objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameDepartmentStoreStatement,
+    PROPERTIES (st)  READONLY objectClassName, numberObject, seriesObject, dateTimeStatement, nameDepartmentStoreStatement,
                              nameCustomerStatement, quantityStatementDetailsStatement, totalQuantityStatement, sumStatement
 
-    PROPERTIES (st) ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
-                    postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
+    PROPERTIES (st)  ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
+                     postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
+     PROPERTIES (st) FORCE PANEL  nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    ORDER BY dateStatement
+    ORDER BY dateTimeStatement
 
     OBJECTS d=statementDetail
-    PROPERTIES (d)  READONLY numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail,
-                    quantityStatementDetail, retailPriceStatementDetail, sumStatementDetail, noteStatementDetail
+    PROPERTIES (d)   READONLY numberStatementDetail, nameAttributeItemStatementDetail, barcodeExSkuStatementDetail,
+                     quantityStatementDetail, retailPriceStatementDetail, sumStatementDetail, noteStatementDetail
 
-    FILTERS         inStatementStatementDetail(st, d)
+    FILTERS          inStatementStatementDetail(st, d)
 ;
 
 DESIGN statements FROM DEFAULT {
@@ -7713,6 +7721,8 @@ DESIGN statements FROM DEFAULT {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
+    POSITION st.historyGroup TO THE LEFT st.postedGroup;
+    ADD d.grid.box BEFORE st.historyGroup;
 }
 
 //----------------------------------- Формы чеков -------------------------------------------------//
