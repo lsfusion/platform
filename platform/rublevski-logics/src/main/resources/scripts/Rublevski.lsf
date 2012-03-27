@@ -43,7 +43,7 @@ GROUP documentHeaderGroup 'Шапка документа' : baseGroup;
 
 CLASS numerator 'Нумератор' : named;
 
-seriesNumerator 'Серия' = DATA STRING[2] (numerator) IN recognizeGroup;
+seriesNumerator 'Серия' = DATA STRING[2] (numerator) IN recognizeGroup FIXEDCHARWIDTH 3;
 
 minValueNumerator 'Мин. значение' = DATA LONG (numerator) IN recognizeGroup;
 maxValueNumerator 'Макс. значение' = DATA LONG (numerator) IN recognizeGroup;
@@ -3724,10 +3724,10 @@ GROUP actGroup 'Акт' : publicGroup;
 GROUP contractorGroup 'Контрагент' : publicGroup;
 GROUP itemStudyOutputDetailInfo 'Ценовый характеристики п/ф' : publicGroup;
 
-CLASS cutting 'Карта пророботки (разделки)' : named;
+CLASS cutting 'Карта проработки (разделки)' : named;
 CLASS detailCutting 'Компонента';
 
-CLASS actOfStudy 'Акт пророботки (разделки)' : historyObject;
+CLASS actOfStudy 'Акт проработки (разделки)' : historyObject;
 CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStudy, postedObject;
 TABLE actOfStudy (actOfStudy);
 
@@ -3738,9 +3738,10 @@ CLASS studyOutputDetail 'Полуфабрикаты' : balanceItemLedger, import
       //      ??????????????????? не понятно что делать с процентом надбавок ??????????????????????   //
 
 sidCutting 'Номер карты (из сборника и прочее)' = DATA INTEGER (cutting) IN cutGroup;
-dateCutting 'Дата создания' = DATA DATE (cutting) IN cutGroup;
 
+dateCutting 'Дата создания' = DATA DATE (cutting) IN cutGroup;
 dateCutting(cutting) <- currentDate() ON ASSIGN cutting IS cutting;
+
 useCutting 'Используется' = DATA BOOLEAN (cutting) IN cutGroup;
 //             номер из сборника.....
 descriptionCutting 'Описание' = DATA STRING[200] (cutting) IN cutGroup;
@@ -3749,9 +3750,9 @@ percLossesCutting 'Процент потерь, %' = DATA DOUBLE (cutting) IN cu
 percSweepsCutting 'Процент зачисток, %' = DATA DOUBLE (cutting) IN cutGroup;
 inDepartmentStoreCutting 'В каких подразделениях разрешено использовать карту' = DATA BOOLEAN (departmentStore, cutting) IN baseGroup;
 
-cuttingDetailCutting 'Строка ИД' = DATA cutting (detailCutting) IN idGroup;
+cuttingDetailCutting 'Строка (ИД)' = DATA cutting (detailCutting) IN idGroup;
 sidCuttingDetailCutting 'Номер карты' (detailCutting) =  sidCutting(cuttingDetailCutting(detailCutting)) IN cutGroup;
-itemDetailCutting 'Товар ИД' = DATA item (detailCutting) IN idGroup;
+itemDetailCutting 'Товар (ИД)' = DATA item (detailCutting) IN idGroup;
 shortNameUnitOfMeasureItemDetailCutting 'Ед.изм.' (detailCutting) = shortNameUnitOfMeasureItem(itemDetailCutting(detailCutting)) IN cutGroup;
 captionItemDetailCutting 'Наименование компонента' (detailCutting) = captionItem (itemDetailCutting(detailCutting)) IN cutGroup;
 factorDetailCutting 'Рассчетный коэффициент цены' = DATA DOUBLE (detailCutting) IN cutGroup;
@@ -3765,6 +3766,8 @@ uniqueDetailCuttingCutting 'Компонента по карте перераб�
 isCuttingDetailCutting(cutting, detailCutting) = cuttingDetailCutting(detailCutting) == cutting;
 
 inItemCutting 'Вкл.' = DATA BOOLEAN (item, cutting) IN cutGroup;
+
+// Акты проработки
 
 departmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idGroup;
 nameDepartmentStoreActOfStudy 'Подразделение' (actOfStudy) = name(departmentStoreActOfStudy(actOfStudy));
@@ -3785,8 +3788,8 @@ nameContractorDepartmentStoreActOfStudy 'Подразделение-контра
 waybillOutputActOfStudy 'Номер расходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 7;
 waybillInputActOfStudy 'Номер приходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 7;
 
-seriesOutputActOfStudy 'Серия расходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 4;
-seriesInputActOfStudy 'Серия приходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 4;
+seriesOutputActOfStudy 'Серия расходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 3;
+seriesInputActOfStudy 'Серия приходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 3;
 
 
 actOfStudyStudyInputDetail = DATA actOfStudy (studyInputDetail) IN idGroup;
@@ -3809,11 +3812,6 @@ percLossesCuttingStudyInputDetail 'Процент потерь, %' (studyInputDe
 percSweepsCuttingStudyInputDetail 'Процент зачисток, %' (studyInputDetail) = percSweepsCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
 
 quantityStudyInputDetail 'Количество для разруба' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
-
-quantityItemActOfStudy (item, actOfStudy) = GROUP SUM quantityStudyInputDetail(studyInputDetail)
-    BY itemStudyInputDetail(studyInputDetail), actOfStudyStudyInputDetail(studyInputDetail);
-
-quantityByStudyInputDetail 'Расход товара к-во' (studyInputDetail) = quantityItemActOfStudy(itemStudyInputDetail(studyInputDetail), actOfStudyStudyInputDetail(studyInputDetail));
 
 retailPriceStudyInputDetail 'Цена за ед.' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
 totalStudyInputDetail 'Сумма' (studyInputDetail) = retailPriceStudyInputDetail(studyInputDetail)*quantityStudyInputDetail(studyInputDetail);
@@ -3858,21 +3856,16 @@ actualQuantityStudyOutputDetail 'Фактический выхода п/ф'(stud
 overQuantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE quantityStudyOutputDetail(studyOutputDetail),
                                                                   actualQuantityStudyOutputDetail(studyOutputDetail);
 
-overQuantityItemActOfStudy 'Количество товара' (item, actOfStudy) = GROUP SUM overQuantityStudyOutputDetail(studyOutputDetail)
-    BY itemStudyOutputDetail(studyOutputDetail), actOfStudyStudyOutputDetail(studyOutputDetail);
+notRoundRetailPriceStudyOutputDetail 'Цена' (studyOutputDetail) = factorStudyOutputDetail(studyOutputDetail) * retailPriceStudyInputDetailStudyOutputDetail(studyOutputDetail);
+roundRetailPriceStudyOutputDetail 'Округленная цена' (studyOutputDetail) = roundMinus1(notRoundRetailPriceStudyOutputDetail(studyOutputDetail));
 
-overQuantityByStudyOutputDetail 'Приход товара к-во' (studyOutputDetail) = overQuantityItemActOfStudy(itemStudyOutputDetail(studyOutputDetail), actOfStudyStudyOutputDetail(studyOutputDetail));
-
-notRoundRetailPriceStudyOutputDetail 'Цена' (studyOutputDetail) = factorStudyOutputDetail(studyOutputDetail)* retailPriceStudyInputDetailStudyOutputDetail(studyOutputDetail);
-retailPriceStudyOutputDetail 'Розничная цена' (studyOutputDetail) = roundMinus1(notRoundRetailPriceStudyOutputDetail(studyOutputDetail));
+retailPriceStudyOutputDetail 'Розничная цена' (studyOutputDetail) = DATA DOUBLE (studyOutputDetail);
 
 totalStudyOutputDetail 'Сумма' (studyOutputDetail)= retailPriceStudyOutputDetail(studyOutputDetail) * overQuantityStudyOutputDetail(studyOutputDetail);
 
 subtotalStudyInputDetail 'Итого сумма  прихода п/ф по товару' (studyInputDetail) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY studyInputDetailStudyOutputDetail(studyOutputDetail);
 
 subtotalByActOfStudy 'Сумма прихода по акту' (actOfStudy) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail);
-
-isStudyInputDetailStudyOutputDetail (studyInputDetail, studyOutputDetail) = studyInputDetailStudyOutputDetail(studyOutputDetail) == studyInputDetail;
 
 
 departmentStoreStudyOutputDetail(studyOutputDetail) = departmentStoreStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
@@ -3886,7 +3879,7 @@ oldRetailRangeStudyOutputDetail(studyOutputDetail) = DATA range (studyOutputDeta
 oldDataRetailRangeStudyOutputDetail 'Старый НДС розничный,%' (studyOutputDetail) =
    dataActingRateRangeDate(oldRetailRangeStudyOutputDetail(studyOutputDetail),  dateStudyOutputDetail(studyOutputDetail)) IN itemStudyOutputDetailInfo;
 
-retailRangeStudyOutputDetail(studyOutputDetail) = oldRetailRangeStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
+retailRangeStudyOutputDetail(studyOutputDetail) = DATA range (studyOutputDetail);
 
 dataRetailRangeStudyOutputDetail 'Новый НДС розничный,%' (studyOutputDetail) =
    dataActingRateRangeDate(retailRangeStudyOutputDetail(studyOutputDetail),  dateStudyOutputDetail(studyOutputDetail));
@@ -3963,6 +3956,8 @@ toFillStudyOutputDetailsStudyInputDetail 'Заполнить данные для
             SET itemStudyOutputDetail(sod) <- itemDetailCutting(detailCutting);
             SET factorStudyOutputDetail(sod) <- factorDetailCutting(detailCutting);
             SET percGoodsStudyOutputDetail(sod) <- percGoodsDetailCutting(detailCutting);
+            SET retailPriceStudyOutputDetail(sod) <- roundRetailPriceStudyOutputDetail(sod);
+            SET retailRangeStudyOutputDetail(sod) <- oldRetailRangeStudyInputDetail(studyInputDetailStudyOutputDetail(sod));
         };
     }
 } CONFIRM;
@@ -4109,7 +4104,7 @@ FORM actOfStudy 'Акт проработки'
                     oldRetailPriceStudyOutputDetail FORCE PANEL
 
     FILTERS         actOfStudyStudyInputDetail(sid)==a,
-                    isStudyInputDetailStudyOutputDetail(sid, sod)
+                    studyInputDetailStudyOutputDetail(sod) == sid
 
     EDIT actOfStudy OBJECT a
 ;
@@ -4208,8 +4203,8 @@ castToString30 = FORMULA STRING[30] '$1 || CAST ($2 AS character(20))';
 @metaCodePostedObject (inventory) ;
 
 nameInventory 'Название инвентаризации' = DATA STRING[100] (inventory) IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-dateInventory 'Остатки выставить на (утро) дату' = DATA DATE (inventory) IN inventGroup;
-timeInventory 'Выставить остатки на время' = DATA TIME (inventory) IN inventGroup;
+dateInventory 'Дата инвентаризации' = DATA DATE (inventory) IN inventGroup;
+timeInventory 'Время инвентаризации' = DATA TIME (inventory) IN inventGroup;
 noteInventory 'Примечание (основание)' = DATA STRING[500] (inventory) IN inventGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 infoInventory 'Дополнительная информация по инвентаризации' = DATA STRING[500] (inventory) IN inventGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 typeOfAdditionInventory(inventory) = DATA typeOfAddition (inventory) IN idGroup;
@@ -5295,7 +5290,7 @@ FORM shipments 'Поставки'
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
     OBJECTS d=shipmentDetail
-    PROPERTIES (d) READONLY numberShipmentDetail, nameAttributeItemShipmentDetail, barcodeExSkuShipmentDetail,
+    PROPERTIES (d) READONLY numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail,
                             quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail,
                             nameWareShipmentDetail, dataSuppliersRangeShipmentDetail, dataRetailRangeShipmentDetail,
                             retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail
@@ -5319,8 +5314,6 @@ CLASS writeOffDetail 'Строка списания' : balanceItemLedger;
 @metaCodeObjectWithPostEx (writeOff, 'Закрытое списание');
 
 CLASS reasonOff 'Причина списания' : named;
-
-numberActWriteOff 'Номер акта' = DATA STRING[10] (writeOff) IN documentHeaderGroup;
 
 reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
 nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN additionalInfo;
@@ -5358,10 +5351,10 @@ FORM reasonOff 'Причина списания'
 ;
 
 castWriteOffObjectsToString100=
-    FORMULA STRING[200] '\'Списание \' || CAST($1 AS TEXT) || \' акт \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)';
+    FORMULA STRING[200] '\'Списание \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)';
 
 descriptionWriteOff 'Название документа' (writeOff) = castWriteOffObjectsToString100(
-    seriesNumberObject(writeOff), numberActWriteOff(writeOff), dateWriteOff(writeOff));
+    seriesNumberObject(writeOff), dateWriteOff(writeOff));
 
 descriptionWriteOffDetail 'Название документа' (writeOffDetail) = descriptionWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
@@ -5460,7 +5453,7 @@ DESIGN innerFlow FROM DEFAULT{
 
 FORM innerFlows 'Расходы в другие отделы'
     OBJECTS f=innerFlow
-    PROPERTIES (f) READONLY objectClassName, numberObject, seriesObject, dateInnerFlow, nameDepartmentStoreInnerFlow,
+    PROPERTIES (f) READONLY objectClassName, numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
                             nameRecipientDepartmentInnerFlow, quantityInnerFlowDetailsInnerFlow,
                             totalQuantityInnerFlow, accountSumInnerFlow
 
@@ -5746,7 +5739,6 @@ DESIGN innerArrivals FROM DEFAULT {
 needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDetail(shipmentDetail);
 needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 
-
 CLASS wastage 'Списание отходов' : outAccountSumDocumentLedger, historyObject;
 CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
 CLASS wastageDetail 'Строка документа': balanceItemLedger;
@@ -5754,6 +5746,7 @@ CLASS wastageDetail 'Строка документа': balanceItemLedger;
 @metaCodeDetailAggregation (shipment, wastage, needToWasteShipment);
 
 dateWastage 'Дата документа' (wastage) = dateShipment(shipmentWastage(wastage));
+timeWastage 'Время документа' (wastage) = timeShipment(shipmentWastage(wastage));
 numberWastage 'Номер документа' (wastage) = numberObject(shipmentWastage(wastage));
 seriesWastage 'Серия документа' (wastage) = seriesObject(shipmentWastage(wastage));
 seriesNumberWastage 'Серия/номер документа' (wastage) = seriesNumberObject(shipmentWastage(wastage));
@@ -5774,8 +5767,13 @@ isPostedWastageDetail 'Закрыт' (wastageDetail) = isPostedWastage(wastageWa
 
 itemWastageDetail 'Товар (ИД)' (wastageDetail) = itemShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 nameAttributeItemWastageDetail 'Товар' (wastageDetail) = nameAttributeItem (itemWastageDetail(wastageDetail));
+barcodeExSkuWastageDetail 'Штрих-код' (wastageDetail) = barcodeExSkuShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 
 percentRateWasteWastageDetail 'Процент списания' (wastageDetail) = percentRateWasteShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+
+numberWastageDetail 'Номер строки' (wastageDetail) =
+    PARTITION SUM 1 IF wastageDetail IS wastageDetail BY wastageWastageDetail(wastageDetail)
+    ORDER wastageDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
 
 quantityWastageDetail 'Количество списания '(wastageDetail) =
     percentRateWasteWastageDetail (wastageDetail)* quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail))/100;
@@ -5798,10 +5796,10 @@ descriptionWastageDetail 'Название документа' (wastageDetail) =
 FORM wastages 'Списания отходов'
 
     OBJECTS w=wastage
-    PROPERTIES (w) READONLY dateWastage, seriesNumberWastage, nameDepartmentStoreWastage, nameSupplierWastage, totalSumWastage
+    PROPERTIES (w) READONLY numberWastage, seriesWastage, dateWastage, timeWastage, nameDepartmentStoreWastage, nameSupplierWastage, totalSumWastage
 
     OBJECTS d=wastageDetail
-    PROPERTIES (d) READONLY nameAttributeItemWastageDetail, quantityWastageDetail, priceWastageDetail, sumWastageDetail
+    PROPERTIES (d) READONLY numberWastageDetail, barcodeExSkuWastageDetail, nameAttributeItemWastageDetail, quantityWastageDetail, priceWastageDetail, sumWastageDetail
 
     FILTERS wastageWastageDetail(d)== w;
 ;
@@ -6187,7 +6185,7 @@ DESIGN userPriceChange FROM DEFAULT {
 FORM userPriceChanges 'Переоценки товаров'
 
     OBJECTS u=userPriceChange
-    PROPERTIES (u) READONLY objectClassName, seriesNumberObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
+    PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
 
     PROPERTIES (u) ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
                    postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
@@ -6266,22 +6264,22 @@ departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipm
 quantityBalanceItemLedger 'Количество' (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
                                                      quantityInnerArrivalDetail(ledger),
                                                     -quantityWriteOffDetail(ledger),
-//                                                    -quantityStatementDetail(ledger),
-//                                                    -quantityInnerFlowDetail(ledger),
-//                                                    -quantityWastageDetail(ledger),
-//                                                    -quantityReturnSupplierDetail(ledger),
+                                                    -quantityStatementDetail(ledger),
+                                                    -quantityInnerFlowDetail(ledger),
+                                                    -quantityWastageDetail(ledger),
+                                                    -quantityReturnSupplierDetail(ledger),
                                                     -quantityInventoryLedger(ledger),
                                                     -quantityBillDetail(ledger),
-                                                     overQuantityByStudyOutputDetail(ledger),
-                                                    -quantityByStudyInputDetail(ledger) PERSISTENT;
+                                                     overQuantityStudyOutputDetail(ledger),
+                                                    -quantityStudyInputDetail(ledger) PERSISTENT;
 
 descriptionLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
                                                             descriptionInnerArrivalDetail(ledger),
                                                             descriptionWriteOffDetail(ledger),
-//                                                            descriptionStatementDetail(ledger),
-//                                                            descriptionInnerFlowDetail(ledger),
-//                                                            descriptionWastageDetail(ledger),
-//                                                            descriptionReturnSupplierDetail(ledger),
+                                                            descriptionStatementDetail(ledger),
+                                                            descriptionInnerFlowDetail(ledger),
+                                                            descriptionWastageDetail(ledger),
+                                                            descriptionReturnSupplierDetail(ledger),
                                                             descriptionInventoryLedger(ledger),
                                                             descriptionUserPriceChangeUserPriceChangeDetail(ledger),
                                                             descriptionBillDetail(ledger),
@@ -6699,9 +6697,11 @@ FORM returnSupplier 'Возврат поставщику'
 FORM returnSuppliers 'Возвраты поставщику'
 
     OBJECTS r=returnSupplier
-    PROPERTIES(r) READONLY objectClassName, seriesObject, numberObject, dateReturnSupplier,
-                           nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, nameUserCreated,
-                           timeCreated, noteReturnSupplier
+    PROPERTIES(r) READONLY objectClassName, numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
+                           nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier,
+                           totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier, retailSumReturnSupplier
+    PROPERTIES(r) FORCE PANEL nameUserCreated, timeCreated, nameUserClosed, timeClosed
+
     PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
                   ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
 
@@ -6771,7 +6771,7 @@ DESIGN commonInfoBatchReturnSupplierDetail FROM DEFAULT {
 // --------------------------- Формы списания ---------------------------------
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
-    PROPERTIES (w) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreWriteOff, numberActWriteOff,
+    PROPERTIES (w) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreWriteOff,
                    dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, accountSumWriteOff
 
     OBJECTS d=writeOffDetail
@@ -6800,7 +6800,7 @@ DESIGN writeOff FROM DEFAULT{
 
 FORM writeOffs 'Списания'
     OBJECTS w=writeOff
-    PROPERTIES (w) READONLY objectClassName, seriesNumberObject, nameDepartmentStoreWriteOff, numberActWriteOff, dateWriteOff,
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWriteOff, timeWriteOff, nameDepartmentStoreWriteOff,
                             nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, quantityWriteOffDetailsWriteOff, accountSumWriteOff
 
     PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWriteOff(w), delete FORCE PANEL SHOWIF isDraftWriteOff(w),
@@ -6829,23 +6829,24 @@ retailPriceDetailSpec (detailSpec) <- priceRetailBLedgerDateTime(
                 itemDetailSpec(detailSpec), departmentStoreDetailSpec(detailSpec), dateTimeDetailSpec(detailSpec))
                 ON CHANGE itemDetailSpec(detailSpec);
 
-//retailPriceStudyInputDetail (studyInputDetail) <- priceRetailBLedgerDateTime(
-//                itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-//                ON CHANGE itemStudyInputDetail(studyInputDetail);   // валется
+retailPriceStudyInputDetail (studyInputDetail) <- priceRetailBLedgerDateTime(
+                itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
+                ON CHANGE itemStudyInputDetail(studyInputDetail);   // валется
 
 oldImporterPriceStudyInputDetail (studyInputDetail) <- priceImporterBLedgerDateTime (
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
                 ON CHANGE itemStudyInputDetail(studyInputDetail);     // норма
 
-//oldRetailRangeStudyInputDetail (studyInputDetail) <- rangeRetailBLedgerDateTime(
-//                itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-//                ON CHANGE itemStudyInputDetail(studyInputDetail);   // валется
+oldRetailRangeStudyInputDetail (studyInputDetail) <- rangeRetailBLedgerDateTime(
+                itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
+                ON CHANGE itemStudyInputDetail(studyInputDetail);   // валется
 
 
 oldRetailPriceStudyOutputDetail (studyOutputDetail) <- priceRetailBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
                 ON CHANGE itemStudyOutputDetail(studyOutputDetail); // норма
 
+// todo : сделать правильно цену изготовителя
 //oldImporterPriceStudyOutputDetail (studyOutputDetail) <- priceImporterBLedgerDateTime(
 //                itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
 //                ON CHANGE itemStudyOutputDetail(studyOutputDetail); // валется
@@ -7474,8 +7475,11 @@ DESIGN inventory FROM DEFAULT {
 
 FORM inventories 'Инвентаризации'
     OBJECTS in=inventory
-    PROPERTIES (in) READONLY objectClassName, seriesNumberObject, nameInventory, nameDepartmentByInventory, noteInventory,
-                    dateInventory, timeInventory, timeCreated FORCE PANEL, nameUserCreated FORCE PANEL, hostnameComputerCreated FORCE PANEL, timeClosed, nameUserClosed, hostnameComputerClosed
+    PROPERTIES(in) READONLY objectClassName, numberObject, seriesObject, dateInventory, timeInventory,
+                            nameDepartmentByInventory, nameInventory, noteInventory
+
+    PROPERTIES(in) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
     PROPERTIES(in)  ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL SHOWIF isDraftInventory(in),
                     postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)//(in) ADDFORM, EDITFORM, delete
 
@@ -7554,12 +7558,11 @@ DESIGN specification FROM DEFAULT{
 
 FORM specifications 'Счет-фактуры'
     OBJECTS sp=specification
-    PROPERTIES (sp) READONLY seriesNumberObject, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
-                             dateToSpecification, quantitySpecification, sumSpecification
+    PROPERTIES (sp) READONLY numberObject, seriesObject, dateSpecification, timeSpecification, nameDepartmentStoreSpecification,
+                             nameCustomerSpecification, dateToSpecification, quantitySpecification, sumSpecification
     PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
 
     PROPERTIES (sp)          ADDFORM, EDITFORM, delete
-    ORDER BY                 seriesNumberObject
 
     OBJECTS d=detailSpec
     PROPERTIES (d)  READONLY numberDetailSpec, nameAttributeItemDetailSpec, barcodeExSkuDetailSpec, quantityDetailSpec,
@@ -7641,8 +7644,8 @@ DESIGN statement FROM DEFAULT {
 
 FORM statements 'Отгрузки из розницы'
     OBJECTS st=statement
-    PROPERTIES (st) READONLY objectClassName, seriesNumberObject, dateStatement, nameCustomerStatement,
-                    nameDepartmentStoreStatement, quantityStatementDetailsStatement, totalQuantityStatement, sumStatement
+    PROPERTIES (st) READONLY objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameDepartmentStoreStatement,
+                             nameCustomerStatement, quantityStatementDetailsStatement, totalQuantityStatement, sumStatement
 
     PROPERTIES (st) ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
                     postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
