@@ -99,7 +99,6 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         Query<KeyField, Field> query = new Query<KeyField,Field>(mapTable.table);
         Expr expr = calculateClassExpr(BaseUtils.join(mapTable.mapKeys, query.mapKeys));
         query.properties.put(storedField,expr);
-        query.and(expr.getWhere());
         return query.getClassWhere(Collections.singleton(storedField));
     }
 }
