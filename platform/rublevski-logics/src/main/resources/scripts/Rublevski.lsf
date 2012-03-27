@@ -2938,7 +2938,7 @@ createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
         SET allowablePercentOrderSupplier(o) <- allowablePercentSupplier(supplierPreliminaryOrder(preliminaryOrder));
         SET preliminaryOrderOrderSupplier(o) <- preliminaryOrder AS preliminaryOrder;
         SET nextDateOrderSupplier(o) <- nextDateOrder(preliminaryOrder);
-//        EXEC fillInOrderSupplier(o);
+        EXEC fillInOrderSupplier(o AS orderSupplier);
     }
     EXEC apply();
 }] (preliminaryOrder) AND NOT preliminaryOrderToOrderSupplier(preliminaryOrder) CONFIRM;
