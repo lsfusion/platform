@@ -30,8 +30,12 @@ public class MexxOrderImporter extends SingleSheetImporter {
             return String.valueOf(currentRow + 1);
         }
         else if (column == LAST_COLUMN + 2) {
-            int year = Integer.valueOf(super.getCellString(row, I));
-            int month = BaseUtils.getNumberOfMonthEnglish(super.getCellString(row, L));
+            int year = 2012;
+            int month = 1;
+            if (super.getCellString(row, I) != "")
+                year = Integer.valueOf(super.getCellString(row, I));
+            if (super.getCellString(row, L) != "")
+                month = BaseUtils.getNumberOfMonthEnglish(super.getCellString(row, L));
             return String.valueOf(BaseUtils.getLastDateInMonth(year, month).getTime());
         }
         return "";

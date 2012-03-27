@@ -52,7 +52,7 @@ CLASS ABSTRACT certificate 'Сертификат';
 CLASS temporalCertificate 'Временный сертификат' : certificate;
 CLASS permanentCertificate 'Постоянный сертификат' : certificate;
 
-sidCertificate 'Номер' = DATA STRING[20] (certificate) IN baseGroup;
+sidCertificate 'Номер' = DATA STRING[20] (certificate) IN baseGroup AGGPROP;
 dateIssueCertificate 'Дата выдачи' = DATA DATE (certificate) IN baseGroup;
 dateValidityCertificate 'Действует до' = DATA DATE (certificate) IN baseGroup;
 
@@ -494,7 +494,8 @@ FORM declarations 'Декларации'
                             sidTemporalCertificateDeclarationDetail HIGHLIGHTIF isCertificatePreparedDeclarationDetail(dd),
                             sidPermanentCertificateDeclarationDetail HIGHLIGHTIF isCertificatePreparedDeclarationDetail(dd),
                             correctionPriceDeclarationDetail, correctionDutyDeclarationDetail,
-                            correctionDutyDataDeclarationDetail, diffDutyDeclarationDetail, registrationDeclarationDetail
+                            correctionDutyDataDeclarationDetail, diffDutyDeclarationDetail, registrationDeclarationDetail,
+                            priceCustomDeclarationDetail, priceManagerialCustomDeclarationDetail
     FILTERS inDeclarationDeclarationDetail(d, dd)
 ;
 
