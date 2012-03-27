@@ -215,6 +215,7 @@ public class CompiledQuery<K,V> {
             } else {
                 if(queryJoins.size()==1) { // "простой" запрос
                     GroupJoinsWhere innerJoin = queryJoins.iterator().next();
+                    innerJoin.where = query.where.translateQuery(innerJoin.keyEqual.getTranslator());
                     from = fillInnerSelect(query.mapKeys, innerJoin, query.properties, keySelect, propertySelect, whereSelect, params, syntax, subcontext, env);
                     orders = getOrdersNotNull(orders, query.properties, ordersNotNull);
                 } else { // "сложный" запрос с full join'ами
@@ -279,10 +280,6 @@ public class CompiledQuery<K,V> {
             this.upWheres = upWheres;
         }
 
-        public void fillInnerJoins() { // заполним Inner Joins, чтобы чтобы keySelect'ы были
-            whereJoins.getWhere(upWheres, true).getSource(this);
-        }
-
         int aliasNum=0;
         final List<JoinSelect> joins = new ArrayList<JoinSelect>();
 
@@ -330,9 +327,14 @@ public class CompiledQuery<K,V> {
             protected abstract Where getInnerWhere(); // assert что isInner
         }
 
+        public void fillInnerJoins(Collection<String> whereSelect) { // заполним Inner Joins, чтобы чтобы keySelect'ы были
+            innerWhere = whereJoins.fillInnerJoins(upWheres, whereSelect, this);
+        }
+
+        private Where innerWhere;
         // получает условия следующие из логики inner join'ов SQL
         private Where getInnerWhere() {
-            Where result = Where.TRUE;
+            Where result = innerWhere;
             for(InnerJoin innerJoin : getInnerJoins()) {
                 JoinSelect joinSelect = getJoinSelect(innerJoin);
                 if(joinSelect!=null)
@@ -989,7 +991,7 @@ public class CompiledQuery<K,V> {
                 return fillSingleSelect(mapKeys, innerSelect, compiledProps, keySelect, propertySelect, params, syntax, subcontext, env);
         }
 
-        compile.fillInnerJoins();
+        compile.fillInnerJoins(whereSelect);
         QueryTranslator keyEqualTranslator = innerSelect.keyEqual.getTranslator();
         for(Map.Entry<AV, Expr> joinProp : keyEqualTranslator.translate(compiledProps).entrySet()) // свойства
             propertySelect.put(joinProp.getKey(), joinProp.getValue().getSource(compile));

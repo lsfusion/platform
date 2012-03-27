@@ -81,10 +81,6 @@ public class Query<K,V> extends IQuery<K,V> {
         return properties.get(property);
     }
 
-    public boolean isEmpty() {
-        return where.isFalse();
-    }
-
     public Type getKeyType(K key) {
         return mapKeys.get(key).getType(where);
     }

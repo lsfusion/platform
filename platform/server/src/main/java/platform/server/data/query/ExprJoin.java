@@ -6,10 +6,7 @@ import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.InnerExpr;
-import platform.server.data.expr.NotNullExpr;
-import platform.server.data.expr.NotNullExprSet;
+import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
@@ -62,5 +59,9 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
                 result = result.and(new InnerJoins(((InnerExpr)notNullExpr).getInnerJoin()));
         }
         return result;
+    }
+
+    public boolean isClassJoin() {
+        return baseExpr instanceof IsClassExpr;
     }
 }

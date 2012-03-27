@@ -9,14 +9,16 @@ import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.*;
+
+import static java.util.Collections.singletonMap;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
 
@@ -36,16 +38,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     public String checkAggregation(SQLSession session) throws SQLException {
         String message = "";
 
-        Query<T, String> checkQuery = new Query<T, String>(this);
-
-        Expr dbExpr = getExpr(checkQuery.mapKeys);
-        Expr calculateExpr = calculateExpr(checkQuery.mapKeys);
-        checkQuery.properties.put("dbvalue", dbExpr);
-        checkQuery.properties.put("calcvalue", calculateExpr);
-        checkQuery.and(dbExpr.getWhere().or(calculateExpr.getWhere()));
-        checkQuery.and(dbExpr.compare(calculateExpr, Compare.EQUALS).not());
-
-        OrderedMap<Map<T, Object>, Map<String, Object>> checkResult = checkQuery.execute(session);
+        OrderedMap<Map<T, Object>, Map<String, Object>> checkResult = getRecalculateQuery(true).execute(session);
         if(checkResult.size() > 0) {
             message += "---- Checking Aggregations : " + this + "-----" + '\n';
             for(Map.Entry<Map<T,Object>,Map<String,Object>> row : checkResult.entrySet())
@@ -55,17 +48,26 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return message;
     }
 
+    private Query<T, String> getRecalculateQuery(boolean outDB) {
+        Query<T, String> query = new Query<T, String>(this);
+
+        Expr dbExpr = getExpr(query.mapKeys);
+        Expr calculateExpr = calculateExpr(query.mapKeys);
+        if(outDB)
+            query.properties.put("dbvalue", dbExpr);
+        query.properties.put("calcvalue", calculateExpr);
+        query.and(dbExpr.getWhere().or(calculateExpr.getWhere()));
+        query.and(dbExpr.compare(calculateExpr, Compare.EQUALS).not());
+        return query;
+    }
+
     public static AggregateProperty recalculate = null;
 
     @Message("logics.info.recalculation.of.aggregated.property")
     @ThisMessage
     public void recalculateAggregation(SQLSession session) throws SQLException {
-        Query<KeyField, PropertyField> writeQuery = new Query<KeyField, PropertyField>(mapTable.table);
-        Expr recalculateExpr = calculateExpr(BaseUtils.join(mapTable.mapKeys, writeQuery.mapKeys));
-        writeQuery.properties.put(field, recalculateExpr);
-        writeQuery.and(mapTable.table.joinAnd(writeQuery.mapKeys).getWhere().or(recalculateExpr.getWhere()));
-
-        session.modifyRecords(new ModifyQuery(mapTable.table,writeQuery));
+        session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false).map(
+                BaseUtils.reverse(mapTable.mapKeys), singletonMap(field, "calcValue"), MapValuesTranslator.noTranslate)));
     }
 
     int getCoeff(PropertyMapImplement<?, T> implement) { return 0; }

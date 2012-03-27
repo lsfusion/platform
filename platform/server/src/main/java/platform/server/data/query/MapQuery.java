@@ -11,6 +11,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 
 import java.sql.SQLException;
@@ -108,6 +109,10 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
 
     protected QuickSet<KeyExpr> getKeys() {
         return query.getInnerKeys();
+    }
+
+    public Where getWhere() {
+        return query.getWhere();
     }
 
     public QuickSet<Value> getValues() {

@@ -16,14 +16,14 @@ import java.util.Map;
 
 public class ModifyQuery {
     public final Table table;
-    private final Query<KeyField, PropertyField> change;
+    private final IQuery<KeyField, PropertyField> change;
     private final QueryEnvironment env;
 
-    public ModifyQuery(Table table, Query<KeyField, PropertyField> change) {
+    public ModifyQuery(Table table, IQuery<KeyField, PropertyField> change) {
         this(table, change, QueryEnvironment.empty);
     }
 
-    public ModifyQuery(Table table, Query<KeyField, PropertyField> change, QueryEnvironment env) {
+    public ModifyQuery(Table table, IQuery<KeyField, PropertyField> change, QueryEnvironment env) {
         this.table = table;
         this.change = change;
         this.env = env;
@@ -31,7 +31,7 @@ public class ModifyQuery {
 
     public SQLExecute getUpdate(SQLSyntax syntax) {
 
-        assert !change.properties.isEmpty();
+        assert !change.getProperties().isEmpty();
         
         int updateModel = syntax.updateModel();
         CompiledQuery<KeyField, PropertyField> changeCompile;
@@ -110,8 +110,8 @@ public class ModifyQuery {
     public SQLExecute getInsertLeftKeys(SQLSyntax syntax) {
 
         // делаем для этого еще один запрос
-        Query<KeyField, PropertyField> leftKeysQuery = new Query<KeyField, PropertyField>(change.mapKeys);
-        leftKeysQuery.and(change.where);
+        Query<KeyField, PropertyField> leftKeysQuery = new Query<KeyField, PropertyField>(change.getMapKeys());
+        leftKeysQuery.and(change.getWhere());
         // исключим ключи которые есть
         leftKeysQuery.and(table.joinAnd(leftKeysQuery.mapKeys).getWhere().not());
 

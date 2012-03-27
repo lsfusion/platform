@@ -8,10 +8,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.*;
-import platform.server.data.query.ExprEnumerator;
-import platform.server.data.query.ExprOrderTopJoin;
-import platform.server.data.query.InnerJoin;
-import platform.server.data.query.InnerJoins;
+import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -257,7 +254,11 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             } else
                 it++;
         }
-        return new WhereJoins(current.toArray(new WhereJoin[current.size()])).getWhere(reducedUpWheres, false);
+
+        Where result = Where.TRUE;
+        for (WhereJoin where : current)
+            result = result.and(reducedUpWheres.get(where));
+        return result;
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> groups, final KeyStat keyStat, final KeyEqual keyEqual) {
@@ -352,12 +353,18 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return result;
     }
 
-    public Where getWhere(Map<WhereJoin, Where> upWheres, boolean skipKeyTop) {
-        Where result = Where.TRUE;
+    public Where fillInnerJoins(Map<WhereJoin, Where> upWheres, Collection<String> whereSelect, CompileSource source) {
+        Where innerWhere = Where.TRUE;
         for (WhereJoin where : wheres)
-            if(!(skipKeyTop && where instanceof ExprOrderTopJoin && ((ExprOrderTopJoin)where).givesNoKeys()))
-                result = result.and(upWheres.get(where));
-        return result;
+            if(!(where instanceof ExprOrderTopJoin && ((ExprOrderTopJoin)where).givesNoKeys())) {
+                Where upWhere = upWheres.get(where);
+                String upSource = upWhere.getSource(source);
+                if(where instanceof ExprJoin && ((ExprJoin)where).isClassJoin()) {
+                    whereSelect.add(upSource);
+                    innerWhere = innerWhere.and(upWhere);
+                }
+            }
+        return innerWhere;
     }
 
     public QuickSet<KeyExpr> getOuterKeys() {

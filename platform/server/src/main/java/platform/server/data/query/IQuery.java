@@ -13,6 +13,7 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.MapValuesTranslator;
+import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 
 import java.sql.SQLException;
@@ -58,8 +59,12 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
 
 
     public abstract Set<V> getProperties();
-    
     public abstract Expr getExpr(V property);
+    public abstract Where getWhere();
+
+    public boolean isEmpty() {
+        return getWhere().isFalse();
+    }
 
     public abstract Query<K, V> getQuery(); // по сути protectedQ  GH  N
     public abstract <RMK, RMV> IQuery<RMK,RMV> map(Map<RMK, K> remapKeys, Map<RMV, V> remapProps, MapValuesTranslate translate);
