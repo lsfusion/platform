@@ -2928,6 +2928,13 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
     };
 };
 //nextDateOrderSupplier (orderSupplier) <- nextDateOrder(preliminaryOrderOrderSupplier(orderSupplier)) ON ASSIGN orderSupplier;
+
+fillInOrderSupplier 'Заполнить заказ рекомендованным количеством' = ACTION (orderSupplier) {
+    FOR (recommendCountOrderSupplier(orderSupplier, item AS item) > 0) DO {
+    SET packQuantityItemOrderSupplier(orderSupplier, item) <- recommendCountOrderSupplier(orderSupplier, item AS item) ;
+    };
+};
+
 createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
     ADDOBJ orderSupplier;
     FOR o == addedObject() DO {
@@ -2938,15 +2945,10 @@ createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
         SET allowablePercentOrderSupplier(o) <- allowablePercentSupplier(supplierPreliminaryOrder(preliminaryOrder));
         SET preliminaryOrderOrderSupplier(o) <- preliminaryOrder AS preliminaryOrder;
         SET nextDateOrderSupplier(o) <- nextDateOrder(preliminaryOrder);
+//        EXEC fillInOrderSupplier(o);
     };
     EXEC apply();
 }] (preliminaryOrder) AND NOT preliminaryOrderToOrderSupplier(preliminaryOrder) CONFIRM;
-
-fillInOrderSupplier 'Заполнить заказ рекомендованным количеством' = ACTION (orderSupplier) {
-    FOR (recommendCountOrderSupplier(orderSupplier, item AS item) > 0) DO {
-    SET packQuantityItemOrderSupplier(orderSupplier, item) <- recommendCountOrderSupplier(orderSupplier, item AS item) ;
-    };
-}   CONFIRM;
 
 FORM orderSupplier 'Заказ поставщику'
 
@@ -3092,7 +3094,10 @@ FORM timeTableDate 'График поставок'
         FILTER 'С заказом на дату заказа' 'F10' quantityOrderOrderSupplier(s, d, t)
         FILTER 'С заказом на дату поставки' 'F10' quantitySupplyOrderSupplier(s, d, t)
     FILTERGROUP filters2
-        FILTER 'Отображать заказы после даты' 'F10' isOrderDatePreliminaryOrder(p, t) DEFAULT
+        FILTER 'Заказы после даты заказа' 'F10' isOrderDatePreliminaryOrder(p, t) DEFAULT
+        FILTER 'Заказы после даты поставки' 'F10' isSupplyDatePreliminaryOrder(p, t)
+        FILTER 'Заказы на дату заказа' 'F10' isOrderDate(t, p)
+        FILTER 'Заказы на дату поставки' 'F10' isSupplyDate(t, p)
 
     ORDER BY dateOrderPreliminaryOrder
 ;
