@@ -5066,20 +5066,20 @@ CONSTRAINT priceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (ite
     AND isPostedShipmentDetail (shipmentDetail) MESSAGE 'Цена поставки меньше цены заказа';
 
 //старые ценовые параметры для переоценок
-oldRetailPriceShipmentDetail 'Старая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+curRetailPriceShipmentDetail 'Текущая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 
-oldRetailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
-oldDataRetailRangeShipmentDetail 'Старый НДС розничный,%' (shipmentDetail) = dataActingRateRange(oldRetailRangeShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
+curRetailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
+curDataRetailRangeShipmentDetail 'Текущий НДС розничный,%' (shipmentDetail) = dataActingRateRange(curRetailRangeShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
 
 oldPriceShipmentDetail 'Старая цена поставщика'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 oldPriceShipmentDetail(shipmentDetail) <- priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail),
     itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail),
     subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
-oldImporterPriceShipmentDetail 'Старая цена изготовителя/импортера' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN itemShipmentDetailInfo;
+curImporterPriceShipmentDetail 'Текущая цена изготовителя/импортера' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN itemShipmentDetailInfo;
 
-oldPriceWareShipmentDetail 'Старая цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN itemShipmentDetailInfo;
-oldWareShipmentDetail = DATA ware (shipmentDetail) IN idGroup;
+curPriceWareShipmentDetail 'Текущая цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN itemShipmentDetailInfo;
+curWareShipmentDetail = DATA ware (shipmentDetail) IN idGroup;
 
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
 sumQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM
@@ -5138,7 +5138,7 @@ descriptionShipmentDetail 'Название документа' (shipmentDetail)
 CLASS priceChangeShipment 'Переоценка на приходе' : priceChangeDocument;
 CLASS priceChangeShipmentDetail 'Строка переоценки на приходе' : priceChangeDocumentDetail;
 
-needToPriceChangeShipmentDetail (shipmentDetail) = oldRetailPriceShipmentDetail(shipmentDetail) != retailPriceShipmentDetail(shipmentDetail) AND
+needToPriceChangeShipmentDetail (shipmentDetail) = curRetailPriceShipmentDetail(shipmentDetail) != retailPriceShipmentDetail(shipmentDetail) AND
                                                    balanceBeforeShipmentShipmentDetail(shipmentDetail) != 0;
 
 needToPriceChangeShipment (shipment) = GROUP SUM 1 IF needToPriceChangeShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail);
@@ -5168,20 +5168,20 @@ nameItemPriceChangeShipmentDetail 'Товар' (priceChangeShipmentDetail) = nam
 
 quantityPriceChangeShipmentDetail 'Остаток' (priceChangeShipmentDetail) = balanceBeforeShipmentShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 
-oldImporterPriceChangeShipmentDetail 'Старая цена изготовителя' (priceChangeShipmentDetail) = oldImporterPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+curImporterPriceChangeShipmentDetail 'Текущая цена изготовителя' (priceChangeShipmentDetail) = curImporterPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 importerPriceChangeShipmentDetail 'Новая цена изготовителя' (priceChangeShipmentDetail) = importerPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 
-oldDataRetailRangePriceChangeShipmentDetail 'Старый НДС, %' (priceChangeShipmentDetail) = oldDataRetailRangeShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+curDataRetailRangePriceChangeShipmentDetail 'Текущий НДС, %' (priceChangeShipmentDetail) = curDataRetailRangeShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 dataRetailRangePriceChangeShipmentDetail 'Новый НДС, %' (priceChangeShipmentDetail) = dataRetailRangeShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 
-oldRetailPriceChangeShipmentDetail 'Старая розничная цена' (priceChangeShipmentDetail) = oldRetailPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+curRetailPriceChangeShipmentDetail 'Текущая розничная цена' (priceChangeShipmentDetail) = curRetailPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 retailPriceChangeShipmentDetail 'Новая розничная цена' (priceChangeShipmentDetail) = retailPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 
 warePriceChangeShipmentDetail 'Новая посуда' (priceChangeShipmentDetail) = wareShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
 priceWarePriceChangeShipmentDetail 'Новая цена посуды' (priceChangeShipmentDetail) = priceWareShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 
-oldWarePriceChangeShipmentDetail 'Старая посуда' (priceChangeShipmentDetail) = oldWareShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
-oldPriceWarePriceChangeShipmentDetail 'Старая цена посуды' (priceChangeShipmentDetail) = oldPriceWareShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+curWarePriceChangeShipmentDetail 'Текущая посуда' (priceChangeShipmentDetail) = curWareShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
+curPriceWarePriceChangeShipmentDetail 'Текущая цена посуды' (priceChangeShipmentDetail) = curPriceWareShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 
 
 FORM ordersShipment 'Заказы'
@@ -5214,12 +5214,12 @@ FORM shipment 'Поставка'
                     priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
                     numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
                     nameWareShipmentDetail, numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
-                    retailMarkupShipmentDetail, oldRetailPriceShipmentDetail, retailPriceShipmentDetail, ADDOBJ, delete
+                    retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail, ADDOBJ, delete
     PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, importerPriceShipmentDetail, dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d),
                                priceWareShipmentDetail SHOWIF inWareShipmentDetail(d), controlExpiryShipmentDetail, isManufacturedShipmentDetail,
                                isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail, hintShipmentDetail,
                                nameCountryShipmentDetail, namebanRevaluationItemDepartmentShipmentDetail,
-                               oldImporterPriceShipmentDetail, oldDataRetailRangeShipmentDetail, oldPriceWareShipmentDetail SHOWIF inWareShipmentDetail(d)
+                               curImporterPriceShipmentDetail, curDataRetailRangeShipmentDetail, curPriceWareShipmentDetail SHOWIF inWareShipmentDetail(d)
 
     PROPERTIES addShipmentDetailBarcode(s) TODRAW d
 
@@ -5298,7 +5298,7 @@ FORM shipments 'Поставки'
     PROPERTIES (d) READONLY numberShipmentDetail, nameAttributeItemShipmentDetail, barcodeExSkuShipmentDetail,
                             quantityShipmentDetail, priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail,
                             nameWareShipmentDetail, dataSuppliersRangeShipmentDetail, dataRetailRangeShipmentDetail,
-                            retailMarkupShipmentDetail, oldRetailPriceShipmentDetail, retailPriceShipmentDetail
+                            retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail
 
     FILTERS inShipmentShipmentDetail(s, d)
 ;
@@ -6500,23 +6500,23 @@ balanceBeforeInnerArrivalInnerArrivalDetail(innerArrivalDetail) <- balanceBItemL
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
 
-oldImporterPriceShipmentDetail (shipmentDetail) <- priceImporterBLedgerDateTime (
+curImporterPriceShipmentDetail (shipmentDetail) <- priceImporterBLedgerDateTime (
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
 
-oldRetailRangeShipmentDetail (shipmentDetail) <- rangeRetailBLedgerDateTime(
+curRetailRangeShipmentDetail (shipmentDetail) <- rangeRetailBLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
 
-oldRetailPriceShipmentDetail (shipmentDetail) <- priceAccountBLedgerDateTime(
+curRetailPriceShipmentDetail (shipmentDetail) <- priceAccountBLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
 
-oldPriceWareShipmentDetail (shipmentDetail) <- priceWareBLedgerDateTime(
+curPriceWareShipmentDetail (shipmentDetail) <- priceWareBLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE wareShipmentDetail(shipmentDetail);
 
-oldWareShipmentDetail (shipmentDetail)  <- wareBLedgerDateTime(
+curWareShipmentDetail (shipmentDetail)  <- wareBLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
 
@@ -7024,7 +7024,7 @@ quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) =
                                                                                           quantityPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                           quantityUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
-oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldImporterPriceChangeShipmentDetail(priceChangeDocumentDetail),
+oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE curImporterPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                               oldImporterPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                               oldImporterPriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                               oldImporterPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
@@ -7035,7 +7035,7 @@ importerPriceChangeDocumentDetail 'Новая цена изготовителя'
                                                                                                           importerPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                           importerPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
-oldDataRetailRangePriceChangeDocumentDetail 'Старый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldDataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
+oldDataRetailRangePriceChangeDocumentDetail 'Старый НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE curDataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                           oldDataRetailRangePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                           oldDataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                           oldDataRetailRangePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
@@ -7046,7 +7046,7 @@ dataRetailRangePriceChangeDocumentDetail 'Новый НДС, %' (priceChangeDocu
                                                                                                       dataRetailRangePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                       dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
-oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE oldRetailPriceChangeShipmentDetail(priceChangeDocumentDetail),
+oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE curRetailPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                          oldRetailPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                          oldRetailPriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                          oldRetailPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
@@ -7092,7 +7092,7 @@ priceWarePriceChangeDocumentDetail 'Новая цена посуды' (priceChan
                                                                                             priceWareUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 oldPriceWarePriceChangeDocumentDetail 'Старая цена посуды' (priceChangeDocumentDetail) = UNION EXCLUSIVE
-                                                                                            oldPriceWarePriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                            curPriceWarePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                             oldPriceWarePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                             oldPriceWarePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                             oldPriceWarePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
