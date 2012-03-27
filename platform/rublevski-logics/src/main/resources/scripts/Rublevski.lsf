@@ -67,7 +67,7 @@ incrementValueNumerator 'Увеличить значение' = ACTION (numerato
 };
 
 FORM numerator 'Нумератор'
-    OBJECTS n = numerator
+    OBJECTS n = numerator FIXED PANEL
     PROPERTIES(n) name, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
 
     EDIT numerator OBJECT n
@@ -6650,8 +6650,8 @@ FORM itemDepartmentStoreInput 'Подбор товаров'
     PROPERTIES(d) READONLY name
 
     TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY name(g)
-    ORDER BY name
+    PROPERTIES READONLY gname = name(g)
+    ORDER BY gname
 
     OBJECTS i=item
     PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUnitOfMeasureItem(i) READONLY
@@ -7952,6 +7952,19 @@ DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
     }
 }
 
+// ---------------------------- Нумераторы по умолчанию --------------------------------- //
+
+defaultNumeratorDocuments = DATA numerator ();
+nameDefaultNumeratorDocuments 'Нумератор для документов' = name(defaultNumeratorDocuments());
+
+numeratorObject(object) <- defaultNumeratorDocuments() ON ASSIGN object IS numeratedObject;
+
+//---------------------------------------------- Параметры -----------------------------------------------------//
+
+FORM parameters 'Параметры'
+    PROPERTIES() nameDefaultNumeratorDocuments;
+;
+
 //---------------------------------------------- Импорт данных -----------------------------------------------------//
 
 //GROUP formularGroup 'Formular' : baseGroup;
@@ -8231,6 +8244,7 @@ NAVIGATOR {
             ADD sidCuttingStudyInputDetail;
             ADD itemDepartmentStoreInput;
         }
+        ADD parameters;
         ADD importData;
     }
 
