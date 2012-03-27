@@ -102,6 +102,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Boolean hideUser;
     public Integer widthUser;
 
+    public String creationScript;
+    
     public ClientPropertyDraw() {
     }
 
@@ -427,6 +429,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
         eventSID = inStream.readUTF();
+
+        creationScript = pool.readString(inStream);
     }
 
     public List<ClientObject> getKeysObjectsList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
@@ -525,7 +529,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                     "<b>sID:</b> %2$s<br>" +
                     "<b>" + ClientResourceBundle.getString("logics.grid") + ":</b> %3$s<br>" +
                     "<b>" + ClientResourceBundle.getString("logics.objects") + ":</b> %4$s<br>" +
-                    "<b>" + ClientResourceBundle.getString("logics.signature") + ":</b> %6$s <i>%2$s</i> (%5$s)" +
+                    "<b>" + ClientResourceBundle.getString("logics.signature") + ":</b> %6$s <i>%2$s</i> (%5$s)<br>" +
+                    "<b>" + ClientResourceBundle.getString("logics.script") + ":</b> %8$s" +
                     "</html>";
 
     public static final String editKeyToolTipFormat =
@@ -539,8 +544,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
         String returnClass = this.returnClass.toString();
         String editKeyText = editKey == null ? "" : String.format(editKeyToolTipFormat, SwingUtils.getKeyStrokeCaption(editKey));
-
-        return String.format(toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass, editKeyText);
+        String script = creationScript != null ? creationScript.replace("\n", "<br>") : "";
+        return String.format(toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass, editKeyText, script);
     }
 
     private GPropertyDraw gwtPropertyDraw;

@@ -661,6 +661,11 @@ propertyStatement
 	List<String> context = new ArrayList<String>();
 	boolean dynamic = true;
 }
+@after {
+	if (inPropParseState()) {
+		self.setPropertyScriptText(property, $text);
+	}
+}
 	:	declaration=propertyDeclaration { if ($declaration.paramNames != null) { context = $declaration.paramNames; dynamic = false; } }
 		'=' 
 		(	def=expressionUnfriendlyPD[context, dynamic, false] { property = $def.property; }

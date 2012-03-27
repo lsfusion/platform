@@ -247,6 +247,8 @@ public class PropertyDrawView extends ComponentView {
 
         entity.propertyObject.property.getCommonClasses().value.serialize(outStream);
         outStream.writeUTF(entity.eventSID);
+
+        pool.writeString(outStream, entity.propertyObject.getCreationScript());
     }
 
     @Override

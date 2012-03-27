@@ -24,6 +24,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
 
     public PropertyObjectEntity(LP<P> property, PropertyObjectInterfaceEntity... objects) {
         super(property.property);
+        setCreationScript(property.getCreationScript());
         for(int i=0;i<property.listInterfaces.size();i++)
             mapping.put(property.listInterfaces.get(i),objects[i]);
     }
@@ -100,5 +101,15 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         }
 
         return new PropertyObjectEntity<P>(property, nmapping);
+    }
+
+    private String creationScript;
+
+    public String getCreationScript() {
+        return creationScript;
+    }
+
+    public void setCreationScript(String creationScript) {
+        this.creationScript = creationScript;
     }
 }

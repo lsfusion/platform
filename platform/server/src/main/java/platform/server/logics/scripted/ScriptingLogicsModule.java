@@ -1766,6 +1766,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return !("}".equals(parsers.peek().input.LT(-1).getText()));
     }
 
+    public void setPropertyScriptText(LP<?> property, String script) {
+        property.setCreationScript(script);
+    }
+
     private void parseStep(State state) {
         try {
             LsfLogicsLexer lexer = new LsfLogicsLexer(createStream());

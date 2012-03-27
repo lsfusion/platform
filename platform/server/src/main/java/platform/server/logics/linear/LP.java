@@ -29,6 +29,7 @@ public class LP<T extends PropertyInterface> {
 
     public Property<T> property;
     public List<T> listInterfaces;
+    private String creationScript = null;
 
     public <IT extends PropertyInterface> boolean intersect(LP<IT> lp) {
         assert listInterfaces.size()==lp.listInterfaces.size();
@@ -368,5 +369,13 @@ public class LP<T extends PropertyInterface> {
 
     public void setAskConfirm(boolean askConfirm) {
         property.askConfirm = askConfirm;
+    }
+
+    public String getCreationScript() {
+        return creationScript;
+    }
+
+    public void setCreationScript(String creationScript) {
+        this.creationScript = creationScript;
     }
 }
