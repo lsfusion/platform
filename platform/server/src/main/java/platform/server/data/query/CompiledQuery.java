@@ -214,9 +214,7 @@ public class CompiledQuery<K,V> {
                 from = "empty";
             } else {
                 if(queryJoins.size()==1) { // "простой" запрос
-                    GroupJoinsWhere innerJoin = queryJoins.iterator().next();
-                    innerJoin.where = query.where.translateQuery(innerJoin.keyEqual.getTranslator());
-                    from = fillInnerSelect(query.mapKeys, innerJoin, query.properties, keySelect, propertySelect, whereSelect, params, syntax, subcontext, env);
+                    from = fillInnerSelect(query.mapKeys, single(queryJoins), query.properties, keySelect, propertySelect, whereSelect, params, syntax, subcontext, env);
                     orders = getOrdersNotNull(orders, query.properties, ordersNotNull);
                 } else { // "сложный" запрос с full join'ами
                     from = fillFullSelect(query.mapKeys, queryJoins, query.where, query.properties, orders, top, keySelect, propertySelect, params, syntax, subcontext, env);
