@@ -3604,7 +3604,121 @@ DESIGN groupsUser FROM DEFAULT {
    }
 }
 
- //---------------------------- Карты проработки (разруба) ----------------------------------------//
+
+//---------------------------- Рецепты блюд ----------------------------------------//
+CLASS recipe 'Рецепт' : named;
+CLASS recipeDetail 'Сырье рецепта';
+
+dishRecipe  'Блюдо (ИД)' = DATA item (recipe) IN idGroup;
+CONSTRAINT dishRecipe (recipe) AND NOT isManufacturedItem(dishRecipe(recipe)) CHECKED MESSAGE 'Блюдо должно производиться';
+captionDishRecipe 'Блюдо' = captionItem (dishRecipe(recipe)) IN baseGroup;
+
+beginDateRecipe 'Используется с' = DATA DATE (recipe) IN baseGroup;
+isUsedRecipe 'Используется' = DATA BOOLEAN (recipe) IN baseGroup;
+numberRecipe 'Номер рецептуры (из сборника и пр.)' = DATA STRING[40] (recipe) IN baseGroup;
+notesRecipe 'Технология приготовления' = DATA STRING[100] (recipe) IN baseGroup;
+outWeightRecipe 'Количество выхода изделия' = DATA DOUBLE (recipe) IN baseGroup;
+
+recipeRecipeDetail 'Рецепт (ИД)' = DATA recipe(recipeDetail) IN baseGroup;
+componentRecipeDetail 'Компонент (ИД)' = DATA component(recipeDetail) IN idGroup;
+nameComponentRecipeDetail 'Компонент' = name(componentRecipeDetail(recipeDetail)) IN baseGroup;
+normQuantityRecipeDetail 'Норма закладки (брутто)' = DATA DOUBLE (recipeDetail) IN baseGroup;
+
+inRecipeRecipeDetail(recipe, recipeDetail) = recipeRecipeDetail(recipeDetail) == recipe;
+
+FORM recipe 'Рецепт блюда'
+    OBJECTS r=recipe FIXED PANEL
+    PROPERTIES(r) captionDishRecipe, numberRecipe, beginDateRecipe, isUsedRecipe, notesRecipe, outWeightRecipe
+
+    OBJECTS rd=recipeDetail
+    PROPERTIES(rd) nameComponentRecipeDetail, normQuantityRecipeDetail, ADDOBJ, delete
+
+    FILTERS inRecipeRecipeDetail(r, rd)
+
+    EDIT recipe OBJECT r
+;
+
+FORM recipes 'Рецепты блюд'
+    OBJECTS r=recipe
+    PROPERTIES(r)  READONLY captionDishRecipe, numberRecipe, isUsedRecipe
+    PROPERTIES(r)  ADDFORM, EDITFORM, delete
+
+    OBJECTS rd=recipeDetail
+    PROPERTIES(rd) READONLY nameComponentRecipeDetail, normQuantityRecipeDetail
+
+    FILTERS   inRecipeRecipeDetail(r, rd)
+;
+
+
+//---------------------------- Товар на оборудовании ----------------------------------------//
+
+CLASS stage 'Ячейка';
+valueStage 'Ячейка' = DATA INTEGER (stage) IN baseGroup;
+barcodeStageGroupMachinery 'Штрих-код ИД' = DATA barcode (stage, groupMachinery) IN idGroup;
+priceStageGroupMachinery 'Розничная цена для штрих-кода' (stage, groupMachinery) = DATA DOUBLE (stage, groupMachinery) IN baseGroup;
+dateStageGroupMachinery 'Дата истечения срока годности' (stage, groupMachinery) = DATA DATE (stage, groupMachinery) IN baseGroup;
+timeStageGroupMachinery 'Время истечения срока годности' (stage, groupMachinery) = DATA INTEGER (stage, groupMachinery) IN baseGroup;
+stockStageGroupMachinery 'Остаток на момент передачи' (stage, groupMachinery) = DATA DOUBLE (stage, groupMachinery) IN baseGroup;
+
+barcodeBarcodeStageGroupMachinery 'Штрих-код' (stage, groupMachinery) = barcodeEx(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
+//nameSkuBarcodeStageGroupMachinery 'Товар' (stage, groupMachinery) = nameSkuBarcode(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
+//titleScalesBarcodeStageGroupMachinery 'Наименование для весов' (stage, groupMachinery) = titleScalesBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
+//titleCashBarcodeStageGroupMachinery 'Наименование для касс' (stage, groupMachinery) = titleCashBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
+//amountBarcodeStageGroupMachinery 'Количество (сколько списать при продаже)' (stage, groupMachinery) = amountBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
+//removeBarcodeStageGroupMachinery 'Заблокирован (удален с оборудования)' (stage, groupMachinery) = removeBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
+//commentRemoveBarcodeStageGroupMachinery 'Причина блокировки' (stage, groupMachinery) = commentRemoveBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
+
+FORM stages 'Товары на оборудовании'
+OBJECTS gr=groupMachinery
+OBJECTS st=stage
+PROPERTIES(gr) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
+PROPERTIES(st) valueStage
+PROPERTIES(st, gr)  barcodeBarcodeStageGroupMachinery, priceStageGroupMachinery, dateStageGroupMachinery,
+                    timeStageGroupMachinery, stockStageGroupMachinery
+FILTERS  barcodeStageGroupMachinery(st, gr);
+
+//---------------------------- Количественные регистры ----------------------------------------//
+
+CLASS ABSTRACT balanceItemLedger 'Изменение остатка по товару';
+TABLE balanceItemLedger (balanceItemLedger);
+
+//---------------------------- Ценовые регистры ----------------------------------------//
+
+CLASS ABSTRACT importerPriceLedger 'Изменение цены изготовителя/импортера';
+TABLE importerPriceLedger (importerPriceLedger);
+
+CLASS ABSTRACT retailVATLedger 'Изменение НДС';
+TABLE retailVATLedger (retailVATLedger);
+
+CLASS ABSTRACT accountPriceLedger 'Изменение учетной цены';
+TABLE accountPriceLedger (accountPriceLedger);
+
+CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
+TABLE retailPriceLedger (retailPriceLedger);
+
+CLASS ABSTRACT warePriceLedger 'Изменение цены посуды';
+TABLE warePriceLedger (warePriceLedger);
+
+//---------------------------- Суммовые регистры ----------------------------------------//
+
+CLASS ABSTRACT accountSumDocumentLedger 'Учетный документ';
+TABLE accountSumDocumentLedger (accountSumDocumentLedger);
+
+CLASS ABSTRACT incAccountSumDocumentLedger 'Учетный документ (приход)' : accountSumDocumentLedger;
+CLASS ABSTRACT outAccountSumDocumentLedger 'Учетный документ (расход)' : accountSumDocumentLedger;
+
+CLASS ABSTRACT incAccountSumHistoryDocumentLedger 'Учетный документ (приход, с историей)' : incAccountSumDocumentLedger, historyObject;
+CLASS ABSTRACT outAccountSumHistoryDocumentLedger 'Учетный документ (расход, с историей)' : outAccountSumDocumentLedger, historyObject;
+
+//---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
+
+CLASS ABSTRACT priceChangeDocument 'Акт переоценки' : incAccountSumDocumentLedger;
+TABLE priceChangeDocument (priceChangeDocument);
+
+CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки';
+TABLE priceChangeDocumentDetail (priceChangeDocumentDetail);
+
+//---------------------------- Карты проработки (разруба) ----------------------------------------//
 GROUP cutGroup 'Разделка' : baseGroup;
 GROUP actGroup 'Акт' : publicGroup;
 GROUP contractorGroup 'Контрагент' : publicGroup;
@@ -3617,8 +3731,8 @@ CLASS actOfStudy 'Акт пророботки (разделки)' : historyObjec
 CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStudy, postedObject;
 TABLE actOfStudy (actOfStudy);
 
-CLASS studyInputDetail 'Товар';
-CLASS studyOutputDetail 'Полуфабрикаты';
+CLASS studyInputDetail 'Товар' : balanceItemLedger;
+CLASS studyOutputDetail 'Полуфабрикаты' : balanceItemLedger, importerPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
 
 @metaCodePostedObject (actOfStudy);
       //      ??????????????????? не понятно что делать с процентом надбавок ??????????????????????   //
@@ -3656,6 +3770,15 @@ departmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idG
 nameDepartmentStoreActOfStudy 'Подразделение' (actOfStudy) = name(departmentStoreActOfStudy(actOfStudy));
 numberActOfStudy 'Номер акта' = DATA STRING[10] (actOfStudy) IN baseGroup;
 
+dateActOfStudy 'Дата документа' (actOfStudy) = DATA DATE (actOfStudy) IN baseGroup;
+    dateActOfStudy (actOfStudy) <- currentDate() ON ASSIGN actOfStudy AS actOfStudy;
+
+timeActOfStudy 'Время документа' (actOfStudy) = DATA TIME (actOfStudy) IN baseGroup;
+    timeActOfStudy (actOfStudy) <- currentTime() ON ASSIGN actOfStudy AS actOfStudy;
+
+dateTimeActOfStudy 'Дата/время документа' (actOfStudy) = toDateTime(dateActOfStudy(actOfStudy), timeActOfStudy(actOfStudy));
+
+
 contractorDepartmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idGroup;
 nameContractorDepartmentStoreActOfStudy 'Подразделение-контрагент' (actOfStudy) = name(contractorDepartmentStoreActOfStudy(actOfStudy)) IN contractorGroup;
 
@@ -3669,7 +3792,6 @@ seriesInputActOfStudy 'Серия приходной накладной' (actOfS
 actOfStudyStudyInputDetail = DATA actOfStudy (studyInputDetail) IN idGroup;
 
 departmentStoreStudyInputDetail (studyInputDetail) = departmentStoreActOfStudy(actOfStudyStudyInputDetail(studyInputDetail));
-dateTimeStudyInputDetail (studyInputDetail) = timeCreated(actOfStudyStudyInputDetail(studyInputDetail));
 
 itemStudyInputDetail = DATA item (studyInputDetail) IN idGroup;
 nameAttributeItemStudyInputDetail 'Товар' (studyInputDetail) = nameAttributeItem(itemStudyInputDetail(studyInputDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
@@ -3691,15 +3813,14 @@ quantityStudyInputDetail 'Количество для разруба' (studyInpu
 quantityItemActOfStudy (item, actOfStudy) = GROUP SUM quantityStudyInputDetail(studyInputDetail)
     BY itemStudyInputDetail(studyInputDetail), actOfStudyStudyInputDetail(studyInputDetail);
 
-quantityByStudyInputDetail 'Расход товара к0во' (studyInputDetail) = quantityItemActOfStudy(itemStudyInputDetail(studyInputDetail), actOfStudyStudyInputDetail(studyInputDetail));
+quantityByStudyInputDetail 'Расход товара к-во' (studyInputDetail) = quantityItemActOfStudy(itemStudyInputDetail(studyInputDetail), actOfStudyStudyInputDetail(studyInputDetail));
 
 retailPriceStudyInputDetail 'Цена за ед.' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
 totalStudyInputDetail 'Сумма' (studyInputDetail) = retailPriceStudyInputDetail(studyInputDetail)*quantityStudyInputDetail(studyInputDetail);
 subtotalActOfStudy 'Сумма расхода по акту' (actOfStudy) = GROUP SUM totalStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail);
 
-dateActOfStudy 'Дата' (actOfStudy) = dateInTime(timeCreated(actOfStudy)) PERSISTENT;
 
-dateStudyInputDetail 'Дата' (studyInputDetail) = dateInTime(timeCreated(actOfStudyStudyInputDetail(studyInputDetail))) PERSISTENT;
+dateStudyInputDetail 'Дата' (studyInputDetail) = dateActOfStudy(actOfStudyStudyInputDetail(studyInputDetail)) PERSISTENT;
 
 oldImporterPriceStudyInputDetail 'Старая цена изгтовителя/импортера' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
 
@@ -3708,16 +3829,15 @@ oldRetailRangeStudyInputDetail(studyInputDetail) = DATA range (studyInputDetail)
 oldDataRetailRangeStudyInputDetail 'Старый НДС розничный,%' (studyInputDetail) =
    dataActingRateRangeDate(oldRetailRangeStudyInputDetail(studyInputDetail),  dateStudyInputDetail(studyInputDetail)) IN baseGroup;
 
+//inDepartmentStoreCuttingByStudyInputDetail(studyInputDetail) = inDepartmentStoreCutting(departmentStoreStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail));
+//inItemCuttingByStudyInputDetail (studyInputDetail) = inItemCutting(itemStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail));
+//useCuttingStudyInputDetail 'Используется' (studyInputDetail) = useCutting(cuttingStudyInputDetail(studyInputDetail));
+//
+//useCuttingByStudyInputDetail 'Пригодная карта для товара, подразделения и исп-ся' (studyInputDetail) =
+//    inItemCutting(itemStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail)) AND
+//    inDepartmentStoreCutting(departmentStoreStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail)) AND
+//    useCuttingStudyInputDetail(studyInputDetail);
 
-
-inDepartmentStoreCuttingByStudyInputDetail(studyInputDetail) = inDepartmentStoreCutting(departmentStoreStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail));
-inItemCuttingByStudyInputDetail (studyInputDetail) = inItemCutting(itemStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail));
-useCuttingStudyInputDetail 'Используется' (studyInputDetail) = useCutting(cuttingStudyInputDetail(studyInputDetail));
-
-useCuttingByStudyInputDetail 'Пригодная карта для товара, подразделения и исп-ся' (studyInputDetail) =
-    inItemCutting(itemStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail)) AND
-    inDepartmentStoreCutting(departmentStoreStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail)) AND
-    useCuttingStudyInputDetail(studyInputDetail);
 
 studyInputDetailStudyOutputDetail = DATA studyInputDetail (studyOutputDetail) IN idGroup;
 actOfStudyStudyOutputDetail(studyOutputDetail) = actOfStudyStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
@@ -3752,13 +3872,10 @@ subtotalStudyInputDetail 'Итого сумма  прихода п/ф по то�
 
 subtotalByActOfStudy 'Сумма прихода по акту' (actOfStudy) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail);
 
-//isDetailCuttingStudyOutputDetail (detailCutting, studyOutputDetail) = cuttingDetailCutting(detailCutting) == cuttingStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
 isStudyInputDetailStudyOutputDetail (studyInputDetail, studyOutputDetail) = studyInputDetailStudyOutputDetail(studyOutputDetail) == studyInputDetail;
 
 
 departmentStoreStudyOutputDetail(studyOutputDetail) = departmentStoreStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
-dateTimeStudyOutputDetail(studyOutputDetail) = dateTimeStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
-
 
 dateStudyOutputDetail 'Дата' (studyOutputDetail) = dateStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail)) PERSISTENT;
 
@@ -3768,6 +3885,76 @@ oldRetailRangeStudyOutputDetail(studyOutputDetail) = DATA range (studyOutputDeta
 
 oldDataRetailRangeStudyOutputDetail 'Старый НДС розничный,%' (studyOutputDetail) =
    dataActingRateRangeDate(oldRetailRangeStudyOutputDetail(studyOutputDetail),  dateStudyOutputDetail(studyOutputDetail)) IN itemStudyOutputDetailInfo;
+
+retailRangeStudyOutputDetail(studyOutputDetail) = oldRetailRangeStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
+
+dataRetailRangeStudyOutputDetail 'Новый НДС розничный,%' (studyOutputDetail) =
+   dataActingRateRangeDate(retailRangeStudyOutputDetail(studyOutputDetail),  dateStudyOutputDetail(studyOutputDetail));
+
+
+//---------------------------- Документы изменяющие суммы при разрубе --------------------------------//
+
+CLASS consumption 'Расходный документ (разруб)' : outAccountSumDocumentLedger;
+CLASS parish 'Приходный документ (разруб)' : incAccountSumDocumentLedger;
+
+isActOfStudy(actOfStudy) = actOfStudy IS actOfStudy AND contractorDepartmentStoreActOfStudy(actOfStudy);
+
+         //  приходный документ //
+@metaCodeSingleAggregation(actOfStudy, parish, isActOfStudy);
+
+waybillInputParish 'Номер приходной накладной' (parish) = waybillInputActOfStudy(actOfStudyParish(parish));
+seriesInputParish 'Серия приходной накладной' (parish) = seriesInputActOfStudy(actOfStudyParish(parish));
+
+dateTimeParish 'Дата/время' (parish) = dateTimeActOfStudy(actOfStudyParish(parish));
+subtotalParish 'Сумма прихода' (parish) = subtotalByActOfStudy(actOfStudyParish(parish));
+departmentStoreParish (parish) = departmentStoreActOfStudy(actOfStudyParish(parish));
+isPostedParish (parish) = isPostedActOfStudy(actOfStudyParish(parish));
+dateParish (parish) = dateActOfStudy(actOfStudyParish(parish));
+numberParish 'Номер акта' (parish) = numberActOfStudy(actOfStudyParish(parish));
+
+contractorDepartmentStoreParish (parish) = contractorDepartmentStoreActOfStudy(actOfStudyParish(parish));
+nameContractorDepartmentStoreParish 'Отдел поставки' (parish) = name(contractorDepartmentStoreParish(parish));
+
+castParishObjectsToString100=
+    FORMULA STRING[200] '\'Акт разруба приход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
+
+descriptionParish 'Название документа' (parish) = castParishObjectsToString100(
+    numberParish(parish), dateParish(parish), nameContractorDepartmentStoreParish(parish));
+
+descriptionStudyOutputDetail 'Название документа' (studyOutputDetail) = castParishObjectsToString100(
+    numberActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail)), dateActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail)),
+    nameContractorDepartmentStoreActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail)));
+
+        //  расходный документ //
+@metaCodeSingleAggregation(actOfStudy, consumption, isActOfStudy);
+
+dateTimeConsumption 'Дата/время' (consumption) = dateTimeActOfStudy(actOfStudyConsumption(consumption));
+subtotalConsumption 'Сумма расхода' (consumption) = subtotalActOfStudy(actOfStudyConsumption(consumption));
+departmentStoreConsumption (consumption) = departmentStoreActOfStudy(actOfStudyConsumption(consumption));
+isPostedConsumption (consumption) = isPostedActOfStudy(actOfStudyConsumption(consumption));
+dateConsumption (consumption) = dateActOfStudy(actOfStudyConsumption(consumption));
+numberConsumption 'Номер акта' (consumption) = numberActOfStudy(actOfStudyConsumption(consumption));
+
+contractorDepartmentStoreConsumption (consumption) = contractorDepartmentStoreActOfStudy(actOfStudyConsumption(consumption));
+nameContractorDepartmentStoreConsumption 'Отдел назначения' (consumption) = name(contractorDepartmentStoreConsumption(consumption));
+
+castConsumptionObjectsToString100=
+    FORMULA STRING[200] '\'Акт разруба расход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
+
+descriptionConsumption 'Название документа' (consumption) = castConsumptionObjectsToString100(
+    numberConsumption(consumption), dateConsumption(consumption), nameContractorDepartmentStoreConsumption(consumption));
+
+descriptionStudyInputDetail 'Название документа' (studyInputDetail) = castConsumptionObjectsToString100(
+    numberActOfStudy(actOfStudyStudyInputDetail(studyInputDetail)), dateActOfStudy(actOfStudyStudyInputDetail(studyInputDetail)),
+    nameContractorDepartmentStoreActOfStudy(actOfStudyStudyInputDetail(studyInputDetail)));
+
+//---------------------------- Изменение остатка и цены при разрубе --------------------------------//
+
+dateTimeStudyOutputDetail 'Дата/время' (studyOutputDetail) = dateTimeActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail));
+isPostedStudyOutputDetail 'Закрыт' (studyOutputDetail)= isPostedActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail));
+
+dateTimeStudyInputDetail 'Дата/время' (studyInputDetail) = dateTimeActOfStudy(actOfStudyStudyInputDetail(studyInputDetail));
+isPostedStudyInputDetail 'Закрыт' (studyInputDetail)  = isPostedActOfStudy(actOfStudyStudyInputDetail(studyInputDetail));
 
 toFillStudyOutputDetailsStudyInputDetail 'Заполнить данные для п/ф' (studyInputDetail) =  ACTION (studyInputDetail) {
     FOR cuttingDetailCutting(detailCutting) == cuttingStudyInputDetail(studyInputDetail) DO {
@@ -3964,11 +4151,6 @@ DESIGN actOfStudy FROM DEFAULT {
 }
 
 
-//    PROPERTIES(in)  ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL SHOWIF isDraftInventory(in),
-//                    postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)
-
-
-
 FORM actOfStudies 'Акты проработки'
 
     OBJECTS a=actOfStudy
@@ -3988,197 +4170,7 @@ DESIGN actOfStudies FROM DEFAULT {
         askConfirm = TRUE;
     }
     POSITION a.historyGroup TO THE LEFT a.postedGroup;
-//    ADD il.grid.box BEFORE in.historyGroup;
-//    il.grid.box {title = 'Товары с недостачей (излишком)';};
 }
-
-
-
-//---------------------------- Рецепты блюд ----------------------------------------//
-CLASS recipe 'Рецепт' : named;
-CLASS recipeDetail 'Сырье рецепта';
-
-dishRecipe  'Блюдо (ИД)' = DATA item (recipe) IN idGroup;
-CONSTRAINT dishRecipe (recipe) AND NOT isManufacturedItem(dishRecipe(recipe)) CHECKED MESSAGE 'Блюдо должно производиться';
-captionDishRecipe 'Блюдо' = captionItem (dishRecipe(recipe)) IN baseGroup;
-
-beginDateRecipe 'Используется с' = DATA DATE (recipe) IN baseGroup;
-isUsedRecipe 'Используется' = DATA BOOLEAN (recipe) IN baseGroup;
-numberRecipe 'Номер рецептуры (из сборника и пр.)' = DATA STRING[40] (recipe) IN baseGroup;
-notesRecipe 'Технология приготовления' = DATA STRING[100] (recipe) IN baseGroup;
-outWeightRecipe 'Количество выхода изделия' = DATA DOUBLE (recipe) IN baseGroup;
-
-recipeRecipeDetail 'Рецепт (ИД)' = DATA recipe(recipeDetail) IN baseGroup;
-componentRecipeDetail 'Компонент (ИД)' = DATA component(recipeDetail) IN idGroup;
-nameComponentRecipeDetail 'Компонент' = name(componentRecipeDetail(recipeDetail)) IN baseGroup;
-normQuantityRecipeDetail 'Норма закладки (брутто)' = DATA DOUBLE (recipeDetail) IN baseGroup;
-
-inRecipeRecipeDetail(recipe, recipeDetail) = recipeRecipeDetail(recipeDetail) == recipe;
-
-FORM recipe 'Рецепт блюда'
-    OBJECTS r=recipe FIXED PANEL
-    PROPERTIES(r) captionDishRecipe, numberRecipe, beginDateRecipe, isUsedRecipe, notesRecipe, outWeightRecipe
-
-    OBJECTS rd=recipeDetail
-    PROPERTIES(rd) nameComponentRecipeDetail, normQuantityRecipeDetail, ADDOBJ, delete
-
-    FILTERS inRecipeRecipeDetail(r, rd)
-
-    EDIT recipe OBJECT r
-;
-
-FORM recipes 'Рецепты блюд'
-    OBJECTS r=recipe
-    PROPERTIES(r)  READONLY captionDishRecipe, numberRecipe, isUsedRecipe
-    PROPERTIES(r)  ADDFORM, EDITFORM, delete
-
-    OBJECTS rd=recipeDetail
-    PROPERTIES(rd) READONLY nameComponentRecipeDetail, normQuantityRecipeDetail
-
-    FILTERS   inRecipeRecipeDetail(r, rd)
-;
-
-
-//---------------------------- Товар на оборудовании ----------------------------------------//
-
-CLASS stage 'Ячейка';
-valueStage 'Ячейка' = DATA INTEGER (stage) IN baseGroup;
-barcodeStageGroupMachinery 'Штрих-код ИД' = DATA barcode (stage, groupMachinery) IN idGroup;
-priceStageGroupMachinery 'Розничная цена для штрих-кода' (stage, groupMachinery) = DATA DOUBLE (stage, groupMachinery) IN baseGroup;
-dateStageGroupMachinery 'Дата истечения срока годности' (stage, groupMachinery) = DATA DATE (stage, groupMachinery) IN baseGroup;
-timeStageGroupMachinery 'Время истечения срока годности' (stage, groupMachinery) = DATA INTEGER (stage, groupMachinery) IN baseGroup;
-stockStageGroupMachinery 'Остаток на момент передачи' (stage, groupMachinery) = DATA DOUBLE (stage, groupMachinery) IN baseGroup;
-
-barcodeBarcodeStageGroupMachinery 'Штрих-код' (stage, groupMachinery) = barcodeEx(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
-//nameSkuBarcodeStageGroupMachinery 'Товар' (stage, groupMachinery) = nameSkuBarcode(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
-//titleScalesBarcodeStageGroupMachinery 'Наименование для весов' (stage, groupMachinery) = titleScalesBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
-//titleCashBarcodeStageGroupMachinery 'Наименование для касс' (stage, groupMachinery) = titleCashBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
-//amountBarcodeStageGroupMachinery 'Количество (сколько списать при продаже)' (stage, groupMachinery) = amountBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
-//removeBarcodeStageGroupMachinery 'Заблокирован (удален с оборудования)' (stage, groupMachinery) = removeBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
-//commentRemoveBarcodeStageGroupMachinery 'Причина блокировки' (stage, groupMachinery) = commentRemoveBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
-
-FORM stages 'Товары на оборудовании'
-OBJECTS gr=groupMachinery
-OBJECTS st=stage
-PROPERTIES(gr) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
-PROPERTIES(st) valueStage
-PROPERTIES(st, gr)  barcodeBarcodeStageGroupMachinery, priceStageGroupMachinery, dateStageGroupMachinery,
-                    timeStageGroupMachinery, stockStageGroupMachinery
-FILTERS  barcodeStageGroupMachinery(st, gr);
-
-//---------------------------- Количественные регистры ----------------------------------------//
-
-CLASS ABSTRACT balanceItemLedger 'Изменение остатка по товару';
-TABLE balanceItemLedger (balanceItemLedger);
-
-//---------------------------- Ценовые регистры ----------------------------------------//
-
-CLASS ABSTRACT importerPriceLedger 'Изменение цены изготовителя/импортера';
-TABLE importerPriceLedger (importerPriceLedger);
-
-CLASS ABSTRACT retailVATLedger 'Изменение НДС';
-TABLE retailVATLedger (retailVATLedger);
-
-CLASS ABSTRACT accountPriceLedger 'Изменение учетной цены';
-TABLE accountPriceLedger (accountPriceLedger);
-
-CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
-TABLE retailPriceLedger (retailPriceLedger);
-
-CLASS ABSTRACT warePriceLedger 'Изменение цены посуды';
-TABLE warePriceLedger (warePriceLedger);
-
-//---------------------------- Суммовые регистры ----------------------------------------//
-
-CLASS ABSTRACT accountSumDocumentLedger 'Учетный документ';
-TABLE accountSumDocumentLedger (accountSumDocumentLedger);
-
-CLASS ABSTRACT incAccountSumDocumentLedger 'Учетный документ (приход)' : accountSumDocumentLedger;
-CLASS ABSTRACT outAccountSumDocumentLedger 'Учетный документ (расход)' : accountSumDocumentLedger;
-
-//---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
-
-CLASS ABSTRACT priceChangeDocument 'Акт переоценки' : incAccountSumDocumentLedger;
-TABLE priceChangeDocument (priceChangeDocument);
-
-CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки';
-TABLE priceChangeDocumentDetail (priceChangeDocumentDetail);
-
-//---------------------------- Документы изменяющие суммы при разрубе --------------------------------//
-
-CLASS consumption 'Расходный документ (разруб)' : outAccountSumDocumentLedger;
-CLASS parish 'Приходный документ (разруб)' : incAccountSumDocumentLedger;
-
-CLASS consumptionDetail 'Строка расходного документа (разруб)' : balanceItemLedger;
-CLASS parishDetail 'Строка приходного документа (разруб)' : balanceItemLedger;
-
-
-isActOfStudy(actOfStudy) = actOfStudy IS actOfStudy AND contractorDepartmentStoreActOfStudy(actOfStudy);
-isActOfStudyStudyInputDetail(studyInputDetail) = isActOfStudy(actOfStudyStudyInputDetail(studyInputDetail));
-isActOfStudyStudyOutputDetail(studyOutputDetail) = isActOfStudyStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
-
-         //  приходный документ //
-@metaCodeSingleAggregation(actOfStudy, parish, isActOfStudy);
-@metaCodeSingleAggregation(studyOutputDetail, parishDetail, isActOfStudyStudyOutputDetail);
-parishParishDetail(parishDetail) = uniqueParish(actOfStudyStudyOutputDetail(studyOutputDetailParishDetail(parishDetail)));
-
-waybillInputParish 'Номер приходной накладной' (parish) = waybillInputActOfStudy(actOfStudyParish(parish));
-seriesInputParish 'Серия приходной накладной' (parish) = seriesInputActOfStudy(actOfStudyParish(parish));
-
-dateTimeParish 'Дата/время' (parish) = timeCreated(actOfStudyParish(parish));
-subtotalParish 'Сумма прихода' (parish) = subtotalByActOfStudy(actOfStudyParish(parish));
-departmentStoreParish (parish) = departmentStoreActOfStudy(actOfStudyParish(parish));
-isPostedParish (parish) = isPostedActOfStudy(actOfStudyParish(parish));
-dateParish (parish) = dateActOfStudy(actOfStudyParish(parish));
-numberParish 'Номер акта' (parish) = numberActOfStudy(actOfStudyParish(parish));
-
-contractorDepartmentStoreParish (parish) = contractorDepartmentStoreActOfStudy(actOfStudyParish(parish));
-nameContractorDepartmentStoreParish 'Отдел поставки' (parish) = name(contractorDepartmentStoreParish(parish));
-
-castParishObjectsToString100=
-    FORMULA STRING[200] '\'Акт разруба приход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
-
-descriptionParish 'Название документа' (parish) = castParishObjectsToString100(
-    numberParish(parish), dateParish(parish), nameContractorDepartmentStoreParish(parish));
-
-descriptionParishDetail 'Название документа' (parishDetail) = descriptionParish(parishParishDetail(parishDetail));
-
-        //  расходный документ //
-@metaCodeSingleAggregation(actOfStudy, consumption, isActOfStudy);
-@metaCodeSingleAggregation(studyInputDetail, consumptionDetail, isActOfStudyStudyInputDetail);
-consumptionConsumptionDetail(consumptionDetail) = uniqueConsumption(actOfStudyStudyInputDetail(studyInputDetailConsumptionDetail(consumptionDetail)));
-
-dateTimeConsumption 'Дата/время' (consumption) = timeCreated(actOfStudyConsumption(consumption));
-subtotalConsumption 'Сумма расхода' (consumption) = subtotalActOfStudy(actOfStudyConsumption(consumption));
-departmentStoreConsumption (consumption) = departmentStoreActOfStudy(actOfStudyConsumption(consumption));
-isPostedConsumption (consumption) = isPostedActOfStudy(actOfStudyConsumption(consumption));
-dateConsumption (consumption) = dateActOfStudy(actOfStudyConsumption(consumption));
-numberConsumption 'Номер акта' (consumption) = numberActOfStudy(actOfStudyConsumption(consumption));
-
-contractorDepartmentStoreConsumption (consumption) = contractorDepartmentStoreActOfStudy(actOfStudyConsumption(consumption));
-nameContractorDepartmentStoreConsumption 'Отдел назначения' (consumption) = name(contractorDepartmentStoreConsumption(consumption));
-
-castConsumptionObjectsToString100=
-    FORMULA STRING[200] '\'Акт разруба расход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
-
-descriptionConsumption 'Название документа' (consumption) = castConsumptionObjectsToString100(
-    numberConsumption(consumption), dateConsumption(consumption), nameContractorDepartmentStoreConsumption(consumption));
-
-descriptionConsumptionDetail 'Название документа' (consumptionDetail) = descriptionConsumption(consumptionConsumptionDetail(consumptionDetail));
-
-//---------------------------- Изменение остатка при разрубе --------------------------------//
-
-dateTimeParishDetail 'Дата/время' (parishDetail) = dateTimeParish(parishParishDetail(parishDetail));
-quantityParishDetail 'Количество прихода' (parishDetail) = overQuantityByStudyOutputDetail(studyOutputDetailParishDetail(parishDetail));
-isPostedParishDetail(parishDetail)  = isPostedParish(parishParishDetail(parishDetail));
-itemParishDetail(parishDetail) = itemStudyOutputDetail(studyOutputDetailParishDetail(parishDetail));
-departmentStoreParishDetail(parishDetail) = departmentStoreParish(parishParishDetail(parishDetail));
-
-dateTimeConsumptionDetail 'Дата/время' (consumptionDetail) = dateTimeConsumption(consumptionConsumptionDetail(consumptionDetail));
-quantityConsumptionDetail 'Количество расхода' (consumptionDetail) = quantityByStudyInputDetail(studyInputDetailConsumptionDetail(consumptionDetail));
-isPostedConsumptionDetail(consumptionDetail)  = isPostedConsumption(consumptionConsumptionDetail(consumptionDetail));
-itemConsumptionDetail(consumptionDetail) = itemStudyInputDetail(studyInputDetailConsumptionDetail(consumptionDetail));
-departmentStoreConsumptionDetail(consumptionDetail) = departmentStoreConsumption(consumptionConsumptionDetail(consumptionDetail));
 
 //---------------------------- Проведение инвентаризации ----------------------------------------//
 
@@ -6232,8 +6224,8 @@ dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateT
                                                                   dateTimeWastageDetail(ledger),
                                                                   dateTimeInventoryLedger(ledger),
                                                                   dateTimeBillDetail(ledger),
-                                                                  dateTimeParishDetail(ledger),
-                                                                  dateTimeConsumptionDetail(ledger) PERSISTENT INDEXED;
+                                                                  dateTimeStudyInputDetail(ledger),
+                                                                  dateTimeStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
 isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                               isPostedReturnSupplierDetail(ledger),
@@ -6244,8 +6236,8 @@ isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShip
                                                               isPostedWastageDetail(ledger),
                                                               isPostedInventoryLedger(ledger),
                                                               isPostedBillDetail(ledger),
-                                                              isPostedParishDetail(ledger),
-                                                              isPostedConsumptionDetail(ledger) PERSISTENT;
+                                                              isPostedStudyInputDetail(ledger),
+                                                              isPostedStudyOutputDetail(ledger) PERSISTENT;
 
 itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                  itemReturnSupplierDetail(ledger),
@@ -6256,8 +6248,8 @@ itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                  itemWastageDetail(ledger),
                                                  itemInventoryLedger(ledger),
                                                  itemBillDetail(ledger),
-                                                 itemParishDetail(ledger),
-                                                 itemConsumptionDetail(ledger) PERSISTENT;
+                                                 itemStudyInputDetail(ledger),
+                                                 itemStudyOutputDetail(ledger) PERSISTENT;
 
 departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                             departmentStoreReturnSupplierDetail(ledger),
@@ -6268,33 +6260,33 @@ departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipm
                                                             departmentStoreWastageDetail(ledger),
                                                             departmentStoreInventoryLedger(ledger),
                                                             departmentStoreBillDetail(ledger),
-                                                            departmentStoreParishDetail(ledger),
-                                                            departmentStoreConsumptionDetail(ledger) PERSISTENT;
+                                                            departmentStoreStudyInputDetail(ledger),
+                                                            departmentStoreStudyOutputDetail(ledger) PERSISTENT;
 
 quantityBalanceItemLedger 'Количество' (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
-                                                    -quantityReturnSupplierDetail(ledger),
                                                      quantityInnerArrivalDetail(ledger),
                                                     -quantityWriteOffDetail(ledger),
-                                                    -quantityStatementDetail(ledger),
-                                                    -quantityInnerFlowDetail(ledger),
-                                                    -quantityWastageDetail(ledger),
+//                                                    -quantityStatementDetail(ledger),
+//                                                    -quantityInnerFlowDetail(ledger),
+//                                                    -quantityWastageDetail(ledger),
+//                                                    -quantityReturnSupplierDetail(ledger),
                                                     -quantityInventoryLedger(ledger),
                                                     -quantityBillDetail(ledger),
-                                                     quantityParishDetail(ledger),
-                                                    -quantityConsumptionDetail(ledger) PERSISTENT;
+                                                     overQuantityByStudyOutputDetail(ledger),
+                                                    -quantityByStudyInputDetail(ledger) PERSISTENT;
 
 descriptionLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
-                                                            descriptionReturnSupplierDetail(ledger),
                                                             descriptionInnerArrivalDetail(ledger),
                                                             descriptionWriteOffDetail(ledger),
-                                                            descriptionStatementDetail(ledger),
-                                                            descriptionInnerFlowDetail(ledger),
-                                                            descriptionWastageDetail(ledger),
-                                                            descriptionInventoryLedger(ledger) PERSISTENT;
-//                                                            descriptionUserPriceChangeUserPriceChangeDetail(ledger),
-//                                                            descriptionBillDetail(ledger),
-//                                                            descriptionParishDetail(ledger),
-//                                                            descriptionConsumptionDetail(ledger) PERSISTENT;
+//                                                            descriptionStatementDetail(ledger),
+//                                                            descriptionInnerFlowDetail(ledger),
+//                                                            descriptionWastageDetail(ledger),
+//                                                            descriptionReturnSupplierDetail(ledger),
+                                                            descriptionInventoryLedger(ledger),
+                                                            descriptionUserPriceChangeUserPriceChangeDetail(ledger),
+                                                            descriptionBillDetail(ledger),
+                                                            descriptionStudyOutputDetail(ledger),
+                                                            descriptionStudyInputDetail(ledger) PERSISTENT;
 
 
 currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
@@ -6344,23 +6336,28 @@ END
 // Цена изготовителя / импортера
 dateTimeImporterPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
                                                                     dateTimeInnerArrivalDetail(ledger),
-                                                                    dateTimeUserPriceChangeDetail(ledger) PERSISTENT INDEXED;
+                                                                    dateTimeUserPriceChangeDetail(ledger),
+                                                                    dateTimeStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
 isPostedImporterPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                                 isPostedInnerArrivalDetail(ledger),
-                                                                isPostedUserPriceChangeDetail(ledger) PERSISTENT;
+                                                                isPostedUserPriceChangeDetail(ledger),
+                                                                isPostedStudyOutputDetail(ledger) PERSISTENT;
 
 itemImporterPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                    itemInnerArrivalDetail(ledger),
-                                                   itemUserPriceChangeDetail(ledger) PERSISTENT;
+                                                   itemUserPriceChangeDetail(ledger),
+                                                   itemStudyOutputDetail(ledger) PERSISTENT;
 
 departmentStoreImporterPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                               departmentStoreInnerArrivalDetail(ledger),
-                                                              departmentStoreUserPriceChangeDetail(ledger) PERSISTENT;
+                                                              departmentStoreUserPriceChangeDetail(ledger),
+                                                              departmentStoreStudyOutputDetail(ledger) PERSISTENT;
 
 priceImporterLedger 'Цена' (ledger) = UNION EXCLUSIVE importerPriceShipmentDetail(ledger),
                                                       importerPriceInnerArrivalDetail(ledger),
-                                                      importerPriceUserPriceChangeDetail(ledger) PERSISTENT;
+                                                      importerPriceUserPriceChangeDetail(ledger),
+                                                      oldImporterPriceStudyOutputDetail(ledger) PERSISTENT;
 @metaCodeItemDepartmentStoreLedger(importerPrice);
 
 priceImporterBLedgerDateTime (item, departmentStore, dateTime) = priceImporterLedger(ledgerBImporterPriceDateTime(item, departmentStore, dateTime));
@@ -6399,23 +6396,28 @@ wareBLedgerDateTime (item, departmentStore, dateTime) = wareWarePriceLedger(ledg
 // Розничный НДС
 dateTimeRetailVATLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
                                                                 dateTimeInnerArrivalDetail(ledger),
-                                                                dateTimeUserPriceChangeDetail(ledger) PERSISTENT INDEXED;
+                                                                dateTimeUserPriceChangeDetail(ledger),
+                                                                dateTimeStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
 isPostedRetailVATLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                             isPostedInnerArrivalDetail(ledger),
-                                                            isPostedUserPriceChangeDetail(ledger) PERSISTENT;
+                                                            isPostedUserPriceChangeDetail(ledger),
+                                                            isPostedStudyOutputDetail(ledger) PERSISTENT;
 
 itemRetailVATLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                itemInnerArrivalDetail(ledger),
-                                               itemUserPriceChangeDetail(ledger) PERSISTENT;
+                                               itemUserPriceChangeDetail(ledger),
+                                               itemStudyOutputDetail(ledger) PERSISTENT;
 
 departmentStoreRetailVATLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                           departmentStoreInnerArrivalDetail(ledger),
-                                                          departmentStoreUserPriceChangeDetail(ledger) PERSISTENT;
+                                                          departmentStoreUserPriceChangeDetail(ledger),
+                                                          departmentStoreStudyOutputDetail(ledger) PERSISTENT;
 
 rangeRetailLedger (ledger) = UNION EXCLUSIVE retailRangeShipmentDetail(ledger),
                                              retailRangeInnerArrivalDetail(ledger),
-                                             retailRangeUserPriceChangeDetail(ledger) PERSISTENT;
+                                             retailRangeUserPriceChangeDetail(ledger),
+                                             retailRangeStudyOutputDetail(ledger) PERSISTENT;
 
 dataRetailLedger 'НДС, %' (ledger) = dataActingRateRangeDate(rangeRetailLedger(ledger), dateInTime(dateTimeRetailVATLedger(ledger))) PERSISTENT;
 
@@ -6428,23 +6430,30 @@ dataRetailBLedgerDateTime 'НДС, %' (item, departmentStore, dateTime) =
 // Цена учетная
 dateTimeAccountPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
                                                                    dateTimeInnerArrivalDetail(ledger),
-                                                                   dateTimeUserPriceChangeDetail(ledger) PERSISTENT INDEXED;
+                                                                   dateTimeUserPriceChangeDetail(ledger),
+                                                                   dateTimeStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
 isPostedAccountPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                                isPostedInnerArrivalDetail(ledger),
-                                                               isPostedUserPriceChangeDetail(ledger) PERSISTENT;
+                                                               isPostedUserPriceChangeDetail(ledger),
+                                                               isPostedStudyOutputDetail(ledger) PERSISTENT;
 
 itemAccountPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                   itemInnerArrivalDetail(ledger),
-                                                  itemUserPriceChangeDetail(ledger) PERSISTENT;
+                                                  itemUserPriceChangeDetail(ledger),
+                                                  itemStudyOutputDetail(ledger) PERSISTENT;
+
 
 departmentStoreAccountPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                              departmentStoreInnerArrivalDetail(ledger),
-                                                             departmentStoreUserPriceChangeDetail(ledger) PERSISTENT;
+                                                             departmentStoreUserPriceChangeDetail(ledger),
+                                                             departmentStoreStudyOutputDetail(ledger) PERSISTENT;
+
 
 priceAccountLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger),
                                                      priceInnerArrivalDetail(ledger),
-                                                     retailPriceUserPriceChangeDetail(ledger) PERSISTENT;
+                                                     retailPriceUserPriceChangeDetail(ledger),
+                                                     retailPriceStudyOutputDetail(ledger) PERSISTENT;
 
 @metaCodeItemDepartmentStoreLedger(accountPrice);
 
@@ -6454,23 +6463,28 @@ priceAccountALedgerDateTime 'Учетная цена (после)' (item, depart
 // Цена розничная
 dateTimeRetailPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
                                                                   dateTimeInnerArrivalDetail(ledger),
-                                                                  dateTimeUserPriceChangeDetail(ledger) PERSISTENT INDEXED;
+                                                                  dateTimeUserPriceChangeDetail(ledger),
+                                                                  dateTimeStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
 isPostedRetailPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                               isPostedInnerArrivalDetail(ledger),
-                                                              isPostedUserPriceChangeDetail(ledger) PERSISTENT;
+                                                              isPostedUserPriceChangeDetail(ledger),
+                                                              isPostedStudyOutputDetail(ledger) PERSISTENT;
 
 itemRetailPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                  itemInnerArrivalDetail(ledger),
-                                                 itemUserPriceChangeDetail(ledger) PERSISTENT;
+                                                 itemUserPriceChangeDetail(ledger),
+                                                 itemStudyOutputDetail(ledger) PERSISTENT;
 
 departmentStoreRetailPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                             departmentStoreInnerArrivalDetail(ledger),
-                                                            departmentStoreUserPriceChangeDetail(ledger) PERSISTENT;
+                                                            departmentStoreUserPriceChangeDetail(ledger),
+                                                            departmentStoreStudyOutputDetail(ledger) PERSISTENT;
 
 priceRetailLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger),
                                                     priceInnerArrivalDetail(ledger),
-                                                    retailPriceUserPriceChangeDetail(ledger) PERSISTENT;
+                                                    retailPriceUserPriceChangeDetail(ledger),
+                                                    retailPriceStudyOutputDetail(ledger) PERSISTENT;
 
 @metaCodeItemDepartmentStoreLedger(retailPrice);
 
@@ -6815,29 +6829,30 @@ retailPriceDetailSpec (detailSpec) <- priceRetailBLedgerDateTime(
                 itemDetailSpec(detailSpec), departmentStoreDetailSpec(detailSpec), dateTimeDetailSpec(detailSpec))
                 ON CHANGE itemDetailSpec(detailSpec);
 
-retailPriceStudyInputDetail (studyInputDetail) <- priceRetailBLedgerDateTime(
-                itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                ON CHANGE itemStudyInputDetail(studyInputDetail);
+//retailPriceStudyInputDetail (studyInputDetail) <- priceRetailBLedgerDateTime(
+//                itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
+//                ON CHANGE itemStudyInputDetail(studyInputDetail);   // валется
 
 oldImporterPriceStudyInputDetail (studyInputDetail) <- priceImporterBLedgerDateTime (
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                ON CHANGE itemStudyInputDetail(studyInputDetail);
+                ON CHANGE itemStudyInputDetail(studyInputDetail);     // норма
 
-oldRetailRangeStudyInputDetail (studyInputDetail) <- rangeRetailBLedgerDateTime(
-                itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                ON CHANGE itemStudyInputDetail(studyInputDetail);
+//oldRetailRangeStudyInputDetail (studyInputDetail) <- rangeRetailBLedgerDateTime(
+//                itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
+//                ON CHANGE itemStudyInputDetail(studyInputDetail);   // валется
+
 
 oldRetailPriceStudyOutputDetail (studyOutputDetail) <- priceRetailBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-                ON CHANGE itemStudyOutputDetail(studyOutputDetail);
+                ON CHANGE itemStudyOutputDetail(studyOutputDetail); // норма
 
-oldImporterPriceStudyOutputDetail (studyOutputDetail) <- priceImporterBLedgerDateTime(
-                itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-                ON CHANGE itemStudyOutputDetail(studyOutputDetail);
+//oldImporterPriceStudyOutputDetail (studyOutputDetail) <- priceImporterBLedgerDateTime(
+//                itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
+//                ON CHANGE itemStudyOutputDetail(studyOutputDetail); // валется
 
 oldRetailRangeStudyOutputDetail (studyOutputDetail) <- rangeRetailBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-                ON CHANGE itemStudyOutputDetail(studyOutputDetail);
+                ON CHANGE itemStudyOutputDetail(studyOutputDetail);  // норма
 
 
 oldImporterPriceStatementDetail (statementDetail) <- priceImporterBLedgerDateTime (
