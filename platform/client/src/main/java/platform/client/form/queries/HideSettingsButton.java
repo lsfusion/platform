@@ -88,7 +88,8 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
             });
 
             for (int i = 0; i < initialTable.getPropertyCount(); i++) {
-                final JCheckBox checkBox = new JCheckBox(initialTable.getPropertyName(i).trim());
+                String caption = initialTable.getPropertyName(i);
+                final JCheckBox checkBox = caption==null ? new JCheckBox(initialTable.getProperty(i).toString()) : new JCheckBox(caption.trim());
                 ClientPropertyDraw property = initialTable.getProperty(i);
                 Boolean needToHide = property.hideUser == null ? property.hide : property.hideUser;
                 if (!needToHide) {
