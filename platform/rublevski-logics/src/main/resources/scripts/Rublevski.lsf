@@ -6355,7 +6355,7 @@ departmentStoreImporterPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShi
 priceImporterLedger 'Цена' (ledger) = UNION EXCLUSIVE importerPriceShipmentDetail(ledger),
                                                       importerPriceInnerArrivalDetail(ledger),
                                                       importerPriceUserPriceChangeDetail(ledger),
-                                                      curImporterPriceStudyOutputDetail(ledger) PERSISTENT;
+                                                      importerPriceStudyOutputDetail(ledger) PERSISTENT;
 @metaCodeItemDepartmentStoreLedger(importerPrice);
 
 priceImporterBLedgerDateTime (item, departmentStore, dateTime) = priceImporterLedger(ledgerBImporterPriceDateTime(item, departmentStore, dateTime));
@@ -6900,18 +6900,15 @@ retailRangeStudyInputDetail (studyInputDetail) <- rangeRetailBLedgerDateTime(
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
                 ON CHANGE itemStudyInputDetail(studyInputDetail);
 
-
-curRetailPriceStudyOutputDetail (studyOutputDetail) <- priceRetailBLedgerDateTime(
+curImporterPriceStudyOutputDetail (studyOutputDetail) <- priceImporterBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
                 ON CHANGE itemStudyOutputDetail(studyOutputDetail);
 
-// todo : сделать правильно цену изготовителя
-
-//curImporterPriceStudyOutputDetail (studyOutputDetail) <- priceImporterBLedgerDateTime(
-//                itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-//                ON CHANGE itemStudyOutputDetail(studyOutputDetail);
-
 curRetailRangeStudyOutputDetail (studyOutputDetail) <- rangeRetailBLedgerDateTime(
+                itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
+                ON CHANGE itemStudyOutputDetail(studyOutputDetail);
+
+curRetailPriceStudyOutputDetail (studyOutputDetail) <- priceRetailBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
                 ON CHANGE itemStudyOutputDetail(studyOutputDetail);
 
