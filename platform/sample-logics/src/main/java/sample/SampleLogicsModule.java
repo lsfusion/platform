@@ -14,7 +14,6 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.Cycle;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
@@ -232,18 +231,18 @@ public class SampleLogicsModule extends LogicsModule {
             addObjectActions(this, objArtGroup2);
 
             addPropertyDraw(inGroup, objArtGroup1, objArtGroup2);
-            addPropertyDraw(inRecGroup, objArtGroup1, objArtGroup2);
-            addPropertyDraw(inRecGroup, objArtGroup2, objArtGroup1);
+//            addPropertyDraw(inRecGroup, objArtGroup1, objArtGroup2);
+//            addPropertyDraw(inRecGroup, objArtGroup2, objArtGroup1);
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotNullFilterEntity(getPropertyObject(inGroup)),
                     "В группе",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
-            filterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new NotNullFilterEntity(getPropertyObject(inRecGroup)),
-                    "В рек. группе",
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F9, InputEvent.SHIFT_DOWN_MASK)));
+//            filterGroup.addFilter(new RegularFilterEntity(genID(),
+//                    new NotNullFilterEntity(getPropertyObject(inRecGroup)),
+//                    "В рек. группе",
+//                    KeyStroke.getKeyStroke(KeyEvent.VK_F9, InputEvent.SHIFT_DOWN_MASK)));
             addRegularFilterGroup(filterGroup);
 
 //            addHintsNoUpdate(inRecGroup);
