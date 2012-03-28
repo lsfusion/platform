@@ -75,7 +75,6 @@ includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importe
 
 @metaCodeDoubleAggregation(importer, freight, formedInvoice, includeImporterFreight);
 
-//freightFormedInvoice 'Фрахт инвойса (ИД)' = DATA freight(formedInvoice) IN idGroup;
 freightInnerInvoice 'Фрахт инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE freightFormedInvoice(innerInvoice),
                                                                           freightDirectInvoice(innerInvoice) IN idGroup;
 dateFreightInnerInvoice 'Фрахт инвойса' (innerInvoice) = dateArrivalFreight(freightInnerInvoice(innerInvoice)) IN baseGroup;
@@ -85,7 +84,6 @@ freightArrivedInnerInvoice 'Прибыл фрахт инвойса' (innerInvoic
 customStoreInnerInvoice 'СВХ (ИД)' (innerInvoice) = customStoreFreight(freightInnerInvoice(innerInvoice)) IN idGroup;
 nameCustomStoreInnerInvoice 'СВХ' (innerInvoice) = name(customStoreInnerInvoice(innerInvoice)) IN baseGroup;
 
-//importerFormedInvoice 'Импортер инвойса (ИД)' = DATA importer(formedInvoice) IN idGroup;
 importerInnerInvoice 'Импортер инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE importerFormedInvoice(innerInvoice),
                                                                               importerDirectInvoice(innerInvoice) IN idGroup;
 nameImporterInnerInvoice 'Импортер инвойса' (innerInvoice) = name(importerInnerInvoice(innerInvoice)) IN baseGroup;
@@ -95,12 +93,11 @@ sidFormedInvoice 'Номер инвойса' (formedInvoice) = sidImporterFreigh
 
 sidInnerInvoice 'Номер инвойса' (innerInvoice) = UNION EXCLUSIVE sidFormedInvoice(innerInvoice), sidDocument(innerInvoice) IN baseGroup;
 
-//uniqueFormedInvoiceImporterFreight (importer, freight) = GROUP UNIQUE formedInvoice
-//                                                                   BY importerFormedInvoice(formedInvoice),
-//                                                                      freightFormedInvoice(formedInvoice)
-//                                                                WHERE formedInvoice IS formedInvoice;
+contractFormedInvoice 'Договор инвойса (ИД)' (formedInvoice) = contractImporterFreight(importerFormedInvoice(formedInvoice),
+                                                                                  freightFormedInvoice(formedInvoice)) IN idGroup;
 
-//includeImporterFreight(importer, freight) => uniqueFormedInvoiceImporterFreight(importer, freight) RESOLVE TRUE;
+//sidContractFormedInvoice 'Договор инвойса' (formedInvoice) = sidContractFormedInvoice(contractFormedInvoice(formedInvoice)) IN
+
 
 quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityProxyImporterFreightSku(importerFormedInvoice(formedInvoice),
                                                                                                    freightFormedInvoice(formedInvoice),
@@ -155,23 +152,14 @@ innerInvoiceDeclarationSku 'Инвойс для декларации' (declarati
 quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)
                                                                          BY declarationInnerInvoice(innerInvoice), sku IN baseGroup PERSISTENT;
 
-//uniqueDeclarationDetailDeclarationSku (declaration, sku) = GROUP UNIQUE declarationDetail
-//                                                                     BY declarationDeclarationDetail(declarationDetail),
-//                                                                        skuDeclarationDetail(declarationDetail)
-//                                                                  WHERE declarationDetail IS declarationDetail;
-
-//quantityDeclarationSku(declaration, sku) => uniqueDeclarationDetailDeclarationSku(declaration, sku) RESOLVE TRUE;
-
 @metaCodeDoubleAggregation(declaration, sku, declarationDetail, quantityDeclarationSku);
 
-//declarationDeclarationDetail 'Декларация позиции' = DATA declaration(declarationDetail) IN idGroup;
 dateDeclarationDetail 'Дата декларации' (declarationDetail) = date(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
 
 numberDeclarationDetail 'Номер строки' (declarationDetail) =
         PARTITION SUM 1 IF declarationDetail IS declarationDetail BY declarationDeclarationDetail(declarationDetail)
         ORDER declarationDetail;
 
-//skuDeclarationDetail 'Товар позиции (ИД)' = DATA sku(declarationDetail) IN idGroup;
 barcodeSkuDeclarationDetail 'Штрих-код' = barcode(skuDeclarationDetail(declarationDetail)) IN baseGroup;
 
 inDeclarationDeclarationDetail (declaration, declarationDetail) = declarationDeclarationDetail(declarationDetail)==declaration;
@@ -440,6 +428,8 @@ quantityDeclarationGroup(declaration, article, customCategory10, STRING, country
 // свойства от артикула
 nameBrandGroupDeclaration 'Бренд' (groupDeclaration) = nameBrandSupplierArticle(articleGroupDeclaration(groupDeclaration));
 nameCategoryGroupDeclaration 'Ном. группа' (groupDeclaration) = nameCategoryArticle(articleGroupDeclaration(groupDeclaration));
+sidGenderGroupDeclaration 'Пол' (groupDeclaration) = sidGenderArticle(articleGroupDeclaration(groupDeclaration));
+nameTypeFabricGroupDeclaration 'Тип одежды' (groupDeclaration) = nameTypeFabricArticle(articleGroupDeclaration(groupDeclaration));
 
 unitOfMeasureGroupDeclaration 'Ед. изм.(ИД)' (groupDeclaration) = unitOfMeasureArticle(articleGroupDeclaration(groupDeclaration));
 sidUnitOfMeasureGroupDeclaration 'Ед. изм.(код)' (groupDeclaration) = sidUnitOfMeasure(unitOfMeasureGroupDeclaration(groupDeclaration));
@@ -508,6 +498,7 @@ FORM declaration 'Декларация'
 
     OBJECTS gd=groupDeclaration
     PROPERTIES (gd) numberGroupDeclaration, nameBrandGroupDeclaration, nameCategoryGroupDeclaration, sidArticleGroupDeclaration,
+                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration,
                     sidCustomCategory10GroupDeclaration, mainCompositionGroupDeclaration, nameCountryGroupDeclaration,
                     quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
                     sumGroupDeclaration, netWeightGroupDeclaration, grossWeightGroupDeclaration
@@ -557,7 +548,7 @@ FORM declarations 'Декларации'
 
     OBJECTS dd=declarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeSkuDeclarationDetail, nameBrandArticleDeclarationDetail,
-                            sidArticleDeclarationDetail, nameCategoryArticleDeclarationDetail, mainCompositionDeclarationDetail,
+                            sidArticleDeclarationDetail, nameCategoryArticleDeclarationDetail, sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
                             nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
                             netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                             quantityDeclarationDetail, priceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
@@ -597,13 +588,12 @@ NAVIGATOR {
     customs {
         ADD customStores;
         ADD certificates;
-        ADD declaration;
         ADD declarations;
         ADD innerInvoices;
-
      }
 
     adminElement {
         ADD certificate;
+        ADD declaration;
     }
 }

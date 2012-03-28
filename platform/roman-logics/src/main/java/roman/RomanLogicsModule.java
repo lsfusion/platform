@@ -4841,23 +4841,33 @@ public class RomanLogicsModule extends LogicsModule {
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
                         new NotNullFilterEntity(addPropertyObject(invoicedShipmentSku, objShipment, objSku)),
                         "Ожидается в поставке"));
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
+                        new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(invoicedShipmentSku, objShipment, objSku)),
+                                           new NotNullFilterEntity(addPropertyObject(quantityShipmentSku, objShipment, objSku))),
+                        "Ожидается или оприходовано в поставке"));
+
+
             } else {
                 FilterEntity inInvoice = new NotNullFilterEntity(addPropertyObject(invoicedShipmentSku, objShipment, objSku));
+                FilterEntity inSimpleShipment = new NotNullFilterEntity(addPropertyObject(quantityShipmentSku, objShipment, objSku));
                 FilterEntity inInvoiceShipmentStock = new NotNullFilterEntity(addPropertyObject(quantitySimpleShipmentRouteSku, objShipment, objRoute, objSku));
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
                         new OrFilterEntity(inInvoice, inInvoiceShipmentStock),
-                        "В инвойсах или оприходовано",
+                        "В инвойсах или оприходовано в короб",
                         KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
-                filterGroup.addFilter(new RegularFilterEntity(genID(),
-                        inInvoice,
-                        "В инвойсах"));
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
                         inInvoiceShipmentStock,
                         "Оприходовано в тек. короб",
                         KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
-                        new NotNullFilterEntity(addPropertyObject(invoicedShipmentSku, objShipment, objSku)),
-                        "Ожидается в поставке"));
+                        inInvoice,
+                        "Ожидается или оприходовано в поставке"));
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
+                        new OrFilterEntity(inInvoice, inSimpleShipment),
+                        "Ожидается или оприходовано в поставке"));
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
+                        inSimpleShipment,
+                        "Оприходовано в поставке"));
             }
             filterGroup.defaultFilter = 0;
             addRegularFilterGroup(filterGroup);
@@ -7924,7 +7934,7 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightTypeInvoice, objImporter, objFreight, objTypeInvoice)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSku, objImporter, objFreight, objSku)));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(typeInvoiceFreightSku, objFreight, objSku), Compare.EQUALS, objTypeInvoice));
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(typeInvoiceFreightSku, objFreight, objSku), Compare.EQUALS, objTypeInvoice));
 
         }
 
