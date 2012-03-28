@@ -113,6 +113,14 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         table = null;
     }
 
+    public OrderedMap<Map<K, Object>, Map<V, Object>> read(DataSession session) throws SQLException {
+        return read(session, new OrderedMap<V, Boolean>());
+    }
+
+    public OrderedMap<Map<K, Object>, Map<V, Object>> read(DataSession session, OrderedMap<V, Boolean> orders) throws SQLException {
+        return read(session.sql, session.env, orders);
+    }
+    
     public OrderedMap<Map<K, Object>, Map<V, Object>> read(SQLSession session, QueryEnvironment env, OrderedMap<V, Boolean> orders) throws SQLException {
         Query<K, V> query = new Query<K,V>(mapKeys.values());
         Join<V> tableJoin = join(query.mapKeys);

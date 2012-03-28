@@ -1,14 +1,19 @@
 package platform.server.logics.table;
 
 import platform.base.BaseUtils;
+import platform.server.caches.IdentityLazy;
+import platform.server.classes.CustomClass;
 import platform.server.classes.SystemClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.BaseClass;
+import platform.server.data.KeyField;
 import platform.server.data.StructTable;
 import platform.server.data.PropertyField;
 import platform.server.data.SQLSession;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.session.DataSession;
+import platform.server.session.SingleKeyNoPropertyUsage;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -78,5 +83,27 @@ public class TableFactory {
         sql.ensureTable(EmptyTable.instance);
 
         sql.commitTransaction();
+    }
+    
+    @IdentityLazy
+    public List<ImplementTable> getImplementTables(CustomClass cls) {
+        List<ImplementTable> result = new ArrayList<ImplementTable>();
+        for (ImplementTable table : getImplementTables()) {
+            if (table.mapFields.containsValue(cls)) {
+                result.add(table);
+            }
+        }
+        return result;
+    }
+
+    public void removeKeys(DataSession session, CustomClass cls, SingleKeyNoPropertyUsage keyTable) throws SQLException {
+        for (ImplementTable table : getImplementTables(cls))
+            for (Map.Entry<KeyField, ValueClass> field : table.mapFields.entrySet())
+                if (field.getValue().equals(cls)) {
+                    // todo : переделать на запрос, а не простое итерирование по таблице
+                    for (Map<String, Object> record : keyTable.read(session).keySet()) {
+                        session.sql.deleteKeyRecords(table, Collections.singletonMap(field.getKey(), BaseUtils.singleValue(record)));
+                    }
+                }
     }
 }

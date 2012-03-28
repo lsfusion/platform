@@ -480,6 +480,11 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
 
         for (Map.Entry<DataObject, ConcreteObjectClass> newClass : newClasses.entrySet())
             newClass.getValue().saveClassChanges(sql, newClass.getKey());
+        
+        // проводим "мини-паковку", то есть удаляем все записи, у которых ключем является удаляем объект
+        for (Map.Entry<CustomClass, SingleKeyNoPropertyUsage> remClass : remove.entrySet()) {
+            BL.LM.tableFactory.removeKeys(this, remClass.getKey(), remClass.getValue());
+        }
 
         incrementApply.cleanIncrementTables();
         sql.commitTransaction();
