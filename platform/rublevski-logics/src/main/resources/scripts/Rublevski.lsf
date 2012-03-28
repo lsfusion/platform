@@ -5432,75 +5432,6 @@ nameWareInnerFlowDetail 'Посуда' (innerFlowDetail) = name(wareInnerFlowDet
 //wareInnerFlowDetail(innerFlowDetail) <- wareItem(itemInnerFlowDetail(innerFlowDetail)) ON CHANGE itemInnerFlowDetail(innerFlowDetail);
 priceWareInnerFlowDetail 'Текущая цена посуды' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
 
-FORM innerFlow 'Расход в другой отдел'
-    OBJECTS f=innerFlow FIXED PANEL
-    PROPERTIES (f) numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
-                   nameRecipientDepartmentInnerFlow, noteInnerFlow, totalQuantityInnerFlow, accountSumInnerFlow
-
-    OBJECTS d=innerFlowDetail
-    PROPERTIES (d) numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
-                   quantityInnerFlowDetail, retailPriceInnerFlowDetail, importerPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
-                   dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, priceWareInnerFlowDetail,
-                   accountSumInnerFlowDetail, ADDOBJ, delete
-
-    PROPERTIES addInnerFlowDetailBarcode(f) TODRAW d
-    FILTERS inInnerFlowInnerFlowDetail(f, d)
-
-    EDIT innerFlow OBJECT f
-;
-
-DESIGN innerFlow FROM DEFAULT{
-    main{
-        preferredSize = (1024, 768);
-        NEW specification.box BEFORE functions.box{
-            tabbedPane = TRUE;
-            ADD d.box {
-                childConstraints = TO THE BOTTOM;
-                title = 'Спецификация';
-            };
-        };
-        NEW header.box BEFORE specification.box {
-            childConstraints = TO THE BOTTOM;
-
-            NEW headerRow1 {
-                childConstraints = TO THE RIGHT;
-                ADD f.documentHeaderGroup;
-            };
-            NEW headerRow2 {
-                childConstraints = TO THE RIGHT;
-                ADD f.waybillSum {
-                    childConstraints = TO THE RIGHT;
-                };
-                ADD f.additionalInfo;
-             };
-        };
-    };
-};
-
-FORM innerFlows 'Расходы в другие отделы'
-    OBJECTS f=innerFlow
-    PROPERTIES (f) READONLY objectClassName, numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
-                            nameRecipientDepartmentInnerFlow, quantityInnerFlowDetailsInnerFlow,
-                            totalQuantityInnerFlow, accountSumInnerFlow
-
-    PROPERTIES (f) ADDFORM, EDITFORM SHOWIF isDraftInnerFlow(f), delete FORCE PANEL SHOWIF isDraftInnerFlow(f),
-                   postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
-
-    OBJECTS d=innerFlowDetail
-    PROPERTIES (d) READONLY numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
-                    quantityInnerFlowDetail, retailPriceInnerFlowDetail, importerPriceInnerFlowDetail, dataRetailRangeInnerFlowDetail, accountSumInnerFlowDetail
-    FILTERS inInnerFlowInnerFlowDetail(f, d)
-;
-
-DESIGN innerFlows FROM DEFAULT {
-    PROPERTY(objectClassName) {
-        preferredCharWidth = 15;
-    }
-    PROPERTY (delete(f)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-}
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 GROUP pricingInnerArrivalDetailInfo 'Дополнительные ценовый параметры' : publicGroup;
@@ -5536,7 +5467,7 @@ senderDepartmentInnerArrival (innerArrival) <- departmentStoreInnerFlow(innerFlo
     ON CHANGE innerFlowInnerArrival(innerArrival);
 
 quantityInnerArrivalDetail 'Количество' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN baseGroup;
-retailPriceInnerArrivalDetail 'Цена' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN baseGroup;
+retailPriceInnerArrivalDetail 'Цена розничная' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN baseGroup;
 
 priceItemInnerArrival 'Цена (максим.)' (item, innerArrival) = priceItemInnerFlow (
     item, innerFlowInnerArrival(innerArrival));
@@ -5685,91 +5616,6 @@ priceWarePriceChangeInnerArrivalDetail 'Новая цена посуды' (price
 
 curWarePriceChangeInnerArrivalDetail 'Текущая посуда' (priceChangeInnerArrivalDetail) = curWareInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
 curPriceWarePriceChangeInnerArrivalDetail 'Текущая цена посуды' (priceChangeInnerArrivalDetail) = curPriceWareInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail)) IN baseGroup;
-
-
-FORM innerArrival 'Приход из другого отдела'
-    OBJECTS a=innerArrival FIXED PANEL
-    PROPERTIES (a) nameDepartmentStoreInnerArrival, numberArrival SHOWIF departmentStoreInnerArrival(a), seriesArrival SHOWIF departmentStoreInnerArrival(a),
-                   dateInnerArrival SHOWIF innerFlowInnerArrival(a), timeInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
-                   cleanAllInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a), toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a),
-                   noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), totalQuantityInnerArrival SHOWIF innerFlowInnerArrival(a),
-                   accountSumInnerArrival SHOWIF innerFlowInnerArrival(a)
-
-    OBJECTS d=innerArrivalDetail
-    PROPERTIES (d) SHOWIF innerFlowInnerArrival(a) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
-                   quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail, numberRetailRangeInnerArrivalDetail,
-                   dataRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail, priceWareInnerArrivalDetail, retailPriceInnerArrivalDetail,
-                   accountSumInnerArrivalDetail, ADDOBJ, delete
-    PROPERTIES (d) FORCE PANEL curImporterPriceInnerArrivalDetail, curNameWareInnerArrivalDetail, curPriceWareInnerArrivalDetail, curDataRetailRangeInnerArrivalDetail, curRetailPriceInnerArrivalDetail
-
-    PROPERTIES addInnerArrivalDetailBarcode(a) TODRAW d
-    FILTERS inInnerArrivalInnerArrivalDetail(a, d)
-
-    OBJECTS i=item
-    PROPERTIES (i) SHOWIF innerFlowInnerArrival(a) nameAttributeItem
-    PROPERTIES (i, a) SHOWIF innerFlowInnerArrival(a) quantityItemInnerFlowInnerArrival, quantityItemInnerArrival,
-                             diffQuantityItemInnerArrival, importerPriceItemInnerArrival, priceItemInnerArrival
-    FILTERS inInnerArrivalItem (i, a)
-
-    EDIT innerArrival OBJECT a
-;
-
-DESIGN innerArrival FROM DEFAULT{
-    main{
-        preferredSize = (1024, 768);
-        NEW specification.box BEFORE functions.box{
-            tabbedPane = TRUE;
-            ADD d.box {
-                childConstraints = TO THE BOTTOM;
-                title = 'Спецификация';
-                d.pricingInnerArrivalDetailInfo {
-                    childConstraints = TO THE RIGHTBOTTOM;
-                }
-            };
-            ADD i.box;
-        };
-        NEW header.box BEFORE specification.box {
-            childConstraints = TO THE BOTTOM;
-
-            NEW headerRow1 {
-                childConstraints = TO THE RIGHT;
-                ADD a.documentHeaderGroup;
-            };
-            NEW headerRow2 {
-                childConstraints = TO THE RIGHT;
-                ADD a.waybillSum {
-                    childConstraints = TO THE RIGHT;
-                };
-                ADD a.additionalInfo;
-             };
-        };
-    };
-};
-
-FORM innerArrivals 'Приходы из других отделов'
-    OBJECTS a=innerArrival
-    PROPERTIES (a) READONLY objectClassName, numberArrival, seriesArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
-                            nameSenderDepartmentInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival
-
-    PROPERTIES (a) ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
-                   postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
-
-    OBJECTS d=innerArrivalDetail
-    PROPERTIES (d) READONLY numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
-                   quantityInnerArrivalDetail, retailPriceInnerArrivalDetail, accountSumInnerArrivalDetail
-
-    FILTERS inInnerArrivalInnerArrivalDetail(a, d)
-;
-
-DESIGN innerArrivals FROM DEFAULT {
-    PROPERTY(objectClassName) {
-        preferredCharWidth = 15;
-    }
-    PROPERTY (delete(a)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-}
 
 //----------------------------------- Списание отходов по нормам -------------------------------------------------//
 needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDetail(shipmentDetail);
@@ -6191,58 +6037,6 @@ priceWareUserPriceChangeDetail 'Новая цена посуды' (userPriceChan
 curWareUserPriceChangeDetail 'Текущая посуда (ИД)' (userPriceChangeDetail) = DATA ware(userPriceChangeDetail) IN idGroup;
 
 curPriceWareUserPriceChangeDetail 'Текущая цена посуды' (userPriceChangeDetail) = DATA DOUBLE (userPriceChangeDetail) IN baseGroup;
-
-
-FORM userPriceChange 'Переоценка товаров'
-    OBJECTS u=userPriceChange FIXED PANEL
-    PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
-                   dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
-
-    OBJECTS d=userPriceChangeDetail
-    PROPERTIES (d) numberUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
-                   curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail, curDataRetailRangeUserPriceChangeDetail,
-                   numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
-                   curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, curPriceWareUserPriceChangeDetail, priceWareUserPriceChangeDetail,
-                   ADDOBJ, delete
-
-    PROPERTIES addUserPriceChangeDetailBarcode(u) TODRAW d
-    FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
-
-    EDIT userPriceChange OBJECT u
-;
-
-DESIGN userPriceChange FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-    }
-}
-
-FORM userPriceChanges 'Переоценки товаров'
-
-    OBJECTS u=userPriceChange
-    PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
-
-    PROPERTIES (u) ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
-                   postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
-
-    OBJECTS d=userPriceChangeDetail
-    PROPERTIES (d) numberUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
-                   importerPriceUserPriceChangeDetail, numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
-                   curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, curPriceWareUserPriceChangeDetail, priceWareUserPriceChangeDetail
-                 //  ADDOBJ, delete
-
-    FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
-;
-
-DESIGN userPriceChanges FROM DEFAULT {
-    PROPERTY(objectClassName) {
-        preferredCharWidth = 15;
-    }
-    PROPERTY (delete(u)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-}
 
 TABLE itemDepartmentStore (item, departmentStore);
 
@@ -7593,6 +7387,227 @@ DESIGN inventories FROM DEFAULT {
     ADD il.grid.box BEFORE in.historyGroup;
     il.grid.box {title = 'Товары с недостачей (излишком)';};
 }
+
+
+//---------------------------Акты переоценок-------------------------------------//
+
+@metaCodeInputMultipleItems (userPriceChange);
+
+FORM userPriceChange 'Переоценка товаров'
+    OBJECTS u=userPriceChange FIXED PANEL
+    PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
+                   dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
+
+    OBJECTS d=userPriceChangeDetail
+    PROPERTIES (d) numberUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
+                   curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail, curDataRetailRangeUserPriceChangeDetail,
+                   numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
+                   curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, curPriceWareUserPriceChangeDetail, priceWareUserPriceChangeDetail,
+                   ADDOBJ, delete
+
+    PROPERTIES inputMultipleItemsUserPriceChange(u) TODRAW d, addUserPriceChangeDetailBarcode(u) TODRAW d
+    FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
+
+    EDIT userPriceChange OBJECT u
+;
+
+DESIGN userPriceChange FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+    }
+}
+
+FORM userPriceChanges 'Переоценки товаров'
+
+    OBJECTS u=userPriceChange
+    PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
+
+    PROPERTIES (u) ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
+                   postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
+
+    OBJECTS d=userPriceChangeDetail
+    PROPERTIES (d) numberUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
+                   importerPriceUserPriceChangeDetail, numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
+                   curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, curPriceWareUserPriceChangeDetail, priceWareUserPriceChangeDetail
+                 //  ADDOBJ, delete
+
+    FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
+;
+
+DESIGN userPriceChanges FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+    PROPERTY (delete(u)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
+
+//---------------- Формы внутреннего перемещения (приход и расход)-------------------------------------//
+
+@metaCodeInputMultipleItems (innerFlow);
+@metaCodeInputMultipleItems (innerArrival);
+
+FORM innerFlow 'Расход в другой отдел'
+    OBJECTS f=innerFlow FIXED PANEL
+    PROPERTIES (f) numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
+                   nameRecipientDepartmentInnerFlow, noteInnerFlow, totalQuantityInnerFlow, accountSumInnerFlow
+
+    OBJECTS d=innerFlowDetail
+    PROPERTIES (d) numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
+                   quantityInnerFlowDetail, importerPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
+                   dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, priceWareInnerFlowDetail,
+                   retailPriceInnerFlowDetail, accountSumInnerFlowDetail, ADDOBJ, delete
+
+    PROPERTIES inputMultipleItemsInnerFlow(f) TODRAW d, addInnerFlowDetailBarcode(f) TODRAW d
+    FILTERS inInnerFlowInnerFlowDetail(f, d)
+
+    EDIT innerFlow OBJECT f
+;
+
+DESIGN innerFlow FROM DEFAULT{
+    main{
+        preferredSize = (1024, 768);
+        NEW specification.box BEFORE functions.box{
+            tabbedPane = TRUE;
+            ADD d.box {
+                childConstraints = TO THE BOTTOM;
+                title = 'Спецификация';
+            };
+        };
+        NEW header.box BEFORE specification.box {
+            childConstraints = TO THE BOTTOM;
+
+            NEW headerRow1 {
+                childConstraints = TO THE RIGHT;
+                ADD f.documentHeaderGroup;
+            };
+            NEW headerRow2 {
+                childConstraints = TO THE RIGHT;
+                ADD f.waybillSum {
+                    childConstraints = TO THE RIGHT;
+                };
+                ADD f.additionalInfo;
+             };
+        };
+    };
+};
+
+FORM innerFlows 'Расходы в другие отделы'
+    OBJECTS f=innerFlow
+    PROPERTIES (f) READONLY objectClassName, numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
+                            nameRecipientDepartmentInnerFlow, quantityInnerFlowDetailsInnerFlow,
+                            totalQuantityInnerFlow, accountSumInnerFlow
+
+    PROPERTIES (f) ADDFORM, EDITFORM SHOWIF isDraftInnerFlow(f), delete FORCE PANEL SHOWIF isDraftInnerFlow(f),
+                   postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
+
+    OBJECTS d=innerFlowDetail
+    PROPERTIES (d) READONLY numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
+                    quantityInnerFlowDetail, retailPriceInnerFlowDetail, importerPriceInnerFlowDetail, dataRetailRangeInnerFlowDetail, accountSumInnerFlowDetail
+    FILTERS inInnerFlowInnerFlowDetail(f, d)
+;
+
+DESIGN innerFlows FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+    PROPERTY (delete(f)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
+
+
+
+
+FORM innerArrival 'Приход из другого отдела'
+    OBJECTS a=innerArrival FIXED PANEL
+    PROPERTIES (a) nameDepartmentStoreInnerArrival, numberArrival SHOWIF departmentStoreInnerArrival(a), seriesArrival SHOWIF departmentStoreInnerArrival(a),
+                   dateInnerArrival SHOWIF innerFlowInnerArrival(a), timeInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
+                   cleanAllInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a), toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a),
+                   noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), totalQuantityInnerArrival SHOWIF innerFlowInnerArrival(a),
+                   accountSumInnerArrival SHOWIF innerFlowInnerArrival(a)
+
+    OBJECTS d=innerArrivalDetail
+    PROPERTIES (d) SHOWIF innerFlowInnerArrival(a) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
+                   quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail, numberRetailRangeInnerArrivalDetail,
+                   dataRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail, priceWareInnerArrivalDetail, retailPriceInnerArrivalDetail,
+                   accountSumInnerArrivalDetail, ADDOBJ, delete
+    PROPERTIES (d) FORCE PANEL curImporterPriceInnerArrivalDetail, curNameWareInnerArrivalDetail, curPriceWareInnerArrivalDetail, curDataRetailRangeInnerArrivalDetail, curRetailPriceInnerArrivalDetail
+
+    PROPERTIES inputMultipleItemsInnerArrival(a) TODRAW d, addInnerArrivalDetailBarcode(a) TODRAW d
+    FILTERS inInnerArrivalInnerArrivalDetail(a, d)
+
+    OBJECTS i=item
+    PROPERTIES (i) SHOWIF innerFlowInnerArrival(a) nameAttributeItem
+    PROPERTIES (i, a) SHOWIF innerFlowInnerArrival(a) quantityItemInnerFlowInnerArrival, quantityItemInnerArrival,
+                             diffQuantityItemInnerArrival, importerPriceItemInnerArrival, priceItemInnerArrival
+    FILTERS inInnerArrivalItem (i, a)
+
+    EDIT innerArrival OBJECT a
+;
+
+DESIGN innerArrival FROM DEFAULT{
+    main{
+        preferredSize = (1024, 768);
+        NEW specification.box BEFORE functions.box{
+            tabbedPane = TRUE;
+            ADD d.box {
+                childConstraints = TO THE BOTTOM;
+                title = 'Спецификация';
+                d.pricingInnerArrivalDetailInfo {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                }
+            };
+            ADD i.box;
+        };
+        NEW header.box BEFORE specification.box {
+            childConstraints = TO THE BOTTOM;
+
+            NEW headerRow1 {
+                childConstraints = TO THE RIGHT;
+                ADD a.documentHeaderGroup;
+            };
+            NEW headerRow2 {
+                childConstraints = TO THE RIGHT;
+                ADD a.waybillSum {
+                    childConstraints = TO THE RIGHT;
+                };
+                ADD a.additionalInfo;
+             };
+        };
+    };
+};
+
+FORM innerArrivals 'Приходы из других отделов'
+    OBJECTS a=innerArrival
+    PROPERTIES (a) READONLY objectClassName, numberArrival, seriesArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
+                            nameSenderDepartmentInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival
+
+    PROPERTIES (a) ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
+                   postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
+
+    OBJECTS d=innerArrivalDetail
+    PROPERTIES (d) READONLY numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
+                   quantityInnerArrivalDetail, retailPriceInnerArrivalDetail, accountSumInnerArrivalDetail
+
+    FILTERS inInnerArrivalInnerArrivalDetail(a, d)
+;
+
+DESIGN innerArrivals FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+    PROPERTY (delete(a)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
 
 //------------------------------------формы: Отпуск из розницы-------------------------//
 
