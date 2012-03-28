@@ -11,6 +11,8 @@ import static platform.base.BaseUtils.nvl;
 public class FormPropertyOptions {
     private Boolean readOnly;
     private Boolean selector;
+    private Boolean hintNoUpdate;
+    private Boolean hintTable;
     private List<GroupObjectEntity> columns;
     private MappedProperty showIf;
     private PropertyObjectEntity readOnlyIf;
@@ -100,11 +102,29 @@ public class FormPropertyOptions {
         return toDraw;
     }
 
+    public Boolean getHintNoUpdate() {
+        return hintNoUpdate;
+    }
+
+    public void setHintNoUpdate(Boolean hintNoUpdate) {
+        this.hintNoUpdate = hintNoUpdate;
+    }
+
+    public Boolean getHintTable() {
+        return hintTable;
+    }
+
+    public void setHintTable(Boolean hintTable) {
+        this.hintTable = hintTable;
+    }
+    
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
         merged.setReadOnly(nvl(overrides.getReadOnly(), readOnly));
         merged.setSelector(nvl(overrides.getSelector(), selector));
+        merged.setHintNoUpdate(nvl(overrides.getHintNoUpdate(), hintNoUpdate));
+        merged.setHintTable(nvl(overrides.getHintTable(), hintTable));
         merged.setColumns(nvl(overrides.getColumns(), columns));
         merged.setShowIf(nvl(overrides.getShowIf(), showIf));
         merged.setReadOnlyIf(nvl(overrides.getReadOnlyIf(), readOnlyIf));

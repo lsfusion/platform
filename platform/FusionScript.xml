@@ -98,7 +98,8 @@
       <keyword name="HIDESCROLLBARS" />
       <keyword name="HIDETITLE" />
       <keyword name="HIGHLIGHTIF" />
-      <keyword name="HINT" />
+      <keyword name="HINTNOUPDATE" />
+      <keyword name="HINTTABLE" />
       <keyword name="HORIZONTAL" />
       <keyword name="HTML" />
       <keyword name="IF" />

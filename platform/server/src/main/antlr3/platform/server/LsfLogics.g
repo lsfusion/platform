@@ -20,7 +20,6 @@ grammar LsfLogics;
 	import platform.server.logics.property.PropertyFollows;
 	import platform.server.logics.property.Cycle;
 	import platform.server.logics.scripted.*;
-	import platform.server.logics.scripted.MappedProperty;
 	import platform.server.logics.scripted.ScriptingLogicsModule.WindowType;
 	import platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition;
 	import platform.server.logics.scripted.ScriptingLogicsModule.GroupingType;
@@ -269,6 +268,7 @@ scope {
 		|	formTreeGroupObjectList
 		|	formFiltersList
 		|	formPropertiesList
+		|	formHintsList
 		|	filterGroupDeclaration
 		|	formOrderByList
 		|	dialogFormDeclaration
@@ -460,9 +460,11 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 @init {
 	$options = new FormPropertyOptions();
 }
-	:	(	'READONLY' { $options.setReadOnly(true); }
-		|	'EDITABLE' { $options.setReadOnly(false); }
-		|	'SELECTOR' { $options.setSelector(true); }
+	:	(	'READONLY' 	{ $options.setReadOnly(true); }
+		|	'EDITABLE' 	{ $options.setReadOnly(false); }
+		|	'SELECTOR' 	{ $options.setSelector(true); }
+		|	'HINTNOUPDATE' { $options.setHintNoUpdate(true); }
+		|	'HINTTABLE' { $options.setHintTable(true); }
 		|	'COLUMNS' '(' ids=nonEmptyIdList ')' { $options.setColumns(getGroupObjectsList($ids.ids)); }
 		|	'SHOWIF' mappedProp=formMappedProperty { $options.setShowIf(getPropertyWithMapping($mappedProp.name, $mappedProp.mapping)); }
 		|	'READONLYIF' propObj=formPropertyObject { $options.setReadOnlyIf($propObj.property); }
@@ -583,6 +585,19 @@ formFiltersList
 	:	'FILTERS'
 		decl=formFilterDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);}
 	    (',' decl=formFilterDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);})*
+	;
+
+formHintsList
+@init {
+	boolean hintNoUpdate = true;
+}
+@after {
+	if (inPropParseState()) {
+		$formStatement::form.addScriptedHints(hintNoUpdate, $list.ids);
+	}
+}
+	:	(('HINTNOUPDATE') | ('HINTTABLE' { hintNoUpdate = false; })) 'LIST'
+		list=nonEmptyCompoundIdList	
 	;
 	
 filterGroupDeclaration

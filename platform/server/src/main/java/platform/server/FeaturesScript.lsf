@@ -315,27 +315,29 @@ CONSTRAINT foo(store, article) > 1000 CHECKED MESSAGE 'ошибка: >1000';
 //////////////// FORM STATEMENT /////////////////
 // Syntax:
 // FORM name ['caption'] [PRINT] [DOCKING | MODAL | FULLSCREEN]
-// [(Objects list | Properties list | Filters list)]
+// [(GroupObjects list | TreeGroupObjects list | Properties list | Filters list | Hints list | OrderBy list | filterGroup | dialog form | edit form | list form)]
 // ...
-// [(Objects list | Properties list | Filters list)];
+// [(GroupObjects list | TreeGroupObjects list | Properties list | Filters list | Hints list | OrderBy list | filterGroup | dialog form | edit form | list form)];
 FORM documentArticle 'По документам'
 
-// Objects list syntax:
+// GroupObjects list syntax:
 // OBJECTS [alias=] className ['<caption>'] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [INIT | FIXED] [PANEL | HIDE | GRID] [PAGESIZE <int value>],
 //         ...
 //         [alias=] className ['<caption>'] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [INIT | FIXED] [PANEL | HIDE | GRID] [PAGESIZE <int value>]
 OBJECTS document, article
 
-// TreeGroup syntax:
+// TreeGroup list syntax:
 // TREE [SID] [alias=] className ['<caption>'] [PARENT <property>] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [PARENT <properties separated with space>],
 //            ...
 //            [alias=] className ['<caption>'] [PARENT <property>] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [PARENT <properties separated with space>]
 
 // Property list syntax:
-// PROPERTIES [alias1=]propName1(param1, ..., paramN1), ..., [aliasN=]propNameK(param1, ..., paramNK)
-// Special properties: SELECTION, OBJVALUE, ADDOBJ
-// Property options:    [READONLY] [EDITABLE] [SELECTOR] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [HIGHLIGHTIF <mappedProperty>]
-//                      [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
+// PROPERTIES [commonOptions] [alias1=]propName1(param1, ..., paramN1) [options1], ..., [aliasK=]propNameK(param1, ..., paramNK) [optionsK]
+// or
+// PROPERTIES(param1, ..., paramN) [commonOptions] [alias1=]propName1 [options1], ..., [aliasK=]propNameK [optionsK]
+// Special properties: SELECTION, OBJVALUE, ADDOBJ, ADDFORM, ADDSESSIONFORM, EDITFORM, EDITSESSIONFORM
+// Property option:    [READONLY] [EDITABLE] [SELECTOR] [HINTNOUPDATE] [HINTTABLE] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [HIGHLIGHTIF <mappedProperty>]
+//                     [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
 
 PROPERTIES store(document), name(article), storeName(document), documentTypeString(document)
 PROPERTIES quantity(document, article)
@@ -343,10 +345,13 @@ PROPERTIES inQuantity(document, article), outQuantity(document, article), docume
 PROPERTIES ADDOBJ(document), ADDOBJ(article)
 
 // Filters list syntax:
-// FILTERS propertyExpression1,
-//         ...
-//         propertyExpressionK
+// FILTERS propertyExpression1, ..., propertyExpressionK
 FILTERS name(article);
+
+// Hints list syntax:
+// HINTNOUPDATE | HINTTABLE propertyName1, ..., propertyNameN
+
+
 
 showForm(document) = ACTION FORM documentArticle OBJECTS document NEWSESSION MODAL;
 

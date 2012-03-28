@@ -249,6 +249,16 @@ public class ScriptingFormEntity extends FormEntity {
         if (showIf != null) {
             LM.showIf(this, property, showIf.property, showIf.mapping);
         }
+
+        Boolean hintNoUpdate = options.getHintNoUpdate();
+        if (hintNoUpdate != null && hintNoUpdate) {
+            addHintsNoUpdate(property.propertyObject.property);
+        }
+        
+        Boolean hintTable = options.getHintTable();
+        if (hintTable != null && hintTable) {
+            addHintsIncrementTable(property.propertyObject.property);
+        }
     }
 
     private void setPropertDrawAlias(String alias, PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
@@ -294,6 +304,19 @@ public class ScriptingFormEntity extends FormEntity {
         }
     }
 
+    public void addScriptedHints(boolean isHintNoUpdate, List<String> propNames) throws ScriptingErrorLog.SemanticErrorException {
+        LP<?>[] properties = new LP<?>[propNames.size()];
+        for (int i = 0; i < propNames.size(); i++) {
+            properties[i] = LM.findLPByCompoundName(propNames.get(i));
+        }
+
+        if (isHintNoUpdate) {
+            addHintsNoUpdate(properties);
+        } else {
+            addHintsIncrementTable(properties);
+        }
+    }
+    
     public void addScriptedRegularFilterGroup(String sid, List<String> captions, List<String> keystrokes, List<LP<?>> properties, List<List<String>> mappings, List<Boolean> defaults) throws ScriptingErrorLog.SemanticErrorException {
         assert captions.size() == mappings.size() && keystrokes.size() == mappings.size() && properties.size() == mappings.size();
 
