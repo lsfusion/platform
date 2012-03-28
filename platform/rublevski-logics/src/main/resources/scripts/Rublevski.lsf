@@ -4678,6 +4678,8 @@ rangeStatementDetail (statementDetail) <- rangeToTaxStore(tax.taxNDS,
                                           storeDepartmentStore(departmentStoreStatementDetail(statementDetail))) ON ASSIGN statementDetail IS statementDetail;
 numberRangeStatementDetail 'НДС номер' (statementDetail) = dataRange(rangeStatementDetail(statementDetail));
 
+CONSTRAINT taxRange(rangeStatementDetail(statementDetail)) != tax.taxNDS CHECKED BY rangeStatementDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
 sumNDSStatementDetail 'НДС за ед.' (statementDetail) = round0(dataActingRateRangeStatementDetail(statementDetail)*retailPriceStatementDetail(statementDetail)/100) IN baseGroup;
 totalSumNDSStatementDetail 'Сумма НДС' (statementDetail) = round0(dataActingRateRangeStatementDetail(statementDetail)*sumStatementDetail(statementDetail)/100) IN baseGroup;
 sumNDSStatement 'Общая сумма НДС' (statement) = GROUP SUM totalSumNDSStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN waybillSum;
@@ -4777,11 +4779,9 @@ departmentStorePriceChangeStatement (priceChangeStatement) = departmentStoreStat
 nameDepartmentStorePriceChangeStatement 'Отдел документа' (priceChangeStatement) = name(departmentStorePriceChangeStatement(priceChangeStatement));
 
 
-//старые ценовые параметры для переоценок
-//curRetailPriceStatementDetail (statementDetail) <- priceRetailStatementDetail (statementDetail) ON CHANGE itemStatementDetail(statementDetail);  //     subtractDate2
+////старые ценовые параметры для переоценок
 
 notEqualsPriceStatementDetail(statementDetail)  = retailPriceStatementDetail(statementDetail) != curRetailPriceStatementDetail(statementDetail);
-
 
 retailRangeStatementDetail(statementDetail) = DATA range (statementDetail) IN idGroup;
 dataRetailRangeStatementDetail 'Текущий НДС розничный,%' (statementDetail) =
@@ -4789,8 +4789,6 @@ dataRetailRangeStatementDetail 'Текущий НДС розничный,%' (sta
 //retailRangeStatementDetail(statementDetail) <- overrideRateRangeItem(itemStatementDetail(statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
 
 importerPriceStatementDetail 'Текущая цена изготовителя/импортера' (statementDetail) = DATA DOUBLE (statementDetail) IN pricingStatementDetailInfo;
-//importerPriceStatementDetail (statementDetail) <- importerPriceItemVal ( itemStatementDetail(statementDetail),
-//    dateStatementDetail(statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
 
 //// атрибуты детализации документа переоценки
 
@@ -5400,13 +5398,17 @@ priceItemInnerFlow 'Цена (максим.)' (item, innerFlow) = GROUP MAX reta
 
 accountSumInnerFlowDetail 'Сумма' (innerFlowDetail) = quantityInnerFlowDetail(innerFlowDetail) * retailPriceInnerFlowDetail (innerFlowDetail) IN baseGroup;
 
-importerPriceInnerFlowDetail 'Цена изготовителя' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail);
+importerPriceInnerFlowDetail 'Цена изготовителя' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
 
 importerPriceItemInnerFlow 'Цена изготовителя (максим.)' (item, innerFlow) = GROUP MAX importerPriceInnerFlowDetail (innerFlowDetail)
     IF innerFlowInnerFlowDetail(innerFlowDetail) == innerFlow BY itemInnerFlowDetail(innerFlowDetail), innerFlowInnerFlowDetail(innerFlowDetail);
 
 retailRangeInnerFlowDetail(innerFlowDetail) = DATA range (innerFlowDetail) IN idGroup;
+numberRetailRangeInnerFlowDetail 'НДС номер' (innerFlowDetail) = dataRange(retailRangeInnerFlowDetail(innerFlowDetail));
 dataRetailRangeInnerFlowDetail 'НДС розничный,%' (innerFlowDetail) = dataActingRateRange(retailRangeInnerFlowDetail(innerFlowDetail)) IN baseGroup;
+
+CONSTRAINT taxRange(retailRangeInnerFlowDetail(innerFlowDetail))!=tax.taxNDS CHECKED BY retailRangeInnerFlowDetail
+    MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 quantityItemInnerFlow 'Количество в расходе' (item, innerFlow) = GROUP SUM quantityInnerFlowDetail(innerFlowDetail)
     IF inInnerFlowInnerFlowDetail (innerFlow, innerFlowDetail) BY itemInnerFlowDetail (innerFlowDetail), innerFlowInnerFlowDetail (innerFlowDetail);
@@ -5426,6 +5428,7 @@ descriptionInnerFlow 'Название документа' (innerFlow) = castInn
 descriptionInnerFlowDetail 'Название документа' (innerFlowDetail) = descriptionInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail));
 
 wareInnerFlowDetail 'Текущая посуда (ИД)' (innerFlowDetail) = DATA ware(innerFlowDetail) IN baseGroup;
+nameWareInnerFlowDetail 'Посуда' (innerFlowDetail) = name(wareInnerFlowDetail(innerFlowDetail));
 //wareInnerFlowDetail(innerFlowDetail) <- wareItem(itemInnerFlowDetail(innerFlowDetail)) ON CHANGE itemInnerFlowDetail(innerFlowDetail);
 priceWareInnerFlowDetail 'Текущая цена посуды' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
 
@@ -5436,8 +5439,8 @@ FORM innerFlow 'Расход в другой отдел'
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) numberInnerFlowDetail, nameAttributeItemInnerFlowDetail, barcodeExSkuInnerFlowDetail,
-                   quantityInnerFlowDetail, retailPriceInnerFlowDetail, importerPriceInnerFlowDetail READONLY,
-                   dataRetailRangeInnerFlowDetail READONLY,
+                   quantityInnerFlowDetail, retailPriceInnerFlowDetail, importerPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
+                   dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, priceWareInnerFlowDetail,
                    accountSumInnerFlowDetail, ADDOBJ, delete
 
     PROPERTIES addInnerFlowDetailBarcode(f) TODRAW d
@@ -5500,6 +5503,9 @@ DESIGN innerFlows FROM DEFAULT {
 }
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
+GROUP pricingInnerArrivalDetailInfo 'Дополнительные ценовый параметры' : publicGroup;
+
+
 CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, historyObject;
 CLASS innerArrivalDetail 'Строка прихода в отдел' : importerPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger, balanceItemLedger;
 @metaCodeObjectWithPostEx (innerArrival, 'Закрытый приход в отдел');
@@ -5539,14 +5545,14 @@ priceItemInnerArrival 'Цена (максим.)' (item, innerArrival) = priceIte
 //    itemInnerArrivalDetail(innerArrivalDetail), innerArrivalInnerArrivalDetail(innerArrivalDetail))
 //    ON CHANGE itemInnerArrivalDetail (innerArrivalDetail);
 
-curRetailPriceInnerArrivalDetail 'Текущая розничная цена' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail);
+curRetailPriceInnerArrivalDetail 'Текущая розничная цена' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN pricingInnerArrivalDetailInfo;
 
 accountSumInnerArrivalDetail 'Сумма' (innerArrivalDetail) =
     quantityInnerArrivalDetail(innerArrivalDetail) * retailPriceInnerArrivalDetail (innerArrivalDetail) IN baseGroup;
 
 importerPriceInnerArrivalDetail 'Цена изготовителя' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail);
 
-curImporterPriceInnerArrivalDetail 'Текущая цена изготовителя' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail);
+curImporterPriceInnerArrivalDetail 'Текущая цена изготовителя' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN pricingInnerArrivalDetailInfo;
 
 importerPriceItemInnerArrival 'Цена изготовителя (максим.)' (item, innerArrival) = importerPriceItemInnerFlow(
     item, innerFlowInnerArrival(innerArrival));
@@ -5556,20 +5562,23 @@ importerPriceItemInnerArrival 'Цена изготовителя (максим.)
 //    ON CHANGE itemInnerArrivalDetail (innerArrivalDetail);
 
 retailRangeInnerArrivalDetail(innerArrivalDetail) = DATA range (innerArrivalDetail) IN idGroup;
+numberRetailRangeInnerArrivalDetail 'НДС номер' (innerArrivalDetail) = dataRange(retailRangeInnerArrivalDetail(innerArrivalDetail));
 dataRetailRangeInnerArrivalDetail 'НДС розничный,%' (innerArrivalDetail) = dataActingRateRange(retailRangeInnerArrivalDetail(innerArrivalDetail)) IN baseGroup;
 
 curRetailRangeInnerArrivalDetail (innerArrivalDetail) = DATA range (innerArrivalDetail) IN idGroup;
 
 curDataRetailRangeInnerArrivalDetail 'Текущий НДС, %' (innerArrivalDetail) =
     dataActingRateRangeDate (curRetailRangeInnerArrivalDetail (innerArrivalDetail),
-                            dateInnerArrival(innerArrivalInnerArrivalDetail(innerArrivalDetail)));
+                            dateInnerArrival(innerArrivalInnerArrivalDetail(innerArrivalDetail))) IN pricingInnerArrivalDetailInfo;
 
 wareInnerArrivalDetail 'Посуда (ИД)' (innerArrivalDetail) = DATA ware(innerArrivalDetail) IN baseGroup;
+nameWareInnerArrivalDetail 'Посуда' (innerArrivalDetail) = name(wareInnerArrivalDetail(innerArrivalDetail));
 priceWareInnerArrivalDetail 'Цена посуды' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN baseGroup;
 //wareInnerArrivalDetail(innerArrivalDetail) <- wareItem(itemInnerArrivalDetail(innerArrivalDetail)) ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
 
 curWareInnerArrivalDetail(innerArrivalDetail) = DATA ware (innerArrivalDetail) IN idGroup;
-curPriceWareInnerArrivalDetail 'Текущая цена посуды' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN baseGroup;
+curNameWareInnerArrivalDetail 'Текущая посуда' (innerArrivalDetail) = name(curWareInnerArrivalDetail(innerArrivalDetail)) IN pricingInnerArrivalDetailInfo MINCHARWIDTH 20 PREFCHARWIDTH 20;
+curPriceWareInnerArrivalDetail 'Текущая цена посуды' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN pricingInnerArrivalDetailInfo;
 
 
 toFillInnerArrivalDetailsInnerArrival 'Заполнить документ из расхода' =  ACTION (innerArrival) {
@@ -5675,7 +5684,7 @@ warePriceChangeInnerArrivalDetail 'Новая посуда' (priceChangeInnerArr
 priceWarePriceChangeInnerArrivalDetail 'Новая цена посуды' (priceChangeInnerArrivalDetail) = priceWareInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail)) IN baseGroup;
 
 curWarePriceChangeInnerArrivalDetail 'Текущая посуда' (priceChangeInnerArrivalDetail) = curWareInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
-curPriceWarePriceChangeInnerArrivalDetail 'Текущая цена посуды' (priceChangeInnerArrivalDetail) =curPriceWareInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail)) IN baseGroup;
+curPriceWarePriceChangeInnerArrivalDetail 'Текущая цена посуды' (priceChangeInnerArrivalDetail) = curPriceWareInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail)) IN baseGroup;
 
 
 FORM innerArrival 'Приход из другого отдела'
@@ -5688,9 +5697,10 @@ FORM innerArrival 'Приход из другого отдела'
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) SHOWIF innerFlowInnerArrival(a) numberInnerArrivalDetail, nameAttributeItemInnerArrivalDetail, barcodeExSkuInnerArrivalDetail,
-                   quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, retailPriceInnerArrivalDetail READONLY, importerPriceInnerArrivalDetail READONLY,
-                   dataRetailRangeInnerArrivalDetail READONLY,
-                   accountSumInnerArrivalDetail READONLY, ADDOBJ, delete
+                   quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail, numberRetailRangeInnerArrivalDetail,
+                   dataRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail, priceWareInnerArrivalDetail, retailPriceInnerArrivalDetail,
+                   accountSumInnerArrivalDetail, ADDOBJ, delete
+    PROPERTIES (d) FORCE PANEL curImporterPriceInnerArrivalDetail, curNameWareInnerArrivalDetail, curPriceWareInnerArrivalDetail, curDataRetailRangeInnerArrivalDetail, curRetailPriceInnerArrivalDetail
 
     PROPERTIES addInnerArrivalDetailBarcode(a) TODRAW d
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
@@ -5712,6 +5722,9 @@ DESIGN innerArrival FROM DEFAULT{
             ADD d.box {
                 childConstraints = TO THE BOTTOM;
                 title = 'Спецификация';
+                d.pricingInnerArrivalDetailInfo {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                }
             };
             ADD i.box;
         };
@@ -7691,8 +7704,9 @@ FORM statement 'Отгрузка из розницы'
                     retailPriceStatementDetail, numberRangeStatementDetail, dataActingRateRangeStatementDetail, sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail,
                     noteStatementDetail READONLY, ADDOBJ, delete
 
-    PROPERTIES (d)  FORCE PANEL importerPriceStatementDetail, dataRetailRangeStatementDetail, curRetailPriceStatementDetail HIGHLIGHTIF notEqualsPriceStatementDetail(d),
-                                nameWareStatementDetail, priceWareStatementDetail, articleItemStatementDetail, nameCountryItemStatementDetail,
+    PROPERTIES (d)  FORCE PANEL importerPriceStatementDetail, nameWareStatementDetail, priceWareStatementDetail, dataRetailRangeStatementDetail,
+                                curRetailPriceStatementDetail HIGHLIGHTIF notEqualsPriceStatementDetail(d),
+                                articleItemStatementDetail, nameCountryItemStatementDetail,
                                 balanceDepartmentStoreItemStatementDetail HIGHLIGHTIF highlightStatementDetail(d)
 
 
@@ -7712,13 +7726,6 @@ DESIGN statement FROM DEFAULT {
             POSITION st.documentHeaderGroup TO THE LEFT st.specificationGroup;
         }
         d.panel {
-//            childConstraints = TO THE RIGHTBOTTOM;
-//            NEW headerRow1 {
-//                childConstraints = TO THE BOTTOM;
-//                ADD PROPERTY(articleItemStatementDetail);
-//                ADD PROPERTY(nameCountryItemStatementDetail);
-//                ADD PROPERTY (balanceDepartmentStoreItemStatementDetail);
-//            }
             POSITION d.pricingStatementDetailInfo TO THE LEFT d.itemStatementDetailInfo;
         }
     }
