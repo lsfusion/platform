@@ -3727,9 +3727,16 @@ dateCutting(cutting) <- currentDate() ON ASSIGN cutting IS cutting;
 useCutting 'Используется' = DATA BOOLEAN (cutting) IN cutGroup;
 //             номер из сборника.....
 descriptionCutting 'Описание' = DATA STRING[200] (cutting) IN cutGroup;
-percAllowancesCutting 'Процент надбавок, %' = DATA DOUBLE (cutting) IN cutGroup;
-percLossesCutting 'Процент потерь, %' = DATA DOUBLE (cutting) IN cutGroup;
-percSweepsCutting 'Процент зачисток, %' = DATA DOUBLE (cutting) IN cutGroup;
+
+percAllowancesCutting 'Процент надбавок, %' = DATA DOUBLE (cutting) IN baseGroup;
+overPercAllowancesCutting 'Процент надбавок, %' (cutting) = UNION OVERRIDE 0 IF cutting IS cutting, percAllowancesCutting(cutting) IN cutGroup;
+
+percLossesCutting 'Процент потерь, %' = DATA DOUBLE (cutting) IN baseGroup;
+overPercLossesCutting 'Процент потерь, %' (cutting) = UNION OVERRIDE 0 IF cutting IS cutting, percLossesCutting(cutting) IN cutGroup;
+
+percSweepsCutting 'Процент зачисток, %' = DATA DOUBLE (cutting) IN baseGroup;
+overPercSweepsCutting 'Процент зачисток, %' (cutting) = UNION OVERRIDE 0 IF cutting IS cutting, percSweepsCutting(cutting) IN cutGroup;
+
 inDepartmentStoreCutting 'В каких подразделениях разрешено использовать карту' = DATA BOOLEAN (departmentStore, cutting) IN baseGroup;
 
 cuttingDetailCutting 'Строка (ИД)' = DATA cutting (detailCutting) IN idGroup;
@@ -3741,7 +3748,7 @@ factorDetailCutting 'Рассчетный коэффициент цены' = DAT
 percGoodsDetailCutting '% выхода компонента (п/ф)' = DATA DOUBLE (detailCutting) IN cutGroup;
 
 notTotalPercGoodsDetailCutting (cutting) = GROUP SUM percGoodsDetailCutting(detailCutting) BY cuttingDetailCutting(detailCutting);
-totalPercGoodsDetailCutting 'Итого % выхода по карте проработки (разделки)' (cutting) = notTotalPercGoodsDetailCutting(cutting)+ percLossesCutting(cutting)+ percSweepsCutting(cutting);
+totalPercGoodsDetailCutting 'Итого % выхода по карте проработки (разделки)' (cutting) = notTotalPercGoodsDetailCutting(cutting)+ overPercLossesCutting(cutting)+ overPercSweepsCutting(cutting);
 highlightCutting(cutting) = totalPercGoodsDetailCutting(cutting) > 100;
 
 uniqueDetailCuttingCutting 'Компонента по карте переработки и товару' (cutting, item) = GROUP UNIQUE detailCutting BY cuttingDetailCutting(detailCutting), itemDetailCutting(detailCutting);
@@ -3789,9 +3796,9 @@ sidCuttingStudyInputDetail 'Номер карты' (studyInputDetail) = sidCutti
 dateCuttingStudyInputDetail 'Дата создания карты' (studyInputDetail) = dateCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
 descriptionCuttingStudyInputDetail 'Описание' (studyInputDetail) = descriptionCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-percAllowancesCuttingStudyInputDetail 'Процент надбавок, %' (studyInputDetail) = percAllowancesCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
-percLossesCuttingStudyInputDetail 'Процент потерь, %' (studyInputDetail) = percLossesCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
-percSweepsCuttingStudyInputDetail 'Процент зачисток, %' (studyInputDetail) = percSweepsCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
+percAllowancesCuttingStudyInputDetail 'Процент надбавок, %' (studyInputDetail) = overPercAllowancesCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
+percLossesCuttingStudyInputDetail 'Процент потерь, %' (studyInputDetail) = overPercLossesCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
+percSweepsCuttingStudyInputDetail 'Процент зачисток, %' (studyInputDetail) = overPercSweepsCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
 
 quantityStudyInputDetail 'Количество для разруба' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
 
@@ -3830,7 +3837,8 @@ captionItemStudyOutputDetail 'Наименование компонента' (st
 factorStudyOutputDetail 'Рассчетный коэффициент цены' = DATA DOUBLE (studyOutputDetail) IN actGroup;
 percGoodsStudyOutputDetail '% выхода компонента (п/ф)' = DATA DOUBLE (studyOutputDetail) IN actGroup;
 percAllowancesStudyOutputDetail 'Процент надбавок, %' = DATA DOUBLE (studyOutputDetail) IN actGroup;
-
+overPercAllowancesStudyOutputDetail (studyOutputDetail) = UNION OVERRIDE 0 IF studyOutputDetail IS studyOutputDetail,
+                                                                         percAllowancesStudyOutputDetail(studyOutputDetail);
 
 quantityStudyInputDetailStudyOutputDetail (studyOutputDetail) = quantityStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
 retailPriceStudyInputDetailStudyOutputDetail (studyOutputDetail) = retailPriceStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
@@ -3843,7 +3851,7 @@ overQuantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE quantityStudyO
                                                                   actualQuantityStudyOutputDetail(studyOutputDetail);
 
 notRoundRetailPriceStudyOutputDetail 'Цена' (studyOutputDetail) = [X*Y*(100+Z)/100]
-    (factorStudyOutputDetail(studyOutputDetail), retailPriceStudyInputDetailStudyOutputDetail(studyOutputDetail), percAllowancesStudyOutputDetail(studyOutputDetail));
+    (factorStudyOutputDetail(studyOutputDetail), retailPriceStudyInputDetailStudyOutputDetail(studyOutputDetail), overPercAllowancesStudyOutputDetail(studyOutputDetail));
 roundRetailPriceStudyOutputDetail 'Округленная цена' (studyOutputDetail) = roundMinus1(notRoundRetailPriceStudyOutputDetail(studyOutputDetail));
 
 retailPriceStudyOutputDetail 'Розничная цена' (studyOutputDetail) = DATA DOUBLE (studyOutputDetail);
@@ -3953,7 +3961,7 @@ toFillStudyOutputDetailsStudyInputDetail 'Заполнить данные для
             SET itemStudyOutputDetail(sod) <- itemDetailCutting(detailCutting);
             SET factorStudyOutputDetail(sod) <- factorDetailCutting(detailCutting);
             SET percGoodsStudyOutputDetail(sod) <- percGoodsDetailCutting(detailCutting);
-            SET percAllowancesStudyOutputDetail(sod) <- percAllowancesCutting(cuttingDetailCutting(detailCutting));
+            SET percAllowancesStudyOutputDetail(sod) <- overPercAllowancesCutting(cuttingDetailCutting(detailCutting));
             SET retailPriceStudyOutputDetail(sod) <- roundRetailPriceStudyOutputDetail(sod);
             SET importerPriceStudyOutputDetail(sod) <- roundImporterPriceStudyOutputDetail(sod);
             SET retailRangeStudyOutputDetail(sod) <- retailRangeStudyInputDetail(studyInputDetailStudyOutputDetail(sod));
@@ -3974,7 +3982,7 @@ cleanAllStudyInputDetail 'Очистить документ' = ACTION (studyInpu
 FORM cutting 'Карта проработки'
 OBJECTS c=cutting FIXED PANEL
 OBJECTS d=detailCutting, dep=departmentStore, i=item
-PROPERTIES(c)      sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting, percSweepsCutting
+PROPERTIES(c)      sidCutting, descriptionCutting, dateCutting, useCutting, overPercAllowancesCutting, overPercLossesCutting, overPercSweepsCutting
 PROPERTIES(c)         totalPercGoodsDetailCutting TODRAW d FORCE PANEL  HIGHLIGHTIF highlightCutting(c)
 
 PROPERTIES(d)      captionItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting, ADDOBJ, delete
@@ -4006,7 +4014,7 @@ DESIGN cutting FROM DEFAULT {
 
 FORM cuttings 'Карты проработки'
     OBJECTS c=cutting
-    PROPERTIES(c)      READONLY sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting, percSweepsCutting
+    PROPERTIES(c)      READONLY sidCutting, descriptionCutting, dateCutting, useCutting, overPercAllowancesCutting, overPercLossesCutting, overPercSweepsCutting
     PROPERTIES(c)      ADDFORM, EDITFORM, delete
 
     OBJECTS d=detailCutting
@@ -4052,8 +4060,8 @@ FORM sidCuttingStudyInputDetail 'Возможные карты проработ�
     PROPERTIES         READONLY nameAttributeItem(i)
 
     OBJECTS c=cutting
-    PROPERTIES(c)      READONLY sidCutting, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting,
-                       percSweepsCutting, totalPercGoodsDetailCutting
+    PROPERTIES(c)      READONLY sidCutting, descriptionCutting, dateCutting, useCutting, overPercAllowancesCutting, overPercLossesCutting,
+                       overPercSweepsCutting, totalPercGoodsDetailCutting
 
     FILTERS            inDepartmentStoreCutting(dep, c),
                        inItemCutting(i, c),
@@ -4082,7 +4090,7 @@ FORM actOfStudy 'Акт проработки'
 
     OBJECTS a=actOfStudy FIXED PANEL
 
-    PROPERTIES(a)      numberActOfStudy, nameDepartmentStoreActOfStudy, dateTimeActOfStudy, nameContractorDepartmentStoreActOfStudy,
+    PROPERTIES(a)      numberActOfStudy, nameDepartmentStoreActOfStudy, dateActOfStudy, timeActOfStudy, nameContractorDepartmentStoreActOfStudy,
                        waybillOutputActOfStudy, seriesOutputActOfStudy, waybillInputActOfStudy, seriesInputActOfStudy
 
     OBJECTS sid=studyInputDetail
@@ -4098,7 +4106,7 @@ FORM actOfStudy 'Акт проработки'
                     totalPercGoodsStudyInputDetail FORCE PANEL HIGHLIGHTIF highlightStudyInputDetail(sid)
 
     PROPERTIES(sod) captionItemStudyOutputDetail, shortNameUnitOfMeasureItemStudyOutputDetail, importerPriceStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
-                    percAllowancesStudyOutputDetail, quantityStudyOutputDetail, actualQuantityStudyOutputDetail, retailPriceStudyOutputDetail, totalStudyOutputDetail
+                    quantityStudyOutputDetail, actualQuantityStudyOutputDetail, retailPriceStudyOutputDetail, totalStudyOutputDetail
 
     PROPERTIES(sod) curImporterPriceStudyOutputDetail FORCE PANEL, curDataRetailRangeStudyOutputDetail FORCE PANEL,
                     curRetailPriceStudyOutputDetail FORCE PANEL
@@ -4120,7 +4128,8 @@ DESIGN actOfStudy FROM DEFAULT {
                 title = 'Акт проработки';
                 ADD PROPERTY (numberActOfStudy);
                 ADD PROPERTY (nameDepartmentStoreActOfStudy);
-                ADD PROPERTY (dateTimeActOfStudy);
+                ADD PROPERTY (dateActOfStudy);
+                ADD PROPERTY (timeActOfStudy);
             }
 
             ADD a.contractorGroup AFTER firstCase {
@@ -4891,7 +4900,7 @@ isWeightShipmentDetail 'Весовой товар?' (shipmentDetail) = isWeightI
 nameinActionItemDepartmentShipmentDetail 'Товар акции?' (shipmentDetail) = name(inActionItemDepartmentVal(itemShipmentDetail(shipmentDetail),
     departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
 
-hintShipmentDetail 'Подсказка по товару' (shipmentDetail) = hintItem(itemShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
+hintShipmentDetail 'Подсказка по товару' (shipmentDetail) = hintItem(itemShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
 nameCountryShipmentDetail 'Страна производства/происхождения' (shipmentDetail) =
     name(countryItem(itemShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo MINCHARWIDTH 15 PREFCHARWIDTH 15;
@@ -5072,7 +5081,7 @@ curImporterPriceShipmentDetail 'Текущая цена изготовителя
 
 curPriceWareShipmentDetail 'Текущая цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
 curWareShipmentDetail = DATA ware (shipmentDetail) IN idGroup;
-curNameWareShipmentDetail 'Текущая посуда' (shipmentDetail) = name(curWareShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo;
+curNameWareShipmentDetail 'Текущая посуда' (shipmentDetail) = name(curWareShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
 sumQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM
@@ -5239,7 +5248,20 @@ DESIGN shipment FROM DEFAULT{
                     childConstraints = TO THE BOTTOM;
                 };
                 ADD d.itemShipmentDetailInfo;
-                POSITION d.pricingShipmentDetailInfo TO THE LEFT d.itemShipmentDetailInfo;
+                NEW commonCase { title = 'Общая информация';
+                    ADD PROPERTY (isFixPriceShipmentDetail(d));
+                    ADD PROPERTY (importerPriceShipmentDetail(d));
+                    ADD PROPERTY (dataWareRangeShipmentDetail(d));
+                }
+                NEW booleanCase { title = 'Вспомогательная информация';
+                    ADD PROPERTY (controlExpiryShipmentDetail(d));
+                    ADD PROPERTY (isManufacturedShipmentDetail(d));
+                    ADD PROPERTY (isWeightShipmentDetail(d));
+                    ADD PROPERTY (nameinActionItemDepartmentShipmentDetail(d));
+                }
+                POSITION d.pricingShipmentDetailInfo TO THE LEFT booleanCase;
+                POSITION booleanCase TO THE LEFT commonCase;
+                POSITION commonCase TO THE LEFT d.itemShipmentDetailInfo;
             };
             ADD i.box;
         };
@@ -5283,7 +5305,7 @@ FORM shipments 'Поставки'
     OBJECTS s=shipment
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment
-    PROPERTIES (s) FORCE PANEL nameUserCreated, timeCreated, nameUserClosed, timeClosed
+    PROPERTIES (s) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (s)          ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
