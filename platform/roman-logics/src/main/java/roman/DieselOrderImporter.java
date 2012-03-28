@@ -40,23 +40,25 @@ public class DieselOrderImporter extends SingleSheetImporter {
     protected String transformValue(int row, int column, int part, String value) {
         value = value.trim();
 
-        switch (column) {
-            case C : 
-                return value.substring(0, value.length()-2);
-            case D:
-            case L:
-            case M:
-                Date sDate = new Date(Integer.parseInt(value.substring(6, 10)) - 1900, Integer.parseInt(value.substring(3, 5)) - 1, Integer.parseInt(value.substring(0, 2)));
-                return DateClass.format(sDate);
-            case E:
-                switch (part) {
-                    case 0:
-                        return value.substring(0, Math.min(10, value.length())); // customs code
-                    case 1:
-                        return value.substring(0, Math.min(6, value.length())); // customs code 6
-                }
-            default:
-                return value;
-        }
+        if (!"".equals(value)) {
+            switch (column) {
+                case C:
+                    return value.substring(0, value.length() - 2);
+                case D:
+                case L:
+                case M:
+                    Date sDate = new Date(Integer.parseInt(value.substring(6, 10)) - 1900, Integer.parseInt(value.substring(3, 5)) - 1, Integer.parseInt(value.substring(0, 2)));
+                    return DateClass.format(sDate);
+                case E:
+                    switch (part) {
+                        case 0:
+                            return value.substring(0, Math.min(10, value.length())); // customs code
+                        case 1:
+                            return value.substring(0, Math.min(6, value.length())); // customs code 6
+                    }
+                default:
+                    return value;
+            }
+        } else return value;
     }
 }

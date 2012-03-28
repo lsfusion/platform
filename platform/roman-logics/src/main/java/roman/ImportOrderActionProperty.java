@@ -188,21 +188,21 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
 
             Integer dateFromIndex = -1;
             Integer dateToIndex = -1;
-            Integer orderSIDIndex = -1;
+            Integer sidIndex = -1;
             for (int i = 0; i < table.fields.size(); i++) {
                 if (table.fields.get(i).equals(dateFromOrderField))
                     dateFromIndex = i;
                 else if (table.fields.get(i).equals(dateToOrderField))
                     dateToIndex = i;
-                else if (table.fields.get(i).equals(orderSIDField))
-                    orderSIDIndex = i;
+                else if (table.fields.get(i).equals(sidField))
+                    sidIndex = i;
             }
             Map<String, Date> dateFromMin = new HashMap<String, Date>();
             Map<String, Date> dateToMax = new HashMap<String, Date>();
             if ((dateFromIndex != -1 && dateToIndex != -1)) {
                 for (List<Object> editingRow : table.data) {
                     if (editingRow.get(dateFromIndex) != null) {
-                        String orderSID = (String) editingRow.get(orderSIDIndex);
+                        String orderSID = (String) editingRow.get(sidIndex);
                         Date dateFrom = (Date) editingRow.get(dateFromIndex);
                         Date dateMin = dateFromMin.get(orderSID);
                         if (dateMin != null) {
@@ -213,7 +213,7 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
                     }
                     if (editingRow.get(dateToIndex) != null) {
                         Date dateTo = (Date) editingRow.get(dateToIndex);
-                        String orderSID = (String) editingRow.get(orderSIDIndex);
+                        String orderSID = (String) editingRow.get(sidIndex);
                         Date dateMax = dateToMax.get(orderSID);
                         if (dateMax != null) {
                             if (dateTo.after(dateMax))
@@ -222,13 +222,13 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
                             dateToMax.put(orderSID, dateTo);
                     }
                 }
-                    for (List<Object> editingRow : table.data) {
-                        String orderSID = (String) editingRow.get(orderSIDIndex);
-                        if(dateFromMin.containsKey(orderSID))
-                          editingRow.set(dateFromIndex, dateFromMin.get(orderSID));
-                        if(dateToMax.containsKey(orderSID))
+                for (List<Object> editingRow : table.data) {
+                    String orderSID = (String) editingRow.get(sidIndex);
+                    if ((dateFromMin.containsKey(orderSID)) && (editingRow.get(dateFromIndex) != null))
+                        editingRow.set(dateFromIndex, dateFromMin.get(orderSID));
+                    if ((dateToMax.containsKey(orderSID)) && (editingRow.get(dateToIndex) != null))
                         editingRow.set(dateToIndex, dateToMax.get(orderSID));
-                    }
+                }
             }
             ImportKey<?>[] keysArray = new ImportKey<?>[]{orderKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
 
