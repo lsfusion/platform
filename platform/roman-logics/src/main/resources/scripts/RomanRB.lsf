@@ -262,13 +262,13 @@ rateExchangeDeclaration 'Курс обмена' (declaration) = nearestRateExcha
 
 rateExchangeDeclarationDetail 'Курс обмена' (declarationDetail) = rateExchangeDeclaration(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
 
-priceDeclarationDetail 'Цена товара' (declarationDetail) = priceFullImporterFreightSku(importerDeclarationDetail(declarationDetail),
-                                                                                       freightDeclarationDetail(declarationDetail),
-                                                                                       skuDeclarationDetail(declarationDetail));
+priceDeclarationDetail 'Цена товара (БУ)' (declarationDetail) = priceFullImporterFreightSku(importerDeclarationDetail(declarationDetail),
+                                                                                            freightDeclarationDetail(declarationDetail),
+                                                                                            skuDeclarationDetail(declarationDetail));
 
-priceManagerialDeclarationDetail 'Цена товара' (declarationDetail) = priceInFullImporterFreightSku(importerDeclarationDetail(declarationDetail),
-                                                                                                   freightDeclarationDetail(declarationDetail),
-                                                                                                   skuDeclarationDetail(declarationDetail));
+priceManagerialDeclarationDetail 'Цена товара (УУ)' (declarationDetail) = priceInFullImporterFreightSku(importerDeclarationDetail(declarationDetail),
+                                                                                                        freightDeclarationDetail(declarationDetail),
+                                                                                                        skuDeclarationDetail(declarationDetail));
 
 priceRateDeclarationDetail 'Цена товара (конверт.)' (declarationDetail) = round0(priceDeclarationDetail(declarationDetail) *
                                                                                  rateExchangeDeclarationDetail(declarationDetail)) IN baseGroup PERSISTENT;
@@ -400,12 +400,72 @@ priceManagerialCustomDeclarationDetail 'Цена с расходами (УУ)' (
                                                                                                registrationDeclarationDetail(declarationDetail) PERSISTENT;
 
 // для экспорта в Декларант
-quantityGroupDeclaration 'Кол-во' = GROUP SUM quantityDeclarationDetail(declarationDetail)
+quantityDeclarationGroup 'Кол-во' = GROUP SUM quantityDeclarationDetail(declarationDetail)
                                            BY declarationDeclarationDetail(declarationDetail),
                                               articleDeclarationDetail(declarationDetail),
                                               customCategory10DeclarationDetail(declarationDetail),
                                               mainCompositionDeclarationDetail(declarationDetail),
                                               countryDeclarationDetail(declarationDetail) IN baseGroup;
+
+CLASS groupDeclaration 'Группировка';
+
+declarationGroupDeclaration 'Декларация (ИД)' = DATA declaration(groupDeclaration) IN idGroup;
+articleGroupDeclaration 'Артикул (ИД)' = DATA article(groupDeclaration) IN idGroup;
+customCategory10GroupDeclaration 'ТН ВЭД (ИД)' = DATA customCategory10(groupDeclaration) IN idGroup;
+mainCompositionGroupDeclaration 'Состав' = DATA STRING[200](groupDeclaration) IN baseGroup;
+countryGroupDeclaration 'Страна (ИД)' = DATA country(groupDeclaration) IN idGroup;
+
+sidArticleGroupDeclaration 'Артикул' (groupDeclaration) = sidArticle(articleGroupDeclaration(groupDeclaration)) IN baseGroup;
+sidCustomCategory10GroupDeclaration 'ТН ВЭД' (groupDeclaration) = sidCustomCategory10(customCategory10GroupDeclaration(groupDeclaration)) IN baseGroup;
+nameCountryGroupDeclaration 'Страна' (groupDeclaration) = name(countryGroupDeclaration(groupDeclaration)) IN baseGroup;
+
+numberGroupDeclaration 'Номер' (groupDeclaration) =
+        PARTITION SUM 1 IF groupDeclaration IS groupDeclaration BY declarationGroupDeclaration(groupDeclaration)
+        ORDER groupDeclaration;
+
+inDeclarationGroupDeclaration (declaration, groupDeclaration) = declarationGroupDeclaration(groupDeclaration)==declaration;
+
+dutyGroupDeclaration 'Пошлина' = DATA DOUBLE(groupDeclaration) IN baseGroup;
+NDSGroupDeclaration 'НДС' = DATA DOUBLE(groupDeclaration) IN baseGroup;
+
+uniqueGroupDeclaration() = GROUP UNIQUE groupDeclaration BY declarationGroupDeclaration(groupDeclaration),
+                                                            articleGroupDeclaration(groupDeclaration),
+                                                            customCategory10GroupDeclaration(groupDeclaration),
+                                                            mainCompositionGroupDeclaration(groupDeclaration),
+                                                            countryGroupDeclaration(groupDeclaration)
+                                                      WHERE groupDeclaration IS groupDeclaration;
+
+quantityDeclarationGroup(declaration, article, customCategory10, STRING, country) => uniqueGroupDeclaration(declaration, article, customCategory10, STRING, country) RESOLVE ALL;
+
+// свойства от артикула
+nameBrandGroupDeclaration 'Бренд' (groupDeclaration) = nameBrandSupplierArticle(articleGroupDeclaration(groupDeclaration));
+nameCategoryGroupDeclaration 'Ном. группа' (groupDeclaration) = nameCategoryArticle(articleGroupDeclaration(groupDeclaration));
+
+unitOfMeasureGroupDeclaration 'Ед. изм.(ИД)' (groupDeclaration) = unitOfMeasureArticle(articleGroupDeclaration(groupDeclaration));
+sidUnitOfMeasureGroupDeclaration 'Ед. изм.(код)' (groupDeclaration) = sidUnitOfMeasure(unitOfMeasureGroupDeclaration(groupDeclaration));
+nameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(unitOfMeasureGroupDeclaration(groupDeclaration));
+
+
+groupDeclarationDeclarationDetail 'Группа строки декларации (ИД)'(declarationDetail) = uniqueGroupDeclaration(
+                                                                                       declarationDeclarationDetail(declarationDetail),
+                                                                                       articleDeclarationDetail(declarationDetail),
+                                                                                       customCategory10DeclarationDetail(declarationDetail),
+                                                                                       mainCompositionDeclarationDetail(declarationDetail),
+                                                                                       countryDeclarationDetail(declarationDetail)) IN idGroup;
+
+numberGroupDeclarationDeclarationDetail 'Группа строки декларации'(declarationDetail) = numberGroupDeclaration(groupDeclarationDeclarationDetail(declarationDetail)) IN baseGroup;
+
+quantityGroupDeclaration 'Кол-во' (groupDeclaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
+                                                              BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup;
+
+netWeightGroupDeclaration 'Вес нетто' (groupDeclaration) = GROUP SUM sumNetWeightDeclarationDetail(declarationDetail)
+                                                                  BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup;
+
+grossWeightGroupDeclaration 'Вес брутто' (groupDeclaration) = GROUP SUM sumGrossWeightDeclarationDetail(declarationDetail)
+                                                                     BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup;
+
+sumGroupDeclaration 'Стоимость' (groupDeclaration) = GROUP SUM sumDeclarationDetail(declarationDetail)
+                                                            BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup;
 
 
 FORM customStores 'Склады временного хранения'
@@ -431,7 +491,7 @@ FORM declaration 'Декларация'
     FILTERS inDeclarationCorrection(d, c)
 
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) numberDeclarationDetail, barcodeSkuDeclarationDetail, nameBrandArticleDeclarationDetail, sidArticleDeclarationDetail,
+    PROPERTIES (dd) numberGroupDeclarationDeclarationDetail, numberDeclarationDetail, barcodeSkuDeclarationDetail, nameBrandArticleDeclarationDetail, sidArticleDeclarationDetail,
                     nameCategoryArticleDeclarationDetail, mainCompositionDeclarationDetail,
                     nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
                     netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
@@ -445,6 +505,14 @@ FORM declaration 'Декларация'
 
     FILTERS inDeclarationDeclarationDetail(d, dd)
     PROPERTIES (c, dd) priceCorrectionDeclarationDetail
+
+    OBJECTS gd=groupDeclaration
+    PROPERTIES (gd) numberGroupDeclaration, nameBrandGroupDeclaration, nameCategoryGroupDeclaration, sidArticleGroupDeclaration,
+                    sidCustomCategory10GroupDeclaration, mainCompositionGroupDeclaration, nameCountryGroupDeclaration,
+                    quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
+                    sumGroupDeclaration, netWeightGroupDeclaration, grossWeightGroupDeclaration
+    FILTERS inDeclarationGroupDeclaration(d, gd)
+
     EDIT declaration OBJECT d
 ;
 
@@ -460,15 +528,19 @@ DESIGN declaration FROM DEFAULT{
         POSITION d.box TO THE LEFT document.box;
 
         ii.grid {
-            fillHorizontal = 0.3;
+            fillHorizontal = 0.5;
         }
 
         c.grid {
-            fillHorizontal = 0.3;
+            fillHorizontal = 0.5;
         }
 
         dd.grid {
             fillVertical = 3;
+        }
+
+        gd.grid {
+            fillVertical = 2;
         }
     }
 };
