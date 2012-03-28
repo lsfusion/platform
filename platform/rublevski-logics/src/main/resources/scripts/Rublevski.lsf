@@ -3741,7 +3741,7 @@ factorDetailCutting 'Рассчетный коэффициент цены' = DAT
 percGoodsDetailCutting '% выхода компонента (п/ф)' = DATA DOUBLE (detailCutting) IN cutGroup;
 
 notTotalPercGoodsDetailCutting (cutting) = GROUP SUM percGoodsDetailCutting(detailCutting) BY cuttingDetailCutting(detailCutting);
-totalPercGoodsDetailCutting 'Итого по карте проработки (разделки)' (cutting) = notTotalPercGoodsDetailCutting(cutting)+ percLossesCutting(cutting)+ percSweepsCutting(cutting);
+totalPercGoodsDetailCutting 'Итого % выхода по карте проработки (разделки)' (cutting) = notTotalPercGoodsDetailCutting(cutting)+ percLossesCutting(cutting)+ percSweepsCutting(cutting);
 highlightCutting(cutting) = totalPercGoodsDetailCutting(cutting) > 100;
 
 uniqueDetailCuttingCutting 'Компонента по карте переработки и товару' (cutting, item) = GROUP UNIQUE detailCutting BY cuttingDetailCutting(detailCutting), itemDetailCutting(detailCutting);
@@ -3804,7 +3804,9 @@ dateStudyInputDetail 'Дата' (studyInputDetail) = dateActOfStudy(actOfStudySt
 
 importerPriceStudyInputDetail 'Текущая цена изгтовителя/импортера' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
 
+
 retailRangeStudyInputDetail(studyInputDetail) = DATA range (studyInputDetail) IN idGroup;
+numberRetailRangeStudyInputDetail 'Номер НДС розничный' (studyInputDetail) = dataRange(retailRangeStudyInputDetail(studyInputDetail));
 
 dataRetailRangeStudyInputDetail 'Текущий НДС розничный,%' (studyInputDetail) =
    dataActingRateRangeDate(retailRangeStudyInputDetail(studyInputDetail),  dateStudyInputDetail(studyInputDetail)) IN baseGroup;
@@ -3827,6 +3829,8 @@ shortNameUnitOfMeasureItemStudyOutputDetail 'Ед.изм.' (studyOutputDetail) =
 captionItemStudyOutputDetail 'Наименование компонента' (studyOutputDetail) = captionItem (itemStudyOutputDetail(studyOutputDetail)) IN actGroup;
 factorStudyOutputDetail 'Рассчетный коэффициент цены' = DATA DOUBLE (studyOutputDetail) IN actGroup;
 percGoodsStudyOutputDetail '% выхода компонента (п/ф)' = DATA DOUBLE (studyOutputDetail) IN actGroup;
+percAllowancesStudyOutputDetail 'Процент надбавок, %' = DATA DOUBLE (studyOutputDetail) IN actGroup;
+
 
 quantityStudyInputDetailStudyOutputDetail (studyOutputDetail) = quantityStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
 retailPriceStudyInputDetailStudyOutputDetail (studyOutputDetail) = retailPriceStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
@@ -3838,7 +3842,8 @@ actualQuantityStudyOutputDetail 'Фактический выхода п/ф'(stud
 overQuantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE quantityStudyOutputDetail(studyOutputDetail),
                                                                   actualQuantityStudyOutputDetail(studyOutputDetail);
 
-notRoundRetailPriceStudyOutputDetail 'Цена' (studyOutputDetail) = factorStudyOutputDetail(studyOutputDetail) * retailPriceStudyInputDetailStudyOutputDetail(studyOutputDetail);
+notRoundRetailPriceStudyOutputDetail 'Цена' (studyOutputDetail) = [X*Y*(100+Z)/100]
+    (factorStudyOutputDetail(studyOutputDetail), retailPriceStudyInputDetailStudyOutputDetail(studyOutputDetail), percAllowancesStudyOutputDetail(studyOutputDetail));
 roundRetailPriceStudyOutputDetail 'Округленная цена' (studyOutputDetail) = roundMinus1(notRoundRetailPriceStudyOutputDetail(studyOutputDetail));
 
 retailPriceStudyOutputDetail 'Розничная цена' (studyOutputDetail) = DATA DOUBLE (studyOutputDetail);
@@ -3849,12 +3854,23 @@ subtotalStudyInputDetail 'Итого сумма  прихода п/ф по то�
 
 subtotalByActOfStudy 'Сумма прихода по акту' (actOfStudy) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail);
 
+notTotalPercGoodsStudyInputDetail (studyInputDetail)= GROUP SUM percGoodsStudyOutputDetail(studyOutputDetail) BY studyInputDetailStudyOutputDetail(studyOutputDetail);
+totalPercGoodsStudyInputDetail 'Итого % выхода по товару' (studyInputDetail) = [X+Y+Z]
+    (notTotalPercGoodsStudyInputDetail(studyInputDetail), percLossesCuttingStudyInputDetail(studyInputDetail), percSweepsCuttingStudyInputDetail(studyInputDetail));
+highlightStudyInputDetail(studyInputDetail) = totalPercGoodsStudyInputDetail(studyInputDetail) > 100;
+
 
 departmentStoreStudyOutputDetail(studyOutputDetail) = departmentStoreStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
 
 dateStudyOutputDetail 'Дата' (studyOutputDetail) = dateStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail)) PERSISTENT;
 
+importerPriceForStudyOutputDetail(studyOutputDetail)  = importerPriceStudyInputDetail (studyInputDetailStudyOutputDetail(studyOutputDetail));
+countImporterPriceStudyOutputDetail (studyOutputDetail) = factorStudyOutputDetail(studyOutputDetail) * importerPriceForStudyOutputDetail(studyOutputDetail);
+roundImporterPriceStudyOutputDetail 'Округленная цена импортера' (studyOutputDetail) = roundMinus1(countImporterPriceStudyOutputDetail(studyOutputDetail));
+
 curImporterPriceStudyOutputDetail 'Текущая цена изгтовителя/импортера' (studyOutputDetail) = DATA DOUBLE (studyOutputDetail) IN itemStudyOutputDetailInfo;
+importerPriceStudyOutputDetail 'Цена изгтовителя/импортера' (studyOutputDetail) = DATA DOUBLE (studyOutputDetail) IN baseGroup;
+
 curRetailPriceStudyOutputDetail 'Текущая розничная цена' (studyOutputDetail) = DATA DOUBLE (studyOutputDetail) IN itemStudyOutputDetailInfo;
 curRetailRangeStudyOutputDetail(studyOutputDetail) = DATA range (studyOutputDetail) IN idGroup;
 
@@ -3865,7 +3881,6 @@ retailRangeStudyOutputDetail(studyOutputDetail) = DATA range (studyOutputDetail)
 
 dataRetailRangeStudyOutputDetail 'Новый НДС розничный,%' (studyOutputDetail) =
    dataActingRateRangeDate(retailRangeStudyOutputDetail(studyOutputDetail),  dateStudyOutputDetail(studyOutputDetail));
-
 
 //---------------------------- Документы изменяющие суммы при разрубе --------------------------------//
 
@@ -3938,7 +3953,9 @@ toFillStudyOutputDetailsStudyInputDetail 'Заполнить данные для
             SET itemStudyOutputDetail(sod) <- itemDetailCutting(detailCutting);
             SET factorStudyOutputDetail(sod) <- factorDetailCutting(detailCutting);
             SET percGoodsStudyOutputDetail(sod) <- percGoodsDetailCutting(detailCutting);
+            SET percAllowancesStudyOutputDetail(sod) <- percAllowancesCutting(cuttingDetailCutting(detailCutting));
             SET retailPriceStudyOutputDetail(sod) <- roundRetailPriceStudyOutputDetail(sod);
+            SET importerPriceStudyOutputDetail(sod) <- roundImporterPriceStudyOutputDetail(sod);
             SET retailRangeStudyOutputDetail(sod) <- retailRangeStudyInputDetail(studyInputDetailStudyOutputDetail(sod));
         };
     }
@@ -4065,7 +4082,7 @@ FORM actOfStudy 'Акт проработки'
 
     OBJECTS a=actOfStudy FIXED PANEL
 
-    PROPERTIES(a)      numberActOfStudy, nameDepartmentStoreActOfStudy, timeCreated, nameContractorDepartmentStoreActOfStudy,
+    PROPERTIES(a)      numberActOfStudy, nameDepartmentStoreActOfStudy, dateTimeActOfStudy, nameContractorDepartmentStoreActOfStudy,
                        waybillOutputActOfStudy, seriesOutputActOfStudy, waybillInputActOfStudy, seriesInputActOfStudy
 
     OBJECTS sid=studyInputDetail
@@ -4077,10 +4094,11 @@ FORM actOfStudy 'Акт проработки'
                     retailPriceStudyInputDetail
     PROPERTIES(sid) quantityStudyInputDetail, totalStudyInputDetail, toFillStudyOutputDetailsStudyInputDetail FORCE PANEL SHOWIF showNotStudyInputDetailStudyOutputDetail(sid,sod),
                     cleanAllStudyInputDetail FORCE PANEL, ADDOBJ, delete
-    PROPERTIES(sid) importerPriceStudyInputDetail FORCE PANEL, dataRetailRangeStudyInputDetail FORCE PANEL
+    PROPERTIES(sid) importerPriceStudyInputDetail FORCE PANEL, dataRetailRangeStudyInputDetail FORCE PANEL,
+                    totalPercGoodsStudyInputDetail FORCE PANEL HIGHLIGHTIF highlightStudyInputDetail(sid)
 
-    PROPERTIES(sod) captionItemStudyOutputDetail, shortNameUnitOfMeasureItemStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
-                    quantityStudyOutputDetail, actualQuantityStudyOutputDetail, retailPriceStudyOutputDetail, totalStudyOutputDetail
+    PROPERTIES(sod) captionItemStudyOutputDetail, shortNameUnitOfMeasureItemStudyOutputDetail, importerPriceStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
+                    percAllowancesStudyOutputDetail, quantityStudyOutputDetail, actualQuantityStudyOutputDetail, retailPriceStudyOutputDetail, totalStudyOutputDetail
 
     PROPERTIES(sod) curImporterPriceStudyOutputDetail FORCE PANEL, curDataRetailRangeStudyOutputDetail FORCE PANEL,
                     curRetailPriceStudyOutputDetail FORCE PANEL
@@ -4098,11 +4116,11 @@ DESIGN actOfStudy FROM DEFAULT {
         a.box {
 
             NEW firstCase {
-            childConstraints = TO THE RIGHT;
-            title = 'Акт проработки';
-            ADD PROPERTY (numberActOfStudy);
-            ADD PROPERTY (nameDepartmentStoreActOfStudy);
-            ADD PROPERTY (timeCreated);
+                childConstraints = TO THE RIGHT;
+                title = 'Акт проработки';
+                ADD PROPERTY (numberActOfStudy);
+                ADD PROPERTY (nameDepartmentStoreActOfStudy);
+                ADD PROPERTY (dateTimeActOfStudy);
             }
 
             ADD a.contractorGroup AFTER firstCase {
@@ -6872,29 +6890,30 @@ retailPriceSpecificationDetail (specificationDetail) <- priceRetailBLedgerDateTi
 
 retailPriceStudyInputDetail (studyInputDetail) <- priceRetailBLedgerDateTime(
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                ON CHANGE itemStudyInputDetail(studyInputDetail);   // валется
+                ON CHANGE itemStudyInputDetail(studyInputDetail);
 
 importerPriceStudyInputDetail (studyInputDetail) <- priceImporterBLedgerDateTime (
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                ON CHANGE itemStudyInputDetail(studyInputDetail);     // норма
+                ON CHANGE itemStudyInputDetail(studyInputDetail);
 
 retailRangeStudyInputDetail (studyInputDetail) <- rangeRetailBLedgerDateTime(
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                ON CHANGE itemStudyInputDetail(studyInputDetail);   // валется
+                ON CHANGE itemStudyInputDetail(studyInputDetail);
 
 
 curRetailPriceStudyOutputDetail (studyOutputDetail) <- priceRetailBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-                ON CHANGE itemStudyOutputDetail(studyOutputDetail); // норма
+                ON CHANGE itemStudyOutputDetail(studyOutputDetail);
 
 // todo : сделать правильно цену изготовителя
+
 //curImporterPriceStudyOutputDetail (studyOutputDetail) <- priceImporterBLedgerDateTime(
 //                itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-//                ON CHANGE itemStudyOutputDetail(studyOutputDetail); // валется
+//                ON CHANGE itemStudyOutputDetail(studyOutputDetail);
 
 curRetailRangeStudyOutputDetail (studyOutputDetail) <- rangeRetailBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-                ON CHANGE itemStudyOutputDetail(studyOutputDetail);  // норма
+                ON CHANGE itemStudyOutputDetail(studyOutputDetail);
 
 
 importerPriceStatementDetail (statementDetail) <- priceImporterBLedgerDateTime (
