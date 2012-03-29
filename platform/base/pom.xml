@@ -362,7 +362,7 @@
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
-                <artifactId>trushkin-logics</artifactId>
+                <artifactId>retail-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

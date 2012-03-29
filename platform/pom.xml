@@ -24,6 +24,8 @@
         <module>sample-logics</module>
         <module>trushkin-logics</module>
         <module>retail-logics</module>
+        <module>retail-api</module>
+        <module>retail-equ</module>
         <module>rublevski-logics</module>
         <module>gwt-form</module>
         <module>gwt-api</module>

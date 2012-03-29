@@ -3335,6 +3335,9 @@ PROPERTIES(s) name, nameFlashScalesModel, noteModel, useModel, maxProductModel, 
               folderScalesModel, lettersModel, compositionScalesModel
 EDIT scalesModel OBJECT s;
 
+//---------------------------- Сервера управления оборудования -----------------------------//
+CLASS equipmentServer 'Сервер оборудования' : named;
+sidEquipmentServer 'Идентификатор' = DATA STRING[20] (equipmentServer) IN baseGroup;
 
 //---------------------------- группы оборудования ----------------------------------------//
 
@@ -3350,8 +3353,11 @@ cellGroupScales 'Помещать на ценники номера ячеек с
 sidSectionGroupScales 'Код отдела в Set Retail' = DATA INTEGER (groupScales) IN baseGroup;
 directoryGroupScales 'Директория сервера Set Retail' = DATA STRING[200] (groupScales) IN baseGroup;
 
-departmentStoreGroupMachinery 'Подразделение ИД' = DATA departmentStore (groupMachinery) IN baseGroup;
+departmentStoreGroupMachinery 'Подразделение (ИД)' = DATA departmentStore (groupMachinery);
 nameDepartmentStoreGroupMachinery 'Подразделение' (groupMachinery) = name(departmentStoreGroupMachinery(groupMachinery)) IN baseGroup;
+
+equipmentServerGroupMachinery 'Сервер оборудования (ИД)' = DATA equipmentServer (groupMachinery);
+nameEquipmentServerGroupMachinery 'Сервер оборудования' (groupMachinery) = name(equipmentServerGroupMachinery(groupMachinery));
 
 //---------------------------- типы оборудования  ----------------------------------------//
 CLASS ABSTRACT machinery 'Оборудование';
@@ -3436,7 +3442,8 @@ EDIT check OBJECT ch;
 FORM groupScales 'Группа весов'
 OBJECTS grs=groupScales FIXED PANEL
 OBJECTS s=scales
-PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
+PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
 PROPERTIES(s)   numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
                 dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales, ADDOBJ, delete
 FILTERGROUP filters1
@@ -3445,7 +3452,8 @@ EDIT groupScales OBJECT grs;
 
 FORM groupsScales 'Группы весов'
 OBJECTS grs=groupScales, s=scales
-PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
+PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                         transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
 PROPERTIES(grs) ADDFORM, EDITFORM, delete
 PROPERTIES(s)   READONLY numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
                 dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales
@@ -3454,7 +3462,7 @@ FILTERS isGroupScalesScales(grs, s);
 FORM groupCashRegister 'Группа касс'
 OBJECTS grc=groupCashRegister FIXED PANEL
 OBJECTS c=cashRegister
-PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
+PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
 PROPERTIES(c)   numberCashRegister, descriptionMachinery, nameGroupMachineryCashRegister, portMachinery, useMachinery, directoryCashRegister, nameCashRegisterModelCashRegister,
                 dateCashRegister, nppCashRegister, statusCashRegister, resultCashRegister, ADDOBJ, delete
 FILTERGROUP filters2
@@ -3464,7 +3472,7 @@ EDIT groupCashRegister OBJECT grc;
 
 FORM groupsCashRegister 'Группы касс'
 OBJECTS grc=groupCashRegister, c=cashRegister
-PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
+PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
 PROPERTIES(grc)  ADDFORM, EDITFORM, delete
 PROPERTIES(c)    READONLY numberCashRegister, descriptionMachinery, portMachinery,
                  useMachinery, directoryCashRegister, nameCashRegisterModelCashRegister,
@@ -3474,7 +3482,7 @@ FILTERS isGroupCashRegisterCashRegister(grc, c);
 FORM groupCheck 'Группа прайс чекеров'
 OBJECTS grch=groupCheck FIXED PANEL
 OBJECTS ch=check
-PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
+PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
 PROPERTIES(ch)   descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery, ADDOBJ, delete
 FILTERGROUP filters3
     FILTER 'Показывать только для данной группы' 'F10' isGroupCheckCheck(grch, ch) DEFAULT
@@ -3482,7 +3490,7 @@ EDIT groupCheck OBJECT grch;
 
 FORM groupsCheck 'Группы прайс чекеров'
 OBJECTS grch=groupCheck, ch=check
-PROPERTIES(grch) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
+PROPERTIES(grch) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
 PROPERTIES(grch) ADDFORM, EDITFORM, delete
 PROPERTIES(ch)   READONLY descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery
 FILTERS isGroupCheckCheck(grch, ch);

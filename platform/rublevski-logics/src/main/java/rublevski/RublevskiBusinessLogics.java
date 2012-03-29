@@ -1,27 +1,19 @@
 package rublevski;
 
 import net.sf.jasperreports.engine.JRException;
-import platform.interop.action.MessageClientAction;
 import platform.server.auth.SecurityPolicy;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.ValueClass;
 import platform.server.data.sql.DataAdapter;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.navigator.NavigatorElement;
-import platform.server.integration.*;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingLogicsModule;
+import retail.api.remote.PriceTransaction;
+import retail.api.remote.RetailRemoteInterface;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * User: DAle
@@ -30,7 +22,7 @@ import java.util.List;
  */
 
 
-public class RublevskiBusinessLogics extends BusinessLogics<RublevskiBusinessLogics> {
+public class RublevskiBusinessLogics extends BusinessLogics<RublevskiBusinessLogics> implements RetailRemoteInterface {
     ScriptingLogicsModule rublevskiLM;
 
     public RublevskiBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
@@ -56,6 +48,11 @@ public class RublevskiBusinessLogics extends BusinessLogics<RublevskiBusinessLog
     @Override
     public BusinessLogics getBL() {
         return this;
+    }
+
+    @Override
+    public PriceTransaction readNextPriceTransaction(String equServerID) throws RemoteException {
+        return new PriceTransaction();
     }
 }
 

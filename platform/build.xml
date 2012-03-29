@@ -236,6 +236,18 @@
         </antcall>
     </target>
 
+    <target name="retail-equ-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="retail-equ"/>
+        </antcall>
+    </target>
+
+    <target name="retail-equ-quickCompile">
+        <antcall target="quickCompile">
+            <param name="artifactId" value="retail-equ"/>
+        </antcall>
+    </target>
+
     <target name="retail-logics-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="retail-logics"/>
