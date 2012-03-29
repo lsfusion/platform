@@ -3803,8 +3803,8 @@ quantityStudyInputDetail 'Количество для разруба' (studyInpu
 
 retailPriceStudyInputDetail 'Цена за ед.' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
 totalStudyInputDetail 'Сумма' (studyInputDetail) = retailPriceStudyInputDetail(studyInputDetail)*quantityStudyInputDetail(studyInputDetail);
-subtotalInputActOfStudy 'Сумма расхода по акту' (actOfStudy) = GROUP SUM totalStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail);
-quantityInputActOfStudy 'К-во расхода по акту' (actOfStudy) = GROUP SUM quantityStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail);
+subtotalInputActOfStudy 'Расход сумма' (actOfStudy) = GROUP SUM totalStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail);
+quantityInputActOfStudy 'Расход к-во' (actOfStudy) = GROUP SUM quantityStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail);
 
 dateStudyInputDetail 'Дата' (studyInputDetail) = dateActOfStudy(actOfStudyStudyInputDetail(studyInputDetail)) PERSISTENT;
 
@@ -3859,8 +3859,8 @@ totalStudyOutputDetail 'Сумма' (studyOutputDetail)= retailPriceStudyOutputD
 
 subtotalStudyInputDetail 'Итого сумма  прихода п/ф по товару' (studyInputDetail) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY studyInputDetailStudyOutputDetail(studyOutputDetail);
 
-subtotalOutputActOfStudy 'Сумма прихода по акту' (actOfStudy) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail);
-quantityOutputActOfStudy 'К-во прихода по акту (фактическое)' (actOfStudy) = GROUP SUM overQuantityStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail);
+subtotalOutputActOfStudy 'Прихода сумма' (actOfStudy) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail);
+quantityOutputActOfStudy 'Прихода к-во (факт.)' (actOfStudy) = GROUP SUM overQuantityStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail);
 
 notTotalPercGoodsStudyInputDetail (studyInputDetail)= GROUP SUM percGoodsStudyOutputDetail(studyOutputDetail) BY studyInputDetailStudyOutputDetail(studyOutputDetail);
 totalPercGoodsStudyInputDetail 'Итого % выхода по товару' (studyInputDetail) = [X+Y+Z]
@@ -4012,9 +4012,9 @@ PROPERTIES(i, c)   inItemCutting
 
 FILTERS isCuttingDetailCutting(c, d)
 FILTERGROUP filters7
-    FILTER 'Показывать подразделения только для данной карты' 'F10' inDepartmentStoreCutting(dep, c) DEFAULT
+    FILTER 'Показывать подразделения только для данной карты' 'F10' inDepartmentStoreCutting(dep, c)
 FILTERGROUP filters8
-    FILTER 'Показывать товар только для данной карты' 'F9' inItemCutting(i, c) DEFAULT
+    FILTER 'Показывать товар только для данной карты' 'F9' inItemCutting(i, c)
 
 EDIT cutting OBJECT c;
 
@@ -4054,6 +4054,9 @@ FORM cuttings 'Карты проработки'
               inDepartmentStoreCutting(dep, c),
               inItemCutting(i, c)
     ORDER BY           nameStoreDepartmentStore, seriesObject, numberObject, captionItemDetailCutting, name
+    FILTERGROUP filters1
+        FILTER 'Только используемые' 'F10' useCutting(c) DEFAULT
+
 ;
 
 
@@ -4117,10 +4120,11 @@ FORM actOfStudy 'Акт проработки'
     OBJECTS sid=studyInputDetail
     OBJECTS sod=studyOutputDetail
 
-    PROPERTIES(sid) nameAttributeItemStudyInputDetail, showSeriesNumberCuttingStudyInputDetail
-    PROPERTIES(sid) seriesNumberCuttingStudyInputDetail, dateCuttingStudyInputDetail, descriptionCuttingStudyInputDetail,
-                    percAllowancesCuttingStudyInputDetail, percLossesCuttingStudyInputDetail, percSweepsCuttingStudyInputDetail,
-                    importerPriceStudyInputDetail, numberRetailRangeStudyInputDetail, dataRetailRangeStudyInputDetail,
+    PROPERTIES(sid) nameAttributeItemStudyInputDetail
+    PROPERTIES(sid) seriesNumberCuttingStudyInputDetail READONLY, showSeriesNumberCuttingStudyInputDetail
+    PROPERTIES(sid) READONLY dateCuttingStudyInputDetail, descriptionCuttingStudyInputDetail,
+                    percAllowancesCuttingStudyInputDetail, percLossesCuttingStudyInputDetail, percSweepsCuttingStudyInputDetail
+    PROPERTIES(sid) importerPriceStudyInputDetail, numberRetailRangeStudyInputDetail, dataRetailRangeStudyInputDetail,
                     retailPriceStudyInputDetail, quantityStudyInputDetail, totalStudyInputDetail,
                     totalPercGoodsStudyInputDetail HIGHLIGHTIF highlightStudyInputDetail(sid) READONLY, ADDOBJ, delete
 
@@ -4182,7 +4186,7 @@ FORM actOfStudies 'Акты проработки'
 
     OBJECTS a=actOfStudy
     PROPERTIES(a)      READONLY objectClassName, numberObject, seriesObject, dateActOfStudy, timeActOfStudy, nameDepartmentStoreActOfStudy,
-                       quantityOutputActOfStudy, subtotalOutputActOfStudy, quantityInputActOfStudy, subtotalInputActOfStudy
+                       nameContractorDepartmentStoreActOfStudy, quantityOutputActOfStudy, subtotalOutputActOfStudy, quantityInputActOfStudy, subtotalInputActOfStudy
     PROPERTIES(a)      FORCE PANEL timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed
 
     PROPERTIES(a)      ADDFORM, EDITFORM SHOWIF isDraftActOfStudy(a), delete FORCE PANEL SHOWIF isDraftActOfStudy(a),
@@ -5568,6 +5572,10 @@ numberWastageDetail 'Номер строки' (wastageDetail) =
 quantityWastageDetail 'Количество списания '(wastageDetail) =
     percentRateWasteWastageDetail (wastageDetail)* quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail))/100;
 
+quantityWastage 'Общее количество' (wastage) = GROUP SUM quantityWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail);
+
+quantityWastageDetailsWastage 'Количество строк' (wastage) = GROUP SUM 1 IF wastageDetail IS wastageDetail BY wastageWastageDetail(wastageDetail);
+
 priceWastageDetail 'Цена' (wastageDetail) = retailPriceShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 
 sumWastageDetail 'Сумма' (wastageDetail) = quantityWastageDetail(wastageDetail) * priceWastageDetail(wastageDetail);
@@ -5586,7 +5594,8 @@ descriptionWastageDetail 'Название документа' (wastageDetail) =
 FORM wastages 'Списания отходов'
 
     OBJECTS w=wastage
-    PROPERTIES (w) READONLY numberWastage, seriesWastage, dateWastage, timeWastage, nameDepartmentStoreWastage, nameSupplierWastage, totalSumWastage
+    PROPERTIES (w) READONLY numberWastage, seriesWastage, dateWastage, timeWastage, nameDepartmentStoreWastage, nameSupplierWastage,
+                   quantityWastageDetailsWastage, quantityWastage, totalSumWastage
 
     OBJECTS d=wastageDetail
     PROPERTIES (d) READONLY numberWastageDetail, barcodeExSkuWastageDetail, nameAttributeItemWastageDetail, quantityWastageDetail, priceWastageDetail, sumWastageDetail
@@ -7771,7 +7780,7 @@ DESIGN specification FROM DEFAULT{
 FORM specifications 'Счет-фактуры'
     OBJECTS sp=specification
     PROPERTIES (sp) READONLY numberObject, seriesObject, dateSpecification, timeSpecification, nameDepartmentStoreSpecification,
-                             nameCustomerSpecification, dateToSpecification, quantitySpecification, sumSpecification
+                             nameCustomerSpecification, dateToSpecification, quantityDetailInSpecification, quantitySpecification, sumSpecification
     PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
 
     PROPERTIES (sp)          ADDFORM, EDITFORM, delete
@@ -7844,7 +7853,6 @@ DESIGN statement FROM DEFAULT {
         preferredSize = (1024, 768);
 
         st.box {
-//            childConstraints = TO THE RIGHTBOTTOM;
             POSITION st.documentHeaderGroup TO THE LEFT st.specificationGroup;
         }
         d.panel {
@@ -7856,14 +7864,14 @@ DESIGN statement FROM DEFAULT {
 
 FORM statements 'Отгрузки из розницы'
     OBJECTS st=statement
-    PROPERTIES (st)  READONLY objectClassName, numberObject, seriesObject, dateTimeStatement, nameDepartmentStoreStatement,
+    PROPERTIES (st)  READONLY objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameDepartmentStoreStatement,
                              nameCustomerStatement, quantityStatementDetailsStatement, totalQuantityStatement, sumStatement
 
     PROPERTIES (st)  ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
                      postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
      PROPERTIES (st) FORCE PANEL  nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    ORDER BY dateTimeStatement
+
 
     OBJECTS d=statementDetail
     PROPERTIES (d)   READONLY numberStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
