@@ -1750,7 +1750,7 @@ nameTaxWare 'Налог' (ware) = nameTaxRange(rangeWare(ware)) IN baseGroup;
 dataRangeWare 'Шкала НДС' (ware) = dataRange(rangeWare(ware)) IN baseGroup;
 dataActingRateRangeWare 'НДС,%' (ware) = dataActingRateRange(rangeWare(ware)) IN baseGroup;
 
-CONSTRAINT taxRange(rangeWareDate(ware, date)) != tax.taxNDS CHECKED MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(rangeWareDate(ware, date)) != tax.taxNDS CHECKED BY retailRangeItem MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 
 FORM addRangeWare 'Добавить Шкалу'
@@ -3706,10 +3706,10 @@ GROUP actGroup 'Акт' : publicGroup;
 GROUP contractorGroup 'Контрагент' : publicGroup;
 GROUP itemStudyOutputDetailInfo 'Ценовый характеристики п/ф' : publicGroup;
 
-CLASS cutting 'Карта проработки (разделки)' : named;
+CLASS cutting 'Карта проработки (разделки)' : named, numeratedObject;
 CLASS detailCutting 'Компонента';
 
-CLASS actOfStudy 'Акт проработки (разделки)' : historyObject;
+CLASS actOfStudy 'Акт проработки (разделки)' : historyObject, numeratedObject;
 CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStudy, postedObject;
 TABLE actOfStudy (actOfStudy);
 
@@ -3719,7 +3719,7 @@ CLASS studyOutputDetail 'Полуфабрикаты' : balanceItemLedger, import
 @metaCodePostedObject (actOfStudy);
       //      ??????????????????? не понятно что делать с процентом надбавок ??????????????????????   //
 
-sidCutting 'Номер карты (из сборника и прочее)' = DATA INTEGER (cutting) IN cutGroup;
+//sidCutting 'Номер карты (из сборника и прочее)' = DATA INTEGER (cutting) IN cutGroup;
 
 dateCutting 'Дата создания' = DATA DATE (cutting) IN cutGroup;
 dateCutting(cutting) <- currentDate() ON ASSIGN cutting IS cutting;
@@ -3740,7 +3740,6 @@ overPercSweepsCutting 'Процент зачисток, %' (cutting) = UNION OVE
 inDepartmentStoreCutting 'В каких подразделениях разрешено использовать карту' = DATA BOOLEAN (departmentStore, cutting) IN baseGroup;
 
 cuttingDetailCutting 'Строка (ИД)' = DATA cutting (detailCutting) IN idGroup;
-sidCuttingDetailCutting 'Номер карты' (detailCutting) =  sidCutting(cuttingDetailCutting(detailCutting)) IN cutGroup;
 itemDetailCutting 'Товар (ИД)' = DATA item (detailCutting) IN idGroup;
 shortNameUnitOfMeasureItemDetailCutting 'Ед.изм.' (detailCutting) = shortNameUnitOfMeasureItem(itemDetailCutting(detailCutting)) IN cutGroup;
 captionItemDetailCutting 'Наименование компонента' (detailCutting) = captionItem (itemDetailCutting(detailCutting)) IN cutGroup;
@@ -3759,8 +3758,8 @@ inItemCutting 'Вкл.' = DATA BOOLEAN (item, cutting) IN cutGroup;
 // Акты проработки
 
 departmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idGroup;
-nameDepartmentStoreActOfStudy 'Подразделение' (actOfStudy) = name(departmentStoreActOfStudy(actOfStudy));
-numberActOfStudy 'Номер акта' = DATA STRING[10] (actOfStudy) IN baseGroup;
+nameDepartmentStoreActOfStudy 'Отдел документа' (actOfStudy) = name(departmentStoreActOfStudy(actOfStudy));
+//numberActOfStudy 'Номер акта' = DATA STRING[10] (actOfStudy) IN baseGroup;
 
 dateActOfStudy 'Дата документа' (actOfStudy) = DATA DATE (actOfStudy) IN baseGroup;
     dateActOfStudy (actOfStudy) <- currentDate() ON ASSIGN actOfStudy AS actOfStudy;
@@ -3772,7 +3771,7 @@ dateTimeActOfStudy 'Дата/время документа' (actOfStudy) = toDat
 
 
 contractorDepartmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idGroup;
-nameContractorDepartmentStoreActOfStudy 'Подразделение-контрагент' (actOfStudy) = name(contractorDepartmentStoreActOfStudy(actOfStudy)) IN contractorGroup;
+nameContractorDepartmentStoreActOfStudy 'Отдел-контрагент' (actOfStudy) = name(contractorDepartmentStoreActOfStudy(actOfStudy)) IN contractorGroup;
 
 waybillOutputActOfStudy 'Номер расходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 7;
 waybillInputActOfStudy 'Номер приходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 7;
@@ -3792,7 +3791,7 @@ counterStudyInputDetail 'Порядковый номер' (studyInputDetail) = P
     BY actOfStudyStudyInputDetail(studyInputDetail) ORDER studyInputDetail IN baseGroup;
 
 cuttingStudyInputDetail = DATA cutting (studyInputDetail) IN idGroup;
-sidCuttingStudyInputDetail 'Номер карты' (studyInputDetail) = sidCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
+seriesNumberCuttingStudyInputDetail 'Номер карты' (studyInputDetail) = seriesNumberObject(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
 dateCuttingStudyInputDetail 'Дата создания карты' (studyInputDetail) = dateCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
 descriptionCuttingStudyInputDetail 'Описание' (studyInputDetail) = descriptionCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
@@ -3804,19 +3803,19 @@ quantityStudyInputDetail 'Количество для разруба' (studyInpu
 
 retailPriceStudyInputDetail 'Цена за ед.' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
 totalStudyInputDetail 'Сумма' (studyInputDetail) = retailPriceStudyInputDetail(studyInputDetail)*quantityStudyInputDetail(studyInputDetail);
-subtotalActOfStudy 'Сумма расхода по акту' (actOfStudy) = GROUP SUM totalStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail);
-
+subtotalInputActOfStudy 'Сумма расхода по акту' (actOfStudy) = GROUP SUM totalStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail);
+quantityInputActOfStudy 'К-во расхода по акту' (actOfStudy) = GROUP SUM quantityStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail);
 
 dateStudyInputDetail 'Дата' (studyInputDetail) = dateActOfStudy(actOfStudyStudyInputDetail(studyInputDetail)) PERSISTENT;
 
-importerPriceStudyInputDetail 'Текущая цена изгтовителя/импортера' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
-
+importerPriceStudyInputDetail 'Цена изгтовителя/импортера' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
 
 retailRangeStudyInputDetail(studyInputDetail) = DATA range (studyInputDetail) IN idGroup;
 numberRetailRangeStudyInputDetail 'Номер НДС розничный' (studyInputDetail) = dataRange(retailRangeStudyInputDetail(studyInputDetail));
 
-dataRetailRangeStudyInputDetail 'Текущий НДС розничный,%' (studyInputDetail) =
+dataRetailRangeStudyInputDetail 'НДС розничный,%' (studyInputDetail) =
    dataActingRateRangeDate(retailRangeStudyInputDetail(studyInputDetail),  dateStudyInputDetail(studyInputDetail)) IN baseGroup;
+CONSTRAINT taxRange(retailRangeStudyInputDetail(studyInputDetail)) != tax.taxNDS CHECKED BY retailRangeStudyInputDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 //inDepartmentStoreCuttingByStudyInputDetail(studyInputDetail) = inDepartmentStoreCutting(departmentStoreStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail));
 //inItemCuttingByStudyInputDetail (studyInputDetail) = inItemCutting(itemStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail));
@@ -3860,7 +3859,8 @@ totalStudyOutputDetail 'Сумма' (studyOutputDetail)= retailPriceStudyOutputD
 
 subtotalStudyInputDetail 'Итого сумма  прихода п/ф по товару' (studyInputDetail) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY studyInputDetailStudyOutputDetail(studyOutputDetail);
 
-subtotalByActOfStudy 'Сумма прихода по акту' (actOfStudy) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail);
+subtotalOutputActOfStudy 'Сумма прихода по акту' (actOfStudy) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail);
+quantityOutputActOfStudy 'К-во прихода по акту (фактическое)' (actOfStudy) = GROUP SUM overQuantityStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail);
 
 notTotalPercGoodsStudyInputDetail (studyInputDetail)= GROUP SUM percGoodsStudyOutputDetail(studyOutputDetail) BY studyInputDetailStudyOutputDetail(studyOutputDetail);
 totalPercGoodsStudyInputDetail 'Итого % выхода по товару' (studyInputDetail) = [X+Y+Z]
@@ -3880,18 +3880,23 @@ curImporterPriceStudyOutputDetail 'Текущая цена изгтовител�
 importerPriceStudyOutputDetail 'Цена изгтовителя/импортера' (studyOutputDetail) = DATA DOUBLE (studyOutputDetail) IN baseGroup;
 
 curRetailPriceStudyOutputDetail 'Текущая розничная цена' (studyOutputDetail) = DATA DOUBLE (studyOutputDetail) IN itemStudyOutputDetailInfo;
-curRetailRangeStudyOutputDetail(studyOutputDetail) = DATA range (studyOutputDetail) IN idGroup;
 
+curRetailRangeStudyOutputDetail(studyOutputDetail) = DATA range (studyOutputDetail) IN idGroup;
+curNumberRetailRangeStudyOutputDetail 'Текущий НДС номер' (studyOutputDetail) = dataRange(curRetailRangeStudyOutputDetail(studyOutputDetail)) IN itemStudyOutputDetailInfo;
 curDataRetailRangeStudyOutputDetail 'Текущий НДС розничный,%' (studyOutputDetail) =
    dataActingRateRangeDate(curRetailRangeStudyOutputDetail(studyOutputDetail),  dateStudyOutputDetail(studyOutputDetail)) IN itemStudyOutputDetailInfo;
 
-retailRangeStudyOutputDetail(studyOutputDetail) = DATA range (studyOutputDetail);
+CONSTRAINT taxRange(curRetailRangeStudyOutputDetail(studyOutputDetail)) != tax.taxNDS CHECKED BY curRetailRangeStudyOutputDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
-dataRetailRangeStudyOutputDetail 'Новый НДС розничный,%' (studyOutputDetail) =
+
+retailRangeStudyOutputDetail(studyOutputDetail) = DATA range (studyOutputDetail);
+numberRetailRangeStudyOutputDetail 'НДС номер' (studyOutputDetail) = dataRange(retailRangeStudyOutputDetail(studyOutputDetail));
+dataRetailRangeStudyOutputDetail 'НДС розничный,%' (studyOutputDetail) =
    dataActingRateRangeDate(retailRangeStudyOutputDetail(studyOutputDetail),  dateStudyOutputDetail(studyOutputDetail));
 
+
 quantityInputItemActOfStudy 'Расход количество' (item, actOfStudy) = GROUP SUM quantityStudyInputDetail(studyInputDetail) BY itemStudyInputDetail(studyInputDetail), actOfStudyStudyInputDetail(studyInputDetail);
-quantityOutputItemActOfStudy 'Приход количество' (item, actOfStudy) = GROUP SUM quantityStudyOutputDetail(studyOutputDetail) BY itemStudyOutputDetail(studyOutputDetail), actOfStudyStudyOutputDetail(studyOutputDetail);
+quantityOutputItemActOfStudy 'Приход количество (фактическое)' (item, actOfStudy) = GROUP SUM overQuantityStudyOutputDetail(studyOutputDetail) BY itemStudyOutputDetail(studyOutputDetail), actOfStudyStudyOutputDetail(studyOutputDetail);
 
 totalInputItemActOfStudy 'Расход сумма' (item, actOfStudy) = GROUP SUM totalStudyInputDetail(studyInputDetail) BY itemStudyInputDetail(studyInputDetail), actOfStudyStudyInputDetail(studyInputDetail);
 totalOutputItemActOfStudy 'Приход сумма' (item, actOfStudy) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY itemStudyOutputDetail(studyOutputDetail), actOfStudyStudyOutputDetail(studyOutputDetail);
@@ -3910,11 +3915,14 @@ waybillInputParish 'Номер приходной накладной' (parish) =
 seriesInputParish 'Серия приходной накладной' (parish) = seriesInputActOfStudy(actOfStudyParish(parish));
 
 dateTimeParish 'Дата/время' (parish) = dateTimeActOfStudy(actOfStudyParish(parish));
-subtotalParish 'Сумма прихода' (parish) = subtotalByActOfStudy(actOfStudyParish(parish));
+subtotalParish 'Сумма прихода' (parish) = subtotalOutputActOfStudy(actOfStudyParish(parish));
 departmentStoreParish (parish) = departmentStoreActOfStudy(actOfStudyParish(parish));
 isPostedParish (parish) = isPostedActOfStudy(actOfStudyParish(parish));
 dateParish (parish) = dateActOfStudy(actOfStudyParish(parish));
-numberParish 'Номер акта' (parish) = numberActOfStudy(actOfStudyParish(parish));
+//numberParish 'Номер акта' (parish) = numberActOfStudy(actOfStudyParish(parish));
+//numberParish 'Номер акта' (parish) = numberObject(actOfStudyParish(parish));
+//seriesParish 'Серия акта' (parish) = seriesObject(actOfStudyParish(parish));
+seriesNumberParish 'Серия/Номер' (parish) = seriesNumberObject(actOfStudyParish(parish));
 
 contractorDepartmentStoreParish (parish) = contractorDepartmentStoreActOfStudy(actOfStudyParish(parish));
 nameContractorDepartmentStoreParish 'Отдел поставки' (parish) = name(contractorDepartmentStoreParish(parish));
@@ -3923,21 +3931,25 @@ castParishObjectsToString100=
     FORMULA STRING[200] '\'Акт разруба приход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
 
 descriptionParish 'Название документа' (parish) = castParishObjectsToString100(
-    numberParish(parish), dateParish(parish), nameContractorDepartmentStoreParish(parish));
+    seriesNumberParish(parish), dateParish(parish), nameContractorDepartmentStoreParish(parish));
 
 descriptionStudyOutputDetail 'Название документа' (studyOutputDetail) = castParishObjectsToString100(
-    numberActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail)), dateActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail)),
+    seriesNumberObject(actOfStudyStudyOutputDetail(studyOutputDetail)), dateActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail)),
     nameContractorDepartmentStoreActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail)));
 
         //  расходный документ //
 @metaCodeSingleAggregation(actOfStudy, consumption, isActOfStudy);
 
 dateTimeConsumption 'Дата/время' (consumption) = dateTimeActOfStudy(actOfStudyConsumption(consumption));
-subtotalConsumption 'Сумма расхода' (consumption) = subtotalActOfStudy(actOfStudyConsumption(consumption));
+subtotalConsumption 'Сумма расхода' (consumption) = subtotalInputActOfStudy(actOfStudyConsumption(consumption));
 departmentStoreConsumption (consumption) = departmentStoreActOfStudy(actOfStudyConsumption(consumption));
 isPostedConsumption (consumption) = isPostedActOfStudy(actOfStudyConsumption(consumption));
 dateConsumption (consumption) = dateActOfStudy(actOfStudyConsumption(consumption));
-numberConsumption 'Номер акта' (consumption) = numberActOfStudy(actOfStudyConsumption(consumption));
+//numberConsumption 'Номер акта' (consumption) = numberActOfStudy(actOfStudyConsumption(consumption));
+//numberConsumption 'Номер акта' (consumption) = numberObject(actOfStudyConsumption(consumption));
+//seriesConsumption 'Серия акта' (consumption) = seriesObject(actOfStudyConsumption(consumption));
+seriesNumberConsumption 'Серия/Номер' (consumption) = seriesNumberObject(actOfStudyConsumption(consumption));
+
 
 contractorDepartmentStoreConsumption (consumption) = contractorDepartmentStoreActOfStudy(actOfStudyConsumption(consumption));
 nameContractorDepartmentStoreConsumption 'Отдел назначения' (consumption) = name(contractorDepartmentStoreConsumption(consumption));
@@ -3946,10 +3958,10 @@ castConsumptionObjectsToString100=
     FORMULA STRING[200] '\'Акт разруба расход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
 
 descriptionConsumption 'Название документа' (consumption) = castConsumptionObjectsToString100(
-    numberConsumption(consumption), dateConsumption(consumption), nameContractorDepartmentStoreConsumption(consumption));
+    seriesNumberConsumption(consumption), dateConsumption(consumption), nameContractorDepartmentStoreConsumption(consumption));
 
 descriptionStudyInputDetail 'Название документа' (studyInputDetail) = castConsumptionObjectsToString100(
-    numberActOfStudy(actOfStudyStudyInputDetail(studyInputDetail)), dateActOfStudy(actOfStudyStudyInputDetail(studyInputDetail)),
+    seriesNumberObject(actOfStudyStudyInputDetail(studyInputDetail)), dateActOfStudy(actOfStudyStudyInputDetail(studyInputDetail)),
     nameContractorDepartmentStoreActOfStudy(actOfStudyStudyInputDetail(studyInputDetail)));
 
 //---------------------------- Изменение остатка и цены при разрубе --------------------------------//
@@ -3988,8 +4000,9 @@ cleanAllStudyInputDetail 'Очистить документ' = ACTION (studyInpu
 FORM cutting 'Карта проработки'
 OBJECTS c=cutting FIXED PANEL
 OBJECTS d=detailCutting, dep=departmentStore, i=item
-PROPERTIES(c)      sidCutting, descriptionCutting, dateCutting, useCutting, overPercAllowancesCutting, overPercLossesCutting, overPercSweepsCutting
-PROPERTIES(c)         totalPercGoodsDetailCutting TODRAW d FORCE PANEL  HIGHLIGHTIF highlightCutting(c)
+PROPERTIES(c)      nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, descriptionCutting, dateCutting,
+                   useCutting, overPercAllowancesCutting, overPercLossesCutting, overPercSweepsCutting
+PROPERTIES(c)      totalPercGoodsDetailCutting TODRAW d FORCE PANEL  HIGHLIGHTIF highlightCutting(c)
 
 PROPERTIES(d)      captionItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting, ADDOBJ, delete
 PROPERTIES(dep)    nameStoreDepartmentStore, name
@@ -4020,7 +4033,8 @@ DESIGN cutting FROM DEFAULT {
 
 FORM cuttings 'Карты проработки'
     OBJECTS c=cutting
-    PROPERTIES(c)      READONLY sidCutting, descriptionCutting, dateCutting, useCutting, overPercAllowancesCutting, overPercLossesCutting, overPercSweepsCutting
+    PROPERTIES(c)      READONLY numberObject, seriesObject, descriptionCutting, dateCutting, useCutting, overPercAllowancesCutting,
+                       overPercLossesCutting, overPercSweepsCutting
     PROPERTIES(c)      ADDFORM, EDITFORM, delete
 
     OBJECTS d=detailCutting
@@ -4039,7 +4053,7 @@ FORM cuttings 'Карты проработки'
     FILTERS   isCuttingDetailCutting(c, d),
               inDepartmentStoreCutting(dep, c),
               inItemCutting(i, c)
-    ORDER BY           nameStoreDepartmentStore, sidCutting, captionItemDetailCutting, name
+    ORDER BY           nameStoreDepartmentStore, seriesObject, numberObject, captionItemDetailCutting, name
 ;
 
 
@@ -4059,14 +4073,14 @@ DESIGN cuttings FROM DEFAULT {
    }
 }
 
-FORM sidCuttingStudyInputDetail 'Возможные карты проработки'
+FORM seriesNumberCuttingStudyInputDetail 'Возможные карты проработки'
     OBJECTS dep=departmentStore FIXED PANEL, i=item FIXED PANEL
 
     PROPERTIES         READONLY depName = name(dep)
     PROPERTIES         READONLY nameAttributeItem(i)
 
     OBJECTS c=cutting
-    PROPERTIES(c)      READONLY sidCutting, descriptionCutting, dateCutting, useCutting, overPercAllowancesCutting, overPercLossesCutting,
+    PROPERTIES(c)      READONLY seriesNumberObject, descriptionCutting, dateCutting, useCutting, overPercAllowancesCutting, overPercLossesCutting,
                        overPercSweepsCutting, totalPercGoodsDetailCutting
 
     FILTERS            inDepartmentStoreCutting(dep, c),
@@ -4074,7 +4088,7 @@ FORM sidCuttingStudyInputDetail 'Возможные карты проработ�
                        useCutting(c)
 ;
 
-DESIGN sidCuttingStudyInputDetail FROM DEFAULT {
+DESIGN seriesNumberCuttingStudyInputDetail FROM DEFAULT {
     PROPERTY(depName) {
         focusable = FALSE;
     }
@@ -4083,12 +4097,12 @@ DESIGN sidCuttingStudyInputDetail FROM DEFAULT {
     }
 }
 
-showSidCuttingStudyInputDetail 'Карта проработки' = ACTION (detail) {
-    FORM sidCuttingStudyInputDetail OBJECTS dep=departmentStoreStudyInputDetail(detail), i=itemStudyInputDetail(detail) MODAL;//  DEFAULT;        //sidCuttingStudyInputDetail
+showSeriesNumberCuttingStudyInputDetail 'Карта проработки' = ACTION (detail) {
+    FORM seriesNumberCuttingStudyInputDetail OBJECTS dep=departmentStoreStudyInputDetail(detail), i=itemStudyInputDetail(detail) MODAL;
     IF formResult() == formResult.ok THEN {
         SET cuttingStudyInputDetail(detail) <- chosenObject('c');
     }
-} SHORTCUT sidCuttingStudyInputDetail DEFAULT;
+} SHORTCUT seriesNumberCuttingStudyInputDetail DEFAULT;
 
 
 
@@ -4096,27 +4110,29 @@ FORM actOfStudy 'Акт проработки'
 
     OBJECTS a=actOfStudy FIXED PANEL
 
-    PROPERTIES(a)      numberActOfStudy, nameDepartmentStoreActOfStudy, dateActOfStudy, timeActOfStudy, nameContractorDepartmentStoreActOfStudy,
-                       waybillOutputActOfStudy, seriesOutputActOfStudy, waybillInputActOfStudy, seriesInputActOfStudy
+    PROPERTIES(a)   nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreActOfStudy,
+                    dateActOfStudy, timeActOfStudy, nameContractorDepartmentStoreActOfStudy,
+                    waybillOutputActOfStudy, seriesOutputActOfStudy, waybillInputActOfStudy, seriesInputActOfStudy
 
     OBJECTS sid=studyInputDetail
     OBJECTS sod=studyOutputDetail
 
-    PROPERTIES(sid) nameAttributeItemStudyInputDetail, showSidCuttingStudyInputDetail
-    PROPERTIES(sid) sidCuttingStudyInputDetail, dateCuttingStudyInputDetail, descriptionCuttingStudyInputDetail,
+    PROPERTIES(sid) nameAttributeItemStudyInputDetail, showSeriesNumberCuttingStudyInputDetail
+    PROPERTIES(sid) seriesNumberCuttingStudyInputDetail, dateCuttingStudyInputDetail, descriptionCuttingStudyInputDetail,
                     percAllowancesCuttingStudyInputDetail, percLossesCuttingStudyInputDetail, percSweepsCuttingStudyInputDetail,
-                    retailPriceStudyInputDetail, quantityStudyInputDetail, totalStudyInputDetail, ADDOBJ, delete
+                    importerPriceStudyInputDetail, numberRetailRangeStudyInputDetail, dataRetailRangeStudyInputDetail,
+                    retailPriceStudyInputDetail, quantityStudyInputDetail, totalStudyInputDetail,
+                    totalPercGoodsStudyInputDetail HIGHLIGHTIF highlightStudyInputDetail(sid) READONLY, ADDOBJ, delete
 
-    PROPERTIES(sid) importerPriceStudyInputDetail FORCE PANEL, dataRetailRangeStudyInputDetail FORCE PANEL,
-                    totalPercGoodsStudyInputDetail FORCE PANEL HIGHLIGHTIF highlightStudyInputDetail(sid)
     PROPERTIES(sid) toFillStudyOutputDetailsStudyInputDetail FORCE PANEL SHOWIF showNotStudyInputDetailStudyOutputDetail(sid,sod),
                     cleanAllStudyInputDetail FORCE PANEL
 
-    PROPERTIES(sod) captionItemStudyOutputDetail, shortNameUnitOfMeasureItemStudyOutputDetail, importerPriceStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
-                    quantityStudyOutputDetail, actualQuantityStudyOutputDetail, retailPriceStudyOutputDetail, totalStudyOutputDetail
+    PROPERTIES(sod) captionItemStudyOutputDetail, shortNameUnitOfMeasureItemStudyOutputDetail, importerPriceStudyOutputDetail,
+                    numberRetailRangeStudyOutputDetail, dataRetailRangeStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
+                    retailPriceStudyOutputDetail, quantityStudyOutputDetail, actualQuantityStudyOutputDetail, totalStudyOutputDetail
 
-    PROPERTIES(sod) curImporterPriceStudyOutputDetail FORCE PANEL, curDataRetailRangeStudyOutputDetail FORCE PANEL,
-                    curRetailPriceStudyOutputDetail FORCE PANEL
+    PROPERTIES(sod) FORCE PANEL curImporterPriceStudyOutputDetail, curNumberRetailRangeStudyOutputDetail,
+                    curDataRetailRangeStudyOutputDetail, curRetailPriceStudyOutputDetail
 
     FILTERS         actOfStudyStudyInputDetail(sid)==a,
                     studyInputDetailStudyOutputDetail(sod) == sid
@@ -4133,7 +4149,7 @@ DESIGN actOfStudy FROM DEFAULT {
             NEW firstCase {
                 childConstraints = TO THE RIGHT;
                 title = 'Акт проработки';
-                ADD PROPERTY (numberActOfStudy);
+//                ADD PROPERTY (numberActOfStudy);
                 ADD PROPERTY (nameDepartmentStoreActOfStudy);
                 ADD PROPERTY (dateActOfStudy);
                 ADD PROPERTY (timeActOfStudy);
@@ -4165,9 +4181,10 @@ DESIGN actOfStudy FROM DEFAULT {
 FORM actOfStudies 'Акты проработки'
 
     OBJECTS a=actOfStudy
-    PROPERTIES(a)      READONLY objectClassName, numberActOfStudy, nameDepartmentStoreActOfStudy, timeCreated FORCE PANEL,
-                       nameUserCreated FORCE PANEL, hostnameComputerCreated FORCE PANEL, timeClosed, nameUserClosed, hostnameComputerClosed,
-                       subtotalByActOfStudy, subtotalActOfStudy
+    PROPERTIES(a)      READONLY objectClassName, numberObject, seriesObject, dateActOfStudy, timeActOfStudy, nameDepartmentStoreActOfStudy,
+                       quantityOutputActOfStudy, subtotalOutputActOfStudy, quantityInputActOfStudy, subtotalInputActOfStudy
+    PROPERTIES(a)      FORCE PANEL timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed
+
     PROPERTIES(a)      ADDFORM, EDITFORM SHOWIF isDraftActOfStudy(a), delete FORCE PANEL SHOWIF isDraftActOfStudy(a),
                        postActOfStudy SHOWIF isDraftActOfStudy(a), unpostActOfStudy SHOWIF isPostedActOfStudy(a)
 
@@ -7610,7 +7627,7 @@ DESIGN innerArrival FROM DEFAULT{
 FORM innerArrivals 'Приходы из других отделов'
     OBJECTS a=innerArrival
     PROPERTIES (a) READONLY objectClassName, numberArrival, seriesArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
-                            nameSenderDepartmentInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival
+                            nameSenderDepartmentInnerArrival, quantityInnerArrivalDetailsInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival
 
     PROPERTIES (a) ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
                    postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
@@ -7728,8 +7745,8 @@ FORM specificationsStatement 'Счета'
 
     FILTERGROUP filters6
             FILTER 'Просроченные с/ф' 'F10' overdueSpecification(sp)
-            FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp)
-            FILTER 'Без отгрузок с/ф ' 'F8' noQuantityStatementsInSpecification(sp) DEFAULT
+            FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp) DEFAULT
+            FILTER 'Без отгрузок с/ф ' 'F8' noQuantityStatementsInSpecification(sp)
 ;
 
 showFormSpecificationsStatement 'Заказы' (statement) = ACTION FORM specificationsStatement OBJECTS st MODAL SHORTCUT specificationsStatement DEFAULT;
@@ -8329,7 +8346,7 @@ NAVIGATOR {
             ADD commonInfoBatchReturnSupplierDetail;
             ADD discountCard;
             ADD actOfStudy;
-            ADD sidCuttingStudyInputDetail;
+            ADD seriesNumberCuttingStudyInputDetail;
             ADD itemDepartmentStoreInput;
         }
         ADD parameters;
