@@ -41,11 +41,11 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             List<String> exportProperties = BaseUtils.toList("numberGroupDeclaration", "nameBrandGroupDeclaration",
                     "nameCategoryGroupDeclaration", "sidGenderGroupDeclaration", "nameTypeFabricGroupDeclaration",
                     "sidArticleGroupDeclaration", "sidCustomCategory10GroupDeclaration", "mainCompositionGroupDeclaration",
-                    "nameCountryGroupDeclaration", "sidCountryGroupDeclaration", "sidOrigin2CountryGroupDeclaration", "quantityGroupDeclaration", "sidUnitOfMeasureGroupDeclaration",
+                    "sidCountryGroupDeclaration", "sidOrigin2CountryGroupDeclaration", "quantityGroupDeclaration", "sidUnitOfMeasureGroupDeclaration",
                     "nameUnitOfMeasureGroupDeclaration", "sumGroupDeclaration", "netWeightGroupDeclaration",
                     "grossWeightGroupDeclaration");
             List<String> exportTitles = BaseUtils.toList("Номер", "Наименование товара", "Артикул товара", "Код товара по ТН ВЭД ТС",
-                    "Страна", "Цифровой код страны", "Буквенный код страны", "Количество товара", "Код единицы измерения",
+                    "Цифровой код страны", "Буквенный код страны", "Количество товара", "Код единицы измерения",
                     "Краткое наименование единицы измерения", "Стоимость", "Вес нетто", "Вес брутто");
 
             DataObject declarationObject = context.getKeyValue(declarationInterface);
@@ -83,10 +83,9 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
 
                 addStringCellToRow(values.get("sidArticleGroupDeclaration"), ";");
                 addStringCellToRow(values.get("sidCustomCategory10GroupDeclaration"), ";");
-                addStringCellToRow(values.get("nameCountryGroupDeclaration"), ";");
                 addStringCellToRow(values.get("sidCountryGroupDeclaration"), ";");
                 addStringCellToRow(values.get("sidOrigin2CountryGroupDeclaration"), ";");
-                addStringCellToRow(values.get("quantityGroupDeclaration"), ";");
+                addDoubleCellToRow(values.get("quantityGroupDeclaration"), ";", 0);
                 addStringCellToRow(values.get("sidUnitOfMeasureGroupDeclaration"), ";");
                 addStringCellToRow(values.get("nameUnitOfMeasureGroupDeclaration"), ";");
                 addDoubleCellToRow(values.get("sumGroupDeclaration"), ";", 7);
@@ -119,7 +118,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             if (!isDouble)
                 row += cell.toString().trim();
             else {
-                String bigDecimal = new BigDecimal(cell.toString()).setScale(precision, BigDecimal.ROUND_FLOOR).toString();
+                String bigDecimal = new BigDecimal(cell.toString()).setScale(precision, BigDecimal.ROUND_HALF_DOWN).toString();
                 while (bigDecimal.endsWith("0") && bigDecimal.length() > 1)
                     bigDecimal = bigDecimal.substring(0, bigDecimal.length() - 1);
                 row += bigDecimal;
