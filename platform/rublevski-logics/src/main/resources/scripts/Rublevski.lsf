@@ -3466,7 +3466,7 @@ FORM groupsCashRegister 'Группы касс'
 OBJECTS grc=groupCashRegister, c=cashRegister
 PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
 PROPERTIES(grc)  ADDFORM, EDITFORM, delete
-PROPERTIES(c)    READONLY numberCashRegister, descriptionMachinery, nameGroupMachineryCashRegister, portMachinery,
+PROPERTIES(c)    READONLY numberCashRegister, descriptionMachinery, portMachinery,
                  useMachinery, directoryCashRegister, nameCashRegisterModelCashRegister,
                  dateCashRegister, nppCashRegister, statusCashRegister, resultCashRegister
 FILTERS isGroupCashRegisterCashRegister(grc, c);
@@ -5237,135 +5237,6 @@ FORM ordersShipment 'Заказы'
 
 showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OBJECTS s MODAL SHORTCUT ordersShipment DEFAULT;
 
-FORM shipment 'Поставка'
-    OBJECTS s=shipment FIXED PANEL
-    PROPERTIES (s) numberObject, seriesObject, dateShipment, timeShipment, nameSupplierShipment,
-                   nameDepartmentStoreShipment, ordersShipment, toFillShipmentDetailsShipment,
-                   percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
-                   carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
-                   noteShipment
-
-    OBJECTS d=shipmentDetail
-    PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
-                    priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
-                    numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
-                    nameWareShipmentDetail, priceWareShipmentDetail, numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
-                    retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail, ADDOBJ, delete
-    PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, importerPriceShipmentDetail,
-                               controlExpiryShipmentDetail, isManufacturedShipmentDetail, isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail,
-                               hintShipmentDetail, nameCountryShipmentDetail, namebanRevaluationItemDepartmentShipmentDetail,
-                               curImporterPriceShipmentDetail, curDataRetailRangeShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
-                               dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curPriceWareShipmentDetail SHOWIF inWareShipmentDetail(d)
-
-
-    PROPERTIES addShipmentDetailBarcode(s) TODRAW d
-
-    FILTERS inShipmentShipmentDetail(s, d)
-
-    OBJECTS i=item
-    PROPERTIES (i) nameAttributeItem
-    PROPERTIES (i, s) quantityItemShipment, sumQuantityOrderedItemShipment
-
-    EDIT shipment OBJECT s
-;
-
-
-DESIGN shipment FROM DEFAULT{
-    main{
-        preferredSize = (1024, 768);
-        NEW specification.box BEFORE functions.box{
-            tabbedPane = TRUE;
-            ADD d.box {
-                childConstraints = TO THE BOTTOM;
-                title = 'Спецификация';
-                ADD d.pricingShipmentDetailInfo {
-                    childConstraints = TO THE BOTTOM;
-                };
-                ADD d.itemShipmentDetailInfo;
-                NEW commonCase { title = 'Общая информация';
-                    ADD PROPERTY (isFixPriceShipmentDetail(d));
-                    ADD PROPERTY (importerPriceShipmentDetail(d));
-                    ADD PROPERTY (dataWareRangeShipmentDetail(d));
-                }
-                NEW booleanCase { title = 'Вспомогательная информация';
-                    ADD PROPERTY (controlExpiryShipmentDetail(d));
-                    ADD PROPERTY (isManufacturedShipmentDetail(d));
-                    ADD PROPERTY (isWeightShipmentDetail(d));
-                    ADD PROPERTY (nameinActionItemDepartmentShipmentDetail(d));
-                }
-                POSITION d.pricingShipmentDetailInfo TO THE LEFT booleanCase;
-                POSITION booleanCase TO THE LEFT commonCase;
-                POSITION commonCase TO THE LEFT d.itemShipmentDetailInfo;
-            };
-            ADD i.box;
-        };
-        NEW header.box BEFORE specification.box {
-            childConstraints = TO THE BOTTOM;
-
-            NEW headerRow1 {
-                childConstraints = TO THE RIGHT;
-                ADD s.documentHeaderGroup {
-                    childConstraints = TO THE BOTTOM;
-                    NEW docHeadRow1 {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(dateShipment);
-                        ADD PROPERTY(timeShipment);
-                        ADD PROPERTY(numberObject);
-                        ADD PROPERTY(seriesObject);
-                    };
-                    NEW docHeadRow2 {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(nameSupplierShipment);
-                        ADD PROPERTY(nameDepartmentStoreShipment);
-                    };
-                };
-                ADD s.ordersInfo {
-                    childConstraints = TO THE BOTTOM;
-                };
-            };
-
-            NEW headerRow2 {
-                childConstraints = TO THE RIGHT;
-                ADD s.waybillSum {
-                    childConstraints = TO THE RIGHT;
-                };
-                ADD s.additionalInfo;
-             };
-        };
-    };
-};
-
-FORM shipments 'Поставки'
-    OBJECTS s=shipment
-    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
-                            nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment
-    PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-
-    PROPERTIES (s)          ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
-                            postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
-
-    OBJECTS d=shipmentDetail
-    PROPERTIES (d) READONLY numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
-                            priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
-                            numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
-                            nameWareShipmentDetail, priceWareShipmentDetail, numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
-                            retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail
-
-    FILTERS inShipmentShipmentDetail(s, d)
-;
-
-DESIGN shipments FROM DEFAULT {
-    PROPERTY(objectClassName) {
-        preferredCharWidth = 15;
-    }
-    PROPERTY (delete(s)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-    POSITION s.historyGroup TO THE LEFT s.postedGroup;
-    ADD d.grid.box BEFORE s.historyGroup;
-}
-
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 CLASS writeOff 'Списание' : outAccountSumDocumentLedger, historyObject, numeratedObject;
 CLASS writeOffDetail 'Строка списания' : balanceItemLedger;
@@ -6581,6 +6452,197 @@ META metaCodeInputMultipleItems (object)
     } TOOLBAR;
 
 END
+
+//----------------------------------- Загрузка в ВУ -------------------------------------------------------
+
+CLASS machineryPriceTransaction 'Загрузка прайса в оборудование';
+TABLE machineryPriceTransaction (machineryPriceTransaction);
+TABLE machineryPriceTransactionBarcode (machineryPriceTransaction, barcode);
+
+groupMachineryMachineryPriceTransaction = DATA groupMachinery (machineryPriceTransaction);
+nameGroupMachineryMachineryPriceTransaction 'Группа оборудования' (transaction) = nameGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
+
+dateMachineryPriceTransaction 'Дата' = DATA DATE (machineryPriceTransaction);
+dateMachineryPriceTransaction (transaction) <- currentDate() ON ASSIGN transaction IS machineryPriceTransaction;
+
+timeMachineryPriceTransaction 'Время' = DATA TIME (machineryPriceTransaction);
+timeMachineryPriceTransaction (transaction) <- currentTime() ON ASSIGN transaction IS machineryPriceTransaction;
+
+dateTimeMachineryPriceTransaction 'Дата/время' (transaction) = toDateTime(dateMachineryPriceTransaction(transaction), timeMachineryPriceTransaction(transaction));
+
+succeededMachineryPriceTransaction 'Загружена' = DATA BOOLEAN (machineryPriceTransaction);
+canceledMachineryPriceTransaction 'Отменена' = DATA BOOLEAN (machineryPriceTransaction);
+processMachineryPriceTransaction 'Требуется загрузка' = machineryPriceTransaction IS machineryPriceTransaction AND NOT
+                                                        succeededMachineryPriceTransaction(machineryPriceTransaction) AND NOT
+                                                        canceledMachineryPriceTransaction(machineryPriceTransaction);
+
+inMachineryPriceTransactionBarcode 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, barcode);
+nameMachineryPriceTransactionBarcode 'Наименование' = DATA STRING[255] (machineryPriceTransaction, barcode);
+priceMachineryPriceTransactionBarcode 'Цена' = DATA DOUBLE (machineryPriceTransaction, barcode);
+
+FORM machineryPriceTransaction 'Загрузка прайса в оборудование'
+    OBJECTS t = machineryPriceTransaction FIXED PANEL
+    PROPERTIES(t) nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
+                  succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
+
+    OBJECTS b = barcode
+    PROPERTIES(b)    barcodeEx
+    PROPERTIES(t, b) inMachineryPriceTransactionBarcode, nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode
+
+    FILTERGROUP inTransaction
+        FILTER 'Загружаемые товары' 'F10' inMachineryPriceTransactionBarcode(t, b)
+
+    EDIT machineryPriceTransaction OBJECT t;
+;
+
+FORM machineryPriceTransactions 'Загрузки прайса в оборудование'
+    OBJECTS t = machineryPriceTransaction
+    PROPERTIES(t) READONLY nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
+                           succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
+    PROPERTIES(t)          ADDFORM, EDITFORM, delete
+
+    OBJECTS b = barcode
+    PROPERTIES(b)    barcodeEx
+    PROPERTIES(t, b) nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode
+
+    FILTERS inMachineryPriceTransactionBarcode(t, b)
+;
+
+//----------------------------------- Формы поступления товара -------------------------------------------------------
+@metaCodeInputMultipleItems(shipment);
+
+FORM shipment 'Поставка'
+    OBJECTS s=shipment FIXED PANEL
+    PROPERTIES (s) numberObject, seriesObject, dateShipment, timeShipment, nameSupplierShipment,
+                   nameDepartmentStoreShipment, ordersShipment, toFillShipmentDetailsShipment,
+                   percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
+                   carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
+                   noteShipment
+
+    OBJECTS d=shipmentDetail
+    PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
+                    priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
+                    numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
+                    nameWareShipmentDetail, priceWareShipmentDetail, numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
+                    retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail, ADDOBJ, delete
+    PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, importerPriceShipmentDetail,
+                               controlExpiryShipmentDetail, isManufacturedShipmentDetail, isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail,
+                               hintShipmentDetail, nameCountryShipmentDetail, namebanRevaluationItemDepartmentShipmentDetail,
+                               curImporterPriceShipmentDetail, curDataRetailRangeShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
+                               dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curPriceWareShipmentDetail SHOWIF inWareShipmentDetail(d)
+
+
+    PROPERTIES inputMultipleItemsShipment(s) TODRAW d, addShipmentDetailBarcode(s) TODRAW d
+
+    FILTERS inShipmentShipmentDetail(s, d)
+
+    OBJECTS i=item
+    PROPERTIES (i) nameAttributeItem
+    PROPERTIES (i, s) quantityItemShipment, sumQuantityOrderedItemShipment
+
+    HINTNOUPDATE LIST isPostedShipment,
+                  balanceBItemLedgerDateTime, priceImporterBLedgerDateTime, wareBLedgerDateTime, priceWareBLedgerDateTime,
+                  rangeRetailBLedgerDateTime, priceRetailBLedgerDateTime
+
+    EDIT shipment OBJECT s
+;
+
+
+DESIGN shipment FROM DEFAULT{
+    main{
+        preferredSize = (1024, 768);
+        NEW specification.box BEFORE functions.box{
+            tabbedPane = TRUE;
+            ADD d.box {
+                childConstraints = TO THE BOTTOM;
+                title = 'Спецификация';
+                ADD d.pricingShipmentDetailInfo {
+                    childConstraints = TO THE BOTTOM;
+                };
+                ADD d.itemShipmentDetailInfo;
+                NEW commonCase { title = 'Общая информация';
+                    ADD PROPERTY (isFixPriceShipmentDetail(d));
+                    ADD PROPERTY (importerPriceShipmentDetail(d));
+                    ADD PROPERTY (dataWareRangeShipmentDetail(d));
+                }
+                NEW booleanCase { title = 'Вспомогательная информация';
+                    ADD PROPERTY (controlExpiryShipmentDetail(d));
+                    ADD PROPERTY (isManufacturedShipmentDetail(d));
+                    ADD PROPERTY (isWeightShipmentDetail(d));
+                    ADD PROPERTY (nameinActionItemDepartmentShipmentDetail(d));
+                }
+                POSITION d.pricingShipmentDetailInfo TO THE LEFT booleanCase;
+                POSITION booleanCase TO THE LEFT commonCase;
+                POSITION commonCase TO THE LEFT d.itemShipmentDetailInfo;
+            };
+            ADD i.box;
+        };
+        NEW header.box BEFORE specification.box {
+            childConstraints = TO THE BOTTOM;
+
+            NEW headerRow1 {
+                childConstraints = TO THE RIGHT;
+                ADD s.documentHeaderGroup {
+                    childConstraints = TO THE BOTTOM;
+                    NEW docHeadRow1 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(dateShipment);
+                        ADD PROPERTY(timeShipment);
+                        ADD PROPERTY(numberObject);
+                        ADD PROPERTY(seriesObject);
+                    };
+                    NEW docHeadRow2 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameSupplierShipment);
+                        ADD PROPERTY(nameDepartmentStoreShipment);
+                    };
+                };
+                ADD s.ordersInfo {
+                    childConstraints = TO THE BOTTOM;
+                };
+            };
+
+            NEW headerRow2 {
+                childConstraints = TO THE RIGHT;
+                ADD s.waybillSum {
+                    childConstraints = TO THE RIGHT;
+                };
+                ADD s.additionalInfo;
+             };
+        };
+    };
+};
+
+FORM shipments 'Поставки'
+    OBJECTS s=shipment
+    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
+                            nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment
+    PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES (s)          ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
+                            postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
+
+    OBJECTS d=shipmentDetail
+    PROPERTIES (d) READONLY numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
+                            priceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
+                            numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
+                            nameWareShipmentDetail, priceWareShipmentDetail, numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
+                            retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail
+
+    FILTERS inShipmentShipmentDetail(s, d)
+;
+
+DESIGN shipments FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+    PROPERTY (delete(s)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+    POSITION s.historyGroup TO THE LEFT s.postedGroup;
+    ADD d.grid.box BEFORE s.historyGroup;
+}
 
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
@@ -8197,6 +8259,9 @@ NAVIGATOR {
         NEW production 'Производство'{
             ADD actOfStudies;
         }
+        NEW equipmentTransactions 'Оборудование' {
+            ADD machineryPriceTransactions;
+        }
     }
     NEW accountInfo 'Сводная информация' TO formsToolbar{
         ADD balanceItemDepartment;
@@ -8348,6 +8413,7 @@ NAVIGATOR {
             ADD actOfStudy;
             ADD seriesNumberCuttingStudyInputDetail;
             ADD itemDepartmentStoreInput;
+            ADD machineryPriceTransaction;
         }
         ADD parameters;
         ADD importData;
