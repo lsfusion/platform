@@ -5410,7 +5410,7 @@ nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) =
 
 quantityInnerFlowDetail 'Количество' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
 
-retailPriceInnerFlowDetail 'Цена' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
+retailPriceInnerFlowDetail 'Розничная цена' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
 
 priceItemInnerFlow 'Цена (максим.)' (item, innerFlow) = GROUP MAX retailPriceInnerFlowDetail (innerFlowDetail)
     IF innerFlowInnerFlowDetail(innerFlowDetail) == innerFlow
@@ -5447,10 +5447,10 @@ descriptionInnerFlow 'Название документа' (innerFlow) = castInn
 
 descriptionInnerFlowDetail 'Название документа' (innerFlowDetail) = descriptionInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail));
 
-wareInnerFlowDetail 'Текущая посуда (ИД)' (innerFlowDetail) = DATA ware(innerFlowDetail) IN baseGroup;
+wareInnerFlowDetail 'Посуда (ИД)' (innerFlowDetail) = DATA ware(innerFlowDetail) IN baseGroup;
 nameWareInnerFlowDetail 'Посуда' (innerFlowDetail) = name(wareInnerFlowDetail(innerFlowDetail));
 //wareInnerFlowDetail(innerFlowDetail) <- wareItem(itemInnerFlowDetail(innerFlowDetail)) ON CHANGE itemInnerFlowDetail(innerFlowDetail);
-priceWareInnerFlowDetail 'Текущая цена посуды' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
+priceWareInnerFlowDetail 'Цена посуды' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
 
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
@@ -6683,7 +6683,7 @@ FORM writeOff 'Списание'
                    dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, accountSumWriteOff
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail,
+    PROPERTIES (d) numberWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
                    accountPriceWriteOffDetail, accountSumWriteOffDetail, ADDOBJ, delete
 
     PROPERTIES FORCE PANEL READONLY articleItemWriteOff(d), nameCountryItemWriteOff(d), retailPriceItemWriteOffDetail(d),
@@ -6716,8 +6716,9 @@ FORM writeOffs 'Списания'
 
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) numberWriteOffDetail, nameAttributeItemWriteOffDetail, barcodeExSkuWriteOffDetail, quantityWriteOffDetail,
+    PROPERTIES (d) READONLY numberWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
                    accountPriceWriteOffDetail, accountSumWriteOffDetail
+
     FILTERS inWriteOffWriteOffDetail(w, d)
 ;
 
