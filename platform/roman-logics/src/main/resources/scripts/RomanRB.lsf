@@ -406,6 +406,9 @@ countryGroupDeclaration 'Страна (ИД)' = DATA country(groupDeclaration) I
 sidArticleGroupDeclaration 'Артикул' (groupDeclaration) = sidArticle(articleGroupDeclaration(groupDeclaration)) IN baseGroup;
 sidCustomCategory10GroupDeclaration 'ТН ВЭД' (groupDeclaration) = sidCustomCategory10(customCategory10GroupDeclaration(groupDeclaration)) IN baseGroup;
 nameCountryGroupDeclaration 'Страна' (groupDeclaration) = name(countryGroupDeclaration(groupDeclaration)) IN baseGroup;
+sidCountryGroupDeclaration 'Цифровой код страны' (groupDeclaration) = sidCountry(countryGroupDeclaration(groupDeclaration)) IN baseGroup;
+sidOrigin2CountryGroupDeclaration 'Буквенный код страны' (groupDeclaration) = sidOrigin2Country(countryGroupDeclaration(groupDeclaration)) IN baseGroup MINCHARWIDTH 3;
+
 
 numberGroupDeclaration 'Номер' (groupDeclaration) =
         PARTITION SUM 1 IF groupDeclaration IS groupDeclaration BY declarationGroupDeclaration(groupDeclaration)
@@ -500,7 +503,8 @@ FORM declaration 'Декларация'
     PROPERTIES (gd) numberGroupDeclaration, nameBrandGroupDeclaration, nameCategoryGroupDeclaration, sidArticleGroupDeclaration,
                     sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration,
                     sidCustomCategory10GroupDeclaration, mainCompositionGroupDeclaration, nameCountryGroupDeclaration,
-                    quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
+                    sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, quantityGroupDeclaration,
+                    sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
                     sumGroupDeclaration, netWeightGroupDeclaration, grossWeightGroupDeclaration
     FILTERS inDeclarationGroupDeclaration(d, gd)
 
