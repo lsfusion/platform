@@ -19,7 +19,8 @@ import java.util.Arrays;
 
 @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "DuplicateThrows"})
 public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
-    RomanLogicsModule RomanLM;
+    public RomanLogicsModule RomanLM;
+    public ScriptingLogicsModule RomanRB;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -32,7 +33,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         super.createModules();
         RomanLM = new RomanLogicsModule(LM, this);
         addLogicsModule(RomanLM);
-        ScriptingLogicsModule RomanRB = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/RomanRB.lsf"), LM, this);
+        RomanRB = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/RomanRB.lsf"), LM, this);
         addLogicsModule(RomanRB);
     }
 

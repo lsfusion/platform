@@ -127,6 +127,7 @@ nameCustomStoreDeclaration 'СВХ' (declaration) = name(customStoreDeclaration(
 sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN baseGroup;
 beginDeclaration 'Начало обработки' = DATA TIME (declaration) IN baseGroup;
 endDeclaration 'Конец обработки' = DATA TIME (declaration) IN baseGroup;
+exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN baseGroup;
 
 importerDeclaration 'Импортер (ИД)' = DATA importer (declaration) IN idGroup;
 nameImporterDeclaration 'Импортёр' = name(importerDeclaration(declaration)) IN baseGroup;
@@ -472,7 +473,7 @@ FORM declaration 'Декларация'
     PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
                   rateExchangeDeclaration, nameImporterDeclaration, rateSumRegistrationDeclaration,
                   dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion,
-                  diffNDSDeclararion, diffDeclaration, expenseCertificateDeclaration
+                  diffNDSDeclararion, diffDeclaration, expenseCertificateDeclaration, exportDeclaration
 
     OBJECTS ii=innerInvoice
     PROPERTIES (ii) sidInnerInvoice
