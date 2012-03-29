@@ -281,6 +281,9 @@ public abstract class GridTable extends ClientFormTable
         if (value instanceof Date) {
             value = Main.formatDate(value);
         }
+        else if(value instanceof Double) {
+            value = (double) Math.round(((Double) value) * 1000) /1000;
+        }
         return (value != null) ? SwingUtils.toMultilineHtml(BaseUtils.rtrim(String.valueOf(value)), createToolTip().getFont()) : null;
     }
 
