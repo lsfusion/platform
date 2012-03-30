@@ -71,9 +71,20 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(title, ";");
             writer.println(row);
 
+            TreeMap<Integer, Map<String, Object>> sortedRows = new TreeMap<Integer, Map<String, Object>>();
+
             for (Map<Object, Object> values : result.values()) {
+
+                Map<String, Object> row = new HashMap<String, Object>();
+                for (String propertySID : exportProperties)
+                    row.put(propertySID, values.get(propertySID));
+                sortedRows.put((Integer) values.get("numberGroupDeclaration"), row);
+            }
+
+            for (Map.Entry<Integer, Map<String, Object>> entry : sortedRows.entrySet()) {
                 row = "";
-                addStringCellToRow(values.get("numberGroupDeclaration"), ";");
+                Map<String, Object> values = entry.getValue();
+                addStringCellToRow(entry.getKey(), ";"); //numberGroupDeclaration
 
                 addPartStringCellToRow(values.get("nameCategoryGroupDeclaration"), null, " ", false);
                 addPartStringCellToRow(values.get("sidGenderGroupDeclaration"), null, ",", false);
