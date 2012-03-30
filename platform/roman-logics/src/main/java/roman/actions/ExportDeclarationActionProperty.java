@@ -81,7 +81,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addPartStringCellToRow(values.get("nameBrandGroupDeclaration"), "Торговая марка ", ",", false);
                 addPartStringCellToRow(values.get("mainCompositionGroupDeclaration"), " Состав:", ";", true);
 
-                addStringCellToRow(values.get("sidArticleGroupDeclaration"), ";");
+                addStringCellToRow("Арт. " + values.get("sidArticleGroupDeclaration"), ";");
                 addStringCellToRow(values.get("sidCustomCategory10GroupDeclaration"), ";");
                 addStringCellToRow(values.get("sidCountryGroupDeclaration"), ";");
                 addStringCellToRow(values.get("sidOrigin2CountryGroupDeclaration"), ";");

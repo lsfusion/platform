@@ -449,6 +449,14 @@ groupDeclarationDeclarationDetail 'Группа строки деклараци�
 
 numberGroupDeclarationDeclarationDetail 'Группа строки декларации'(declarationDetail) = numberGroupDeclaration(groupDeclarationDeclarationDetail(declarationDetail)) IN baseGroup;
 
+
+inDeclarationDetailInnerInvoice 'Связка' (declarationDetail, innerInvoice) = quantityInnerInvoiceSku(innerInvoice, skuDeclarationDetail(declarationDetail)) IF
+                                                                             declarationDeclarationDetail(declarationDetail) == declarationInnerInvoice(innerInvoice);
+
+inGroupDeclarationInnerInvoice 'Связка' (groupDeclaration, innerInvoice) = GROUP SUM inDeclarationDetailInnerInvoice(declarationDetail, innerInvoice)
+                                                                                  BY groupDeclarationDeclarationDetail(declarationDetail), innerInvoice;
+
+
 quantityGroupDeclaration 'Кол-во' (groupDeclaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
                                                               BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup;
 
@@ -507,6 +515,8 @@ FORM declaration 'Декларация'
                     sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, quantityGroupDeclaration,
                     sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
                     sumGroupDeclaration, netWeightGroupDeclaration, grossWeightGroupDeclaration
+
+    PROPERTIES (gd, ii) inGroupDeclarationInnerInvoice
     FILTERS inDeclarationGroupDeclaration(d, gd)
 
     EDIT declaration OBJECT d
