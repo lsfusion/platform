@@ -10,9 +10,9 @@
         <relativePath>../logics/pom.xml</relativePath>
     </parent>
 
-    <artifactId>rublevski-logics</artifactId>
+    <artifactId>retail-logics</artifactId>
     <packaging>jar</packaging>
-    <name>Rublevski Logics</name>
+    <name>Retail Logics</name>
 
     <dependencies>
         <dependency>

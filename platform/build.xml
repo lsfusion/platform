@@ -224,18 +224,6 @@
         </antcall>
     </target>
 
-    <target name="trushkin-logics-recursiveCompile">
-        <antcall target="recursiveCompile">
-            <param name="artifactId" value="trushkin-logics"/>
-        </antcall>
-    </target>
-
-    <target name="trushkin-logics-quickCompile">
-        <antcall target="quickCompile">
-            <param name="artifactId" value="trushkin-logics"/>
-        </antcall>
-    </target>
-
     <target name="retail-equ-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="retail-equ"/>
@@ -257,18 +245,6 @@
     <target name="retail-logics-quickCompile">
         <antcall target="quickCompile">
             <param name="artifactId" value="retail-logics"/>
-        </antcall>
-    </target>
-
-    <target name="rublevski-logics-recursiveCompile">
-        <antcall target="recursiveCompile">
-            <param name="artifactId" value="rublevski-logics"/>
-        </antcall>
-    </target>
-
-    <target name="rublevski-logics-quickCompile">
-        <antcall target="quickCompile">
-            <param name="artifactId" value="rublevski-logics"/>
         </antcall>
     </target>
 
@@ -329,18 +305,6 @@
     <target name="paas-web-quickCompile">
         <antcall target="quickCompile">
             <param name="artifactId" value="paas-web"/>
-        </antcall>
-    </target>
-
-    <target name="test-logics-recursiveCompile">
-        <antcall target="recursiveCompile">
-            <param name="artifactId" value="test-logics"/>
-        </antcall>
-    </target>
-
-    <target name="test-logics-quickCompile">
-        <antcall target="quickCompile">
-            <param name="artifactId" value="test-logics"/>
         </antcall>
     </target>
 

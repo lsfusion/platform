@@ -1,10 +1,9 @@
-package rublevski;
+package retail;
 
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
-import platform.server.Context;
 import platform.server.auth.SecurityPolicy;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.KeyExpr;
@@ -19,11 +18,10 @@ import retail.api.remote.PriceTransaction;
 import retail.api.remote.RetailRemoteInterface;
 import retail.api.remote.ScalesInfo;
 
-import javax.mail.Session;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.sql.*;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -33,22 +31,22 @@ import java.util.*;
  */
 
 
-public class RublevskiBusinessLogics extends BusinessLogics<RublevskiBusinessLogics> implements RetailRemoteInterface {
-    ScriptingLogicsModule rublevskiLM;
+public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> implements RetailRemoteInterface {
+    ScriptingLogicsModule retailLM;
 
-    public RublevskiBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
+    public RetailBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
     }
 
     public ScriptingLogicsModule getLM() {
-        return rublevskiLM;
+        return retailLM;
     }
 
     @Override
     protected void createModules() throws IOException {
         super.createModules();
-        rublevskiLM = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Rublevski.lsf"), LM, this);
-        addLogicsModule(rublevskiLM);
+        retailLM = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/retail.lsf"), LM, this);
+        addLogicsModule(retailLM);
     }
 
     @Override
@@ -74,13 +72,13 @@ public class RublevskiBusinessLogics extends BusinessLogics<RublevskiBusinessLog
         List<ScalesInfo> scalesInfoList = new ArrayList<ScalesInfo>();
         List<Object> groupMashineryMPTList = new ArrayList<Object>();
 
-        LP isMachineryPriceTransaction = rublevskiLM.is(rublevskiLM.getClassByName("machineryPriceTransaction"));
+        LP isMachineryPriceTransaction = retailLM.is(retailLM.getClassByName("machineryPriceTransaction"));
         Map<Object, KeyExpr> keys = isMachineryPriceTransaction.getMapKeys();
         Query<Object, Object> query = new Query<Object, Object>(keys);
-        query.properties.put("groupMachineryMPT", rublevskiLM.getLPByName("groupMachineryMachineryPriceTransaction").getExpr(BaseUtils.singleValue(keys)));
-        query.properties.put("processMPT", rublevskiLM.getLPByName("processMachineryPriceTransaction").getExpr(BaseUtils.singleValue(keys)));
+        query.properties.put("groupMachineryMPT", retailLM.getLPByName("groupMachineryMachineryPriceTransaction").getExpr(BaseUtils.singleValue(keys)));
+        query.properties.put("processMPT", retailLM.getLPByName("processMachineryPriceTransaction").getExpr(BaseUtils.singleValue(keys)));
         query.and(isMachineryPriceTransaction.property.getExpr(keys).getWhere());
-        //query.and(rublevskiLM.getLPByName("processMachineryPriceTransaction").property.getExpr(keys).getWhere());
+        //query.and(retailLM.getLPByName("processMachineryPriceTransaction").property.getExpr(keys).getWhere());
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
         for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : result.entrySet()) {
             String groupMachineryMPT = entry.getValue().get("groupMachineryMPT").toString().trim();
@@ -94,10 +92,10 @@ public class RublevskiBusinessLogics extends BusinessLogics<RublevskiBusinessLog
             newKeys.put("scales", scalesExpr);
             newKeys.put("groupMachinery", groupMachineryExpr);
             Query<Object, Object> query2 = new Query<Object, Object>(newKeys);
-            query2.properties.put("numberScales", rublevskiLM.getLPByName("numberScales").getExpr(scalesExpr));
-            query2.properties.put("descriptionMachinery", rublevskiLM.getLPByName("descriptionMachinery").getExpr(scalesExpr));
-            query2.properties.put("nameGroupMachineryScales", rublevskiLM.getLPByName("nameGroupMachineryScales").getExpr(scalesExpr));
-            query2.and(groupMachineryExpr.compare(new DataObject(groupMachineryMPT, (ConcreteClass) rublevskiLM.getClassByName("groupScales")), Compare.EQUALS));
+            query2.properties.put("numberScales", retailLM.getLPByName("numberScales").getExpr(scalesExpr));
+            query2.properties.put("descriptionMachinery", retailLM.getLPByName("descriptionMachinery").getExpr(scalesExpr));
+            query2.properties.put("nameGroupMachineryScales", retailLM.getLPByName("nameGroupMachineryScales").getExpr(scalesExpr));
+            query2.and(groupMachineryExpr.compare(new DataObject(groupMachineryMPT, (ConcreteClass) retailLM.getClassByName("groupScales")), Compare.EQUALS));
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result2 = query2.execute(session.sql);
             //тут InvocationTargetException
             for (Map<Object, Object> values : result2.values()) {

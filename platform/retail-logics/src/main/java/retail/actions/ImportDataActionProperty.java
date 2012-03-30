@@ -1,13 +1,12 @@
-package rublevski.actions;
+package retail.actions;
 
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.ValueClass;
 import platform.server.integration.*;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingLogicsModule;
-import rublevski.RublevskiBusinessLogics;
+import retail.RetailBusinessLogics;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -16,11 +15,11 @@ import java.util.Collection;
 import java.util.List;
 
 public class ImportDataActionProperty extends ScriptingActionProperty {
-    private ScriptingLogicsModule rublevskiLM;
+    private ScriptingLogicsModule retailLM;
 
-    public ImportDataActionProperty(RublevskiBusinessLogics BL) {
+    public ImportDataActionProperty(RetailBusinessLogics BL) {
         super(BL);
-        rublevskiLM = BL.getLM();
+        retailLM = BL.getLM();
 
         try {
             Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
@@ -36,9 +35,9 @@ public class ImportDataActionProperty extends ScriptingActionProperty {
 
         try {
             // Get a connection to the database
-            conn = DriverManager.getConnection(((String) rublevskiLM.getLPByName("importUrl").read(context)).trim(),
-                    ((String) rublevskiLM.getLPByName("importLogin").read(context)).trim(),
-                    ((String) rublevskiLM.getLPByName("importPassword").read(context)).trim());
+            conn = DriverManager.getConnection(((String) retailLM.getLPByName("importUrl").read(context)).trim(),
+                    ((String) retailLM.getLPByName("importLogin").read(context)).trim(),
+                    ((String) retailLM.getLPByName("importPassword").read(context)).trim());
 
             importItemGroup(context, conn);
 
@@ -60,16 +59,16 @@ public class ImportDataActionProperty extends ScriptingActionProperty {
         ImportField itemGroupName = new ImportField(BL.LM.name);
         ImportField parentGroupID = new ImportField(BL.LM.extSID);
 
-        ImportKey<?> itemGroupKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("itemGroup"),
+        ImportKey<?> itemGroupKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("itemGroup"),
                 BL.LM.extSIDToObject.getMapping(itemGroupID));
         ImportProperty<?> itemGroupIDProperty = new ImportProperty(itemGroupID, BL.LM.extSID.getMapping(itemGroupKey));
         ImportProperty<?> itemGroupNameProperty = new ImportProperty(itemGroupName, BL.LM.name.getMapping(itemGroupKey));
 
-        ImportKey<?> parentGroupKey = new ImportKey((ConcreteCustomClass) rublevskiLM.getClassByName("itemGroup"),
+        ImportKey<?> parentGroupKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("itemGroup"),
                 BL.LM.extSIDToObject.getMapping(parentGroupID));
 
-        ImportProperty<?> parentGroupProperty = new ImportProperty(parentGroupID, rublevskiLM.getLPByName("parentItemGroup").getMapping(itemGroupKey),
-                BL.LM.object((ConcreteCustomClass) rublevskiLM.getClassByName("itemGroup")).getMapping(parentGroupKey));
+        ImportProperty<?> parentGroupProperty = new ImportProperty(parentGroupID, retailLM.getLPByName("parentItemGroup").getMapping(itemGroupKey),
+                BL.LM.object((ConcreteCustomClass) retailLM.getClassByName("itemGroup")).getMapping(parentGroupKey));
 
         Collection<? extends ImportKey<?>> keys = Arrays.asList(itemGroupKey, parentGroupKey);
         Collection<ImportProperty<?>> properties = Arrays.asList(itemGroupIDProperty, itemGroupNameProperty, parentGroupProperty);

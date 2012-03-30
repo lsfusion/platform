@@ -1,4 +1,4 @@
-MODULE Rublevski;
+MODULE retail;
 
 IMPORT BaseLogicsModule;
 
@@ -332,10 +332,10 @@ META metaCodePostedObject (object)
     isDraft###object 'Открыт' (object) = object IS object AND NOT object IS object##Posted;
     isPosted###object 'Закрыт' (object) = object IS object##Posted;
 
-    post###object 'Закрыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { SET objectClass(object) <- CustomObjectClass.Rublevski_##object##Posted; } ] (object)
+    post###object 'Закрыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { SET objectClass(object) <- CustomObjectClass.retail_##object##Posted; } ] (object)
                                     IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
 
-    unpost###object 'Открыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { SET objectClass(object) <- CustomObjectClass.Rublevski_##object; } ] (object)
+    unpost###object 'Открыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { SET objectClass(object) <- CustomObjectClass.retail_##object; } ] (object)
                                       IF object IS object##Posted TOOLBAR CONFIRM;
 
 END
@@ -4580,9 +4580,9 @@ inInventoryDepartmentStoreListInventoryPageListDetailPage (inventory, department
 isDraftListInventory 'Открыт' (listInventory) = listInventory IS listInventory AND NOT listInventory IS listInventoryPosted;
 isPostedListInventory 'Закрыт' (listInventory) = listInventory IS listInventoryPosted;
 
-postListInventory 'Закрыть' (listInventory) = [ACTION (listInventory) SET objectClass(listInventory) <- CustomObjectClass.Rublevski_listInventoryPosted] (listInventory)
+postListInventory 'Закрыть' (listInventory) = [ACTION (listInventory) SET objectClass(listInventory) <- CustomObjectClass.retail_listInventoryPosted] (listInventory)
                                     IF listInventory IS listInventory AND NOT listInventory IS listInventoryPosted TOOLBAR CONFIRM;
-unpostListInventory 'Открыть' (listInventory) = [ACTION (listInventory) SET objectClass(listInventory) <- CustomObjectClass.Rublevski_listInventory] (listInventory)
+unpostListInventory 'Открыть' (listInventory) = [ACTION (listInventory) SET objectClass(listInventory) <- CustomObjectClass.retail_listInventory] (listInventory)
                                       IF listInventory IS listInventoryPosted TOOLBAR CONFIRM;
 
 storeByInventory(inventory) = GROUP EQUAL storeDepartmentStore(departmentStore) IF includeDepartmentStoreInventory (departmentStore, inventory) BY inventory AS inventory;
@@ -8744,14 +8744,14 @@ FORM parameters 'Параметры'
 
 //GROUP formularGroup 'Formular' : baseGroup;
 
-importDataAction 'Импортировать данные (Formular)' = ACTION CUSTOM 'rublevski.actions.ImportDataActionProperty';// IN formularGroup;
+importDataAction 'Импортировать данные (Formular)' = ACTION CUSTOM 'retail.actions.ImportDataActionProperty';// IN formularGroup;
 importUrl 'URL' = DATA STRING[200] (); //IN formularGroup;
 importLogin 'Логин' = DATA STRING[200] ();// IN formularGroup;
 importPassword 'Пароль' = DATA STRING[200] ();// IN formularGroup;
 
 //GROUP lstradeGroup 'LS Trade' : baseGroup;
 
-importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'rublevski.actions.ImportLSTDataActionProperty';// IN lstradeGroup;
+importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'retail.actions.ImportLSTDataActionProperty';// IN lstradeGroup;
 importLSTDirectory 'Папка' = DATA STRING[200] ();// IN lstradeGroup;
 importInactive 'Импортировать в том числе неактивные' = DATA BOOLEAN ();
 importGroupItems 'Импортировать группы товаров' = DATA BOOLEAN ();

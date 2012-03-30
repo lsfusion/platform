@@ -22,10 +22,9 @@
         <module>budget-logics</module>
         <module>roman-logics</module>
         <module>sample-logics</module>
-        <module>trushkin-logics</module>
         <module>retail-api</module>
         <module>retail-equ</module>
-        <module>rublevski-logics</module>
+        <module>retail-logics</module>
         <module>gwt-form</module>
         <module>gwt-api</module>
         <module>paas-api</module>
