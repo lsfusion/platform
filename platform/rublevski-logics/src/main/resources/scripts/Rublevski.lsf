@@ -6633,14 +6633,14 @@ FORM shipment 'Поставка'
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
-                    supplierPriceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
+                    importerPriceShipmentDetail READONLY, supplierPriceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
                     numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
                     nameWareShipmentDetail, priceWareShipmentDetail, numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
                     retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail, ADDOBJ, delete
-    PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail, importerPriceShipmentDetail,
+    PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail,
                                controlExpiryShipmentDetail, isManufacturedShipmentDetail, isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail,
                                hintShipmentDetail, nameCountryShipmentDetail, namebanRevaluationItemDepartmentShipmentDetail,
-                               curImporterPriceShipmentDetail, curDataRetailRangeShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
+                               curImporterPriceShipmentDetail, curSupplierPriceShipmentDetail, curDataRetailRangeShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
                                dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curPriceWareShipmentDetail SHOWIF inWareShipmentDetail(d)
 
 
@@ -6736,7 +6736,7 @@ FORM shipments 'Поставки'
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d) READONLY numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
-                            supplierPriceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
+                            supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
                             numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
                             nameWareShipmentDetail, priceWareShipmentDetail, numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
                             retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail
@@ -7243,6 +7243,7 @@ FORM priceChangeDocuments 'Акты переоценки'
     OBJECTS pcd=priceChangeDocumentDetail
     PROPERTIES(pcd) READONLY nameItemPriceChangeDocumentDetail, quantityPriceChangeDocumentDetail,
                              oldImporterPriceChangeDocumentDetail, importerPriceChangeDocumentDetail,
+                             oldSupplierPriceChangeDocumentDetail, supplierPriceChangeDocumentDetail,
                              oldDataRetailRangePriceChangeDocumentDetail, dataRetailRangePriceChangeDocumentDetail,
                              oldRetailPriceChangeDocumentDetail, retailPriceChangeDocumentDetail,
                              oldPriceWarePriceChangeDocumentDetail, priceWarePriceChangeDocumentDetail
@@ -7640,8 +7641,9 @@ FORM userPriceChange 'Переоценка товаров'
 
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) numberUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
-                   curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail, curDataRetailRangeUserPriceChangeDetail,
-                   numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
+                   curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
+                   curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
+                   curDataRetailRangeUserPriceChangeDetail, numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
                    curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, curPriceWareUserPriceChangeDetail, priceWareUserPriceChangeDetail,
                    ADDOBJ, delete
 
@@ -7667,7 +7669,8 @@ FORM userPriceChanges 'Переоценки товаров'
 
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) READONLY numberUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
-                   curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail, curDataRetailRangeUserPriceChangeDetail,
+                   curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
+                   curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail, curDataRetailRangeUserPriceChangeDetail,
                    numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail, curRetailPriceUserPriceChangeDetail,
                    retailPriceUserPriceChangeDetail, curPriceWareUserPriceChangeDetail, priceWareUserPriceChangeDetail
 
@@ -7698,7 +7701,7 @@ FORM innerFlow 'Расход в другой отдел'
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) numberInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
-                   quantityInnerFlowDetail, importerPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
+                   quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
                    dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, priceWareInnerFlowDetail,
                    retailPriceInnerFlowDetail, accountSumInnerFlowDetail, ADDOBJ, delete
 
@@ -7747,7 +7750,7 @@ FORM innerFlows 'Расходы в другие отделы'
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) READONLY numberInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
-                            quantityInnerFlowDetail, importerPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
+                            quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
                             dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, priceWareInnerFlowDetail,
                             retailPriceInnerFlowDetail, accountSumInnerFlowDetail
     FILTERS inInnerFlowInnerFlowDetail(f, d)
@@ -7777,10 +7780,11 @@ FORM innerArrival 'Приход из другого отдела'
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) SHOWIF innerFlowInnerArrival(a) numberInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
-                   quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail, numberRetailRangeInnerArrivalDetail,
+                   quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail, supplierPriceInnerArrivalDetail, numberRetailRangeInnerArrivalDetail,
                    dataRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail, priceWareInnerArrivalDetail, retailPriceInnerArrivalDetail,
                    accountSumInnerArrivalDetail, ADDOBJ, delete
-    PROPERTIES (d) FORCE PANEL curImporterPriceInnerArrivalDetail, curNameWareInnerArrivalDetail, curPriceWareInnerArrivalDetail, curDataRetailRangeInnerArrivalDetail, curRetailPriceInnerArrivalDetail
+    PROPERTIES (d) FORCE PANEL curImporterPriceInnerArrivalDetail, curSupplierPriceInnerArrivalDetail, curNameWareInnerArrivalDetail,
+                   curPriceWareInnerArrivalDetail, curDataRetailRangeInnerArrivalDetail, curRetailPriceInnerArrivalDetail
 
     PROPERTIES inputMultipleItemsInnerArrival(a) TODRAW d, addInnerArrivalDetailBarcode(a) TODRAW d
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
@@ -7966,7 +7970,7 @@ FORM statement 'Отгрузка из розницы'
                     retailPriceStatementDetail, numberRangeStatementDetail, dataActingRateRangeStatementDetail, sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail,
                     noteStatementDetail, ADDOBJ, delete
 
-    PROPERTIES (d)  FORCE PANEL importerPriceStatementDetail, nameWareStatementDetail, priceWareStatementDetail, dataRetailRangeStatementDetail,
+    PROPERTIES (d)  FORCE PANEL importerPriceStatementDetail, supplierPriceStatementDetail, nameWareStatementDetail, priceWareStatementDetail, dataRetailRangeStatementDetail,
                                 curRetailPriceStatementDetail HIGHLIGHTIF notEqualsPriceStatementDetail(d),
                                 articleItemStatementDetail, nameCountryItemStatementDetail,
                                 balanceDepartmentStoreItemStatementDetail HIGHLIGHTIF highlightStatementDetail(d)
