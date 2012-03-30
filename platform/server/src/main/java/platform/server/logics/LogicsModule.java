@@ -1620,7 +1620,11 @@ public abstract class LogicsModule {
 
             switch (unionType) {
                 case SUM:
-                    mapOperands.put(operand, (Integer) params[offs]);
+                    if (mapOperands.containsKey(operand)) {
+                        mapOperands.put(operand, mapOperands.get(operand) + (Integer) params[offs]);
+                    } else {
+                        mapOperands.put(operand, (Integer) params[offs]);
+                    }
                     break;
                 default:
                     listOperands.add(operand);

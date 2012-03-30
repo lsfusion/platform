@@ -710,6 +710,27 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(eaPropLP, mergeAllParams(allProps));
     }
 
+    public LPWithParams addScriptedAdditiveOrProp(List<String> operands, List<LPWithParams> properties) {
+        assert operands.size() + 1 == properties.size();
+        
+        LPWithParams res = properties.get(0);
+        if (operands.size() > 0) {
+            scriptLogger.info("addScriptedAdditiveOrProp(" + operands + ", " + properties + ");");
+            List<Object> resultParams;
+            Integer[] coeffs = new Integer[properties.size()];
+            for (int i = 0; i < coeffs.length; i++) {
+                if (i == 0 || operands.get(i-1).equals("(+)")) {
+                    coeffs[i] = 1;
+                } else {
+                    coeffs[i] = -1;
+                }
+            }
+            resultParams = getCoeffParamsPlainList(properties, coeffs);
+            res = new LPWithParams(addUProp(null, "", Union.SUM, resultParams.toArray()), mergeAllParams(properties));
+        }
+        return res;    
+    }
+    
     public LPWithParams addScriptedAdditiveProp(List<String> operands, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
         assert operands.size() + 1 == properties.size();
 
@@ -865,7 +886,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(isBreak ? baseLM.flowBreak : baseLM.flowReturn, new ArrayList<Integer>());
     }
 
-    private List<Object> getParamsPlainList(List<LPWithParams>... mappedPropLists) throws ScriptingErrorLog.SemanticErrorException {
+    private List<Object> getCoeffParamsPlainList(List<LPWithParams> mappedPropsList, Integer[] coeffs) {
+        List<LP<?>> props = new ArrayList<LP<?>>();
+        List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
+        for (LPWithParams mappedProp : mappedPropsList) {
+            props.add(mappedProp.property);
+            usedParams.add(mappedProp.usedParams);
+        }
+        return getCoeffParamsPlainList(props, usedParams, coeffs);
+    } 
+    
+    private List<Object> getParamsPlainList(List<LPWithParams>... mappedPropLists) {
         List<LP<?>> props = new ArrayList<LP<?>>();
         List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
         for (List<LPWithParams> mappedPropList : mappedPropLists) {
@@ -874,16 +905,20 @@ public class ScriptingLogicsModule extends LogicsModule {
                 usedParams.add(mappedProp.usedParams);
             }
         }
-        return getParamsPlainList(props, usedParams);
+        return getCoeffParamsPlainList(props, usedParams, null);
     }
 
-    private List<Object> getParamsPlainList(List<LP<?>> paramProps, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
+    private List<Object> getCoeffParamsPlainList(List<LP<?>> paramProps, List<List<Integer>> usedParams, Integer[] coeffs) {
+        assert coeffs == null || paramProps.size() == coeffs.length;
         List<Integer> allUsedParams = mergeIntLists(usedParams);
         List<Object> resultParams = new ArrayList<Object>();
 
         for (int i = 0; i < paramProps.size(); i++) {
             LP<?> property = paramProps.get(i);
             if (property != null) {
+                if (coeffs != null) {
+                    resultParams.add(coeffs[i]);
+                }
                 resultParams.add(property);
                 for (int paramIndex : usedParams.get(i)) {
                     int localParamIndex = allUsedParams.indexOf(paramIndex);
@@ -891,6 +926,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                     resultParams.add(localParamIndex + 1);
                 }
             } else {
+                if (coeffs != null) {
+                    resultParams.add(coeffs[i]);
+                }
                 int localParamIndex = allUsedParams.indexOf(usedParams.get(i).get(0));
                 assert localParamIndex >= 0;
                 resultParams.add(localParamIndex + 1);
@@ -934,23 +972,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultProp;
     }
 
-    private List<Object> transformSumUnionParams(List<Object> params) {
-        List<Object> newList = new ArrayList<Object>();
-        for (Object obj : params) {
-            if (obj instanceof LP) {
-                newList.add(1);
-            }
-            newList.add(obj);
-        }
-        return newList;
-    }
-
     public LPWithParams addScriptedUProp(Union unionType, List<LPWithParams> paramProps, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedUProp(" + unionType + ", " + paramProps + ");");
         checkUnionPropertyParams(paramProps, errMsgPropType);
-        List<Object> resultParams = getParamsPlainList(paramProps);
+
+        List<Object> resultParams;
         if (unionType == Union.SUM) {
-            resultParams = transformSumUnionParams(resultParams);
+            Integer[] coeffs = new Integer[paramProps.size()];
+            for (int i = 0; i < coeffs.length; i++) {
+                coeffs[i] = 1;
+            }
+            resultParams = getCoeffParamsPlainList(paramProps, coeffs);
+        } else {
+            resultParams = getParamsPlainList(paramProps);
         }
         LP<?> prop = addUProp(null, "", unionType, resultParams.toArray());
         return new LPWithParams(prop, mergeAllParams(paramProps));

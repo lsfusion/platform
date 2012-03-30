@@ -176,9 +176,11 @@ testFormula(store, article) = sum12(incomeQuantity(store, article), outcomeQuant
 
 // Computational expressions
 // Priority:
+// OR
 // AND  IF
 // ==  !=
 // <  >  <=  >=
+// (+) (-)
 // +  -
 // *  /
 // - (unary)

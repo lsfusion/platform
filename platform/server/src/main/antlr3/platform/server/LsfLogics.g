@@ -767,16 +767,31 @@ relationalPE[List<String> context, boolean dynamic] returns [LPWithParams proper
 		}
 	}	
 }
-	:	lhs=additivePE[context, dynamic] { leftProp = $lhs.property; }
+	:	lhs=additiveORPE[context, dynamic] { leftProp = $lhs.property; }
 		(
 			(   operand=REL_OPERAND { op = $operand.text; }
-			    rhs=additivePE[context, dynamic] { rightProp = $rhs.property; }
+			    rhs=additiveORPE[context, dynamic] { rightProp = $rhs.property; }
 			)
 		|	def=typePropertyDefinition { mainProp = $def.property; }
 		)?
 	;
 
 
+additiveORPE[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
+	List<String> ops = new ArrayList<String>();
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedAdditiveOrProp(ops, props);
+	}
+}
+	:	firstExpr=additivePE[context, dynamic] { props.add($firstExpr.property); }
+		(operand=ADDOR_OPERAND nextExpr=additivePE[context, dynamic] { ops.add($operand.text); props.add($nextExpr.property); })*
+	;
+	
+	
 additivePE[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
@@ -2331,5 +2346,6 @@ REL_OPERAND		: 	('<') | ('>') | ('<=') | ('>=');
 MINUS			:	'-';
 PLUS			:	'+';
 MULT_OPERAND	:	('*') | ('/');
+ADDOR_OPERAND	:	'(+)' | '(-)';
 CONCAT_OPERAND	:	'##';
 CONCAT_CAPITALIZE_OPERAND	:	'###';	
