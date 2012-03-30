@@ -1042,7 +1042,8 @@ valueBarcodeToCurrentDate 'Штрих-код на тек. дату' (string) = v
 skuBarcodeStringDate 'Товар (ИД)' (string, date) = skuBarcode(valueBarcodeToDate(string, date));
 nameSkuStringDate 'Товар' (string, date) = nameAttributeItem(skuBarcodeStringDate(string, date));
 
-actionBarcode 'Активный' (barcode) = valueBarcodeToCurrentDate(barcodeEx(barcode))==barcode;
+activeBarcodeDate 'Активный' (barcode, date) = valueBarcodeToDate(barcodeEx(barcode), date) == barcode;
+activeBarcode 'Активный' (barcode) = valueBarcodeToCurrentDate(barcodeEx(barcode)) == barcode;
 
 titleOriginScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode);
 titleOriginCashBarcode 'Наименование для касс' = DATA STRING[100] (barcode);
@@ -1847,7 +1848,7 @@ FORM item 'Товар'
 
     OBJECTS b=barcode
     PROPERTIES(b)       barcodeEx, dateBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode,
-                        amountBarcode, removeBarcode, commentRemoveBarcode, actionBarcode
+                        amountBarcode, removeBarcode, commentRemoveBarcode, activeBarcode
     PROPERTIES(i)       generateBarcodeSku TODRAW b FORCE PANEL
     PROPERTIES(b)       ADDOBJ, delete
     PROPERTIES(i, b)    primarySkuBarcode
@@ -5104,7 +5105,7 @@ GROUP pricingShipmentDetailInfo 'Дополнительные ценовые п�
 quantityShipmentDetail 'Количество' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 totalQuantityShipment 'Общее количество' (shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN waybillSum;
 quantityItemShipment 'Количество по товару в поставке' (item, shipment) = GROUP SUM quantityShipmentDetail (shipmentDetail) BY itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
-isShipedItemShipment 'Товар есть в поставке' (item, shipment) = quantityItemShipment(item, shipment) > 0;
+isShippedItemShipment 'Товар есть в поставке' (item, shipment) = quantityItemShipment(item, shipment) > 0;
 
 balanceBeforeShipmentShipmentDetail 'Остаток до поставки' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 
@@ -5280,7 +5281,7 @@ sumQuantityOrderedItemShipment 'Количество по товару в зак
 isOrderedItemShipment 'Товар есть в заказах поставки' (item, shipment) =  sumQuantityOrderedItemShipment(item, shipment) > 0;
 
 isNotShipedOrderedItemShipment 'Товар есть в заказе и отсутствует в поставке' (item, shipment) =
-    isOrderedItemShipment (item, shipment) AND NOT isShipedItemShipment (item, shipment);
+    isOrderedItemShipment (item, shipment) AND NOT isShippedItemShipment (item, shipment);
 
 isOrderedShipmentDetail 'Товар поставки есть в заказах поставки' (shipmentDetail) = isOrderedItemShipment(itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail));
 
@@ -6237,6 +6238,8 @@ CLASS userPriceChangeDetail 'Строка переоценки товаров' :
 @metaCodeObjectWithPostEx (userPriceChange, 'Закрытая переоценка товаров');
 
 quantityUserPriceChangeDetail 'Кол-во переоценки' = DATA DOUBLE (userPriceChangeDetail);
+quantityItemUserPriceChange 'Кол-во по товару' (item, userPriceChange) = GROUP SUM quantityUserPriceChangeDetail(detail)
+                                                                               BY itemUserPriceChangeDetail(detail), userPriceChangeUserPriceChangeDetail(detail);
 
 importerPriceUserPriceChangeDetail 'Цена изготовителя' = DATA DOUBLE (userPriceChangeDetail);
 supplierPriceUserPriceChangeDetail 'Цена поставщика' = DATA DOUBLE (userPriceChangeDetail);
@@ -6397,6 +6400,11 @@ META metaCodeItemDepartmentStoreLedger(prefix)
 
     ledgerA###prefix##DateTime (item, departmentStore, dateTime) = concatLedgerA###prefix##DateTime(item, departmentStore, dateTime)[2];
 
+    concatLedgerCurrent###prefix (item, departmentStore) = GROUP MAX order###prefix##Ledger(ledger) AND
+        isPosted###prefix##Ledger(ledger)
+        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger);
+
+    currentLedger###prefix (item, departmentStore) = concatLedgerCurrent###prefix(item, departmentStore)[2];
 END
 
 
@@ -6588,6 +6596,8 @@ priceRetailLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetai
 @metaCodeItemDepartmentStoreLedger(retailPrice);
 
 priceRetailBLedgerDateTime (item, departmentStore, dateTime) = priceRetailLedger(ledgerBRetailPriceDateTime(item, departmentStore, dateTime));
+
+priceRetailCurrentLedger (item, departmentStore) = priceRetailLedger(currentLedgerRetailPrice(item, departmentStore)) PERSISTENT;
 
 // --------------------------- Использование регистров (автоматическое заполнение) ---------------------------------
 
@@ -6842,12 +6852,19 @@ END
 
 //----------------------------------- Загрузка в ВУ -------------------------------------------------------
 
+inGroupMachineryItem 'Вкл' (groupMachinery, item) = TRUE IF groupMachinery IS groupMachinery AND item IS item;
+// todo : сделать, чтобы хитро можно было настраивать что куда качать
+
 CLASS machineryPriceTransaction 'Загрузка прайса в оборудование';
 TABLE machineryPriceTransaction (machineryPriceTransaction);
 TABLE machineryPriceTransactionBarcode (machineryPriceTransaction, barcode);
 
 groupMachineryMachineryPriceTransaction = DATA groupMachinery (machineryPriceTransaction);
 nameGroupMachineryMachineryPriceTransaction 'Группа оборудования' (transaction) = nameGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
+
+departmentStoreMachineryPriceTransaction (transaction) = departmentStoreGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
+
+equipmentServerMachineryPriceTransaction (transaction) = equipmentServerGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
 
 dateMachineryPriceTransaction 'Дата' = DATA DATE (machineryPriceTransaction);
 dateMachineryPriceTransaction (transaction) <- currentDate() ON ASSIGN transaction IS machineryPriceTransaction;
@@ -6867,6 +6884,65 @@ inMachineryPriceTransactionBarcode 'Вкл' = DATA BOOLEAN (machineryPriceTransa
 nameMachineryPriceTransactionBarcode 'Наименование' = DATA STRING[255] (machineryPriceTransaction, barcode);
 priceMachineryPriceTransactionBarcode 'Цена' = DATA DOUBLE (machineryPriceTransaction, barcode);
 
+orderMachineryPriceTransaction (transaction) = LIST(dateTimeMachineryPriceTransaction(transaction), transaction) PERSISTENT;
+
+TABLE barcodeGroupMachinery (barcode, groupMachinery);
+
+lastOrderTransactionBarcodeGroupMachinery (barcode, groupMachinery) = GROUP MAX orderMachineryPriceTransaction(transaction)
+                                                                          AND inMachineryPriceTransactionBarcode(transaction, barcode)
+                                                                          AND NOT canceledMachineryPriceTransaction(transaction)
+                                                                      BY barcode, groupMachineryMachineryPriceTransaction(transaction);
+lastTransactionBarcodeGroupMachinery (barcode, groupMachinery) = lastOrderTransactionBarcodeGroupMachinery(barcode, groupMachinery) [2] PERSISTENT;
+
+transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудовании' (barcode, groupMachinery)  =
+    priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = priceRetailCurrentLedger(skuBarcode(barcode), departmentStoreGroupMachinery(groupMachinery));
+
+createMachineryPriceTransactionItem = SESSION DATA BOOLEAN (item);
+tempBarcode = SESSION DATA BOOLEAN (barcode);
+tempCountBarcode = GROUP SUM 1 IF tempBarcode(barcode);
+
+createMachineryPriceTransaction 'Создать транзакцию' = ACTION (departmentStore) {
+    FOR departmentStoreGroupMachinery(groupMachinery) == departmentStore DO {
+        SET tempBarcode(barcode) <- createMachineryPriceTransactionItem(skuBarcode(barcode)) // если передали параметром
+                                    AND inGroupMachineryItem(groupMachinery, skuBarcode(barcode)) // если на эту группу оборудования должна закачиваться
+                                    AND activeBarcode(barcode) // если активный штрих-код
+                                    AND ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery) // если есть цена розничная
+                                    AND NOT ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery) == transactionPriceBarcodeGroupMachinery(barcode, groupMachinery); // если цена изменилась
+        IF tempCountBarcode() THEN {
+            ADDOBJ machineryPriceTransaction;
+            FOR t == addedObject() DO {
+                SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery AS groupMachinery;
+                SET inMachineryPriceTransactionBarcode(t, barcode) <- tempBarcode(barcode);
+                IF groupMachinery IS groupScales THEN
+                    SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleScalesBarcode(barcode)
+                ELSE
+                    SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleCashBarcode(barcode);
+                SET priceMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery);
+            }
+        }
+    }
+};
+
+GROUP machineryPriceGroup 'Загрузить в оборудование' : baseGroup;
+
+createBalanceMachineryPriceTransaction 'Остатки' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
+    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentBalanceItemLedger(item, departmentStore);
+    EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
+} CONFIRM IN machineryPriceGroup;
+
+createPriceMachineryPriceTransaction 'Все товары' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
+    SET createMachineryPriceTransactionItem(item) <- TRUE IF priceRetailCurrentLedger(item, departmentStore);
+    EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
+} CONFIRM IN machineryPriceGroup;
+
+META metaCodeDocumentMachineryPriceTransaction (document)
+    create###document##MachineryPriceTransaction 'Загрузить в оборудование' = ACTION (document) NEWSESSION AUTOAPPLY {
+        SET createMachineryPriceTransactionItem(item) <- TRUE IF quantityItem###document(item, document);
+        EXEC createMachineryPriceTransaction(departmentStore###document(document));
+    } TOOLBAR CONFIRM;
+END
+
 FORM machineryPriceTransaction 'Загрузка прайса в оборудование'
     OBJECTS t = machineryPriceTransaction FIXED PANEL
     PROPERTIES(t) nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
@@ -6883,10 +6959,14 @@ FORM machineryPriceTransaction 'Загрузка прайса в оборудо�
 ;
 
 FORM machineryPriceTransactions 'Загрузки прайса в оборудование'
+    OBJECTS d = departmentStore FIXED PANEL
+    PROPERTIES name(d) SELECTOR, createBalanceMachineryPriceTransaction(d), createPriceMachineryPriceTransaction(d)
+
     OBJECTS t = machineryPriceTransaction
     PROPERTIES(t) READONLY nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
                            succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
     PROPERTIES(t)          ADDFORM, EDITFORM, delete
+    FILTERS departmentStoreMachineryPriceTransaction(t) == d
 
     OBJECTS b = barcode
     PROPERTIES(b)    barcodeEx
@@ -6897,6 +6977,7 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
 @metaCodeInputMultipleItems(shipment);
+@metaCodeDocumentMachineryPriceTransaction(shipment);
 
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
@@ -7006,7 +7087,8 @@ FORM shipments 'Поставки'
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (s)          ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
+    PROPERTIES (s)          createShipmentMachineryPriceTransaction FORCE PANEL,
+                            ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
     OBJECTS d=shipmentDetail
@@ -7908,6 +7990,7 @@ DESIGN inventories FROM DEFAULT {
 //---------------------------Акты переоценок-------------------------------------//
 
 @metaCodeInputMultipleItems (userPriceChange);
+@metaCodeDocumentMachineryPriceTransaction(userPriceChange);
 
 FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
@@ -7939,7 +8022,8 @@ FORM userPriceChanges 'Переоценки товаров'
     OBJECTS u=userPriceChange
     PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
 
-    PROPERTIES (u) ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
+    PROPERTIES (u) createUserPriceChangeMachineryPriceTransaction FORCE PANEL,
+                   ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
                    postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
 
     OBJECTS d=userPriceChangeDetail
@@ -7968,6 +8052,7 @@ DESIGN userPriceChanges FROM DEFAULT {
 
 @metaCodeInputMultipleItems (innerFlow);
 @metaCodeInputMultipleItems (innerArrival);
+@metaCodeDocumentMachineryPriceTransaction(innerArrival);
 
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
@@ -8041,10 +8126,6 @@ DESIGN innerFlows FROM DEFAULT {
     }
 }
 
-
-
-
-
 FORM innerArrival 'Приход из другого отдела'
     OBJECTS a=innerArrival FIXED PANEL
     PROPERTIES (a) nameDepartmentStoreInnerArrival, numberArrival SHOWIF departmentStoreInnerArrival(a), seriesArrival SHOWIF departmentStoreInnerArrival(a),
@@ -8110,7 +8191,8 @@ FORM innerArrivals 'Приходы из других отделов'
     PROPERTIES (a) READONLY objectClassName, numberArrival, seriesArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
                             nameSenderDepartmentInnerArrival, quantityInnerArrivalDetailsInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival
 
-    PROPERTIES (a) ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
+    PROPERTIES (a) createInnerArrivalMachineryPriceTransaction FORCE PANEL,
+                   ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
                    postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
