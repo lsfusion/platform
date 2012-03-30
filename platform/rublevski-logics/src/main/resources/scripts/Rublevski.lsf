@@ -625,11 +625,11 @@ OBJECTS f=formItem FIXED PANEL
 PROPERTIES(f) name;
 
 //--------------------------------- Кол-во в упаковке --------------------------//
-CLASS numberInPack 'Кол-во в упаковке' : named;
-
-FORM numberInPack 'Кол-во в упаковке'
-OBJECTS n=numberInPack FIXED PANEL
-PROPERTIES(n) name;
+//CLASS numberInPack 'Кол-во в упаковке' : named;
+//
+//FORM numberInPack 'Кол-во в упаковке'
+//OBJECTS n=numberInPack FIXED PANEL
+//PROPERTIES(n) name;
 
 //---------------------------------- Норма отходов ------------------------------------//
 CLASS rateWaste 'Норма отходов' : named, externalObject;
@@ -749,9 +749,9 @@ formItemItem = DATA formItem (item) IN idGroup;
 nameFormItemItem 'Форма товара (особенности нарезки/разделки)' = name(formItemItem(item)) IN descriptionGroup;
 @metaCodeShowItemAttribute(FormItem, 'Показывать форму', displayGroup);
 
-numberInPackItem = DATA numberInPack (item) IN idGroup;
-nameNumberInPackItem 'Кол-во в упаковке' = name(numberInPackItem(item)) IN orderGroup;
-@metaCodeShowItemAttribute(NumberInPack, 'Показывать кол-во в упаковке', displayGroup);
+//numberInPackItem = DATA numberInPack (item) IN idGroup;
+numberInPackItem 'Кол-во в упаковке' = DATA DOUBLE (item) IN orderGroup;
+//@metaCodeShowItemAttribute(NumberInPack, 'Показывать кол-во в упаковке', displayGroup);
 
 rateWasteItem = DATA rateWaste(item) IN idGroup;
 nameRateWasteItem 'Норма отходов' = name(rateWasteItem(item)) IN rateGroup;
@@ -866,16 +866,19 @@ valueStringItemAttribute(item, attribute) = UNION EXCLUSIVE  valueCaptionItemAtt
 CLASS STATIC integerItemAttribute 'Целочисленный атрибут' {
     length 'Длина',
     width 'Ширина',
-    height 'Высота'
+    height 'Высота',
+    numberInPack 'Количество в грузовом месте'
 } : itemAttribute;
 
 valueLengthItemAttribute(item, attribute) = lengthItem(item) AND attribute == integerItemAttribute.length;
 valueWidthItemAttribute(item, attribute) = widthItem(item) AND attribute == integerItemAttribute.width;
 valueHeightItemAttribute(item, attribute) = heightItem(item) AND attribute == integerItemAttribute.height;
+valueNumberInPackItemAttribute(item, attribute) = numberInPackItem(item) AND attribute == integerItemAttribute.numberInPack;
 
 valueIntegerItemAttribute(item, attribute) = UNION EXCLUSIVE valueLengthItemAttribute(item, attribute),
                                                              valueWidthItemAttribute(item, attribute),
-                                                             valueHeightItemAttribute(item, attribute);
+                                                             valueHeightItemAttribute(item, attribute),
+                                                             valueNumberInPackItemAttribute(item, attribute);
 stringIntegerItemAttribute(item, attribute) = castToString255(valueIntegerItemAttribute(item, attribute));
 
 CLASS STATIC doubleItemAttribute 'Дробный атрибут' {
@@ -921,7 +924,6 @@ CLASS STATIC objectItemAttribute 'Объектный атрибут' {
     sort 'Сорт/категория',
     pack 'Упаковка',
     specialty 'Особенность',
-    numberInPack 'Число в упаковке',
     size 'Размер/калибр',
     coolingDegree 'Степень охлаждения',
     color 'Цвет',
@@ -937,7 +939,7 @@ valueTypeItemAttribute(item, attribute) = typeItemItem(item) AND attribute == ob
 valueFormItemAttribute(item, attribute) = formItemItem(item) AND attribute == objectItemAttribute.formItem;
 valueSortItemAttribute(item, attribute) = sortItem(item) AND attribute == objectItemAttribute.sort;
 valuePackItemAttribute(item, attribute) = packItem(item) AND attribute == objectItemAttribute.pack;
-valueNumberInPackItemAttribute(item, attribute) = numberInPackItem(item) AND attribute == objectItemAttribute.numberInPack;
+//valueNumberInPackItemAttribute(item, attribute) = numberInPackItem(item) AND attribute == objectItemAttribute.numberInPack;
 valueSpecialtyItemAttribute(item, attribute) = specialtyItem(item) AND attribute == objectItemAttribute.specialty;
 valueSizeItemAttribute(item, attribute) = sizeItem(item) AND attribute == objectItemAttribute.size;
 valueCoolingDegreeItemAttribute(item, attribute) = coolingDegreeItem(item) AND attribute == objectItemAttribute.coolingDegree;
@@ -952,7 +954,7 @@ valueObjectItemAttribute(item, attribute) = UNION EXCLUSIVE valueItemGroupItemAt
                                                             valueFormItemAttribute(item, attribute),
                                                             valueSortItemAttribute(item, attribute),
                                                             valuePackItemAttribute(item, attribute),
-                                                            valueNumberInPackItemAttribute(item, attribute),
+                                                           // valueNumberInPackItemAttribute(item, attribute),
                                                             valueSpecialtyItemAttribute(item, attribute),
                                                             valueSizeItemAttribute(item, attribute),
                                                             valueCoolingDegreeItemAttribute(item, attribute),
@@ -1837,7 +1839,7 @@ FORM item 'Товар'
 
                   controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem,
 
-                  netWeightItem, quantityPackItem, minQuantityOrderItem, minReserveItem, nameNumberInPackItem,
+                  netWeightItem, quantityPackItem, minQuantityOrderItem, minReserveItem, numberInPackItem,
 
                   bonusReturnItem, nameReturnItem, hintItem, bonusItem,
 
@@ -2065,7 +2067,7 @@ FORM itemGroup 'Товарная группа'
                    showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
                    showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                    showArticleItemGroup, showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
-                   showNumberInPackItemGroup, showRateWasteItemGroup, showWareItemGroup
+                   showRateWasteItemGroup, showWareItemGroup
     EDIT itemGroup OBJECT g
 ;
 
@@ -2089,7 +2091,7 @@ FORM itemGroups 'Товарные группы'
     PROPERTIES(cg)   canonicalNameItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup,
                      showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
                      showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
-                     showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup, showNumberInPackItemGroup,
+                     showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
                      showRateWasteItemGroup, showWareItemGroup, delete
 
     ORDER BY canonicalNameItemGroup
@@ -4798,6 +4800,9 @@ statusSpecification 'Расход' (specification) = CASE
 //количество-цены по строкам
 
 quantityStatementDetail 'Количество' (statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
+packQuantityStatementDetail 'Количество грузовых мест' (statementDetail) = quantityStatementDetail(statementDetail)/
+    UNION OVERRIDE 1 IF statementDetail IS statementDetail, quantityPackItem(itemStatementDetail(statementDetail));
+
 retailPriceStatementDetail 'Цена товара (розн.)'(statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
 sumStatementDetail 'Сумма' (statementDetail) = round0(retailPriceStatementDetail(statementDetail)*quantityStatementDetail(statementDetail))IN baseGroup;
 
@@ -4948,6 +4953,50 @@ retailPriceChangeStatementDetail 'Новая розничная цена' (price
 
 warePriceChangeStatementDetail 'Текущая посуда' (priceChangeStatementDetail) = wareStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail)) IN baseGroup;
 priceWarePriceChangeStatementDetail 'Текущая цена посуды' (priceChangeStatementDetail) =  priceWareStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail)) IN baseGroup;
+
+// для накладной (шапка и хвост)
+carStatement 'Автомобиль' (statement) = DATA STRING[30] (statement);
+ownerCarStatement 'Владелец автомобиля' (statement) = DATA STRING[100] (statement);
+trailerStatement 'Прицеп' (statement) = DATA STRING[10] (statement);
+driverCarStatement 'Водитель' (statement) = DATA STRING[40] (statement);
+waybillStatement 'Путевой лист' (statement) = DATA STRING[20] (statement);
+
+transportPayerStatement 'Заказчик перевозки (ИД)' (statement) = DATA legalEntity (statement);
+
+shipmentBaseStatement 'Основание отпуска' (statement) = DATA STRING[30] (statement);
+
+dataLoadingPlaceStatement 'Пункт погрузки' (statement) = DATA STRING[50] (statement);
+loadingPlaceStatement 'Пункт погрузки' (statement) = UNION OVERRIDE addressStore(storeDepartmentStore(departmentStoreStatement(statement))),
+                                                       dataLoadingPlaceStatement (statement);
+
+dataUnloadingPlaceStatement 'Пункт разгрузки' (statement) = DATA STRING[50] (statement);
+unloadingPlaceStatement 'Пункт разгрузки' (statement) = UNION OVERRIDE addressLegalEntity(customerStatement(statement)),
+                                                       dataUnloadingPlaceStatement (statement);
+
+readdressingStatement 'Переадресовка' (statement) = DATA STRING[50] (statement);
+
+issuanceAllowedStatement 'Отпуск разрешил' (statement) = DATA employee(statement);
+issuanceExecutedStatement 'Отпуск произвел' (statement) = DATA employee(statement);
+
+forwarderStatement 'Товар к перевозке принял (экспедитор)' (statement) = DATA STRING[40] (statement);
+
+warrantStatement 'По доверенности' (statement) = DATA STRING[30](statement);
+warrantHolderStatement 'Доверенность выдана на' (statement) = DATA STRING[100](statement);
+
+goodsAcceptedStatement 'Принял грузополучатель' (statement) = DATA STRING[40] (statement);
+
+loadingExecuterStatement 'Исполнитель ПРР' (statement) = DATA employee(statement);
+
+CLASS wayOfLoading 'Способ ПРР' : named;
+nameWayOfLoading 'Способ ПРР' (wayOfLoading) = name(wayOfLoading) IF TRUE IN baseGroup;
+//усложнение из-за бага
+
+wayOfLoadingStatement 'Способ ПРР' (statement) = DATA wayOfLoading(statement);
+codeLoadingStatement 'Код ПРР' (statement) = DATA STRING[3] (statement);
+
+arrivalTimeStatement 'Время прибытия' (statement) = DATA DATETIME(statement);
+departureTimeStatement 'Время убытия' (statement) = DATA DATETIME(statement);
+downtimeStatement 'Время простоя' (statement) = DATA STRING[10] (statement);
 
 //---------------------------- Кассовые отчеты ----------------------------------------//
 CLASS cashReport 'Кассовый отчет' : transaction;
@@ -5950,6 +5999,46 @@ descriptionReturnSupplier 'Название документа' (returnSupplier)
     seriesNumberObject(returnSupplier), dateReturnSupplier(returnSupplier), nameSupplierReturnSupplier(returnSupplier));
 
 descriptionReturnSupplierDetail 'Название документа' (returnSupplierDetail) = descriptionReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
+
+// для возвратной накладной (шапка и хвост)
+carReturnSupplier 'Автомобиль' (returnSupplier) = DATA STRING[30] (returnSupplier);
+ownerCarReturnSupplier 'Владелец автомобиля' (returnSupplier) = DATA STRING[100] (returnSupplier);
+trailerReturnSupplier 'Прицеп' (returnSupplier) = DATA STRING[10] (returnSupplier);
+driverCarReturnSupplier 'Водитель' (returnSupplier) = DATA STRING[40] (returnSupplier);
+waybillReturnSupplier 'Путевой лист' (returnSupplier) = DATA STRING[20] (returnSupplier);
+
+transportPayerReturnSupplier 'Заказчик перевозки (ИД)' (returnSupplier) = DATA legalEntity (returnSupplier);
+
+shipmentBaseReturnSupplier 'Основание отпуска' (returnSupplier) = DATA STRING[30] (returnSupplier);
+
+dataLoadingPlaceReturnSupplier 'Пункт погрузки' (returnSupplier) = DATA STRING[50] (returnSupplier);
+loadingPlaceReturnSupplier 'Пункт погрузки' (returnSupplier) = UNION OVERRIDE addressStore(storeDepartmentStore(departmentStoreReturnSupplier(returnSupplier))),
+                                                       dataLoadingPlaceStatement (returnSupplier);
+
+dataUnloadingPlaceReturnSupplier 'Пункт разгрузки' (returnSupplier) = DATA STRING[50] (returnSupplier);
+unloadingPlaceReturnSupplier 'Пункт разгрузки' (returnSupplier) = UNION OVERRIDE addressLegalEntity(supplierReturnSupplier(returnSupplier)),
+                                                       dataUnloadingPlaceReturnSupplier (returnSupplier);
+
+readdressingReturnSupplier 'Переадресовка' (returnSupplier) = DATA STRING[50] (returnSupplier);
+
+issuanceAllowedReturnSupplier 'Отпуск разрешил' (returnSupplier) = DATA employee(returnSupplier);
+issuanceExecutedReturnSupplier 'Отпуск произвел' (returnSupplier) = DATA employee(returnSupplier);
+
+forwarderReturnSupplier 'Товар к перевозке принял (экспедитор)' (returnSupplier) = DATA STRING[40] (returnSupplier);
+
+warrantReturnSupplier 'По доверенности' (returnSupplier) = DATA STRING[30](returnSupplier);
+warrantHolderReturnSupplier 'Доверенность выдана на' (returnSupplier) = DATA STRING[100](returnSupplier);
+
+goodsAcceptedReturnSupplier 'Принял грузополучатель' (returnSupplier) = DATA STRING[40] (returnSupplier);
+
+loadingExecuterReturnSupplier 'Исполнитель ПРР' (returnSupplier) = DATA employee(returnSupplier);
+
+wayOfLoadingReturnSupplier 'Способ ПРР' (returnSupplier) = DATA wayOfLoading(returnSupplier);
+codeLoadingReturnSupplier 'Код ПРР' (returnSupplier) = DATA STRING[3] (returnSupplier);
+
+arrivalTimeReturnSupplier 'Время прибытия' (returnSupplier) = DATA DATETIME(returnSupplier);
+departureTimeReturnSupplier 'Время убытия' (returnSupplier) = DATA DATETIME(returnSupplier);
+downtimeReturnSupplier 'Время простоя' (returnSupplier) = DATA STRING[10] (returnSupplier);
 
 //----------------------------------------------- Чеки ---------------------------------------------------//
 
@@ -8454,6 +8543,108 @@ DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
     }
 }
 
+// ---------------------------- Атрибуты для накладной --------------------------------- //
+// для накладной (шапка и хвост)
+carConsignment 'Автомобиль' (consignment) = UNION OVERRIDE carStatement (consignment),
+                                                           carReturnSupplier (consignment);
+
+ownerCarConsignment 'Владелец автомобиля' (consignment) = UNION OVERRIDE ownerCarStatement (consignment),
+                                                                         ownerCarReturnSupplier (consignment);
+
+trailerConsignment 'Прицеп' (consignment) = UNION OVERRIDE trailerStatement (consignment),
+                                                           trailerReturnSupplier (consignment);
+
+driverCarConsignment 'Водитель' (consignment) = UNION OVERRIDE driverCarStatement (consignment),
+                                                               driverCarReturnSupplier (consignment);
+
+waybillConsignment 'Путевой лист' (consignment) = UNION OVERRIDE waybillStatement (consignment),
+                                                                 waybillReturnSupplier (consignment);
+
+transportPayerConsignment 'Заказчик перевозки (ИД)' (consignment) = UNION OVERRIDE transportPayerStatement (consignment),
+                                                                                   transportPayerReturnSupplier (consignment);
+
+shipmentBaseConsignment 'Основание отпуска' (consignment) = UNION OVERRIDE shipmentBaseStatement (consignment),
+                                                                           shipmentBaseReturnSupplier (consignment);
+
+dataLoadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION OVERRIDE dataLoadingPlaceStatement (consignment),
+                                                                            dataLoadingPlaceReturnSupplier (consignment);
+
+loadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION OVERRIDE loadingPlaceStatement (consignment),
+                                                                        loadingPlaceReturnSupplier (consignment);
+
+dataUnloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION OVERRIDE dataUnloadingPlaceStatement (consignment),
+                                                                               dataUnloadingPlaceReturnSupplier (consignment);
+
+unloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION OVERRIDE unloadingPlaceStatement (consignment),
+                                                                           unloadingPlaceReturnSupplier (consignment);
+
+readdressingConsignment 'Переадресовка' (consignment) = UNION OVERRIDE readdressingStatement (consignment),
+                                                                       readdressingReturnSupplier (consignment);
+
+issuanceAllowedConsignment 'Отпуск разрешил' (consignment) = UNION OVERRIDE issuanceAllowedStatement(consignment),
+                                                                            issuanceAllowedReturnSupplier(consignment);
+
+issuanceExecutedConsignment 'Отпуск произвел' (consignment) = UNION OVERRIDE issuanceExecutedStatement(consignment),
+                                                                             issuanceExecutedReturnSupplier(consignment);
+
+forwarderConsignment 'Товар к перевозке принял (экспедитор)' (consignment) = UNION OVERRIDE forwarderStatement(consignment),
+                                                                                            forwarderReturnSupplier(consignment);
+
+warrantConsignment 'По доверенности' (consignment) = UNION OVERRIDE warrantStatement (consignment),
+                                                                    warrantReturnSupplier (consignment);
+
+warrantHolderConsignment 'Доверенность выдана на' (consignment) = UNION OVERRIDE warrantHolderStatement (consignment),
+                                                                                 warrantHolderReturnSupplier (consignment);
+
+goodsAcceptedConsignment 'Принял грузополучатель' (consignment) = UNION OVERRIDE goodsAcceptedStatement (consignment),
+                                                                                 goodsAcceptedReturnSupplier (consignment);
+
+loadingExecuterConsignment 'Исполнитель ПРР' (consignment) = UNION OVERRIDE loadingExecuterStatement(consignment),
+                                                                            loadingExecuterReturnSupplier(consignment);
+
+wayOfLoadingConsignment 'Способ ПРР' (consignment) = UNION OVERRIDE wayOfLoadingStatement(consignment),
+                                                                    wayOfLoadingReturnSupplier(consignment);
+
+codeLoadingConsignment 'Код ПРР' (consignment) = UNION OVERRIDE codeLoadingStatement (consignment),
+                                                                codeLoadingReturnSupplier (consignment);
+
+arrivalTimeConsignment 'Время прибытия' (consignment) = UNION OVERRIDE arrivalTimeStatement (consignment),
+                                                                        arrivalTimeReturnSupplier (consignment);
+
+departureTimeConsignment 'Время убытия' (consignment) = UNION OVERRIDE departureTimeStatement (consignment),
+                                                                       departureTimeReturnSupplier (consignment);
+
+downtimeConsignment 'Время простоя' (consignment) = UNION OVERRIDE downtimeStatement (consignment),
+                                                                   downtimeReturnSupplier (consignment);
+
+// для накладной (спецификация)
+nameItemConsignmentDetail 'Наименование товара' (consignmentDetail) = UNION OVERRIDE nameAttributeItem(itemStatementDetail(consignmentDetail)),
+                                                                                   nameAttributeItem(itemReturnSupplierDetail(consignmentDetail)) ;
+
+unitOfMeasureConsignmentDetail 'Единица измерения' (consignmentDetail) = UNION OVERRIDE unitOfMeasureItem(itemStatementDetail(consignmentDetail)),
+                                                                                      unitOfMeasureItem(itemReturnSupplierDetail(consignmentDetail));
+
+quantityConsignmentDetail 'Количество' (consignmentDetail) = UNION OVERRIDE quantityStatementDetail(consignmentDetail),
+                                                                          quantityReturnSupplierDetail(consignmentDetail);
+
+priceConsignmentDetail 'Цена' (consignmentDetail) = UNION OVERRIDE retailPriceStatementDetail (consignmentDetail),
+                                                                   supplierPriceReturnSupplierDetail (consignmentDetail);
+
+costConsignmentDetail 'Стоимость' (consignmentDetail) = UNION OVERRIDE sumStatementDetail (consignmentDetail),
+                                                                       sumSupplierReturnSupplierDetail (consignmentDetail);
+
+vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION OVERRIDE dataActingRateRangeStatementDetail (consignmentDetail),
+                                                                       dataSuppliersRangeReturnSupplierDetail (consignmentDetail);
+
+sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION OVERRIDE totalSumNDSStatementDetail (consignmentDetail),
+                                                                         sumSupplierVATReturnSupplierDetail (consignmentDetail);
+
+costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION OVERRIDE sumStatementDetail (consignmentDetail),
+                                                                                sumSupplierReturnSupplierDetail (consignmentDetail);
+
+packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) =
+    quantityPackItem(itemStatementDetail(consignmentDetail))* packQuantityStatementDetail(consignmentDetail);
+
 // ---------------------------- Нумераторы по умолчанию --------------------------------- //
 
 defaultNumeratorDocuments = DATA numerator ();
@@ -8641,7 +8832,7 @@ NAVIGATOR {
             ADD specialty;
             ADD coolingDegree;
             ADD formItem;
-            ADD numberInPack;
+        //    ADD numberInPack;
             ADD rateWaste;
             ADD addNameisPortionBarItem;
             ADD nameisPortionBarItem;
