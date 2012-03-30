@@ -5115,7 +5115,7 @@ overPriceWareShipmentDetail (shipmentDetail) = UNION OVERRIDE 0 IF shipmentDetai
 wareRangeShipmentDetail 'Шкала НДС по посуде' (shipmentDetail) = DATA range (shipmentDetail);
 
 dataWareRangeShipmentDetail 'НДС по посуде' (shipmentDetail) =
-    dataActingRateRange(wareRangeShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo MINCHARWIDTH 4 PREFCHARWIDTH 4;
+    dataActingRateRangeDate(wareRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo MINCHARWIDTH 4 PREFCHARWIDTH 4;
 
 wareRangeShipmentDetail (shipmentDetail) <- rangeWareVal (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
     ON CHANGE itemShipmentDetail(shipmentDetail);
@@ -5209,7 +5209,7 @@ CONSTRAINT supplierPriceShipmentDetail (shipmentDetail) < minAllowPriceItemShipm
 curRetailPriceShipmentDetail 'Текущая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
 
 curRetailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
-curDataRetailRangeShipmentDetail 'Текущий НДС розничный,%' (shipmentDetail) = dataActingRateRange(curRetailRangeShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo;
+curDataRetailRangeShipmentDetail 'Текущий НДС розничный,%' (shipmentDetail) = dataActingRateRangeDate(curRetailRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo;
 
 //oldPriceShipmentDetail 'Старая цена поставщика'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 //oldPriceShipmentDetail(shipmentDetail) <- priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail),
@@ -5274,6 +5274,20 @@ descriptionShipment 'Название документа' (shipment) = castShipm
     seriesNumberObject(shipment), dateShipment(shipment), nameSupplierShipment(shipment));
 
 descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
+                                 // Суммы //
+
+totalSumSupplierPriceShipment 'Сумма без НДС' (shipment) = GROUP SUM sumPriceShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail);
+// totalSumSupplierVATShipment
+totalSumImporterPriceShipment 'Сумма изготовителя' (shipment) = GROUP SUM [importerPriceShipmentDetail(shipmentDetail)*quantityShipmentDetail(shipmentDetail)](shipmentDetail)
+    BY shipmentShipmentDetail(shipmentDetail);
+
+totalSumMarkupShipment 'Сумма надбавки' (shipment) = GROUP SUM [sumMarkupShipmentDetail(shipmentDetail)*quantityShipmentDetail(shipmentDetail)](shipmentDetail)
+    BY shipmentShipmentDetail(shipmentDetail);
+//totalSumWareShipment  -сумма посуды
+//totalSumVatWareShipment - сумма ндс по посуде
+totalSumRetailVATShipment 'Сумма розничного НДС' (shipment) = GROUP SUM [sumRetailVATShipmentDetail(shipmentDetail)*quantityShipmentDetail(shipmentDetail)](shipmentDetail)
+    BY shipmentShipmentDetail(shipmentDetail);
+
 
 // ---------------------------------- Дооценка на приходе ------------------------------------------
 
@@ -5423,7 +5437,7 @@ importerPriceItemInnerFlow 'Цена изготовителя (максим.)' (
 
 retailRangeInnerFlowDetail(innerFlowDetail) = DATA range (innerFlowDetail) IN idGroup;
 numberRetailRangeInnerFlowDetail 'НДС номер' (innerFlowDetail) = dataRange(retailRangeInnerFlowDetail(innerFlowDetail));
-dataRetailRangeInnerFlowDetail 'НДС розничный,%' (innerFlowDetail) = dataActingRateRange(retailRangeInnerFlowDetail(innerFlowDetail)) IN baseGroup;
+dataRetailRangeInnerFlowDetail 'НДС розничный,%' (innerFlowDetail) = dataActingRateRangeDate(retailRangeInnerFlowDetail(innerFlowDetail), dateInnerFlowDetail(innerFlowDetail)) IN baseGroup;
 
 CONSTRAINT taxRange(retailRangeInnerFlowDetail(innerFlowDetail))!=tax.taxNDS CHECKED BY retailRangeInnerFlowDetail
     MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
@@ -5450,6 +5464,52 @@ nameWareInnerFlowDetail 'Посуда' (innerFlowDetail) = name(wareInnerFlowDet
 //wareInnerFlowDetail(innerFlowDetail) <- wareItem(itemInnerFlowDetail(innerFlowDetail)) ON CHANGE itemInnerFlowDetail(innerFlowDetail);
 priceWareInnerFlowDetail 'Цена посуды' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
 
+wareRangeInnerFlowDetail 'Шкала НДС по посуде' (innerFlowDetail) = DATA range (innerFlowDetail);
+
+dataWareRangeInnerFlowDetail 'НДС по посуде' (innerFlowDetail) =
+    dataActingRateRangeDate(wareRangeInnerFlowDetail(innerFlowDetail), dateInnerFlowDetail(innerFlowDetail));
+
+wareRangeInnerFlowDetail (innerFlowDetail) <- rangeWareVal (wareInnerFlowDetail (innerFlowDetail), dateInnerFlowDetail(innerFlowDetail))
+    ON CHANGE itemInnerFlowDetail(innerFlowDetail);
+
+CONSTRAINT taxRange(wareRangeInnerFlowDetail(innerFlowDetail)) != tax.taxNDS CHECKED BY wareRangeInnerFlowDetail
+    MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+sumVatWareInnerFlowDetail 'Сумма НДС по посуде, за ед.' (innerFlowDetail) =
+     round0((
+     (UNION OVERRIDE 0 IF innerFlowDetail IS innerFlowDetail, priceWareInnerFlowDetail (innerFlowDetail)) *
+     UNION OVERRIDE 0 IF innerFlowDetail IS innerFlowDetail, dataWareRangeInnerFlowDetail(innerFlowDetail))/100);
+
+sumDetailVatWareInnerFlowDetail 'Сумма НДС по посуде' (innerFlowDetail) =
+    UNION OVERRIDE 0 IF innerFlowDetail IS innerFlowDetail, sumVatWareInnerFlowDetail(innerFlowDetail) * quantityInnerFlowDetail(innerFlowDetail);
+
+
+withoutWarePriceInnerFlowDetail 'Цена без посуды' (innerFlowDetail) = retailPriceInnerFlowDetail(innerFlowDetail) -
+    (UNION OVERRIDE 0 IF innerFlowDetail IS innerFlowDetail, priceWareInnerFlowDetail(innerFlowDetail));
+
+sumRetailVATInnerFlowDetail 'Сумма НДС за ед.' (innerFlowDetail) = [X*Y/(100+X)](
+    withoutWarePriceInnerFlowDetail(innerFlowDetail), dataRetailRangeInnerFlowDetail(innerFlowDetail));
+
+sumMarkupInnerFlowDetail 'Сумма надбавки' (innerFlowDetail) = [X-Y-Z](
+    withoutWarePriceInnerFlowDetail(innerFlowDetail), sumRetailVATInnerFlowDetail(innerFlowDetail), supplierPriceInnerFlowDetail(innerFlowDetail));
+
+totalSumImporterPriceInnerFlow 'Сумма изготовителя' (innerFlow) = GROUP SUM [importerPriceInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail)](innerFlowDetail)
+    BY innerFlowInnerFlowDetail(innerFlowDetail);
+
+totalSumSupplierPriceInnerFlow 'Сумма без НДС' (innerFlow) = GROUP SUM [supplierPriceInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail)](innerFlowDetail)
+    BY innerFlowInnerFlowDetail(innerFlowDetail);
+
+totalSumMarkupInnerFlow 'Сумма надбавки' (innerFlow) = GROUP SUM [sumMarkupInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail)](innerFlowDetail)
+    BY innerFlowInnerFlowDetail(innerFlowDetail);
+
+totalSumRetailVATInnerFlow 'Сумма розничного НДС' (innerFlow) = GROUP SUM [sumRetailVATInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail)](innerFlowDetail)
+    BY innerFlowInnerFlowDetail(innerFlowDetail);
+
+totalSumWareInnerFlow 'Сумма посуды' (innerFlow) = GROUP SUM [priceWareInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail)](innerFlowDetail)
+    BY innerFlowInnerFlowDetail(innerFlowDetail);
+
+totalSumVatWareInnerFlow 'Сумма НДС по посуде' (innerFlow) =  GROUP SUM
+    sumDetailVatWareInnerFlowDetail(innerFlowDetail) BY innerFlowInnerFlowDetail(innerFlowDetail);
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 GROUP pricingInnerArrivalDetailInfo 'Дополнительные ценовый параметры' : publicGroup;
@@ -5514,7 +5574,7 @@ importerPriceItemInnerArrival 'Цена изготовителя (максим.)
 
 retailRangeInnerArrivalDetail(innerArrivalDetail) = DATA range (innerArrivalDetail) IN idGroup;
 numberRetailRangeInnerArrivalDetail 'НДС номер' (innerArrivalDetail) = dataRange(retailRangeInnerArrivalDetail(innerArrivalDetail));
-dataRetailRangeInnerArrivalDetail 'НДС розничный,%' (innerArrivalDetail) = dataActingRateRange(retailRangeInnerArrivalDetail(innerArrivalDetail)) IN baseGroup;
+dataRetailRangeInnerArrivalDetail 'НДС розничный,%' (innerArrivalDetail) = dataActingRateRangeDate(retailRangeInnerArrivalDetail(innerArrivalDetail), dateInnerArrivalDetail(innerArrivalDetail)) IN baseGroup;
 
 curRetailRangeInnerArrivalDetail (innerArrivalDetail) = DATA range (innerArrivalDetail) IN idGroup;
 
@@ -5531,6 +5591,8 @@ curWareInnerArrivalDetail(innerArrivalDetail) = DATA ware (innerArrivalDetail) I
 curNameWareInnerArrivalDetail 'Текущая посуда' (innerArrivalDetail) = name(curWareInnerArrivalDetail(innerArrivalDetail)) IN pricingInnerArrivalDetailInfo MINCHARWIDTH 20 PREFCHARWIDTH 20;
 curPriceWareInnerArrivalDetail 'Текущая цена посуды' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN pricingInnerArrivalDetailInfo;
 
+wareRangeInnerArrivalDetail 'Шкала НДС по посуде' (innerArrivalDetail) = DATA range (innerArrivalDetail);
+
 
 toFillInnerArrivalDetailsInnerArrival 'Заполнить документ из расхода' =  ACTION (innerArrival) {
     FOR innerArrivalInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail)) == innerArrival DO {
@@ -5545,6 +5607,7 @@ toFillInnerArrivalDetailsInnerArrival 'Заполнить документ из 
             SET supplierPriceInnerArrivalDetail (d) <- supplierPriceInnerFlowDetail(innerFlowDetail);
             SET wareInnerArrivalDetail(d) <- wareInnerFlowDetail(innerFlowDetail);
             SET priceWareInnerArrivalDetail (d) <- priceWareInnerFlowDetail(innerFlowDetail);
+            SET wareRangeInnerArrivalDetail (d) <- wareRangeInnerFlowDetail(innerFlowDetail);
             SET retailRangeInnerArrivalDetail (d) <- retailRangeInnerFlowDetail(innerFlowDetail);
         };
     };
@@ -5567,6 +5630,51 @@ totalQuantityInnerArrival 'Общее количество' (innerArrival) = GRO
 
 accountSumInnerArrival 'Общая сумма' (innerArrival) = GROUP SUM accountSumInnerArrivalDetail (innerArrivalDetail)
     BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN waybillSum;
+
+dataWareRangeInnerArrivalDetail 'НДС по посуде' (innerArrivalDetail) =
+    dataActingRateRangeDate(wareRangeInnerArrivalDetail(innerArrivalDetail), dateInnerArrivalDetail(innerArrivalDetail));
+
+wareRangeInnerArrivalDetail (innerArrivalDetail) <- rangeWareVal (wareInnerArrivalDetail(innerArrivalDetail), dateInnerArrivalDetail(innerArrivalDetail))
+    ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
+
+CONSTRAINT taxRange(wareRangeInnerArrivalDetail(innerArrivalDetail)) != tax.taxNDS CHECKED BY wareRangeInnerArrivalDetail
+    MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+sumVatWareInnerArrivalDetail 'Сумма НДС по посуде, за ед.' (innerArrivalDetail) =
+     round0((
+     (UNION OVERRIDE 0 IF innerArrivalDetail IS innerArrivalDetail, priceWareInnerArrivalDetail (innerArrivalDetail)) *
+     UNION OVERRIDE 0 IF innerArrivalDetail IS innerArrivalDetail, dataWareRangeInnerArrivalDetail(innerArrivalDetail))/100);
+
+sumDetailVatWareInnerArrivalDetail 'Сумма НДС по посуде' (innerArrivalDetail) =
+    UNION OVERRIDE 0 IF innerArrivalDetail IS innerArrivalDetail, sumVatWareInnerArrivalDetail(innerArrivalDetail) * quantityInnerArrivalDetail(innerArrivalDetail);
+
+
+withoutWarePriceInnerArrivalDetail 'Цена без посуды' (innerArrivalDetail) = retailPriceInnerArrivalDetail(innerArrivalDetail) -
+    (UNION OVERRIDE 0 IF innerArrivalDetail IS innerArrivalDetail, priceWareInnerArrivalDetail(innerArrivalDetail));
+
+sumRetailVATInnerArrivalDetail 'Сумма НДС за ед.' (innerArrivalDetail) = [X*Y/(100+X)](
+    withoutWarePriceInnerArrivalDetail(innerArrivalDetail), dataRetailRangeInnerArrivalDetail(innerArrivalDetail));
+
+sumMarkupInnerArrivalDetail 'Сумма надбавки' (innerArrivalDetail) = [X-Y-Z](
+    withoutWarePriceInnerArrivalDetail(innerArrivalDetail), sumRetailVATInnerArrivalDetail(innerArrivalDetail), supplierPriceInnerArrivalDetail(innerArrivalDetail));
+
+totalSumImporterPriceInnerArrival 'Сумма изготовителя' (innerArrival) = GROUP SUM [importerPriceInnerArrivalDetail(innerArrivalDetail)*quantityInnerArrivalDetail(innerArrivalDetail)](innerArrivalDetail)
+    BY innerArrivalInnerArrivalDetail(innerArrivalDetail);
+
+totalSumSupplierPriceInnerArrival 'Сумма без НДС' (innerArrival) = GROUP SUM [supplierPriceInnerArrivalDetail(innerArrivalDetail)*quantityInnerArrivalDetail(innerArrivalDetail)](innerArrivalDetail)
+    BY innerArrivalInnerArrivalDetail(innerArrivalDetail);
+
+totalSumMarkupInnerArrival 'Сумма надбавки' (innerArrival) = GROUP SUM [sumMarkupInnerArrivalDetail(innerArrivalDetail)*quantityInnerArrivalDetail(innerArrivalDetail)](innerArrivalDetail)
+    BY innerArrivalInnerArrivalDetail(innerArrivalDetail);
+
+totalSumRetailVATInnerArrival 'Сумма розничного НДС' (innerArrival) = GROUP SUM [sumRetailVATInnerArrivalDetail(innerArrivalDetail)*quantityInnerArrivalDetail(innerArrivalDetail)](innerArrivalDetail)
+    BY innerArrivalInnerArrivalDetail(innerArrivalDetail);
+
+totalSumWareInnerArrival 'Сумма посуды' (innerArrival) = GROUP SUM [priceWareInnerArrivalDetail(innerArrivalDetail)*quantityInnerArrivalDetail(innerArrivalDetail)](innerArrivalDetail)
+    BY innerArrivalInnerArrivalDetail(innerArrivalDetail);
+
+totalSumVatWareInnerArrival 'Сумма НДС по посуде' (innerArrival) =  GROUP SUM
+    sumDetailVatWareInnerArrivalDetail(innerArrivalDetail) BY innerArrivalInnerArrivalDetail(innerArrivalDetail);
 
 // ---------------------------------- Дооценка на внутреннем перемещении (приход) ------------------------------------------
 
