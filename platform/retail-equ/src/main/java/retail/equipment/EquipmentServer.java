@@ -4,10 +4,12 @@ import org.apache.log4j.Logger;
 import platform.interop.RemoteLoaderInterface;
 import retail.api.remote.PriceTransaction;
 import retail.api.remote.RetailRemoteInterface;
+import retail.api.remote.ScalesInfo;
 
 import java.net.MalformedURLException;
 import java.rmi.*;
 import java.text.MessageFormat;
+import java.util.List;
 
 public class EquipmentServer {
     
@@ -54,7 +56,9 @@ public class EquipmentServer {
 
                         if (remote != null) {
 
-                            PriceTransaction transaction = remote.readNextPriceTransaction(equServerID);
+                            //PriceTransaction transaction = remote.readNextPriceTransaction(equServerID);
+                            //List<ScalesInfo> transactionList = remote.readScalesInfo(equServerID);
+                            //transactionList.add(null);
                             logger.info("transaction complete");
                         }
 
