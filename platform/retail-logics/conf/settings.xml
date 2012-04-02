@@ -6,13 +6,13 @@
     default-lazy-init="true">
 
     <bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
-        <constructor-arg value="rublevski"/>
+        <constructor-arg value="retail"/>
         <constructor-arg value="localhost"/>
         <constructor-arg value="postgres"/>
         <constructor-arg value="11111"/>
     </bean>
 
-    <bean id="businessLogics" class="rublevski.RublevskiBusinessLogics">
+    <bean id="businessLogics" class="retail.RetailBusinessLogics">
         <constructor-arg ref="dataAdapter"/>
         <constructor-arg type="int" value="7652"/>
     </bean>
