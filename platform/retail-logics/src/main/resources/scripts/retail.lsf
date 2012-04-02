@@ -8762,7 +8762,6 @@ importNumberItemsAtATime 'Разбивать на пакеты по' = DATA INTE
 importPrices 'Импортировать цены товаров' = DATA BOOLEAN ();
 importAssortment 'Импортировать ассортимент' = DATA BOOLEAN();
 importShipment 'Импортировать документы прихода' = DATA BOOLEAN ();
-importNumberShipments 'Кол-во' = DATA INTEGER ();
 importCompanies 'Импортировать компании' = DATA BOOLEAN ();
 importSuppliers 'Импортировать поставщиков' = DATA BOOLEAN ();
 importCustomers 'Импортировать покупателей' = DATA BOOLEAN ();
@@ -8773,7 +8772,7 @@ importRateWastes 'Импортировать нормы отходов' = DATA B
 FORM importData 'Импорт данных'
     PROPERTIES() importDataAction, importUrl, importLogin, importPassword
     PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importWares, importItems,
-    importNumberItems, importNumberItemsAtATime, importPrices, importAssortment, importShipment, importNumberShipments,
+    importNumberItems, importNumberItemsAtATime, importPrices, importAssortment, importShipment,
     importCompanies, importSuppliers, importCustomers, importStores, importDepartmentStores, importBanks, importRateWastes
 ;
 
