@@ -3803,6 +3803,9 @@ TABLE priceChangeDocument (priceChangeDocument);
 CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки';
 TABLE priceChangeDocumentDetail (priceChangeDocumentDetail);
 
+//---------------------------- Загрузка в ВУ  ----------------------------------------//
+CLASS ABSTRACT priceTransactionDocument 'Документ, требующий загрузки в оборудование';
+
 //---------------------------- Карты проработки (разруба) ----------------------------------------//
 GROUP cutGroup 'Разделка' : baseGroup;
 GROUP actGroup 'Акт' : publicGroup;
@@ -5051,7 +5054,7 @@ CLASS batch 'Партия';
 
 CLASS ABSTRACT batchShipment 'Партия из прихода' : batch, balanceItemLedger, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger, warePriceLedger;
 
-CLASS shipment 'Поставка' : incAccountSumDocumentLedger, historyObject, numberedObject;
+CLASS shipment 'Поставка' : incAccountSumDocumentLedger, historyObject, numberedObject, priceTransactionDocument;
 CLASS shipmentDetail 'Строка поставки' : batchShipment;
 @metaCodeObjectWithPostEx(shipment, 'Закрытая поставка');
 
@@ -5576,7 +5579,7 @@ totalSumVatWareInnerFlow 'Сумма НДС по посуде' (innerFlow) =  GR
 GROUP pricingInnerArrivalDetailInfo 'Дополнительные ценовый параметры' : publicGroup;
 
 
-CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, historyObject;
+CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, historyObject, priceTransactionDocument;
 CLASS innerArrivalDetail 'Строка прихода в отдел' : importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger, balanceItemLedger;
 @metaCodeObjectWithPostEx (innerArrival, 'Закрытый приход в отдел');
 
@@ -6293,7 +6296,7 @@ descriptionSaleDiscountDocument (saleDiscountDocument) = castZReportObjectsToStr
 isPostedSaleDiscountDocument (saleDiscountDocument) = isPostedZReport(zReportSaleDiscountDocument(saleDiscountDocument));
 //----------------------------------------------- Переоценка товара ---------------------------------------------------//
 
-CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject;
+CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, priceTransactionDocument;
 CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 @metaCodeObjectWithPostEx (userPriceChange, 'Закрытая переоценка товаров');
 
@@ -7084,11 +7087,34 @@ transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудо
     priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = priceRetailCurrentLedger(skuBarcode(barcode), departmentStoreGroupMachinery(groupMachinery));
 
+sentPriceTransactionDocument 'Загружен в оборудование' = DATA BOOLEAN (priceTransactionDocument);
+commentMachineryPriceTransaction 'Примечание' = DATA STRING[30] (machineryPriceTransaction);
+
+descriptionPriceTransactionDocument 'Название документа загрузки' (document) = UNION EXCLUSIVE descriptionShipment(document),
+                                                                                               descriptionInnerArrival(document),
+                                                                                               descriptionUserPriceChange(document);
+
+priceTransactionDocumentMachineryPriceTransaction = DATA priceTransactionDocument (machineryPriceTransaction);
+descriptionPriceTransactionDocumentMachineryPriceTransaction 'Основание загрузки' (transaction) =
+    descriptionPriceTransactionDocument(priceTransactionDocumentMachineryPriceTransaction(transaction));
+
+// todo : persistent почему-то не работает
+descriptionMachineryPriceTransaction 'Основание' (document) = UNION OVERRIDE descriptionPriceTransactionDocumentMachineryPriceTransaction(document),
+                                                                             commentMachineryPriceTransaction(document);
+
+tmpBoolean = SESSION DATA BOOLEAN ();
+
 createMachineryPriceTransactionItem = SESSION DATA BOOLEAN (item);
+createMachineryPriceTransactionDocument = SESSION DATA priceTransactionDocument();
+createMachineryPriceTransactionComment = SESSION DATA STRING[20] ();
+tempMessage = SESSION DATA STRING[3000] ();
 tempBarcode = SESSION DATA BOOLEAN (barcode);
 tempCountBarcode = GROUP SUM 1 IF tempBarcode(barcode);
 
+formatCreateTransactionMessage = FORMULA STRING[3000] '$1 || $2 || \' - \' || CAST($3 as text) || \' товаров.\'\n';
+
 createMachineryPriceTransaction 'Создать транзакцию' = ACTION (departmentStore) {
+    SET tempMessage() <- 'Принято к загрузке в оборудование : \n';
     FOR departmentStoreGroupMachinery(groupMachinery) == departmentStore DO {
         SET tempBarcode(barcode) <- createMachineryPriceTransactionItem(skuBarcode(barcode)) // если передали параметром
                                     AND inGroupMachineryItem(groupMachinery, skuBarcode(barcode)) // если на эту группу оборудования должна закачиваться
@@ -7099,6 +7125,8 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
             ADDOBJ machineryPriceTransaction;
             FOR t == addedObject() DO {
                 SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery AS groupMachinery;
+                SET priceTransactionDocumentMachineryPriceTransaction(t) <- createMachineryPriceTransactionDocument();
+                SET commentMachineryPriceTransaction(t) <- createMachineryPriceTransactionComment();
                 SET inMachineryPriceTransactionBarcode(t, barcode) <- tempBarcode(barcode);
                 IF groupMachinery IS groupScales THEN
                     SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleScalesBarcode(barcode)
@@ -7106,26 +7134,37 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                     SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleCashBarcode(barcode);
                 SET priceMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery);
             }
+            SET tempMessage() <- formatCreateTransactionMessage(tempMessage(), nameGroupMachinery(groupMachinery), tempCountBarcode());
+            SET tmpBoolean() <- TRUE;
         }
     }
+
+    IF tmpBoolean() THEN
+        MESSAGE tempMessage()
+    ELSE
+        MESSAGE 'Загрузка прайса в оборудование не требуется.';
 };
 
 GROUP machineryPriceGroup 'Загрузить в оборудование' : baseGroup;
 
 createBalanceMachineryPriceTransaction 'Остатки' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
     SET createMachineryPriceTransactionItem(item) <- TRUE IF currentBalanceItemLedger(item, departmentStore);
+    SET createMachineryPriceTransactionComment() <- 'Загрузка остатков целиком';
     EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
 } CONFIRM IN machineryPriceGroup;
 
 createPriceMachineryPriceTransaction 'Все товары' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
     SET createMachineryPriceTransactionItem(item) <- TRUE IF priceRetailCurrentLedger(item, departmentStore);
+    SET createMachineryPriceTransactionComment() <- 'Загрузка товаров целиком';
     EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
 } CONFIRM IN machineryPriceGroup;
 
 META metaCodeDocumentMachineryPriceTransaction (document)
     create###document##MachineryPriceTransaction 'Загрузить в оборудование' = ACTION (document) NEWSESSION AUTOAPPLY {
         SET createMachineryPriceTransactionItem(item) <- TRUE IF quantityItem###document(item, document);
+        SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
         EXEC createMachineryPriceTransaction(departmentStore###document(document));
+        SET sentPriceTransactionDocument(document) <- TRUE;
     } TOOLBAR CONFIRM;
 END
 
@@ -7150,7 +7189,7 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
 
     OBJECTS t = machineryPriceTransaction
     PROPERTIES(t) READONLY nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
-                           succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
+                           descriptionMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
     PROPERTIES(t)          ADDFORM, EDITFORM, delete
     FILTERS departmentStoreMachineryPriceTransaction(t) == d
 
@@ -7270,7 +7309,8 @@ DESIGN shipment FROM DEFAULT{
 FORM shipments 'Поставки'
     OBJECTS s=shipment
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
-                            nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment
+                            nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
+                            sentPriceTransactionDocument
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (s)          createShipmentMachineryPriceTransaction FORCE PANEL,
@@ -8206,7 +8246,8 @@ DESIGN userPriceChange FROM DEFAULT {
 FORM userPriceChanges 'Переоценки товаров'
 
     OBJECTS u=userPriceChange
-    PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
+    PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
+                            sentPriceTransactionDocument
 
     PROPERTIES (u) createUserPriceChangeMachineryPriceTransaction FORCE PANEL,
                    ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
@@ -8375,7 +8416,8 @@ DESIGN innerArrival FROM DEFAULT{
 FORM innerArrivals 'Приходы из других отделов'
     OBJECTS a=innerArrival
     PROPERTIES (a) READONLY objectClassName, numberArrival, seriesArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
-                            nameSenderDepartmentInnerArrival, quantityInnerArrivalDetailsInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival
+                            nameSenderDepartmentInnerArrival, quantityInnerArrivalDetailsInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival,
+                            sentPriceTransactionDocument
 
     PROPERTIES (a) createInnerArrivalMachineryPriceTransaction FORCE PANEL,
                    ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
