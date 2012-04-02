@@ -3956,8 +3956,8 @@ subtotalOutputActOfStudy 'Прихода сумма' (actOfStudy) = GROUP SUM to
 quantityOutputActOfStudy 'Прихода к-во (факт.)' (actOfStudy) = GROUP SUM overQuantityStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail);
 
 notTotalPercGoodsStudyInputDetail (studyInputDetail)= GROUP SUM percGoodsStudyOutputDetail(studyOutputDetail) BY studyInputDetailStudyOutputDetail(studyOutputDetail);
-totalPercGoodsStudyInputDetail 'Итого % выхода по товару' (studyInputDetail) = [X+Y+Z]
-    (notTotalPercGoodsStudyInputDetail(studyInputDetail), percLossesCuttingStudyInputDetail(studyInputDetail), percSweepsCuttingStudyInputDetail(studyInputDetail));
+totalPercGoodsStudyInputDetail 'Итого % выхода по товару' (studyInputDetail) = notTotalPercGoodsStudyInputDetail(studyInputDetail) (+)
+    percLossesCuttingStudyInputDetail(studyInputDetail)(+) percSweepsCuttingStudyInputDetail(studyInputDetail);
 highlightStudyInputDetail(studyInputDetail) = totalPercGoodsStudyInputDetail(studyInputDetail) > 100;
 
 
@@ -5534,14 +5534,14 @@ sumDetailVatWareInnerFlowDetail 'Сумма НДС по посуде' (innerFlow
     UNION OVERRIDE 0 IF innerFlowDetail IS innerFlowDetail, sumVatWareInnerFlowDetail(innerFlowDetail) * quantityInnerFlowDetail(innerFlowDetail);
 
 
-withoutWarePriceInnerFlowDetail 'Цена без посуды' (innerFlowDetail) = retailPriceInnerFlowDetail(innerFlowDetail) -
-    (UNION OVERRIDE 0 IF innerFlowDetail IS innerFlowDetail, priceWareInnerFlowDetail(innerFlowDetail));
+withoutWarePriceInnerFlowDetail 'Цена без посуды' (innerFlowDetail) = retailPriceInnerFlowDetail(innerFlowDetail) (-)
+    priceWareInnerFlowDetail(innerFlowDetail);
 
 sumRetailVATInnerFlowDetail 'Сумма НДС за ед.' (innerFlowDetail) = [X*Y/(100+X)](
     withoutWarePriceInnerFlowDetail(innerFlowDetail), dataRetailRangeInnerFlowDetail(innerFlowDetail));
 
-sumMarkupInnerFlowDetail 'Сумма надбавки' (innerFlowDetail) = [X-Y-Z](
-    withoutWarePriceInnerFlowDetail(innerFlowDetail), sumRetailVATInnerFlowDetail(innerFlowDetail), supplierPriceInnerFlowDetail(innerFlowDetail));
+sumMarkupInnerFlowDetail 'Сумма надбавки' (innerFlowDetail) = withoutWarePriceInnerFlowDetail(innerFlowDetail) (-)
+    sumRetailVATInnerFlowDetail(innerFlowDetail) (-) supplierPriceInnerFlowDetail(innerFlowDetail);
 
 totalSumImporterPriceInnerFlow 'Сумма изготовителя' (innerFlow) = GROUP SUM [importerPriceInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail)](innerFlowDetail)
     BY innerFlowInnerFlowDetail(innerFlowDetail);
@@ -5699,14 +5699,14 @@ sumDetailVatWareInnerArrivalDetail 'Сумма НДС по посуде' (innerA
     UNION OVERRIDE 0 IF innerArrivalDetail IS innerArrivalDetail, sumVatWareInnerArrivalDetail(innerArrivalDetail) * quantityInnerArrivalDetail(innerArrivalDetail);
 
 
-withoutWarePriceInnerArrivalDetail 'Цена без посуды' (innerArrivalDetail) = retailPriceInnerArrivalDetail(innerArrivalDetail) -
-    (UNION OVERRIDE 0 IF innerArrivalDetail IS innerArrivalDetail, priceWareInnerArrivalDetail(innerArrivalDetail));
+withoutWarePriceInnerArrivalDetail 'Цена без посуды' (innerArrivalDetail) = retailPriceInnerArrivalDetail(innerArrivalDetail) (-)
+    priceWareInnerArrivalDetail(innerArrivalDetail);
 
 sumRetailVATInnerArrivalDetail 'Сумма НДС за ед.' (innerArrivalDetail) = [X*Y/(100+X)](
     withoutWarePriceInnerArrivalDetail(innerArrivalDetail), dataRetailRangeInnerArrivalDetail(innerArrivalDetail));
 
-sumMarkupInnerArrivalDetail 'Сумма надбавки' (innerArrivalDetail) = [X-Y-Z](
-    withoutWarePriceInnerArrivalDetail(innerArrivalDetail), sumRetailVATInnerArrivalDetail(innerArrivalDetail), supplierPriceInnerArrivalDetail(innerArrivalDetail));
+sumMarkupInnerArrivalDetail 'Сумма надбавки' (innerArrivalDetail) = withoutWarePriceInnerArrivalDetail(innerArrivalDetail) (-)
+    sumRetailVATInnerArrivalDetail(innerArrivalDetail) (-) supplierPriceInnerArrivalDetail(innerArrivalDetail);
 
 totalSumImporterPriceInnerArrival 'Сумма изготовителя' (innerArrival) = GROUP SUM [importerPriceInnerArrivalDetail(innerArrivalDetail)*quantityInnerArrivalDetail(innerArrivalDetail)](innerArrivalDetail)
     BY innerArrivalInnerArrivalDetail(innerArrivalDetail);
@@ -5974,6 +5974,18 @@ sumSupplierVATReturnSupplierDetail (returnSupplierDetail) <- calcSumSupplierVATR
 sumSupplierReturnSupplierDetail 'Сумма с НДС' (returnSupplierDetail) = sumPriceReturnSupplierDetail(returnSupplierDetail) +
     UNION OVERRIDE 0 IF returnSupplierDetail IS returnSupplierDetail, sumSupplierVATReturnSupplierDetail(returnSupplierDetail);
 
+retailPriceReturnSupplierDetail 'Розничная цена' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
+retailPriceReturnSupplierDetail(returnSupplierDetail) <- retailPriceShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
+                                                         ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+
+retailRangeReturnSupplierDetail(returnSupplierDetail) = DATA range (returnSupplierDetail) IN idGroup;
+retailRangeReturnSupplierDetail(returnSupplierDetail) <- retailRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
+                                                         ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+dataRetailRangeReturnSupplierDetail 'НДС розничный,%' (returnSupplierDetail) = dataActingRateRangeDate(retailRangeReturnSupplierDetail(returnSupplierDetail), dateReturnSupplierDetail(returnSupplierDetail));
+
+CONSTRAINT taxRange(retailRangeReturnSupplierDetail(returnSupplierDetail)) != tax.taxNDS CHECKED BY retailRangeReturnSupplierDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+
 // Суммовые параметры для шапки документа
 
 totalQuantityReturnSupplier 'Общее количество' (returnSupplier) = GROUP SUM quantityReturnSupplierDetail(returnSupplierDetail)
@@ -6000,6 +6012,43 @@ descriptionReturnSupplier 'Название документа' (returnSupplier)
     seriesNumberObject(returnSupplier), dateReturnSupplier(returnSupplier), nameSupplierReturnSupplier(returnSupplier));
 
 descriptionReturnSupplierDetail 'Название документа' (returnSupplierDetail) = descriptionReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
+
+sumVatWareReturnSupplierDetail 'Сумма НДС по посуде, за ед.' (returnSupplierDetail) =
+     round0((
+     (UNION OVERRIDE 0 IF returnSupplierDetail IS returnSupplierDetail, priceWareReturnSupplierDetail (returnSupplierDetail)) *
+     UNION OVERRIDE 0 IF returnSupplierDetail IS returnSupplierDetail, dataWareRangeReturnSupplierDetail(returnSupplierDetail))/100);
+
+sumDetailVatWareReturnSupplierDetail 'Сумма НДС по посуде' (returnSupplierDetail) =
+    UNION OVERRIDE 0 IF returnSupplierDetail IS returnSupplierDetail, sumVatWareReturnSupplierDetail(returnSupplierDetail) * quantityReturnSupplierDetail(returnSupplierDetail);
+
+
+withoutWarePriceReturnSupplierDetail 'Цена без посуды' (returnSupplierDetail) = retailPriceReturnSupplierDetail(returnSupplierDetail) (-)
+    priceWareReturnSupplierDetail(returnSupplierDetail);
+
+sumRetailVATReturnSupplierDetail 'Сумма НДС за ед.' (returnSupplierDetail) = [X*Y/(100+X)](
+    withoutWarePriceReturnSupplierDetail(returnSupplierDetail), dataRetailRangeReturnSupplierDetail(returnSupplierDetail));
+
+sumMarkupReturnSupplierDetail 'Сумма надбавки' (returnSupplierDetail) = withoutWarePriceReturnSupplierDetail(returnSupplierDetail)(-)
+    sumRetailVATReturnSupplierDetail(returnSupplierDetail) (-) supplierPriceReturnSupplierDetail(returnSupplierDetail);
+
+
+totalSumImporterPriceReturnSupplier 'Сумма изготовителя' (returnSupplier) = GROUP SUM [importerPriceReturnSupplierDetail(returnSupplierDetail)*quantityReturnSupplierDetail(returnSupplierDetail)](returnSupplierDetail)
+    BY returnSupplierReturnSupplierDetail(returnSupplierDetail);
+
+totalSumSupplierPriceReturnSupplier 'Сумма без НДС' (returnSupplier) = GROUP SUM sumPriceReturnSupplierDetail(returnSupplierDetail)
+    BY returnSupplierReturnSupplierDetail(returnSupplierDetail);
+
+totalSumMarkupReturnSupplier 'Сумма надбавки' (returnSupplier) = GROUP SUM [sumMarkupReturnSupplierDetail(returnSupplierDetail)*quantityReturnSupplierDetail(returnSupplierDetail)](returnSupplierDetail)
+    BY returnSupplierReturnSupplierDetail(returnSupplierDetail);
+
+totalSumRetailVATReturnSupplier 'Сумма розничного НДС' (returnSupplier) = GROUP SUM [sumRetailVATReturnSupplierDetail(returnSupplierDetail)*quantityReturnSupplierDetail(returnSupplierDetail)](returnSupplierDetail)
+    BY returnSupplierReturnSupplierDetail(returnSupplierDetail);
+
+totalSumWareReturnSupplier 'Сумма посуды' (returnSupplier) = GROUP SUM [priceWareReturnSupplierDetail(returnSupplierDetail)*quantityReturnSupplierDetail(returnSupplierDetail)](returnSupplierDetail)
+    BY returnSupplierReturnSupplierDetail(returnSupplierDetail);
+
+totalSumVatWareReturnSupplier 'Сумма НДС по посуде' (returnSupplier) =  GROUP SUM
+    sumDetailVatWareReturnSupplierDetail(returnSupplierDetail) BY returnSupplierReturnSupplierDetail(returnSupplierDetail);
 
 // для возвратной накладной (шапка и хвост)
 carReturnSupplier 'Автомобиль' (returnSupplier) = DATA STRING[30] (returnSupplier);
@@ -6246,6 +6295,7 @@ supplierPriceUserPriceChangeDetail 'Цена поставщика' = DATA DOUBLE
 retailRangeUserPriceChangeDetail 'НДС' = DATA range (userPriceChangeDetail);
 numberRetailRangeUserPriceChangeDetail 'НДС, номер' (userPriceChangeDetail) = dataRange(retailRangeUserPriceChangeDetail(userPriceChangeDetail));
 dataRetailRangeUserPriceChangeDetail 'НДС, %' (userPriceChangeDetail) = dataActingRateRangeDate(retailRangeUserPriceChangeDetail(userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail));
+retailPriceUserPriceChangeDetail 'Новая розничная цена' = DATA DOUBLE (userPriceChangeDetail);
 
 CONSTRAINT taxRange(retailRangeUserPriceChangeDetail(userPriceChangeDetail)) != tax.taxNDS CHECKED BY retailRangeUserPriceChangeDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
@@ -6254,10 +6304,7 @@ curSupplierPriceUserPriceChangeDetail 'Текущая цена поставщи�
 curRetailRangeUserPriceChangeDetail 'Текущий НДС' = DATA range (userPriceChangeDetail);
 curNumberRetailRangeUserPriceChangeDetail 'Текущий НДС, номер' (userPriceChangeDetail) = dataRange(curRetailRangeUserPriceChangeDetail(userPriceChangeDetail));
 curDataRetailRangeUserPriceChangeDetail 'Текущий НДС, %' (userPriceChangeDetail) = dataActingRateRangeDate(curRetailRangeUserPriceChangeDetail(userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail));
-
-
 curRetailPriceUserPriceChangeDetail 'Текущая розничная цена' = DATA DOUBLE (userPriceChangeDetail);
-retailPriceUserPriceChangeDetail 'Новая розничная цена' = DATA DOUBLE (userPriceChangeDetail);
 
 castUserPriceChangeToString100=
     FORMULA STRING[200] '\'Акт переоценки \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)';
@@ -6282,6 +6329,134 @@ curWareUserPriceChangeDetail 'Текущая посуда (ИД)' (userPriceChan
 curPriceWareUserPriceChangeDetail 'Текущая цена посуды' (userPriceChangeDetail) = DATA DOUBLE (userPriceChangeDetail) IN baseGroup;
 
 TABLE itemDepartmentStore (item, departmentStore);
+
+
+wareRangeUserPriceChangeDetail 'Шкала НДС по посуде' (userPriceChangeDetail) = DATA range (userPriceChangeDetail);
+
+dataWareRangeUserPriceChangeDetail 'НДС по посуде' (userPriceChangeDetail) =
+    dataActingRateRangeDate(wareRangeUserPriceChangeDetail(userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail));
+
+wareRangeUserPriceChangeDetail (userPriceChangeDetail) <- rangeWareVal (wareUserPriceChangeDetail (userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail))
+    ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+
+CONSTRAINT taxRange(wareRangeUserPriceChangeDetail(userPriceChangeDetail)) != tax.taxNDS CHECKED BY wareRangeUserPriceChangeDetail
+    MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+sumVatWareUserPriceChangeDetail 'Сумма НДС по посуде, за ед.' (userPriceChangeDetail) =
+     round0((
+     (UNION OVERRIDE 0 IF userPriceChangeDetail IS userPriceChangeDetail, priceWareUserPriceChangeDetail (userPriceChangeDetail)) *
+     UNION OVERRIDE 0 IF userPriceChangeDetail IS userPriceChangeDetail, dataWareRangeUserPriceChangeDetail(userPriceChangeDetail))/100);
+
+sumDetailVatWareUserPriceChangeDetail 'Сумма НДС по посуде' (userPriceChangeDetail) =
+    UNION OVERRIDE 0 IF userPriceChangeDetail IS userPriceChangeDetail, sumVatWareUserPriceChangeDetail(userPriceChangeDetail) * quantityUserPriceChangeDetail(userPriceChangeDetail);
+
+withoutWarePriceUserPriceChangeDetail 'Цена без посуды' (userPriceChangeDetail) = retailPriceUserPriceChangeDetail(userPriceChangeDetail) (-)
+    priceWareUserPriceChangeDetail(userPriceChangeDetail);
+
+sumRetailVATUserPriceChangeDetail 'Сумма НДС за ед.' (userPriceChangeDetail) = [X*Y/(100+X)](
+    withoutWarePriceUserPriceChangeDetail(userPriceChangeDetail), dataRetailRangeUserPriceChangeDetail(userPriceChangeDetail));
+
+sumMarkupUserPriceChangeDetail 'Сумма надбавки' (userPriceChangeDetail) = withoutWarePriceUserPriceChangeDetail(userPriceChangeDetail) (-)
+    sumRetailVATUserPriceChangeDetail(userPriceChangeDetail) (-) supplierPriceUserPriceChangeDetail(userPriceChangeDetail);
+
+totalSumImporterPriceUserPriceChange 'Сумма изготовителя' (userPriceChange) = GROUP SUM
+    [importerPriceUserPriceChangeDetail(userPriceChangeDetail)*quantityUserPriceChangeDetail(userPriceChangeDetail)](userPriceChangeDetail)
+    BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
+totalSumSupplierPriceUserPriceChange 'Сумма без НДС' (userPriceChange) = GROUP SUM
+    [supplierPriceUserPriceChangeDetail(userPriceChangeDetail)*quantityUserPriceChangeDetail(userPriceChangeDetail)](userPriceChangeDetail)
+    BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
+totalSumMarkupUserPriceChange 'Сумма надбавки' (userPriceChange) = GROUP SUM [sumMarkupUserPriceChangeDetail(userPriceChangeDetail)*
+    quantityUserPriceChangeDetail(userPriceChangeDetail)](userPriceChangeDetail)
+    BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
+totalSumRetailVATUserPriceChange 'Сумма розничного НДС' (userPriceChange) = GROUP SUM [sumRetailVATUserPriceChangeDetail(userPriceChangeDetail)*
+    quantityUserPriceChangeDetail(userPriceChangeDetail)](userPriceChangeDetail)
+    BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
+totalSumWareUserPriceChange 'Сумма посуды' (userPriceChange) = GROUP SUM [priceWareUserPriceChangeDetail(userPriceChangeDetail)*
+    quantityUserPriceChangeDetail(userPriceChangeDetail)](userPriceChangeDetail)
+    BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
+totalSumVatWareUserPriceChange 'Сумма НДС по посуде' (userPriceChange) =  GROUP SUM
+    sumDetailVatWareUserPriceChangeDetail(userPriceChangeDetail) BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
+                  // ---------Действующие  показатели переоценки--------------- //
+
+curWareRangeUserPriceChangeDetail 'Шкала НДС по посуде' (userPriceChangeDetail) = DATA range (userPriceChangeDetail);
+
+curDataWareRangeUserPriceChangeDetail 'НДС по посуде' (userPriceChangeDetail) =
+    dataActingRateRangeDate(curWareRangeUserPriceChangeDetail(userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail));
+
+curWareRangeUserPriceChangeDetail (userPriceChangeDetail) <- rangeWareVal (curWareUserPriceChangeDetail (userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail))
+    ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+
+CONSTRAINT taxRange(curWareRangeUserPriceChangeDetail(userPriceChangeDetail)) != tax.taxNDS CHECKED BY curWareRangeUserPriceChangeDetail
+    MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+curSumVatWareUserPriceChangeDetail 'Сумма НДС по посуде, за ед.' (userPriceChangeDetail) =
+     round0((
+     (UNION OVERRIDE 0 IF userPriceChangeDetail IS userPriceChangeDetail, curPriceWareUserPriceChangeDetail (userPriceChangeDetail)) *
+     UNION OVERRIDE 0 IF userPriceChangeDetail IS userPriceChangeDetail, curDataWareRangeUserPriceChangeDetail(userPriceChangeDetail))/100);
+
+curSumDetailVatWareUserPriceChangeDetail 'Сумма НДС по посуде' (userPriceChangeDetail) =
+    UNION OVERRIDE 0 IF userPriceChangeDetail IS userPriceChangeDetail, curSumVatWareUserPriceChangeDetail(userPriceChangeDetail) * quantityUserPriceChangeDetail(userPriceChangeDetail);
+
+
+
+curWithoutWarePriceUserPriceChangeDetail 'Цена без посуды' (userPriceChangeDetail) = curRetailPriceUserPriceChangeDetail(userPriceChangeDetail) (-)
+    curPriceWareUserPriceChangeDetail(userPriceChangeDetail);
+
+curSumRetailVATUserPriceChangeDetail 'Сумма НДС за ед.' (userPriceChangeDetail) = [X*Y/(100+X)](
+    curWithoutWarePriceUserPriceChangeDetail(userPriceChangeDetail), curDataRetailRangeUserPriceChangeDetail(userPriceChangeDetail));
+
+curSumMarkupUserPriceChangeDetail 'Сумма надбавки' (userPriceChangeDetail) = curWithoutWarePriceUserPriceChangeDetail(userPriceChangeDetail) (-)
+    curSumRetailVATUserPriceChangeDetail(userPriceChangeDetail) (-) curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail);
+
+
+curTotalSumImporterPriceUserPriceChange 'Сумма изготовителя' (userPriceChange) = GROUP SUM
+    [curImporterPriceUserPriceChangeDetail(userPriceChangeDetail)*quantityUserPriceChangeDetail(userPriceChangeDetail)](userPriceChangeDetail)
+    BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
+curTotalSumSupplierPriceUserPriceChange 'Сумма без НДС' (userPriceChange) = GROUP SUM
+    [curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail)*quantityUserPriceChangeDetail(userPriceChangeDetail)](userPriceChangeDetail)
+    BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
+curTotalSumMarkupUserPriceChange 'Сумма надбавки' (userPriceChange) = GROUP SUM [curSumMarkupUserPriceChangeDetail(userPriceChangeDetail)*
+    quantityUserPriceChangeDetail(userPriceChangeDetail)](userPriceChangeDetail)
+    BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
+curTotalSumRetailVATUserPriceChange 'Сумма розничного НДС' (userPriceChange) = GROUP SUM [curSumRetailVATUserPriceChangeDetail(userPriceChangeDetail)*
+    quantityUserPriceChangeDetail(userPriceChangeDetail)](userPriceChangeDetail)
+    BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
+curTotalSumWareUserPriceChange 'Сумма посуды' (userPriceChange) = GROUP SUM [curPriceWareUserPriceChangeDetail(userPriceChangeDetail)*
+    quantityUserPriceChangeDetail(userPriceChangeDetail)](userPriceChangeDetail)
+    BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
+curTotalSumVatWareUserPriceChange 'Сумма НДС по посуде' (userPriceChange) =  GROUP SUM
+    curSumDetailVatWareUserPriceChangeDetail(userPriceChangeDetail) BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
+                         // ---------Дельта  показателей переоценки--------------- //
+
+diffTotalSumImporterPriceUserPriceChange 'Изменение суммы изготовителя' (userPriceChange) = totalSumImporterPriceUserPriceChange(userPriceChange) (-)
+    curTotalSumImporterPriceUserPriceChange(userPriceChange);
+
+diffTotalSumSupplierPriceUserPriceChange 'Изменение суммы поставщика' (userPriceChange) = totalSumSupplierPriceUserPriceChange(userPriceChange) (-)
+    curTotalSumSupplierPriceUserPriceChange(userPriceChange);
+
+diffTotalSumMarkupUserPriceChange 'Изменение суммы надбавки' (userPriceChange) = totalSumMarkupUserPriceChange(userPriceChange) (-)
+    curTotalSumMarkupUserPriceChange(userPriceChange);
+
+diffTotalSumRetailVATUserPriceChange 'Изменение суммы розничного НДС' (userPriceChange) = totalSumRetailVATUserPriceChange(userPriceChange) (-)
+    curTotalSumRetailVATUserPriceChange(userPriceChange);
+
+diffTotalSumWareUserPriceChange 'Изменение суммы посуды' (userPriceChange) = totalSumWareUserPriceChange(userPriceChange) (-)
+    curTotalSumWareUserPriceChange(userPriceChange);
+
+diffTotalSumVatWareUserPriceChange 'Изменение суммы НДС посуды' (userPriceChange) = totalSumVatWareUserPriceChange(userPriceChange) (-)
+    curTotalSumVatWareUserPriceChange(userPriceChange);
 
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
