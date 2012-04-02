@@ -57,8 +57,8 @@ public class EquipmentServer {
                         if (remote != null) {
 
                             //PriceTransaction transaction = remote.readNextPriceTransaction(equServerID);
-                            //List<ScalesInfo> transactionList = remote.readScalesInfo(equServerID);
-                            //transactionList.add(null);
+                            List<ScalesInfo> transactionList = remote.readScalesInfo(equServerID);
+                            transactionList.add(null);
                             logger.info("transaction complete");
                         }
 

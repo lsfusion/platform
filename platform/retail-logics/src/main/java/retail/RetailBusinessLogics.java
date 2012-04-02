@@ -87,17 +87,17 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 groupMashineryMPTList.add(groupMachineryMPT);
 
             KeyExpr scalesExpr = new KeyExpr("scales");
-            KeyExpr groupMachineryExpr = new KeyExpr("groupMachinery");
+            KeyExpr groupScalesExpr = new KeyExpr("groupScales");
             Map<Object, KeyExpr> newKeys = new HashMap<Object, KeyExpr>();
             newKeys.put("scales", scalesExpr);
-            newKeys.put("groupMachinery", groupMachineryExpr);
+            newKeys.put("groupScales", groupScalesExpr);
             Query<Object, Object> query2 = new Query<Object, Object>(newKeys);
             query2.properties.put("numberScales", retailLM.getLPByName("numberScales").getExpr(scalesExpr));
             query2.properties.put("descriptionMachinery", retailLM.getLPByName("descriptionMachinery").getExpr(scalesExpr));
             query2.properties.put("nameGroupMachineryScales", retailLM.getLPByName("nameGroupMachineryScales").getExpr(scalesExpr));
-            query2.and(groupMachineryExpr.compare(new DataObject(groupMachineryMPT, (ConcreteClass) retailLM.getClassByName("groupScales")), Compare.EQUALS));
+            query2.and(groupScalesExpr.compare(new DataObject(groupMachineryMPT, (ConcreteClass) retailLM.getClassByName("groupScales")), Compare.EQUALS));
+            //query.and(projectExpr.compare(projectObject, Compare.EQUALS));
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result2 = query2.execute(session.sql);
-            //тут InvocationTargetException
             for (Map<Object, Object> values : result2.values()) {
                 String numberScales = values.get("numberScales").toString().trim();
                 String descriptionMachinery = values.get("descriptionMachinery").toString().trim();
