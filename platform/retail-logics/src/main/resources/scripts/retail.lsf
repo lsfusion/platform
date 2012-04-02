@@ -2679,7 +2679,7 @@ TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
 CLASS ABSTRACT order 'Заказ' : historyObject;
 CLASS orderSupplier 'Заказ поставщику' : order;
-CLASS orderSupplierPosted 'Закрытый заказ поставщику' :orderSupplier;
+CLASS orderSupplierPosted 'Закрытый заказ поставщику' :orderSupplier, postedObject;
 //CLASS orderStock 'Заказ складу' :order;
 
 dataOrderSupplier 'Номер заказа' (orderSupplier) = DATA INTEGER (orderSupplier) IN orderSupplierGroup;
@@ -3110,12 +3110,20 @@ FORM orderSuppliers 'Заказы поставщику'
 
     PROPERTIES(o)          ADDFORM, EDITFORM SHOWIF isDraftOrderSupplier(o), delete FORCE PANEL SHOWIF isDraftOrderSupplier(o),
                            postOrderSupplier SHOWIF isDraftOrderSupplier(o), unpostOrderSupplier SHOWIF isPostedOrderSupplier(o)
+    PROPERTIES(o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    OBJECTS i=item
-    PROPERTIES(i) READONLY nameAttributeItem
+    OBJECTS g=itemGroup, i=item
 
-    PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier, priceSupplierItemOrderSupplier,
-                               sumItemOrderSupplier
+    PROPERTIES             nameAttributeItemGroupItem(g, i) READONLY, barcodeBarcodeSku(i) READONLY
+    ORDER BY               nameAttributeItemGroupItem
+
+    PROPERTIES(o, i) READONLY  topItem, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
+
+    PROPERTIES(i) READONLY quantityPackItemOver, minQuantityOrderItemOver
+
+    PROPERTIES(o, i) READONLY  recommendCountOrderSupplier, priceSupplierItemOrderSupplier,
+                               dataSuppliersRangeOrderSupplier, sumWareOrderSupplier, sumDetailVatItemOrderSupplier,
+                               fullSumItemOrderSupplier
 
     FILTERS sumQuantityItemOrderSupplier(o, i)
 ;
@@ -3126,6 +3134,9 @@ DESIGN orderSuppliers FROM DEFAULT{
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
+    ADD o.historyGroup BEFORE functions.box;
+    ADD o.postedGroup BEFORE functions.box;
+    POSITION o.historyGroup TO THE LEFT o.postedGroup;
 }
 
 
