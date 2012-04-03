@@ -118,8 +118,8 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addPartStringCellToRow(values.get("nameBrandGroupDeclaration"), "Торговая марка ", ",", false);
                 addPartStringCellToRow(values.get("mainCompositionGroupDeclaration"), " Состав:", ";", true);
 
+                addDoubleCellToRow(values.get("grossWeightGroupDeclaration"), ";", 3);
                 addDoubleCellToRow(values.get("netWeightGroupDeclaration"), ";", 3);
-                addDoubleCellToRow(values.get("grossWeightGroupDeclaration"), "", 3);
                 addStringCellToRow(null, ";"); //Вес нетто без упаковки
                 addDoubleCellToRow(values.get("sumGroupDeclaration"), ";", 7);
                 addStringCellToRow(null, ";"); //Таможенная стоимость
