@@ -44,9 +44,35 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     "sidCountryGroupDeclaration", "sidOrigin2CountryGroupDeclaration", "quantityGroupDeclaration", "sidUnitOfMeasureGroupDeclaration",
                     "nameUnitOfMeasureGroupDeclaration", "sumGroupDeclaration", "netWeightGroupDeclaration",
                     "grossWeightGroupDeclaration");
-            List<String> exportTitles = BaseUtils.toList("Номер", "Наименование товара", "Артикул товара", "Код товара по ТН ВЭД ТС",
-                    "Цифровой код страны", "Буквенный код страны", "Количество товара", "Код единицы измерения",
-                    "Краткое наименование единицы измерения", "Стоимость", "Вес нетто", "Вес брутто");
+            List<String> exportTitles = BaseUtils.toList("Порядковый номер декларируемого товара", "Наименование товара", "Вес брутто",
+                    "Вес нетто", "Вес нетто без упаковки", "Фактурная стоимость товара", "Таможенная стоимость",
+                    "Статистическая стоимость", "Код товара по ТН ВЭД ТС", "Запреты и ограничения", "Интеллектуальная собственность",
+                    "Цифровой код страны происхождения товара", "Буквенный код страны происхождения товара",
+                    "Код метода определения таможенной стоимости", "Название географического пункта",
+                    "Код условий поставки по Инкотермс", "Код вида поставки товаров", "Количество мест",
+                    "Вид грузовых мест","Код валюты квоты",	"Остаток квоты в валюте", "Остаток квоты в единице измерения",
+                    "Код единицы измерения квоты", "Наименование единицы измерения квоты",
+                    "Количество товара в специфических единицах измерения", "Количество подакцизного товара",
+                    "Код специфических единиц измерения", "Краткое наименование специфических единиц измерения",
+                    "Код единицы измерения подакцизного товара", "Наименование единицы измерения подакцизного товара",
+                    "Количество товара в дополнительных единицах измерения", "Код дополнительной единицы измерения",
+                    "Наименование дополнительной единицы измерения",
+                    "Корректировки таможенной стоимости", "Количество акцизных марок", "Код предшествующей таможенной процедуры",
+                    "Преференция код 1", "Преференция код 2", "Преференция код 3", "Преференция код 4",
+                    "Код особенности перемещения товаров", "Запрашиваемый срок переработки", "Номер документа переработки",
+                    "Дата документа переработки", "Место проведения операций переработки", "Количество товара переработки",
+                    "Код единицы измерения количества товара переработки", "Краткое наименование единицы измерения количества товара переработки",
+                    "Почтовый индекс организации осуществлявшей переработку", "Код страны переработки", "Наименование страны переработки",
+                    "Наименование региона переработки",	"Наименование населенного пункта переработки",	"Улица и дом переработки",
+                    "Наименование лица (отправителя) переработки",	"УНП лица (отправителя) переработки",
+                    "Почтовый индекс лица (отправителя) переработки", "Наименование региона лица (отправителя) переработки",
+                    "Населенный пункт лица (отправителя) переработки", "Улица и дом лица (отправителя) переработки",
+                    "Код страны регистрации лица (отправителя) переработки", "Название страны регистрации лица (отправителя) переработки",
+                    "Номер документа, удостоверяющего личность физического лица  переработки",	"Идентификационный номер физического лица переработки",
+                    "Дата выдачи документа, удостоверяющего личность физического лица переработки",
+                    "Код документа, удостоверяющего личность физического лица переработки"/*, "Артикул товара"*/);
+
+
 
             DataObject declarationObject = context.getKeyValue(declarationInterface);
 
@@ -92,16 +118,73 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addPartStringCellToRow(values.get("nameBrandGroupDeclaration"), "Торговая марка ", ",", false);
                 addPartStringCellToRow(values.get("mainCompositionGroupDeclaration"), " Состав:", ";", true);
 
-                addStringCellToRow("Арт. " + values.get("sidArticleGroupDeclaration"), ";");
+                addDoubleCellToRow(values.get("netWeightGroupDeclaration"), ";", 3);
+                addDoubleCellToRow(values.get("grossWeightGroupDeclaration"), "", 3);
+                addStringCellToRow(null, ";"); //Вес нетто без упаковки
+                addDoubleCellToRow(values.get("sumGroupDeclaration"), ";", 7);
+                addStringCellToRow(null, ";"); //Таможенная стоимость
+                addStringCellToRow(null, ";"); //Статистическая стоимость
                 addStringCellToRow(values.get("sidCustomCategory10GroupDeclaration"), ";");
+                addStringCellToRow(null, ";"); //Запреты и ограничения
+                addStringCellToRow(null, ";"); //Интеллектуальная собственность
                 addStringCellToRow(values.get("sidCountryGroupDeclaration"), ";");
                 addStringCellToRow(values.get("sidOrigin2CountryGroupDeclaration"), ";");
+                addStringCellToRow(null, ";"); //Код метода определения таможенной стоимости
+                addStringCellToRow(null, ";"); //Название географического пункта
+                addStringCellToRow(null, ";"); //Код условий поставки по Инкотермс
+                addStringCellToRow(null, ";"); //Код вида поставки товаров
+                addStringCellToRow(null, ";"); //Количество мест
+                addStringCellToRow(null, ";"); //Вид грузовых мест
+                addStringCellToRow(null, ";"); //Код валюты квоты
+                addStringCellToRow(null, ";"); //Остаток квоты в валюте
+                addStringCellToRow(null, ";"); //Остаток квоты в единице измерения
+                addStringCellToRow(null, ";"); //Код единицы измерения квоты
+                addStringCellToRow(null, ";"); //Наименование единицы измерения квоты
+                addDoubleCellToRow(values.get("netWeightGroupDeclaration"), ";", 3); //Количество товара в специфических единицах измерения
+                addStringCellToRow(null, ";"); //Количество подакцизного товара
+                addStringCellToRow(null, ";"); //Код специфических единиц измерения
+                addStringCellToRow(null, ";"); //Краткое наименование специфических единиц измерения
+                addStringCellToRow(null, ";"); //Код единицы измерения подакцизного товара
+                addStringCellToRow(null, ";"); //Наименование единицы измерения подакцизного товара
                 addDoubleCellToRow(values.get("quantityGroupDeclaration"), ";", 0);
                 addStringCellToRow(values.get("sidUnitOfMeasureGroupDeclaration"), ";");
                 addStringCellToRow(values.get("nameUnitOfMeasureGroupDeclaration"), ";");
-                addDoubleCellToRow(values.get("sumGroupDeclaration"), ";", 7);
-                addDoubleCellToRow(values.get("netWeightGroupDeclaration"), ";", 3);
-                addDoubleCellToRow(values.get("grossWeightGroupDeclaration"), "", 3);
+
+                addStringCellToRow(null, ";"); //Корректировки таможенной стоимости
+                addStringCellToRow(null, ";"); //Количество акцизных марок
+                addStringCellToRow(null, ";"); //Код предшествующей таможенной процедуры
+                addStringCellToRow(null, ";"); //Преференция код 1
+                addStringCellToRow(null, ";"); //Преференция код 2
+                addStringCellToRow(null, ";"); //Преференция код 3
+                addStringCellToRow(null, ";"); //Преференция код 4
+                addStringCellToRow(null, ";"); //Код особенности перемещения товаров
+                addStringCellToRow(null, ";"); //Запрашиваемый срок переработки
+                addStringCellToRow(null, ";"); //Номер документа переработки
+                addStringCellToRow(null, ";"); //Дата документа переработки
+                addStringCellToRow(null, ";"); //Место проведения операций переработки
+                addStringCellToRow(null, ";"); //Количество товара переработки
+                addStringCellToRow(null, ";"); //Код единицы измерения количества товара переработки
+                addStringCellToRow(null, ";"); //Краткое наименование единицы измерения количества товара переработки
+                addStringCellToRow(null, ";"); //Почтовый индекс организации осуществлявшей переработку
+                addStringCellToRow(null, ";"); //Код страны переработки
+                addStringCellToRow(null, ";"); //Наименование страны переработки
+                addStringCellToRow(null, ";"); //Наименование региона переработки
+                addStringCellToRow(null, ";"); //Наименование населенного пункта переработки
+                addStringCellToRow(null, ";"); //Улица и дом переработки
+                addStringCellToRow(null, ";"); //Наименование лица (отправителя) переработки
+                addStringCellToRow(null, ";"); //УНП лица (отправителя) переработки
+                addStringCellToRow(null, ";"); //Почтовый индекс лица (отправителя) переработки
+                addStringCellToRow(null, ";"); //Наименование региона лица (отправителя) переработки
+                addStringCellToRow(null, ";"); //Населенный пункт лица (отправителя) переработки
+                addStringCellToRow(null, ";"); //Улица и дом лица (отправителя) переработки
+                addStringCellToRow(null, ";"); //Код страны регистрации лица (отправителя) переработки
+                addStringCellToRow(null, ";"); //Название страны регистрации лица (отправителя) переработки
+                addStringCellToRow(null, ";"); //Номер документа, удостоверяющего личность физического лица  переработки
+                addStringCellToRow(null, ";"); //Идентификационный номер физического лица переработки
+                addStringCellToRow(null, ";"); //Дата выдачи документа, удостоверяющего личность физического лица переработки
+                addStringCellToRow(null, ";"); //Код документа, удостоверяющего личность физического лица переработки
+
+                //addStringCellToRow("Арт. " + values.get("sidArticleGroupDeclaration"), ";");
 
                 writer.println(row);
             }
