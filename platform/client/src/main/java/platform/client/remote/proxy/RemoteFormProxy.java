@@ -316,6 +316,13 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
+    public void collapseGroupObject(int groupId, byte[] bytes) throws RemoteException {
+        logRemoteMethodStartVoidCall("collapseTreeNode");
+        target.expandGroupObject(groupId, bytes);
+        logRemoteMethodEndVoidCall("collapseTreeNode");
+    }
+
+    @PendingRemoteMethod
     public void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException {
         logRemoteMethodStartVoidCall("moveGroupObject");
         target.moveGroupObject(parentGroupId, parentKey, childGroupId, childKey, index);

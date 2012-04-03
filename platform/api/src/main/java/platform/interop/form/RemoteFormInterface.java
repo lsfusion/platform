@@ -92,6 +92,8 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     void expandGroupObject(int groupId, byte[] bytes) throws RemoteException;
 
+    void collapseGroupObject(int groupId, byte[] bytes) throws RemoteException;
+
     void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
 
     ClientResultAction getClientActionOnApply() throws RemoteException;

@@ -4,6 +4,7 @@ import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.table.TableColumnExt;
+import org.jdesktop.swingx.treetable.TreeTableNode;
 import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyRendererComponent;
@@ -47,6 +48,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     private Set<TreePath> expandedPathes;
 
     boolean plainTreeMode = false;
+    boolean manualExpand;
 
     private TableSortableHeaderManager<ClientPropertyDraw> sortableHeaderManager;
 
@@ -115,7 +117,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         addTreeWillExpandListener(new TreeWillExpandListener() {
             public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
                 TreeGroupNode node = (TreeGroupNode) event.getPath().getLastPathComponent();
-                if (!synchronize) {
+                if (!synchronize && !manualExpand) {
                     if (node.group != null) {
                         try {
                             form.expandGroupObject(node.group, node.key);
@@ -130,6 +132,16 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             }
 
             public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+                TreeGroupNode node = (TreeGroupNode) event.getPath().getLastPathComponent();
+                if (!synchronize && !manualExpand) {
+                    if (node.group != null) {
+                        try {
+                            form.collapseGroupObject(node.group, node.key);
+                        } catch (IOException e) {
+                            throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"), e);
+                        }
+                    }
+                }
             }
         });
 
@@ -241,6 +253,34 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         model.updateKeys(group, keys, parents);
     }
 
+    public void expandNew(ClientGroupObject group) {
+        for (TreeGroupNode node : model.getGroupNodes(group)) {
+            boolean inExpanded = false;
+            for (TreePath expandedPath : expandedPathes)
+                if (Arrays.asList(expandedPath.getPath()).contains(node))
+                    inExpanded = true;
+            if (!inExpanded && (node.getChildCount() > 1 || (node.getChildCount() == 1 && node.getChildAt(0) instanceof TreeGroupNode))) {
+                TreePath path = new TreePath(getTreePath(node, new ArrayList<TreeTableNode>()).toArray());
+                expandPathManually(path);
+            }
+        }
+    }
+    
+    private List<TreeTableNode> getTreePath(TreeTableNode node, List<TreeTableNode> path) {
+        path.add(0, node);
+        if (node.getParent() != null) {
+            return getTreePath(node.getParent(), path);
+        } else {
+            return path;
+        }
+    }
+    
+    public void expandPathManually(TreePath path) {
+        manualExpand = true;
+        expandPath(path);
+        manualExpand = false;
+    }
+
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> ivalues) {
         model.updateDrawPropertyValues(property, ivalues);
     }
@@ -345,6 +385,9 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 model.firePathChanged(nodePath);
             }
         });
+
+        for (ClientGroupObject group : treeGroup.groups)
+            expandNew(group);
 
         moveToFocusableCellIfNeeded();
 

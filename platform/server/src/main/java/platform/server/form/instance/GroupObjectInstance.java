@@ -297,7 +297,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public boolean isNull() {
 //        assert assertNull();
 //        return objects.iterator().next().getObjectValue() instanceof NullValue;
-        for (ObjectInstance object : objects)
+        for (ObjectInstance object : GroupObjectInstance.getObjects(getUpTreeGroups()))
             if (object.getObjectValue() instanceof NullValue) return true;
         return false;
     }

@@ -475,6 +475,18 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
+    public void collapseGroupObject(int groupId, byte[] groupValues) throws RemoteException {
+        try {
+            GroupObjectInstance group = form.getGroupObjectInstance(groupId);
+            Map<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
+            if (valueToSet != null) {
+                form.collapseGroupObject(group, valueToSet);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException {
         try {
             GroupObjectInstance parentGroup = form.getGroupObjectInstance(parentGroupId);

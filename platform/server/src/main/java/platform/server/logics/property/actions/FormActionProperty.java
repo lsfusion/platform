@@ -134,7 +134,8 @@ public class FormActionProperty extends CustomActionProperty {
                         ObjectInstance objectInstance = newFormInstance.instanceFactory.getInstance(object);
                         // нужна проверка, т.к. в принципе пока FormActionProperty может ссылаться на ObjectEntity из разных FormEntity
                         if (objectInstance != null) {
-                            thisFormInstance.seekObject(object.baseClass, objectInstance.getObjectValue());
+                            thisFormInstance.expandCurrentGroupObject(object.baseClass);
+                            thisFormInstance.forceChangeObject(object.baseClass, objectInstance.getObjectValue());
                         }
                     } catch (SQLException e) {
                         throw new RuntimeException(e);

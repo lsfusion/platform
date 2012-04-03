@@ -598,6 +598,11 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
+    public void collapseGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
+        remoteForm.collapseGroupObject(group.getID(), objectValue.serialize());
+        applyRemoteChanges();
+    }
+
     public void changeGroupObject(ClientGroupObject groupObject, Scroll changeType) throws IOException {
         SwingUtils.stopSingleAction(groupObject.getActionID(), false);
 

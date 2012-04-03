@@ -467,6 +467,54 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         group.updated |= UPDATED_EXPANDS;
     }
 
+    public void collapseGroupObject(GroupObjectInstance group, Map<ObjectInstance, DataObject> value) throws SQLException {
+        if(group.expandTable!=null) {
+            group.expandTable.deleteRecords(session.sql, value);
+            group.updated |= UPDATED_EXPANDS;
+        }
+    }
+
+    public void expandCurrentGroupObject(ValueClass cls) throws SQLException {
+        for (ObjectInstance object : getObjects()) {
+            if (object.getBaseClass().isCompatibleParent(cls))
+                expandCurrentGroupObject(object);
+        }
+    }
+    
+    public void expandCurrentGroupObject(ObjectInstance object) throws SQLException {
+        GroupObjectInstance groupObject = object.groupTo;
+        if (groupObject != null && groupObject.isInTree()) {
+            if (groupObject.parent != null) {
+                // если рекурсивное свойство, то просто раскрываем текущий объект
+                Map<ObjectInstance, DataObject> value = new HashMap<ObjectInstance, DataObject>();
+                for (ObjectInstance obj : groupObject.objects) {
+                    ObjectValue objectValue = obj.getObjectValue();
+                    if (objectValue instanceof DataObject)
+                        value.put(obj, (DataObject)objectValue);
+                }
+                if (!value.isEmpty())
+                    expandGroupObject(groupObject, value);
+            } else {
+                // раскрываем все верхние groupObject
+                for (GroupObjectInstance group : groups) {
+                    List<GroupObjectInstance> upGroups = group.getUpTreeGroups();
+                    Map<ObjectInstance, DataObject> value = new HashMap<ObjectInstance, DataObject>();
+                    int upObjects = 0;
+                    for (GroupObjectInstance goi : upGroups) {
+                        if (goi != null && !goi.equals(group)) {
+                            upObjects += goi.objects.size();
+                            value.putAll(goi.getGroupObjectValue());
+                        }
+                    }
+                    if (!value.isEmpty() && value.size() == upObjects) // проверка на то, что в каждом из верхних groupObject выбран какой-то объект
+                        expandGroupObject(group.getUpTreeGroup(), value);
+                    if (group.equals(groupObject))
+                        break;
+                }
+            }
+        }
+    }
+
     public void switchClassView(GroupObjectInstance group) {
         ClassViewType newClassView = switchView(group.curClassView);
         if (group.entity.isAllowedClassView(newClassView)) {
@@ -544,6 +592,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 }
             }
         }
+
+        expandCurrentGroupObject(object);
 
         // todo : теоретически надо переделывать
         // нужно менять текущий объект, иначе не будет работать ImportFromExcelActionProperty
@@ -985,11 +1035,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
 
-    public void seekObject(ValueClass cls, ObjectValue value) throws SQLException {
+    public void forceChangeObject(ValueClass cls, ObjectValue value) throws SQLException {
 
         for (ObjectInstance object : getObjects()) {
             if (object.getBaseClass().isCompatibleParent(cls))
-                seekObject(object, value);
+                forceChangeObject(object, value);
         }
     }
 
