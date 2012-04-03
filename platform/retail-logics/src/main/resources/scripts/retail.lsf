@@ -4815,8 +4815,6 @@ statusSpecification 'Расход' (specification) = CASE
 //количество-цены по строкам
 
 quantityStatementDetail 'Количество' (statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
-packQuantityStatementDetail 'Количество грузовых мест' (statementDetail) = quantityStatementDetail(statementDetail)/
-    UNION OVERRIDE 1 IF statementDetail IS statementDetail, quantityPackItem(itemStatementDetail(statementDetail));
 
 retailPriceStatementDetail 'Цена товара (розн.)'(statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
 sumStatementDetail 'Сумма' (statementDetail) = round0(retailPriceStatementDetail(statementDetail)*quantityStatementDetail(statementDetail))IN baseGroup;
@@ -5103,6 +5101,14 @@ codeLoadingStatement 'Код ПРР' (statement) = DATA STRING[3] (statement);
 arrivalTimeStatement 'Время прибытия' (statement) = DATA DATETIME(statement);
 departureTimeStatement 'Время убытия' (statement) = DATA DATETIME(statement);
 downtimeStatement 'Время простоя' (statement) = DATA STRING[10] (statement);
+
+raceQuantityStatement 'Количество ездок' (statement) = DATA INTEGER (statement);
+
+packQuantityStatementDetail 'Количество грузовых мест' (statementDetail) = quantityStatementDetail(statementDetail)/
+    UNION OVERRIDE 1 IF statementDetail IS statementDetail, quantityPackItem(itemStatementDetail(statementDetail));
+
+grossWeightStatementDetail 'Масса груза, т.' (statementDetail) =
+    grossWeightItem(itemStatementDetail(statementDetail))*quantityStatementDetail(statementDetail)/1000;
 
 //---------------------------- Кассовые отчеты ----------------------------------------//
 CLASS cashReport 'Кассовый отчет' : transaction;
@@ -5713,6 +5719,54 @@ totalSumWareInnerFlow 'Сумма посуды' (innerFlow) = GROUP SUM [priceWa
 totalSumVatWareInnerFlow 'Сумма НДС по посуде' (innerFlow) =  GROUP SUM
     sumDetailVatWareInnerFlowDetail(innerFlowDetail) BY innerFlowInnerFlowDetail(innerFlowDetail);
 
+// для накладной (шапка и хвост)
+carInnerFlow 'Автомобиль' (innerFlow) = DATA STRING[30] (innerFlow);
+ownerCarInnerFlow 'Владелец автомобиля' (innerFlow) = DATA STRING[100] (innerFlow);
+trailerInnerFlow 'Прицеп' (innerFlow) = DATA STRING[10] (innerFlow);
+driverCarInnerFlow 'Водитель' (innerFlow) = DATA STRING[40] (innerFlow);
+waybillInnerFlow 'Путевой лист' (innerFlow) = DATA STRING[20] (innerFlow);
+
+transportPayerInnerFlow 'Заказчик перевозки (ИД)' (innerFlow) = DATA legalEntity (innerFlow);
+
+shipmentBaseInnerFlow 'Основание отпуска' (innerFlow) = DATA STRING[30] (innerFlow);
+
+dataLoadingPlaceInnerFlow 'Пункт погрузки' (innerFlow) = DATA STRING[50] (innerFlow);
+loadingPlaceInnerFlow 'Пункт погрузки' (innerFlow) = UNION OVERRIDE addressStore(storeDepartmentStore(departmentStoreInnerFlow(innerFlow))),
+                                                       dataLoadingPlaceInnerFlow (innerFlow);
+
+dataUnloadingPlaceInnerFlow 'Пункт разгрузки' (innerFlow) = DATA STRING[50] (innerFlow);
+unloadingPlaceInnerFlow 'Пункт разгрузки' (innerFlow) = UNION OVERRIDE addressLegalEntity(recipientDepartmentInnerFlow(innerFlow)),
+                                                       dataUnloadingPlaceInnerFlow (innerFlow);
+
+readdressingInnerFlow 'Переадресовка' (innerFlow) = DATA STRING[50] (innerFlow);
+
+issuanceAllowedInnerFlow 'Отпуск разрешил' (innerFlow) = DATA employee(innerFlow);
+issuanceExecutedInnerFlow 'Отпуск произвел' (innerFlow) = DATA employee(innerFlow);
+
+forwarderInnerFlow 'Товар к перевозке принял (экспедитор)' (innerFlow) = DATA STRING[40] (innerFlow);
+
+warrantInnerFlow 'По доверенности' (innerFlow) = DATA STRING[30](innerFlow);
+warrantHolderInnerFlow 'Доверенность выдана на' (innerFlow) = DATA STRING[100](innerFlow);
+
+goodsAcceptedInnerFlow 'Принял грузополучатель' (innerFlow) = DATA STRING[40] (innerFlow);
+
+loadingExecuterInnerFlow 'Исполнитель ПРР' (innerFlow) = DATA employee(innerFlow);
+
+wayOfLoadingInnerFlow 'Способ ПРР' (innerFlow) = DATA wayOfLoading(innerFlow);
+codeLoadingInnerFlow 'Код ПРР' (innerFlow) = DATA STRING[3] (innerFlow);
+
+arrivalTimeInnerFlow 'Время прибытия' (innerFlow) = DATA DATETIME(innerFlow);
+departureTimeInnerFlow 'Время убытия' (innerFlow) = DATA DATETIME(innerFlow);
+downtimeInnerFlow 'Время простоя' (innerFlow) = DATA STRING[10] (innerFlow);
+
+raceQuantityInnerFlow 'Количество ездок' (innerFlow) = DATA INTEGER (innerFlow);
+
+packQuantityInnerFlowDetail 'Количество грузовых мест' (innerFlowDetail) = quantityInnerFlowDetail(innerFlowDetail)/
+    UNION OVERRIDE 1 IF innerFlowDetail IS innerFlowDetail, quantityPackItem(itemInnerFlowDetail(innerFlowDetail));
+
+grossWeightInnerFlowDetail 'Масса груза, т.' (innerFlowDetail) =
+    grossWeightItem(itemInnerFlowDetail(innerFlowDetail))*quantityInnerFlowDetail(innerFlowDetail)/1000;
+
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 GROUP pricingInnerArrivalDetailInfo 'Дополнительные ценовый параметры' : publicGroup;
 
@@ -6188,7 +6242,6 @@ dataRetailRangeReturnSupplierDetail 'НДС розничный,%' (returnSupplie
 
 CONSTRAINT taxRange(retailRangeReturnSupplierDetail(returnSupplierDetail)) != tax.taxNDS CHECKED BY retailRangeReturnSupplierDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
-
 // Суммовые параметры для шапки документа
 
 totalQuantityReturnSupplier 'Общее количество' (returnSupplier) = GROUP SUM quantityReturnSupplierDetail(returnSupplierDetail)
@@ -6344,6 +6397,14 @@ codeLoadingReturnSupplier 'Код ПРР' (returnSupplier) = DATA STRING[3] (ret
 arrivalTimeReturnSupplier 'Время прибытия' (returnSupplier) = DATA DATETIME(returnSupplier);
 departureTimeReturnSupplier 'Время убытия' (returnSupplier) = DATA DATETIME(returnSupplier);
 downtimeReturnSupplier 'Время простоя' (returnSupplier) = DATA STRING[10] (returnSupplier);
+
+raceQuantityReturnSupplier 'Количество ездок' (returnSupplier) = DATA INTEGER (returnSupplier);
+
+packQuantityReturnSupplierDetail 'Количество грузовых мест' (returnSupplierDetail) = quantityReturnSupplierDetail(returnSupplierDetail)/
+    UNION OVERRIDE 1 IF returnSupplierDetail IS returnSupplierDetail, quantityPackItem(itemReturnSupplierDetail(returnSupplierDetail));
+
+grossWeightReturnSupplierDetail 'Масса груза, т.' (returnSupplierDetail) =
+    grossWeightItem(itemReturnSupplierDetail(returnSupplierDetail))*quantityReturnSupplierDetail(returnSupplierDetail)/1000;
 
 //----------------------------------------------- Чеки ---------------------------------------------------//
 
@@ -9097,104 +9158,146 @@ DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
 // ---------------------------- Атрибуты для накладной --------------------------------- //
 // для накладной (шапка и хвост)
 carConsignment 'Автомобиль' (consignment) = UNION OVERRIDE carStatement (consignment),
-                                                           carReturnSupplier (consignment);
+                                                           carReturnSupplier (consignment),
+                                                           carInnerFlow (consignment);
 
 ownerCarConsignment 'Владелец автомобиля' (consignment) = UNION OVERRIDE ownerCarStatement (consignment),
-                                                                         ownerCarReturnSupplier (consignment);
+                                                                         ownerCarReturnSupplier (consignment),
+                                                                         ownerCarInnerFlow (consignment);
 
 trailerConsignment 'Прицеп' (consignment) = UNION OVERRIDE trailerStatement (consignment),
-                                                           trailerReturnSupplier (consignment);
+                                                           trailerReturnSupplier (consignment),
+                                                           trailerInnerFlow (consignment);
 
 driverCarConsignment 'Водитель' (consignment) = UNION OVERRIDE driverCarStatement (consignment),
-                                                               driverCarReturnSupplier (consignment);
+                                                               driverCarReturnSupplier (consignment),
+                                                               driverCarInnerFlow (consignment);
 
 waybillConsignment 'Путевой лист' (consignment) = UNION OVERRIDE waybillStatement (consignment),
-                                                                 waybillReturnSupplier (consignment);
+                                                                 waybillReturnSupplier (consignment),
+                                                                 waybillInnerFlow (consignment);
 
 transportPayerConsignment 'Заказчик перевозки (ИД)' (consignment) = UNION OVERRIDE transportPayerStatement (consignment),
-                                                                                   transportPayerReturnSupplier (consignment);
+                                                                                   transportPayerReturnSupplier (consignment),
+                                                                                   transportPayerInnerFlow (consignment);
 
 shipmentBaseConsignment 'Основание отпуска' (consignment) = UNION OVERRIDE shipmentBaseStatement (consignment),
-                                                                           shipmentBaseReturnSupplier (consignment);
+                                                                           shipmentBaseReturnSupplier (consignment),
+                                                                           shipmentBaseInnerFlow (consignment);
 
 dataLoadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION OVERRIDE dataLoadingPlaceStatement (consignment),
-                                                                            dataLoadingPlaceReturnSupplier (consignment);
+                                                                            dataLoadingPlaceReturnSupplier (consignment),
+                                                                            dataLoadingPlaceInnerFlow (consignment);
 
 loadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION OVERRIDE loadingPlaceStatement (consignment),
-                                                                        loadingPlaceReturnSupplier (consignment);
+                                                                        loadingPlaceReturnSupplier (consignment),
+                                                                        loadingPlaceInnerFlow (consignment);
 
 dataUnloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION OVERRIDE dataUnloadingPlaceStatement (consignment),
-                                                                               dataUnloadingPlaceReturnSupplier (consignment);
+                                                                               dataUnloadingPlaceReturnSupplier (consignment),
+                                                                               dataUnloadingPlaceInnerFlow (consignment);
 
 unloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION OVERRIDE unloadingPlaceStatement (consignment),
-                                                                           unloadingPlaceReturnSupplier (consignment);
+                                                                           unloadingPlaceReturnSupplier (consignment),
+                                                                           unloadingPlaceInnerFlow (consignment);
 
 readdressingConsignment 'Переадресовка' (consignment) = UNION OVERRIDE readdressingStatement (consignment),
-                                                                       readdressingReturnSupplier (consignment);
+                                                                       readdressingReturnSupplier (consignment),
+                                                                       readdressingInnerFlow (consignment);
 
 issuanceAllowedConsignment 'Отпуск разрешил' (consignment) = UNION OVERRIDE issuanceAllowedStatement(consignment),
-                                                                            issuanceAllowedReturnSupplier(consignment);
+                                                                            issuanceAllowedReturnSupplier(consignment),
+                                                                            issuanceAllowedInnerFlow(consignment);
 
 issuanceExecutedConsignment 'Отпуск произвел' (consignment) = UNION OVERRIDE issuanceExecutedStatement(consignment),
-                                                                             issuanceExecutedReturnSupplier(consignment);
+                                                                             issuanceExecutedReturnSupplier(consignment),
+                                                                             issuanceExecutedInnerFlow(consignment);
 
 forwarderConsignment 'Товар к перевозке принял (экспедитор)' (consignment) = UNION OVERRIDE forwarderStatement(consignment),
-                                                                                            forwarderReturnSupplier(consignment);
+                                                                                            forwarderReturnSupplier(consignment),
+                                                                                            forwarderInnerFlow(consignment);
 
 warrantConsignment 'По доверенности' (consignment) = UNION OVERRIDE warrantStatement (consignment),
-                                                                    warrantReturnSupplier (consignment);
+                                                                    warrantReturnSupplier (consignment),
+                                                                    warrantInnerFlow (consignment);
 
 warrantHolderConsignment 'Доверенность выдана на' (consignment) = UNION OVERRIDE warrantHolderStatement (consignment),
-                                                                                 warrantHolderReturnSupplier (consignment);
+                                                                                 warrantHolderReturnSupplier (consignment),
+                                                                                 warrantHolderInnerFlow (consignment);
 
 goodsAcceptedConsignment 'Принял грузополучатель' (consignment) = UNION OVERRIDE goodsAcceptedStatement (consignment),
-                                                                                 goodsAcceptedReturnSupplier (consignment);
+                                                                                 goodsAcceptedReturnSupplier (consignment),
+                                                                                 goodsAcceptedInnerFlow (consignment);
 
 loadingExecuterConsignment 'Исполнитель ПРР' (consignment) = UNION OVERRIDE loadingExecuterStatement(consignment),
-                                                                            loadingExecuterReturnSupplier(consignment);
+                                                                            loadingExecuterReturnSupplier(consignment),
+                                                                            loadingExecuterInnerFlow(consignment);
 
 wayOfLoadingConsignment 'Способ ПРР' (consignment) = UNION OVERRIDE wayOfLoadingStatement(consignment),
-                                                                    wayOfLoadingReturnSupplier(consignment);
+                                                                    wayOfLoadingReturnSupplier(consignment),
+                                                                    wayOfLoadingInnerFlow(consignment);
 
 codeLoadingConsignment 'Код ПРР' (consignment) = UNION OVERRIDE codeLoadingStatement (consignment),
-                                                                codeLoadingReturnSupplier (consignment);
+                                                                codeLoadingReturnSupplier (consignment),
+                                                                codeLoadingInnerFlow (consignment);
 
 arrivalTimeConsignment 'Время прибытия' (consignment) = UNION OVERRIDE arrivalTimeStatement (consignment),
-                                                                        arrivalTimeReturnSupplier (consignment);
+                                                                       arrivalTimeReturnSupplier (consignment),
+                                                                       arrivalTimeInnerFlow (consignment);
 
 departureTimeConsignment 'Время убытия' (consignment) = UNION OVERRIDE departureTimeStatement (consignment),
-                                                                       departureTimeReturnSupplier (consignment);
+                                                                       departureTimeReturnSupplier (consignment),
+                                                                       departureTimeInnerFlow (consignment);
 
 downtimeConsignment 'Время простоя' (consignment) = UNION OVERRIDE downtimeStatement (consignment),
-                                                                   downtimeReturnSupplier (consignment);
+                                                                   downtimeReturnSupplier (consignment),
+                                                                   downtimeInnerFlow (consignment);
+
+raceQuantityConsignment 'Количество ездок' (consignment) = UNION OVERRIDE raceQuantityStatement(consignment),
+                                                                          raceQuantityReturnSupplier(consignment),
+                                                                          raceQuantityInnerFlow(consignment);
 
 // для накладной (спецификация)
 nameItemConsignmentDetail 'Наименование товара' (consignmentDetail) = UNION OVERRIDE nameAttributeItem(itemStatementDetail(consignmentDetail)),
-                                                                                   nameAttributeItem(itemReturnSupplierDetail(consignmentDetail)) ;
+                                                                                     nameAttributeItem(itemReturnSupplierDetail(consignmentDetail)),
+                                                                                     nameAttributeItem(itemInnerFlowDetail(consignmentDetail));
 
 unitOfMeasureConsignmentDetail 'Единица измерения' (consignmentDetail) = UNION OVERRIDE unitOfMeasureItem(itemStatementDetail(consignmentDetail)),
-                                                                                      unitOfMeasureItem(itemReturnSupplierDetail(consignmentDetail));
+                                                                                        unitOfMeasureItem(itemReturnSupplierDetail(consignmentDetail)),
+                                                                                        unitOfMeasureItem(itemInnerFlowDetail(consignmentDetail));
 
 quantityConsignmentDetail 'Количество' (consignmentDetail) = UNION OVERRIDE quantityStatementDetail(consignmentDetail),
-                                                                          quantityReturnSupplierDetail(consignmentDetail);
+                                                                            quantityReturnSupplierDetail(consignmentDetail),
+                                                                            quantityInnerFlowDetail(consignmentDetail);
 
 priceConsignmentDetail 'Цена' (consignmentDetail) = UNION OVERRIDE retailPriceStatementDetail (consignmentDetail),
-                                                                   supplierPriceReturnSupplierDetail (consignmentDetail);
+                                                                   supplierPriceReturnSupplierDetail (consignmentDetail),
+                                                                   retailPriceInnerFlowDetail(consignmentDetail);
 
 costConsignmentDetail 'Стоимость' (consignmentDetail) = UNION OVERRIDE sumStatementDetail (consignmentDetail),
-                                                                       sumSupplierReturnSupplierDetail (consignmentDetail);
+                                                                       sumSupplierReturnSupplierDetail (consignmentDetail),
+                                                                       accountSumInnerFlow (consignmentDetail);
 
 vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION OVERRIDE dataActingRateRangeStatementDetail (consignmentDetail),
-                                                                       dataSuppliersRangeReturnSupplierDetail (consignmentDetail);
+                                                                       dataSuppliersRangeReturnSupplierDetail (consignmentDetail),
+                                                                       dataRetailRangeInnerFlowDetail (consignmentDetail);
 
 sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION OVERRIDE totalSumNDSStatementDetail (consignmentDetail),
-                                                                         sumSupplierVATReturnSupplierDetail (consignmentDetail);
+                                                                         sumSupplierVATReturnSupplierDetail (consignmentDetail),
+                                                                         totalSumRetailVATInnerFlow (consignmentDetail);
 
 costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION OVERRIDE sumStatementDetail (consignmentDetail),
-                                                                                sumSupplierReturnSupplierDetail (consignmentDetail);
+                                                                                sumSupplierReturnSupplierDetail (consignmentDetail),
+                                                                                accountSumInnerFlow (consignmentDetail);
 
-packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) =
-    quantityPackItem(itemStatementDetail(consignmentDetail))* packQuantityStatementDetail(consignmentDetail);
+packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = UNION OVERRIDE packQuantityStatementDetail(consignmentDetail),
+                                                                                              packQuantityReturnSupplierDetail(consignmentDetail),
+                                                                                              packQuantityInnerFlowDetail(consignmentDetail);
+
+grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = UNION OVERRIDE grossWeightStatementDetail(consignmentDetail),
+                                                                                    grossWeightReturnSupplierDetail(consignmentDetail),
+                                                                                    grossWeightInnerFlowDetail(consignmentDetail);
+
 
 // ---------------------------- Нумераторы по умолчанию --------------------------------- //
 
