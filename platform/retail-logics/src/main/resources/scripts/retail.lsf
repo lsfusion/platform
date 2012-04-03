@@ -5,6 +5,7 @@ IMPORT BaseLogicsModule;
 floor = FORMULA DOUBLE 'floor($1)';
 
 castToString255 = FORMULA STRING[255] 'CAST($1 AS character(255))';
+castToString3 = FORMULA STRING[3] 'CAST($1 AS character(3))';
 isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE 0 END';
 
 CLASS doubleNamed 'Объект с кратким наименованием' : named;
@@ -3472,6 +3473,8 @@ sidEquipmentServer 'Идентификатор' = DATA STRING[20] (equipmentServ
 //---------------------------- группы оборудования ----------------------------------------//
 
 CLASS ABSTRACT groupMachinery 'Группы оборудования';
+TABLE groupMachinery (groupMachinery);
+
 CLASS groupScales 'Группы весов' : groupMachinery;
 CLASS groupCashRegister 'Группы касс' : groupMachinery;
 CLASS groupCheck 'Группы прайс чекеров' : groupMachinery;
@@ -3491,26 +3494,36 @@ nameEquipmentServerGroupMachinery 'Сервер оборудования' (group
 
 //---------------------------- типы оборудования  ----------------------------------------//
 CLASS ABSTRACT machinery 'Оборудование';
+TABLE machinery(machinery);
+
 CLASS cashRegister 'Касса' : machinery, computer;
 CLASS scales 'Весы' : machinery;
 CLASS check 'Прайс чекер' : machinery;
 
-
-groupCashRegisterCashRegister 'Группа ИД' = DATA groupCashRegister (cashRegister) IN idGroup;
+isGroupCashRegister (machinery) = machinery IS groupCashRegister;
+groupCashRegisterCashRegister 'Группа (ИД)' = DATA groupCashRegister (cashRegister) IN idGroup;
 isGroupCashRegisterCashRegister (groupCashRegister, cashRegister) = groupCashRegisterCashRegister(cashRegister) == groupCashRegister;
 
-groupScalesScales 'Группа ИД' = DATA groupScales (scales) IN idGroup;
+isGroupScales (machinery) = machinery IS groupScales;
+groupScalesScales 'Группа (ИД)' = DATA groupScales (scales) IN idGroup;
 isGroupScalesScales (groupScales, scales) = groupScalesScales(scales) == groupScales;
 
-groupCheckCheck 'Группа ИД' = DATA groupCheck (check) IN idGroup;
+isGroupCheck (machinery) = machinery IS groupCheck;
+groupCheckCheck 'Группа (ИД)' = DATA groupCheck (check) IN idGroup;
 isGroupCheckCheck (groupCheck, check) = groupCheckCheck(check) == groupCheck;
+
+// todo : persistent почему-то не работает
+groupMachineryMachinery 'Группа (ИД)' (machinery) = UNION EXCLUSIVE groupCashRegisterCashRegister(machinery),
+                                                                   groupScalesScales(machinery),
+                                                                   groupCheckCheck(machinery);
+nameGroupMachineryMachinery 'Группа' (machinery) = nameGroupMachinery(groupMachineryMachinery(machinery));
+
 
 nameGroupMachineryCashRegister 'Наименование группы' (cashRegister) = nameGroupMachinery(groupCashRegisterCashRegister(cashRegister)) IN baseGroup;
 nameGroupMachineryScales 'Наименование группы' (scales) = nameGroupMachinery(groupScalesScales(scales)) IN baseGroup;
 nameGroupMachineryCheck 'Наименование группы' (check) = nameGroupMachinery(groupCheckCheck(check)) IN baseGroup;
 
-dataGroupMachineryMachinery 'Наименование группы' (machinery) = UNION EXCLUSIVE nameGroupMachineryCashRegister(machinery), nameGroupMachineryScales(machinery), nameGroupMachineryCheck(machinery);
-
+nppMachinery 'Порядковый номер' = DATA INTEGER (machinery) IN baseGroup;
 descriptionMachinery 'Описание' = DATA STRING[200] (machinery) IN baseGroup;
 portMachinery 'Адрес/порт' = DATA STRING[100] (machinery) IN baseGroup;
 useMachinery 'Оборудование используется' = DATA BOOLEAN (machinery) IN baseGroup;
@@ -3522,7 +3535,6 @@ nameCashRegisterModelCashRegister 'Модель кассы' (cashRegister) = nam
 statusCashRegister 'Статус кассы (на момент посл.передачи)' = DATA STRING[200] (cashRegister) IN baseGroup;
 resultCashRegister 'Результат передачи на кассу товаров' = DATA STRING[200] (cashRegister) IN baseGroup;
 dateCashRegister 'Дата фискализации кассового аппарата' = DATA DATE (cashRegister) IN baseGroup;
-nppCashRegister 'Порядковый номер кассы в торговом объекте ' = DATA INTEGER (cashRegister) IN baseGroup;
 
 CLASS STATIC feature 'Свойство для оборудования'
 {
@@ -3547,83 +3559,98 @@ nameProductionScales 'Св-во товара[Срок годн.в часах] п
 sidScales 'ID весов для Set Retail' = DATA INTEGER (scales) IN baseGroup;
 
 
-FORM machineries 'Оборудование'
-OBJECTS m=machinery
-PROPERTIES(m) READONLY objectClassName, descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery
-PROPERTIES(m) ADDFORM, EDITFORM, delete;
-
 FORM cashRegister 'Касса'
-OBJECTS c=cashRegister FIXED PANEL
-PROPERTIES(c) numberCashRegister, descriptionMachinery, nameGroupMachineryCashRegister, portMachinery, useMachinery, directoryCashRegister, nameCashRegisterModelCashRegister,
-              dateCashRegister, nppCashRegister, statusCashRegister, resultCashRegister
-EDIT cashRegister OBJECT c;
+    OBJECTS c=cashRegister FIXED PANEL
+    PROPERTIES(c) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, numberCashRegister, directoryCashRegister, nameCashRegisterModelCashRegister,
+                  dateCashRegister, statusCashRegister, resultCashRegister
+    EDIT cashRegister OBJECT c
+;
 
 FORM scales 'Весы'
-OBJECTS s=scales FIXED PANEL
-PROPERTIES(s) numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
-              dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales
-EDIT scales OBJECT s;
+    OBJECTS s=scales FIXED PANEL
+    PROPERTIES(s) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, numberScales, nameScalesModelScales,
+                  dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales
+    EDIT scales OBJECT s
+;
 
 FORM check 'Прайс чекер'
-OBJECTS ch=check FIXED PANEL
-PROPERTIES(ch) descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery
-EDIT check OBJECT ch;
+    OBJECTS ch=check FIXED PANEL
+    PROPERTIES(ch) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery
+    EDIT check OBJECT ch
+;
 
 FORM groupScales 'Группа весов'
-OBJECTS grs=groupScales FIXED PANEL
-OBJECTS s=scales
-PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
-PROPERTIES(s)   numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
-                dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales, ADDOBJ, delete
-FILTERGROUP filters1
-    FILTER 'Показывать только для данной группы' 'F10' isGroupScalesScales(grs, s) DEFAULT
-EDIT groupScales OBJECT grs;
+    OBJECTS grs=groupScales FIXED PANEL
+    PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                    transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
+
+    OBJECTS s=scales
+    PROPERTIES(s)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, numberScales, nameScalesModelScales,
+                    dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales, ADDOBJ, delete
+    FILTERGROUP filters1
+        FILTER 'Показывать только для данной группы' 'F10' isGroupScalesScales(grs, s) DEFAULT
+    EDIT groupScales OBJECT grs
+;
 
 FORM groupsScales 'Группы весов'
-OBJECTS grs=groupScales, s=scales
-PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+    OBJECTS grs=groupScales
+    PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
                          transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
-PROPERTIES(grs) ADDFORM, EDITFORM, delete
-PROPERTIES(s)   READONLY numberScales, descriptionMachinery, nameGroupMachineryScales, portMachinery, useMachinery, nameScalesModelScales,
-                dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales
-FILTERS isGroupScalesScales(grs, s);
+    PROPERTIES(grs) ADDFORM, EDITFORM, delete
+
+    OBJECTS s=scales
+    PROPERTIES(s)   READONLY nppMachinery, descriptionMachinery, portMachinery, useMachinery, numberScales, nameScalesModelScales,
+                             dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales
+    FILTERS isGroupScalesScales(grs, s)
+;
 
 FORM groupCashRegister 'Группа касс'
-OBJECTS grc=groupCashRegister FIXED PANEL
-OBJECTS c=cashRegister
-PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
-PROPERTIES(c)   numberCashRegister, descriptionMachinery, nameGroupMachineryCashRegister, portMachinery, useMachinery, directoryCashRegister, nameCashRegisterModelCashRegister,
-                dateCashRegister, nppCashRegister, statusCashRegister, resultCashRegister, ADDOBJ, delete
-FILTERGROUP filters2
-    FILTER 'Показывать только для данной группы' 'F10' isGroupCashRegisterCashRegister(grc, c) DEFAULT
-EDIT groupCashRegister OBJECT grc;
+
+    OBJECTS grc=groupCashRegister FIXED PANEL
+    PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
+
+    OBJECTS c=cashRegister
+    PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, nameGroupMachineryCashRegister, portMachinery, useMachinery, numberCashRegister, directoryCashRegister, nameCashRegisterModelCashRegister,
+                    dateCashRegister, statusCashRegister, resultCashRegister, ADDOBJ, delete
+
+    FILTERGROUP filters2
+        FILTER 'Показывать только для данной группы' 'F10' isGroupCashRegisterCashRegister(grc, c) DEFAULT
+
+    EDIT groupCashRegister OBJECT grc
+;
 
 
 FORM groupsCashRegister 'Группы касс'
-OBJECTS grc=groupCashRegister, c=cashRegister
-PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
-PROPERTIES(grc)  ADDFORM, EDITFORM, delete
-PROPERTIES(c)    READONLY numberCashRegister, descriptionMachinery, portMachinery,
-                 useMachinery, directoryCashRegister, nameCashRegisterModelCashRegister,
-                 dateCashRegister, nppCashRegister, statusCashRegister, resultCashRegister
-FILTERS isGroupCashRegisterCashRegister(grc, c);
+    OBJECTS grc=groupCashRegister, c=cashRegister
+    PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
+    PROPERTIES(grc)  ADDFORM, EDITFORM, delete
+
+    PROPERTIES(c) READONLY nppMachinery, descriptionMachinery, portMachinery,
+                           useMachinery, numberCashRegister, directoryCashRegister, nameCashRegisterModelCashRegister,
+                           dateCashRegister, statusCashRegister, resultCashRegister
+    FILTERS isGroupCashRegisterCashRegister(grc, c)
+;
 
 FORM groupCheck 'Группа прайс чекеров'
-OBJECTS grch=groupCheck FIXED PANEL
-OBJECTS ch=check
-PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
-PROPERTIES(ch)   descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery, ADDOBJ, delete
-FILTERGROUP filters3
-    FILTER 'Показывать только для данной группы' 'F10' isGroupCheckCheck(grch, ch) DEFAULT
-EDIT groupCheck OBJECT grch;
+    OBJECTS grch=groupCheck FIXED PANEL
+    PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
+
+    OBJECTS ch=check
+    PROPERTIES(ch)  nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, ADDOBJ, delete
+    FILTERGROUP filters3
+        FILTER 'Показывать только для данной группы' 'F10' isGroupCheckCheck(grch, ch) DEFAULT
+    EDIT groupCheck OBJECT grch
+;
 
 FORM groupsCheck 'Группы прайс чекеров'
-OBJECTS grch=groupCheck, ch=check
-PROPERTIES(grch) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
-PROPERTIES(grch) ADDFORM, EDITFORM, delete
-PROPERTIES(ch)   READONLY descriptionMachinery, dataGroupMachineryMachinery, portMachinery, useMachinery
-FILTERS isGroupCheckCheck(grch, ch);
+    OBJECTS grch=groupCheck
+    PROPERTIES(grch) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
+    PROPERTIES(grch)          ADDFORM, EDITFORM, delete
+
+    OBJECTS ch=check
+    PROPERTIES(ch)   READONLY nppMachinery, descriptionMachinery, portMachinery, useMachinery
+    FILTERS isGroupCheckCheck(grch, ch)
+;
 
 // ----------------------------------- Группы пользователей -------------------------------------------------- //
 
@@ -3669,7 +3696,7 @@ FORM groupUser 'Группa пользователей'
     PROPERTIES(gru)  nameGroupUser, sidGroupUser
     PROPERTIES(e)    nameGroupUserEmployee, userFirstName, userLastName, phoneEmployee, nameActionEmployee, nameEmployeeSystemEmployee,
                      shortNameLanguageEmployee, numberEmployee, passwordEmployee, dataEmployee
-    PROPERTIES(c)    READONLY nameStoreDepartmentStoreCashRegister, nameDepartmentStoreCashRegister, nameGroupMachineryCashRegister, numberCashRegister, nppCashRegister
+    PROPERTIES(c)    READONLY nameStoreDepartmentStoreCashRegister, nameDepartmentStoreCashRegister, nameGroupMachineryCashRegister, numberCashRegister, nppMachinery
     PROPERTIES(e, c) includedEmployeeCashRegister, dateFromEmployeeCashRegister, dateToEmployeeCashRegister
     PROPERTIES(d)    READONLY nameStoreDepartmentStore, name
     PROPERTIES(e, d) dateFromEmployeeDepartmentStore, dateToEmployeeDepartmentStore, inEmployeeDepartmentStore
@@ -3701,7 +3728,7 @@ OBJECTS gru=groupUser, e=employee, c=cashRegister, d=departmentStore
 PROPERTIES(gru)  READONLY nameGroupUser, sidGroupUser
 PROPERTIES(gru)  ADDFORM, EDITFORM, delete
 PROPERTIES(e)    READONLY userFirstName, userLastName, phoneEmployee, nameActionEmployee
-PROPERTIES(c)    READONLY nameStoreDepartmentStoreCashRegister, nameDepartmentStoreCashRegister, numberCashRegister, nameGroupMachineryCashRegister, nppCashRegister
+PROPERTIES(c)    READONLY nameStoreDepartmentStoreCashRegister, nameDepartmentStoreCashRegister, numberCashRegister, nameGroupMachineryCashRegister, nppMachinery
 PROPERTIES(e, c) includedEmployeeCashRegister, dateFromEmployeeCashRegister, dateToEmployeeCashRegister
 PROPERTIES(d)    READONLY nameStoreDepartmentStore, name
 PROPERTIES(e, d) READONLY dateFromEmployeeDepartmentStore, dateToEmployeeDepartmentStore, inEmployeeDepartmentStore
@@ -6879,11 +6906,22 @@ END
 inGroupMachineryItem 'Вкл' (groupMachinery, item) = TRUE IF groupMachinery IS groupMachinery AND item IS item;
 // todo : сделать, чтобы хитро можно было настраивать что куда качать
 
-CLASS machineryPriceTransaction 'Загрузка прайса в оборудование';
+CLASS ABSTRACT machineryPriceTransaction 'Загрузка прайса в оборудование';
 TABLE machineryPriceTransaction (machineryPriceTransaction);
 TABLE machineryPriceTransactionBarcode (machineryPriceTransaction, barcode);
 
-groupMachineryMachineryPriceTransaction = DATA groupMachinery (machineryPriceTransaction);
+CLASS cashRegisterPriceTransaction 'Загрузка прайса в кассы' : machineryPriceTransaction;
+CLASS scalesPriceTransaction 'Загрузка прайса в весы' : machineryPriceTransaction;
+CLASS checkPriceTransaction 'Загрузка прайса в прайс чекеры' : machineryPriceTransaction;
+
+groupCashRegisterCashRegisterPriceTransaction 'Группа касс' = DATA groupCashRegister (cashRegisterPriceTransaction);
+groupScalesScalesRegisterPriceTransaction 'Группа весов' = DATA groupScales (scalesPriceTransaction);
+groupCheckCheckRegisterPriceTransaction 'Группа прайс чекеров' = DATA groupCheck (checkPriceTransaction);
+
+groupMachineryMachineryPriceTransaction 'Группа оборудования (ИД)' (transaction) = UNION EXCLUSIVE groupCashRegisterCashRegisterPriceTransaction(transaction),
+                                                                                                   groupScalesScalesRegisterPriceTransaction(transaction),
+                                                                                                   groupCheckCheckRegisterPriceTransaction(transaction) PERSISTENT;
+
 nameGroupMachineryMachineryPriceTransaction 'Группа оборудования' (transaction) = nameGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
 
 departmentStoreMachineryPriceTransaction (transaction) = departmentStoreGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
@@ -6898,11 +6936,16 @@ timeMachineryPriceTransaction (transaction) <- currentTime() ON ASSIGN transacti
 
 dateTimeMachineryPriceTransaction 'Дата/время' (transaction) = toDateTime(dateMachineryPriceTransaction(transaction), timeMachineryPriceTransaction(transaction));
 
+snapshotMachineryPriceTransaction 'Целиком' = DATA BOOLEAN (machineryPriceTransaction);
+
 succeededMachineryPriceTransaction 'Загружена' = DATA BOOLEAN (machineryPriceTransaction);
 canceledMachineryPriceTransaction 'Отменена' = DATA BOOLEAN (machineryPriceTransaction);
 processMachineryPriceTransaction 'Требуется загрузка' = machineryPriceTransaction IS machineryPriceTransaction AND NOT
                                                         succeededMachineryPriceTransaction(machineryPriceTransaction) AND NOT
                                                         canceledMachineryPriceTransaction(machineryPriceTransaction);
+
+inMachineryPriceTransactionCashMachinery 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, machinery);
+nppsMachineryPriceTransaction 'Номера устройств' = GROUP CONCAT castToString3(nppMachinery(machinery)) IF inMachineryPriceTransactionCashMachinery(transaction, machinery), ',' BY transaction PERSISTENT;
 
 inMachineryPriceTransactionBarcode 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, barcode);
 nameMachineryPriceTransactionBarcode 'Наименование' = DATA STRING[255] (machineryPriceTransaction, barcode);
@@ -6914,15 +6957,18 @@ TABLE barcodeGroupMachinery (barcode, groupMachinery);
 
 lastOrderTransactionBarcodeGroupMachinery (barcode, groupMachinery) = GROUP MAX orderMachineryPriceTransaction(transaction)
                                                                           AND inMachineryPriceTransactionBarcode(transaction, barcode)
+                                                                          AND NOT snapshotMachineryPriceTransaction(transaction)
                                                                           AND NOT canceledMachineryPriceTransaction(transaction)
                                                                       BY barcode, groupMachineryMachineryPriceTransaction(transaction);
 lastTransactionBarcodeGroupMachinery (barcode, groupMachinery) = lastOrderTransactionBarcodeGroupMachinery(barcode, groupMachinery) [2] PERSISTENT;
+
+transactionNameBarcodeGroupMachinery 'Текущее наименование в оборудовании' (barcode, groupMachinery)  =
+    nameMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 
 transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудовании' (barcode, groupMachinery)  =
     priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = priceRetailCurrentLedger(skuBarcode(barcode), departmentStoreGroupMachinery(groupMachinery));
 
-sentPriceTransactionDocument 'Загружен в оборудование' = DATA BOOLEAN (priceTransactionDocument);
 commentMachineryPriceTransaction 'Примечание' = DATA STRING[30] (machineryPriceTransaction);
 
 descriptionPriceTransactionDocument 'Название документа загрузки' (document) = UNION EXCLUSIVE descriptionShipment(document),
@@ -6936,6 +6982,85 @@ descriptionPriceTransactionDocumentMachineryPriceTransaction 'Основание
 // todo : persistent почему-то не работает
 descriptionMachineryPriceTransaction 'Основание' (document) = UNION OVERRIDE descriptionPriceTransactionDocumentMachineryPriceTransaction(document),
                                                                              commentMachineryPriceTransaction(document);
+
+sentPriceTransactionDocument 'Принят к загрузке в оборудование' = DATA BOOLEAN (priceTransactionDocument);
+
+// todo : это свойство тоже не становится PERSISTENT
+countProcessPriceTransactionDocument 'Кол-во ожидающих транзакций' (document) = GROUP SUM 1 IF processMachineryPriceTransaction(transaction)
+                                                                                 BY priceTransactionDocumentMachineryPriceTransaction(transaction);
+
+succeededPriceTransactionDocument 'Загружен в оборудование' (document) = sentPriceTransactionDocument (document) AND NOT countProcessPriceTransactionDocument(document);
+
+statusEquipmentPriceTransactionDocument 'Статус загрузки в оборудование' (document) =
+                                                        CASE
+                                                            WHEN succeededPriceTransactionDocument(document) THEN 'Успешно загружен' IF document IS priceTransactionDocument
+                                                            WHEN sentPriceTransactionDocument(document) THEN 'Принят к загрузке' IF document IS priceTransactionDocument
+                                                            DEFAULT 'Не загружен' IF document IS priceTransactionDocument
+                                                        END;
+
+// перезагрузка прайса целиком
+selectedMachinery 'Вкл' = SESSION DATA BOOLEAN (machinery);
+tmpGroupMachinery = SESSION DATA groupMachinery();
+
+GROUP snapshotMachineryPriceGroup 'Перезагрузка прайса' : publicGroup;
+
+FORM groupMachineryInput 'Выбор оборудования для перезагрузки прайса'
+
+    OBJECTS d = departmentStore FIXED PANEL
+    PROPERTIES(d) READONLY dname = name
+
+    OBJECTS g = groupMachinery
+    PROPERTIES(g) READONLY nameGroupMachinery, nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery
+    FILTERS departmentStoreGroupMachinery(g) == d
+
+    OBJECTS m = machinery
+    PROPERTIES(m)          selectedMachinery
+    PROPERTIES(m) READONLY nppMachinery, descriptionMachinery, portMachinery, useMachinery
+
+    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupCashRegister(g) numberCashRegister, directoryCashRegister,
+                                                                    nameCashRegisterModelCashRegister, dateCashRegister
+
+    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupScales(g)       numberScales, nameScalesModelScales
+
+    FILTERS groupMachineryMachinery(m) == g
+;
+
+DESIGN groupMachineryInput FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+    }
+    PROPERTY(dname) {
+        focusable = FALSE;
+    }
+}
+
+snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = ACTION (departmentStore) NEWSESSION {
+    FORM groupMachineryInput OBJECTS d = (departmentStore AS departmentStore) MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET tmpGroupMachinery() <- chosenObject('g');
+        IF tmpGroupMachinery() IS groupScales THEN
+            ADDOBJ scalesPriceTransaction
+        ELSE IF tmpGroupMachinery() IS groupCheck THEN
+            ADDOBJ checkPriceTransaction
+        ELSE
+            ADDOBJ cashRegisterPriceTransaction;
+        FOR t == addedObject() DO {
+            SET groupMachineryMachineryPriceTransaction(t) <- tmpGroupMachinery();
+            SET commentMachineryPriceTransaction(t) <- 'Перезагрузка прайса целиком';
+            SET snapshotMachineryPriceTransaction(t) <- TRUE;
+            SET inMachineryPriceTransactionCashMachinery(t, machinery) <- selectedMachinery(machinery);
+            SET inMachineryPriceTransactionBarcode(t, barcode) <- TRUE AND lastTransactionBarcodeGroupMachinery(barcode, tmpGroupMachinery())
+                                                                       AND inGroupMachineryItem(tmpGroupMachinery(), skuBarcode(barcode)) // важно, что товар должен быть активным на текущий момент
+                                                                       AND activeBarcode(barcode);
+            SET nameMachineryPriceTransactionBarcode(t, barcode) <- transactionNameBarcodeGroupMachinery(barcode, tmpGroupMachinery());
+            SET priceMachineryPriceTransactionBarcode(t, barcode) <- transactionPriceBarcodeGroupMachinery(barcode, tmpGroupMachinery());
+        }
+        EXEC apply();
+    }
+} CONFIRM IN snapshotMachineryPriceGroup;
+
+// Инкрементная загрузка
+GROUP incrementMachineryPriceGroup 'Инкрементная загрузка' : publicGroup;
 
 tmpBoolean = SESSION DATA BOOLEAN ();
 
@@ -6956,8 +7081,16 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                                     AND activeBarcode(barcode) // если активный штрих-код
                                     AND ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery) // если есть цена розничная
                                     AND NOT ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery) == transactionPriceBarcodeGroupMachinery(barcode, groupMachinery); // если цена изменилась
+
         IF tempCountBarcode() THEN {
-            ADDOBJ machineryPriceTransaction;
+
+            IF groupMachinery IS groupScales THEN
+                ADDOBJ scalesPriceTransaction
+            ELSE IF groupMachinery IS groupCheck THEN
+                ADDOBJ checkPriceTransaction
+            ELSE
+                ADDOBJ cashRegisterPriceTransaction;
+
             FOR t == addedObject() DO {
                 SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery AS groupMachinery;
                 SET priceTransactionDocumentMachineryPriceTransaction(t) <- createMachineryPriceTransactionDocument();
@@ -6980,19 +7113,17 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
         MESSAGE 'Загрузка прайса в оборудование не требуется.';
 };
 
-GROUP machineryPriceGroup 'Загрузить в оборудование' : baseGroup;
-
 createBalanceMachineryPriceTransaction 'Остатки' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
     SET createMachineryPriceTransactionItem(item) <- TRUE IF currentBalanceItemLedger(item, departmentStore);
-    SET createMachineryPriceTransactionComment() <- 'Загрузка остатков целиком';
+    SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка остатков';
     EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
-} CONFIRM IN machineryPriceGroup;
+} CONFIRM IN incrementMachineryPriceGroup;
 
 createPriceMachineryPriceTransaction 'Все товары' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
     SET createMachineryPriceTransactionItem(item) <- TRUE IF priceRetailCurrentLedger(item, departmentStore);
-    SET createMachineryPriceTransactionComment() <- 'Загрузка товаров целиком';
+    SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка товаров';
     EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
-} CONFIRM IN machineryPriceGroup;
+} CONFIRM IN incrementMachineryPriceGroup;
 
 META metaCodeDocumentMachineryPriceTransaction (document)
     create###document##MachineryPriceTransaction 'Загрузить в оборудование' = ACTION (document) NEWSESSION AUTOAPPLY {
@@ -7006,25 +7137,26 @@ END
 FORM machineryPriceTransaction 'Загрузка прайса в оборудование'
     OBJECTS t = machineryPriceTransaction FIXED PANEL
     PROPERTIES(t) nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
-                  succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
+                  snapshotMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
 
     OBJECTS b = barcode
     PROPERTIES(b)    barcodeEx
     PROPERTIES(t, b) inMachineryPriceTransactionBarcode, nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode
 
     FILTERGROUP inTransaction
-        FILTER 'Загружаемые товары' 'F10' inMachineryPriceTransactionBarcode(t, b)
+        FILTER 'Загружаемые товары' 'F10' inMachineryPriceTransactionBarcode(t, b) DEFAULT
 
     EDIT machineryPriceTransaction OBJECT t;
 ;
 
 FORM machineryPriceTransactions 'Загрузки прайса в оборудование'
     OBJECTS d = departmentStore FIXED PANEL
-    PROPERTIES name(d) SELECTOR, createBalanceMachineryPriceTransaction(d), createPriceMachineryPriceTransaction(d)
+    PROPERTIES name(d) SELECTOR, createBalanceMachineryPriceTransaction(d), createPriceMachineryPriceTransaction(d), snapshotGroupMachineryDepartmentStore(d)
 
     OBJECTS t = machineryPriceTransaction
-    PROPERTIES(t) READONLY nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
-                           descriptionMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
+    PROPERTIES(t) READONLY snapshotMachineryPriceTransaction, nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
+                           descriptionMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction,
+                           nppsMachineryPriceTransaction FORCE PANEL SHOWIF snapshotMachineryPriceTransaction(t)
     PROPERTIES(t)          ADDFORM, EDITFORM, delete
     FILTERS departmentStoreMachineryPriceTransaction(t) == d
 
@@ -7145,7 +7277,7 @@ FORM shipments 'Поставки'
     OBJECTS s=shipment
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
-                            sentPriceTransactionDocument
+                            statusEquipmentPriceTransactionDocument
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (s)          createShipmentMachineryPriceTransaction FORCE PANEL,
@@ -8194,7 +8326,7 @@ FORM userPriceChanges 'Переоценки товаров'
 
     OBJECTS u=userPriceChange
     PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
-                            sentPriceTransactionDocument
+                            statusEquipmentPriceTransactionDocument
 
     PROPERTIES (u) createUserPriceChangeMachineryPriceTransaction FORCE PANEL,
                    ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
@@ -8364,7 +8496,7 @@ FORM innerArrivals 'Приходы из других отделов'
     OBJECTS a=innerArrival
     PROPERTIES (a) READONLY objectClassName, numberArrival, seriesArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
                             nameSenderDepartmentInnerArrival, quantityInnerArrivalDetailsInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival,
-                            sentPriceTransactionDocument
+                            statusEquipmentPriceTransactionDocument
 
     PROPERTIES (a) createInnerArrivalMachineryPriceTransaction FORCE PANEL,
                    ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
@@ -9058,7 +9190,6 @@ NAVIGATOR {
             ADD groupsCashRegister;
             ADD groupsScales;
             ADD groupsCheck;
-            ADD machineries;
             ADD models;
             ADD stages;
             ADD cashReports;
