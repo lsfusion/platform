@@ -70,9 +70,10 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     "Код страны регистрации лица (отправителя) переработки", "Название страны регистрации лица (отправителя) переработки",
                     "Номер документа, удостоверяющего личность физического лица  переработки",	"Идентификационный номер физического лица переработки",
                     "Дата выдачи документа, удостоверяющего личность физического лица переработки",
-                    "Код документа, удостоверяющего личность физического лица переработки"/*, "Артикул товара"*/);
-
-
+                    "Код документа, удостоверяющего личность физического лица переработки",
+                    "Наименование изготовителя", "Товарный знак", "Марка товара", "Модель товара", "Артикул товара",
+                    "Стандарт (ГОСТ, ОСТ, СПП, СТО, ТУ)", "Сорт (группа сортов)", "Дата выпуска", "Количество товара",
+                    "Краткое наименование единицы измерения", "Код единицы измерения", "Группа товаров");
 
             DataObject declarationObject = context.getKeyValue(declarationInterface);
 
@@ -184,14 +185,25 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(null, ";"); //Дата выдачи документа, удостоверяющего личность физического лица переработки
                 addStringCellToRow(null, ";"); //Код документа, удостоверяющего личность физического лица переработки
 
-                //addStringCellToRow("Арт. " + values.get("sidArticleGroupDeclaration"), ";");
+                addStringCellToRow(null, ";"); //Наименование изготовителя
+                addStringCellToRow(null, ";"); //Товарный знак
+                addStringCellToRow(values.get("nameBrandGroupDeclaration"), ";"); //Марка товара
+                addStringCellToRow(null, ";"); //Модель товара
+                addStringCellToRow(values.get("sidArticleGroupDeclaration"), ";"); //Артикул товара
+                addStringCellToRow(null, ";"); //Стандарт (ГОСТ, ОСТ, СПП, СТО, ТУ)
+                addStringCellToRow(null, ";"); //Сорт (группа сортов)
+                addStringCellToRow(null, ";"); //Дата выпуска
+                addStringCellToRow(null, ";"); //Количество товара
+                addStringCellToRow(null, ";"); //Краткое наименование единицы измерения
+                addStringCellToRow(null, ";"); //Код единицы измерения
+                addStringCellToRow(null, ";"); //Группа товаров
 
                 writer.println(row);
             }
 
             writer.close();
 
-            files.put("export.csv", IOUtils.getFileBytes(f));
+            files.put("TSware.csv", IOUtils.getFileBytes(f));
             context.addAction(new ExportFileClientAction(files));
 
         } catch (UnsupportedEncodingException e) {
