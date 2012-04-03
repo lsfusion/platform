@@ -805,6 +805,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addMAProp("", length), asList(msgProp));
     }
 
+    public LPWithParams addScriptedChangeClassAProp(LPWithParams param, String className) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedChangeClassAProp(" + className + ")");
+        ValueClass cls = findClassByCompoundName(className);
+        checkChangeClassActionClass(cls);
+        LP<?> res = addChangeClassAProp("", (ConcreteCustomClass) cls);
+        return new LPWithParams(res,  param.usedParams);
+    }
+
     public LPWithParams addScriptedSetPropertyAProp(List<String> context, LPWithParams toProperty, LPWithParams fromProperty) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedSetPropertyAProp(" + context + ", " + toProperty + ", " + fromProperty + ");");
         if (toProperty.property == null) {
@@ -1668,6 +1676,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkFormDataClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof DataClass)) {
             errLog.emitFormDataClassError(parser);
+        }
+    }
+
+    private void checkChangeClassActionClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(cls instanceof ConcreteCustomClass)) {
+            errLog.emitChangeClassActionClassError(parser);
         }
     }
 

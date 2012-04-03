@@ -11,6 +11,7 @@
       <option name="HAS_BRACES" value="true" />
       <option name="HAS_PARENS" value="true" />
       <option name="HAS_STRING_ESCAPES" value="true" />
+      <option name="LINE_COMMENT_AT_START" value="false" />
     </options>
     <keywords ignore_case="false">
       <keyword name="ABSTRACT" />
@@ -41,6 +42,7 @@
       <keyword name="CC" />
       <keyword name="CENTER" />
       <keyword name="CHANGE" />
+      <keyword name="CHANGECLASS" />
       <keyword name="CHECK" />
       <keyword name="CHECKED" />
       <keyword name="CLASS" />

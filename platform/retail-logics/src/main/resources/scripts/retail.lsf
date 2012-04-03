@@ -333,10 +333,10 @@ META metaCodePostedObject (object)
     isDraft###object 'Открыт' (object) = object IS object AND NOT object IS object##Posted;
     isPosted###object 'Закрыт' (object) = object IS object##Posted;
 
-    post###object 'Закрыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { SET objectClass(object) <- CustomObjectClass.retail_##object##Posted; } ] (object)
+    post###object 'Закрыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object##Posted; } ] (object)
                                     IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
 
-    unpost###object 'Открыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { SET objectClass(object) <- CustomObjectClass.retail_##object; } ] (object)
+    unpost###object 'Открыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object; } ] (object)
                                       IF object IS object##Posted TOOLBAR CONFIRM;
 
 END
@@ -4659,9 +4659,9 @@ inInventoryDepartmentStoreListInventoryPageListDetailPage (inventory, department
 isDraftListInventory 'Открыт' (listInventory) = listInventory IS listInventory AND NOT listInventory IS listInventoryPosted;
 isPostedListInventory 'Закрыт' (listInventory) = listInventory IS listInventoryPosted;
 
-postListInventory 'Закрыть' (listInventory) = [ACTION (listInventory) SET objectClass(listInventory) <- CustomObjectClass.retail_listInventoryPosted] (listInventory)
+postListInventory 'Закрыть' (listInventory) = [ACTION (listInventory) CHANGECLASS listInventory TO listInventoryPosted] (listInventory)
                                     IF listInventory IS listInventory AND NOT listInventory IS listInventoryPosted TOOLBAR CONFIRM;
-unpostListInventory 'Открыть' (listInventory) = [ACTION (listInventory) SET objectClass(listInventory) <- CustomObjectClass.retail_listInventory] (listInventory)
+unpostListInventory 'Открыть' (listInventory) = [ACTION (listInventory) CHANGECLASS listInventory TO listInventory] (listInventory)
                                       IF listInventory IS listInventoryPosted TOOLBAR CONFIRM;
 
 storeByInventory(inventory) = GROUP EQUAL storeDepartmentStore(departmentStore) IF includeDepartmentStoreInventory (departmentStore, inventory) BY inventory AS inventory;

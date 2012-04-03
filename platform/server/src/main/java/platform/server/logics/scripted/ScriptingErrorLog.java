@@ -358,6 +358,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "all objects should have mapping");
     }
 
+    public void emitChangeClassActionClassError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "class cannot be built-in or abstract");
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

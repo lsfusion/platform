@@ -861,15 +861,19 @@ simplePE[List<String> context, boolean dynamic] returns [LPWithParams property]
 
 	
 expressionPrimitive[List<String> context, boolean dynamic] returns [LPWithParams property]
-	:	paramName=parameter
-        {
-			if (inPropParseState()) {
-				$property = new LPWithParams(null, Collections.singletonList(self.getParamIndex($paramName.text, $context, $dynamic, insideRecursion)));
-			}
-		}
+	:	param=singleParameter[context, dynamic] { $property = $param.property; }
 	|	expr=expressionFriendlyPD[context, dynamic] { $property = $expr.property; }
 	;
 
+singleParameter[List<String> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = new LPWithParams(null, Collections.singletonList(self.getParamIndex($paramName.text, $context, $dynamic, insideRecursion)));
+	}
+}
+	:	paramName=parameter
+	;
+	
 expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	joinDef=joinPropertyDefinition[context, dynamic] { $property = $joinDef.property; } 
 	|	unionDef=unionPropertyDefinition[context, dynamic] { $property = $unionDef.property;} 
@@ -1382,6 +1386,7 @@ customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams pro
 	|   msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
 	|   mailPDB=emailActionPropertyDefinitionBody[context, dynamic] { $property = $mailPDB.property; }
 	|	filePDB=fileActionPropertyDefinitionBody[context, dynamic] { $property = $filePDB.property; }
+	|	classPDB=changeClassActionPropertyDefinitionBody[context, dynamic] { $property = $classPDB.property; }
 	;
 
 			
@@ -1510,6 +1515,15 @@ fileActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 	:	('LOADFILE' { loadFile = true; } | 'OPENFILE' { loadFile = false; }) 
 		pe=propertyExpression[context, dynamic]	
 	;
+
+changeClassActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedChangeClassAProp($param.property, $className.sid);	
+	}
+}
+	:	'CHANGECLASS' param=singleParameter[context, dynamic] 'TO' className=classId 
+	;  
 
 listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
@@ -2161,15 +2175,6 @@ nonEmptyCompoundIdList returns [List<String> ids]
 	:	firstId=compoundID	{ $ids.add($firstId.sid); }
 		(',' nextId=compoundID	{ $ids.add($nextId.sid); })*
 	;
-
-parameterList returns [List<String> ids]
-@init {
-	ids = new ArrayList<String>();
-}
-	:	(firstParam=parameter	 { $ids.add($firstParam.text); }
-		(',' nextParam=parameter { $ids.add($nextParam.text); })* )?
-	;
-
 
 propertyExpressionList[List<String> context, boolean dynamic] returns [List<LPWithParams> props] 
 @init {
