@@ -5575,7 +5575,9 @@ sumRetailVATInnerFlowDetail 'Сумма НДС за ед.' (innerFlowDetail) = [
 //totalSumMarkupInnerFlow 'Сумма надбавки' (innerFlow) = GROUP SUM [sumMarkupInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail)](innerFlowDetail)
 //    BY innerFlowInnerFlowDetail(innerFlowDetail);
 //
-totalSumRetailVATInnerFlow 'Сумма розничного НДС' (innerFlow) = GROUP SUM [sumRetailVATInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail)](innerFlowDetail)
+sumRetailVATInnerFlow 'Сумма розничного НДС' (innerFlowDetail) = sumRetailVATInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail);
+
+totalSumRetailVATInnerFlow 'Сумма розничного НДС' (innerFlow) = GROUP SUM sumRetailVATInnerFlow(innerFlowDetail)
     BY innerFlowInnerFlowDetail(innerFlowDetail);
 //
 //totalSumWareInnerFlow 'Сумма посуды' (innerFlow) = GROUP SUM [priceWareInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail)](innerFlowDetail)
@@ -5635,7 +5637,7 @@ sumPackQuantityInnerFlow 'Общее количество грузовых ме�
 grossWeightInnerFlowDetail 'Масса груза, т.' (innerFlowDetail) =
     grossWeightItem(itemInnerFlowDetail(innerFlowDetail))*quantityInnerFlowDetail(innerFlowDetail)/1000;
 
-sumGrossWeightInnerFlowDetail 'Общая масса груза, т.' (innerFlow) = GROUP SUM grossWeightInnerFlowDetail(innerFlowDetail)
+sumGrossWeightInnerFlow 'Общая масса груза, т.' (innerFlow) = GROUP SUM grossWeightInnerFlowDetail(innerFlowDetail)
     BY innerFlowInnerFlowDetail(innerFlowDetail);
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
@@ -8882,151 +8884,169 @@ DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
 // ---------------------------- Атрибуты для накладной --------------------------------- //
 // для накладной (шапка и хвост)
 carConsignment 'Автомобиль' (consignment) = UNION EXCLUSIVE carStatement (consignment),
-                                                           carReturnSupplier (consignment),
-                                                           carInnerFlow (consignment);
+                                                            carReturnSupplier (consignment),
+                                                            carInnerFlow (consignment);
 
 ownerCarConsignment 'Владелец автомобиля' (consignment) = UNION EXCLUSIVE ownerCarStatement (consignment),
-                                                                         ownerCarReturnSupplier (consignment),
-                                                                         ownerCarInnerFlow (consignment);
+                                                                          ownerCarReturnSupplier (consignment),
+                                                                          ownerCarInnerFlow (consignment);
 
 trailerConsignment 'Прицеп' (consignment) = UNION EXCLUSIVE trailerStatement (consignment),
-                                                           trailerReturnSupplier (consignment),
-                                                           trailerInnerFlow (consignment);
+                                                            trailerReturnSupplier (consignment),
+                                                            trailerInnerFlow (consignment);
 
 driverCarConsignment 'Водитель' (consignment) = UNION EXCLUSIVE driverCarStatement (consignment),
-                                                               driverCarReturnSupplier (consignment),
-                                                               driverCarInnerFlow (consignment);
+                                                                driverCarReturnSupplier (consignment),
+                                                                driverCarInnerFlow (consignment);
 
 waybillConsignment 'Путевой лист' (consignment) = UNION EXCLUSIVE waybillStatement (consignment),
-                                                                 waybillReturnSupplier (consignment),
-                                                                 waybillInnerFlow (consignment);
+                                                                  waybillReturnSupplier (consignment),
+                                                                  waybillInnerFlow (consignment);
 
 transportPayerConsignment 'Заказчик перевозки (ИД)' (consignment) = UNION EXCLUSIVE transportPayerStatement (consignment),
-                                                                                   transportPayerReturnSupplier (consignment),
-                                                                                   transportPayerInnerFlow (consignment);
+                                                                                    transportPayerReturnSupplier (consignment),
+                                                                                    transportPayerInnerFlow (consignment);
+
+nameTransportPayerConsignment 'Заказчик перевозки ' (consignment) =
+    [FORMULA STRING[200] ' || CAST($1 AS TEXT) ||  \' , \' || CAST($2 AS TEXT)']
+    (name(transportPayerConsignment(consignment)), UNPLegalEntity(transportPayerConsignment(consignment)));
 
 shipmentBaseConsignment 'Основание отпуска' (consignment) = UNION EXCLUSIVE shipmentBaseStatement (consignment),
-                                                                           shipmentBaseReturnSupplier (consignment),
-                                                                           shipmentBaseInnerFlow (consignment);
+                                                                            shipmentBaseReturnSupplier (consignment),
+                                                                            shipmentBaseInnerFlow (consignment);
 
 dataLoadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION EXCLUSIVE dataLoadingPlaceStatement (consignment),
-                                                                            dataLoadingPlaceReturnSupplier (consignment),
-                                                                            dataLoadingPlaceInnerFlow (consignment);
+                                                                             dataLoadingPlaceReturnSupplier (consignment),
+                                                                             dataLoadingPlaceInnerFlow (consignment);
 
 loadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION EXCLUSIVE loadingPlaceStatement (consignment),
-                                                                        loadingPlaceReturnSupplier (consignment),
-                                                                        loadingPlaceInnerFlow (consignment);
+                                                                         loadingPlaceReturnSupplier (consignment),
+                                                                         loadingPlaceInnerFlow (consignment);
 
 dataUnloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION EXCLUSIVE dataUnloadingPlaceStatement (consignment),
-                                                                               dataUnloadingPlaceReturnSupplier (consignment),
-                                                                               dataUnloadingPlaceInnerFlow (consignment);
+                                                                                dataUnloadingPlaceReturnSupplier (consignment),
+                                                                                dataUnloadingPlaceInnerFlow (consignment);
 
 unloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION EXCLUSIVE unloadingPlaceStatement (consignment),
-                                                                           unloadingPlaceReturnSupplier (consignment),
-                                                                           unloadingPlaceInnerFlow (consignment);
+                                                                            unloadingPlaceReturnSupplier (consignment),
+                                                                            unloadingPlaceInnerFlow (consignment);
 
 readdressingConsignment 'Переадресовка' (consignment) = UNION EXCLUSIVE readdressingStatement (consignment),
-                                                                       readdressingReturnSupplier (consignment),
-                                                                       readdressingInnerFlow (consignment);
+                                                                        readdressingReturnSupplier (consignment),
+                                                                        readdressingInnerFlow (consignment);
 
 issuanceAllowedConsignment 'Отпуск разрешил' (consignment) = UNION EXCLUSIVE issuanceAllowedStatement(consignment),
-                                                                            issuanceAllowedReturnSupplier(consignment),
-                                                                            issuanceAllowedInnerFlow(consignment);
+                                                                             issuanceAllowedReturnSupplier(consignment),
+                                                                             issuanceAllowedInnerFlow(consignment);
 
 issuanceExecutedConsignment 'Отпуск произвел' (consignment) = UNION EXCLUSIVE issuanceExecutedStatement(consignment),
-                                                                             issuanceExecutedReturnSupplier(consignment),
-                                                                             issuanceExecutedInnerFlow(consignment);
+                                                                              issuanceExecutedReturnSupplier(consignment),
+                                                                              issuanceExecutedInnerFlow(consignment);
 
 forwarderConsignment 'Товар к перевозке принял (экспедитор)' (consignment) = UNION EXCLUSIVE forwarderStatement(consignment),
-                                                                                            forwarderReturnSupplier(consignment),
-                                                                                            forwarderInnerFlow(consignment);
+                                                                                             forwarderReturnSupplier(consignment),
+                                                                                             forwarderInnerFlow(consignment);
 
 warrantConsignment 'По доверенности' (consignment) = UNION EXCLUSIVE warrantStatement (consignment),
-                                                                    warrantReturnSupplier (consignment),
-                                                                    warrantInnerFlow (consignment);
+                                                                     warrantReturnSupplier (consignment),
+                                                                     warrantInnerFlow (consignment);
 
 warrantHolderConsignment 'Доверенность выдана на' (consignment) = UNION EXCLUSIVE warrantHolderStatement (consignment),
-                                                                                 warrantHolderReturnSupplier (consignment),
-                                                                                 warrantHolderInnerFlow (consignment);
+                                                                                  warrantHolderReturnSupplier (consignment),
+                                                                                  warrantHolderInnerFlow (consignment);
 
 goodsAcceptedConsignment 'Принял грузополучатель' (consignment) = UNION EXCLUSIVE goodsAcceptedStatement (consignment),
-                                                                                 goodsAcceptedReturnSupplier (consignment),
-                                                                                 goodsAcceptedInnerFlow (consignment);
+                                                                                  goodsAcceptedReturnSupplier (consignment),
+                                                                                  goodsAcceptedInnerFlow (consignment);
 
 loadingExecuterConsignment 'Исполнитель ПРР' (consignment) = UNION EXCLUSIVE loadingExecuterStatement(consignment),
-                                                                            loadingExecuterReturnSupplier(consignment),
-                                                                            loadingExecuterInnerFlow(consignment);
+                                                                             loadingExecuterReturnSupplier(consignment),
+                                                                             loadingExecuterInnerFlow(consignment);
 
 wayOfLoadingConsignment 'Способ ПРР' (consignment) = UNION EXCLUSIVE wayOfLoadingStatement(consignment),
-                                                                    wayOfLoadingReturnSupplier(consignment),
-                                                                    wayOfLoadingInnerFlow(consignment);
+                                                                     wayOfLoadingReturnSupplier(consignment),
+                                                                     wayOfLoadingInnerFlow(consignment);
 
 codeLoadingConsignment 'Код ПРР' (consignment) = UNION EXCLUSIVE codeLoadingStatement (consignment),
-                                                                codeLoadingReturnSupplier (consignment),
-                                                                codeLoadingInnerFlow (consignment);
+                                                                 codeLoadingReturnSupplier (consignment),
+                                                                 codeLoadingInnerFlow (consignment);
 
 arrivalTimeConsignment 'Время прибытия' (consignment) = UNION EXCLUSIVE arrivalTimeStatement (consignment),
-                                                                       arrivalTimeReturnSupplier (consignment),
-                                                                       arrivalTimeInnerFlow (consignment);
+                                                                        arrivalTimeReturnSupplier (consignment),
+                                                                        arrivalTimeInnerFlow (consignment);
 
 departureTimeConsignment 'Время убытия' (consignment) = UNION EXCLUSIVE departureTimeStatement (consignment),
-                                                                       departureTimeReturnSupplier (consignment),
-                                                                       departureTimeInnerFlow (consignment);
+                                                                        departureTimeReturnSupplier (consignment),
+                                                                        departureTimeInnerFlow (consignment);
 
 downtimeConsignment 'Время простоя' (consignment) = UNION EXCLUSIVE downtimeStatement (consignment),
-                                                                   downtimeReturnSupplier (consignment),
-                                                                   downtimeInnerFlow (consignment);
+                                                                    downtimeReturnSupplier (consignment),
+                                                                    downtimeInnerFlow (consignment);
 
 raceQuantityConsignment 'Количество ездок' (consignment) = UNION EXCLUSIVE raceQuantityStatement(consignment),
-                                                                          raceQuantityReturnSupplier(consignment),
-                                                                          raceQuantityInnerFlow(consignment);
+                                                                           raceQuantityReturnSupplier(consignment),
+                                                                           raceQuantityInnerFlow(consignment);
 
 // для накладной (спецификация)
 nameItemConsignmentDetail 'Наименование товара' (consignmentDetail) = UNION EXCLUSIVE nameAttributeItem(itemStatementDetail(consignmentDetail)),
-                                                                                     nameAttributeItem(itemReturnSupplierDetail(consignmentDetail)),
-                                                                                     nameAttributeItem(itemInnerFlowDetail(consignmentDetail));
+                                                                                      nameAttributeItem(itemReturnSupplierDetail(consignmentDetail)),
+                                                                                      nameAttributeItem(itemInnerFlowDetail(consignmentDetail));
 
 unitOfMeasureConsignmentDetail 'Единица измерения' (consignmentDetail) = UNION EXCLUSIVE unitOfMeasureItem(itemStatementDetail(consignmentDetail)),
-                                                                                        unitOfMeasureItem(itemReturnSupplierDetail(consignmentDetail)),
-                                                                                        unitOfMeasureItem(itemInnerFlowDetail(consignmentDetail));
+                                                                                         unitOfMeasureItem(itemReturnSupplierDetail(consignmentDetail)),
+                                                                                         unitOfMeasureItem(itemInnerFlowDetail(consignmentDetail));
 
 quantityConsignmentDetail 'Количество' (consignmentDetail) = UNION EXCLUSIVE quantityStatementDetail(consignmentDetail),
-                                                                            quantityReturnSupplierDetail(consignmentDetail),
-                                                                            quantityInnerFlowDetail(consignmentDetail);
+                                                                             quantityReturnSupplierDetail(consignmentDetail),
+                                                                             quantityInnerFlowDetail(consignmentDetail);
+
+sumQuantityConsignment 'Общее количество' (consignment) = UNION EXCLUSIVE totalQuantityStatement(consignment),
+                                                                          totalQuantityReturnSupplier(consignment),
+                                                                          totalQuantityInnerFlow(consignment);
 
 priceConsignmentDetail 'Цена' (consignmentDetail) = UNION EXCLUSIVE retailPriceStatementDetail (consignmentDetail),
-                                                                   supplierPriceReturnSupplierDetail (consignmentDetail),
-                                                                   retailPriceInnerFlowDetail(consignmentDetail);
+                                                                    supplierPriceReturnSupplierDetail (consignmentDetail),
+                                                                    retailPriceInnerFlowDetail(consignmentDetail);
 
 costConsignmentDetail 'Стоимость' (consignmentDetail) = UNION EXCLUSIVE sumStatementDetail (consignmentDetail),
-                                                                       sumSupplierReturnSupplierDetail (consignmentDetail),
-                                                                       accountSumInnerFlow (consignmentDetail);
+                                                                        sumSupplierReturnSupplierDetail (consignmentDetail),
+                                                                        accountSumInnerFlowDetail (consignmentDetail);
+
+sumCostConsignmentDetail 'Общая стоимость' (consignment) = UNION EXCLUSIVE sumStatement(consignment),
+                                                                           totalSumSupplierReturnSupplier(consignment),
+                                                                           accountSumInnerFlow(consignment);
 
 vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION EXCLUSIVE dataActingRateRangeStatementDetail (consignmentDetail),
-                                                                       dataSuppliersRangeReturnSupplierDetail (consignmentDetail),
-                                                                       dataRetailRangeInnerFlowDetail (consignmentDetail);
+                                                                        dataSuppliersRangeReturnSupplierDetail (consignmentDetail),
+                                                                        dataRetailRangeInnerFlowDetail (consignmentDetail);
 
 sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION EXCLUSIVE totalSumNDSStatementDetail (consignmentDetail),
-                                                                         sumSupplierVATReturnSupplierDetail (consignmentDetail),
-                                                                         totalSumRetailVATInnerFlow (consignmentDetail);
+                                                                          sumSupplierVATReturnSupplierDetail (consignmentDetail),
+                                                                          totalSumRetailVATInnerFlow (consignmentDetail);
+
+totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNION EXCLUSIVE sumNDSStatement (consignment),
+                                                                               totalSumIncVATReturnSupplier (consignment),
+                                                                               totalSumRetailVATInnerFlow (consignment);
 
 costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION EXCLUSIVE sumStatementDetail (consignmentDetail),
-                                                                                sumSupplierReturnSupplierDetail (consignmentDetail),
-                                                                                accountSumInnerFlow (consignmentDetail);
+                                                                                 sumSupplierReturnSupplierDetail (consignmentDetail),
+                                                                                 accountSumInnerFlow (consignmentDetail);
 
 packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = UNION EXCLUSIVE packQuantityStatementDetail(consignmentDetail),
-                                                                                              packQuantityReturnSupplierDetail(consignmentDetail),
-                                                                                              packQuantityInnerFlowDetail(consignmentDetail);
+                                                                                               packQuantityReturnSupplierDetail(consignmentDetail),
+                                                                                               packQuantityInnerFlowDetail(consignmentDetail);
 
 sumPackQuantityConsignment 'Общее количество грузовых мест' (consignment) = UNION EXCLUSIVE sumPackQuantityStatement(consignment),
-                                                                                            sumPackQuantityReturnSupplier(consignment);
+                                                                                            sumPackQuantityReturnSupplier(consignment),
+                                                                                            sumPackQuantityInnerFlow(consignment);
 
 grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = UNION EXCLUSIVE grossWeightStatementDetail(consignmentDetail),
-                                                                                    grossWeightReturnSupplierDetail(consignmentDetail),
-                                                                                    grossWeightInnerFlowDetail(consignmentDetail);
+                                                                                     grossWeightReturnSupplierDetail(consignmentDetail),
+                                                                                     grossWeightInnerFlowDetail(consignmentDetail);
 
 sumGrossWeightConsignmentDetail 'Общая масса груза, т.' (consignment) = UNION EXCLUSIVE sumGrossWeightStatement(consignment),
-                                                                                        sumGrossWeightReturnSupplier(consignment);
+                                                                                        sumGrossWeightReturnSupplier(consignment),
+                                                                                        sumGrossWeightInnerFlow(consignment);
 
 // ---------------------------- Нумераторы по умолчанию --------------------------------- //
 
