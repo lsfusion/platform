@@ -203,10 +203,11 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
         try {
 
+            Set<String> barcodes = new HashSet<String>();
             int amountOfImportIterations = (int) Math.ceil((double) numberOfItems / numberOfItemsAtATime);
             Integer rest = numberOfItems;
             for (int i = 0; i < amountOfImportIterations; i++) {
-                importPackOfItems(itemsPath, quantityPath, warePath, importInactive, context, rest > numberOfItemsAtATime ? numberOfItemsAtATime : rest, i);
+                importPackOfItems(itemsPath, quantityPath, warePath, importInactive, context, rest > numberOfItemsAtATime ? numberOfItemsAtATime : rest, i, barcodes);
                 rest -= numberOfItemsAtATime;
                 System.gc();
             }
@@ -219,8 +220,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importPackOfItems(String itemsPath, String quantityPath, String warePath, Boolean importInactive, ExecutionContext context, Integer numberOfItemsAtATime, int i) throws SQLException, IOException, xBaseJException {
-        List<List<Object>> data = importItemsFromDBF(itemsPath, quantityPath, warePath, importInactive, numberOfItemsAtATime, numberOfItemsAtATime * i);
+    private void importPackOfItems(String itemsPath, String quantityPath, String warePath, Boolean importInactive, ExecutionContext context, Integer numberOfItemsAtATime, int i, Set<String> barcodes) throws SQLException, IOException, xBaseJException {
+        List<List<Object>> data = importItemsFromDBF(itemsPath, quantityPath, warePath, importInactive, numberOfItemsAtATime, numberOfItemsAtATime * i, barcodes);
         if (data == null) return;
 
         ImportField itemIDField = new ImportField(BL.LM.extSID);
@@ -1043,7 +1044,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     }
 
     private List<List<Object>> importItemsFromDBF(String itemsPath, String quantityPath, String warePath, Boolean importInactive,
-                                                  Integer numberOfItems, Integer startItem) throws IOException, xBaseJException {
+                                                  Integer numberOfItems, Integer startItem, Set<String> barcodes) throws IOException, xBaseJException {
 
         DBF wareImportFile = new DBF(warePath);
         int totalRecordCount = wareImportFile.getRecordCount();
@@ -1086,8 +1087,6 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
 
         data = new ArrayList<List<Object>>();
-
-        Set<String> barcodes = new HashSet<String>();
 
         for (int j = 0; j < startItem; j++) {
             itemsImportFile.read();

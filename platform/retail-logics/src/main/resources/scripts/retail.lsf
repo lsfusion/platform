@@ -6904,7 +6904,9 @@ END
 
 //----------------------------------- Загрузка в ВУ -------------------------------------------------------
 
-inGroupMachineryItem 'Вкл' (groupMachinery, item) = TRUE IF groupMachinery IS groupMachinery AND item IS item;
+inGroupMachineryItem 'Вкл' (groupMachinery, item) = TRUE IF groupMachinery IS groupMachinery AND item IS item
+                                                         AND NOT (groupMachinery IS groupScales AND NOT isWeightedItem(item));
+
 // todo : сделать, чтобы хитро можно было настраивать что куда качать
 
 CLASS ABSTRACT machineryPriceTransaction 'Загрузка прайса в оборудование';
@@ -6948,11 +6950,11 @@ processMachineryPriceTransaction 'Требуется загрузка' = machine
 inMachineryPriceTransactionCashMachinery 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, machinery);
 nppsMachineryPriceTransaction 'Номера устройств' = GROUP CONCAT castToString3(nppMachinery(machinery)) IF inMachineryPriceTransactionCashMachinery(transaction, machinery), ',' BY transaction PERSISTENT;
 
+orderMachineryPriceTransaction (transaction) = LIST(dateTimeMachineryPriceTransaction(transaction), transaction) PERSISTENT;
+
 inMachineryPriceTransactionBarcode 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, barcode);
 nameMachineryPriceTransactionBarcode 'Наименование' = DATA STRING[255] (machineryPriceTransaction, barcode);
 priceMachineryPriceTransactionBarcode 'Цена' = DATA DOUBLE (machineryPriceTransaction, barcode);
-
-orderMachineryPriceTransaction (transaction) = LIST(dateTimeMachineryPriceTransaction(transaction), transaction) PERSISTENT;
 
 TABLE barcodeGroupMachinery (barcode, groupMachinery);
 
@@ -6972,6 +6974,10 @@ ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barc
 
 commentMachineryPriceTransaction 'Примечание' = DATA STRING[30] (machineryPriceTransaction);
 
+isDraftPriceTransactionDocument 'Открыт' (document) = UNION EXCLUSIVE isDraftShipment(document),
+                                                                      isDraftInnerArrival(document),
+                                                                      isDraftUserPriceChange(document);
+
 descriptionPriceTransactionDocument 'Название документа загрузки' (document) = UNION EXCLUSIVE descriptionShipment(document),
                                                                                                descriptionInnerArrival(document),
                                                                                                descriptionUserPriceChange(document);
@@ -6985,6 +6991,7 @@ descriptionMachineryPriceTransaction 'Основание' (document) = UNION OVE
                                                                              commentMachineryPriceTransaction(document);
 
 sentPriceTransactionDocument 'Принят к загрузке в оборудование' = DATA BOOLEAN (priceTransactionDocument);
+sentPriceTransactionDocument(document) <- NULL ON ASSIGN isDraftPriceTransactionDocument(document);
 
 // todo : это свойство тоже не становится PERSISTENT
 countProcessPriceTransactionDocument 'Кол-во ожидающих транзакций' (document) = GROUP SUM 1 IF processMachineryPriceTransaction(transaction)
@@ -7133,6 +7140,7 @@ META metaCodeDocumentMachineryPriceTransaction (document)
         EXEC createMachineryPriceTransaction(departmentStore###document(document));
         SET sentPriceTransactionDocument(document) <- TRUE;
     } TOOLBAR CONFIRM;
+    showCreateMachineryPriceTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT sentPriceTransactionDocument(document);
 END
 
 FORM machineryPriceTransaction 'Загрузка прайса в оборудование'
@@ -7296,10 +7304,11 @@ FORM shipments 'Поставки'
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumSupplierPriceShipment, totalSumIncVATShipment,
                             totalSumSupplierShipment, retailSumShipment, statusEquipmentPriceTransactionDocument
-//    PROPERTIES (s) totalSumSupplierPriceShipment, totalSumMarkupShipment, totalSumWareShipment, totalSumVatWareShipment, totalSumRetailVATShipment
+                            statusEquipmentPriceTransactionDocument HIGHLIGHTIF showCreateMachineryPriceTransactionShipment(s)
+                            
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (s)          createShipmentMachineryPriceTransaction FORCE PANEL,
+    PROPERTIES (s)          createShipmentMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionShipment(s),
                             ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
@@ -8347,7 +8356,7 @@ FORM userPriceChanges 'Переоценки товаров'
                    diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument,
                    statusEquipmentPriceTransactionDocument
 
-    PROPERTIES (u) createUserPriceChangeMachineryPriceTransaction FORCE PANEL,
+    PROPERTIES (u) createUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionUserPriceChange(u),
                    ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
                    postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
 
@@ -8517,7 +8526,7 @@ FORM innerArrivals 'Приходы из других отделов'
                             nameSenderDepartmentInnerArrival, quantityInnerArrivalDetailsInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival,
                             statusEquipmentPriceTransactionDocument
 
-    PROPERTIES (a) createInnerArrivalMachineryPriceTransaction FORCE PANEL,
+    PROPERTIES (a) createInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionInnerArrival(a),
                    ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
                    postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
 
@@ -9411,6 +9420,7 @@ NAVIGATOR {
             ADD seriesNumberCuttingStudyInputDetail;
             ADD itemDepartmentStoreInput;
             ADD machineryPriceTransaction;
+            ADD groupMachineryInput;
         }
         ADD parameters;
         ADD importData;
