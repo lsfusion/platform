@@ -44,7 +44,8 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     "sidCountryGroupDeclaration", "sidOrigin2CountryGroupDeclaration", "quantityGroupDeclaration", "sidUnitOfMeasureGroupDeclaration",
                     "nameUnitOfMeasureGroupDeclaration", "sumGroupDeclaration", "netWeightGroupDeclaration",
                     "grossWeightGroupDeclaration");
-            List<String> exportTitles = BaseUtils.toList("Порядковый номер декларируемого товара", "Наименование товара", "Вес брутто",
+
+            List<String> exportTitlesTSware = BaseUtils.toList("Порядковый номер декларируемого товара", "Наименование товара", "Вес брутто",
                     "Вес нетто", "Вес нетто без упаковки", "Фактурная стоимость товара", "Таможенная стоимость",
                     "Статистическая стоимость", "Код товара по ТН ВЭД ТС", "Запреты и ограничения", "Интеллектуальная собственность",
                     "Цифровой код страны происхождения товара", "Буквенный код страны происхождения товара",
@@ -70,18 +71,24 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     "Код страны регистрации лица (отправителя) переработки", "Название страны регистрации лица (отправителя) переработки",
                     "Номер документа, удостоверяющего личность физического лица  переработки",	"Идентификационный номер физического лица переработки",
                     "Дата выдачи документа, удостоверяющего личность физического лица переработки",
-                    "Код документа, удостоверяющего личность физического лица переработки",
-                    "Наименование изготовителя", "Товарный знак", "Марка товара", "Модель товара", "Артикул товара",
+                    "Код документа, удостоверяющего личность физического лица переработки");
+
+            List<String> exportTitlesTSmarkings = BaseUtils.toList(
+                    "Номер товара", "Наименование изготовителя", "Товарный знак", "Марка товара", "Модель товара", "Артикул товара",
                     "Стандарт (ГОСТ, ОСТ, СПП, СТО, ТУ)", "Сорт (группа сортов)", "Дата выпуска", "Количество товара",
                     "Краткое наименование единицы измерения", "Код единицы измерения", "Группа товаров");
 
             DataObject declarationObject = context.getKeyValue(declarationInterface);
 
             Map<String, byte[]> files = new HashMap<String, byte[]>();
-            File f = File.createTempFile("temp", ".csv");
-            PrintWriter writer = new PrintWriter(
+            File fileTSware = File.createTempFile("TSware", ".csv");
+            PrintWriter writerTSware = new PrintWriter(
                     new OutputStreamWriter(
-                            new FileOutputStream(f), "windows-1251"));
+                            new FileOutputStream(fileTSware), "windows-1251"));
+            File fileTSMarkings = File.createTempFile("TSmarkings", ".csv");
+            PrintWriter writerTSmarkings = new PrintWriter(
+                    new OutputStreamWriter(
+                            new FileOutputStream(fileTSMarkings), "windows-1251"));
 
             LP isGroupDeclaration = BL.LM.is(romanRB.getClassByName("groupDeclaration"));
             Map<Object, KeyExpr> keys = isGroupDeclaration.getMapKeys();
@@ -94,9 +101,14 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
 
             row = "";
-            for (String title : exportTitles)
+            for (String title : exportTitlesTSware)
                 addStringCellToRow(title, ";");
-            writer.println(row);
+            writerTSware.println(row);
+
+            row = "";
+            for (String title : exportTitlesTSmarkings)
+                addStringCellToRow(title, ";");
+            writerTSmarkings.println(row);
 
             TreeMap<Integer, Map<String, Object>> sortedRows = new TreeMap<Integer, Map<String, Object>>();
 
@@ -185,6 +197,13 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(null, ";"); //Дата выдачи документа, удостоверяющего личность физического лица переработки
                 addStringCellToRow(null, ";"); //Код документа, удостоверяющего личность физического лица переработки
 
+                writerTSware.println(row);
+            }
+
+            for (Map.Entry<Integer, Map<String, Object>> entry : sortedRows.entrySet()) {
+                row = "";
+                Map<String, Object> values = entry.getValue();
+                addStringCellToRow(entry.getKey(), ";"); //numberGroupDeclaration
                 addStringCellToRow(null, ";"); //Наименование изготовителя
                 addStringCellToRow(null, ";"); //Товарный знак
                 addStringCellToRow(values.get("nameBrandGroupDeclaration"), ";"); //Марка товара
@@ -198,12 +217,14 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(null, ";"); //Код единицы измерения
                 addStringCellToRow(null, ";"); //Группа товаров
 
-                writer.println(row);
+                writerTSmarkings.println(row);
             }
 
-            writer.close();
+            writerTSware.close();
+            writerTSmarkings.close();
 
-            files.put("TSware.csv", IOUtils.getFileBytes(f));
+            files.put("TSware.csv", IOUtils.getFileBytes(fileTSware));
+            files.put("TSmarkings.csv", IOUtils.getFileBytes(fileTSMarkings));
             context.addAction(new ExportFileClientAction(files));
 
         } catch (UnsupportedEncodingException e) {
