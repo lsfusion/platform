@@ -496,6 +496,9 @@ META metaCodeTotals (object)
     sumRetailVAT###object##Detail 'Сумма НДС за ед.' (object##Detail) = [X*Y/(100+Y)](
         withoutWarePrice###object##Detail(object##Detail), dataRetailRange###object##Detail(object##Detail));
 
+    sumDetailVat###object##Detail 'Сумма НДС' (object##Detail) =
+        UNION OVERRIDE 0 IF object##Detail IS object##Detail, sumRetailVAT###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
+
     sumMarkup###object##Detail 'Сумма надбавки' (object##Detail) = withoutWarePrice###object##Detail(object##Detail) (-)
         sumRetailVAT###object##Detail(object##Detail) (-) supplierPrice###object##Detail(object##Detail);
 
@@ -5970,7 +5973,7 @@ supplierMarkupReturnSupplierDetail 'Оптовая надбавка/торгов
 supplierMarkupReturnSupplierDetail (returnSupplierDetail) <- overSupplierMarkupShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                              ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
-numberSupplierRangeReturnSupplierDetail 'НДС поставщика, номер' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
+numberSupplierRangeReturnSupplierDetail 'НДС поставщика, номер' (returnSupplierDetail) = DATA range (returnSupplierDetail) IN baseGroup;
 numberSupplierRangeReturnSupplierDetail (returnSupplierDetail) <- numberSuppliersRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                                       ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
@@ -5987,7 +5990,7 @@ priceWareReturnSupplierDetail 'Цена посуды' (returnSupplierDetail) = D
 priceWareReturnSupplierDetail (returnSupplierDetail) <- priceWareShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                         ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
-dataWareRangeReturnSupplierDetail 'НДС по посуде' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail);
+dataWareRangeReturnSupplierDetail 'НДС по посуде, %' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail);
 dataWareRangeReturnSupplierDetail (returnSupplierDetail) <- dataWareRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                             ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
@@ -6009,7 +6012,7 @@ retailRangeReturnSupplierDetail(returnSupplierDetail) = DATA range (returnSuppli
 retailRangeReturnSupplierDetail(returnSupplierDetail) <- retailRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                          ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
-numberRetailRangeReturnSupplierDetail 'НДС розничный, номер' = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
+numberRetailRangeReturnSupplierDetail 'НДС розничный, номер' = DATA range (returnSupplierDetail) IN baseGroup;
 numberRetailRangeReturnSupplierDetail (returnSupplierDetail) <- numberRetailRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                                 ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
@@ -6024,6 +6027,28 @@ retailMarkupReturnSupplierDetail (returnSupplierDetail) <- retailMarkupShipmentD
 retailPriceReturnSupplierDetail 'Розничная цена' = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
 retailPriceReturnSupplierDetail (returnSupplierDetail) <- retailPriceShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                           ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+
+//@metaCodeTotals(returnSupplier);
+
+//текущие параметры
+
+curRetailPriceReturnSupplierDetail 'Текущая розничная цена' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail);
+
+curSupplierRangeReturnSupplierDetail(returnSupplierDetail) = DATA range (returnSupplierDetail) IN idGroup;
+curDataSupplierRangeReturnSupplierDetail 'Текущий НДС розничный,%' (returnSupplierDetail) =
+    dataActingRateRangeDate(curSupplierRangeReturnSupplierDetail(returnSupplierDetail), dateReturnSupplierDetail(returnSupplierDetail));
+
+curRetailRangeReturnSupplierDetail(returnSupplierDetail) = DATA range (returnSupplierDetail) IN idGroup;
+curDataRetailRangeReturnSupplierDetail 'Текущий НДС розничный,%' (returnSupplierDetail) =
+    dataActingRateRangeDate(curRetailRangeReturnSupplierDetail(returnSupplierDetail), dateReturnSupplierDetail(returnSupplierDetail));
+
+curImporterPriceReturnSupplierDetail 'Текущая цена изготовителя/импортера' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail);
+curSupplierPriceReturnSupplierDetail 'Текущая цена поставщика' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail);
+
+curPriceWareReturnSupplierDetail 'Текущая цена посуды' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail);
+curWareReturnSupplierDetail = DATA ware (returnSupplierDetail) IN idGroup;
+curNameWareReturnSupplierDetail 'Текущая посуда' (returnSupplierDetail) = name(curWareReturnSupplierDetail(returnSupplierDetail));
+
 
 // Суммовые параметры для шапки документа
 
@@ -6673,6 +6698,7 @@ balanceBeforeInnerArrivalInnerArrivalDetail(innerArrivalDetail) <- balanceBItemL
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
 
+
 curImporterPriceShipmentDetail (shipmentDetail) <- priceImporterBLedgerDateTime (
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 ON CHANGE itemShipmentDetail(shipmentDetail);
@@ -6754,14 +6780,31 @@ curWareInnerArrivalDetail (innerArrivalDetail) <- wareBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
 
-
-curDataRetailReturnSupplierDetail 'Текущий розничный НДС, %' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail);
-curDataRetailReturnSupplierDetail (returnSupplierDetail) <- dataRetailBLedgerDateTime(
+curRetailPriceReturnSupplierDetail (returnSupplierDetail) <- priceAccountBLedgerDateTime(
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
                 dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
 
-curRetailPriceReturnSupplierDetail 'Текущая розничная цена' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail);
-curRetailPriceReturnSupplierDetail (returnSupplierDetail) <- priceRetailBLedgerDateTime(
+curSupplierRangeReturnSupplierDetail (returnSupplierDetail) <- suppliersRangeItemVal(
+                itemReturnSupplierDetail(returnSupplierDetail), dateReturnSupplierDetail(returnSupplierDetail))
+                ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
+
+curRetailRangeReturnSupplierDetail (returnSupplierDetail) <- rangeRetailBLedgerDateTime(
+                itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
+                dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
+
+curImporterPriceReturnSupplierDetail (returnSupplierDetail) <- priceImporterBLedgerDateTime (
+                itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
+                dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
+
+curSupplierPriceReturnSupplierDetail (returnSupplierDetail) <- priceSupplierBLedgerDateTime (
+                itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
+                dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
+
+curWareReturnSupplierDetail (returnSupplierDetail)  <- wareBLedgerDateTime(
+                itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
+                dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
+
+curPriceWareReturnSupplierDetail (returnSupplierDetail) <- priceWareBLedgerDateTime(
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
                 dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
 
@@ -6829,7 +6872,7 @@ supplierPriceChangeReturnSupplierDetail 'Новая цена поставщик�
     supplierPriceReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
 
 curDataRetailRangePriceChangeReturnSupplierDetail 'Текущий НДС, %' (priceChangeReturnSupplierDetail) =
-    curDataRetailReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+    curDataRetailRangeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
 dataRetailRangePriceChangeReturnSupplierDetail 'Новый НДС, %' (priceChangeReturnSupplierDetail) =
     dataRetailRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
 
@@ -7386,14 +7429,17 @@ FORM returnSupplier 'Возврат поставщику'
                   commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, importerPriceReturnSupplierDetail, supplierPriceReturnSupplierDetail,
                   supplierMarkupReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail, dataSuppliersRangeReturnSupplierDetail,
                   nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
-                  retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail//, curDataRetailReturnSupplierDetail, curRetailPriceReturnSupplierDetail
+                  retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
     PROPERTIES addReturnSupplierDetailBarcode(r) TODRAW d
-    PROPERTIES FORCE PANEL READONLY controlExpiryReturnSupplierDetail(d), isManufacturedReturnSupplierDetail(d),
+    PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
+                                    curDataSupplierRangeReturnSupplierDetail(d), curRetailPriceReturnSupplierDetail(d),
+                                    curDataRetailRangeReturnSupplierDetail(d),
+                                    controlExpiryReturnSupplierDetail(d), isManufacturedReturnSupplierDetail(d),
                                     isWeightReturnSupplierDetail(d), nameinActionItemDepartmentReturnSupplierDetail(d),
                                     hintReturnSupplierDetail(d), nameCountryReturnSupplierDetail(d),
-                                    namebanRevaluationItemDepartmentReturnSupplierDetail(d), priceWareReturnSupplierDetail(d),
-                                    dataWareRangeReturnSupplierDetail(d)
+                                    namebanRevaluationItemDepartmentReturnSupplierDetail(d), dataWareRangeReturnSupplierDetail(d),
+                                    curNameWareReturnSupplierDetail(d), curPriceWareReturnSupplierDetail(d)
 
     FILTERS isReturnSupplier(r, d)
 
@@ -7413,7 +7459,10 @@ FORM returnSuppliers 'Возвраты поставщику'
 
     OBJECTS d=returnSupplierDetail
     PROPERTIES(d) READONLY numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
-                           quantityReturnSupplierDetail, importerPriceReturnSupplierDetail, supplierPriceReturnSupplierDetail
+                           commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, importerPriceReturnSupplierDetail, supplierPriceReturnSupplierDetail,
+                           supplierMarkupReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail, dataSuppliersRangeReturnSupplierDetail,
+                           nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
+                           retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail
 
     FILTERS isReturnSupplier(r, d)
 ;
@@ -7424,6 +7473,26 @@ DESIGN returnSupplier FROM DEFAULT {
         tabbedPane = TRUE;
         ADD d.box{
             title = 'Спецификация';
+            ADD d.panel{
+            childConstraints = TO THE RIGHT;
+                NEW curVal {
+                    childConstraints = TO THE BOTTOM;
+                    title = 'Текущие ценовые параметры';
+                    ADD PROPERTY(curImporterPriceReturnSupplierDetail);
+                    ADD PROPERTY(curSupplierPriceReturnSupplierDetail);
+                    ADD PROPERTY(curDataSupplierRangeReturnSupplierDetail);
+                    ADD PROPERTY(curRetailPriceReturnSupplierDetail);
+                    ADD PROPERTY(curDataRetailRangeReturnSupplierDetail);
+                };
+                ADD d.itemReturnSupplierDetailInfo;
+                NEW ware {
+                    childConstraints = TO THE BOTTOM;
+                    title = 'Посуда';
+                    ADD PROPERTY(curNameWareReturnSupplierDetail);
+                    ADD PROPERTY(curPriceWareReturnSupplierDetail);
+                    ADD PROPERTY(dataWareRangeReturnSupplierDetail);
+                };
+            };
         };
     };
 
