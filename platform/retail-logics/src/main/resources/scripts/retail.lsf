@@ -42,6 +42,9 @@ computerClosed(postedObject) <- currentComputer() ON ASSIGN postedObject IS post
 
 GROUP documentHeaderGroup 'Шапка документа' : baseGroup;
 
+CLASS ABSTRACT consignment 'Накладная';
+CLASS ABSTRACT consignmentDetail 'Строка накладной';
+
 // ----------------------------------- Нумераторы ------------------------------------------ //
 
 CLASS numerator 'Нумератор' : named;
@@ -4855,8 +4858,8 @@ GROUP specificationGroup 'Счет-фактуры' : publicGroup;
 GROUP itemStatementDetailInfo 'Информация по товару' : publicGroup;
 GROUP pricingStatementDetailInfo 'Дополнительные ценовые параметры': publicGroup;
 
-CLASS statement 'Выписка из розницы' : outAccountSumDocumentLedger, historyObject, numberedObject;
-CLASS statementDetail 'Строка выписки из розницы' : balanceItemLedger;
+CLASS statement 'Выписка из розницы' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
+CLASS statementDetail 'Строка выписки из розницы' : balanceItemLedger, consignmentDetail;
 @metaCodeObjectWithPostEx(statement, 'Закрытая выписка из розницы');
 
 //    шапка документа поставки
@@ -5516,8 +5519,8 @@ descriptionWriteOffDetail 'Название документа' (writeOffDetail)
 
 
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
-CLASS innerFlow 'Расход в отдел' : outAccountSumDocumentLedger, historyObject, numberedObject;
-CLASS innerFlowDetail 'Строка расхода в отдел' : balanceItemLedger;
+CLASS innerFlow 'Расход в отдел' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
+CLASS innerFlowDetail 'Строка расхода в отдел' : balanceItemLedger, consignmentDetail;
 @metaCodeObjectWithPostEx (innerFlow, 'Закрытый расход в отдел');
 
 recipientDepartmentInnerFlow 'Отдел-получатель (ИД)' (innerFlow) = DATA departmentStore(innerFlow);
@@ -5920,8 +5923,8 @@ FORM wastages 'Списания отходов'
 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
-CLASS returnSupplier 'Возврат поставщику' : outAccountSumDocumentLedger, historyObject, numberedObject;
-CLASS returnSupplierDetail 'Строка возврата поставщику' : balanceItemLedger;
+CLASS returnSupplier 'Возврат поставщику' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
+CLASS returnSupplierDetail 'Строка возврата поставщику' : balanceItemLedger, consignmentDetail;
 @metaCodeObjectWithPostEx(returnSupplier, 'Закрытый возврат поставщику');
 
 // шапка документа "Возврат поставщику"
@@ -9213,9 +9216,11 @@ nameItemConsignmentDetail 'Наименование товара' (consignmentDe
                                                                                       nameAttributeItem(itemReturnSupplierDetail(consignmentDetail)),
                                                                                       nameAttributeItem(itemInnerFlowDetail(consignmentDetail));
 
-unitOfMeasureConsignmentDetail 'Единица измерения' (consignmentDetail) = UNION EXCLUSIVE unitOfMeasureItem(itemStatementDetail(consignmentDetail)),
+unitOfMeasureConsignmentDetail 'Единица измерения (ИД)' (consignmentDetail) = UNION EXCLUSIVE unitOfMeasureItem(itemStatementDetail(consignmentDetail)),
                                                                                          unitOfMeasureItem(itemReturnSupplierDetail(consignmentDetail)),
                                                                                          unitOfMeasureItem(itemInnerFlowDetail(consignmentDetail));
+
+shortNameConsignmentDetail 'Единица измерения' (consignmentDetail) = shortName(unitOfMeasureConsignmentDetail(consignmentDetail));
 
 quantityConsignmentDetail 'Количество' (consignmentDetail) = UNION EXCLUSIVE quantityStatementDetail(consignmentDetail),
                                                                              quantityReturnSupplierDetail(consignmentDetail),
@@ -9243,7 +9248,7 @@ vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION EXCLUSIVE
 
 sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION EXCLUSIVE totalSumNDSStatementDetail (consignmentDetail),
                                                                           sumSupplierVATReturnSupplierDetail (consignmentDetail),
-                                                                          totalSumRetailVATInnerFlow (consignmentDetail);
+                                                                          sumRetailVATInnerFlowDetail (consignmentDetail);
 
 totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNION EXCLUSIVE sumNDSStatement (consignment),
                                                                                totalSumIncVATReturnSupplier (consignment),
@@ -9251,7 +9256,7 @@ totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNIO
 
 costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION EXCLUSIVE sumStatementDetail (consignmentDetail),
                                                                                  sumSupplierReturnSupplierDetail (consignmentDetail),
-                                                                                 accountSumInnerFlow (consignmentDetail);
+                                                                                 sumRetailVATInnerFlowDetail (consignmentDetail);
 
 packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = UNION EXCLUSIVE packQuantityStatementDetail(consignmentDetail),
                                                                                                packQuantityReturnSupplierDetail(consignmentDetail),
@@ -9269,6 +9274,31 @@ sumGrossWeightConsignmentDetail 'Общая масса груза, т.' (consign
                                                                                         sumGrossWeightReturnSupplier(consignment),
                                                                                         sumGrossWeightInnerFlow(consignment);
 
+inConsignmentConsignmentDetail (consignment, consignmentDetail) = UNION EXCLUSIVE inStatementStatementDetail(consignment, consignmentDetail),
+                                                                                  isReturnSupplier(consignment, consignmentDetail),
+                                                                                  inInnerFlowInnerFlowDetail(consignment, consignmentDetail);
+
+// ---------------------------- Формы для накладных --------------------------------- //
+FORM consignment 'Накладная'
+    OBJECTS c=consignment FIXED PANEL
+
+    PROPERTIES (c) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+                   transportPayerConsignment, shipmentBaseConsignment, dataLoadingPlaceConsignment, loadingPlaceConsignment,
+                   readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
+                   forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
+                   commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
+                   arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
+                   sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
+                   sumCostConsignmentDetail, totalSumVATConsignmentDetail
+
+    OBJECTS d=consignmentDetail
+
+    PROPERTIES(d) nameItemConsignmentDetail, shortNameConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
+                  costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
+                  packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteInnerFlowDetail
+
+    //FILTERS inConsignmentConsignmentDetail(c, d)
+;
 // ---------------------------- Нумераторы по умолчанию --------------------------------- //
 
 defaultNumeratorDocuments = DATA numerator ();
@@ -9419,6 +9449,10 @@ NAVIGATOR {
     NEW printedForms 'Печатные формы' TO formsToolbar{
         ADD register;
 
+    }
+
+    NEW printForms 'Печать' TO formsToolbar{
+        ADD consignment;
     }
 
     ADD adminElement TO formsTree {
