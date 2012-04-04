@@ -427,7 +427,13 @@ uniqueGroupDeclaration() = GROUP UNIQUE groupDeclaration BY declarationGroupDecl
                                                             countryGroupDeclaration(groupDeclaration)
                                                       WHERE groupDeclaration IS groupDeclaration;
 
-quantityDeclarationGroup(declaration, article, customCategory10, STRING, country) => uniqueGroupDeclaration(declaration, article, customCategory10, STRING, country) RESOLVE ALL;
+quantityDeclarationGroup(declaration, article, customCategory10, STRING, country) => uniqueGroupDeclaration(declaration, article, customCategory10, STRING, country) RESOLVE TRUE;
+isGroupDeclaration(group) = group IS groupDeclaration;
+isGroupDeclaration(group) => quantityDeclarationGroup(declarationGroupDeclaration(group),
+                                                      articleGroupDeclaration(group),
+                                                      customCategory10GroupDeclaration(group),
+                                                      mainCompositionGroupDeclaration(group),
+                                                      countryGroupDeclaration(group)) RESOLVE FALSE;
 
 // свойства от артикула
 nameBrandGroupDeclaration 'Бренд' (groupDeclaration) = nameBrandSupplierArticle(articleGroupDeclaration(groupDeclaration));
@@ -493,7 +499,7 @@ FORM declaration 'Декларация'
     FILTERS inDeclarationCorrection(d, c)
 
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) numberGroupDeclarationDeclarationDetail, numberDeclarationDetail, barcodeSkuDeclarationDetail, nameBrandArticleDeclarationDetail, sidArticleDeclarationDetail,
+    PROPERTIES (dd) numberDeclarationDetail, barcodeSkuDeclarationDetail, nameBrandArticleDeclarationDetail, sidArticleDeclarationDetail,
                     nameCategoryArticleDeclarationDetail, mainCompositionDeclarationDetail,
                     nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
                     netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
