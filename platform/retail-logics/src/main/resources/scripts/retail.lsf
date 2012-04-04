@@ -388,6 +388,9 @@ META metaCodeObjectWithPostEx (object, captionPosted)
     nameAttributeItem###object##Detail 'Товар строки документа' (object##Detail) =
         nameAttributeItem(item###object##Detail(object##Detail)) IN recognizeGroup;
 
+    shortNameUnitOfMeasureItem###object##Detail 'Ед. изм.' (object##Detail) =
+        shortNameUnitOfMeasureItem(item###object##Detail(object##Detail)) IN baseGroup;
+
     barcodeExSku###object##Detail 'Штрих-код товара' (object) =
         barcodeEx(barcodeSku(item###object##Detail (object))) IN baseGroup;
 
@@ -504,19 +507,19 @@ META metaCodeTotals (object)
 
 
     totalSumSupplierPrice###object 'Сумма без НДС' (object) = GROUP SUM supplierPrice###object##Detail(object##Detail)*quantity###object##Detail(object##Detail)
-        BY object###object##Detail(object);
+        BY object###object##Detail(object##Detail);
 
     totalSumMarkup###object 'Сумма надбавки' (object) = GROUP SUM sumMarkup###object##Detail(object##Detail)*quantity###object##Detail(object##Detail)
-        BY object###object##Detail(object);
+        BY object###object##Detail(object##Detail);
 
     totalSumWare###object 'Сумма посуды' (object) = GROUP SUM priceWare###object##Detail (object##Detail)*quantity###object##Detail(object##Detail)
-        BY object###object##Detail(object);
+        BY object###object##Detail(object##Detail);
 
     totalSumVatWare###object 'Сумма НДС по посуде' (object) =  GROUP SUM sumDetailVatWare###object##Detail(object##Detail)
-        BY object###object##Detail(object);
+        BY object###object##Detail(object##Detail);
 
     totalSumRetailVAT###object 'Сумма розничного НДС' (object) = GROUP SUM sumRetailVAT###object##Detail(object##Detail)*quantity###object##Detail(object##Detail)
-        BY object###object##Detail(object);
+        BY object###object##Detail(object##Detail);
 
 END
 
@@ -5245,9 +5248,12 @@ priceWareShipmentDetail 'Цена посуды' (shipmentDetail) = DATA DOUBLE (
 priceWareShipmentDetail (shipmentDetail) <- priceWareVal (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
                                             ON CHANGE itemShipmentDetail(shipmentDetail);
 
-overPriceWareShipmentDetail (shipmentDetail) = UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail,
-                                               priceWareShipmentDetail (shipmentDetail);
+overPriceWareShipmentDetail 'Цена посуды' (shipmentDetail) = UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail,
+                                                             priceWareShipmentDetail (shipmentDetail);
+overSumPriceWareShipmentDetail 'Сумма посуды' (shipmentDetail) = UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail,
+                                                                 overPriceWareShipmentDetail(shipmentDetail)*quantityShipmentDetail(shipmentDetail);
 
+totalSumSupplierShipmentDetail 'Сумма с ндс и посудой' (shipmentDetail) = overSumPriceWareShipmentDetail(shipmentDetail) (+) sumSupplierShipmentDetail(shipmentDetail);
 
 retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 
@@ -5282,6 +5288,8 @@ retailPriceShipmentDetail 'Новая розничная цена' (shipmentDeta
     ELSE roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail) + overPriceWareShipmentDetail(shipmentDetail));
 
 @metaCodeTotals (shipment);
+
+amountSumRetailVATShipmentDetail 'Сумма розничного НДС' (shipmentDetail) = amountRetailVATShipmentDetail(shipmentDetail)*quantityShipmentDetail(shipmentDetail);
 
 diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentDetail) = retailPriceShipmentDetail(shipmentDetail) - nonRoundRetailPriceShipmentDetail(shipmentDetail);
 
@@ -7407,6 +7415,31 @@ DESIGN shipments FROM DEFAULT {
     ADD d.grid.box BEFORE s.historyGroup;
 }
 
+FORM register 'Реестр цен'
+    OBJECTS s=shipment
+    PROPERTIES (s)  SELECTOR numberObject, dateShipment, nameDepartmentStoreShipment, nameSupplierShipment,
+                    totalQuantityShipment, totalSumSupplierPriceShipment, totalSumSupplierVATShipment,
+                    totalSumWareShipment, totalSumVatWareShipment, totalSumSupplierShipment, totalSumMarkupShipment,
+                    totalSumRetailVATShipment, retailSumShipment
+
+    OBJECTS d=shipmentDetail
+    PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, shortNameUnitOfMeasureItemShipmentDetail, quantityShipmentDetail,
+                    importerPriceShipmentDetail, sumPriceShipmentDetail, supplierMarkupShipmentDetail, sumSupplierVATShipmentDetail,
+                    dataSuppliersRangeShipmentDetail, overSumPriceWareShipmentDetail, overPriceWareShipmentDetail, sumDetailVatWareShipmentDetail, dataWareRangeShipmentDetail,
+                    totalSumSupplierShipmentDetail, retailMarkupShipmentDetail, sumMarkupShipmentDetail, dataRetailRangeShipmentDetail,
+                    amountSumRetailVATShipmentDetail, retailPriceShipmentDetail, retailSumShipmentDetail
+
+    FILTERS inShipmentShipmentDetail(s, d)
+;
+
+
+
+
+
+
+
+
+
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
@@ -9382,6 +9415,10 @@ NAVIGATOR {
         ADD balanceItemDepartment;
         ADD sumAccountDocumentLedger;
         ADD priceChangeDocuments;
+    }
+    NEW printedForms 'Печатные формы' TO formsToolbar{
+        ADD register;
+
     }
 
     ADD adminElement TO formsTree {
