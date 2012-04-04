@@ -486,6 +486,7 @@ META metaCodeDetailAggregation (primObject, aggrObject, aggrProperty)
 
 END
 
+
 META metaCodeTotals (object)
 
     sumVatWare###object##Detail 'Сумма НДС по посуде, за ед.' (object##Detail) =
@@ -499,16 +500,16 @@ META metaCodeTotals (object)
     withoutWarePrice###object##Detail 'Цена без посуды' (object##Detail) = retailPrice###object##Detail(object##Detail) (-)
         priceWare###object##Detail(object##Detail);
 
-    sumRetailVAT###object##Detail 'Сумма НДС за ед.' (object##Detail) = [X*Y/(100+Y)](
+    sumRetailVAT###object##Detail 'Сумма НДС за ед. (без посуды)' (object##Detail) = [X*Y/(100+Y)](
         withoutWarePrice###object##Detail(object##Detail), dataRetailRange###object##Detail(object##Detail));
 
-    sumDetailVat###object##Detail 'Сумма НДС' (object##Detail) =
+    sumDetailVat###object##Detail 'Сумма НДС (без посуды)' (object##Detail) =
         UNION OVERRIDE 0 IF object##Detail IS object##Detail, sumRetailVAT###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
 
     sumMarkup###object##Detail 'Сумма надбавки, за ед.' (object##Detail) = withoutWarePrice###object##Detail(object##Detail) (-)
         sumRetailVAT###object##Detail(object##Detail) (-) supplierPrice###object##Detail(object##Detail);
 
-    sumDetailMarkUp###object##Detail 'Сумма надбавки' (object##Detail) = sumMarkup###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
+    sumDetailMarkup###object##Detail 'Сумма надбавки' (object##Detail) = sumMarkup###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
 
     totalSumSupplierPrice###object 'Сумма без НДС' (object) = GROUP SUM supplierPrice###object##Detail(object##Detail)*quantity###object##Detail(object##Detail)
         BY object###object##Detail(object##Detail);
@@ -519,10 +520,10 @@ META metaCodeTotals (object)
     totalSumVatWare###object 'Сумма НДС по посуде' (object) =  GROUP SUM sumDetailVatWare###object##Detail(object##Detail)
         BY object###object##Detail(object##Detail);
 
-    totalSumRetailVAT###object 'Сумма розничного НДС' (object) = GROUP SUM sumDetailVat###object##Detail(object##Detail)
+    totalSumRetailVAT###object 'Сумма розничного НДС(без посуды)' (object) = GROUP SUM sumDetailVat###object##Detail(object##Detail)
         BY object###object##Detail(object##Detail);
 
-    totalSumMarkup###object 'Сумма надбавки' (object) = GROUP SUM sumDetailMarkUp###object##Detail(object##Detail)
+    totalSumMarkup###object 'Сумма надбавки' (object) = GROUP SUM sumDetailMarkup###object##Detail(object##Detail)
         BY object###object##Detail(object##Detail);
 
     //для цен и НДС поставщика
@@ -550,11 +551,11 @@ META metaCodeTotals (object)
     totalSumCleanSupplier###object 'Общая сумма поставщика с НДС (без посуды)' (object) =
         GROUP SUM sumSupplier###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
 
-    totalSumIncVAT###object 'Сумма НДС' (object) =
+    totalSumIncVAT###object 'Общая сумма НДС' (object) =
         (UNION OVERRIDE 0 IF object IS object, totalSumSupplierVAT###object (object)) +
         (UNION OVERRIDE 0 IF object IS object, totalSumVatWare###object (object)) IN waybillSum;
 
-    totalSumSupplier###object 'Сумма с НДС' (object) =
+    totalSumSupplier###object 'Общая сумма с НДС' (object) =
         totalSumCleanSupplier###object (object) +
         (UNION OVERRIDE 0 IF object IS object, totalSumWare###object (object)) IN waybillSum;
 
@@ -6089,6 +6090,8 @@ curNameWareReturnSupplierDetail 'Текущая посуда' (returnSupplierDet
 
 // Суммовые параметры для шапки документа
 
+carryingChargesReturnSupplier 'Транспортные расходы' (returnSupplier) = DATA DOUBLE (returnSupplier) IN waybillSum;
+
 totalQuantityReturnSupplier 'Общее количество' (returnSupplier) = GROUP SUM quantityReturnSupplierDetail(returnSupplierDetail)
                                                                   BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN waybillSum;
 
@@ -7479,7 +7482,7 @@ FORM commonInfoBatchReturnSupplierDetail 'Партии'
 FORM returnSupplier 'Возврат поставщику'
     OBJECTS r=returnSupplier FIXED PANEL
     PROPERTIES(r) numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
-                  nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier,
+                  nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
                   totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier,
                   retailSumReturnSupplier
 
@@ -7489,7 +7492,7 @@ FORM returnSupplier 'Возврат поставщику'
                   supplierMarkupReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail, dataSuppliersRangeReturnSupplierDetail,
                   sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
                   nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
-                  retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail
+                  retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail, sumDetailMarkupReturnSupplierDetail, sumDetailVatReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
     PROPERTIES addReturnSupplierDetailBarcode(r) TODRAW d
     PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
@@ -7510,7 +7513,7 @@ FORM returnSuppliers 'Возвраты поставщику'
 
     OBJECTS r=returnSupplier
     PROPERTIES(r) READONLY objectClassName, numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
-                           nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier,
+                           nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
                            totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier, retailSumReturnSupplier
     PROPERTIES (r) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -7523,7 +7526,7 @@ FORM returnSuppliers 'Возвраты поставщику'
                            supplierMarkupReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail, dataSuppliersRangeReturnSupplierDetail,
                            sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
                            nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
-                           retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail
+                           retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail, sumDetailMarkupReturnSupplierDetail, sumDetailVatReturnSupplierDetail
 
     FILTERS isReturnSupplier(r, d)
 ;
