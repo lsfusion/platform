@@ -7460,15 +7460,9 @@ FORM register 'Реестр цен'
     FILTERS inShipmentShipmentDetail(s, d)
 ;
 
-
-
-
-
-
-
-
-
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
+
+@metaCodeInputMultipleItems(returnSupplier);
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
     OBJECTS b=batchShipment
@@ -7494,7 +7488,7 @@ FORM returnSupplier 'Возврат поставщику'
                   nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
                   retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail, sumDetailMarkupReturnSupplierDetail, sumDetailVatReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
-    PROPERTIES addReturnSupplierDetailBarcode(r) TODRAW d
+    PROPERTIES inputMultipleItemsReturnSupplier(r) TODRAW d, addReturnSupplierDetailBarcode(r) TODRAW d
     PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
                                     curDataSupplierRangeReturnSupplierDetail(d), curRetailPriceReturnSupplierDetail(d),
                                     curDataRetailRangeReturnSupplierDetail(d),
