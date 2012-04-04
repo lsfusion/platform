@@ -5561,14 +5561,20 @@ priceWareInnerFlowDetail 'Цена посуды' (innerFlowDetail) = DATA DOUBLE
 withoutWarePriceInnerFlowDetail 'Цена без посуды' (innerFlowDetail) = retailPriceInnerFlowDetail(innerFlowDetail) (-)
     priceWareInnerFlowDetail(innerFlowDetail);
 
-sumRetailVATInnerFlowDetail 'Сумма НДС за ед.' (innerFlowDetail) = [X*Y/(100+Y)](
+sumRetailVATUnitInnerFlowDetail 'Сумма НДС за ед.' (innerFlowDetail) = [X*Y/(100+Y)](
     withoutWarePriceInnerFlowDetail(innerFlowDetail), dataRetailRangeInnerFlowDetail(innerFlowDetail));
 
-sumRetailVATInnerFlow 'Сумма розничного НДС' (innerFlowDetail) = sumRetailVATInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail);
+sumRetailVATInnerFlowDetail 'Сумма розничного НДС' (innerFlowDetail) = sumRetailVATUnitInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail);
 
-totalSumRetailVATInnerFlow 'Сумма розничного НДС' (innerFlow) = GROUP SUM sumRetailVATInnerFlow(innerFlowDetail)
+totalSumRetailVATInnerFlow 'Сумма розничного НДС' (innerFlow) = GROUP SUM sumRetailVATInnerFlowDetail(innerFlowDetail)
     BY innerFlowInnerFlowDetail(innerFlowDetail);
 
+supplierMarkupInnerFlowDetail 'Оптовая надбавка' (innerFlowDetail) =
+    (supplierPriceInnerFlowDetail(innerFlowDetail)/importerPriceInnerFlowDetail(innerFlowDetail) - 1)*100;
+
+retailMarkupInnerFlowDetail 'Торговая надбавка' (innerFlowDetail) =
+    ((withoutWarePriceInnerFlowDetail(innerFlowDetail) - sumRetailVATUnitInnerFlowDetail(innerFlowDetail))/
+    importerPriceInnerFlowDetail(innerFlowDetail) - 1)*100;
 
 // для накладной (шапка и хвост)
 carInnerFlow 'Автомобиль' (innerFlow) = DATA STRING[30] (innerFlow);
@@ -5623,6 +5629,12 @@ grossWeightInnerFlowDetail 'Масса груза, т.' (innerFlowDetail) =
 
 sumGrossWeightInnerFlow 'Общая масса груза, т.' (innerFlow) = GROUP SUM grossWeightInnerFlowDetail(innerFlowDetail)
     BY innerFlowInnerFlowDetail(innerFlowDetail);
+
+castNoteInnerFlowDetailToString100=
+    FORMULA STRING[200] '\'РОЦ: \' || CAST($1 AS TEXT) ||  \'; Оптовая надбавка: \' || CAST($2 AS TEXT)||  \'; Торговая наценка: \' || CAST($3 AS TEXT)';
+
+noteInnerFlowDetail 'Примечание' (innerFlowDetail) = castNoteInnerFlowDetailToString100(
+    importerPriceInnerFlowDetail(innerFlowDetail), supplierMarkupInnerFlowDetail(innerFlowDetail), retailMarkupInnerFlowDetail(innerFlowDetail));
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 GROUP pricingInnerArrivalDetailInfo 'Дополнительные ценовый параметры' : publicGroup;
@@ -9014,13 +9026,17 @@ readdressingConsignment 'Переадресовка' (consignment) = UNION EXCLU
                                                                         readdressingReturnSupplier (consignment),
                                                                         readdressingInnerFlow (consignment);
 
-issuanceAllowedConsignment 'Отпуск разрешил' (consignment) = UNION EXCLUSIVE issuanceAllowedStatement(consignment),
+issuanceAllowedConsignment 'Отпуск разрешил (ИД)' (consignment) = UNION EXCLUSIVE issuanceAllowedStatement(consignment),
                                                                              issuanceAllowedReturnSupplier(consignment),
                                                                              issuanceAllowedInnerFlow(consignment);
 
-issuanceExecutedConsignment 'Отпуск произвел' (consignment) = UNION EXCLUSIVE issuanceExecutedStatement(consignment),
+commonNameIssuanceAllowedConsignment 'Отпуск разрешил' (consignment) = commonName(issuanceAllowedConsignment(consignment));
+
+issuanceExecutedConsignment 'Отпуск произвел (ИД)' (consignment) = UNION EXCLUSIVE issuanceExecutedStatement(consignment),
                                                                               issuanceExecutedReturnSupplier(consignment),
                                                                               issuanceExecutedInnerFlow(consignment);
+
+commonNameIssuanceExecutedConsignment 'Отпуск произвел' (consignment) = commonName(issuanceExecutedConsignment(consignment));
 
 forwarderConsignment 'Товар к перевозке принял (экспедитор)' (consignment) = UNION EXCLUSIVE forwarderStatement(consignment),
                                                                                              forwarderReturnSupplier(consignment),
@@ -9038,13 +9054,17 @@ goodsAcceptedConsignment 'Принял грузополучатель' (consignm
                                                                                   goodsAcceptedReturnSupplier (consignment),
                                                                                   goodsAcceptedInnerFlow (consignment);
 
-loadingExecuterConsignment 'Исполнитель ПРР' (consignment) = UNION EXCLUSIVE loadingExecuterStatement(consignment),
+loadingExecuterConsignment 'Исполнитель ПРР (ИД)' (consignment) = UNION EXCLUSIVE loadingExecuterStatement(consignment),
                                                                              loadingExecuterReturnSupplier(consignment),
                                                                              loadingExecuterInnerFlow(consignment);
 
-wayOfLoadingConsignment 'Способ ПРР' (consignment) = UNION EXCLUSIVE wayOfLoadingStatement(consignment),
-                                                                     wayOfLoadingReturnSupplier(consignment),
-                                                                     wayOfLoadingInnerFlow(consignment);
+commonNameLoadingExecuterConsignment 'Исполнитель ПРР' (consignment) = commonName(loadingExecuterConsignment(consignment));
+
+wayOfLoadingConsignment 'Способ ПРР (ИД)' (consignment) = UNION EXCLUSIVE wayOfLoadingStatement(consignment),
+                                                                          wayOfLoadingReturnSupplier(consignment),
+                                                                          wayOfLoadingInnerFlow(consignment);
+
+nameWayOfLoadingConsignment 'Способ ПРР' (consignment) = name(wayOfLoadingConsignment(consignment));
 
 codeLoadingConsignment 'Код ПРР' (consignment) = UNION EXCLUSIVE codeLoadingStatement (consignment),
                                                                  codeLoadingReturnSupplier (consignment),
