@@ -5270,6 +5270,7 @@ overSupplierMarkupShipmentDetail 'Оптовая надбавка/торгова
         UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, supplierMarkupShipmentDetail(shipmentDetail);
 dateFitToShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
 
+
 suppliersRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
 numberSuppliersRangeShipmentDetail 'НДС поставщика, номер' (shipmentDetail) = dataRange(suppliersRangeShipmentDetail(shipmentDetail));
 dataSuppliersRangeShipmentDetail 'НДС поставщика,%' (shipmentDetail) = dataActingRateRangeDate
@@ -6025,13 +6026,14 @@ supplierMarkupReturnSupplierDetail 'Оптовая надбавка/торгов
 supplierMarkupReturnSupplierDetail (returnSupplierDetail) <- overSupplierMarkupShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                              ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
-numberSupplierRangeReturnSupplierDetail 'НДС поставщика, номер' (returnSupplierDetail) = DATA range (returnSupplierDetail) IN baseGroup;
-numberSupplierRangeReturnSupplierDetail (returnSupplierDetail) <- numberSuppliersRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                                      ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+suppliersRangeReturnSupplierDetail (returnSupplierDetail) = DATA range (returnSupplierDetail) IN idGroup;
+suppliersRangeReturnSupplierDetail (returnSupplierDetail) <- suppliersRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
+                                                             ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
-dataSuppliersRangeReturnSupplierDetail 'НДС поставщика, %' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
-dataSuppliersRangeReturnSupplierDetail (returnSupplierDetail) <- dataSuppliersRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                                 ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+numberSupplierRangeReturnSupplierDetail 'НДС поставщика, номер' (returnSupplierDetail) =
+    dataRange(suppliersRangeReturnSupplierDetail(returnSupplierDetail));
+dataSuppliersRangeReturnSupplierDetail 'НДС поставщика, %' (returnSupplierDetail) =
+    dataActingRateRangeDate(suppliersRangeReturnSupplierDetail(returnSupplierDetail), dateReturnSupplierDetail(returnSupplierDetail));
 
 wareReturnSupplierDetail 'Посуда (ИД)' (returnSupplierDetail) = DATA ware (returnSupplierDetail);
 wareReturnSupplierDetail (returnSupplierDetail) <- wareShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
@@ -6050,13 +6052,10 @@ retailRangeReturnSupplierDetail(returnSupplierDetail) = DATA range (returnSuppli
 retailRangeReturnSupplierDetail(returnSupplierDetail) <- retailRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                          ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
-numberRetailRangeReturnSupplierDetail 'НДС розничный, номер' = DATA range (returnSupplierDetail) IN baseGroup;
-numberRetailRangeReturnSupplierDetail (returnSupplierDetail) <- numberRetailRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                                ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
-
-dataRetailRangeReturnSupplierDetail 'НДС розничный, %' = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
-dataRetailRangeReturnSupplierDetail (returnSupplierDetail) <- dataRetailRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                              ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+numberRetailRangeReturnSupplierDetail 'НДС розничный, номер' =
+    dataRange(retailRangeReturnSupplierDetail(returnSupplierDetail));
+dataRetailRangeReturnSupplierDetail 'НДС розничный, %' =
+    dataActingRateRangeDate(retailRangeReturnSupplierDetail(returnSupplierDetail), dateReturnSupplierDetail(returnSupplierDetail));
 
 retailMarkupReturnSupplierDetail 'Торговая надбавка, %' = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
 retailMarkupReturnSupplierDetail (returnSupplierDetail) <- retailMarkupShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
