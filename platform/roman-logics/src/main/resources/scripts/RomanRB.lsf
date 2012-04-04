@@ -77,7 +77,7 @@ includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importe
 
 freightInnerInvoice 'Фрахт инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE freightFormedInvoice(innerInvoice),
                                                                           freightDirectInvoice(innerInvoice) IN idGroup;
-dateFreightInnerInvoice 'Фрахт инвойса' (innerInvoice) = dateArrivalFreight(freightInnerInvoice(innerInvoice)) IN baseGroup;
+dateFreightInnerInvoice 'Дата инвойса' (innerInvoice) = dateArrivalFreight(freightInnerInvoice(innerInvoice)) IN baseGroup;
 
 freightArrivedInnerInvoice 'Прибыл фрахт инвойса' (innerInvoice) = freightInnerInvoice(innerInvoice) IS freightArrived;
 
@@ -523,7 +523,11 @@ FORM declaration 'Декларация'
                     sumGroupDeclaration, netWeightGroupDeclaration, grossWeightGroupDeclaration
 
     PROPERTIES (gd, ii) inGroupDeclarationInnerInvoice
-    FILTERS inDeclarationGroupDeclaration(d, gd)
+
+    OBJECTS ii2=innerInvoice
+    PROPERTIES (ii2) sidInnerInvoice, dateFreightInnerInvoice
+
+    FILTERS inDeclarationGroupDeclaration(d, gd), inGroupDeclarationInnerInvoice(gd, ii2)
 
     EDIT declaration OBJECT d
 ;
@@ -538,6 +542,7 @@ DESIGN declaration FROM DEFAULT{
         }
 
         POSITION d.box TO THE LEFT document.box;
+        POSITION gd.box TO THE LEFT ii2.box;
 
         ii.grid {
             fillHorizontal = 0.5;
@@ -553,6 +558,11 @@ DESIGN declaration FROM DEFAULT{
 
         gd.grid {
             fillVertical = 2;
+        }
+
+        ii2.grid {
+            fillVertical = 2;
+            fillHorizontal = 0.4;
         }
     }
 };
