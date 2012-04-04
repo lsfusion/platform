@@ -7303,7 +7303,7 @@ FORM shipments 'Поставки'
     OBJECTS s=shipment
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumSupplierPriceShipment, totalSumIncVATShipment,
-                            totalSumSupplierShipment, retailSumShipment, statusEquipmentPriceTransactionDocument
+                            totalSumSupplierShipment, retailSumShipment,
                             statusEquipmentPriceTransactionDocument HIGHLIGHTIF showCreateMachineryPriceTransactionShipment(s)
                             
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
