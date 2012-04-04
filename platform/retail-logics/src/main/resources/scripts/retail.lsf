@@ -9481,10 +9481,6 @@ NAVIGATOR {
     }
     NEW printedForms 'Печатные формы' TO formsToolbar{
         ADD register;
-
-    }
-
-    NEW printForms 'Печать' TO formsToolbar{
         ADD consignment;
     }
 
