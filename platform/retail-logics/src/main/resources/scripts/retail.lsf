@@ -486,7 +486,6 @@ META metaCodeDetailAggregation (primObject, aggrObject, aggrProperty)
 
 END
 
-
 META metaCodeTotals (object)
 
     sumVatWare###object##Detail 'Сумма НДС по посуде, за ед.' (object##Detail) =
@@ -545,11 +544,19 @@ META metaCodeTotals (object)
         UNION OVERRIDE 0 IF object##Detail IS object##Detail, sumDetailSupplierVAT###object##Detail(object##Detail))
         ON CHANGE quantity###object##Detail(object##Detail);
 
-    totalSumSupplierVAT###object 'Общая сумма поставщика НДС' (object) =
+    totalSumSupplierVAT###object 'Общая сумма НДС поставщика (без посуды)' (object) =
         GROUP SUM sumDetailSupplierVAT###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
 
-    totalSumCleanSupplier###object 'Общая сумма поставщика с НДС ' (object) =
+    totalSumCleanSupplier###object 'Общая сумма поставщика с НДС (без посуды)' (object) =
         GROUP SUM sumSupplier###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
+
+    totalSumIncVAT###object 'Сумма НДС' (object) =
+        (UNION OVERRIDE 0 IF object IS object, totalSumSupplierVAT###object (object)) +
+        (UNION OVERRIDE 0 IF object IS object, totalSumVatWare###object (object)) IN waybillSum;
+
+    totalSumSupplier###object 'Сумма с НДС' (object) =
+        totalSumCleanSupplier###object (object) +
+        (UNION OVERRIDE 0 IF object IS object, totalSumWare###object (object)) IN waybillSum;
 
 END
 
@@ -5345,15 +5352,6 @@ diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentD
 retailSumShipmentDetail 'Розничная сумма' (shipmentDetail) = quantityShipmentDetail(shipmentDetail) * retailPriceShipmentDetail(shipmentDetail);
 retailSumShipment 'Розничная сумма' (shipment) = GROUP SUM retailSumShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN waybillSum;
 
-totalSumIncVATShipment 'Сумма НДС' (shipment) =
-    (UNION OVERRIDE 0 IF shipment IS shipment, totalSumSupplierVATShipment (shipment)) +
-    (UNION OVERRIDE 0 IF shipment IS shipment, totalSumVatWareShipment (shipment)) IN waybillSum;
-
-totalSumSupplierShipment 'Сумма с НДС' (shipment) =
-    totalSumCleanSupplierShipment (shipment) +
-    (UNION OVERRIDE 0 IF shipment IS shipment, totalSumWareShipment (shipment)) IN waybillSum;
-
-
 quantityShipmentOrderItem 'Поставленное количество' (orderSupplier, item) = GROUP SUM quantityShipmentDetail (shipmentDetail) IF inShipmentOrder (shipmentShipmentDetail (shipmentDetail), orderSupplier) BY orderSupplier, itemShipmentDetail(shipmentDetail);
 
 //контроль цен поставки по заказам с учетом допустимых отклонений по поставщику
@@ -6089,16 +6087,11 @@ curPriceWareReturnSupplierDetail 'Текущая цена посуды' (returnS
 curWareReturnSupplierDetail = DATA ware (returnSupplierDetail) IN idGroup;
 curNameWareReturnSupplierDetail 'Текущая посуда' (returnSupplierDetail) = name(curWareReturnSupplierDetail(returnSupplierDetail));
 
+
 // Суммовые параметры для шапки документа
 
 totalQuantityReturnSupplier 'Общее количество' (returnSupplier) = GROUP SUM quantityReturnSupplierDetail(returnSupplierDetail)
                                                                   BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN waybillSum;
-
-totalSumIncVATReturnSupplier 'Общая сумма НДС' (returnSupplier) = GROUP SUM sumDetailSupplierVATReturnSupplierDetail(returnSupplierDetail)
-                                                                  BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN waybillSum;
-
-totalSumSupplierReturnSupplier 'Общая сумма с НДС' (returnSupplier) = GROUP SUM sumSupplierReturnSupplierDetail(returnSupplierDetail)
-                                                                      BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN waybillSum;
 
 isReturnSupplier (returnSupplier, returnSupplierDetail) = returnSupplierReturnSupplierDetail(returnSupplierDetail) == returnSupplier;
 
@@ -6848,7 +6841,7 @@ curPriceWareReturnSupplierDetail (returnSupplierDetail) <- priceWareBLedgerDateT
                 dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
 
 retailSumReturnSupplierDetail 'Розничная сумма' (returnSupplierDetail) =
-    quantityReturnSupplierDetail(returnSupplierDetail) * curRetailPriceReturnSupplierDetail(returnSupplierDetail);
+    quantityReturnSupplierDetail(returnSupplierDetail) * retailPriceReturnSupplierDetail(returnSupplierDetail);
 retailSumReturnSupplier 'Розничная сумма' (returnSupplier) = GROUP SUM retailSumReturnSupplierDetail(shipmentDetail)
                                                              BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN waybillSum;
 
