@@ -557,9 +557,6 @@ hasParentItemGroup 'Уровень' (child, parent) = TRUE AND hasParentItemGrou
 
 hasParentAndLeafItemGroup (child, parent) = hasParentItemGroup(child, parent) AND isLeafItemGroup(child);
 
-hasParentOrNullItemGroup (child, parent) = UNION OVERRIDE hasParentItemGroup(child, parent), child IS itemGroup AND NOT parent;
-hasParentAndLeafOrNullItemGroup (child, parent) = UNION OVERRIDE hasParentAndLeafItemGroup(child, parent), isLeafItemGroup(child) AND NOT parent;
-
 canonicalNameItemGroup 'Каноническое имя' (itemGroup) = castToString255(
                            [GROUP CONCAT name(parent), ' / ' BY child ORDER DESC hasParentItemGroupLevel(child, parent)](itemGroup))
 
@@ -815,7 +812,6 @@ inWareItem 'Товар в посуде' (item) = item IS item AND wareItem(item)
 
 //equipmentGroup
 isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN headGroup;
-isWeightedItem 'Признак взвешиваемого товара' = DATA BOOLEAN (item) IN equipmentGroup;
 compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
 isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN equipmentGroup;
 isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN equipmentGroup;
@@ -1078,7 +1074,7 @@ dateBarcode 'Дата действия' = UNION OVERRIDE 2001_01_01 IF barcode I
 skuBarcode = DATA sku(barcode) IN baseGroup;
 nameSkuBarcode 'Товар штрих-кода' (barcode) = nameAttributeItem(skuBarcode(barcode)) IN recognizeGroup;
 
-hasParentOrNullItemGroupBarcode (itemGroup, barcode) = hasParentItemGroupSku(itemGroup, skuBarcode(barcode));
+hasParentItemGroupBarcode (itemGroup, barcode) = hasParentItemGroupSku(itemGroup, skuBarcode(barcode));
 
 barcodeToDate 'Штрих-код на дату' (string, date) = GROUP UNIQUE barcode BY barcodeEx(barcode), dateBarcode(barcode) PERSISTENT;
 
@@ -1872,7 +1868,7 @@ FORM item 'Товар'
                   oldPriceItem, nameTagItem, multiplierItem,
 
                   // Дополнительные
-                  isWeightedItem, passScalesItem, isMarkItem, isLoafCutItem,
+                  passScalesItem, isMarkItem, isLoafCutItem,
                   compositionScalesItem, storageTemperatureItem, banSailItem,
 
                   importerPriceItem, showFormimporterPriceItem,
@@ -2091,7 +2087,7 @@ FORM barcodeForm 'Товары по Ш-К'
     OBJECTS b=barcode
     PROPERTIES(b) READONLY barcodeEx, nameSkuBarcode, shortNameUnitOfMeasureBarcode
     PROPERTIES(b) ADDFORM, EDITFORM, delete
-    FILTERS hasParentOrNullItemGroupBarcode(g, b)
+    FILTERS hasParentItemGroupBarcode(g, b)
     ORDER BY nameSkuBarcode
 
     DIALOG barcode OBJECT b
@@ -2146,8 +2142,8 @@ FORM itemGroups 'Товарные группы'
     ORDER BY canonicalNameItemGroup
 
     FILTERGROUP filters
-        FILTER 'Все листья' 'F10' hasParentAndLeafOrNullItemGroup(cg, g) DEFAULT
-        FILTER 'Всех потомков' 'F9' hasParentOrNullItemGroup(cg, g)
+        FILTER 'Все листья' 'F10' hasParentAndLeafItemGroup(cg, g) DEFAULT
+        FILTER 'Всех потомков' 'F9' hasParentItemGroup(cg, g)
         FILTER 'Только непосредственных потомков' 'F8' inParentItemGroupItemGroup(cg, g)
 ;
 
@@ -3567,6 +3563,39 @@ nameProductionScales 'Св-во товара[Срок годн.в часах] п
                                                                                                   productionScales(scales)) IN baseGroup;
 sidScales 'ID весов для Set Retail' = DATA INTEGER (scales) IN baseGroup;
 
+// фильтрация по группам товаров
+
+filterItemsGroupMachinery 'Фильтровать по группам товаров' = DATA BOOLEAN (groupMachinery);
+
+inGroupMachineryItemGroup 'Вкл' = DATA BOOLEAN (groupMachinery, itemGroup);
+
+FORM filterItemsGroupMachinery 'Фильтрация по группам товаров'
+    OBJECTS gm = groupMachinery FIXED PANEL
+    PROPERTIES(gm) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery
+
+    TREE treeGroups g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY name(g)
+    ORDER BY name
+
+    OBJECTS cg=itemGroup
+    PROPERTIES(cg) READONLY canonicalNameItemGroup
+    PROPERTIES(gm, cg)      inGroupMachineryItemGroup
+    ORDER BY canonicalNameItemGroup
+    FILTERS hasParentAndLeafItemGroup(cg, g)
+
+    FILTERGROUP filters
+        FILTER 'Только выбранные группы' 'F10' inGroupMachineryItemGroup(gm, cg)
+;
+
+DESIGN filterItemsGroupMachinery FROM DEFAULT {
+    POSITION treeGroups.box TO THE LEFT cg.box;
+
+    treeGroups.tree {
+        fillHorizontal = 0.5;
+    }
+}
+
+showFilterItemsGroupMachinery 'Выбрать группы' (groupMachinery) = ACTION FORM filterItemsGroupMachinery OBJECTS gm MODAL;
 
 FORM cashRegister 'Касса'
     OBJECTS c=cashRegister FIXED PANEL
@@ -3591,7 +3620,8 @@ FORM check 'Прайс чекер'
 FORM groupScales 'Группа весов'
     OBJECTS grs=groupScales FIXED PANEL
     PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                    transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
+                    transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales,
+                    filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grs)
 
     OBJECTS s=scales
     PROPERTIES(s)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, numberScales, nameScalesModelScales,
@@ -3604,7 +3634,7 @@ FORM groupScales 'Группа весов'
 FORM groupsScales 'Группы весов'
     OBJECTS grs=groupScales
     PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                         transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
+                         transferGroupMachinery, filterItemsGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
     PROPERTIES(grs) ADDFORM, EDITFORM, delete
 
     OBJECTS s=scales
@@ -3616,7 +3646,8 @@ FORM groupsScales 'Группы весов'
 FORM groupCashRegister 'Группа касс'
 
     OBJECTS grc=groupCashRegister FIXED PANEL
-    PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
+    PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery,
+                    filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grc)
 
     OBJECTS c=cashRegister
     PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, nameGroupMachineryCashRegister, portMachinery, useMachinery, numberCashRegister, directoryCashRegister, nameCashRegisterModelCashRegister,
@@ -3631,7 +3662,7 @@ FORM groupCashRegister 'Группа касс'
 
 FORM groupsCashRegister 'Группы касс'
     OBJECTS grc=groupCashRegister, c=cashRegister
-    PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
+    PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery, filterItemsGroupMachinery
     PROPERTIES(grc)  ADDFORM, EDITFORM, delete
 
     PROPERTIES(c) READONLY nppMachinery, descriptionMachinery, portMachinery,
@@ -3642,7 +3673,8 @@ FORM groupsCashRegister 'Группы касс'
 
 FORM groupCheck 'Группа прайс чекеров'
     OBJECTS grch=groupCheck FIXED PANEL
-    PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
+    PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery,
+                     filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grch)
 
     OBJECTS ch=check
     PROPERTIES(ch)  nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, ADDOBJ, delete
@@ -3653,7 +3685,7 @@ FORM groupCheck 'Группа прайс чекеров'
 
 FORM groupsCheck 'Группы прайс чекеров'
     OBJECTS grch=groupCheck
-    PROPERTIES(grch) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery
+    PROPERTIES(grch) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery, filterItemsGroupMachinery
     PROPERTIES(grch)          ADDFORM, EDITFORM, delete
 
     OBJECTS ch=check
@@ -6970,8 +7002,10 @@ END
 
 //----------------------------------- Загрузка в ВУ -------------------------------------------------------
 
-inGroupMachineryItem 'Вкл' (groupMachinery, item) = TRUE IF groupMachinery IS groupMachinery AND item IS item
-                                                         AND NOT (groupMachinery IS groupScales AND NOT isWeightedItem(item));
+inGroupMachineryItem 'Вкл' (groupMachinery, item) = groupMachinery IS groupMachinery
+                                                    AND item IS item
+                                                         AND NOT (filterItemsGroupMachinery(groupMachinery) AND NOT inGroupMachineryItemGroup(groupMachinery, itemGroupSku(item)))
+                                                         AND NOT (groupMachinery IS groupScales AND NOT passScalesItem(item));
 
 // todo : сделать, чтобы хитро можно было настраивать что куда качать
 
@@ -9601,6 +9635,7 @@ NAVIGATOR {
             ADD itemDepartmentStoreInput;
             ADD machineryPriceTransaction;
             ADD groupMachineryInput;
+            ADD filterItemsGroupMachinery;
         }
         ADD parameters;
         ADD importData;
