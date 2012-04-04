@@ -5230,6 +5230,7 @@ wareShipmentDetail 'Посуда (ИД)' (shipmentDetail) = DATA ware(shipmentDe
 nameWareShipmentDetail 'Посуда' (shipmentDetail) = name(wareShipmentDetail(shipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
 
 wareShipmentDetail(shipmentDetail) <- wareItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+
 dataWareRangeShipmentDetail 'НДС по посуде' (shipmentDetail) =
     dataActingRateRangeDate(rangeWareVal(wareShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)),
     dateShipmentDetail(shipmentDetail));
@@ -5287,11 +5288,11 @@ retailSumShipment 'Розничная сумма' (shipment) = GROUP SUM retailS
 totalCleanSumSupplierShipment 'Общая сумма с НДС (без посуды)' (shipment) =
     GROUP SUM sumSupplierShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 
-totalSumIncVATShipment 'Общая сумма НДС' (shipment) =
+totalSumIncVATShipment 'Сумма НДС' (shipment) =
     (UNION OVERRIDE 0 IF shipment IS shipment, totalSumSupplierVATShipment (shipment)) +
     (UNION OVERRIDE 0 IF shipment IS shipment, totalSumVatWareShipment (shipment)) IN waybillSum;
 
-totalSumSupplierShipment 'Общая сумма с НДС' (shipment) =
+totalSumSupplierShipment 'Сумма с НДС' (shipment) =
     totalCleanSumSupplierShipment (shipment) +
     (UNION OVERRIDE 0 IF shipment IS shipment, totalSumWareShipment (shipment)) IN waybillSum;
 
@@ -7167,6 +7168,23 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
     FILTERS inMachineryPriceTransactionBarcode(t, b)
 ;
 
+
+//    totalSumSupplierPrice###object 'Сумма поставщика' (object) = GROUP SUM supplierPrice###object##Detail(object##Detail)*quantity###object##Detail(object##Detail)
+//        BY object###object##Detail(object);
+//
+//    totalSumMarkup###object 'Сумма надбавки' (object) = GROUP SUM sumMarkup###object##Detail(object##Detail)*quantity###object##Detail(object##Detail)
+//        BY object###object##Detail(object);
+//
+//    totalSumWare###object 'Сумма посуды' (object) = GROUP SUM priceWare###object##Detail (object##Detail)*quantity###object##Detail(object##Detail)
+//        BY object###object##Detail(object);
+//
+//    totalSumVatWare###object 'Сумма НДС по посуде' (object) =  GROUP SUM sumDetailVatWare###object##Detail(object##Detail)
+//        BY object###object##Detail(object);
+//
+//    totalSumRetailVAT###object 'Сумма розничного НДС' (object) = GROUP SUM sumRetailVAT###object##Detail(object##Detail)*quantity###object##Detail(object##Detail)
+//        BY object###object##Detail(object);
+
+
 //----------------------------------- Формы поступления товара -------------------------------------------------------
 @metaCodeInputMultipleItems(shipment);
 @metaCodeDocumentMachineryPriceTransaction(shipment);
@@ -7276,8 +7294,9 @@ DESIGN shipment FROM DEFAULT{
 FORM shipments 'Поставки'
     OBJECTS s=shipment
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
-                            nameSupplierShipment, quantityShipmentDetailsShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
-                            statusEquipmentPriceTransactionDocument
+                            nameSupplierShipment, quantityShipmentDetailsShipment, totalSumSupplierPriceShipment, totalSumIncVATShipment,
+                            totalSumSupplierShipment, retailSumShipment, statusEquipmentPriceTransactionDocument
+//    PROPERTIES (s) totalSumSupplierPriceShipment, totalSumMarkupShipment, totalSumWareShipment, totalSumVatWareShipment, totalSumRetailVATShipment
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (s)          createShipmentMachineryPriceTransaction FORCE PANEL,
@@ -7896,9 +7915,6 @@ FORM priceChangeDocuments 'Акты переоценки'
     PROPERTIES(pc) READONLY objectClassName, isPostedPriceChangeDocument FORCE GRID, dateTimePriceChangeDocument, nameDepartmentStorePriceChangeDocument,
                             numberPriceChangeDocument, seriesPriceChangeDocument, nameSupplierPriceChangeShipment, nameSupplierPriceChangeReturnSupplier,
                             nameSenderDepartmentPriceChangeInnerArrival,
-                       //     oldTotalSumSupplierPricePriceChangeDocument, totalSumSupplierPricePriceChangeDocument, oldTotalSumMarkupPriceChangeDocument,
-                       //     totalSumMarkupPriceChangeDocument, oldTotalSumRetailVATPriceChangeDocument, totalSumRetailVATPriceChangeDocument,
-                       //     oldTotalSumWarePriceChangeDocument, totalSumWarePriceChangeDocument, oldTotalSumVatWarePriceChangeDocument, totalSumVatWarePriceChangeDocument,
                             diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
                             diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument
 
@@ -7907,8 +7923,9 @@ FORM priceChangeDocuments 'Акты переоценки'
                              oldImporterPriceChangeDocumentDetail, importerPriceChangeDocumentDetail,
                              oldSupplierPriceChangeDocumentDetail, supplierPriceChangeDocumentDetail,
                              oldDataRetailRangePriceChangeDocumentDetail, dataRetailRangePriceChangeDocumentDetail,
-                             oldRetailPriceChangeDocumentDetail, retailPriceChangeDocumentDetail,
-                             oldPriceWarePriceChangeDocumentDetail, priceWarePriceChangeDocumentDetail
+                             oldPriceWarePriceChangeDocumentDetail, priceWarePriceChangeDocumentDetail,
+                             oldRetailPriceChangeDocumentDetail, retailPriceChangeDocumentDetail
+
     FILTERS documentPriceChangeDocumentDetail(pcd) == pc
 ;
 
