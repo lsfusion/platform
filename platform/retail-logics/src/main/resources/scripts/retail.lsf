@@ -7923,8 +7923,8 @@ FORM priceChangeDocuments 'Акты переоценки'
                              oldImporterPriceChangeDocumentDetail, importerPriceChangeDocumentDetail,
                              oldSupplierPriceChangeDocumentDetail, supplierPriceChangeDocumentDetail,
                              oldDataRetailRangePriceChangeDocumentDetail, dataRetailRangePriceChangeDocumentDetail,
-                             oldPriceWarePriceChangeDocumentDetail, priceWarePriceChangeDocumentDetail,
-                             oldRetailPriceChangeDocumentDetail, retailPriceChangeDocumentDetail
+                             oldRetailPriceChangeDocumentDetail, retailPriceChangeDocumentDetail,
+                             oldPriceWarePriceChangeDocumentDetail, priceWarePriceChangeDocumentDetail
 
     FILTERS documentPriceChangeDocumentDetail(pcd) == pc
 ;
@@ -8321,7 +8321,7 @@ FORM userPriceChange 'Переоценка товаров'
 
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) numberUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
-                   curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
+//                   curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                    curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
                    curDataRetailRangeUserPriceChangeDetail, numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
                    curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, curPriceWareUserPriceChangeDetail, priceWareUserPriceChangeDetail,
@@ -8343,7 +8343,9 @@ FORM userPriceChanges 'Переоценки товаров'
 
     OBJECTS u=userPriceChange
     PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
-                            statusEquipmentPriceTransactionDocument
+                   diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
+                   diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument,
+                   statusEquipmentPriceTransactionDocument
 
     PROPERTIES (u) createUserPriceChangeMachineryPriceTransaction FORCE PANEL,
                    ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
