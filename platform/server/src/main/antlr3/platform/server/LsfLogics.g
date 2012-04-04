@@ -1528,21 +1528,37 @@ changeClassActionPropertyDefinitionBody[List<String> context, boolean dynamic] r
 listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
+	List<String> localPropNames = new ArrayList<String>();
 	boolean newSession = false;
 	boolean doApply = false;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedListAProp(newSession, doApply, props);
+		$property = self.addScriptedListAProp(newSession, doApply, props, localPropNames);
 	}
 }
 	:	('NEWSESSION' { newSession = true; } ('AUTOAPPLY' {doApply = true; } )? )?
 		'{'
 			(	(PDB=actionPropertyDefinitionBody[context, dynamic] { props.add($PDB.property); }
 				( {!self.semicolonNeeded()}?=>  | ';'))
+			|	def=localDataPropertyDefinition ';' { localPropNames.add($def.name); }
 			|	emptyStatement
 			)*
 		'}'
+	;
+
+localDataPropertyDefinition returns [String name]
+@after {
+	$name = $propName.text;
+	if (inPropParseState()) {
+		self.addLocalDataProperty($propName.text, $returnClass.sid, $paramClasses.ids);
+	}
+}
+	:	'LOCAL' propName=ID 
+		'=' returnClass=classId
+		'('
+			paramClasses=classIdList
+		')'
 	;
 
 execActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -1553,7 +1569,7 @@ execActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 }
 	:	'EXEC'
 		prop=propertyObject
-		{ if (inPropParseState()) self.checkActionProperty($prop.property); }		
+		{ if (inPropParseState()) self.checkActionProperty($prop.property); }
 		'('
 		exprList=propertyExpressionList[context, dynamic]
 		')'

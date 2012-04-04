@@ -124,6 +124,7 @@
       <keyword name="LIMIT" />
       <keyword name="LIST" />
       <keyword name="LOADFILE" />
+      <keyword name="LOCAL" />
       <keyword name="LOGGABLE" />
       <keyword name="LONG" />
       <keyword name="MAX" />

@@ -208,9 +208,9 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // List action
 // statement syntax:
 // [NEWSESSION [AUTOAPPLY]]  {
-//      actionStatement1;
+//      actionStatement1 | LOCAL name = returnClass ( [paramClass1, ..., paramClassK1] )
 //      ...
-//      actionStatementN;
+//      actionStatementN | LOCAL name = returnClass ( [paramClass1, ..., paramClassKN] );
 // }
 //
 // If NEWSESSION is specified than action will be performed in new session.
@@ -258,6 +258,11 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // statement syntax:
 // MESSAGE propertyExpr [ LENGTH n ]
 // Default length = 2000
+
+// Change class action
+// statement syntax:
+// CHANGECLASS object TO className
+// built-in or abstract class names are forbidden
 
 // File open/load action
 // statement syntax:

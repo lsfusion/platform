@@ -70,6 +70,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     private LsfLogicsParser parser;
     private Stack<LsfLogicsParser> parsers = new Stack<LsfLogicsParser>();
 
+    private Map<String, LP<?>> currentLocalProperties = new HashMap<String, LP<?>>();
+
     public enum State {GROUP, CLASS, PROP, TABLE, INDEX}
     public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, LONG, DATE, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER}
@@ -254,6 +256,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LP<?> findLPByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (currentLocalProperties.containsKey(name)) {
+            return currentLocalProperties.get(name);
+        }
+
         LP<?> property = lpResolver.resolve(name);
         checkProperty(property, name);
         return property;
@@ -775,12 +781,23 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
 
-    public LPWithParams addScriptedListAProp(boolean newSession, boolean doApply, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedListAProp(boolean newSession, boolean doApply, List<LPWithParams> properties, List<String> localPropNames) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedListAProp(" + newSession + ", " + doApply + ", " + properties + ");");
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
         LP prop = addListAProp(null, genSID(), "", usedParams.size(), newSession, doApply, resultParams.toArray());
+        for (String propName : localPropNames) {
+            currentLocalProperties.remove(propName);
+        }
         return new LPWithParams(prop, usedParams);
+    }
+
+    public LP<?> addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames) throws ScriptingErrorLog.SemanticErrorException {
+        checkLocalDataPropertyName(name);
+
+        LP<?> res = addScriptedDProp(returnClassName, paramClassNames, true, false);
+        currentLocalProperties.put(name, res);
+        return res;
     }
 
     public LPWithParams addScriptedJoinAProp(LP mainProp, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
@@ -1807,6 +1824,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkFormActionObjectsMapping(List<String> objects, List<LPWithParams> mapping) throws ScriptingErrorLog.SemanticErrorException {
         if (objects.size() != mapping.size() && mapping.size() > 0) {
             errLog.emitFormActionObjectsMappingError(parser);
+        }
+    }
+
+    private void checkLocalDataPropertyName(String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (currentLocalProperties.containsKey(name)) {
+            errLog.emitAlreadyDefinedError(parser, "local property", name);
+        } else if (lpResolver.resolve(name) != null) {
+            errLog.emitAlreadyDefinedError(parser, "property", name);
         }
     }
 
