@@ -73,6 +73,20 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
                     ((PropertyMapImplement<?,T>)propertyInterface.getKey()).execute(propValues, session, propertyInterface.getValue().object, modifier);
         }
     }
+
+    @Override
+    public Set<Property> getSetChangeProps(boolean notNull, boolean add) {
+        if(notNull) {
+            Set<Property> result = new HashSet<Property>();
+            if(whereProp instanceof PropertyMapImplement)
+                result.addAll(((PropertyMapImplement) whereProp).property.getSetChangeProps(true, true));
+            for(PropertyInterfaceImplement<T> groupProp : groupProps)
+                if(groupProp instanceof PropertyMapImplement)
+                    result.addAll((((PropertyMapImplement)groupProp).property).getDataChanges());
+            return result;
+        } else
+            return super.getSetChangeProps(notNull, add);
+    }
 }
 
 

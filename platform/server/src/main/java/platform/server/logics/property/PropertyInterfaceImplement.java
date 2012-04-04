@@ -23,7 +23,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> {
     Expr mapExpr(Map<P, ? extends Expr> joinImplement, Modifier modifier);
     Expr mapExpr(Map<P, ? extends Expr> joinImplement);
 
-    Expr mapIncrementExpr(Map<P, ? extends Expr> joinImplement, PropertyChanges newChanges, PropertyChanges prevChanges, WhereBuilder changedWhere, IncrementType incrementType);
+    Expr mapIncrementExpr(Map<P, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere, IncrementType incrementType);
 
     abstract void mapFillDepends(Collection<Property> depends);
 

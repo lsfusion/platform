@@ -2,8 +2,11 @@ package platform.server.data.where.classes;
 
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.Field;
 import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.where.Where;
 
 import java.awt.event.KeyListener;
 import java.util.HashMap;
@@ -100,6 +103,14 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         for(And<K> andWhere : wheres)
             result = result.or(new ClassWhere<K>(andWhere.remove(keys)));
         return result;
-    } 
+    }
+
+    public Where getWhere(Map<K, ? extends Expr> mapExprs) {
+        Where result = Where.FALSE;
+        for(And<K> andWhere : wheres)
+            result = result.or(andWhere.getWhere(mapExprs));
+        return result;
+
+    }
 }
 

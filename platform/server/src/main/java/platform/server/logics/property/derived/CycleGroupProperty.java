@@ -18,10 +18,7 @@ import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.*;
 import platform.server.session.*;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyInterface> extends MaxGroupProperty<I> {
 
@@ -54,11 +51,10 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     }
 
     @Override
-    public Set<Property> getChangeDepends() {
-        Set<Property> result = super.getChangeDepends();
+    public Set<Property> getDataChangeProps() {
         if(toChange!=null)
-            result = BaseUtils.addSet(result, toChange);
-        return result;
+            return Collections.<Property>singleton(toChange);
+        return super.getDataChangeProps();
     }
 
     @Override

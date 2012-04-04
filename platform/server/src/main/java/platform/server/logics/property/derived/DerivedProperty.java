@@ -6,7 +6,9 @@ import platform.interop.Compare;
 import platform.server.classes.*;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
+import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.flow.SetActionProperty;
 
 import java.util.*;
 
@@ -540,4 +542,10 @@ public class DerivedProperty {
         return new PropertyMapImplement<ClassPropertyInterface, T>(dataProperty, dataProperty.getMapInterfaces(listInterfaces));
     }
 
+    public static <L extends PropertyInterface> PropertyMapImplement<?, L> createSetAction(Property<L> property, boolean notNull) {
+        List<L> listInterfaces = new ArrayList<L>(property.interfaces);
+        SetActionProperty<L, L> actionProperty = new SetActionProperty<L, L>(genID(), (notNull ? "Задать" : "Сбросить") + " " + property.caption,
+                property.interfaces, listInterfaces, property.getImplement(), notNull);
+        return new PropertyMapImplement<ClassPropertyInterface, L>(actionProperty, actionProperty.getMapInterfaces(listInterfaces));
+    }
 }

@@ -195,6 +195,10 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         getQuery().outSelect(session);
     }
 
+    public void outClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+        getQuery().outClassesSelect(session, QueryEnvironment.empty, baseClass);
+    }
+
     public platform.server.data.query.Join<PropertyField> join(Map<KeyField, ? extends Expr> joinImplement) {
         return new AddPullWheres<KeyField, platform.server.data.query.Join<PropertyField>>() {
             protected JoinCaseList<PropertyField> initCaseList() {

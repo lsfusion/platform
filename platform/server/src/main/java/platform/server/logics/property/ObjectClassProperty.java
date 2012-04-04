@@ -21,7 +21,9 @@ import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
 
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class ObjectClassProperty extends ExecuteProperty {
 
@@ -70,5 +72,14 @@ public class ObjectClassProperty extends ExecuteProperty {
         PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(entity.propertyObject.mapping);
         if(mapObject instanceof ObjectEntity && !((CustomClass)((ObjectEntity)mapObject).baseClass).hasChildren())
             entity.forceViewType = ClassViewType.HIDE;
+    }
+
+    @Override
+    public Set<Property> getChangeProps() {
+        return baseClass.getChildProps();
+    }
+
+    public Set<Property> getUsedProps() {
+        return new HashSet<Property>();
     }
 }

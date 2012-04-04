@@ -91,8 +91,8 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         return resultExpr;*/
     }
 
-    public Set<Property> getChangeDepends() {
-        return BaseUtils.mergeSet(super.getChangeDepends(), BaseUtils.toSet((Property)property, (Property)reverse.property));
+    public Set<Property> getDataChangeProps() {
+        return BaseUtils.toSet((Property)property, (Property)reverse.property);
     }
 
     // без решения reverse'а и timeChanges не включишь этот механизм

@@ -12,102 +12,110 @@ import platform.server.session.*;
 
 import java.util.*;
 
+import static platform.base.BaseUtils.mergeSet;
+
 public class DerivedChange<D extends PropertyInterface, C extends PropertyInterface> {
 
-    private final Property<C> property; // что меняем
-    private final PropertyImplement<D, PropertyInterfaceImplement<C>> value;
+    private final Property<C> writeTo; // что меняем
+    private final PropertyImplement<D, PropertyInterfaceImplement<C>> writeFrom;
+
     private final Collection<PropertyMapImplement<?,C>> where;
     private final Collection<PropertyMapImplement<?,C>> onChange;
-    private final boolean valueChanged;
-    private final boolean forceChanged;
+    private final IncrementType incrementType;
 
-    public DerivedChange(Property<C> property, PropertyImplement<D, PropertyInterfaceImplement<C>> value, Collection<PropertyMapImplement<?,C>> where, Collection<PropertyMapImplement<?,C>> onChange, boolean valueChanged, boolean forceChanged) {
-        this.property = property;
-        this.value = value;
+    public DerivedChange(Property<C> writeTo, PropertyImplement<D, PropertyInterfaceImplement<C>> writeFrom, Collection<PropertyMapImplement<?, C>> where, Collection<PropertyMapImplement<?, C>> onChange, IncrementType incrementType) {
+        this.writeTo = writeTo;
+        this.writeFrom = writeFrom;
         this.where = where;
         this.onChange = onChange;
-        this.valueChanged = valueChanged;
-        this.forceChanged = forceChanged;
+        this.incrementType = incrementType;
     }
 
-    private Set<Property> getDepends(boolean newDepends) {
+    public Set<Property> getOnChangeDepends() {
         Set<Property> used = new HashSet<Property>();
-        if(valueChanged==newDepends) {
-            used.add(value.property);
-            FunctionProperty.fillDepends(used,where);
-        }
-        FunctionProperty.fillDepends(used, BaseUtils.merge(value.mapping.values(), onChange));
+        FunctionProperty.fillDepends(used, BaseUtils.merge(writeFrom.mapping.values(), onChange));
         return used;
     }
 
-    public Set<Property> getNewDepends() {
-        return getDepends(true);
+    public Set<OldProperty> getOnChangeOldDepends() {
+        Set<OldProperty> used = new HashSet<OldProperty>();
+        for(Property property : getOnChangeDepends()) {
+            assert property.getOldDepends().isEmpty();
+            used.add(property.getOld());
+        }
+        return used;
     }
 
-    public Set<Property> getPrevDepends() {
-        return getDepends(false);
+    public Set<Property> getWhereDepends() {
+        Set<Property> used = new HashSet<Property>();
+        FunctionProperty.fillDepends(used, where);
+        return used;
     }
 
-    public boolean hasUsedDataChanges(PropertyChanges propChanges, PropertyChanges prevChanges) {
-        return hasUsedDataChanges(propChanges, true) || hasUsedDataChanges(prevChanges, false);
+    public Set<Property> getFullWhereDepends() {
+        return mergeSet(mergeSet(getOnChangeDepends(), getOnChangeOldDepends()), getWhereDepends());
     }
 
-    private PropertyChange<C> getDerivedChange(PropertyChanges newChanges, PropertyChanges prevChanges) {
+    public Set<Property> getDepends() {
+        Set<Property> used = new HashSet<Property>();
+        used.add(writeFrom.property);
+        used.addAll(getFullWhereDepends());
+        return used;
+    }
 
-        Map<C,KeyExpr> mapKeys = property.getMapKeys();
+    public Set<OldProperty> getOldDepends() {
+        Set<OldProperty> result = new HashSet<OldProperty>();
+        result.addAll(writeFrom.property.getOldDepends());
+        for(Property<?> property : getWhereDepends())
+            result.addAll(property.getOldDepends());
+        for(OldProperty property : getOnChangeOldDepends())
+            result.add(property);
+        return result;
+    }
+
+    private PropertyChange<C> getDerivedChange(PropertyChanges changes) {
+
+        Map<C,KeyExpr> mapKeys = writeTo.getMapKeys();
 
         WhereBuilder onChangeWhere = new WhereBuilder();
         Map<D, Expr> implementExprs = new HashMap<D, Expr>();
-        for(Map.Entry<D,PropertyInterfaceImplement<C>> interfaceImplement : value.mapping.entrySet())
-            implementExprs.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapIncrementExpr(mapKeys, newChanges, prevChanges, onChangeWhere, IncrementType.CHANGE));
+        for(Map.Entry<D,PropertyInterfaceImplement<C>> interfaceImplement : writeFrom.mapping.entrySet())
+            implementExprs.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapIncrementExpr(mapKeys, changes, onChangeWhere, IncrementType.CHANGE));
 
         Where andWhere = Where.TRUE; // докинем дополнительные условия
         for(PropertyMapImplement<?,C> propChange : where) // наплевать на изменения
-            andWhere = andWhere.and(propChange.mapExpr(mapKeys, valueChanged ? newChanges : prevChanges).getWhere());
+            andWhere = andWhere.and(propChange.mapExpr(mapKeys, changes).getWhere());
         for(PropertyMapImplement<?,C> propChange : onChange)
-            andWhere = andWhere.and(propChange.mapIncrementExpr(mapKeys, newChanges, prevChanges, onChangeWhere, forceChanged ? IncrementType.CHANGESET : IncrementType.CHANGE).getWhere());
-
+            propChange.mapIncrementExpr(mapKeys, changes, onChangeWhere, incrementType);
         andWhere = andWhere.and(onChangeWhere.toWhere());
 
-        return new PropertyChange<C>(mapKeys, getDerivedChangeExpr(implementExprs, newChanges, prevChanges, andWhere), andWhere);
+        return new PropertyChange<C>(mapKeys, getDerivedChangeExpr(implementExprs, changes, andWhere), andWhere);
     }
     
-    private Expr getDerivedChangeExpr(Map<D, Expr> implementExprs, PropertyChanges newChanges, PropertyChanges prevChanges, Where andWhere) {
+    private Expr getDerivedChangeExpr(Map<D, Expr> implementExprs, PropertyChanges changes, Where andWhere) {
         KeyEquals keyEquals = andWhere.getKeyEquals(); // оптимизация
         if(keyEquals.size==0)
             return Expr.NULL;
         KeyEqual keyEqual;
         if(keyEquals.size == 1 && !(keyEqual=keyEquals.getKey(0)).isEmpty())
             implementExprs = keyEqual.getTranslator().translate(implementExprs);
-        return value.property.getExpr(implementExprs, valueChanged ? newChanges : prevChanges);
+        return writeFrom.property.getExpr(implementExprs, changes);
     }
 
-    public DataChanges getDataChanges(Modifier modifier) {
-        return getDataChanges(modifier, Property.defaultModifier);
+    public boolean hasEventChanges(PropertyChanges propChanges) {
+        return hasEventChanges(propChanges.getStruct());
     }
 
-    public DataChanges getDataChanges(Modifier modifier, Modifier prevModifier) {
-        return getDataChanges(modifier.getPropertyChanges(), prevModifier.getPropertyChanges());
+    public boolean hasEventChanges(StructChanges changes) {
+        return changes.hasChanges(changes.getUsedChanges(getDepends())); // если в where нет изменений то из assertion'а что
     }
 
-    public boolean hasUsedDataChanges(PropertyChanges propChanges, boolean newDepends) {
-        StructChanges struct = propChanges.getStruct();
-        return struct.hasChanges(getUsedDataChanges(struct, newDepends));
-    }
-
-    public QuickSet<Property> getUsedDerivedChange(StructChanges changes, boolean newDepends) {
-        return changes.getUsedChanges(newDepends?getNewDepends():getPrevDepends());
-    }
-
-    public QuickSet<Property> getUsedDataChanges(StructChanges changes, boolean newModifier) {
-        return QuickSet.add(property.getUsedDataChanges(changes),getUsedDerivedChange(changes, newModifier));
+    public QuickSet<Property> getUsedDataChanges(StructChanges changes) {
+        assert hasEventChanges(changes);
+        return QuickSet.add(writeTo.getUsedDataChanges(changes), changes.getUsedChanges(getDepends()));
     }
     
     public DataChanges getDataChanges(PropertyChanges changes) {
-        return getDataChanges(changes, PropertyChanges.EMPTY);
-    }
-
-    public DataChanges getDataChanges(PropertyChanges newChanges, PropertyChanges prevChanges) {
-        return property.getDataChanges(getDerivedChange(newChanges, prevChanges), newChanges, null).changes;
+        return writeTo.getDataChanges(getDerivedChange(changes), changes, null).changes;
     }
 }

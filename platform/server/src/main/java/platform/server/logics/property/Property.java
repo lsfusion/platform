@@ -56,7 +56,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.base.BaseUtils.crossJoin;
 import static platform.base.BaseUtils.join;
+import static platform.base.BaseUtils.merge;
 
 public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T>, ServerIdentitySerializable {
 
@@ -232,6 +234,18 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public Set<Property> getDepends() {
         return getDepends(true);
     }
+    
+    public Map<Property, List<Property>> getRecDepends(Stack<Property> current) {
+        
+        current.push(this);
+        Map<Property,List<Property>> result = new HashMap<Property, List<Property>>();
+        for(Property<?> depend : getDepends()) {
+            result.put(depend, new ArrayList<Property>(current));
+            result.putAll(depend.getRecDepends(current));
+        }
+        current.pop();
+        return result;
+    }
 
     @IdentityLazy
     public Map<T, KeyExpr> getMapKeys() {
@@ -269,29 +283,17 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier, WhereBuilder resultChanged) {
-        return getIncrementExpr(joinImplement, modifier, resultChanged, IncrementType.SUSPICION);
+        return getIncrementExpr(joinImplement, resultChanged, modifier.getPropertyChanges(), IncrementType.SUSPICION);
     }
 
-    public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier, WhereBuilder resultChanged, IncrementType incrementType) {
-        return getIncrementExpr(joinImplement, modifier.getPropertyChanges(), resultChanged, incrementType);
+    public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, WhereBuilder resultChanged, Modifier modifier, IncrementType incrementType) {
+        return getIncrementExpr(joinImplement, resultChanged, modifier.getPropertyChanges(), incrementType);
     }
 
-    public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier, Modifier prevModifier, WhereBuilder resultChanged, IncrementType incrementType) {
-        return getIncrementExpr(joinImplement, modifier.getPropertyChanges(), prevModifier.getPropertyChanges(), resultChanged, incrementType);
-    }
-
-    public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder resultChanged) {
-        return getIncrementExpr(joinImplement, propChanges, resultChanged, IncrementType.SUSPICION);
-    }
-
-    public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder resultChanged, IncrementType incrementType) {
-        return getIncrementExpr(joinImplement, propChanges, PropertyChanges.EMPTY, resultChanged, incrementType);
-    }
-
-    public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges newChanges, PropertyChanges prevChanges, WhereBuilder resultChanged, IncrementType incrementType) {
+    public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, WhereBuilder resultChanged, PropertyChanges propChanges, IncrementType incrementType) {
         WhereBuilder incrementWhere = new WhereBuilder();
-        Expr newExpr = getExpr(joinImplement, newChanges, incrementWhere);
-        Expr prevExpr = getExpr(joinImplement, prevChanges, incrementWhere);
+        Expr newExpr = getExpr(joinImplement, propChanges, incrementWhere);
+        Expr prevExpr = getOld().getExpr(joinImplement, propChanges, incrementWhere);
 
         Where forceWhere;
         switch(incrementType) {
@@ -306,6 +308,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 break;
             case CHANGE:
                 forceWhere = newExpr.getWhere().or(prevExpr.getWhere()).and(newExpr.compare(prevExpr, Compare.EQUALS).not());
+                break;
+            case LEFTCHANGE:
+                forceWhere = newExpr.getWhere().and(newExpr.compare(prevExpr, Compare.EQUALS).not());
                 break;
             case SUSPICION:
                 forceWhere = newExpr.getWhere().or(prevExpr.getWhere());
@@ -491,6 +496,29 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         canChangeSID = false;
     }
 
+    public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitFitClasses(SinglePropertyTableUsage<T> changeTable, DataSession session) throws SQLException {
+        assert isStored();
+
+        // оптимизация
+        if(!Settings.instance.isEnableApplySingleStored() || DataSession.notFitClasses(this, changeTable))
+            return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(createChangeTable(), changeTable);
+        if(DataSession.fitClasses(this, changeTable))
+            return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(changeTable, createChangeTable());
+
+        PropertyChange<T> change = SinglePropertyTableUsage.getChange(changeTable);
+
+        Map<KeyField, KeyExpr> mapKeys = crossJoin(mapTable.mapKeys, change.mapKeys);
+        Where classWhere = getClassWhere(field).getWhere(merge(mapKeys, Collections.singletonMap(field, change.expr)))
+                            .or(mapTable.table.getClasses().getWhere(mapKeys).and(change.expr.getWhere().not())); // или если меняет на null, assert что fitKeyClasses
+
+
+        SinglePropertyTableUsage<T> fit = readChangeTable(session.sql, change.and(classWhere), session.baseClass, session.env);
+        SinglePropertyTableUsage<T> notFit = readChangeTable(session.sql, change.and(classWhere.not()), session.baseClass, session.env);
+        assert DataSession.fitClasses(this, fit);
+//        assert DataSession.notFitClasses(this, notFit); так как в классовой логике нет not, table(key0 is A, unknown) and not key0 is A она пока не разберет
+        return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(fit,notFit);
+    }
+
     public static class CommonClasses<T extends PropertyInterface> {
         public Map<T, ValueClass> interfaces;
         public ValueClass value;
@@ -624,6 +652,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 return true;
         return false;
     }
+    
+    public Set<OldProperty> getOldDepends() {
+        Set<OldProperty> result = new HashSet<OldProperty>();
+        for(Property<?> property : getDepends(false)) // derived'ы в общем то не интересуют так как используется в singleApply
+            result.addAll(property.getOldDepends());
+        return result;
+    }
 
     public Collection<MaxChangeProperty<?, T>> getMaxChangeProperties(Collection<Property> properties) {
         Collection<MaxChangeProperty<?, T>> result = new ArrayList<MaxChangeProperty<?, T>>();
@@ -671,9 +706,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return new MapDataChanges<T>();
     }
 
-    private Set<Property> actionChangeProps = new HashSet<Property>();
-    public Set<Property> getChangeDepends() {
-        return actionChangeProps;
+    private Set<ExecuteProperty> actionChangeProps = new HashSet<ExecuteProperty>(); // только у Data и IsClassProperty
+
+    public Set<Property> getDataChangeProps() {
+        return new HashSet<Property>();
     }
 
     protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
@@ -942,37 +978,54 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     // дебилизм конечно, но это самый простой обход DistrGroupProperty
     public boolean isOnlyNotZero = false;
 
-    public Set<PropertyFollows<?, T>> followed = new HashSet<PropertyFollows<?, T>>();
-    public Set<PropertyFollows<T, ?>> follows = new HashSet<PropertyFollows<T, ?>>();
-
-    public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement) {
-        return addFollows(implement, PropertyFollows.RESOLVE_ALL);
-    }
-
-    public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement, int options) {
+    public <L extends PropertyInterface> Collection<Property> addFollows(PropertyMapImplement<L, T> implement, int options) {
         return addFollows(implement, ServerResourceBundle.getString("logics.property.violated.consequence.from") + "(" + this + ") => (" + implement.property + ")", options);
     }
 
-    public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement, String caption, int options) {
-        PropertyFollows<T, L> propertyFollows = new PropertyFollows<T, L>(this, implement, options);
-        follows.add(propertyFollows);
-        implement.property.followed.add(propertyFollows);
+    public <L extends PropertyInterface> Collection<Property> addFollows(PropertyMapImplement<L, T> implement, String caption, int options) {
+//        PropertyFollows<T, L> propertyFollows = new PropertyFollows<T, L>(this, implement, options);
+
+        Collection<Property> props = new ArrayList<Property>();
+        if((options & PropertyFollows.RESOLVE_TRUE)!=0 && implement.property.hasSet(true)) { // оптимизационная проверка
+            assert interfaces.size() == implement.mapping.size(); // assert что количество
+            PropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true);
+            setAction.mapDerivedChange(IncrementType.SET, implement.reverse(this));
+            props.add(setAction.property);
+        } 
+        if((options & PropertyFollows.RESOLVE_FALSE)!=0 && hasSet(false)) {
+            PropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false);
+            setAction.mapDerivedChange(IncrementType.DROP, implement);
+            props.add(setAction.property);
+        }
 
         Property constraint = DerivedProperty.createAndNot(this, implement).property;
         constraint.caption = caption;
         constraint.setConstraint(false);
-        return constraint;
+        props.add(constraint);
+
+        return props;
     }
 
-    public Collection<Property> getFollows() {
-        Collection<Property> result = new ArrayList<Property>();
-        for(PropertyFollows<T, ?> follow : follows)
-            result.add(follow.getFollow());
-        return result;
+    public <D extends PropertyInterface> void setDerivedChange(IncrementType incrementType, PropertyMapImplement<?, T> onChangeImplement) {
+        assert this instanceof ActionProperty;
+        setDerivedChange(true, incrementType, DerivedProperty.<T>createStatic(true, ActionClass.instance), onChangeImplement);
     }
 
-    public boolean isFollow() {
-        return !(followed.isEmpty() && follows.isEmpty());
+    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, IncrementType incrementType, PropertyMapImplement<D, T> valueImplement, PropertyMapImplement<?, T> onChangeImplement) {
+        setDerivedChange(valueChanged, incrementType, valueImplement, new ArrayList<PropertyMapImplement<?, T>>(), Collections.<PropertyMapImplement<?, T>>singletonList(onChangeImplement));
+    }
+
+    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, IncrementType incrementType, PropertyMapImplement<D, T> valueImplement, Collection<PropertyMapImplement<?, T>> whereImplements, Collection<PropertyMapImplement<?, T>> onChangeImplements) {
+        setDerivedChange(valueChanged, incrementType, BaseUtils.<PropertyImplement<D, PropertyInterfaceImplement<T>>>immutableCast(valueImplement), whereImplements, onChangeImplements);
+    }
+    
+    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, IncrementType incrementType, PropertyImplement<D, PropertyInterfaceImplement<T>> valueImplement, Collection<PropertyMapImplement<?, T>> whereImplements, Collection<PropertyMapImplement<?, T>> onChangeImplements) {
+        if(!valueChanged)
+            valueImplement = new PropertyImplement<D, PropertyInterfaceImplement<T>>(valueImplement.property.getOld(), valueImplement.mapping);
+        DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(this, valueImplement, whereImplements, onChangeImplements, incrementType);
+        // запишем в DataProperty
+        for(UserProperty dataProperty : getDataChanges())
+            dataProperty.derivedChange = derivedChange;
     }
 
     protected Expr getDefaultExpr(Map<T, ? extends Expr> mapExprs) {
@@ -991,7 +1044,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
         proceedNotNull(mapKeys, where.and(getExpr(mapKeys, session.modifier).getWhere().not()), session, modifier);
     }
-
     public void setNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
         proceedNull(mapKeys, where.and(getExpr(mapKeys, modifier).getWhere()), session, modifier);
     }
@@ -1008,6 +1060,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         session.execute(this, new PropertyChange<T>(mapKeys, CaseExpr.NULL, where), modifier, null, null);
     }
 
+    protected boolean hasSet(boolean notNull) {
+        return !getSetChangeProps(notNull, false).isEmpty();
+    }
+
+    public Set<Property> getSetChangeProps(boolean notNull, boolean add) {
+        return new HashSet<Property>(getDataChanges(PropertyChanges.EMPTY, !notNull).getProperties()); // хотя и getDataChanges() сойдет
+    }
+
     @Override
     public List<AbstractGroup> fillGroups(List<AbstractGroup> groupsList) {
         return groupsList;
@@ -1017,16 +1077,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return this instanceof UserProperty && ((UserProperty)this).derivedChange != null;
     }
 
-    public Set<Property> getChangeProps() {
-        return new HashSet<Property>();
-    }
-
     private boolean finalized = false;
     public void finalizeInit() {
         assert !finalized;
         finalized = true;
-        for(Property property : getChangeProps())
-            property.actionChangeProps.add(this);
+        if(this instanceof ExecuteProperty)
+            for(Property<?> property : ((ExecuteProperty)this).getChangeProps()) // вообще говоря DataProperty и IsClassProperty
+                property.actionChangeProps.add((ExecuteProperty) this);
     }
 
     public QuickSet<Property> getUsedDerivedChange(StructChanges propChanges) {
@@ -1048,19 +1105,30 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             getQuery(PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, new HashMap<T, Expr>()).pack();
     }
 
+    protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
+        Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
+        for(Property depend : getDepends())
+            result.add(new Pair<Property<?>, LinkType>(depend, LinkType.DEPEND));
+        for(Property depend : actionChangeProps) // только у Data и IsClassProperty
+            result.add(new Pair<Property<?>, LinkType>(depend, LinkType.DEPEND));
+        return result;
+    }
+
     private Collection<Pair<Property<?>, LinkType>> links; 
     @ManualLazy
     public Collection<Pair<Property<?>, LinkType>> getLinks() {
-        if(links==null) {
-            Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
-            for(Property depend : getDepends())
-                result.add(new Pair<Property<?>, LinkType>(depend, LinkType.DEPEND));
-            for(Property depend : getFollows())
-                result.add(new Pair<Property<?>, LinkType>(depend, LinkType.FOLLOW));
-            for(Property depend : getChangeDepends())
-                result.add(new Pair<Property<?>, LinkType>(depend, LinkType.CHANGE));
-            links = result;
-        }
+        if(links==null)
+            links = calculateLinks();
         return links;
     }
+
+    private OldProperty<T> old;
+    public OldProperty<T> getOld() {
+        if(old==null) {
+            assert getOldDepends().isEmpty();
+            old = new OldProperty<T>(this);
+        }
+        return old;
+    }
+
 }

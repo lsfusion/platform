@@ -20,6 +20,7 @@ import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.IsClassProperty;
+import platform.server.logics.property.Property;
 import platform.server.logics.property.SessionDataProperty;
 
 import java.io.DataOutputStream;
@@ -416,6 +417,14 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         Set<IsClassProperty> result = new HashSet<IsClassProperty>();
         for(ValueClass valueClass : classes)
             result.add(valueClass.getProperty());
+        return result;
+    }
+
+    @IdentityLazy
+    public Set<Property> getChildProps() {
+        Set<Property> result = new HashSet<Property>();
+        for(CustomClass customClass : getChilds())
+            result.add(customClass.getProperty());
         return result;
     }
 }

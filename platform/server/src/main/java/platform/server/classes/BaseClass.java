@@ -14,6 +14,7 @@ import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ObjectClassProperty;
+import platform.server.logics.property.Property;
 import platform.server.logics.table.ObjectTable;
 import platform.server.logics.linear.LP;
 import platform.server.logics.DataObject;

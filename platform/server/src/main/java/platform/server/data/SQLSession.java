@@ -46,7 +46,6 @@ public class SQLSession extends MutableObject {
 
     public final static String userParam = "adsadaweewuser";
     public final static String isServerRestartingParam = "sdfisserverrestartingpdfdf";
-    public final static String sessionParam = "dsfreerewrewrsf";
     public final static String computerParam = "fjruwidskldsor";
 
     public SQLSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
@@ -401,6 +400,7 @@ public class SQLSession extends MutableObject {
     }
 
     private boolean explainAnalyzeMode = false;
+    private boolean explainNoAnalyze = false;
     private void executeExplain(PreparedStatement statement) throws SQLException {
         ResultSet result = statement.executeQuery();
         try {
@@ -420,14 +420,18 @@ public class SQLSession extends MutableObject {
 
         env.before(this, connection);
 
-        PreparedStatement statement = getStatement((explainAnalyzeMode?"EXPLAIN ANALYZE ":"") + command, paramObjects, connection, syntax);
+        PreparedStatement statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN ANALYZE ":"") + command, paramObjects, connection, syntax);
 
-        int result;
+        int result = 0;
         try {
             if(explainAnalyzeMode) {
-                executeExplain(statement);
+                PreparedStatement explainStatement = statement;
+                if(explainNoAnalyze)
+                    explainStatement = getStatement("EXPLAIN " + command, paramObjects, connection, syntax);
+                executeExplain(explainStatement);
                 result = 100;
-            } else
+            }
+            if(!(explainAnalyzeMode && !explainNoAnalyze))
                 result = statement.executeUpdate();
         } catch (SQLException e) {
             logger.error(statement.toString());

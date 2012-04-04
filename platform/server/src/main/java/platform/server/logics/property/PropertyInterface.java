@@ -68,7 +68,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return interfaceValues.get((P) this);
     }
 
-    public Expr mapIncrementExpr(Map<P, ? extends Expr> joinImplement, PropertyChanges newChanges, PropertyChanges prevChanges, WhereBuilder changedWhere, IncrementType incrementType) {
+    public Expr mapIncrementExpr(Map<P, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere, IncrementType incrementType) {
         return mapExpr(joinImplement);
     }
 

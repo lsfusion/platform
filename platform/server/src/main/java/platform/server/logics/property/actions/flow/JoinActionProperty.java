@@ -1,5 +1,6 @@
 package platform.server.logics.property.actions.flow;
 
+import platform.base.BaseUtils;
 import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
@@ -8,10 +9,9 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import static platform.base.BaseUtils.mergeSet;
 import static platform.base.BaseUtils.reverse;
 
 public class JoinActionProperty extends KeepContextActionProperty {
@@ -22,6 +22,8 @@ public class JoinActionProperty extends KeepContextActionProperty {
         super(sID, caption, classes != null ? classes : getClasses(listInterfaces, implement.mapping.values()));
 
         action = DerivedProperty.mapImplements(implement, reverse(getMapInterfaces(listInterfaces)));
+
+        finalizeInit();
     }
 
     public FlowResult flowExecute(ExecutionContext context) throws SQLException {
@@ -36,6 +38,19 @@ public class JoinActionProperty extends KeepContextActionProperty {
         }
         ((ActionProperty) action.property).execute(context.override(readValues));
         return FlowResult.FINISH;
+    }
+
+    @Override
+    public Set<Property> getChangeProps() {
+        return ((ActionProperty)action.property).getChangeProps();
+    }
+
+    @Override
+    public Set<Property> getUsedProps() {
+        Set<Property> result = new HashSet<Property>(((ActionProperty) action.property).getUsedProps());
+        for(PropertyInterfaceImplement<ClassPropertyInterface> value : action.mapping.values())
+            value.mapFillDepends(result);
+        return result;
     }
 
     @Override

@@ -56,6 +56,11 @@
         <property name="requiredPassword" value="false"/>
 	</bean>
 
+    <!--bean id="settings" class="platform.server.Settings">
+        <property name="limitExclusiveSimpleCount"><value type="int">100000</value></property>
+        <property name="limitExclusiveSimpleComplexity"><value type="int">100000</value></property>
+    </bean-->
+
 <!-- default ports: 6666, 6667, 6668 -->
     <bean id="serverInstanceLocator" class="platform.server.net.ServerInstanceLocator">
         <constructor-arg type="int" value="6666"/>

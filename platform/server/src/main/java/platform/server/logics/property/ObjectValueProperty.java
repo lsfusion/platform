@@ -16,7 +16,9 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class ObjectValueProperty extends ExecuteClassProperty {
 
@@ -73,5 +75,13 @@ public class ObjectValueProperty extends ExecuteClassProperty {
         PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(propertyView.entity.propertyObject.mapping);
         if (mapObject instanceof ObjectEntity)
             propertyView.caption = ((ObjectEntity) mapObject).getCaption();
+    }
+
+    public Set<Property> getChangeProps() {
+        return new HashSet<Property>();
+    }
+
+    public Set<Property> getUsedProps() {
+        return new HashSet<Property>();
     }
 }

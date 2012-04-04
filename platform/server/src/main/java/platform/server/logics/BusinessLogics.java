@@ -1523,7 +1523,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         return getRestartController().isPendingRestart();
                     }
                 },
-                LM.baseClass, LM.baseClass.named, LM.session, LM.name, LM.recognizeGroup, LM.transaction, LM.date, LM.currentDate, getGlobalSql());
+                LM.baseClass, LM.baseClass.named, LM.session, LM.name, LM.recognizeGroup, LM.transaction, LM.date, LM.currentDate, LM.currentSession, getGlobalSql());
     }
 
     public List<Property> getProperties() {
@@ -1540,12 +1540,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
 
     private static class LinksIn implements Comparable<LinksIn> {
+//        private final QuickMap<LinkType, List<Property>> countLinks = new SimpleMap<LinkType, List<Property>>();
         private final QuickMap<LinkType, Integer> countLinks = new SimpleMap<LinkType, Integer>();
         private final boolean usedByConstraints;
         private final Property<?> property;
 
         public int compareTo(LinksIn o) {
             for(LinkType linkType : LinkType.order) {
+//                int thisCount = countLinks.get(linkType).size();
+//                int thatCount = o.countLinks.get(linkType).size();
                 int thisCount = countLinks.get(linkType);
                 int thatCount = o.countLinks.get(linkType);
                 if(thisCount>thatCount)
@@ -1563,16 +1566,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         private LinksIn(Property property, boolean usedByConstraints) {
             for(LinkType linkType : LinkType.order)
+//                countLinks.add(linkType, new ArrayList<Property>());
                 countLinks.add(linkType, 0);
             this.property = property;
             this.usedByConstraints = usedByConstraints;
         }
 
-        public void reduce(LinkType link) {
+        public void reduce(Property property, LinkType link) {
+//            boolean remove = countLinks.get(link).remove(property);
+//            assert remove;
             countLinks.add(link, countLinks.get(link) - 1);
         }
 
-        public void add(LinkType link) {
+        public void add(Property property, LinkType link) {
+//            countLinks.get(link).add(property);
             countLinks.add(link, countLinks.get(link) + 1);
         }
     }
@@ -1594,7 +1601,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 linksIn = new LinksIn(linkProperty, usedByConstraints);
                 linksMap.add(linkProperty, linksIn);
             }
-            linksIn.add(link.second);
+            linksIn.add(property, link.second);
 
             fillLinks(linkProperty, linksMap, usedByConstraints, checked);
         }
@@ -1604,6 +1611,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         List<Property> list = new ArrayList<Property>();
         while(!sortedSet.isEmpty()) {
             LinksIn firstKey = sortedSet.first();
+//            assert firstKey.countLinks.get(LinkType.DEPEND).isEmpty();
             assert firstKey.countLinks.get(LinkType.DEPEND).equals(0);
             sortedSet.remove(firstKey);
 
@@ -1611,7 +1619,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 LinksIn linkOrder = linksMap.get(link.first);
                 assert linkOrder.property.equals(link.first);
                 if(sortedSet.remove(linkOrder)) { // проверяем что еще не было
-                    linkOrder.reduce(link.second);
+                    linkOrder.reduce(firstKey.property, link.second);
                     sortedSet.add(linkOrder);
                 }
             }
@@ -1645,13 +1653,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    public LinkedHashSet<Property> getConstraintDerivedDependProperties() {
-        LinkedHashSet<Property> result = new LinkedHashSet<Property>();
+    public LinkedHashSet<OldProperty> getConstraintDerivedDependProperties() {
+        LinkedHashSet<OldProperty> result = new LinkedHashSet<OldProperty>();
         for (Property property : getPropertyList()) {
             if (property.isFalse)
-                result.add(property);
+                result.add(property.getOld());
             if (property.isDerived())
-                result.addAll(((UserProperty)property).derivedChange.getPrevDepends());
+                result.addAll(((UserProperty)property).derivedChange.getOldDepends());
         }
         return result;
     }
@@ -1674,6 +1682,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 fillAppliedDependFrom(depend, applied, mapDepends);
     }
 
+    // assert что key property is stored, а value property is stored или instanceof OldProperty
     @IdentityLazy
     private Map<Property, List<Property>>  getMapAppliedDepends() {
         Map<Property, Set<Property>> mapDepends = new HashMap<Property, Set<Property>>();
@@ -1681,8 +1690,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             mapDepends.put(property, new HashSet<Property>());
             fillAppliedDependFrom(property, property, mapDepends);
         }
-        for(Property property : getConstraintDerivedDependProperties())
-            fillAppliedDependFrom(property, property, mapDepends);
+        for(OldProperty old : getConstraintDerivedDependProperties())
+            fillAppliedDependFrom(old.property, old, mapDepends);
 
         Iterable<Property> propertyList = getPropertyList();
         Map<Property, List<Property>> orderedMapDepends = new HashMap<Property, List<Property>>();
@@ -1695,15 +1704,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public List<Property> getAppliedDependFrom(Property property) {
         assert property.isStored();
         return getMapAppliedDepends().get(property);
-    }
-
-    @IdentityLazy
-    public List<Property> getFollowProperties() {
-        List<Property> result = new ArrayList<Property>();
-        for (Property property : getPropertyList())
-            if (property.isFollow())
-                result.add(property);
-        return result;
     }
 
     public List<AggregateProperty> getAggregateStoredProperties() {

@@ -8,10 +8,7 @@ import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static platform.base.BaseUtils.*;
 
@@ -20,7 +17,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     private final PropertyMapImplement<?, I> ifProp; // calculate
     private final OrderedMap<PropertyInterfaceImplement<I>, Boolean> orders; // calculate
     private final PropertyMapImplement<ClassPropertyInterface, I> action; // action
-    private final PropertyMapImplement<ClassPropertyInterface, I> elseAction;
+    private final PropertyMapImplement<ClassPropertyInterface, I> elseAction; // action
     private final boolean recursive;
 
     public ForActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, PropertyMapImplement<?, I> ifProp, OrderedMap<PropertyInterfaceImplement<I>, Boolean> orders, PropertyMapImplement<ClassPropertyInterface, I> action, PropertyMapImplement<ClassPropertyInterface, I> elseAction, boolean recursive) {
@@ -33,6 +30,25 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         this.action = action;
         this.elseAction = elseAction;
         this.recursive = recursive;
+
+        finalizeInit();
+    }
+
+    public Set<Property> getChangeProps() {
+        Set<Property> result = ((ActionProperty) action.property).getChangeProps();
+        if(elseAction != null)
+            result = mergeSet(result, ((ActionProperty) elseAction.property).getChangeProps());
+        return result;
+    }
+
+    public Set<Property> getUsedProps() {
+        Set<Property> result = new HashSet<Property>(((ActionProperty) action.property).getUsedProps());
+        if(elseAction != null)
+            result.addAll(((ActionProperty) elseAction.property).getUsedProps());
+        ifProp.mapFillDepends(result);
+        for(PropertyInterfaceImplement<I> order : orders.keySet())
+            order.mapFillDepends(result);
+        return result;
     }
 
     @Override

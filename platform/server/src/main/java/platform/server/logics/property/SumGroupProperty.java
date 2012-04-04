@@ -56,11 +56,10 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
                 orders, restriction.property, over).map(restriction.mapping);
     }
 
-    public Set<Property> getChangeDepends() {
-        Set<Property> result = super.getChangeDepends();
+    public Set<Property> getDataChangeProps() {
         if(distribute!=null)
-            result = BaseUtils.mergeSet(result, BaseUtils.<Property>toSet(distribute.property, nullImplement.property));
-        return result;
+            return BaseUtils.<Property>toSet(distribute.property, nullImplement.property);
+        return super.getDataChangeProps();
     }
 
     @Override

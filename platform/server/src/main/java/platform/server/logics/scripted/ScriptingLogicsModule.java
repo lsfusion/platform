@@ -1278,7 +1278,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<Object> params = getParamsPlainList(asList(valueProp, changeProp));
 
-        mainProp.setDerivedChange(!useOld, !anyChange, valueProp.property, BL, params.subList(1, params.size()).toArray());
+        mainProp.setDerivedChange(!useOld, !anyChange, valueProp.property, params.subList(1, params.size()).toArray());
     }
 
     public void addScriptedTable(String name, List<String> classIds) throws ScriptingErrorLog.SemanticErrorException {

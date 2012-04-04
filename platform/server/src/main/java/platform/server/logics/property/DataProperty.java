@@ -9,9 +9,9 @@ import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class DataProperty extends UserProperty {
 
@@ -46,27 +46,27 @@ public abstract class DataProperty extends UserProperty {
     }
 
     @Override
-    public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges newChanges, PropertyChanges prevChanges) {
+    public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges changes) {
         PropertyChange<ClassPropertyInterface> result = null;
 
         Map<ClassPropertyInterface, KeyExpr> mapKeys = getMapKeys();
         Expr prevExpr = null;
         for(ClassPropertyInterface remove : interfaces) {
             IsClassProperty classProperty = remove.interfaceClass.getProperty();
-            if(classProperty.hasChanges(newChanges) || classProperty.hasChanges(prevChanges)) {
+            if(classProperty.hasChanges(changes)) {
                 if(prevExpr==null) // оптимизация
                     prevExpr = getExpr(mapKeys);
-                result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, classProperty.getRemoveWhere(mapKeys.get(remove), newChanges, prevChanges).and(prevExpr.getWhere())));
+                result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, classProperty.getRemoveWhere(mapKeys.get(remove), changes).and(prevExpr.getWhere())));
             }
         }
         IsClassProperty classProperty = value.getProperty();
-        if(classProperty.hasChanges(newChanges) || classProperty.hasChanges(prevChanges)) {
+        if(classProperty.hasChanges(changes)) {
             if(prevExpr==null) // оптимизация
                 prevExpr = getExpr(mapKeys);
-            result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, classProperty.getRemoveWhere(prevExpr, newChanges, prevChanges)));
+            result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, classProperty.getRemoveWhere(prevExpr, changes)));
         }
         
-        return PropertyChange.addNull(result, super.getDerivedChange(newChanges, prevChanges));
+        return PropertyChange.addNull(result, super.getDerivedChange(changes));
     }
 
     @Override
@@ -74,13 +74,13 @@ public abstract class DataProperty extends UserProperty {
         QuickSet<Property> result = super.getUsedDerivedChange(propChanges).merge(value.getProperty().getUsedChanges(propChanges));
         for(ClassPropertyInterface remove : interfaces)
             result = result.merge(remove.interfaceClass.getProperty().getUsedChanges(propChanges));
-        if(derivedChange!=null)
-            result = result.merge(derivedChange.getUsedDataChanges(propChanges, true));
+        if(derivedChange!=null && derivedChange.hasEventChanges(propChanges))
+            result = result.merge(derivedChange.getUsedDataChanges(propChanges));
         return result;
     }
 
     @Override
-    public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges propChanges) {
-        return PropertyChange.addNull(getDerivedChange(propChanges, PropertyChanges.EMPTY), super.getDerivedChange(propChanges));
+    protected void fillDepends(Set<Property> depends, boolean derived) { // для Action'а связь считается слабой
+        if(derived) depends.addAll(getDerivedDepends());
     }
 }

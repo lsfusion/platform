@@ -8,8 +8,6 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.type.Type;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
@@ -35,12 +33,11 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         return new CommonClasses<ClassPropertyInterface>(IsClassProperty.getMapClasses(interfaces), getValueClass());
     }
 
-    @Override
-    protected void fillDepends(Set<Property> depends, boolean derived) {
-        if(derived && derivedChange !=null) depends.addAll(derivedChange.getNewDepends());
-    }
-
     public DerivedChange<?,?> derivedChange = null;
+    
+    protected Set<Property> getDerivedDepends() {
+        return derivedChange !=null ? derivedChange.getDepends() : new HashSet<Property>();
+    }
 
     @IdentityLazy
     private PropertyImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
@@ -53,13 +50,17 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
     }
 
     @Override
-    public Set<Property> getChangeDepends() {
-        return BaseUtils.mergeSet(super.getChangeDepends(), BaseUtils.<Property>toSet(getInterfaceClassProperty().property, getValueClassProperty().property));
+    public Set<Property> getDataChangeProps() {
+        return getClassDepends();
+    }
+
+    private Set<Property> getClassDepends() {
+        return BaseUtils.<Property>toSet(getInterfaceClassProperty().property, getValueClassProperty().property);
     }
 
     @Override
     protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
-        return propChanges.getUsedChanges(getChangeDepends());
+        return propChanges.getUsedChanges(getClassDepends());
     }
 
     @Override
@@ -94,13 +95,13 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
 
     public abstract void execute(ExecutionContext context) throws SQLException;
 
-    public PropertyChange<ClassPropertyInterface> getDerivedChange(Modifier newModifier, Modifier prevModifier) {
-        return getDerivedChange(newModifier.getPropertyChanges(), prevModifier.getPropertyChanges());
+    public PropertyChange<ClassPropertyInterface> getDerivedChange(Modifier modifier) {
+        return getDerivedChange(modifier.getPropertyChanges());
     }
 
-    public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges newChanges, PropertyChanges prevChanges) {
-        if(derivedChange!=null && derivedChange.hasUsedDataChanges(newChanges, prevChanges)) {
-            PropertyChange<ClassPropertyInterface> propertyChange = derivedChange.getDataChanges(newChanges, prevChanges).get(this);
+    public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges changes) {
+        if(derivedChange!=null && derivedChange.hasEventChanges(changes)) {
+            PropertyChange<ClassPropertyInterface> propertyChange = derivedChange.getDataChanges(changes).get(this);
             return propertyChange != null ? propertyChange : getNoChange(); // noChange для прикола с stored в aspectgetexpr (там hasChanges стоит, а с null'ом его не будет)
         }
         return null;

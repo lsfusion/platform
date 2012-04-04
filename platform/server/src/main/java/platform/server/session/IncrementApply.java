@@ -39,27 +39,27 @@ public class IncrementApply extends OverrideModifier {
 
     public void cleanIncrementTables() throws SQLException {
         increment.cleanIncrementTables(session.sql);
-        applyStart.cleanIncrementTables(session.sql);
     }
 
-    public <P extends PropertyInterface> void updateApplyStart(Property<P> property, SinglePropertyTableUsage<P> tableUsage, BaseClass baseClass) throws SQLException { // изврат конечно
-        SinglePropertyTableUsage<P> prevTable = applyStart.getTable(property);
+    public <P extends PropertyInterface> void updateApplyStart(OldProperty<P> property, SinglePropertyTableUsage<P> tableUsage, BaseClass baseClass) throws SQLException { // изврат конечно
+        SinglePropertyTableUsage<P> prevTable = increment.getTable(property);
         if(prevTable==null) {
             prevTable = property.createChangeTable();
-            applyStart.add(property, prevTable);
+            increment.add(property, prevTable);
         }
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
         prevTable.addRows(session.sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, session.env); // если он уже был в базе он не заместится
-        applyStart.addChange(property);
+        increment.addChange(property);
     }
 
-    public final IncrementProps applyStart = new IncrementProps();
-
     public Map<ImplementTable, Collection<Property>> groupPropertiesByTables() {
-       return BaseUtils.group(
+        return BaseUtils.group(
                new BaseUtils.Group<ImplementTable, Property>() {
                    public ImplementTable group(Property key) {
-                       return key.mapTable.table;
+                       if(key.isStored())
+                           return key.mapTable.table;
+                       assert key instanceof OldProperty;
+                       return null;
                    }
                }, increment.getProperties());
     }

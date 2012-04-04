@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static platform.base.BaseUtils.crossJoin;
+import static platform.base.BaseUtils.reverse;
 
 public class PropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> extends PropertyImplement<P, T> implements PropertyInterfaceImplement<T> {
 
@@ -32,6 +33,10 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
 
     public PropertyMapImplement(Property<P> property, Map<P, T> mapping) {
         super(property, mapping);
+    }
+    
+    public PropertyMapImplement<T, P> reverse(Property<T> property) {
+        return new PropertyMapImplement<T, P>(property, BaseUtils.reverse(mapping));
     }
 
     public Expr mapExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier) {
@@ -75,6 +80,12 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     public void mapNotNull(Map<T, DataObject> values, DataSession session, Modifier modifier) throws SQLException {
         property.setNotNull(BaseUtils.join(mapping, values), session, modifier);
     }
+    public void mapNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
+        property.setNotNull(BaseUtils.join(mapping, mapKeys), where, session, modifier);
+    }
+    public void mapNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
+        property.setNull(BaseUtils.join(mapping, mapKeys), where, session, modifier);
+    }
 
     public PropertyMapImplement<?, T> mapChangeImplement(Map<T, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
         PropertyMapImplement<?, P> changeImplement = property.modifyChangeImplement(new Result<Property>(), BaseUtils.join(mapping, interfaceValues), session, modifier);
@@ -96,7 +107,11 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        return session.execute(property, mapValues(keys).getPropertyChange(session.getObjectValue(value, property.getType()).getExpr()), modifier, executeForm, mapObjects);
+        return execute(keys, session, session.getObjectValue(value, property.getType()), modifier, executeForm, mapObjects);
+    }
+
+    private List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, ObjectValue objectValue, Modifier modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        return session.execute(property, mapValues(keys).getPropertyChange(objectValue.getExpr()), modifier, executeForm, mapObjects);
     }
 
     public void fill(Set<T> interfaces, Set<PropertyMapImplement<?, T>> properties) {
@@ -111,16 +126,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return new PropertyImplement<P, K>(property, BaseUtils.join(mapping, remap));
     }
 
-    public Expr mapIncrementExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier, WhereBuilder changedWhere, IncrementType incrementType) {
-        return property.getIncrementExpr(BaseUtils.join(mapping, joinImplement), modifier, changedWhere, incrementType);
-    }
-
-    public Expr mapIncrementExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier, Modifier prevModifier, WhereBuilder changedWhere, IncrementType incrementType) {
-        return property.getIncrementExpr(BaseUtils.join(mapping, joinImplement), modifier, prevModifier, changedWhere, incrementType);
-    }
-
-    public Expr mapIncrementExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges newChanges, PropertyChanges prevChanges, WhereBuilder changedWhere, IncrementType incrementType) {
-        return property.getIncrementExpr(BaseUtils.join(mapping, joinImplement), newChanges, prevChanges, changedWhere, incrementType);
+    public Expr mapIncrementExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere, IncrementType incrementType) {
+        return property.getIncrementExpr(BaseUtils.join(mapping, joinImplement), changedWhere, changes, incrementType);
     }
     
     public ClassWhere<T> mapClassWhere() {
@@ -131,4 +138,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return crossJoin(mapping, property.getCommonClasses().interfaces);
     }
 
+    public <L extends PropertyInterface> void mapDerivedChange(IncrementType set, PropertyMapImplement<L, T> reverse) {
+        property.setDerivedChange(set, reverse.map(BaseUtils.reverse(mapping)));
+    }
 }

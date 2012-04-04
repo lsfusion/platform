@@ -2,12 +2,25 @@ package platform.server.logics.property.actions.flow;
 
 import platform.server.classes.ValueClass;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.Property;
 
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class BreakActionProperty extends KeepContextActionProperty {
     public BreakActionProperty() {
         super("break", "break", new ValueClass[0]);
+
+        finalizeInit();
+    }
+
+    public Set<Property> getChangeProps() {
+        return new HashSet<Property>();
+    }
+
+    public Set<Property> getUsedProps() {
+        return new HashSet<Property>();
     }
 
     public FlowResult flowExecute(ExecutionContext context) throws SQLException {

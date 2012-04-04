@@ -382,6 +382,22 @@ public class Query<K,V> extends IQuery<K,V> {
         compile(session.syntax).outSelect(session, env);
     }
 
+    public void outClassesSelect(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException {
+        // выведем на экран
+        OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> result = executeClasses(session, env, baseClass);
+
+        for(Map.Entry<Map<K, DataObject>, Map<V, ObjectValue>> rowMap : result.entrySet()) {
+            for(Map.Entry<K, DataObject> key : rowMap.getKey().entrySet()) {
+                System.out.println(key.getKey()+"-"+key.getValue());
+            }
+            System.out.println("---- ");
+            for(Map.Entry<V, ObjectValue> property : rowMap.getValue().entrySet()) {
+                System.out.println(property.getKey()+"-"+property.getValue());
+            }
+        }
+    }
+
+
     public String toString() {
         return "JQ";
     }

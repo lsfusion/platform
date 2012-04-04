@@ -14,12 +14,13 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.CustomActionProperty;
 import skolkovo.SkolkovoLogicsModule;
 
 import java.sql.SQLException;
 import java.util.Map;
 
-public class ExportExpertsActionProperty extends ActionProperty {
+public class ExportExpertsActionProperty extends CustomActionProperty {
 
     boolean escape;
     SkolkovoLogicsModule LM;

@@ -8,6 +8,8 @@ import platform.server.caches.ManualLazy;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
+import platform.server.data.expr.Expr;
+import platform.server.data.where.Where;
 
 import java.util.*;
 
@@ -75,6 +77,12 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             super(key, value);
         }
 
+        public Where getWhere(Map<K, ? extends Expr> mapExprs) {
+            Where result = Where.TRUE;
+            for(int i=0;i<size;i++)
+                result = result.and(mapExprs.get(getKey(i)).isClass(getValue(i)));
+            return result;
+        }
     }
 
     protected And<K> createMap() {

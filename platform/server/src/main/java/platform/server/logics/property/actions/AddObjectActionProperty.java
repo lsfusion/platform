@@ -14,12 +14,11 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.IsClassProperty;
 import platform.server.logics.property.Property;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class AddObjectActionProperty extends CustomActionProperty {
 
@@ -38,6 +37,11 @@ public class AddObjectActionProperty extends CustomActionProperty {
 
     private Property propertyValue;
     private DataClass dataClass;
+
+    @Override
+    public Set<Property> getChangeProps() {
+        return IsClassProperty.getParentProps(valueClass);
+    }
 
     public AddObjectActionProperty(String sID, CustomClass valueClass) {
         this(sID, null, null, false, valueClass, null, null, null);

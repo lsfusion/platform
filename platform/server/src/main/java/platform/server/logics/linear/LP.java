@@ -22,6 +22,7 @@ import javax.swing.*;
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.base.BaseUtils.immutableCast;
 import static platform.server.logics.PropertyUtils.mapImplement;
 import static platform.server.logics.PropertyUtils.readImplements;
 
@@ -73,7 +74,7 @@ public class LP<T extends PropertyInterface> {
     }
 
     public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, LP<D> valueProperty, int whereNum, BusinessLogics<?> BL, Object... params) {
-        setDerivedChange(valueChanged, false, valueProperty, whereNum, BL, params);
+        setDerivedChange(valueChanged, false, valueProperty, whereNum, params);
     }
 
     public <D extends PropertyInterface> void setDerivedForcedChange(LP<D> valueProperty, Object... params) {
@@ -85,23 +86,19 @@ public class LP<T extends PropertyInterface> {
     }
 
     public <D extends PropertyInterface> void setDerivedForcedChange(boolean valueChanged, int whereNum, LP<D> valueProperty, Object... params) {
-        setDerivedChange(valueChanged, true, valueProperty, whereNum, null, params);
+        setDerivedChange(valueChanged, true, valueProperty, whereNum, params);
     }
 
-    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, boolean forceChanged, LP<D> valueProperty, BusinessLogics<?> BL, Object... params) {
-        setDerivedChange(valueChanged, forceChanged, valueProperty, 0, BL, params);
+    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, boolean forceChanged, LP<D> valueProperty, Object... params) {
+        setDerivedChange(valueChanged, forceChanged, valueProperty, 0, params);
     }
-    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, boolean forceChanged, LP<D> valueProperty, int whereNum, BusinessLogics<?> BL, Object... params) {
-        List<PropertyInterfaceImplement<T>> defImplements = readImplements(listInterfaces, params);
+    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, boolean setChanged, LP<D> valueProperty, int whereNum, Object... params) {
         int intValue = valueProperty.listInterfaces.size();
-        DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(property, mapImplement(valueProperty, defImplements.subList(0, intValue)),
-                BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue, intValue + whereNum)),
-                BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue + whereNum, defImplements.size())),
-                valueChanged, forceChanged);
+        List<PropertyInterfaceImplement<T>> defImplements = readImplements(listInterfaces, params);
 
-        // запишем в DataProperty
-        for(UserProperty dataProperty : property.getDataChanges())
-            dataProperty.derivedChange = derivedChange;
+        property.setDerivedChange(valueChanged, setChanged ? IncrementType.SET : IncrementType.LEFTCHANGE, mapImplement(valueProperty, defImplements.subList(0, intValue)),
+                BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue, intValue + whereNum)),
+                BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue + whereNum, defImplements.size())));
     }
 
     public List<T> listGroupInterfaces;

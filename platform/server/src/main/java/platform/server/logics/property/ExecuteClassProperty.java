@@ -1,5 +1,7 @@
 package platform.server.logics.property;
 
+import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.QuickSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
@@ -8,6 +10,7 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,14 +20,8 @@ public abstract class ExecuteClassProperty extends ExecuteProperty {
         super(sID, caption, classes);
     }
 
-    @Override
-    protected void fillDepends(Set<Property> depends, boolean derived) {
-        super.fillDepends(depends, derived);
-        depends.add(getIsClassProperty().property);
-    }
-
     @IdentityLazy
-    private PropertyImplement<?, ClassPropertyInterface> getIsClassProperty() {
+    public PropertyImplement<?, ClassPropertyInterface> getIsClassProperty() {
         return IsClassProperty.getProperty(interfaces);
     }
 
@@ -36,5 +33,11 @@ public abstract class ExecuteClassProperty extends ExecuteProperty {
     
     protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return getValueExpr(joinImplement).and(getIsClassProperty().mapExpr(joinImplement, propChanges, changedWhere).getWhere());
+    }
+
+    @Override
+    protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
+        return BaseUtils.add(super.calculateLinks(),
+                new Pair<Property<?>, LinkType>(getIsClassProperty().property, LinkType.ACTIONUSED));
     }
 }

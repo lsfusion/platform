@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.ConcreteObjectClass;
+import platform.server.classes.CustomClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
@@ -94,9 +95,34 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
                 session.changeClass(BaseUtils.singleValue(row), session.baseClass.unknown);
     }
 
-    public Where getRemoveWhere(Expr joinExpr, PropertyChanges newChanges, PropertyChanges prevChanges) {
+    public static Set<Property> getParentProps(CustomClass customClass) {
+        Set<Property> result = new HashSet<Property>();
+        Collection<CustomClass> parents = new HashSet<CustomClass>();
+        customClass.fillParents(parents);
+        for(CustomClass parent : parents)
+            result.add(parent.getProperty());
+        return result;
+    }
+
+    @Override
+    public Set<Property> getSetChangeProps(boolean notNull, boolean add) {
+        // предыдущий класс может быть любым кроме child's
+        CustomClass customClass = ((CustomClass) getInterfaceClass());
+        Set<Property> childProps = customClass.getChildProps();
+        if(add) {
+            assert notNull;
+            return getParentProps(customClass);
+        }
+
+        if(notNull)
+            return BaseUtils.removeSet(customClass.getBaseClass().getChildProps(), childProps);
+        else
+            return BaseUtils.mergeSet(getParentProps(customClass), childProps);
+    }
+
+    public Where getRemoveWhere(Expr joinExpr, PropertyChanges newChanges) {
         WhereBuilder changedWhere = new WhereBuilder();
-        getIncrementExpr(Collections.singletonMap(BaseUtils.single(interfaces), joinExpr), newChanges, prevChanges, changedWhere, IncrementType.DROP);
+        getIncrementExpr(Collections.singletonMap(BaseUtils.single(interfaces), joinExpr), changedWhere, newChanges, IncrementType.DROP);
         return changedWhere.toWhere();
     }
 }

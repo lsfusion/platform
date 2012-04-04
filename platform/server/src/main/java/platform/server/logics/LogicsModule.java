@@ -556,7 +556,7 @@ public abstract class LogicsModule {
     protected <C extends PropertyInterface> LP addSetPropertyAProp(AbstractGroup group, String name, String caption, int interfaces, int resInterfaces, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
-        return addProperty(group, new LP<ClassPropertyInterface>(new SetActionProperty<C, PropertyInterface>(name, caption,
+        return addProperty(group, new LP<ClassPropertyInterface>(new ChangeActionProperty<C, PropertyInterface>(name, caption,
                                                                                                              innerInterfaces, (List) readImplements.subList(0, resInterfaces),
                                                                                                              (PropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
     }
@@ -2264,7 +2264,8 @@ public abstract class LogicsModule {
         for (int i = 0; i < second.listInterfaces.size(); i++) {
             mapInterfaces.put(second.listInterfaces.get(i), first.listInterfaces.get(mapping[i] - 1));
         }
-        addProp(first.property.addFollows(new PropertyMapImplement<L, T>(second.property, mapInterfaces), options));
+        for(Property addProp : first.property.addFollows(new PropertyMapImplement<L, T>(second.property, mapInterfaces), options))
+            addProp(addProp);
     }
 
     protected void followed(LP first, LP... lps) {
@@ -2281,24 +2282,24 @@ public abstract class LogicsModule {
         setNotNull(property, PropertyFollows.RESOLVE_TRUE, classes);
     }
 
-    protected void setNotNull(LP property, int resolve, ValueClass... classes) {
+    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LP<P> property, int resolve, ValueClass... classes) {
 
         ValueClass[] values = new ValueClass[property.listInterfaces.size()];
         System.arraycopy(classes, 0, values, 0, classes.length);
         ValueClass[] propertyClasses = property.getMapClasses();
         System.arraycopy(propertyClasses, classes.length, values, classes.length, propertyClasses.length - classes.length);
 
-        LP checkProp = addCProp(LogicalClass.instance, true, values);
+        LP<C> checkProp = addCProp(LogicalClass.instance, true, values);
 
-        Map mapInterfaces = new HashMap();
+        Map<P,C> mapInterfaces = new HashMap<P,C>();
         for (int i = 0; i < property.listInterfaces.size(); i++) {
             mapInterfaces.put(property.listInterfaces.get(i), checkProp.listInterfaces.get(i));
         }
-        addProp(
-                checkProp.property.addFollows(
-                        new PropertyMapImplement(property.property, mapInterfaces),
+        for(Property addProp : checkProp.property.addFollows(
+                        new PropertyMapImplement<P,C>(property.property, mapInterfaces),
                         ServerResourceBundle.getString("logics.property") + " " + property.property.caption + " [" + property.property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
-                        resolve));
+                        resolve))
+            addProp(addProp);
     }
 
     protected void makeUserLoggable(LP... lps) {

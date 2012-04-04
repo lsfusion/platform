@@ -933,12 +933,14 @@ public class BaseUtils {
         Map<G, Collection<K>> result = new HashMap<G, Collection<K>>();
         for (K key : keys) {
             G group = getter.group(key);
-            Collection<K> groupList = result.get(group);
-            if (groupList == null) {
-                groupList = new ArrayList<K>();
-                result.put(group, groupList);
+            if(group!=null) {
+                Collection<K> groupList = result.get(group);
+                if (groupList == null) {
+                    groupList = new ArrayList<K>();
+                    result.put(group, groupList);
+                }
+                groupList.add(key);
             }
-            groupList.add(key);
         }
         return result;
     }
@@ -947,12 +949,14 @@ public class BaseUtils {
         Map<G, List<K>> result = new HashMap<G, List<K>>();
         for (K key : keys) {
             G group = getter.group(key);
-            List<K> groupList = result.get(group);
-            if (groupList == null) {
-                groupList = new ArrayList<K>();
-                result.put(group, groupList);
+            if(group!=null) {
+                List<K> groupList = result.get(group);
+                if (groupList == null) {
+                    groupList = new ArrayList<K>();
+                    result.put(group, groupList);
+                }
+                groupList.add(key);
             }
-            groupList.add(key);
         }
         return result;
     }
@@ -961,12 +965,14 @@ public class BaseUtils {
         Map<G, Set<K>> result = new HashMap<G, Set<K>>();
         for (K key : keys) {
             G group = getter.group(key);
-            Set<K> groupSet = result.get(group);
-            if (groupSet == null) {
-                groupSet = new HashSet<K>();
-                result.put(group, groupSet);
+            if(group!=null) {
+                Set<K> groupSet = result.get(group);
+                if (groupSet == null) {
+                    groupSet = new HashSet<K>();
+                    result.put(group, groupSet);
+                }
+                groupSet.add(key);
             }
-            groupSet.add(key);
         }
         return result;
     }
@@ -1011,12 +1017,14 @@ public class BaseUtils {
         SortedMap<G, Set<K>> result = new TreeMap<G, Set<K>>(comparator);
         for (K key : keys) {
             G group = getter.group(key);
-            Set<K> groupSet = result.get(group);
-            if (groupSet == null) {
-                groupSet = new HashSet<K>();
-                result.put(group, groupSet);
+            if(group!=null) {
+                Set<K> groupSet = result.get(group);
+                if (groupSet == null) {
+                    groupSet = new HashSet<K>();
+                    result.put(group, groupSet);
+                }
+                groupSet.add(key);
             }
-            groupSet.add(key);
         }
         return result;
     }

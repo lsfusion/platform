@@ -67,7 +67,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     @ThisMessage
     public void recalculateAggregation(SQLSession session) throws SQLException {
         session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false).map(
-                BaseUtils.reverse(mapTable.mapKeys), singletonMap(field, "calcValue"), MapValuesTranslator.noTranslate)));
+                BaseUtils.reverse(mapTable.mapKeys), singletonMap(field, "calcvalue"), MapValuesTranslator.noTranslate)));
     }
 
     int getCoeff(PropertyMapImplement<?, T> implement) { return 0; }

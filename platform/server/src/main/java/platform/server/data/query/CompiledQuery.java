@@ -442,6 +442,16 @@ public class CompiledQuery<K,V> {
                 }
                 return alias + "." + name;
             }
+
+            protected String getEmptySelect(Where groupWhere) {
+                Map<String, String> keySelect = new HashMap<String, String>();
+                for(Map.Entry<String, K> expr : group.entrySet())
+                    keySelect.put(expr.getKey(), expr.getValue().getType(groupWhere).getCast(SQLSyntax.NULL, syntax, false));
+                Map<String, String> propertySelect = new HashMap<String, String>();
+                for(Map.Entry<I, String> expr : queries.entrySet())
+                    propertySelect.put(expr.getValue(), exprs.get(expr.getKey()).getType().getCast(SQLSyntax.NULL, syntax, false));
+                return "(" + syntax.getSelect("empty", SQLSession.stringExpr(keySelect, propertySelect), "", "", "", "", "") + ")";
+            }
         }
 
         private class GroupSelect extends QuerySelect<Expr, GroupExpr.Query,GroupJoin,GroupExpr> {
@@ -462,8 +472,8 @@ public class CompiledQuery<K,V> {
                     exprWhere = exprWhere.or(query.getWhere());
                 }
                 Where groupWhere = exprWhere.and(Expr.getWhere(group));
-                Where fullWhere = groupWhere;
 
+                Where fullWhere = groupWhere;
                 StatKeys<Expr> statKeys = innerJoin.getStatKeys(keyStat); // определяем ключи которые надо протолкнуть
                 Where pushWhere;
                 if(innerJoin.getJoins().size() > 1 && (pushWhere = whereJoins.getGroupPushWhere(innerJoin.getJoins(), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
@@ -473,29 +483,18 @@ public class CompiledQuery<K,V> {
                         if((pushWhere = whereJoins.getGroupPushWhere(Collections.singletonMap(key, innerJoin.group.get(key)), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.distinct.get(key)))!=null)
                             fullWhere = fullWhere.and(pushWhere);
 
+                if(fullWhere.isFalse()) // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
+                    return getEmptySelect(groupWhere);
+
                 Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
-                Map<String, String> keySelect, propertySelect;
-                String fromSelect;
+                Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
+                String fromSelect = new Query<KeyExpr,Expr>(keys.toMap(),BaseUtils.toMap(queryExprs), fullWhere)
+                    .compile(syntax, subcontext).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, params, env);
 
-                if(fullWhere.isFalse()) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
-                    keySelect = new HashMap<String, String>();
-                    for(Map.Entry<String, Expr> expr : group.entrySet())
-                        keySelect.put(expr.getKey(), expr.getValue().getType(groupWhere).getCast(SQLSyntax.NULL, syntax, false));
-                    propertySelect = new HashMap<String, String>();
-                    for(Map.Entry<GroupExpr.Query, String> expr : queries.entrySet())
-                        propertySelect.put(expr.getValue(), exprs.get(expr.getKey()).getType().getCast(propertySelect.get(expr.getValue()), syntax, false));
-                    fromSelect = "empty";
-                } else {
-                    Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
-                    fromSelect = new Query<KeyExpr,Expr>(keys.toMap(),BaseUtils.toMap(queryExprs), fullWhere)
-                        .compile(syntax, subcontext).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, params, env);
-
-                    keySelect = BaseUtils.join(group,fromPropertySelect);
-                    propertySelect = new HashMap<String, String>();
-                    for(Map.Entry<GroupExpr.Query, String> expr : queries.entrySet())
-                        propertySelect.put(expr.getValue(), expr.getKey().getSource(fromPropertySelect, syntax, exprs.get(expr.getKey()).getType()));
-                }
-
+                Map<String, String> keySelect = BaseUtils.join(group,fromPropertySelect);
+                Map<String, String> propertySelect = new HashMap<String, String>();
+                for(Map.Entry<GroupExpr.Query, String> expr : queries.entrySet())
+                    propertySelect.put(expr.getValue(), expr.getKey().getSource(fromPropertySelect, syntax, exprs.get(expr.getKey()).getType()));
 
                 Collection<String> havingSelect = new ArrayList<String>();
                 if(isSingle(innerJoin))
@@ -532,13 +531,17 @@ public class CompiledQuery<K,V> {
                 Set<Expr> queryExprs = new HashSet<Expr>();
                 for(PartitionExpr.Query query : queries.keySet())
                     queryExprs.addAll(query.getExprs());
-                Where fullWhere = innerJoin.getWhere();
+                Where innerWhere = innerJoin.getWhere();
 
+                Where fullWhere = innerWhere;
                 if(Settings.instance.isPushOrderWhere()) {
                     StatKeys<KeyExpr> statKeys = innerJoin.getStatKeys(keyStat); // определяем ключи которые надо протолкнуть
                     Where pushWhere;
                     if((pushWhere = whereJoins.getPartitionPushWhere(innerJoin.getJoins(), innerJoin.getPartitions(), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
                         fullWhere = fullWhere.and(pushWhere);
+
+                    if(fullWhere.isFalse()) // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
+                        return getEmptySelect(innerWhere);
                 }
 
                 Map<String,String> keySelect = new HashMap<String,String>();
@@ -613,12 +616,16 @@ public class CompiledQuery<K,V> {
 
             public String getSource(ExecuteEnvironment env) {
 
-                Where fullWhere = innerJoin.getWhere();
+                Where innerWhere = innerJoin.getWhere();
 
+                Where fullWhere = innerWhere;
                 StatKeys<KeyExpr> statKeys = innerJoin.getStatKeys(keyStat);
                 Where pushWhere;
                 if((pushWhere = whereJoins.getGroupPushWhere(innerJoin.getJoins(), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
                     fullWhere = fullWhere.and(pushWhere);
+
+                if(fullWhere.isFalse())
+                    return getEmptySelect(innerWhere);
 
                 Map<String, String> keySelect = new HashMap<String, String>();
                 Map<String, String> propertySelect = new HashMap<String, String>();
@@ -749,16 +756,20 @@ public class CompiledQuery<K,V> {
                 for(Map.Entry<String, Expr> initialExpr : initialExprs.entrySet())
                     columnTypes.put(initialExpr.getKey(), initialExpr.getValue().getType(initialWhere));
 
+                Where fullWhere = initialWhere;
                 Map<KeyExpr, BaseExpr> staticGroup = BaseUtils.filterNotKeys(innerJoin.getJoins(), mapIterate.keySet());
                 StatKeys<KeyExpr> statKeys = initialWhere.getStatKeys(staticGroup.keySet()); // определяем ключи которые надо протолкнуть
                 Where pushWhere; // проталкивание в итерацию начальных групп
                 if((pushWhere = whereJoins.getGroupPushWhere(staticGroup, upWheres, innerJoin, keyStat, initialWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
-                    initialWhere = initialWhere.and(pushWhere);
+                    fullWhere = fullWhere.and(pushWhere);
+
+                if(fullWhere.isFalse())
+                    return getEmptySelect(initialWhere);
 
                 String outerParams = null;
                 Map<Value, String> innerParams;
                 if(useRecursionFunction) {
-                    QuickSet<Value> values = AbstractOuterContext.getOuterValues(BaseUtils.add(queries.keySet(), initialWhere));
+                    QuickSet<Value> values = AbstractOuterContext.getOuterValues(BaseUtils.add(queries.keySet(), fullWhere));
                     outerParams = "";
                     innerParams = new HashMap<Value, String>();
                     int iv = 1;
@@ -781,7 +792,7 @@ public class CompiledQuery<K,V> {
 
                 List<String> keyOrder = new ArrayList<String>();
                 List<String> propOrder = new ArrayList<String>();
-                String initialSelect = getSelect(recKeys, initialExprs, columnTypes, initialWhere, keyOrder, propOrder, useRecursionFunction, false, innerParams, pushContext, env);
+                String initialSelect = getSelect(recKeys, initialExprs, columnTypes, fullWhere, keyOrder, propOrder, useRecursionFunction, false, innerParams, pushContext, env);
                 String stepSelect = getSelect(recKeys, stepExprs, columnTypes, stepWhere.and(recWhere), keyOrder, propOrder, useRecursionFunction, true, innerParams, pushContext, env);
                 List<String> fieldOrder = BaseUtils.mergeList(keyOrder, propOrder);
 
@@ -1127,7 +1138,6 @@ public class CompiledQuery<K,V> {
             mapValues.put(param.getValue(),param.getKey().getParseInterface());
         mapValues.put(SQLSession.userParam, env.getSQLUser());
         mapValues.put(SQLSession.computerParam, env.getSQLComputer());
-        mapValues.put(SQLSession.sessionParam, env.getID());
         mapValues.put(SQLSession.isServerRestartingParam, env.getIsServerRestarting());
 
         return mapValues;
