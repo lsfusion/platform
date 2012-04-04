@@ -7084,7 +7084,14 @@ GROUP incrementMachineryPriceGroup 'Инкрементная загрузка' :
 
 tmpBoolean = SESSION DATA BOOLEAN ();
 
+createMachineryPriceTransactionSnapshot = SESSION DATA BOOLEAN ();
+
 createMachineryPriceTransactionItem = SESSION DATA BOOLEAN (item);
+createMachineryPriceTransactionBarcodeGroupMachinery (barcode, groupMachinery) = createMachineryPriceTransactionItem(skuBarcode(barcode)) // если передали параметром
+                                                                                 AND inGroupMachineryItem(groupMachinery, skuBarcode(barcode)) // если на эту группу оборудования должна закачиваться
+                                                                                 AND activeBarcode(barcode) // если активный штрих-код
+                                                                                 AND ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery); // если есть цена розничная
+
 createMachineryPriceTransactionDocument = SESSION DATA priceTransactionDocument();
 createMachineryPriceTransactionComment = SESSION DATA STRING[20] ();
 tempMessage = SESSION DATA STRING[3000] ();
@@ -7096,11 +7103,11 @@ formatCreateTransactionMessage = FORMULA STRING[3000] '$1 || $2 || \' - \' || CA
 createMachineryPriceTransaction 'Создать транзакцию' = ACTION (departmentStore) {
     SET tempMessage() <- 'Принято к загрузке в оборудование : \n';
     FOR departmentStoreGroupMachinery(groupMachinery) == departmentStore DO {
-        SET tempBarcode(barcode) <- createMachineryPriceTransactionItem(skuBarcode(barcode)) // если передали параметром
-                                    AND inGroupMachineryItem(groupMachinery, skuBarcode(barcode)) // если на эту группу оборудования должна закачиваться
-                                    AND activeBarcode(barcode) // если активный штрих-код
-                                    AND ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery) // если есть цена розничная
-                                    AND NOT ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery) == transactionPriceBarcodeGroupMachinery(barcode, groupMachinery); // если цена изменилась
+        IF createMachineryPriceTransactionSnapshot() THEN
+            SET tempBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
+        ELSE
+            SET tempBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
+                                        AND NOT (ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery) == transactionPriceBarcodeGroupMachinery(barcode, groupMachinery)); // если цена изменилась
 
         IF tempCountBarcode() THEN {
 
@@ -7146,12 +7153,22 @@ createPriceMachineryPriceTransaction 'Все товары' = ACTION (departmentS
 } CONFIRM IN incrementMachineryPriceGroup;
 
 META metaCodeDocumentMachineryPriceTransaction (document)
+
     create###document##MachineryPriceTransaction 'Загрузить в оборудование' = ACTION (document) NEWSESSION AUTOAPPLY {
         SET createMachineryPriceTransactionItem(item) <- TRUE IF quantityItem###document(item, document);
         SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
         EXEC createMachineryPriceTransaction(departmentStore###document(document));
         SET sentPriceTransactionDocument(document) <- TRUE;
     } TOOLBAR CONFIRM;
+
+    createSnapshot###document##MachineryPriceTransaction 'Загрузить все позиции' = ACTION (document) NEWSESSION AUTOAPPLY {
+        SET createMachineryPriceTransactionSnapshot() <- TRUE;
+        SET createMachineryPriceTransactionItem(item) <- TRUE IF quantityItem###document(item, document);
+        SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
+        EXEC createMachineryPriceTransaction(departmentStore###document(document));
+        SET sentPriceTransactionDocument(document) <- TRUE;
+    } SHORTCUT statusEquipmentPriceTransactionDocument CONFIRM;
+
     showCreateMachineryPriceTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT sentPriceTransactionDocument(document);
 END
 
@@ -7321,6 +7338,7 @@ FORM shipments 'Поставки'
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (s)          createShipmentMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionShipment(s),
+                            createSnapshotShipmentMachineryPriceTransaction FORCE PANEL,
                             ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
@@ -8369,6 +8387,7 @@ FORM userPriceChanges 'Переоценки товаров'
                    statusEquipmentPriceTransactionDocument
 
     PROPERTIES (u) createUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionUserPriceChange(u),
+                   createSnapshotUserPriceChangeMachineryPriceTransaction FORCE PANEL,
                    ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
                    postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
 
@@ -8539,6 +8558,7 @@ FORM innerArrivals 'Приходы из других отделов'
                             statusEquipmentPriceTransactionDocument
 
     PROPERTIES (a) createInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionInnerArrival(a),
+                   createSnapshotInnerArrivalMachineryPriceTransaction FORCE PANEL,
                    ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
                    postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
 
