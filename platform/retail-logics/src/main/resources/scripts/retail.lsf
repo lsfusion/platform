@@ -110,7 +110,7 @@ setValueNumeratedObject 'Сгенерировать номер' = ACTION (numera
 } IN numberedGroup SHORTCUT numberObject;
 
 // todo : не работает
-setValueNumeratedObject(numeratedObject) <- TRUE ON CHANGE numeratorObject(numeratedObject);
+//setValueNumeratedObject(numeratedObject) <- TRUE ON CHANGE numeratorObject(numeratedObject);
 
 // ----------------------------------- Шаблоны ------------------------------------------ //
 
@@ -7125,7 +7125,6 @@ statusEquipmentPriceTransactionDocument 'Статус загрузки в обо
 
 // перезагрузка прайса целиком
 selectedMachinery 'Вкл' = SESSION DATA BOOLEAN (machinery);
-tmpGroupMachinery = SESSION DATA groupMachinery();
 
 GROUP snapshotMachineryPriceGroup 'Перезагрузка прайса' : publicGroup;
 
@@ -7162,23 +7161,24 @@ DESIGN groupMachineryInput FROM DEFAULT {
 snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = ACTION (departmentStore) NEWSESSION {
     FORM groupMachineryInput OBJECTS d = (departmentStore AS departmentStore) MODAL;
     IF formResult() == formResult.ok THEN {
-        SET tmpGroupMachinery() <- chosenObject('g');
-        IF tmpGroupMachinery() IS groupScales THEN
+        LOCAL groupMachinery = groupMachinery ();
+        SET groupMachinery() <- chosenObject('g');
+        IF groupMachinery() IS groupScales THEN
             ADDOBJ scalesPriceTransaction
-        ELSE IF tmpGroupMachinery() IS groupCheck THEN
+        ELSE IF groupMachinery() IS groupCheck THEN
             ADDOBJ checkPriceTransaction
         ELSE
             ADDOBJ cashRegisterPriceTransaction;
         FOR t == addedObject() DO {
-            SET groupMachineryMachineryPriceTransaction(t) <- tmpGroupMachinery();
+            SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery();
             SET commentMachineryPriceTransaction(t) <- 'Перезагрузка прайса целиком';
             SET snapshotMachineryPriceTransaction(t) <- TRUE;
             SET inMachineryPriceTransactionCashMachinery(t, machinery) <- selectedMachinery(machinery);
-            SET inMachineryPriceTransactionBarcode(t, barcode) <- TRUE AND lastTransactionBarcodeGroupMachinery(barcode, tmpGroupMachinery())
-                                                                       AND inGroupMachineryItem(tmpGroupMachinery(), skuBarcode(barcode)) // важно, что товар должен быть активным на текущий момент
+            SET inMachineryPriceTransactionBarcode(t, barcode) <- TRUE AND lastTransactionBarcodeGroupMachinery(barcode, groupMachinery())
+                                                                       AND inGroupMachineryItem(groupMachinery(), skuBarcode(barcode)) // важно, что товар должен быть активным на текущий момент
                                                                        AND activeBarcode(barcode);
-            SET nameMachineryPriceTransactionBarcode(t, barcode) <- transactionNameBarcodeGroupMachinery(barcode, tmpGroupMachinery());
-            SET priceMachineryPriceTransactionBarcode(t, barcode) <- transactionPriceBarcodeGroupMachinery(barcode, tmpGroupMachinery());
+            SET nameMachineryPriceTransactionBarcode(t, barcode) <- transactionNameBarcodeGroupMachinery(barcode, groupMachinery());
+            SET priceMachineryPriceTransactionBarcode(t, barcode) <- transactionPriceBarcodeGroupMachinery(barcode, groupMachinery());
         }
         EXEC apply();
     }
@@ -7186,8 +7186,6 @@ snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = 
 
 // Инкрементная загрузка
 GROUP incrementMachineryPriceGroup 'Инкрементная загрузка' : publicGroup;
-
-tmpBoolean = SESSION DATA BOOLEAN ();
 
 createMachineryPriceTransactionSnapshot = SESSION DATA BOOLEAN ();
 
@@ -7199,22 +7197,25 @@ createMachineryPriceTransactionBarcodeGroupMachinery (barcode, groupMachinery) =
 
 createMachineryPriceTransactionDocument = SESSION DATA priceTransactionDocument();
 createMachineryPriceTransactionComment = SESSION DATA STRING[20] ();
-tempMessage = SESSION DATA STRING[3000] ();
-tempBarcode = SESSION DATA BOOLEAN (barcode);
-tempCountBarcode = GROUP SUM 1 IF tempBarcode(barcode);
-
-formatCreateTransactionMessage = FORMULA STRING[3000] '$1 || $2 || \' - \' || CAST($3 as text) || \' товаров.\'\n';
 
 createMachineryPriceTransaction 'Создать транзакцию' = ACTION (departmentStore) {
-    SET tempMessage() <- 'Принято к загрузке в оборудование : \n';
+    LOCAL message = STRING[3000] ();
+    LOCAL sentSomething = BOOLEAN();
+    SET message() <- 'Принято к загрузке в оборудование : \n';
+
     FOR departmentStoreGroupMachinery(groupMachinery) == departmentStore DO {
+        LOCAL inBarcode = BOOLEAN (barcode);
+        // todo : не работает
+//        SET tempBarcode(barcode) <- NULL;
         IF createMachineryPriceTransactionSnapshot() THEN
-            SET tempBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
+            SET inBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
         ELSE
-            SET tempBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
+            SET inBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
                                         AND NOT (ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery) == transactionPriceBarcodeGroupMachinery(barcode, groupMachinery)); // если цена изменилась
 
-        IF tempCountBarcode() THEN {
+        LOCAL countBarcode = INTEGER();
+        SET countBarcode() <- [GROUP SUM 1 IF inBarcode(barcode)]();
+        IF countBarcode() THEN {
 
             IF groupMachinery IS groupScales THEN
                 ADDOBJ scalesPriceTransaction
@@ -7227,20 +7228,21 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                 SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery AS groupMachinery;
                 SET priceTransactionDocumentMachineryPriceTransaction(t) <- createMachineryPriceTransactionDocument();
                 SET commentMachineryPriceTransaction(t) <- createMachineryPriceTransactionComment();
-                SET inMachineryPriceTransactionBarcode(t, barcode) <- tempBarcode(barcode);
+                SET inMachineryPriceTransactionBarcode(t, barcode) <- inBarcode(barcode);
                 IF groupMachinery IS groupScales THEN
                     SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleScalesBarcode(barcode)
                 ELSE
                     SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleCashBarcode(barcode);
                 SET priceMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery);
             }
-            SET tempMessage() <- formatCreateTransactionMessage(tempMessage(), nameGroupMachinery(groupMachinery), tempCountBarcode());
-            SET tmpBoolean() <- TRUE;
+            SET message() <- [FORMULA STRING[3000] '$1 || $2 || \' - \' || CAST($3 as text) || \' товаров.\'\n']
+                             (message(), nameGroupMachinery(groupMachinery), countBarcode());
+            SET sentSomething() <- TRUE;
         }
     }
 
-    IF tmpBoolean() THEN
-        MESSAGE tempMessage()
+    IF sentSomething() THEN
+        MESSAGE message()
     ELSE
         MESSAGE 'Загрузка прайса в оборудование не требуется.';
 };
