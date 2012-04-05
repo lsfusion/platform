@@ -7615,8 +7615,12 @@ DESIGN returnSupplier FROM DEFAULT {
 
     NEW specification.box BEFORE functions.box{
         tabbedPane = TRUE;
+
         ADD d.box{
             title = 'Спецификация';
+            ADD d.grid{
+                fillVertical = 12;
+            };
             ADD d.panel{
             childConstraints = TO THE RIGHT;
                 NEW curVal {
