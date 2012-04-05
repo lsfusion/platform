@@ -486,7 +486,6 @@ META metaCodeDetailAggregation (primObject, aggrObject, aggrProperty)
 
 END
 
-
 META metaCodeTotals (object)
 
 //    sumVatWare###object##Detail 'Сумма НДС по посуде, за ед.' (object##Detail) =
@@ -5990,6 +5989,7 @@ FORM wastages 'Списания отходов'
     FILTERS wastageWastageDetail(d)== w;
 ;
 
+
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
 CLASS returnSupplier 'Возврат поставщику' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
@@ -6136,6 +6136,16 @@ descriptionReturnSupplier 'Название документа' (returnSupplier)
     seriesNumberObject(returnSupplier), dateReturnSupplier(returnSupplier), nameSupplierReturnSupplier(returnSupplier));
 
 descriptionReturnSupplierDetail 'Название документа' (returnSupplierDetail) = descriptionReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
+
+// для формы подбора товара
+
+sumQuantityItemShipment (departmentStore, supplier, item) =
+    GROUP SUM quantityShipmentDetail(shipmentDetail)
+    IF shipmentShipmentDetail(shipmentDetail) IS shipmentPosted
+    BY departmentStoreShipmentDetail(shipmentDetail), supplierShipmentDetail(shipmentDetail),
+       itemShipmentDetail(shipmentDetail);
+
+isSumQuantityItemShipment (departmentStore, supplier, item) = sumQuantityItemShipment(departmentStore, supplier, item) > 0;
 
 // для возвратной накладной (шапка и хвост)
 carReturnSupplier 'Автомобиль' (returnSupplier) = DATA STRING[30] (returnSupplier);
@@ -7017,6 +7027,67 @@ META metaCodeInputMultipleItems (object)
 
 END
 
+//------------------------------------------------Подбор товара для возврата поставщику-----------------------------------------
+
+FORM itemDepartmentStoreSupplierInput 'Подбор товаров'
+    OBJECTS d=departmentStore FIXED PANEL
+    PROPERTIES(d) READONLY name
+
+    OBJECTS s=supplier FIXED PANEL
+    PROPERTIES(s) READONLY name
+
+    TREE treeGroup g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY gname = name(g)
+    ORDER BY gname
+
+    OBJECTS i=item
+    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUnitOfMeasureItem(i) READONLY
+    FILTERS nameAttributeItemGroupItem(g, i)
+    ORDER BY nameAttributeItemGroupItem
+
+    PROPERTIES currentBalanceItemLedger(i, d), quantityInputItem(i)
+
+    FILTERGROUP filterSupply
+        FILTER 'Поставлявшиеся' 'F11' isSumQuantityItemShipment(d, s, i) DEFAULT
+    FILTERGROUP filterBalance
+        FILTER 'На остатках' 'F10' currentBalanceItemLedger(i, d) DEFAULT
+    FILTERGROUP filterSelected
+        FILTER 'Выбранные' 'F9' quantityInputItem(i)
+;
+
+DESIGN itemDepartmentStoreSupplierInput FROM DEFAULT {
+    POSITION treeGroup.box TO THE LEFT i.box;
+    POSITION d.box TO THE LEFT s.box;
+
+    treeGroup.tree {
+        fillHorizontal = 0.4;
+    }
+
+    i.grid {
+        defaultComponent = TRUE;
+    }
+}
+
+META metaCodeInputMultipleItemsSupplier (object)
+
+    inputMultipleItemsSupplier###object 'Подбор товаров' = ACTION (object) {
+        FORM itemDepartmentStoreSupplierInput OBJECTS d = departmentStore###object(object), s = supplier###object(object) MODAL;
+        IF formResult() == formResult.ok THEN {
+            FOR quantityInputItem(item) DO {
+                ADDOBJ object##Detail;
+                FOR w == addedObject() DO {
+                    SET object###object##Detail(w) <- object AS object;
+                    SET item###object##Detail(w) <- item AS item;
+                    SET quantity###object##Detail(w) <- quantityInputItem(item);
+                }
+            }
+        }
+        // todo : не работает, но надо включить
+    //    SET quantityInputItem(item) <- NULL;
+    } TOOLBAR;
+
+END
+
 //----------------------------------- Загрузка в ВУ -------------------------------------------------------
 
 inGroupMachineryItem 'Вкл' (groupMachinery, item) = groupMachinery IS groupMachinery
@@ -7475,7 +7546,7 @@ FORM register 'Реестр цен'
 
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
-@metaCodeInputMultipleItems(returnSupplier);
+@metaCodeInputMultipleItemsSupplier(returnSupplier);
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
     OBJECTS b=batchShipment
@@ -7499,9 +7570,10 @@ FORM returnSupplier 'Возврат поставщику'
                   supplierMarkupReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail, dataSuppliersRangeReturnSupplierDetail,
                   sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
                   nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
-                  retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail, sumDetailMarkupReturnSupplierDetail, sumDetailVatReturnSupplierDetail
+                  retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail, sumDetailMarkupReturnSupplierDetail, sumDetailVatReturnSupplierDetail,
+                  sumDetailVatWareReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
-    PROPERTIES inputMultipleItemsReturnSupplier(r) TODRAW d, addReturnSupplierDetailBarcode(r) TODRAW d
+    PROPERTIES inputMultipleItemsSupplierReturnSupplier(r) TODRAW d, addReturnSupplierDetailBarcode(r) TODRAW d
     PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
                                     curDataSupplierRangeReturnSupplierDetail(d), curRetailPriceReturnSupplierDetail(d),
                                     curDataRetailRangeReturnSupplierDetail(d),
@@ -7533,7 +7605,8 @@ FORM returnSuppliers 'Возвраты поставщику'
                            supplierMarkupReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail, dataSuppliersRangeReturnSupplierDetail,
                            sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
                            nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
-                           retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail, sumDetailMarkupReturnSupplierDetail, sumDetailVatReturnSupplierDetail
+                           retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail, sumDetailMarkupReturnSupplierDetail, sumDetailVatReturnSupplierDetail,
+                           sumDetailVatWareReturnSupplierDetail
 
     FILTERS isReturnSupplier(r, d)
 ;
