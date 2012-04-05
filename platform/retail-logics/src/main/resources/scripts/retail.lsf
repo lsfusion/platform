@@ -2238,6 +2238,7 @@ FILTERS itemAssortment(a, i);
 CLASS ABSTRACT committee 'Комиссия' : named;
 CLASS revaluationCommittee 'Комиссия переоценки' : committee;
 CLASS inventoryCommittee 'Комиссия для инвентаризации' : committee;
+CLASS registerCommittee 'Комиссия для реестра цен' : committee;
 
 chairmanCommittee 'Председатель комиссии (ИД)' = DATA employee (committee);
 commonNameChairmanCommittee 'Председатель комиссии' (committee) = commonName(chairmanCommittee(committee)) IN baseGroup;
@@ -2245,23 +2246,41 @@ departmentStoreCommittee 'Отдел комиссии (ИД)' = DATA departmentS
 nameDepartmentStoreCommittee 'Отдел комиссии' (committee) = commonName(departmentStoreCommittee(committee)) IN baseGroup;
 CONSTRAINT chairmanCommittee(committee) IF committee IS revaluationCommittee AND NOT departmentStoreEmployee(departmentStoreCommittee(committee), chairmanCommittee(committee)) CHECKED MESSAGE 'Отдел комиссии должен соответствовать отделу председателя комиссии';
 CONSTRAINT departmentStoreCommittee(revaluationCommitteeDepartmentStore(departmentStore)) != departmentStore CHECKED MESSAGE 'Отдел комиссии должен соответствовать текущему отделу';
-CONSTRAINT committee IS committee AND NOT chairmanCommittee(committee) MESSAGE 'Ошибка: не задан председатель комиссии';
-
+//CONSTRAINT committee IS committee AND NOT chairmanCommittee(committee) MESSAGE 'Ошибка: не задан председатель комиссии';
+                 // т.к. нет у комиссии для реестра председателя
 inCommitteeEmployee 'Является членом комиссии' (committee, employee) = DATA BOOLEAN (committee, employee);
 
 inDepartmentStoreEmployeeCommittee(employee, committee) = UNION EXCLUSIVE
     departmentStoreEmployee(departmentStoreCommittee(committee), employee) AND committee IS revaluationCommittee,
     employee IS employee AND committee IS inventoryCommittee;
+isNotRegisterCommittee (committee) = UNION OVERRIDE committee IS revaluationCommittee, committee IS inventoryCommittee;
+isRegisterCommittee (committee) = committee IS registerCommittee;
+
+formedManCommittee = DATA employee (registerCommittee);
+checkedManCommittee = DATA employee (registerCommittee);
+labeledManCommittee = DATA employee (registerCommittee);
+accountantManCommittee = DATA employee (registerCommittee);
+headManCommittee = DATA employee (registerCommittee);
+
+nameFormedManCommittee 'Цены сформировал' (committee) = commonName(formedManCommittee(committee));
+nameCheckedManCommittee 'Реестр проверил' (committee) = commonName(checkedManCommittee(committee));
+nameLabeledManCommittee 'Товар промаркировал' (committee) = commonName(labeledManCommittee(committee));
+nameAccountantManCommittee 'Бухгалтер' (committee) = commonName(accountantManCommittee(committee));
+nameHeadManCommittee 'Зав. магазином' (committee) = commonName(headManCommittee(committee));
+
 
 FORM committee 'Комиссия'
     OBJECTS c=committee FIXED PANEL
-    PROPERTIES(c)    name, nameDepartmentStoreCommittee, commonNameChairmanCommittee
+    PROPERTIES(c)    name, nameDepartmentStoreCommittee SHOWIF isNotRegisterCommittee(c), commonNameChairmanCommittee SHOWIF isNotRegisterCommittee(c)
+    PROPERTIES(c)    SHOWIF isRegisterCommittee(c) nameFormedManCommittee, nameCheckedManCommittee,
+                     nameLabeledManCommittee, nameAccountantManCommittee, nameHeadManCommittee
+
 
     OBJECTS e=employee
-    PROPERTIES(e)    READONLY name, userFirstName, userLastName
-    PROPERTIES(e)    ADDSESSIONFORM, EDITSESSIONFORM, delete
+    PROPERTIES(e)    SHOWIF isNotRegisterCommittee(c) READONLY name, userFirstName, userLastName
+    PROPERTIES(e)    SHOWIF isNotRegisterCommittee(c) ADDSESSIONFORM, EDITSESSIONFORM, delete
 
-    PROPERTIES(c, e) inCommitteeEmployee
+    PROPERTIES(c, e) SHOWIF isNotRegisterCommittee(c) inCommitteeEmployee
 
     FILTERS inDepartmentStoreEmployeeCommittee(e, c)
     FILTERGROUP filters6
@@ -2269,7 +2288,7 @@ FORM committee 'Комиссия'
 
     EDIT committee OBJECT c
     EDIT inventoryCommittee OBJECT c
-
+    EDIT registerCommittee OBJECT c
 ;
 
 FORM employeesCommittees 'Комиссии'
@@ -2281,6 +2300,15 @@ FORM employeesCommittees 'Комиссии'
     PROPERTIES(e) READONLY userFirstName, userLastName
 
     FILTERS inCommitteeEmployee(c, e)
+;
+
+FORM registerCommittee 'Комиссия для реестра цен'
+    OBJECTS r=registerCommittee// FIXED PANEL
+    PROPERTIES(r)    READONLY name, nameFormedManCommittee, nameCheckedManCommittee,                   //nameDepartmentStoreCommittee
+                     nameLabeledManCommittee, nameAccountantManCommittee, nameHeadManCommittee
+    PROPERTIES(r)    ADDFORM, EDITFORM
+
+    DIALOG registerCommittee OBJECT r
 ;
 
 // ----------------------------------- Банк ------------------------------------------- //
@@ -5363,6 +5391,9 @@ diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentD
 retailSumShipmentDetail 'Розничная сумма' (shipmentDetail) = quantityShipmentDetail(shipmentDetail) * retailPriceShipmentDetail(shipmentDetail);
 retailSumShipment 'Розничная сумма' (shipment) = GROUP SUM retailSumShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN waybillSum;
 
+committeeShipment(shipment) = DATA registerCommittee(shipment);
+nameCommitteeShipment 'Название комиссии для реестра цен' (shipment) = commonName(committeeShipment(shipment));
+
 //--------------------показатели для реестра цен----------------------------//
 
 supportSumPriceShipmentDetail 'Сумма пост-ка с посудой без НДС' (shipmentDetail) = sumSupplierPriceShipmentDetail(shipmentDetail) (+) overSumPriceWareShipmentDetail(shipmentDetail) (-) sumDetailVatWareShipmentDetail(shipmentDetail);
@@ -7393,7 +7424,7 @@ FORM shipment 'Поставка'
                    nameDepartmentStoreShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
                    carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
-                   noteShipment
+                   noteShipment, nameCommitteeShipment
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
@@ -7525,23 +7556,29 @@ DESIGN shipments FROM DEFAULT {
     ADD d.grid.box BEFORE s.historyGroup;
 }
 
+nameFormedManShipment 'Цены сформировал' (shipment) = nameFormedManCommittee(committeeShipment(shipment));
+nameCheckedManShipment 'Реестр проверил' (shipment) = nameCheckedManCommittee(committeeShipment(shipment));
+nameLabeledManShipment 'Товар промаркировал' (shipment) = nameLabeledManCommittee(committeeShipment(shipment));
+nameAccountantManShipment 'Бухгалтер' (shipment) = nameAccountantManCommittee(committeeShipment(shipment));
+nameHeadManShipment 'Зав. магазином' (shipment) = nameHeadManCommittee(committeeShipment(shipment));
+
 FORM register 'Реестр цен'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s)  SELECTOR numberObject, dateShipment, nameDepartmentStoreShipment, nameSupplierShipment,
                     totalQuantityShipment, supportSumPriceShipment, totalSumSupplierVATShipment,
                     totalSumWareShipment, totalSumVatWareShipment, exSumSupplierShipment, totalSumMarkupShipment,
-                    fullDetailVatShipment, retailSumShipment       //
+                    fullDetailVatShipment, retailSumShipment,
+                    nameFormedManShipment, nameCheckedManShipment, nameLabeledManShipment, nameAccountantManShipment,
+                    nameHeadManShipment
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, shortNameUnitOfMeasureItemShipmentDetail, quantityShipmentDetail,
-                    importerPriceShipmentDetail, supportSumPriceShipmentDetail, overSupplierMarkupShipmentDetail, sumSupplierVATShipmentDetail,
-                   // importerPriceShipmentDetail, sumSupplierPriceShipmentDetail, supplierMarkupShipmentDetail, sumSupplierVATShipmentDetail,
-                    dataSuppliersRangeShipmentDetail, overSumPriceWareShipmentDetail, overPriceWareShipmentDetail, sumDetailVatWareShipmentDetail, dataWareRangeShipmentDetail,
-
+                    importerPriceShipmentDetail, supportSumPriceShipmentDetail, overSupplierMarkupShipmentDetail, sumDetailSupplierVATShipmentDetail, dataSuppliersRangeShipmentDetail,
+                    overSumPriceWareShipmentDetail, overPriceWareShipmentDetail, sumDetailVatWareShipmentDetail, dataWareRangeShipmentDetail,
                     exSumSupplierShipmentDetail, percMarkupShipmentDetail, sumDetailMarkupShipmentDetail, dataRetailRangeShipmentDetail,
                     fullDetailVatShipmentDetail, retailPriceShipmentDetail, retailSumShipmentDetail
 
-    FILTERS inShipmentShipmentDetail(s, d)                //      sumPriceShipmentDetail
+    FILTERS inShipmentShipmentDetail(s, d)
 ;
 
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
@@ -9580,6 +9617,7 @@ NAVIGATOR {
             ADD store;
             ADD tradingNetwork;
             ADD committee;
+            ADD registerCommittee;
             ADD bank;
             ADD ownership;
             ADD supplier;
