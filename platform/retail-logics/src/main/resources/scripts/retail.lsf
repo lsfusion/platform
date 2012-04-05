@@ -42,6 +42,8 @@ computerClosed(postedObject) <- currentComputer() ON ASSIGN postedObject IS post
 
 GROUP documentHeaderGroup 'Шапка документа' : baseGroup;
 
+GROUP consignmentGroup 'Шапка накладной' : baseGroup;
+
 CLASS ABSTRACT consignment 'Накладная';
 CLASS ABSTRACT consignmentDetail 'Строка накладной';
 
@@ -5616,7 +5618,6 @@ descriptionWriteOff 'Название документа' (writeOff) = castWrite
 
 descriptionWriteOffDetail 'Название документа' (writeOffDetail) = descriptionWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
-
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
 CLASS innerFlow 'Расход в отдел' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
 CLASS innerFlowDetail 'Строка расхода в отдел' : balanceItemLedger, consignmentDetail;
@@ -7414,6 +7415,209 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
     FILTERS inMachineryPriceTransactionBarcode(t, b)
 ;
 
+// ---------------------------- Атрибуты для накладной --------------------------------- //
+// для накладной (шапка и хвост)
+carConsignment 'Автомобиль' (consignment) = UNION EXCLUSIVE carStatement (consignment),
+                                                            carReturnSupplier (consignment),
+                                                            carInnerFlow (consignment) IN consignmentGroup;
+
+ownerCarConsignment 'Владелец автомобиля' (consignment) = UNION EXCLUSIVE ownerCarStatement (consignment),
+                                                                          ownerCarReturnSupplier (consignment),
+                                                                          ownerCarInnerFlow (consignment) IN consignmentGroup;
+
+trailerConsignment 'Прицеп' (consignment) = UNION EXCLUSIVE trailerStatement (consignment),
+                                                            trailerReturnSupplier (consignment),
+                                                            trailerInnerFlow (consignment) IN consignmentGroup;
+
+driverCarConsignment 'Водитель' (consignment) = UNION EXCLUSIVE driverCarStatement (consignment),
+                                                                driverCarReturnSupplier (consignment),
+                                                                driverCarInnerFlow (consignment) IN consignmentGroup;
+
+waybillConsignment 'Путевой лист' (consignment) = UNION EXCLUSIVE waybillStatement (consignment),
+                                                                  waybillReturnSupplier (consignment),
+                                                                  waybillInnerFlow (consignment) IN consignmentGroup;
+
+transportPayerConsignment 'Заказчик перевозки (ИД)' (consignment) = UNION EXCLUSIVE transportPayerStatement (consignment),
+                                                                                    transportPayerReturnSupplier (consignment),
+                                                                                    transportPayerInnerFlow (consignment);
+
+nameTransportPayerConsignment 'Заказчик перевозки ' (consignment) =
+    [FORMULA STRING[200] 'CAST($1 AS TEXT) ||  \' , \' || CAST($2 AS TEXT)']
+    (name(transportPayerConsignment(consignment)), UNPLegalEntity(transportPayerConsignment(consignment))) IN consignmentGroup;
+
+shipmentBaseConsignment 'Основание отпуска' (consignment) = UNION EXCLUSIVE shipmentBaseStatement (consignment),
+                                                                            shipmentBaseReturnSupplier (consignment),
+                                                                            shipmentBaseInnerFlow (consignment) IN consignmentGroup;
+
+dataLoadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION EXCLUSIVE dataLoadingPlaceStatement (consignment),
+                                                                             dataLoadingPlaceReturnSupplier (consignment),
+                                                                             dataLoadingPlaceInnerFlow (consignment);
+
+loadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION EXCLUSIVE loadingPlaceStatement (consignment),
+                                                                         loadingPlaceReturnSupplier (consignment),
+                                                                         loadingPlaceInnerFlow (consignment) IN consignmentGroup;
+
+dataUnloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION EXCLUSIVE dataUnloadingPlaceStatement (consignment),
+                                                                                dataUnloadingPlaceReturnSupplier (consignment),
+                                                                                dataUnloadingPlaceInnerFlow (consignment);
+
+unloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION EXCLUSIVE unloadingPlaceStatement (consignment),
+                                                                            unloadingPlaceReturnSupplier (consignment),
+                                                                            unloadingPlaceInnerFlow (consignment) IN consignmentGroup;
+
+readdressingConsignment 'Переадресовка' (consignment) = UNION EXCLUSIVE readdressingStatement (consignment),
+                                                                        readdressingReturnSupplier (consignment),
+                                                                        readdressingInnerFlow (consignment) IN consignmentGroup;
+
+issuanceAllowedConsignment 'Отпуск разрешил (ИД)' (consignment) = UNION EXCLUSIVE issuanceAllowedStatement(consignment),
+                                                                             issuanceAllowedReturnSupplier(consignment),
+                                                                             issuanceAllowedInnerFlow(consignment);
+
+commonNameIssuanceAllowedConsignment 'Отпуск разрешил' (consignment) = commonName(issuanceAllowedConsignment(consignment)) IN consignmentGroup;
+
+issuanceExecutedConsignment 'Отпуск произвел (ИД)' (consignment) = UNION EXCLUSIVE issuanceExecutedStatement(consignment),
+                                                                              issuanceExecutedReturnSupplier(consignment),
+                                                                              issuanceExecutedInnerFlow(consignment);
+
+commonNameIssuanceExecutedConsignment 'Отпуск произвел' (consignment) = commonName(issuanceExecutedConsignment(consignment)) IN consignmentGroup;
+
+forwarderConsignment 'Товар к перевозке принял (экспедитор)' (consignment) = UNION EXCLUSIVE forwarderStatement(consignment),
+                                                                                             forwarderReturnSupplier(consignment),
+                                                                                             forwarderInnerFlow(consignment) IN consignmentGroup;
+
+warrantConsignment 'По доверенности' (consignment) = UNION EXCLUSIVE warrantStatement (consignment),
+                                                                     warrantReturnSupplier (consignment),
+                                                                     warrantInnerFlow (consignment) IN consignmentGroup;
+
+warrantHolderConsignment 'Доверенность выдана на' (consignment) = UNION EXCLUSIVE warrantHolderStatement (consignment),
+                                                                                  warrantHolderReturnSupplier (consignment),
+                                                                                  warrantHolderInnerFlow (consignment) IN consignmentGroup;
+
+goodsAcceptedConsignment 'Принял грузополучатель' (consignment) = UNION EXCLUSIVE goodsAcceptedStatement (consignment),
+                                                                                  goodsAcceptedReturnSupplier (consignment),
+                                                                                  goodsAcceptedInnerFlow (consignment) IN consignmentGroup;
+
+loadingExecuterConsignment 'Исполнитель ПРР (ИД)' (consignment) = UNION EXCLUSIVE loadingExecuterStatement(consignment),
+                                                                             loadingExecuterReturnSupplier(consignment),
+                                                                             loadingExecuterInnerFlow(consignment);
+
+commonNameLoadingExecuterConsignment 'Исполнитель ПРР' (consignment) = commonName(loadingExecuterConsignment(consignment)) IN consignmentGroup;
+
+wayOfLoadingConsignment 'Способ ПРР (ИД)' (consignment) = UNION EXCLUSIVE wayOfLoadingStatement(consignment),
+                                                                          wayOfLoadingReturnSupplier(consignment),
+                                                                          wayOfLoadingInnerFlow(consignment);
+
+nameWayOfLoadingConsignment 'Способ ПРР' (consignment) = name(wayOfLoadingConsignment(consignment)) IN consignmentGroup;
+
+codeLoadingConsignment 'Код ПРР' (consignment) = UNION EXCLUSIVE codeLoadingStatement (consignment),
+                                                                 codeLoadingReturnSupplier (consignment),
+                                                                 codeLoadingInnerFlow (consignment) IN consignmentGroup;
+
+arrivalTimeConsignment 'Время прибытия' (consignment) = UNION EXCLUSIVE arrivalTimeStatement (consignment),
+                                                                        arrivalTimeReturnSupplier (consignment),
+                                                                        arrivalTimeInnerFlow (consignment) IN consignmentGroup;
+
+departureTimeConsignment 'Время убытия' (consignment) = UNION EXCLUSIVE departureTimeStatement (consignment),
+                                                                        departureTimeReturnSupplier (consignment),
+                                                                        departureTimeInnerFlow (consignment) IN consignmentGroup;
+
+downtimeConsignment 'Время простоя' (consignment) = UNION EXCLUSIVE downtimeStatement (consignment),
+                                                                    downtimeReturnSupplier (consignment),
+                                                                    downtimeInnerFlow (consignment) IN consignmentGroup;
+
+raceQuantityConsignment 'Количество ездок' (consignment) = UNION EXCLUSIVE raceQuantityStatement(consignment),
+                                                                           raceQuantityReturnSupplier(consignment),
+                                                                           raceQuantityInnerFlow(consignment) IN consignmentGroup;
+
+// для накладной (спецификация)
+nameItemConsignmentDetail 'Наименование товара' (consignmentDetail) = UNION EXCLUSIVE nameAttributeItem(itemStatementDetail(consignmentDetail)),
+                                                                                      nameAttributeItem(itemReturnSupplierDetail(consignmentDetail)),
+                                                                                      nameAttributeItem(itemInnerFlowDetail(consignmentDetail));
+
+unitOfMeasureConsignmentDetail 'Единица измерения (ИД)' (consignmentDetail) = UNION EXCLUSIVE unitOfMeasureItem(itemStatementDetail(consignmentDetail)),
+                                                                                         unitOfMeasureItem(itemReturnSupplierDetail(consignmentDetail)),
+                                                                                         unitOfMeasureItem(itemInnerFlowDetail(consignmentDetail));
+
+shortNameConsignmentDetail 'Единица измерения' (consignmentDetail) = shortName(unitOfMeasureConsignmentDetail(consignmentDetail));
+
+quantityConsignmentDetail 'Количество' (consignmentDetail) = UNION EXCLUSIVE quantityStatementDetail(consignmentDetail),
+                                                                             quantityReturnSupplierDetail(consignmentDetail),
+                                                                             quantityInnerFlowDetail(consignmentDetail);
+
+sumQuantityConsignment 'Общее количество' (consignment) = UNION EXCLUSIVE totalQuantityStatement(consignment),
+                                                                          totalQuantityReturnSupplier(consignment),
+                                                                          totalQuantityInnerFlow(consignment) IN consignmentGroup;
+
+priceConsignmentDetail 'Цена' (consignmentDetail) = UNION EXCLUSIVE retailPriceStatementDetail (consignmentDetail),
+                                                                    supplierPriceReturnSupplierDetail (consignmentDetail),
+                                                                    retailPriceInnerFlowDetail(consignmentDetail);
+
+costConsignmentDetail 'Стоимость' (consignmentDetail) = UNION EXCLUSIVE sumStatementDetail (consignmentDetail),
+                                                                        sumSupplierReturnSupplierDetail (consignmentDetail),
+                                                                        accountSumInnerFlowDetail (consignmentDetail);
+
+sumCostConsignmentDetail 'Общая стоимость' (consignment) = UNION EXCLUSIVE sumStatement(consignment),
+                                                                           totalSumSupplierReturnSupplier(consignment),
+                                                                           accountSumInnerFlow(consignment) IN consignmentGroup;
+
+vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION EXCLUSIVE dataActingRateRangeStatementDetail (consignmentDetail),
+                                                                        dataSuppliersRangeReturnSupplierDetail (consignmentDetail),
+                                                                        dataRetailRangeInnerFlowDetail (consignmentDetail);
+
+sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION EXCLUSIVE totalSumNDSStatementDetail (consignmentDetail),
+                                                                          sumDetailSupplierVATReturnSupplierDetail (consignmentDetail),
+                                                                          sumRetailVATInnerFlowDetail (consignmentDetail);
+
+totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNION EXCLUSIVE sumNDSStatement (consignment),
+                                                                               totalSumIncVATReturnSupplier (consignment),
+                                                                               totalSumRetailVATInnerFlow (consignment) IN consignmentGroup;
+
+costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION EXCLUSIVE sumStatementDetail (consignmentDetail),
+                                                                                 sumSupplierReturnSupplierDetail (consignmentDetail),
+                                                                                 sumRetailVATInnerFlowDetail (consignmentDetail);
+
+packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = UNION EXCLUSIVE packQuantityStatementDetail(consignmentDetail),
+                                                                                               packQuantityReturnSupplierDetail(consignmentDetail),
+                                                                                               packQuantityInnerFlowDetail(consignmentDetail);
+
+sumPackQuantityConsignment 'Общее количество грузовых мест' (consignment) = UNION EXCLUSIVE sumPackQuantityStatement(consignment),
+                                                                                            sumPackQuantityReturnSupplier(consignment),
+                                                                                            sumPackQuantityInnerFlow(consignment) IN consignmentGroup;
+
+grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = UNION EXCLUSIVE grossWeightStatementDetail(consignmentDetail),
+                                                                                     grossWeightReturnSupplierDetail(consignmentDetail),
+                                                                                     grossWeightInnerFlowDetail(consignmentDetail);
+
+sumGrossWeightConsignmentDetail 'Общая масса груза, т.' (consignment) = UNION EXCLUSIVE sumGrossWeightStatement(consignment),
+                                                                                        sumGrossWeightReturnSupplier(consignment),
+                                                                                        sumGrossWeightInnerFlow(consignment) IN consignmentGroup;
+
+inConsignmentConsignmentDetail (consignment, consignmentDetail) = UNION EXCLUSIVE inStatementStatementDetail(consignment, consignmentDetail),
+                                                                                  isReturnSupplier(consignment, consignmentDetail),
+                                                                                  inInnerFlowInnerFlowDetail(consignment, consignmentDetail);
+
+// ---------------------------- Формы для накладных --------------------------------- //
+FORM consignment 'Накладная'
+    OBJECTS c=consignment FIXED PANEL
+
+    PROPERTIES (c) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+                   nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
+                   readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
+                   forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
+                   commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
+                   arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
+                   sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
+                   sumCostConsignmentDetail, totalSumVATConsignmentDetail
+
+    OBJECTS d=consignmentDetail
+
+    PROPERTIES(d) nameItemConsignmentDetail, shortNameConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
+                  costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
+                  packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteInnerFlowDetail
+
+    //FILTERS inConsignmentConsignmentDetail(c, d)
+;
+
 //----------------------------------- Формы поступления товара -------------------------------------------------------
 @metaCodeInputMultipleItems(shipment);
 @metaCodeDocumentMachineryPriceTransaction(shipment);
@@ -7601,6 +7805,15 @@ FORM returnSupplier 'Возврат поставщику'
                   totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier,
                   retailSumReturnSupplier
 
+    PROPERTIES(r) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+                  nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
+                  readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
+                  forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
+                  commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
+                  arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
+                  sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
+                  sumCostConsignmentDetail, totalSumVATConsignmentDetail
+
     OBJECTS d=returnSupplierDetail
     PROPERTIES(d) numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
                   commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, importerPriceReturnSupplierDetail, supplierPriceReturnSupplierDetail,
@@ -7678,6 +7891,10 @@ DESIGN returnSupplier FROM DEFAULT {
                     ADD PROPERTY(dataWareRangeReturnSupplierDetail);
                 };
             };
+        };
+        NEW consignment{
+            title = 'Накладная';
+            ADD r.consignmentGroup;
         };
     };
 
@@ -8673,10 +8890,20 @@ DESIGN userPriceChanges FROM DEFAULT {
 @metaCodeInputMultipleItems (innerArrival);
 @metaCodeDocumentMachineryPriceTransaction(innerArrival);
 
+
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
     PROPERTIES (f) numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
                    nameRecipientDepartmentInnerFlow, noteInnerFlow, totalQuantityInnerFlow, accountSumInnerFlow
+
+    PROPERTIES (f) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+                   nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
+                   readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
+                   forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
+                   commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
+                   arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
+                   sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
+                   sumCostConsignmentDetail, totalSumVATConsignmentDetail
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) numberInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
@@ -8691,29 +8918,36 @@ FORM innerFlow 'Расход в другой отдел'
 ;
 
 DESIGN innerFlow FROM DEFAULT{
-    main{
-        preferredSize = (1024, 768);
-        NEW specification.box BEFORE functions.box{
-            tabbedPane = TRUE;
-            ADD d.box {
-                childConstraints = TO THE BOTTOM;
-                title = 'Спецификация';
+
+    NEW specification.box BEFORE functions.box{
+        tabbedPane = TRUE;
+        ADD d.box{
+            title = 'Спецификация';
+            ADD d.grid{
+                fillVertical = 12;
             };
         };
-        NEW header.box BEFORE specification.box {
-            childConstraints = TO THE BOTTOM;
+        NEW consignment{
+            title = 'Накладная';
+            ADD f.consignmentGroup;
+        };
+    };
 
-            NEW headerRow1 {
+    NEW header.box BEFORE specification.box {
+
+        childConstraints = TO THE BOTTOM;
+
+        NEW headerRow1 {
+            childConstraints = TO THE RIGHT;
+            ADD f.documentHeaderGroup;
+        };
+
+        NEW headerRow2 {
+            childConstraints = TO THE RIGHT;
+            ADD f.waybillSum {
                 childConstraints = TO THE RIGHT;
-                ADD f.documentHeaderGroup;
             };
-            NEW headerRow2 {
-                childConstraints = TO THE RIGHT;
-                ADD f.waybillSum {
-                    childConstraints = TO THE RIGHT;
-                };
-                ADD f.additionalInfo;
-             };
+            ADD f.additionalInfo;
         };
     };
 };
@@ -8943,6 +9177,15 @@ FORM statement 'Отгрузка из розницы'
                     nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, showFormSpecificationsStatement,
                     noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement
 
+    PROPERTIES(st) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+                   nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
+                   readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
+                   forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
+                   commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
+                   arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
+                   sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
+                   sumCostConsignmentDetail, totalSumVATConsignmentDetail
+
     OBJECTS d=statementDetail
     PROPERTIES (d)  numberStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
                     retailPriceStatementDetail, numberRangeStatementDetail, dataActingRateRangeStatementDetail, sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail,
@@ -8962,18 +9205,30 @@ FORM statement 'Отгрузка из розницы'
 ;
 
 DESIGN statement FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
 
-        st.box {
-            POSITION st.documentHeaderGroup TO THE LEFT st.specificationGroup;
-        }
-        d.panel {
-            POSITION d.pricingStatementDetailInfo TO THE LEFT d.itemStatementDetailInfo;
-        }
-    }
+    NEW specification.box BEFORE functions.box{
+        tabbedPane = TRUE;
+        ADD d.box{
+            title = 'Спецификация';
+            ADD d.grid{
+                fillVertical = 12;
+            };
+            ADD d.panel{
+                POSITION d.pricingStatementDetailInfo TO THE LEFT d.itemStatementDetailInfo;
+            };
+        };
+        NEW consignment{
+            title = 'Накладная';
+            ADD st.consignmentGroup;
+        };
+    };
+
+    ADD st.panel BEFORE specification.box{
+        POSITION st.documentHeaderGroup TO THE LEFT st.specificationGroup;
+        POSITION st.waybillSum TO THE RIGHT st.additionalInfo;
+    };
+
 }
-
 
 FORM statements 'Отгрузки из розницы'
     OBJECTS st=statement
@@ -8982,7 +9237,8 @@ FORM statements 'Отгрузки из розницы'
 
     PROPERTIES (st)  ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
                      postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
-     PROPERTIES (st) FORCE PANEL  nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES (st) FORCE PANEL  nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
 
 
@@ -9246,208 +9502,6 @@ DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
     }
 }
 
-// ---------------------------- Атрибуты для накладной --------------------------------- //
-// для накладной (шапка и хвост)
-carConsignment 'Автомобиль' (consignment) = UNION EXCLUSIVE carStatement (consignment),
-                                                            carReturnSupplier (consignment),
-                                                            carInnerFlow (consignment);
-
-ownerCarConsignment 'Владелец автомобиля' (consignment) = UNION EXCLUSIVE ownerCarStatement (consignment),
-                                                                          ownerCarReturnSupplier (consignment),
-                                                                          ownerCarInnerFlow (consignment);
-
-trailerConsignment 'Прицеп' (consignment) = UNION EXCLUSIVE trailerStatement (consignment),
-                                                            trailerReturnSupplier (consignment),
-                                                            trailerInnerFlow (consignment);
-
-driverCarConsignment 'Водитель' (consignment) = UNION EXCLUSIVE driverCarStatement (consignment),
-                                                                driverCarReturnSupplier (consignment),
-                                                                driverCarInnerFlow (consignment);
-
-waybillConsignment 'Путевой лист' (consignment) = UNION EXCLUSIVE waybillStatement (consignment),
-                                                                  waybillReturnSupplier (consignment),
-                                                                  waybillInnerFlow (consignment);
-
-transportPayerConsignment 'Заказчик перевозки (ИД)' (consignment) = UNION EXCLUSIVE transportPayerStatement (consignment),
-                                                                                    transportPayerReturnSupplier (consignment),
-                                                                                    transportPayerInnerFlow (consignment);
-
-nameTransportPayerConsignment 'Заказчик перевозки ' (consignment) =
-    [FORMULA STRING[200] ' || CAST($1 AS TEXT) ||  \' , \' || CAST($2 AS TEXT)']
-    (name(transportPayerConsignment(consignment)), UNPLegalEntity(transportPayerConsignment(consignment)));
-
-shipmentBaseConsignment 'Основание отпуска' (consignment) = UNION EXCLUSIVE shipmentBaseStatement (consignment),
-                                                                            shipmentBaseReturnSupplier (consignment),
-                                                                            shipmentBaseInnerFlow (consignment);
-
-dataLoadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION EXCLUSIVE dataLoadingPlaceStatement (consignment),
-                                                                             dataLoadingPlaceReturnSupplier (consignment),
-                                                                             dataLoadingPlaceInnerFlow (consignment);
-
-loadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION EXCLUSIVE loadingPlaceStatement (consignment),
-                                                                         loadingPlaceReturnSupplier (consignment),
-                                                                         loadingPlaceInnerFlow (consignment);
-
-dataUnloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION EXCLUSIVE dataUnloadingPlaceStatement (consignment),
-                                                                                dataUnloadingPlaceReturnSupplier (consignment),
-                                                                                dataUnloadingPlaceInnerFlow (consignment);
-
-unloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION EXCLUSIVE unloadingPlaceStatement (consignment),
-                                                                            unloadingPlaceReturnSupplier (consignment),
-                                                                            unloadingPlaceInnerFlow (consignment);
-
-readdressingConsignment 'Переадресовка' (consignment) = UNION EXCLUSIVE readdressingStatement (consignment),
-                                                                        readdressingReturnSupplier (consignment),
-                                                                        readdressingInnerFlow (consignment);
-
-issuanceAllowedConsignment 'Отпуск разрешил (ИД)' (consignment) = UNION EXCLUSIVE issuanceAllowedStatement(consignment),
-                                                                             issuanceAllowedReturnSupplier(consignment),
-                                                                             issuanceAllowedInnerFlow(consignment);
-
-commonNameIssuanceAllowedConsignment 'Отпуск разрешил' (consignment) = commonName(issuanceAllowedConsignment(consignment));
-
-issuanceExecutedConsignment 'Отпуск произвел (ИД)' (consignment) = UNION EXCLUSIVE issuanceExecutedStatement(consignment),
-                                                                              issuanceExecutedReturnSupplier(consignment),
-                                                                              issuanceExecutedInnerFlow(consignment);
-
-commonNameIssuanceExecutedConsignment 'Отпуск произвел' (consignment) = commonName(issuanceExecutedConsignment(consignment));
-
-forwarderConsignment 'Товар к перевозке принял (экспедитор)' (consignment) = UNION EXCLUSIVE forwarderStatement(consignment),
-                                                                                             forwarderReturnSupplier(consignment),
-                                                                                             forwarderInnerFlow(consignment);
-
-warrantConsignment 'По доверенности' (consignment) = UNION EXCLUSIVE warrantStatement (consignment),
-                                                                     warrantReturnSupplier (consignment),
-                                                                     warrantInnerFlow (consignment);
-
-warrantHolderConsignment 'Доверенность выдана на' (consignment) = UNION EXCLUSIVE warrantHolderStatement (consignment),
-                                                                                  warrantHolderReturnSupplier (consignment),
-                                                                                  warrantHolderInnerFlow (consignment);
-
-goodsAcceptedConsignment 'Принял грузополучатель' (consignment) = UNION EXCLUSIVE goodsAcceptedStatement (consignment),
-                                                                                  goodsAcceptedReturnSupplier (consignment),
-                                                                                  goodsAcceptedInnerFlow (consignment);
-
-loadingExecuterConsignment 'Исполнитель ПРР (ИД)' (consignment) = UNION EXCLUSIVE loadingExecuterStatement(consignment),
-                                                                             loadingExecuterReturnSupplier(consignment),
-                                                                             loadingExecuterInnerFlow(consignment);
-
-commonNameLoadingExecuterConsignment 'Исполнитель ПРР' (consignment) = commonName(loadingExecuterConsignment(consignment));
-
-wayOfLoadingConsignment 'Способ ПРР (ИД)' (consignment) = UNION EXCLUSIVE wayOfLoadingStatement(consignment),
-                                                                          wayOfLoadingReturnSupplier(consignment),
-                                                                          wayOfLoadingInnerFlow(consignment);
-
-nameWayOfLoadingConsignment 'Способ ПРР' (consignment) = name(wayOfLoadingConsignment(consignment));
-
-codeLoadingConsignment 'Код ПРР' (consignment) = UNION EXCLUSIVE codeLoadingStatement (consignment),
-                                                                 codeLoadingReturnSupplier (consignment),
-                                                                 codeLoadingInnerFlow (consignment);
-
-arrivalTimeConsignment 'Время прибытия' (consignment) = UNION EXCLUSIVE arrivalTimeStatement (consignment),
-                                                                        arrivalTimeReturnSupplier (consignment),
-                                                                        arrivalTimeInnerFlow (consignment);
-
-departureTimeConsignment 'Время убытия' (consignment) = UNION EXCLUSIVE departureTimeStatement (consignment),
-                                                                        departureTimeReturnSupplier (consignment),
-                                                                        departureTimeInnerFlow (consignment);
-
-downtimeConsignment 'Время простоя' (consignment) = UNION EXCLUSIVE downtimeStatement (consignment),
-                                                                    downtimeReturnSupplier (consignment),
-                                                                    downtimeInnerFlow (consignment);
-
-raceQuantityConsignment 'Количество ездок' (consignment) = UNION EXCLUSIVE raceQuantityStatement(consignment),
-                                                                           raceQuantityReturnSupplier(consignment),
-                                                                           raceQuantityInnerFlow(consignment);
-
-// для накладной (спецификация)
-nameItemConsignmentDetail 'Наименование товара' (consignmentDetail) = UNION EXCLUSIVE nameAttributeItem(itemStatementDetail(consignmentDetail)),
-                                                                                      nameAttributeItem(itemReturnSupplierDetail(consignmentDetail)),
-                                                                                      nameAttributeItem(itemInnerFlowDetail(consignmentDetail));
-
-unitOfMeasureConsignmentDetail 'Единица измерения (ИД)' (consignmentDetail) = UNION EXCLUSIVE unitOfMeasureItem(itemStatementDetail(consignmentDetail)),
-                                                                                         unitOfMeasureItem(itemReturnSupplierDetail(consignmentDetail)),
-                                                                                         unitOfMeasureItem(itemInnerFlowDetail(consignmentDetail));
-
-shortNameConsignmentDetail 'Единица измерения' (consignmentDetail) = shortName(unitOfMeasureConsignmentDetail(consignmentDetail));
-
-quantityConsignmentDetail 'Количество' (consignmentDetail) = UNION EXCLUSIVE quantityStatementDetail(consignmentDetail),
-                                                                             quantityReturnSupplierDetail(consignmentDetail),
-                                                                             quantityInnerFlowDetail(consignmentDetail);
-
-sumQuantityConsignment 'Общее количество' (consignment) = UNION EXCLUSIVE totalQuantityStatement(consignment),
-                                                                          totalQuantityReturnSupplier(consignment),
-                                                                          totalQuantityInnerFlow(consignment);
-
-priceConsignmentDetail 'Цена' (consignmentDetail) = UNION EXCLUSIVE retailPriceStatementDetail (consignmentDetail),
-                                                                    supplierPriceReturnSupplierDetail (consignmentDetail),
-                                                                    retailPriceInnerFlowDetail(consignmentDetail);
-
-costConsignmentDetail 'Стоимость' (consignmentDetail) = UNION EXCLUSIVE sumStatementDetail (consignmentDetail),
-                                                                        sumSupplierReturnSupplierDetail (consignmentDetail),
-                                                                        accountSumInnerFlowDetail (consignmentDetail);
-
-sumCostConsignmentDetail 'Общая стоимость' (consignment) = UNION EXCLUSIVE sumStatement(consignment),
-                                                                           totalSumSupplierReturnSupplier(consignment),
-                                                                           accountSumInnerFlow(consignment);
-
-vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION EXCLUSIVE dataActingRateRangeStatementDetail (consignmentDetail),
-                                                                        dataSuppliersRangeReturnSupplierDetail (consignmentDetail),
-                                                                        dataRetailRangeInnerFlowDetail (consignmentDetail);
-
-sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION EXCLUSIVE totalSumNDSStatementDetail (consignmentDetail),
-                                                                          sumDetailSupplierVATReturnSupplierDetail (consignmentDetail),
-                                                                          sumRetailVATInnerFlowDetail (consignmentDetail);
-
-totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNION EXCLUSIVE sumNDSStatement (consignment),
-                                                                               totalSumIncVATReturnSupplier (consignment),
-                                                                               totalSumRetailVATInnerFlow (consignment);
-
-costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION EXCLUSIVE sumStatementDetail (consignmentDetail),
-                                                                                 sumSupplierReturnSupplierDetail (consignmentDetail),
-                                                                                 sumRetailVATInnerFlowDetail (consignmentDetail);
-
-packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = UNION EXCLUSIVE packQuantityStatementDetail(consignmentDetail),
-                                                                                               packQuantityReturnSupplierDetail(consignmentDetail),
-                                                                                               packQuantityInnerFlowDetail(consignmentDetail);
-
-sumPackQuantityConsignment 'Общее количество грузовых мест' (consignment) = UNION EXCLUSIVE sumPackQuantityStatement(consignment),
-                                                                                            sumPackQuantityReturnSupplier(consignment),
-                                                                                            sumPackQuantityInnerFlow(consignment);
-
-grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = UNION EXCLUSIVE grossWeightStatementDetail(consignmentDetail),
-                                                                                     grossWeightReturnSupplierDetail(consignmentDetail),
-                                                                                     grossWeightInnerFlowDetail(consignmentDetail);
-
-sumGrossWeightConsignmentDetail 'Общая масса груза, т.' (consignment) = UNION EXCLUSIVE sumGrossWeightStatement(consignment),
-                                                                                        sumGrossWeightReturnSupplier(consignment),
-                                                                                        sumGrossWeightInnerFlow(consignment);
-
-inConsignmentConsignmentDetail (consignment, consignmentDetail) = UNION EXCLUSIVE inStatementStatementDetail(consignment, consignmentDetail),
-                                                                                  isReturnSupplier(consignment, consignmentDetail),
-                                                                                  inInnerFlowInnerFlowDetail(consignment, consignmentDetail);
-
-// ---------------------------- Формы для накладных --------------------------------- //
-FORM consignment 'Накладная'
-    OBJECTS c=consignment FIXED PANEL
-
-    PROPERTIES (c) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
-                   transportPayerConsignment, shipmentBaseConsignment, dataLoadingPlaceConsignment, loadingPlaceConsignment,
-                   readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
-                   forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
-                   commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
-                   arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
-                   sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
-                   sumCostConsignmentDetail, totalSumVATConsignmentDetail
-
-    OBJECTS d=consignmentDetail
-
-    PROPERTIES(d) nameItemConsignmentDetail, shortNameConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
-                  costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
-                  packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteInnerFlowDetail
-
-    //FILTERS inConsignmentConsignmentDetail(c, d)
-;
 // ---------------------------- Нумераторы по умолчанию --------------------------------- //
 
 defaultNumeratorDocuments = DATA numerator ();
