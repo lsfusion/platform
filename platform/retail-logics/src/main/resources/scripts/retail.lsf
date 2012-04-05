@@ -9706,6 +9706,7 @@ NAVIGATOR {
             ADD machineryPriceTransaction;
             ADD groupMachineryInput;
             ADD filterItemsGroupMachinery;
+            ADD itemDepartmentStoreSupplierInput;
         }
         ADD parameters;
         ADD importData;
