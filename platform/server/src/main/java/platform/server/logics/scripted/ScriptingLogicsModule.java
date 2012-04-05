@@ -11,11 +11,16 @@ import platform.base.OrderedMap;
 import platform.server.LsfLogicsLexer;
 import platform.server.LsfLogicsParser;
 import platform.server.classes.*;
+import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.sets.OrObjectClassSet;
+import platform.server.classes.sets.UpClassSet;
 import platform.server.data.Union;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.data.type.ConcatenateType;
 import platform.server.data.type.Type;
+import platform.server.data.where.classes.AbstractClassWhere;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.*;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.window.*;
@@ -69,6 +74,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final ScriptingErrorLog errLog;
     private LsfLogicsParser parser;
     private Stack<LsfLogicsParser> parsers = new Stack<LsfLogicsParser>();
+    private List<String> warningList = new ArrayList<String>();
 
     private Map<String, LP<?>> currentLocalProperties = new HashMap<String, LP<?>>();
 
@@ -443,6 +449,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         checkPropertyValue(property, name);
+        checkClassWhere(property, name);
         addNamedParams(property.property.getSID(), namedParams);
     }
 
@@ -1835,6 +1842,28 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    private void checkClassWhere(LP<?> property, String name) {
+        ClassWhere<Integer> classWhere = property.getClassWhere();
+        boolean needWarning = false;
+        if (classWhere.wheres.length > 1) {
+            needWarning = true;
+        } else {
+            AbstractClassWhere.And<Integer> where = classWhere.wheres[0];
+            for (int i = 0; i < where.size; ++i) {
+                AndClassSet acSet = where.getValue(i);
+                if (acSet instanceof UpClassSet && ((UpClassSet)acSet).wheres.length > 1 ||
+                    acSet instanceof OrObjectClassSet && ((OrObjectClassSet)acSet).up.wheres.length > 1) {
+
+                    needWarning = true;
+                    break;
+                }
+            }
+        }
+        if (needWarning) {
+            warningList.add(" Property " + name + " has class where " + property.getClassWhere());
+        }
+    }
+
     public boolean semicolonNeeded() {
         return !("}".equals(parsers.peek().input.LT(-1).getText()));
     }
@@ -1887,12 +1916,22 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public void initProperties()  {
+        warningList.clear();
         parseStep(ScriptingLogicsModule.State.PROP);
     }
 
     @Override
     public void initIndexes() {
         parseStep(ScriptingLogicsModule.State.INDEX);
+        if (parsers.size() < 2) {
+            showWarnings();
+        }
+    }
+
+    private void showWarnings() {
+        for (String warningText : warningList) {
+            scriptLogger.info("WARNING!" + warningText);
+        }
     }
 
     @Override
