@@ -10,10 +10,12 @@ import platform.client.logics.ClientContainer;
 import platform.interop.form.layout.*;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.List;
 
@@ -127,7 +129,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                 ((ClientFormTabbedPane) component).showAllComponents();
         }
 
-        Set<Component> visibleComponents = new HashSet<Component>();
+        Set<Component> visibleComponents = new LinkedHashSet<Component>();
 
         components = new ArrayList<Component>();
         for (Component component : allComponents) {
@@ -668,6 +670,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
     private void setComponentsBounds(double[] coords) {
 
+        Map<Component, Integer> heights = new HashMap<Component, Integer>();
         for (Component comp : components) {
 
             SimplexComponentInfo info = infos.get(comp);
@@ -679,9 +682,40 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                 TP = (int) coords[infoP.T - 1];
             }
 
+            int height = (int) Math.round(coords[info.B - 1] - coords[info.T - 1]);
+            Integer parentHeight = null;
+            int prefTabAreaHeight = 0;
+            if (comp.getParent() != null) {
+                parentHeight = heights.get(comp.getParent());
+                if (comp.getParent() instanceof ClientFormTabbedPane) {
+                    ClientFormTabbedPane parentContainer = (ClientFormTabbedPane) comp.getParent();
+                    try {
+                        if (parentContainer.getTabRunCount() > 1) {
+                            Method getHeightMethod = BasicTabbedPaneUI.TabbedPaneLayout.class.getDeclaredMethod("preferredTabAreaHeight", int.class, int.class);
+                            getHeightMethod.setAccessible(true);
+                            prefTabAreaHeight = (Integer) getHeightMethod.invoke(comp.getParent().getLayout(), SwingConstants.TOP, comp.getParent().getWidth());
 
+                            Method getTabAreaInsetsMethod = BasicTabbedPaneUI.class.getDeclaredMethod("getTabAreaInsets", int.class);
+                            getTabAreaInsetsMethod.setAccessible(true);
+                            Insets tabAreaInsets = (Insets) getTabAreaInsetsMethod.invoke(parentContainer.getUI(), SwingConstants.TOP);
+
+                            prefTabAreaHeight += 2 * (tabAreaInsets.top + tabAreaInsets.bottom);
+
+                            prefTabAreaHeight -= parentContainer.getTabInsets().height;
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+            if (parentHeight != null) {
+                Insets parentInsets = IsInsideSimplexConstraint.getComponentInsets(comp.getParent());
+                parentHeight -= parentInsets.top + parentInsets.bottom;
+                height = Math.min(height, parentHeight - prefTabAreaHeight);
+            }
+            heights.put(comp, height);
             comp.setBounds((int) Math.round(coords[info.L - 1] - LP), (int) Math.round(coords[info.T - 1] - TP),
-                    (int) Math.round(coords[info.R - 1] - coords[info.L - 1]), (int) Math.round(coords[info.B - 1] - coords[info.T - 1]));
+                    (int) Math.round(coords[info.R - 1] - coords[info.L - 1]), height);
         }
 
     }

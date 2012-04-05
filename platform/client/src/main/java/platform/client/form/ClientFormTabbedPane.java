@@ -34,7 +34,7 @@ public class ClientFormTabbedPane extends JTabbedPane implements AutoHideableCon
         Dimension contSize = testContainer.getMinimumSize();
         minHeight = minSize.height;
 
-        tabInsets = new Dimension(minSize.width - contSize.width, minSize.height - contSize.height);
+        tabInsets = new Dimension(4, minSize.height - contSize.height);
 
         removeAll();
     }
