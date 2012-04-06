@@ -131,11 +131,12 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
 
             TreeMap<Integer, Map<String, Object>> sortedRows = new TreeMap<Integer, Map<String, Object>>();
 
-            for (Map<Object, Object> values : result.values()) {
-
+            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : result.entrySet()) {
+                Map<Object, Object> values = entry.getValue();
                 Map<String, Object> valuesRow = new HashMap<String, Object>();
                 for (String propertySID : exportProperties)
                     valuesRow.put(propertySID, values.get(propertySID));
+                valuesRow.put("groupDeclarationID", entry.getKey().values().iterator().next());
                 sortedRows.put((Integer) values.get("numberGroupDeclaration"), valuesRow);
             }
 
@@ -150,7 +151,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 innerInvoiceQuery.properties.put("sidInnerInvoice", romanRB.getLPByName("sidInnerInvoice").getExpr(innerInvoiceExpr));
                 innerInvoiceQuery.properties.put("dateFreightInnerInvoice", romanRB.getLPByName("dateFreightInnerInvoice").getExpr(innerInvoiceExpr));
 
-                innerInvoiceQuery.and(romanRB.getLPByName("inGroupDeclarationInnerInvoice").getExpr(new DataObject(result.getKey(0).values().iterator().next(), (ConcreteClass)romanRB.getClassByName("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
+                innerInvoiceQuery.and(romanRB.getLPByName("inGroupDeclarationInnerInvoice").getExpr(new DataObject(entry.getValue().get("groupDeclarationID")/*result.getKey(0).values().iterator().next()*/, (ConcreteClass)romanRB.getClassByName("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
 
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> innerInvoiceResult = innerInvoiceQuery.execute(context.getSession().sql);
 
