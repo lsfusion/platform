@@ -2302,7 +2302,7 @@ CLASS registerCommittee 'Комиссия для реестра цен' : commit
 
 chairmanCommittee 'Председатель комиссии (ИД)' = DATA employee (committee);
 commonNameChairmanCommittee 'Председатель комиссии' (committee) = commonName(chairmanCommittee(committee)) IN baseGroup;
-nameOfficerChairmanCommittee 'Должность председаетеля' (committee) = nameOfficerEmployee(chairmanCommittee(committee)) IN baseGroup;
+nameOfficerChairmanCommittee 'Должность председаетеля' (committee) = nameOfficerEmployee(chairmanCommittee(committee));
 
 departmentStoreCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (committee);
 nameDepartmentStoreCommittee 'Отдел комиссии' (committee) = commonName(departmentStoreCommittee(committee)) IN baseGroup;
@@ -9497,73 +9497,6 @@ FORM statement 'Отгрузка из розницы'
     EDIT statement OBJECT st
 ;
 
-//DESIGN statement FROM DEFAULT {
-//    main {
-//        preferredSize = (1024, 768);
-//            tabbedPane = TRUE;
-//        ADD firstCase{
-//            title = 'Спецификация';
-////            ADD d.grid{
-//////                fillVertical = 12;
-//
-//
-//            NEW header.box BEFORE d.box {
-//                childConstraints = TO THE BOTTOM;
-//                NEW headerRow1 {
-//                    childConstraints = TO THE RIGHT;
-//                    ADD st.documentHeaderGroup {
-//                        childConstraints = TO THE BOTTOM;
-//                        NEW docHeadRow1 {
-//                            childConstraints = TO THE RIGHT;
-//                            ADD PROPERTY(dateStatement);
-//                            ADD PROPERTY(timeStatement);
-//                            ADD PROPERTY(numberObject);
-//                            ADD PROPERTY(seriesObject);
-//                        };
-//                        NEW docHeadRow2 {
-//                            childConstraints = TO THE RIGHT;
-//                            ADD PROPERTY(nameCustomerStatement);
-//                            ADD PROPERTY(nameDepartmentStoreStatement);
-//                        };
-//                    };
-//                    ADD st.specificationGroup {
-//                        childConstraints = TO THE BOTTOM;
-//                    };
-//                };
-//
-//                NEW headerRow2 {
-//                        childConstraints = TO THE RIGHT;
-//                    ADD st.waybillSum {
-//                        childConstraints = TO THE RIGHT;
-//                    };
-//                    ADD st.additionalInfo {
-//                        childConstraints = TO THE RIGHT;
-//                    };
-//                };
-//            }
-//            ADD d.panel{
-//                POSITION d.pricingStatementDetailInfo TO THE LEFT d.itemStatementDetailInfo;
-//            };
-//
-//            };
-//
-//
-//
-//
-////        d.panel {
-////            POSITION d.pricingStatementDetailInfo TO THE LEFT d.itemStatementDetailInfo;
-////        }
-//    }
-//
-//
-//    ADD st.panel BEFORE specification.box{
-//        POSITION st.documentHeaderGroup TO THE LEFT st.specificationGroup;
-//        POSITION st.waybillSum TO THE RIGHT st.additionalInfo;
-//    };
-//
-//}
-
-
 DESIGN statement FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
@@ -9572,18 +9505,8 @@ DESIGN statement FROM DEFAULT {
             tabbedPane = TRUE;
             ADD d.box{
                 title = 'Спецификация';
-//                ADD d.grid{
-////                    fillVertical = 12;
-//                };
                 ADD d.panel{
-                    childConstraints = TO THE BOTTOM;
-                        ADD d.pricingStatementDetailInfo{
-                            childConstraints = TO THE RIGHT;
-                        }
-                        ADD d.itemStatementDetailInfo{
-                            childConstraints = TO THE RIGHT;
-                        }
-
+                    POSITION d.pricingStatementDetailInfo TO THE LEFT d.itemStatementDetailInfo;
                 };
             };
             NEW consignment{
