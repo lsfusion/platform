@@ -5,6 +5,7 @@ import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.interop.action.ExportFileClientAction;
+import platform.server.classes.ConcreteClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
@@ -78,6 +79,12 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     "Стандарт (ГОСТ, ОСТ, СПП, СТО, ТУ)", "Сорт (группа сортов)", "Дата выпуска", "Количество товара",
                     "Краткое наименование единицы измерения", "Код единицы измерения", "Группа товаров");
 
+            List<String> exportTitlesTSDocs44 = BaseUtils.toList("Номер товара", "Номер документа", "Дата документа",
+                    "Код таможенного органа", "Код вида представляемого документа",	"Дата начала действия документа",
+                    "Дата окончания действия документа", "Дата представления недостающего документа", "Код срока временного ввоза",
+                    "Заявляемый срок временного ввоза",	"Код вида платежа (льготы)", "ОПЕРЕЖАЮЩАЯ ПОСТАВКА",
+                    "Запрашиваемый срок переработки	Код страны (сертификат происхождения)",	"Код вида упрощений (реестр УЭО)");
+
             DataObject declarationObject = context.getKeyValue(declarationInterface);
 
             Map<String, byte[]> files = new HashMap<String, byte[]>();
@@ -89,16 +96,10 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             PrintWriter writerTSmarkings = new PrintWriter(
                     new OutputStreamWriter(
                             new FileOutputStream(fileTSMarkings), "windows-1251"));
-
-            LP isGroupDeclaration = BL.LM.is(romanRB.getClassByName("groupDeclaration"));
-            Map<Object, KeyExpr> keys = isGroupDeclaration.getMapKeys();
-            KeyExpr key = BaseUtils.singleValue(keys);
-            Query<Object, Object> query = new Query<Object, Object>(keys);
-            for (String propertySID : exportProperties)
-                query.properties.put(propertySID, romanRB.getLPByName(propertySID).getExpr(context.getModifier(), key));
-            query.and(isGroupDeclaration.getExpr(key).getWhere());
-            query.and(romanRB.getLPByName("declarationGroupDeclaration").getExpr(context.getModifier(), key).compare(declarationObject.getExpr(), Compare.EQUALS));
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
+            File fileTSDocs44 = File.createTempFile("TSDocs44", ".csv");
+            PrintWriter writerTSDocs44 = new PrintWriter(
+                    new OutputStreamWriter(
+                            new FileOutputStream(fileTSDocs44), "windows-1251"));
 
             row = "";
             for (String title : exportTitlesTSware)
@@ -110,17 +111,60 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(title, ";");
             writerTSmarkings.println(row);
 
+            row = "";
+            for (String title : exportTitlesTSDocs44)
+                addStringCellToRow(title, ";");
+            writerTSDocs44.println(row);
+            for(int i = 0; i<10; i++) {
+                writerTSDocs44.println("");
+            }
+
+            LP isGroupDeclaration = BL.LM.is(romanRB.getClassByName("groupDeclaration"));
+            Map<Object, KeyExpr> keys = isGroupDeclaration.getMapKeys();
+            KeyExpr key = BaseUtils.singleValue(keys);
+            Query<Object, Object> query = new Query<Object, Object>(keys);
+            for (String propertySID : exportProperties)
+                query.properties.put(propertySID, romanRB.getLPByName(propertySID).getExpr(context.getModifier(), key));
+            query.and(isGroupDeclaration.getExpr(key).getWhere());
+            query.and(romanRB.getLPByName("declarationGroupDeclaration").getExpr(context.getModifier(), key).compare(declarationObject.getExpr(), Compare.EQUALS));
+            OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
+
             TreeMap<Integer, Map<String, Object>> sortedRows = new TreeMap<Integer, Map<String, Object>>();
 
             for (Map<Object, Object> values : result.values()) {
 
-                Map<String, Object> row = new HashMap<String, Object>();
+                Map<String, Object> valuesRow = new HashMap<String, Object>();
                 for (String propertySID : exportProperties)
-                    row.put(propertySID, values.get(propertySID));
-                sortedRows.put((Integer) values.get("numberGroupDeclaration"), row);
+                    valuesRow.put(propertySID, values.get(propertySID));
+                sortedRows.put((Integer) values.get("numberGroupDeclaration"), valuesRow);
             }
 
             for (Map.Entry<Integer, Map<String, Object>> entry : sortedRows.entrySet()) {
+
+                //Creation of TSDocs44.csv
+                KeyExpr innerInvoiceExpr = new KeyExpr("innerInvoice");
+                Map<Object, KeyExpr> innerInvoiceKeys = new HashMap<Object, KeyExpr>();
+                innerInvoiceKeys.put("innerInvoice", innerInvoiceExpr);
+
+                Query<Object, Object> innerInvoiceQuery = new Query<Object, Object>(innerInvoiceKeys);
+                innerInvoiceQuery.properties.put("sidInnerInvoice", romanRB.getLPByName("sidInnerInvoice").getExpr(innerInvoiceExpr));
+                innerInvoiceQuery.properties.put("dateFreightInnerInvoice", romanRB.getLPByName("dateFreightInnerInvoice").getExpr(innerInvoiceExpr));
+
+                innerInvoiceQuery.and(romanRB.getLPByName("inGroupDeclarationInnerInvoice").getExpr(new DataObject(result.getKey(0).values().iterator().next(), (ConcreteClass)romanRB.getClassByName("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
+
+                OrderedMap<Map<Object, Object>, Map<Object, Object>> innerInvoiceResult = innerInvoiceQuery.execute(context.getSession().sql);
+
+
+                
+                for (Map<Object, Object> innerInvoiceValues : innerInvoiceResult.values()) {
+                    row = "";
+                    addStringCellToRow(entry.getKey(), ";");//numberGroupDeclaration
+                    addStringCellToRow(innerInvoiceValues.get("sidInnerInvoice"), ";");
+                    addStringCellToRow(innerInvoiceValues.get("dateFreightInnerInvoice"), "");
+                    writerTSDocs44.println(row);
+                }
+
+                //Creation of TSware.csv
                 row = "";
                 Map<String, Object> values = entry.getValue();
                 addStringCellToRow(entry.getKey(), ";"); //numberGroupDeclaration
@@ -198,11 +242,9 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(null, ";"); //Код документа, удостоверяющего личность физического лица переработки
 
                 writerTSware.println(row);
-            }
 
-            for (Map.Entry<Integer, Map<String, Object>> entry : sortedRows.entrySet()) {
+                //Creation of TSmarkings.csv
                 row = "";
-                Map<String, Object> values = entry.getValue();
                 addStringCellToRow(entry.getKey(), ";"); //numberGroupDeclaration
                 addStringCellToRow(null, ";"); //Наименование изготовителя
                 addStringCellToRow(null, ";"); //Товарный знак
@@ -222,9 +264,11 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
 
             writerTSware.close();
             writerTSmarkings.close();
+            writerTSDocs44.close();
 
             files.put("TSware.csv", IOUtils.getFileBytes(fileTSware));
             files.put("TSmarkings.csv", IOUtils.getFileBytes(fileTSMarkings));
+            files.put("TSDocs44.csv", IOUtils.getFileBytes(fileTSDocs44));
             context.addAction(new ExportFileClientAction(files));
 
         } catch (UnsupportedEncodingException e) {
