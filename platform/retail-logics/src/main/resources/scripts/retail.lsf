@@ -388,9 +388,9 @@ META metaCodeObjectWithPostEx (object, captionPosted)
 
     departmentStore###object##Detail 'Отдел магазина (ИД)' (object##Detail) = departmentStore###object(object###object##Detail(object##Detail));
 
-    item###object##Detail 'Товар строки документа (ИД)' (object##Detail) = DATA item (object##Detail) IN idGroup;
+    item###object##Detail 'Товар (ИД)' (object##Detail) = DATA item (object##Detail) IN idGroup;
 
-    nameAttributeItem###object##Detail 'Товар строки документа' (object##Detail) =
+    nameAttributeItem###object##Detail 'Товар' (object##Detail) =
         nameAttributeItem(item###object##Detail(object##Detail)) IN recognizeGroup;
 
     shortNameUnitOfMeasureItem###object##Detail 'Ед. изм.' (object##Detail) =
@@ -489,11 +489,6 @@ META metaCodeDetailAggregation (primObject, aggrObject, aggrProperty)
 END
 
 META metaCodeTotals (object)
-
-//    sumVatWare###object##Detail 'Сумма НДС по посуде, за ед.' (object##Detail) =
-//         round0((
-//         (UNION OVERRIDE 0 IF object##Detail IS object##Detail, priceWare###object##Detail (object##Detail)) *
-//         UNION OVERRIDE 0 IF object##Detail IS object##Detail, dataWareRange###object##Detail(object##Detail))/100);
 
     sumVatWare###object##Detail 'Сумма НДС по посуде, за ед.' (object##Detail) = round0( [X*Y/(100+Y)](
          (UNION OVERRIDE 0 IF object##Detail IS object##Detail, priceWare###object##Detail (object##Detail)),
@@ -2818,16 +2813,18 @@ dataOrderPreliminaryOrder 'Номер заказа для предварител
 completePercentageOrderSupplier 'Процент выполнения' (orderSupplier) = DATA DOUBLE (orderSupplier) IN orderSupplierGroup;
 allowablePercentOrderSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (orderSupplier) IN supplierGroup;
 
-quantityPackItemOver 'Количество в грузовом месте' (item) = UNION OVERRIDE 1 IF item IS item, quantityPackItem(item);
+//quantityPackItemOver 'Количество в грузовом месте' (item) = UNION OVERRIDE 1 IF item IS item, quantityPackItem(item);
 quantityRealizationDepartmentStoreItemOver 'Прожад в день' (departmentStore, item) =
     UNION OVERRIDE 0 IF (departmentStore IS departmentStore AND item IS item), quantityRealizationDepartmentStoreItem(departmentStore, item);
 balanceDepartmentStoreItemOver 'Текущий остаток' (departmentStore, item) =
     UNION OVERRIDE 0 IF (departmentStore IS departmentStore AND item IS item), balanceDepartmentStoreItem(departmentStore, item);
 minReserveItemOver 'Минимальный резерв' (item) = UNION OVERRIDE 0 IF item IS item, minReserveItem(item);
-minQuantityOrderItemOver 'Минимальный заказ' (item) = UNION OVERRIDE 0 IF item IS item, minQuantityOrderItem(item);
+//minQuantityOrderItemOver 'Минимальный заказ' (item) = UNION OVERRIDE 0 IF item IS item, minQuantityOrderItem(item);
 
-packQuantityItemOrderSupplier 'Заказ(мест)' = DATA INTEGER (orderSupplier, item);
-sumQuantityItemOrderSupplier 'Заказ(единиц)' (orderSupplier, item) = quantityPackItemOver(item) * packQuantityItemOrderSupplier(orderSupplier, item);
+packQuantityItemOrderSupplier 'Заказ(мест)' = DATA DOUBLE (orderSupplier, item);
+sumQuantityItemOrderSupplier 'Заказ(единиц)' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item);
+sumQuantityItemOrderSupplier (orderSupplier, item) <- (UNION OVERRIDE 1 IF item IS item, quantityPackItem(item)) * packQuantityItemOrderSupplier(orderSupplier, item)
+                                                      ON CHANGE packQuantityItemOrderSupplier(orderSupplier, item);
 priceSupplierItemOrderSupplier 'Цена поставщика' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item);
 priceSupplierItemOrderSupplier (orderSupplier, item) <- priceSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier))
     ON ASSIGN packQuantityItemOrderSupplier(orderSupplier, item);
@@ -2835,9 +2832,9 @@ priceSupplierItemOrderSupplier (orderSupplier, item) <- priceSupplierItemDepartm
 suppliersRangeItemDateOrderSupplier 'Шкала' (orderSupplier, item) = DATA range (orderSupplier, item) IN idGroup;
 suppliersRangeItemDateOrderSupplier (orderSupplier, item) <- suppliersRangeItemVal(item, dateOrderSupplier(orderSupplier))
                                                              ON ASSIGN packQuantityItemOrderSupplier(orderSupplier, item);
-numberSuppliersRangeOrderSupplier 'Шкала НДС поставщика' (orderSupplier, item) =
+numberSuppliersRangeOrderSupplier 'НДС поставщика, номер' (orderSupplier, item) =
     dataRange(suppliersRangeItemDateOrderSupplier(orderSupplier, item));
-dataSuppliersRangeOrderSupplier 'НДС поставщика' (orderSupplier, item) =
+dataSuppliersRangeOrderSupplier 'НДС поставщика, %' (orderSupplier, item) =
     UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item,
                    dataActingRateRangeDate(suppliersRangeItemDateOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier));
 CONSTRAINT taxRange(suppliersRangeItemDateOrderSupplier(orderSupplier, item)) != tax.taxNDS CHECKED BY suppliersRangeItemDateOrderSupplier MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
@@ -2955,9 +2952,9 @@ isEnoughItem 'Достаточно ли остатков товара' (orderSup
     balanceDepartmentStoreItemOver(departmentStoreOrderSupplier(orderSupplier), item) - quantityRealizationItemNextOrder(orderSupplier, item) < minReserveItemOver(item);
 recommendCountOrderSupplier 'Рекомендуемый заказ' (orderSupplier, item) =
     IF isEnoughItem(orderSupplier, item) THEN
-    (UNION MAX floor((quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item))/quantityPackItemOver(item)),
-                (minQuantityOrderItemOver(item) IF orderSupplier IS orderSupplier))
-                ELSE 0 IF (orderSupplier IS orderSupplier AND item IS item);
+    (UNION MAX floor((quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item))/
+    (UNION OVERRIDE 1 IF item IS item, quantityPackItem(item))), ((UNION OVERRIDE 0 IF item IS item, minQuantityOrderItem(item)) IF orderSupplier IS orderSupplier))
+    ELSE 0 IF (orderSupplier IS orderSupplier AND item IS item);
 
 isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentVal (
     supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
@@ -3139,14 +3136,14 @@ FORM orderSupplier 'Заказ поставщику'
 
     PROPERTIES(o, i)       topItem, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
 
-    PROPERTIES(i) READONLY quantityPackItemOver, minQuantityOrderItemOver
+    PROPERTIES(i) quantityPackItem, minQuantityOrderItem
     PROPERTIES FORCE PANEL nameWareOrderSupplier(o, i), numberSuppliersRangeOrderSupplier(o, i)
     PROPERTIES FORCE PANEL READONLY articleItem(i), nameCountryItem(i), retailPriceItemOrderSupplier(o, i),
                                     nameinActionItemOrderSupplier(o, i), banMovementDepartmentStoreOrderSupplier(o, i),
                                     lastOrderSupplier(o, i), priceWareOrderSupplier(o, i), numberDataRangeWareOrderSupplier(o, i),
                                     dataWareRangeOrderSupplier(o, i)
 
-    PROPERTIES(o, i)       recommendCountOrderSupplier, priceSupplierItemOrderSupplier,
+    PROPERTIES(o, i)       recommendCountOrderSupplier, priceSupplierItemOrderSupplier, numberSuppliersRangeOrderSupplier,
                            dataSuppliersRangeOrderSupplier, sumWareOrderSupplier, sumDetailVatItemOrderSupplier,
                            fullSumItemOrderSupplier
 
@@ -3233,9 +3230,9 @@ FORM orderSuppliers 'Заказы поставщику'
 
     PROPERTIES(o, i) READONLY  topItem, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
 
-    PROPERTIES(i) READONLY quantityPackItemOver, minQuantityOrderItemOver
+    PROPERTIES(i) READONLY quantityPackItem, minQuantityOrderItem
 
-    PROPERTIES(o, i) READONLY  recommendCountOrderSupplier, priceSupplierItemOrderSupplier,
+    PROPERTIES(o, i) READONLY  recommendCountOrderSupplier, priceSupplierItemOrderSupplier, numberSuppliersRangeOrderSupplier,
                                dataSuppliersRangeOrderSupplier, sumWareOrderSupplier, sumDetailVatItemOrderSupplier,
                                fullSumItemOrderSupplier
 
@@ -4870,9 +4867,9 @@ numberSpecificationDetail 'Номер строки' (specificationDetail) =
     PARTITION SUM 1 IF specificationDetail IS specificationDetail BY specificationSpecificationDetail(specificationDetail)
     ORDER specificationDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
 
-itemSpecificationDetail 'Товар строки документа (ИД)' (specificationDetail) = DATA item (specificationDetail) IN idGroup;
+itemSpecificationDetail 'Товар (ИД)' (specificationDetail) = DATA item (specificationDetail) IN idGroup;
 
-nameAttributeItemSpecificationDetail 'Товар строки документа' (specificationDetail) =
+nameAttributeItemSpecificationDetail 'Товар' (specificationDetail) =
     nameAttributeItem(itemSpecificationDetail(specificationDetail)) IN recognizeGroup;
 
 barcodeExSkuSpecificationDetail 'Штрих-код товара' (specificationDetail) =
@@ -5289,6 +5286,7 @@ namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоце
 
 supplierShipmentDetail 'Поставщик (ИД)' (shipmentDetail) = supplierShipment(shipmentShipmentDetail(shipmentDetail));
 
+
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
 
@@ -5426,6 +5424,10 @@ CONSTRAINT supplierPriceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipm
 CONSTRAINT supplierPriceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail))
     AND isPostedShipmentDetail (shipmentDetail) MESSAGE 'Цена поставки меньше цены заказа';
 
+isAllowPriceItemShipment 'Доспустимая цена поставки' (shipmentDetail) =
+    supplierPriceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) OR
+    supplierPriceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail));
+
 //старые ценовые параметры для переоценок
 curRetailPriceShipmentDetail 'Текущая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
 
@@ -5444,12 +5446,16 @@ curPriceWareShipmentDetail 'Текущая цена посуды' (shipmentDetai
 curWareShipmentDetail = DATA ware (shipmentDetail) IN idGroup;
 curNameWareShipmentDetail 'Текущая посуда' (shipmentDetail) = name(curWareShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
+
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
 sumQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM
     sumQuantityItemOrderSupplier (orderSupplier, item)
     IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
 
 isOrderedItemShipment 'Товар есть в заказах поставки' (item, shipment) =  sumQuantityOrderedItemShipment(item, shipment) > 0;
+
+isShippedOrOrderedItemShipment 'Товар или заказан или поставлен' (item, shipment) =
+    sumQuantityOrderedItemShipment(item, shipment) OR quantityItemShipment(item, shipment);
 
 isNotShipedOrderedItemShipment 'Товар есть в заказе и отсутствует в поставке' (item, shipment) =
     isOrderedItemShipment (item, shipment) AND NOT isShippedItemShipment (item, shipment);
@@ -6263,9 +6269,9 @@ numberBillDetail 'Номер строки' (billDetail) =
     PARTITION SUM 1 IF billDetail IS billDetail BY billBillDetail(billDetail)
     ORDER billDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
 
-itemBillDetail 'Товар строки документа (ИД)' (billDetail) = DATA item (billDetail) IN idGroup;
+itemBillDetail 'Товар (ИД)' (billDetail) = DATA item (billDetail) IN idGroup;
 
-nameAttributeItemBillDetail 'Товар строки документа' (billDetail) =
+nameAttributeItemBillDetail 'Товар' (billDetail) =
     nameAttributeItem(itemBillDetail(billDetail)) IN recognizeGroup;
 
 numberBill 'Номер чека' (bill) = DATA INTEGER (bill) IN documentHeaderGroup;
@@ -7632,9 +7638,11 @@ FORM shipment 'Поставка'
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
-                    importerPriceShipmentDetail READONLY, supplierPriceShipmentDetail, supplierMarkupShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
-                    numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
-                    nameWareShipmentDetail, priceWareShipmentDetail, numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
+                    supplierPriceShipmentDetail HIGHLIGHTIF isAllowPriceItemShipment(d), supplierMarkupShipmentDetail,
+                    importerPriceShipmentDetail READONLY, dateFitToShipmentDetail,
+                    balanceBeforeShipmentShipmentDetail, numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail,
+                    sumDetailSupplierVATShipmentDetail, sumSupplierShipmentDetail, nameWareShipmentDetail, priceWareShipmentDetail,
+                    numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
                     retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail, ADDOBJ, delete
     PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail,
                                controlExpiryShipmentDetail, isManufacturedShipmentDetail, isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail,
@@ -7648,8 +7656,11 @@ FORM shipment 'Поставка'
     FILTERS inShipmentShipmentDetail(s, d)
 
     OBJECTS i=item
+
     PROPERTIES (i) nameAttributeItem
-    PROPERTIES (i, s) quantityItemShipment, sumQuantityOrderedItemShipment
+    PROPERTIES (i, s) minAllowPriceItemShipment, maxAllowPriceItemShipment, quantityItemShipment, sumQuantityOrderedItemShipment
+
+    FILTERS isShippedOrOrderedItemShipment(i, s)
 
     HINTNOUPDATE LIST isPostedShipment,
                   balanceBItemLedgerDateTime, priceImporterBLedgerDateTime, wareBLedgerDateTime, priceWareBLedgerDateTime,
@@ -7739,11 +7750,12 @@ FORM shipments 'Поставки'
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
     OBJECTS d=shipmentDetail
-    PROPERTIES (d) READONLY numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
-                            supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateFitToShipmentDetail, balanceBeforeShipmentShipmentDetail,
-                            numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail, sumSupplierVATShipmentDetail, sumSupplierShipmentDetail,
-                            nameWareShipmentDetail, priceWareShipmentDetail, numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
-                            retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail
+    PROPERTIES (d) READONLY  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
+                             supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateFitToShipmentDetail,
+                             balanceBeforeShipmentShipmentDetail, numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail,
+                             sumDetailSupplierVATShipmentDetail, sumSupplierShipmentDetail, nameWareShipmentDetail, priceWareShipmentDetail,
+                             numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail, retailMarkupShipmentDetail,
+                             curRetailPriceShipmentDetail, retailPriceShipmentDetail
 
     FILTERS inShipmentShipmentDetail(s, d)
 ;
@@ -7815,10 +7827,10 @@ FORM returnSupplier 'Возврат поставщику'
                   sumCostConsignmentDetail, totalSumVATConsignmentDetail
 
     OBJECTS d=returnSupplierDetail
-    PROPERTIES(d) numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
-                  commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, importerPriceReturnSupplierDetail, supplierPriceReturnSupplierDetail,
-                  supplierMarkupReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail, dataSuppliersRangeReturnSupplierDetail,
-                  sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
+    PROPERTIES(d) numberReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
+                  commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
+                  supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail READONLY, numberSupplierRangeReturnSupplierDetail,
+                  dataSuppliersRangeReturnSupplierDetail, sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
                   nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
                   retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail, sumDetailMarkupReturnSupplierDetail, sumDetailVatReturnSupplierDetail,
                   sumDetailVatWareReturnSupplierDetail
@@ -7850,10 +7862,10 @@ FORM returnSuppliers 'Возвраты поставщику'
                   ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
 
     OBJECTS d=returnSupplierDetail
-    PROPERTIES(d) READONLY numberReturnSupplierDetail, nameAttributeItemReturnSupplierDetail, barcodeExSkuReturnSupplierDetail,
-                           commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, importerPriceReturnSupplierDetail, supplierPriceReturnSupplierDetail,
-                           supplierMarkupReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail, dataSuppliersRangeReturnSupplierDetail,
-                           sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
+    PROPERTIES(d) READONLY numberReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
+                           commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
+                           supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail,
+                           dataSuppliersRangeReturnSupplierDetail, sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
                            nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
                            retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail, sumDetailMarkupReturnSupplierDetail, sumDetailVatReturnSupplierDetail,
                            sumDetailVatWareReturnSupplierDetail
