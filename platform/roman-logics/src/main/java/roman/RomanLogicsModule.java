@@ -877,6 +877,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP priceInShipmentDetail;
     private LP contractInShipmentStockSku;
     public LP priceInImporterFreightSku;
+    public LP priceInFreightSku;
     public LP RRPInImporterFreightSku;
     private LP netWeightImporterFreightSku;
     private LP netWeightImporterFreightArticle;
@@ -3191,6 +3192,8 @@ public class RomanLogicsModule extends LogicsModule {
         priceDirectImporterFreightSku = addMGProp(baseGroup, "priceDirectImporterFreightSku", true, "Цена входная", priceRateSupplierBoxSku, importerSupplierBox, 1, freightFreightUnit, 1, 2);
         priceInImporterFreightSku = addSUProp(baseGroup, "priceInImporterFreightSku", "Цена входная", Union.OVERRIDE, priceDirectImporterFreightSku, priceProxyImporterFreightSku, priceImporterFreightSku);
 
+        priceInFreightSku = addMGProp(baseGroup, "priceInFreightSku", "Цена входная", priceInImporterFreightSku, 2, 3);
+
         RRPImporterFreightSku = addDProp(baseGroup, "RRPImporterFreightSku", "Цена рекомендованная", DoubleClass.instance, importer, freight, sku);
         RRPProxyImporterFreightSku = addMGProp(baseGroup, "RRPProxyImporterFreightSku", true, "Цена рекомендованная", RRPInShipmentStockSku, importerShipmentFreightBox, 1, 2, freightFreightUnit, 2, 3);
         RRPDirectImporterFreightSku = addMGProp(baseGroup, "RRPDirectImporterFreightSku", true, "Цена рекомендованная", RRPRateSupplierBoxSku, importerSupplierBox, 1, freightFreightUnit, 1, 2);
@@ -3671,6 +3674,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement customs = addNavigatorElement(baseLM.baseElement, "customs", "Таможенное оформление");
         customs.window = leftToolbar;
+
+        NavigatorElement prices = addNavigatorElement(baseLM.baseElement, "prices", "Ценообразование");
+        prices.window = leftToolbar;
 
         NavigatorElement settings = addNavigatorElement(baseLM.baseElement, "settings", "Настройки");
         settings.window = leftToolbar;
@@ -7802,7 +7808,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightListFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, nameCustomStoreFreight, formLogFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, tonnageDataFreight, netWeightInvoicedFreight, grossWeightFreight, volumeDataFreight, palletCountDataFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, nameCustomStoreFreight, formLogFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, netWeightInvoicedFreight, grossWeightFreight, palletNumberFreight, freightBoxNumberFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.GRID);
             setReadOnly(objFreight, true);
             setReadOnly(formLogFreight, false);

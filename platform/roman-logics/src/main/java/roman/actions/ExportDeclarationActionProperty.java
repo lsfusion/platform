@@ -149,7 +149,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
 
                 Query<Object, Object> innerInvoiceQuery = new Query<Object, Object>(innerInvoiceKeys);
                 innerInvoiceQuery.properties.put("sidInnerInvoice", romanRB.getLPByName("sidInnerInvoice").getExpr(innerInvoiceExpr));
-                innerInvoiceQuery.properties.put("dateFreightInnerInvoice", romanRB.getLPByName("dateFreightInnerInvoice").getExpr(innerInvoiceExpr));
+                innerInvoiceQuery.properties.put("dateInnerInvoice", romanRB.getLPByName("dateInnerInvoice").getExpr(innerInvoiceExpr));
 
                 innerInvoiceQuery.and(romanRB.getLPByName("inGroupDeclarationInnerInvoice").getExpr(new DataObject(entry.getValue().get("groupDeclarationID")/*result.getKey(0).values().iterator().next()*/, (ConcreteClass)romanRB.getClassByName("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
 
@@ -161,7 +161,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     row = "";
                     addStringCellToRow(entry.getKey(), ";");//numberGroupDeclaration
                     addStringCellToRow(innerInvoiceValues.get("sidInnerInvoice"), ";");
-                    addStringCellToRow(innerInvoiceValues.get("dateFreightInnerInvoice"), "");
+                    addStringCellToRow(innerInvoiceValues.get("dateInnerInvoice"), "");
                     writerTSDocs44.println(row);
                 }
 

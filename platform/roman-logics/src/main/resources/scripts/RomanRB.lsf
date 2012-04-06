@@ -77,7 +77,8 @@ includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importe
 
 freightInnerInvoice 'Фрахт инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE freightFormedInvoice(innerInvoice),
                                                                           freightDirectInvoice(innerInvoice) IN idGroup;
-dateFreightInnerInvoice 'Дата инвойса' (innerInvoice) = dateArrivalFreight(freightInnerInvoice(innerInvoice)) IN baseGroup;
+
+dateFreightInnerInvoice 'Дата инвойса' (formedInvoice) = dateArrivalFreight(freightInnerInvoice(formedInvoice)) IN baseGroup;
 
 freightArrivedInnerInvoice 'Прибыл фрахт инвойса' (innerInvoice) = freightInnerInvoice(innerInvoice) IS freightArrived;
 
@@ -92,6 +93,11 @@ sidFormedInvoice 'Номер инвойса' (formedInvoice) = sidImporterFreigh
                                                                       freightFormedInvoice(formedInvoice)) IN baseGroup;
 
 sidInnerInvoice 'Номер инвойса' (innerInvoice) = UNION EXCLUSIVE sidFormedInvoice(innerInvoice), sidDocument(innerInvoice) IN baseGroup;
+
+dateFormedInvoice 'Дата инвойса' (formedInvoice) = dateImporterFreight(importerInnerInvoice(formedInvoice),
+                                                                       freightInnerInvoice(formedInvoice)) IN baseGroup;
+
+dateInnerInvoice 'Дата инвойса' (innerInvoice) = UNION EXCLUSIVE date(innerInvoice), dateFormedInvoice(innerInvoice) IN baseGroup;
 
 contractFormedInvoice 'Договор инвойса (ИД)' (formedInvoice) = contractImporterFreight(importerFormedInvoice(formedInvoice),
                                                                                   freightFormedInvoice(formedInvoice)) IN idGroup;
@@ -525,7 +531,7 @@ FORM declaration 'Декларация'
     PROPERTIES (gd, ii) inGroupDeclarationInnerInvoice
 
     OBJECTS ii2=innerInvoice
-    PROPERTIES (ii2) sidInnerInvoice, dateFreightInnerInvoice
+    PROPERTIES (ii2) sidInnerInvoice, dateInnerInvoice
 
     FILTERS inDeclarationGroupDeclaration(d, gd), inGroupDeclarationInnerInvoice(gd, ii2)
 
@@ -602,7 +608,7 @@ DESIGN declarations FROM DEFAULT {
 
 FORM innerInvoices 'Инвойсы РБ'
     OBJECTS i=innerInvoice
-    PROPERTIES(i) READONLY nameCustomStoreInnerInvoice, sidInnerInvoice, nameImporterInnerInvoice, dateFreightInnerInvoice
+    PROPERTIES(i) READONLY nameCustomStoreInnerInvoice, sidInnerInvoice, nameImporterInnerInvoice, dateInnerInvoice
     PROPERTIES(i) sidDeclarationInnerInvoice, delete
     FILTERS freightArrivedInnerInvoice(i)
 
@@ -613,6 +619,72 @@ FORM innerInvoices 'Инвойсы РБ'
     FILTERS quantityInnerInvoiceSku(i, s)
 ;
 
+// документы расценки
+CLASS ABSTRACT priceChangeDocument 'Документ изменения цен';
+CLASS basePriceChangeDocument 'Расценка' : priceChangeDocument;
+CLASS discountPriceChangeDocument 'Уценка' : priceChangeDocument;
+
+sidPriceChangeDocument 'Номер' = DATA STRING[10] (priceChangeDocument) IN baseGroup;
+datePriceChangeDocument 'Дата документа' = DATA DATE(priceChangeDocument) IN baseGroup;
+isDiscountPriceChangeDocument 'Распродажа' = DATA BOOLEAN(priceChangeDocument) IN baseGroup;
+keepDiscountPriceChangeDocument 'Учитывать скидки' = DATA BOOLEAN(priceChangeDocument) IN baseGroup;
+
+priceInPriceChangeDocumentSku 'Цена первого поставщика' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
+RRPPriceChangeDocumentSku 'Рекомендуемая цена' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
+ratePriceChangeDocumentSku 'Обменный курс' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
+priceRetailPriceChangeDocumentSku 'Розничная цена' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
+
+basePriceChangeDocumentSku 'Цена без уценки' = DATA DOUBLE(discountPriceChangeDocument, sku) IN baseGroup;
+markdownPriceChangeDocumentSku 'Цена с уценкой' = DATA DOUBLE(discountPriceChangeDocument, sku) IN baseGroup;
+
+FORM priceChangeDocument 'Документ изменений цен'
+
+    OBJECTS p=basePriceChangeDocument FIXED PANEL
+    PROPERTIES(p) sidPriceChangeDocument, datePriceChangeDocument, isDiscountPriceChangeDocument, keepDiscountPriceChangeDocument
+
+    OBJECTS s=sku
+    PROPERTIES(s) barcode, sidArticleSku
+    PROPERTIES (p, s) priceInPriceChangeDocumentSku, RRPPriceChangeDocumentSku, ratePriceChangeDocumentSku,
+                      priceRetailPriceChangeDocumentSku
+
+    FILTERS priceInPriceChangeDocumentSku (p, s)
+    EDIT basePriceChangeDocument OBJECT p
+;
+
+FORM priceChangeDocuments 'Документы изменений цен'
+
+    OBJECTS p=basePriceChangeDocument
+    PROPERTIES(p) READONLY sidPriceChangeDocument, datePriceChangeDocument, isDiscountPriceChangeDocument, keepDiscountPriceChangeDocument
+    PROPERTIES(p) ADDFORM, EDITFORM, delete
+
+    OBJECTS s=sku
+    PROPERTIES(s) READONLY barcode, sidArticleSku
+    PROPERTIES (p, s) priceInPriceChangeDocumentSku, RRPPriceChangeDocumentSku, ratePriceChangeDocumentSku,
+                      priceRetailPriceChangeDocumentSku
+
+    FILTERS priceInPriceChangeDocumentSku (p, s)
+;
+
+
+toCreatePriceChangeDocument 'Заполнить документ из фрахта' =  ACTION (freight) NEWSESSION {
+    ADDOBJ basePriceChangeDocument;
+    FOR p == addedObject() DO {
+        SET priceInPriceChangeDocumentSku(p, sku) <- priceInFreightSku(freight, sku);
+        FORM priceChangeDocuments OBJECTS p=addedObject() MODAL;
+        IF formResult() == formResult.ok THEN {
+            EXEC apply();
+        };
+    };
+} CONFIRM;
+
+
+FORM freights 'Фрахты'
+
+    OBJECTS f=freight
+    PROPERTIES(f) READONLY date, nameCustomStoreFreight, nameRouteFreight, nameExporterFreight
+    PROPERTIES(f) toCreatePriceChangeDocument
+;
+
 
 NAVIGATOR {
 
@@ -621,10 +693,16 @@ NAVIGATOR {
         ADD certificates;
         ADD declarations;
         ADD innerInvoices;
-     }
+    }
+
+    prices {
+        ADD priceChangeDocuments;
+        ADD freights;
+    }
 
     adminElement {
         ADD certificate;
         ADD declaration;
+        ADD priceChangeDocument;
     }
 }
