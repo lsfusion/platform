@@ -494,13 +494,11 @@ END
 
 META metaCodeTotals (object)
 
-    sumVatWare###object##Detail 'Сумма НДС по посуде, за ед.' (object##Detail) = round0( [X*Y/(100+Y)](
-         (UNION OVERRIDE 0 IF object##Detail IS object##Detail, priceWare###object##Detail (object##Detail)),
-         (UNION OVERRIDE 0 IF object##Detail IS object##Detail, dataWareRange###object##Detail(object##Detail)))
-         );
+    sumVatWare###object##Detail 'Сумма НДС по посуде, за ед.' (object##Detail) = [round0(X*Y/(100+Y))](
+        priceWare###object##Detail (object##Detail), dataWareRange###object##Detail(object##Detail));
 
     sumDetailVatWare###object##Detail 'Сумма НДС по посуде' (object##Detail) =
-        UNION OVERRIDE 0 IF object##Detail IS object##Detail, sumVatWare###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
+        sumVatWare###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
 
     withoutWarePrice###object##Detail 'Цена без посуды' (object##Detail) = retailPrice###object##Detail(object##Detail) (-)
         priceWare###object##Detail(object##Detail);
@@ -509,13 +507,13 @@ META metaCodeTotals (object)
         withoutWarePrice###object##Detail(object##Detail), dataRetailRange###object##Detail(object##Detail));
 
     sumDetailVat###object##Detail 'Сумма НДС (без посуды)' (object##Detail) =
-        UNION OVERRIDE 0 IF object##Detail IS object##Detail, sumRetailVAT###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
+        sumRetailVAT###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
 
     sumMarkup###object##Detail 'Сумма надбавки, за ед.' (object##Detail) = withoutWarePrice###object##Detail(object##Detail) (-)
         sumRetailVAT###object##Detail(object##Detail) (-) supplierPrice###object##Detail(object##Detail);
 
     sumDetailMarkup###object##Detail 'Сумма надбавки' (object##Detail) =
-        UNION OVERRIDE 0 IF object##Detail IS object##Detail, sumMarkup###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
+        sumMarkup###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
 
     totalSumSupplierPrice###object 'Сумма без НДС' (object) = GROUP SUM supplierPrice###object##Detail(object##Detail)*quantity###object##Detail(object##Detail)
         BY object###object##Detail(object##Detail);
@@ -537,18 +535,17 @@ META metaCodeTotals (object)
     sumSupplierPrice###object##Detail 'Сумма без НДС' (object##Detail) =
         supplierPrice###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
 
-    sumSupplierVAT###object##Detail 'Сумма НДС, за ед.' (object##Detail) = round0(
-        (UNION OVERRIDE 0 IF object##Detail IS object##Detail, supplierPrice###object##Detail(object##Detail) *
-        UNION OVERRIDE 0 IF object##Detail IS object##Detail, dataSuppliersRange###object##Detail(object##Detail))/100);
+    sumSupplierVAT###object##Detail 'Сумма НДС, за ед.' (object##Detail) = [round0(X*Y/100)](
+        supplierPrice###object##Detail(object##Detail), dataSuppliersRange###object##Detail(object##Detail));
 
     sumDetailSupplierVAT###object##Detail 'Сумма НДС' (object##Detail) = DATA DOUBLE (object##Detail) IN baseGroup;
-    sumDetailSupplierVAT###object##Detail (object##Detail) <-
+    sumDetailSupplierVAT###object##Detail(object##Detail) <-
         sumSupplierVAT###object##Detail(object##Detail) * quantity###object##Detail(object##Detail)
         ON CHANGE quantity###object##Detail(object##Detail);
 
     sumSupplier###object##Detail 'Сумма с НДС' (object##Detail) = DATA DOUBLE (object##Detail) IN baseGroup;
-    sumSupplier###object##Detail (object##Detail) <- (sumSupplierPrice###object##Detail(object##Detail) +
-        UNION OVERRIDE 0 IF object##Detail IS object##Detail, sumDetailSupplierVAT###object##Detail(object##Detail))
+    sumSupplier###object##Detail(object##Detail) <-
+    (sumSupplierPrice###object##Detail(object##Detail) (+) sumDetailSupplierVAT###object##Detail(object##Detail))
         ON CHANGE quantity###object##Detail(object##Detail);
 
     totalSumSupplierVAT###object 'Общая сумма НДС поставщика (без посуды)' (object) =
@@ -558,12 +555,10 @@ META metaCodeTotals (object)
         GROUP SUM sumSupplier###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
 
     totalSumIncVAT###object 'Общая сумма НДС' (object) =
-        (UNION OVERRIDE 0 IF object IS object, totalSumSupplierVAT###object (object)) +
-        (UNION OVERRIDE 0 IF object IS object, totalSumVatWare###object (object)) IN waybillSum;
+        totalSumSupplierVAT###object(object) (+) totalSumVatWare###object(object) IN waybillSum;
 
     totalSumSupplier###object 'Общая сумма с НДС' (object) =
-        totalSumCleanSupplier###object (object) +
-        (UNION OVERRIDE 0 IF object IS object, totalSumWare###object (object)) IN waybillSum;
+        totalSumCleanSupplier###object(object) (+) totalSumWare###object(object) IN waybillSum;
 
 END
 
@@ -2960,13 +2955,13 @@ sumDetailVatWareOrderSupplier 'Сума НДС по посуде' (orderSupplier
     (UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item,
                     sumQuantityItemOrderSupplier(orderSupplier, item) * sumVatWareOrderSupplier(orderSupplier, item)));
 sumDetailVatItemOrderSupplier 'Сумма НДС' (orderSupplier, item) =
-    sumDetailVatOrderSupplier(orderSupplier, item) + sumDetailVatWareOrderSupplier(orderSupplier, item);
+    sumDetailVatOrderSupplier(orderSupplier, item) (+) sumDetailVatWareOrderSupplier(orderSupplier, item);
 
 totalSumVatOrderSupplier 'Общая сумма НДС' (orderSupplier) =
     GROUP SUM sumDetailVatItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
 
 fullSumItemOrderSupplier 'Сумма заказа с НДС' (orderSupplier, item) =
-    sumItemOrderSupplier(orderSupplier, item) + sumDetailVatOrderSupplier(orderSupplier, item) + sumWareOrderSupplier(orderSupplier, item);
+    sumItemOrderSupplier(orderSupplier, item) (+) sumDetailVatOrderSupplier(orderSupplier, item) (+) sumWareOrderSupplier(orderSupplier, item);
 totalFullSumOrderSupplier 'Общая сумма заказа с НДС' (orderSupplier) =
     GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
 
@@ -3023,9 +3018,9 @@ CONSTRAINT nextDateOrderSupplier(orderSupplier) < dateOrderSupplier(orderSupplie
 quantityRealizationItemNextOrder 'Предполагаемое количество реализации товара до следующей поставки' (orderSupplier, item) =
     quantityDaysAfterNextOrder(orderSupplier)*quantityRealizationDepartmentStoreItemOver(departmentStoreOrderSupplier(orderSupplier), item);
 balance2DepartmentStoreItem 'Величина остатков товара за вычетом минимального резерва' (orderSupplier, item) =
-    balanceDepartmentStoreItemOver(departmentStoreOrderSupplier(orderSupplier), item) - minReserveItemOver(item);
+    balanceDepartmentStoreItemOver(departmentStoreOrderSupplier(orderSupplier), item) (-) minReserveItemOver(item);
 isEnoughItem 'Достаточно ли остатков товара' (orderSupplier, item) =
-    balanceDepartmentStoreItemOver(departmentStoreOrderSupplier(orderSupplier), item) - quantityRealizationItemNextOrder(orderSupplier, item) < minReserveItemOver(item);
+    balanceDepartmentStoreItemOver(departmentStoreOrderSupplier(orderSupplier), item) (-) quantityRealizationItemNextOrder(orderSupplier, item) < minReserveItemOver(item);
 recommendCountOrderSupplier 'Рекомендуемый заказ' (orderSupplier, item) =
     IF isEnoughItem(orderSupplier, item) THEN
     (UNION MAX floor((quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item))/
@@ -4102,7 +4097,8 @@ factorDetailCutting 'Рассчетный коэффициент цены' = DAT
 percGoodsDetailCutting '% выхода компонента (п/ф)' = DATA DOUBLE (detailCutting) IN cutGroup;
 
 notTotalPercGoodsDetailCutting (cutting) = GROUP SUM percGoodsDetailCutting(detailCutting) BY cuttingDetailCutting(detailCutting);
-totalPercGoodsDetailCutting 'Итого % выхода по карте проработки (разделки)' (cutting) = notTotalPercGoodsDetailCutting(cutting)+ overPercLossesCutting(cutting)+ overPercSweepsCutting(cutting);
+totalPercGoodsDetailCutting 'Итого % выхода по карте проработки (разделки)' (cutting) = notTotalPercGoodsDetailCutting(cutting) (+)
+    overPercLossesCutting(cutting) (+) overPercSweepsCutting(cutting);
 highlightCutting(cutting) = totalPercGoodsDetailCutting(cutting) > 100;
 
 uniqueDetailCuttingCutting 'Компонента по карте переработки и товару' (cutting, item) = GROUP UNIQUE detailCutting BY cuttingDetailCutting(detailCutting), itemDetailCutting(detailCutting);
@@ -5448,14 +5444,14 @@ amountMarkupShipmentDetail 'Сумма торговой надбавки (за �
     (UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, retailMarkupShipmentDetail(shipmentDetail))/100;
 
 amountRetailVATShipmentDetail 'Сумма розничного НДС (за ед.)' (shipmentDetail) =
-    (supplierPriceShipmentDetail(shipmentDetail) + amountMarkupShipmentDetail(shipmentDetail))*
+    (supplierPriceShipmentDetail(shipmentDetail) (+) amountMarkupShipmentDetail(shipmentDetail))*
     (UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, dataRetailRangeShipmentDetail(shipmentDetail))/100;
 
-nonRoundRetailPriceShipmentDetail 'Цена розничная (неокруглен.)'(shipmentDetail) = supplierPriceShipmentDetail(shipmentDetail) + amountMarkupShipmentDetail(shipmentDetail) + amountRetailVATShipmentDetail(shipmentDetail);
+nonRoundRetailPriceShipmentDetail 'Цена розничная (неокруглен.)'(shipmentDetail) = supplierPriceShipmentDetail(shipmentDetail) (+) amountMarkupShipmentDetail(shipmentDetail) (+) amountRetailVATShipmentDetail(shipmentDetail);
 
 retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = IF isFixPriceShipmentDetail(shipmentDetail)
-    THEN roundMinus1(importerPriceShipmentDetail(shipmentDetail) + overPriceWareShipmentDetail(shipmentDetail))
-    ELSE roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail) + overPriceWareShipmentDetail(shipmentDetail));
+    THEN roundMinus1(importerPriceShipmentDetail(shipmentDetail) (+) overPriceWareShipmentDetail(shipmentDetail))
+    ELSE roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail) (+) overPriceWareShipmentDetail(shipmentDetail));
 
 @metaCodeTotals (shipment);
 
@@ -5467,7 +5463,7 @@ exSumSupplierShipment 'Сумма с ндс и посудой' (shipment) = GROU
 
 amountSumRetailVATShipmentDetail 'Сумма розничного НДС' (shipmentDetail) = amountRetailVATShipmentDetail(shipmentDetail)*quantityShipmentDetail(shipmentDetail);
 
-diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentDetail) = retailPriceShipmentDetail(shipmentDetail) - nonRoundRetailPriceShipmentDetail(shipmentDetail);
+diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentDetail) = retailPriceShipmentDetail(shipmentDetail) (-) nonRoundRetailPriceShipmentDetail(shipmentDetail);
 
 retailSumShipmentDetail 'Розничная сумма' (shipmentDetail) = quantityShipmentDetail(shipmentDetail) * retailPriceShipmentDetail(shipmentDetail);
 retailSumShipment 'Розничная сумма' (shipment) = GROUP SUM retailSumShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN waybillSum;
@@ -5497,8 +5493,15 @@ quantityShipmentOrderItem 'Поставленное количество' (order
 priceOrderItemShipment 'Цена товара в заказах поставки (максим.)' (item, shipment) = GROUP MAX
         priceSupplierItemOrderSupplier(orderSupplier, item) IF inShipmentOrder (shipment, orderSupplier) BY item, shipment;
 
-maxAllowPriceItemShipment 'Максимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 + [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
-minAllowPriceItemShipment 'Минимально допустимая цена в поставке' (item, shipment) = priceOrderItemShipment (item, shipment) * (100 - [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
+maxAllowPriceItemShipment 'Максимально допустимая цена в поставке' (item, shipment) = [X*(100+Y)/100](
+    priceOrderItemShipment (item, shipment),
+    UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier(supplierShipment(shipment)));
+
+minAllowPriceItemShipment 'Минимально допустимая цена в поставке' (item, shipment) = [X*(100-Y)/100](
+    priceOrderItemShipment (item, shipment),
+    UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier(supplierShipment(shipment)));
+
+//    priceOrderItemShipment (item, shipment) * (100 - [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
 CONSTRAINT supplierPriceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail))
     AND isPostedShipmentDetail (shipmentDetail) MESSAGE 'Цена поставки больше цены заказа';
 
@@ -5775,7 +5778,7 @@ supplierMarkupInnerFlowDetail 'Оптовая надбавка' (innerFlowDetail
     (supplierPriceInnerFlowDetail(innerFlowDetail)/importerPriceInnerFlowDetail(innerFlowDetail) - 1)*100;
 
 retailMarkupInnerFlowDetail 'Торговая надбавка' (innerFlowDetail) =
-    ((withoutWarePriceInnerFlowDetail(innerFlowDetail) - sumRetailVATUnitInnerFlowDetail(innerFlowDetail))/
+    ((withoutWarePriceInnerFlowDetail(innerFlowDetail) (-) sumRetailVATUnitInnerFlowDetail(innerFlowDetail))/
     importerPriceInnerFlowDetail(innerFlowDetail) - 1)*100;
 
 // для накладной (шапка и хвост)
@@ -5948,7 +5951,7 @@ quantityItemInnerArrival 'Количество в приходе' (item, innerAr
 
 quantityItemInnerFlowInnerArrival 'Количество в расходе' (item, innerArrival) = quantityItemInnerFlow(item, innerFlowInnerArrival(innerArrival));
 diffQuantityItemInnerArrival 'Расхождение' (item, innerArrival) =
-    quantityItemInnerFlowInnerArrival(item, innerArrival) - quantityItemInnerArrival(item, innerArrival);
+    quantityItemInnerFlowInnerArrival(item, innerArrival) (-) quantityItemInnerArrival(item, innerArrival);
 
 balanceBeforeInnerArrivalInnerArrivalDetail 'Остаток до' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail);
 
@@ -8472,7 +8475,7 @@ retailSumChangeDocument 'Новая розничная сумма' (priceChangeD
     BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 accountSumChangeDocumentDetail 'Сумма переоценки' (priceChangeDocumentDetail) =
-                retailSumChangeDocumentDetail(priceChangeDocumentDetail) - oldRetailSumChangeDocumentDetail(priceChangeDocumentDetail);
+                retailSumChangeDocumentDetail(priceChangeDocumentDetail) (-) oldRetailSumChangeDocumentDetail(priceChangeDocumentDetail);
 
 accountSumChangeDocument 'Сумма переоценки' (priceChangeDocument) = GROUP SUM accountSumChangeDocumentDetail(priceChangeDocumentDetail)
                                                                           BY  documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
@@ -8584,11 +8587,10 @@ oldDataWareRangePriceChangeDocumentDetail 'НДС по посуде' (priceChang
                             datePriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 oldSumVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде, за ед.' (priceChangeDocumentDetail) = [round0(X*Y/(100+Y))](
-     (UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, oldPriceWarePriceChangeDocumentDetail (priceChangeDocumentDetail)),
-     (UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, oldDataWareRangePriceChangeDocumentDetail(priceChangeDocumentDetail)));
+     oldPriceWarePriceChangeDocumentDetail (priceChangeDocumentDetail), oldDataWareRangePriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 oldSumDetailVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде' (priceChangeDocumentDetail) =
-    UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, oldSumVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) * quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+    oldSumVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) * quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 
 oldTotalSumImporterPricePriceChangeDocument 'Старая сумма изготовителя' (priceChangeDocument) = GROUP SUM
@@ -8691,7 +8693,7 @@ FORM priceChangeDocuments 'Акты переоценки'
 ;
                             //----------рабочая форма--------//
 
-FORM actOfRevaluation 'Акты переоценки (печ.)'
+FORM actOfRevaluation 'Акты переоценки'
     OBJECTS pc=priceChangeDocument  FIXED PANEL
     PROPERTIES(pc) SELECTOR  numberPriceChangeDocument, seriesPriceChangeDocument, objectClassName, isPostedPriceChangeDocument,
                              nameDepartmentStorePriceChangeDocument, datePriceChangeDocument, nameRevaluationCommitteePriceChangeDocument,
