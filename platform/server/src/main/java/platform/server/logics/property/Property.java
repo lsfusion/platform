@@ -400,7 +400,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return calculateExpr(joinImplement, PropertyChanges.EMPTY, null);
     }
 
-    public Expr calculateClassExpr(Map<T, ? extends Expr> joinImplement) {
+    public Expr calculateClassExpr(Map<T, ? extends Expr> joinImplement) { // вызывается до stored
         return calculateExpr(joinImplement, SessionDataProperty.modifier.getPropertyChanges(), null);
     }
 
@@ -420,8 +420,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return (CustomClass) new Query<String, String>(new HashMap<String, KeyExpr>(), getClassExpr(mapExprs), "value").
                 getClassWhere(Collections.singleton("value")).getSingleWhere("value").getOr().getCommonClass();
     }
-
-    public abstract Type getType();
 
     public Type getEditorType(Map<T, PropertyObjectInterfaceInstance> mapObjects) {
         return getType();
@@ -508,14 +506,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         PropertyChange<T> change = SinglePropertyTableUsage.getChange(changeTable);
 
         Map<KeyField, KeyExpr> mapKeys = crossJoin(mapTable.mapKeys, change.mapKeys);
-        Where classWhere = getClassWhere(field).getWhere(merge(mapKeys, Collections.singletonMap(field, change.expr)))
-                            .or(mapTable.table.getClasses().getWhere(mapKeys).and(change.expr.getWhere().not())); // или если меняет на null, assert что fitKeyClasses
-
+        Where classWhere = fieldClassWhere.getWhere(merge(mapKeys, Collections.singletonMap(field, change.expr)))
+                            .or(change.expr.getWhere().not()); // или если меняет на null, assert что fitKeyClasses, mapTable.table.getClasses().getWhere(mapKeys).and(
 
         SinglePropertyTableUsage<T> fit = readChangeTable(session.sql, change.and(classWhere), session.baseClass, session.env);
         SinglePropertyTableUsage<T> notFit = readChangeTable(session.sql, change.and(classWhere.not()), session.baseClass, session.env);
         assert DataSession.fitClasses(this, fit);
-//        assert DataSession.notFitClasses(this, notFit); так как в классовой логике нет not, table(key0 is A, unknown) and not key0 is A она пока не разберет
+        assert DataSession.notFitClasses(this, notFit); // из-за эвристики с not могут быть накладки
         return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(fit,notFit);
     }
 
@@ -529,28 +526,32 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         }
     }
 
+    public Type getType() {
+        return getCommonClasses().value.getType();
+    }
+
     public Map<T, ValueClass> getMapClasses() {
         return getCommonClasses().interfaces;
     }
 
     public abstract CommonClasses<T> getCommonClasses();
 
-    public abstract ClassWhere<Field> getClassWhere(PropertyField storedField);
+    public abstract ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField);
 
     public boolean cached = false;
 
     public MapKeysTable<T> mapTable; // именно здесь потому как не обязательно persistent
 
+    public ClassWhere<Field> fieldClassWhere;
+
     public void markStored(TableFactory tableFactory) {
-        mapTable = tableFactory.getMapTable(getMapClasses());
+        MapKeysTable<T> mapTable = tableFactory.getMapTable(getMapClasses());
+        PropertyField field = new PropertyField(getSID(), getType());
+        fieldClassWhere = getClassWhere(mapTable, field);
+        mapTable.table.addField(field, fieldClassWhere);
 
-        PropertyField storedField = new PropertyField(getSID(), getType());
-        mapTable.table.addField(storedField, getClassWhere(storedField));
-
-        // именно после так как высчитали, а то сама себя stored'ом считать будет
-        field = storedField;
-
-        assert !cached;
+        this.mapTable = mapTable;
+        this.field = field;
     }
 
     public String outputStored(boolean outputTable) {
@@ -1090,10 +1091,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return QuickSet.EMPTY();
     }
 
-    public PropertyChange<T> getDerivedChange(PropertyChanges propChanges) {
-        return null;
-    }
-    
     @IdentityLazy
     public PropertyChange<T> getNoChange() {
         return new PropertyChange<T>(getMapKeys(), CaseExpr.NULL);

@@ -51,7 +51,7 @@ abstract public class DataWhere extends ObjectWhere {
         return new MeanClassWheres(getMeanClassWhere(),this);
     }
 
-    public MeanClassWhere getMeanClassWhere() {
+    protected MeanClassWhere getMeanClassWhere() {
         return new MeanClassWhere(getClassWhere());
     }
 

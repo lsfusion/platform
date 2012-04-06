@@ -128,12 +128,12 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
         return where;
     }
 
-    public <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(QuickSet<K> keepStat, List<Expr> orderTop) {
+    public <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(QuickSet<K> keepStat, List<Expr> orderTop, boolean noWhere) {
         Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>();
         for(int i=0;i<size;i++) {
             KeyEqual keyEqual = getKey(i); // keyEqual закидывается в статистику так как keepStat не всегда translate'ся
             Where where = getValue(i);
-            where.groupJoinsWheres(keepStat, keyEqual.getKeyStat(where), orderTop).compileMeans().fillList(keyEqual, result);
+            where.groupJoinsWheres(keepStat, keyEqual.getKeyStat(where), orderTop, noWhere).compileMeans().fillList(keyEqual, result);
         }
         return result;
     }
@@ -164,7 +164,7 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
     }
 
     public <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop) {
-        Collection<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat, orderTop);
+        Collection<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat, orderTop, false);
         if(!tryExclusive || whereJoins.size()<=1 || whereJoins.size() > Settings.instance.getLimitExclusiveCount())
             return new Pair<Collection<GroupJoinsWhere>, Boolean>(whereJoins, false);
         List<GroupJoinsWhere> sortedWhereJoins = GroupWhere.sort(whereJoins);
@@ -188,9 +188,9 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
         }
     }
 
-    public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keepStat) {
+    public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keepStat, boolean noWhere) {
         Collection<GroupStatWhere<K>> statJoins = new ArrayList<GroupStatWhere<K>>();
-        for(GroupJoinsWhere whereJoin : getWhereJoins(keepStat, new ArrayList<Expr>()))
+        for(GroupJoinsWhere whereJoin : getWhereJoins(keepStat, new ArrayList<Expr>(), noWhere))
             statJoins.add(new GroupStatWhere<K>(whereJoin.keyEqual, whereJoin.getStatKeys(keepStat), whereJoin.where));
         return statJoins;
     }
@@ -198,7 +198,7 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
     public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(boolean exclusive, QuickSet<K> keepStat, GroupStatType type, boolean noWhere) {
         assert !(exclusive && noWhere); // если noWhere то не exclusive
         // получаем GroupJoinsWhere, конвертим в GroupStatWhere, группируем по type'у (через MapWhere), упорядочиваем по complexity
-        Collection<GroupStatWhere<K>> statJoins = type.group(getStatJoins(keepStat));
+        Collection<GroupStatWhere<K>> statJoins = type.group(getStatJoins(keepStat, noWhere || type.equals(GroupStatType.ALL)), noWhere, this);
         if(!exclusive || statJoins.size()<=1) // если не нужно notExclusive || один элемент
             return statJoins;
 
@@ -215,5 +215,9 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
             GroupStatWhere<K> firstJoin = sortedStatJoins.iterator().next();
             return type.merge(getWhere().and(firstJoin.getFullWhere().not()).getStatJoins(keepStat, exclusive, type, noWhere), firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
         }
+    }
+    
+    public boolean isSimple() {
+        return size==1 && getKey(0).isEmpty();
     }
 }

@@ -86,5 +86,5 @@ public abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere
         return new KeyEquals(this);  // в operator'ах никаких equals быть не может
     }
 
-    public abstract <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop);
+    public abstract <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere);
 }

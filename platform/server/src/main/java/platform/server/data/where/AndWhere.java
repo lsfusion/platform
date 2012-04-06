@@ -16,6 +16,8 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -89,13 +91,13 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return wheres.length==0 || (where instanceof AndWhere && (BaseUtils.hashEquals(this, where) || (substractWheres(((AndWhere)where).wheres,wheres,instancer)!=null)));
     }
 
-    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop) {
-        GroupJoinsWheres result = new GroupJoinsWheres(TRUE);
+    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
+        GroupJoinsWheres result = new GroupJoinsWheres(TRUE, noWhere);
         for(Where where : wheres)
-            result = result.and(where.groupJoinsWheres(keepStat, keyStat, orderTop));
+            result = result.and(where.groupJoinsWheres(keepStat, keyStat, orderTop, noWhere));
         return result;
     }
-    public KeyEquals calculateKeyEquals() {
+    public KeyEquals calculateGroupKeyEquals() {
         KeyEquals result = new KeyEquals(TRUE);
         for(Where where : wheres)
             result = result.and(where.getKeyEquals());

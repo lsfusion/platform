@@ -2,11 +2,11 @@ package platform.server.data.query.innerjoins;
 
 import platform.base.BaseUtils;
 import platform.base.Pair;
-import platform.server.Settings;
-import platform.server.data.expr.Expr;
+import platform.base.QuickMap;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.MapStatKeys;
 import platform.server.data.where.MapWhere;
+import platform.server.data.where.Where;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,13 +16,13 @@ public enum GroupStatType {
     ALL, STAT, NONE;
 
     // группируем по KeyEqual + статистике, or'им Where
-    private <K> Collection<GroupStatWhere<K>> groupStat(Collection<GroupStatWhere<K>>... statJoinsList) {
+    private <K> Collection<GroupStatWhere<K>> groupStat(boolean noWhere, Collection<GroupStatWhere<K>>... statJoinsList) {
         Collection<GroupStatWhere<K>> result = new ArrayList<GroupStatWhere<K>>();
         MapWhere<Pair<KeyEqual, StatKeys<K>>> mapWhere = new MapWhere<Pair<KeyEqual, StatKeys<K>>>();
         for(Collection<GroupStatWhere<K>> statJoins : statJoinsList)
             for(GroupStatWhere<K> statJoin : statJoins)
                 mapWhere.add(new Pair<KeyEqual, StatKeys<K>>(statJoin.keyEqual,
-                        statJoin.stats), statJoin.where);
+                        statJoin.stats), noWhere ? Where.TRUE : statJoin.where);
         for(int i=0;i<mapWhere.size;i++) { // возвращаем результат
             Pair<KeyEqual, StatKeys<K>> map = mapWhere.getKey(i);
             result.add(new GroupStatWhere<K>(map.first, map.second, mapWhere.getValue(i)));
@@ -31,41 +31,41 @@ public enum GroupStatType {
     }
 
     // группируем по keyEqual, or'им StatKeys и Where
-    private <K> Collection<GroupStatWhere<K>> groupAll(Collection<GroupStatWhere<K>>... statJoinsList) {
+    private <K> Collection<GroupStatWhere<K>> groupAll(boolean noWhere, QuickMap<KeyEqual, Where> keyEquals, Collection<GroupStatWhere<K>>... statJoinsList) {
         Collection<GroupStatWhere<K>> result = new ArrayList<GroupStatWhere<K>>();
         MapWhere<KeyEqual> mapWhere = new MapWhere<KeyEqual>(); MapStatKeys<KeyEqual, K> mapStats = new MapStatKeys<KeyEqual, K>();
         for(Collection<GroupStatWhere<K>> statJoins : statJoinsList)
             for(GroupStatWhere<K> statJoin : statJoins) {
-                mapWhere.add(statJoin.keyEqual, statJoin.where); mapStats.add(statJoin.keyEqual, statJoin.stats);
+                mapWhere.add(statJoin.keyEqual, noWhere || keyEquals!=null ? Where.TRUE : statJoin.where); mapStats.add(statJoin.keyEqual, statJoin.stats);
             }
         for(int i=0;i<mapWhere.size;i++) { // возвращаем результат
             KeyEqual keys = mapWhere.getKey(i);
-            result.add(new GroupStatWhere<K>(keys, mapStats.get(keys), mapWhere.getValue(i)));
+            result.add(new GroupStatWhere<K>(keys, mapStats.get(keys), keyEquals!=null ? keyEquals.get(keys) : mapWhere.getValue(i)));
         }
         return result;
 
     }
 
-    public <K> Collection<GroupStatWhere<K>> group(Collection<GroupStatWhere<K>> statJoins) { // statJoins - в NONE группировке
+    public <K> Collection<GroupStatWhere<K>> group(Collection<GroupStatWhere<K>> statJoins, boolean noWhere, QuickMap<KeyEqual, Where> keyEquals) { // statJoins - в NONE группировке
         switch(this) {
             case NONE:
                 return statJoins;
             case STAT:
-                return groupStat(statJoins);
+                return groupStat(noWhere, statJoins);
             case ALL:
-                return groupAll(statJoins);
+                return groupAll(noWhere, keyEquals, statJoins);
         }
         throw new RuntimeException("should not be");
     }
     
-    public <K> Collection<GroupStatWhere<K>> merge(Collection<GroupStatWhere<K>> joins1, Collection<GroupStatWhere<K>> joins2) { // joins1, joins2 в this группировке
+    public <K> Collection<GroupStatWhere<K>> merge(Collection<GroupStatWhere<K>> joins1, Collection<GroupStatWhere<K>> joins2, boolean noWhere) { // joins1, joins2 в this группировке
         switch(this) {
             case NONE:
                 return BaseUtils.merge(joins1, joins2);
             case STAT:
-                return groupStat(joins1, joins2);
+                return groupStat(noWhere, joins1, joins2);
             case ALL:
-                return groupAll(joins1, joins2);
+                return groupAll(noWhere, null, joins1, joins2);
         }
         throw new RuntimeException("should not be");
     }

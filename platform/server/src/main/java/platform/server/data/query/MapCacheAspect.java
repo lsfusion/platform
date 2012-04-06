@@ -291,10 +291,10 @@ public class MapCacheAspect {
         return getDataChanges(property, change, changedWhere, propChanges, ((MapPropertyInterface)property).getDataChangesCache(), thisJoinPoint);
     }
 
-    static class QueryInterfaceImplement<K extends PropertyInterface> extends AbstractValuesContext<QueryInterfaceImplement<K>> {
-        final PropertyChanges usedChanges;
-        final PropertyQueryType changed; // нужно ли условие на изменение, по сути для этого св-ва и делается класс
-        final Map<K, ? extends Expr> values;
+    public static class QueryInterfaceImplement<K extends PropertyInterface> extends AbstractValuesContext<QueryInterfaceImplement<K>> {
+        private final PropertyChanges usedChanges;
+        private final PropertyQueryType changed; // нужно ли условие на изменение, по сути для этого св-ва и делается класс
+        private final Map<K, ? extends Expr> values;
 
         QueryInterfaceImplement(Property<?> property, PropertyChanges changes, PropertyQueryType changed, Map<K, ? extends Expr> values) {
             usedChanges = property.getUsedChanges(changes);
@@ -341,6 +341,8 @@ public class MapCacheAspect {
 
         if(disableCaches)
             return (IQuery<K, String>) thisJoinPoint.proceed();
+
+        property.cached = true;
 
         QueryInterfaceImplement<K> implement = new QueryInterfaceImplement<K>(property,propChanges,queryType,interfaceValues);
 
@@ -394,12 +396,12 @@ public class MapCacheAspect {
         return getQuery(property, propChanges, queryType, interfaceValues, ((MapPropertyInterface) property).getJoinExprCache(), thisJoinPoint);
     }
 
-    static class JoinExprInterfaceImplement<P extends PropertyInterface> extends AbstractInnerContext<JoinExprInterfaceImplement<P>> {
-        final PropertyChanges usedChanges;
-        final Map<P, Expr> joinImplement;
-        final boolean where;
+    public static class JoinExprInterfaceImplement<P extends PropertyInterface> extends AbstractInnerContext<JoinExprInterfaceImplement<P>> {
+        private final PropertyChanges usedChanges;
+        private final Map<P, Expr> joinImplement;
+        private final boolean where;
 
-        JoinExprInterfaceImplement(Property<P> property, Map<P, Expr> joinImplement, PropertyChanges propChanges, boolean where) {
+        public JoinExprInterfaceImplement(Property<P> property, Map<P, Expr> joinImplement, PropertyChanges propChanges, boolean where) {
             usedChanges = property.getUsedChanges(propChanges);
             this.joinImplement = joinImplement;
             this.where = where;
@@ -424,7 +426,7 @@ public class MapCacheAspect {
             return AbstractOuterContext.getOuterValues(joinImplement.values()).merge(usedChanges.getContextValues());
         }
 
-        JoinExprInterfaceImplement(JoinExprInterfaceImplement<P> implement, MapTranslate translator) {
+        private JoinExprInterfaceImplement(JoinExprInterfaceImplement<P> implement, MapTranslate translator) {
             usedChanges = implement.usedChanges.translate(translator.mapValues());
             joinImplement = translator.translate(implement.joinImplement);
             this.where = implement.where;

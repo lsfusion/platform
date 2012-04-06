@@ -242,18 +242,68 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return toWhere(followWheres, where);
     }
 
-    // из двух where в неправильной форме, делает еще одно where в неправильной форме
-    // ничего не перестраивает цель такого CheckWhere найти первый попавшийся not Null элемент и пометиться как не true
-    // выполняет основные проверки на directMeansFrom
-    public static CheckWhere orCheck(CheckWhere where1,CheckWhere where2) {
-
+    public static CheckWhere prevOrCheck(CheckWhere where1,CheckWhere where2) {
         CheckWhere followWhere1 = Settings.instance.isCheckFollowsWhenObjects() ?where1:checkff(where1, where2);
         CheckWhere followWhere2 = Settings.instance.isCheckFollowsWhenObjects() ?where2:checkff(where2, followWhere1);
 
         if(followWhere1.isFalse() || followWhere2.isTrue()) return followWhere2;
         if(followWhere2.isFalse() || followWhere1.isTrue()) return followWhere1;
-        
+
         return toWhere(BaseUtils.add(followWhere1.getAnd(), followWhere2.getAnd(), instancer), true);
+    }
+
+/*    public static CheckWhere orCheck(CheckWhere where1,CheckWhere where2) {
+        CheckWhere newCheck = newOrCheck(where1, where2);
+        assert BaseUtils.hashEquals(newCheck, prevOrCheck(where1, where2));
+        return newCheck;
+    }*/
+
+    // из двух where в неправильной форме, делает еще одно where в неправильной форме
+    // ничего не перестраивает цель такого CheckWhere найти первый попавшийся not Null элемент и пометиться как не true
+    // выполняет основные проверки на directMeansFrom
+    public static CheckWhere orCheck(CheckWhere where1,CheckWhere where2) {
+        
+        if(where1.isFalse() || where2.isTrue()) return where2;
+        if(where2.isFalse() || where1.isTrue()) return where1;
+
+        // COPY PASTE с модификациями для OrWhere.orCheck(w1, w2), OrWhere.checkTrue(w[], int, boolean) - для оптимизации как самые критичные места
+        if(where2 instanceof OrObjectWhere)
+            if (where1.directMeansFrom(((OrObjectWhere) where2).not()))
+                return Where.TRUE;
+
+        if(where1 instanceof OrObjectWhere) // если Or то проверим, если And нет смысла, все равно скобки потом отдельно будут раскрываться
+            if(where2.directMeansFrom(((OrObjectWhere) where1).not()))
+                return Where.TRUE;
+
+        AndObjectWhere[] wheres1 = where1.getAnd();
+        AndObjectWhere[] wheres2 = where2.getAnd();
+        AndObjectWhere[] rawMerged = new AndObjectWhere[wheres2.length+wheres1.length]; int mnum = 0;
+
+        for(AndObjectWhere andWhere2 : wheres2)
+            if(!where1.directMeansFrom(andWhere2))
+                rawMerged[mnum++] = andWhere2;
+
+        if(mnum == 0)
+            return where1;
+
+        int clean2 = mnum;
+        for (AndObjectWhere andWhere1 : wheres1) {
+            int j = 0;
+            while (j < clean2) {// бежим не по всем, а только по не вычишенным
+                if (rawMerged[j].directMeansFrom(andWhere1)) // sibling не нужен
+                    break;
+                j++;
+            }
+            if (j == clean2) // не нашли
+                rawMerged[mnum++] = andWhere1;
+        }
+
+        if(mnum==clean2)
+            return where2;
+        if(mnum==wheres2.length+wheres1.length)
+            return toWhere(rawMerged, true);
+        AndObjectWhere[] merged = new AndObjectWhere[mnum]; System.arraycopy(rawMerged, 0, merged, 0, mnum);
+        return toWhere(merged, true);
     }
 
     public static boolean checkTrue(CheckWhere where1, CheckWhere where2) {
@@ -564,6 +614,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             OrObjectWhere bracketWhere = maxWheres[i];
             AndObjectWhere[] brackets = bracketWhere.getAnd();
 
+            // COPY PASTE с модификациями для OrWhere.orCheck(w1, w2), OrWhere.checkTrue(w[], int, boolean) - для оптимизации как самые критичные места
             int is=0;
             while(is<siblings.length) {
                 if(siblings[is].directMeansFrom(bracketWhere.not()))
@@ -598,17 +649,16 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                 AndObjectWhere sibling = siblings[s];
                 int j=0;
                 while(j<cleanBrackets) {// бежим не по всем, а только по не вычишенным
-                    if(mergeBrackets[j].directMeansFrom(sibling)) // sibling не нужен
+                    if(mergeBrackets[j].directMeansFrom(sibling)) { // sibling не нужен
+                        if(droppedSiblings==null)
+                            droppedSiblings = new boolean[siblings.length];
+                        droppedSiblings[s] = true;
                         break;
+                    }
                     j++;
                 }
                 if(j==cleanBrackets) // не нашли*/
                     mergeBrackets[mnum++] = sibling;
-                else {
-                    if(droppedSiblings==null)
-                        droppedSiblings = new boolean[siblings.length];
-                    droppedSiblings[s] = true;
-                }
             }
 
             boolean[] used = checkTrue(mergeBrackets, mnum, true); // вызываем рекурсию
@@ -699,13 +749,13 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop) {
-        GroupJoinsWheres result = new GroupJoinsWheres();
+    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
+        GroupJoinsWheres result = new GroupJoinsWheres(noWhere);
         for(Where where : wheres)
-            result.or(where.groupJoinsWheres(keepStat, keyStat, orderTop));
+            result.or(where.groupJoinsWheres(keepStat, keyStat, orderTop, noWhere));
         return result;
     }
-    public KeyEquals calculateKeyEquals() {
+    public KeyEquals calculateGroupKeyEquals() {
         KeyEquals result = new KeyEquals();
         for(Where where : wheres)
             result.addAll(where.getKeyEquals());

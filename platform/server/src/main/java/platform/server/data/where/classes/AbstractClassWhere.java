@@ -1,9 +1,6 @@
 package platform.server.data.where.classes;
 
-import platform.base.ArrayInstancer;
-import platform.base.BaseUtils;
-import platform.base.ExtraMapSetWhere;
-import platform.base.QuickMap;
+import platform.base.*;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
@@ -32,6 +29,13 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
                 if(!getValue(i).getType().isCompatible(and.get(getKey(i)).getType()))
                     return false;
             return true;
+        }
+        
+        public <T> And<T> remap(Map<K, T> remap) {
+            And<T> result = new And<T>();
+            for(int i=0;i<size;i++)
+                result.add(remap.get(getKey(i)), getValue(i));
+            return result;
         }
         
         public And<K> remove(Collection<? extends K> keys) {
@@ -81,6 +85,31 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             Where result = Where.TRUE;
             for(int i=0;i<size;i++)
                 result = result.and(mapExprs.get(getKey(i)).isClass(getValue(i)));
+            return result;
+        }
+
+        public And<K>[] andNot(AbstractClassWhere<K, ?> where) {
+            AndClassSet[][] ands = new AndClassSet[size][];
+            for(int i=0;i<size;i++)
+                ands[i] = getValue(i).getAnd();
+            ArrayCombinations<AndClassSet> combs = new ArrayCombinations<AndClassSet>(ands, AndClassSet.arrayInstancer);
+            if(combs.max==1) {
+                if(where.meansFrom(this))
+                    return new And[0];
+                else
+                    return null; // не меняем ничего
+            }
+            And<K>[] keep = new And[combs.max]; int k=0;
+            for(AndClassSet[] comb : combs) {
+                And<K> and = new And<K>();
+                for(int i=0;i<size;i++)
+                    and.add(getKey(i), comb[i]);
+                if(!where.meansFrom(and))
+                    keep[k++] = and;
+            }
+            if(combs.max==k)
+                return null;
+            And<K>[] result = new And[k]; System.arraycopy(keep, 0, result, 0, k);
             return result;
         }
     }
@@ -145,6 +174,32 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         for(int i=1;i<wheres.length;i++)
             assert result.equals(wheres[i].get(key));
         return result;
+    }
+
+    protected abstract This FALSE();
+
+    public This andNot(This where) {
+        if(where.isFalse())
+            return (This) this;
+        This changedWhere = FALSE();
+        if(where.isTrue())
+            return changedWhere;
+        
+        And<K>[] rawKeepWheres = newArray(wheres.length); int k=0;
+        for(And<K> and : wheres) {
+            And<K>[] andNots = and.andNot(where);
+            if(andNots!=null) {
+                for(And<K> andNot : andNots)
+                    changedWhere = changedWhere.or(createThis(new And[]{andNot}));
+            } else
+                rawKeepWheres[k++] = and;
+        }
+        if(k==wheres.length)
+            return (This) this;
+        if(k==0)
+            return changedWhere;
+        And<K>[] keepWheres = newArray(k); System.arraycopy(rawKeepWheres,0,keepWheres,0,k);
+        return changedWhere.or(createThis(keepWheres));
     }
 
     public boolean means(This where) {

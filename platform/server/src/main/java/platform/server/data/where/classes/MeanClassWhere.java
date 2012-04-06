@@ -23,9 +23,11 @@ public class MeanClassWhere extends AbstractOuterContext<MeanClassWhere> impleme
     public final static MeanClassWhere TRUE = new MeanClassWhere(ClassExprWhere.TRUE); 
 
     private final ClassExprWhere classWhere;
+    private final ClassExprWhere classNotWhere;
     private final QuickSet<QuickSet<VariableClassExpr>> equals;
 
     public ClassExprWhere getClassWhere(BaseExpr operator1, BaseExpr operator2) {
+        assert classNotWhere.isFalse();
         if(operator1 instanceof VariableClassExpr && operator2 instanceof VariableClassExpr) {
             assert equals.size==1;
             EqualMap equalMap = new EqualMap(2);
@@ -55,15 +57,25 @@ public class MeanClassWhere extends AbstractOuterContext<MeanClassWhere> impleme
     public ClassExprWhere getClassWhere() {
         EqualMap equalMap = new EqualMap(getEqualSize()*2);
         fillEqualMap(equalMap);
-        return classWhere.andEquals(equalMap);
+        return classWhere.andEquals(equalMap).andNot(classNotWhere.andEquals(equalMap));
     }
 
     public MeanClassWhere(ClassExprWhere classWhere) {
         this(classWhere, new QuickSet<QuickSet<VariableClassExpr>>());
     }
+    
+    public MeanClassWhere(ClassExprWhere classWhere, boolean not) {
+        this(ClassExprWhere.TRUE, classWhere, new QuickSet<QuickSet<VariableClassExpr>>());
+        assert not;
+    }
 
     public MeanClassWhere(ClassExprWhere classWhere, QuickSet<QuickSet<VariableClassExpr>> equals) {
+        this(classWhere, ClassExprWhere.FALSE, equals);
+    }
+
+    public MeanClassWhere(ClassExprWhere classWhere, ClassExprWhere classNotWhere, QuickSet<QuickSet<VariableClassExpr>> equals) {
         this.classWhere = classWhere;
+        this.classNotWhere = classNotWhere;
         this.equals = equals;
     }
 
@@ -78,21 +90,21 @@ public class MeanClassWhere extends AbstractOuterContext<MeanClassWhere> impleme
             if(!equal.dropped)
                 andEquals.add(new QuickSet<VariableClassExpr>(equal.size, equal.exprs));
         }
-        return new MeanClassWhere(classWhere.and(where.classWhere), andEquals);
+        return new MeanClassWhere(classWhere.and(where.classWhere), classNotWhere.or(where.classNotWhere), andEquals);
     }
 
     public MeanClassWhere translate(MapTranslate translator) {
         QuickSet<QuickSet<VariableClassExpr>> transEquals = new QuickSet<QuickSet<VariableClassExpr>>();
         for(int i=0;i<equals.size;i++)
             transEquals.add(translator.translateVariable(equals.get(i)));
-        return new MeanClassWhere(classWhere.translateOuter(translator), transEquals);
+        return new MeanClassWhere(classWhere.translateOuter(translator), classNotWhere.translateOuter(translator), transEquals);
     }
 
     protected int hash(HashContext hash) {
         int result = 0;
         for(int i=0;i<equals.size;i++)
             result ^= AbstractOuterContext.hashOuter(equals.get(i), hash);
-        return classWhere.hashOuter(hash) * 31 + result;
+        return 31 * (classWhere.hashOuter(hash) * 31 + classNotWhere.hashOuter(hash)) + result;
     }
 
     protected boolean isComplex() {
@@ -103,14 +115,14 @@ public class MeanClassWhere extends AbstractOuterContext<MeanClassWhere> impleme
         QuickSet<OuterContext> equalContext = new QuickSet<OuterContext>();
         for(int i=0;i<equals.size;i++)
             equalContext.addAll(equals.get(i));
-        return classWhere.getOuterDepends().merge(equalContext);
+        return classWhere.getOuterDepends().merge(classNotWhere.getOuterDepends()).merge(equalContext);
     }
 
     public boolean twins(TwinImmutableInterface o) {
-        return classWhere.equals(((MeanClassWhere) o).classWhere) && equals.equals(((MeanClassWhere) o).equals);
+        return classWhere.equals(((MeanClassWhere) o).classWhere) && classNotWhere.equals(((MeanClassWhere) o).classNotWhere) && equals.equals(((MeanClassWhere) o).equals);
     }
 
     public String toString() {
-        return classWhere.toString() + " " + equals.toString();
+        return classWhere.toString() + " N " + classNotWhere.toString() + " " + equals.toString();
     }
 }

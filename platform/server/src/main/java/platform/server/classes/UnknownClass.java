@@ -88,4 +88,8 @@ public class UnknownClass implements ConcreteObjectClass {
     public AndClassSet getKeepClass() {
         return this;
     }
+
+    public AndClassSet[] getAnd() {
+        return new AndClassSet[]{this};
+    }
 }

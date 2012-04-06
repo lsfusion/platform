@@ -397,11 +397,11 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     }
 
     public static <T extends PropertyInterface> boolean fitClasses(Property<T> property, SinglePropertyTableUsage<T> change) {
-        return change.getClassWhere(property.mapTable.mapKeys, property.field).means(property.getClassWhere(property.field));
+        return change.getClassWhere(property.mapTable.mapKeys, property.field).means(property.fieldClassWhere);
     }
 
     public static <T extends PropertyInterface> boolean notFitClasses(Property<T> property, SinglePropertyTableUsage<T> change) {
-        return change.getClassWhere(property.mapTable.mapKeys, property.field).and(property.getClassWhere(property.field)).isFalse();
+        return change.getClassWhere(property.mapTable.mapKeys, property.field).and(property.fieldClassWhere).isFalse();
     }
 
     private <T extends PropertyInterface, D extends PropertyInterface> void applySingleStored(Property<T> property, SinglePropertyTableUsage<T> change, BusinessLogics<?> BL, IncrementApply incrementApply) throws SQLException {
@@ -462,7 +462,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
                     break;
                 }
             }
-            if(property instanceof ExecuteProperty)
+            if(property instanceof ExecuteProperty && property.isDerived())
                 executeDerived((ExecuteProperty) property, incrementApply, actions, pendingExecutes); // действия
             if(property.isStored()) // постоянно-хранимые свойства
                 readStored(property, incrementApply, BL);

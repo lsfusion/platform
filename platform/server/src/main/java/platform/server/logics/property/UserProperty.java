@@ -11,6 +11,7 @@ import platform.server.data.PropertyField;
 import platform.server.data.type.Type;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.table.MapKeysTable;
 import platform.server.session.*;
 
 import java.sql.SQLException;
@@ -74,14 +75,9 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         return new MapDataChanges<ClassPropertyInterface>(new DataChanges(this, change), Collections.singletonMap(this, getIdentityInterfaces()));
     }
 
-    public Type getType() {
-        return getValueClass().getType();
-    }
-
     public abstract ValueClass getValueClass();
 
-    @IdentityLazy
-    public ClassWhere<Field> getClassWhere(PropertyField storedField) {
+    public ClassWhere<Field> getClassWhere(MapKeysTable<ClassPropertyInterface> mapTable, PropertyField storedField) {
         Map<Field, AndClassSet> result = new HashMap<Field, AndClassSet>();
         for(Map.Entry<ClassPropertyInterface, KeyField> mapKey : mapTable.mapKeys.entrySet())
             result.put(mapKey.getValue(), mapKey.getKey().interfaceClass.getUpSet());
@@ -94,18 +90,6 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
     }
 
     public abstract void execute(ExecutionContext context) throws SQLException;
-
-    public PropertyChange<ClassPropertyInterface> getDerivedChange(Modifier modifier) {
-        return getDerivedChange(modifier.getPropertyChanges());
-    }
-
-    public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges changes) {
-        if(derivedChange!=null && derivedChange.hasEventChanges(changes)) {
-            PropertyChange<ClassPropertyInterface> propertyChange = derivedChange.getDataChanges(changes).get(this);
-            return propertyChange != null ? propertyChange : getNoChange(); // noChange для прикола с stored в aspectgetexpr (там hasChanges стоит, а с null'ом его не будет)
-        }
-        return null;
-    }
 
     // не сильно структурно поэтому вынесено в метод
     public <V> Map<ClassPropertyInterface, V> getMapInterfaces(List<V> list) {

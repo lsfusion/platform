@@ -515,7 +515,7 @@ public class CompiledQuery<K,V> {
         }
 
         private String getGroupBy(Collection<String> keySelect) {
-            return BaseUtils.evl(BaseUtils.toString((Collection) (syntax.supportGroupNumbers() ? BaseUtils.genList(keySelect.size()) : keySelect), ","), "3+2");
+            return BaseUtils.evl(BaseUtils.toString((Collection) (syntax.supportGroupNumbers() ? BaseUtils.consecutiveList(keySelect.size()) : keySelect), ","), "3+2");
         }
 
         private class PartitionSelect extends QuerySelect<KeyExpr, PartitionExpr.Query,PartitionJoin,PartitionExpr> {

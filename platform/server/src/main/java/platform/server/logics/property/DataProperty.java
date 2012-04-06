@@ -45,7 +45,6 @@ public abstract class DataProperty extends UserProperty {
         context.getSession().changeProperty(this, context.getKeys(), context.getValue(), context.isGroupLast());
     }
 
-    @Override
     public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges changes) {
         PropertyChange<ClassPropertyInterface> result = null;
 
@@ -65,8 +64,13 @@ public abstract class DataProperty extends UserProperty {
                 prevExpr = getExpr(mapKeys);
             result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, classProperty.getRemoveWhere(prevExpr, changes)));
         }
-        
-        return PropertyChange.addNull(result, super.getDerivedChange(changes));
+
+        if(derivedChange!=null && derivedChange.hasEventChanges(changes)) {
+            PropertyChange<ClassPropertyInterface> propertyChange = derivedChange.getDataChanges(changes).get(this);
+            result = PropertyChange.addNull(result, propertyChange != null ? propertyChange : getNoChange()); // noChange для прикола с stored в aspectgetexpr (там hasChanges стоит, а с null'ом его не будет)
+        }
+
+        return result;
     }
 
     @Override

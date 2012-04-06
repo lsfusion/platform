@@ -85,4 +85,8 @@ public abstract class ConcreteCustomClass extends CustomClass implements Concret
     public Stat getStat() {
         return new Stat(getCount());
     }
+
+    public AndClassSet[] getAnd() {
+        return new AndClassSet[]{this};
+    }
 }

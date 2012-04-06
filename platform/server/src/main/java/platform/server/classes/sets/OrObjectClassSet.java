@@ -44,6 +44,17 @@ public class OrObjectClassSet implements OrClassSet, AndClassSet {
         return or((OrObjectClassSet)node);
     }
 
+    public AndClassSet[] getAnd() {
+        AndClassSet[] result = new AndClassSet[set.size+(up.isEmpty()?0:1)+(unknown?1:0)]; int r=0;
+        for(int i=0;i<set.size;i++)
+            result[r++] = set.get(i);
+        if(!up.isEmpty())
+            result[r++] = up;
+        if(unknown)
+            result[r] = new OrObjectClassSet(); // бред, конечно но может и прокатит
+        return result;
+    }
+
     public OrObjectClassSet or(OrObjectClassSet node) {
         // or'им Up'ы, or'им Set'ы после чего вырезаем из Set'а все кто есть в Up'ах
 

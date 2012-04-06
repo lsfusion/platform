@@ -11,13 +11,13 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
+import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 
 import java.util.List;
-import java.util.Set;
 
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
 
@@ -122,10 +122,10 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return checkTrue;
     }
 
-    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop);
+    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere);
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop) {
-        GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat, orderTop);
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
+        GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat, orderTop, noWhere);
         if(result.size > Settings.instance.getLimitWhereJoinsCount() || result.getComplexity(true) > Settings.instance.getLimitWhereJoinsComplexity())
             result = result.compileMeans(keepStat, keyStat);
         return result;
@@ -137,5 +137,17 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         if(result.size > Settings.instance.getLimitClassWhereCount() || result.getComplexity(true) > Settings.instance.getLimitClassWhereComplexity())
             result = new MeanClassWheres(new MeanClassWhere(result.getClassWhere()), this);
         return result;
+    }
+
+    protected abstract KeyEquals calculateGroupKeyEquals();
+    public KeyEquals calculateKeyEquals() {
+        if(isFalse())
+            return new KeyEquals();
+
+        for(Where where : wheres)
+            if(!where.getKeyEquals().isSimple())
+                return calculateGroupKeyEquals();
+
+        return new KeyEquals(this);
     }
 }

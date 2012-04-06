@@ -7,6 +7,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.extra.BinaryWhere;
+import platform.server.data.expr.where.extra.IsClassWhere;
 import platform.server.data.query.ExprJoin;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.CompileSource;
@@ -17,6 +18,7 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
+import platform.server.data.where.classes.PackClassWhere;
 
 import java.util.List;
 
@@ -72,14 +74,16 @@ public class NotWhere extends ObjectWhere {
         where.fillDataJoinWheres(joins, andWhere);
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
         ExprJoin exprJoin;
         if(where instanceof BinaryWhere && (exprJoin=((BinaryWhere)where).groupJoinsWheres(orderTop, true))!=null)
-            return new GroupJoinsWheres(exprJoin, this);
-        return new GroupJoinsWheres(this);
+            return new GroupJoinsWheres(exprJoin, this, noWhere);
+        return new GroupJoinsWheres(this, noWhere);
     }
 
     public MeanClassWheres calculateMeanClassWheres() {
+        if(where instanceof IsClassWhere || where instanceof PackClassWhere)
+            return new MeanClassWheres(new MeanClassWhere(where.getClassWhere(), true), this);
         return new MeanClassWheres(MeanClassWhere.TRUE,this);
     }
 

@@ -34,8 +34,8 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
 
     public abstract class NotNull extends NotNullExpr.NotNull {
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop) {
-            return new GroupJoinsWheres(InnerExpr.this.getInnerJoin(), this);
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
+            return new GroupJoinsWheres(InnerExpr.this.getInnerJoin(), this, noWhere);
         }
     }
 

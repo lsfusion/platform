@@ -4,10 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.QuickSet;
 import platform.server.classes.ValueClass;
-import platform.server.session.IncrementApply;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
-import platform.server.session.StructChanges;
+import platform.server.session.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,5 +38,13 @@ public abstract class ExecuteProperty extends UserProperty {
         for(Property depend : getDerivedDepends())
             result.add(new Pair<Property<?>, LinkType>(depend, LinkType.ACTIONDERIVED));
         return BaseUtils.merge(result, super.calculateLinks());
+    }
+
+    public PropertyChange<ClassPropertyInterface> getDerivedChange(Modifier modifier) {
+        return getDerivedChange(modifier.getPropertyChanges());
+    }
+
+    public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges changes) {
+        return derivedChange.getDataChanges(changes).get(this);
     }
 }

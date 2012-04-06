@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.base.BaseUtils;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
 import platform.server.data.where.classes.AbstractClassWhere;
@@ -33,18 +34,15 @@ public class OrConcatenateClass extends AbstractClassWhere<Integer,OrConcatenate
         return ((OrConcatenateClass)node).means(this);
     }
 
-    public ValueClass getCommonClass() { // временно для outputField сделал
-        return StringClass.get(100);
-//        throw new RuntimeException("not supported"); // потом когда разовьется тема с конкатенацией
-/*        assert !isFalse();
+    public ValueClass getCommonClass() {
+        assert !isFalse();
 
         int size = wheres[0].size;
-        Collection<Integer> concKeys = new ArrayList<Integer>();
-        for(int i=0;i<size;i++)
-            concKeys.add(i);
-        AndClassSet[] concClasses = new AndClassSet[size]; int cn=0;
-        for(ValueClass commonClass : BaseUtils.toList(getCommonParent(concKeys)))
-            concClasses[cn++] = commonClass.getUpSet();
-        return new ConcatenateClassSet(concClasses);*/
+        return new ConcatenateValueClass(BaseUtils.toList(getCommonParent(
+                BaseUtils.consecutiveList(size, 0))).toArray(new ValueClass[size]));
+    }
+
+    protected OrConcatenateClass FALSE() {
+        throw new RuntimeException("not supported");
     }
 }

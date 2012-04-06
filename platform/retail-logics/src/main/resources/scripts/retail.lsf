@@ -7853,7 +7853,7 @@ FORM shipment 'Поставка'
 
     HINTNOUPDATE LIST isPostedShipment,
                   balanceBItemLedgerDateTime, priceImporterBLedgerDateTime, wareBLedgerDateTime, priceWareBLedgerDateTime,
-                  rangeRetailBLedgerDateTime, priceRetailBLedgerDateTime
+                  rangeRetailBLedgerDateTime, priceRetailBLedgerDateTime, priceSupplierBLedgerDateTime, priceAccountBLedgerDateTime
 
     EDIT shipment OBJECT s
 ;

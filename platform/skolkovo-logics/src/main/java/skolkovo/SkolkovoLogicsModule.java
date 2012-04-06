@@ -3771,7 +3771,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailNotificationProjectEA = addEAProp(emailIO, project);
         addEARecipients(emailNotificationProjectEA, emailFinalClusterProject, 1);
-        addEARecipients(emailNotificationProjectEA, MimeMessage.RecipientType.CC, emailIO, 1);
+        addEARecipients(emailNotificationProjectEA, MimeMessage.RecipientType.CC, emailIO);
         emailNotificationHeaderProject = addJProp(add2Strings, addCProp(StringClass.get(2000), "Проверка проекта - "), nameNativeProject, 1);
         emailNotificationProject = addJProp(baseGroup, true, "emailNotificationProject", "Проверка на соответствие направлению деятельности (e-mail)", emailNotificationProjectEA, 1, emailNotificationHeaderProject, 1);
         emailNotificationProject.setImage("email.png");

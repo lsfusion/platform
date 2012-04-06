@@ -723,7 +723,7 @@ public abstract class LogicsModule {
 
             ArrayList nParams = new ArrayList();
             nParams.add(attachmentNameProp);
-            nParams.addAll(genList(attachmentNameProp.listInterfaces.size()));
+            nParams.addAll(consecutiveList(attachmentNameProp.listInterfaces.size()));
             nParams.addAll(asList(copyOfRange(params, 1, params.length)));
 
             params = nParams.toArray();
@@ -2237,7 +2237,6 @@ public abstract class LogicsModule {
 
     private void addPersistent(AggregateProperty property) {
         assert !baseLM.isGeneratedSID(property.getSID());
-        property.stored = true;
 
         baseLM.logger.debug("Initializing stored property " + property + "...");
         property.markStored(baseLM.tableFactory);

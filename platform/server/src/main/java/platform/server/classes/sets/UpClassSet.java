@@ -172,5 +172,7 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return result;
     }
 
-
+    public AndClassSet[] getAnd() {
+        return new AndClassSet[]{this};
+    }
 }

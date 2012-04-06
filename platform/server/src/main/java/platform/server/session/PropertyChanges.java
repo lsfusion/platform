@@ -10,6 +10,7 @@ import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.WhereBuilder;
+import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 
@@ -151,7 +152,8 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
 
     public <P extends PropertyInterface> PropertyChange<P> getChange(Property<P> property) {
         ModifyChange<P> propChange = getModify(property);
-        return PropertyChange.addNull(propChange==null? null : propChange.change, propChange != null && propChange.isFinal ? null : property.getDerivedChange(this));
+        return PropertyChange.addNull(propChange == null ? null : propChange.change, !(property instanceof DataProperty) ||
+                (propChange != null && propChange.isFinal) ? null : (PropertyChange<P>) ((DataProperty)property).getDerivedChange(this));
     }
 
     public <P extends PropertyInterface> Expr getChangeExpr(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {

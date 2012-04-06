@@ -910,7 +910,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams wrapWithFlowAction(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
         LP<?> action = property.property;
         int intNum = action.listInterfaces.size();
-        LP joinProp = addJoinAProp(null, genSID(), "", intNum, action.getMapClasses(), action, genList(intNum).toArray());
+        LP joinProp = addJoinAProp(null, genSID(), "", intNum, action.getMapClasses(), action, consecutiveList(intNum).toArray());
         return new LPWithParams(joinProp, property.usedParams);
     }
 

@@ -93,6 +93,10 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     public static ClassExprWhere TRUE = new ClassExprWhere(true);
     public static ClassExprWhere FALSE = new ClassExprWhere(false);
 
+    protected ClassExprWhere FALSE() {
+        return FALSE;
+    }
+
     public ClassExprWhere(VariableClassExpr key, AndClassSet classes) {
         super(key,classes);
     }
@@ -140,7 +144,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     }
     // нужен очень быстрый так как в checkTrue используется
     public ClassExprWhere andEquals(EqualMap equals) {
-        if(equals.size==0) return this;
+        if(equals.size==0 || isFalse() || isTrue()) return this;
 
         And<VariableClassExpr>[] rawAndWheres = newArray(wheres.length); int num=0;
         for(And<VariableClassExpr> where : wheres) {

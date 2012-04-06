@@ -544,7 +544,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
         if(query.type.hasAdd()) {
             Expr result = CaseExpr.NULL;
-            for(GroupStatWhere innerWhere : getSplitJoins(query.getWhere(), query.type, outerInner, false)) {
+            for(GroupStatWhere<Expr> innerWhere : getSplitJoins(query.getWhere(), query.type, outerInner, false)) {
                 Expr innerResult;
                 if(!innerWhere.keyEqual.isEmpty()) { // translatе'им expr
                     QueryTranslator equalTranslator = innerWhere.keyEqual.getTranslator();

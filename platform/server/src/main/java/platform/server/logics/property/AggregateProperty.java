@@ -13,6 +13,7 @@ import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.table.MapKeysTable;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -22,10 +23,9 @@ import static java.util.Collections.singletonMap;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
 
-    public boolean stored = false;
-
     public boolean isStored() {
-        return stored && !DataSession.reCalculateAggr; // для тестирования 2-е условие
+        assert (field!=null) == (mapTable!=null);
+        return mapTable!=null && !DataSession.reCalculateAggr; // для тестирования 2-е условие
     }
 
     protected AggregateProperty(String SID,String caption,List<T> interfaces) {
@@ -70,35 +70,20 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
                 BaseUtils.reverse(mapTable.mapKeys), singletonMap(field, "calcvalue"), MapValuesTranslator.noTranslate)));
     }
 
-    int getCoeff(PropertyMapImplement<?, T> implement) { return 0; }
-
     @IdentityLazy
-    public Type getType() {
-        return calculateClassExpr(getMapKeys()).getSelfType();
-    }
-
-    // потом можно убрать когда getCommonClass будет в OrConcatenateClass
-    @Override
-    @IdentityLazy
-    public Map<T,ValueClass> getMapClasses() {
+    public ClassWhere<Object> getClassValueWhere() {
         Query<T, String> query = new Query<T, String>(this);
-        query.and(calculateClassExpr(query.mapKeys).getWhere());
-        return query.<T>getClassWhere(new ArrayList<String>()).getCommonParent(interfaces);
+        query.properties.put("value", calculateClassExpr(query.mapKeys));
+        return query.getClassWhere(Collections.singleton("value"));
     }
 
     @IdentityLazy
     public CommonClasses<T> getCommonClasses() {
-        Query<T, String> query = new Query<T, String>(this);
-        query.properties.put("value", calculateClassExpr(query.mapKeys));
-        Map<Object, ValueClass> mapClasses = query.<Object>getClassWhere(query.properties.keySet()).getCommonParent(BaseUtils.<Object,T,String>merge(interfaces, query.properties.keySet()));
+        Map<Object, ValueClass> mapClasses = getClassValueWhere().getCommonParent(BaseUtils.<Object, T, String>merge(interfaces, Collections.singleton("value")));
         return new CommonClasses<T>(BaseUtils.filterKeys(mapClasses, interfaces), mapClasses.get("value"));
     }
 
-    @IdentityLazy
-    public ClassWhere<Field> getClassWhere(PropertyField storedField) {
-        Query<KeyField, Field> query = new Query<KeyField,Field>(mapTable.table);
-        Expr expr = calculateClassExpr(BaseUtils.join(mapTable.mapKeys, query.mapKeys));
-        query.properties.put(storedField,expr);
-        return query.getClassWhere(Collections.singleton(storedField));
+    public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
+        return getClassValueWhere().remap(BaseUtils.<Object, T, String, Field>merge(mapTable.mapKeys, Collections.singletonMap("value", storedField)));
     }
 }

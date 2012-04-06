@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.base.ArrayCombinations;
 import platform.base.BaseUtils;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
@@ -96,5 +97,18 @@ public class ConcatenateClassSet implements ConcreteClass  {
     @Override
     public int hashCode() {
         return Arrays.hashCode(classes);
+    }
+
+    public AndClassSet[] getAnd() {
+        AndClassSet[][] ands = new AndClassSet[classes.length][];
+        for(int i=0;i<classes.length;i++)
+            ands[i] = classes[i].getAnd();
+        ArrayCombinations<AndClassSet> combs = new ArrayCombinations<AndClassSet>(ands, AndClassSet.arrayInstancer);
+        if(combs.max==1)
+            return new AndClassSet[]{this};
+        AndClassSet[] result = new AndClassSet[combs.max]; int k=0;
+        for(AndClassSet[] comb : combs)
+            result[k++] = new ConcatenateClassSet(comb);
+        return result;
     }
 }

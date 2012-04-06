@@ -1940,11 +1940,15 @@ public class BaseUtils {
         return a > b ? a : b;
     }
 
-    public static List<Integer> genList(int i) {
+    public static List<Integer> consecutiveList(int i, int is) {
         List<Integer> result = new ArrayList<Integer>();
         for(int j=0;j<i;j++)
-            result.add(j+1);
+            result.add(j+is);
         return result;
+    }
+
+    public static List<Integer> consecutiveList(int i) {
+        return consecutiveList(i, 1);
     }
     
     public static <K> List<K> sort(Collection<K> col, Comparator<K> comparator) {

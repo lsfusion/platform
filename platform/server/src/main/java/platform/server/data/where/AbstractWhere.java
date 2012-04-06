@@ -214,7 +214,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             }
 
             protected Collection<GroupStatWhere<K>> add(Collection<GroupStatWhere<K>> op1, Collection<GroupStatWhere<K>> op2) {
-                return type.merge(op1, op2);
+                return type.merge(op1, op2, noWhere);
             }
         }.proceed(this, exprs.toMap());
     }

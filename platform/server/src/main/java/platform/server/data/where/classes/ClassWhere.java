@@ -49,6 +49,9 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     public static <K> ClassWhere<K> STATIC(boolean isTrue) {
         return new ClassWhere<K>(isTrue);
     }
+    protected ClassWhere<K> FALSE() {
+        return STATIC(false);
+    }
 
     public static <M,K> Map<M,ClassWhere<K>> STATIC(Collection<M> keys, boolean isTrue) {
         Map<M, ClassWhere<K>> result = new HashMap<M, ClassWhere<K>>();
@@ -111,6 +114,13 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
             result = result.or(andWhere.getWhere(mapExprs));
         return result;
 
+    }
+    
+    public <T> ClassWhere<T> remap(Map<K, T> map) {
+        And<T>[] remapWheres = new And[wheres.length];
+        for(int i=0;i<wheres.length;i++)
+            remapWheres[i] = wheres[i].remap(map);
+        return new ClassWhere<T>(remapWheres);
     }
 }
 

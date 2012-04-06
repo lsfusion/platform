@@ -20,7 +20,6 @@ import platform.server.data.where.*;
 import platform.server.data.where.classes.ClassExprWhere;
 
 import java.util.List;
-import java.util.Set;
 
 public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWhere {
 
@@ -81,11 +80,11 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         }
         return null;        
     }
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
         ExprJoin exprJoin = groupJoinsWheres(orderTop, false);
         if(exprJoin!=null)
-            return new GroupJoinsWheres(exprJoin, this);
-        return getOperandWhere().groupJoinsWheres(keepStat, keyStat, orderTop).and(new GroupJoinsWheres(this));
+            return new GroupJoinsWheres(exprJoin, this, noWhere);
+        return getOperandWhere().groupJoinsWheres(keepStat, keyStat, orderTop, noWhere).and(new GroupJoinsWheres(this, noWhere));
     }
 
     @IdentityLazy
