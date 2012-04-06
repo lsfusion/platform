@@ -376,7 +376,7 @@ META metaCodeObjectWithPostEx (object, captionPosted)
     nameDepartmentStore###object 'Отдел документа' (object) = name(departmentStore###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 20 PREFCHARWIDTH 40;;
 
-    note###object 'Примечание' = DATA STRING[100] (object) IN additionalInfo;
+    note###object 'Примечание' = DATA STRING[100] (object) IN additionalInfo MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
     object###object##Detail 'Строка документа' = DATA object (object##Detail) IN idGroup;
 
@@ -1336,11 +1336,16 @@ GROUP employeeGroup 'Пользовательская информация' : ba
 CLASS ABSTRACT person 'Физическое лицо';
 CLASS employee 'Сотрудник' : person, customUser;
 CLASS employeeSystem 'Операционная система';
+CLASS officer 'Должность' ;
 
 
 nameEmployeeSystem 'Операционная система' = DATA STRING[100] (employeeSystem) IN employeeGroup;
 employeeSystemEmployee(employee) = DATA employeeSystem (employee) IN idGroup;
 nameEmployeeSystemEmployee 'Операционная система на рабочем месте пользователя' (employee) = nameEmployeeSystem(employeeSystemEmployee(employee)) IN employeeGroup;
+
+nameOfficer 'Должность' = DATA STRING[100] (officer) IN baseGroup;
+officerEmployee(employee) = DATA officer (employee) IN idGroup;
+nameOfficerEmployee 'Должность сотрудника' (employee) = nameOfficer(officerEmployee(employee)) IN baseGroup;
 
 languageEmployee(employee) = DATA language (employee) IN idGroup;
 nameLanguageEmployee 'Язык интерфейса' = name(languageEmployee(employee)) IN employeeGroup;
@@ -1400,7 +1405,7 @@ CLASS STATIC itemStatus 'Статус товара'
 storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) AUTOSET;
 nameStoreDepartmentStore 'Магазин' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
 revaluationCommitteeDepartmentStore 'Комиссия отдела (ИД)' = DATA revaluationCommittee (departmentStore);
-nameRevaluationCommitteeDepartmentStore 'Комиссия отдела' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+nameRevaluationCommitteeDepartmentStore 'Комиссия переоценки отдела' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
 deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
 controlMinusRestsContainerDepartmentStore 'Контроль за минусовыми остатками тары' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
@@ -1433,10 +1438,17 @@ inTradingNetworkStoreTypeStoreDepartment (tradingNetwork, storeType, store, depa
     tradingNetworkDepartmentStore(department) == tradingNetwork AND NOT store AND NOT storeType,
     department IS departmentStore AND NOT store AND NOT storeType AND NOT tradingNetwork;
 
+FORM officer 'Должность'
+    OBJECTS of=officer FIXED PANEL
+    PROPERTIES(of) nameOfficer
+    EDIT officer OBJECT of
+;
+
+
 FORM employee 'Сотрудник'
     OBJECTS e=employee FIXED PANEL
-    PROPERTIES(e)      userFirstName, userLastName, phoneEmployee, nameEmployeeSystemEmployee, shortNameLanguageEmployee, numberEmployee,
-                       passwordEmployee, dataEmployee
+    PROPERTIES(e)      userFirstName, userLastName, nameOfficerEmployee, phoneEmployee, nameEmployeeSystemEmployee,
+                       shortNameLanguageEmployee, numberEmployee, passwordEmployee, dataEmployee
 
     TREE treeStore t=tradingNetwork, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY name(t), name(st), name(s), name(ds)
@@ -1452,7 +1464,7 @@ FORM employee 'Сотрудник'
 
 FORM employees 'Сотрудники'
     OBJECTS e=employee
-    PROPERTIES(e) READONLY userFirstName, userLastName
+    PROPERTIES(e) READONLY userFirstName, userLastName, nameOfficerEmployee
     PROPERTIES(e) ADDFORM, EDITFORM, delete
 
     OBJECTS ds=departmentStore
@@ -2236,9 +2248,12 @@ CLASS ABSTRACT committee 'Комиссия' : named;
 CLASS revaluationCommittee 'Комиссия переоценки' : committee;
 CLASS inventoryCommittee 'Комиссия для инвентаризации' : committee;
 CLASS registerCommittee 'Комиссия для реестра цен' : committee;
+//CLASS revaluationCommittee 'Комиссия для акта переоценки' : committee;
 
 chairmanCommittee 'Председатель комиссии (ИД)' = DATA employee (committee);
 commonNameChairmanCommittee 'Председатель комиссии' (committee) = commonName(chairmanCommittee(committee)) IN baseGroup;
+nameOfficerChairmanCommittee 'Должность председаетеля' (committee) = nameOfficerEmployee(chairmanCommittee(committee)) IN baseGroup;
+
 departmentStoreCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (committee);
 nameDepartmentStoreCommittee 'Отдел комиссии' (committee) = commonName(departmentStoreCommittee(committee)) IN baseGroup;
 CONSTRAINT chairmanCommittee(committee) IF committee IS revaluationCommittee AND NOT departmentStoreEmployee(departmentStoreCommittee(committee), chairmanCommittee(committee)) CHECKED MESSAGE 'Отдел комиссии должен соответствовать отделу председателя комиссии';
@@ -2249,8 +2264,11 @@ inCommitteeEmployee 'Является членом комиссии' (committee,
 
 inDepartmentStoreEmployeeCommittee(employee, committee) = UNION EXCLUSIVE
     departmentStoreEmployee(departmentStoreCommittee(committee), employee) AND committee IS revaluationCommittee,
-    employee IS employee AND committee IS inventoryCommittee;
+    employee IS employee AND committee IS inventoryCommittee,
+    employee IS employee AND committee IS registerCommittee;       // является ли сотрудником отдела
+
 isNotRegisterCommittee (committee) = UNION OVERRIDE committee IS revaluationCommittee, committee IS inventoryCommittee;
+
 isRegisterCommittee (committee) = committee IS registerCommittee;
 
 formedManCommittee = DATA employee (registerCommittee);
@@ -2265,6 +2283,14 @@ nameLabeledManCommittee 'Товар промаркировал' (committee) = co
 nameAccountantManCommittee 'Бухгалтер' (committee) = commonName(accountantManCommittee(committee));
 nameHeadManCommittee 'Зав. магазином' (committee) = commonName(headManCommittee(committee));
 
+castOfficerEmployeeToString40 =
+     FORMULA STRING[40] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)';
+nameOfficerAndNameEmployee 'Должность ФИО' (employee) = castOfficerEmployeeToString40(nameOfficerEmployee(employee), commonName(employee));
+
+commonNameEmployeeCommittee 'Члены комиссии' (committee) =
+     GROUP CONCAT nameOfficerAndNameEmployee(employee) IF inCommitteeEmployee(committee, employee), ', '
+     BY committee MINCHARWIDTH 50 PREFCHARWIDTH 50;
+
 
 FORM committee 'Комиссия'
     OBJECTS c=committee FIXED PANEL
@@ -2274,7 +2300,7 @@ FORM committee 'Комиссия'
 
 
     OBJECTS e=employee
-    PROPERTIES(e)    SHOWIF isNotRegisterCommittee(c) READONLY name, userFirstName, userLastName
+    PROPERTIES(e)    SHOWIF isNotRegisterCommittee(c) READONLY name, userFirstName, userLastName, nameOfficerEmployee
     PROPERTIES(e)    SHOWIF isNotRegisterCommittee(c) ADDSESSIONFORM, EDITSESSIONFORM, delete
 
     PROPERTIES(c, e) SHOWIF isNotRegisterCommittee(c) inCommitteeEmployee
@@ -2294,7 +2320,7 @@ FORM employeesCommittees 'Комиссии'
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 
     OBJECTS e=employee
-    PROPERTIES(e) READONLY userFirstName, userLastName
+    PROPERTIES(e) READONLY userFirstName, userLastName, nameOfficerEmployee
 
     FILTERS inCommitteeEmployee(c, e)
 ;
@@ -4966,6 +4992,8 @@ customerStatement 'Покупатель (ИД)' (statement) = DATA customer (sta
 nameCustomerStatement 'Покупатель' (statement) = name(customerStatement(statement)) IN documentHeaderGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40;
 
+numberDisposalStatement '№ распоряжения на переоценку' (statement) = DATA STRING[30] (statement) IN additionalInfo;
+
 inStatementSpecification 'Включить в накладную' (statement, specification) = DATA BOOLEAN (statement, specification)
     IN idGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
@@ -5088,6 +5116,7 @@ isPostedPriceChangeStatement 'Закрыт' (priceChangeStatement) = isPostedSta
 numberPriceChangeStatement 'Номер накладной' (priceChangeStatement) = numberObject(statementPriceChangeStatement(priceChangeStatement));
 seriesPriceChangeStatement 'Серия накладной' (priceChangeStatement) = seriesObject(statementPriceChangeStatement(priceChangeStatement));
 descriptionPriceChangeStatement 'Название документа' (priceChangeStatement) = descriptionStatement(statementPriceChangeStatement(priceChangeStatement));
+numberDisposalPriceChangeStatement '№ распоряжения на переоценку' (priceChangeStatement) = numberDisposalStatement(statementPriceChangeStatement(priceChangeStatement));
 
 customerPriceChangeStatement (priceChangeStatement) = customerStatement(statementPriceChangeStatement(priceChangeStatement));
 nameCustomerPriceChangeStatement 'Покупатель' (priceChangeStatement) = name(customerPriceChangeStatement(priceChangeStatement));
@@ -5287,6 +5316,8 @@ namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоце
 supplierShipmentDetail 'Поставщик (ИД)' (shipmentDetail) = supplierShipment(shipmentShipmentDetail(shipmentDetail));
 
 
+numberDisposalShipment '№ распоряжения на переоценку' (shipment) = DATA STRING[30] (shipment) IN additionalInfo;
+
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
 
@@ -5392,7 +5423,7 @@ retailSumShipmentDetail 'Розничная сумма' (shipmentDetail) = quant
 retailSumShipment 'Розничная сумма' (shipment) = GROUP SUM retailSumShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN waybillSum;
 
 committeeShipment(shipment) = DATA registerCommittee(shipment);
-nameCommitteeShipment 'Название комиссии для реестра цен' (shipment) = commonName(committeeShipment(shipment));
+nameCommitteeShipment 'Название комиссии для реестра цен' (shipment) = commonName(committeeShipment(shipment)) IN additionalInfo;
 
 //--------------------показатели для реестра цен----------------------------//
 
@@ -5530,6 +5561,7 @@ nameSupplierPriceChangeShipment 'Поставщик' (priceChangeShipment) = nam
 departmentStorePriceChangeShipment (priceChangeShipment) = departmentStoreShipment(shipmentPriceChangeShipment(priceChangeShipment));
 nameDepartmentStorePriceChangeShipment 'Отдел магазина' (priceChangeShipment) = name(departmentStorePriceChangeShipment(priceChangeShipment));
 
+numberDisposalPriceChangeShipment '№ распоряжения на переоценку' (priceChangeShipment) = numberDisposalShipment(shipmentPriceChangeShipment(priceChangeShipment));
 
 // атрибуты детализации документа переоценки
 
@@ -5799,6 +5831,8 @@ priceItemInnerArrival 'Цена (максим.)' (item, innerArrival) = priceIte
 //    itemInnerArrivalDetail(innerArrivalDetail), innerArrivalInnerArrivalDetail(innerArrivalDetail))
 //    ON CHANGE itemInnerArrivalDetail (innerArrivalDetail);
 
+numberDisposalInnerArrival '№ распоряжения на переоценку' (innerArrival) = DATA STRING[30] (innerArrival) IN baseGroup;
+
 curRetailPriceInnerArrivalDetail 'Текущая розничная цена' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN pricingInnerArrivalDetailInfo;
 
 accountSumInnerArrivalDetail 'Сумма' (innerArrivalDetail) =
@@ -5903,6 +5937,8 @@ nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' 
 
 departmentStorePriceChangeInnerArrival (priceChangeInnerArrival) = departmentStoreInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 nameDepartmentStorePriceChangeInnerArrival 'Отдел-получатель' (priceChangeInnerArrival) = name(departmentStorePriceChangeInnerArrival(priceChangeInnerArrival));
+
+numberDisposalPriceChangeInnerArrival '№ распоряжения на переоценку' (priceChangeInnerArrival) = numberDisposalInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 
 // атрибуты детализации документа переоценки
 
@@ -6041,6 +6077,8 @@ supplierReturnSupplierDetail 'Поставщик (ИД)' (returnSupplierDetail) 
 
 nameSupplierReturnSupplier 'Поставщик' (returnSupplier) = name(supplierReturnSupplier(returnSupplier)) IN documentHeaderGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40;
+
+numberDisposalReturnSupplier '№ распоряжения на переоценку' (returnSupplier) = DATA STRING[30] (returnSupplier) IN additionalInfo;
 
 // информация по товару
 
@@ -6438,6 +6476,8 @@ CLASS userPriceChangeDetail 'Строка переоценки товаров' :
 quantityUserPriceChangeDetail 'Кол-во переоценки' = DATA DOUBLE (userPriceChangeDetail);
 quantityItemUserPriceChange 'Кол-во по товару' (item, userPriceChange) = GROUP SUM quantityUserPriceChangeDetail(detail)
                                                                                BY itemUserPriceChangeDetail(detail), userPriceChangeUserPriceChangeDetail(detail);
+
+numberDisposalUserPriceChange '№ распоряжения на переоценку' (userPriceChange) = DATA STRING[30] (userPriceChange) IN baseGroup;
 
 importerPriceUserPriceChangeDetail 'Цена изготовителя' = DATA DOUBLE (userPriceChangeDetail);
 supplierPriceUserPriceChangeDetail 'Цена поставщика' = DATA DOUBLE (userPriceChangeDetail);
@@ -6941,6 +6981,8 @@ isPostedPriceChangeReturnSupplier 'Закрыт' (priceChangeReturnSupplier) = i
 numberPriceChangeReturnSupplier 'Номер накладной' (priceChangeReturnSupplier) = numberObject(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 seriesPriceChangeReturnSupplier 'Серия накладной' (priceChangeReturnSupplier) = seriesObject(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 descriptionPriceChangeReturnSupplier 'Название документа' (priceChangeReturnSupplier) = descriptionReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+
+numberDisposalPriceChangeReturnSupplier '№ распоряжения на переоценку' (priceChangeReturnSupplier) =numberDisposalReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 
 supplierPriceChangeReturnSupplier (priceChangeReturnSupplier) = supplierReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 nameSupplierPriceChangeReturnSupplier 'Поставщик' (priceChangeReturnSupplier) = name(supplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
@@ -7634,7 +7676,7 @@ FORM shipment 'Поставка'
                    nameDepartmentStoreShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
                    carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
-                   noteShipment, nameCommitteeShipment
+                   noteShipment, nameCommitteeShipment, numberDisposalShipment
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
@@ -7725,11 +7767,13 @@ DESIGN shipment FROM DEFAULT{
             };
 
             NEW headerRow2 {
-                childConstraints = TO THE RIGHT;
+                childConstraints = TO THE BOTTOM;
                 ADD s.waybillSum {
                     childConstraints = TO THE RIGHT;
                 };
-                ADD s.additionalInfo;
+                ADD s.additionalInfo {
+                     childConstraints = TO THE RIGHT;
+                };
              };
         };
     };
@@ -7815,7 +7859,7 @@ FORM returnSupplier 'Возврат поставщику'
     PROPERTIES(r) numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
                   nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
                   totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier,
-                  retailSumReturnSupplier
+                  retailSumReturnSupplier, numberDisposalReturnSupplier
 
     PROPERTIES(r) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
                   nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
@@ -7928,11 +7972,13 @@ DESIGN returnSupplier FROM DEFAULT {
             };
         };
 
-    ADD r.waybillSum{
-        childConstraints = TO THE RIGHT;
-    };
+        ADD r.waybillSum{
+            childConstraints = TO THE RIGHT;
+        };
 
-    ADD PROPERTY(noteReturnSupplier);
+        ADD r.additionalInfo {
+            childConstraints = TO THE RIGHT;
+        };
     };
 
     ADD PROPERTY(delete(d)){
@@ -8199,11 +8245,22 @@ isPostedPriceChangeDocument 'Закрыт' (priceChangeDocument) = UNION EXCLUSI
 
 numberPriceChangeDocument 'Номер накладной' (priceChangeDocument) = UNION EXCLUSIVE numberPriceChangeShipment(priceChangeDocument),
                                                                                     numberPriceChangeReturnSupplier(priceChangeDocument),
-                                                                                    numberPriceChangeInnerArrival(priceChangeDocument) PERSISTENT;
+                                                                                    numberPriceChangeInnerArrival(priceChangeDocument),
+                                                                                    numberPriceChangeStatement(priceChangeDocument),
+                                                                                    numberObject(priceChangeDocument) PERSISTENT;
 
 seriesPriceChangeDocument 'Серия накладной' (priceChangeDocument) = UNION EXCLUSIVE seriesPriceChangeShipment(priceChangeDocument),
                                                                                     seriesPriceChangeReturnSupplier(priceChangeDocument),
-                                                                                    seriesPriceChangeInnerArrival(priceChangeDocument) PERSISTENT;
+                                                                                    seriesPriceChangeInnerArrival(priceChangeDocument),
+                                                                                    seriesPriceChangeStatement (priceChangeDocument),
+                                                                                    seriesObject(priceChangeDocument) PERSISTENT;
+
+numberDisposalPriceChangeDocument '№ распоряжения на переоценку' (priceChangeDocument) = UNION EXCLUSIVE
+                                                                                    numberDisposalPriceChangeShipment(priceChangeDocument),
+                                                                                    numberDisposalPriceChangeReturnSupplier(priceChangeDocument),
+                                                                                    numberDisposalPriceChangeInnerArrival(priceChangeDocument),
+                                                                                    numberDisposalPriceChangeStatement(priceChangeDocument),
+                                                                                    numberDisposalUserPriceChange(priceChangeDocument)PERSISTENT;
 
 departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE departmentStorePriceChangeShipment(priceChangeDocument),
                                                                            departmentStorePriceChangeReturnSupplier(priceChangeDocument),
@@ -8224,6 +8281,8 @@ itemPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE item
                                                                             itemPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                             itemUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 nameItemPriceChangeDocumentDetail 'Товар' (priceChangeDocumentDetail) = nameAttributeItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
+
+shortNameUnitOfMeasureItemPriceChangeDocumentDetail 'Ед. изм.' (priceChangeDocumentDetail) = shortNameUnitOfMeasureItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = UNION EXCLUSIVE quantityPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                           quantityPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
@@ -8279,8 +8338,14 @@ retailPriceChangeDocumentDetail 'Новая розничная цена' (priceC
 oldRetailSumChangeDocumentDetail 'Старая розничная сумма' (priceChangeDocumentDetail) =
                 quantityPriceChangeDocumentDetail(priceChangeDocumentDetail) * oldRetailPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
+oldRetailSumChangeDocument 'Старая розничная сумма' (priceChangeDocument) = GROUP SUM oldRetailSumChangeDocumentDetail(priceChangeDocumentDetail)
+    BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
 retailSumChangeDocumentDetail 'Новая розничная сумма' (priceChangeDocumentDetail) =
                 quantityPriceChangeDocumentDetail(priceChangeDocumentDetail) * retailPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+retailSumChangeDocument 'Новая розничная сумма' (priceChangeDocument) = GROUP SUM retailSumChangeDocumentDetail(priceChangeDocumentDetail)
+    BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 accountSumChangeDocumentDetail 'Сумма переоценки' (priceChangeDocumentDetail) =
                 retailSumChangeDocumentDetail(priceChangeDocumentDetail) - oldRetailSumChangeDocumentDetail(priceChangeDocumentDetail);
@@ -8332,37 +8397,52 @@ dataWareRangePriceChangeDocumentDetail 'НДС по посуде' (priceChangeDo
     dataActingRateRangeDate(rangeWareVal(warePriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)),
                             datePriceChangeDocumentDetail(priceChangeDocumentDetail));
 
-sumVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде, за ед.' (priceChangeDocumentDetail) = round0([X*Y/(100+Y)](
+sumVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде, за ед.' (priceChangeDocumentDetail) = [round0(X*Y/(100+Y))](
      (UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, priceWarePriceChangeDocumentDetail (priceChangeDocumentDetail)),
-     (UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, dataWareRangePriceChangeDocumentDetail(priceChangeDocumentDetail)))
-     );
+     (UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, dataWareRangePriceChangeDocumentDetail(priceChangeDocumentDetail)));
 
 sumDetailVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде' (priceChangeDocumentDetail) =
     UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, sumVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) * quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-
 totalSumImporterPricePriceChangeDocument 'Сумма изготовителя' (priceChangeDocument) = GROUP SUM
-    [importerPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)](priceChangeDocumentDetail)
-    BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+    importerPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)
+        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-totalSumSupplierPricePriceChangeDocument 'Новая сумма поставщика' (priceChangeDocument) = GROUP SUM [supplierPriceChangeDocumentDetail(priceChangeDocumentDetail)*
-    quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)](priceChangeDocumentDetail)
-    BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-totalSumMarkupPriceChangeDocument 'Новая сумма надбавки' (priceChangeDocument) = GROUP SUM [sumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)*
-    quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)](priceChangeDocumentDetail)
-    BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+totalSumSupplierPricePriceChangeDocumentDetail 'Новая сумма поставщика' (priceChangeDocumentDetail)=
+    supplierPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+totalSumSupplierPricePriceChangeDocument 'Новая сумма поставщика' (priceChangeDocument) = GROUP SUM
+    totalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail)
+        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-totalSumRetailVATPriceChangeDocument 'Новая сумма розничного НДС' (priceChangeDocument) = GROUP SUM [sumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail)*
-    quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)](priceChangeDocumentDetail)
-    BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+totalSumMarkupPriceChangeDocumentDetail 'Новая сумма надбавки' (priceChangeDocumentDetail)=
+    sumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+totalSumMarkupPriceChangeDocument 'Новая сумма надбавки' (priceChangeDocument) = GROUP SUM
+    totalSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)
+        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-totalSumWarePriceChangeDocument 'Новая сумма посуды' (priceChangeDocument) = GROUP SUM [priceWarePriceChangeDocumentDetail(priceChangeDocumentDetail)*
-    quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)](priceChangeDocumentDetail)
-    BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+totalSumRetailVATPriceChangeDocumentDetail 'Новая сумма розничного НДС' (priceChangeDocumentDetail)=
+    sumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+totalSumRetailVATPriceChangeDocument 'Новая сумма розничного НДС' (priceChangeDocument) = GROUP SUM
+    totalSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail)
+        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+totalSumWarePriceChangeDocumentDetail 'Новая сумма посуды' (priceChangeDocumentDetail)=
+    priceWarePriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+totalSumWarePriceChangeDocument 'Новая сумма посуды' (priceChangeDocument) = GROUP SUM
+    totalSumWarePriceChangeDocumentDetail(priceChangeDocumentDetail)
+        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 totalSumVatWarePriceChangeDocument 'Новая сумма НДС по посуде' (priceChangeDocument) =  GROUP SUM
     sumDetailVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+quantityPriceChangeDocument 'Количество' (priceChangeDocument) = GROUP SUM quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)
+    BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+
+numberPriceChangeDocumentDetail 'Номер строки' (priceChangeDocumentDetail) =
+        PARTITION SUM 1 IF priceChangeDocumentDetail IS priceChangeDocumentDetail BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail)
+        ORDER priceChangeDocumentDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
 
            //------------------------------текущие показатели--------------------------------------//
 
@@ -8379,39 +8459,68 @@ oldDataWareRangePriceChangeDocumentDetail 'НДС по посуде' (priceChang
     dataActingRateRangeDate(rangeWareVal(oldWarePriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)),
                             datePriceChangeDocumentDetail(priceChangeDocumentDetail));
 
-oldSumVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде, за ед.' (priceChangeDocumentDetail) = round0([X*Y/(100+Y)](
+oldSumVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде, за ед.' (priceChangeDocumentDetail) = [round0(X*Y/(100+Y))](
      (UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, oldPriceWarePriceChangeDocumentDetail (priceChangeDocumentDetail)),
-     (UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, oldDataWareRangePriceChangeDocumentDetail(priceChangeDocumentDetail)))
-     );
+     (UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, oldDataWareRangePriceChangeDocumentDetail(priceChangeDocumentDetail)));
 
 oldSumDetailVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде' (priceChangeDocumentDetail) =
     UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, oldSumVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) * quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 
 oldTotalSumImporterPricePriceChangeDocument 'Старая сумма изготовителя' (priceChangeDocument) = GROUP SUM
-    [oldImporterPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)](priceChangeDocumentDetail)
-    BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+    oldImporterPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)
+        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-oldTotalSumSupplierPricePriceChangeDocument 'Старая сумма поставщика' (priceChangeDocument) = GROUP SUM [oldSupplierPriceChangeDocumentDetail(priceChangeDocumentDetail)*
-    quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)](priceChangeDocumentDetail)
-    BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-oldTotalSumMarkupPriceChangeDocument 'Старая сумма надбавки' (priceChangeDocument) = GROUP SUM [oldSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)*
-    quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)](priceChangeDocumentDetail)
-    BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-oldTotalSumRetailVATPriceChangeDocument 'Старая сумма розничного НДС' (priceChangeDocument) = GROUP SUM [oldSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail)*
-    quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)](priceChangeDocumentDetail)
-    BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+oldTotalSumSupplierPricePriceChangeDocumentDetail 'Старая сумма поставщика' (priceChangeDocumentDetail) =
+    oldSupplierPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+oldTotalSumSupplierPricePriceChangeDocument 'Старая сумма поставщика' (priceChangeDocument) = GROUP SUM
+    oldTotalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail)
+        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-oldTotalSumWarePriceChangeDocument 'Старая сумма посуды' (priceChangeDocument) = GROUP SUM [oldPriceWarePriceChangeDocumentDetail(priceChangeDocumentDetail)*
-    quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)](priceChangeDocumentDetail)
-    BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+oldTotalSumMarkupPriceChangeDocumentDetail 'Старая сумма надбавки' (priceChangeDocumentDetail) =
+    oldSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+oldTotalSumMarkupPriceChangeDocument 'Старая сумма надбавки' (priceChangeDocument) = GROUP SUM
+    oldTotalSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)
+        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+
+oldTotalSumRetailVATPriceChangeDocumentDetail 'Старая сумма розничного НДС' (priceChangeDocumentDetail) =
+    oldSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+oldTotalSumRetailVATPriceChangeDocument 'Старая сумма розничного НДС' (priceChangeDocument) = GROUP SUM
+    oldTotalSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail)
+        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+
+oldTotalSumWarePriceChangeDocumentDetail 'Старая сумма посуды' (priceChangeDocumentDetail) =
+    oldPriceWarePriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+oldTotalSumWarePriceChangeDocument 'Старая сумма посуды' (priceChangeDocument) = GROUP SUM
+    oldTotalSumWarePriceChangeDocumentDetail(priceChangeDocumentDetail)
+        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 oldTotalSumVatWarePriceChangeDocument 'Старая сумма НДС по посуде' (priceChangeDocument) =  GROUP SUM
-    oldSumDetailVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+    oldSumDetailVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail)
+        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
                          // ---------Дельта  показателей переоценки--------------- //
+
+diffTotalSumSupplierPricePriceChangeDocumentDetail 'Изменение суммы поставщика' (priceChangeDocumentDetail) = totalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+    oldTotalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+diffTotalSumMarkupPriceChangeDocumentDetail 'Изменение суммы надбавки' (priceChangeDocumentDetail) = totalSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+    oldTotalSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+diffTotalSumRetailVATPriceChangeDocumentDetail 'Изменение суммы розничного НДС' (priceChangeDocumentDetail) = totalSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+    oldTotalSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+diffTotalSumWarePriceChangeDocumentDetail 'Изменение суммы посуды' (priceChangeDocumentDetail) = totalSumWarePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+    oldTotalSumWarePriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+diffTotalSumVatWarePriceChangeDocumentDetail 'Изменение суммы НДС посуды' (priceChangeDocumentDetail) = sumDetailVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+    oldSumDetailVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail);
+
 
 diffTotalSumImporterPricePriceChangeDocument 'Изменение суммы изготовителя' (priceChangeDocument) = totalSumImporterPricePriceChangeDocument(priceChangeDocument) (-)
     oldTotalSumImporterPricePriceChangeDocument(priceChangeDocument);
@@ -8430,6 +8539,12 @@ diffTotalSumWarePriceChangeDocument 'Изменение суммы посуды'
 
 diffTotalSumVatWarePriceChangeDocument 'Изменение суммы НДС посуды' (priceChangeDocument) = totalSumVatWarePriceChangeDocument(priceChangeDocument) (-)
     oldTotalSumVatWarePriceChangeDocument(priceChangeDocument);
+
+nameRevaluationCommitteePriceChangeDocument 'Комиссия' (priceChangeDocument) = nameRevaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument));
+commonNameEmployeeCommitteePriceChangeDocument 'Сотрудники комиссии' (priceChangeDocument) = commonNameEmployeeCommittee(revaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument)));
+inPriceChangeDocumentEmployee (priceChangeDocument, employee) = inCommitteeEmployee(revaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument)), employee);
+commonNameChairmanPriceChangeDocument 'Председатель комиссии' (priceChangeDocument) = commonNameChairmanCommittee(revaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument)));
+nameOfficerChairmanPriceChangeDocument 'Должность' (priceChangeDocument) = nameOfficerChairmanCommittee(revaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument)));
 
 
 FORM priceChangeDocuments 'Акты переоценки'
@@ -8450,6 +8565,48 @@ FORM priceChangeDocuments 'Акты переоценки'
 
     FILTERS documentPriceChangeDocumentDetail(pcd) == pc
 ;
+                            //----------рабочая форма--------//
+
+FORM actOfRevaluation 'Акты переоценки (печ.)'
+    OBJECTS pc=priceChangeDocument  FIXED PANEL
+    PROPERTIES(pc) SELECTOR  numberPriceChangeDocument, seriesPriceChangeDocument, objectClassName, isPostedPriceChangeDocument,
+                             nameDepartmentStorePriceChangeDocument, datePriceChangeDocument, nameRevaluationCommitteePriceChangeDocument,
+                             commonNameChairmanPriceChangeDocument, nameOfficerChairmanPriceChangeDocument, commonNameEmployeeCommitteePriceChangeDocument,
+                             quantityPriceChangeDocument, numberDisposalPriceChangeDocument,
+                             oldTotalSumSupplierPricePriceChangeDocument, oldTotalSumMarkupPriceChangeDocument, oldTotalSumRetailVATPriceChangeDocument,
+                             oldTotalSumWarePriceChangeDocument, oldTotalSumVatWarePriceChangeDocument, oldRetailSumChangeDocument,
+                             totalSumSupplierPricePriceChangeDocument, totalSumMarkupPriceChangeDocument, totalSumMarkupPriceChangeDocument,
+                             totalSumWarePriceChangeDocument, totalSumVatWarePriceChangeDocument, retailSumChangeDocumentDetail,
+                             diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
+                             diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument
+
+    OBJECTS pcd=priceChangeDocumentDetail
+    PROPERTIES(pcd) READONLY numberPriceChangeDocumentDetail, nameItemPriceChangeDocumentDetail, shortNameUnitOfMeasureItemPriceChangeDocumentDetail,
+                             quantityPriceChangeDocumentDetail,
+                             oldTotalSumSupplierPricePriceChangeDocumentDetail, oldTotalSumMarkupPriceChangeDocumentDetail,
+                             oldTotalSumRetailVATPriceChangeDocumentDetail, oldTotalSumWarePriceChangeDocumentDetail,
+                             oldSumDetailVatWarePriceChangeDocumentDetail, oldRetailPriceChangeDocumentDetail, oldRetailSumChangeDocumentDetail,
+                             totalSumSupplierPricePriceChangeDocumentDetail, totalSumMarkupPriceChangeDocumentDetail,
+                             totalSumRetailVATPriceChangeDocumentDetail, totalSumWarePriceChangeDocumentDetail,
+                             sumDetailVatWarePriceChangeDocumentDetail, retailPriceChangeDocumentDetail, retailSumChangeDocumentDetail,
+                             diffTotalSumSupplierPricePriceChangeDocumentDetail, diffTotalSumMarkupPriceChangeDocumentDetail,
+                             diffTotalSumRetailVATPriceChangeDocumentDetail, diffTotalSumWarePriceChangeDocumentDetail,
+                             diffTotalSumVatWarePriceChangeDocumentDetail, accountSumChangeDocumentDetail
+
+    OBJECTS e=employee
+    PROPERTIES(e) READONLY   commonName, nameOfficerEmployee
+
+    FILTERS                  documentPriceChangeDocumentDetail(pcd) == pc,
+                             inPriceChangeDocumentEmployee(pc, e)
+;
+
+
+
+
+
+
+
+
 
 //------------------------------------ Изменение учетных сумм ------------------------------------------//
 
@@ -8839,7 +8996,7 @@ DESIGN inventories FROM DEFAULT {
 FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
     PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
-                   dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange
+                   dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange, numberDisposalUserPriceChange//, nameRevaluationCommitteePriceChangeDocument
 
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) numberUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
@@ -8997,7 +9154,7 @@ FORM innerArrival 'Приход из другого отдела'
                    dateInnerArrival SHOWIF innerFlowInnerArrival(a), timeInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
                    cleanAllInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a), toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a),
                    noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), totalQuantityInnerArrival SHOWIF innerFlowInnerArrival(a),
-                   accountSumInnerArrival SHOWIF innerFlowInnerArrival(a)
+                   accountSumInnerArrival SHOWIF innerFlowInnerArrival(a), numberDisposalInnerArrival SHOWIF innerFlowInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) SHOWIF innerFlowInnerArrival(a) numberInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
@@ -9187,7 +9344,7 @@ FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
     PROPERTIES (st) numberObject, seriesObject, dateStatement, timeStatement, nameCustomerStatement,
                     nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, showFormSpecificationsStatement,
-                    noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement
+                    noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement, numberDisposalStatement
 
     PROPERTIES(st) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
                    nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
@@ -9216,31 +9373,138 @@ FORM statement 'Отгрузка из розницы'
     EDIT statement OBJECT st
 ;
 
+//DESIGN statement FROM DEFAULT {
+//    main {
+//        preferredSize = (1024, 768);
+//            tabbedPane = TRUE;
+//        ADD firstCase{
+//            title = 'Спецификация';
+////            ADD d.grid{
+//////                fillVertical = 12;
+//
+//
+//            NEW header.box BEFORE d.box {
+//                childConstraints = TO THE BOTTOM;
+//                NEW headerRow1 {
+//                    childConstraints = TO THE RIGHT;
+//                    ADD st.documentHeaderGroup {
+//                        childConstraints = TO THE BOTTOM;
+//                        NEW docHeadRow1 {
+//                            childConstraints = TO THE RIGHT;
+//                            ADD PROPERTY(dateStatement);
+//                            ADD PROPERTY(timeStatement);
+//                            ADD PROPERTY(numberObject);
+//                            ADD PROPERTY(seriesObject);
+//                        };
+//                        NEW docHeadRow2 {
+//                            childConstraints = TO THE RIGHT;
+//                            ADD PROPERTY(nameCustomerStatement);
+//                            ADD PROPERTY(nameDepartmentStoreStatement);
+//                        };
+//                    };
+//                    ADD st.specificationGroup {
+//                        childConstraints = TO THE BOTTOM;
+//                    };
+//                };
+//
+//                NEW headerRow2 {
+//                        childConstraints = TO THE RIGHT;
+//                    ADD st.waybillSum {
+//                        childConstraints = TO THE RIGHT;
+//                    };
+//                    ADD st.additionalInfo {
+//                        childConstraints = TO THE RIGHT;
+//                    };
+//                };
+//            }
+//            ADD d.panel{
+//                POSITION d.pricingStatementDetailInfo TO THE LEFT d.itemStatementDetailInfo;
+//            };
+//
+//            };
+//
+//
+//
+//
+////        d.panel {
+////            POSITION d.pricingStatementDetailInfo TO THE LEFT d.itemStatementDetailInfo;
+////        }
+//    }
+//
+//
+//    ADD st.panel BEFORE specification.box{
+//        POSITION st.documentHeaderGroup TO THE LEFT st.specificationGroup;
+//        POSITION st.waybillSum TO THE RIGHT st.additionalInfo;
+//    };
+//
+//}
+
+
 DESIGN statement FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
 
-    NEW specification.box BEFORE functions.box{
-        tabbedPane = TRUE;
-        ADD d.box{
-            title = 'Спецификация';
-            ADD d.grid{
-                fillVertical = 12;
+        NEW specification.box BEFORE functions.box{
+            tabbedPane = TRUE;
+            ADD d.box{
+                title = 'Спецификация';
+//                ADD d.grid{
+////                    fillVertical = 12;
+//                };
+                ADD d.panel{
+                    childConstraints = TO THE BOTTOM;
+                        ADD d.pricingStatementDetailInfo{
+                            childConstraints = TO THE RIGHT;
+                        }
+                        ADD d.itemStatementDetailInfo{
+                            childConstraints = TO THE RIGHT;
+                        }
+
+                };
             };
-            ADD d.panel{
-                POSITION d.pricingStatementDetailInfo TO THE LEFT d.itemStatementDetailInfo;
+            NEW consignment{
+                title = 'Накладная';
+                ADD st.consignmentGroup;
             };
         };
-        NEW consignment{
-            title = 'Накладная';
-            ADD st.consignmentGroup;
-        };
-    };
 
-    ADD st.panel BEFORE specification.box{
-        POSITION st.documentHeaderGroup TO THE LEFT st.specificationGroup;
-        POSITION st.waybillSum TO THE RIGHT st.additionalInfo;
-    };
+        NEW header.box BEFORE specification.box {
+            childConstraints = TO THE BOTTOM;
+            NEW headerRow1 {
+                childConstraints = TO THE RIGHT;
+                ADD st.documentHeaderGroup {
+                    childConstraints = TO THE BOTTOM;
+                    NEW docHeadRow1 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(dateStatement);
+                        ADD PROPERTY(timeStatement);
+                        ADD PROPERTY(numberObject);
+                        ADD PROPERTY(seriesObject);
+                    };
+                    NEW docHeadRow2 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameCustomerStatement);
+                        ADD PROPERTY(nameDepartmentStoreStatement);
+                    };
+                };
+                ADD st.specificationGroup {
+                    childConstraints = TO THE BOTTOM;
+                };
+            };
 
+            NEW headerRow2 {
+                    childConstraints = TO THE RIGHT;
+                ADD st.waybillSum {
+                    childConstraints = TO THE RIGHT;
+                };
+                ADD st.additionalInfo {
+                    childConstraints = TO THE RIGHT;
+                };
+            };
+        }
+    }
 }
+
 
 FORM statements 'Отгрузки из розницы'
     OBJECTS st=statement
@@ -9663,6 +9927,7 @@ NAVIGATOR {
     }
     NEW printedForms 'Печатные формы' TO formsToolbar{
         ADD register;
+        ADD actOfRevaluation;
         ADD consignment;
     }
 
@@ -9676,6 +9941,7 @@ NAVIGATOR {
             ADD barcode;
             ADD barcodeInput;
             ADD employee;
+            ADD officer;
             ADD groupUser;
             ADD tradingSquare;
             ADD departmentStore;
