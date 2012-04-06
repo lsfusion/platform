@@ -1860,6 +1860,9 @@ defaultLabelTypeItemDepartmentStore(item, departmentStore) = defaultLabelTypeDep
 @metaCodeNameDoubleObjectDateProperty(labelItemDepartment, item, departmentStore, 'Ценник', labelType, labelGroup, defaultLabelTypeItemDepartmentStore);
 labelBarcodeDepartmentVal (barcode, departmentStore, date) = labelItemDepartmentVal(skuBarcode(barcode), departmentStore, date);
 
+CONSTRAINT labelItemDepartmentDate(item, departmentStore, date) AND NOT inLabelTypeDepartmentStore(labelItemDepartmentDate(item, departmentStore, date), departmentStore)
+    CHECKED BY labelItemDepartmentDate MESSAGE 'Тип ценника запрещен для выбранного отдела магазина';
+
 @metaCodeDoubleObjectDateProperty(multiplierItemDepartment, item, departmentStore, 'Множитель', INTEGER, labelGroup);
 
 @metaCodeDoubleObjectDateProperty(oldPriceItemDepartment, item, departmentStore, 'Старая цена', DOUBLE, labelGroup);
@@ -7529,6 +7532,17 @@ timeLabelTransaction (transaction) <- currentTime() ON ASSIGN transaction IS lab
 departmentStoreLabelTransaction = DATA departmentStore (labelTransaction);
 nameDepartmentStoreLabelTransaction 'Отдел магазина' (transaction) = name(departmentStoreLabelTransaction(transaction));
 
+printedPriceTransactionDocument 'Распечатан' = DATA BOOLEAN (priceTransactionDocument);
+printedPriceTransactionDocument(document) <- NULL ON ASSIGN isDraftPriceTransactionDocument(document);
+
+priceTransactionDocumentLabelTransaction = DATA priceTransactionDocument (labelTransaction);
+descriptionLabelTransaction 'Основание загрузки' (transaction) =
+    descriptionPriceTransactionDocument(priceTransactionDocumentLabelTransaction(transaction));
+
+statusPrintPriceTransactionDocument 'Статус печати ценника' (document) =
+    IF printedPriceTransactionDocument(document) THEN 'Распечатан' AND document IS priceTransactionDocument
+                                                 ELSE 'Не распечатан' AND document IS priceTransactionDocument;
+
 TABLE labelTransactionLabelTypeBarcode(labelTransaction, labelType, barcode);
 
 inLabelTransactionLabelTypeBarcode 'Вкл' = DATA BOOLEAN (labelTransaction, labelType, barcode);
@@ -7537,7 +7551,7 @@ priceLabelTransactionLabelTypeBarcode 'Цена' = DATA DOUBLE (labelTransaction
 
 FORM labelTransaction 'Печать ценников' PRINT
     OBJECTS l = labelTransaction FIXED PANEL
-    PROPERTIES(l) nameDepartmentStoreLabelTransaction, dateLabelTransaction, timeLabelTransaction
+    PROPERTIES(l) nameDepartmentStoreLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
 
     OBJECTS (t = labelType, b = barcode)
     PROPERTIES(l, t, b)    inLabelTransactionLabelTypeBarcode
@@ -7549,16 +7563,18 @@ FORM labelTransaction 'Печать ценников' PRINT
 
 FORM labelTransactions 'Печать ценников'
     OBJECTS l = labelTransaction
-    PROPERTIES(l) nameDepartmentStoreLabelTransaction, dateLabelTransaction, timeLabelTransaction
+    PROPERTIES(l) nameDepartmentStoreLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
 
     OBJECTS (t = labelType, b = barcode)
-    PROPERTIES(t)       READONLY name
+    PROPERTIES(l, t, b) READONLY inLabelTransactionLabelTypeBarcode
+    PROPERTIES(t)       READONLY name, sidLabelType
     PROPERTIES(b)       READONLY barcodeEx
-    PROPERTIES(l, t, b) READONLY inLabelTransactionLabelTypeBarcode, nameLabelTransactionLabelTypeBarcode, priceLabelTransactionLabelTypeBarcode
+    PROPERTIES(l, t, b) READONLY nameLabelTransactionLabelTypeBarcode, priceLabelTransactionLabelTypeBarcode
     FILTERS inLabelTransactionLabelTypeBarcode(l, t, b)
 ;
 
 createLabelTransactionItem = SESSION DATA BOOLEAN (item);
+createLabelTransactionDocument = SESSION DATA priceTransactionDocument();
 
 createLabelTransaction 'Распечатать ценники' = ACTION (departmentStore, date) {
 
@@ -7571,6 +7587,7 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
 
     FOR t == addedObject() DO {
         SET departmentStoreLabelTransaction(t) <- departmentStore AS departmentStore;
+        SET priceTransactionDocumentLabelTransaction(t) <- createLabelTransactionDocument();
         SET inLabelTransactionLabelTypeBarcode(t, l, barcode) <- inBarcode(barcode) AND labelBarcodeDepartmentVal(barcode, departmentStore, date) == l;
         SET nameLabelTransactionLabelTypeBarcode(t, l, barcode) AND inLabelTransactionLabelTypeBarcode(t, l, barcode) <- nameSkuBarcode(barcode);
         SET priceLabelTransactionLabelTypeBarcode(t, l, barcode) AND inLabelTransactionLabelTypeBarcode(t, l, barcode) <- ledgerPriceBarcodeDepartmentStore(barcode, departmentStore);
@@ -7583,8 +7600,12 @@ META metaCodeDocumentLabelTransaction (document)
 
     create###document##LabelTransaction 'Печать ценников' = ACTION (document) NEWSESSION AUTOAPPLY {
         SET createLabelTransactionItem(item) <- TRUE IF quantityItem###document(item, document);
+        SET createLabelTransactionDocument() <- document AS priceTransactionDocument;
         EXEC createLabelTransaction(departmentStore###document(document), date###document(document));
+        SET printedPriceTransactionDocument(document) <- TRUE;
     } TOOLBAR CONFIRM;
+
+    showPrintLabelTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT printedPriceTransactionDocument(document);
 
 END
 
@@ -7910,13 +7931,14 @@ FORM shipments 'Поставки'
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumSupplierPriceShipment, totalSumIncVATShipment,
                             totalSumSupplierShipment, retailSumShipment,
+                            statusPrintPriceTransactionDocument HIGHLIGHTIF showPrintLabelTransactionShipment(s),
                             statusEquipmentPriceTransactionDocument HIGHLIGHTIF showCreateMachineryPriceTransactionShipment(s)
-                            
+
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (s)          createShipmentMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionShipment(s),
+    PROPERTIES (s)          createShipmentLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionShipment(s),
+                            createShipmentMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionShipment(s),
                             createSnapshotShipmentMachineryPriceTransaction FORCE PANEL,
-                            createShipmentLabelTransaction FORCE PANEL,
                             ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
@@ -10138,6 +10160,7 @@ NAVIGATOR {
             ADD filterItemsGroupMachinery;
             ADD itemDepartmentStoreSupplierInput;
             ADD labelType;
+            ADD labelTransaction;
         }
         ADD parameters;
         ADD importData;
