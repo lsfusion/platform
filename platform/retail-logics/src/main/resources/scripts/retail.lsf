@@ -6156,8 +6156,8 @@ numberWastageDetail 'Номер строки' (wastageDetail) =
     PARTITION SUM 1 IF wastageDetail IS wastageDetail BY wastageWastageDetail(wastageDetail)
     ORDER wastageDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
 
-quantityWastageDetail 'Количество списания '(wastageDetail) =
-    percentRateWasteWastageDetail (wastageDetail)* quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail))/100;
+quantityWastageDetail 'Количество списания '(wastageDetail) = [X*Y/100](
+    percentRateWasteWastageDetail (wastageDetail), quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail)));
 
 quantityWastage 'Общее количество' (wastage) = GROUP SUM quantityWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail);
 
@@ -6169,6 +6169,7 @@ dataRetailRangeWastageDetail 'НДС розничный, %' (wastageDetail) = da
 priceWareWastageDetail 'Цена посуды' (wastageDetail) = priceWareShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 dataWareRangeWastageDetail 'НДС по посуде' (wastageDetail) = dataWareRangeShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 dataSuppliersRangeWastageDetail 'НДС поставщика,%' (wastageDetail) = dataSuppliersRangeShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+
 @metaCodeTotals(wastage);
 
 sumWastageDetail 'Сумма' (wastageDetail) = quantityWastageDetail(wastageDetail) * retailPriceWastageDetail(wastageDetail);
@@ -6337,6 +6338,9 @@ CONSTRAINT itemShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) !
     OR supplierShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail)) != supplierReturnSupplierDetail(returnSupplierDetail)
     OR isNotPostedShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
     CHECKED BY batchReturnSupplierDetail MESSAGE 'Выберите партию этого товара';
+
+CONSTRAINT quantityReturnSupplierDetail(returnSupplierDetail) > quantityShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
+    MESSAGE 'Выбрано количество товара больше чем в приходе';
 
 castReturnSupplierObjectsToString100=
     FORMULA STRING[200] '\'Возврат поставщику \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
