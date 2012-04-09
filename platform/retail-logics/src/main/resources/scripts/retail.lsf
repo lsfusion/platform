@@ -5700,7 +5700,8 @@ FORM ordersShipment 'Заказы'
 
     FILTERS isSupplierShipmentOrder (s, o),
             isDepartmentStoreShipmentOrder (s, o),
-            isAvailableOrderShipment (s, o)
+            isAvailableOrderShipment (s, o),
+            isPostedOrderSupplier(o)
 ;
 
 showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OBJECTS s MODAL SHORTCUT ordersShipment DEFAULT;
