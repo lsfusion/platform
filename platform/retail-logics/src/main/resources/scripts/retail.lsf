@@ -6537,6 +6537,9 @@ numberCashRegisterBill 'Касса ' (bill) = numberCashRegister(cashRegisterBil
 departmentStoreZReport (zReport) = DATA departmentStore(zReport);
 nameDepartmentStoreZReport 'Отдел Z-отчета' (zReport) = name(departmentStoreZReport(zReport));
 
+departmentStoreZReport(zReport) <- departmentStoreCashRegister(cashRegisterZReport(zReport))
+    ON CHANGE cashRegisterZReport(zReport);
+
 departmentStoreBill (bill) <- departmentStoreZReport(zReportBill(bill)) ON CHANGE zReportBill(bill);
 
 castZReportObjectsToString100=
@@ -9770,7 +9773,7 @@ DESIGN statements FROM DEFAULT {
 
 FORM bill 'Z-отчет'
     OBJECTS z=zReport FIXED PANEL
-    PROPERTIES (z) numberCashRegisterZReport, nameDepartmentStoreZReport, dateOpenZReport, numberZReport,
+    PROPERTIES (z) numberCashRegisterZReport, nameDepartmentStoreZReport READONLY, dateOpenZReport, numberZReport,
                     quantityBillsZReport, quantityPositionsZReport, sumZReport, discountSumZReport
 
     OBJECTS b=bill
