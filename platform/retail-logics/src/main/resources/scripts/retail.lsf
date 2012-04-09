@@ -6941,6 +6941,9 @@ priceAccountLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDeta
 priceAccountBLedgerDateTime 'Учетная цена (до)' (item, departmentStore, dateTime) = priceAccountLedger(ledgerBAccountPriceDateTime(item, departmentStore, dateTime));
 priceAccountALedgerDateTime 'Учетная цена (после)' (item, departmentStore, dateTime) = priceAccountLedger(ledgerAAccountPriceDateTime(item, departmentStore, dateTime));
 
+curPriceAccountBLedgerDateTime 'Текущая учетная цена (до)' (item, departmentStore) = priceAccountLedger(ledgerBAccountPriceDateTime(item, departmentStore, currentDateTime()));
+curPriceAccountALedgerDateTime 'Текушая учетная цена (после)' (item, departmentStore) = priceAccountLedger(ledgerAAccountPriceDateTime(item, departmentStore, currentDateTime()));
+
 // Цена розничная
 dateTimeRetailPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
                                                                   dateTimeInnerArrivalDetail(ledger),
@@ -9855,7 +9858,7 @@ inTradingNetworkStoreTypeStoreDepartmentDepartment (tradingNetwork, storeType, s
     tradingNetworkDepartmentStore(department) == tradingNetwork AND NOT store AND NOT storeType AND NOT depStore,
     department IS departmentStore AND NOT store AND NOT storeType AND NOT tradingNetwork AND NOT depStore;
 
-FORM balanceItemDepartment 'Остатки по отделам'
+FORM balanceItemDepartment 'Остатки по отделам на дату'
 
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
@@ -9921,6 +9924,97 @@ DESIGN balanceItemDepartment FROM DEFAULT {
                 fillHorizontal = 1;
                 childConstraints = TO THE BOTTOM;
                 ADD t.box;
+                ADD treeStore.box {title = 'Магазины';};
+                ADD treeGroups.box {title = 'Товарные группы';};
+        }
+
+        NEW secondCase {
+                fillHorizontal = 2;
+                childConstraints = TO THE BOTTOM;
+                ADD dsi.box {fillVertical = 2;}
+
+                NEW ledger.box {
+                    fillVertical = 1;
+                    title = 'Изменение цен';
+                    tabbedPane = TRUE;
+                    ADD bil.box;
+                    ADD apl.box;
+                    ADD rpl.box;
+                    ADD ipl.box;
+                    ADD spl.box;
+                    ADD rvl.box;
+                    ADD wpl.box;
+                }
+
+        }
+        POSITION firstCase TO THE LEFT secondCase;
+
+        ADD functions.box;
+    }
+}
+
+FORM curBalanceItemDepartment 'Текущие остатки по отделам'
+
+    TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
+    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, tn), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+
+    TREE treeGroups g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY name(g)
+
+    OBJECTS           dsi=(dep=departmentStore, i=item)
+    PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  barcodeBarcodeSku
+    FILTERS           hasParentItemGroupSku(g, i),
+                      inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
+
+
+    PROPERTIES(i, dep) READONLY curPriceAccountALedgerDateTime, currentBalanceItemLedger
+    FILTERGROUP filters
+        FILTER 'Товары с остатком' 'F10' currentBalanceItemLedger(i, dep) DEFAULT
+
+    OBJECTS apl=accountPriceLedger
+    PROPERTIES (apl) descriptionLedger, dateTimeAccountPriceLedger, priceAccountLedger
+    FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
+    ORDER BY dateTimeAccountPriceLedger DESC
+
+    OBJECTS rpl=retailPriceLedger
+    PROPERTIES (rpl) descriptionLedger, dateTimeRetailPriceLedger, priceRetailLedger
+    FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
+    ORDER BY dateTimeRetailPriceLedger DESC
+
+    OBJECTS bil=balanceItemLedger
+    PROPERTIES(bil) descriptionLedger, dateTimeBalanceItemLedger, quantityBalanceItemLedger READONLY
+    FILTERS isPostedBalanceItemLedger(bil) AND itemBalanceItemLedger(bil)==i AND departmentStoreBalanceItemLedger(bil)==dep
+    ORDER BY dateTimeBalanceItemLedger DESC
+
+    OBJECTS ipl=importerPriceLedger
+    PROPERTIES(ipl) descriptionLedger, dateTimeImporterPriceLedger, priceImporterLedger
+    FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
+    ORDER BY dateTimeImporterPriceLedger DESC
+
+    OBJECTS spl=supplierPriceLedger
+    PROPERTIES(spl) descriptionLedger, dateTimeSupplierPriceLedger, priceSupplierLedger
+    FILTERS isPostedSupplierPriceLedger(spl) AND itemSupplierPriceLedger(spl)==i AND departmentStoreSupplierPriceLedger(spl)==dep
+    ORDER BY dateTimeSupplierPriceLedger DESC
+
+    OBJECTS rvl=retailVATLedger
+    PROPERTIES(rvl) descriptionLedger, dateTimeRetailVATLedger, dataRetailLedger
+    FILTERS isPostedRetailVATLedger(rvl) AND itemRetailVATLedger(rvl)==i AND departmentStoreRetailVATLedger(rvl)==dep
+    ORDER BY dateTimeRetailVATLedger DESC
+
+    OBJECTS wpl= warePriceLedger
+    PROPERTIES(wpl) descriptionLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, priceWareWarePriceLedger
+    FILTERS isPostedWarePriceLedger(wpl) AND itemWarePriceLedger(wpl)==i AND departmentStoreWarePriceLedger(wpl)==dep
+    ORDER BY dateTimeWarePriceLedger DESC
+;
+
+DESIGN curBalanceItemDepartment FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW firstCase {
+                fillHorizontal = 1;
+                childConstraints = TO THE BOTTOM;
                 ADD treeStore.box {title = 'Магазины';};
                 ADD treeGroups.box {title = 'Товарные группы';};
         }
@@ -10149,6 +10243,7 @@ NAVIGATOR {
     }
     NEW accountInfo 'Сводная информация' TO formsToolbar{
         ADD balanceItemDepartment;
+        ADD curBalanceItemDepartment;
         ADD sumAccountDocumentLedger;
         ADD priceChangeDocuments;
     }
