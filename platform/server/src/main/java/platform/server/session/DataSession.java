@@ -392,7 +392,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         return apply(BL, new ArrayList<ClientAction>(), true);
     }
 
-    private static <T extends PropertyInterface> boolean fitKeyClasses(Property<T> property, SinglePropertyTableUsage<T> change) {
+    public static <T extends PropertyInterface> boolean fitKeyClasses(Property<T> property, SinglePropertyTableUsage<T> change) {
         return change.getClassWhere(property.mapTable.mapKeys).means(property.mapTable.table.getClasses());
     }
 

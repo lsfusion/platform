@@ -507,11 +507,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
         Map<KeyField, KeyExpr> mapKeys = crossJoin(mapTable.mapKeys, change.mapKeys);
         Where classWhere = fieldClassWhere.getWhere(merge(mapKeys, Collections.singletonMap(field, change.expr)))
-                            .or(change.expr.getWhere().not()); // или если меняет на null, assert что fitKeyClasses, mapTable.table.getClasses().getWhere(mapKeys).and(
+                            .or(mapTable.table.getClasses().getWhere(mapKeys).and(change.expr.getWhere().not())); // или если меняет на null, assert что fitKeyClasses
 
         SinglePropertyTableUsage<T> fit = readChangeTable(session.sql, change.and(classWhere), session.baseClass, session.env);
         SinglePropertyTableUsage<T> notFit = readChangeTable(session.sql, change.and(classWhere.not()), session.baseClass, session.env);
         assert DataSession.fitClasses(this, fit);
+        assert DataSession.fitKeyClasses(this, fit);
         assert DataSession.notFitClasses(this, notFit); // из-за эвристики с not могут быть накладки
         return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(fit,notFit);
     }
