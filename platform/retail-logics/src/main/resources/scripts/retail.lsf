@@ -9410,36 +9410,56 @@ FORM innerFlow 'Расход в другой отдел'
 ;
 
 DESIGN innerFlow FROM DEFAULT{
+    main{
+        preferredSize = (1024, 768);
 
-    NEW specification.box BEFORE functions.box{
-        tabbedPane = TRUE;
-        ADD d.box{
-            title = 'Спецификация';
-            ADD d.grid{
-                fillVertical = 12;
+        NEW specification.box BEFORE functions.box{
+            tabbedPane = TRUE;
+            ADD d.box{
+                title = 'Спецификация';
+                ADD d.grid{
+                    fillVertical = 12;
+                };
+            };
+            NEW consignment{
+                title = 'Накладная';
+                ADD f.consignmentGroup;
             };
         };
-        NEW consignment{
-            title = 'Накладная';
-            ADD f.consignmentGroup;
-        };
-    };
 
-    NEW header.box BEFORE specification.box {
+        NEW header.box BEFORE specification.box {
 
-        childConstraints = TO THE BOTTOM;
+            childConstraints = TO THE BOTTOM;
 
-        NEW headerRow1 {
-            childConstraints = TO THE RIGHT;
-            ADD f.documentHeaderGroup;
-        };
-
-        NEW headerRow2 {
-            childConstraints = TO THE RIGHT;
-            ADD f.waybillSum {
+            NEW headerRow1 {
                 childConstraints = TO THE RIGHT;
+                ADD f.documentHeaderGroup {
+                    childConstraints = TO THE BOTTOM;
+                    NEW docHeadRow1 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(dateInnerFlow);
+                        ADD PROPERTY(timeInnerFlow);
+                        ADD PROPERTY(numberObject);
+                        ADD PROPERTY(seriesObject);
+                    };
+                    NEW docHeadRow2 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameDepartmentStoreInnerFlow);
+                        ADD PROPERTY(nameRecipientDepartmentInnerFlow);
+                    };
+                };
+
             };
-            ADD f.additionalInfo;
+
+            NEW headerRow2 {
+                childConstraints = TO THE BOTTOM;
+                ADD f.waybillSum {
+                    childConstraints = TO THE RIGHT;
+                };
+                ADD f.additionalInfo {
+                    childConstraints = TO THE RIGHT;
+                };
+            };
         };
     };
 };
