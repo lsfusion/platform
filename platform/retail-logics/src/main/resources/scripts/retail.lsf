@@ -4361,25 +4361,44 @@ cleanAllStudyInputDetail 'Очистить документ' = ACTION (studyInpu
 
 
 FORM cutting 'Карта проработки'
-OBJECTS c=cutting FIXED PANEL
-OBJECTS d=detailCutting, dep=departmentStore, i=item
-PROPERTIES(c)      nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, descriptionCutting, dateCutting,
-                   useCutting, overPercAllowancesCutting, overPercLossesCutting, overPercSweepsCutting
-PROPERTIES(c)      totalPercGoodsDetailCutting TODRAW d FORCE PANEL  HIGHLIGHTIF highlightCutting(c)
+    OBJECTS c=cutting FIXED PANEL
+    OBJECTS d=detailCutting
+    PROPERTIES(c)      nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, descriptionCutting, dateCutting,
+                       useCutting, overPercAllowancesCutting, overPercLossesCutting, overPercSweepsCutting
+    PROPERTIES(c)      totalPercGoodsDetailCutting TODRAW d FORCE PANEL  HIGHLIGHTIF highlightCutting(c)
 
-PROPERTIES(d)      captionItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting, ADDOBJ, delete
-PROPERTIES(dep)    nameStoreDepartmentStore, name
-PROPERTIES(i)      nameAttributeItem, shortNameUnitOfMeasureItem, nameBrandItem
-PROPERTIES(dep, c) inDepartmentStoreCutting
-PROPERTIES(i, c)   inItemCutting
 
-FILTERS isCuttingDetailCutting(c, d)
-FILTERGROUP filters7
-    FILTER 'Показывать подразделения только для данной карты' 'F10' inDepartmentStoreCutting(dep, c)
-FILTERGROUP filters8
-    FILTER 'Показывать товар только для данной карты' 'F9' inItemCutting(i, c)
+    PROPERTIES(d)      captionItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting, ADDOBJ, delete
 
-EDIT cutting OBJECT c;
+    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+        PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
+        FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore(st, s)
+
+        OBJECTS dep=departmentStore
+        PROPERTIES(dep) READONLY depName = name
+        FILTERS inTradingNetworkStoreTypeStoreDepartment(t, st, s, dep)
+        ORDER BY depName
+
+    TREE treeGroup g=itemGroup PARENT parentItemGroup
+        PROPERTIES READONLY gname = name(g)
+        ORDER BY gname
+
+        OBJECTS i=item
+        PROPERTIES READONLY barcodeBarcodeSku(i), nameAttributeItemGroupItem(g, i), shortNameUnitOfMeasureItem(i), nameBrandItem(i)
+        FILTERS nameAttributeItemGroupItem(g, i)
+        ORDER BY nameAttributeItemGroupItem
+
+    PROPERTIES(dep, c) inDepartmentStoreCutting
+    PROPERTIES(i, c)   inItemCutting
+
+    FILTERS isCuttingDetailCutting(c, d)
+    FILTERGROUP filters7
+        FILTER 'Показывать подразделения только для данной карты' 'F10' inDepartmentStoreCutting(dep, c)
+    FILTERGROUP filters8
+        FILTER 'Показывать товар только для данной карты' 'F9' inItemCutting(i, c)
+
+    EDIT cutting OBJECT c
+;
 
 DESIGN cutting FROM DEFAULT {
     main{
@@ -4388,8 +4407,26 @@ DESIGN cutting FROM DEFAULT {
        NEW cut.box BEFORE functions.box{
             tabbedPane = TRUE;
             ADD d.box;
-            ADD dep.box { title = 'Подразделение'; }
-            ADD i.box { title = 'Товар, для которого действует карта'; }
+            NEW caseOneBox {
+                title = 'Подразделение';
+
+                ADD treeStore.box {
+                    fillHorizontal = 1;
+                };
+                ADD dep.box {
+                    fillHorizontal = 2;
+                };
+                POSITION treeStore.box TO THE LEFT dep.box;
+            }
+            NEW caseTwoBox { title = 'Товар, для которого действует карта';
+                ADD treeGroup.box {
+                    fillHorizontal = 1;
+                };
+                ADD i.box {
+                    fillHorizontal = 2;
+                };
+                POSITION treeGroup.box TO THE LEFT i.box;
+            }
        }
    }
 }
@@ -4407,7 +4444,7 @@ FORM cuttings 'Карты проработки'
     PROPERTIES(dep)    READONLY nameStoreDepartmentStore, name
 
     OBJECTS i=item
-    PROPERTIES(i)      READONLY nameAttributeItem, shortNameUnitOfMeasureItem, nameBrandItem
+    PROPERTIES(i)      READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUnitOfMeasureItem, nameBrandItem
 
     PROPERTIES(dep, c) READONLY inDepartmentStoreCutting
 
@@ -7971,6 +8008,7 @@ nameLabeledManShipment 'Товар промаркировал' (shipment) = name
 nameAccountantManShipment 'Бухгалтер' (shipment) = nameAccountantManCommittee(committeeShipment(shipment));
 nameHeadManShipment 'Зав. магазином' (shipment) = nameHeadManCommittee(committeeShipment(shipment));
 
+//------------------------------печатная форма----------------------------------//
 FORM register 'Реестр цен'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s)  SELECTOR numberObject, dateShipment, nameDepartmentStoreShipment, nameSupplierShipment,
@@ -8713,9 +8751,8 @@ FORM priceChangeDocuments 'Акты переоценки'
 
     FILTERS documentPriceChangeDocumentDetail(pcd) == pc
 ;
-                            //----------рабочая форма--------//
-
-FORM actOfRevaluation 'Акты переоценки'
+                            //----------печатная форма--------//
+FORM actOfRevaluation 'Акт переоценки'
     OBJECTS pc=priceChangeDocument  FIXED PANEL
     PROPERTIES(pc) SELECTOR  numberPriceChangeDocument, seriesPriceChangeDocument, objectClassName, isPostedPriceChangeDocument,
                              nameDepartmentStorePriceChangeDocument, datePriceChangeDocument, nameRevaluationCommitteePriceChangeDocument,
