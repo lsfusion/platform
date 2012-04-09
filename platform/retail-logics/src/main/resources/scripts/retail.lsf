@@ -515,10 +515,14 @@ META metaCodeTotals (object)
     sumDetailMarkup###object##Detail 'Сумма надбавки' (object##Detail) =
         sumMarkup###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
 
-    totalSumSupplierPrice###object 'Сумма без НДС' (object) = GROUP SUM supplierPrice###object##Detail(object##Detail)*quantity###object##Detail(object##Detail)
+    totalSumSupplierPrice###object##Detail 'Сумма без НДС' (object##Detail) = supplierPrice###object##Detail(object##Detail)*quantity###object##Detail(object##Detail);
+    totalSumWare###object##Detail 'Сумма посуды' (object##Detail) = priceWare###object##Detail (object##Detail)*quantity###object##Detail(object##Detail);
+
+
+    totalSumSupplierPrice###object 'Сумма без НДС' (object) = GROUP SUM totalSumSupplierPrice###object##Detail(object##Detail)
         BY object###object##Detail(object##Detail);
 
-    totalSumWare###object 'Сумма посуды' (object) = GROUP SUM priceWare###object##Detail (object##Detail)*quantity###object##Detail(object##Detail)
+    totalSumWare###object 'Сумма посуды' (object) = GROUP SUM totalSumWare###object##Detail(object##Detail)
         BY object###object##Detail(object##Detail);
 
     totalSumVatWare###object 'Сумма НДС по посуде' (object) =  GROUP SUM sumDetailVatWare###object##Detail(object##Detail)
@@ -5716,7 +5720,35 @@ quantityWriteOffDetail 'Кол-во для строки списания' = DATA
 quantityWriteOff 'Общее кол-во' (writeOff) = GROUP SUM quantityWriteOffDetail(writeOffDetail)
                                                     BY writeOffWriteOffDetail(writeOffDetail) IN waybillSum;
 
+supplierPriceWriteOffDetail 'Цена поставщика' (writeOffDetail) = DATA DOUBLE (writeOffDetail) IN baseGroup;
+wareWriteOffDetail = DATA ware (writeOffDetail) IN idGroup;
+nameWareWriteOffDetail 'Посуда' (writeOffDetail) = name(wareWriteOffDetail(writeOffDetail)) IN baseGroup;
+priceWareWriteOffDetail 'Цена посуды' (writeOffDetail) = DATA DOUBLE (writeOffDetail) IN baseGroup;
+
+wareWriteOffDetail(writeOffDetail) <- wareItem(itemWriteOffDetail(writeOffDetail)) ON CHANGE itemWriteOffDetail(writeOffDetail);
+
+dataWareRangeWriteOffDetail 'НДС по посуде' (writeOffDetail) =
+    dataActingRateRangeDate(rangeWareVal(wareWriteOffDetail(writeOffDetail), dateWriteOffDetail(writeOffDetail)),
+    dateWriteOffDetail(writeOffDetail));
+
+retailRangeWriteOffDetail(writeOffDetail) = DATA range (writeOffDetail) IN idGroup;
+numberRetailRangeWriteOffDetail 'НДС номер' (writeOffDetail) = dataRange(retailRangeWriteOffDetail(writeOffDetail));
+dataRetailRangeWriteOffDetail 'НДС розничный,%' (writeOffDetail) = dataActingRateRangeDate(retailRangeWriteOffDetail(writeOffDetail), dateWriteOffDetail(writeOffDetail)) IN baseGroup;
+
+CONSTRAINT taxRange(retailRangeWriteOffDetail(writeOffDetail))!=tax.taxNDS CHECKED BY retailRangeWriteOffDetail
+    MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+
 accountPriceWriteOffDetail 'Цена учётная' = DATA DOUBLE (writeOffDetail) IN baseGroup;
+retailPriceWriteOffDetail 'Розничная цена' (writeOffDetail) = DATA DOUBLE (writeOffDetail) IN baseGroup;
+
+suppliersRangeWriteOffDetail(writeOffDetail) = DATA range (writeOffDetail) IN idGroup;
+suppliersRangeWriteOffDetail(writeOffDetail) <- suppliersRangeItemVal(itemWriteOffDetail(writeOffDetail), dateWriteOffDetail(writeOffDetail)) ON CHANGE itemWriteOffDetail(writeOffDetail);
+dataSuppliersRangeWriteOffDetail 'НДС поставщика,%' (writeOffDetail) = dataActingRateRangeDate
+    (suppliersRangeWriteOffDetail(writeOffDetail), dateWriteOffDetail(writeOffDetail));
+// сами по себе не нужны, только чтобы сработал метакод....
+
+@metaCodeTotals (writeOff);
 
 accountSumWriteOffDetail 'Сумма' (writeOffDetail) = accountPriceWriteOffDetail(writeOffDetail)*quantityWriteOffDetail(writeOffDetail);
 accountSumWriteOff 'Общая сумма' (writeOff) = GROUP SUM accountSumWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN waybillSum;
@@ -6131,9 +6163,15 @@ quantityWastage 'Общее количество' (wastage) = GROUP SUM quantity
 
 quantityWastageDetailsWastage 'Количество строк' (wastage) = GROUP SUM 1 IF wastageDetail IS wastageDetail BY wastageWastageDetail(wastageDetail);
 
-priceWastageDetail 'Цена' (wastageDetail) = retailPriceShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+retailPriceWastageDetail 'Цена розничная' (wastageDetail) = retailPriceShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+supplierPriceWastageDetail 'Цена поставщика' (wastageDetail) = supplierPriceShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+dataRetailRangeWastageDetail 'НДС розничный, %' (wastageDetail) = dataRetailRangeShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+priceWareWastageDetail 'Цена посуды' (wastageDetail) = priceWareShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+dataWareRangeWastageDetail 'НДС по посуде' (wastageDetail) = dataWareRangeShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+dataSuppliersRangeWastageDetail 'НДС поставщика,%' (wastageDetail) = dataSuppliersRangeShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+@metaCodeTotals(wastage);
 
-sumWastageDetail 'Сумма' (wastageDetail) = quantityWastageDetail(wastageDetail) * priceWastageDetail(wastageDetail);
+sumWastageDetail 'Сумма' (wastageDetail) = quantityWastageDetail(wastageDetail) * retailPriceWastageDetail(wastageDetail);
 
 totalSumWastage 'Общая сумма' (wastage) = GROUP SUM sumWastageDetail (wastageDetail)
     IF  wastageWastageDetail(wastageDetail) == wastage BY wastageWastageDetail(wastageDetail) IN waybillSum;
@@ -6153,7 +6191,7 @@ FORM wastages 'Списания отходов'
                    quantityWastageDetailsWastage, quantityWastage, totalSumWastage
 
     OBJECTS d=wastageDetail
-    PROPERTIES (d) READONLY numberWastageDetail, barcodeExSkuWastageDetail, nameAttributeItemWastageDetail, quantityWastageDetail, priceWastageDetail, sumWastageDetail
+    PROPERTIES (d) READONLY numberWastageDetail, barcodeExSkuWastageDetail, nameAttributeItemWastageDetail, quantityWastageDetail, retailPriceWastageDetail, sumWastageDetail
 
     FILTERS wastageWastageDetail(d)== w;
 ;
@@ -6972,8 +7010,28 @@ accountPriceWriteOffDetail (writeOffDetail) <- priceAccountBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
                 ON CHANGE itemWriteOffDetail(writeOffDetail);
 
-retailPriceItemWriteOffDetail 'Розничная цена' (writeOffDetail) = priceRetailBLedgerDateTime (
-                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail));
+//retailPriceWriteOffDetail 'Розничная цена' (writeOffDetail) = priceRetailBLedgerDateTime (
+//                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail));
+retailPriceWriteOffDetail (writeOffDetail) <- priceRetailBLedgerDateTime(
+                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
+                ON CHANGE itemWriteOffDetail(writeOffDetail);
+
+supplierPriceWriteOffDetail (writeOffDetail) <- priceSupplierBLedgerDateTime(
+                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
+                ON CHANGE itemWriteOffDetail(writeOffDetail);
+
+wareWriteOffDetail (writeOffDetail)  <- wareBLedgerDateTime(
+                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
+                ON CHANGE itemWriteOffDetail(writeOffDetail);
+
+priceWareWriteOffDetail (writeOffDetail) <- priceWareBLedgerDateTime(
+                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
+                ON CHANGE itemWriteOffDetail(writeOffDetail);
+
+retailRangeWriteOffDetail (writeOffDetail) <- rangeRetailBLedgerDateTime(
+                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
+                ON CHANGE itemWriteOffDetail(writeOffDetail);
+
 
 retailPriceInnerFlowDetail (innerFlowDetail) <- priceRetailBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
@@ -8201,7 +8259,7 @@ FORM writeOff 'Списание'
     PROPERTIES (d) numberWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
                    accountPriceWriteOffDetail, accountSumWriteOffDetail, ADDOBJ, delete
 
-    PROPERTIES FORCE PANEL READONLY articleItemWriteOff(d), nameCountryItemWriteOff(d), retailPriceItemWriteOffDetail(d),
+    PROPERTIES FORCE PANEL READONLY articleItemWriteOff(d), nameCountryItemWriteOff(d), retailPriceWriteOffDetail(d),
                                     balanceDepartmentStoreItemWriteOff(d), minReserveItemDepartmentWriteOff(d),
                                     maxReserveItemDepartmentWriteOff(d), dateLastShipment(d)
 
