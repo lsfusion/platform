@@ -146,6 +146,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         if (type == Data.DATETIME) return DateTimeClass.instance;
         if (type == Data.CUSTOMFILECLASS) return CustomFileClass.instance;
         if (type == Data.TIME) return TimeClass.instance;
+        if (type == Data.COLOR) return ColorClass.instance;
 
         throw new IOException();
     }

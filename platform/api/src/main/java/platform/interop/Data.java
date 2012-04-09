@@ -25,4 +25,5 @@ public class Data {
     public final static byte DATETIME = 20;
     public final static byte CUSTOMFILECLASS = 21;
     public final static byte TIME = 22;
+    public final static byte COLOR = 23;
 }

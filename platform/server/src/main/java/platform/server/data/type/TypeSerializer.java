@@ -56,6 +56,7 @@ public class TypeSerializer {
         if (type == Data.DATETIME) return DateTimeClass.instance;
         if (type == Data.CUSTOMFILECLASS) return CustomFileClass.instance;
         if (type == Data.TIME) return TimeClass.instance;
+        if (type == Data.COLOR) return ColorClass.instance;
 
         //todo:!!
         if (type == Data.FILEACTION) return FileActionClass.getDefinedInstance(false, "", "");

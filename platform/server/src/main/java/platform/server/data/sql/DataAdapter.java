@@ -121,6 +121,14 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return Types.LONGVARBINARY;
     }
 
+    public String getColorType() {
+        return "integer";
+    }
+
+    public int getColorSQL() {
+        return Types.INTEGER;
+    }
+
     public String getBitString(Boolean value) {
         return (value ? "1" : "0");
     }

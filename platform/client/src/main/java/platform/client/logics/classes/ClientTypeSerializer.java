@@ -51,6 +51,7 @@ public class ClientTypeSerializer {
         if (type == Data.DATETIME) return ClientDateTimeClass.instance;
         if (type == Data.CUSTOMFILECLASS) return ClientCustomFileClass.instance;
         if (type == Data.TIME) return ClientTimeClass.instance;
+        if (type == Data.COLOR) return ClientColorClass.instance;
 
         if (type == Data.ACTION) return new ClientActionClass(inStream);
         if (type == Data.CLASSACTION) return new ClientClassActionClass(inStream);

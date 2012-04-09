@@ -46,6 +46,7 @@
       <keyword name="CHECK" />
       <keyword name="CHECKED" />
       <keyword name="CLASS" />
+      <keyword name="COLOR" />
       <keyword name="COLUMNS" />
       <keyword name="CONCAT" />
       <keyword name="CONFIRM" />

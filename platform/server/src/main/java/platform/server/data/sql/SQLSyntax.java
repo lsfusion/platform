@@ -75,6 +75,9 @@ public interface SQLSyntax {
     String getByteArrayType();
     int getByteArraySQL();
 
+    String getColorType();
+    int getColorSQL();
+
     String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top);
 
     boolean nullUnionTrouble();

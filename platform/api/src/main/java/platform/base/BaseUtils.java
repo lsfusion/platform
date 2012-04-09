@@ -436,6 +436,10 @@ public class BaseUtils {
             return new Time(inStream.readLong());
         }
 
+        if (objectType == 10) {
+            return new Color(inStream.readInt());
+        }
+
         throw new IOException();
     }
 
@@ -506,6 +510,12 @@ public class BaseUtils {
         if (object instanceof Time) {
             outStream.writeByte(9);
             outStream.writeLong(((Time) object).getTime());
+            return;
+        }
+
+        if (object instanceof Color) {
+            outStream.writeByte(10);
+            outStream.writeInt(((Color) object).getRGB());
             return;
         }
 

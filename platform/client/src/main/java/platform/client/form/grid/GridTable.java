@@ -280,9 +280,10 @@ public abstract class GridTable extends ClientFormTable
         Object value = (rowIndex != -1 && colIndex != -1 && !getProperty(rowIndex, colIndex).echoSymbols) ? getValueAt(rowIndex, colIndex) : null;
         if (value instanceof Date) {
             value = Main.formatDate(value);
-        }
-        else if(value instanceof Double) {
+        } else if (value instanceof Double) {
             value = (double) Math.round(((Double) value) * 1000) /1000;
+        } else if (value instanceof Color) {
+            value = "#" + Integer.toHexString(((Color) value).getRGB()).substring(2, 8);
         }
         return (value != null) ? SwingUtils.toMultilineHtml(BaseUtils.rtrim(String.valueOf(value)), createToolTip().getFont()) : null;
     }

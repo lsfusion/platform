@@ -60,6 +60,10 @@ public abstract class CellTable extends SingleCellTable
             tooltip = value.toString();
             if (value instanceof Date) {
                 tooltip = Main.formatDate(value);
+            } else if (value instanceof Double) {
+                tooltip = String.valueOf((double) Math.round(((Double) value) * 1000) /1000);
+            } else if (value instanceof Color) {
+                tooltip = "#" + Integer.toHexString(((Color) value).getRGB()).substring(2, 8);
             }
             return SwingUtils.toMultilineHtml(BaseUtils.rtrim(tooltip), createToolTip().getFont());
         } else {
