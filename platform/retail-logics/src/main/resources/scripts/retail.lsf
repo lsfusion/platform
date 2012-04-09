@@ -6497,6 +6497,8 @@ totalSumPaymentBill (bill) = GROUP SUM sumPayment(payment)
 
 CONSTRAINT sumBill (bill) != UNION OVERRIDE 0 IF bill IS bill, totalSumPaymentBill(bill) MESSAGE 'Сумма платежей по чеку не соответствует сумме чека';
 
+// todo: проверить работает ли CONSTRAINT
+
 paymentTypePayment 'Тип платежа (ИД' (payment) = DATA paymentType(payment);
 namePaymentTypePayment 'Тип платежа' (payment) = name(paymentTypePayment(payment));
 
@@ -6617,7 +6619,7 @@ quantityUserPriceChangeDetail 'Кол-во переоценки' = DATA DOUBLE (
 quantityItemUserPriceChange 'Кол-во по товару' (item, userPriceChange) = GROUP SUM quantityUserPriceChangeDetail(detail)
                                                                                BY itemUserPriceChangeDetail(detail), userPriceChangeUserPriceChangeDetail(detail);
 
-numberDisposalUserPriceChange '№ распоряжения на переоценку' (userPriceChange) = DATA STRING[30] (userPriceChange) IN baseGroup;
+numberDisposalUserPriceChange '№ распоряжения на переоценку' (userPriceChange) = DATA STRING[30] (userPriceChange) IN additionalInfo;
 
 importerPriceUserPriceChangeDetail 'Цена изготовителя' = DATA DOUBLE (userPriceChangeDetail);
 supplierPriceUserPriceChangeDetail 'Цена поставщика' = DATA DOUBLE (userPriceChangeDetail);
@@ -9304,7 +9306,7 @@ DESIGN inventories FROM DEFAULT {
 FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
     PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
-                   dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange, numberDisposalUserPriceChange//, nameRevaluationCommitteePriceChangeDocument
+                   dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange, noteUserPriceChange, numberDisposalUserPriceChange//, nameRevaluationCommitteePriceChangeDocument
 
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) numberUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
@@ -9323,6 +9325,19 @@ FORM userPriceChange 'Переоценка товаров'
 DESIGN userPriceChange FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
+
+         u.box {
+                childConstraints = TO THE BOTTOM;
+                ADD u.numberedGroup {
+                    childConstraints = TO THE RIGHT;
+                };
+                ADD u.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                };
+                ADD u.additionalInfo {
+                    childConstraints = TO THE RIGHT;
+                };
+         };
     }
 }
 
@@ -9813,21 +9828,23 @@ FORM bills 'Чеки'
     PROPERTIES (z) READONLY objectClassName, numberCashRegisterZReport, nameDepartmentStoreZReport, dateOpenZReport,
                             numberZReport, quantityBillsZReport, quantityPositionsZReport, sumZReport, discountSumZReport
     PROPERTIES (z) ADDFORM, EDITFORM SHOWIF isDraftZReport(z), delete FORCE PANEL SHOWIF isDraftZReport(z),
-                        postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
+                            postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
     OBJECTS b=bill
-    PROPERTIES(b) READONLY numberBill, dateBill, timeBill, numberCashRegisterBill, nameDepartmentStoreBill,
-                           numberDiscountCardBill, nameCustomerDiscountCardBill, sumBill, discountSumBill, quantityBillDetailsBill, quantityPositionsBill
+    PROPERTIES(b) READONLY  numberBill, dateBill, timeBill, numberCashRegisterBill, nameDepartmentStoreBill,
+                            numberDiscountCardBill, nameCustomerDiscountCardBill, sumBill, discountSumBill,
+                            quantityBillDetailsBill, quantityPositionsBill
 
     FILTERS zReportBill(b)==z
 
     OBJECTS d=billDetail
-    PROPERTIES(d) READONLY barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, priceBillDetail, sumBillDetail, discountSumBillDetail
+    PROPERTIES(d) READONLY  barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, priceBillDetail,
+                            sumBillDetail, discountSumBillDetail
 
     FILTERS billBillDetail(d)==b
 
     OBJECTS p=payment
-    PROPERTIES(p) READONLY namePaymentTypePayment, namePaymentMeansPayment, sumPayment
+    PROPERTIES(p) READONLY  namePaymentTypePayment, namePaymentMeansPayment, sumPayment
 
     FILTERS billPayment(p)==b
 ;
