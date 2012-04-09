@@ -2860,7 +2860,7 @@ TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
 @metaCodeDoubleObjectDateProperty(timeTable, supplier, departmentStore, 'Поставка', BOOLEAN, baseGroup);
 
-CLASS ABSTRACT order 'Заказ' : historyObject;
+CLASS ABSTRACT order 'Заказ' : historyObject, numberedObject;
 CLASS orderSupplier 'Заказ поставщику' : order;
 CLASS orderSupplierPosted 'Закрытый заказ поставщику' :orderSupplier, postedObject;
 //CLASS orderStock 'Заказ складу' :order;
@@ -3196,7 +3196,7 @@ FORM orderSupplier 'Заказ поставщику'
 
     OBJECTS o=orderSupplier FIXED PANEL
 
-    PROPERTIES(o)          dataOrderSupplier READONLY, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
+    PROPERTIES(o)          numberObject, seriesObject, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
                            quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
                            nameSupplierOrderSupplier, totalSumOrderSupplier, totalSumVatOrderSupplier,
                            totalFullSumOrderSupplier, allowablePercentOrderSupplier
@@ -3242,6 +3242,8 @@ DESIGN orderSupplier FROM DEFAULT {
             ADD PROPERTY(allowablePercentOrderSupplier);
             ADD o.orderSupplierGroup {
                 childConstraints = TO THE RIGHT;
+                ADD PROPERTY(numberObject);
+                ADD PROPERTY(seriesObject);
             };
         }
         ADD o.dateOrderSupplierGroup{
@@ -3288,7 +3290,7 @@ DESIGN orderSupplier FROM DEFAULT {
 FORM orderSuppliers 'Заказы поставщику'
 
     OBJECTS o=orderSupplier
-    PROPERTIES(o) READONLY objectClassName, dataOrderSupplier, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
+    PROPERTIES(o) READONLY objectClassName, numberObject, seriesObject, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
                            quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
                            nameSupplierOrderSupplier, completePercentageOrderSupplier, totalSumOrderSupplier, timeCreated,
                            nameUserCreated, allowablePercentOrderSupplier
@@ -8063,8 +8065,7 @@ FORM returnSupplier 'Возврат поставщику'
                   supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail READONLY, numberSupplierRangeReturnSupplierDetail,
                   dataSuppliersRangeReturnSupplierDetail, sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
                   nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
-                  retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail, sumDetailMarkupReturnSupplierDetail, sumDetailVatReturnSupplierDetail,
-                  sumDetailVatWareReturnSupplierDetail
+                  retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
     PROPERTIES inputMultipleItemsSupplierReturnSupplier(r) TODRAW d, addReturnSupplierDetailBarcode(r) TODRAW d
     PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
@@ -8098,9 +8099,7 @@ FORM returnSuppliers 'Возвраты поставщику'
                            supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail,
                            dataSuppliersRangeReturnSupplierDetail, sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
                            nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
-                           retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail, sumDetailMarkupReturnSupplierDetail, sumDetailVatReturnSupplierDetail,
-                           sumDetailVatWareReturnSupplierDetail
-
+                           retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail
     FILTERS isReturnSupplier(r, d)
 ;
 
