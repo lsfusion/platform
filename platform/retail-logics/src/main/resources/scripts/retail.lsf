@@ -7641,6 +7641,12 @@ timeLabelTransaction (transaction) <- currentTime() ON ASSIGN transaction IS lab
 departmentStoreLabelTransaction = DATA departmentStore (labelTransaction);
 nameDepartmentStoreLabelTransaction 'Отдел магазина' (transaction) = name(departmentStoreLabelTransaction(transaction));
 
+labelTypeLabelTransaction = DATA labelType (labelTransaction);
+nameLabelTypeLabelTransaction 'Тип ценника' (transaction) = name(labelTypeLabelTransaction(transaction));
+
+CONSTRAINT labelTypeLabelTransaction(transaction) AND NOT inLabelTypeDepartmentStore(labelTypeLabelTransaction(transaction), departmentStoreLabelTransaction(transaction))
+           CHECKED BY labelTypeLabelTransaction MESSAGE 'Тип ценника запрещен для выбранного подразделения';
+
 printedPriceTransactionDocument 'Распечатан' = DATA BOOLEAN (priceTransactionDocument);
 printedPriceTransactionDocument(document) <- NULL ON ASSIGN isDraftPriceTransactionDocument(document);
 
@@ -7652,74 +7658,63 @@ statusPrintPriceTransactionDocument 'Статус печати ценника' (
     IF printedPriceTransactionDocument(document) THEN 'Распечатан' AND document IS priceTransactionDocument
                                                  ELSE 'Не распечатан' AND document IS priceTransactionDocument;
 
-TABLE labelTransactionLabelTypeBarcode(labelTransaction, labelType, barcode);
+TABLE labelTransactionBarcode(labelTransaction, barcode);
 
-selLabelTransactionBarcode 'Вкл' = DATA BOOLEAN (labelTransaction, barcode);
-selLabelTransactionLabelType 'Вкл' = DATA BOOLEAN (labelTransaction, labelType);
+inLabelTransactionBarcode 'Вкл' (labelTransaction, barcode) = DATA BOOLEAN (labelTransaction, barcode);
 
-selLabelTransactionLabelTypeBarcode 'Вкл' = DATA BOOLEAN (labelTransaction, labelType, barcode);
-
-inLabelTransactionLabelTypeBarcode 'Вкл' (labelTransaction, labelType, barcode) =
-    UNION OVERRIDE selLabelTransactionBarcode(labelTransaction, barcode) AND selLabelTransactionLabelType(labelTransaction, labelType),
-                   selLabelTransactionLabelTypeBarcode(labelTransaction, labelType, barcode);
 nameLabelTransactionBarcode 'Наименование' = DATA STRING[255] (labelTransaction, barcode);
 priceLabelTransactionBarcode 'Цена' = DATA DOUBLE (labelTransaction, barcode);
 
 FORM printLabelTransaction 'Печать ценников' PRINT
     OBJECTS l = labelTransaction FIXED PANEL
-    PROPERTIES(l) nameDepartmentStoreLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
+    PROPERTIES(l) READONLY nameLabelTypeLabelTransaction, nameDepartmentStoreLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
 
-    OBJECTS (t = labelType, b = barcode)
-    PROPERTIES(l, t, b)    inLabelTransactionLabelTypeBarcode
-    PROPERTIES(t) READONLY name, sidLabelType
-    PROPERTIES(b) READONLY barcodeEx
-    PROPERTIES(l, b)       nameLabelTransactionBarcode, priceLabelTransactionBarcode
-    FILTERS inLabelTransactionLabelTypeBarcode(l, t, b)
+    OBJECTS b = barcode
+    PROPERTIES(l, b) READONLY inLabelTransactionBarcode
+    PROPERTIES(b)    READONLY barcodeEx
+    PROPERTIES(l, b) READONLY nameLabelTransactionBarcode, priceLabelTransactionBarcode
+    FILTERS inLabelTransactionBarcode(l, b)
 ;
 
 FORM customLabelTransaction 'Печать ценников'
     OBJECTS l = labelTransaction FIXED PANEL
-    PROPERTIES(l) nameDepartmentStoreLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
-
-    OBJECTS t = labelType
-    PROPERTIES(l, t)       selLabelTransactionLabelType
-    PROPERTIES(t) READONLY name
-    FILTERS inLabelTypeDepartmentStore(t, departmentStoreLabelTransaction(l))
+    PROPERTIES(l) nameLabelTypeLabelTransaction, nameDepartmentStoreLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
 
     OBJECTS b = barcode
-    PROPERTIES(l, b) selLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode
-
-    FILTERS selLabelTransactionBarcode(l, b)
+    PROPERTIES(l, b)          inLabelTransactionBarcode
+    PROPERTIES(b)    READONLY barcodeEx
+    PROPERTIES(l, b)          nameLabelTransactionBarcode, priceLabelTransactionBarcode
+    FILTERS inLabelTransactionBarcode(l, b)
 ;
-
-DESIGN customLabelTransaction FROM DEFAULT {
-    POSITION l.box TO THE LEFT t.box;
-
-    b.grid {
-        fillVertical = 3.0;
-    }
-}
 
 FORM labelTransactions 'Печать ценников'
     OBJECTS d = departmentStore FIXED PANEL
     PROPERTIES name(d) SELECTOR
 
     OBJECTS l = labelTransaction
-    PROPERTIES(l) READONLY descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
+    PROPERTIES(l) READONLY nameLabelTypeLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
     PROPERTIES(l) READONLY nameUserCreated, hostnameComputerCreated
     FILTERS departmentStoreLabelTransaction(l) == d
 
-    OBJECTS (t = labelType, b = barcode)
-    PROPERTIES(l, t, b) READONLY inLabelTransactionLabelTypeBarcode
-    PROPERTIES(t)       READONLY name, sidLabelType
-    PROPERTIES(b)       READONLY barcodeEx
-    PROPERTIES(l, b)    READONLY nameLabelTransactionBarcode, priceLabelTransactionBarcode
-    FILTERS inLabelTransactionLabelTypeBarcode(l, t, b)
+    OBJECTS b = barcode
+    PROPERTIES(l, b) READONLY inLabelTransactionBarcode
+    PROPERTIES(b)    READONLY barcodeEx
+    PROPERTIES(l, b) READONLY nameLabelTransactionBarcode, priceLabelTransactionBarcode
+    FILTERS inLabelTransactionBarcode(l, b)
 ;
 
 createLabelTransactionItem = SESSION DATA BOOLEAN (item);
 createLabelTransactionDocument = SESSION DATA priceTransactionDocument();
 createLabelTransactionSnapshot = SESSION DATA BOOLEAN();
+
+createLabelTransactionFillParams 'Заполнить параметры' = ACTION (labelTransaction, departmentStore) {
+
+    SET departmentStoreLabelTransaction(labelTransaction) <- departmentStore AS departmentStore;
+    SET priceTransactionDocumentLabelTransaction(labelTransaction) <- createLabelTransactionDocument();
+
+    SET nameLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- nameSkuBarcode(barcode);
+    SET priceLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- ledgerPriceBarcodeDepartmentStore(barcode, departmentStore);
+}
 
 createLabelTransaction 'Распечатать ценники' = ACTION (departmentStore, date) {
 
@@ -7728,28 +7723,28 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
                                                          AND activeBarcode(barcode) // если активный штрих-код
                                                          AND ledgerPriceBarcodeDepartmentStore(barcode, departmentStore);
 
-    ADDOBJ labelTransaction;
-
-    FOR t == addedObject() DO {
-        SET departmentStoreLabelTransaction(t) <- departmentStore AS departmentStore;
-        SET priceTransactionDocumentLabelTransaction(t) <- createLabelTransactionDocument();
-        IF createLabelTransactionSnapshot() THEN {
-
-            SET selLabelTransactionBarcode(t, barcode) <- inBarcode(barcode);
-            SET nameLabelTransactionBarcode(t, barcode) AND selLabelTransactionBarcode(t, barcode) <- nameSkuBarcode(barcode);
-            SET priceLabelTransactionBarcode(t, barcode) AND selLabelTransactionBarcode(t, barcode) <- ledgerPriceBarcodeDepartmentStore(barcode, departmentStore);
-
+    IF createLabelTransactionSnapshot() THEN {
+        ADDOBJ labelTransaction;
+        FOR t == addedObject() DO {
+            SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode);
+            EXEC createLabelTransactionFillParams(t AS labelTransaction, departmentStore AS departmentStore);
             FORM customLabelTransaction OBJECTS l = t AS labelTransaction MODAL;
             IF formResult() == formResult.ok THEN {
                 FORM printLabelTransaction OBJECTS l = t AS labelTransaction;
             }
-        } ELSE {
-
-            SET selLabelTransactionLabelTypeBarcode(t, l, barcode) <- inBarcode(barcode) AND labelBarcodeDepartmentVal(barcode, departmentStore, date) == l;
-            SET nameLabelTransactionBarcode(t, barcode) AND selLabelTransactionLabelTypeBarcode(t, l, barcode) <- nameSkuBarcode(barcode);
-            SET priceLabelTransactionBarcode(t, barcode) AND selLabelTransactionLabelTypeBarcode(t, l, barcode) <- ledgerPriceBarcodeDepartmentStore(barcode, departmentStore);
-
-            FORM printLabelTransaction OBJECTS l = t AS labelTransaction;
+        }
+    } ELSE {
+        // бежим по всем типам ценников из управленческих параметров
+        FOR ([GROUP SUM 1 AND inBarcode(barcode) BY labelBarcodeDepartmentVal(barcode, departmentStore, date), departmentStore, date](l, departmentStore, date)) DO {
+            // для каждого создаем по операции печати ценников
+            ADDOBJ labelTransaction;
+            FOR t == addedObject() DO {
+                SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) AND labelBarcodeDepartmentVal(barcode, departmentStore, date) == l;
+                SET labelTypeLabelTransaction(t) <- l AS labelType;
+                EXEC createLabelTransactionFillParams(t AS labelTransaction, departmentStore AS departmentStore);
+                // вызываем печатную форму для каждого из них
+                FORM printLabelTransaction OBJECTS l = t AS labelTransaction;
+            }
         }
     }
 };
@@ -9303,6 +9298,7 @@ DESIGN inventories FROM DEFAULT {
 
 @metaCodeInputMultipleItems (userPriceChange);
 @metaCodeDocumentMachineryPriceTransaction(userPriceChange);
+@metaCodeDocumentLabelTransaction(userPriceChange);
 
 FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
@@ -9348,12 +9344,15 @@ FORM userPriceChanges 'Переоценки товаров'
     PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
                    diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
                    diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument,
-                   statusEquipmentPriceTransactionDocument
+                   statusPrintPriceTransactionDocument HIGHLIGHTIF showPrintLabelTransactionUserPriceChange(u),
+                   statusEquipmentPriceTransactionDocument HIGHLIGHTIF showCreateMachineryPriceTransactionUserPriceChange(u)
 
-    PROPERTIES (u) createUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionUserPriceChange(u),
-                   createSnapshotUserPriceChangeMachineryPriceTransaction FORCE PANEL,
-                   ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
-                   postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
+    PROPERTIES (u)          createUserPriceChangeLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionUserPriceChange(u),
+                            createSnapshotUserPriceChangeLabelTransaction FORCE PANEL,
+                            createUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionUserPriceChange(u),
+                            createSnapshotUserPriceChangeMachineryPriceTransaction FORCE PANEL,
+                            ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
+                            postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
 
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) READONLY numberUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
@@ -9382,7 +9381,7 @@ DESIGN userPriceChanges FROM DEFAULT {
 @metaCodeInputMultipleItems (innerFlow);
 @metaCodeInputMultipleItems (innerArrival);
 @metaCodeDocumentMachineryPriceTransaction(innerArrival);
-
+@metaCodeDocumentLabelTransaction(innerArrival);
 
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
@@ -9556,12 +9555,15 @@ FORM innerArrivals 'Приходы из других отделов'
     OBJECTS a=innerArrival
     PROPERTIES (a) READONLY objectClassName, numberArrival, seriesArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
                             nameSenderDepartmentInnerArrival, quantityInnerArrivalDetailsInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival,
-                            statusEquipmentPriceTransactionDocument
+                            statusPrintPriceTransactionDocument HIGHLIGHTIF showPrintLabelTransactionInnerArrival(a),
+                            statusEquipmentPriceTransactionDocument HIGHLIGHTIF showCreateMachineryPriceTransactionInnerArrival(a)
 
-    PROPERTIES (a) createInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionInnerArrival(a),
-                   createSnapshotInnerArrivalMachineryPriceTransaction FORCE PANEL,
-                   ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
-                   postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
+    PROPERTIES (a)          createInnerArrivalLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionInnerArrival(a),
+                            createSnapshotInnerArrivalLabelTransaction FORCE PANEL,
+                            createInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionInnerArrival(a),
+                            createSnapshotInnerArrivalMachineryPriceTransaction FORCE PANEL,
+                            ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
+                            postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) READONLY numberInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
