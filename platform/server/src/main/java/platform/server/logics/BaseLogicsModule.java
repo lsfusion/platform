@@ -877,7 +877,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         seekBarcodeAction = addJProp(true, getString("logics.barcode.search"), addSAProp(null), barcodeToObject, 1);
         barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp(getString("logics.barcode.not.found"), getString("logics.error")), is(StringClass.get(13)), 1, barcodeToObject, 1);
 
-        extSID = addDProp(baseGroup, "extSID", getString("logics.extsid"), StringClass.get(100), externalObject);
+        extSID = addDProp(recognizeGroup, "extSID", getString("logics.extsid"), StringClass.get(100), externalObject);
         extSIDToObject = addAGProp("extSIDToObject", getString("logics.object"), extSID);
         
         timeCreated = addDProp(historyGroup, "timeCreated", getString("logics.timecreated"), DateTimeClass.instance, historyObject);

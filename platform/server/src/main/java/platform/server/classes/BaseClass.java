@@ -1,36 +1,38 @@
 package platform.server.classes;
 
+import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.sets.ConcreteCustomClassSet;
+import platform.server.data.PropertyField;
+import platform.server.data.SQLSession;
 import platform.server.data.Table;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.SingleClassExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
+import platform.server.data.query.Join;
+import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
+import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.ObjectClassProperty;
-import platform.server.logics.property.Property;
-import platform.server.logics.table.ObjectTable;
 import platform.server.logics.linear.LP;
-import platform.server.logics.DataObject;
+import platform.server.logics.property.ObjectClassProperty;
+import platform.server.logics.table.ObjectTable;
 import platform.server.session.DataSession;
-import platform.server.data.SQLSession;
-import platform.server.data.PropertyField;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.query.Query;
-import platform.server.data.query.Join;
-import platform.base.OrderedMap;
 
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
 public class BaseClass extends AbstractCustomClass {
+
+    protected final static Logger logger = Logger.getLogger(BaseClass.class);
 
     public ObjectTable table;
 
@@ -124,6 +126,7 @@ public class BaseClass extends AbstractCustomClass {
 
         // применение переименования классов вынесено сюда, поскольку objectClass.fillIDs() вызывается раньше проставления ID'шников - не срабатывает execute()
         for (Object object : modifiedNames.keySet()) {
+            logger.info("renaming class with id " + object + " to " + modifiedNames.get(object));
             name.execute(modifiedNames.get(object), session, session.getDataObject(object, ObjectType.instance));
         }
 
