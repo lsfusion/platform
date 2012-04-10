@@ -5918,6 +5918,7 @@ noteInnerFlowDetail 'Примечание' (innerFlowDetail) = castNoteInnerFlow
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 GROUP pricingInnerArrivalDetailInfo 'Дополнительные ценовый параметры' : publicGroup;
+GROUP consumptionGroup 'Расход': baseGroup;
 
 
 CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, historyObject, priceTransactionDocument;
@@ -5959,7 +5960,7 @@ priceItemInnerArrival 'Цена (максим.)' (item, innerArrival) = priceIte
 //    itemInnerArrivalDetail(innerArrivalDetail), innerArrivalInnerArrivalDetail(innerArrivalDetail))
 //    ON CHANGE itemInnerArrivalDetail (innerArrivalDetail);
 
-numberDisposalInnerArrival '№ распоряжения на переоценку' (innerArrival) = DATA STRING[30] (innerArrival) IN baseGroup;
+numberDisposalInnerArrival '№ распоряжения на переоценку' (innerArrival) = DATA STRING[30] (innerArrival) IN additionalInfo;
 
 curRetailPriceInnerArrivalDetail 'Текущая розничная цена' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN pricingInnerArrivalDetailInfo;
 
@@ -6018,7 +6019,7 @@ toFillInnerArrivalDetailsInnerArrival 'Заполнить документ из 
             SET retailRangeInnerArrivalDetail (d) <- retailRangeInnerFlowDetail(innerFlowDetail);
         };
     };
-} IN documentHeaderGroup CONFIRM;
+} IN consumptionGroup CONFIRM;
 
 quantityItemInnerArrival 'Количество в приходе' (item, innerArrival) = GROUP SUM quantityInnerArrivalDetail(innerArrivalDetail)
     IF inInnerArrivalInnerArrivalDetail (innerArrival, innerArrivalDetail) BY itemInnerArrivalDetail (innerArrivalDetail),
@@ -9538,15 +9539,38 @@ DESIGN innerArrival FROM DEFAULT{
 
             NEW headerRow1 {
                 childConstraints = TO THE RIGHT;
-                ADD a.documentHeaderGroup;
+                ADD a.documentHeaderGroup {
+                    childConstraints = TO THE BOTTOM;
+                    NEW docHeadRow1 {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD PROPERTY(dateInnerArrival);
+                        ADD PROPERTY(timeInnerArrival);
+                        ADD PROPERTY(numberArrival);
+                        ADD PROPERTY(seriesArrival);
+                    };
+                    NEW docHeadRow2 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameDepartmentStoreInnerArrival);
+                        ADD PROPERTY(nameSenderDepartmentInnerArrival);
+                    };
+                };
+                ADD a.consumptionGroup {
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY (toFillInnerArrivalDetailsInnerArrival);
+                    ADD PROPERTY (cleanAllInnerArrivalDetailsInnerArrival);
+                }
+
             };
+
             NEW headerRow2 {
-                childConstraints = TO THE RIGHT;
+                childConstraints = TO THE BOTTOM;
                 ADD a.waybillSum {
                     childConstraints = TO THE RIGHT;
                 };
-                ADD a.additionalInfo;
-             };
+                ADD a.additionalInfo {
+                    childConstraints = TO THE RIGHT;
+                };
+            };
         };
     };
 };
