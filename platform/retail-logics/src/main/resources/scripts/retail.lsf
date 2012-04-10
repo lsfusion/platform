@@ -41,6 +41,8 @@ userClosed(postedObject) <- currentUser() ON ASSIGN postedObject IS postedObject
 computerClosed(postedObject) <- currentComputer() ON ASSIGN postedObject IS postedObject;
 
 GROUP documentHeaderGroup 'Шапка документа' : baseGroup;
+GROUP documentSumGroup 'Суммы документа': publicGroup;
+GROUP documentPrmGroup 'Параметры документа': publicGroup;
 
 GROUP carConsignmentGroup 'Автомобиль' : baseGroup;
 GROUP issuanceConsignmentGroup 'Отпуск' : baseGroup;
@@ -380,7 +382,7 @@ META metaCodeObjectWithPostEx (object, captionPosted)
     nameDepartmentStore###object 'Отдел документа' (object) = name(departmentStore###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 20 PREFCHARWIDTH 40;;
 
-    note###object 'Примечание' = DATA STRING[100] (object) IN additionalInfo MINCHARWIDTH 20 PREFCHARWIDTH 20;
+    note###object 'Примечание' = DATA STRING[100] (object) IN additionalInfo MINCHARWIDTH 30 PREFCHARWIDTH 80;
 
     object###object##Detail 'Строка документа' = DATA object (object##Detail) IN idGroup;
 
@@ -559,10 +561,10 @@ META metaCodeTotals (object)
         GROUP SUM sumSupplier###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
 
     totalSumIncVAT###object 'Общая сумма НДС' (object) =
-        totalSumSupplierVAT###object(object) (+) totalSumVatWare###object(object) IN waybillSum PERSISTENT;
+        totalSumSupplierVAT###object(object) (+) totalSumVatWare###object(object) IN documentSumGroup PERSISTENT;
 
     totalSumSupplier###object 'Общая сумма с НДС' (object) =
-        totalSumCleanSupplier###object(object) (+) totalSumWare###object(object) IN waybillSum PERSISTENT;
+        totalSumCleanSupplier###object(object) (+) totalSumWare###object(object) IN documentSumGroup PERSISTENT;
 
 END
 
@@ -5025,13 +5027,13 @@ quantityDetailInSpecification 'Количество строк в докумен
 quantitySpecificationDetail 'Кол-во товара' = DATA DOUBLE (specificationDetail) IN baseGroup;
 
 quantitySpecification 'Общее кол-во' (specification) = GROUP SUM quantitySpecificationDetail(specificationDetail)
-                                                    BY specificationSpecificationDetail(specificationDetail) IN waybillSum;
+                                                    BY specificationSpecificationDetail(specificationDetail) IN documentSumGroup;
 departmentStoreSpecificationDetail(specificationDetail) = departmentStoreSpecification(specificationSpecificationDetail(specificationDetail));
 
 retailPriceSpecificationDetail 'Цена товара (розн.)' = DATA DOUBLE (specificationDetail) IN baseGroup;
 
 sumSpecificationDetail 'Сумма' (specificationDetail) = round0(retailPriceSpecificationDetail(specificationDetail)*quantitySpecificationDetail(specificationDetail));
-sumSpecification 'Общая сумма' (specification) = GROUP SUM sumSpecificationDetail(specificationDetail) BY specificationSpecificationDetail(specificationDetail) IN waybillSum;
+sumSpecification 'Общая сумма' (specification) = GROUP SUM sumSpecificationDetail(specificationDetail) BY specificationSpecificationDetail(specificationDetail) IN documentSumGroup;
 
 priceBySpecificationItem (specification, item) = GROUP EQUAL retailPriceSpecificationDetail(specificationDetail)
     BY specificationSpecificationDetail(specificationDetail), itemSpecificationDetail(specificationDetail);
@@ -5047,7 +5049,7 @@ rangeSpecificationDetail (specificationDetail) <- rangeToTaxStore(specifications
 sumNDSSpecificationDetail 'НДС за ед.' (specificationDetail) = round0(dataActingRateRangeSpecificationDetail(specificationDetail)*retailPriceSpecificationDetail(specificationDetail)/100) IN baseGroup;
 totalSumNDSSpecificationDetail 'Сумма НДС' (specificationDetail) = round0(dataActingRateRangeSpecificationDetail(specificationDetail)*sumSpecificationDetail(specificationDetail)/100) IN baseGroup;
 sumNDSSpecification 'Общая сумма НДС' (specification) = GROUP SUM totalSumNDSSpecificationDetail(specificationDetail)
-    BY specificationSpecificationDetail(specificationDetail) IN waybillSum;
+    BY specificationSpecificationDetail(specificationDetail) IN documentSumGroup;
 
 articleItemSpecificationDetail 'Артикул производителя/поставщика' (specificationDetail) = articleItem(itemSpecificationDetail(specificationDetail));
 nameCountryItemSpecificationDetail 'Страна производства/происхождения' (specificationDetail) = nameCountryItem(itemSpecificationDetail(specificationDetail));
@@ -5130,7 +5132,7 @@ curRetailPriceStatementDetail 'Текущая розничная цена' (stat
 
 
 rangeStatementDetail (statementDetail) = DATA range (statementDetail) IN idGroup;
-dataActingRateRangeStatementDetail 'Ставка НДС расчетная' (statementDetail) = dataActingRateRangeDate(rangeStatementDetail(statementDetail),  dateStatement(statementStatementDetail(statementDetail))) IN waybillSum;
+dataActingRateRangeStatementDetail 'Ставка НДС расчетная' (statementDetail) = dataActingRateRangeDate(rangeStatementDetail(statementDetail),  dateStatement(statementStatementDetail(statementDetail))) IN documentSumGroup;
 rangeStatementDetail (statementDetail) <- rangeToTaxStore(tax.taxNDS,
                                           storeDepartmentStore(departmentStoreStatementDetail(statementDetail))) ON ASSIGN statementDetail IS statementDetail;
 numberRangeStatementDetail 'НДС номер' (statementDetail) = dataRange(rangeStatementDetail(statementDetail));
@@ -5139,7 +5141,7 @@ CONSTRAINT taxRange(rangeStatementDetail(statementDetail)) != tax.taxNDS CHECKED
 
 sumNDSStatementDetail 'НДС за ед.' (statementDetail) = round0(dataActingRateRangeStatementDetail(statementDetail)*retailPriceStatementDetail(statementDetail)/100) IN baseGroup;
 totalSumNDSStatementDetail 'Сумма НДС' (statementDetail) = round0(dataActingRateRangeStatementDetail(statementDetail)*sumStatementDetail(statementDetail)/100) IN baseGroup;
-sumNDSStatement 'Общая сумма НДС' (statement) = GROUP SUM totalSumNDSStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN waybillSum;
+sumNDSStatement 'Общая сумма НДС' (statement) = GROUP SUM totalSumNDSStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN documentSumGroup;
 
 
 quantityItemStatement 'Количество товара в отгрузке' (item, statement) = GROUP SUM quantityStatementDetail(statementDetail)
@@ -5148,8 +5150,8 @@ quantityItemStatement 'Количество товара в отгрузке' (i
 priceByItemStatement(item, statement) = GROUP EQUAL retailPriceStatementDetail(statementDetail)
     BY itemStatementDetail(statementDetail), statementStatementDetail(statementDetail);
 
-totalQuantityStatement 'Общее количество' (statement) = GROUP SUM quantityStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN waybillSum;
-sumStatement 'Общая сумма' (statement) = GROUP SUM sumStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN waybillSum;
+totalQuantityStatement 'Общее количество' (statement) = GROUP SUM quantityStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN documentSumGroup;
+sumStatement 'Общая сумма' (statement) = GROUP SUM sumStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN documentSumGroup;
 
 articleItemStatementDetail 'Артикул производителя/поставщика' (statementDetail) = articleItem(itemStatementDetail(statementDetail)) IN itemStatementDetailInfo;
 nameCountryItemStatementDetail 'Страна производства/происхождения' (statementDetail) = nameCountryItem(itemStatementDetail(statementDetail)) IN itemStatementDetailInfo;
@@ -5307,13 +5309,13 @@ packQuantityStatementDetail 'Количество грузовых мест' (st
     UNION OVERRIDE 1 IF statementDetail IS statementDetail, quantityPackItem(itemStatementDetail(statementDetail));
 
 sumPackQuantityStatement 'Общее количество грузовых мест' (statement) = GROUP SUM packQuantityStatementDetail(statementDetail)
-    BY statementStatementDetail(statementDetail);
+    BY statementStatementDetail(statementDetail) IN sumConsignmentGroup;
 
 grossWeightStatementDetail 'Масса груза, т.' (statementDetail) =
     grossWeightItem(itemStatementDetail(statementDetail))*quantityStatementDetail(statementDetail)/1000;
 
 sumGrossWeightStatement 'Общая масса груза, т.' (statement) = GROUP SUM grossWeightStatementDetail(statementDetail)
-    BY statementStatementDetail(statementDetail);
+    BY statementStatementDetail(statementDetail) IN sumConsignmentGroup;
 
 //---------------------------- Кассовые отчеты ----------------------------------------//
 CLASS cashReport 'Кассовый отчет' : transaction;
@@ -5360,8 +5362,7 @@ CLASS shipment 'Поставка' : incAccountSumDocumentLedger, historyObject, 
 CLASS shipmentDetail 'Строка поставки' : batchShipment;
 @metaCodeObjectWithPostEx(shipment, 'Закрытая поставка');
 
-GROUP waybillSum 'Суммы накладной': baseGroup;
-GROUP ordersInfo 'Заказы': baseGroup;
+GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
 GROUP additionalInfo 'Дополнительно' : baseGroup;
 
 //шапка документа поставки
@@ -5379,15 +5380,15 @@ numberSeriesToShipment (number, series) = GROUP UNIQUE shipment BY numberObject(
 supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipment) IN idGroup;
 
 nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN documentHeaderGroup
-    MINCHARWIDTH 30 PREFCHARWIDTH 40;
+    MINCHARWIDTH 30 PREFCHARWIDTH 40 IN documentPrmGroup;
 
-carryingChargesShipment 'Транспортные расходы' (shipment) = DATA DOUBLE (shipment) IN waybillSum;
+carryingChargesShipment 'Транспортные расходы' (shipment) = DATA DOUBLE (shipment) IN documentSumGroup;
 
 inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) = DATA BOOLEAN (shipment, orderSupplier)
     IN idGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
 ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(dataOrderSupplier(orderSupplier))
-    IF inShipmentOrder(shipment, orderSupplier), ', ' BY shipment IN ordersInfo MINCHARWIDTH 10 PREFCHARWIDTH 10;
+    IF inShipmentOrder(shipment, orderSupplier), ', ' BY shipment IN shipmentOrderGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
 isSupplierShipmentOrder 'Заявка поставщика поставки' (shipment, orderSupplier) = supplierShipment(shipment)== supplierOrderSupplier(orderSupplier);
 
@@ -5416,13 +5417,13 @@ namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоце
 supplierShipmentDetail 'Поставщик (ИД)' (shipmentDetail) = supplierShipment(shipmentShipmentDetail(shipmentDetail));
 
 
-numberDisposalShipment '№ распоряжения на переоценку' (shipment) = DATA STRING[30] (shipment) IN additionalInfo;
+numberDisposalShipment '№ распоряжения на переоценку' (shipment) = DATA STRING[30] (shipment) IN documentPrmGroup;
 
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
 
 quantityShipmentDetail 'Количество' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-totalQuantityShipment 'Общее количество' (shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN waybillSum;
+totalQuantityShipment 'Общее количество' (shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN documentSumGroup;
 quantityItemShipment 'Количество по товару в поставке' (item, shipment) = GROUP SUM quantityShipmentDetail (shipmentDetail) BY itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
 isShippedItemShipment 'Товар есть в поставке' (item, shipment) = quantityItemShipment(item, shipment) > 0;
 
@@ -5525,10 +5526,10 @@ amountSumRetailVATShipmentDetail 'Сумма розничного НДС' (shipm
 diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentDetail) = retailPriceShipmentDetail(shipmentDetail) (-) nonRoundRetailPriceShipmentDetail(shipmentDetail);
 
 retailSumShipmentDetail 'Розничная сумма' (shipmentDetail) = quantityShipmentDetail(shipmentDetail) * retailPriceShipmentDetail(shipmentDetail);
-retailSumShipment 'Розничная сумма' (shipment) = GROUP SUM retailSumShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN waybillSum PERSISTENT;
+retailSumShipment 'Розничная сумма' (shipment) = GROUP SUM retailSumShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN documentSumGroup PERSISTENT;
 
 committeeShipment(shipment) = DATA registerCommittee(shipment);
-nameCommitteeShipment 'Название комиссии для реестра цен' (shipment) = commonName(committeeShipment(shipment)) IN additionalInfo;
+nameCommitteeShipment 'Комиссия для реестра цен' (shipment) = commonName(committeeShipment(shipment)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
 //--------------------показатели для реестра цен----------------------------//
 
@@ -5609,7 +5610,7 @@ quantityOrderedShipmentDetailsShipment 'Количество позиций, д�
 percentOrderedShipmentDetailsShipment 'Процент позиций поставки, для которых есть заказ' (shipment) =
     [X*100/Y](
     quantityOrderedShipmentDetailsShipment(shipment),
-    UNION OVERRIDE 1 IF shipment IS shipment, quantityShipmentDetailsShipment(shipment)) IN ordersInfo;
+    UNION OVERRIDE 1 IF shipment IS shipment, quantityShipmentDetailsShipment(shipment)) IN shipmentOrderGroup;
 
 surePercentSupplierShipment 'Обязательный % заказанных товаров в прих. накладной' (shipment) = DATA INTEGER (shipment);
 surePercentSupplierShipment (shipment) <- surePercentSupplier(supplierShipment (shipment)) ON CHANGE supplierShipment(shipment);
@@ -5630,7 +5631,7 @@ toFillShipmentDetailsShipment 'Заполнить поставку из зака
             SET supplierPriceShipmentDetail(s) <- priceOrderItemShipment(item, shipment);
         };
     };
-} IN ordersInfo CONFIRM;
+} IN shipmentOrderGroup CONFIRM;
 
 percentRateWasteShipmentDetail 'Процент для списания отходов' (shipmentDetail) = DATA DOUBLE (shipmentDetail);
 
@@ -5732,7 +5733,7 @@ nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reason
 quantityWriteOffDetail 'Кол-во для строки списания' = DATA INTEGER (writeOffDetail) IN baseGroup;
 
 quantityWriteOff 'Общее кол-во' (writeOff) = GROUP SUM quantityWriteOffDetail(writeOffDetail)
-                                                    BY writeOffWriteOffDetail(writeOffDetail) IN waybillSum;
+                                                    BY writeOffWriteOffDetail(writeOffDetail) IN documentSumGroup;
 
 supplierPriceWriteOffDetail 'Цена поставщика' (writeOffDetail) = DATA DOUBLE (writeOffDetail) IN baseGroup;
 wareWriteOffDetail = DATA ware (writeOffDetail) IN idGroup;
@@ -5765,7 +5766,7 @@ dataSuppliersRangeWriteOffDetail 'НДС поставщика,%' (writeOffDetail
 @metaCodeTotals (writeOff);
 
 accountSumWriteOffDetail 'Сумма' (writeOffDetail) = accountPriceWriteOffDetail(writeOffDetail)*quantityWriteOffDetail(writeOffDetail);
-accountSumWriteOff 'Общая сумма' (writeOff) = GROUP SUM accountSumWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN waybillSum;
+accountSumWriteOff 'Общая сумма' (writeOff) = GROUP SUM accountSumWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN documentSumGroup;
 
 articleItemWriteOff 'Артикул производителя/поставщика' (writeOffDetail) = articleItem(itemWriteOffDetail(writeOffDetail));
 nameCountryItemWriteOff 'Страна' (writeOffDetail) = nameCountryItem(itemWriteOffDetail(writeOffDetail));
@@ -5832,10 +5833,10 @@ quantityItemInnerFlow 'Количество в расходе' (item, innerFlow)
     IF inInnerFlowInnerFlowDetail (innerFlow, innerFlowDetail) BY itemInnerFlowDetail (innerFlowDetail), innerFlowInnerFlowDetail (innerFlowDetail);
 
 totalQuantityInnerFlow 'Общее количество' (innerFlow) = GROUP SUM quantityInnerFlowDetail(innerFlowDetail)
-    BY innerFlowInnerFlowDetail(innerFlowDetail) IN waybillSum;
+    BY innerFlowInnerFlowDetail(innerFlowDetail) IN documentSumGroup;
 
 accountSumInnerFlow 'Общая сумма' (innerFlow) = GROUP SUM accountSumInnerFlowDetail (innerFlowDetail)
-    IF innerFlowInnerFlowDetail (innerFlowDetail) == innerFlow BY innerFlowInnerFlowDetail(innerFlowDetail) IN waybillSum;
+    IF innerFlowInnerFlowDetail (innerFlowDetail) == innerFlow BY innerFlowInnerFlowDetail(innerFlowDetail) IN documentSumGroup;
 
 castInnerFlowObjectsToString100=
     FORMULA STRING[200] '\'Расход в отдел \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
@@ -6047,10 +6048,10 @@ balanceBeforeInnerArrivalInnerArrivalDetail 'Остаток до' (innerArrivalD
 inInnerArrivalItem (item, innerArrival) = quantityItemInnerArrival(item, innerArrival) > 0;
 
 totalQuantityInnerArrival 'Общее количество' (innerArrival) = GROUP SUM quantityInnerArrivalDetail(innerArrivalDetail)
-    BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN waybillSum;
+    BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN documentSumGroup;
 
 accountSumInnerArrival 'Общая сумма' (innerArrival) = GROUP SUM accountSumInnerArrivalDetail (innerArrivalDetail)
-    BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN waybillSum;
+    BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN documentSumGroup;
 
 
 // ---------------------------------- Дооценка на внутреннем перемещении (приход) ------------------------------------------
@@ -6190,7 +6191,7 @@ dataSuppliersRangeWastageDetail 'НДС поставщика,%' (wastageDetail) 
 sumWastageDetail 'Сумма' (wastageDetail) = quantityWastageDetail(wastageDetail) * retailPriceWastageDetail(wastageDetail);
 
 totalSumWastage 'Общая сумма' (wastage) = GROUP SUM sumWastageDetail (wastageDetail)
-    IF  wastageWastageDetail(wastageDetail) == wastage BY wastageWastageDetail(wastageDetail) IN waybillSum;
+    IF  wastageWastageDetail(wastageDetail) == wastage BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
 
 castWastageObjectsToString100=
     FORMULA STRING[200] '\'Списание отходов \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
@@ -6341,10 +6342,10 @@ curNameWareReturnSupplierDetail 'Текущая посуда' (returnSupplierDet
 
 // Суммовые параметры для шапки документа
 
-carryingChargesReturnSupplier 'Транспортные расходы' (returnSupplier) = DATA DOUBLE (returnSupplier) IN waybillSum;
+carryingChargesReturnSupplier 'Транспортные расходы' (returnSupplier) = DATA DOUBLE (returnSupplier) IN documentSumGroup;
 
 totalQuantityReturnSupplier 'Общее количество' (returnSupplier) = GROUP SUM quantityReturnSupplierDetail(returnSupplierDetail)
-                                                                  BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN waybillSum;
+                                                                  BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN documentSumGroup;
 
 isReturnSupplier (returnSupplier, returnSupplierDetail) = returnSupplierReturnSupplierDetail(returnSupplierDetail) == returnSupplier;
 
@@ -6421,13 +6422,13 @@ packQuantityReturnSupplierDetail 'Количество грузовых мест
     UNION OVERRIDE 1 IF returnSupplierDetail IS returnSupplierDetail, quantityPackItem(itemReturnSupplierDetail(returnSupplierDetail));
 
 sumPackQuantityReturnSupplier 'Общее количество грузовых мест' (returnSupplier) = GROUP SUM packQuantityReturnSupplierDetail(returnSupplierDetail)
-    BY returnSupplierReturnSupplierDetail(returnSupplierDetail);
+    BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN sumConsignmentGroup;
 
 grossWeightReturnSupplierDetail 'Масса груза, т.' (returnSupplierDetail) =
     grossWeightItem(itemReturnSupplierDetail(returnSupplierDetail))*quantityReturnSupplierDetail(returnSupplierDetail)/1000;
 
 sumGrossWeightReturnSupplier 'Общее количество грузовых мест' (returnSupplier) = GROUP SUM packQuantityReturnSupplierDetail(returnSupplierDetail)
-    BY returnSupplierReturnSupplierDetail(returnSupplierDetail);
+    BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN sumConsignmentGroup;
 
 //----------------------------------------------- Чеки ---------------------------------------------------//
 
@@ -6474,19 +6475,19 @@ sumBillDetail 'Сумма продажи' (billDetail) = priceBillDetail(billDet
 discountSumBillDetail 'Сумма скидки' (billDetail) = DATA DOUBLE (billDetail);
 
 sumBill 'Сумма чека' (bill) = GROUP SUM sumBillDetail(billDetail) IF billBillDetail (billDetail) == bill
-    BY billBillDetail (billDetail) IN waybillSum PERSISTENT;
+    BY billBillDetail (billDetail) IN documentSumGroup PERSISTENT;
 
 discountSumBill 'Сумма скидки в чеке' (bill) = GROUP SUM discountSumBillDetail(billDetail) IF billBillDetail (billDetail) == bill
-    BY billBillDetail (billDetail) IN waybillSum;
+    BY billBillDetail (billDetail) IN documentSumGroup;
 
 quantityBillDetailsBill 'Количество строк в чеке' (bill) = GROUP SUM 1 IF billBillDetail (billDetail) == bill
-    BY billBillDetail (billDetail) IN waybillSum;
+    BY billBillDetail (billDetail) IN documentSumGroup;
 
 quantityItemBill 'Количество по товару в чеке' (item, bill) = GROUP SUM quantityBillDetail(billDetail)
     BY itemBillDetail(billDetail), billBillDetail(billDetail);
 
 quantityPositionsBill 'Количество позиций в чеке' (bill) = GROUP SUM 1 IF quantityItemBill (item, bill)
-    BY bill IN waybillSum;
+    BY bill IN documentSumGroup;
 
 CLASS payment 'Оплата по чеку';
 CLASS STATIC paymentMeans 'Форма оплаты'{
@@ -6574,7 +6575,7 @@ quantityZReportBill 'Количество по товару в Z-отчете' (
     BY itemBillDetail(billDetail), zReportBillDetail(billDetail);
 
 quantityPositionsZReport 'Количество товаров в Z-отчете' (zReport) = GROUP SUM 1 IF quantityZReportBill (item, zReport)
-    BY zReport IN waybillSum;
+    BY zReport IN documentSumGroup;
 
 addBillDetailBarcodeFill 'Добавить строку по штрих-коду' = ACTION (bill) {
     FORM barcodeInput MODAL;
@@ -7140,7 +7141,7 @@ curPriceWareReturnSupplierDetail (returnSupplierDetail) <- priceWareBLedgerDateT
 retailSumReturnSupplierDetail 'Розничная сумма' (returnSupplierDetail) =
     quantityReturnSupplierDetail(returnSupplierDetail) * retailPriceReturnSupplierDetail(returnSupplierDetail);
 retailSumReturnSupplier 'Розничная сумма' (returnSupplier) = GROUP SUM retailSumReturnSupplierDetail(shipmentDetail)
-                                                             BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN waybillSum;
+                                                             BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN documentSumGroup;
 
 // ---------------------------------- Переоценка на возврате ------------------------------------------
 
@@ -7953,7 +7954,7 @@ packQuantityConsignmentDetail 'Количество грузовых мест' (
 
 sumPackQuantityConsignment 'Общее количество грузовых мест' (consignment) = UNION EXCLUSIVE sumPackQuantityStatement(consignment),
                                                                                             sumPackQuantityReturnSupplier(consignment),
-                                                                                            sumPackQuantityInnerFlow(consignment);
+                                                                                            sumPackQuantityInnerFlow(consignment) IN sumConsignmentGroup;
 
 grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = UNION EXCLUSIVE grossWeightStatementDetail(consignmentDetail),
                                                                                      grossWeightReturnSupplierDetail(consignmentDetail),
@@ -7961,7 +7962,7 @@ grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = 
 
 sumGrossWeightConsignmentDetail 'Общая масса груза, т.' (consignment) = UNION EXCLUSIVE sumGrossWeightStatement(consignment),
                                                                                         sumGrossWeightReturnSupplier(consignment),
-                                                                                        sumGrossWeightInnerFlow(consignment);
+                                                                                        sumGrossWeightInnerFlow(consignment) IN sumConsignmentGroup;
 
 consignmentConsignmentDetail (consignmentDetail) = UNION EXCLUSIVE statementStatementDetail(consignmentDetail),
                                                                    returnSupplierReturnSupplierDetail(consignmentDetail),
@@ -7996,11 +7997,11 @@ FORM consignment 'Накладная'
 
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
-    PROPERTIES (s) numberObject, seriesObject, dateShipment, timeShipment, nameSupplierShipment,
-                   nameDepartmentStoreShipment, ordersShipment, toFillShipmentDetailsShipment,
+    PROPERTIES (s) nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
+                   nameSupplierShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
                    carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
-                   noteShipment, nameCommitteeShipment, numberDisposalShipment
+                   noteShipment, nameCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s)
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
@@ -8066,39 +8067,35 @@ DESIGN shipment FROM DEFAULT{
             ADD i.box;
         };
         NEW header.box BEFORE specification.box {
-            childConstraints = TO THE BOTTOM;
+            childConstraints = TO THE RIGHT;
 
-            NEW headerRow1 {
-                childConstraints = TO THE RIGHT;
-                ADD s.documentHeaderGroup {
-                    childConstraints = TO THE BOTTOM;
-                    NEW docHeadRow1 {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(dateShipment);
-                        ADD PROPERTY(timeShipment);
-                        ADD PROPERTY(numberObject);
-                        ADD PROPERTY(seriesObject);
-                    };
-                    NEW docHeadRow2 {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(nameSupplierShipment);
-                        ADD PROPERTY(nameDepartmentStoreShipment);
-                    };
-                };
-                ADD s.ordersInfo {
-                    childConstraints = TO THE BOTTOM;
-                };
-            };
-
-            NEW headerRow2 {
+            NEW headerCol1 {
                 childConstraints = TO THE BOTTOM;
-                ADD s.waybillSum {
+
+                ADD s.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateShipment);
+                    ADD PROPERTY(timeShipment);
+                    ADD PROPERTY(nameDepartmentStoreShipment);
                 };
-                ADD s.additionalInfo {
-                     childConstraints = TO THE RIGHT;
-                };
-             };
+
+                NEW headerCol1Row2 {
+                    childConstraints = TO THE RIGHT;
+                    ADD s.documentPrmGroup {
+                        childConstraints = TO THE BOTTOM;
+                        ADD PROPERTY(noteShipment);
+                    }
+                    ADD s.shipmentOrderGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                }
+            }
+
+            ADD s.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
         };
     };
 };
@@ -8306,7 +8303,7 @@ DESIGN returnSupplier FROM DEFAULT {
             };
         };
 
-        ADD r.waybillSum{
+        ADD r.documentSumGroup{
             childConstraints = TO THE RIGHT;
         };
 
@@ -9488,7 +9485,7 @@ DESIGN innerFlow FROM DEFAULT{
 
             NEW headerRow2 {
                 childConstraints = TO THE BOTTOM;
-                ADD f.waybillSum {
+                ADD f.documentSumGroup {
                     childConstraints = TO THE RIGHT;
                 };
                 ADD f.additionalInfo {
@@ -9598,7 +9595,7 @@ DESIGN innerArrival FROM DEFAULT{
 
             NEW headerRow2 {
                 childConstraints = TO THE BOTTOM;
-                ADD a.waybillSum {
+                ADD a.documentSumGroup {
                     childConstraints = TO THE RIGHT;
                 };
                 ADD a.additionalInfo {
@@ -9686,7 +9683,7 @@ DESIGN specification FROM DEFAULT{
     main {
         preferredSize = (1024, 768);
 
-        sp.waybillSum { caption = 'Суммы счет-фактуры'; };
+        sp.documentSumGroup { caption = 'Суммы счет-фактуры'; };
 
         d.panel {
             childConstraints = TO THE BOTTOM;
@@ -9830,7 +9827,7 @@ DESIGN statement FROM DEFAULT {
 
             NEW headerRow2 {
                     childConstraints = TO THE RIGHT;
-                ADD st.waybillSum {
+                ADD st.documentSumGroup {
                     childConstraints = TO THE RIGHT;
                 };
                 ADD st.additionalInfo {
