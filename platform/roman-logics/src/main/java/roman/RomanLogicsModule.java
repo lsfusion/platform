@@ -98,6 +98,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP RRPDirectImporterFreightSku;
     private LP RRPProxyImporterFreightSku;
     private LP RRPImporterFreightSku;
+    private LP RRPFreightSku;
 
 
     public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> baseLM, RomanBusinessLogics BL) {
@@ -516,6 +517,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP NDSPercentCustomFreightSku;
     private LP NDSPercentFreightSku;
     private LP NDSImporterFreightSku;
+    private LP priceFullDutyNDSImporterFreightSku;
+    private LP priceFullDutyNDSFreightSku;
     private LP sumNDSImporterFreightSku;
     private LP sumNDSImporterFreight;
     private LP sumRegistrationFreightSku;
@@ -913,6 +916,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP sumFullImporterFreightArticle;
     private LP priceFullKgImporterFreightArticle;
     private LP priceFullDutyImporterFreightSku;
+    private LP priceInFullDutyImporterFreightSku;
+    private LP priceInFullDutyNDSFreightSku;
     private LP oneArticleSkuShipmentDetail;
     private LP oneArticleColorShipmentDetail;
     private LP oneArticleSizeShipmentDetail;
@@ -3192,12 +3197,14 @@ public class RomanLogicsModule extends LogicsModule {
         priceDirectImporterFreightSku = addMGProp(baseGroup, "priceDirectImporterFreightSku", true, "Цена входная", priceRateSupplierBoxSku, importerSupplierBox, 1, freightFreightUnit, 1, 2);
         priceInImporterFreightSku = addSUProp(baseGroup, "priceInImporterFreightSku", "Цена входная", Union.OVERRIDE, priceDirectImporterFreightSku, priceProxyImporterFreightSku, priceImporterFreightSku);
 
-        priceInFreightSku = addMGProp(baseGroup, "priceInFreightSku", "Цена входная", priceInImporterFreightSku, 2, 3);
+        priceInFreightSku = addMGProp(baseGroup, "priceInFreightSku", true, "Цена входная", priceInImporterFreightSku, 2, 3);
 
         RRPImporterFreightSku = addDProp(baseGroup, "RRPImporterFreightSku", "Цена рекомендованная", DoubleClass.instance, importer, freight, sku);
         RRPProxyImporterFreightSku = addMGProp(baseGroup, "RRPProxyImporterFreightSku", true, "Цена рекомендованная", RRPInShipmentStockSku, importerShipmentFreightBox, 1, 2, freightFreightUnit, 2, 3);
         RRPDirectImporterFreightSku = addMGProp(baseGroup, "RRPDirectImporterFreightSku", true, "Цена рекомендованная", RRPRateSupplierBoxSku, importerSupplierBox, 1, freightFreightUnit, 1, 2);
         RRPInImporterFreightSku = addSUProp(baseGroup, "RRPInImporterFreightSku", "Цена рекомендованная", Union.OVERRIDE, RRPDirectImporterFreightSku, RRPProxyImporterFreightSku, RRPImporterFreightSku);
+
+        RRPFreightSku = addMGProp(baseGroup, "RRPFreightSku", true, "Цена рекомендованная", RRPInImporterFreightSku, 2, 3);
 
         addConstraint(addJProp("Для SKU должна быть задана входная цена", and(true, false), is(freightPriced), 2, priceInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), false);
 
@@ -3339,6 +3346,7 @@ public class RomanLogicsModule extends LogicsModule {
         priceDutyImporterFreightSku = addJProp(baseGroup, "priceDutyImporterFreightSku", "Сумма пошлины", baseLM.sumDouble2, dutyImporterFreightSku, 1, 2, 3, priceInvoiceImporterFreightSku, 1, 2, 3);
 
         priceFullDutyImporterFreightSku = addSUProp(baseGroup, "priceFullDutyImporterFreightSku", "Цена с пошлиной", Union.SUM, priceFullImporterFreightSku, dutyImporterFreightSku);
+        priceInFullDutyImporterFreightSku = addSUProp(baseGroup, "priceInFullDutyImporterFreightSku", "Цена с пошлиной (УУ)", Union.SUM, priceInFullImporterFreightSku, dutyImporterFreightSku);
 
         sumDutyImporterFreightSku = addJProp(baseGroup, "sumDutyImporterFreightSku", "Сумма пошлины", baseLM.multiplyDouble2, dutyImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
         sumDutyImporterFreight = addSGProp(baseGroup, "sumDutyImporterFreight", true, "Сумма пошлины", sumDutyImporterFreightSku, 1, 2);
@@ -3347,6 +3355,9 @@ public class RomanLogicsModule extends LogicsModule {
         NDSPercentCustomFreightSku = addJProp(baseGroup, "NDSPercentCustomFreightSku", "НДС (%)", and(false, false), NDSPercentCustom, is(freight), 1, is(sku), 2);
         NDSPercentFreightSku = addSUProp(baseGroup, "NDSPercentFreightSku", "НДС (%)", Union.OVERRIDE, NDSPercentCustomFreightSku, NDSPercentOriginFreightSku);
         NDSImporterFreightSku = addJProp(baseGroup, "NDSImporterFreightSku", "НДС (евро)", baseLM.percent2, priceFullDutyImporterFreightSku, 1, 2, 3, NDSPercentFreightSku, 2, 3);
+
+        priceFullDutyNDSImporterFreightSku = addSUProp(baseGroup, "priceFullDutyNDSImporterFreightSku", "Цена с расходами", Union.SUM, priceInFullDutyImporterFreightSku, NDSImporterFreightSku);
+        priceFullDutyNDSFreightSku = addMGProp(baseGroup, "priceFullDutyNDSFreightSku", true, "Цена с расходами", priceFullDutyNDSImporterFreightSku, 2, 3);
 
         sumNDSImporterFreightSku = addJProp(baseGroup, "sumNDSImporterFreightSku", "Сумма НДС", baseLM.multiplyDouble2, NDSImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
         sumNDSImporterFreight = addSGProp(baseGroup, "sumNDSImporterFreight", true, "Сумма НДС", sumNDSImporterFreightSku, 1, 2);
@@ -4867,7 +4878,7 @@ public class RomanLogicsModule extends LogicsModule {
                         KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
                         inInvoice,
-                        "Ожидается или оприходовано в поставке"));
+                        "Ожидается в поставке"));
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
                         new OrFilterEntity(inInvoice, inSimpleShipment),
                         "Ожидается или оприходовано в поставке"));

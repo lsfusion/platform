@@ -179,6 +179,8 @@ public class DeclarationExportActionProperty extends CustomActionProperty {
             putString(N07Decl, row.values.get(map.get(N07Decl)));
             putString(N_REGDecl, row.values.get(map.get(N_REGDecl)));
             putString(GK_7Decl, row.values.get(map.get(GK_7Decl)));
+            putString(G372Decl, row.values.get(map.get(G372Decl)));
+            putString(G241Decl, row.values.get(map.get(G241Decl)));
             putString(G022IDecl, row.values.get(map.get(G022IDecl)));
             putString(G023IDecl, row.values.get(map.get(G023IDecl)));
             putString(G081Decl, row.values.get(map.get(G081Decl)));
@@ -214,7 +216,6 @@ public class DeclarationExportActionProperty extends CustomActionProperty {
             putString(G23ADecl, row.values.get(map.get(G23ADecl)));
             putDouble(G12Decl, row.values.get(map.get(G12Decl)));
             putDouble(G23Decl, row.values.get(map.get(G23Decl)));
-            putString(G241Decl, row.values.get(map.get(G241Decl)));
             putString(G242Decl, row.values.get(map.get(G242Decl)));
             putString(G30Decl, row.values.get(map.get(G30Decl)));
             putString(G30ADecl, row.values.get(map.get(G30ADecl)));
@@ -250,7 +251,7 @@ public class DeclarationExportActionProperty extends CustomActionProperty {
             putString(G363Decl, row.values.get(map.get(G363Decl)));
             putString(G364Decl, row.values.get(map.get(G364Decl)));
             putString(G371Decl, row.values.get(map.get(G371Decl)));
-            putString(G372Decl, row.values.get(map.get(G372Decl)));
+
             putString(G373Decl, row.values.get(map.get(G373Decl)));
             putDouble(G39Decl, row.values.get(map.get(G39Decl)));
             putString(G39EDIZMDecl, row.values.get(map.get(G39EDIZMDecl)));

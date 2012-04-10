@@ -395,12 +395,15 @@ priceManagerialCustomDeclarationDetail 'Цена с расходами (УУ)' (
                                                                                                registrationDeclarationDetail(declarationDetail) PERSISTENT;
 
 // для экспорта в Декларант
+TABLE groupDeclaration (groupDeclaration);
+TABLE declarationArticleCustomCategoryCompositionCountry(declaration, article, customCategory10, STRING[200], country);
+
 quantityDeclarationGroup 'Кол-во' = GROUP SUM quantityDeclarationDetail(declarationDetail)
                                            BY declarationDeclarationDetail(declarationDetail),
                                               articleDeclarationDetail(declarationDetail),
                                               customCategory10DeclarationDetail(declarationDetail),
                                               mainCompositionDeclarationDetail(declarationDetail),
-                                              countryDeclarationDetail(declarationDetail) IN baseGroup;
+                                              countryDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
 
 CLASS groupDeclaration 'Группировка';
 
@@ -409,6 +412,8 @@ articleGroupDeclaration 'Артикул (ИД)' = DATA article(groupDeclaration)
 customCategory10GroupDeclaration 'ТН ВЭД (ИД)' = DATA customCategory10(groupDeclaration) IN idGroup;
 mainCompositionGroupDeclaration 'Состав' = DATA STRING[200](groupDeclaration) IN baseGroup;
 countryGroupDeclaration 'Страна (ИД)' = DATA country(groupDeclaration) IN idGroup;
+
+certificatedGroupDeclaration 'Необходимость сертификации' (groupDeclaration) = certificatedCustomCategory10(customCategory10GroupDeclaration(groupDeclaration)) IN baseGroup;
 
 sidArticleGroupDeclaration 'Артикул' (groupDeclaration) = sidArticle(articleGroupDeclaration(groupDeclaration)) IN baseGroup;
 sidCustomCategory10GroupDeclaration 'ТН ВЭД' (groupDeclaration) = sidCustomCategory10(customCategory10GroupDeclaration(groupDeclaration)) IN baseGroup;
@@ -463,23 +468,23 @@ numberGroupDeclarationDeclarationDetail 'Группа строки деклар�
 
 
 inDeclarationDetailInnerInvoice 'Связка' (declarationDetail, innerInvoice) = quantityInnerInvoiceSku(innerInvoice, skuDeclarationDetail(declarationDetail)) IF
-                                                                             declarationDeclarationDetail(declarationDetail) == declarationInnerInvoice(innerInvoice);
+                                                                             declarationDeclarationDetail(declarationDetail) == declarationInnerInvoice(innerInvoice) PERSISTENT;
 
 inGroupDeclarationInnerInvoice 'Связка' (groupDeclaration, innerInvoice) = GROUP SUM inDeclarationDetailInnerInvoice(declarationDetail, innerInvoice)
-                                                                                  BY groupDeclarationDeclarationDetail(declarationDetail), innerInvoice;
+                                                                                  BY groupDeclarationDeclarationDetail(declarationDetail), innerInvoice PERSISTENT;
 
 
 quantityGroupDeclaration 'Кол-во' (groupDeclaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
-                                                              BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup;
+                                                              BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
 
 netWeightGroupDeclaration 'Вес нетто' (groupDeclaration) = GROUP SUM sumNetWeightDeclarationDetail(declarationDetail)
-                                                                  BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup;
+                                                                  BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
 
 grossWeightGroupDeclaration 'Вес брутто' (groupDeclaration) = GROUP SUM sumGrossWeightDeclarationDetail(declarationDetail)
-                                                                     BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup;
+                                                                     BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
 
 sumGroupDeclaration 'Стоимость' (groupDeclaration) = GROUP SUM sumDeclarationDetail(declarationDetail)
-                                                            BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup;
+                                                            BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
 
 
 FORM customStores 'Склады временного хранения'
@@ -488,6 +493,19 @@ FORM customStores 'Склады временного хранения'
 ;
 
 
+FORM declarationInvoices 'Присоединение инвойсов'
+    OBJECTS d=declaration FIXED PANEL
+    PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
+                  nameImporterDeclaration
+
+    OBJECTS ii=innerInvoice
+    PROPERTIES (ii) sidInnerInvoice
+    PROPERTIES (d, ii) inDeclarationInnerInvoice
+    FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
+;
+
+showFormDeclarationInvoices 'Присоединить инвойсы' (declaration) = ACTION FORM declarationInvoices OBJECTS d NEWSESSION MODAL TOOLBAR;
+
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
     PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
@@ -495,10 +513,10 @@ FORM declaration 'Декларация'
                   dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion,
                   diffNDSDeclararion, diffDeclaration, expenseCertificateDeclaration, exportDeclaration
 
-    OBJECTS ii=innerInvoice
-    PROPERTIES (ii) sidInnerInvoice
-    PROPERTIES (d, ii) inDeclarationInnerInvoice
-    FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
+//    OBJECTS ii=innerInvoice
+//    PROPERTIES (ii) sidInnerInvoice
+//    PROPERTIES (d, ii) inDeclarationInnerInvoice
+//    FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
 
     OBJECTS c=correction
     PROPERTIES(c) date, ADDOBJ, delete
@@ -528,7 +546,7 @@ FORM declaration 'Декларация'
                     sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
                     sumGroupDeclaration, netWeightGroupDeclaration, grossWeightGroupDeclaration
 
-    PROPERTIES (gd, ii) inGroupDeclarationInnerInvoice
+    //PROPERTIES (gd, ii) inGroupDeclarationInnerInvoice
 
     OBJECTS ii2=innerInvoice
     PROPERTIES (ii2) sidInnerInvoice, dateInnerInvoice
@@ -541,18 +559,18 @@ FORM declaration 'Декларация'
 
 DESIGN declaration FROM DEFAULT{
     main {
-        NEW document.box BEFORE dd.box {
-            tabbedPane = TRUE;
-            ADD ii.box;
-            ADD c.box;
-        }
+//        NEW document.box BEFORE dd.box {
+//            tabbedPane = TRUE;
+//            ADD ii.box;
+//            ADD c.box;
+//        }
 
-        POSITION d.box TO THE LEFT document.box;
+        POSITION d.box TO THE LEFT c.box;
         POSITION gd.box TO THE LEFT ii2.box;
 
-        ii.grid {
-            fillHorizontal = 0.5;
-        }
+//        ii.grid {
+//            fillHorizontal = 0.5;
+//        }
 
         c.grid {
             fillHorizontal = 0.5;
@@ -581,7 +599,7 @@ FORM declarations 'Декларации'
                            rateExchangeDeclaration, nameImporterDeclaration, rateSumRegistrationDeclaration,
                            dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion, diffNDSDeclararion, diffDeclaration,
                            expenseCertificateDeclaration
-    PROPERTIES(d) ADDFORM, EDITFORM, delete
+    PROPERTIES(d) ADDFORM, EDITFORM, delete, showFormDeclarationInvoices
 
     OBJECTS dd=declarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeSkuDeclarationDetail, nameBrandArticleDeclarationDetail,
@@ -630,6 +648,7 @@ isDiscountPriceChangeDocument 'Распродажа' = DATA BOOLEAN(priceChangeD
 keepDiscountPriceChangeDocument 'Учитывать скидки' = DATA BOOLEAN(priceChangeDocument) IN baseGroup;
 
 priceInPriceChangeDocumentSku 'Цена первого поставщика' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
+priceFullPriceChangeDocumentSku 'Цена с затратами' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
 RRPPriceChangeDocumentSku 'Рекомендуемая цена' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
 ratePriceChangeDocumentSku 'Обменный курс' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
 priceRetailPriceChangeDocumentSku 'Розничная цена' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
@@ -644,8 +663,8 @@ FORM priceChangeDocument 'Документ изменений цен'
 
     OBJECTS s=sku
     PROPERTIES(s) barcode, sidArticleSku
-    PROPERTIES (p, s) priceInPriceChangeDocumentSku, RRPPriceChangeDocumentSku, ratePriceChangeDocumentSku,
-                      priceRetailPriceChangeDocumentSku
+    PROPERTIES (p, s) priceInPriceChangeDocumentSku, priceFullPriceChangeDocumentSku, RRPPriceChangeDocumentSku,
+                      ratePriceChangeDocumentSku, priceRetailPriceChangeDocumentSku
 
     FILTERS priceInPriceChangeDocumentSku (p, s)
     EDIT basePriceChangeDocument OBJECT p
@@ -659,8 +678,8 @@ FORM priceChangeDocuments 'Документы изменений цен'
 
     OBJECTS s=sku
     PROPERTIES(s) READONLY barcode, sidArticleSku
-    PROPERTIES (p, s) priceInPriceChangeDocumentSku, RRPPriceChangeDocumentSku, ratePriceChangeDocumentSku,
-                      priceRetailPriceChangeDocumentSku
+    PROPERTIES (p, s) priceInPriceChangeDocumentSku, priceFullPriceChangeDocumentSku, RRPPriceChangeDocumentSku,
+                      ratePriceChangeDocumentSku, priceRetailPriceChangeDocumentSku
 
     FILTERS priceInPriceChangeDocumentSku (p, s)
 ;
@@ -670,7 +689,9 @@ toCreatePriceChangeDocument 'Заполнить документ из фрахт
     ADDOBJ basePriceChangeDocument;
     FOR p == addedObject() DO {
         SET priceInPriceChangeDocumentSku(p, sku) <- priceInFreightSku(freight, sku);
-        FORM priceChangeDocuments OBJECTS p=addedObject() MODAL;
+        SET priceFullPriceChangeDocumentSku(p, sku) <- priceFullDutyNDSFreightSku(freight, sku);
+        SET RRPPriceChangeDocumentSku(p, sku) <- RRPFreightSku(freight, sku);
+        FORM priceChangeDocument OBJECTS p=addedObject() MODAL;
         IF formResult() == formResult.ok THEN {
             EXEC apply();
         };
