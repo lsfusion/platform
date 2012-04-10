@@ -407,7 +407,7 @@ META metaCodeObjectWithPostEx (object, captionPosted)
         barcodeEx(barcodeSku(item###object##Detail (object))) IN baseGroup;
 
     quantity###object##Details###object 'Количество строк в документе' (object) =
-        GROUP SUM 1 IF in###object###object##Detail(object, object##Detail) BY object;
+        GROUP SUM 1 IF in###object###object##Detail(object, object##Detail) BY object PERSISTENT;
 
     add###object##DetailBarcode 'Добавить строку по штрих-коду' = ACTION (object) {
         FORM barcodeInput MODAL;
@@ -518,7 +518,7 @@ META metaCodeTotals (object)
     sumDetailMarkup###object##Detail 'Сумма надбавки' (object##Detail) =
         sumMarkup###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
 
-    totalSumSupplierPrice###object##Detail 'Сумма без НДС' (object##Detail) = supplierPrice###object##Detail(object##Detail)*quantity###object##Detail(object##Detail);
+    totalSumSupplierPrice###object##Detail 'Сумма без НДС' (object##Detail) = supplierPrice###object##Detail(object##Detail)*quantity###object##Detail(object##Detail) PERSISTENT;
     totalSumWare###object##Detail 'Сумма посуды' (object##Detail) = priceWare###object##Detail (object##Detail)*quantity###object##Detail(object##Detail);
 
 
@@ -562,10 +562,10 @@ META metaCodeTotals (object)
         GROUP SUM sumSupplier###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
 
     totalSumIncVAT###object 'Общая сумма НДС' (object) =
-        totalSumSupplierVAT###object(object) (+) totalSumVatWare###object(object) IN waybillSum;
+        totalSumSupplierVAT###object(object) (+) totalSumVatWare###object(object) IN waybillSum PERSISTENT;
 
     totalSumSupplier###object 'Общая сумма с НДС' (object) =
-        totalSumCleanSupplier###object(object) (+) totalSumWare###object(object) IN waybillSum;
+        totalSumCleanSupplier###object(object) (+) totalSumWare###object(object) IN waybillSum PERSISTENT;
 
 END
 
@@ -1305,7 +1305,7 @@ userBarcodeSku = DATA barcode(sku) IN idGroup;
 barcodeUserBarcodeSku 'Основной штрих-код' = barcodeEx(userBarcodeSku(sku)) IN baseGroup;
 
 defaultBarcodeSku(sku) = GROUP MIN barcode BY skuBarcode(barcode) IN idGroup;
-barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku) IN baseGroup;
+barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku) IN baseGroup PERSISTENT;
 
 primarySkuBarcode 'Основной штрих-код' (sku, barcode) = barcodeSku(sku) == barcode;
 
@@ -1871,6 +1871,9 @@ CONSTRAINT labelItemDepartmentDate(item, departmentStore, date) AND NOT inLabelT
     CHECKED BY labelItemDepartmentDate MESSAGE 'Тип ценника запрещен для выбранного отдела магазина';
 
 @metaCodeDoubleObjectDateProperty(multiplierItemDepartment, item, departmentStore, 'Множитель', INTEGER, labelGroup);
+multiplierItemDepartmentValOver (item, departmentStore, date) = UNION OVERRIDE 1 IF item IS item AND departmentStore IS departmentStore AND date IS DATE,
+                                                                               multiplierItemDepartmentVal(item, departmentStore, date);
+multiplierBarcodeDepartmentValOver (barcode, departmentStore, date) = multiplierItemDepartmentValOver(skuBarcode(barcode), departmentStore, date);
 
 @metaCodeDoubleObjectDateProperty(oldPriceItemDepartment, item, departmentStore, 'Старая цена', DOUBLE, labelGroup);
 
@@ -5500,7 +5503,7 @@ nonRoundRetailPriceShipmentDetail 'Цена розничная (неокругл
 
 retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = IF isFixPriceShipmentDetail(shipmentDetail)
     THEN roundMinus1(importerPriceShipmentDetail(shipmentDetail) (+) overPriceWareShipmentDetail(shipmentDetail))
-    ELSE roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail) (+) overPriceWareShipmentDetail(shipmentDetail));
+    ELSE roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail) (+) overPriceWareShipmentDetail(shipmentDetail)) PERSISTENT;
 
 @metaCodeTotals (shipment);
 
@@ -5515,7 +5518,7 @@ amountSumRetailVATShipmentDetail 'Сумма розничного НДС' (shipm
 diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentDetail) = retailPriceShipmentDetail(shipmentDetail) (-) nonRoundRetailPriceShipmentDetail(shipmentDetail);
 
 retailSumShipmentDetail 'Розничная сумма' (shipmentDetail) = quantityShipmentDetail(shipmentDetail) * retailPriceShipmentDetail(shipmentDetail);
-retailSumShipment 'Розничная сумма' (shipment) = GROUP SUM retailSumShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN waybillSum;
+retailSumShipment 'Розничная сумма' (shipment) = GROUP SUM retailSumShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN waybillSum PERSISTENT;
 
 committeeShipment(shipment) = DATA registerCommittee(shipment);
 nameCommitteeShipment 'Название комиссии для реестра цен' (shipment) = commonName(committeeShipment(shipment)) IN additionalInfo;
@@ -7432,7 +7435,7 @@ sentPriceTransactionDocument(document) <- NULL ON ASSIGN isDraftPriceTransaction
 
 // todo : это свойство тоже не становится PERSISTENT
 countProcessPriceTransactionDocument 'Кол-во ожидающих транзакций' (document) = GROUP SUM 1 IF processMachineryPriceTransaction(transaction)
-                                                                                 BY priceTransactionDocumentMachineryPriceTransaction(transaction);
+                                                                                 BY priceTransactionDocumentMachineryPriceTransaction(transaction) PERSISTENT;
 
 succeededPriceTransactionDocument 'Загружен в оборудование' (document) = sentPriceTransactionDocument (document) AND NOT countProcessPriceTransactionDocument(document);
 
@@ -7666,6 +7669,7 @@ TABLE labelTransactionBarcode(labelTransaction, barcode);
 
 inLabelTransactionBarcode 'Вкл' (labelTransaction, barcode) = DATA BOOLEAN (labelTransaction, barcode);
 
+quantityLabelTransactionBarcode 'Кол-во' (labelTransaction, barcode) = DATA INTEGER (labelTransaction, barcode);
 nameLabelTransactionBarcode 'Наименование' = DATA STRING[255] (labelTransaction, barcode);
 priceLabelTransactionBarcode 'Цена' = DATA DOUBLE (labelTransaction, barcode);
 
@@ -7676,7 +7680,7 @@ FORM printLabelTransaction 'Печать ценников' PRINT
     OBJECTS b = barcode
     PROPERTIES(l, b) READONLY inLabelTransactionBarcode
     PROPERTIES(b)    READONLY barcodeEx
-    PROPERTIES(l, b) READONLY nameLabelTransactionBarcode, priceLabelTransactionBarcode
+    PROPERTIES(l, b) READONLY quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
 ;
 
@@ -7687,7 +7691,7 @@ FORM customLabelTransaction 'Печать ценников'
     OBJECTS b = barcode
     PROPERTIES(l, b)          inLabelTransactionBarcode
     PROPERTIES(b)    READONLY barcodeEx
-    PROPERTIES(l, b)          nameLabelTransactionBarcode, priceLabelTransactionBarcode
+    PROPERTIES(l, b)          quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
 ;
 
@@ -7703,7 +7707,7 @@ FORM labelTransactions 'Печать ценников'
     OBJECTS b = barcode
     PROPERTIES(l, b) READONLY inLabelTransactionBarcode
     PROPERTIES(b)    READONLY barcodeEx
-    PROPERTIES(l, b) READONLY nameLabelTransactionBarcode, priceLabelTransactionBarcode
+    PROPERTIES(l, b) READONLY quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
 ;
 
@@ -7731,6 +7735,7 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
         ADDOBJ labelTransaction;
         FOR t == addedObject() DO {
             SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode);
+            SET quantityLabelTransactionBarcode(t, barcode) AND inLabelTransactionBarcode(t, barcode) <- 1;
             EXEC createLabelTransactionFillParams(t AS labelTransaction, departmentStore AS departmentStore);
             FORM customLabelTransaction OBJECTS l = t AS labelTransaction MODAL;
             IF formResult() == formResult.ok THEN {
@@ -7744,6 +7749,7 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
             ADDOBJ labelTransaction;
             FOR t == addedObject() DO {
                 SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) AND labelBarcodeDepartmentVal(barcode, departmentStore, date) == l;
+                SET quantityLabelTransactionBarcode(t, barcode) AND inLabelTransactionBarcode(t, barcode) <- multiplierBarcodeDepartmentValOver(barcode, departmentStore, date);
                 SET labelTypeLabelTransaction(t) <- l AS labelType;
                 EXEC createLabelTransactionFillParams(t AS labelTransaction, departmentStore AS departmentStore);
                 // вызываем печатную форму для каждого из них
