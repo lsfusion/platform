@@ -6853,8 +6853,10 @@ priceImporterLedger 'Цена' (ledger) = UNION EXCLUSIVE importerPriceShipmentD
                                                       importerPriceStudyOutputDetail(ledger) PERSISTENT;
 @metaCodeItemDepartmentStoreLedger(importerPrice);
 
-priceImporterBLedgerDateTime (item, departmentStore, dateTime) = priceImporterLedger(ledgerBImporterPriceDateTime(item, departmentStore, dateTime));
+priceImporterBLedgerDateTime 'Цена изготовителя (до)' (item, departmentStore, dateTime) = priceImporterLedger(ledgerBImporterPriceDateTime(item, departmentStore, dateTime));
+priceImporterALedgerDateTime 'Цена изготовителя (после)' (item, departmentStore, dateTime) = priceImporterLedger(ledgerAImporterPriceDateTime(item, departmentStore, dateTime));
 
+currentPriceImporterLedger 'Цена изготовителя' (item, departmentStore) = priceImporterLedger(currentLedgerImporterPrice(item, departmentStore));
 
 // Цена поставщика
 dateTimeSupplierPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
@@ -6883,9 +6885,10 @@ priceSupplierLedger 'Цена' (ledger) = UNION EXCLUSIVE supplierPriceShipmentD
                                                       supplierPriceStudyOutputDetail(ledger) PERSISTENT;
 @metaCodeItemDepartmentStoreLedger(supplierPrice);
 
-priceSupplierBLedgerDateTime (item, departmentStore, dateTime) = priceSupplierLedger(ledgerBSupplierPriceDateTime(item, departmentStore, dateTime));
+priceSupplierBLedgerDateTime 'Цена поставщика (до)' (item, departmentStore, dateTime) = priceSupplierLedger(ledgerBSupplierPriceDateTime(item, departmentStore, dateTime));
+priceSupplierALedgerDateTime 'Цена поставщика (после)' (item, departmentStore, dateTime) = priceSupplierLedger(ledgerASupplierPriceDateTime(item, departmentStore, dateTime));
 
-
+currentPriceSupplierLedger 'Цена поставщика' (item, departmentStore) = priceSupplierLedger(currentLedgerSupplierPrice(item, departmentStore));
 
 // Цена посуды
 dateTimeWarePriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
@@ -6915,7 +6918,11 @@ priceWareWarePriceLedger 'Цена' (ledger) = UNION EXCLUSIVE priceWareShipment
 nameWareWarePriceLedger 'Посуда' (ledger) = name(wareWarePriceLedger(ledger));
 @metaCodeItemDepartmentStoreLedger(warePrice);
 
-priceWareBLedgerDateTime (item, departmentStore, dateTime) = priceWareWarePriceLedger(ledgerBWarePriceDateTime(item, departmentStore, dateTime));
+priceWareBLedgerDateTime 'Цена посуды (до)' (item, departmentStore, dateTime) = priceWareWarePriceLedger(ledgerBWarePriceDateTime(item, departmentStore, dateTime));
+priceWareALedgerDateTime 'Цена посуды (после)' (item, departmentStore, dateTime) = priceWareWarePriceLedger(ledgerAWarePriceDateTime(item, departmentStore, dateTime));
+
+currentPriceWareLedger 'Цена посуды' (item, departmentStore) = priceWareWarePriceLedger(currentLedgerWarePrice(item, departmentStore));
+
 wareBLedgerDateTime (item, departmentStore, dateTime) = wareWarePriceLedger(ledgerBWarePriceDateTime(item, departmentStore, dateTime));
 
 // Розничный НДС
@@ -6948,9 +6955,17 @@ dataRetailLedger 'НДС, %' (ledger) = dataActingRateRangeDate(rangeRetailLedge
 
 @metaCodeItemDepartmentStoreLedger(retailVAT);
 
-rangeRetailBLedgerDateTime (item, departmentStore, dateTime) = rangeRetailLedger(ledgerBRetailVATDateTime(item, departmentStore, dateTime));
-dataRetailBLedgerDateTime 'НДС, %' (item, departmentStore, dateTime) =
+rangeRetailBLedgerDateTime 'НДС (до)' (item, departmentStore, dateTime) = rangeRetailLedger(ledgerBRetailVATDateTime(item, departmentStore, dateTime));
+dataRetailBLedgerDateTime 'НДС, % (до)' (item, departmentStore, dateTime) =
             dataActingRateRangeDate(rangeRetailBLedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
+rangeRetailALedgerDateTime 'НДС (после)' (item, departmentStore, dateTime) = rangeRetailLedger(ledgerARetailVATDateTime(item, departmentStore, dateTime));
+dataRetailALedgerDateTime 'НДС, % (после)' (item, departmentStore, dateTime) =
+            dataActingRateRangeDate(rangeRetailALedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
+
+currentRangeRetailLedger 'НДС' (item, departmentStore) = rangeRetailLedger(currentLedgerRetailVAT(item, departmentStore));
+dataCurrentRetailLedger 'НДС, %' (item, departmentStore) =
+            dataActingRateRange(currentRangeRetailLedger(item, departmentStore));
+
 
 // Цена учетная
 dateTimeAccountPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
@@ -6985,8 +7000,7 @@ priceAccountLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDeta
 priceAccountBLedgerDateTime 'Учетная цена (до)' (item, departmentStore, dateTime) = priceAccountLedger(ledgerBAccountPriceDateTime(item, departmentStore, dateTime));
 priceAccountALedgerDateTime 'Учетная цена (после)' (item, departmentStore, dateTime) = priceAccountLedger(ledgerAAccountPriceDateTime(item, departmentStore, dateTime));
 
-curPriceAccountBLedgerDateTime 'Текущая учетная цена (до)' (item, departmentStore) = priceAccountLedger(ledgerBAccountPriceDateTime(item, departmentStore, currentDateTime()));
-curPriceAccountALedgerDateTime 'Текушая учетная цена (после)' (item, departmentStore) = priceAccountLedger(ledgerAAccountPriceDateTime(item, departmentStore, currentDateTime()));
+currentPriceAccountLedger 'Учетная цена' (item, departmentStore) = priceAccountLedger(currentLedgerAccountPrice(item, departmentStore));
 
 // Цена розничная
 dateTimeRetailPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
@@ -7016,10 +7030,11 @@ priceRetailLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetai
 
 @metaCodeItemDepartmentStoreLedger(retailPrice);
 
-priceRetailBLedgerDateTime (item, departmentStore, dateTime) = priceRetailLedger(ledgerBRetailPriceDateTime(item, departmentStore, dateTime));
+priceRetailBLedgerDateTime 'Розничная цена (до)' (item, departmentStore, dateTime) = priceRetailLedger(ledgerBRetailPriceDateTime(item, departmentStore, dateTime));
+priceRetailALedgerDateTime 'Розничная цена (после)' (item, departmentStore, dateTime) = priceRetailLedger(ledgerARetailPriceDateTime(item, departmentStore, dateTime));
 
-priceRetailCurrentLedger (item, departmentStore) = priceRetailLedger(currentLedgerRetailPrice(item, departmentStore)) PERSISTENT;
-ledgerPriceBarcodeDepartmentStore 'Текущая цена по учету' (barcode, departmentStore) = priceRetailCurrentLedger(skuBarcode(barcode), departmentStore);
+currentPriceRetailLedger 'Розничная цена' (item, departmentStore) = priceRetailLedger(currentLedgerRetailPrice(item, departmentStore)) PERSISTENT;
+ledgerPriceBarcodeDepartmentStore 'Текущая цена по учету' (barcode, departmentStore) = currentPriceRetailLedger(skuBarcode(barcode), departmentStore);
 
 // --------------------------- Использование регистров (автоматическое заполнение) ---------------------------------
 
@@ -7608,7 +7623,7 @@ createBalanceMachineryPriceTransaction 'Остатки' = ACTION (departmentStor
 } CONFIRM IN incrementMachineryPriceGroup;
 
 createPriceMachineryPriceTransaction 'Все товары' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
-    SET createMachineryPriceTransactionItem(item) <- TRUE IF priceRetailCurrentLedger(item, departmentStore);
+    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentPriceRetailLedger(item, departmentStore);
     SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка товаров';
     EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
 } CONFIRM IN incrementMachineryPriceGroup;
@@ -10110,7 +10125,9 @@ FORM balanceItemDepartment 'Остатки по отделам на дату'
                       inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
 
 
-    PROPERTIES(i, dep, t) READONLY priceAccountALedgerDateTime, balanceAItemLedgerDateTime
+    PROPERTIES(i, dep, t) READONLY balanceAItemLedgerDateTime, priceImporterALedgerDateTime, priceSupplierALedgerDateTime,
+                                   priceAccountALedgerDateTime, dataRetailALedgerDateTime, priceRetailALedgerDateTime,
+                                   priceWareALedgerDateTime
     FILTERGROUP filters
         FILTER 'Товары с остатком' 'F10' balanceAItemLedgerDateTime(i, dep, t) DEFAULT
 
@@ -10202,7 +10219,9 @@ FORM curBalanceItemDepartment 'Текущие остатки по отделам
                       inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
 
 
-    PROPERTIES(i, dep) READONLY curPriceAccountALedgerDateTime, currentBalanceItemLedger
+    PROPERTIES(i, dep) READONLY currentBalanceItemLedger, currentPriceImporterLedger, currentPriceSupplierLedger,
+                                currentPriceAccountLedger, dataCurrentRetailLedger, currentPriceRetailLedger,
+                                currentPriceWareLedger
     FILTERGROUP filters
         FILTER 'Товары с остатком' 'F10' currentBalanceItemLedger(i, dep) DEFAULT
 
