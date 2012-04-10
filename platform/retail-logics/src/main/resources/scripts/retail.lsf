@@ -430,7 +430,7 @@ META metaCodeObjectWithPostEx (object, captionPosted)
         FOR object###object##Detail (detail) == object DO {
           EXEC delete(detail AS object##Detail);
         };
-    } IN documentHeaderGroup CONFIRM;
+    } IN documentPrmGroup CONFIRM;
 
     @metaCodePostedObject (object);
 
@@ -5807,7 +5807,7 @@ CLASS innerFlowDetail 'Строка расхода в отдел' : balanceItemL
 @metaCodeObjectWithPostEx (innerFlow, 'Закрытый расход в отдел');
 
 recipientDepartmentInnerFlow 'Отдел-получатель (ИД)' (innerFlow) = DATA departmentStore(innerFlow);
-nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentHeaderGroup;
+nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentPrmGroup;
 
 quantityInnerFlowDetail 'Количество' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
 
@@ -5950,12 +5950,12 @@ isArrivedInnerFlow (innerFlow) = innerFlow IS innerFlow AND innerArrivalInnerFlo
 
 innerFlowInnerArrivalDetail (innerArrivalDetail) = innerFlowInnerArrival(innerArrivalInnerArrivalDetail(innerArrivalDetail));
 
-numberArrival 'Накладная отгрузки с отдела-отправителя' (innerArrival) = numberObject(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup;
+numberArrival 'Номер накладной' (innerArrival) = numberObject(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup;
 seriesArrival 'Серия накладной' (innerArrival) = seriesObject(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup;
 seriesNumberArrival 'Серия/Номер' (innerArrival) = seriesNumberObject(innerFlowInnerArrival(innerArrival));
 
 senderDepartmentInnerArrival 'Отдел-отправитель (ИД)' (innerArrival) = DATA departmentStore(innerArrival);
-nameSenderDepartmentInnerArrival 'Отдел-отправитель' (innerArrival) = name(senderDepartmentInnerArrival(innerArrival)) IN documentHeaderGroup;
+nameSenderDepartmentInnerArrival 'Отдел-отправитель' (innerArrival) = name(senderDepartmentInnerArrival(innerArrival)) IN documentPrmGroup;
 
 dateInnerArrival (innerArrival) <- dateInnerFlow(innerFlowInnerArrival(innerArrival)) ON CHANGE innerFlowInnerArrival(innerArrival);
 
@@ -5977,7 +5977,7 @@ priceItemInnerArrival 'Цена (максим.)' (item, innerArrival) = priceIte
 //    itemInnerArrivalDetail(innerArrivalDetail), innerArrivalInnerArrivalDetail(innerArrivalDetail))
 //    ON CHANGE itemInnerArrivalDetail (innerArrivalDetail);
 
-numberDisposalInnerArrival '№ распоряжения на переоценку' (innerArrival) = DATA STRING[30] (innerArrival) IN additionalInfo;
+numberDisposalInnerArrival '№ распоряжения на переоценку' (innerArrival) = DATA STRING[30] (innerArrival) IN documentPrmGroup;
 
 curRetailPriceInnerArrivalDetail 'Текущая розничная цена' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN pricingInnerArrivalDetailInfo;
 
@@ -8097,11 +8097,11 @@ DESIGN shipment FROM DEFAULT{
 
                 ADD s.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameDepartmentStoreShipment);
                     ADD PROPERTY(numberObject);
                     ADD PROPERTY(seriesObject);
                     ADD PROPERTY(dateShipment);
                     ADD PROPERTY(timeShipment);
-                    ADD PROPERTY(nameDepartmentStoreShipment);
                 };
 
                 NEW headerCol1Row2 {
@@ -8316,11 +8316,11 @@ DESIGN returnSupplier FROM DEFAULT {
 
             ADD r.documentHeaderGroup {
                 childConstraints = TO THE RIGHT;
+                ADD PROPERTY(nameDepartmentStoreReturnSupplier);
                 ADD PROPERTY(numberObject);
                 ADD PROPERTY(seriesObject);
                 ADD PROPERTY(dateReturnSupplier);
                 ADD PROPERTY(timeReturnSupplier);
-                ADD PROPERTY(nameDepartmentStoreReturnSupplier);
             };
 
             ADD r.documentPrmGroup {
@@ -8390,12 +8390,12 @@ DESIGN writeOff FROM DEFAULT{
 
                 ADD w.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameDepartmentStoreWriteOff);
                     ADD PROPERTY(nameNumeratorObject);
                     ADD PROPERTY(numberObject);
                     ADD PROPERTY(seriesObject);
                     ADD PROPERTY(dateWriteOff);
                     ADD PROPERTY(timeWriteOff);
-                    ADD PROPERTY(nameDepartmentStoreWriteOff);
                 }
 
                 ADD w.documentPrmGroup {
@@ -9602,35 +9602,29 @@ DESIGN innerFlow FROM DEFAULT{
 
         NEW header.box BEFORE specification.box {
 
-            childConstraints = TO THE BOTTOM;
+            childConstraints = TO THE RIGHT;
 
             NEW headerRow1 {
-                childConstraints = TO THE RIGHT;
-                ADD f.documentHeaderGroup {
-                    childConstraints = TO THE BOTTOM;
-                    NEW docHeadRow1 {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(dateInnerFlow);
-                        ADD PROPERTY(timeInnerFlow);
-                        ADD PROPERTY(numberObject);
-                        ADD PROPERTY(seriesObject);
-                    };
-                    NEW docHeadRow2 {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(nameDepartmentStoreInnerFlow);
-                        ADD PROPERTY(nameRecipientDepartmentInnerFlow);
-                    };
-                };
-
-            };
-
-            NEW headerRow2 {
                 childConstraints = TO THE BOTTOM;
-                ADD f.documentSumGroup {
+
+                ADD f.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
-                };
-            };
-        };
+                    ADD PROPERTY(nameDepartmentStoreInnerFlow);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateInnerFlow);
+                    ADD PROPERTY(timeInnerFlow);
+                }
+
+                ADD f.documentPrmGroup {
+                    childConstraints = TO THE RIGHT;
+                }
+            }
+
+            ADD f.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
     };
 };
 
@@ -9667,7 +9661,7 @@ FORM innerArrival 'Приход из другого отдела'
                    dateInnerArrival SHOWIF innerFlowInnerArrival(a), timeInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
                    cleanAllInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a), toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a),
                    noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), totalQuantityInnerArrival SHOWIF innerFlowInnerArrival(a),
-                   accountSumInnerArrival SHOWIF innerFlowInnerArrival(a), numberDisposalInnerArrival SHOWIF innerFlowInnerArrival(a)
+                   accountSumInnerArrival SHOWIF innerFlowInnerArrival(a), numberDisposalInnerArrival SHOWIF needToPriceChangeInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) SHOWIF innerFlowInnerArrival(a) numberInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
@@ -9704,45 +9698,40 @@ DESIGN innerArrival FROM DEFAULT{
             ADD i.box;
         };
         NEW header.box BEFORE specification.box {
-            childConstraints = TO THE BOTTOM;
+            childConstraints = TO THE RIGHT;
 
-            NEW headerRow1 {
-                childConstraints = TO THE RIGHT;
+            NEW headerCol1 {
+                childConstraints = TO THE BOTTOM;
+
                 ADD a.documentHeaderGroup {
-                    childConstraints = TO THE BOTTOM;
-                    NEW docHeadRow1 {
-                        childConstraints = TO THE RIGHTBOTTOM;
-                        ADD PROPERTY(dateInnerArrival);
-                        ADD PROPERTY(timeInnerArrival);
-                        ADD PROPERTY(numberArrival);
-                        ADD PROPERTY(seriesArrival);
-                    };
-                    NEW docHeadRow2 {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(nameDepartmentStoreInnerArrival);
-                        ADD PROPERTY(nameSenderDepartmentInnerArrival);
-                    };
-                };
-                ADD a.consumptionGroup {
-                    childConstraints = TO THE BOTTOM;
-                    ADD PROPERTY (toFillInnerArrivalDetailsInnerArrival);
-                    ADD PROPERTY (cleanAllInnerArrivalDetailsInnerArrival);
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameDepartmentStoreInnerArrival);
+                    ADD PROPERTY(numberArrival);
+                    ADD PROPERTY(seriesArrival);
+                    ADD PROPERTY(dateInnerArrival);
+                    ADD PROPERTY(timeInnerArrival);
                 }
 
-            };
+                NEW headerCol1Row2 {
+                    childConstraints = TO THE RIGHT;
 
-            NEW headerRow2 {
+                    ADD a.documentPrmGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+
+                    ADD a.consumptionGroup {
+                        childConstraints = TO THE BOTTOM;
+                        ADD PROPERTY (cleanAllInnerArrivalDetailsInnerArrival);
+                    }
+                }
+            }
+
+            ADD a.documentSumGroup {
                 childConstraints = TO THE BOTTOM;
-                ADD a.documentSumGroup {
-                    childConstraints = TO THE RIGHT;
-                };
-                ADD a.additionalInfo {
-                    childConstraints = TO THE RIGHT;
-                };
-            };
-        };
-    };
-};
+            }
+        }
+    }
+}
 
 FORM innerArrivals 'Приходы из других отделов'
     OBJECTS a=innerArrival
