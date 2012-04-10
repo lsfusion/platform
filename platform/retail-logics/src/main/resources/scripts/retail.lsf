@@ -5494,6 +5494,9 @@ notRoundImporterPriceShipmentDetail 'Цена изготовителя/импо�
 importerPriceShipmentDetail 'Цена изготовителя/импортера' (shipmentDetail) =
     round0(notRoundImporterPriceShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo;
 
+commonMarkupShipmentDetail 'Общий процент надбавки от цены изготовителя' (shipmentDetail) = [(X*(Y+100)/Z/100-1)*100](
+    supplierPriceShipmentDetail(shipmentDetail), retailMarkupShipmentDetail(shipmentDetail), importerPriceShipmentDetail(shipmentDetail));
+
 amountMarkupShipmentDetail 'Сумма торговой надбавки (за ед.)' (shipmentDetail) =
     supplierPriceShipmentDetail(shipmentDetail) *
     (UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, retailMarkupShipmentDetail(shipmentDetail))/100;
@@ -6666,14 +6669,34 @@ descriptionPriceChangeInnerArrival 'Название документа' (priceC
 wareUserPriceChangeDetail 'Посуда (ИД)' (userPriceChangeDetail) = DATA ware(userPriceChangeDetail) IN baseGroup;
 wareUserPriceChangeDetail(userPriceChangeDetail) <- wareItem(itemUserPriceChangeDetail(userPriceChangeDetail)) ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
 
-priceWareUserPriceChangeDetail 'Новая цена посуды' (userPriceChangeDetail) = DATA DOUBLE (userPriceChangeDetail) IN baseGroup;
+priceWareUserPriceChangeDetail 'Цена посуды' (userPriceChangeDetail) = DATA DOUBLE (userPriceChangeDetail) IN baseGroup;
 
-//priceWareUserPriceChangeDetail (userPriceChangeDetail) <- priceWareVal (wareUserPriceChangeDetail (userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail))
-//                                            ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+wareRangeUserPriceChangeDetail  (userPriceChangeDetail) = DATA range (userPriceChangeDetail);
+wareRangeUserPriceChangeDetail (userPriceChangeDetail) <- rangeWareVal(wareUserPriceChangeDetail(userPriceChangeDetail),
+    dateUserPriceChangeDetail(userPriceChangeDetail)) ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+
+numberWareRangeUserPriceChangeDetail 'НДС,номер по посуде' (userPriceChangeDetail) = dataRange(
+    wareRangeUserPriceChangeDetail(userPriceChangeDetail));
+
+dataWareRangeUserPriceChangeDetail 'НДС,% по посуде' (userPriceChangeDetail) = dataActingRateRangeDate(
+    wareRangeUserPriceChangeDetail(userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail));
 
 curWareUserPriceChangeDetail 'Текущая посуда (ИД)' (userPriceChangeDetail) = DATA ware(userPriceChangeDetail) IN idGroup;
 
 curPriceWareUserPriceChangeDetail 'Текущая цена посуды' (userPriceChangeDetail) = DATA DOUBLE (userPriceChangeDetail) IN baseGroup;
+
+curWareRangeUserPriceChangeDetail  (userPriceChangeDetail) = DATA range (userPriceChangeDetail);
+curWareRangeUserPriceChangeDetail (userPriceChangeDetail) <- rangeWareVal(curWareUserPriceChangeDetail(userPriceChangeDetail),
+    dateUserPriceChangeDetail(userPriceChangeDetail)) ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+
+curNumberWareRangeUserPriceChangeDetail 'Тек. НДС,номер по посуде' (userPriceChangeDetail) = dataRange(
+    curWareRangeUserPriceChangeDetail(userPriceChangeDetail));
+
+curDataWareRangeUserPriceChangeDetail 'Тек. НДС,% по посуде' (userPriceChangeDetail) = dataActingRateRangeDate(
+    curWareRangeUserPriceChangeDetail(userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail));
+
+
+isUserPriceChangeDetail(userPriceChangeDetail) = userPriceChangeDetail IS userPriceChangeDetail;
 
 TABLE itemDepartmentStore (item, departmentStore);
 
@@ -8724,6 +8747,9 @@ sumRetailVATPriceChangeDocumentDetail 'Сумма НДС за ед.' (priceChang
 sumMarkupPriceChangeDocumentDetail 'Сумма надбавки' (priceChangeDocumentDetail) = withoutWarePricePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
     sumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail) (-) supplierPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
+retailMarkupPriceChangeDocumentDetail 'Наценка,%' (priceChangeDocumentDetail) = [X*100/Y](
+    sumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail), supplierPriceChangeDocumentDetail(priceChangeDocumentDetail));
+
 dataWareRangePriceChangeDocumentDetail 'НДС по посуде' (priceChangeDocumentDetail) =
     dataActingRateRangeDate(rangeWareVal(warePriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)),
                             datePriceChangeDocumentDetail(priceChangeDocumentDetail));
@@ -8786,9 +8812,14 @@ oldSumRetailVATPriceChangeDocumentDetail 'Сумма НДС за ед.' (priceCh
 oldSumMarkupPriceChangeDocumentDetail 'Сумма надбавки' (priceChangeDocumentDetail) = oldWithoutWarePricePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
     oldSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail) (-) oldSupplierPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
+oldRetailMarkupPriceChangeDocumentDetail 'Текущая наценка,%' (priceChangeDocumentDetail) = [X*100/Y](
+    oldSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail), oldImporterPriceChangeDocumentDetail(priceChangeDocumentDetail));
+
 oldDataWareRangePriceChangeDocumentDetail 'НДС по посуде' (priceChangeDocumentDetail) =
     dataActingRateRangeDate(rangeWareVal(oldWarePriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)),
                             datePriceChangeDocumentDetail(priceChangeDocumentDetail));
+//oldNumberWareRangePriceChangeDocumentDetail 'Тек. НДС, номер по посуде' (priceChangeDocumentDetail) =
+//    dataRange(rangeWareVal(oldWarePriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)));
 
 oldSumVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде, за ед.' (priceChangeDocumentDetail) = [round0(X*Y/(100+Y))](
      oldPriceWarePriceChangeDocumentDetail (priceChangeDocumentDetail), oldDataWareRangePriceChangeDocumentDetail(priceChangeDocumentDetail));
@@ -8796,6 +8827,8 @@ oldSumVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде, з�
 oldSumDetailVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде' (priceChangeDocumentDetail) =
     oldSumVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) * quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
+commonMarkupPriceChangeDocumentDetail 'Общий процент надбавки от цены изготовителя' (priceChangeDocumentDetail) = [(X/Y-1)*100](
+    supplierPriceChangeDocumentDetail(priceChangeDocumentDetail), importerPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 oldTotalSumImporterPricePriceChangeDocument 'Старая сумма изготовителя' (priceChangeDocument) = GROUP SUM
     oldImporterPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)
@@ -9323,18 +9356,86 @@ DESIGN inventories FROM DEFAULT {
 @metaCodeDocumentMachineryPriceTransaction(userPriceChange);
 @metaCodeDocumentLabelTransaction(userPriceChange);
 
+percMarkupUserPriceChange 'Процент торговой надбавки'  = DATA DOUBLE (userPriceChange);
+percDiscountUserPriceChange 'Процент скидки от розн. цены'  = DATA DOUBLE (userPriceChange);
+toShowDiscountUserPriceChange (userPriceChange) =  userPriceChange IS userPriceChange AND NOT percMarkupUserPriceChange(userPriceChange);
+toShowMarkupUserPriceChange (userPriceChange) =  userPriceChange IS userPriceChange AND NOT percDiscountUserPriceChange(userPriceChange);
+
+newDiscountRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetail) =  [roundMinus1(X-(X*Y)/100)](
+    curRetailPriceUserPriceChangeDetail(userPriceChangeDetail), percDiscountUserPriceChange(userPriceChange));
+
+newMarkupRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetail) = [roundMinus1(X+(X*Y)/100+(X+(X*Y)/100)*Z/100+F)](
+    curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail),
+    percMarkupUserPriceChange(userPriceChange),
+    curDataRetailRangeUserPriceChangeDetail(userPriceChangeDetail),
+    (UNION OVERRIDE 0.0 IF userPriceChangeDetail IS userPriceChangeDetail, curPriceWareUserPriceChangeDetail(userPriceChangeDetail)));
+
+
+
+FORM addPercMarkupUserPriceChange 'Изменить наценку товара'
+    OBJECTS u=userPriceChange FIXED PANEL
+    PROPERTIES (u) percMarkupUserPriceChange
+;
+
+
+showFormAddPercMarkupUserPriceChange 'Изменить наценку товара' (userPriceChange) = ACTION (userPriceChange) {
+        FORM addPercMarkupUserPriceChange OBJECTS u = userPriceChange AS userPriceChange MODAL;
+        IF formResult() == formResult.ok THEN {
+            FOR userPriceChangeUserPriceChangeDetail(userPriceChangeDetail) == userPriceChange DO {
+                SET importerPriceUserPriceChangeDetail(userPriceChangeDetail) <- curImporterPriceUserPriceChangeDetail(userPriceChangeDetail);
+                SET supplierPriceUserPriceChangeDetail(userPriceChangeDetail) <- curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail);
+                SET retailRangeUserPriceChangeDetail(userPriceChangeDetail) <- curRetailRangeUserPriceChangeDetail(userPriceChangeDetail);
+                SET priceWareUserPriceChangeDetail(userPriceChangeDetail) <- curPriceWareUserPriceChangeDetail(userPriceChangeDetail);
+                SET wareRangeUserPriceChangeDetail(userPriceChangeDetail) <- curWareRangeUserPriceChangeDetail(userPriceChangeDetail);
+                SET retailPriceUserPriceChangeDetail(userPriceChangeDetail) <- newMarkupRetailPriceUserPriceChangeDetail(userPriceChange, userPriceChangeDetail);
+            }
+        }
+} TOOLBAR CONFIRM;
+
+
+FORM addPercDiscountUserPriceChange 'Сделать скидку'
+    OBJECTS u=userPriceChange FIXED PANEL
+    PROPERTIES (u) percDiscountUserPriceChange
+;
+
+showFormAddPercDiscountUserPriceChange 'Сделать скидку' (userPriceChange) = ACTION (userPriceChange) {
+        FORM addPercDiscountUserPriceChange OBJECTS u = userPriceChange AS userPriceChange MODAL;
+        IF formResult() == formResult.ok THEN {
+            FOR userPriceChangeUserPriceChangeDetail(userPriceChangeDetail) == userPriceChange DO {
+                SET importerPriceUserPriceChangeDetail(userPriceChangeDetail) <- curImporterPriceUserPriceChangeDetail(userPriceChangeDetail);
+                SET supplierPriceUserPriceChangeDetail(userPriceChangeDetail) <- curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail);
+                SET retailRangeUserPriceChangeDetail(userPriceChangeDetail) <- curRetailRangeUserPriceChangeDetail(userPriceChangeDetail);
+                SET priceWareUserPriceChangeDetail(userPriceChangeDetail) <- curPriceWareUserPriceChangeDetail(userPriceChangeDetail);
+                SET wareRangeUserPriceChangeDetail(userPriceChangeDetail) <- curWareRangeUserPriceChangeDetail(userPriceChangeDetail);
+                SET retailPriceUserPriceChangeDetail(userPriceChangeDetail) <- newDiscountRetailPriceUserPriceChangeDetail(userPriceChange, userPriceChangeDetail);
+            }
+        }
+} TOOLBAR CONFIRM;
+
+// todo: пока что сделал так, что можно выбрать только один экшн на изменение цены.
+//       Для расчета новых показателей цены, необходимо чтобы все поля были не пустые.....
+
 FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
+     OBJECTS d=userPriceChangeDetail
     PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
-                   dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange, noteUserPriceChange, numberDisposalUserPriceChange//, nameRevaluationCommitteePriceChangeDocument
+                   dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange, noteUserPriceChange, numberDisposalUserPriceChange
 
-    OBJECTS d=userPriceChangeDetail
+    PROPERTIES showFormAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
+               showFormAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u)
+
+
     PROPERTIES (d) numberUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
-//                   curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
+                   curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                    curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
-                   curDataRetailRangeUserPriceChangeDetail, numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
-                   curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, curPriceWareUserPriceChangeDetail, priceWareUserPriceChangeDetail,
-                   ADDOBJ, delete
+                   oldRetailMarkupPriceChangeDocumentDetail, retailMarkupPriceChangeDocumentDetail,
+                   curNumberRetailRangeUserPriceChangeDetail, curDataRetailRangeUserPriceChangeDetail,
+                   numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
+                   curPriceWareUserPriceChangeDetail, priceWareUserPriceChangeDetail,
+                   curNumberWareRangeUserPriceChangeDetail, curDataWareRangeUserPriceChangeDetail,
+                   numberWareRangeUserPriceChangeDetail, dataWareRangeUserPriceChangeDetail,
+                   curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, ADDOBJ, delete
+//    PROPERTIES (u, d)  newMarkupRetailPriceUserPriceChangeDetail, newDiscountRetailPriceUserPriceChangeDetail
 
     PROPERTIES inputMultipleItemsUserPriceChange(u) TODRAW d, addUserPriceChangeDetailBarcode(u) TODRAW d
     FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
@@ -9346,18 +9447,28 @@ DESIGN userPriceChange FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
 
-         u.box {
-                childConstraints = TO THE BOTTOM;
-                ADD u.numberedGroup {
-                    childConstraints = TO THE RIGHT;
-                };
-                ADD u.documentHeaderGroup {
-                    childConstraints = TO THE RIGHT;
-                };
-                ADD u.additionalInfo {
-                    childConstraints = TO THE RIGHT;
-                };
-         };
+        u.box {
+            childConstraints = TO THE BOTTOM;
+            ADD u.numberedGroup {
+                childConstraints = TO THE RIGHT;
+            };
+            ADD u.documentHeaderGroup {
+                childConstraints = TO THE RIGHT;
+            };
+            ADD u.additionalInfo {
+                childConstraints = TO THE RIGHT;
+            };
+        };
+
+        PROPERTY(importerPriceUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(supplierPriceUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(retailMarkupPriceChangeDocumentDetail) { background = #FFFFCC; }
+        PROPERTY(numberRetailRangeUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(dataRetailRangeUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(priceWareUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(numberWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(dataWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(retailPriceUserPriceChangeDetail) { background = #FFFFCC; }
     }
 }
 
@@ -9379,10 +9490,15 @@ FORM userPriceChanges 'Переоценки товаров'
 
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) READONLY numberUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
-                   curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
-                   curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail, curDataRetailRangeUserPriceChangeDetail,
-                   numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail, curRetailPriceUserPriceChangeDetail,
-                   retailPriceUserPriceChangeDetail, curPriceWareUserPriceChangeDetail, priceWareUserPriceChangeDetail
+                            curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
+                            curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
+                            oldRetailMarkupPriceChangeDocumentDetail, retailMarkupPriceChangeDocumentDetail,
+                            curNumberRetailRangeUserPriceChangeDetail, curDataRetailRangeUserPriceChangeDetail,
+                            numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
+                            curPriceWareUserPriceChangeDetail, priceWareUserPriceChangeDetail,
+                            curNumberWareRangeUserPriceChangeDetail, curDataWareRangeUserPriceChangeDetail,
+                            numberWareRangeUserPriceChangeDetail, dataWareRangeUserPriceChangeDetail,
+                            curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail
 
 
     FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
@@ -10503,6 +10619,8 @@ NAVIGATOR {
             ADD statement;
             ADD numerator;
             ADD userPriceChange;
+            ADD addPercDiscountUserPriceChange;
+            ADD addPercMarkupUserPriceChange;
             ADD returnSupplier;
             ADD barcodeForm;
             ADD bill;
