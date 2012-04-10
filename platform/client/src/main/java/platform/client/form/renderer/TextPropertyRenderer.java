@@ -2,7 +2,6 @@ package platform.client.form.renderer;
 
 import platform.client.form.PropertyRendererComponent;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ComponentDesign;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,6 +11,8 @@ import java.text.Format;
 public class TextPropertyRenderer extends JTextArea implements PropertyRendererComponent {
 
     Format format;
+
+    private Color defaultBackground = Color.WHITE;
 
     public TextPropertyRenderer(ClientPropertyDraw property) {
         super();
@@ -24,6 +25,7 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRendererC
 
         if (property.design != null)
             property.design.designCell(this);
+        defaultBackground = getBackground();
         setEditable(false);
     }
 
@@ -39,7 +41,7 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRendererC
             }
         } else {
             setBorder(BorderFactory.createEmptyBorder(2, 3, 1, 2));
-            setBackground(Color.WHITE);
+            setBackground(defaultBackground);
         }
     }
 

@@ -12,12 +12,15 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
 
     Format format;
 
+    private Color defaultBackground = Color.WHITE;
+
     LabelPropertyRenderer(ClientPropertyDraw property) {
         super();
         if (property != null) {
             format = property.getFormat();
             setOpaque(true);
             property.design.designCell(this);
+            defaultBackground = getBackground();
         }
     }
 
@@ -47,7 +50,7 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
                 setBackground(PropertyRendererComponent.SELECTED_ROW_BACKGROUND);
             }
         } else {
-            setBackground(Color.WHITE);
+            setBackground(defaultBackground);
         }
     }
 
