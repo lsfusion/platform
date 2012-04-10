@@ -105,7 +105,7 @@ seriesNumberObject 'Серия/Номер' (numberedObject) = [FORMULA STRING[21
 CLASS ABSTRACT numeratedObject 'Нумерируемый объект' : numberedObject;
 
 numeratorObject 'Нумератор (ИД)' = DATA numerator (numeratedObject);
-nameNumeratorObject 'Нумератор' (numeratedObject) = name(numeratorObject(numeratedObject)) IN numberedGroup;
+nameNumeratorObject 'Нумератор' (numeratedObject) = name(numeratorObject(numeratedObject)) IN numberedGroup MINCHARWIDTH 7 PREFCHARWIDTH 15;
 
 setValueNumeratedObject 'Сгенерировать номер' = ACTION (numeratedObject) {
     SET numberObject(numeratedObject) <- curStringValueNumerator(numeratorObject(numeratedObject));
@@ -382,7 +382,7 @@ META metaCodeObjectWithPostEx (object, captionPosted)
     nameDepartmentStore###object 'Отдел документа' (object) = name(departmentStore###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 20 PREFCHARWIDTH 40;;
 
-    note###object 'Примечание' = DATA STRING[100] (object) IN additionalInfo MINCHARWIDTH 30 PREFCHARWIDTH 80;
+    note###object 'Примечание' = DATA STRING[100] (object) IN additionalInfo MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup;
 
     object###object##Detail 'Строка документа' = DATA object (object##Detail) IN idGroup;
 
@@ -5731,7 +5731,7 @@ CLASS writeOffDetail 'Строка списания' : balanceItemLedger;
 CLASS reasonOff 'Причина списания' : named;
 
 reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
-nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN additionalInfo;
+nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN documentPrmGroup;
 
 quantityWriteOffDetail 'Кол-во для строки списания' = DATA INTEGER (writeOffDetail) IN baseGroup;
 
@@ -6228,10 +6228,10 @@ supplierReturnSupplier 'Поставщик (ИД)' (returnSupplier) = DATA suppl
 
 supplierReturnSupplierDetail 'Поставщик (ИД)' (returnSupplierDetail) = supplierReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
 
-nameSupplierReturnSupplier 'Поставщик' (returnSupplier) = name(supplierReturnSupplier(returnSupplier)) IN documentHeaderGroup
+nameSupplierReturnSupplier 'Поставщик' (returnSupplier) = name(supplierReturnSupplier(returnSupplier)) IN documentPrmGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40;
 
-numberDisposalReturnSupplier '№ распоряжения на переоценку' (returnSupplier) = DATA STRING[30] (returnSupplier) IN additionalInfo;
+numberDisposalReturnSupplier '№ распоряжения на переоценку' (returnSupplier) = DATA STRING[30] (returnSupplier) IN documentPrmGroup;
 
 // информация по товару
 
@@ -7171,7 +7171,7 @@ retailSumReturnSupplier 'Розничная сумма' (returnSupplier) = GROUP
 CLASS priceChangeReturnSupplier 'Переоценка на возврате' : priceChangeDocument;
 CLASS priceChangeReturnSupplierDetail 'Строка переоценки на возврате' : priceChangeDocumentDetail;
 
-needToPriceChangeReturnSupplierDetail (returnSupplierDetail) = supplierPriceReturnSupplierDetail(returnSupplierDetail) != curRetailPriceReturnSupplierDetail(returnSupplierDetail);
+needToPriceChangeReturnSupplierDetail (returnSupplierDetail) = retailPriceReturnSupplierDetail(returnSupplierDetail) != curRetailPriceReturnSupplierDetail(returnSupplierDetail);
 
 needToPriceChangeReturnSupplier (returnSupplier) = GROUP SUM 1 IF needToPriceChangeReturnSupplierDetail(returnSupplierDetail)
                                                    BY returnSupplierReturnSupplierDetail(returnSupplierDetail);
@@ -8108,7 +8108,6 @@ DESIGN shipment FROM DEFAULT{
                     childConstraints = TO THE RIGHT;
                     ADD s.documentPrmGroup {
                         childConstraints = TO THE BOTTOM;
-                        ADD PROPERTY(noteShipment);
                     }
                     ADD s.shipmentOrderGroup {
                         childConstraints = TO THE BOTTOM;
@@ -8207,7 +8206,7 @@ FORM returnSupplier 'Возврат поставщику'
     PROPERTIES(r) numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
                   nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
                   totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier,
-                  retailSumReturnSupplier, numberDisposalReturnSupplier
+                  retailSumReturnSupplier, numberDisposalReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
     PROPERTIES(r) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
                   nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
@@ -8308,30 +8307,29 @@ DESIGN returnSupplier FROM DEFAULT {
         };
     };
 
-    NEW header.box BEFORE specification.box{
+    NEW header.box BEFORE specification.box {
+
+        childConstraints = TO THE RIGHT;
+
+        NEW headerCol1 {
             childConstraints = TO THE BOTTOM;
-        ADD r.documentHeaderGroup{
-            childConstraints = TO THE BOTTOM;
-            NEW first {
+
+            ADD r.documentHeaderGroup {
                 childConstraints = TO THE RIGHT;
                 ADD PROPERTY(numberObject);
                 ADD PROPERTY(seriesObject);
                 ADD PROPERTY(dateReturnSupplier);
                 ADD PROPERTY(timeReturnSupplier);
-            };
-            NEW second{
-                childConstraints = TO THE RIGHT;
                 ADD PROPERTY(nameDepartmentStoreReturnSupplier);
-                ADD PROPERTY(nameSupplierReturnSupplier);
             };
-        };
+
+            ADD r.documentPrmGroup {
+                childConstraints = TO THE BOTTOM;
+            };
+        }
 
         ADD r.documentSumGroup{
-            childConstraints = TO THE RIGHT;
-        };
-
-        ADD r.additionalInfo {
-            childConstraints = TO THE RIGHT;
+            childConstraints = TO THE BOTTOM;
         };
     };
 
@@ -8383,6 +8381,33 @@ DESIGN writeOff FROM DEFAULT{
 
     main {
         preferredSize = (1024, 768);
+
+        NEW header.box BEFORE d.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
+
+                ADD w.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateWriteOff);
+                    ADD PROPERTY(timeWriteOff);
+                    ADD PROPERTY(nameDepartmentStoreWriteOff);
+                }
+
+                ADD w.documentPrmGroup {
+                    childConstraints = TO THE RIGHT;
+                }
+            }
+
+            ADD w.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+
         d.panel{
             childConstraints = TO THE BOTTOM;
         }
@@ -9602,9 +9627,6 @@ DESIGN innerFlow FROM DEFAULT{
             NEW headerRow2 {
                 childConstraints = TO THE BOTTOM;
                 ADD f.documentSumGroup {
-                    childConstraints = TO THE RIGHT;
-                };
-                ADD f.additionalInfo {
                     childConstraints = TO THE RIGHT;
                 };
             };
