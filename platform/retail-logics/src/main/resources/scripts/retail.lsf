@@ -5501,9 +5501,14 @@ amountRetailVATShipmentDetail 'Сумма розничного НДС (за ед
 
 nonRoundRetailPriceShipmentDetail 'Цена розничная (неокруглен.)'(shipmentDetail) = supplierPriceShipmentDetail(shipmentDetail) (+) amountMarkupShipmentDetail(shipmentDetail) (+) amountRetailVATShipmentDetail(shipmentDetail);
 
-retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = IF isFixPriceShipmentDetail(shipmentDetail)
+calculatedRetailPriceShipmentDetail 'Новая розничная цена (расч.)' (shipmentDetail) = IF isFixPriceShipmentDetail(shipmentDetail)
     THEN roundMinus1(importerPriceShipmentDetail(shipmentDetail) (+) overPriceWareShipmentDetail(shipmentDetail))
     ELSE roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail) (+) overPriceWareShipmentDetail(shipmentDetail)) PERSISTENT;
+
+retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail);
+
+retailPriceShipmentDetail (shipmentDetail) <- calculatedRetailPriceShipmentDetail (shipmentDetail)
+    ON CHANGE calculatedRetailPriceShipmentDetail (shipmentDetail);
 
 @metaCodeTotals (shipment);
 
