@@ -55,7 +55,7 @@ public class ColorClass extends DataClass {
 
     @Override
     public String getString(Object value, SQLSyntax syntax) {
-        return "#" + Integer.toHexString(((Color) value).getRGB()).substring(2, 8);
+        return String.valueOf(((Color)value).getRGB());
     }
 
     @Override
@@ -96,8 +96,6 @@ public class ColorClass extends DataClass {
     public Color read(Object value) {
         if (value instanceof Integer) {
             return new Color((Integer) value);
-        } else if (value instanceof Color) {
-            return (Color) value;
         } else {
             return null;
         }
