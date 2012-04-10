@@ -1930,7 +1930,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private void showWarnings() {
         for (String warningText : warningList) {
-            scriptLogger.info("WARNING!" + warningText);
+            scriptLogger.warn("WARNING!" + warningText);
         }
     }
 

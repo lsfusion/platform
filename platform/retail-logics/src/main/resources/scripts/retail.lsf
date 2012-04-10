@@ -47,9 +47,6 @@ GROUP issuanceConsignmentGroup 'Отпуск' : baseGroup;
 GROUP loadingConsignmentGroup 'ПРР' : baseGroup;
 GROUP sumConsignmentGroup 'Суммы' : baseGroup;
 
-CLASS ABSTRACT consignment 'Накладная';
-CLASS ABSTRACT consignmentDetail 'Строка накладной';
-
 // ----------------------------------- Нумераторы ------------------------------------------ //
 
 CLASS numerator 'Нумератор' : named;
@@ -4040,7 +4037,7 @@ TABLE accountPriceLedger (accountPriceLedger);
 CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
 TABLE retailPriceLedger (retailPriceLedger);
 
-CLASS ABSTRACT warePriceLedger 'Изменение цены посуды';
+CLASS ABSTRACT warePriceLedger 'Изменение цены посуды' : importerPriceLedger; // todo : смотри выше
 TABLE warePriceLedger (warePriceLedger);
 
 //---------------------------- Суммовые регистры ----------------------------------------//
@@ -4053,6 +4050,11 @@ CLASS ABSTRACT outAccountSumDocumentLedger 'Учетный документ (р�
 
 CLASS ABSTRACT incAccountSumHistoryDocumentLedger 'Учетный документ (приход, с историей)' : incAccountSumDocumentLedger, historyObject;
 CLASS ABSTRACT outAccountSumHistoryDocumentLedger 'Учетный документ (расход, с историей)' : outAccountSumDocumentLedger, historyObject;
+
+//---------------------------- Накладные ----------------------------------------//
+
+CLASS ABSTRACT consignment 'Накладная' : outAccountSumDocumentLedger; // todo : чит, чтобы правильно считался getClassWhere и не падал в локальный минимум
+CLASS ABSTRACT consignmentDetail 'Строка накладной' : balanceItemLedger; // todo : тоже самое
 
 //---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
 
@@ -4078,8 +4080,8 @@ CLASS actOfStudy 'Акт проработки (разделки)' : historyObjec
 CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStudy, postedObject;
 TABLE actOfStudy (actOfStudy);
 
-CLASS studyInputDetail 'Товар' : balanceItemLedger;
-CLASS studyOutputDetail 'Полуфабрикаты' : balanceItemLedger, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
+CLASS studyInputDetail 'Строка проработки (вход)' : balanceItemLedger;
+CLASS studyOutputDetail 'Строка проработки (выход)' : balanceItemLedger, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
 
 @metaCodePostedObject (actOfStudy);
       //      ??????????????????? не понятно что делать с процентом надбавок ??????????????????????   //
@@ -6386,11 +6388,11 @@ shipmentBaseReturnSupplier 'Основание отпуска' (returnSupplier) 
 
 dataLoadingPlaceReturnSupplier 'Пункт погрузки' (returnSupplier) = DATA STRING[50] (returnSupplier);
 loadingPlaceReturnSupplier 'Пункт погрузки' (returnSupplier) = UNION OVERRIDE addressStore(storeDepartmentStore(departmentStoreReturnSupplier(returnSupplier))),
-                                                       dataLoadingPlaceStatement (returnSupplier);
+                                                                              dataLoadingPlaceReturnSupplier (returnSupplier);
 
 dataUnloadingPlaceReturnSupplier 'Пункт разгрузки' (returnSupplier) = DATA STRING[50] (returnSupplier);
 unloadingPlaceReturnSupplier 'Пункт разгрузки' (returnSupplier) = UNION OVERRIDE addressLegalEntity(supplierReturnSupplier(returnSupplier)),
-                                                       dataUnloadingPlaceReturnSupplier (returnSupplier);
+                                                                                 dataUnloadingPlaceReturnSupplier (returnSupplier);
 
 readdressingReturnSupplier 'Переадресовка' (returnSupplier) = DATA STRING[50] (returnSupplier);
 
@@ -7961,9 +7963,9 @@ sumGrossWeightConsignmentDetail 'Общая масса груза, т.' (consign
                                                                                         sumGrossWeightReturnSupplier(consignment),
                                                                                         sumGrossWeightInnerFlow(consignment);
 
-inConsignmentConsignmentDetail (consignment, consignmentDetail) = UNION EXCLUSIVE inStatementStatementDetail(consignment, consignmentDetail),
-                                                                                  isReturnSupplier(consignment, consignmentDetail),
-                                                                                  inInnerFlowInnerFlowDetail(consignment, consignmentDetail);
+consignmentConsignmentDetail (consignmentDetail) = UNION EXCLUSIVE statementStatementDetail(consignmentDetail),
+                                                                   returnSupplierReturnSupplierDetail(consignmentDetail),
+                                                                   innerFlowInnerFlowDetail(consignmentDetail);
 
 // ---------------------------- Формы для накладных --------------------------------- //
 FORM consignment 'Накладная'
@@ -7984,7 +7986,7 @@ FORM consignment 'Накладная'
                   costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
                   packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteInnerFlowDetail
 
-    //FILTERS inConsignmentConsignmentDetail(c, d)
+    FILTERS consignmentConsignmentDetail(d) == c
 ;
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
