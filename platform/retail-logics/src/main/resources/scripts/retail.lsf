@@ -4942,7 +4942,7 @@ descriptionInventoryLedger 'Название документа' (inventoryLedge
 
 //---------------------------- Отгрузка по безналу(розница) ----------------------------//
 
-GROUP customerGroup 'Покупатель' : publicGroup;
+GROUP customerGroup 'Покупатель' : documentPrmGroup;
 GROUP itemSpecificationDetailInfo 'Информация по товару' : baseGroup;
 
 CLASS specification 'Счет-фактура': historyObject, numeratedObject;
@@ -4962,7 +4962,7 @@ managerCustomerSpecification 'Руководитель' (specification) = manage
 phoneCustomerSpecification 'Телефон' (specification) = phoneLegalEntity(customerSpecification(specification)) IN customerGroup;
 
 objectiveAcquiringSpecification(specification) = DATA objectiveAcquiring (specification) IN idGroup;
-nameObjectiveAcquiringSpecification 'Цель приобретения' (specification) = name(objectiveAcquiringSpecification(specification)) IN additionalInfo;
+nameObjectiveAcquiringSpecification 'Цель приобретения' (specification) = name(objectiveAcquiringSpecification(specification)) IN documentPrmGroup;
 
 // расчетный счет, банк, и т.д.
 
@@ -4975,13 +4975,13 @@ timeSpecification 'Время документа' (specification) = DATA TIME (s
 dateTimeSpecification 'Дата/время документа' (specification) = toDateTime(dateSpecification(specification), timeSpecification(specification));
 
 
-dateToSpecification 'Срок действия с/ф' (specification) = DATA DATE (specification) IN documentHeaderGroup;
+dateToSpecification 'Срок действия с/ф' (specification) = DATA DATE (specification) IN documentPrmGroup;
 overdueSpecification 'Просроченные с/ф' (specification) = dateToSpecification(specification) < currentDate();
 noOverdueSpecification 'Непросроченные с/ф' (specification) = dateToSpecification(specification) >= currentDate();
 
 
 departmentStoreSpecification 'Отдел документа (ИД)' (specification) = DATA departmentStore(specification) IN idGroup;
-nameDepartmentStoreSpecification 'Отдел выписки (отгрузки) документа' (specification) = name(departmentStoreSpecification(specification))
+nameDepartmentStoreSpecification 'Отдел документа' (specification) = name(departmentStoreSpecification(specification))
     IN documentHeaderGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
 noteSpecification 'Примечание' = DATA STRING[100] (specification) IN additionalInfo;
@@ -5032,8 +5032,8 @@ departmentStoreSpecificationDetail(specificationDetail) = departmentStoreSpecifi
 
 retailPriceSpecificationDetail 'Цена товара (розн.)' = DATA DOUBLE (specificationDetail) IN baseGroup;
 
-sumSpecificationDetail 'Сумма' (specificationDetail) = round0(retailPriceSpecificationDetail(specificationDetail)*quantitySpecificationDetail(specificationDetail));
-sumSpecification 'Общая сумма' (specification) = GROUP SUM sumSpecificationDetail(specificationDetail) BY specificationSpecificationDetail(specificationDetail) IN documentSumGroup;
+sumSpecificationDetail 'Сумма с НДС' (specificationDetail) = round0(retailPriceSpecificationDetail(specificationDetail)*quantitySpecificationDetail(specificationDetail));
+sumSpecification 'Общая сумма с НДС' (specification) = GROUP SUM sumSpecificationDetail(specificationDetail) BY specificationSpecificationDetail(specificationDetail) IN documentSumGroup;
 
 priceBySpecificationItem (specification, item) = GROUP EQUAL retailPriceSpecificationDetail(specificationDetail)
     BY specificationSpecificationDetail(specificationDetail), itemSpecificationDetail(specificationDetail);
@@ -5050,6 +5050,9 @@ sumNDSSpecificationDetail 'НДС за ед.' (specificationDetail) = round0(dat
 totalSumNDSSpecificationDetail 'Сумма НДС' (specificationDetail) = round0(dataActingRateRangeSpecificationDetail(specificationDetail)*sumSpecificationDetail(specificationDetail)/100) IN baseGroup;
 sumNDSSpecification 'Общая сумма НДС' (specification) = GROUP SUM totalSumNDSSpecificationDetail(specificationDetail)
     BY specificationSpecificationDetail(specificationDetail) IN documentSumGroup;
+
+sumWithoutNDSSpecificationDetail 'Сумма без НДС' (specificationDetail) = sumSpecificationDetail(specificationDetail) (-) totalSumNDSSpecificationDetail(specificationDetail);
+sumWithoutNDSSpecification 'Общая сумма без НДС' (specification) = sumSpecification(specification) (-) sumNDSSpecification(specification) IN documentSumGroup;
 
 articleItemSpecificationDetail 'Артикул производителя/поставщика' (specificationDetail) = articleItem(itemSpecificationDetail(specificationDetail));
 nameCountryItemSpecificationDetail 'Страна производства/происхождения' (specificationDetail) = nameCountryItem(itemSpecificationDetail(specificationDetail));
@@ -5091,10 +5094,10 @@ CLASS statementDetail 'Строка выписки из розницы' : balanc
 
 //    шапка документа поставки
 customerStatement 'Покупатель (ИД)' (statement) = DATA customer (statement) IN idGroup;
-nameCustomerStatement 'Покупатель' (statement) = name(customerStatement(statement)) IN documentHeaderGroup
+nameCustomerStatement 'Покупатель' (statement) = name(customerStatement(statement)) IN documentPrmGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40;
 
-numberDisposalStatement '№ распоряжения на переоценку' (statement) = DATA STRING[30] (statement) IN additionalInfo;
+numberDisposalStatement '№ распоряжения на переоценку' (statement) = DATA STRING[30] (statement) IN documentPrmGroup;
 
 inStatementSpecification 'Включить в накладную' (statement, specification) = DATA BOOLEAN (statement, specification)
     IN idGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
@@ -5120,7 +5123,7 @@ statusSpecification 'Расход' (specification) = CASE
 quantityStatementDetail 'Количество' (statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
 
 retailPriceStatementDetail 'Цена товара (розн.)'(statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
-sumStatementDetail 'Сумма' (statementDetail) = round0(retailPriceStatementDetail(statementDetail)*quantityStatementDetail(statementDetail))IN baseGroup;
+sumStatementDetail 'Сумма с НДС' (statementDetail) = round0(retailPriceStatementDetail(statementDetail)*quantityStatementDetail(statementDetail))IN baseGroup;
 
 //departmentStoreStatementDetail(statementDetail) = departmentStoreStatement(statementStatementDetail(statementDetail));
 //retailPriceStatementDetail(statementDetail) <- retailPriceItemDepartmentVal (itemStatementDetail(statementDetail),
@@ -5151,7 +5154,10 @@ priceByItemStatement(item, statement) = GROUP EQUAL retailPriceStatementDetail(s
     BY itemStatementDetail(statementDetail), statementStatementDetail(statementDetail);
 
 totalQuantityStatement 'Общее количество' (statement) = GROUP SUM quantityStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN documentSumGroup;
-sumStatement 'Общая сумма' (statement) = GROUP SUM sumStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN documentSumGroup;
+sumStatement 'Общая сумма с НДС' (statement) = GROUP SUM sumStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN documentSumGroup;
+
+sumWithoutNDSStatementDetail 'Сумма без НДС' (statementDetail) = sumStatementDetail(statementDetail) (-) totalSumNDSStatementDetail(statementDetail);
+sumWithoutNDSStatement 'Общая сумма без НДС' (statement) = sumStatement(statement) (-) sumNDSStatement(statement) IN documentSumGroup;
 
 articleItemStatementDetail 'Артикул производителя/поставщика' (statementDetail) = articleItem(itemStatementDetail(statementDetail)) IN itemStatementDetailInfo;
 nameCountryItemStatementDetail 'Страна производства/происхождения' (statementDetail) = nameCountryItem(itemStatementDetail(statementDetail)) IN itemStatementDetailInfo;
@@ -9792,7 +9798,7 @@ FORM specificationForm 'Отгрузки по данной с/ф'
 
     OBJECTS st=statement
     PROPERTIES (st) READONLY seriesNumberObject, dateStatement, nameCustomerStatement, nameDepartmentStoreStatement,
-                             noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement
+                             noteStatement, totalQuantityStatement, sumNDSStatement, sumStatement
 
     FILTERS inStatementSpecification(st, sp)
 ;
@@ -9805,12 +9811,14 @@ FORM specification 'Счет-фактура'
     OBJECTS sp=specification FIXED PANEL
     PROPERTIES (sp) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreSpecification,
                     dateSpecification, timeSpecification, dateToSpecification, nameCustomerSpecification,
-                    nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
+                    nameObjectiveAcquiringSpecification, noteSpecification,
+                    quantitySpecification, sumWithoutNDSSpecification, sumNDSSpecification, sumSpecification
 
     OBJECTS d=specificationDetail
     PROPERTIES (d) numberSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail, quantitySpecificationDetail,
-                   retailPriceSpecificationDetail, dataActingRateRangeSpecificationDetail, sumNDSSpecificationDetail, totalSumNDSSpecificationDetail,
-                   sumSpecificationDetail, ADDOBJ, delete
+                   retailPriceSpecificationDetail, sumWithoutNDSSpecificationDetail, dataActingRateRangeSpecificationDetail,
+                   sumNDSSpecificationDetail, totalSumNDSSpecificationDetail, sumSpecificationDetail,
+                   ADDOBJ, delete
 
     PROPERTIES FORCE PANEL READONLY articleItemSpecificationDetail(d), nameCountryItemSpecificationDetail(d), balanceDepartmentStoreItemSpecificationDetail(d)
                    HIGHLIGHTIF highlightSpecificationDetail(d), availableQuantityItemBySpecificationDetail(d) HIGHLIGHTIF NotNullAvailableQuantityItemBySpecificationDetail(d)
@@ -9825,29 +9833,58 @@ DESIGN specification FROM DEFAULT{
     main {
         preferredSize = (1024, 768);
 
-        sp.documentSumGroup { caption = 'Суммы счет-фактуры'; };
+        NEW header.box BEFORE d.box {
+            childConstraints = TO THE RIGHT;
 
-        d.panel {
-            childConstraints = TO THE BOTTOM;
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
 
-        POSITION PROPERTY (balanceDepartmentStoreItemSpecificationDetail(d)) TO THE LEFT PROPERTY (availableQuantityItemBySpecificationDetail(d));
+                ADD sp.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameDepartmentStoreSpecification);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateSpecification);
+                    ADD PROPERTY(timeSpecification);
+                }
+
+                ADD sp.documentPrmGroup {
+                    childConstraints = TO THE BOTTOM;
+                    NEW headerRow21 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameCustomerSpecification);
+                        ADD PROPERTY(nameObjectiveAcquiringSpecification);
+                    }
+                    NEW headerRow22 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(dateToSpecification);
+                        ADD PROPERTY(noteSpecification);
+                    }
+                }
+            }
+
+            ADD sp.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
         }
-
     }
 }
 
 FORM specifications 'Счет-фактуры'
     OBJECTS sp=specification
     PROPERTIES (sp) READONLY numberObject, seriesObject, dateSpecification, timeSpecification, nameDepartmentStoreSpecification,
-                             nameCustomerSpecification, dateToSpecification, quantityDetailInSpecification, quantitySpecification, sumSpecification
+                             nameCustomerSpecification, dateToSpecification, quantityDetailInSpecification, quantitySpecification,
+                             sumWithoutNDSSpecification, sumNDSSpecification, sumSpecification
     PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
 
     PROPERTIES (sp)          ADDFORM, EDITFORM, delete
 
     OBJECTS d=specificationDetail
     PROPERTIES (d) READONLY  numberSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
-                             quantitySpecificationDetail, retailPriceSpecificationDetail, dataActingRateRangeSpecificationDetail,
-                             sumNDSSpecificationDetail, totalSumNDSSpecificationDetail,sumSpecificationDetail
+                             quantitySpecificationDetail, retailPriceSpecificationDetail,
+                             sumWithoutNDSSpecificationDetail, dataActingRateRangeSpecificationDetail,
+                             sumNDSSpecificationDetail, totalSumNDSSpecificationDetail, sumSpecificationDetail
 
     FILTERS         inSpecificationSpecificationDetail(sp, d)
 
@@ -9887,7 +9924,8 @@ FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
     PROPERTIES (st) numberObject, seriesObject, dateStatement, timeStatement, nameCustomerStatement,
                     nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, showFormSpecificationsStatement,
-                    noteStatement, totalQuantityStatement, sumStatement, sumNDSStatement, numberDisposalStatement
+                    noteStatement, totalQuantityStatement, sumWithoutNDSStatement, sumNDSStatement, sumStatement,
+                    numberDisposalStatement SHOWIF needToPriceChangeStatement(st)
 
     PROPERTIES(st) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
                    nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
@@ -9900,7 +9938,8 @@ FORM statement 'Отгрузка из розницы'
 
     OBJECTS d=statementDetail
     PROPERTIES (d)  numberStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
-                    retailPriceStatementDetail, numberRangeStatementDetail, dataActingRateRangeStatementDetail, sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail,
+                    retailPriceStatementDetail, sumWithoutNDSStatementDetail, numberRangeStatementDetail, dataActingRateRangeStatementDetail,
+                    sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail,
                     noteStatementDetail, ADDOBJ, delete
 
     PROPERTIES (d)  FORCE PANEL importerPriceStatementDetail, supplierPriceStatementDetail, nameWareStatementDetail, priceWareStatementDetail, dataRetailRangeStatementDetail,
@@ -9934,7 +9973,7 @@ DESIGN statement FROM DEFAULT {
                 ADD st.carConsignmentGroup;
                 ADD st.issuanceConsignmentGroup;
                 ADD st.loadingConsignmentGroup;
-                ADD st.sumConsignmentGroup{
+                ADD st.sumConsignmentGroup {
                     childConstraints = TO THE RIGHT;
                 };
                 POSITION st.issuanceConsignmentGroup TO THE RIGHT st.carConsignmentGroup;
@@ -9944,38 +9983,30 @@ DESIGN statement FROM DEFAULT {
         };
 
         NEW header.box BEFORE specification.box {
-            childConstraints = TO THE BOTTOM;
-            NEW headerRow1 {
-                childConstraints = TO THE RIGHT;
+            childConstraints = TO THE RIGHT;
+
+            NEW headerCol1 {
+                childConstraints = TO THE BOTTOM;
                 ADD st.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameDepartmentStoreStatement);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateStatement);
+                    ADD PROPERTY(timeStatement);
+                }
+                ADD st.documentPrmGroup {
                     childConstraints = TO THE BOTTOM;
-                    NEW docHeadRow1 {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(dateStatement);
-                        ADD PROPERTY(timeStatement);
-                        ADD PROPERTY(numberObject);
-                        ADD PROPERTY(seriesObject);
-                    };
-                    NEW docHeadRow2 {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(nameCustomerStatement);
-                        ADD PROPERTY(nameDepartmentStoreStatement);
-                    };
-                };
+                }
                 ADD st.specificationGroup {
                     childConstraints = TO THE BOTTOM;
-                };
-            };
+                }
+                POSITION st.documentPrmGroup TO THE LEFT st.specificationGroup;
+            }
 
-            NEW headerRow2 {
-                    childConstraints = TO THE RIGHT;
-                ADD st.documentSumGroup {
-                    childConstraints = TO THE RIGHT;
-                };
-                ADD st.additionalInfo {
-                    childConstraints = TO THE RIGHT;
-                };
-            };
+            ADD st.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
         }
     }
 }
@@ -9984,7 +10015,8 @@ DESIGN statement FROM DEFAULT {
 FORM statements 'Отгрузки из розницы'
     OBJECTS st=statement
     PROPERTIES (st)  READONLY objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameDepartmentStoreStatement,
-                             nameCustomerStatement, quantityStatementDetailsStatement, totalQuantityStatement, sumStatement
+                             nameCustomerStatement, quantityStatementDetailsStatement, totalQuantityStatement,
+                             sumWithoutNDSStatement, sumNDSStatement, sumStatement
 
     PROPERTIES (st)  ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
                      postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
@@ -9995,8 +10027,8 @@ FORM statements 'Отгрузки из розницы'
 
     OBJECTS d=statementDetail
     PROPERTIES (d)   READONLY numberStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
-                     retailPriceStatementDetail, numberRangeStatementDetail, dataActingRateRangeStatementDetail, sumNDSStatementDetail,
-                     totalSumNDSStatementDetail, sumStatementDetail, noteStatementDetail
+                     retailPriceStatementDetail, sumWithoutNDSStatementDetail, numberRangeStatementDetail, dataActingRateRangeStatementDetail,
+                     sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail, noteStatementDetail
 
     FILTERS          inStatementStatementDetail(st, d)
 ;
