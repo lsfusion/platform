@@ -96,6 +96,8 @@ public class ColorClass extends DataClass {
     public Color read(Object value) {
         if (value instanceof Integer) {
             return new Color((Integer) value);
+        } if (value instanceof Color) {
+            return (Color) value;
         } else {
             return null;
         }
