@@ -6644,7 +6644,7 @@ quantityUserPriceChangeDetail 'Кол-во переоценки' = DATA DOUBLE (
 quantityItemUserPriceChange 'Кол-во по товару' (item, userPriceChange) = GROUP SUM quantityUserPriceChangeDetail(detail)
                                                                                BY itemUserPriceChangeDetail(detail), userPriceChangeUserPriceChangeDetail(detail);
 
-numberDisposalUserPriceChange '№ распоряжения на переоценку' (userPriceChange) = DATA STRING[30] (userPriceChange) IN additionalInfo;
+numberDisposalUserPriceChange '№ распоряжения на переоценку' (userPriceChange) = DATA STRING[30] (userPriceChange) IN documentPrmGroup;
 
 importerPriceUserPriceChangeDetail 'Цена изготовителя' = DATA DOUBLE (userPriceChangeDetail);
 supplierPriceUserPriceChangeDetail 'Цена поставщика' = DATA DOUBLE (userPriceChangeDetail);
@@ -8932,22 +8932,22 @@ diffTotalSumVatWarePriceChangeDocumentDetail 'Изменение суммы НД
 
 
 diffTotalSumImporterPricePriceChangeDocument 'Изменение суммы изготовителя' (priceChangeDocument) = totalSumImporterPricePriceChangeDocument(priceChangeDocument) (-)
-    oldTotalSumImporterPricePriceChangeDocument(priceChangeDocument);
+    oldTotalSumImporterPricePriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
 diffTotalSumSupplierPricePriceChangeDocument 'Изменение суммы поставщика' (priceChangeDocument) = totalSumSupplierPricePriceChangeDocument(priceChangeDocument) (-)
-    oldTotalSumSupplierPricePriceChangeDocument(priceChangeDocument);
+    oldTotalSumSupplierPricePriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
 diffTotalSumMarkupPriceChangeDocument 'Изменение суммы надбавки' (priceChangeDocument) = totalSumMarkupPriceChangeDocument(priceChangeDocument) (-)
-    oldTotalSumMarkupPriceChangeDocument(priceChangeDocument);
+    oldTotalSumMarkupPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
 diffTotalSumRetailVATPriceChangeDocument 'Изменение суммы розничного НДС' (priceChangeDocument) = totalSumRetailVATPriceChangeDocument(priceChangeDocument) (-)
-    oldTotalSumRetailVATPriceChangeDocument(priceChangeDocument);
+    oldTotalSumRetailVATPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
 diffTotalSumWarePriceChangeDocument 'Изменение суммы посуды' (priceChangeDocument) = totalSumWarePriceChangeDocument(priceChangeDocument) (-)
-    oldTotalSumWarePriceChangeDocument(priceChangeDocument);
+    oldTotalSumWarePriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
 diffTotalSumVatWarePriceChangeDocument 'Изменение суммы НДС посуды' (priceChangeDocument) = totalSumVatWarePriceChangeDocument(priceChangeDocument) (-)
-    oldTotalSumVatWarePriceChangeDocument(priceChangeDocument);
+    oldTotalSumVatWarePriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
 nameRevaluationCommitteePriceChangeDocument 'Комиссия' (priceChangeDocument) = nameRevaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument));
 commonNameEmployeeCommitteePriceChangeDocument 'Сотрудники комиссии' (priceChangeDocument) = commonNameEmployeeCommittee(revaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument)));
@@ -9463,14 +9463,13 @@ showFormAddPercDiscountUserPriceChange 'Сделать скидку' (userPriceC
 
 FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
-     OBJECTS d=userPriceChangeDetail
     PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
-                   dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange, noteUserPriceChange, numberDisposalUserPriceChange
+                   dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
+                   diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
+                   diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument,
+                   noteUserPriceChange, numberDisposalUserPriceChange
 
-    PROPERTIES showFormAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
-               showFormAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u)
-
-
+    OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) numberUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
                    curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                    curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
@@ -9483,7 +9482,10 @@ FORM userPriceChange 'Переоценка товаров'
                    curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, ADDOBJ, delete
 //    PROPERTIES (u, d)  newMarkupRetailPriceUserPriceChangeDetail, newDiscountRetailPriceUserPriceChangeDetail
 
-    PROPERTIES inputMultipleItemsUserPriceChange(u) TODRAW d, addUserPriceChangeDetailBarcode(u) TODRAW d
+    PROPERTIES showFormAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
+               showFormAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u),
+               inputMultipleItemsUserPriceChange(u) TODRAW d, addUserPriceChangeDetailBarcode(u) TODRAW d
+
     FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
 
     EDIT userPriceChange OBJECT u
@@ -9493,18 +9495,29 @@ DESIGN userPriceChange FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
 
-        u.box {
-            childConstraints = TO THE BOTTOM;
-            ADD u.numberedGroup {
-                childConstraints = TO THE RIGHT;
-            };
-            ADD u.documentHeaderGroup {
-                childConstraints = TO THE RIGHT;
-            };
-            ADD u.additionalInfo {
-                childConstraints = TO THE RIGHT;
-            };
-        };
+        NEW header.box BEFORE d.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerCol1 {
+                childConstraints = TO THE BOTTOM;
+                ADD u.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameDepartmentStoreUserPriceChange);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateUserPriceChange);
+                    ADD PROPERTY(timeUserPriceChange);
+                }
+                ADD u.documentPrmGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+
+            ADD u.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
 
         PROPERTY(importerPriceUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(supplierPriceUserPriceChangeDetail) { background = #FFFFCC; }
