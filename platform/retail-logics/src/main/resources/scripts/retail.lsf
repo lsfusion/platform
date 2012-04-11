@@ -4072,7 +4072,6 @@ CLASS ABSTRACT priceTransactionDocument 'Документ, требующий з
 //---------------------------- Карты проработки (разруба) ----------------------------------------//
 GROUP cutGroup 'Разделка' : baseGroup;
 GROUP actGroup 'Акт' : publicGroup;
-GROUP contractorGroup 'Контрагент' : publicGroup;
 GROUP itemStudyOutputDetailInfo 'Ценовый характеристики п/ф' : publicGroup;
 
 CLASS cutting 'Карта проработки (разделки)' : named, numeratedObject;
@@ -4131,23 +4130,23 @@ departmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idG
 nameDepartmentStoreActOfStudy 'Отдел документа' (actOfStudy) = name(departmentStoreActOfStudy(actOfStudy));
 //numberActOfStudy 'Номер акта' = DATA STRING[10] (actOfStudy) IN baseGroup;
 
-dateActOfStudy 'Дата документа' (actOfStudy) = DATA DATE (actOfStudy) IN baseGroup;
-    dateActOfStudy (actOfStudy) <- currentDate() ON ASSIGN actOfStudy AS actOfStudy;
+dateActOfStudy 'Дата документа' (actOfStudy) = DATA DATE (actOfStudy) IN documentHeaderGroup;
+dateActOfStudy (actOfStudy) <- currentDate() ON ASSIGN actOfStudy AS actOfStudy;
 
-timeActOfStudy 'Время документа' (actOfStudy) = DATA TIME (actOfStudy) IN baseGroup;
-    timeActOfStudy (actOfStudy) <- currentTime() ON ASSIGN actOfStudy AS actOfStudy;
+timeActOfStudy 'Время документа' (actOfStudy) = DATA TIME (actOfStudy) IN documentHeaderGroup;
+timeActOfStudy (actOfStudy) <- currentTime() ON ASSIGN actOfStudy AS actOfStudy;
 
 dateTimeActOfStudy 'Дата/время документа' (actOfStudy) = toDateTime(dateActOfStudy(actOfStudy), timeActOfStudy(actOfStudy));
 
 
 contractorDepartmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idGroup;
-nameContractorDepartmentStoreActOfStudy 'Отдел-контрагент' (actOfStudy) = name(contractorDepartmentStoreActOfStudy(actOfStudy)) IN contractorGroup;
+nameContractorDepartmentStoreActOfStudy 'Отдел-контрагент' (actOfStudy) = name(contractorDepartmentStoreActOfStudy(actOfStudy)) IN documentPrmGroup;
 
-waybillOutputActOfStudy 'Номер расходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 7;
-waybillInputActOfStudy 'Номер приходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 7;
+waybillOutputActOfStudy 'Номер расходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN documentPrmGroup FIXEDCHARWIDTH 7;
+waybillInputActOfStudy 'Номер приходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN documentPrmGroup FIXEDCHARWIDTH 7;
 
-seriesOutputActOfStudy 'Серия расходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 3;
-seriesInputActOfStudy 'Серия приходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN contractorGroup FIXEDCHARWIDTH 3;
+seriesOutputActOfStudy 'Серия расходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN documentPrmGroup FIXEDCHARWIDTH 3;
+seriesInputActOfStudy 'Серия приходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN documentPrmGroup FIXEDCHARWIDTH 3;
 
 
 actOfStudyStudyInputDetail = DATA actOfStudy (studyInputDetail) IN idGroup;
@@ -4173,8 +4172,8 @@ quantityStudyInputDetail 'Количество для разруба' (studyInpu
 
 retailPriceStudyInputDetail 'Цена за ед.' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
 totalStudyInputDetail 'Сумма' (studyInputDetail) = retailPriceStudyInputDetail(studyInputDetail)*quantityStudyInputDetail(studyInputDetail);
-subtotalInputActOfStudy 'Расход сумма' (actOfStudy) = GROUP SUM totalStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail);
-quantityInputActOfStudy 'Расход к-во' (actOfStudy) = GROUP SUM quantityStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail);
+subtotalInputActOfStudy 'Расход сумма' (actOfStudy) = GROUP SUM totalStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail) IN documentSumGroup;
+quantityInputActOfStudy 'Расход к-во' (actOfStudy) = GROUP SUM quantityStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail) IN documentSumGroup;
 
 dateStudyInputDetail 'Дата' (studyInputDetail) = dateActOfStudy(actOfStudyStudyInputDetail(studyInputDetail)) PERSISTENT;
 
@@ -4230,8 +4229,8 @@ totalStudyOutputDetail 'Сумма' (studyOutputDetail)= retailPriceStudyOutputD
 
 subtotalStudyInputDetail 'Итого сумма  прихода п/ф по товару' (studyInputDetail) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY studyInputDetailStudyOutputDetail(studyOutputDetail);
 
-subtotalOutputActOfStudy 'Прихода сумма' (actOfStudy) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail);
-quantityOutputActOfStudy 'Прихода к-во (факт.)' (actOfStudy) = GROUP SUM overQuantityStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail);
+subtotalOutputActOfStudy 'Приход сумма' (actOfStudy) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail) IN documentSumGroup;
+quantityOutputActOfStudy 'Приход к-во' (actOfStudy) = GROUP SUM overQuantityStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail) IN documentSumGroup;
 
 notTotalPercGoodsStudyInputDetail (studyInputDetail)= GROUP SUM percGoodsStudyOutputDetail(studyOutputDetail) BY studyInputDetailStudyOutputDetail(studyOutputDetail);
 totalPercGoodsStudyInputDetail 'Итого % выхода по товару' (studyInputDetail) = notTotalPercGoodsStudyInputDetail(studyInputDetail) (+)
@@ -4531,6 +4530,7 @@ FORM actOfStudy 'Акт проработки'
 
     PROPERTIES(a)   nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreActOfStudy,
                     dateActOfStudy, timeActOfStudy, nameContractorDepartmentStoreActOfStudy,
+                    quantityOutputActOfStudy, subtotalOutputActOfStudy, quantityInputActOfStudy, subtotalInputActOfStudy,
                     waybillOutputActOfStudy, seriesOutputActOfStudy, waybillInputActOfStudy, seriesInputActOfStudy
 
     OBJECTS sid=studyInputDetail
@@ -4564,37 +4564,47 @@ DESIGN actOfStudy FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
 
-        a.box {
+        NEW header.box BEFORE sid.box {
+            childConstraints = TO THE RIGHT;
 
-            NEW firstCase {
-                childConstraints = TO THE RIGHT;
-                title = 'Акт проработки';
-//                ADD PROPERTY (numberActOfStudy);
-                ADD PROPERTY (nameDepartmentStoreActOfStudy);
-                ADD PROPERTY (dateActOfStudy);
-                ADD PROPERTY (timeActOfStudy);
-            }
-
-            ADD a.contractorGroup AFTER firstCase {
+            NEW headerCol1 {
                 childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(nameContractorDepartmentStoreActOfStudy);
-                NEW secondCase {
-                    title = 'Расход';
+
+                ADD a.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameDepartmentStoreActOfStudy);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateActOfStudy);
+                    ADD PROPERTY(timeActOfStudy);
+                }
+
+                ADD a.documentPrmGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+
+                NEW headerOut {
+                    title = 'Расходная накладная';
                     ADD PROPERTY(waybillOutputActOfStudy);
                     ADD PROPERTY(seriesOutputActOfStudy);
                 }
-                NEW thirdCase {
-                    title = 'Приход';
+                POSITION a.documentPrmGroup TO THE LEFT headerOut;
+
+                NEW headerIn {
+                    title = 'Приходная накладная';
                     ADD PROPERTY(waybillInputActOfStudy);
                     ADD PROPERTY(seriesInputActOfStudy);
                 }
-                POSITION secondCase TO THE LEFT thirdCase;
+                POSITION a.documentPrmGroup TO THE LEFT headerIn;
+                POSITION headerOut TO THE LEFT headerIn;
             }
 
+            ADD a.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
         }
-
     }
-
 }
 
 
@@ -7296,7 +7306,7 @@ FORM itemDepartmentStoreInput 'Подбор товаров'
     PROPERTIES currentBalanceItemLedger(i, d), quantityInputItem(i)
 
     FILTERGROUP filterBalance
-        FILTER 'На остатках' 'F10' currentBalanceItemLedger(i, d) DEFAULT
+        FILTER 'На остатках' 'F10' currentBalanceItemLedger(i, d)
     FILTERGROUP filterSelected
         FILTER 'Выбранные' 'F9' quantityInputItem(i)
 ;
