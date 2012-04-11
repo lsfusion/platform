@@ -8049,21 +8049,24 @@ FORM consignment 'Накладная'
 @metaCodeDocumentMachineryPriceTransaction(shipment);
 @metaCodeDocumentLabelTransaction(shipment);
 
+toShowPriceImporterShipment 'Есть оптовая надбавка' (shipment) = DATA BOOLEAN (shipment) IN documentPrmGroup;
+toShowWareShipment 'Есть стеклопосуда' (shipment) = DATA BOOLEAN (shipment) IN documentPrmGroup;
+
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s) nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
                    nameSupplierShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
                    carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
-                   noteShipment, nameCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s)
+                   noteShipment, toShowPriceImporterShipment, toShowWareShipment, nameCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s)
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
-                    supplierPriceShipmentDetail HIGHLIGHTIF isAllowPriceItemShipment(d), supplierMarkupShipmentDetail,
-                    importerPriceShipmentDetail READONLY, dateFitToShipmentDetail,
+                    supplierPriceShipmentDetail HIGHLIGHTIF isAllowPriceItemShipment(d), supplierMarkupShipmentDetail SHOWIF toShowPriceImporterShipment(s),
+                    importerPriceShipmentDetail READONLY SHOWIF toShowPriceImporterShipment(s), dateFitToShipmentDetail,
                     balanceBeforeShipmentShipmentDetail, numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail,
-                    sumDetailSupplierVATShipmentDetail, sumSupplierShipmentDetail, nameWareShipmentDetail, priceWareShipmentDetail,
-                    numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
+                    sumDetailSupplierVATShipmentDetail, sumSupplierShipmentDetail, nameWareShipmentDetail SHOWIF toShowWareShipment(s),
+                    priceWareShipmentDetail SHOWIF toShowWareShipment(s), numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
                     retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail, ADDOBJ, delete
     PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail,
                                controlExpiryShipmentDetail, isManufacturedShipmentDetail, isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail,
