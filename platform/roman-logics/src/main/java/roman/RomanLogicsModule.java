@@ -990,7 +990,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP quantityDirectFreightSku;
     private LP quantityDirectImporterFreightSupplier;
     private LP quantityFreightBrandSupplier;
-    private LP quantityFreightSupplier;
+    //private LP quantityFreightSupplier;
     private LP quantityFreightSku;
     private LP quantityFreightedBetweenDateSku;
     private LP quantityFreightedSku;
@@ -1454,6 +1454,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         baseLM.tableFactory.include("articleColorSupplier", article, colorSupplier);
         baseLM.tableFactory.include("articleSizeSupplier", article, sizeSupplier);
+        baseLM.tableFactory.include("listArticleColorSupplier", list, article, colorSupplier);
 
         baseLM.tableFactory.include("shipmentRoute", shipment, route);
 
@@ -3029,7 +3030,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityFreightArticle = addSGProp(baseGroup, "quantityFreightArticle", "Кол-во отгруженное с STX", quantityImporterFreightSku, 2, articleSku, 3);
         quantityFreightBrandSupplier = addSGProp(baseGroup, "quantityFreightBrandSupplier", "Кол-во отгруженное с STX", quantityImporterFreightSku, 2, brandSupplierArticleSku, 3);
-        quantityFreightSupplier = addSGProp(baseGroup, "quantityFreightSupplier", true, "Кол-во", quantityFreightBrandSupplier, 1, supplierBrandSupplier, 2);
+        //quantityFreightSupplier = addSGProp(baseGroup, "quantityFreightSupplier", true, "Кол-во", quantityFreightBrandSupplier, 1, supplierBrandSupplier, 2);
 
         quantityFreightSku = addSGProp(baseGroup, "quantityFreightSku", true, true, "Кол-во", quantityImporterFreightSku, 2, 3);
         quantityDirectFreightSku = addSGProp(baseGroup, "quantityDirectFreightSku", true, true, "Кол-во (напрямую)", quantityDirectImporterFreightSku, 2, 3);

@@ -52,6 +52,8 @@ CLASS ABSTRACT certificate 'Сертификат';
 CLASS temporalCertificate 'Временный сертификат' : certificate;
 CLASS permanentCertificate 'Постоянный сертификат' : certificate;
 
+TABLE certificate (certificate);
+
 sidCertificate 'Номер' = DATA STRING[20] (certificate) IN baseGroup AGGPROP;
 dateIssueCertificate 'Дата выдачи' = DATA DATE (certificate) IN baseGroup;
 dateValidityCertificate 'Действует до' = DATA DATE (certificate) IN baseGroup;
@@ -70,6 +72,8 @@ FORM certificates 'Сертификаты'
 
 //--------------------------------- Инвойсы -------------------------------------------------------------------------//
 CLASS formedInvoice 'Инвойс от STX' : innerInvoice;
+
+TABLE innerInvoice (innerInvoice);
 
 includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importer, freight) AND freight IS freightArrived;
 
@@ -92,15 +96,19 @@ nameImporterInnerInvoice 'Импортер инвойса' (innerInvoice) = name
 sidFormedInvoice 'Номер инвойса' (formedInvoice) = sidImporterFreight(importerFormedInvoice(formedInvoice),
                                                                       freightFormedInvoice(formedInvoice)) IN baseGroup;
 
-sidInnerInvoice 'Номер инвойса' (innerInvoice) = UNION EXCLUSIVE sidFormedInvoice(innerInvoice), sidDocument(innerInvoice) IN baseGroup;
+sidDirectInvoice = sidDocument(innerInvoice) AND innerInvoice IS directInvoice;
+
+sidInnerInvoice 'Номер инвойса' (innerInvoice) = UNION EXCLUSIVE sidDirectInvoice(innerInvoice), sidFormedInvoice(innerInvoice) IN baseGroup;
 
 dateFormedInvoice 'Дата инвойса' (formedInvoice) = dateImporterFreight(importerInnerInvoice(formedInvoice),
                                                                        freightInnerInvoice(formedInvoice)) IN baseGroup;
 
-dateInnerInvoice 'Дата инвойса' (innerInvoice) = UNION EXCLUSIVE date(innerInvoice), dateFormedInvoice(innerInvoice) IN baseGroup;
+dateDirectInvoice = date(innerInvoice) AND innerInvoice IS directInvoice;
+
+dateInnerInvoice 'Дата инвойса' (innerInvoice) = UNION EXCLUSIVE dateDirectInvoice(innerInvoice), dateFormedInvoice(innerInvoice) IN baseGroup;
 
 contractFormedInvoice 'Договор инвойса (ИД)' (formedInvoice) = contractImporterFreight(importerFormedInvoice(formedInvoice),
-                                                                                  freightFormedInvoice(formedInvoice)) IN idGroup;
+                                                                                       freightFormedInvoice(formedInvoice)) IN idGroup;
 
 //sidContractFormedInvoice 'Договор инвойса' (formedInvoice) = sidContractFormedInvoice(contractFormedInvoice(formedInvoice)) IN
 
@@ -109,7 +117,9 @@ quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = 
                                                                                                    freightFormedInvoice(formedInvoice),
                                                                                                    sku);
 
-quantityInnerInvoiceSku 'Кол-во в инвойсе' (innerInvoice, sku) = UNION EXCLUSIVE quantityDocumentSku(innerInvoice, sku),
+quantityDirectInvoiceSku = quantityDocumentSku(innerInvoice, sku) AND innerInvoice IS directInvoice;
+
+quantityInnerInvoiceSku 'Кол-во в инвойсе' (innerInvoice, sku) = UNION EXCLUSIVE quantityDirectInvoiceSku(innerInvoice, sku),
                                                                                  quantityFormedInvoiceSku(innerInvoice, sku);
 
 quantityFormedInvoice 'Кол-во в инвойсе' (innerInvoice) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)
@@ -123,14 +133,17 @@ CLASS registeredDeclaration 'Зарегистрованная деклараци
 
 CLASS declarationDetail 'Позиция декларации';
 
+TABLE declarationSku (declaration, sku);
 TABLE declarationDetail (declarationDetail);
+TABLE declarationDetailInnerInvoice (declarationDetail, innerInvoice);
+
 
 CLASS correction 'КТС' : transaction;
 
 customStoreDeclaration 'СВХ (ИД)' = DATA customStore(declaration) IN idGroup;
 nameCustomStoreDeclaration 'СВХ' (declaration) = name(customStoreDeclaration(declaration)) IN baseGroup;
 
-sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN baseGroup;
+sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN baseGroup MINCHARWIDTH 10;
 beginDeclaration 'Начало обработки' = DATA TIME (declaration) IN baseGroup;
 endDeclaration 'Конец обработки' = DATA TIME (declaration) IN baseGroup;
 exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN baseGroup;
@@ -396,6 +409,7 @@ priceManagerialCustomDeclarationDetail 'Цена с расходами (УУ)' (
 
 // для экспорта в Декларант
 TABLE groupDeclaration (groupDeclaration);
+TABLE groupDeclarationInnerInvoice (groupDeclaration, innerInvoice);
 TABLE declarationArticleCustomCategoryCompositionCountry(declaration, article, customCategory10, STRING[200], country);
 
 quantityDeclarationGroup 'Кол-во' = GROUP SUM quantityDeclarationDetail(declarationDetail)
@@ -644,6 +658,8 @@ CLASS ABSTRACT priceChangeDocument 'Документ изменения цен';
 CLASS basePriceChangeDocument 'Расценка' : priceChangeDocument;
 CLASS discountPriceChangeDocument 'Уценка' : priceChangeDocument;
 
+TABLE priceChangeDocumentSku(priceChangeDocument, sku);
+
 sidPriceChangeDocument 'Номер' = DATA STRING[10] (priceChangeDocument) IN baseGroup;
 datePriceChangeDocument 'Дата документа' = DATA DATE(priceChangeDocument) IN baseGroup;
 isDiscountPriceChangeDocument 'Распродажа' = DATA BOOLEAN(priceChangeDocument) IN baseGroup;
@@ -727,5 +743,6 @@ NAVIGATOR {
         ADD certificate;
         ADD declaration;
         ADD priceChangeDocument;
+        ADD declarationInvoices;
     }
 }
