@@ -12,6 +12,8 @@ public class ScriptingGroupObject {
     ClassViewType viewType;
     boolean isInitType;
     Integer pageSize;
+    String reportPathPropName;
+    List<String> reportPathMapping;
 
     public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<String> captions) {
         assert objects.size() == classes.size() && classes.size() == captions.size();
@@ -36,5 +38,10 @@ public class ScriptingGroupObject {
 
     public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
+    }
+
+    public void setReportPathProp(String propName, List<String> mapping) {
+        this.reportPathPropName = propName;
+        this.reportPathMapping = mapping;
     }
 }

@@ -29,6 +29,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public List<ObjectEntity> objects = new ArrayList<ObjectEntity>();
 
+    public PropertyObjectEntity reportPathProp;
+
     public GroupObjectEntity() {
     }
 
@@ -77,6 +79,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             pool.serializeMap(outStream, isParent);
         }
         pool.writeObject(outStream, pageSize);
+        pool.serializeObject(outStream, reportPathProp);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -90,6 +93,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             isParent = pool.deserializeMap(inStream);
         }
         pageSize = pool.readObject(inStream);
+        reportPathProp = pool.deserializeObject(inStream);
     }
 
     public Map<ObjectEntity, PropertyObjectEntity> isParent = null;

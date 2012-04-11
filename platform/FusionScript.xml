@@ -172,6 +172,7 @@
       <keyword name="RECURSION" />
       <keyword name="REGEXP" />
       <keyword name="REMOVE" />
+      <keyword name="REPORTFILE" />
       <keyword name="RESOLVE" />
       <keyword name="RETURN" />
       <keyword name="RIGHT" />

@@ -80,6 +80,12 @@ public class ScriptingFormEntity extends FormEntity {
             addGroupObjectEntity(groupName, groupObj);
             groups.add(groupObj);
         }
+
+        for (int i = 0; i < groupObjects.size(); i++) {
+            if (groupObjects.get(i).reportPathPropName != null) {
+                groups.get(i).reportPathProp = addPropertyObject(groupObjects.get(i).reportPathPropName, groupObjects.get(i).reportPathMapping);
+            }
+        }
         return groups;
     }
 

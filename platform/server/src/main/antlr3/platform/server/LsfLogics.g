@@ -362,6 +362,7 @@ formTreeGroupObjectList
 
 formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	:	(object = formCommonGroupObject { $groupObject = $object.groupObject; })	
+		(path = formGroupObjectReportPath { $groupObject.setReportPathProp($path.propName, $path.mapping); })?
 		(viewType = formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.isInitType); } )?
 		(pageSize = formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); })?
 	; 
@@ -385,6 +386,10 @@ formCommonGroupObject returns [ScriptingGroupObject groupObject]
 		{
 			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions);
 		}
+	;
+
+formGroupObjectReportPath returns [String propName, List<String> mapping]
+	:	'REPORTFILE' prop=formMappedProperty { $propName = $prop.name; $mapping = $prop.mapping; }
 	;
 
 formGroupObjectViewType returns [ClassViewType type, boolean isInitType]

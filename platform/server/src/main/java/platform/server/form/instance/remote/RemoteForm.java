@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.ExceptionUtils;
 import platform.base.OrderedMap;
+import platform.base.Pair;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
 import platform.interop.Scroll;
@@ -28,6 +29,7 @@ import platform.server.classes.CustomClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
 import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.listener.RemoteFormListener;
@@ -51,6 +53,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static platform.base.BaseUtils.deserializeObject;
+import static platform.server.form.entity.GroupObjectHierarchy.ReportNode;
 
 // фасад для работы с клиентом
 public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends RemoteContextObject implements RemoteFormInterface {
@@ -218,28 +221,46 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
+    private InputStream getCustomReportInputStream(String sid, ReportNode node, boolean toExcel, Integer groupId) throws SQLException {
+        InputStream iStream = null;
+        if (node != null) {
+            PropertyObjectEntity reportPathProp = node.getGroupList().get(0).reportPathProp;
+            if (reportPathProp != null) {
+                PropertyObjectInstance propInstance = form.instanceFactory.getInstance(reportPathProp);
+                String reportPath = (String) propInstance.read(form.session, form);
+                if (reportPath != null) {
+                    String resourceName = "/" + getVariableCustomReportName(getReportPrefix(toExcel, groupId) + reportPath.trim());
+                    iStream = getClass().getResourceAsStream(resourceName);
+                }
+            }
+        }
+        if (iStream == null) {
+            String resourceName = "/" + getCustomReportName(sid, getDefaultReportSID(toExcel, groupId));
+            iStream = getClass().getResourceAsStream(resourceName);
+        }
+        return iStream;
+    }
+
     private Map<String, JasperDesign> getCustomReportDesigns(boolean toExcel, Integer groupId) {
         try {
             GroupObjectHierarchy.ReportHierarchy hierarchy = getReportHierarchy(groupId);
             Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
-            List<String> ids = new ArrayList<String>();
-            ids.add(GroupObjectHierarchy.rootNodeName);
+            List<Pair<String, ReportNode>> nodes = new ArrayList<Pair<String, ReportNode>>();
+            nodes.add(new Pair<String, ReportNode>(GroupObjectHierarchy.rootNodeName, null));
             for (GroupObjectHierarchy.ReportNode node : hierarchy.getAllNodes()) {
-                ids.add(node.getID());
+                nodes.add(new Pair<String, ReportNode>(node.getID(), node));
             }
-            for (String id : ids) {
-                String resourceName = "/" + getCustomReportName(id, getReportSID(toExcel, groupId));
-                InputStream iStream = getClass().getResourceAsStream(resourceName);
+            for (Pair<String, ReportNode> node : nodes) {
+                InputStream iStream = getCustomReportInputStream(node.first, node.second, toExcel, groupId);
                 // Если не нашли custom design для xls, пробуем найти обычный
                 if (toExcel && iStream == null) {
-                    resourceName = "/" + getCustomReportName(id, getReportSID(false, groupId));
-                    iStream = getClass().getResourceAsStream(resourceName);
+                    iStream = getCustomReportInputStream(node.first, node.second, false, groupId);
                 }
                 if (iStream == null) {
                     return null;
                 }
                 JasperDesign subreport = JRXmlLoader.load(iStream);
-                designs.put(id, subreport);
+                designs.put(node.first, subreport);
             }
             return designs;
         } catch (Exception e) {
@@ -250,7 +271,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     public Map<String, String> getReportPath(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) {
         Map<String, String> ret = new HashMap<String, String>();
 
-        String sid = getReportSID(toExcel, groupId);
+        String sid = getDefaultReportSID(toExcel, groupId);
         Map<String, JasperDesign> customDesigns = getCustomReportDesigns(toExcel, groupId);
         if (customDesigns != null) {
             Set<String> keySet = customDesigns.keySet();
@@ -260,8 +281,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                         System.getProperty("user.dir") + "/target/classes/" + getCustomReportName(key, sid)
                 );
             }
-        }
-            else {
+        } else {
             Set<Integer> hidedGroupsId = new HashSet<Integer>();
             for (GroupObjectInstance group : form.groups) {
                 if (group.curClassView == ClassViewType.HIDE || groupId != null && groupId != group.getID()) {
@@ -291,16 +311,20 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return ret;
     }
 
-    private static final String xlsSuffix = "_xls";
-    private static final String tablePrefix = "_Table";
+    private static final String xlsPrefix = "xls_";
+    private static final String tablePrefix = "table";
 
-    private String getReportSID(boolean toExcel, Integer groupId) {
-        String reportSID = getSID() + (groupId == null ? "" : tablePrefix + form.getGroupObjectInstance(groupId).getSID());
-        return reportSID + (toExcel ? xlsSuffix : "");
+    private String getReportPrefix(boolean toExcel, Integer groupId) {
+        String prefix = (toExcel ? xlsPrefix : "");
+        return prefix + (groupId == null ? "" : tablePrefix + form.getGroupObjectInstance(groupId).getSID() + "_");
+    }
+
+    private String getDefaultReportSID(boolean toExcel, Integer groupId) {
+        return getReportPrefix(toExcel, groupId) + getSID();
     }
 
     private Map<String, JasperDesign> getReportDesigns(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) {
-        String sid = getReportSID(toExcel, groupId);
+        String sid = getDefaultReportSID(toExcel, groupId);
         Map<String, JasperDesign> customDesigns = getCustomReportDesigns(toExcel, groupId);
         if (customDesigns != null) {
             return customDesigns;
@@ -327,6 +351,13 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         } catch (JRException e) {
             throw new RuntimeException(ServerResourceBundle.getString("form.instance.error.creating.design"), e);
         }
+    }
+
+    private String getVariableCustomReportName(String name) {
+        if (!name.endsWith(".jrxml")) {
+            name = name + ".jrxml";
+        }
+        return "reports/custom/" + name;
     }
 
     private String getCustomReportName(String name, String sid) {
