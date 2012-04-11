@@ -2762,6 +2762,7 @@ limitSupplier 'Кредитный лимит' = DATA INTEGER (supplier) IN docGr
 prioritySupplier 'Приоритет оплаты (1 - в первую очередь)' = DATA INTEGER (supplier) IN docGroup;
 signsSupplier 'Число знаков после запятой для строки накладной' = DATA INTEGER (supplier) IN supplierGroup;
 marksSupplier 'Число знаков после зап.в сумме к оплате по накладной' = DATA INTEGER (supplier) IN supplierGroup;
+periodicitySupply 'Переодичность поставок, дней' = DATA INTEGER (supplier) IN supplierGroup;
 
 emailOrderSupplierDepartmentStore 'e-mail для передачи заказа' = DATA STRING[100] (supplier, departmentStore)IN supplierGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 contactSupplierDepartmentStore 'Контактная информация' = DATA STRING[500] (supplier, departmentStore)IN supplierGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
@@ -2823,7 +2824,7 @@ FORM supplier 'Поставщик'
                   accountantLegalEntity, showFormaccountantLegalEntity, phoneLegalEntity, showFormphoneLegalEntity,
                   UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
                   residentLegalEntity, manufacturerLegalEntity, surePercentSupplier, allowablePercentSupplier,
-                  afterDaysSupplier, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier //dataActingLicenseLegalEntity, dataOverrideContractSupplier, dataOverrideAccountLegalEntity
+                  afterDaysSupplier, periodicitySupply, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier //dataActingLicenseLegalEntity, dataOverrideContractSupplier, dataOverrideAccountLegalEntity
 
     OBJECTS a=account
     PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
@@ -3058,14 +3059,16 @@ maxDataOrderSupplier = UNION OVERRIDE 0, [GROUP MAX dataOrderSupplier(orderSuppl
 nextDataOrderSupplier = maxDataOrderSupplier() + 1;
 dataOrderSupplier (orderSupplier) <- OLD nextDataOrderSupplier() ON ASSIGN orderSupplier IS orderSupplier;
 
-curDateOrderSupplier 'Дата заказа' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
-dateOrderSupplier 'Дата поставки' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
-
 departmentStoreOrderSupplier 'Отдел заказа (ИД)' = DATA departmentStore (orderSupplier);
 nameDepartmentStoreOrderSupplier 'Отдел заказа' (orderSupplier) = name(departmentStoreOrderSupplier(orderSupplier));
 
 supplierOrderSupplier 'Поставщик заказа (ИД)' = DATA supplier (orderSupplier);
 nameSupplierOrderSupplier 'Поставщик заказа' (orderSupplier) = name(supplierOrderSupplier(orderSupplier));
+
+curDateOrderSupplier 'Дата заказа' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
+curDateOrderSupplier (orderSupplier) <- currentDate() ON ASSIGN departmentStoreOrderSupplier(orderSupplier);
+dateOrderSupplier 'Дата поставки' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
+dateOrderSupplier (orderSupplier) <- addDate2(currentDate(),1) ON ASSIGN departmentStoreOrderSupplier(orderSupplier);
 
 preliminaryOrderOrderSupplier 'Предварительный заказ заказа' = DATA preliminaryOrder (orderSupplier);
 
@@ -3202,7 +3205,18 @@ nextDateOrder 'Дата следующей поставки' (preliminaryOrder) 
     PARTITION PREV dateSupplyPreliminaryOrder(preliminaryOrder)
     BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder)
     ORDER DESC dateSupplyPreliminaryOrder(preliminaryOrder);
+
+minDateSupplyOrderSupplier (supplier, departmentStore, date) = GROUP MIN dateSupplyPreliminaryOrder(preliminaryOrder)
+                                                                         IF dateSupplyPreliminaryOrder(preliminaryOrder) > (date AS DATE)
+                                                                         BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder), date;
+
 nextDateOrderSupplier 'Дата следующей поставки' (orderSupplier) = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
+nextDateOrderSupplier (orderSupplier) <- [UNION OVERRIDE periodicitySupply(supplierOrderSupplier(orderSupplier)),
+                                                        minDateSupplyOrderSupplier(supplierOrderSupplier(orderSupplier),
+                                                        departmentStoreOrderSupplier(orderSupplier),
+                                                        dateOrderSupplier(orderSupplier))] (orderSupplier)
+                                         ON ASSIGN supplierOrderSupplier(orderSupplier);
+
 quantityDaysAfterNextOrder 'Дней до следующей поставки' (orderSupplier) =
     daysInclBetweenDates(curDateOrderSupplier(orderSupplier), nextDateOrderSupplier(orderSupplier)) IN dateOrderSupplierGroup;
 CONSTRAINT nextDateOrderSupplier(orderSupplier) < dateOrderSupplier(orderSupplier) MESSAGE 'Дата поставки не должна превышать дату поставки следующей поставки';
@@ -3359,6 +3373,17 @@ fillInOrderSupplier 'Заполнить заказ рекомендованны�
         SET packQuantityItemOrderSupplier(orderSupplier, item) <- recommendCountOrderSupplier(orderSupplier, item AS item) ;
     };
 };
+
+//addOrderSupplier 'Создать заказ' = ACTION () NEWSESSION {
+//    ADDOBJ orderSupplier;
+//    FOR os == addedObject() DO {
+//        SET curDateOrderSupplier(os) <- currentDate();
+//        FORM orderSupplier OBJECTS o = os AS orderSupplier MODAL;
+//        IF formResult() == formResult.ok THEN {
+//            EXEC apply();
+//        }
+//    }
+//} TOOLBAR;
 
 createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
     ADDOBJ orderSupplier;
