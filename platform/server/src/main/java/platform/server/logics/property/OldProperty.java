@@ -15,6 +15,8 @@ public class OldProperty<T extends PropertyInterface> extends SimpleIncrementPro
     public OldProperty(Property<T> property) {
         super("OLD_" + property.getSID(), property.caption + " (в БД)", (List<T>)property.interfaces);
         this.property = property;
+
+//        SessionDataProperty.modifier.addProperty(this);
     }
 
     @Override

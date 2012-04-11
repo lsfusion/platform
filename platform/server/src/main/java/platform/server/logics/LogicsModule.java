@@ -1,6 +1,7 @@
 package platform.server.logics;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.hssf.record.formula.functions.T;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Result;
@@ -1160,7 +1161,7 @@ public abstract class LogicsModule {
         RecursiveProperty<PropertyInterface> property = new RecursiveProperty<PropertyInterface>(name, caption, interfaces, cycle,
                 mapInterfaces, mapIterate, initial, step);
         if(cycle==Cycle.NO)
-            addProperty(null, new LP(property.getConstrainedProperty()));
+            addConstraint(property.getConstrainedProperty(), false);
 
         LP result = new LP<RecursiveProperty.Interface>(property, interfaces);
 //        if (convertToLogical)
@@ -1464,7 +1465,7 @@ public abstract class LogicsModule {
         CycleGroupProperty<T, P> property = new CycleGroupProperty<T, P>(name, caption, innerInterfaces, listImplements.subList(1, listImplements.size()), listImplements.get(0), dataProp == null ? null : dataProp.property);
 
         // нужно добавить ограничение на уникальность
-        addProperty(null, new LP(property.getConstrainedProperty(checkChange)));
+        addConstraint(property.getConstrainedProperty(), checkChange);
 
         return mapLGProp(group, persistent, property, listImplements.subList(1, listImplements.size()));
     }
@@ -1558,7 +1559,7 @@ public abstract class LogicsModule {
     private <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, boolean noConstraint, AggregateGroupProperty<T> property, List<PropertyInterfaceImplement<T>> listImplements) {
         // нужно добавить ограничение на уникальность
         if(!noConstraint)
-            addProperty(null, new LP(property.getConstrainedProperty(checkChange)));
+            addConstraint(property.getConstrainedProperty(), checkChange);
 
         return mapLGProp(group, persistent, property, listImplements);
     }
@@ -2047,8 +2048,8 @@ public abstract class LogicsModule {
 
     protected LP addAAProp(CustomClass customClass, LP barcode, LP barcodePrefix, boolean quantity, LP... properties) {
         return addAProp(new AddObjectActionProperty(genSID(),
-                                                    (barcode != null) ? barcode.property : null, (barcodePrefix != null) ? barcodePrefix.property : null,
-                                                    quantity, customClass, LP.toPropertyArray(properties), null, null));
+                (barcode != null) ? barcode.property : null, (barcodePrefix != null) ? barcodePrefix.property : null,
+                quantity, customClass, LP.toPropertyArray(properties), null, null));
     }
 
     @IdentityLazy
@@ -2186,7 +2187,7 @@ public abstract class LogicsModule {
         return result;
     }
 
-    protected LP addProp(Property<? extends PropertyInterface> prop) {
+    public LP addProp(Property<? extends PropertyInterface> prop) {
         return addProp(null, prop);
     }
 
@@ -2246,14 +2247,29 @@ public abstract class LogicsModule {
         addPersistent((AggregateProperty) lp.property);
     }
 
-    protected void addConstraint(LP<?> lp, boolean checkChange) {
-        lp.property.setConstraint(checkChange);
+    public <T extends PropertyInterface> LP<T> addOldProp(LP<T> lp) {
+        return addProperty(null, new LP<T>(lp.property.getOld(), lp.listInterfaces));
+    }
+
+    public <T extends PropertyInterface> LP<T> addCHProp(LP<T> lp, IncrementType type) {
+        return addProperty(null, new LP<T>(lp.property.getChanged(type), lp.listInterfaces));
+    }
+
+    public void addConstraint(Property property, boolean checkChange) {
+        addConstraint(addProp(property), checkChange);
+    }
+
+    public void addConstraint(LP<?> lp, boolean checkChange) {
+        addConstraint(lp, (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null);
     }
 
     protected void addConstraint(LP<?> lp, Property.CheckType type, List<Property<?>> checkProps) {
+        if(!lp.property.noDB())
+            lp = addCHProp(lp, IncrementType.SET);
+        // assert что lp уже в списке properties
         lp.property.setConstraint(type, checkProps);
     }
-    
+
     protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LP<T> first, LP<L> second, int... mapping) {
         follows(first, PropertyFollows.RESOLVE_ALL, second, mapping);
     }
@@ -2263,8 +2279,7 @@ public abstract class LogicsModule {
         for (int i = 0; i < second.listInterfaces.size(); i++) {
             mapInterfaces.put(second.listInterfaces.get(i), first.listInterfaces.get(mapping[i] - 1));
         }
-        for(Property addProp : first.property.addFollows(new PropertyMapImplement<L, T>(second.property, mapInterfaces), options))
-            addProp(addProp);
+        first.property.addFollows(new PropertyMapImplement<L, T>(second.property, mapInterfaces), options, this);
     }
 
     protected void followed(LP first, LP... lps) {
@@ -2294,11 +2309,10 @@ public abstract class LogicsModule {
         for (int i = 0; i < property.listInterfaces.size(); i++) {
             mapInterfaces.put(property.listInterfaces.get(i), checkProp.listInterfaces.get(i));
         }
-        for(Property addProp : checkProp.property.addFollows(
-                        new PropertyMapImplement<P,C>(property.property, mapInterfaces),
-                        ServerResourceBundle.getString("logics.property") + " " + property.property.caption + " [" + property.property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
-                        resolve))
-            addProp(addProp);
+        checkProp.property.addFollows(
+                new PropertyMapImplement<P, C>(property.property, mapInterfaces),
+                ServerResourceBundle.getString("logics.property") + " " + property.property.caption + " [" + property.property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
+                resolve, this);
     }
 
     protected void makeUserLoggable(LP... lps) {

@@ -1657,7 +1657,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         LinkedHashSet<OldProperty> result = new LinkedHashSet<OldProperty>();
         for (Property property : getPropertyList()) {
             if (property.isFalse)
-                result.add(property.getOld());
+                result.addAll(property.getOldDepends());
             if (property.isDerived())
                 result.addAll(((UserProperty)property).derivedChange.getOldDepends());
         }
@@ -1695,8 +1695,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         Iterable<Property> propertyList = getPropertyList();
         Map<Property, List<Property>> orderedMapDepends = new HashMap<Property, List<Property>>();
-        for(Map.Entry<Property, Set<Property>> mapDepend : mapDepends.entrySet())
-            orderedMapDepends.put(mapDepend.getKey(), BaseUtils.orderList(mapDepend.getValue(), propertyList));
+        for(Map.Entry<Property, Set<Property>> mapDepend : mapDepends.entrySet()) {
+            List<Property> dependList = BaseUtils.orderList(mapDepend.getValue(), propertyList);
+            assert dependList.size()==mapDepend.getValue().size();
+            orderedMapDepends.put(mapDepend.getKey(), dependList);
+        }
         return orderedMapDepends;
     }
 

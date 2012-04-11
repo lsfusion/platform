@@ -16,6 +16,7 @@ import platform.server.data.*;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.extra.EqualsWhere;
@@ -23,6 +24,7 @@ import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
@@ -768,13 +770,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return new PropertyMapImplement<T, T>(this, getIdentityInterfaces());
     }
 
-    public void setConstraint(boolean checkChange) {
-        isFalse = true;
-        this.checkChange = (checkChange ? CheckType.CHECK_ALL : CheckType.CHECK_NO);
-    }
-    
     public void setConstraint(CheckType type, List<Property<?>> checkProperties) {
         assert type != CheckType.CHECK_SOME || checkProperties != null;
+        assert noDB();
 
         isFalse = true;
         this.checkChange = type;
@@ -980,11 +978,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     // дебилизм конечно, но это самый простой обход DistrGroupProperty
     public boolean isOnlyNotZero = false;
 
-    public <L extends PropertyInterface> Collection<Property> addFollows(PropertyMapImplement<L, T> implement, int options) {
-        return addFollows(implement, ServerResourceBundle.getString("logics.property.violated.consequence.from") + "(" + this + ") => (" + implement.property + ")", options);
+    public <L extends PropertyInterface> Collection<Property> addFollows(PropertyMapImplement<L, T> implement, int options, LogicsModule lm) {
+        return addFollows(implement, ServerResourceBundle.getString("logics.property.violated.consequence.from") + "(" + this + ") => (" + implement.property + ")", options, lm);
     }
 
-    public <L extends PropertyInterface> Collection<Property> addFollows(PropertyMapImplement<L, T> implement, String caption, int options) {
+    public <L extends PropertyInterface> Collection<Property> addFollows(PropertyMapImplement<L, T> implement, String caption, int options, LogicsModule lm) {
 //        PropertyFollows<T, L> propertyFollows = new PropertyFollows<T, L>(this, implement, options);
 
         Collection<Property> props = new ArrayList<Property>();
@@ -992,18 +990,17 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             assert interfaces.size() == implement.mapping.size(); // assert что количество
             PropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true);
             setAction.mapDerivedChange(IncrementType.SET, implement.reverse(this));
-            props.add(setAction.property);
+            lm.addProp(setAction.property);
         } 
         if((options & PropertyFollows.RESOLVE_FALSE)!=0 && hasSet(false)) {
             PropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false);
             setAction.mapDerivedChange(IncrementType.DROP, implement);
-            props.add(setAction.property);
+            lm.addProp(setAction.property);
         }
 
         Property constraint = DerivedProperty.createAndNot(this, implement).property;
         constraint.caption = caption;
-        constraint.setConstraint(false);
-        props.add(constraint);
+        lm.addConstraint(constraint, false);
 
         return props;
     }
@@ -1120,6 +1117,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return links;
     }
 
+    @IdentityLazy
+    public ChangedProperty<T> getChanged(IncrementType type) {
+        return new ChangedProperty<T>(this, type);
+    }
+
     private OldProperty<T> old;
     public OldProperty<T> getOld() {
         if(old==null) {
@@ -1129,4 +1131,68 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return old;
     }
 
+    public boolean noDB() {
+        return !getOldDepends().isEmpty();
+    }
+
+    @IdentityLazy
+    public Map<T, ValueClass> getNoDBInterfaces() { // для constraint'ов
+        assert noDB();
+
+        PropertyChanges changes = PropertyChanges.EMPTY;
+        for(OldProperty old : getOldDepends())
+            changes = changes.add(new PropertyChanges(old, old.getClassChange()));
+
+        Query<T, Object> query = new Query<T, Object>(this);
+        query.and(getExpr(query.mapKeys, changes).getWhere());
+        return query.<T>getClassWhere(new ArrayList<Object>()).getCommonParent(interfaces);
+    }
+
+    public PropertyChange<T> getClassChange() {
+        Map<T, KeyExpr> mapKeys = getMapKeys();
+        ClassTable<T> classTable = getClassTable();
+        Join<PropertyField> classJoin = classTable.join(join(classTable.mapFields, mapKeys));
+        return new PropertyChange<T>(mapKeys, classJoin.getExpr(classTable.propValue), classJoin.getWhere());
+    }
+
+        
+    public ClassTable<T> getClassTable() {
+        return new ClassTable<T>(this);
+    }
+
+    public static class ClassTable<P extends PropertyInterface> extends Table {
+
+        public final Map<KeyField, P> mapFields;
+        public final PropertyField propValue;
+
+        public ClassTable(Property<P> property) {
+            super(property.getSID());
+
+            CommonClasses<P> commonClasses = property.getCommonClasses();
+            Map<P, ValueClass> propInterfaces = commonClasses.interfaces;
+            ValueClass valueClass = commonClasses.value;
+
+            mapFields = new HashMap<KeyField, P>();
+            for(P propInterface : property.interfaces) {
+                KeyField key = new KeyField(propInterface.getSID(), propInterfaces.get(propInterface).getType());
+                keys.add(key); // чтобы порядок сохранить, хотя может и не критично
+                mapFields.put(key, propInterface);
+            }
+
+            propValue = new PropertyField("value", valueClass.getType());
+            properties.add(propValue);
+
+            Map<KeyField, ValueClass> fieldClasses = BaseUtils.join(mapFields, propInterfaces);
+            classes = new ClassWhere<KeyField>(fieldClasses, true);
+            propertyClasses.put(propValue, new ClassWhere<Field>(BaseUtils.add(fieldClasses, propValue, valueClass), true));
+        }
+
+        public StatKeys<KeyField> getStatKeys() {
+            return getStatKeys(this, 100);
+        }
+
+        public Map<PropertyField, Stat> getStatProps() {
+            return getStatProps(this, 100);
+        }
+    }
 }

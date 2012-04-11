@@ -535,13 +535,10 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
 
     @Message("message.session.apply.check")
     public <T extends PropertyInterface> String check(@ParamMessage Property<T> property, IncrementApply incrementApply) throws SQLException {
-        if(property.hasChanges(incrementApply) || property.getOld().hasChanges(incrementApply)) {
+        assert property.noDB();
+        if(property.hasChanges(incrementApply)) {
             Query<T,String> changed = new Query<T,String>(property);
-
-            WhereBuilder changedWhere = new WhereBuilder();
-            property.getIncrementExpr(changed.mapKeys, changedWhere, incrementApply, IncrementType.SET);
-            changed.and(changedWhere.toWhere()); // только на измененные смотрим
-
+            changed.and(property.getExpr(changed.mapKeys, incrementApply).getWhere()); // только на измененные смотрим
             OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>> result = changed.executeClasses(sql, new OrderedMap<String, Boolean>(), 30, baseClass, env);
             if (result.size() > 0) {
                 NoPropertyTableUsage keysTable = new NoPropertyTableUsage<T>(new ArrayList<T>(property.interfaces), property.interfaceTypeGetter);
@@ -557,10 +554,10 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
                 Query<T,String> detailed = new Query<T,String>(keysMap);
                 detailed.and(keysTable.getWhere(keysMap));
 
-                Property.CommonClasses<?> classes = property.getCommonClasses();
+                Map<T, ValueClass> classes = property.getNoDBInterfaces();
                 int interfaceIndex = 0;
                 for(T propertyInterface : property.interfaces) {
-                    ValueClass valueClass = classes.interfaces.get(propertyInterface);
+                    ValueClass valueClass = classes.get(propertyInterface);
                     for (Property nameProp : recognizeGroup.getProperties()) {
                         List<ValueClassWrapper> wrapper = Arrays.asList(new ValueClassWrapper(valueClass));
                         if (!nameProp.getProperties(Arrays.asList(wrapper), true).isEmpty()) {

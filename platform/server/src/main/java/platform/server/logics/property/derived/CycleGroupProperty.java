@@ -40,13 +40,12 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     }
 
     @IdentityLazy
-    public Property getConstrainedProperty(boolean checkChange) {
+    public Property getConstrainedProperty() {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false
         Property constraint = DerivedProperty.createPartition(innerInterfaces, DerivedProperty.<I>createStatic(true, LogicalClass.instance),
                 getMapInterfaces().values(), groupProperty, new HashMap<I, JoinProperty.Interface>(), Compare.GREATER);
         constraint.caption = ServerResourceBundle.getString("logics.property.derived.violate.property.uniqueness.for.objects", groupProperty.toString());
-        constraint.setConstraint(checkChange);
         return constraint;
     }
 

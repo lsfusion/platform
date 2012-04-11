@@ -15,7 +15,7 @@ META metaCodeSinglePropsAggregation (primProperty, aggrObject, aggrProperty)
 
     unique###aggrObject (primObject) =
         GROUP UNIQUE aggrObject BY primProperty(aggrObject)
-        WHERE aggrObject IS aggrObject;
+        WHERE aggrObject IS aggrObject PERSISTENT;
 
     aggrProperty(primObject) => unique###aggrObject(primObject) RESOLVE TRUE;
 
@@ -37,7 +37,7 @@ META metaCodeDoublePropsAggregation (prim1Property, prim2Property, aggrObject, a
 
     unique###aggrObject (prim1Object, prim2Object) =
         GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
-        WHERE aggrObject IS aggrObject;
+        WHERE aggrObject IS aggrObject PERSISTENT;
 
     aggrProperty(prim1Object, prim2Object) => unique###aggrObject(prim1Object, prim2Object) RESOLVE TRUE;
 
@@ -113,7 +113,7 @@ quantityInnerInvoiceSku 'Кол-во в инвойсе' (innerInvoice, sku) = UN
                                                                                  quantityFormedInvoiceSku(innerInvoice, sku);
 
 quantityFormedInvoice 'Кол-во в инвойсе' (innerInvoice) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)
-                                                                 BY innerInvoice IN baseGroup;
+                                                                 BY innerInvoice IN baseGroup PERSISTENT;
 
 
 //--------------------------------- Декларации ----------------------------------------------------------------------//
@@ -154,7 +154,7 @@ CONSTRAINT importerDeclaration(declarationInnerInvoice(innerInvoice)) != importe
     MESSAGE 'Инвойс для другого импортёра';
 
 innerInvoiceDeclarationSku 'Инвойс для декларации' (declaration, sku) = GROUP MAX innerInvoice IF quantityInnerInvoiceSku(innerInvoice, sku)
-                                                                               BY declarationInnerInvoice(innerInvoice), sku;
+                                                                               BY declarationInnerInvoice(innerInvoice), sku PERSISTENT;
 
 quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)
                                                                          BY declarationInnerInvoice(innerInvoice), sku IN baseGroup PERSISTENT;
@@ -219,7 +219,7 @@ customCategory10InvoicedDeclarationDetail 'ТН ВЭД товара (ИД)' (dec
 customCategory10DataDeclarationDetail 'ТН ВЭД товара (ИД)' = DATA customCategory10(declarationDetail) IN idGroup;
 
 customCategory10DeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = UNION OVERRIDE customCategory10InvoicedDeclarationDetail(declarationDetail),
-                                                                                            customCategory10DataDeclarationDetail(declarationDetail) IN idGroup;
+                                                                                            customCategory10DataDeclarationDetail(declarationDetail) IN idGroup PERSISTENT;
 
 sidCustomCategory10DeclarationDetail 'ТН ВЭД товара' (declarationDetail) = sidCustomCategory10(customCategory10DeclarationDetail(declarationDetail));
 
@@ -233,7 +233,7 @@ temporalCertificateDeclarationDetail 'Временный сертификат п
 permanentCertificateDeclarationDetail 'Постоянный сертификат партии (ИД)' = DATA permanentCertificate(declarationDetail) IN idGroup;
 
 certificatePreparedDeclarationDetail 'Сертификат партии (ИД)' (declarationDetail) = UNION OVERRIDE temporalCertificateDeclarationDetail(declarationDetail),
-                                                                                                   permanentCertificateDeclarationDetail(declarationDetail) IN idGroup;
+                                                                                                   permanentCertificateDeclarationDetail(declarationDetail) IN idGroup PERSISTENT;
 
 sidTemporalCertificateDeclarationDetail 'Временный сертификат партии' (declarationDetail) = sidCertificate(temporalCertificateDeclarationDetail(declarationDetail)) IN baseGroup;
 sidPermanentCertificateDeclarationDetail 'Постоянный сертификат партии' (declarationDetail) = sidCertificate(permanentCertificateDeclarationDetail(declarationDetail)) IN baseGroup;
@@ -324,7 +324,7 @@ inDeclarationCorrection (declaration, correction) = declarationCorrection(correc
 
 priceCorrectionDeclarationDetail 'Скорректированная стоимость' = DATA DOUBLE(correction, declarationDetail) IN baseGroup;
 
-correctionPriceDeclarationDetail 'Скорректированная стоимость' (declarationDetail) = GROUP MAX priceCorrectionDeclarationDetail(correction, declarationDetail) BY declarationDetail;
+correctionPriceDeclarationDetail 'Скорректированная стоимость' (declarationDetail) = GROUP MAX priceCorrectionDeclarationDetail(correction, declarationDetail) BY declarationDetail PERSISTENT;
 
 correctionDutyDeclarationDetail 'Скорректированная пошлина (расч.)' (declarationDetail) = (UNION MAX
                                 netWeightDeclarationDetail(declarationDetail) * dutySumCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty()),
@@ -431,12 +431,14 @@ inDeclarationGroupDeclaration (declaration, groupDeclaration) = declarationGroup
 dutyGroupDeclaration 'Пошлина' = DATA DOUBLE(groupDeclaration) IN baseGroup;
 NDSGroupDeclaration 'НДС' = DATA DOUBLE(groupDeclaration) IN baseGroup;
 
+TABLE groupstring (object, object, object, object, STRING[200]);
+
 uniqueGroupDeclaration() = GROUP UNIQUE groupDeclaration BY declarationGroupDeclaration(groupDeclaration),
                                                             articleGroupDeclaration(groupDeclaration),
                                                             customCategory10GroupDeclaration(groupDeclaration),
                                                             mainCompositionGroupDeclaration(groupDeclaration),
                                                             countryGroupDeclaration(groupDeclaration)
-                                                      WHERE groupDeclaration IS groupDeclaration;
+                                                      WHERE groupDeclaration IS groupDeclaration PERSISTENT;
 
 quantityDeclarationGroup(declaration, article, customCategory10, STRING, country) => uniqueGroupDeclaration(declaration, article, customCategory10, STRING, country) RESOLVE TRUE;
 isGroupDeclaration(group) = group IS groupDeclaration;

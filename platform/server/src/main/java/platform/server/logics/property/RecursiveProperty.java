@@ -68,7 +68,6 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         IntegralClass integralClass = (IntegralClass)getType();
         Property constraint = DerivedProperty.createCompare(interfaces, getImplement(), DerivedProperty.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
         constraint.caption = ServerResourceBundle.getString("logics.property.cycle.detected", caption);
-        constraint.setConstraint(false);
         return constraint;
     }
 

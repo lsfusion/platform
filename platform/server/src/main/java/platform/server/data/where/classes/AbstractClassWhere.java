@@ -242,7 +242,9 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
                 return false;
         }
 
-        return getKNF().meansFrom(andFrom);
+        boolean result = getKNF().meansFrom(andFrom);
+//        assert result == getPrevKNF().meansFrom(andFrom);
+        return result;
 
 /*        // погнали перестановки
         int[] nums = new int[mnum];
@@ -271,11 +273,43 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     @ManualLazy
     private KNF<K> getKNF() {
         if(knf==null) {
-            knf = KNF.STATIC(false);
-            for(And<K> where : wheres) // бежим по всем операндам
-                knf = knf.or(where);
+            if(wheres.length==0)
+                knf = KNF.STATIC(false);
+            else {
+                KNF<K>[] knfs = new KNF[wheres.length];
+                for (int i = 0; i < wheres.length; i++)
+                    knfs[i] = new KNF<K>(KNF.toOr(wheres[i]));
+
+                for(int p=0;p<wheres.length-1;p++) {
+                    // сначала ищем наиболее похожие
+                    BaseUtils.Paired<Or<K>> max = null; int lm=0; int rm = 0;
+                    for(int i=0;i<knfs.length;i++)
+                        if(knfs[i] != null) {
+                            for(int j=i+1;j<knfs.length;j++)
+                                if(knfs[j] != null) {
+                                    BaseUtils.Paired<Or<K>> paired = new BaseUtils.Paired<Or<K>>(knfs[i].wheres, knfs[j].wheres, KNF.<K>instancer());
+                                    if(max == null || paired.common.length > max.common.length) {
+                                        max = paired; lm = i; rm = j;
+                                    }
+                                }
+                        }
+                    knfs[lm] = KNF.orPairs(max);
+                    knfs[rm] = null;
+                }
+                knf = knfs[0];
+            }
         }
         return knf;
+    }
+    
+    private KNF<K> prevKnf;
+    private KNF<K> getPrevKNF() {
+        if(prevKnf == null) {
+            prevKnf = KNF.STATIC(false);
+            for(And<K> where : wheres) // бежим по всем операндам
+                prevKnf = prevKnf.or(where);
+        }
+        return prevKnf;
     }
 
     static class Or<K> extends QuickMap<K,OrClassSet> {
@@ -304,10 +338,20 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
     }
 
-    protected static class KNF<K> extends ExtraMapSetWhere<K,OrClassSet,Or<K>,KNF<K>> implements ArrayInstancer<Or<K>> {
+    protected static class KNF<K> extends ExtraMapSetWhere<K,OrClassSet,Or<K>,KNF<K>> {
 
-        public Or<K>[] newArray(int size) {
-            return new Or[size];
+        private final static ArrayInstancer<Or> instancer = new ArrayInstancer<Or>() {
+            public Or[] newArray(int size) {
+                return new Or[size];
+            }
+        };
+        public static <K> ArrayInstancer<Or<K>> instancer() {
+            return BaseUtils.immutableCast(instancer);
+        }
+
+        @Override
+        protected Or<K>[] newArray(int size) {
+            return instancer.newArray(size);
         }
 
         public KNF(Or<K>[] iWheres) {
@@ -347,18 +391,23 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
 
         public KNF<K> or(QuickMap<K,AndClassSet> map) {
-            // алгоритм такой : надо до выполнения самого or'а, выцепим "скобки" (единичные or'ы) тогда можно assert'ить что скобки можно просто прицепить и ни одна из этих скобок не будет следовать
+            return orPairs(new BaseUtils.Paired<Or<K>>(wheres, toOr(map), KNF.<K>instancer()));
+        }
 
-            Or<K>[] toOr = newArray(map.size);
+        private static <K> Or<K>[] toOr(QuickMap<K, AndClassSet> map) {
+            Or<K>[] toOr = new Or[map.size];
             for(int j=0;j<map.size;j++)
                 toOr[j] = new Or<K>(map.getKey(j),map.getValue(j).getOr());
+            return toOr;
+        }
 
-            BaseUtils.Paired<Or<K>> paired = new BaseUtils.Paired<Or<K>>(wheres, toOr, this);
+        private static <K> KNF<K> orPairs(BaseUtils.Paired<Or<K>> paired) {
+            // алгоритм такой : надо до выполнения самого or'а, выцепим "скобки" (единичные or'ы) тогда можно assert'ить что скобки можно просто прицепить и ни одна из этих скобок не будет следовать
             KNF<K> and = new KNF<K>(paired.getDiff1()).intersect(new KNF<K>(paired.getDiff2()));
             if(paired.common.length==0)
                 return and;
             assert and.checkMerge(paired.common);
-            Or<K>[] merged = newArray(and.wheres.length+paired.common.length);
+            Or<K>[] merged = new Or[and.wheres.length + paired.common.length];
             System.arraycopy(paired.common,0,merged,0,paired.common.length);
             System.arraycopy(and.wheres,0,merged,paired.common.length,and.wheres.length);
             return new KNF<K>(merged);
