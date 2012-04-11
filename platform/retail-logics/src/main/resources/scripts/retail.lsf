@@ -1471,18 +1471,22 @@ nameEmployeeSystemEmployee 'Операционная система на раб�
 
 nameOfficer 'Должность' = DATA STRING[100] (officer) IN baseGroup;
 officerEmployee(employee) = DATA officer (employee) IN idGroup;
-nameOfficerEmployee 'Должность сотрудника' (employee) = nameOfficer(officerEmployee(employee)) IN baseGroup;
+nameOfficerEmployee 'Должность сотрудника' (employee) = nameOfficer(officerEmployee(employee)) IN baseGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 languageEmployee(employee) = DATA language (employee) IN idGroup;
-nameLanguageEmployee 'Язык интерфейса' = name(languageEmployee(employee)) IN employeeGroup;
-shortNameLanguageEmployee 'Язык интерфейса сокр.' = shortName(languageEmployee(employee)) IN employeeGroup;
-numberEmployee 'Номер кассира для касс' = DATA STRING[10] (employee) IN employeeGroup;
-passwordEmployee 'Пароль для касс' = DATA STRING[20] (employee) IN employeeGroup;
-dataEmployee 'Данные для регистрации на кассе (штрих-код)' = DATA STRING[20] (employee) IN employeeGroup;
+nameLanguageEmployee 'Язык интерфейса' = name(languageEmployee(employee)) IN employeeGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
+shortNameLanguageEmployee 'Язык интерфейса сокр.' = shortName(languageEmployee(employee)) IN employeeGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
+numberEmployee 'Номер кассира для касс' = DATA STRING[10] (employee) IN employeeGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
+passwordEmployee 'Пароль для касс' = DATA STRING[20] (employee) IN employeeGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
+dataEmployee 'Данные для регистрации на кассе (штрих-код)' = DATA STRING[20] (employee) IN employeeGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 
 includeDepartmentStoreEmployee 'Сотрудник отдела' = DATA BOOLEAN (departmentStore, employee);
-phoneEmployee 'Телефон' = DATA STRING[50] (employee) IN employeeGroup;
+phoneEmployee 'Телефон' = DATA STRING[50] (employee) IN employeeGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
+
+nameDepartmentByEmployee 'Отделы' (employee) =
+     GROUP CONCAT name(departmentStore) IF includeDepartmentStoreEmployee(departmentStore, employee), ', '
+     BY employee MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 // ------------------------------------- Скидки ---------------------------------------------------------- //
 
@@ -1519,6 +1523,14 @@ FORM employees 'Сотрудники'
     OBJECTS ds=departmentStore
     PROPERTIES(ds) READONLY name, nameStoreDepartmentStore
     FILTERS includeDepartmentStoreEmployee(ds, e)
+;
+
+FORM employeeDialog 'Сотрудники'
+    OBJECTS e=employee
+    PROPERTIES(e)      userFirstName, userLastName, nameOfficerEmployee, phoneEmployee, shortNameLanguageEmployee,
+                       numberEmployee, dataEmployee, nameDepartmentByEmployee
+
+    DIALOG employee OBJECT e
 ;
 
 // ----------------------------------- Цех ----------------------------------- //
@@ -2351,7 +2363,7 @@ CONSTRAINT accountantManCommittee(committee) AND NOT isIncludeEmployeeCommittee(
 CONSTRAINT headManCommittee(committee) AND NOT isIncludeEmployeeCommittee(headManCommittee(committee), committee)
     CHECKED BY headManCommittee MESSAGE 'Зав. магазином не является сотрудником отдела';
 
-CONSTRAINT inCommitteeEmployee(committee, emploee) AND NOT isIncludeEmployeeCommittee(emploee, committee)
+CONSTRAINT inCommitteeEmployee(committee, employee) AND NOT isIncludeEmployeeCommittee(employee, committee)
     CHECKED MESSAGE 'Член комиссии не является сотрудником отделов';
 
 castOfficerEmployeeToString40 =
@@ -10782,6 +10794,7 @@ NAVIGATOR {
             ADD barcode;
             ADD barcodeInput;
             ADD employee;
+            ADD employeeDialog;
             ADD officer;
             ADD groupUser;
             ADD tradingSquare;
