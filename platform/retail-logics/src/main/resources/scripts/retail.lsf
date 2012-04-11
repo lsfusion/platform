@@ -3815,7 +3815,7 @@ CLASS groupScales 'Группы весов' : groupMachinery;
 CLASS groupCashRegister 'Группы касс' : groupMachinery;
 CLASS groupCheck 'Группы прайс чекеров' : groupMachinery;
 
-nameGroupMachinery 'Наименование группы' = DATA STRING[200] (groupMachinery) IN baseGroup;
+nameGroupMachinery 'Наименование группы' = DATA STRING[200] (groupMachinery) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 transferGroupMachinery 'Передать товар на группу оборудования' = DATA BOOLEAN (groupMachinery) IN baseGroup;
 
 cellGroupScales 'Помещать на ценники номера ячеек с этой группы' = DATA BOOLEAN (groupScales) IN baseGroup;
@@ -4256,7 +4256,7 @@ GROUP itemStudyOutputDetailInfo 'Ценовый характеристики п/
 CLASS cutting 'Карта проработки (разделки)' : named, numeratedObject;
 CLASS detailCutting 'Компонента';
 
-CLASS actOfStudy 'Акт проработки (разделки)' : historyObject, numeratedObject;
+CLASS actOfStudy 'Акт проработки (разделки)' : historyObject, numeratedObject, priceTransactionDocument;
 CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStudy, postedObject;
 TABLE actOfStudy (actOfStudy);
 
@@ -4327,6 +4327,11 @@ waybillInputActOfStudy 'Номер приходной накладной' (actOf
 seriesOutputActOfStudy 'Серия расходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN documentPrmGroup FIXEDCHARWIDTH 3;
 seriesInputActOfStudy 'Серия приходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN documentPrmGroup FIXEDCHARWIDTH 3;
 
+castActOfStudyObjectsToString100=
+    FORMULA STRING[200] '\'Акт разруба \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
+
+descriptionActOfStudy 'Название документа' (actOfStudy) = castActOfStudyObjectsToString100(
+    seriesNumberObject(actOfStudy), dateActOfStudy(actOfStudy), nameContractorDepartmentStoreActOfStudy(actOfStudy));
 
 actOfStudyStudyInputDetail = DATA actOfStudy (studyInputDetail) IN idGroup;
 
@@ -4397,6 +4402,11 @@ quantityStudyOutputDetail 'Количество выхода п/ф' (studyOutput
 actualQuantityStudyOutputDetail 'Фактический выхода п/ф'(studyOutputDetail) = DATA DOUBLE (studyOutputDetail);
 overQuantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE quantityStudyOutputDetail(studyOutputDetail),
                                                                   actualQuantityStudyOutputDetail(studyOutputDetail);
+
+// свойство для засылки в кассы
+quantityItemActOfStudy (item, actOfStudy) = GROUP SUM actualQuantityStudyOutputDetail(studyOutputDetail)
+                                                      BY itemStudyOutputDetail(studyOutputDetail),
+                                                         actOfStudyStudyOutputDetail(studyOutputDetail);
 
 notRoundRetailPriceStudyOutputDetail 'Цена' (studyOutputDetail) = [X*Y*(100+Z)/100]
     (factorStudyOutputDetail(studyOutputDetail), retailPriceStudyInputDetailStudyOutputDetail(studyOutputDetail), overPercAllowancesStudyOutputDetail(studyOutputDetail));
@@ -4701,125 +4711,6 @@ showSeriesNumberCuttingStudyInputDetail 'Карта проработки' = ACTI
     }
 } SHORTCUT seriesNumberCuttingStudyInputDetail DEFAULT;
 
-
-
-FORM actOfStudy 'Акт проработки'
-
-    OBJECTS a=actOfStudy FIXED PANEL
-
-    PROPERTIES(a)   nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreActOfStudy,
-                    dateActOfStudy, timeActOfStudy, nameContractorDepartmentStoreActOfStudy,
-                    quantityOutputActOfStudy, subtotalOutputActOfStudy, quantityInputActOfStudy, subtotalInputActOfStudy,
-                    waybillOutputActOfStudy, seriesOutputActOfStudy, waybillInputActOfStudy, seriesInputActOfStudy
-
-    OBJECTS sid=studyInputDetail
-    OBJECTS sod=studyOutputDetail
-
-    PROPERTIES(sid) nameAttributeItemStudyInputDetail
-    PROPERTIES(sid) seriesNumberCuttingStudyInputDetail READONLY, showSeriesNumberCuttingStudyInputDetail
-    PROPERTIES(sid) READONLY dateCuttingStudyInputDetail, descriptionCuttingStudyInputDetail,
-                    percAllowancesCuttingStudyInputDetail, percLossesCuttingStudyInputDetail, percSweepsCuttingStudyInputDetail
-    PROPERTIES(sid) importerPriceStudyInputDetail, supplierPriceStudyInputDetail, numberRetailRangeStudyInputDetail, dataRetailRangeStudyInputDetail,
-                    retailPriceStudyInputDetail, quantityStudyInputDetail, totalStudyInputDetail,
-                    totalPercGoodsStudyInputDetail HIGHLIGHTIF highlightStudyInputDetail(sid) READONLY, ADDOBJ, delete
-
-    PROPERTIES(sid) toFillStudyOutputDetailsStudyInputDetail FORCE PANEL SHOWIF showNotStudyInputDetailStudyOutputDetail(sid,sod),
-                    cleanAllStudyInputDetail FORCE PANEL
-
-    PROPERTIES(sod) captionItemStudyOutputDetail, shortNameUnitOfMeasureItemStudyOutputDetail, importerPriceStudyOutputDetail, supplierPriceStudyOutputDetail,
-                    numberRetailRangeStudyOutputDetail, dataRetailRangeStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
-                    retailPriceStudyOutputDetail, quantityStudyOutputDetail, actualQuantityStudyOutputDetail, totalStudyOutputDetail
-
-    PROPERTIES(sod) FORCE PANEL curImporterPriceStudyOutputDetail, curSupplierPriceStudyOutputDetail, curNumberRetailRangeStudyOutputDetail,
-                    curDataRetailRangeStudyOutputDetail, curRetailPriceStudyOutputDetail
-
-    FILTERS         actOfStudyStudyInputDetail(sid)==a,
-                    studyInputDetailStudyOutputDetail(sod) == sid
-
-    EDIT actOfStudy OBJECT a
-;
-
-DESIGN actOfStudy FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-
-        NEW header.box BEFORE sid.box {
-            childConstraints = TO THE RIGHT;
-
-            NEW headerCol1 {
-                childConstraints = TO THE BOTTOM;
-
-                ADD a.documentHeaderGroup {
-                    childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(nameDepartmentStoreActOfStudy);
-                    ADD PROPERTY(nameNumeratorObject);
-                    ADD PROPERTY(numberObject);
-                    ADD PROPERTY(seriesObject);
-                    ADD PROPERTY(dateActOfStudy);
-                    ADD PROPERTY(timeActOfStudy);
-                }
-
-                ADD a.documentPrmGroup {
-                    childConstraints = TO THE BOTTOM;
-                }
-
-                NEW headerOut {
-                    title = 'Расходная накладная';
-                    ADD PROPERTY(waybillOutputActOfStudy);
-                    ADD PROPERTY(seriesOutputActOfStudy);
-                }
-                POSITION a.documentPrmGroup TO THE LEFT headerOut;
-
-                NEW headerIn {
-                    title = 'Приходная накладная';
-                    ADD PROPERTY(waybillInputActOfStudy);
-                    ADD PROPERTY(seriesInputActOfStudy);
-                }
-                POSITION a.documentPrmGroup TO THE LEFT headerIn;
-                POSITION headerOut TO THE LEFT headerIn;
-            }
-
-            ADD a.documentSumGroup {
-                childConstraints = TO THE BOTTOM;
-            }
-        }
-    }
-}
-
-
-FORM actOfStudies 'Акты проработки'
-
-    OBJECTS a=actOfStudy
-    PROPERTIES(a)      READONLY objectClassName, numberObject, seriesObject, dateActOfStudy, timeActOfStudy, nameDepartmentStoreActOfStudy,
-                       nameContractorDepartmentStoreActOfStudy, quantityOutputActOfStudy, subtotalOutputActOfStudy, quantityInputActOfStudy, subtotalInputActOfStudy
-    PROPERTIES(a)      FORCE PANEL timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed
-
-    PROPERTIES(a)      ADDFORM, EDITFORM SHOWIF isDraftActOfStudy(a), delete FORCE PANEL SHOWIF isDraftActOfStudy(a),
-                       postActOfStudy SHOWIF isDraftActOfStudy(a), unpostActOfStudy SHOWIF isPostedActOfStudy(a)
-
-    OBJECTS i = item
-    PROPERTIES(i)      READONLY nameAttributeItem, shortNameUnitOfMeasureItem
-    PROPERTIES(i, a)   READONLY quantityInputItemActOfStudy, totalInputItemActOfStudy, quantityOutputItemActOfStudy, totalOutputItemActOfStudy
-
-    ORDER BY           totalInputItemActOfStudy, totalOutputItemActOfStudy
-    FILTERS            quantityInputItemActOfStudy(i,a) OR quantityOutputItemActOfStudy(i,a)
-
-    FILTERGROUP filters1
-        FILTER 'Показать приход' 'F10' totalOutputItemActOfStudy(i, a)
-        FILTER 'Показать расход' 'F9' totalInputItemActOfStudy(i, a)
-;
-
-DESIGN actOfStudies FROM DEFAULT {
-    PROPERTY(objectClassName) {
-        preferredCharWidth = 25;
-    }
-    PROPERTY (delete(a)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-    POSITION a.historyGroup TO THE LEFT a.postedGroup;
-    ADD i.box BEFORE a.historyGroup;
-}
 
 //---------------------------- Проведение инвентаризации ----------------------------------------//
 
@@ -7662,11 +7553,13 @@ commentMachineryPriceTransaction 'Примечание' = DATA STRING[30] (machi
 
 isDraftPriceTransactionDocument 'Открыт' (document) = UNION EXCLUSIVE isDraftShipment(document),
                                                                       isDraftInnerArrival(document),
-                                                                      isDraftUserPriceChange(document);
+                                                                      isDraftUserPriceChange(document),
+                                                                      isDraftActOfStudy(document);
 
 descriptionPriceTransactionDocument 'Название документа загрузки' (document) = UNION EXCLUSIVE descriptionShipment(document),
                                                                                                descriptionInnerArrival(document),
-                                                                                               descriptionUserPriceChange(document);
+                                                                                               descriptionUserPriceChange(document),
+                                                                                               descriptionActOfStudy(document);
 
 priceTransactionDocumentMachineryPriceTransaction = DATA priceTransactionDocument (machineryPriceTransaction);
 descriptionPriceTransactionDocumentMachineryPriceTransaction 'Основание загрузки' (transaction) =
@@ -10370,6 +10263,135 @@ DESIGN bills FROM DEFAULT{
         POSITION d.box TO THE LEFT p.box;
     }
 };
+
+//----------------------------------- Акты проработки -------------------------------------------------//
+@metaCodeDocumentMachineryPriceTransaction(actOfStudy);
+@metaCodeDocumentLabelTransaction(actOfStudy);
+
+FORM actOfStudy 'Акт проработки'
+
+    OBJECTS a=actOfStudy FIXED PANEL
+
+    PROPERTIES(a)   nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreActOfStudy,
+                    dateActOfStudy, timeActOfStudy, nameContractorDepartmentStoreActOfStudy,
+                    quantityOutputActOfStudy, subtotalOutputActOfStudy, quantityInputActOfStudy, subtotalInputActOfStudy,
+                    waybillOutputActOfStudy, seriesOutputActOfStudy, waybillInputActOfStudy, seriesInputActOfStudy
+
+    OBJECTS sid=studyInputDetail
+    OBJECTS sod=studyOutputDetail
+
+    PROPERTIES(sid) nameAttributeItemStudyInputDetail
+    PROPERTIES(sid) seriesNumberCuttingStudyInputDetail READONLY, showSeriesNumberCuttingStudyInputDetail
+    PROPERTIES(sid) READONLY dateCuttingStudyInputDetail, descriptionCuttingStudyInputDetail,
+                    percAllowancesCuttingStudyInputDetail, percLossesCuttingStudyInputDetail, percSweepsCuttingStudyInputDetail
+    PROPERTIES(sid) importerPriceStudyInputDetail, supplierPriceStudyInputDetail, numberRetailRangeStudyInputDetail, dataRetailRangeStudyInputDetail,
+                    retailPriceStudyInputDetail, quantityStudyInputDetail, totalStudyInputDetail,
+                    totalPercGoodsStudyInputDetail HIGHLIGHTIF highlightStudyInputDetail(sid) READONLY, ADDOBJ, delete
+
+    PROPERTIES(sid) toFillStudyOutputDetailsStudyInputDetail FORCE PANEL SHOWIF showNotStudyInputDetailStudyOutputDetail(sid,sod),
+                    cleanAllStudyInputDetail FORCE PANEL
+
+    PROPERTIES(sod) captionItemStudyOutputDetail, shortNameUnitOfMeasureItemStudyOutputDetail, importerPriceStudyOutputDetail, supplierPriceStudyOutputDetail,
+                    numberRetailRangeStudyOutputDetail, dataRetailRangeStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
+                    retailPriceStudyOutputDetail, quantityStudyOutputDetail, actualQuantityStudyOutputDetail, totalStudyOutputDetail
+
+    PROPERTIES(sod) FORCE PANEL curImporterPriceStudyOutputDetail, curSupplierPriceStudyOutputDetail, curNumberRetailRangeStudyOutputDetail,
+                    curDataRetailRangeStudyOutputDetail, curRetailPriceStudyOutputDetail
+
+    FILTERS         actOfStudyStudyInputDetail(sid)==a,
+                    studyInputDetailStudyOutputDetail(sod) == sid
+
+    EDIT actOfStudy OBJECT a
+;
+
+DESIGN actOfStudy FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+        NEW header.box BEFORE sid.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerCol1 {
+                childConstraints = TO THE BOTTOM;
+
+                ADD a.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameDepartmentStoreActOfStudy);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateActOfStudy);
+                    ADD PROPERTY(timeActOfStudy);
+                }
+
+                ADD a.documentPrmGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+
+                NEW headerOut {
+                    title = 'Расходная накладная';
+                    ADD PROPERTY(waybillOutputActOfStudy);
+                    ADD PROPERTY(seriesOutputActOfStudy);
+                }
+                POSITION a.documentPrmGroup TO THE LEFT headerOut;
+
+                NEW headerIn {
+                    title = 'Приходная накладная';
+                    ADD PROPERTY(waybillInputActOfStudy);
+                    ADD PROPERTY(seriesInputActOfStudy);
+                }
+                POSITION a.documentPrmGroup TO THE LEFT headerIn;
+                POSITION headerOut TO THE LEFT headerIn;
+            }
+
+            ADD a.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+    }
+}
+
+
+FORM actOfStudies 'Акты проработки'
+
+    OBJECTS a=actOfStudy
+    PROPERTIES(a)  READONLY objectClassName, numberObject, seriesObject, dateActOfStudy, timeActOfStudy, nameDepartmentStoreActOfStudy,
+                            nameContractorDepartmentStoreActOfStudy, quantityOutputActOfStudy, subtotalOutputActOfStudy, quantityInputActOfStudy, subtotalInputActOfStudy,
+                            statusPrintPriceTransactionDocument HIGHLIGHTIF showPrintLabelTransactionActOfStudy(a),
+                            statusEquipmentPriceTransactionDocument HIGHLIGHTIF showCreateMachineryPriceTransactionActOfStudy(a)
+
+    PROPERTIES(a) READONLY FORCE PANEL timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed
+
+    PROPERTIES (a)          createActOfStudyLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionActOfStudy(a),
+                            createSnapshotActOfStudyLabelTransaction FORCE PANEL,
+                            createActOfStudyMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionActOfStudy(a),
+                            createSnapshotActOfStudyMachineryPriceTransaction FORCE PANEL,
+                            ADDFORM, EDITFORM SHOWIF isDraftActOfStudy(a), delete FORCE PANEL SHOWIF isDraftActOfStudy(a),
+                            postActOfStudy SHOWIF isDraftActOfStudy(a), unpostActOfStudy SHOWIF isPostedActOfStudy(a)
+
+    OBJECTS i = item
+    PROPERTIES(i)      READONLY nameAttributeItem, shortNameUnitOfMeasureItem
+    PROPERTIES(i, a)   READONLY quantityInputItemActOfStudy, totalInputItemActOfStudy, quantityOutputItemActOfStudy, totalOutputItemActOfStudy
+
+    ORDER BY           totalInputItemActOfStudy, totalOutputItemActOfStudy
+    FILTERS            quantityInputItemActOfStudy(i,a) OR quantityOutputItemActOfStudy(i,a)
+
+    FILTERGROUP filters1
+        FILTER 'Показать приход' 'F10' totalOutputItemActOfStudy(i, a)
+        FILTER 'Показать расход' 'F9' totalInputItemActOfStudy(i, a)
+;
+
+DESIGN actOfStudies FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 25;
+    }
+    PROPERTY (delete(a)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+    POSITION a.historyGroup TO THE LEFT a.postedGroup;
+    ADD i.box BEFORE a.historyGroup;
+}
 
 //----------------------------------- Форма для остатков -------------------------------------------------//
 

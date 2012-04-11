@@ -883,8 +883,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         timeCreated = addDProp(historyGroup, "timeCreated", getString("logics.timecreated"), DateTimeClass.instance, historyObject);
         userCreated = addDProp(idGroup, "userCreated", getString("logics.usercreated"), customUser, historyObject);
         nameUserCreated = addJProp(historyGroup, "nameUserCreated", getString("logics.usercreated"), name, userCreated, 1);
+        nameUserCreated.setMinimumCharWidth(10); nameUserCreated.setPreferredCharWidth(20);
         computerCreated = addDProp(idGroup, "computerCreated", getString("logics.computercreated"), computer, historyObject);
         hostnameComputerCreated = addJProp(historyGroup, "hostnameComputerCreated", getString("logics.computercreated"), hostname, computerCreated, 1);
+        hostnameComputerCreated.setMinimumCharWidth(10); hostnameComputerCreated.setPreferredCharWidth(20);
         
         timeCreated.setDerivedChange(true, currentDateTime, is(historyObject), 1);
         userCreated.setDerivedChange(true, currentUser, is(historyObject), 1);
