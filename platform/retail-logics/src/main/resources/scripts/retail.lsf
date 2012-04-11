@@ -10376,7 +10376,8 @@ FORM isSupplierItemDepartmentStore 'Ассортимент товаров в п�
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameDep=name(dep), nameIt=nameAttributeItem(i), barcodeBarcodeSku(i)
     ORDER BY          nameDep
-    PROPERTIES(sp, i, dep, t) nameisSupplierItemDepartmentOver, priceSupplierItemDepartmentOver
+    PROPERTIES(sp, i, dep, t) nameisSupplierItemDepartmentOver HIGHLIGHTIF nameisSupplierItemDepartmentDate(sp, i, dep, t),
+                              priceSupplierItemDepartmentOver HIGHLIGHTIF priceSupplierItemDepartmentDate(sp, i, dep, t)
     FILTERS           inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     FILTERS           hasParentItemGroupSku(g, i)
     FILTERGROUP filters10
