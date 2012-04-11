@@ -328,9 +328,9 @@ CONSTRAINT foo(store, article) > 1000 CHECKED MESSAGE 'ошибка: >1000';
 FORM documentArticle 'По документам'
 
 // GroupObjects list syntax:
-// OBJECTS [alias=] className ['<caption>'] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [INIT | FIXED] [PANEL | HIDE | GRID] [PAGESIZE <int value>],
+// OBJECTS [alias=] className ['<caption>'] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [REPORTFILE prop(p1, ..., pK)] [INIT | FIXED] [PANEL | HIDE | GRID] [PAGESIZE <int value>],
 //         ...
-//         [alias=] className ['<caption>'] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [INIT | FIXED] [PANEL | HIDE | GRID] [PAGESIZE <int value>]
+//         [alias=] className ['<caption>'] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [REPORTFILE prop(p1, ..., pK)] [INIT | FIXED] [PANEL | HIDE | GRID] [PAGESIZE <int value>]
 OBJECTS document, article
 
 // TreeGroup list syntax:
