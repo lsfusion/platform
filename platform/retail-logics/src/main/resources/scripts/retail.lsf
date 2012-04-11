@@ -4834,7 +4834,6 @@ CLASS STATIC typeOfAddition 'Тип сличительной ведомости'
 };
 
 GROUP inventoryGroup 'Информация об инвентаризации' : publicGroup;
-GROUP inventGroup 'Вспомогательные' : publicGroup;
 GROUP collationSheetGroup 'Информация о сличительных ведомостях' : baseGroup;
 GROUP listInventoryGroup 'Информация об описях' : baseGroup;
 GROUP inventoryCommitteeGroup 'Комиссия' : baseGroup;
@@ -4844,13 +4843,17 @@ castToString30 = FORMULA STRING[30] '$1 || CAST ($2 AS character(20))';
 
 @metaCodePostedObject (inventory) ;
 
-nameInventory 'Название инвентаризации' = DATA STRING[100] (inventory) IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-dateInventory 'Дата инвентаризации' = DATA DATE (inventory) IN inventGroup;
-timeInventory 'Время инвентаризации' = DATA TIME (inventory) IN inventGroup;
-noteInventory 'Примечание (основание)' = DATA STRING[500] (inventory) IN inventGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-infoInventory 'Дополнительная информация по инвентаризации' = DATA STRING[500] (inventory) IN inventGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+nameInventory 'Название инвентаризации' = DATA STRING[100] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+
+dateInventory 'Дата документа' = DATA DATE (inventory) IN documentHeaderGroup;
+dateInventory(inventory) <- currentDate() ON ASSIGN inventory IS inventory;
+timeInventory 'Время документа' = DATA TIME (inventory) IN documentHeaderGroup;
+timeInventory(inventory) <- currentTime() ON ASSIGN inventory IS inventory;
+
+noteInventory 'Примечание (основание)' = DATA STRING[500] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+infoInventory 'Дополнительная информация по инвентаризации' = DATA STRING[500] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 typeOfAdditionInventory(inventory) = DATA typeOfAddition (inventory) IN idGroup;
-nameTypeOfAdditionInventory 'Тип сличительной ведомости' (inventory) = name(typeOfAdditionInventory(inventory)) IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+nameTypeOfAdditionInventory 'Тип сличительной ведомости' (inventory) = name(typeOfAdditionInventory(inventory)) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 dateTimeInventory 'Выставить остатки на дату/время' (inventory) = toDateTime(dateInventory(inventory), timeInventory(inventory));
 
@@ -4872,11 +4875,11 @@ includeDepartmentStoreInventory 'Включить в инвентаризаци�
 uniqueCollationSheetDepartmentStoreInventory 'Сличительная ведомость по скалду и инвентаризации' (departmentStore, inventory) =
     GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet);
 
-typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) = DATA typeOfAddition (departmentStore, inventory) IN inventoryGroup;
+typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) = DATA typeOfAddition (departmentStore, inventory);
 includeTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory) =
     typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) IF includeDepartmentStoreInventory(departmentStore, inventory) IN inventoryGroup;
 nameTypeOfAdditionDepartmentStoreInventory 'Тип сличительной ведомости' (departmentStore, inventory) =
-    name(includeTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory)) IN inventoryGroup;
+    name(includeTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory)) IN documentPrmGroup;
 
 typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory) =
     (UNION OVERRIDE typeOfAdditionInventory(inventory) AND departmentStore IS departmentStore,
@@ -4885,7 +4888,7 @@ typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory) =
 
 nameTypeOfAdditionDepartmentStoreInventoryOver 'Тип сличительной ведомости' (departmentStore, inventory) = name(typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory)) IN inventoryGroup;
 
-nameDepartmentByInventory 'Подразделения для инвентаризации' (inventory) =
+nameDepartmentByInventory 'Отделы документа' (inventory) =
     GROUP CONCAT name(departmentStore) IF includeDepartmentStoreInventory(departmentStore, inventory), ', ' BY inventory IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 150;
 
 quantityStoreInventory(store, inventory) = GROUP SUM 1 IF includeDepartmentStoreInventory(departmentStore, inventory)  BY storeDepartmentStore(departmentStore), inventory;
@@ -9488,16 +9491,44 @@ FORM inventory 'Инвентаризация'
 
 DESIGN inventory FROM DEFAULT {
     main{
-        in.box {
-            POSITION in.inventoryGroup TO THE LEFT in.inventGroup;
-                in.inventGroup {
+        NEW header.box BEFORE in.box {
+            childConstraints = TO THE BOTTOM;
+
+            ADD in.documentHeaderGroup {
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(nameDepartmentByInventory);
+                ADD PROPERTY(nameNumeratorObject);
+                ADD PROPERTY(numberObject);
+                ADD PROPERTY(seriesObject);
+                ADD PROPERTY(dateInventory);
+                ADD PROPERTY(timeInventory);
+            }
+
+            NEW headerRow2 {
+                childConstraints = TO THE RIGHT;
+                ADD in.documentPrmGroup {
                     childConstraints = TO THE BOTTOM;
-                    ADD PROPERTY(fillBalanceInventory(in));
-                    ADD PROPERTY(convertPriceInventory(in));
-                    POSITION PROPERTY(fillBalanceInventory(in)) TO THE LEFT PROPERTY(convertPriceInventory(in));
+                    NEW headerRow2Col1Row1 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameTypeOfAdditionInventory);
+                        ADD PROPERTY(nameInventory);
+                    }
+                    NEW headerRow2Col1Row2 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(noteInventory);
+                        ADD PROPERTY(infoInventory);
+                    }
                 }
+                NEW actionContainer {
+                    title = 'Действия';
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(fillBalanceInventory);
+                    ADD PROPERTY(convertPriceInventory);
+                }
+            }
         }
-        NEW secondCase BEFORE functions.box{
+
+        NEW secondCase BEFORE functions.box {
                 tabbedPane = TRUE;
                 NEW z.box { title = 'Описи';
                     fillVertical = 5;
