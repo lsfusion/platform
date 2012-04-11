@@ -797,8 +797,12 @@ CLASS STATIC itemStatus 'Статус товара'
 
 storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) AUTOSET;
 nameStoreDepartmentStore 'Магазин' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
-revaluationCommitteeDepartmentStore 'Комиссия отдела (ИД)' = DATA revaluationCommittee (departmentStore);
-nameRevaluationCommitteeDepartmentStore 'Комиссия отдела' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+revaluationCommitteeDepartmentStore 'Комиссия переоценки (ИД)' = DATA revaluationCommittee (departmentStore);
+nameRevaluationCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+
+registerCommitteeDepartmentStore 'Комиссия для реестра (ИД)' = DATA registerCommittee (departmentStore);
+nameRegisterCommitteeDepartmentStore 'Комиссия для реестра' (departmentStore) = name(registerCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+
 controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
 deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
 controlMinusRestsContainerDepartmentStore 'Контроль за минусовыми остатками тары' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
@@ -1477,7 +1481,7 @@ passwordEmployee 'Пароль для касс' = DATA STRING[20] (employee) IN 
 dataEmployee 'Данные для регистрации на кассе (штрих-код)' = DATA STRING[20] (employee) IN employeeGroup;
 
 
-departmentStoreEmployee 'Сотрудник отдела' = DATA BOOLEAN (departmentStore, employee);
+includeDepartmentStoreEmployee 'Сотрудник отдела' = DATA BOOLEAN (departmentStore, employee);
 phoneEmployee 'Телефон' = DATA STRING[50] (employee) IN employeeGroup;
 
 // ------------------------------------- Скидки ---------------------------------------------------------- //
@@ -1498,7 +1502,7 @@ FORM employee 'Сотрудник'
     TREE treeStore t=tradingNetwork, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY name(t), name(st), name(s), name(ds)
 
-    PROPERTIES(ds, e)  departmentStoreEmployee
+    PROPERTIES(ds, e)  includeDepartmentStoreEmployee
 
     FILTERS   inStoreTypeTradingNetwork (st, t),
               inStoreTypeStore (st, s),
@@ -1514,7 +1518,7 @@ FORM employees 'Сотрудники'
 
     OBJECTS ds=departmentStore
     PROPERTIES(ds) READONLY name, nameStoreDepartmentStore
-    FILTERS departmentStoreEmployee(ds, e)
+    FILTERS includeDepartmentStoreEmployee(ds, e)
 ;
 
 // ----------------------------------- Цех ----------------------------------- //
@@ -2305,28 +2309,22 @@ CLASS ABSTRACT committee 'Комиссия' : named;
 CLASS revaluationCommittee 'Комиссия переоценки' : committee;
 CLASS inventoryCommittee 'Комиссия для инвентаризации' : committee;
 CLASS registerCommittee 'Комиссия для реестра цен' : committee;
-//CLASS revaluationCommittee 'Комиссия для акта переоценки' : committee;
 
 chairmanCommittee 'Председатель комиссии (ИД)' = DATA employee (committee);
-commonNameChairmanCommittee 'Председатель комиссии' (committee) = commonName(chairmanCommittee(committee)) IN baseGroup;
+commonNameChairmanCommittee 'Председатель комиссии' (committee) = commonName(chairmanCommittee(committee)) IN recognizeGroup;
 nameOfficerChairmanCommittee 'Должность председаетеля' (committee) = nameOfficerEmployee(chairmanCommittee(committee));
 
-departmentStoreCommittee 'Отдел комиссии (ИД)' = DATA departmentStore (committee);
-nameDepartmentStoreCommittee 'Отдел комиссии' (committee) = commonName(departmentStoreCommittee(committee)) IN baseGroup;
-CONSTRAINT chairmanCommittee(committee) IF committee IS revaluationCommittee AND NOT departmentStoreEmployee(departmentStoreCommittee(committee), chairmanCommittee(committee)) CHECKED MESSAGE 'Отдел комиссии должен соответствовать отделу председателя комиссии';
-CONSTRAINT departmentStoreCommittee(revaluationCommitteeDepartmentStore(departmentStore)) != departmentStore CHECKED MESSAGE 'Отдел комиссии должен соответствовать текущему отделу';
-//CONSTRAINT committee IS committee AND NOT chairmanCommittee(committee) MESSAGE 'Ошибка: не задан председатель комиссии';
-                 // т.к. нет у комиссии для реестра председателя
 inCommitteeEmployee 'Является членом комиссии' (committee, employee) = DATA BOOLEAN (committee, employee);
+inCommitteeDepartmentStore 'Вкл.' (committee, departmentStore)= DATA BOOLEAN (committee, departmentStore) IN baseGroup;
 
-inDepartmentStoreEmployeeCommittee(employee, committee) = UNION EXCLUSIVE
-    departmentStoreEmployee(departmentStoreCommittee(committee), employee) AND committee IS revaluationCommittee,
-    employee IS employee AND committee IS inventoryCommittee,
-    employee IS employee AND committee IS registerCommittee;       // является ли сотрудником отдела
+includeDepartmentStoreEmployeeCommittee(departmentStore, employee, committee) = inCommitteeDepartmentStore(committee, departmentStore) AND includeDepartmentStoreEmployee(departmentStore, employee);
+isIncludeEmployeeCommittee (employee, committee) = GROUP SUM 1 IF includeDepartmentStoreEmployeeCommittee(departmentStore, employee, committee) BY employee, committee;
 
-isNotRegisterCommittee (committee) = UNION OVERRIDE committee IS revaluationCommittee, committee IS inventoryCommittee;
+CONSTRAINT registerCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeDepartmentStore(registerCommitteeDepartmentStore(departmentStore), departmentStore)
+    CHECKED BY registerCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
 
-isRegisterCommittee (committee) = committee IS registerCommittee;
+CONSTRAINT revaluationCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeDepartmentStore(revaluationCommitteeDepartmentStore(departmentStore), departmentStore)
+    CHECKED BY revaluationCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
 
 formedManCommittee = DATA employee (registerCommittee);
 checkedManCommittee = DATA employee (registerCommittee);
@@ -2334,11 +2332,27 @@ labeledManCommittee = DATA employee (registerCommittee);
 accountantManCommittee = DATA employee (registerCommittee);
 headManCommittee = DATA employee (registerCommittee);
 
-nameFormedManCommittee 'Цены сформировал' (committee) = commonName(formedManCommittee(committee));
-nameCheckedManCommittee 'Реестр проверил' (committee) = commonName(checkedManCommittee(committee));
-nameLabeledManCommittee 'Товар промаркировал' (committee) = commonName(labeledManCommittee(committee));
-nameAccountantManCommittee 'Бухгалтер' (committee) = commonName(accountantManCommittee(committee));
-nameHeadManCommittee 'Зав. магазином' (committee) = commonName(headManCommittee(committee));
+nameFormedManCommittee 'Цены сформировал' (committee) = commonName(formedManCommittee(committee)) IN recognizeGroup;
+nameCheckedManCommittee 'Реестр проверил' (committee) = commonName(checkedManCommittee(committee)) IN recognizeGroup;
+nameLabeledManCommittee 'Товар промаркировал' (committee) = commonName(labeledManCommittee(committee)) IN recognizeGroup;
+nameAccountantManCommittee 'Бухгалтер' (committee) = commonName(accountantManCommittee(committee)) IN recognizeGroup;
+nameHeadManCommittee 'Зав. магазином' (committee) = commonName(headManCommittee(committee)) IN recognizeGroup;
+
+CONSTRAINT chairmanCommittee(committee) AND NOT isIncludeEmployeeCommittee(chairmanCommittee(committee), committee)
+    CHECKED BY chairmanCommittee MESSAGE 'Председатель комиссии не является сотрудником отдела';
+CONSTRAINT formedManCommittee(committee) AND NOT isIncludeEmployeeCommittee(formedManCommittee(committee), committee)
+    CHECKED BY formedManCommittee MESSAGE 'Сформировал цены не является сотрудником отдела';
+CONSTRAINT checkedManCommittee(committee) AND NOT isIncludeEmployeeCommittee(checkedManCommittee(committee), committee)
+    CHECKED BY checkedManCommittee MESSAGE 'Реестр проверил не является сотрудником отдела';
+CONSTRAINT labeledManCommittee(committee) AND NOT isIncludeEmployeeCommittee(labeledManCommittee(committee), committee)
+    CHECKED BY labeledManCommittee MESSAGE 'Товар промаркировал не является сотрудником отдела';
+CONSTRAINT accountantManCommittee(committee) AND NOT isIncludeEmployeeCommittee(accountantManCommittee(committee), committee)
+    CHECKED BY accountantManCommittee MESSAGE 'Бухгалтер не является сотрудником отдела';
+CONSTRAINT headManCommittee(committee) AND NOT isIncludeEmployeeCommittee(headManCommittee(committee), committee)
+    CHECKED BY headManCommittee MESSAGE 'Зав. магазином не является сотрудником отдела';
+
+CONSTRAINT inCommitteeEmployee(committee, emploee) AND NOT isIncludeEmployeeCommittee(emploee, committee)
+    CHECKED MESSAGE 'Член комиссии не является сотрудником отделов';
 
 castOfficerEmployeeToString40 =
      FORMULA STRING[40] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)';
@@ -2348,49 +2362,202 @@ commonNameEmployeeCommittee 'Члены комиссии' (committee) =
      GROUP CONCAT nameOfficerAndNameEmployee(employee) IF inCommitteeEmployee(committee, employee), ', '
      BY committee MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
+nameEmployeeByCommittee 'Члены комиссии' (committee) =
+     GROUP CONCAT commonName(employee) IF inCommitteeEmployee(committee, employee), ', '
+     BY committee MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
-FORM committee 'Комиссия'
-    OBJECTS c=committee FIXED PANEL
-    PROPERTIES(c)    name, nameDepartmentStoreCommittee SHOWIF isNotRegisterCommittee(c), commonNameChairmanCommittee SHOWIF isNotRegisterCommittee(c)
-    PROPERTIES(c)    SHOWIF isRegisterCommittee(c) nameFormedManCommittee, nameCheckedManCommittee,
-                     nameLabeledManCommittee, nameAccountantManCommittee, nameHeadManCommittee
+nameDepartmentByCommittee 'Отделы' (committee) =
+     GROUP CONCAT name(departmentStore) IF inCommitteeDepartmentStore(committee, departmentStore), ', '
+     BY committee MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 
-    OBJECTS e=employee
-    PROPERTIES(e)    SHOWIF isNotRegisterCommittee(c) READONLY name, userFirstName, userLastName, nameOfficerEmployee
-    PROPERTIES(e)    SHOWIF isNotRegisterCommittee(c) ADDSESSIONFORM, EDITSESSIONFORM, delete
+FORM registerCommittee 'Комиссия для реестра цен'
+    OBJECTS c=registerCommittee FIXED PANEL
+    PROPERTIES(c)      name, nameFormedManCommittee, nameCheckedManCommittee,
+                       nameLabeledManCommittee, nameAccountantManCommittee, nameHeadManCommittee
 
-    PROPERTIES(c, e) SHOWIF isNotRegisterCommittee(c) inCommitteeEmployee
+    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+    PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
+    FILTERS            stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore(st, s)
 
-    FILTERS inDepartmentStoreEmployeeCommittee(e, c)
-    FILTERGROUP filters6
-        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
+    OBJECTS dep=departmentStore
+    PROPERTIES(dep)    READONLY depName = name
+    PROPERTIES(c, dep) inCommitteeDepartmentStore
+    FILTERS            inTradingNetworkStoreTypeStoreDepartment(t, st, s, dep)
+    ORDER BY depName
 
-    EDIT committee OBJECT c
-    EDIT inventoryCommittee OBJECT c
+    FILTERGROUP filters5
+        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeDepartmentStore(c, dep)
+
     EDIT registerCommittee OBJECT c
 ;
 
-FORM employeesCommittees 'Комиссии'
-    OBJECTS c=committee
-    PROPERTIES(c) READONLY name, nameDepartmentStoreCommittee, commonNameChairmanCommittee
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
+DESIGN registerCommittee FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        childConstraints = TO THE BOTTOM;
+
+        NEW caseOne AFTER c.box {
+            childConstraints = TO THE RIGHT;
+            title = 'Отделы, для которых действуют комиссии';
+
+            ADD treeStore.tree {
+                fillHorizontal = 1;
+            }
+
+            ADD dep.box{
+                fillHorizontal = 2;
+            }
+        }
+
+        NEW oneCase AFTER caseOne{
+            title = 'Состав комиссии';
+            fillHorizontal = 3;
+            childConstraints = TO THE BOTTOM;
+            ADD PROPERTY (nameFormedManCommittee);
+            ADD PROPERTY (nameCheckedManCommittee);
+            ADD PROPERTY (nameLabeledManCommittee);
+            ADD PROPERTY (nameAccountantManCommittee);
+            ADD PROPERTY (nameHeadManCommittee);
+        }
+
+    }
+}
+
+
+FORM revaluationCommittee 'Комиссия переоценки'
+    OBJECTS c=revaluationCommittee FIXED PANEL
+    PROPERTIES(c)      name, commonNameChairmanCommittee
+
+    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+    PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
+    FILTERS            stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore(st, s)
+
+    OBJECTS dep=departmentStore
+    PROPERTIES(dep)    READONLY depName = name
+    PROPERTIES(c, dep) inCommitteeDepartmentStore
+    FILTERS            inTradingNetworkStoreTypeStoreDepartment(t, st, s, dep)
+    ORDER BY depName
+
 
     OBJECTS e=employee
-    PROPERTIES(e) READONLY userFirstName, userLastName, nameOfficerEmployee
+    PROPERTIES(e)      READONLY name, userFirstName, userLastName, nameOfficerEmployee
+    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
 
-    FILTERS inCommitteeEmployee(c, e)
+    PROPERTIES(c, e)   inCommitteeEmployee
+    FILTERS            isIncludeEmployeeCommittee (e, c)
+    FILTERGROUP filters6
+        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
+
+    FILTERGROUP filters5
+        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeDepartmentStore(c, dep)
+
+    EDIT revaluationCommittee OBJECT c
 ;
 
-FORM registerCommittee 'Комиссия для реестра цен'
-    OBJECTS r=registerCommittee// FIXED PANEL
-    PROPERTIES(r)    READONLY name, nameFormedManCommittee, nameCheckedManCommittee,                   //nameDepartmentStoreCommittee
-                     nameLabeledManCommittee, nameAccountantManCommittee, nameHeadManCommittee
-    PROPERTIES(r)    ADDFORM, EDITFORM
+DESIGN revaluationCommittee FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+        NEW OneCase BEFORE e.box {
+            ADD PROPERTY (commonNameChairmanCommittee);
+        }
+
+        NEW caseOne BEFORE OneCase {
+            childConstraints = TO THE RIGHT;
+            title = 'Отделы, для которых действуют комиссии';
+
+            ADD treeStore.tree {
+                fillHorizontal = 1;
+            }
+
+            ADD dep.box {
+                fillHorizontal = 2;
+            }
+        };
+    }
+}
+
+
+
+FORM inventoryCommittee 'Комиссия для инвентаризации'
+    OBJECTS c=inventoryCommittee FIXED PANEL
+    PROPERTIES(c)      name, commonNameChairmanCommittee
+
+    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+    PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
+    FILTERS            stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore(st, s)
+
+    OBJECTS dep=departmentStore
+    PROPERTIES(dep)    READONLY depName = name
+    PROPERTIES(c, dep) inCommitteeDepartmentStore
+    FILTERS            inTradingNetworkStoreTypeStoreDepartment(t, st, s, dep)
+    ORDER BY depName
+
+    OBJECTS e=employee
+    PROPERTIES(e)      READONLY name, userFirstName, userLastName, nameOfficerEmployee
+    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
+
+    PROPERTIES(c, e)   inCommitteeEmployee
+    FILTERS            isIncludeEmployeeCommittee (e, c)
+    FILTERGROUP filters6
+        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
+
+    FILTERGROUP filters5
+        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeDepartmentStore(c, dep)
+
+    EDIT inventoryCommittee OBJECT c
+
+;
+
+DESIGN inventoryCommittee FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+        NEW OneCase BEFORE e.box {
+            ADD PROPERTY (commonNameChairmanCommittee);
+        }
+
+        NEW caseOne BEFORE OneCase {
+            childConstraints = TO THE RIGHT;
+            title = 'Отделы, для которых действуют комиссии';
+
+            ADD treeStore.tree {
+                fillHorizontal = 1;
+            }
+
+            ADD dep.box {
+                fillHorizontal = 2;
+            }
+        };
+    }
+}
+
+
+FORM registerCommitteeDialog 'Комиссии для реестра цен'
+    OBJECTS r=registerCommittee
+    PROPERTIES(r)      READONLY name, nameDepartmentByCommittee, nameFormedManCommittee, nameCheckedManCommittee, nameLabeledManCommittee,
+                       nameAccountantManCommittee, nameHeadManCommittee
+    PROPERTIES(r)      ADDFORM, EDITFORM
 
     DIALOG registerCommittee OBJECT r
 ;
 
+FORM inventoryCommitteeDialog 'Комиссии для инвентаризации'
+    OBJECTS ic=inventoryCommittee
+    PROPERTIES(ic)      READONLY name, nameDepartmentByCommittee, nameEmployeeByCommittee, commonNameChairmanCommittee
+    PROPERTIES(ic)      ADDFORM, EDITFORM
+
+    DIALOG inventoryCommittee OBJECT ic
+;
+
+FORM revaluationCommitteeDialog 'Комиссии переоценки'
+    OBJECTS rc=revaluationCommittee
+    PROPERTIES(rc)      READONLY name, nameDepartmentByCommittee, nameEmployeeByCommittee, commonNameChairmanCommittee
+    PROPERTIES(rc)      ADDFORM, EDITFORM
+
+    DIALOG revaluationCommittee OBJECT rc
+;
 // ----------------------------------- Банк ------------------------------------------- //
 
 GROUP banksGroup 'Информация о банке' : baseGroup;
@@ -3399,12 +3566,12 @@ FORM departmentStore 'Отдел магазина'
                             verifyOrderArrivalDepartmentStore, maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
                             quantityCashChangeOneOperationAccountDepartmentStore, commonNameMateriallyResponsiblePersonItemReportDepartmentStore,
                             commonNameBookkeeperItemReportDepartmentStore, commonNamePersonCheckReportDepartmentStore, nameRevaluationCommitteeDepartmentStore,
-                            namediscount, showFormNamediscount
+                            nameRegisterCommitteeDepartmentStore, namediscount, showFormNamediscount
 
     OBJECTS e=employee
     PROPERTIES(e) READONLY userFirstName, userLastName
     PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
-    FILTERS departmentStoreEmployee(d, e)
+    FILTERS includeDepartmentStoreEmployee(d, e)
 
     OBJECTS t=tradingSquare
     PROPERTIES(t) squareTradingSquare, dateTradingSquare
@@ -5547,9 +5714,11 @@ diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentD
 retailSumShipmentDetail 'Розничная сумма' (shipmentDetail) = quantityShipmentDetail(shipmentDetail) * retailPriceShipmentDetail(shipmentDetail);
 retailSumShipment 'Розничная сумма' (shipment) = GROUP SUM retailSumShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN documentSumGroup PERSISTENT;
 
-committeeShipment(shipment) = DATA registerCommittee(shipment);
-nameCommitteeShipment 'Комиссия для реестра цен' (shipment) = commonName(committeeShipment(shipment)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+registerCommitteeShipment(shipment) = DATA registerCommittee(shipment);
+nameRegisterCommitteeShipment 'Комиссия для реестра цен' (shipment) = commonName(registerCommitteeShipment(shipment)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
+registerCommitteeShipment(shipment) <- registerCommitteeDepartmentStore(departmentStoreShipment(shipment))
+    ON ASSIGN shipment IS shipment;
 //--------------------показатели для реестра цен----------------------------//
 
 supportSumPriceShipmentDetail 'Сумма пост-ка с посудой без НДС' (shipmentDetail) = sumSupplierPriceShipmentDetail(shipmentDetail) (+) overSumPriceWareShipmentDetail(shipmentDetail) (-) sumDetailVatWareShipmentDetail(shipmentDetail);
@@ -8058,7 +8227,7 @@ FORM shipment 'Поставка'
                    nameSupplierShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
                    carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
-                   noteShipment, toShowPriceImporterShipment, toShowWareShipment, nameCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s)
+                   noteShipment, toShowPriceImporterShipment, toShowWareShipment, nameRegisterCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s)
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
@@ -8196,11 +8365,11 @@ DESIGN shipments FROM DEFAULT {
     ADD d.grid.box BEFORE s.historyGroup;
 }
 
-nameFormedManShipment 'Цены сформировал' (shipment) = nameFormedManCommittee(committeeShipment(shipment));
-nameCheckedManShipment 'Реестр проверил' (shipment) = nameCheckedManCommittee(committeeShipment(shipment));
-nameLabeledManShipment 'Товар промаркировал' (shipment) = nameLabeledManCommittee(committeeShipment(shipment));
-nameAccountantManShipment 'Бухгалтер' (shipment) = nameAccountantManCommittee(committeeShipment(shipment));
-nameHeadManShipment 'Зав. магазином' (shipment) = nameHeadManCommittee(committeeShipment(shipment));
+nameFormedManShipment 'Цены сформировал' (shipment) = nameFormedManCommittee(registerCommitteeShipment(shipment));
+nameCheckedManShipment 'Реестр проверил' (shipment) = nameCheckedManCommittee(registerCommitteeShipment(shipment));
+nameLabeledManShipment 'Товар промаркировал' (shipment) = nameLabeledManCommittee(registerCommitteeShipment(shipment));
+nameAccountantManShipment 'Бухгалтер' (shipment) = nameAccountantManCommittee(registerCommitteeShipment(shipment));
+nameHeadManShipment 'Зав. магазином' (shipment) = nameHeadManCommittee(registerCommitteeShipment(shipment));
 
 //------------------------------печатная форма----------------------------------//
 FORM register 'Реестр цен'
@@ -8208,7 +8377,7 @@ FORM register 'Реестр цен'
     PROPERTIES (s)  SELECTOR numberObject, dateShipment, nameDepartmentStoreShipment, nameSupplierShipment,
                     totalQuantityShipment, supportSumPriceShipment, totalSumSupplierVATShipment,
                     totalSumWareShipment, totalSumVatWareShipment, exSumSupplierShipment, totalSumMarkupShipment,
-                    fullDetailVatShipment, retailSumShipment,
+                    fullDetailVatShipment, retailSumShipment, nameRegisterCommitteeShipment,
                     nameFormedManShipment, nameCheckedManShipment, nameLabeledManShipment, nameAccountantManShipment,
                     nameHeadManShipment
 
@@ -8962,11 +9131,15 @@ diffTotalSumWarePriceChangeDocument 'Изменение суммы посуды'
 diffTotalSumVatWarePriceChangeDocument 'Изменение суммы НДС посуды' (priceChangeDocument) = totalSumVatWarePriceChangeDocument(priceChangeDocument) (-)
     oldTotalSumVatWarePriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
-nameRevaluationCommitteePriceChangeDocument 'Комиссия' (priceChangeDocument) = nameRevaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument));
-commonNameEmployeeCommitteePriceChangeDocument 'Сотрудники комиссии' (priceChangeDocument) = commonNameEmployeeCommittee(revaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument)));
-inPriceChangeDocumentEmployee (priceChangeDocument, employee) = inCommitteeEmployee(revaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument)), employee);
-commonNameChairmanPriceChangeDocument 'Председатель комиссии' (priceChangeDocument) = commonNameChairmanCommittee(revaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument)));
-nameOfficerChairmanPriceChangeDocument 'Должность' (priceChangeDocument) = nameOfficerChairmanCommittee(revaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument)));
+revaluationCommitteePriceChangeDocument 'Комиссия переоценки ИД' (priceChangeDocument) = DATA revaluationCommittee(priceChangeDocument);
+revaluationCommitteePriceChangeDocument(priceChangeDocument) <- revaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument))
+    ON ASSIGN priceChangeDocument IS priceChangeDocument;
+
+nameRevaluationCommitteePriceChangeDocument 'Комиссия переоценки' (priceChangeDocument) = name(revaluationCommitteePriceChangeDocument(priceChangeDocument));
+commonNameEmployeeCommitteePriceChangeDocument 'Сотрудники комиссии' (priceChangeDocument) = commonNameEmployeeCommittee(revaluationCommitteePriceChangeDocument(priceChangeDocument));
+inPriceChangeDocumentEmployee (priceChangeDocument, employee) = inCommitteeEmployee(revaluationCommitteePriceChangeDocument(priceChangeDocument), employee);
+commonNameChairmanPriceChangeDocument 'Председатель комиссии' (priceChangeDocument) = commonNameChairmanCommittee(revaluationCommitteePriceChangeDocument(priceChangeDocument));
+nameOfficerChairmanPriceChangeDocument 'Должность' (priceChangeDocument) = nameOfficerChairmanCommittee(revaluationCommitteePriceChangeDocument(priceChangeDocument));
 
 
 FORM priceChangeDocuments 'Акты переоценки'
@@ -8975,7 +9148,7 @@ FORM priceChangeDocuments 'Акты переоценки'
                             numberPriceChangeDocument, seriesPriceChangeDocument, nameSupplierPriceChangeShipment, nameSupplierPriceChangeReturnSupplier,
                             nameSenderDepartmentPriceChangeInnerArrival,
                             diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
-                            diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument
+                            diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument, nameRevaluationCommitteePriceChangeDocument
 
     OBJECTS pcd=priceChangeDocumentDetail
     PROPERTIES(pcd) READONLY nameItemPriceChangeDocumentDetail, quantityPriceChangeDocumentDetail,
@@ -10486,7 +10659,11 @@ NAVIGATOR {
         }
         NEW employeeRelations 'Сотрудники' {
             ADD employees;
-            ADD employeesCommittees;
+            NEW committeeRelations 'Комиссии' {
+                ADD registerCommitteeDialog;
+                ADD revaluationCommitteeDialog;
+                ADD inventoryCommitteeDialog;
+            }
             ADD groupsUser;
         }
         NEW contragents 'Контрагенты'{
@@ -10581,8 +10758,9 @@ NAVIGATOR {
             ADD departmentStores;
             ADD store;
             ADD tradingNetwork;
-            ADD committee;
             ADD registerCommittee;
+            ADD revaluationCommittee;
+            ADD inventoryCommittee;
             ADD bank;
             ADD ownership;
             ADD supplier;
