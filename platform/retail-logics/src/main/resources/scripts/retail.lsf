@@ -9008,13 +9008,12 @@ FORM actOfRevaluation 'Акт переоценки'
                              inPriceChangeDocumentEmployee(pc, e)
 ;
 
+// ---------------------------------- Контроль предельных надбавок ------------------------------------------
+CONSTRAINT commonMarkupShipmentDetail (shipmentDetail) >
+    maxTradeAllowanceItem (itemShipmentDetail(shipmentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
 
-
-
-
-
-
-
+CONSTRAINT commonMarkupPriceChangeDocumentDetail (priceChangeDocumentDetail) >
+    maxTradeAllowanceItem (itemPriceChangeDocumentDetail(priceChangeDocumentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
 
 //------------------------------------ Изменение учетных сумм ------------------------------------------//
 
