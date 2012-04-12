@@ -8091,7 +8091,7 @@ transportPayerConsignment 'Заказчик перевозки (ИД)' (consignm
                                                                                     transportPayerInnerFlow (consignment);
 
 nameTransportPayerConsignment 'Заказчик перевозки ' (consignment) =
-    [FORMULA STRING[200] 'CAST($1 AS TEXT) ||  \' , \' || CAST($2 AS TEXT)']
+    [FORMULA STRING[100] 'CAST($1 AS TEXT) ||  \' , \' || CAST($2 AS TEXT)']
     (name(transportPayerConsignment(consignment)), UNPLegalEntity(transportPayerConsignment(consignment))) IN carConsignmentGroup;
 
 dataLoadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION EXCLUSIVE dataLoadingPlaceStatement (consignment),
