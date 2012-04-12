@@ -2715,7 +2715,7 @@ CLASS STATIC contractForm 'Порядок оплаты'
     requirement 'Платежное требование'
 };
 
-dataContract 'Номер договора' = DATA STRING[30] (contract) IN contractGroup;
+numberContract 'Номер договора' = DATA STRING[30] (contract) IN contractGroup;
 //formContract(contract) = DATA contractForm (contract) IN contractGroup;
 //nameFormContract 'Порядок оплаты по договору' (contract) = name(formContract(contract)) IN contractGroup;
 typeContract(contract) = DATA contractType (contract) IN contractGroup;
@@ -2732,7 +2732,7 @@ noteContract 'Примечание' = DATA STRING[500] (contract) IN contractGro
 
 @metaCodeNameObjectDateProperty(formContract, contract, 'Порядок оплаты по договору', contractForm, contractGroup);
 CONSTRAINT contract IS contract AND NOT formContract(contract)  MESSAGE 'ошибка: Не выбран порядок оплаты по договору';
-@metaCodeObjectDateProperty(delayContract, contract, 'Отсрочка платежа(кален. дней),при "-" предоплата', DOUBLE, baseGroup);
+@metaCodeObjectDateProperty(delayContract, contract, 'Отсрочка платежа(кален. дней),при "-" предоплата', DOUBLE, contractGroup);
 
 
 // ----------------------------------- Поставщик ------------------------------------------ //
@@ -2783,12 +2783,12 @@ overrideSupplierDepartmentStoreDate(supplier, departmentStore, date) = UNION OVE
 isYesControlSupplierDepartmentStore(supplier, departmentStore) = controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes;
 isYesSureSupplierDepartmentStoreVal(supplier, departmentStore, date) = sureSupplierDepartmentStoreVal(supplier, departmentStore, date) == yesNo.yes;
 
-//dataContractSupplier 'Договор по умолчанию' (supplier) = dataContract(userContractSupplier(supplier));
+//numberContractSupplier 'Договор по умолчанию' (supplier) = numberContract(userContractSupplier(supplier));
 defaultContractSupplier(supplier) = GROUP MAX contract AS contract BY supplierContract(contract);
-//dataDefaultContractSupplier(supplier) = dataContract(defaultContractSupplier(supplier));
+//dataDefaultContractSupplier(supplier) = numberContract(defaultContractSupplier(supplier));
 
 overrideContractSupplier 'Основной договор' (supplier) = UNION OVERRIDE defaultContractSupplier(supplier), userContractSupplier(supplier);
-dataOverrideContractSupplier 'Основной договор' (supplier) = dataContract(overrideContractSupplier(supplier)) IN lawGroup;
+numberOverrideContractSupplier 'Основной договор' (supplier) = numberContract(overrideContractSupplier(supplier)) IN lawGroup;
 CONSTRAINT supplier != supplierContract(userContractSupplier(supplier)) CHECKED MESSAGE 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
 equalsSupplierContract 'Основной договор' (supplier, contract) = userContractSupplier(supplier) == contract;
 
@@ -2800,20 +2800,70 @@ inCompanyContract(company, contract) = companyContract(contract) == company;
 inCompanyAccount(company, account) = legalEntityAccount(account) == company;
 inCustomerAccount(customer, account) = legalEntityAccount(account) == customer;
 
-nameSupplierContract 'Контрагент' (contract) = name(supplierContract(contract));
-nameCompanyContract 'Контрагент' (contract) = name(companyContract(contract));
+isInSupplierContractCompany(supplier, contract, company)  = inSupplierContract(supplier, contract) AND inCompanyContract(company, contract);
+isInCompanySupplier (company, supplier) = GROUP SUM 1 IF isInSupplierContractCompany(supplier, contract, company) BY company, supplier;
+
+nameSupplierContract 'Поставщик' (contract) = name(supplierContract(contract)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+nameCompanyContract 'Компания' (contract) = name(companyContract(contract)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 
 userContractCompanySupplier 'Контракт (ИД)' = DATA contract (company, supplier) IN idGroup;
-//dataContractCompanySupplier 'Договор по умолчанию' (company, supplier) = dataContract(userContractCompany(company));
+//numberContractCompanySupplier 'Договор по умолчанию' (company, supplier) = numberContract(userContractCompany(company));
 actingContract(contract) = contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate();
 actingContractCompanySupplier(company, supplier) = GROUP MAX actingContract(contract) BY companyContract(contract), supplierContract(contract);
 
 overrideContractCompanySupplier 'Основной договор' (company, supplier) = UNION OVERRIDE actingContractCompanySupplier(company, supplier), userContractCompanySupplier(company, supplier);
-dataOverrideContractCompanySupplier 'Основной договор' (company, supplier) = dataContract(overrideContractCompanySupplier(company, supplier)) IN lawGroup;
+numberOverrideContractCompanySupplier 'Основной договор' (company, supplier) = numberContract(overrideContractCompanySupplier(company, supplier)) IN lawGroup;
 CONSTRAINT supplier != supplierContract(userContractCompanySupplier(company, supplier)) CHECKED MESSAGE 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
 CONSTRAINT company != companyContract(userContractCompanySupplier(company, supplier)) CHECKED MESSAGE 'ошибка: Договор по умолчанию для компании должен соответствовать договорам компании';
 equalsCompanySupplierContract 'Основной договор' (company, supplier, contract) = userContractCompanySupplier(company, supplier) == contract;
 
+
+FORM contract 'Договор'
+    OBJECTS c=contract FIXED PANEL
+    PROPERTIES(c) numberContract, nameCompanyContract, nameSupplierContract, nameTypeContract, nameformContract, showFormNameformContract,
+                   delayContract, showFormdelayContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract,
+                   requestContract, noteContract
+
+    EDIT contract OBJECT c
+    EDIT contractProvider OBJECT c
+;
+
+DESIGN contract FROM DEFAULT {
+    main{
+        c.box {
+            childConstraints = TO THE BOTTOM;
+
+            NEW oneCase {
+                childConstraints = TO THE RIGHT;
+                title = 'Контрагенты';
+                ADD PROPERTY(numberContract);
+                ADD PROPERTY(nameCompanyContract);
+                ADD PROPERTY(nameSupplierContract);
+            }
+
+            NEW twoCase{
+                title = 'Даты';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(dateFromContract);
+                ADD PROPERTY(dateToContract);
+                ADD PROPERTY(currencyContract);
+            }
+            ADD c.contractGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+    }
+}
+
+FORM contracts 'Договоры'
+    OBJECTS c=contract
+    PROPERTIES(c) READONLY numberContract, nameCompanyContract, nameSupplierContract, nameformContract,
+                   nameTypeContract, dateFromContract, dateToContract, warnContract, banContract,
+                   delayContract
+
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    ORDER BY nameCompanyContract, nameSupplierContract
+;
 
 FORM supplier 'Поставщик'
     TREE treeStore y=STRING[3], t=tradingNetwork, st=storeType, so=store
@@ -2825,13 +2875,13 @@ FORM supplier 'Поставщик'
                   accountantLegalEntity, showFormaccountantLegalEntity, phoneLegalEntity, showFormphoneLegalEntity,
                   UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
                   residentLegalEntity, manufacturerLegalEntity, surePercentSupplier, allowablePercentSupplier,
-                  afterDaysSupplier, periodicitySupply, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier //dataActingLicenseLegalEntity, dataOverrideContractSupplier, dataOverrideAccountLegalEntity
+                  afterDaysSupplier, periodicitySupply, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier //dataActingLicenseLegalEntity, numberOverrideContractSupplier, dataOverrideAccountLegalEntity
 
     OBJECTS a=account
     PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
 
     OBJECTS c=contractProvider
-    PROPERTIES(c) dataContract, nameCompanyContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract,
+    PROPERTIES(c) numberContract, nameCompanyContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract,
                   dateToContract, currencyContract, warnContract, banContract, delayContract, showFormdelayContract, requestContract, noteContract, ADDOBJ, delete
     OBJECTS l=license
     PROPERTIES(l) dataLicense, dateFromLicense, dateToLicense, ADDOBJ, delete   //        tabaccoLicense
@@ -2925,26 +2975,29 @@ FORM company 'Компания'
     OBJECTS a=account
     PROPERTIES(a)  dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
 
-    OBJECTS c=contractProvider
-    PROPERTIES(c)  dataContract, nameSupplierContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract,
-                   dateToContract, currencyContract, noteContract, delayContract, showFormdelayContract, ADDOBJ, delete
-
     OBJECTS s=supplier
-    PROPERTIES(s) name, fullNameLegalEntity
+    PROPERTIES(s) name
 
-    PROPERTIES(co, s)    dataOverrideContractCompanySupplier
+    OBJECTS c=contractProvider
+    PROPERTIES(c)  READONLY numberContract, nameSupplierContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract,
+                   dateToContract, currencyContract, noteContract, delayContract, showFormdelayContract
+    PROPERTIES(c)  ADDFORM, EDITFORM, delete
+
+    PROPERTIES(co, s)    numberOverrideContractCompanySupplier
     PROPERTIES(co, s, c) equalsCompanySupplierContract
-
     FILTERS inCompanyContract(co, c),
-        inCompanyAccount(co, a),
-        inSupplierContract(s, c)
+            inCompanyAccount(co, a),
+            inSupplierContract(s, c)
+
+    FILTERGROUP filters1
+        FILTER 'Показывать только поставщиков, с которыми есть договор' 'F10' isInCompanySupplier(co, s) DEFAULT
 
     EDIT company OBJECT co
 ;
 
 DESIGN company FROM DEFAULT {
     main{
-
+       preferredSize = (1024, 768);
        co.box {
             childConstraints = TO THE RIGHT;
 
@@ -3001,9 +3054,9 @@ FORM customer 'Покупатель'
 
 FORM customers 'Покупатели'
     OBJECTS cu=customer
-    PROPERTIES(cu)   name, fullNameLegalEntity, UNPLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
-                     addressLegalEntity
-    PROPERTIES(cu) ADDFORM, EDITFORM, delete
+    PROPERTIES(cu)   READONLY name, fullNameLegalEntity, UNPLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
+                              addressLegalEntity
+    PROPERTIES(cu)   ADDFORM, EDITFORM, delete
 ;
 
 //--------------------------------------Дисконтные карточки------------------------------------------------------------------//
@@ -10867,6 +10920,7 @@ NAVIGATOR {
         NEW contragents 'Контрагенты'{
             ADD suppliers;
             ADD customers;
+            ADD contracts;
             ADD discountCards;
             ADD banks;
         }
@@ -10965,6 +11019,7 @@ NAVIGATOR {
             ADD supplier;
             ADD customer;
             ADD company;
+            ADD contract;
             ADD cashRegisterModel;
             ADD scalesModel;
             ADD checkModel;
