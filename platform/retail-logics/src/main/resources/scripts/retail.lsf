@@ -4278,11 +4278,6 @@ PROPERTIES(st, gr)  barcodeBarcodeStageGroupMachinery, priceStageGroupMachinery,
                     timeStageGroupMachinery, stockStageGroupMachinery
 FILTERS  barcodeStageGroupMachinery(st, gr);
 
-//---------------------------- Количественные регистры ----------------------------------------//
-
-CLASS ABSTRACT balanceItemLedger 'Изменение остатка по товару';
-TABLE balanceItemLedger (balanceItemLedger);
-
 //---------------------------- Ценовые регистры ----------------------------------------//
 
 CLASS ABSTRACT importerPriceLedger 'Изменение цены изготовителя/импортера';
@@ -4303,6 +4298,19 @@ TABLE retailPriceLedger (retailPriceLedger);
 CLASS ABSTRACT warePriceLedger 'Изменение цены посуды' : importerPriceLedger; // todo : смотри выше
 TABLE warePriceLedger (warePriceLedger);
 
+//---------------------------- Количественные регистры ----------------------------------------//
+
+CLASS ABSTRACT balanceItemLedger 'Изменение остатка по товару';
+TABLE balanceItemLedger (balanceItemLedger);
+
+CLASS ABSTRACT batch 'Партия' : balanceItemLedger, importerPriceLedger; // todo : смотри выше
+
+CLASS ABSTRACT outBalanceItemLedger 'Внешний расход' : balanceItemLedger;
+CLASS ABSTRACT outUserBalanceItemLedger 'Внешний расход с указанной партией' : outBalanceItemLedger;
+CLASS ABSTRACT outAutoBalanceItemLedger 'Внешний расход с автоматической себестоимостью' : outBalanceItemLedger;
+
+//CLASS ABSTRACT inBalanceItemLedger 'Внутренний приход' : balanceItemLedger;
+
 //---------------------------- Суммовые регистры ----------------------------------------//
 
 CLASS ABSTRACT accountSumDocumentLedger 'Учетный документ';
@@ -4317,7 +4325,7 @@ CLASS ABSTRACT outAccountSumHistoryDocumentLedger 'Учетный докумен
 //---------------------------- Накладные ----------------------------------------//
 
 CLASS ABSTRACT consignment 'Накладная' : outAccountSumDocumentLedger; // todo : чит, чтобы правильно считался getClassWhere и не падал в локальный минимум
-CLASS ABSTRACT consignmentDetail 'Строка накладной' : balanceItemLedger; // todo : тоже самое
+CLASS ABSTRACT consignmentDetail 'Строка накладной' : outBalanceItemLedger; // todo : тоже самое
 
 //---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
 
@@ -4342,8 +4350,8 @@ CLASS actOfStudy 'Акт проработки (разделки)' : historyObjec
 CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStudy, postedObject;
 TABLE actOfStudy (actOfStudy);
 
-CLASS studyInputDetail 'Строка проработки (вход)' : balanceItemLedger;
-CLASS studyOutputDetail 'Строка проработки (выход)' : balanceItemLedger, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
+CLASS studyInputDetail 'Строка проработки (вход)' : outAutoBalanceItemLedger;
+CLASS studyOutputDetail 'Строка проработки (выход)' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
 
 @metaCodePostedObject (actOfStudy);
       //      ??????????????????? не понятно что делать с процентом надбавок ??????????????????????   //
@@ -5079,7 +5087,7 @@ descriptionCollationSheet 'Название документа' (collationSheet)
 
 //---------------------------- Изменение остатка инвентаризации ----------------------------//
 
-CLASS inventoryLedger 'Изменение остатка инвентаризации' : balanceItemLedger;
+CLASS inventoryLedger 'Изменение остатка инвентаризации' : outAutoBalanceItemLedger;
 TABLE inventoryLedgerTable (inventoryLedger);
 
 needToLedgerCollationSheetItem (collationSheet, item) = shortageQuantityCountedCollationSheetItem(collationSheet, item) != 0
@@ -5256,7 +5264,7 @@ GROUP itemStatementDetailInfo 'Информация по товару' : publicG
 GROUP pricingStatementDetailInfo 'Дополнительные ценовые параметры': publicGroup;
 
 CLASS statement 'Выписка из розницы' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
-CLASS statementDetail 'Строка выписки из розницы' : balanceItemLedger, consignmentDetail;
+CLASS statementDetail 'Строка выписки из розницы' : outAutoBalanceItemLedger, consignmentDetail;
 @metaCodeObjectWithPostEx(statement, 'Закрытая выписка из розницы');
 
 //    шапка документа поставки
@@ -5527,12 +5535,8 @@ PROPERTIES (d) READONLY numberCashDocument, sumCashDocument
 FILTERS inCashReportDocument(r,d);
 
 //---------------------------- Приход товара от поставщика ----------------------------------------//
-CLASS batch 'Партия';
-
-CLASS ABSTRACT batchShipment 'Партия из прихода' : batch, balanceItemLedger, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger, warePriceLedger;
-
 CLASS shipment 'Поставка' : incAccountSumDocumentLedger, historyObject, numberedObject, priceTransactionDocument;
-CLASS shipmentDetail 'Строка поставки' : batchShipment;
+CLASS shipmentDetail 'Строка поставки' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger, warePriceLedger;
 @metaCodeObjectWithPostEx(shipment, 'Закрытая поставка');
 
 GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
@@ -5900,7 +5904,7 @@ showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OB
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 CLASS writeOff 'Списание' : outAccountSumDocumentLedger, historyObject, numeratedObject;
-CLASS writeOffDetail 'Строка списания' : balanceItemLedger;
+CLASS writeOffDetail 'Строка списания' : outAutoBalanceItemLedger;
 @metaCodeObjectWithPostEx (writeOff, 'Закрытое списание');
 
 CLASS reasonOff 'Причина списания' : named;
@@ -5978,7 +5982,7 @@ descriptionWriteOffDetail 'Название документа' (writeOffDetail)
 
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
 CLASS innerFlow 'Расход в отдел' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
-CLASS innerFlowDetail 'Строка расхода в отдел' : balanceItemLedger, consignmentDetail;
+CLASS innerFlowDetail 'Строка расхода в отдел' : outAutoBalanceItemLedger, consignmentDetail;
 @metaCodeObjectWithPostEx (innerFlow, 'Закрытый расход в отдел');
 
 recipientDepartmentInnerFlow 'Отдел-получатель (ИД)' (innerFlow) = DATA departmentStore(innerFlow);
@@ -6114,7 +6118,7 @@ GROUP consumptionGroup 'Расход': baseGroup;
 
 
 CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, historyObject, priceTransactionDocument;
-CLASS innerArrivalDetail 'Строка прихода в отдел' : importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger, balanceItemLedger;
+CLASS innerArrivalDetail 'Строка прихода в отдел' : balanceItemLedger, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 @metaCodeObjectWithPostEx (innerArrival, 'Закрытый приход в отдел');
 
 innerFlowInnerArrival 'Накладная отгрузки с отдела-отправителя (ИД)' (innerArrival) = DATA innerFlowPosted (innerArrival);
@@ -6316,7 +6320,7 @@ needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipme
 
 CLASS wastage 'Списание отходов' : outAccountSumDocumentLedger, historyObject;
 CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
-CLASS wastageDetail 'Строка документа': balanceItemLedger;
+CLASS wastageDetail 'Строка документа': outAutoBalanceItemLedger;
 
 @metaCodeDetailAggregation (shipment, wastage, needToWasteShipment);
 
@@ -6395,7 +6399,7 @@ FORM wastages 'Списания отходов'
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
 CLASS returnSupplier 'Возврат поставщику' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
-CLASS returnSupplierDetail 'Строка возврата поставщику' : balanceItemLedger, consignmentDetail;
+CLASS returnSupplierDetail 'Строка возврата поставщику' : outUserBalanceItemLedger, consignmentDetail;
 @metaCodeObjectWithPostEx(returnSupplier, 'Закрытый возврат поставщику');
 
 // шапка документа "Возврат поставщику"
@@ -6438,7 +6442,7 @@ namebanRevaluationItemDepartmentReturnSupplierDetail 'Запрет на пере
 
 // количество/цены по строкам
 
-batchReturnSupplierDetail 'Партия (ИД)' = DATA batchShipment (returnSupplierDetail) IN idGroup;
+batchReturnSupplierDetail 'Партия (ИД)' = DATA shipmentDetail (returnSupplierDetail) IN idGroup;
 
 commonInfoBatchReturnSupplierDetail 'Партия' (returnSupplierDetail) = descriptionShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
 
@@ -6613,7 +6617,7 @@ sumGrossWeightReturnSupplier 'Общее количество грузовых �
 CLASS bill 'Чек' : historyObject;
 TABLE bill (bill);
 
-CLASS billDetail 'Строка чека' : balanceItemLedger;
+CLASS billDetail 'Строка чека' : outAutoBalanceItemLedger;
 TABLE billDetail (billDetail);
 
 dateBill 'Дата документа' (bill) = DATA DATE (bill) IN documentHeaderGroup;
@@ -6926,18 +6930,6 @@ departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipm
                                                             departmentStoreStudyInputDetail(ledger),
                                                             departmentStoreStudyOutputDetail(ledger) PERSISTENT;
 
-quantityBalanceItemLedger 'Количество' (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
-                                                     quantityInnerArrivalDetail(ledger),
-                                                    -quantityWriteOffDetail(ledger),
-                                                    -quantityStatementDetail(ledger),
-                                                    -quantityInnerFlowDetail(ledger),
-                                                    -quantityWastageDetail(ledger),
-                                                    -quantityReturnSupplierDetail(ledger),
-                                                    -quantityInventoryLedger(ledger),
-                                                    -quantityBillDetail(ledger),
-                                                     overQuantityStudyOutputDetail(ledger),
-                                                    -quantityStudyInputDetail(ledger) PERSISTENT;
-
 descriptionLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
                                                             descriptionInnerArrivalDetail(ledger),
                                                             descriptionWriteOffDetail(ledger),
@@ -6951,6 +6943,30 @@ descriptionLedger 'Название документа' (ledger) = UNION EXCLUSI
                                                             descriptionStudyOutputDetail(ledger),
                                                             descriptionStudyInputDetail(ledger) PERSISTENT;
 
+
+// ---------------------------- Расчет себестоимости -------------------------------- //
+
+quantityBatch 'Кол-во' (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
+                                                 overQuantityStudyOutputDetail(ledger);
+
+quantityOutAutoBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityWriteOffDetail(ledger),
+                                                                     quantityStatementDetail(ledger),
+                                                                     quantityInnerFlowDetail(ledger),
+                                                                     quantityWastageDetail(ledger),
+                                                                     quantityInventoryLedger(ledger),
+                                                                     quantityBillDetail(ledger),
+                                                                     quantityStudyInputDetail(ledger);
+
+quantityOutUserBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityReturnSupplierDetail(ledger);
+
+quantityOutBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityOutAutoBalanceItemLedger(ledger),
+                                                                 quantityOutUserBalanceItemLedger(ledger);
+
+quantityBalanceItemLedger 'Количество' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
+                                                                  -quantityOutBalanceItemLedger(ledger),
+                                                                  quantityInnerArrivalDetail(ledger) PERSISTENT;
+
+// ---------------------------- Остаток по товару -------------------------------- //
 
 currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
                                                           BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger) PERSISTENT;
@@ -8436,11 +8452,11 @@ DESIGN shipments FROM DEFAULT {
 @metaCodeInputMultipleItemsSupplier(returnSupplier);
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
-    OBJECTS b=batchShipment
+    OBJECTS b=shipmentDetail
     PROPERTIES(b) READONLY seriesObjectDetail, numberObjectDetail, dateShipmentDetail,
                            quantityShipmentDetail, supplierPriceShipmentDetail, dataSuppliersRangeShipmentDetail,
                            retailPriceShipmentDetail
-    DIALOG batchShipment OBJECT b;
+    DIALOG shipmentDetail OBJECT b;
 ;
 
 
