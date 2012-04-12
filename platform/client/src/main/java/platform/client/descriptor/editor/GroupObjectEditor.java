@@ -53,7 +53,7 @@ public class GroupObjectEditor extends JTabbedPane implements NodeEditor {
             }
         }));
 
-        TitledPanel propertyHighlightPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.view.selection.property"), new PropertyObjectEditor(group, "propertyHighlight", form, group));
+        TitledPanel propertyBackgroundPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.view.selection.property"), new PropertyObjectEditor(group, "propertyBackground", form, group));
 
         TitledPanel pageSizePanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.view.selection.pagesize"), new IncrementTextEditor(group, "pageSize"));
 
@@ -66,10 +66,10 @@ public class GroupObjectEditor extends JTabbedPane implements NodeEditor {
         DefaultOrdersEditor defaultOrdersPanel = new DefaultOrdersEditor(form, group);
 
         if (group.getParent() != null){
-            addTab(ClientResourceBundle.getString("descriptor.editor.view.common"), new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel, filterPropertyPanel, pageSizePanel, new IsParentEditor()));
+            addTab(ClientResourceBundle.getString("descriptor.editor.view.common"), new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyBackgroundPanel, filterPropertyPanel, pageSizePanel, new IsParentEditor()));
         }
         else{
-            addTab(ClientResourceBundle.getString("descriptor.editor.view.common"), new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel, filterPropertyPanel, pageSizePanel));
+            addTab(ClientResourceBundle.getString("descriptor.editor.view.common"), new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyBackgroundPanel, filterPropertyPanel, pageSizePanel));
         }
         addTab(ClientResourceBundle.getString("descriptor.properties"), new NorthBoxPanel(groupPropertyObjectPanel));
         addTab(ClientResourceBundle.getString("descriptor.editor.view.display"), new NorthBoxPanel(propertiesPanel));

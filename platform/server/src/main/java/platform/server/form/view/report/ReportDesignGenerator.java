@@ -111,7 +111,7 @@ public class ReportDesignGenerator {
 
     private List<ReportDrawField> getAllowedGroupDrawFields(GroupObjectEntity group) {
         List<ReportDrawField> fields = new ArrayList<ReportDrawField>();
-        PropertyObjectEntity highlightProp = group.propertyHighlight;
+        PropertyObjectEntity backgroundProp = group.propertyBackground;
 
         for (PropertyDrawView property : formView.properties) {
             GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.groups);
@@ -124,7 +124,7 @@ public class ReportDesignGenerator {
 
             if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup) && !hidden) {
                 ReportDrawField reportField = property.getReportDrawField();
-                if (reportField != null && (highlightProp == null || highlightProp.property != property.entity.propertyObject.property)) {
+                if (reportField != null && (backgroundProp == null || backgroundProp.property != property.entity.propertyObject.property)) {
                     Integer widthUser = columnUserPreferences == null ? null : columnUserPreferences.getWidthUser();
                     if (widthUser != null)
                         reportField.setWidthUser(widthUser);
@@ -148,7 +148,7 @@ public class ReportDesignGenerator {
         for (GroupObjectEntity group : groups) {
             boolean hiddenGroup = hiddenGroupsId.contains(group.getID());
             GroupObjectView groupView = formView.getGroupObject(group);
-            PropertyObjectEntity highlightProp = group.propertyHighlight;
+            PropertyObjectEntity backgroundProp = group.propertyBackground;
 
             boolean hasColumnGroupProperty = false;
             List<ReportDrawField> drawFields = getAllowedGroupDrawFields(group);
@@ -164,12 +164,12 @@ public class ReportDesignGenerator {
                 }
             }
 
-            String highlightPropertySID = null;
-            if (highlightProp != null) {
-                ReportDrawField reportField = new ReportDrawField(highlightProp.property.getSID(), "");
-                highlightProp.property.getType().fillReportDrawField(reportField);
+            String backgroundPropertySID = null;
+            if (backgroundProp != null) {
+                ReportDrawField reportField = new ReportDrawField(backgroundProp.property.getSID(), "");
+                backgroundProp.property.getType().fillReportDrawField(reportField);
                 addDesignField(design, reportField);
-                highlightPropertySID = reportField.sID;
+                backgroundPropertySID = reportField.sID;
             }
 
             if (!hiddenGroup) {
@@ -208,7 +208,7 @@ public class ReportDesignGenerator {
                 }
                 design.addStyle(groupCellStyle);
                 JRDesignStyle groupCaptionStyle = groupCellStyle;
-                if (highlightPropertySID != null) {
+                if (backgroundPropertySID != null) {
                     if (detail) {
                         groupCaptionStyle = (JRDesignStyle) groupCellStyle.clone();
                         groupCaptionStyle.setName(groupCellStyle.getName() + "_caption");
@@ -219,7 +219,7 @@ public class ReportDesignGenerator {
                     Color oldColor = condStyle.getBackcolor();
                     condStyle.setBackcolor(new Color(oldColor.getRed(), oldColor.getGreen(), 0));
                     JRDesignExpression expr =
-                            ReportUtils.createExpression("new Boolean($F{" + highlightPropertySID + "} != null)", java.lang.Boolean.class);
+                            ReportUtils.createExpression("new Boolean($F{" + backgroundPropertySID + "} != null)", java.lang.Boolean.class);
                     condStyle.setConditionExpression(expr);
                     groupCellStyle.addConditionalStyle(condStyle);
                 }

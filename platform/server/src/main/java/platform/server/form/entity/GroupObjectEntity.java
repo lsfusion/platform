@@ -60,8 +60,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
     public Integer pageSize;
 
-
-    public PropertyObjectEntity<?> propertyHighlight;
+    public PropertyObjectEntity<?> propertyBackground;
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
@@ -72,7 +71,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         pool.writeInt(outStream, initClassView.ordinal());
         pool.writeObject(outStream, banClassView);
         pool.serializeObject(outStream, treeGroup);
-        pool.serializeObject(outStream, propertyHighlight);
+        pool.serializeObject(outStream, propertyBackground);
         pool.serializeObject(outStream, filterProperty);
         outStream.writeBoolean(isParent != null);
         if (isParent != null) {
@@ -87,7 +86,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         initClassView = ClassViewType.values()[pool.readInt(inStream)];
         banClassView = pool.readObject(inStream);
         treeGroup = pool.deserializeObject(inStream);
-        propertyHighlight = pool.deserializeObject(inStream);
+        propertyBackground = pool.deserializeObject(inStream);
         filterProperty = pool.deserializeObject(inStream);
         if (inStream.readBoolean()) {
             isParent = pool.deserializeMap(inStream);

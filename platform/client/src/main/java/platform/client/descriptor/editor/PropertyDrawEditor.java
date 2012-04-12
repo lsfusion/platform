@@ -61,7 +61,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
             }
         });
 
-        TitledPanel propertyHighlightPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.selection.property"), new IncrementDialogEditor(descriptor, "propertyHighlight") {
+        TitledPanel propertyBackgroundPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.selection.property"), new IncrementDialogEditor(descriptor, "propertyBackground") {
             protected Object dialogValue(Object currentValue) {
                 return new ListGroupObjectEditor(descriptor.getColumnGroupObjects()).getPropertyObject();
             }
@@ -87,7 +87,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
                 groupObjectPanel,
                 columnGroupObjectsPanel,
                 propertyCaptionPanel,
-                propertyHighlightPanel,
+                propertyBackgroundPanel,
                 shouldBeLastPanel,
                 readOnlyPanel,
                 focusablePanel,

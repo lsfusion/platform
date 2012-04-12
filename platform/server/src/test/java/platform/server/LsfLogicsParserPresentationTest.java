@@ -205,7 +205,7 @@ public class LsfLogicsParserPresentationTest {
         setupTest("FORM storeArticle\n" +
                   "OBJECTS s=store, a=article\n" +
                   "PROPERTIES SELECTION(s) READONLY, name(s) READONLY, OBJVALUE(a), name(a)\n" +
-                  "PROPERTIES(s) storeSizeName HIGHLIGHTIF storeSize(s)\n" +
+                  "PROPERTIES(s) storeSizeName BACKGROUND storeSize(s)\n" +
                   "PROPERTIES(s, a) incomeQuantity HEADER outcomeQuantity(s, a) READONLY, incomeQuantity2 FOOTER outcomeQuantity2(s, a) SHOWIF outcomeQuantity(s, a)"
         );
 
@@ -218,7 +218,7 @@ public class LsfLogicsParserPresentationTest {
         assertTrue(incProp.readOnly);
         assertFalse(inc2Prop.readOnly);
 
-        assertEquals(sizeProp.propertyHighlight.property, findPBySID("storeSize"));
+        assertEquals(sizeProp.propertyBackground.property, findPBySID("storeSize"));
         assertEquals(incProp.propertyCaption.property, findPBySID("outcomeQuantity"));
         assertEquals(inc2Prop.propertyFooter.property, findPBySID("outcomeQuantity2"));
         //check if showif is ok
@@ -230,7 +230,7 @@ public class LsfLogicsParserPresentationTest {
         setupTest("FORM storeArticle\n" +
                   "OBJECTS s=store, a=article\n" +
                   "PROPERTIES READONLY SELECTION(s), name(s) EDITABLE, OBJVALUE(a), name(a)\n" +
-                  "PROPERTIES(s, a) SHOWIF bar(s, a) HIGHLIGHTIF outcomeQuantity(s, a) READONLY incomeQuantity, incomeQuantity2 EDITABLE\n" +
+                  "PROPERTIES(s, a) SHOWIF bar(s, a) BACKGROUND outcomeQuantity(s, a) READONLY incomeQuantity, incomeQuantity2 EDITABLE\n" +
                   "PROPERTIES HEADER incomeQuantity(s, a) FOOTER incomeQuantity2(s, a) outcomeQuantity(s, a), outcomeQuantity2(s, a) SHOWIF incomeQuantity2(s, a)"
         );
 
@@ -252,8 +252,8 @@ public class LsfLogicsParserPresentationTest {
         assertShowIF(incProp, findPBySID("bar"));
         assertShowIF(inc2Prop, findPBySID("bar"));
 
-        assertEquals(incProp.propertyHighlight.property, findPBySID("outcomeQuantity"));
-        assertEquals(inc2Prop.propertyHighlight.property, findPBySID("outcomeQuantity"));
+        assertEquals(incProp.propertyBackground.property, findPBySID("outcomeQuantity"));
+        assertEquals(inc2Prop.propertyBackground.property, findPBySID("outcomeQuantity"));
 
         //3я строка
         assertEquals(outProp.propertyCaption.property, findPBySID("incomeQuantity"));

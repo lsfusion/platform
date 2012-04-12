@@ -343,7 +343,7 @@ OBJECTS document, article
 // or
 // PROPERTIES(param1, ..., paramN) [commonOptions] [alias1=]propName1 [options1], ..., [aliasK=]propNameK [optionsK]
 // Special properties: SELECTION, OBJVALUE, ADDOBJ, ADDFORM, ADDSESSIONFORM, EDITFORM, EDITSESSIONFORM
-// Property option:    [READONLY] [EDITABLE] [SELECTOR] [HINTNOUPDATE] [HINTTABLE] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [HIGHLIGHTIF <mappedProperty>]
+// Property option:    [READONLY] [EDITABLE] [SELECTOR] [HINTNOUPDATE] [HINTTABLE] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [BACKGROUND <mappedProperty>]
 //                     [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
 
 PROPERTIES store(document), name(article), storeName(document), documentTypeString(document)

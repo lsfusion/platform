@@ -335,12 +335,12 @@ public class GridController {
         table.updateColumnCaptions(property, captions);
     }
 
-    public void updateCellHighlightValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellHighlights) {
-        table.updateCellHighlightValues(property, cellHighlights);
+    public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
+        table.updateCellBackgroundValues(property, cellBackgroundValues);
     }
 
-    public void updateRowHighlightValues(Map<ClientGroupObjectValue, Object> rowHighlights) {
-        table.updateRowHighlightValues(rowHighlights);
+    public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
+        table.updateRowBackgroundValues(rowBackground);
     }
 
     public void selectObject(ClientGroupObjectValue currentObject) {

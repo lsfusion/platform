@@ -31,6 +31,7 @@
       <keyword name="ATTACH" />
       <keyword name="AUTOAPPLY" />
       <keyword name="AUTOSET" />
+      <keyword name="BACKGROUND" />
       <keyword name="BCC" />
       <keyword name="BEFORE" />
       <keyword name="BOOLEAN" />
@@ -100,7 +101,6 @@
       <keyword name="HIDE" />
       <keyword name="HIDESCROLLBARS" />
       <keyword name="HIDETITLE" />
-      <keyword name="HIGHLIGHTIF" />
       <keyword name="HINTNOUPDATE" />
       <keyword name="HINTTABLE" />
       <keyword name="HORIZONTAL" />

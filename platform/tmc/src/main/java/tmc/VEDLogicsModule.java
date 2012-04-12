@@ -31,7 +31,6 @@ import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.PropertyChange;
@@ -2100,7 +2099,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             PropertyDrawEntity<?> addvOrderArticleDraw = getPropertyDraw(addvOrderArticle);
             if(addvOrderArticleDraw!=null)
-                addvOrderArticleDraw.setPropertyHighlight(addPropertyObject(addJProp(baseLM.and1, baseLM.redColor, isNegativeAddvOrderArticle, 1, 2), objDoc, objArt));
+                addvOrderArticleDraw.setPropertyBackground(addPropertyObject(addJProp(baseLM.and1, baseLM.redColor, isNegativeAddvOrderArticle, 1, 2), objDoc, objArt));
         }
 
         @Override
@@ -2561,9 +2560,9 @@ public class VEDLogicsModule extends LogicsModule {
             addPropertyDraw(orderSaleUseObligation, objDoc, objObligation);
 
             if (toAdd) {
-                objArt.groupTo.propertyHighlight = addPropertyObject(addJProp(baseLM.and1, baseLM.redColor, actionOutArticle, 1, 2), objDoc, objArt);
+                objArt.groupTo.propertyBackground = addPropertyObject(addJProp(baseLM.and1, baseLM.redColor, actionOutArticle, 1, 2), objDoc, objArt);
 
-                objObligation.groupTo.propertyHighlight = addPropertyObject(addJProp(baseLM.and1, baseLM.redColor, orderSaleObligationCanNotBeUsed, 1, 2), objDoc, objObligation);
+                objObligation.groupTo.propertyBackground = addPropertyObject(addJProp(baseLM.and1, baseLM.redColor, orderSaleObligationCanNotBeUsed, 1, 2), objDoc, objObligation);
                 addHintsNoUpdate(obligationDocument);
             }
 

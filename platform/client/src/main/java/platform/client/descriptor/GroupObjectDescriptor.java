@@ -9,7 +9,6 @@ import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
 
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -26,7 +25,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
 
     private ClassViewType initClassView = ClassViewType.GRID;
     private List<ClassViewType> banClassViewList = new ArrayList<ClassViewType>();
-    private PropertyObjectDescriptor propertyHighlight;
+    private PropertyObjectDescriptor propertyBackground;
     private PropertyDrawDescriptor filterProperty;
 
     public List<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
@@ -99,13 +98,13 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         updateDependency(this, "banClassView");
     }
 
-    public PropertyObjectDescriptor getPropertyHighlight() {
-        return propertyHighlight;
+    public PropertyObjectDescriptor getPropertyBackground() {
+        return propertyBackground;
     }
 
-    public void setPropertyHighlight(PropertyObjectDescriptor propertyHighlight) {
-        this.propertyHighlight = propertyHighlight;
-        updateDependency(this, "propertyHighlight");
+    public void setPropertyBackground(PropertyObjectDescriptor propertyBackground) {
+        this.propertyBackground = propertyBackground;
+        updateDependency(this, "propertyBackground");
     }
 
     public PropertyDrawDescriptor getFilterProperty() {
@@ -123,7 +122,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         pool.writeInt(outStream, initClassView.ordinal());
         pool.writeObject(outStream, banClassViewList);
         pool.serializeObject(outStream, parent);
-        pool.serializeObject(outStream, propertyHighlight);
+        pool.serializeObject(outStream, propertyBackground);
         pool.serializeObject(outStream, filterProperty);
         outStream.writeBoolean(!isParent.isEmpty());
         if (!isParent.isEmpty()) {
@@ -137,7 +136,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         initClassView = ClassViewType.values()[pool.readInt(inStream)];
         banClassViewList = pool.readObject(inStream);
         parent = pool.deserializeObject(inStream);
-        propertyHighlight = pool.deserializeObject(inStream);
+        propertyBackground = pool.deserializeObject(inStream);
         filterProperty = pool.deserializeObject(inStream);
         if (inStream.readBoolean()) {
             isParent = pool.deserializeMap(inStream);

@@ -546,8 +546,8 @@ FORM declaration 'Декларация'
                     quantityDeclarationDetail, priceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
                     rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail,
                     certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
-                    sidTemporalCertificateDeclarationDetail HIGHLIGHTIF isCertificatePreparedDeclarationDetail(dd),
-                    sidPermanentCertificateDeclarationDetail HIGHLIGHTIF isCertificatePreparedDeclarationDetail(dd),
+                    sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
+                    sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
                     correctionPriceDeclarationDetail, correctionDutyDeclarationDetail, correctionDutyDataDeclarationDetail,
                     diffDutyDeclarationDetail, registrationDeclarationDetail, ADDOBJ, delete
 
@@ -625,8 +625,8 @@ FORM declarations 'Декларации'
                             quantityDeclarationDetail, priceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
                             rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail,
                             certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
-                            sidTemporalCertificateDeclarationDetail HIGHLIGHTIF isCertificatePreparedDeclarationDetail(dd),
-                            sidPermanentCertificateDeclarationDetail HIGHLIGHTIF isCertificatePreparedDeclarationDetail(dd),
+                            sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
+                            sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
                             correctionPriceDeclarationDetail, correctionDutyDeclarationDetail,
                             correctionDutyDataDeclarationDetail, diffDutyDeclarationDetail, registrationDeclarationDetail,
                             priceCustomDeclarationDetail, priceManagerialCustomDeclarationDetail

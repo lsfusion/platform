@@ -17,7 +17,6 @@ import platform.interop.ClassViewType;
 import platform.interop.form.layout.AbstractGroupObject;
 import platform.interop.form.layout.GroupObjectContainerSet;
 
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -88,7 +87,7 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
     }
 
     public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
-        controller.updateRowHighlightValues(readKeys);
+        controller.updateRowBackgroundValues(readKeys);
     }
 
     public ClientGroupObject getGroupObject() {

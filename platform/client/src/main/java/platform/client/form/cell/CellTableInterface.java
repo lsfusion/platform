@@ -15,8 +15,7 @@ public interface CellTableInterface {
     ClientGroupObjectValue getKey(int row, int col);
 
     boolean isSelected(int row, int column);
-    boolean isCellHighlighted(int row, int column);
-    Color getHighlightColor(int row, int column);
+    Color getBackgroundColor(int row, int column);
 
     ClientFormController getForm();
 

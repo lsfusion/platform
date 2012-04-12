@@ -12,7 +12,6 @@ import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
 import platform.interop.form.layout.GroupObjectContainerSet;
 
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -27,7 +26,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
     private PropertyObjectDescriptor propertyCaption;
     private PropertyObjectDescriptor propertyReadOnly;
     private PropertyObjectDescriptor propertyFooter;
-    private PropertyObjectDescriptor propertyHighlight;
+    private PropertyObjectDescriptor propertyBackground;
 
     private boolean readOnly;
 
@@ -150,13 +149,13 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         updateDependency(this, "propertyCaption");
     }
 
-    public PropertyObjectDescriptor getPropertyHighlight() { // usage через reflection
-        return propertyHighlight;
+    public PropertyObjectDescriptor getPropertyBackground() { // usage через reflection
+        return propertyBackground;
     }
 
-    public void setPropertyHighlight(PropertyObjectDescriptor propertyHighlight) {
-        this.propertyHighlight= propertyHighlight;
-        updateDependency(this, "propertyHighlight");
+    public void setPropertyBackground(PropertyObjectDescriptor propertyBackground) {
+        this.propertyBackground = propertyBackground;
+        updateDependency(this, "propertyBackground");
     }
 
     public void setCaption(String caption) { // usage через reflection
@@ -199,7 +198,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         pool.serializeObject(outStream, propertyCaption);
         pool.serializeObject(outStream, propertyReadOnly);
         pool.serializeObject(outStream, propertyFooter);
-        pool.serializeObject(outStream, propertyHighlight);
+        pool.serializeObject(outStream, propertyBackground);
 
         outStream.writeBoolean(shouldBeLast);
         outStream.writeBoolean(readOnly);
@@ -216,7 +215,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         propertyCaption = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
         propertyReadOnly = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
         propertyFooter = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
-        propertyHighlight = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
+        propertyBackground = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
         readOnly = inStream.readBoolean();

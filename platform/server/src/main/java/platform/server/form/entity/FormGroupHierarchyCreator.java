@@ -65,9 +65,9 @@ public class FormGroupHierarchyCreator {
         }
 
         for (GroupObjectEntity group : form.groups) {
-            if (group.propertyHighlight != null) {
-                Set<GroupObjectEntity> highlightObjects = getGroupsByObjects(group.propertyHighlight.getObjectInstances());
-                addDependencies(graph, highlightObjects, true);
+            if (group.propertyBackground != null) {
+                Set<GroupObjectEntity> backgroundObjects = getGroupsByObjects(group.propertyBackground.getObjectInstances());
+                addDependencies(graph, backgroundObjects, true);
             }
         }
 

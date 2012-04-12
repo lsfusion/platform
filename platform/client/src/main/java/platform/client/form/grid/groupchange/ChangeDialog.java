@@ -293,11 +293,7 @@ public class ChangeDialog extends JDialog {
                 return property;
             }
 
-            public boolean isCellHighlighted(int row, int column) {
-                return false;
-            }
-
-            public Color getHighlightColor(int row, int column) {
+            public Color getBackgroundColor(int row, int column) {
                 return null;
             }
 

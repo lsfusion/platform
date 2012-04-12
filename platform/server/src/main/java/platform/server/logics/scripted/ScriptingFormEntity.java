@@ -242,19 +242,19 @@ public class ScriptingFormEntity extends FormEntity {
         property.propertyCaption = options.getHeader();
         property.propertyFooter = options.getFooter();
 
-        PropertyObjectEntity highlightProperty = options.getHighlightIf();
-        if (highlightProperty != null && !highlightProperty.property.getType().equals(ColorClass.instance)) {
-            LP highlightLP = LM.getLPBySID(highlightProperty.property.getSID());
-            Object[] params = new Object[highlightLP.listInterfaces.size() + 2];
+        PropertyObjectEntity backgroundProperty = options.getBackground();
+        if (backgroundProperty != null && !backgroundProperty.property.getType().equals(ColorClass.instance)) {
+            LP backgroundLP = LM.getLPBySID(backgroundProperty.property.getSID());
+            Object[] params = new Object[backgroundLP.listInterfaces.size() + 2];
             params[0] = LM.baseLM.defaultOverrideBackgroundColor;
-            params[1] = highlightLP;
-            for (int i = 0; i < highlightLP.listInterfaces.size(); i++) {
+            params[1] = backgroundLP;
+            for (int i = 0; i < backgroundLP.listInterfaces.size(); i++) {
                 params[i + 2] = i + 1;
             }
-            Collection<ObjectEntity> objects = highlightProperty.getObjectInstances();
-            property.propertyHighlight = addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
+            Collection<ObjectEntity> objects = backgroundProperty.getObjectInstances();
+            property.propertyBackground = addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
         } else {
-            property.propertyHighlight = highlightProperty;
+            property.propertyBackground = backgroundProperty;
         }
 
         property.propertyReadOnly = options.getReadOnlyIf();

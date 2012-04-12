@@ -91,9 +91,9 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).captionReader;
             case PropertyReadType.FOOTER:
                 return clientForm.getProperty(inStream.readInt()).footerReader;
-            case PropertyReadType.CELL_HIGHLIGHT:
-                return clientForm.getProperty(inStream.readInt()).highlightReader;
-            case PropertyReadType.ROW_HIGHLIGHT:
+            case PropertyReadType.CELL_BACKGROUND:
+                return clientForm.getProperty(inStream.readInt()).backgroundReader;
+            case PropertyReadType.ROW_BACKGROUND:
                 return clientForm.getGroupObject(inStream.readInt());
             default:
                 throw new IOException();

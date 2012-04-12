@@ -53,8 +53,8 @@ public abstract class GridTable extends ClientFormTable
     private Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> captions = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-    private Map<ClientGroupObjectValue, Object> rowHighlights = new HashMap<ClientGroupObjectValue, Object>();
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellHighlights = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private Map<ClientGroupObjectValue, Object> rowBackground = new HashMap<ClientGroupObjectValue, Object>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     private ClientGroupObjectValue currentObject;
 
@@ -338,7 +338,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public void updateTable() {
-        model.update(groupObject, properties, rowKeys, columnKeys, captions, values, rowHighlights, cellHighlights);
+        model.update(groupObject, properties, rowKeys, columnKeys, captions, values, rowBackground, cellBackgroundValues);
 
         refreshColumnModel();
 
@@ -907,8 +907,8 @@ public abstract class GridTable extends ClientFormTable
         this.captions.put(property, captions);
     }
 
-    public void updateCellHighlightValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellHighlights) {
-        this.cellHighlights.put(property, cellHighlights);
+    public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
+        this.cellBackgroundValues.put(property, cellBackgroundValues);
     }
 
     public void setColumnValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
@@ -919,8 +919,8 @@ public abstract class GridTable extends ClientFormTable
         this.columnKeys.put(property, columnKeys);
     }
 
-    public void updateRowHighlightValues(Map<ClientGroupObjectValue, Object> rowHighlights) {
-        this.rowHighlights = rowHighlights;
+    public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
+        this.rowBackground = rowBackground;
     }
 
     public Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
@@ -1001,12 +1001,8 @@ public abstract class GridTable extends ClientFormTable
         return selectionController.isCellSelected(getProperty(row, column), rowKeys.get(row));
     }
 
-    public boolean isCellHighlighted(int row, int column) {
-        return model.isCellHighlighted(row, column);
-    }
-
-    public Color getHighlightColor(int row, int column) {
-        return model.getHighlightColor(row, column);
+    public Color getBackgroundColor(int row, int column) {
+        return model.getBackgroundColor(row, column);
     }
 
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {

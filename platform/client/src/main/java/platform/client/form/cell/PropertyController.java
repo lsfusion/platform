@@ -8,7 +8,6 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -119,7 +118,7 @@ public class PropertyController implements CellViewListener {
         view.setToolTip(caption);
     }
 
-    public void setHighlight(Object color) {
-        view.setHighlight(color);
+    public void setBackground(Object color) {
+        view.setBackground(color);
     }
 }

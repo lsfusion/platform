@@ -203,8 +203,8 @@ public class TreeGroupController extends AbstractGroupObjectController {
         }
     }
 
-    public void updateRowHighlightValues(Map<ClientGroupObjectValue, Object> rowHighlights) {
-        panel.updateRowHighlightValue(BaseUtils.singleValue(rowHighlights));
+    public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
+        panel.updateRowBackgroundValue(BaseUtils.singleValue(rowBackground));
     }
 
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
@@ -213,9 +213,9 @@ public class TreeGroupController extends AbstractGroupObjectController {
         }
     }
 
-    public void updateCellHighlightValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellHighlights) {
+    public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
         if (panelProperties.contains(property)) {
-            panel.updateCellHighlightValue(property, cellHighlights);
+            panel.updateCellBackgroundValue(property, cellBackgroundValues);
         }
     }
 }

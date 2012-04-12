@@ -28,15 +28,15 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final PropertyObjectInstance<?> propertyCaption;
     public final PropertyObjectInstance<?> propertyReadOnly;
     public final PropertyObjectInstance<?> propertyFooter;
-    public final PropertyObjectInstance<?> propertyHighlight;
+    public final PropertyObjectInstance<?> propertyBackground;
 
     // извращенное множественное наследование
     public CaptionReaderInstance captionReader = new CaptionReaderInstance();
     public FooterReaderInstance footerReader = new FooterReaderInstance();
-    public HighlightReaderInstance highlightReader = new HighlightReaderInstance();
+    public BackgroundReaderInstance backgroundReader = new BackgroundReaderInstance();
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity, PropertyObjectInstance<P> propertyObject, GroupObjectInstance toDraw, List<GroupObjectInstance> columnGroupObjects,
-                                PropertyObjectInstance<?> propertyCaption, PropertyObjectInstance<?> propertyReadOnly, PropertyObjectInstance<?> propertyFooter, PropertyObjectInstance<?> propertyHighlight) {
+                                PropertyObjectInstance<?> propertyCaption, PropertyObjectInstance<?> propertyReadOnly, PropertyObjectInstance<?> propertyFooter, PropertyObjectInstance<?> propertyBackground) {
         super(entity);
         this.propertyObject = propertyObject;
         this.toDraw = toDraw;
@@ -44,7 +44,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         this.propertyCaption = propertyCaption;
         this.propertyReadOnly = propertyReadOnly;
         this.propertyFooter = propertyFooter;
-        this.propertyHighlight = propertyHighlight;
+        this.propertyBackground = propertyBackground;
     }
 
     public PropertyObjectInstance getPropertyObjectInstance() {
@@ -166,13 +166,13 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         }
     }
 
-    public class HighlightReaderInstance implements PropertyReaderInstance {
+    public class BackgroundReaderInstance implements PropertyReaderInstance {
         public PropertyObjectInstance getPropertyObjectInstance() {
-            return propertyHighlight;
+            return propertyBackground;
         }
 
         public byte getTypeID() {
-            return PropertyReadType.CELL_HIGHLIGHT;
+            return PropertyReadType.CELL_BACKGROUND;
         }
 
         public int getID() {
@@ -189,7 +189,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         @Override
         public String toString() {
-            return ServerResourceBundle.getString("logics.highlight") + "(" + PropertyDrawInstance.this.toString() + ")";
+            return ServerResourceBundle.getString("logics.background") + "(" + PropertyDrawInstance.this.toString() + ")";
         }
     }
 

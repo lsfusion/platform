@@ -64,7 +64,7 @@ public class SelectionProperty extends SessionDataProperty {
         for (int i = 0; i < objects.size(); i++) {
             params[i + 2] = i + 1;
         }
-        entity.getToDraw(form).propertyHighlight = form.addPropertyObject(LM.addJProp(LM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
+        entity.getToDraw(form).propertyBackground = form.addPropertyObject(LM.addJProp(LM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
     }
 
     @Override

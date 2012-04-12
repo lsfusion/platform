@@ -96,7 +96,7 @@ public class ButtonCellView extends ClientButton implements CellView {
 //        }
     }
 
-    public void setHighlight(Object highlight) {
+    public void setBackground(Object background) {
         // пока не highlight'им
     }
 

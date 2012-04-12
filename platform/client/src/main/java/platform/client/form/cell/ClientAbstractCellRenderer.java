@@ -3,7 +3,6 @@ package platform.client.form.cell;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.renderer.StringPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ComponentDesign;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
@@ -44,14 +43,13 @@ public class ClientAbstractCellRenderer extends JComponent
             ((JButton) comp).setSelected(cellTable.isPressed(row, column));
         }
 
-        if (cellTable.isCellHighlighted(row, column)) {
-            Color highlightColor = cellTable.getHighlightColor(row, column);
-            
+        Color backgroundColor = cellTable.getBackgroundColor(row, column);
+        if (backgroundColor != null) {
             if (!hasFocus && !isSelected && !cellTable.isSelected(row, column)) {
-                comp.setBackground(highlightColor);
+                comp.setBackground(backgroundColor);
             } else {
                 Color bgColor = comp.getBackground();
-                comp.setBackground(new Color(highlightColor.getRGB() & bgColor.getRGB()));
+                comp.setBackground(new Color(backgroundColor.getRGB() & bgColor.getRGB()));
             }
         }
 

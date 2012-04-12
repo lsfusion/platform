@@ -12,7 +12,6 @@ import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
@@ -42,17 +41,17 @@ import static platform.interop.ClassViewType.HIDE;
 
 public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, PropertyReaderInstance {
 
-    public final PropertyObjectInstance propertyHighlight;
+    public final PropertyObjectInstance propertyBackground;
     final static int DIRECTION_DOWN = 1;
     final static int DIRECTION_UP = 2;
     final static int DIRECTION_CENTER = 3;
 
     public PropertyObjectInstance getPropertyObjectInstance() {
-        return propertyHighlight;
+        return propertyBackground;
     }
 
     public byte getTypeID() {
-        return PropertyReadType.ROW_HIGHLIGHT;
+        return PropertyReadType.ROW_BACKGROUND;
     }
 
     public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
@@ -95,13 +94,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
     }
 
-    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, PropertyObjectInstance propertyHighlight, Map<ObjectInstance, PropertyObjectInstance> parent) {
+    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, PropertyObjectInstance propertyBackground, Map<ObjectInstance, PropertyObjectInstance> parent) {
 
         this.entity = entity;
 
         this.objects = objects;
 
-        this.propertyHighlight = propertyHighlight;
+        this.propertyBackground = propertyBackground;
 
         for(ObjectInstance object : objects)
             object.groupTo = this;

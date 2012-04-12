@@ -42,7 +42,7 @@ import static platform.base.BaseUtils.nullTrim;
 @SuppressWarnings({"UnusedDeclaration"})
 public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
     public CaptionReader captionReader = new CaptionReader();
-    public HighlightReader highlightReader = new HighlightReader();
+    public BackgroundReader backgroundReader = new BackgroundReader();
     public FooterReader footerReader = new FooterReader();
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
@@ -595,7 +595,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
     }
 
-    public class HighlightReader implements ClientPropertyReader {
+    public class BackgroundReader implements ClientPropertyReader {
         public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
             List<ClientObject> result = ClientPropertyDraw.this.getKeysObjectsList(classViews, controllers);
             if (!panelProperties.contains(this)) {
@@ -613,7 +613,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
-            controller.updateCellHighlightValues(ClientPropertyDraw.this, readKeys);
+            controller.updateCellBackgroundValues(ClientPropertyDraw.this, readKeys);
         }
     }
 }

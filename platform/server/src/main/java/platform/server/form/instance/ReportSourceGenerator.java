@@ -83,10 +83,10 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 types.put(orderObject, order.getKey().getType());
             }
 
-            if (group.propertyHighlight != null) {
-                Pair<Object, PropertyType> highlightObject = new Pair<Object, PropertyType>(group.propertyHighlight, PropertyType.HIGHLIGHT);
-                newQuery.properties.put(highlightObject, group.propertyHighlight.getExpr(newQuery.mapKeys, form));
-                types.put(highlightObject, group.propertyHighlight.getType());
+            if (group.propertyBackground != null) {
+                Pair<Object, PropertyType> backgroundObject = new Pair<Object, PropertyType>(group.propertyBackground, PropertyType.BACKGROUND);
+                newQuery.properties.put(backgroundObject, group.propertyBackground.getExpr(newQuery.mapKeys, form));
+                types.put(backgroundObject, group.propertyBackground.getType());
             }
 
             if (!gridGroupsId.contains(group.getID()))
@@ -154,8 +154,8 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 }
 
                 for (GroupObjectInstance group : groups) {
-                    if (group.propertyHighlight != null) {
-                        propertyList.add(new Pair<String, PropertyReaderInstance>(group.propertyHighlight.property.getSID(), group));
+                    if (group.propertyBackground != null) {
+                        propertyList.add(new Pair<String, PropertyReaderInstance>(group.propertyBackground.property.getSID(), group));
                     }
                 }
 
@@ -175,8 +175,8 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     }
 
                     for (GroupObjectInstance group : groups) {
-                        if (group.propertyHighlight != null) {
-                            propertyValues.add(row.getValue().get(new Pair<Object, PropertyType>(group.propertyHighlight, PropertyType.HIGHLIGHT)));
+                        if (group.propertyBackground != null) {
+                            propertyValues.add(row.getValue().get(new Pair<Object, PropertyType>(group.propertyBackground, PropertyType.BACKGROUND)));
                         }
                     }
 
@@ -322,5 +322,5 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return BaseUtils.filterList(form.groups, groups);
     }
 
-    public enum PropertyType {PLAIN, ORDER, CAPTION, FOOTER, HIGHLIGHT}
+    public enum PropertyType {PLAIN, ORDER, CAPTION, FOOTER, BACKGROUND}
 }

@@ -16,7 +16,7 @@ public class FormPropertyOptions {
     private List<GroupObjectEntity> columns;
     private MappedProperty showIf;
     private PropertyObjectEntity readOnlyIf;
-    private PropertyObjectEntity highlightIf;
+    private PropertyObjectEntity background;
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
     private ClassViewType forceViewType;
@@ -62,12 +62,12 @@ public class FormPropertyOptions {
         this.readOnlyIf = readOnlyIf;
     }
 
-    public PropertyObjectEntity getHighlightIf() {
-        return highlightIf;
+    public PropertyObjectEntity getBackground() {
+        return background;
     }
 
-    public void setHighlightIf(PropertyObjectEntity highlightIf) {
-        this.highlightIf = highlightIf;
+    public void setBackground(PropertyObjectEntity background) {
+        this.background = background;
     }
 
     public PropertyObjectEntity getHeader() {
@@ -128,7 +128,7 @@ public class FormPropertyOptions {
         merged.setColumns(nvl(overrides.getColumns(), columns));
         merged.setShowIf(nvl(overrides.getShowIf(), showIf));
         merged.setReadOnlyIf(nvl(overrides.getReadOnlyIf(), readOnlyIf));
-        merged.setHighlightIf(nvl(overrides.getHighlightIf(), highlightIf));
+        merged.setBackground(nvl(overrides.getBackground(), background));
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));
         merged.setForceViewType(nvl(overrides.getForceViewType(), forceViewType));

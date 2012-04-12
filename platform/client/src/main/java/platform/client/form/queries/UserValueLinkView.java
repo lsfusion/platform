@@ -51,11 +51,7 @@ public class UserValueLinkView extends ValueLinkView {
                 return property;
             }
 
-            public boolean isCellHighlighted(int row, int column) {
-                return false;
-            }
-
-            public Color getHighlightColor(int row, int column) {
+            public Color getBackgroundColor(int row, int column) {
                 return null;
             }
 

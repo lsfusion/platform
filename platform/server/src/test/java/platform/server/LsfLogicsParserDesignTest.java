@@ -70,7 +70,6 @@ public class LsfLogicsParserDesignTest {
     public void testEmptyStatements() throws Exception {
         setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
                   "    GROUP(s) {\n" +
-                  "        highlightColor = #321233;;;\n" +
                   "        ;; tableRowsCount = 10;\n" +
                   "        needVerticalScroll = FALSE;\n" +
                   "    ;;};;\n" +

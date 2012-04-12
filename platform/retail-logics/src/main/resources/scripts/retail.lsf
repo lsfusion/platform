@@ -2030,22 +2030,22 @@ FORM item 'Товар'
     PROPERTIES (d) name
     FILTERS inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
 
-    PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
+    PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
     PROPERTIES (sp) SELECTOR name
-    PROPERTIES      nameisSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF nameisSupplierItemDepartmentDate(sp, i, d, dt), showFormNameisSupplierItemDepartmentOver(sp, i, d),
-                    namebanSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF namebanSupplierItemDepartmentDate(sp, i, d, dt), showFormNamebanSupplierItemDepartmentOver(sp, i, d),
-                    priceSupplierItemDepartmentOver(sp, i, d, dt) HIGHLIGHTIF priceSupplierItemDepartmentDate(sp, i, d, dt), showFormpriceSupplierItemDepartmentOver(sp, i, d),
-                    markupItemDepartmentOver(i, d, dt) HIGHLIGHTIF markupItemDepartmentDate(i, d, dt), showFormmarkupItemDepartmentOver(i, d)
-    PROPERTIES      retailPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF retailPriceItemDepartmentDate(i, d, dt), showFormretailPriceItemDepartmentOver(i, d),
-                    maxReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF maxReserveItemDepartmentDate(i, d, dt), showFormmaxReserveItemDepartmentOver(i, d),
-                    minReserveItemDepartmentOver(i, d, dt) HIGHLIGHTIF minReserveItemDepartmentDate(i, d, dt), showFormminReserveItemDepartmentOver(i, d),
-                    namebanRevaluationItemDepartmentOver(i, d, dt) HIGHLIGHTIF namebanRevaluationItemDepartmentDate(i, d, dt), showFormNamebanRevaluationItemDepartmentOver(i, d),
-                    nameinActionItemDepartmentOver(i, d, dt) HIGHLIGHTIF nameinActionItemDepartmentDate(i, d, dt), showFormNameinActionItemDepartmentOver(i, d),
-                    marginProductionItemDepartmentOver(i, d, dt) HIGHLIGHTIF marginProductionItemDepartmentDate(i, d, dt), showFormmarginProductionItemDepartmentOver(i, d),
-                    discountItemDepartmentOver(i, d, dt) HIGHLIGHTIF discountItemDepartmentDate(i, d, dt), showFormdiscountItemDepartmentOver(i, d),
-                    namelabelItemDepartmentOver(i, d, dt) HIGHLIGHTIF labelItemDepartmentDate(i, d, dt), showFormNamelabelItemDepartmentOver(i, d),
-                    multiplierItemDepartmentOver(i, d, dt) HIGHLIGHTIF multiplierItemDepartmentDate(i, d, dt), showFormmultiplierItemDepartmentOver(i, d),
-                    oldPriceItemDepartmentOver(i, d, dt) HIGHLIGHTIF oldPriceItemDepartmentDate(i, d, dt), showFormoldPriceItemDepartmentOver(i, d)
+    PROPERTIES      nameisSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND nameisSupplierItemDepartmentDate(sp, i, d, dt), showFormNameisSupplierItemDepartmentOver(sp, i, d),
+                    namebanSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND namebanSupplierItemDepartmentDate(sp, i, d, dt), showFormNamebanSupplierItemDepartmentOver(sp, i, d),
+                    priceSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND priceSupplierItemDepartmentDate(sp, i, d, dt), showFormpriceSupplierItemDepartmentOver(sp, i, d),
+                    markupItemDepartmentOver(i, d, dt) BACKGROUND markupItemDepartmentDate(i, d, dt), showFormmarkupItemDepartmentOver(i, d)
+    PROPERTIES      retailPriceItemDepartmentOver(i, d, dt) BACKGROUND retailPriceItemDepartmentDate(i, d, dt), showFormretailPriceItemDepartmentOver(i, d),
+                    maxReserveItemDepartmentOver(i, d, dt) BACKGROUND maxReserveItemDepartmentDate(i, d, dt), showFormmaxReserveItemDepartmentOver(i, d),
+                    minReserveItemDepartmentOver(i, d, dt) BACKGROUND minReserveItemDepartmentDate(i, d, dt), showFormminReserveItemDepartmentOver(i, d),
+                    namebanRevaluationItemDepartmentOver(i, d, dt) BACKGROUND namebanRevaluationItemDepartmentDate(i, d, dt), showFormNamebanRevaluationItemDepartmentOver(i, d),
+                    nameinActionItemDepartmentOver(i, d, dt) BACKGROUND nameinActionItemDepartmentDate(i, d, dt), showFormNameinActionItemDepartmentOver(i, d),
+                    marginProductionItemDepartmentOver(i, d, dt) BACKGROUND marginProductionItemDepartmentDate(i, d, dt), showFormmarginProductionItemDepartmentOver(i, d),
+                    discountItemDepartmentOver(i, d, dt) BACKGROUND discountItemDepartmentDate(i, d, dt), showFormdiscountItemDepartmentOver(i, d),
+                    namelabelItemDepartmentOver(i, d, dt) BACKGROUND labelItemDepartmentDate(i, d, dt), showFormNamelabelItemDepartmentOver(i, d),
+                    multiplierItemDepartmentOver(i, d, dt) BACKGROUND multiplierItemDepartmentDate(i, d, dt), showFormmultiplierItemDepartmentOver(i, d),
+                    oldPriceItemDepartmentOver(i, d, dt) BACKGROUND oldPriceItemDepartmentDate(i, d, dt), showFormoldPriceItemDepartmentOver(i, d)
 
     EDIT item OBJECT i
 ;
@@ -2839,10 +2839,10 @@ FORM supplier 'Поставщик'
     OBJECTS d=departmentStore
     PROPERTIES(d) nameStoreDepartmentStore, name
 
-    PROPERTIES (dt) OBJVALUE HIGHLIGHTIF dateDiffersCurrent(dt)
+    PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
 
     PROPERTIES(s, d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore  //namesureSupplierDepartmentStore, showFormNamesureSupplierDepartmentStore
-    PROPERTIES       namesureSupplierDepartmentStoreOver(s, d, dt) HIGHLIGHTIF namesureSupplierDepartmentStoreDate(s, d, dt), showFormNamesureSupplierDepartmentStoreOver(s, d)
+    PROPERTIES       namesureSupplierDepartmentStoreOver(s, d, dt) BACKGROUND namesureSupplierDepartmentStoreDate(s, d, dt), showFormNamesureSupplierDepartmentStoreOver(s, d)
 
     PROPERTIES(s,c) equalsSupplierContract
     PROPERTIES(s,a) equalsLegalEntityAccount
@@ -4598,7 +4598,7 @@ FORM cutting 'Карта проработки'
     OBJECTS d=detailCutting
     PROPERTIES(c)      nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, descriptionCutting, dateCutting,
                        useCutting, overPercAllowancesCutting, overPercLossesCutting, overPercSweepsCutting
-    PROPERTIES(c)      totalPercGoodsDetailCutting TODRAW d FORCE PANEL  HIGHLIGHTIF highlightCutting(c)
+    PROPERTIES(c)      totalPercGoodsDetailCutting TODRAW d FORCE PANEL  BACKGROUND highlightCutting(c)
 
 
     PROPERTIES(d)      captionItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting, ADDOBJ, delete
@@ -7804,7 +7804,7 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
     OBJECTS t = machineryPriceTransaction
     PROPERTIES(t) READONLY snapshotMachineryPriceTransaction, nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
                            descriptionMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction,
-                           quantityMachineryPriceTransactionErrorMachineryPriceTransaction HIGHLIGHTIF quantityMachineryPriceTransactionErrorMachineryPriceTransaction(t),
+                           quantityMachineryPriceTransactionErrorMachineryPriceTransaction BACKGROUND quantityMachineryPriceTransactionErrorMachineryPriceTransaction(t),
                            nppsMachineryPriceTransaction FORCE PANEL SHOWIF snapshotMachineryPriceTransaction(t)
     PROPERTIES(t) READONLY nameUserCreated, hostnameComputerCreated
     PROPERTIES(t)          ADDFORM, EDITFORM, delete
@@ -8216,7 +8216,7 @@ FORM shipment 'Поставка'
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
-                    supplierPriceShipmentDetail HIGHLIGHTIF isAllowPriceItemShipment(d), supplierMarkupShipmentDetail SHOWIF toShowPriceImporterShipment(s),
+                    supplierPriceShipmentDetail BACKGROUND isAllowPriceItemShipment(d), supplierMarkupShipmentDetail SHOWIF toShowPriceImporterShipment(s),
                     importerPriceShipmentDetail READONLY SHOWIF toShowPriceImporterShipment(s), dateFitToShipmentDetail,
                     balanceBeforeShipmentShipmentDetail, numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail,
                     sumDetailSupplierVATShipmentDetail, sumSupplierShipmentDetail, nameWareShipmentDetail SHOWIF toShowWareShipment(s),
@@ -8315,8 +8315,8 @@ FORM shipments 'Поставки'
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumSupplierPriceShipment, totalSumIncVATShipment,
                             totalSumSupplierShipment, retailSumShipment,
-                            statusPrintPriceTransactionDocument HIGHLIGHTIF showPrintLabelTransactionShipment(s),
-                            statusEquipmentPriceTransactionDocument HIGHLIGHTIF showCreateMachineryPriceTransactionShipment(s)
+                            statusPrintPriceTransactionDocument BACKGROUND showPrintLabelTransactionShipment(s),
+                            statusEquipmentPriceTransactionDocument BACKGROUND showCreateMachineryPriceTransactionShipment(s)
 
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -9448,8 +9448,8 @@ FORM inventory 'Инвентаризация'
     PROPERTIES (i)   READONLY nameAttributeItem, barcodeBarcodeSku
 
     PROPERTIES(cs, i) quantityCountedCollationSheetItem, balanceCollationSheetItem, shortageQuantityCountedCollationSheetItem
-    PROPERTIES       priceByCollationSheetItem (cs,i) HIGHLIGHTIF notEqualsPriceByCollationSheetItem(cs, i),
-                     priceAccountCollationSheetItem(cs, i) HIGHLIGHTIF notEqualsPriceByCollationSheetItem(cs, i)
+    PROPERTIES       priceByCollationSheetItem (cs,i) BACKGROUND notEqualsPriceByCollationSheetItem(cs, i),
+                     priceAccountCollationSheetItem(cs, i) BACKGROUND notEqualsPriceByCollationSheetItem(cs, i)
 
     PROPERTIES(cs, i) totalCollationSheetItem, totalBalansCollationSheetItem, shortageTotalCollationSheetItem
 
@@ -9734,8 +9734,8 @@ FORM userPriceChanges 'Переоценки товаров'
     PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
                    diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
                    diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument,
-                   statusPrintPriceTransactionDocument HIGHLIGHTIF showPrintLabelTransactionUserPriceChange(u),
-                   statusEquipmentPriceTransactionDocument HIGHLIGHTIF showCreateMachineryPriceTransactionUserPriceChange(u)
+                   statusPrintPriceTransactionDocument BACKGROUND showPrintLabelTransactionUserPriceChange(u),
+                   statusEquipmentPriceTransactionDocument BACKGROUND showCreateMachineryPriceTransactionUserPriceChange(u)
 
     PROPERTIES (u)          createUserPriceChangeLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionUserPriceChange(u),
                             createSnapshotUserPriceChangeLabelTransaction FORCE PANEL SHOWIF isPostedUserPriceChange(u),
@@ -9968,8 +9968,8 @@ FORM innerArrivals 'Приходы из других отделов'
     OBJECTS a=innerArrival
     PROPERTIES (a) READONLY objectClassName, numberArrival, seriesArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
                             nameSenderDepartmentInnerArrival, quantityInnerArrivalDetailsInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival,
-                            statusPrintPriceTransactionDocument HIGHLIGHTIF showPrintLabelTransactionInnerArrival(a),
-                            statusEquipmentPriceTransactionDocument HIGHLIGHTIF showCreateMachineryPriceTransactionInnerArrival(a)
+                            statusPrintPriceTransactionDocument BACKGROUND showPrintLabelTransactionInnerArrival(a),
+                            statusEquipmentPriceTransactionDocument BACKGROUND showCreateMachineryPriceTransactionInnerArrival(a)
 
     PROPERTIES (a)          createInnerArrivalLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionInnerArrival(a),
                             createSnapshotInnerArrivalLabelTransaction FORCE PANEL SHOWIF isPostedInnerArrival(a),
@@ -10088,7 +10088,7 @@ FORM specification 'Счет-фактура'
                    ADDOBJ, delete
 
     PROPERTIES FORCE PANEL READONLY articleItemSpecificationDetail(d), nameCountryItemSpecificationDetail(d), balanceDepartmentStoreItemSpecificationDetail(d)
-                   HIGHLIGHTIF highlightSpecificationDetail(d), availableQuantityItemBySpecificationDetail(d) HIGHLIGHTIF NotNullAvailableQuantityItemBySpecificationDetail(d)
+                   BACKGROUND highlightSpecificationDetail(d), availableQuantityItemBySpecificationDetail(d) BACKGROUND NotNullAvailableQuantityItemBySpecificationDetail(d)
 
     PROPERTIES inputMultipleItemsSpecification(sp) TODRAW d, addSpecificationDetailBarcode(sp) TODRAW d
     FILTERS inSpecificationSpecificationDetail(sp, d)
@@ -10210,9 +10210,9 @@ FORM statement 'Отгрузка из розницы'
                     noteStatementDetail, ADDOBJ, delete
 
     PROPERTIES (d)  FORCE PANEL importerPriceStatementDetail, supplierPriceStatementDetail, nameWareStatementDetail, priceWareStatementDetail, dataRetailRangeStatementDetail,
-                                curRetailPriceStatementDetail HIGHLIGHTIF notEqualsPriceStatementDetail(d),
+                                curRetailPriceStatementDetail BACKGROUND notEqualsPriceStatementDetail(d),
                                 articleItemStatementDetail, nameCountryItemStatementDetail,
-                                balanceDepartmentStoreItemStatementDetail HIGHLIGHTIF highlightStatementDetail(d)
+                                balanceDepartmentStoreItemStatementDetail BACKGROUND highlightStatementDetail(d)
 
 
     PROPERTIES      inputMultipleItemsStatement(st) TODRAW d, addStatementDetailBarcode(st) TODRAW d
@@ -10419,7 +10419,7 @@ FORM actOfStudy 'Акт проработки'
                     percAllowancesCuttingStudyInputDetail, percLossesCuttingStudyInputDetail, percSweepsCuttingStudyInputDetail
     PROPERTIES(sid) importerPriceStudyInputDetail, supplierPriceStudyInputDetail, numberRetailRangeStudyInputDetail, dataRetailRangeStudyInputDetail,
                     retailPriceStudyInputDetail, quantityStudyInputDetail, totalStudyInputDetail,
-                    totalPercGoodsStudyInputDetail HIGHLIGHTIF highlightStudyInputDetail(sid) READONLY, ADDOBJ, delete
+                    totalPercGoodsStudyInputDetail BACKGROUND highlightStudyInputDetail(sid) READONLY, ADDOBJ, delete
 
     PROPERTIES(sid) toFillStudyOutputDetailsStudyInputDetail FORCE PANEL SHOWIF showNotStudyInputDetailStudyOutputDetail(sid,sod),
                     cleanAllStudyInputDetail FORCE PANEL
@@ -10490,8 +10490,8 @@ FORM actOfStudies 'Акты проработки'
     OBJECTS a=actOfStudy
     PROPERTIES(a)  READONLY objectClassName, numberObject, seriesObject, dateActOfStudy, timeActOfStudy, nameDepartmentStoreActOfStudy,
                             nameContractorDepartmentStoreActOfStudy, quantityOutputActOfStudy, subtotalOutputActOfStudy, quantityInputActOfStudy, subtotalInputActOfStudy,
-                            statusPrintPriceTransactionDocument HIGHLIGHTIF showPrintLabelTransactionActOfStudy(a),
-                            statusEquipmentPriceTransactionDocument HIGHLIGHTIF showCreateMachineryPriceTransactionActOfStudy(a)
+                            statusPrintPriceTransactionDocument BACKGROUND showPrintLabelTransactionActOfStudy(a),
+                            statusEquipmentPriceTransactionDocument BACKGROUND showCreateMachineryPriceTransactionActOfStudy(a)
 
     PROPERTIES(a) READONLY FORCE PANEL timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed
 
@@ -10747,8 +10747,8 @@ FORM isSupplierItemDepartmentStore 'Ассортимент товаров в п�
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameDep=name(dep), nameIt=nameAttributeItem(i), barcodeBarcodeSku(i)
     ORDER BY          nameDep
-    PROPERTIES(sp, i, dep, t) nameisSupplierItemDepartmentOver HIGHLIGHTIF nameisSupplierItemDepartmentDate(sp, i, dep, t),
-                              priceSupplierItemDepartmentOver HIGHLIGHTIF priceSupplierItemDepartmentDate(sp, i, dep, t)
+    PROPERTIES(sp, i, dep, t) nameisSupplierItemDepartmentOver BACKGROUND nameisSupplierItemDepartmentDate(sp, i, dep, t),
+                              priceSupplierItemDepartmentOver BACKGROUND priceSupplierItemDepartmentDate(sp, i, dep, t)
     FILTERS           inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     FILTERS           hasParentItemGroupSku(g, i)
     FILTERGROUP filters10

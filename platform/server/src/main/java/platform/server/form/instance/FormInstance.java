@@ -1001,13 +1001,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 if (propertyDraw.propertyFooter != null) {
                     usedProperties.add(propertyDraw.propertyFooter.property);
                 }
-                if (propertyDraw.propertyHighlight != null) {
-                    usedProperties.add(propertyDraw.propertyHighlight.property);
+                if (propertyDraw.propertyBackground != null) {
+                    usedProperties.add(propertyDraw.propertyBackground.property);
                 }
             }
             for (GroupObjectInstance group : groups) {
-                if (group.propertyHighlight != null) {
-                    usedProperties.add(group.propertyHighlight.property);
+                if (group.propertyBackground != null) {
+                    usedProperties.add(group.propertyBackground.property);
                 }
                 group.fillUpdateProperties((Set<Property>) usedProperties);
             }
@@ -1241,10 +1241,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                     readProperties.put(drawProperty.captionReader, columnGroupGrids);
                 if (drawProperty.propertyFooter != null && (read || propertyUpdated(drawProperty.propertyFooter, columnGroupGrids, changedProps)))
                     readProperties.put(drawProperty.footerReader, columnGroupGrids);
-                if (drawProperty.propertyHighlight != null && (read || propertyUpdated(drawProperty.propertyHighlight, drawGridObjects, changedProps))) {
-                    readProperties.put(drawProperty.highlightReader, drawGridObjects);
+                if (drawProperty.propertyBackground != null && (read || propertyUpdated(drawProperty.propertyBackground, drawGridObjects, changedProps))) {
+                    readProperties.put(drawProperty.backgroundReader, drawGridObjects);
                     if (!inInterface) {
-                        result.panelProperties.add(drawProperty.highlightReader);
+                        result.panelProperties.add(drawProperty.backgroundReader);
                     }
                 }
             } else if (previous!=null) // говорим клиенту что свойство надо удалить
@@ -1252,9 +1252,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
 
         for (GroupObjectInstance group : groups) // читаем highlight'ы
-            if (group.propertyHighlight != null) {
+            if (group.propertyBackground != null) {
                 Set<GroupObjectInstance> gridGroups = (group.curClassView == GRID ? Collections.singleton(group) : new HashSet<GroupObjectInstance>());
-                if (refresh || (group.updated & UPDATED_CLASSVIEW) != 0 || propertyUpdated(group.propertyHighlight, gridGroups, changedProps))
+                if (refresh || (group.updated & UPDATED_CLASSVIEW) != 0 || propertyUpdated(group.propertyBackground, gridGroups, changedProps))
                     readProperties.put(group, gridGroups);
             }
 

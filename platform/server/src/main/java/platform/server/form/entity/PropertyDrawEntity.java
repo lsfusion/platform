@@ -36,7 +36,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public PropertyObjectEntity<?> propertyCaption;
     public PropertyObjectEntity<?> propertyReadOnly;
     public PropertyObjectEntity<?> propertyFooter;
-    public PropertyObjectEntity<?> propertyHighlight;
+    public PropertyObjectEntity<?> propertyBackground;
 
     public boolean shouldBeLast = false;
     public ClassViewType forceViewType = null;
@@ -68,8 +68,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.propertyFooter = propertyFooter;
     }
 
-    public void setPropertyHighlight(PropertyObjectEntity propertyHighlight) {
-        this.propertyHighlight = propertyHighlight;
+    public void setPropertyBackground(PropertyObjectEntity propertyBackground) {
+        this.propertyBackground = propertyBackground;
     }
 
     public boolean isSelector() {
@@ -93,7 +93,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         pool.serializeObject(outStream, propertyCaption);
         pool.serializeObject(outStream, propertyReadOnly);
         pool.serializeObject(outStream, propertyFooter);
-        pool.serializeObject(outStream, propertyHighlight);
+        pool.serializeObject(outStream, propertyBackground);
 
         outStream.writeBoolean(shouldBeLast);
         outStream.writeBoolean(readOnly);
@@ -110,7 +110,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         propertyCaption = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
         propertyReadOnly = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
         propertyFooter = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
-        propertyHighlight = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
+        propertyBackground = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
         readOnly = inStream.readBoolean();

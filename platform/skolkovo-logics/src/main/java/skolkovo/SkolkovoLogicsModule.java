@@ -4760,35 +4760,35 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             PropertyObjectEntity sidProjectProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(255, 250, 205)), sidProject, 1), objProject);
             if ("rus".equals(lng)) {
-                getPropertyDraw(nameNativeManagerProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(nameNativeClaimerProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(nameNativeProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(nameNativeFinalClusterProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(nativeProblemProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(nativeInnovativeProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(nativeSubstantiationProjectType).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(loadFileNativeTechnicalDescriptionProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(openFileNativeTechnicalDescriptionProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(loadFileNativeSummaryProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(openFileNativeSummaryProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(nativeNumberPatent).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(nativeTypePatent).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(nameNativeManagerProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(nameNativeClaimerProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(nameNativeProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(nameNativeFinalClusterProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(nativeProblemProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(nativeInnovativeProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(nativeSubstantiationProjectType).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(loadFileNativeTechnicalDescriptionProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(openFileNativeTechnicalDescriptionProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(loadFileNativeSummaryProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(openFileNativeSummaryProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(nativeNumberPatent).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(nativeTypePatent).setPropertyBackground(sidProjectProperty);
             }
 
             if ("eng".equals(lng)) {
-                getPropertyDraw(nameForeignManagerProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(nameForeignClaimerProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(nameForeignProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(nameForeignFinalClusterProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(foreignProblemProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(foreignInnovativeProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(foreignSubstantiationProjectType).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(loadFileForeignTechnicalDescriptionProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(openFileForeignTechnicalDescriptionProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(loadFileForeignSummaryProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(openFileForeignSummaryProject).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(foreignNumberPatent).setPropertyHighlight(sidProjectProperty);
-                getPropertyDraw(foreignTypePatent).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(nameForeignManagerProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(nameForeignClaimerProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(nameForeignProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(nameForeignFinalClusterProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(foreignProblemProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(foreignInnovativeProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(foreignSubstantiationProjectType).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(loadFileForeignTechnicalDescriptionProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(openFileForeignTechnicalDescriptionProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(loadFileForeignSummaryProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(openFileForeignSummaryProject).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(foreignNumberPatent).setPropertyBackground(sidProjectProperty);
+                getPropertyDraw(foreignTypePatent).setPropertyBackground(sidProjectProperty);
             }
             return design;
         }
@@ -5590,25 +5590,25 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             LP highlightColor = addCProp(ColorClass.instance, new Color(223, 255, 223));
             PropertyObjectEntity statusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, statusDataProject, 1), objProject);
-            getPropertyDraw(nameStatusProject).setPropertyHighlight(statusProperty);
+            getPropertyDraw(nameStatusProject).setPropertyBackground(statusProperty);
 
             PropertyObjectEntity dateProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateDataProject, 1), objProject);
-            getPropertyDraw(dateProject).setPropertyHighlight(dateProperty);
+            getPropertyDraw(dateProject).setPropertyBackground(dateProperty);
 
             PropertyObjectEntity dateStatusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateStatusDataProject, 1), objProject);
-            getPropertyDraw(dateStatusProject).setPropertyHighlight(dateStatusProperty);
+            getPropertyDraw(dateStatusProject).setPropertyBackground(dateStatusProperty);
 
             PropertyObjectEntity nameNativeProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeDataProject, 1), objProject);
-            getPropertyDraw(nameNativeProject).setPropertyHighlight(nameNativeProperty);
+            getPropertyDraw(nameNativeProject).setPropertyBackground(nameNativeProperty);
 
             PropertyObjectEntity nameForeignProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignDataProject, 1), objProject);
-            getPropertyDraw(nameForeignProject).setPropertyHighlight(nameForeignProperty);
+            getPropertyDraw(nameForeignProject).setPropertyBackground(nameForeignProperty);
 
             PropertyObjectEntity nameNativeCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeCorrectHighlightClaimerProject, 1), objProject);
-            getPropertyDraw(nameNativeClaimerProject).setPropertyHighlight(nameNativeCorrectHighlightClaimerProjectProperty);
+            getPropertyDraw(nameNativeClaimerProject).setPropertyBackground(nameNativeCorrectHighlightClaimerProjectProperty);
 
             PropertyObjectEntity nameForeignCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignCorrectHighlightClaimerProject, 1), objProject);
-            getPropertyDraw(nameForeignClaimerProject).setPropertyHighlight(nameForeignCorrectHighlightClaimerProjectProperty);
+            getPropertyDraw(nameForeignClaimerProject).setPropertyBackground(nameForeignCorrectHighlightClaimerProjectProperty);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
 //            getPropertyDraw(addProject).forceViewType = ClassViewType.PANEL;
@@ -7271,25 +7271,25 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             LP highlightColor = addCProp(ColorClass.instance, new Color(223, 255, 223));
             PropertyObjectEntity statusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, statusDataProject, 1), objProject);
-            getPropertyDraw(nameStatusProject).setPropertyHighlight(statusProperty);
+            getPropertyDraw(nameStatusProject).setPropertyBackground(statusProperty);
 
             PropertyObjectEntity dateProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateDataProject, 1), objProject);
-            getPropertyDraw(dateProject).setPropertyHighlight(dateProperty);
+            getPropertyDraw(dateProject).setPropertyBackground(dateProperty);
 
             PropertyObjectEntity dateStatusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateStatusDataProject, 1), objProject);
-            getPropertyDraw(dateStatusProject).setPropertyHighlight(dateStatusProperty);
+            getPropertyDraw(dateStatusProject).setPropertyBackground(dateStatusProperty);
 
             PropertyObjectEntity nameNativeProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeDataProject, 1), objProject);
-            getPropertyDraw(nameNativeProject).setPropertyHighlight(nameNativeProperty);
+            getPropertyDraw(nameNativeProject).setPropertyBackground(nameNativeProperty);
 
             PropertyObjectEntity nameForeignProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignDataProject, 1), objProject);
-            getPropertyDraw(nameForeignProject).setPropertyHighlight(nameForeignProperty);
+            getPropertyDraw(nameForeignProject).setPropertyBackground(nameForeignProperty);
 
             PropertyObjectEntity nameNativeCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeCorrectHighlightClaimerProject, 1), objProject);
-            getPropertyDraw(nameNativeClaimerProject).setPropertyHighlight(nameNativeCorrectHighlightClaimerProjectProperty);
+            getPropertyDraw(nameNativeClaimerProject).setPropertyBackground(nameNativeCorrectHighlightClaimerProjectProperty);
 
             PropertyObjectEntity nameForeignCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignCorrectHighlightClaimerProject, 1), objProject);
-            getPropertyDraw(nameForeignClaimerProject).setPropertyHighlight(nameForeignCorrectHighlightClaimerProjectProperty);
+            getPropertyDraw(nameForeignClaimerProject).setPropertyBackground(nameForeignCorrectHighlightClaimerProjectProperty);
 
             objDocument = addSingleGroupObject(document, nameTypeDocument, nameLanguageDocument, postfixDocument, openFileDocument);
             getPropertyDraw(postfixDocument).forceViewType = ClassViewType.PANEL;

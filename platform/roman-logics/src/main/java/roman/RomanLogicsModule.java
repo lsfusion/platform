@@ -4762,12 +4762,12 @@ public class RomanLogicsModule extends LogicsModule {
                 quantityColumn = addPropertyDraw(quantitySupplierBoxBoxShipmentRouteSku, objSupplierBox, objShipment, objRoute, objSku);
 
                 PropertyObjectEntity diffListSupplierBoxProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffListSupplierBox, 1), objSupplierBox);
-                getPropertyDraw(quantityDataList).setPropertyHighlight(diffListSupplierBoxProperty);
-                getPropertyDraw(quantitySupplierBox).setPropertyHighlight(diffListSupplierBoxProperty);
+                getPropertyDraw(quantityDataList).setPropertyBackground(diffListSupplierBoxProperty);
+                getPropertyDraw(quantitySupplierBox).setPropertyBackground(diffListSupplierBoxProperty);
 
                 PropertyObjectEntity diffListShipSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffListShipSku, 1, 2, 3), objSupplierBox, objShipment, objSku);
-                getPropertyDraw(quantityDataListSku).setPropertyHighlight(diffListShipSkuProperty);
-                getPropertyDraw(quantityShipDimensionShipmentSku).setPropertyHighlight(diffListShipSkuProperty);
+                getPropertyDraw(quantityDataListSku).setPropertyBackground(diffListShipSkuProperty);
+                getPropertyDraw(quantityShipDimensionShipmentSku).setPropertyBackground(diffListShipSkuProperty);
 
             } else {
                 quantityColumn = addPropertyDraw(quantitySimpleShipmentRouteSku, objShipment, objRoute, objSku);
@@ -4783,8 +4783,8 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(quantityShipmentRouteSku, objShipment, objRoute, objSku).setToDraw(objRoute.groupTo);
 
             PropertyObjectEntity diffShipmentRouteSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffShipmentRouteSku, 1, 2, 3), objShipment, objRoute, objSku);
-            getPropertyDraw(invoicedShipmentRouteSku).setPropertyHighlight(diffShipmentRouteSkuProperty);
-            getPropertyDraw(quantityShipmentRouteSku).setPropertyHighlight(diffShipmentRouteSkuProperty);
+            getPropertyDraw(invoicedShipmentRouteSku).setPropertyBackground(diffShipmentRouteSkuProperty);
+            getPropertyDraw(quantityShipmentRouteSku).setPropertyBackground(diffShipmentRouteSkuProperty);
 
             objShipmentDetail = addSingleGroupObject((box ? boxShipmentDetail : simpleShipmentDetail),
                     baseLM.selection, barcodeSkuShipmentDetail, nameBrandSupplierArticleSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, sidSizeSupplierItemShipmentDetail,
@@ -4822,13 +4822,13 @@ public class RomanLogicsModule extends LogicsModule {
             PropertyObjectEntity oneArticleColorProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneArticleColorShipmentDetail, 1), objShipmentDetail);
             PropertyObjectEntity oneArticleSizeProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneArticleSizeShipmentDetail, 1), objShipmentDetail);
 
-            getPropertyDraw(nameCategoryArticleSkuShipmentDetail).setPropertyHighlight(oneArticleProperty);
-            getPropertyDraw(nameUnitOfMeasureArticleSkuShipmentDetail).setPropertyHighlight(oneArticleProperty);
-            getPropertyDraw(netWeightSkuShipmentDetail).setPropertyHighlight(oneArticleSizeProperty);
+            getPropertyDraw(nameCategoryArticleSkuShipmentDetail).setPropertyBackground(oneArticleProperty);
+            getPropertyDraw(nameUnitOfMeasureArticleSkuShipmentDetail).setPropertyBackground(oneArticleProperty);
+            getPropertyDraw(netWeightSkuShipmentDetail).setPropertyBackground(oneArticleSizeProperty);
             getPropertyDraw(netWeightSkuShipmentDetail).eventSID = WeightDaemonTask.SCALES_SID;
-            getPropertyDraw(nameCountryOfOriginSkuShipmentDetail).setPropertyHighlight(oneArticleColorProperty);
-            getPropertyDraw(mainCompositionOriginSkuShipmentDetail).setPropertyHighlight(oneArticleColorProperty);
-            getPropertyDraw(additionalCompositionOriginSkuShipmentDetail).setPropertyHighlight(oneArticleColorProperty);
+            getPropertyDraw(nameCountryOfOriginSkuShipmentDetail).setPropertyBackground(oneArticleColorProperty);
+            getPropertyDraw(mainCompositionOriginSkuShipmentDetail).setPropertyBackground(oneArticleColorProperty);
+            getPropertyDraw(additionalCompositionOriginSkuShipmentDetail).setPropertyBackground(oneArticleColorProperty);
 
             if (!box)
                 addFixedFilter(new CompareFilterEntity(addPropertyObject(typeSupplier, objSupplier), Compare.EQUALS, addPropertyObject(baseLM.vtrue)));
@@ -5226,8 +5226,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             LP highlightColor = addCProp(ColorClass.instance, new Color(128, 255, 128));
             PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffPalletFreight, 1), objFreight);
-            getPropertyDraw(palletCountDataFreight).setPropertyHighlight(diffPalletFreightProperty);
-            getPropertyDraw(palletNumberFreight).setPropertyHighlight(diffPalletFreightProperty);
+            getPropertyDraw(palletCountDataFreight).setPropertyBackground(diffPalletFreightProperty);
+            getPropertyDraw(palletNumberFreight).setPropertyBackground(diffPalletFreightProperty);
 
             objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
@@ -5342,8 +5342,8 @@ public class RomanLogicsModule extends LogicsModule {
 //            addObjectActions(this, objFreight);
 
             PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(128, 255, 128)), diffPalletFreight, 1), objFreight);
-            getPropertyDraw(palletCountDataFreight).setPropertyHighlight(diffPalletFreightProperty);
-            getPropertyDraw(palletNumberFreight).setPropertyHighlight(diffPalletFreightProperty);
+            getPropertyDraw(palletCountDataFreight).setPropertyBackground(diffPalletFreightProperty);
+            getPropertyDraw(palletNumberFreight).setPropertyBackground(diffPalletFreightProperty);
 
             objShipment = addSingleGroupObject(shipment, "Поставка", baseLM.date, sidDocument, nameSupplierDocument);
 
@@ -6339,7 +6339,7 @@ public class RomanLogicsModule extends LogicsModule {
                      additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku);
 
             PropertyObjectEntity diffCountRelationCustomCategory10SkuProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(128, 255, 255)), diffCountRelationCustomCategory10Sku, 1), objSku);
-            getPropertyDraw(nameSubCategoryDataSku).setPropertyHighlight(diffCountRelationCustomCategory10SkuProperty);
+            getPropertyDraw(nameSubCategoryDataSku).setPropertyBackground(diffCountRelationCustomCategory10SkuProperty);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
             addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
@@ -7419,8 +7419,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             LP highlightColor = addCProp(ColorClass.instance, new Color(255, 128, 128));
             PropertyObjectEntity greaterPriceMinPriceImporterFreightArticleProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, greaterPriceMinPriceImporterFreightArticle, 1, 2, 3), objImporter, objFreight, objArticle);
-            getPropertyDraw(minPriceRateImporterFreightArticle).setPropertyHighlight(greaterPriceMinPriceImporterFreightArticleProperty);
-            getPropertyDraw(priceFullKgImporterFreightArticle).setPropertyHighlight(greaterPriceMinPriceImporterFreightArticleProperty);
+            getPropertyDraw(minPriceRateImporterFreightArticle).setPropertyBackground(greaterPriceMinPriceImporterFreightArticleProperty);
+            getPropertyDraw(priceFullKgImporterFreightArticle).setPropertyBackground(greaterPriceMinPriceImporterFreightArticleProperty);
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku);
 
@@ -7456,8 +7456,8 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(sumRegistrationImporterFreightSku, objImporter, objFreight, objSku);
 
             PropertyObjectEntity greaterPriceMinPriceImporterFreightSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, greaterPriceMinPriceImporterFreightSku, 1, 2, 3), objImporter, objFreight, objSku);
-            getPropertyDraw(minPriceRateFreightSku).setPropertyHighlight(greaterPriceMinPriceImporterFreightSkuProperty);
-            getPropertyDraw(priceFullKgImporterFreightSku).setPropertyHighlight(greaterPriceMinPriceImporterFreightSkuProperty);
+            getPropertyDraw(minPriceRateFreightSku).setPropertyBackground(greaterPriceMinPriceImporterFreightSkuProperty);
+            getPropertyDraw(priceFullKgImporterFreightSku).setPropertyBackground(greaterPriceMinPriceImporterFreightSkuProperty);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightBrandSupplier, objImporter, objFreight, objBrandSupplier)));

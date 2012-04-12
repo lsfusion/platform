@@ -468,13 +468,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     @Override
-    public boolean isCellHighlighted(int row, int column) {
-        //todo:
-        return false;
-    }
-
-    @Override
-    public Color getHighlightColor(int row, int column) {
+    public Color getBackgroundColor(int row, int column) {
         //todo:
         return null;
     }

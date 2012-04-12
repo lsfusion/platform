@@ -5,7 +5,6 @@ import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.cell.PropertyController;
-import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 
@@ -59,7 +58,7 @@ public class PanelController {
 
         columnKeys.remove(property);
         captions.remove(property);
-        cellHighlights.remove(property);
+        cellBackgroundValues.remove(property);
         values.remove(property);
     }
 
@@ -83,10 +82,10 @@ public class PanelController {
         }
     }
 
-    public void setRowHighlight(Object value) {
+    public void setRowBackground(Object value) {
         for (Map<ClientGroupObjectValue, PropertyController> propControllers : properties.values()) {
             for (PropertyController controller : propControllers.values()) {
-                controller.setHighlight(value);
+                controller.setBackground(value);
             }
         }
     }
@@ -175,15 +174,15 @@ public class PanelController {
 
         logicsSupplier.updateToolbar();
 
-        setRowHighlight(rowHighlight);
+        setRowBackground(rowBackground);
 
-        for (Map.Entry<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> updateCellHighlights : cellHighlights.entrySet()) {
-            Map<ClientGroupObjectValue, PropertyController> propControllers = properties.get(updateCellHighlights.getKey());
-            for (Map.Entry<ClientGroupObjectValue, Object> updateKeys : updateCellHighlights.getValue().entrySet()) {
+        for (Map.Entry<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> updateCellBackgroundValues : cellBackgroundValues.entrySet()) {
+            Map<ClientGroupObjectValue, PropertyController> propControllers = properties.get(updateCellBackgroundValues.getKey());
+            for (Map.Entry<ClientGroupObjectValue, Object> updateKeys : updateCellBackgroundValues.getValue().entrySet()) {
                 PropertyController propController = propControllers.get(updateKeys.getKey());
                 // так как может быть autoHide'ута
-                if (propController != null && rowHighlight == null) {
-                    propController.setHighlight(updateKeys.getValue());
+                if (propController != null && rowBackground == null) {
+                    propController.setBackground(updateKeys.getValue());
                 }
             }
         }
@@ -207,15 +206,15 @@ public class PanelController {
         this.captions.put(property, captions);
     }
 
-    protected Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellHighlights = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    protected Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
-    public void updateCellHighlightValue(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellHighlights) {
-        this.cellHighlights.put(property, cellHighlights);
+    public void updateCellBackgroundValue(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
+        this.cellBackgroundValues.put(property, cellBackgroundValues);
     }
 
-    private Object rowHighlight;
+    private Object rowBackground;
 
-    public void updateRowHighlightValue(Object rowHighlight) {
-        this.rowHighlight = rowHighlight;
+    public void updateRowBackgroundValue(Object rowBackground) {
+        this.rowBackground = rowBackground;
     }
 }
