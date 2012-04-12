@@ -844,12 +844,13 @@ CLASS STATIC printOrientation 'Ориентация' {
 
 CLASS labelType 'Тип ценника' : named;
 
-sidLabelType 'Код' = DATA STRING[20] (labelType);
 widthLabelType 'Ширина' = DATA INTEGER (labelType);
 heightLabelType 'Высота' = DATA INTEGER (labelType);
 
 orientationLabelType = DATA printOrientation (labelType);
 nameOrientationLabelType 'Ориентация' (labelType) = name(orientationLabelType(labelType));
+
+fileTemplateLabelType 'Файл шаблона' = DATA STRING[200] (labelType);
 
 inLabelTypeDepartmentStore 'Включен' (labelType, departmentStore) = DATA BOOLEAN (labelType, departmentStore);
 
@@ -858,7 +859,7 @@ isDefaultLabelTypeDepartmentStore 'По умолчанию' (labelType, departme
 
 FORM labelType 'Тип ценника'
     OBJECTS l = labelType FIXED PANEL
-    PROPERTIES(l) name, sidLabelType, widthLabelType, heightLabelType, nameOrientationLabelType
+    PROPERTIES(l) name, widthLabelType, heightLabelType, nameOrientationLabelType, fileTemplateLabelType
 
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
@@ -883,7 +884,7 @@ DESIGN labelType FROM DEFAULT {
 
 FORM labelTypes 'Типы ценников'
     OBJECTS l = labelType
-    PROPERTIES(l) READONLY name, sidLabelType, widthLabelType, heightLabelType, nameOrientationLabelType
+    PROPERTIES(l) READONLY name, widthLabelType, heightLabelType, nameOrientationLabelType, fileTemplateLabelType
     PROPERTIES(l)          ADDFORM, EDITFORM, delete
 ;
 
@@ -7867,6 +7868,8 @@ nameLabelTypeLabelTransaction 'Тип ценника' (transaction) = name(label
 CONSTRAINT labelTypeLabelTransaction(transaction) AND NOT inLabelTypeDepartmentStore(labelTypeLabelTransaction(transaction), departmentStoreLabelTransaction(transaction))
            CHECKED BY labelTypeLabelTransaction MESSAGE 'Тип ценника запрещен для выбранного подразделения';
 
+fileTemplateLabelTransaction 'Файл шаблона' (transaction) = fileTemplateLabelType(labelTypeLabelTransaction(transaction));
+
 printedPriceTransactionDocument 'Распечатан' = DATA BOOLEAN (priceTransactionDocument);
 printedPriceTransactionDocument(document) <- NULL ON ASSIGN isDraftPriceTransactionDocument(document);
 
@@ -7887,7 +7890,7 @@ nameLabelTransactionBarcode 'Наименование' = DATA STRING[255] (label
 priceLabelTransactionBarcode 'Цена' = DATA DOUBLE (labelTransaction, barcode);
 
 FORM printLabelTransaction 'Печать ценников' PRINT
-    OBJECTS l = labelTransaction FIXED PANEL
+    OBJECTS l = labelTransaction REPORTFILE fileTemplateLabelTransaction(l) FIXED PANEL
     PROPERTIES(l) READONLY nameLabelTypeLabelTransaction, nameDepartmentStoreLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
 
     OBJECTS b = barcode
@@ -8318,9 +8321,9 @@ FORM shipments 'Поставки'
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (s)          createShipmentLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionShipment(s),
-                            createSnapshotShipmentLabelTransaction FORCE PANEL,
+                            createSnapshotShipmentLabelTransaction FORCE PANEL SHOWIF isPostedShipment(s),
                             createShipmentMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionShipment(s),
-                            createSnapshotShipmentMachineryPriceTransaction FORCE PANEL,
+                            createSnapshotShipmentMachineryPriceTransaction FORCE PANEL SHOWIF isPostedShipment(s),
                             ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
@@ -9735,9 +9738,9 @@ FORM userPriceChanges 'Переоценки товаров'
                    statusEquipmentPriceTransactionDocument HIGHLIGHTIF showCreateMachineryPriceTransactionUserPriceChange(u)
 
     PROPERTIES (u)          createUserPriceChangeLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionUserPriceChange(u),
-                            createSnapshotUserPriceChangeLabelTransaction FORCE PANEL,
+                            createSnapshotUserPriceChangeLabelTransaction FORCE PANEL SHOWIF isPostedUserPriceChange(u),
                             createUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionUserPriceChange(u),
-                            createSnapshotUserPriceChangeMachineryPriceTransaction FORCE PANEL,
+                            createSnapshotUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF isPostedUserPriceChange(u),
                             ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
                             postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
 
@@ -9969,9 +9972,9 @@ FORM innerArrivals 'Приходы из других отделов'
                             statusEquipmentPriceTransactionDocument HIGHLIGHTIF showCreateMachineryPriceTransactionInnerArrival(a)
 
     PROPERTIES (a)          createInnerArrivalLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionInnerArrival(a),
-                            createSnapshotInnerArrivalLabelTransaction FORCE PANEL,
+                            createSnapshotInnerArrivalLabelTransaction FORCE PANEL SHOWIF isPostedInnerArrival(a),
                             createInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionInnerArrival(a),
-                            createSnapshotInnerArrivalMachineryPriceTransaction FORCE PANEL,
+                            createSnapshotInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF isPostedInnerArrival(a),
                             ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
                             postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
 
@@ -10493,9 +10496,9 @@ FORM actOfStudies 'Акты проработки'
     PROPERTIES(a) READONLY FORCE PANEL timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed
 
     PROPERTIES (a)          createActOfStudyLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionActOfStudy(a),
-                            createSnapshotActOfStudyLabelTransaction FORCE PANEL,
+                            createSnapshotActOfStudyLabelTransaction FORCE PANEL SHOWIF isPostedActOfStudy(a),
                             createActOfStudyMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionActOfStudy(a),
-                            createSnapshotActOfStudyMachineryPriceTransaction FORCE PANEL,
+                            createSnapshotActOfStudyMachineryPriceTransaction FORCE PANEL SHOWIF isPostedActOfStudy(a),
                             ADDFORM, EDITFORM SHOWIF isDraftActOfStudy(a), delete FORCE PANEL SHOWIF isDraftActOfStudy(a),
                             postActOfStudy SHOWIF isDraftActOfStudy(a), unpostActOfStudy SHOWIF isPostedActOfStudy(a)
 
