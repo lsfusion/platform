@@ -10963,7 +10963,7 @@ countDayMovedItemOver 'кол-во дней' (departmentStore) =
 //для оптимизации быстродействия не добавлял дату в GROUP MAX
 dateLastMovedItem 'Дата последнего движения товара' (item, departmentStore) =
     GROUP MAX dateTimeBalanceItemLedger(ledger)
-    BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger);
+    BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger) PERSISTENT;
 
 dateLastMovedItemOver(item, departmentStore, date) =
     (dateLastMovedItem(item, departmentStore) AND (date AS DATETIME)) >= addDate2(dateInTime(date), -countDayMovedItemOver(departmentStore));
