@@ -5087,6 +5087,8 @@ dateToSpecification 'Срок действия с/ф' (specification) = DATA DAT
 overdueSpecification 'Просроченные с/ф' (specification) = dateToSpecification(specification) < currentDate();
 noOverdueSpecification 'Непросроченные с/ф' (specification) = dateToSpecification(specification) >= currentDate();
 
+overdueSpecificationDate 'Просроченные с/ф' (specification, date) = dateToSpecification(specification) < date AND date AS DATE;
+noOverdueSpecificationDate 'Непросроченные с/ф' (specification, date) = dateToSpecification(specification) >= date AND date AS DATE;
 
 departmentStoreSpecification 'Отдел документа (ИД)' (specification) = DATA departmentStore(specification) IN idGroup;
 nameDepartmentStoreSpecification 'Отдел документа' (specification) = name(departmentStoreSpecification(specification))
@@ -5217,7 +5219,7 @@ isCustomerStatementSpecification 'Заявка покупателя' (statement,
 
 isDepartmentStoreStatementSpecification 'Заявка отдела' (statement, specification) = departmentStoreStatement(statement)== departmentStoreSpecification(specification);
 
-quantityStatementsInSpecification(specification) = GROUP SUM 1 IF inStatementSpecification(statement, specification) BY specification;
+quantityStatementsInSpecification(specification) = GROUP SUM 1 IF inStatementSpecification(statement, specification) AND isPostedStatement(statement) BY specification;
 noQuantityStatementsInSpecification(specification) = specification IS specification AND NOT quantityStatementsInSpecification(specification);
 
 statusSpecification 'Расход' (specification) = CASE
@@ -8680,23 +8682,22 @@ balanceDepartmentStoreItemSpecificationDetail 'Текущий остаток' (s
 quantityItemBySpecificationDetail(specificationDetail) = quantityItemSpecification( itemSpecificationDetail(specificationDetail), specificationSpecificationDetail(specificationDetail));
 highlightSpecificationDetail(specificationDetail) =  quantityItemBySpecificationDetail(specificationDetail) > balanceDepartmentStoreItemSpecificationDetail(specificationDetail);
 
-//noOverdueSpecificationDate 'Непросроченные с/ф' (specification, dateIn) = dateToSpecification(specification) >= dateIn AND dateIn AS DATE;
+quantityItemDepartmentStoreDate 'Количество выставленного товара' (departmentStore, item, date) = GROUP SUM
+    quantitySpecificationDetail(specificationDetail)
+    IF dateToSpecification(specificationSpecificationDetail(specificationDetail)) >= date AND date AS DATE
+    BY departmentStoreSpecificationDetail(specificationDetail), itemSpecificationDetail(specificationDetail), date;
 
-quantityItemDepartmentStore 'Количество выставленного товара на тек. момент' (departmentStore, item) = GROUP SUM
-    quantitySpecificationDetail(specificationDetail) IF noOverdueSpecification(specificationSpecificationDetail(specificationDetail))
-    BY departmentStoreSpecificationDetail(specificationDetail), itemSpecificationDetail(specificationDetail);
 
-//quantityItemDepartmentStore 'Количество выставленного товара на тек. момент' (departmentStore, item) = GROUP SUM
-//    quantitySpecificationDetail(specificationDetail) IF noOverdueSpecificationDate(specificationSpecificationDetail(specificationDetail), dateSpecification(specificationSpecificationDetail(specificationDetail)))
-//    BY departmentStoreSpecificationDetail(specificationDetail), itemSpecificationDetail(specificationDetail);
-
-quantityExhibitedItemBySpecificationDetail(specificationDetail) = quantityItemDepartmentStore(departmentStoreSpecificationDetail(specificationDetail), itemSpecificationDetail(specificationDetail));
+quantityExhibitedItemBySpecificationDetail(specificationDetail) = quantityItemDepartmentStoreDate(departmentStoreSpecificationDetail(specificationDetail),
+    itemSpecificationDetail(specificationDetail), dateSpecification(specificationSpecificationDetail(specificationDetail)));
 
 availableQuantityItemBySpecificationDetail 'Доступное к-во, с учетом непросроченных с/ф' (specificationDetail) =
     balanceDepartmentStoreItemSpecificationDetail(specificationDetail)-quantityExhibitedItemBySpecificationDetail(specificationDetail);
 
 NotNullAvailableQuantityItemBySpecificationDetail(specificationDetail) = availableQuantityItemBySpecificationDetail(specificationDetail) < 0;
 
+overdueSpecificationStatement 'Просроченные с/ф' (specification, statement) = overdueSpecificationDate(specification, dateStatement(statement));
+noOverdueSpecificationStatement 'Непросроченные с/ф' (specification, statement) = noOverdueSpecificationDate(specification, dateStatement(statement));
 
 // --------------------------- Использование регистров (автоматическое заполнение): инвентаризация---------------//
 
@@ -9952,15 +9953,72 @@ DESIGN innerArrivals FROM DEFAULT {
 
 FORM specificationForm 'Отгрузки по данной с/ф'
     OBJECTS sp=specification FIXED PANEL
-    PROPERTIES (sp) READONLY seriesNumberObject, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification, nameCustomerSpecification,
-                             nameObjectiveAcquiringSpecification, noteSpecification, quantitySpecification, sumSpecification, sumNDSSpecification
+    PROPERTIES (sp) READONLY seriesObject, numberObject, nameDepartmentStoreSpecification, dateSpecification, timeSpecification,
+    dateToSpecification, nameCustomerSpecification, nameObjectiveAcquiringSpecification, noteSpecification,
+    quantitySpecification, sumWithoutNDSSpecification, sumNDSSpecification, sumSpecification
 
     OBJECTS st=statement
     PROPERTIES (st) READONLY seriesNumberObject, dateStatement, nameCustomerStatement, nameDepartmentStoreStatement,
                              noteStatement, totalQuantityStatement, sumNDSStatement, sumStatement
 
-    FILTERS inStatementSpecification(st, sp)
+     OBJECTS d=statementDetail
+    PROPERTIES (d)  READONLY numberStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
+                             retailPriceStatementDetail, sumWithoutNDSStatementDetail, numberRangeStatementDetail,
+                             dataActingRateRangeStatementDetail, sumNDSStatementDetail, totalSumNDSStatementDetail,
+                             sumStatementDetail, noteStatementDetail
+
+    FILTERS inStatementSpecification(st, sp),
+            isPostedStatement(st),
+            inStatementStatementDetail(st, d)
 ;
+
+DESIGN specificationForm FROM DEFAULT{
+    main {
+        preferredSize = (1024, 768);
+
+        NEW case BEFORE functions.box{
+            title = 'Накладные на отгрузку по данной с/ф';
+            ADD st.grid;
+            ADD d.grid;
+        }
+        NEW header.box BEFORE case {
+            title = 'Счет-фактура';
+            childConstraints = TO THE RIGHT;
+
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
+
+                ADD sp.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameDepartmentStoreSpecification);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateSpecification);
+                    ADD PROPERTY(timeSpecification);
+                }
+
+                ADD sp.documentPrmGroup {
+                    childConstraints = TO THE BOTTOM;
+                    NEW headerRow21 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameCustomerSpecification);
+                        ADD PROPERTY(nameObjectiveAcquiringSpecification);
+                    }
+                    NEW headerRow22 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(dateToSpecification);
+                        ADD PROPERTY(noteSpecification);
+                    }
+                }
+            }
+
+            ADD sp.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+    }
+}
+
 
 showFormSpecificationForm 'Показать отгрузки по данной с/ф' (specification) = ACTION FORM specificationForm OBJECTS sp MODAL TOOLBAR;
 
@@ -10054,7 +10112,6 @@ FORM specifications 'Счет-фактуры'
 
 
 
-
 FORM specificationsStatement 'Счета'
     OBJECTS st=statement FIXED PANEL
     PROPERTIES (st) READONLY seriesNumberObject, dateStatement
@@ -10067,11 +10124,12 @@ FORM specificationsStatement 'Счета'
     PROPERTIES (st, sp) statusStatementSpecification
 
     FILTERS isCustomerStatementSpecification (st, sp),
-            isDepartmentStoreStatementSpecification (st, sp)
+            isDepartmentStoreStatementSpecification (st, sp),
+            dateSpecification(sp) <= dateStatement(st)
 
     FILTERGROUP filters6
-            FILTER 'Просроченные с/ф' 'F10' overdueSpecification(sp)
-            FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp) DEFAULT
+            FILTER 'Просроченные с/ф' 'F10' overdueSpecificationStatement(sp, st)
+            FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecificationStatement(sp, st) DEFAULT
             FILTER 'Без отгрузок с/ф ' 'F8' noQuantityStatementsInSpecification(sp)
 ;
 
