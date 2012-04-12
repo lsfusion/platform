@@ -10606,6 +10606,27 @@ inTradingNetworkStoreTypeStoreDepartmentDepartment (tradingNetwork, storeType, s
     tradingNetworkDepartmentStore(department) == tradingNetwork AND NOT store AND NOT storeType AND NOT depStore,
     department IS departmentStore AND NOT store AND NOT storeType AND NOT tradingNetwork AND NOT depStore;
 
+countDayMovedItem 'Кол-во дней (30)' = SESSION DATA INTEGER (departmentStore) TOOLBAR;
+countDayMovedItemOver 'кол-во дней' (departmentStore) =
+    UNION OVERRIDE 30 AND departmentStore AS departmentStore, countDayMovedItem(departmentStore);
+
+//для оптимизации быстродействия не добавлял дату в GROUP MAX
+dateLastMovedItem 'Дата последнего движения товара' (item, departmentStore) =
+    GROUP MAX dateTimeBalanceItemLedger(ledger)
+    BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger);
+
+dateLastMovedItemOver(item, departmentStore, date) =
+    (dateLastMovedItem(item, departmentStore) AND (date AS DATETIME)) >= addDate2(dateInTime(date), -countDayMovedItemOver(departmentStore));
+
+dateLastMovedUnionBalanceItem(item, departmentStore, date) =
+    TRUE IF balanceAItemLedgerDateTime(item, departmentStore, date) OR TRUE IF dateLastMovedItemOver(item, departmentStore, date);
+
+curDateLastMovedItemOver(item, departmentStore) =
+    dateLastMovedItem(item, departmentStore) >= addDate2(currentDate(), -countDayMovedItemOver(departmentStore));
+
+curDateLastMovedUnionBalanceItem(item, departmentStore) =
+    TRUE IF currentBalanceItemLedger(item, departmentStore) OR TRUE IF curDateLastMovedItemOver(item, departmentStore);
+
 FORM balanceItemDepartment 'Остатки по отделам на дату'
 
     OBJECTS t=DATETIME FIXED PANEL
@@ -10627,8 +10648,14 @@ FORM balanceItemDepartment 'Остатки по отделам на дату'
     PROPERTIES(i, dep, t) READONLY balanceAItemLedgerDateTime, priceImporterALedgerDateTime, priceSupplierALedgerDateTime,
                                    priceAccountALedgerDateTime, dataRetailALedgerDateTime, priceRetailALedgerDateTime,
                                    priceWareALedgerDateTime
+
+    PROPERTIES(i, dep) READONLY dateLastMovedItem
+
+    PROPERTIES countDayMovedItem(dep) TODRAW dsi FORCE PANEL
+
     FILTERGROUP filters
         FILTER 'Товары с остатком' 'F10' balanceAItemLedgerDateTime(i, dep, t) DEFAULT
+        FILTER 'Товары с движением не позднее' 'F9' dateLastMovedUnionBalanceItem(i, dep, t)
 
     OBJECTS apl=accountPriceLedger
     PROPERTIES (apl) descriptionLedger, dateTimeAccountPriceLedger, priceAccountLedger
@@ -10720,9 +10747,13 @@ FORM curBalanceItemDepartment 'Текущие остатки по отделам
 
     PROPERTIES(i, dep) READONLY currentBalanceItemLedger, currentPriceImporterLedger, currentPriceSupplierLedger,
                                 currentPriceAccountLedger, dataCurrentRetailLedger, currentPriceRetailLedger,
-                                currentPriceWareLedger
+                                currentPriceWareLedger, dateLastMovedItem
+
+    PROPERTIES countDayMovedItem(dep) TODRAW dsi FORCE PANEL
+
     FILTERGROUP filters
         FILTER 'Товары с остатком' 'F10' currentBalanceItemLedger(i, dep) DEFAULT
+        FILTER 'Товары с движением не позднее' 'F9' curDateLastMovedUnionBalanceItem(i, dep)
 
     OBJECTS apl=accountPriceLedger
     PROPERTIES (apl) descriptionLedger, dateTimeAccountPriceLedger, priceAccountLedger
