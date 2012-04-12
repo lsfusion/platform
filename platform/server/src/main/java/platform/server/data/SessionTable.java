@@ -368,4 +368,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     public void drop(SQLSession session, Object owner) throws SQLException {
         session.returnTemporaryTable(this, owner);
     }
+    public void rollDrop(SQLSession session, Object owner) throws SQLException {
+        session.rollReturnTemporaryTable(this, owner);
+    }
 }

@@ -20,7 +20,7 @@ public class SQLTemporaryPool {
         return tables.isEmpty();
     }
 
-    public String getTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, FillTemporaryTable data, Integer count, Result<Integer> resultActual, Map<String, WeakReference<Object>> used) throws SQLException {
+    public String getTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, FillTemporaryTable data, Integer count, Result<Integer> resultActual, Map<String, WeakReference<Object>> used, Result<Boolean> isNew) throws SQLException {
         FieldStruct fieldStruct = new FieldStruct(keys, properties, count);
         resultActual.set(count);
 
@@ -48,6 +48,7 @@ public class SQLTemporaryPool {
                     if(count==null)
                         resultActual.set(actual);
 
+                    isNew.set(false);
                     return matchTable;
                 }
 
@@ -66,6 +67,7 @@ public class SQLTemporaryPool {
 
             matchTables.add(table);
 
+            isNew.set(true);
             return table;
         }
     }

@@ -113,6 +113,8 @@ public class SessionRows extends SessionData<SessionRows> {
 
     public void drop(SQLSession session, Object owner) {
     }
+    public void rollDrop(SQLSession session, Object owner) throws SQLException {
+    }
 
     public SessionData deleteRecords(SQLSession session, Map<KeyField,DataObject> keys) throws SQLException {
         return new SessionRows(this.keys, properties, BaseUtils.removeKey(rows, keys));

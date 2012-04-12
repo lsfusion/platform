@@ -21,6 +21,10 @@ public class SingleKeyNoPropertyUsage extends NoPropertyTableUsage<String> {
         });
     }
 
+    public SingleKeyNoPropertyUsage(SingleKeyNoPropertyUsage usage) {
+        super(usage);
+    }
+
     public Where getWhere(Expr expr) {
         return getWhere(Collections.singletonMap("key", expr));
     }

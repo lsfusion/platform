@@ -2,7 +2,6 @@ package platform.server.session;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.caches.ValuesContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
@@ -129,15 +128,14 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         return query.execute(session, orders, 0, env);
     }
 
-    // assert что ни вызывается при нижнем конструкторе пока
-    public ValuesContext getUsage() { // IMMUTABLE
-        return table;
-    }
-
     public SessionTableUsage(SessionData<?> table, Map<KeyField, K> mapKeys, Map<PropertyField, V> mapProps) {
         this.table = table;
         this.mapKeys = mapKeys;
         this.mapProps = mapProps;
+    }
+    
+    public SessionTableUsage(SessionTableUsage<K,V> usage) {
+        this(usage.table, usage.mapKeys, usage.mapProps);
     }
 
     public <MK> SessionTableUsage<MK, V> map(Map<K, MK> remapKeys) {
@@ -162,4 +160,32 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     public boolean isEmpty() {
         return table.isEmpty();
     }
+    
+    public SessionData saveData() {
+        return table;
+    }
+    public void rollData(SQLSession sql, SessionData table) throws SQLException {
+        assert this.table == null;
+        this.table = table;
+        this.table.rollDrop(sql, this);
+    }
+    
+    public static <T> Map<T, SessionData> saveData(Map<T, ? extends SessionTableUsage> map) {
+        Map<T, SessionData> result = new HashMap<T, SessionData>();
+        for(Map.Entry<T, ? extends SessionTableUsage> entry : map.entrySet())
+            result.put(entry.getKey(), entry.getValue().saveData());
+        return result;
+    }
+
+    // assert что не удаляется
+    public static <T, D extends SessionTableUsage> Map<T, D> rollData(SQLSession sql, Map<T, D> map, Map<T, SessionData> rollback) throws SQLException {
+        Map<T, D> result = new HashMap<T, D>();
+        for(Map.Entry<T, SessionData> entry : rollback.entrySet()) {
+            D table = map.get(entry.getKey());
+            table.rollData(sql, entry.getValue());
+            result.put(entry.getKey(), table);
+        }
+        return result;
+    }
+
 }

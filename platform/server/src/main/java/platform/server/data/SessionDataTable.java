@@ -128,6 +128,9 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     public void drop(SQLSession session, Object owner) throws SQLException {
         table.drop(session, owner);
     }
+    public void rollDrop(SQLSession session, Object owner) throws SQLException {
+        table.rollDrop(session, owner);
+    }
 
     public boolean used(Query<?, ?> query) {
         return query.getInnerValues().contains(table);

@@ -31,6 +31,10 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         });
     }
 
+    public SinglePropertyTableUsage(SessionTableUsage<K, String> usage) {
+        super(usage);
+    }
+
     public void insertRecord(SQLSession session, Map<K, DataObject> keyFields, ObjectValue propertyValue, boolean update, boolean groupLast) throws SQLException {
         insertRecord(session, keyFields, Collections.singletonMap("value", propertyValue), update, groupLast);
     }

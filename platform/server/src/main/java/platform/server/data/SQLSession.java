@@ -109,11 +109,16 @@ public class SQLSession extends MutableObject {
             for(String transactionTable : transactionTables) {
                 dropTemporaryTableFromDB(transactionTable);
 
+                sessionTablesMap.remove(transactionTable);
                 getSQLTemporaryPool().removeTable(transactionTable);
             }
 
         privateConnection.rollback();
         endTransaction();
+    }
+
+    public void checkSessionTableMap(SessionTable table, Object owner) {
+        assert sessionTablesMap.get(table.name).get() == owner;
     }
 
     public void commitTransaction() throws SQLException {
@@ -293,9 +298,11 @@ public class SQLSession extends MutableObject {
 
         removeUnusedTemporaryTables();
 
-        String table = getSQLTemporaryPool().getTable(this, keys, properties, fill, count, actual, sessionTablesMap);
+        Result<Boolean> isNew = new Result<Boolean>();
+        String table = getSQLTemporaryPool().getTable(this, keys, properties, fill, count, actual, sessionTablesMap, isNew);
+        assert !sessionTablesMap.containsKey(table);
         sessionTablesMap.put(table, new WeakReference<Object>(owner));
-        if(isInTransaction())
+        if(isNew.result && isInTransaction())
             transactionTables.add(table);
 
         return table;
@@ -323,6 +330,15 @@ public class SQLSession extends MutableObject {
         }
 
         tryCommon();
+    }
+    
+    public void rollReturnTemporaryTable(SessionTable table, Object owner) throws SQLException {
+        needPrivate();
+
+        synchronized (sessionTablesMap) {
+            assert !sessionTablesMap.containsKey(table.name);
+            sessionTablesMap.put(table.name, new WeakReference<Object>(owner));
+        }
     }
 
     // напрямую не используется, только через Pool

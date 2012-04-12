@@ -16,7 +16,6 @@ import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.*;
 import platform.server.data.where.Where;
-import platform.server.data.where.WhereBuilder;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
@@ -35,11 +34,86 @@ import java.util.*;
 
 public class DataSession extends BaseMutableModifier implements SessionChanges {
 
-    public Map<CustomClass, SingleKeyNoPropertyUsage> add = new HashMap<CustomClass, SingleKeyNoPropertyUsage>();
-    public Map<CustomClass, SingleKeyNoPropertyUsage> remove = new HashMap<CustomClass, SingleKeyNoPropertyUsage>();
-    public Map<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> data = new HashMap<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>>();
+    private Map<CustomClass, SingleKeyNoPropertyUsage> add = new HashMap<CustomClass, SingleKeyNoPropertyUsage>();
+    private Map<CustomClass, SingleKeyNoPropertyUsage> remove = new HashMap<CustomClass, SingleKeyNoPropertyUsage>();
+    private Map<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> data = new HashMap<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>>();
 
-    public SingleKeyPropertyUsage news = null;
+    private SingleKeyPropertyUsage news = null;
+    private Map<DataObject, ConcreteObjectClass> newClasses = new HashMap<DataObject, ConcreteObjectClass>();
+
+    private class Transaction {
+        private final Map<CustomClass, SessionData> add;
+        private final Map<CustomClass, SessionData> remove;
+        private final Map<DataProperty, SessionData> data;
+        
+        private final SessionData news;
+        private final Map<DataObject, ConcreteObjectClass> newClasses;
+        
+        private Transaction() {
+            add = SessionTableUsage.saveData(DataSession.this.add);
+            remove = SessionTableUsage.saveData(DataSession.this.remove);
+            data = SessionTableUsage.saveData(DataSession.this.data);
+
+            if(DataSession.this.news!=null)
+                news = DataSession.this.news.saveData();
+            else
+                news = null;
+            newClasses = new HashMap<DataObject, ConcreteObjectClass>(DataSession.this.newClasses);
+        }
+
+        private void rollback() throws SQLException {
+            dropTables(sql); // старые вернем
+
+            // assert что новые включают старые
+            DataSession.this.add = SessionTableUsage.rollData(sql, DataSession.this.add, add);
+            DataSession.this.remove = SessionTableUsage.rollData(sql, DataSession.this.remove, remove);
+            DataSession.this.data = SessionTableUsage.rollData(sql, DataSession.this.data, data);
+
+            if(news!=null)
+                DataSession.this.news.rollData(sql, news);
+            else
+                DataSession.this.news = null;
+            DataSession.this.newClasses = newClasses;
+        }
+    }
+    private Transaction applyTransaction; // restore point
+
+    private void startTransaction() throws SQLException {
+        sql.startTransaction();
+    }
+    private void checkTransaction() {
+        if(sql.isInTransaction() && applyTransaction==null)
+            applyTransaction = new Transaction();
+    }
+    private void rollbackTransaction() throws SQLException {
+        if(applyTransaction!=null) {
+            applyTransaction.rollback();
+            applyTransaction = null;
+        }
+        sql.rollbackTransaction();
+
+//        checkSessionTableMap();
+    }
+/*    private void checkSessionTableMap() {
+        checkSessionTableMap(add);
+        checkSessionTableMap(remove);
+        checkSessionTableMap(data);
+        checkSessionTableMap(news);
+    }
+    private void checkSessionTableMap(Map<?, ? extends SessionTableUsage> usages) {
+        for(SessionTableUsage usage : usages.values())
+            checkSessionTableMap(usage);
+    }
+    private void checkSessionTableMap(SessionTableUsage usage) {
+        if(usage!=null && usage.table instanceof SessionDataTable)
+            sql.checkSessionTableMap(((SessionDataTable)usage.table).getTable(), usage);
+    }*/
+    
+
+    private void commitTransaction() throws SQLException {
+        applyTransaction = null;
+        sql.commitTransaction();
+    }
 
     public static Set<IsClassProperty> getProperties(Set<CustomClass> addClasses, Set<CustomClass> removeClasses) {
         return CustomClass.getProperties(BaseUtils.mergeSet(addClasses, removeClasses));
@@ -236,6 +310,10 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         newClasses = new HashMap<DataObject, ConcreteObjectClass>();
 
         dropTables(sql);
+        add.clear();
+        remove.clear();
+        data.clear();
+        news = null;
 
         applyObject = null; // сбрасываем в том числе когда cancel потому как cancel drop'ает в том числе и добавление объекта
     }
@@ -265,8 +343,6 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
 
         return object;
     }
-
-    Map<DataObject, ConcreteObjectClass> newClasses = new HashMap<DataObject, ConcreteObjectClass>();
 
     public void changeClass(DataObject change, ConcreteObjectClass toClass) throws SQLException {
         changeClass(change, toClass, true);
@@ -448,7 +524,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
             currentSession.execute(applyObject.object, DataSession.this, modifier);
         }
 
-        sql.startTransaction();
+        startTransaction();
 
         Map<ExecuteProperty, List<ExecutionContext>> pendingExecutes = new HashMap<ExecuteProperty, List<ExecutionContext>>();
         IncrementApply incrementApply = new IncrementApply(this);
@@ -471,7 +547,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         if (onlyCheck || constraintResult != null) {
             // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
             incrementApply.cleanIncrementTables();
-            sql.rollbackTransaction();
+            rollbackTransaction();
             return constraintResult;
         }
 
@@ -488,7 +564,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         }
 
         incrementApply.cleanIncrementTables();
-        sql.commitTransaction();
+        commitTransaction();
         restart(false);
 
         for(Map.Entry<ExecuteProperty, List<ExecutionContext>> pendingExecute : pendingExecutes.entrySet())
@@ -625,6 +701,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     };
 
     public void changeClass(Set<CustomClass> addClasses, Set<CustomClass> removeClasses, ConcreteObjectClass toClass, DataObject change, SQLSession session, boolean groupLast) throws SQLException {
+        checkTransaction(); // важно что, вначале
+
         for(CustomClass addClass : addClasses) {
             SingleKeyNoPropertyUsage addTable = add.get(addClass);
             if(addTable==null) { // если нету таблицы создаем
@@ -672,6 +750,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     }
 
     public void changeProperty(final DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, SQLSession session, boolean groupLast) throws SQLException {
+        checkTransaction();
+
         SinglePropertyTableUsage<ClassPropertyInterface> dataChange = data.get(property);
         if(dataChange == null) { // создадим таблицу, если не было
             dataChange = property.createChangeTable();
@@ -696,10 +776,5 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         addChanges(data.keySet());
         if(news!=null)
             addChange(baseClass.getObjectClassProperty());
-
-        add.clear();
-        remove.clear();
-        data.clear();
-        news = null;
     }
 }

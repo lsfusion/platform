@@ -25,6 +25,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     public abstract Join<PropertyField> join(final Map<KeyField, ? extends Expr> joinImplement);
 
     public abstract void drop(SQLSession session, Object owner) throws SQLException;
+    public abstract void rollDrop(SQLSession session, Object owner) throws SQLException;
 
     public abstract boolean used(Query<?, ?> query);
 
