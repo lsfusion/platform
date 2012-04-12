@@ -8259,6 +8259,33 @@ FORM consignment 'Накладная'
 toShowPriceImporterShipment 'Есть оптовая надбавка' (shipment) = DATA BOOLEAN (shipment) IN documentPrmGroup;
 toShowWareShipment 'Есть стеклопосуда' (shipment) = DATA BOOLEAN (shipment) IN documentPrmGroup;
 
+nameFormedManShipment 'Цены сформировал' (shipment) = nameFormedManCommittee(registerCommitteeShipment(shipment));
+nameCheckedManShipment 'Реестр проверил' (shipment) = nameCheckedManCommittee(registerCommitteeShipment(shipment));
+nameLabeledManShipment 'Товар промаркировал' (shipment) = nameLabeledManCommittee(registerCommitteeShipment(shipment));
+nameAccountantManShipment 'Бухгалтер' (shipment) = nameAccountantManCommittee(registerCommitteeShipment(shipment));
+nameHeadManShipment 'Зав. магазином' (shipment) = nameHeadManCommittee(registerCommitteeShipment(shipment));
+
+FORM pricesRegister 'Реестр цен' PRINT
+    OBJECTS s=shipment FIXED PANEL
+    PROPERTIES (s)  SELECTOR numberObject, dateShipment, nameDepartmentStoreShipment, nameSupplierShipment,
+                    totalQuantityShipment, supportSumPriceShipment, totalSumSupplierVATShipment,
+                    totalSumWareShipment, totalSumVatWareShipment, exSumSupplierShipment, totalSumMarkupShipment,
+                    fullDetailVatShipment, retailSumShipment, nameRegisterCommitteeShipment,
+                    nameFormedManShipment, nameCheckedManShipment, nameLabeledManShipment, nameAccountantManShipment,
+                    nameHeadManShipment
+
+    OBJECTS d=shipmentDetail
+    PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, shortNameUnitOfMeasureItemShipmentDetail, quantityShipmentDetail,
+                    importerPriceShipmentDetail, supportSumPriceShipmentDetail, overSupplierMarkupShipmentDetail, sumDetailSupplierVATShipmentDetail, dataSuppliersRangeShipmentDetail,
+                    overSumPriceWareShipmentDetail, overPriceWareShipmentDetail, sumDetailVatWareShipmentDetail, dataWareRangeShipmentDetail,
+                    exSumSupplierShipmentDetail, percMarkupShipmentDetail, sumDetailMarkupShipmentDetail, dataRetailRangeShipmentDetail,
+                    fullDetailVatShipmentDetail, retailPriceShipmentDetail, retailSumShipmentDetail
+
+    FILTERS inShipmentShipmentDetail(s, d)
+;
+
+toPrintPricesRegister 'Реестр цен' (shipment) = ACTION FORM pricesRegister OBJECTS s TOOLBAR IMAGE 'print.png';
+
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s) nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
@@ -8377,6 +8404,7 @@ FORM shipments 'Поставки'
                             createSnapshotShipmentLabelTransaction FORCE PANEL SHOWIF isPostedShipment(s),
                             createShipmentMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionShipment(s),
                             createSnapshotShipmentMachineryPriceTransaction FORCE PANEL SHOWIF isPostedShipment(s),
+                            toPrintPricesRegister FORCE PANEL,
                             ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
@@ -8402,32 +8430,6 @@ DESIGN shipments FROM DEFAULT {
     POSITION s.historyGroup TO THE LEFT s.postedGroup;
     ADD d.grid.box BEFORE s.historyGroup;
 }
-
-nameFormedManShipment 'Цены сформировал' (shipment) = nameFormedManCommittee(registerCommitteeShipment(shipment));
-nameCheckedManShipment 'Реестр проверил' (shipment) = nameCheckedManCommittee(registerCommitteeShipment(shipment));
-nameLabeledManShipment 'Товар промаркировал' (shipment) = nameLabeledManCommittee(registerCommitteeShipment(shipment));
-nameAccountantManShipment 'Бухгалтер' (shipment) = nameAccountantManCommittee(registerCommitteeShipment(shipment));
-nameHeadManShipment 'Зав. магазином' (shipment) = nameHeadManCommittee(registerCommitteeShipment(shipment));
-
-//------------------------------печатная форма----------------------------------//
-FORM register 'Реестр цен'
-    OBJECTS s=shipment FIXED PANEL
-    PROPERTIES (s)  SELECTOR numberObject, dateShipment, nameDepartmentStoreShipment, nameSupplierShipment,
-                    totalQuantityShipment, supportSumPriceShipment, totalSumSupplierVATShipment,
-                    totalSumWareShipment, totalSumVatWareShipment, exSumSupplierShipment, totalSumMarkupShipment,
-                    fullDetailVatShipment, retailSumShipment, nameRegisterCommitteeShipment,
-                    nameFormedManShipment, nameCheckedManShipment, nameLabeledManShipment, nameAccountantManShipment,
-                    nameHeadManShipment
-
-    OBJECTS d=shipmentDetail
-    PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, shortNameUnitOfMeasureItemShipmentDetail, quantityShipmentDetail,
-                    importerPriceShipmentDetail, supportSumPriceShipmentDetail, overSupplierMarkupShipmentDetail, sumDetailSupplierVATShipmentDetail, dataSuppliersRangeShipmentDetail,
-                    overSumPriceWareShipmentDetail, overPriceWareShipmentDetail, sumDetailVatWareShipmentDetail, dataWareRangeShipmentDetail,
-                    exSumSupplierShipmentDetail, percMarkupShipmentDetail, sumDetailMarkupShipmentDetail, dataRetailRangeShipmentDetail,
-                    fullDetailVatShipmentDetail, retailPriceShipmentDetail, retailSumShipmentDetail
-
-    FILTERS inShipmentShipmentDetail(s, d)
-;
 
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
@@ -10988,7 +10990,7 @@ NAVIGATOR {
         ADD priceChangeDocuments;
     }
     NEW printedForms 'Печатные формы' TO formsToolbar{
-        ADD register;
+        ADD pricesRegister;
         ADD actOfRevaluation;
         ADD consignment;
     }
