@@ -189,6 +189,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP<?> name;
     public LP<?> date;
 
+    public LP redColor;
+    public LP yellowColor;
+
     public LP daysInclBetweenDates;
     public LP weeksInclBetweenDates;
     public LP weeksNullInclBetweenDates;
@@ -419,6 +422,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP disableEmail;
     public LP defaultCountry;
     public LP nameDefaultCountry;
+
+    public LP defaultBackgroundColor;
+    public LP defaultOverrideBackgroundColor;
 
     public LP sidCountry;
     protected LP generateDatesCountry;
@@ -754,6 +760,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
 
+        redColor = addCProp(ColorClass.instance, Color.RED);
+        yellowColor = addCProp(ColorClass.instance, Color.YELLOW);
+
         notZero = addJProp(diff2, 1, vzero);
         onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
         onlyNotZero.property.isOnlyNotZero = true;
@@ -1069,6 +1078,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         nameDefaultCountry = addJProp("nameDefaultCountry", getString("logics.country.default.country"), baseLM.name, defaultCountry);
         nameDefaultCountry.setPreferredCharWidth(30);
 
+        defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);
+        defaultOverrideBackgroundColor = addSUProp("defaultOverrideBackgroundColor", true, getString("logics.default.background.color"), Union.OVERRIDE, yellowColor, defaultBackgroundColor);
+
         entryDictionary = addDProp("entryDictionary", getString("logics.dictionary"), dictionary, dictionaryEntry);
         termDictionary = addDProp(recognizeGroup, "termDictionary", getString("logics.dictionary.termin"), StringClass.get(50), dictionaryEntry);
         translationDictionary = addDProp(baseGroup, "translationDictionary", getString("logics.dictionary.translation"), StringClass.get(50), dictionaryEntry);
@@ -1210,7 +1222,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 classArray[i] = classes[i];
             }
 
-            SelectionProperty property = new SelectionProperty(sid, classArray);
+            SelectionProperty property = new SelectionProperty(sid, classArray, baseLM);
             LP lp = new LP<ClassPropertyInterface>(property);
             registerProperty(lp);
             selectionLP.put(sid, lp);
@@ -2296,7 +2308,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private AdminFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.global.parameters"));
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, disableEmail, webHost, nameDefaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, checkAggregationsAction, recalculateAction, recalculateFollowsAction, packAction, runGarbageCollector});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, disableEmail, webHost, nameDefaultCountry, barcodePrefix, defaultBackgroundColor, restartServerAction, cancelRestartServerAction, checkAggregationsAction, recalculateAction, recalculateFollowsAction, packAction, runGarbageCollector});
         }
     }
 

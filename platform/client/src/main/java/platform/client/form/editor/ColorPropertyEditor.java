@@ -3,7 +3,6 @@ package platform.client.form.editor;
 import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.logics.classes.ClientColorClass;
-import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,18 +15,20 @@ public class ColorPropertyEditor extends JTextField implements PropertyEditorCom
     private Color chosenColor;
     private JColorChooser editorDialog;
     private JDialog chooserDialog;
+    private boolean reset;
 
     public ColorPropertyEditor(Object value) {
         super();
-        initialColor = value != null ? (Color) value : ClientColorClass.getDefaultValue();
+        initialColor = (Color) value;
 
-        setBackground(initialColor);
-        editorDialog = new JColorChooser(initialColor);
+        setBackground(initialColor != null ? initialColor : ClientColorClass.getDefaultValue());
+        editorDialog = new JColorChooser(initialColor != null ? initialColor : ClientColorClass.getDefaultValue());
 
         ActionListener okListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setBackground(editorDialog.getColor());
                 chosenColor = editorDialog.getColor();
+                reset = false;
             }
         };
 
@@ -41,11 +42,12 @@ public class ColorPropertyEditor extends JTextField implements PropertyEditorCom
 
     @Override
     public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
-        if (condition == WHEN_FOCUSED && !KeyStrokes.isEscapeEvent(ke) && !KeyStrokes.isEnterEvent(ke) && KeyEvent.CHAR_UNDEFINED != ke.getKeyChar() ) {
+        if (condition == WHEN_FOCUSED && KeyEvent.VK_ESCAPE != ke.getKeyChar() && KeyEvent.VK_ENTER != ke.getKeyChar() && KeyEvent.CHAR_UNDEFINED != ke.getKeyChar() ) {
             if (ke.getKeyChar() == KeyEvent.VK_DELETE) {
                 setBackground(ClientColorClass.getDefaultValue());
-                chosenColor = ClientColorClass.getDefaultValue();
+                chosenColor = null;
                 editorDialog.setColor(ClientColorClass.getDefaultValue());
+                reset = true;
             } else {
                 chooserDialog.setVisible(true);
             }
@@ -77,7 +79,11 @@ public class ColorPropertyEditor extends JTextField implements PropertyEditorCom
 
     @Override
     public Object getCellEditorValue() throws RemoteException {
-        return chosenColor == null ? initialColor : chosenColor;
+        if (chosenColor == null) {
+            return reset ? chosenColor : initialColor;
+        } else {
+            return chosenColor;
+        }
     }
 
     @Override

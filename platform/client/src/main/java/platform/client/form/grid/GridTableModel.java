@@ -19,7 +19,6 @@ public class GridTableModel extends AbstractTableModel {
     private ClientPropertyDraw[] columnProps = new ClientPropertyDraw[0];
     private ClientGroupObjectValue[] columnKeys = new ClientGroupObjectValue[0];
     private String[] columnNames = new String[0];
-    private Object[][] highlightData = new Object[0][];
     private Color[][] highlightColor = new Color[0][];
 
     public void update(ClientGroupObject groupObject,
@@ -61,7 +60,6 @@ public class GridTableModel extends AbstractTableModel {
 
         if (data.length == 0 || data[0].length != columnProps.length || data.length != rowKeys.size()) {
             data = new Object[rowKeys.size()][columnProps.length];
-            highlightData = new Object[rowKeys.size()][columnProps.length];
             highlightColor = new Color[rowKeys.size()][columnProps.length];
         }
 
@@ -78,13 +76,10 @@ public class GridTableModel extends AbstractTableModel {
                 data[i][j] = propValues != null ? propValues.get(cellKey) : null;
 
                 if (rowHighlight != null) {
-                    highlightData[i][j] = rowHighlight;
-                    highlightColor[i][j] = groupObject.highlightColor;
+                    highlightColor[i][j] = (Color) rowHighlight;
                 } else if (highlightValues != null) {
-                    highlightData[i][j] = highlightValues.get(cellKey);
-                    highlightColor[i][j] = highlightData[i][j] != null ? columnProps[j].highlightColor : null;
+                    highlightColor[i][j] = (Color) highlightValues.get(cellKey);
                 } else {
-                    highlightData[i][j] = null;
                     highlightColor[i][j] = null;
                 }
             }
@@ -170,7 +165,7 @@ public class GridTableModel extends AbstractTableModel {
     }
 
     public boolean isCellHighlighted(int row, int column) {
-        return highlightData[row][column] != null;
+        return highlightColor[row][column] != null;
     }
 
     public Color getHighlightColor(int row, int column) {

@@ -95,7 +95,6 @@ public class PropertyDrawEditor extends GroupElementEditor {
                 editKeyPanel));
 
         addTab(ClientResourceBundle.getString("descriptor.editor.object.editor.display"), new NorthBoxPanel(defaultComponent,
-                new TitledPanel(null, new IncrementColorEditor(ClientResourceBundle.getString("descriptor.editor.view.illumination.color"), descriptor, "highlightColor")),
                 new SizesEditor(descriptor.client),
                 new ComponentDesignEditor(ClientResourceBundle.getString("descriptor.editor.view.design"), descriptor.client.design)));
 

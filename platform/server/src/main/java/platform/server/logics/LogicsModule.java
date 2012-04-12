@@ -894,7 +894,7 @@ public abstract class LogicsModule {
         return property instanceof ActionProperty;
     }
 
-    protected LP addJProp(LP mainProp, Object... params) {
+    public LP addJProp(LP mainProp, Object... params) {
         return addJProp(baseLM.privateGroup, "sys", mainProp, params);
     }
 

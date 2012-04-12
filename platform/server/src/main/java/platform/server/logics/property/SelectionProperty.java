@@ -4,21 +4,27 @@ import platform.interop.KeyStrokes;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
+import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.ServerResourceBundle;
+
+import java.util.Collection;
 
 public class SelectionProperty extends SessionDataProperty {
 
     ValueClass[] classes;
+    BaseLogicsModule LM;
 
-    public SelectionProperty(String sID, ValueClass[] classes) {
+    public SelectionProperty(String sID, ValueClass[] classes, BaseLogicsModule LM) {
         super(sID, ServerResourceBundle.getString("logics.property.select"), classes, LogicalClass.instance);
         this.classes = classes;
+        this.LM = LM;
     }
 
     @Override
@@ -51,7 +57,14 @@ public class SelectionProperty extends SessionDataProperty {
                 KeyStrokes.getSelectionFilterKeyStroke()), false);
         form.addRegularFilterGroup(filterGroup);
 
-        entity.getToDraw(form).propertyHighlight = entity.propertyObject;
+        Collection<ObjectEntity> objects = entity.propertyObject.getObjectInstances();
+        Object[] params = new Object[objects.size() + 2];
+        params[0] = LM.baseLM.defaultOverrideBackgroundColor;
+        params[1] = LM.getLP(entity.propertyObject.property.getSID());
+        for (int i = 0; i < objects.size(); i++) {
+            params[i + 2] = i + 1;
+        }
+        entity.getToDraw(form).propertyHighlight = form.addPropertyObject(LM.addJProp(LM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
     }
 
     @Override

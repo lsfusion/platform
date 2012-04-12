@@ -53,8 +53,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String[] interfacesCaptions;
 
-    public Color highlightColor;
-
     public String caption;
     public String regexp;
     public String regexpMessage;
@@ -262,14 +260,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return new Dimension(getMaximumWidth(comp), getMaximumHeight(comp));
     }
 
-    public Color getHighlightColor() {
-        return highlightColor;
-    }
-
-    public void setHighlightColor(Color highlightColor) {
-        this.highlightColor = highlightColor;
-    }
-
     public PropertyRendererComponent getRendererComponent() {
         if (renderer == null) {
             renderer = baseType.getRendererComponent(caption, this);
@@ -363,8 +353,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         outStream.writeBoolean(editOnSingleClick);
         outStream.writeBoolean(hide);
 
-        pool.writeObject(outStream, highlightColor);
-
         outStream.writeInt(ID);
     }
 
@@ -399,8 +387,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         showTableFirst = inStream.readBoolean();
         editOnSingleClick = inStream.readBoolean();
         hide = inStream.readBoolean();
-
-        highlightColor = pool.readObject(inStream);
 
         baseType = ClientTypeSerializer.deserialize(inStream);
         changeType = ClientTypeSerializer.deserialize(inStream);

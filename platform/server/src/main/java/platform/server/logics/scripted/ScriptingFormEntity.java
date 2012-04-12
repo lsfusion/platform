@@ -3,6 +3,7 @@ package platform.server.logics.scripted;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.navigator.FormShowType;
+import platform.server.classes.ColorClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.*;
@@ -14,10 +15,7 @@ import platform.server.form.view.FormView;
 import platform.server.logics.linear.LP;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static platform.base.BaseUtils.nvl;
 
@@ -243,7 +241,22 @@ public class ScriptingFormEntity extends FormEntity {
 
         property.propertyCaption = options.getHeader();
         property.propertyFooter = options.getFooter();
-        property.propertyHighlight = options.getHighlightIf();
+
+        PropertyObjectEntity highlightProperty = options.getHighlightIf();
+        if (highlightProperty != null && !highlightProperty.property.getType().equals(ColorClass.instance)) {
+            LP highlightLP = LM.getLPBySID(highlightProperty.property.getSID());
+            Object[] params = new Object[highlightLP.listInterfaces.size() + 2];
+            params[0] = LM.baseLM.defaultOverrideBackgroundColor;
+            params[1] = highlightLP;
+            for (int i = 0; i < highlightLP.listInterfaces.size(); i++) {
+                params[i + 2] = i + 1;
+            }
+            Collection<ObjectEntity> objects = highlightProperty.getObjectInstances();
+            property.propertyHighlight = addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
+        } else {
+            property.propertyHighlight = highlightProperty;
+        }
+
         property.propertyReadOnly = options.getReadOnlyIf();
         if (options.getForceViewType() != null) {
             property.forceViewType = options.getForceViewType();

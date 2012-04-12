@@ -159,15 +159,6 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         updateDependency(this, "propertyHighlight");
     }
 
-    public Color getHighlightColor() {
-        return client.getHighlightColor();
-    }
-
-    public void setHighlightColor(Color highlightColor) {
-        client.setHighlightColor(highlightColor);
-        updateDependency(this, "highlightColor");
-    }
-
     public void setCaption(String caption) { // usage через reflection
         client.caption = caption;
         updateDependency(this, "caption");

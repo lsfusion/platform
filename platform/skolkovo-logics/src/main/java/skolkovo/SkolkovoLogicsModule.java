@@ -4758,7 +4758,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //            }
             design.setShowTableFirstLogical(true);
 
-            PropertyObjectEntity sidProjectProperty = addPropertyObject(sidProject, objProject);
+            PropertyObjectEntity sidProjectProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(255, 250, 205)), sidProject, 1), objProject);
             if ("rus".equals(lng)) {
                 getPropertyDraw(nameNativeManagerProject).setPropertyHighlight(sidProjectProperty);
                 getPropertyDraw(nameNativeClaimerProject).setPropertyHighlight(sidProjectProperty);
@@ -4790,7 +4790,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 getPropertyDraw(foreignNumberPatent).setPropertyHighlight(sidProjectProperty);
                 getPropertyDraw(foreignTypePatent).setPropertyHighlight(sidProjectProperty);
             }
-            design.setHighlightColor(new Color(255, 250, 205));
             return design;
         }
     }
@@ -4991,8 +4990,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             specContainer.add(dopContainer);
 
             specContainer.tabbedPane = true;
-
-        design.setHighlightColor(new Color(255, 250, 205));
             return design;
 
         }
@@ -5591,25 +5588,26 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             setForceViewType(editClaimerProject, ClassViewType.PANEL);
 
-            PropertyObjectEntity statusProperty = addPropertyObject(statusDataProject, objProject);
+            LP highlightColor = addCProp(ColorClass.instance, new Color(223, 255, 223));
+            PropertyObjectEntity statusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, statusDataProject, 1), objProject);
             getPropertyDraw(nameStatusProject).setPropertyHighlight(statusProperty);
 
-            PropertyObjectEntity dateProperty = addPropertyObject(dateDataProject, objProject);
+            PropertyObjectEntity dateProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateDataProject, 1), objProject);
             getPropertyDraw(dateProject).setPropertyHighlight(dateProperty);
 
-            PropertyObjectEntity dateStatusProperty = addPropertyObject(dateStatusDataProject, objProject);
+            PropertyObjectEntity dateStatusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateStatusDataProject, 1), objProject);
             getPropertyDraw(dateStatusProject).setPropertyHighlight(dateStatusProperty);
 
-            PropertyObjectEntity nameNativeProperty = addPropertyObject(nameNativeDataProject, objProject);
+            PropertyObjectEntity nameNativeProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeDataProject, 1), objProject);
             getPropertyDraw(nameNativeProject).setPropertyHighlight(nameNativeProperty);
 
-            PropertyObjectEntity nameForeignProperty = addPropertyObject(nameForeignDataProject, objProject);
+            PropertyObjectEntity nameForeignProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignDataProject, 1), objProject);
             getPropertyDraw(nameForeignProject).setPropertyHighlight(nameForeignProperty);
 
-            PropertyObjectEntity nameNativeCorrectHighlightClaimerProjectProperty = addPropertyObject(nameNativeCorrectHighlightClaimerProject, objProject);
+            PropertyObjectEntity nameNativeCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeCorrectHighlightClaimerProject, 1), objProject);
             getPropertyDraw(nameNativeClaimerProject).setPropertyHighlight(nameNativeCorrectHighlightClaimerProjectProperty);
 
-            PropertyObjectEntity nameForeignCorrectHighlightClaimerProjectProperty = addPropertyObject(nameForeignCorrectHighlightClaimerProject, objProject);
+            PropertyObjectEntity nameForeignCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignCorrectHighlightClaimerProject, 1), objProject);
             getPropertyDraw(nameForeignClaimerProject).setPropertyHighlight(nameForeignCorrectHighlightClaimerProjectProperty);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
@@ -5901,7 +5899,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             specContainer.add(originalDocsContainer);
             specContainer.add(registerContainer);
 
-            design.setHighlightColor(new Color(223, 255, 223));
 //            design.get(objVoteHeader.groupTo).grid.constraints.fillHorizontal = 1.5;
 
             design.getPanelContainer(objVote.groupTo).add(design.get(getPropertyDraw(generateVoteProject)));
@@ -7272,25 +7269,26 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(loadFileResolutionIPProject).propertyCaption = addPropertyObject(hideLoadFileResolutionIPProject, objProject);
             getPropertyDraw(loadFileResolutionIPProject).forceViewType = ClassViewType.PANEL;
 
-            PropertyObjectEntity statusProperty = addPropertyObject(statusDataProject, objProject);
+            LP highlightColor = addCProp(ColorClass.instance, new Color(223, 255, 223));
+            PropertyObjectEntity statusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, statusDataProject, 1), objProject);
             getPropertyDraw(nameStatusProject).setPropertyHighlight(statusProperty);
 
-            PropertyObjectEntity dateProperty = addPropertyObject(dateDataProject, objProject);
+            PropertyObjectEntity dateProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateDataProject, 1), objProject);
             getPropertyDraw(dateProject).setPropertyHighlight(dateProperty);
 
-            PropertyObjectEntity dateStatusProperty = addPropertyObject(dateStatusDataProject, objProject);
+            PropertyObjectEntity dateStatusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateStatusDataProject, 1), objProject);
             getPropertyDraw(dateStatusProject).setPropertyHighlight(dateStatusProperty);
 
-            PropertyObjectEntity nameNativeProperty = addPropertyObject(nameNativeDataProject, objProject);
+            PropertyObjectEntity nameNativeProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeDataProject, 1), objProject);
             getPropertyDraw(nameNativeProject).setPropertyHighlight(nameNativeProperty);
 
-            PropertyObjectEntity nameForeignProperty = addPropertyObject(nameForeignDataProject, objProject);
+            PropertyObjectEntity nameForeignProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignDataProject, 1), objProject);
             getPropertyDraw(nameForeignProject).setPropertyHighlight(nameForeignProperty);
 
-            PropertyObjectEntity nameNativeCorrectHighlightClaimerProjectProperty = addPropertyObject(nameNativeCorrectHighlightClaimerProject, objProject);
+            PropertyObjectEntity nameNativeCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeCorrectHighlightClaimerProject, 1), objProject);
             getPropertyDraw(nameNativeClaimerProject).setPropertyHighlight(nameNativeCorrectHighlightClaimerProjectProperty);
 
-            PropertyObjectEntity nameForeignCorrectHighlightClaimerProjectProperty = addPropertyObject(nameForeignCorrectHighlightClaimerProject, objProject);
+            PropertyObjectEntity nameForeignCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignCorrectHighlightClaimerProject, 1), objProject);
             getPropertyDraw(nameForeignClaimerProject).setPropertyHighlight(nameForeignCorrectHighlightClaimerProjectProperty);
 
             objDocument = addSingleGroupObject(document, nameTypeDocument, nameLanguageDocument, postfixDocument, openFileDocument);
@@ -7306,8 +7304,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.setHighlightColor(new Color(223, 255, 223));
 
             design.get(objProject.groupTo).grid.constraints.fillVertical = 1.5;
             design.get(objProject.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 200));

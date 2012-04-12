@@ -27,7 +27,6 @@ public class TableCellView extends JPanel implements CellView {
     private final ClientGroupObjectValue columnKey;
     private final ClientFormController form;
 
-    private Object highlight;
     private Color highlightColor;
     private ValueEventListener valueEventListener;
 
@@ -79,7 +78,7 @@ public class TableCellView extends JPanel implements CellView {
             }
 
             public boolean isCellHighlighted(int row, int column) {
-                return TableCellView.this.highlight != null;
+                return TableCellView.this.highlightColor != null;
             }
 
             public Color getHighlightColor(int row, int column) {
@@ -177,14 +176,12 @@ public class TableCellView extends JPanel implements CellView {
         table.setValue(ivalue);
     }
 
-    public void setHighlight(Object highlight, Color highlightColor) {
-        if (BaseUtils.nullEquals(this.highlight, highlight) &&
-                BaseUtils.nullEquals(this.highlightColor, highlightColor)) {
+    public void setHighlight(Object highlight) {
+        if (BaseUtils.nullEquals(this.highlightColor, highlight)) {
             return;
         }
 
-        this.highlight = highlight;
-        this.highlightColor = highlightColor;
+        this.highlightColor = (Color) highlight;
 
         revalidate();
         repaint();

@@ -2100,7 +2100,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             PropertyDrawEntity<?> addvOrderArticleDraw = getPropertyDraw(addvOrderArticle);
             if(addvOrderArticleDraw!=null)
-                addvOrderArticleDraw.setPropertyHighlight(addPropertyObject(isNegativeAddvOrderArticle, objDoc, objArt));
+                addvOrderArticleDraw.setPropertyHighlight(addPropertyObject(addJProp(baseLM.and1, baseLM.redColor, isNegativeAddvOrderArticle, 1, 2), objDoc, objArt));
         }
 
         @Override
@@ -2110,10 +2110,6 @@ public class VEDLogicsModule extends LogicsModule {
             design.get(objArt.groupTo).grid.constraints.fillVertical = 3;
 
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
-
-            PropertyDrawView addvOrderArticleView = design.get(getPropertyDraw(addvOrderArticle));
-            if(addvOrderArticleView!=null)
-                addvOrderArticleView.highlightColor = new Color(255,0,0);
 
             return design;
         }
@@ -2565,9 +2561,9 @@ public class VEDLogicsModule extends LogicsModule {
             addPropertyDraw(orderSaleUseObligation, objDoc, objObligation);
 
             if (toAdd) {
-                objArt.groupTo.propertyHighlight = addPropertyObject(actionOutArticle, objDoc, objArt);
+                objArt.groupTo.propertyHighlight = addPropertyObject(addJProp(baseLM.and1, baseLM.redColor, actionOutArticle, 1, 2), objDoc, objArt);
 
-                objObligation.groupTo.propertyHighlight = addPropertyObject(orderSaleObligationCanNotBeUsed, objDoc, objObligation);
+                objObligation.groupTo.propertyHighlight = addPropertyObject(addJProp(baseLM.and1, baseLM.redColor, orderSaleObligationCanNotBeUsed, 1, 2), objDoc, objObligation);
                 addHintsNoUpdate(obligationDocument);
             }
 
@@ -2626,8 +2622,6 @@ public class VEDLogicsModule extends LogicsModule {
                 design.getGroupPropertyContainer((GroupObjectView) null, cashRegOperGroup).add(1, design.get(getPropertyDraw(printOrderCheck)));
 
                 design.get(getPropertyDraw(printOrderCheck)).constraints.insetsSibling.right = 100;
-
-                design.get(objObligation.groupTo).highlightColor = new Color(255, 0, 0);
             }
 
             design.get(objCoupon.groupTo).grid.minRowCount = 2;

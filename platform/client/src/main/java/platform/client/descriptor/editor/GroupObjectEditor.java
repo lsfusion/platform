@@ -72,7 +72,7 @@ public class GroupObjectEditor extends JTabbedPane implements NodeEditor {
             addTab(ClientResourceBundle.getString("descriptor.editor.view.common"), new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel, filterPropertyPanel, pageSizePanel));
         }
         addTab(ClientResourceBundle.getString("descriptor.properties"), new NorthBoxPanel(groupPropertyObjectPanel));
-        addTab(ClientResourceBundle.getString("descriptor.editor.view.display"), new NorthBoxPanel(new TitledPanel(null, new IncrementColorEditor(ClientResourceBundle.getString("descriptor.editor.view.illumination.color"), group, "highlightColor")), propertiesPanel));
+        addTab(ClientResourceBundle.getString("descriptor.editor.view.display"), new NorthBoxPanel(propertiesPanel));
         addTab(ClientResourceBundle.getString("descriptor.editor.view.order.by.default"), new NorthBoxPanel(defaultOrdersPanel));
 
     }                                        

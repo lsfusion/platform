@@ -194,15 +194,6 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         return client.getClientComponent(parent);
     }
 
-    public Color getHighlightColor() {
-        return client.getHighlightColor();
-    }
-
-    public void setHighlightColor(Color highlightColor) {
-        client.setHighlightColor(highlightColor);
-        updateDependency(this, "highlightColor");
-    }
-
     public String getVariableName() {
         if (objects.size() == 1) {
             return objects.get(0).getVariableName() + ".groupTo";

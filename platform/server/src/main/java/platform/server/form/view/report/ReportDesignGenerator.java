@@ -217,13 +217,7 @@ public class ReportDesignGenerator {
                     JRDesignConditionalStyle condStyle = new JRDesignConditionalStyle();
                     condStyle.setParentStyle(groupCellStyle);
                     Color oldColor = condStyle.getBackcolor();
-                    Color newColor;
-                    if (groupView.highlightColor == null) {
-                        newColor = new Color(oldColor.getRed(), oldColor.getGreen(), 0);
-                    } else {
-                        newColor = transformColor(groupView.highlightColor, oldColor.getRed() / 255);
-                    }
-                    condStyle.setBackcolor(newColor);
+                    condStyle.setBackcolor(new Color(oldColor.getRed(), oldColor.getGreen(), 0));
                     JRDesignExpression expr =
                             ReportUtils.createExpression("new Boolean($F{" + highlightPropertySID + "} != null)", java.lang.Boolean.class);
                     condStyle.setConditionExpression(expr);
@@ -246,10 +240,6 @@ public class ReportDesignGenerator {
                 addDesignField(design, propertyField);
             }
         }
-    }
-
-    private Color transformColor(Color color, double coeff) {
-        return new Color((int) (color.getRed() * coeff), (int) (color.getGreen() * coeff), (int) (color.getBlue() * coeff));
     }
 
     private void addReportFieldToLayout(ReportLayout layout, ReportDrawField reportField, JRDesignStyle captionStyle, JRDesignStyle style) {

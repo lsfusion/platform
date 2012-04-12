@@ -9,10 +9,6 @@ public class GroupObjectViewProxy extends ViewProxy<GroupObjectView> {
         super(target);
     }
 
-    public void setHighlightColor(Color highlightColor) {
-        target.highlightColor = highlightColor;
-    }
-
     public void setNeedVerticalScroll(Boolean needVerticalScroll) {
         target.needVerticalScroll = needVerticalScroll;
     }

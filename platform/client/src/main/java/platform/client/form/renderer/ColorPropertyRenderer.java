@@ -22,12 +22,6 @@ public class ColorPropertyRenderer extends LabelPropertyRenderer implements Prop
     @Override
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         this.value = value == null ? ClientColorClass.getDefaultValue() : (Color) value;
-//        if (value == null)
-//            setBackground(new Color(0, 0, 0, 0));
-//        setOpaque(false);
-//        else {
-//            setBackground((Color) value);
-//        }
         setSelected(isSelected, hasFocus);
     }
 

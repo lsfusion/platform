@@ -52,8 +52,6 @@ public class PropertyDrawView extends ComponentView {
     public String regexpMessage;
     public boolean echoSymbols;
 
-    public Color highlightColor;
-
     private int minimumCharWidth;
     private int maximumCharWidth;
     private int preferredCharWidth;
@@ -211,8 +209,6 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(editOnSingleClick);
         outStream.writeBoolean(hide);
 
-        pool.writeObject(outStream, highlightColor);
-
         //entity часть
         TypeSerializer.serializeType(outStream, getType());
         TypeSerializer.serializeType(outStream, getChangeType());
@@ -282,8 +278,6 @@ public class PropertyDrawView extends ComponentView {
         showTableFirst = inStream.readBoolean();
         editOnSingleClick = inStream.readBoolean();
         hide = inStream.readBoolean();
-
-        highlightColor = pool.readObject(inStream);
 
         entity = pool.context.entity.getPropertyDraw(inStream.readInt());
     }

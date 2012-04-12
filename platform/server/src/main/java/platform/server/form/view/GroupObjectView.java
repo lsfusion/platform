@@ -17,8 +17,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public GroupObjectEntity entity;
 
-    public Color highlightColor;
-
     public Boolean needVerticalScroll = true;
     public Integer tableRowsCount;
 
@@ -87,8 +85,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         pool.serializeCollection(outStream, this, serializationType);
         pool.serializeObject(outStream, pool.context.view.getTreeGroup(entity.treeGroup));
 
-        pool.writeObject(outStream, highlightColor);
-
         pool.serializeObject(outStream, grid, serializationType);
         pool.serializeObject(outStream, showType, serializationType);
         pool.serializeObject(outStream, pool.context.view.getProperty(entity.filterProperty));
@@ -110,8 +106,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         entity = pool.context.entity.getGroupObject(ID);
 
         pool.deserializeCollection(this, inStream);
-
-        highlightColor = pool.readObject(inStream);
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);

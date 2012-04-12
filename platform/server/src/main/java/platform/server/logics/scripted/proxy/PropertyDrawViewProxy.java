@@ -39,10 +39,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.echoSymbols = echoSymbols;
     }
 
-    public void setHighlightColor(Color highlightColor) {
-        target.highlightColor = highlightColor;
-    }
-
     public void setMinimumCharWidth(int minimumCharWidth) {
         target.setMinimumCharWidth(minimumCharWidth);
     }

@@ -156,13 +156,11 @@ public class LsfLogicsParserDesignTest {
     public void testSetGroupViewProperties() throws Exception {
         setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
                   "    GROUP(s) {\n" +
-                  "        highlightColor = #321233;\n" +
                   "        tableRowsCount = 10;\n" +
                   "        needVerticalScroll = FALSE;\n" +
                   "    }\n" +
                   "}");
 
-        assertEquals(sGroup.highlightColor, new Color(0x321233));
         assertEquals((long) sGroup.tableRowsCount, 10);
         assertEquals(sGroup.needVerticalScroll, false);
     }
@@ -188,7 +186,6 @@ public class LsfLogicsParserDesignTest {
                   "\n" +
                   "    PROPERTY(storeSizeName(s)) {\n" +
                   "        echoSymbols = FALSE;\n" +
-                  "        highlightColor = #120BAC;\n" +
                   "        minimumSize = (321, 123);" +
                   "    }\n" +
                   "\n" +
@@ -220,7 +217,6 @@ public class LsfLogicsParserDesignTest {
         assertTrue(barView.hide);
         assertEquals(barView.regexp, "[\\d]+");
 
-        assertEquals(storeSizeView.highlightColor, new Color(0x120BAC));
         assertEquals(storeSizeView.minimumSize, new Dimension(321, 123));
 
         assertEquals(nameView.getMinimumCharWidth(), 11);

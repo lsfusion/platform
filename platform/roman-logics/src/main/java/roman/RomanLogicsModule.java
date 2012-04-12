@@ -4755,16 +4755,17 @@ public class RomanLogicsModule extends LogicsModule {
 //            getPropertyDraw(oneShipmentSku).forceViewType = ClassViewType.PANEL;
 
             PropertyDrawEntity quantityColumn;
+            LP highlightColor = addCProp(ColorClass.instance, new Color(255, 128, 128));
             if (box) {
                 addPropertyDraw(quantityListSku, objSupplierBox, objSku);
                 addPropertyDraw(quantityShipDimensionShipmentSku, objSupplierBox, objShipment, objSku);
                 quantityColumn = addPropertyDraw(quantitySupplierBoxBoxShipmentRouteSku, objSupplierBox, objShipment, objRoute, objSku);
 
-                PropertyObjectEntity diffListSupplierBoxProperty = addPropertyObject(diffListSupplierBox, objSupplierBox);
+                PropertyObjectEntity diffListSupplierBoxProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffListSupplierBox, 1), objSupplierBox);
                 getPropertyDraw(quantityDataList).setPropertyHighlight(diffListSupplierBoxProperty);
                 getPropertyDraw(quantitySupplierBox).setPropertyHighlight(diffListSupplierBoxProperty);
 
-                PropertyObjectEntity diffListShipSkuProperty = addPropertyObject(diffListShipSku, objSupplierBox, objShipment, objSku);
+                PropertyObjectEntity diffListShipSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffListShipSku, 1, 2, 3), objSupplierBox, objShipment, objSku);
                 getPropertyDraw(quantityDataListSku).setPropertyHighlight(diffListShipSkuProperty);
                 getPropertyDraw(quantityShipDimensionShipmentSku).setPropertyHighlight(diffListShipSkuProperty);
 
@@ -4781,7 +4782,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(invoicedShipmentRouteSku, objShipment, objRoute, objSku).setToDraw(objRoute.groupTo);
             addPropertyDraw(quantityShipmentRouteSku, objShipment, objRoute, objSku).setToDraw(objRoute.groupTo);
 
-            PropertyObjectEntity diffShipmentRouteSkuProperty = addPropertyObject(diffShipmentRouteSku, objShipment, objRoute, objSku);
+            PropertyObjectEntity diffShipmentRouteSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffShipmentRouteSku, 1, 2, 3), objShipment, objRoute, objSku);
             getPropertyDraw(invoicedShipmentRouteSku).setPropertyHighlight(diffShipmentRouteSkuProperty);
             getPropertyDraw(quantityShipmentRouteSku).setPropertyHighlight(diffShipmentRouteSkuProperty);
 
@@ -4816,10 +4817,10 @@ public class RomanLogicsModule extends LogicsModule {
             //getPropertyDraw(nameOriginCategoryArticleSkuShipmentDetail).forceViewType = ClassViewType.GRID;
             //getPropertyDraw(netWeightArticleSkuShipmentDetail).forceViewType = ClassViewType.GRID;
 
-            PropertyObjectEntity oneArticleProperty = addPropertyObject(oneArticleSkuShipmentDetail, objShipmentDetail);
-            PropertyObjectEntity oneSkuProperty = addPropertyObject(oneSkuShipmentDetail, objShipmentDetail);
-            PropertyObjectEntity oneArticleColorProperty = addPropertyObject(oneArticleColorShipmentDetail, objShipmentDetail);
-            PropertyObjectEntity oneArticleSizeProperty = addPropertyObject(oneArticleSizeShipmentDetail, objShipmentDetail);
+            PropertyObjectEntity oneArticleProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneArticleSkuShipmentDetail, 1), objShipmentDetail);
+            PropertyObjectEntity oneSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneSkuShipmentDetail, 1), objShipmentDetail);
+            PropertyObjectEntity oneArticleColorProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneArticleColorShipmentDetail, 1), objShipmentDetail);
+            PropertyObjectEntity oneArticleSizeProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneArticleSizeShipmentDetail, 1), objShipmentDetail);
 
             getPropertyDraw(nameCategoryArticleSkuShipmentDetail).setPropertyHighlight(oneArticleProperty);
             getPropertyDraw(nameUnitOfMeasureArticleSkuShipmentDetail).setPropertyHighlight(oneArticleProperty);
@@ -5137,8 +5138,6 @@ public class RomanLogicsModule extends LogicsModule {
             intraContainer.add(intraRow2);
             intraContainer.add(intraRow3);
 
-            design.setHighlightColor(new Color(255, 128, 128));
-
             if (box)
                 design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(this.findItemBox));
             else
@@ -5225,7 +5224,8 @@ public class RomanLogicsModule extends LogicsModule {
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
             setSelector(objFreight, true);
 
-            PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(diffPalletFreight, objFreight);
+            LP highlightColor = addCProp(ColorClass.instance, new Color(128, 255, 128));
+            PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffPalletFreight, 1), objFreight);
             getPropertyDraw(palletCountDataFreight).setPropertyHighlight(diffPalletFreightProperty);
             getPropertyDraw(palletNumberFreight).setPropertyHighlight(diffPalletFreightProperty);
 
@@ -5258,8 +5258,6 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
             design.get(objPallet.groupTo).grid.constraints.fillVertical = 1;
             design.get(objFreightBox.groupTo).grid.constraints.fillVertical = 2;
-
-            design.setHighlightColor(new Color(128, 255, 128));
 
             return design;
         }
@@ -5343,7 +5341,7 @@ public class RomanLogicsModule extends LogicsModule {
             setReadOnly(objFreight, true);
 //            addObjectActions(this, objFreight);
 
-            PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(diffPalletFreight, objFreight);
+            PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(128, 255, 128)), diffPalletFreight, 1), objFreight);
             getPropertyDraw(palletCountDataFreight).setPropertyHighlight(diffPalletFreightProperty);
             getPropertyDraw(palletNumberFreight).setPropertyHighlight(diffPalletFreightProperty);
 
@@ -5430,10 +5428,6 @@ public class RomanLogicsModule extends LogicsModule {
             design.addIntersection(design.getGroupObjectContainer(objSku.groupTo),
                     design.getGroupObjectContainer(objDirectInvoice.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
-
-
-            design.setHighlightColor(new Color(128, 255, 128));
 
             return design;
         }
@@ -6344,7 +6338,7 @@ public class RomanLogicsModule extends LogicsModule {
                      mainCompositionOriginSku, translationMainCompositionSku, mainCompositionSku,
                      additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku);
 
-            PropertyObjectEntity diffCountRelationCustomCategory10SkuProperty = addPropertyObject(diffCountRelationCustomCategory10Sku, objSku);
+            PropertyObjectEntity diffCountRelationCustomCategory10SkuProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(128, 255, 255)), diffCountRelationCustomCategory10Sku, 1), objSku);
             getPropertyDraw(nameSubCategoryDataSku).setPropertyHighlight(diffCountRelationCustomCategory10SkuProperty);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
@@ -6488,8 +6482,6 @@ public class RomanLogicsModule extends LogicsModule {
             //design.get(filterGroupCategory).drawToToolbar = false;
             //design.get(filterGroupCustomCategory10).drawToToolbar = false;
             //design.get(filterGroupCountry).drawToToolbar = false;
-
-            design.setHighlightColor(new Color(128, 255, 255));
 
             return design;
         }
@@ -7425,7 +7417,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(objImporter, objFreight, objArticle, quantityImporterFreightArticle, markupPercentImporterFreightArticle, priceFullKgImporterFreightArticle, minPriceRateImporterFreightArticle);
 
-            PropertyObjectEntity greaterPriceMinPriceImporterFreightArticleProperty = addPropertyObject(greaterPriceMinPriceImporterFreightArticle, objImporter, objFreight, objArticle);
+            LP highlightColor = addCProp(ColorClass.instance, new Color(255, 128, 128));
+            PropertyObjectEntity greaterPriceMinPriceImporterFreightArticleProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, greaterPriceMinPriceImporterFreightArticle, 1, 2, 3), objImporter, objFreight, objArticle);
             getPropertyDraw(minPriceRateImporterFreightArticle).setPropertyHighlight(greaterPriceMinPriceImporterFreightArticleProperty);
             getPropertyDraw(priceFullKgImporterFreightArticle).setPropertyHighlight(greaterPriceMinPriceImporterFreightArticleProperty);
 
@@ -7462,7 +7455,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(NDSImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(sumRegistrationImporterFreightSku, objImporter, objFreight, objSku);
 
-            PropertyObjectEntity greaterPriceMinPriceImporterFreightSkuProperty = addPropertyObject(greaterPriceMinPriceImporterFreightSku, objImporter, objFreight, objSku);
+            PropertyObjectEntity greaterPriceMinPriceImporterFreightSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, greaterPriceMinPriceImporterFreightSku, 1, 2, 3), objImporter, objFreight, objSku);
             getPropertyDraw(minPriceRateFreightSku).setPropertyHighlight(greaterPriceMinPriceImporterFreightSkuProperty);
             getPropertyDraw(priceFullKgImporterFreightSku).setPropertyHighlight(greaterPriceMinPriceImporterFreightSkuProperty);
 
@@ -7530,8 +7523,6 @@ public class RomanLogicsModule extends LogicsModule {
 
             design.get(objArticle.groupTo).grid.constraints.fillVertical = 3;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 3;
-
-            design.setHighlightColor(new Color(255, 128, 128));
 
             return design;
         }

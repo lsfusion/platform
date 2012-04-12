@@ -41,8 +41,6 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
     public ClientGrid grid;
     public ClientShowType showType;
 
-    public Color highlightColor;
-
     public List<ClientObject> objects = new ArrayList<ClientObject>();
 
     public boolean mayHaveChildren() {
@@ -135,7 +133,6 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, objects);
-        pool.writeObject(outStream, highlightColor);
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, showType);
         outStream.writeBoolean(needVerticalScroll);
@@ -148,8 +145,6 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
         pool.deserializeCollection(objects, inStream);
 
         parent = pool.deserializeObject(inStream);
-
-        highlightColor = pool.readObject(inStream);
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
@@ -201,14 +196,6 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
 
     public List<ClientGroupObject> getUpTreeGroups() {
         return BaseUtils.add(upTreeGroups, this);
-    }
-
-    public Color getHighlightColor() {
-        return highlightColor;
-    }
-
-    public void setHighlightColor(Color highlightColor) {
-        this.highlightColor = highlightColor;
     }
 
     public boolean isLastGroupInTree() {

@@ -22,7 +22,7 @@ classSIDToYesNo 'Да/нет по ИД'(string) = GROUP UNIQUE yesNo BY classSID
 CLASS language 'Язык' : doubleNamed;
 
 stringEqualsAll(string) = string == 'Все';
-dateDiffersCurrent(date) = date != currentDate();
+dateDiffersCurrent(date) = date IS DATE AND date != currentDate();
 
 CLASS ABSTRACT postedObject 'Объект с возможностью закрытия';
 TABLE postedObject (postedObject);

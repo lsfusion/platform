@@ -86,8 +86,7 @@ public class PanelController {
     public void setRowHighlight(Object value) {
         for (Map<ClientGroupObjectValue, PropertyController> propControllers : properties.values()) {
             for (PropertyController controller : propControllers.values()) {
-                ClientGroupObject groupObject = logicsSupplier.getSelectedGroupObject();
-                controller.setHighlight(value, groupObject == null ? null : groupObject.highlightColor);
+                controller.setHighlight(value);
             }
         }
     }
@@ -184,7 +183,7 @@ public class PanelController {
                 PropertyController propController = propControllers.get(updateKeys.getKey());
                 // так как может быть autoHide'ута
                 if (propController != null && rowHighlight == null) {
-                    propController.setHighlight(updateKeys.getValue(), updateCellHighlights.getKey().highlightColor);
+                    propController.setHighlight(updateKeys.getValue());
                 }
             }
         }

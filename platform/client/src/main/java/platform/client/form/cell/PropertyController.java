@@ -119,7 +119,7 @@ public class PropertyController implements CellViewListener {
         view.setToolTip(caption);
     }
 
-    public void setHighlight(Object highlight, Color highlightColor) {
-        view.setHighlight(highlight, highlightColor);
+    public void setHighlight(Object color) {
+        view.setHighlight(color);
     }
 }
