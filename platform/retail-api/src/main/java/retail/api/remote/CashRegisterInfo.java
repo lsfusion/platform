@@ -2,10 +2,10 @@ package retail.api.remote;
 
 import java.io.Serializable;
 
-public class ScalesInfo extends MachineryInfo {
+public class CashRegisterInfo extends MachineryInfo {
     public String directory;
-    
-    public ScalesInfo(Integer number, String nameModel, String handlerModel, String port, String directory) {
+
+    public CashRegisterInfo(Integer number, String nameModel, String handlerModel, String port, String directory) {
         this.number = number;
         this.nameModel = nameModel;
         this.handlerModel = handlerModel;

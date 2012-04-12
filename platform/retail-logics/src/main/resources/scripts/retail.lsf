@@ -3765,6 +3765,7 @@ nameFrontOffice 'Версия фронт офиса на кассе' = DATA STRI
 noteModel 'Примечание' = DATA STRING[200] (model) IN baseGroup;
 useModel 'Модель используется' = DATA BOOLEAN (model) IN baseGroup;
 lettersModel 'Преобразовать наименование товара В ЗАГЛАВНЫЕ БУКВЫ' = DATA BOOLEAN (model) IN baseGroup;
+handlerModel 'Обработчик' = DATA STRING[200] (model) IN baseGroup;
 
 
 frontOfficeCashRegisterModel 'Модель касс (ИД)' = DATA frontOffice (cashRegisterModel) IN idGroup;
@@ -3789,7 +3790,7 @@ nameModelCheckModel 'Модель прайс чекера' = nameModelCheck(mode
 
 FORM models 'Модели оборудования'
 OBJECTS m=model
-PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel
+PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel, handlerModel
 PROPERTIES(m) ADDFORM, EDITFORM, delete;                // либо так как ниже//
 //OBJECTS s=scalesModel, ch=checkModel, c=cashModel
 //PROPERTIES(ch) READONLY name, nameModelCheckModel, noteModel, useModel, maxProductModel
@@ -3813,17 +3814,17 @@ PROPERTIES(m) ADDFORM, EDITFORM, delete;                // либо так ка�
 
 FORM checkModel 'Модель прайс чекера'
 OBJECTS ch=checkModel FIXED PANEL
-PROPERTIES(ch) name, nameModelCheckModel, noteModel, useModel, maxProductModel
+PROPERTIES(ch) name, nameModelCheckModel, noteModel, handlerModel, useModel, maxProductModel
 EDIT checkModel OBJECT ch;
 
 FORM cashRegisterModel 'Модель касс'
 OBJECTS c=cashRegisterModel FIXED PANEL
-PROPERTIES(c) name, nameFrontOfficeCashRegisterModel, noteModel, useModel, dateToCashRegisterModel, lettersModel
+PROPERTIES(c) name, nameFrontOfficeCashRegisterModel, noteModel, handlerModel, useModel, dateToCashRegisterModel, lettersModel
 EDIT cashRegisterModel OBJECT c;
 
 FORM scalesModel 'Модель весов'
 OBJECTS s=scalesModel FIXED PANEL
-PROPERTIES(s) name, nameFlashScalesModel, noteModel, useModel, maxProductModel, maxTextScalesModel,
+PROPERTIES(s) name, nameFlashScalesModel, noteModel, handlerModel, useModel, maxProductModel, maxTextScalesModel,
               folderScalesModel, lettersModel, compositionScalesModel
 EDIT scalesModel OBJECT s;
 
@@ -3893,6 +3894,7 @@ cashRegisterModelCashRegister 'Модель ИД' = DATA cashRegisterModel (cash
 numberCashRegister 'Регистрационный номер кассы' = DATA STRING[100] (cashRegister) IN baseGroup;
 directoryCashRegister 'Директория обмена с кассой' = DATA STRING[100] (cashRegister) IN baseGroup;
 nameCashRegisterModelCashRegister 'Модель кассы' (cashRegister) = name(cashRegisterModelCashRegister(cashRegister)) IN baseGroup;
+handlerCashRegisterModelCashRegister 'Обработчик кассы' (cashRegister) = handlerModel(cashRegisterModelCashRegister(cashRegister)) IN baseGroup;
 statusCashRegister 'Статус кассы (на момент посл.передачи)' = DATA STRING[200] (cashRegister) IN baseGroup;
 resultCashRegister 'Результат передачи на кассу товаров' = DATA STRING[200] (cashRegister) IN baseGroup;
 dateCashRegister 'Дата фискализации кассового аппарата' = DATA DATE (cashRegister) IN baseGroup;
@@ -3907,6 +3909,7 @@ CLASS STATIC feature 'Свойство для оборудования'
 scalesModelScales 'Модель ИД' = DATA scalesModel (scales) IN idGroup;
 numberScales 'Заводской(серийный) номер ' = DATA STRING[100] (scales) IN baseGroup;
 nameScalesModelScales 'Модель весов' (scales) = name(scalesModelScales(scales)) IN baseGroup;
+handlerScalesModelScales 'Обработчик весов' (scales) = handlerModel(scalesModelScales(scales)) IN baseGroup;
 dateScales 'Дата следующей обязательной поверки' = DATA DATE (scales) IN baseGroup;
 passScales 'свойство ИД' = DATA feature (scales) IN idGroup;
 namePassScales 'Свойство товара [Годен до] помещать в ингредиенты' (scales) = name(UNION OVERRIDE feature.always IF scales IS scales,
@@ -4045,7 +4048,7 @@ FORM groupsCheck 'Группы прайс чекеров'
     PROPERTIES(grch)          ADDFORM, EDITFORM, delete
 
     OBJECTS ch=check
-    PROPERTIES(ch)   READONLY nppMachinery, descriptionMachinery, portMachinery, useMachinery
+    PROPERTIES(ch)   READONLY nppMachinery, descriptionMachinery, nameModelCheckModel, portMachinery, useMachinery
     FILTERS isGroupCheckCheck(grch, ch)
 ;
 
@@ -7535,6 +7538,8 @@ departmentStoreMachineryPriceTransaction (transaction) = departmentStoreGroupMac
 
 equipmentServerMachineryPriceTransaction (transaction) = equipmentServerGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
 
+sidEquipmentServerMachineryPriceTransaction (transaction) = sidEquipmentServer(equipmentServerMachineryPriceTransaction (transaction));
+
 dateMachineryPriceTransaction 'Дата' = DATA DATE (machineryPriceTransaction);
 dateMachineryPriceTransaction (transaction) <- currentDate() ON ASSIGN transaction IS machineryPriceTransaction;
 
@@ -7616,6 +7621,16 @@ statusEquipmentPriceTransactionDocument 'Статус загрузки в обо
 selectedMachinery 'Вкл' = SESSION DATA BOOLEAN (machinery);
 
 GROUP snapshotMachineryPriceGroup 'Перезагрузка прайса' : publicGroup;
+
+//--------------------Сообщения об ошибках транзакций--------------------//
+CLASS machineryPriceTransactionError 'Ошибка';
+dataMachineryPriceTransactionError 'Сообщение об ошибке' = DATA STRING[200] (machineryPriceTransactionError) IN baseGroup;
+dateMachineryPriceTransactionError 'Время возникновения' = DATA DATETIME (machineryPriceTransactionError) IN baseGroup;
+errorTraceMachineryPriceTransactionError 'След исключения' = DATA TEXT (machineryPriceTransactionError) IN baseGroup;
+machineryPriceTransactionMachineryPriceTransactionError 'Транзакция (ID)' = DATA machineryPriceTransaction(machineryPriceTransactionError) IN baseGroup;
+quantityMachineryPriceTransactionErrorMachineryPriceTransaction 'Количество ошибок' (MachineryPriceTransaction) = GROUP SUM 1 IF machineryPriceTransactionMachineryPriceTransactionError (machineryPriceTransactionError) == MachineryPriceTransaction
+    BY machineryPriceTransactionMachineryPriceTransactionError (machineryPriceTransactionError) IN baseGroup;
+
 
 FORM groupMachineryInput 'Выбор оборудования для перезагрузки прайса'
 
@@ -7788,6 +7803,7 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
     OBJECTS t = machineryPriceTransaction
     PROPERTIES(t) READONLY snapshotMachineryPriceTransaction, nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
                            descriptionMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction,
+                           quantityMachineryPriceTransactionErrorMachineryPriceTransaction HIGHLIGHTIF quantityMachineryPriceTransactionErrorMachineryPriceTransaction(t),
                            nppsMachineryPriceTransaction FORCE PANEL SHOWIF snapshotMachineryPriceTransaction(t)
     PROPERTIES(t) READONLY nameUserCreated, hostnameComputerCreated
     PROPERTIES(t)          ADDFORM, EDITFORM, delete
@@ -7798,7 +7814,38 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
     PROPERTIES(t, b) nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode
 
     FILTERS inMachineryPriceTransactionBarcode(t, b)
+
+    OBJECTS e = machineryPriceTransactionError
+    PROPERTIES(e)    dataMachineryPriceTransactionError, dateMachineryPriceTransactionError
+    PROPERTIES(e)  FORCE PANEL  errorTraceMachineryPriceTransactionError
+    FILTERS machineryPriceTransactionMachineryPriceTransactionError(e) == t
+
 ;
+
+DESIGN machineryPriceTransactions FROM DEFAULT {
+
+    main {
+
+        t.box {
+            preferredSize = ( -1, 300);
+            minimumSize = ( -1, 300);
+            maximumSize = ( -1, 300);
+        }
+
+        NEW specContainer {
+            tabbedPane = TRUE;
+            ADD b.box;
+            NEW errorContainer {
+               title = 'Сообщения об ошибках';
+               ADD e.box;
+               PROPERTY(errorTraceMachineryPriceTransactionError(e)) {
+                  fillHorizontal = 1;
+                  panelLabelAbove = TRUE;
+               }
+            }
+        }
+    }
+}
 
 //----------------------------------- Печать ценников -------------------------------------------------------
 

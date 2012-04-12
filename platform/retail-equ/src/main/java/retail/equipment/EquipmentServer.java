@@ -2,17 +2,19 @@ package retail.equipment;
 
 import org.apache.log4j.Logger;
 import platform.interop.RemoteLoaderInterface;
-import retail.api.remote.PriceTransaction;
-import retail.api.remote.RetailRemoteInterface;
-import retail.api.remote.ScalesInfo;
+import retail.api.remote.*;
 
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.rmi.*;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.List;
+import java.util.*;
 
 public class EquipmentServer {
-    
+
     private Thread thread;
 
     protected final static Logger logger = Logger.getLogger(EquipmentServer.class);
@@ -20,9 +22,9 @@ public class EquipmentServer {
     public EquipmentServer(final String equServerID, final String serverUrl, final int millis) {
 
         thread = new Thread(new Runnable() {
-            
-            private RetailRemoteInterface remote = null;            
-            
+
+            private RetailRemoteInterface remote = null;
+
             @Override
             public void run() {
 
@@ -56,9 +58,7 @@ public class EquipmentServer {
 
                         if (remote != null) {
 
-                            //PriceTransaction transaction = remote.readNextPriceTransaction(equServerID);
-                            List<ScalesInfo> transactionList = remote.readScalesInfo(equServerID);
-                            transactionList.add(null);
+                            processTransactionInfo(remote, equServerID);
                             logger.info("transaction complete");
                         }
 
@@ -76,9 +76,48 @@ public class EquipmentServer {
                 }
             }
         });
-        
+
         thread.start();
     }
+
+
+    private void processTransactionInfo(RetailRemoteInterface remote, String equServerID) throws SQLException, RemoteException, FileNotFoundException, UnsupportedEncodingException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+        List<TransactionInfo> transactionInfoList = remote.readTransactionInfo(equServerID);
+        Collections.sort(transactionInfoList, COMPARATOR);
+        for (TransactionInfo<MachineryInfo> transaction : transactionInfoList) {
+
+            Map<String, List<MachineryInfo>> handlerModelMap = new HashMap<String, List<MachineryInfo>>();
+            for (MachineryInfo machinery : transaction.machineryInfoList) {
+                if (!handlerModelMap.containsKey(machinery.handlerModel))
+                    handlerModelMap.put(machinery.handlerModel, new ArrayList());
+                handlerModelMap.get(machinery.handlerModel).add(machinery);
+            }
+
+            for (Map.Entry<String, List<MachineryInfo>> entry : handlerModelMap.entrySet()) {
+                if (entry.getKey() != null) {
+
+                    try{
+                    Class outerClass = Class.forName(entry.getKey().trim().split("\\$")[0]);
+                    Class innerClass = Class.forName(entry.getKey().trim());
+                    Object clsHandler = innerClass.getDeclaredConstructors()[0].newInstance(outerClass.newInstance());
+                    transaction.sendTransaction(clsHandler, entry.getValue());
+                    }
+                    catch (Exception e) {
+                        remote.errorReport(transaction.id, e);
+                    }
+                }
+            }
+
+            remote.succeedTransaction(transaction.id);
+        }
+
+    }
+
+    private static Comparator<TransactionInfo> COMPARATOR = new Comparator<TransactionInfo>() {
+        public int compare(TransactionInfo o1, TransactionInfo o2) {
+            return o1.dateTimeCode.compareTo(o2.dateTimeCode);
+        }
+    };
 
 
     public void stop() {
