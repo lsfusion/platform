@@ -33,6 +33,11 @@ public class ReportGenerator {
     private Map<String, List<List<Object>>> compositeColumnValues;
     private boolean toExcel;
 
+    // Для того, чтобы в отчетах данные выводились по несколько раз, нужно создать в .jrxml файле parameter строкового типа
+    // с таким именем, и в default value expression вписать имя field'а, который будет содержать количество копий
+    // имя должно быть, как строковая константа, в двойных кавычках
+    private final String repeatPropertyFieldName = "REPORT_REPEAT_PROPERTY";
+
     private static class SourcesGenerationOutput {
         public Map<String, ClientReportData> data;
         // данные для свойств с группами в колонках
@@ -92,10 +97,26 @@ public class ReportGenerator {
         return new Pair<Map<String, Object>, JRDataSource>(params, rootSource);
     }
 
+    private String getRepeatCountPropName(String parentID) {
+        String propName = null;
+        JRParameter parameter = designs.get(parentID).getParametersMap().get(repeatPropertyFieldName);
+        if (parameter != null) {
+            propName = parameter.getDefaultValueExpression().getText();
+            if (propName != null && propName.length() > 1) {
+                propName = propName.substring(1, propName.length()-1);
+            } else {
+                propName = null;
+            }
+        }
+        return propName;
+    }
+
     private ReportDependentDataSource iterateChildSubreports(String parentID, Map<String, Object> params) throws JRException {
         Map<String, Object> localParams = new HashMap<String, Object>();
         List<ReportDependentDataSource> childSources = new ArrayList<ReportDependentDataSource>();
-        ReportDependentDataSource source = new ReportDependentDataSource(data.get(parentID), childSources);
+
+        String repeatCountPropName = getRepeatCountPropName(parentID);
+        ReportDependentDataSource source = new ReportDependentDataSource(data.get(parentID), childSources, repeatCountPropName);
 
         for (String childID : hierarchy.get(parentID)) {
             ReportDependentDataSource childSource = iterateChildSubreports(childID, localParams);
