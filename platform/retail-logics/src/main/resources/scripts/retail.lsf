@@ -3588,8 +3588,14 @@ DESIGN orderSuppliers FROM DEFAULT{
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
-    ADD o.historyGroup BEFORE functions.box;
-    ADD o.postedGroup BEFORE functions.box;
+    ADD o.historyGroup BEFORE functions.box {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    };
+    ADD o.postedGroup BEFORE functions.box {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    };
     POSITION o.historyGroup TO THE LEFT o.postedGroup;
 }
 
@@ -8300,319 +8306,6 @@ FORM pricesRegister 'Реестр цен' PRINT
     FILTERS inShipmentShipmentDetail(s, d)
 ;
 
-
-//FORM shipment 'Поставка'
-//    OBJECTS s=shipment FIXED PANEL
-//    PROPERTIES (s) nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
-//                   nameSupplierShipment, ordersShipment, toFillShipmentDetailsShipment,
-//                   percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
-//                   carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
-//                   noteShipment, toShowPriceImporterShipment, toShowWareShipment, nameRegisterCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s)
-//
-//    OBJECTS d=shipmentDetail
-//    PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
-//                    supplierPriceShipmentDetail BACKGROUND isAllowPriceItemShipment(d), supplierMarkupShipmentDetail SHOWIF toShowPriceImporterShipment(s),
-//                    importerPriceShipmentDetail READONLY SHOWIF toShowPriceImporterShipment(s), dateFitToShipmentDetail,
-//                    balanceBeforeShipmentShipmentDetail, numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail,
-//                    sumDetailSupplierVATShipmentDetail, sumSupplierShipmentDetail, nameWareShipmentDetail SHOWIF toShowWareShipment(s),
-//                    priceWareShipmentDetail SHOWIF toShowWareShipment(s), numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
-//                    retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail, ADDOBJ, delete
-//    PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail,
-//                               controlExpiryShipmentDetail, isManufacturedShipmentDetail, isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail,
-//                               hintShipmentDetail, nameCountryShipmentDetail, namebanRevaluationItemDepartmentShipmentDetail,
-//                               curImporterPriceShipmentDetail, curSupplierPriceShipmentDetail, curDataRetailRangeShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
-//                               dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curPriceWareShipmentDetail SHOWIF inWareShipmentDetail(d)
-//
-//
-//    PROPERTIES inputMultipleItemsShipment(s) TODRAW d, addShipmentDetailBarcode(s) TODRAW d
-//
-//    FILTERS inShipmentShipmentDetail(s, d)
-//
-//    OBJECTS i=item
-//
-//    PROPERTIES (i) nameAttributeItem
-//    PROPERTIES (i, s) minAllowPriceItemShipment, maxAllowPriceItemShipment, quantityItemShipment, sumQuantityOrderedItemShipment
-//
-//    FILTERS isShippedOrOrderedItemShipment(i, s)
-//
-//    HINTNOUPDATE LIST isPostedShipment,
-//                  balanceBItemLedgerDateTime, priceImporterBLedgerDateTime, wareBLedgerDateTime, priceWareBLedgerDateTime,
-//                  rangeRetailBLedgerDateTime, priceRetailBLedgerDateTime, priceSupplierBLedgerDateTime, priceAccountBLedgerDateTime
-//
-//    EDIT shipment OBJECT s
-//;
-//
-//
-//DESIGN shipment FROM DEFAULT{
-//    main{
-//        preferredSize = (1024, 768);
-//        NEW specification.box BEFORE functions.box{
-//            tabbedPane = TRUE;
-//            ADD d.box {
-//                childConstraints = TO THE BOTTOM;
-//                title = 'Спецификация';
-//                ADD d.pricingShipmentDetailInfo {
-//                    childConstraints = TO THE BOTTOM;
-//                };
-//                ADD d.itemShipmentDetailInfo;
-//                NEW commonCase { title = 'Общая информация';
-//                    ADD PROPERTY (isFixPriceShipmentDetail(d));
-//                    ADD PROPERTY (importerPriceShipmentDetail(d));
-//                    ADD PROPERTY (dataWareRangeShipmentDetail(d));
-//                }
-//                NEW booleanCase { title = 'Вспомогательная информация';
-//                    ADD PROPERTY (controlExpiryShipmentDetail(d));
-//                    ADD PROPERTY (isManufacturedShipmentDetail(d));
-//                    ADD PROPERTY (isWeightShipmentDetail(d));
-//                    ADD PROPERTY (nameinActionItemDepartmentShipmentDetail(d));
-//                }
-//                POSITION d.pricingShipmentDetailInfo TO THE LEFT booleanCase;
-//                POSITION booleanCase TO THE LEFT commonCase;
-//                POSITION commonCase TO THE LEFT d.itemShipmentDetailInfo;
-//            };
-//            ADD i.box;
-//        };
-//        NEW header.box BEFORE specification.box {
-//            childConstraints = TO THE RIGHT;
-//
-//            NEW headerCol1 {
-//                childConstraints = TO THE BOTTOM;
-//
-//                ADD s.documentHeaderGroup {
-//                    childConstraints = TO THE RIGHT;
-//                    ADD PROPERTY(nameDepartmentStoreShipment);
-//                    ADD PROPERTY(numberObject);
-//                    ADD PROPERTY(seriesObject);
-//                    ADD PROPERTY(dateShipment);
-//                    ADD PROPERTY(timeShipment);
-//                };
-//
-//                NEW headerCol1Row2 {
-//                    childConstraints = TO THE RIGHT;
-//                    ADD s.documentPrmGroup {
-//                        childConstraints = TO THE BOTTOM;
-//                    }
-//                    ADD s.shipmentOrderGroup {
-//                        childConstraints = TO THE BOTTOM;
-//                    }
-//                }
-//            }
-//
-//            ADD s.documentSumGroup {
-//                childConstraints = TO THE BOTTOM;
-//            }
-//        };
-//    };
-//};
-//
-//FORM shipments 'Поставки'
-//    OBJECTS s=shipment
-//    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
-//                            nameSupplierShipment, quantityShipmentDetailsShipment, totalSumSupplierPriceShipment, totalSumIncVATShipment,
-//                            totalSumSupplierShipment, retailSumShipment,
-//                            statusPrintPriceTransactionDocument BACKGROUND showPrintLabelTransactionShipment(s),
-//                            statusEquipmentPriceTransactionDocument BACKGROUND showCreateMachineryPriceTransactionShipment(s)
-//
-//    PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-//
-//    PROPERTIES (s)          createShipmentLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionShipment(s),
-//                            createSnapshotShipmentLabelTransaction FORCE PANEL SHOWIF isPostedShipment(s),
-//                            createShipmentMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionShipment(s),
-//                            createSnapshotShipmentMachineryPriceTransaction FORCE PANEL SHOWIF isPostedShipment(s),
-//                            toPrintPricesRegister FORCE PANEL,
-//                            ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
-//                            postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
-//
-//    OBJECTS d=shipmentDetail
-//    PROPERTIES (d) READONLY  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
-//                             supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateFitToShipmentDetail,
-//                             balanceBeforeShipmentShipmentDetail, numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail,
-//                             sumDetailSupplierVATShipmentDetail, sumSupplierShipmentDetail, nameWareShipmentDetail, priceWareShipmentDetail,
-//                             numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail, retailMarkupShipmentDetail,
-//                             curRetailPriceShipmentDetail, retailPriceShipmentDetail
-//
-//    FILTERS inShipmentShipmentDetail(s, d)
-//;
-//
-//DESIGN shipments FROM DEFAULT {
-//    PROPERTY(objectClassName) {
-//        preferredCharWidth = 15;
-//    }
-//    PROPERTY (delete(s)) {
-//        panelLocation = TOOLBAR;
-//        askConfirm = TRUE;
-//    }
-//    POSITION s.historyGroup TO THE LEFT s.postedGroup;
-//    ADD d.grid.box BEFORE s.historyGroup;
-//}
-//
-////-----------------------------------Формы возврата поставщику-------------------------------------------------------
-//
-//@metaCodeInputMultipleItemsSupplier(returnSupplier);
-//
-//FORM commonInfoBatchReturnSupplierDetail 'Партии'
-//    OBJECTS b=shipmentDetail
-//    PROPERTIES(b) READONLY seriesObjectDetail, numberObjectDetail, dateShipmentDetail,
-//                           quantityShipmentDetail, supplierPriceShipmentDetail, dataSuppliersRangeShipmentDetail,
-//                           retailPriceShipmentDetail
-//    DIALOG shipmentDetail OBJECT b;
-//;
-//
-//
-//FORM returnSupplier 'Возврат поставщику'
-//    OBJECTS r=returnSupplier FIXED PANEL
-//    PROPERTIES(r) numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
-//                  nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
-//                  totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier,
-//                  retailSumReturnSupplier, numberDisposalReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
-//
-//    PROPERTIES(r) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
-//                  nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
-//                  readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
-//                  forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
-//                  commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
-//                  arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
-//                  sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
-//                  sumCostConsignmentDetail, totalSumVATConsignmentDetail
-//
-//    OBJECTS d=returnSupplierDetail
-//    PROPERTIES(d) numberReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
-//                  commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
-//                  supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail READONLY, numberSupplierRangeReturnSupplierDetail,
-//                  dataSuppliersRangeReturnSupplierDetail, sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
-//                  nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
-//                  retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail
-//    PROPERTIES(d) ADDOBJ, delete
-//    PROPERTIES inputMultipleItemsSupplierReturnSupplier(r) TODRAW d, addReturnSupplierDetailBarcode(r) TODRAW d
-//    PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
-//                                    curDataSupplierRangeReturnSupplierDetail(d), curRetailPriceReturnSupplierDetail(d),
-//                                    curDataRetailRangeReturnSupplierDetail(d),
-//                                    controlExpiryReturnSupplierDetail(d), isManufacturedReturnSupplierDetail(d),
-//                                    isWeightReturnSupplierDetail(d), nameinActionItemDepartmentReturnSupplierDetail(d),
-//                                    hintReturnSupplierDetail(d), nameCountryReturnSupplierDetail(d),
-//                                    namebanRevaluationItemDepartmentReturnSupplierDetail(d), dataWareRangeReturnSupplierDetail(d),
-//                                    curNameWareReturnSupplierDetail(d), curPriceWareReturnSupplierDetail(d)
-//
-//    FILTERS isReturnSupplier(r, d)
-//
-//    EDIT returnSupplier OBJECT r
-//;
-//
-//FORM returnSuppliers 'Возвраты поставщику'
-//
-//    OBJECTS r=returnSupplier
-//    PROPERTIES(r) READONLY objectClassName, numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
-//                           nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
-//                           totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier, retailSumReturnSupplier
-//    PROPERTIES (r) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-//
-//    PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
-//                  ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
-//
-//    OBJECTS d=returnSupplierDetail
-//    PROPERTIES(d) READONLY numberReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
-//                           commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
-//                           supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail,
-//                           dataSuppliersRangeReturnSupplierDetail, sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
-//                           nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
-//                           retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail
-//    FILTERS isReturnSupplier(r, d)
-//;
-//
-//DESIGN returnSupplier FROM DEFAULT {
-//
-//    NEW specification.box BEFORE functions.box{
-//        tabbedPane = TRUE;
-//
-//        ADD d.box{
-//            title = 'Спецификация';
-//            ADD d.grid{
-//                fillVertical = 12;
-//            };
-//            ADD d.panel{
-//            childConstraints = TO THE RIGHT;
-//                NEW curVal {
-//                    childConstraints = TO THE BOTTOM;
-//                    title = 'Текущие ценовые параметры';
-//                    ADD PROPERTY(curImporterPriceReturnSupplierDetail);
-//                    ADD PROPERTY(curSupplierPriceReturnSupplierDetail);
-//                    ADD PROPERTY(curDataSupplierRangeReturnSupplierDetail);
-//                    ADD PROPERTY(curRetailPriceReturnSupplierDetail);
-//                    ADD PROPERTY(curDataRetailRangeReturnSupplierDetail);
-//                };
-//                ADD d.itemReturnSupplierDetailInfo;
-//                NEW ware {
-//                    childConstraints = TO THE BOTTOM;
-//                    title = 'Посуда';
-//                    ADD PROPERTY(curNameWareReturnSupplierDetail);
-//                    ADD PROPERTY(curPriceWareReturnSupplierDetail);
-//                    ADD PROPERTY(dataWareRangeReturnSupplierDetail);
-//                };
-//            };
-//        };
-//        NEW consignment{
-//            title = 'Накладная';
-//            childConstraints = TO THE BOTTOM;
-//            ADD r.carConsignmentGroup;
-//            ADD r.issuanceConsignmentGroup;
-//            ADD r.loadingConsignmentGroup;
-//            ADD r.sumConsignmentGroup{
-//                childConstraints = TO THE RIGHT;
-//            };
-//            POSITION r.issuanceConsignmentGroup TO THE RIGHT r.carConsignmentGroup;
-//            POSITION r.loadingConsignmentGroup TO THE RIGHT r.carConsignmentGroup;
-//            POSITION r.sumConsignmentGroup TO THE RIGHT r.carConsignmentGroup;
-//        };
-//    };
-//
-//    NEW header.box BEFORE specification.box {
-//
-//        childConstraints = TO THE RIGHT;
-//
-//        NEW headerCol1 {
-//            childConstraints = TO THE BOTTOM;
-//
-//            ADD r.documentHeaderGroup {
-//                childConstraints = TO THE RIGHT;
-//                ADD PROPERTY(nameDepartmentStoreReturnSupplier);
-//                ADD PROPERTY(numberObject);
-//                ADD PROPERTY(seriesObject);
-//                ADD PROPERTY(dateReturnSupplier);
-//                ADD PROPERTY(timeReturnSupplier);
-//            };
-//
-//            ADD r.documentPrmGroup {
-//                childConstraints = TO THE BOTTOM;
-//            };
-//        }
-//
-//        ADD r.documentSumGroup{
-//            childConstraints = TO THE BOTTOM;
-//        };
-//    };
-//
-//    ADD PROPERTY(delete(d)){
-//        askConfirm=TRUE;
-//    }
-//}
-//
-//DESIGN returnSuppliers FROM DEFAULT{
-//    ADD PROPERTY(delete(r)){
-//        panelLocation=TOOLBAR;
-//        askConfirm=TRUE;
-//    }
-//
-//    ADD r.historyGroup BEFORE functions.box;
-//    ADD r.postedGroup BEFORE functions.box;
-//    POSITION r.historyGroup TO THE LEFT r.postedGroup;
-//}
-//
-//DESIGN commonInfoBatchReturnSupplierDetail FROM DEFAULT {
-//    main {
-//        preferredSize = (800, 500);
-//    };
-//}
-
 // --------------------------- Формы списания ---------------------------------
 @metaCodeInputMultipleItems(writeOff);
 
@@ -9252,7 +8945,7 @@ FORM priceChangeDocuments 'Акты переоценки'
     FILTERS documentPriceChangeDocumentDetail(pcd) == pc
 ;
 
-                                 /////////////////////////////////////////////
+//------------------------------------------- Приход товара----------------------------------------------------//
 
 toPrintPricesRegister 'Реестр цен' (shipment) = ACTION FORM pricesRegister OBJECTS s TOOLBAR IMAGE 'print.png';
 toPrintActOfRevaluationShipment 'Акт переоценки' (shipment) = toPrintActOfRevaluation(uniquePriceChangeShipment(shipment));
@@ -9403,8 +9096,14 @@ DESIGN shipments FROM DEFAULT {
 //        askConfirm = TRUE;
     }
 
-//    s.historyGroup {childConstraints = TO THE BOTTOM;}
-//    s.postedGroup {childConstraints = TO THE BOTTOM;}
+    s.historyGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    }
+    s.postedGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    }
     POSITION s.historyGroup TO THE LEFT s.postedGroup;
     ADD d.grid.box BEFORE s.historyGroup;
 }
@@ -9416,11 +9115,11 @@ DESIGN shipments FROM DEFAULT {
 toPrintActOfRevaluationReturnSupplier 'Акт переоценки' (returnSupplier) = toPrintActOfRevaluation(uniquePriceChangeReturnSupplier(returnSupplier));
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
-    OBJECTS b=batch    //
+    OBJECTS b=shipmentDetail    //
     PROPERTIES(b) READONLY seriesObjectDetail, numberObjectDetail, dateShipmentDetail,
                            quantityShipmentDetail, supplierPriceShipmentDetail, dataSuppliersRangeShipmentDetail,
                            retailPriceShipmentDetail
-    DIALOG batch OBJECT b;     // batchShipment
+    DIALOG shipmentDetail OBJECT b;     // batchShipment
 ;
 
 
@@ -9573,8 +9272,14 @@ DESIGN returnSuppliers FROM DEFAULT{
 //        askConfirm=TRUE;
     }
 
-    ADD r.historyGroup BEFORE functions.box;
-    ADD r.postedGroup BEFORE functions.box;
+    ADD r.historyGroup BEFORE functions.box {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    };
+    ADD r.postedGroup BEFORE functions.box {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    };
     POSITION r.historyGroup TO THE LEFT r.postedGroup;
 }
 
@@ -9992,6 +9697,14 @@ DESIGN inventories FROM DEFAULT {
     PROPERTY (delete(in)) {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
+    }
+    in.historyGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    }
+    in.postedGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
     }
     POSITION in.historyGroup TO THE LEFT in.postedGroup;
     ADD il.grid.box BEFORE in.historyGroup;
@@ -10729,6 +10442,14 @@ DESIGN statements FROM DEFAULT {
         panelLocation = TOOLBAR;
 //        askConfirm = TRUE;
     }
+    st.historyGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    }
+    st.postedGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    }
     POSITION st.historyGroup TO THE LEFT st.postedGroup;
     ADD d.grid.box BEFORE st.historyGroup;
 }
@@ -10942,6 +10663,14 @@ DESIGN actOfStudies FROM DEFAULT {
     PROPERTY (delete(a)) {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
+    }
+    a.historyGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    }
+    a.postedGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
     }
     POSITION a.historyGroup TO THE LEFT a.postedGroup;
     ADD i.box BEFORE a.historyGroup;
