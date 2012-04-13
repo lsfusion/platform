@@ -50,12 +50,7 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         return IsClassProperty.getProperty(getValueClass(), "value");
     }
 
-    @Override
-    public Set<Property> getDataChangeProps() {
-        return getClassDepends();
-    }
-
-    private Set<Property> getClassDepends() {
+    protected Set<Property> getClassDepends() {
         return BaseUtils.<Property>toSet(getInterfaceClassProperty().property, getValueClassProperty().property);
     }
 

@@ -91,8 +91,9 @@ public abstract class DataProperty extends UserProperty {
 
     @Override
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
-        return add(add(super.calculateLinks(),
-                new Pair<Property<?>, LinkType>(getInterfaceClassProperty().property, LinkType.ACTIONDERIVED)),
-                new Pair<Property<?>, LinkType>(getValueClassProperty().property, LinkType.ACTIONDERIVED)); // чтобы удаления классов зацеплять
+        Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
+        for(Property property : getClassDepends())
+            result.add(new Pair<Property<?>, LinkType>(property, LinkType.ACTIONDERIVED));
+        return BaseUtils.merge(super.calculateLinks(), result); // чтобы удаления классов зацеплять
     }
 }

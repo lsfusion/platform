@@ -7518,8 +7518,7 @@ META metaCodeInputMultipleItems (object)
                 }
             }
         }
-        // todo : не работает, но надо включить
-    //    SET quantityInputItem(item) <- NULL;
+        SET quantityInputItem(item) <- NULL;
     } TOOLBAR;
 
 END
