@@ -2754,6 +2754,11 @@ supplierContract 'Поставщик (ИД)' = DATA supplier (contract) IN idGro
 userContractSupplier 'Контракт (ИД)' = DATA contract (supplier) IN idGroup;
 //companySupplier 'Организация (ИД)' = DATA company (supplier) IN idGroup;
 
+countContracts 'Кол-во контрактов для отдел-поставщик' (supplier, departmentStore) =
+    GROUP SUM 1 IF (companyContract(contract) == companyStore(storeDepartmentStore(departmentStore))
+                    AND supplierContract(contract) == supplier)
+    BY supplier, departmentStore;
+
 payerSupplier 'Плательщик НДС' = DATA BOOLEAN (supplier) IN supplierGroup;
 scheduleSupplier 'Разрешить доп.заказ товаров вне графика' = DATA BOOLEAN (supplier) IN supplierGroup;
 surePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = DATA INTEGER (supplier) IN supplierGroup;
@@ -5589,6 +5594,14 @@ supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipmen
 nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN documentHeaderGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40 IN documentPrmGroup;
 
+contractShipment 'Договор' (shipment) = DATA contract (shipment) IN idGroup;
+
+contractShipment (shipment) <- overrideContractCompanySupplier(companyStore(storeDepartmentStore(departmentStoreShipment(shipment))), supplierShipment(shipment))
+                               IF (countContracts(supplierShipment(shipment), departmentStoreShipment(shipment)) == 1)
+                               ON CHANGE supplierShipment(shipment);
+
+numberContractShipment 'Договор' (shipment) = numberContract(contractShipment(shipment)) IN documentPrmGroup;
+
 carryingChargesShipment 'Транспортные расходы' (shipment) = DATA DOUBLE (shipment) IN documentSumGroup;
 
 inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) = DATA BOOLEAN (shipment, orderSupplier)
@@ -6439,6 +6452,14 @@ supplierReturnSupplierDetail 'Поставщик (ИД)' (returnSupplierDetail) 
 
 nameSupplierReturnSupplier 'Поставщик' (returnSupplier) = name(supplierReturnSupplier(returnSupplier)) IN documentPrmGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40;
+
+contractReturnSupplier 'Договор' (returnSupplier) = DATA contract (returnSupplier) IN idGroup;
+
+contractReturnSupplier (returnSupplier) <- overrideContractCompanySupplier(companyStore(storeDepartmentStore(departmentStoreReturnSupplier(returnSupplier))), supplierReturnSupplier(returnSupplier))
+                               IF (countContracts(supplierReturnSupplier(returnSupplier), departmentStoreReturnSupplier(returnSupplier)) == 1)
+                               ON CHANGE supplierReturnSupplier(returnSupplier);
+
+numberContractReturnSupplier 'Договор' (returnSupplier) = numberContract(contractReturnSupplier(returnSupplier)) IN documentPrmGroup;
 
 numberDisposalReturnSupplier '№ распоряжения на переоценку' (returnSupplier) = DATA STRING[30] (returnSupplier) IN documentPrmGroup;
 
@@ -9006,7 +9027,7 @@ toPrintActOfRevaluationShipment 'Акт переоценки' (shipment) = toPri
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s) nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
-                   nameSupplierShipment, ordersShipment, toFillShipmentDetailsShipment,
+                   nameSupplierShipment, numberContractShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
                    carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
                    noteShipment, toShowPriceImporterShipment, toShowWareShipment, nameRegisterCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s)
@@ -9178,7 +9199,7 @@ FORM commonInfoBatchReturnSupplierDetail 'Партии'
 FORM returnSupplier 'Возврат поставщику'
     OBJECTS r=returnSupplier FIXED PANEL
     PROPERTIES(r) numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
-                  nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
+                  nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, numberContractReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
                   totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier,
                   retailSumReturnSupplier, returnLossSupplierReturnSupplier, numberDisposalReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
