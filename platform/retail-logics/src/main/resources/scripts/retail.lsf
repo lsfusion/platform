@@ -2766,6 +2766,8 @@ signsSupplier 'Число знаков после запятой для стро
 marksSupplier 'Число знаков после зап.в сумме к оплате по накладной' = DATA INTEGER (supplier) IN supplierGroup;
 periodicitySupply 'Переодичность поставок, дней' = DATA INTEGER (supplier) IN supplierGroup;
 
+returnLossSupplier '% потерь при возврате' (supplier) = DATA DOUBLE (supplier) IN supplierGroup;
+
 emailOrderSupplierDepartmentStore 'e-mail для передачи заказа' = DATA STRING[100] (supplier, departmentStore)IN supplierGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 contactSupplierDepartmentStore 'Контактная информация' = DATA STRING[500] (supplier, departmentStore)IN supplierGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 controlSupplierDepartmentStore(supplier, departmentStore) = DATA yesNo (supplier, departmentStore)IN idGroup;
@@ -2876,7 +2878,8 @@ FORM supplier 'Поставщик'
                   accountantLegalEntity, showFormaccountantLegalEntity, phoneLegalEntity, showFormphoneLegalEntity,
                   UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
                   residentLegalEntity, manufacturerLegalEntity, surePercentSupplier, allowablePercentSupplier,
-                  afterDaysSupplier, periodicitySupply, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier, marksSupplier //dataActingLicenseLegalEntity, numberOverrideContractSupplier, dataOverrideAccountLegalEntity
+                  afterDaysSupplier, periodicitySupply, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier,
+                  returnLossSupplier, marksSupplier //dataActingLicenseLegalEntity, numberOverrideContractSupplier, dataOverrideAccountLegalEntity
 
     OBJECTS a=account
     PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
@@ -6419,6 +6422,11 @@ nameSupplierReturnSupplier 'Поставщик' (returnSupplier) = name(supplier
 
 numberDisposalReturnSupplier '№ распоряжения на переоценку' (returnSupplier) = DATA STRING[30] (returnSupplier) IN documentPrmGroup;
 
+returnLossSupplierReturnSupplier '% потерь при возврате' (returnSupplier) = DATA DOUBLE (returnSupplier) IN documentPrmGroup;
+
+returnLossSupplierReturnSupplier (returnSupplier) <- returnLossSupplier(supplierReturnSupplier(returnSupplier))
+    ON CHANGE supplierReturnSupplier(returnSupplier);
+
 // информация по товару
 
 GROUP itemReturnSupplierDetailInfo 'Информация по товару' : baseGroup;
@@ -6508,6 +6516,12 @@ retailPriceReturnSupplierDetail (returnSupplierDetail) <- retailPriceShipmentDet
                                                           ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
 @metaCodeTotals(returnSupplier);
+
+lossSumCleanSupplierReturnSupplier 'Сумма потерь при возврате (без НДС)' (returnSupplier) =
+    totalSumCleanSupplierReturnSupplier (returnSupplier) * returnLossSupplierReturnSupplier(returnSupplier);
+
+lossSumIncVATReturnSupplier 'Сумма НДС по потерям при возврате' (returnSupplier) =
+    totalSumIncVATReturnSupplier (returnSupplier) * returnLossSupplierReturnSupplier(returnSupplier);
 
 //текущие параметры
 
@@ -9146,7 +9160,7 @@ FORM returnSupplier 'Возврат поставщику'
     PROPERTIES(r) numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
                   nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
                   totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier,
-                  retailSumReturnSupplier, numberDisposalReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
+                  retailSumReturnSupplier, returnLossSupplierReturnSupplier, numberDisposalReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
     PROPERTIES(r) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
                   nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
