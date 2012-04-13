@@ -21,6 +21,9 @@
 		</box>
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
+	<parameter name="REPORT_REPEAT_FIELD" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["retail_quantityLabelTransactionBarcode"]]></defaultValueExpression>
+	</parameter>
 	<field name="l" class="java.lang.Integer"/>
 	<field name="retail_nameDepartmentStoreLabelTransaction" class="java.lang.String"/>
 	<field name="retail_descriptionLabelTransaction" class="java.lang.String"/>
@@ -34,6 +37,7 @@
 	<field name="retail_barcodeEx" class="java.lang.String"/>
 	<field name="retail_nameLabelTransactionBarcode" class="java.lang.String"/>
 	<field name="retail_priceLabelTransactionBarcode" class="java.lang.Double"/>
+	<field name="retail_quantityLabelTransactionBarcode" class="java.lang.Integer"/>
 	<detail>
 		<band height="130">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">

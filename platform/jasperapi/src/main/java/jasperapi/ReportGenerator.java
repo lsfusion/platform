@@ -36,7 +36,7 @@ public class ReportGenerator {
     // Для того, чтобы в отчетах данные выводились по несколько раз, нужно создать в .jrxml файле parameter строкового типа
     // с таким именем, и в default value expression вписать имя field'а, который будет содержать количество копий
     // имя должно быть, как строковая константа, в двойных кавычках
-    private final String repeatPropertyFieldName = "REPORT_REPEAT_PROPERTY";
+    private final String repeatPropertyFieldName = "REPORT_REPEAT_FIELD";
 
     private static class SourcesGenerationOutput {
         public Map<String, ClientReportData> data;
