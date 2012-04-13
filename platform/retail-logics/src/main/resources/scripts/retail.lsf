@@ -8922,7 +8922,7 @@ FORM actOfRevaluation 'Акт переоценки' PRINT
                              inPriceChangeDocumentEmployee(pc, e)
 ;
 
-toPrintActOfRevaluation 'Акт переоценки' (priceChangeDocument) = ACTION FORM actOfRevaluation OBJECTS pc TOOLBAR IMAGE 'print.png';
+toPrintActOfRevaluation 'Акт переоценки' (priceChangeDocument) = ACTION FORM actOfRevaluation OBJECTS pc TOOLBAR IMAGE 'print.png' CONFIRM;
 
 
 FORM priceChangeDocuments 'Акты переоценки'
@@ -9093,7 +9093,6 @@ DESIGN shipments FROM DEFAULT {
     }
     PROPERTY (toPrintActOfRevaluationShipment(s)) {
         panelLocation = TOOLBAR;
-//        askConfirm = TRUE;
     }
 
     s.historyGroup {
@@ -9269,7 +9268,6 @@ DESIGN returnSuppliers FROM DEFAULT{
     }
     ADD PROPERTY(toPrintActOfRevaluationReturnSupplier(r)){
         panelLocation=TOOLBAR;
-//        askConfirm=TRUE;
     }
 
     ADD r.historyGroup BEFORE functions.box {
@@ -10121,7 +10119,6 @@ DESIGN innerArrivals FROM DEFAULT {
     }
     PROPERTY (toPrintActOfRevaluationInnerArrival(a)) {
         panelLocation = TOOLBAR;
-        askConfirm = TRUE;
     }
 }
 
@@ -10440,7 +10437,6 @@ DESIGN statements FROM DEFAULT {
     }
     PROPERTY (toPrintActOfRevaluationStatement(st)) {
         panelLocation = TOOLBAR;
-//        askConfirm = TRUE;
     }
     st.historyGroup {
         childConstraints = TO THE BOTTOM;
