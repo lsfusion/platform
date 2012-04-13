@@ -291,7 +291,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         for(Map.Entry<Expr,BaseExpr> entry : innerOuter.entrySet()) // собсно будем паковать "общим" where исключив, одновременно за or not'им себя, чтобы собой не пакнуться
             packOuterInner.put(entry.getValue(), entry.getKey().followFalse(packQuery.getWhere().and(packWhere.or(entry.getKey().getWhere().not())).not(), true));
 
-        if((thisExpr==null || BaseUtils.hashEquals(packQuery,query)) && BaseUtils.hashEquals(BaseUtils.reverse(innerOuter),packOuterInner)) { // если изменилось погнали по кругу, или же один раз
+        if(BaseUtils.hashEquals(packQuery,query) && BaseUtils.hashEquals(BaseUtils.reverse(innerOuter),packOuterInner)) { // если изменилось погнали по кругу, или же один раз
             if(thisExpr!=null) {
                 Iterator<ClassExprWhere> i = thisExpr.packNoChange.iterator();
                 while(i.hasNext())
@@ -544,13 +544,19 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
         if(query.type.hasAdd()) {
             Expr result = CaseExpr.NULL;
-            for(GroupStatWhere<Expr> innerWhere : getSplitJoins(query.getWhere(), query.type, outerInner, false)) {
+            Collection<GroupStatWhere<Expr>> splitJoins = getSplitJoins(query.getWhere(), query.type, outerInner, false);
+            for(GroupStatWhere<Expr> innerWhere : splitJoins) {
                 Expr innerResult;
                 if(!innerWhere.keyEqual.isEmpty()) { // translatе'им expr
                     QueryTranslator equalTranslator = innerWhere.keyEqual.getTranslator();
                     innerResult = createInner(equalTranslator.translate(outerInner), query.translateQuery(equalTranslator).and(innerWhere.where));
-                } else
-                    innerResult = createInnerBase(outerInner, query.andSplit(innerWhere.where));
+                } else {
+                    if(splitJoins.size()>1) // если не изменилось, то ничего не делаем чтобы при паковке цикла не было (да )
+                        query = query.andSplit(innerWhere.where);
+                    else
+                        query.splitWhere = innerWhere.where;
+                    innerResult = createInnerBase(outerInner, query);
+                }
 
                 // берем keyEquals
                 result = query.type.add(result, innerResult);
