@@ -2749,8 +2749,8 @@ TABLE company (company);
 CLASS customer 'Покупатель' : legalEntity;
 TABLE customer (customer);
 
-companyContract 'Организация (ИД)' = DATA company (contract) IN idGroup;
-supplierContract 'Поставщик (ИД)' = DATA supplier (contract) IN idGroup;
+companyContract 'Организация (ИД)' = DATA company (contract) IN idGroup AUTOSET;
+supplierContract 'Поставщик (ИД)' = DATA supplier (contract) IN idGroup AUTOSET;
 userContractSupplier 'Контракт (ИД)' = DATA contract (supplier) IN idGroup;
 //companySupplier 'Организация (ИД)' = DATA company (supplier) IN idGroup;
 
@@ -2884,9 +2884,14 @@ FORM supplier 'Поставщик'
     OBJECTS a=account
     PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
 
+    OBJECTS co=company
+    PROPERTIES(co) name
+
     OBJECTS c=contractProvider
-    PROPERTIES(c) numberContract, nameCompanyContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract,
-                  dateToContract, currencyContract, warnContract, banContract, delayContract, showFormdelayContract, requestContract, noteContract, ADDOBJ, delete
+    PROPERTIES(c)  READONLY numberContract, nameCompanyContract, nameformContract, nameTypeContract, dateFromContract,
+                   dateToContract, currencyContract, noteContract, delayContract
+    PROPERTIES(c)  ADDFORM, EDITFORM, delete
+
     OBJECTS l=license
     PROPERTIES(l) dataLicense, dateFromLicense, dateToLicense, ADDOBJ, delete   //        tabaccoLicense
 
@@ -2898,16 +2903,23 @@ FORM supplier 'Поставщик'
     PROPERTIES(s, d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore  //namesureSupplierDepartmentStore, showFormNamesureSupplierDepartmentStore
     PROPERTIES       namesureSupplierDepartmentStoreOver(s, d, dt) BACKGROUND namesureSupplierDepartmentStoreDate(s, d, dt), showFormNamesureSupplierDepartmentStoreOver(s, d)
 
-    PROPERTIES(s,c) equalsSupplierContract
+//    PROPERTIES(s,c) equalsSupplierContract
     PROPERTIES(s,a) equalsLegalEntityAccount
     //PROPERTIES(s,l) equalsLegalEntityLicense
+
+    PROPERTIES(co, s)    numberOverrideContractCompanySupplier
+    PROPERTIES(co, s, c) equalsCompanySupplierContract
+
     FILTERS stringEqualsAll(y),
         inStoreTypeTradingNetwork (st, t),
         inStoreTypeStore (st, so),
         inTradingNetworkStoreTypeStoreDepartment(t, st, so, d),
         inSupplierContract(s, c),
         inSupplierAccount(s, a),
+        inCompanyContract(co, c),
         inSupplierLicense(s, l)
+    FILTERGROUP filters1
+        FILTER 'Показывать только поставщиков, с которыми есть договор' 'F5' isInCompanySupplier(co, s) DEFAULT
 
     FILTERGROUP filters9
         FILTER 'Показывать только с заполненными полями' 'F10' overrideSupplierDepartmentStoreDate(s, d, dt)
@@ -2921,7 +2933,8 @@ FORM supplier 'Поставщик'
 
 DESIGN supplier FROM DEFAULT {
     main{
-       s.box {
+        preferredSize = (1024, 768);
+        s.box {
             childConstraints = TO THE RIGHT;
 
             NEW oneCase {
@@ -2942,12 +2955,18 @@ DESIGN supplier FROM DEFAULT {
                 ADD s.docGroup;
                 ADD s.supplierGroup;
             }
-       }
+        }
 
-       NEW prop.box BEFORE functions.box{
+        NEW prop.box BEFORE functions.box{
             tabbedPane = TRUE;
             ADD a.box;
-            ADD c.box;
+            NEW firstCase {
+                title = 'Компания-договор';
+                childConstraints = TO THE RIGHT;
+                ADD co.box;
+                ADD c.box;
+            }
+
             ADD l.box;
 
             ADD d.box {
@@ -2959,7 +2978,8 @@ DESIGN supplier FROM DEFAULT {
                 fillHorizontal = 3;
                 };
             }
-       }
+
+        }
     }
 }
 
@@ -2983,8 +3003,8 @@ FORM company 'Компания'
     PROPERTIES(s) name
 
     OBJECTS c=contractProvider
-    PROPERTIES(c)  READONLY numberContract, nameSupplierContract, nameformContract, showFormNameformContract, nameTypeContract, dateFromContract,
-                   dateToContract, currencyContract, noteContract, delayContract, showFormdelayContract
+    PROPERTIES(c)  READONLY numberContract, nameSupplierContract, nameformContract, nameTypeContract, dateFromContract,
+                   dateToContract, currencyContract, noteContract, delayContract
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
 
     PROPERTIES(co, s)    numberOverrideContractCompanySupplier
