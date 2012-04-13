@@ -41,12 +41,12 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
     }
 
     @IdentityLazy
-    private PropertyImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
+    protected PropertyImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
         return IsClassProperty.getProperty(interfaces);
     }
 
     @IdentityLazy
-    private PropertyImplement<?, String> getValueClassProperty() {
+    protected PropertyImplement<?, String> getValueClassProperty() {
         return IsClassProperty.getProperty(getValueClass(), "value");
     }
 

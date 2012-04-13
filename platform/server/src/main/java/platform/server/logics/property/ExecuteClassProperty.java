@@ -20,24 +20,19 @@ public abstract class ExecuteClassProperty extends ExecuteProperty {
         super(sID, caption, classes);
     }
 
-    @IdentityLazy
-    public PropertyImplement<?, ClassPropertyInterface> getIsClassProperty() {
-        return IsClassProperty.getProperty(interfaces);
-    }
-
     protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
-        return getIsClassProperty().property.getUsedChanges(propChanges);
+        return getInterfaceClassProperty().property.getUsedChanges(propChanges);
     }
 
     protected abstract Expr getValueExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement);
     
     protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return getValueExpr(joinImplement).and(getIsClassProperty().mapExpr(joinImplement, propChanges, changedWhere).getWhere());
+        return getValueExpr(joinImplement).and(getInterfaceClassProperty().mapExpr(joinImplement, propChanges, changedWhere).getWhere());
     }
 
     @Override
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
         return BaseUtils.add(super.calculateLinks(),
-                new Pair<Property<?>, LinkType>(getIsClassProperty().property, LinkType.ACTIONUSED));
+                new Pair<Property<?>, LinkType>(getInterfaceClassProperty().property, LinkType.ACTIONUSED));
     }
 }

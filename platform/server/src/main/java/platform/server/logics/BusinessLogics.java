@@ -1546,6 +1546,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         private final Property<?> property;
 
         public int compareTo(LinksIn o) {
+            if(usedByConstraints && !o.usedByConstraints)
+                return 1;
+            if(!usedByConstraints && o.usedByConstraints)
+                return -1;
+
             for(LinkType linkType : LinkType.order) {
 //                int thisCount = countLinks.get(linkType).size();
 //                int thatCount = o.countLinks.get(linkType).size();
@@ -1556,10 +1561,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 if(thisCount<thatCount)
                     return -1;
             }
-            if(usedByConstraints && !o.usedByConstraints)
-                return 1;
-            if(!usedByConstraints && o.usedByConstraints)
-                return -1;
             assert (property.getSID().equals(o.property.getSID())==property.equals(o.property));
             return property.getSID().compareTo(o.property.getSID());
         }
@@ -1634,8 +1635,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         QuickMap<Property, LinksIn> linksMap = new SimpleMap<Property, LinksIn>();
         QuickSet<Property> checked = new QuickSet<Property>();
         for (Property property : getProperties())
-            if(!onlyCheck || property.isFalse)
-                fillLinks(property, linksMap, property.isFalse, checked);
+            if(property.isFalse)
+                fillLinks(property, linksMap, true, checked);
+        if(!onlyCheck) { // именно так чтобы правильные пометки usedByConstraints проставились
+            for (Property property : getProperties())
+                if(!property.isFalse)
+                    fillLinks(property, linksMap, false, checked);
+        }
 
         SortedSet<LinksIn> sortedLinks = new TreeSet<LinksIn>();
         for(int i=0;i<linksMap.size;i++)

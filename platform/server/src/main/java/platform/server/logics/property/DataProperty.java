@@ -1,5 +1,7 @@
 package platform.server.logics.property;
 
+import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.QuickSet;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
@@ -8,10 +10,9 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.session.*;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import static platform.base.BaseUtils.add;
 
 public abstract class DataProperty extends UserProperty {
 
@@ -86,5 +87,12 @@ public abstract class DataProperty extends UserProperty {
     @Override
     protected void fillDepends(Set<Property> depends, boolean derived) { // для Action'а связь считается слабой
         if(derived) depends.addAll(getDerivedDepends());
+    }
+
+    @Override
+    protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
+        return add(add(super.calculateLinks(),
+                new Pair<Property<?>, LinkType>(getInterfaceClassProperty().property, LinkType.ACTIONDERIVED)),
+                new Pair<Property<?>, LinkType>(getValueClassProperty().property, LinkType.ACTIONDERIVED)); // чтобы удаления классов зацеплять
     }
 }
