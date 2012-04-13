@@ -48,6 +48,7 @@ GROUP carConsignmentGroup 'Автомобиль' : baseGroup;
 GROUP issuanceConsignmentGroup 'Отпуск' : baseGroup;
 GROUP loadingConsignmentGroup 'ПРР' : baseGroup;
 GROUP sumConsignmentGroup 'Суммы' : baseGroup;
+GROUP printGroup 'Печать' : baseGroup;
 
 // ----------------------------------- Нумераторы ------------------------------------------ //
 
@@ -8251,7 +8252,7 @@ consignmentConsignmentDetail (consignmentDetail) = UNION EXCLUSIVE statementStat
                                                                    innerFlowInnerFlowDetail(consignmentDetail);
 
 // ---------------------------- Формы для накладных --------------------------------- //
-FORM consignment 'Накладная'
+FORM consignmentOne 'ТТН-1' PRINT
     OBJECTS c=consignment FIXED PANEL
 
     PROPERTIES (c) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
@@ -8271,6 +8272,25 @@ FORM consignment 'Накладная'
 
     FILTERS consignmentConsignmentDetail(d) == c
 ;
+
+FORM consignmentTwo 'ТН-2' PRINT
+    OBJECTS c=consignment FIXED PANEL
+
+    PROPERTIES (c) shipmentBaseConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
+                   forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
+                   sumQuantityConsignment, sumCostConsignmentDetail, totalSumVATConsignmentDetail
+
+    OBJECTS d=consignmentDetail
+
+    PROPERTIES(d) nameItemConsignmentDetail, shortNameConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
+                  costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
+                  noteInnerFlowDetail
+
+    FILTERS consignmentConsignmentDetail(d) == c
+;
+
+toPrintConsignmentOne 'ТТН-1' (consignment) = ACTION FORM consignmentOne OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
+toPrintConsignmentTwo 'ТН-2' (consignment) = ACTION FORM consignmentTwo OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
 @metaCodeInputMultipleItems(shipment);
@@ -9067,10 +9087,10 @@ FORM shipments 'Поставки'
                             createSnapshotShipmentLabelTransaction FORCE PANEL SHOWIF isPostedShipment(s),
                             createShipmentMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionShipment(s),
                             createSnapshotShipmentMachineryPriceTransaction FORCE PANEL SHOWIF isPostedShipment(s),
-                            toPrintPricesRegister FORCE PANEL,
+                            toPrintActOfRevaluationShipment FORCE PANEL SHOWIF needToPriceChangeShipment(s), toPrintPricesRegister FORCE PANEL,
                             ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
-    PROPERTIES (s) FORCE PANEL toPrintActOfRevaluationShipment SHOWIF needToPriceChangeShipment(s)
+
     OBJECTS d=shipmentDetail
     PROPERTIES (d) READONLY  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
                              supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateFitToShipmentDetail,
@@ -9086,12 +9106,12 @@ DESIGN shipments FROM DEFAULT {
     PROPERTY(objectClassName) {
         preferredCharWidth = 15;
     }
+    PROPERTY (toPrintActOfRevaluationShipment(s)) {
+        panelLocation = TOOLBAR;
+    }
     PROPERTY (delete(s)) {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
-    }
-    PROPERTY (toPrintActOfRevaluationShipment(s)) {
-        panelLocation = TOOLBAR;
     }
 
     s.historyGroup {
@@ -9168,10 +9188,10 @@ FORM returnSuppliers 'Возвраты поставщику'
                            totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier, retailSumReturnSupplier
     PROPERTIES (r) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
+    PROPERTIES(r) FORCE PANEL toPrintConsignmentOne, toPrintConsignmentTwo, toPrintActOfRevaluationReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
+
     PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
                   ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
-
-    PROPERTIES(r) FORCE PANEL toPrintActOfRevaluationReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
     OBJECTS d=returnSupplierDetail
     PROPERTIES(d) READONLY numberReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
@@ -9261,12 +9281,19 @@ DESIGN returnSupplier FROM DEFAULT {
 }
 
 DESIGN returnSuppliers FROM DEFAULT{
-    ADD PROPERTY(delete(r)){
+    ADD PROPERTY(toPrintConsignmentOne(r)){
         panelLocation=TOOLBAR;
-        askConfirm=TRUE;
+    }
+    ADD PROPERTY(toPrintConsignmentTwo(r)){
+        panelLocation=TOOLBAR;
     }
     ADD PROPERTY(toPrintActOfRevaluationReturnSupplier(r)){
         panelLocation=TOOLBAR;
+    }
+
+    ADD PROPERTY(delete(r)){
+        panelLocation=TOOLBAR;
+        askConfirm=TRUE;
     }
 
     ADD r.historyGroup BEFORE functions.box {
@@ -9857,9 +9884,10 @@ FORM userPriceChanges 'Переоценки товаров'
                             createSnapshotUserPriceChangeLabelTransaction FORCE PANEL SHOWIF isPostedUserPriceChange(u),
                             createUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionUserPriceChange(u),
                             createSnapshotUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF isPostedUserPriceChange(u),
+                            toPrintActOfRevaluation FORCE PANEL,
                             ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
                             postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
-    PROPERTIES (u) FORCE PANEL toPrintActOfRevaluation
+
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) READONLY numberUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
                             curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
@@ -9980,6 +10008,7 @@ FORM innerFlows 'Расходы в другие отделы'
     PROPERTIES (f) READONLY objectClassName, numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
                             nameRecipientDepartmentInnerFlow, quantityInnerFlowDetailsInnerFlow,
                             totalQuantityInnerFlow, accountSumInnerFlow
+    PROPERTIES (f) FORCE PANEL toPrintConsignmentOne, toPrintConsignmentTwo
 
     PROPERTIES (f) ADDFORM, EDITFORM SHOWIF isDraftInnerFlow(f), delete FORCE PANEL SHOWIF isDraftInnerFlow(f),
                    postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
@@ -9995,6 +10024,12 @@ FORM innerFlows 'Расходы в другие отделы'
 DESIGN innerFlows FROM DEFAULT {
     PROPERTY(objectClassName) {
         preferredCharWidth = 15;
+    }
+    PROPERTY (toPrintConsignmentOne(f)) {
+        panelLocation = TOOLBAR;
+    }
+    PROPERTY (toPrintConsignmentTwo(f)) {
+        panelLocation = TOOLBAR;
     }
     PROPERTY (delete(f)) {
         panelLocation = TOOLBAR;
@@ -10094,10 +10129,10 @@ FORM innerArrivals 'Приходы из других отделов'
                             createSnapshotInnerArrivalLabelTransaction FORCE PANEL SHOWIF isPostedInnerArrival(a),
                             createInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionInnerArrival(a),
                             createSnapshotInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF isPostedInnerArrival(a),
+                            toPrintActOfRevaluationInnerArrival FORCE PANEL SHOWIF needToPriceChangeInnerArrival(a),
                             ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
                             postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
 
-    PROPERTIES (a) FORCE PANEL toPrintActOfRevaluationInnerArrival SHOWIF needToPriceChangeInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) READONLY numberInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
@@ -10112,12 +10147,12 @@ DESIGN innerArrivals FROM DEFAULT {
     PROPERTY(objectClassName) {
         preferredCharWidth = 15;
     }
+    PROPERTY (toPrintActOfRevaluationInnerArrival(a)) {
+        panelLocation = TOOLBAR;
+    }
     PROPERTY (delete(a)) {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
-    }
-    PROPERTY (toPrintActOfRevaluationInnerArrival(a)) {
-        panelLocation = TOOLBAR;
     }
 }
 
@@ -10358,8 +10393,8 @@ DESIGN statement FROM DEFAULT {
                 title = 'Спецификация';
                 ADD d.panel{
                     POSITION d.pricingStatementDetailInfo TO THE LEFT d.itemStatementDetailInfo;
-                };
-            };
+                }
+            }
             NEW consignment{
                 title = 'Накладная';
                 childConstraints = TO THE BOTTOM;
@@ -10368,12 +10403,12 @@ DESIGN statement FROM DEFAULT {
                 ADD st.loadingConsignmentGroup;
                 ADD st.sumConsignmentGroup {
                     childConstraints = TO THE RIGHT;
-                };
+                }
                 POSITION st.issuanceConsignmentGroup TO THE RIGHT st.carConsignmentGroup;
                 POSITION st.loadingConsignmentGroup TO THE RIGHT st.carConsignmentGroup;
                 POSITION st.sumConsignmentGroup TO THE RIGHT st.carConsignmentGroup;
-            };
-        };
+            }
+        }
 
         NEW header.box BEFORE specification.box {
             childConstraints = TO THE RIGHT;
@@ -10408,14 +10443,16 @@ DESIGN statement FROM DEFAULT {
 FORM statements 'Отгрузки из розницы'
     OBJECTS st=statement
     PROPERTIES (st)  READONLY objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameDepartmentStoreStatement,
-                             nameCustomerStatement, quantityStatementDetailsStatement, totalQuantityStatement,
-                             sumWithoutNDSStatement, sumNDSStatement, sumStatement
+                     nameCustomerStatement, quantityStatementDetailsStatement, totalQuantityStatement,
+                     sumWithoutNDSStatement, sumNDSStatement, sumStatement
+    PROPERTIES (st)  FORCE PANEL toPrintConsignmentOne, toPrintConsignmentTwo, toPrintActOfRevaluationStatement SHOWIF needToPriceChangeStatement(st)
+
 
     PROPERTIES (st)  ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
                      postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
 
-    PROPERTIES (st) FORCE PANEL  nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-    PROPERTIES (st) FORCE PANEL toPrintActOfRevaluationStatement SHOWIF needToPriceChangeStatement(st)
+    PROPERTIES (st)  FORCE PANEL  nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
 
 
     OBJECTS d=statementDetail
@@ -10430,12 +10467,18 @@ DESIGN statements FROM DEFAULT {
     PROPERTY(objectClassName) {
         preferredCharWidth = 15;
     }
-    PROPERTY (delete(st)) {
+    PROPERTY (toPrintConsignmentOne(st)) {
         panelLocation = TOOLBAR;
-        askConfirm = TRUE;
+    }
+    PROPERTY (toPrintConsignmentTwo(st)) {
+        panelLocation = TOOLBAR;
     }
     PROPERTY (toPrintActOfRevaluationStatement(st)) {
         panelLocation = TOOLBAR;
+    }
+    PROPERTY (delete(st)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
     }
     st.historyGroup {
         childConstraints = TO THE BOTTOM;
@@ -11113,7 +11156,8 @@ NAVIGATOR {
     NEW printedForms 'Печатные формы' TO formsToolbar{
         ADD pricesRegister;
         ADD actOfRevaluation;
-        ADD consignment;
+        ADD consignmentOne;
+        ADD consignmentTwo;
     }
 
     ADD adminElement TO formsTree {
