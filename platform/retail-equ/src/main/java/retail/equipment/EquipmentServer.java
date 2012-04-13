@@ -96,14 +96,20 @@ public class EquipmentServer {
             for (Map.Entry<String, List<MachineryInfo>> entry : handlerModelMap.entrySet()) {
                 if (entry.getKey() != null) {
 
-                    try{
-                    Class outerClass = Class.forName(entry.getKey().trim().split("\\$")[0]);
-                    Class innerClass = Class.forName(entry.getKey().trim());
-                    Object clsHandler = innerClass.getDeclaredConstructors()[0].newInstance(outerClass.newInstance());
-                    transaction.sendTransaction(clsHandler, entry.getValue());
-                    }
-                    catch (Exception e) {
+                    try {
+                        Object clsHandler;
+                        if (entry.getKey().trim().split("\\$").length == 1) {
+                            Class cls = Class.forName(entry.getKey().trim());
+                            clsHandler = cls.newInstance();
+                        } else {
+                            Class outerClass = Class.forName(entry.getKey().trim().split("\\$")[0]);
+                            Class innerClass = Class.forName(entry.getKey().trim());
+                            clsHandler = innerClass.getDeclaredConstructors()[0].newInstance(outerClass.newInstance());
+                        }
+                        transaction.sendTransaction(clsHandler, entry.getValue());
+                    } catch (Exception e) {
                         remote.errorReport(transaction.id, e);
+                        return;
                     }
                 }
             }

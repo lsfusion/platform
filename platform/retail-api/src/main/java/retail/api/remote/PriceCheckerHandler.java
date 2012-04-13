@@ -1,6 +1,8 @@
 package retail.api.remote;
 
-import java.io.Serializable;
+import retail.api.remote.MachineryHandler;
+import retail.api.remote.PriceCheckerInfo;
+import retail.api.remote.TransactionPriceCheckerInfo;
 
 public interface PriceCheckerHandler extends MachineryHandler<TransactionPriceCheckerInfo, PriceCheckerInfo> {
 }

@@ -12,7 +12,6 @@ import platform.interop.Compare;
 import platform.server.auth.SecurityPolicy;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.CustomClass;
 import platform.server.classes.StringClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
@@ -23,7 +22,6 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
-import platform.server.session.Modifier;
 import retail.api.remote.*;
 
 import java.rmi.RemoteException;

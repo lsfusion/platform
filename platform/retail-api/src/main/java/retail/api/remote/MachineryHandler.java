@@ -1,5 +1,8 @@
 package retail.api.remote;
 
+import retail.api.remote.MachineryInfo;
+import retail.api.remote.TransactionInfo;
+
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;

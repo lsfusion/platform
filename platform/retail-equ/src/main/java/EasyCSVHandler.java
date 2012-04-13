@@ -1,4 +1,4 @@
-package retail.api.remote;
+import retail.api.remote.*;
 
 import java.io.*;
 import java.util.ArrayList;
