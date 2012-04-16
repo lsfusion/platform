@@ -24,6 +24,19 @@ CLASS language 'Язык' : doubleNamed;
 stringEqualsAll(string) = string == 'Все';
 dateDiffersCurrent(date) = date IS DATE AND date != currentDate();
 
+FORM dialogDate 'Выбор даты'
+    OBJECTS d = DATE FIXED PANEL
+    PROPERTIES(d) objValue = OBJVALUE
+;
+
+DESIGN dialogDate FROM DEFAULT {
+    PROPERTY (objValue) {
+        caption = 'Введите дату';
+        font = 'Tahoma bold 64';
+        panelLabelAbove = TRUE;
+    }
+}
+
 CLASS ABSTRACT postedObject 'Объект с возможностью закрытия';
 TABLE postedObject (postedObject);
 
@@ -347,7 +360,7 @@ META metaCodePostedObject (object)
     isPosted###object 'Закрыт' (object) = object IS object##Posted;
 
     post###object 'Закрыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object##Posted; } ] (object)
-                                    IF object IS object AND NOT object IS object##Posted CONFIRM;
+                                    IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
 
     unpost###object 'Открыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object; } ] (object)
                                       IF object IS object##Posted TOOLBAR CONFIRM;
@@ -7082,6 +7095,10 @@ dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateT
                                                                   dateTimeStudyInputDetail(ledger),
                                                                   dateTimeStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
+dateBalanceItemLedger 'Дата' (ledger) = dateInTime(dateTimeBalanceItemLedger(ledger));
+
+orderBalanceItemLedger (ledger) = LIST(dateTimeBalanceItemLedger(ledger), ledger);
+
 isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                               isPostedReturnSupplierDetail(ledger),
                                                               isPostedInnerArrivalDetail(ledger),
@@ -7106,6 +7123,8 @@ itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                  itemStudyInputDetail(ledger),
                                                  itemStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
+nameItemBalanceItemLedger 'Товар' (ledger) = nameAttributeItem(itemBalanceItemLedger(ledger));
+
 departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                             departmentStoreReturnSupplierDetail(ledger),
                                                             departmentStoreInnerArrivalDetail(ledger),
@@ -7117,6 +7136,8 @@ departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipm
                                                             departmentStoreBillDetail(ledger),
                                                             departmentStoreStudyInputDetail(ledger),
                                                             departmentStoreStudyOutputDetail(ledger) PERSISTENT INDEXED;
+
+nameDepartmentStoreBalanceItemLedger 'Отдел магазина' (ledger) = name(departmentStoreBalanceItemLedger(ledger));
 
 descriptionBalanceItemLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
                                                                              descriptionInnerArrivalDetail(ledger),
@@ -7185,7 +7206,7 @@ balanceAItemLedgerDateTime 'Остаток на дату' (item, departmentStore
                                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
 
 
-costBalanceItemLedgerBatch (ledger, batch) = DATA DOUBLE (balanceItemLedger, batch);
+costBalanceItemLedgerBatch 'Расписано' (ledger, batch) = DATA DOUBLE (balanceItemLedger, batch);
 
 signedCostBalanceItemLedgerBatch (ledger, batch) = IF ledger IS outBalanceItemLedger
                                                         THEN -costBalanceItemLedgerBatch(ledger, batch)
@@ -7195,6 +7216,7 @@ currentBalanceBatchLedger 'Текущий остаток' (batch, departmentStor
                                                           BY batch, departmentStoreBalanceItemLedger(ledger) PERSISTENT;
 
 costedBalanceItemLedger 'Расписано' (ledger) = GROUP SUM costBalanceItemLedgerBatch (ledger, batch) BY ledger PERSISTENT;
+needToCostBalanceItemLedger 'Требуется расчет себестоимости' (ledger) = quantityBalanceItemLedger(ledger) AND NOT quantityBalanceItemLedger(ledger) == costedBalanceItemLedger(ledger);
 
 quantityBatchBatch 'Кол-во' (ledger, batch) = quantityBatch(ledger) AND batch == ledger;
 
@@ -7249,11 +7271,45 @@ quantityBalanceItemLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityBatchBa
                                                                  quantityInBalanceItemLedgerBatch(ledger, batch),
                                                                  quantityInnerArrivalDetailBatch(ledger, batch);
 
-setCostBalanceItemLedgerBatch 'Рассчитать себестоимость' = ACTION (ledger) {
-    SET costBalanceItemLedgerBatch(ledger, batch) <- NULL;
+resetCostBalanceItemLedgerBatch 'Перерассчитать себестоимость' = ACTION (ledger) NEWSESSION AUTOAPPLY {
+    IF costedBalanceItemLedger(ledger) THEN {
+        SET costBalanceItemLedgerBatch(ledger, batch) <- NULL;
+        EXEC apply(); // todo : здесь apply не нужен, но без этого следующая команда повиснет
+    }
     SET costBalanceItemLedgerBatch(ledger, batch) <- quantityBalanceItemLedgerBatch(ledger, batch);
 }
 
+setBalanceItemLedgerBatchCost 'Дорассчитать себестоимость' = ACTION () NEWSESSION {
+
+    SET costBalanceItemLedgerBatch(ledger, batch) AND needToCostBalanceItemLedger(ledger) <- NULL;
+    EXEC apply();
+
+    FOR needToCostBalanceItemLedger(ledger) ORDER orderBalanceItemLedger(ledger) DO {
+        SET costBalanceItemLedgerBatch(ledger, batch) <- quantityBalanceItemLedgerBatch(ledger, batch);
+        EXEC apply();
+    }
+} CONFIRM;
+
+resetBalanceItemLedgerBatchCost 'Перерассчитать себестоимость' = ACTION () NEWSESSION {
+
+    FORM dialogDate MODAL;
+    IF formResult() == formResult.ok THEN {
+
+        FOR d == chosenDate('d') DO {
+            SET costBalanceItemLedgerBatch(ledger, batch) AND dateBalanceItemLedger(ledger) >= (d AS DATE) <- NULL;
+            EXEC apply();
+
+            FOR dateBalanceItemLedger(ledger) >= (d AS DATE) ORDER orderBalanceItemLedger(ledger) DO {
+                SET costBalanceItemLedgerBatch(ledger, batch) <- quantityBalanceItemLedgerBatch(ledger, batch);
+                EXEC apply();
+            }
+        }
+    }
+} CONFIRM;
+
+clearBalanceItemLedgerBatchCost 'Сбросить всю себестоимость' = ACTION() NEWSESSION AUTOAPPLY {
+    SET costBalanceItemLedgerBatch(ledger, batch) <- NULL;
+} CONFIRM;
 
 // --------------------------- Использование регистров количества (автоматическое заполнение) ---------------------------------
 
@@ -9404,7 +9460,7 @@ FORM shipments 'Поставки'
                             createSnapshotShipmentMachineryPriceTransaction FORCE PANEL SHOWIF isPostedShipment(s),
                             toPrintActOfRevaluationShipment FORCE PANEL SHOWIF needToPriceChangeShipment(s), toPrintPricesRegister FORCE PANEL,
                             ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
-                            postShipment FORCE GRID SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
+                            postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d) READONLY  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
@@ -11211,7 +11267,7 @@ FORM curBalanceItemDepartment 'Текущие остатки'
     ORDER BY dateTimeRetailPriceLedger DESC
 
     OBJECTS bil=balanceItemLedger
-    PROPERTIES(bil) descriptionBalanceItemLedger, dateTimeBalanceItemLedger, signedQuantityBalanceItemLedger READONLY, setCostBalanceItemLedgerBatch
+    PROPERTIES(bil) descriptionBalanceItemLedger, dateTimeBalanceItemLedger, signedQuantityBalanceItemLedger READONLY
     FILTERS isPostedBalanceItemLedger(bil) AND itemBalanceItemLedger(bil)==i AND departmentStoreBalanceItemLedger(bil)==dep
     ORDER BY dateTimeBalanceItemLedger DESC
 
@@ -11291,12 +11347,34 @@ DESIGN curBalanceItemDepartment FROM DEFAULT {
 
 FORM costItemLedger 'Себестоимость'
     OBJECTS bil = balanceItemLedger
-    PROPERTIES(bil) dateTimeBalanceItemLedger, descriptionBalanceItemLedger, quantityBalanceItemLedger
+    PROPERTIES(bil) READONLY dateTimeBalanceItemLedger, descriptionBalanceItemLedger, nameItemBalanceItemLedger, nameDepartmentStoreBalanceItemLedger,
+                             quantityBalanceItemLedger, costedBalanceItemLedger
+    PROPERTIES(bil)          resetCostBalanceItemLedgerBatch
+    ORDER BY dateTimeBalanceItemLedger
+
+    FILTERGROUP needToCostBalanceItemLedger
+        FILTER 'Нерасписанные строки' 'F9' needToCostBalanceItemLedger(bil)
 
     OBJECTS bt = batch
-    PROPERTIES(bt)  dateTimeBatch, descriptionBatch, quantityBatch
-    PROPERTIES(bil, bt) costBalanceItemLedgerBatch FORCE GRID
+    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, currentBalanceBatch
+    PROPERTIES(bil, bt)     costBalanceItemLedgerBatch FORCE GRID
+    FILTERS itemBatch(bt) == itemBalanceItemLedger(bil)
+    ORDER BY dateTimeBatch DESC
+
+    FILTERGROUP inBalanceItemLedgerBatch
+        FILTER 'Только расписанные партии' 'F10' costBalanceItemLedgerBatch (bil, bt) DEFAULT
+
+    PROPERTIES() setBalanceItemLedgerBatchCost, resetBalanceItemLedgerBatchCost, clearBalanceItemLedgerBatchCost
 ;
+
+DESIGN costItemLedger FROM DEFAULT {
+    NEW buttonCont BEFORE functions.box {
+        childConstraints = TO THE RIGHT;
+        ADD PROPERTY(setBalanceItemLedgerBatchCost);
+        ADD PROPERTY(resetBalanceItemLedgerBatchCost);
+        ADD PROPERTY(clearBalanceItemLedgerBatchCost);
+    }
+}
 
 //---------------------------------------------- Форма поставки товаров в отдел -------------------------------------//
 
@@ -11325,7 +11403,8 @@ FORM isSupplierItemDepartmentStore 'Ассортимент товаров в п�
     FILTERS           inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     FILTERS           hasParentItemGroupSku(g, i)
     FILTERGROUP filters10
-        FILTER 'Показывать поставляемые товары' 'F10' inSupplierItemDepartmentOver(sp, i, dep, t) DEFAULT;
+        FILTER 'Показывать поставляемые товары' 'F10' inSupplierItemDepartmentOver(sp, i, dep, t) DEFAULT
+;
 
 DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
     main{
@@ -11678,6 +11757,7 @@ NAVIGATOR {
             ADD labelType;
             ADD printLabelTransaction;
             ADD customLabelTransaction;
+            ADD dialogDate;
         }
         ADD parameters;
         ADD importData;

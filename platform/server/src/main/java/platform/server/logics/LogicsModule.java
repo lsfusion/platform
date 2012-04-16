@@ -600,7 +600,7 @@ public abstract class LogicsModule {
                 !hasElse ? null : (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>) readImplements.get(implCnt - 2);
 
         OrderedMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
-                toOrderedMap(readImplements.subList(resInterfaces + 1, implCnt - (hasElse ? 2 : 1)), ascending);
+                toOrderedMap(readImplements.subList(resInterfaces + 1, implCnt - (hasElse ? 2 : 1)), !ascending);
 
         List mapInterfaces = readImplements.subList(0, resInterfaces);
 
