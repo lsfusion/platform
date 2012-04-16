@@ -286,6 +286,14 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
     }
 
+    public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues) {
+        if (panelProperties.contains(property)) {
+            panel.updateCellForegroundValue(property, cellForegroundValues);
+        } else {
+            grid.updateCellForegroundValues(property, cellForegroundValues);
+        }
+    }
+
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
         if (panelProperties.contains(property)) {
             panel.updatePropertyValues(property, values);
@@ -299,6 +307,14 @@ public class GroupObjectController extends AbstractGroupObjectController {
             grid.updateRowBackgroundValues(rowBackground);
         } else {
             panel.updateRowBackgroundValue(BaseUtils.singleValue(rowBackground));
+        }
+    }
+
+    public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground) {
+        if (classView == ClassViewType.GRID) {
+            grid.updateRowForegroundValues(rowForeground);
+        } else {
+            panel.updateRowForegroundValue(BaseUtils.singleValue(rowForeground));
         }
     }
 

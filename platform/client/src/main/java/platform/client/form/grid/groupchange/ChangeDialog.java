@@ -297,6 +297,10 @@ public class ChangeDialog extends JDialog {
                 return null;
             }
 
+            public Color getForegroundColor(int row, int column) {
+                return null;
+            }
+
             public ClientFormController getForm() {
                 return form;
             }

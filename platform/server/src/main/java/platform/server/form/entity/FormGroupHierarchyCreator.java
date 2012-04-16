@@ -69,6 +69,10 @@ public class FormGroupHierarchyCreator {
                 Set<GroupObjectEntity> backgroundObjects = getGroupsByObjects(group.propertyBackground.getObjectInstances());
                 addDependencies(graph, backgroundObjects, true);
             }
+            if (group.propertyForeground != null) {
+                Set<GroupObjectEntity> foregroundObjects = getGroupsByObjects(group.propertyForeground.getObjectInstances());
+                addDependencies(graph, foregroundObjects, true);
+            }
         }
 
         for (FilterEntity filter : form.fixedFilters) {

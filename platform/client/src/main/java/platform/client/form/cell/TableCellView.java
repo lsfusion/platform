@@ -28,6 +28,7 @@ public class TableCellView extends JPanel implements CellView {
     private final ClientFormController form;
 
     private Color backgroundColor;
+    private Color foregroundColor;
     private ValueEventListener valueEventListener;
 
     @Override
@@ -79,6 +80,10 @@ public class TableCellView extends JPanel implements CellView {
 
             public Color getBackgroundColor(int row, int column) {
                 return backgroundColor;
+            }
+
+            public Color getForegroundColor(int row, int column) {
+                return foregroundColor;
             }
 
             public ClientFormController getForm() {
@@ -178,6 +183,17 @@ public class TableCellView extends JPanel implements CellView {
         }
 
         this.backgroundColor = (Color) background;
+
+        revalidate();
+        repaint();
+    }
+
+    public void setForeground(Object foreground) {
+        if (BaseUtils.nullEquals(this.foregroundColor, foreground)) {
+            return;
+        }
+
+        this.foregroundColor = (Color) foreground;
 
         revalidate();
         repaint();

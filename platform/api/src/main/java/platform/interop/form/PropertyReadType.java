@@ -6,4 +6,6 @@ public class PropertyReadType {
     public final static byte CELL_BACKGROUND = 2;
     public final static byte ROW_BACKGROUND = 3;
     public final static byte FOOTER = 4;
+    public final static byte CELL_FOREGROUND = 5;
+    public final static byte ROW_FOREGROUND = 6;
 }

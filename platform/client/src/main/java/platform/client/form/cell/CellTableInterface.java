@@ -16,6 +16,7 @@ public interface CellTableInterface {
 
     boolean isSelected(int row, int column);
     Color getBackgroundColor(int row, int column);
+    Color getForegroundColor(int row, int column);
 
     ClientFormController getForm();
 

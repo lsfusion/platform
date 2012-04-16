@@ -474,6 +474,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'SHOWIF' mappedProp=formMappedProperty { $options.setShowIf(getPropertyWithMapping($mappedProp.name, $mappedProp.mapping)); }
 		|	'READONLYIF' propObj=formPropertyObject { $options.setReadOnlyIf($propObj.property); }
 		|	'BACKGROUND' propObj=formPropertyObject { $options.setBackground($propObj.property); }
+		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	'FORCE' viewType=classViewType { $options.setForceViewType($viewType.type); }

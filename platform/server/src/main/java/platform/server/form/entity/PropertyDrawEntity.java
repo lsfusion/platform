@@ -37,6 +37,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public PropertyObjectEntity<?> propertyReadOnly;
     public PropertyObjectEntity<?> propertyFooter;
     public PropertyObjectEntity<?> propertyBackground;
+    public PropertyObjectEntity<?> propertyForeground;
 
     public boolean shouldBeLast = false;
     public ClassViewType forceViewType = null;
@@ -72,6 +73,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.propertyBackground = propertyBackground;
     }
 
+    public void setPropertyForeground(PropertyObjectEntity propertyForeground) {
+        this.propertyForeground = propertyForeground;
+    }
+
     public boolean isSelector() {
         return selector;
     }
@@ -94,6 +99,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         pool.serializeObject(outStream, propertyReadOnly);
         pool.serializeObject(outStream, propertyFooter);
         pool.serializeObject(outStream, propertyBackground);
+        pool.serializeObject(outStream, propertyForeground);
 
         outStream.writeBoolean(shouldBeLast);
         outStream.writeBoolean(readOnly);
@@ -111,6 +117,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         propertyReadOnly = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
         propertyFooter = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
         propertyBackground = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
+        propertyForeground = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
         readOnly = inStream.readBoolean();

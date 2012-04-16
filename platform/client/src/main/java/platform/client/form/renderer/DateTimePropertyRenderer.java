@@ -28,6 +28,7 @@ public class DateTimePropertyRenderer extends LabelPropertyRenderer
             setText(format.format(DateConverter.stampToDate((Timestamp) value)));
         else
             setText("");
+        setForeground(UIManager.getColor("TextField.foreground"));
         setSelected(isSelected, hasFocus);
     }
 

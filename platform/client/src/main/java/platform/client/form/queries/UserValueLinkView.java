@@ -55,6 +55,10 @@ public class UserValueLinkView extends ValueLinkView {
                 return null;
             }
 
+            public Color getForegroundColor(int row, int column) {
+                return null;
+            }
+
             public ClientFormController getForm() {
                 return logicsSupplier.getForm();
             }

@@ -21,6 +21,7 @@ public class TimePropertyRenderer extends LabelPropertyRenderer implements Prope
             setText(format.format(value));
         else
             setText("");
+        setForeground(UIManager.getColor("TextField.foreground"));
         setSelected(isSelected, hasFocus);
     }
 

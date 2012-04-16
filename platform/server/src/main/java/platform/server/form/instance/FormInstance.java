@@ -1004,10 +1004,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 if (propertyDraw.propertyBackground != null) {
                     usedProperties.add(propertyDraw.propertyBackground.property);
                 }
+                if (propertyDraw.propertyForeground != null) {
+                    usedProperties.add(propertyDraw.propertyForeground.property);
+                }
             }
             for (GroupObjectInstance group : groups) {
                 if (group.propertyBackground != null) {
                     usedProperties.add(group.propertyBackground.property);
+                }
+                if (group.propertyForeground != null) {
+                    usedProperties.add(group.propertyForeground.property);
                 }
                 group.fillUpdateProperties((Set<Property>) usedProperties);
             }
@@ -1247,16 +1253,28 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                         result.panelProperties.add(drawProperty.backgroundReader);
                     }
                 }
+                if (drawProperty.propertyForeground != null && (read || propertyUpdated(drawProperty.propertyForeground, drawGridObjects, changedProps))) {
+                    readProperties.put(drawProperty.foregroundReader, drawGridObjects);
+                    if (!inInterface) {
+                        result.panelProperties.add(drawProperty.foregroundReader);
+                    }
+                }
             } else if (previous!=null) // говорим клиенту что свойство надо удалить
                 result.dropProperties.add(drawProperty);
         }
 
-        for (GroupObjectInstance group : groups) // читаем highlight'ы
+        for (GroupObjectInstance group : groups) { // читаем highlight'ы
             if (group.propertyBackground != null) {
                 Set<GroupObjectInstance> gridGroups = (group.curClassView == GRID ? Collections.singleton(group) : new HashSet<GroupObjectInstance>());
                 if (refresh || (group.updated & UPDATED_CLASSVIEW) != 0 || propertyUpdated(group.propertyBackground, gridGroups, changedProps))
-                    readProperties.put(group, gridGroups);
+                    readProperties.put(group.rowBackgroundReader, gridGroups);
             }
+            if (group.propertyForeground != null) {
+                Set<GroupObjectInstance> gridGroups = (group.curClassView == GRID ? Collections.singleton(group) : new HashSet<GroupObjectInstance>());
+                if (refresh || (group.updated & UPDATED_CLASSVIEW) != 0 || propertyUpdated(group.propertyForeground, gridGroups, changedProps))
+                    readProperties.put(group.rowForegroundReader, gridGroups);
+            }
+        }
 
         return readProperties;
     }

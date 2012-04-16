@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ClientGroupObject extends IdentityObject implements ClientPropertyReader, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
+public class ClientGroupObject extends IdentityObject implements ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
 
     public ClientPropertyDraw filterProperty;
 
@@ -41,6 +41,9 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
     public ClientShowType showType;
 
     public List<ClientObject> objects = new ArrayList<ClientObject>();
+
+    public RowBackgroundReader rowBackgroundReader = new RowBackgroundReader();
+    public RowForegroundReader rowForegroundReader = new RowForegroundReader();
 
     public boolean mayHaveChildren() {
         return isRecursive || (parent != null && parent.groups.indexOf(this) != parent.groups.size() - 1);
@@ -84,18 +87,6 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
 
     public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
         return getKeysObjectsList(classViews, controllers);
-    }
-
-    public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
-        controller.updateRowBackgroundValues(readKeys);
-    }
-
-    public ClientGroupObject getGroupObject() {
-        return this;
-    }
-
-    public boolean shouldBeDrawn(ClientFormController form) {
-        return true;
     }
 
     private static IDGenerator idGenerator = new DefaultIDGenerator();
@@ -223,5 +214,41 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
             }
         }
         return gwtGroupObject;
+    }
+
+    public class RowBackgroundReader implements ClientPropertyReader {
+        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+            return ClientGroupObject.this.getKeysObjectsList(classViews, controllers);
+        }
+
+        public ClientGroupObject getGroupObject() {
+            return ClientGroupObject.this;
+        }
+
+        public boolean shouldBeDrawn(ClientFormController form) {
+            return true;
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
+            controller.updateRowBackgroundValues(readKeys);
+        }
+    }
+
+    public class RowForegroundReader implements ClientPropertyReader {
+        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+            return ClientGroupObject.this.getKeysObjectsList(classViews, controllers);
+        }
+
+        public ClientGroupObject getGroupObject() {
+            return ClientGroupObject.this;
+        }
+
+        public boolean shouldBeDrawn(ClientFormController form) {
+            return true;
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
+            controller.updateRowForegroundValues(readKeys);
+        }
     }
 }

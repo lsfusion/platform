@@ -27,6 +27,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
     private PropertyObjectDescriptor propertyReadOnly;
     private PropertyObjectDescriptor propertyFooter;
     private PropertyObjectDescriptor propertyBackground;
+    private PropertyObjectDescriptor propertyForeground;
 
     private boolean readOnly;
 
@@ -158,6 +159,15 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         updateDependency(this, "propertyBackground");
     }
 
+    public PropertyObjectDescriptor getPropertyForeground() { // usage через reflection
+        return propertyForeground;
+    }
+
+    public void setPropertyForeground(PropertyObjectDescriptor propertyForeground) {
+        this.propertyForeground = propertyForeground;
+        updateDependency(this, "propertyForeground");
+    }
+
     public void setCaption(String caption) { // usage через reflection
         client.caption = caption;
         updateDependency(this, "caption");
@@ -199,6 +209,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         pool.serializeObject(outStream, propertyReadOnly);
         pool.serializeObject(outStream, propertyFooter);
         pool.serializeObject(outStream, propertyBackground);
+        pool.serializeObject(outStream, propertyForeground);
 
         outStream.writeBoolean(shouldBeLast);
         outStream.writeBoolean(readOnly);
@@ -216,6 +227,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         propertyReadOnly = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
         propertyFooter = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
         propertyBackground = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
+        propertyForeground = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
         readOnly = inStream.readBoolean();

@@ -29,14 +29,17 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final PropertyObjectInstance<?> propertyReadOnly;
     public final PropertyObjectInstance<?> propertyFooter;
     public final PropertyObjectInstance<?> propertyBackground;
+    public final PropertyObjectInstance<?> propertyForeground;
 
     // извращенное множественное наследование
     public CaptionReaderInstance captionReader = new CaptionReaderInstance();
     public FooterReaderInstance footerReader = new FooterReaderInstance();
     public BackgroundReaderInstance backgroundReader = new BackgroundReaderInstance();
+    public ForegroundReaderInstance foregroundReader = new ForegroundReaderInstance();
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity, PropertyObjectInstance<P> propertyObject, GroupObjectInstance toDraw, List<GroupObjectInstance> columnGroupObjects,
-                                PropertyObjectInstance<?> propertyCaption, PropertyObjectInstance<?> propertyReadOnly, PropertyObjectInstance<?> propertyFooter, PropertyObjectInstance<?> propertyBackground) {
+                                PropertyObjectInstance<?> propertyCaption, PropertyObjectInstance<?> propertyReadOnly, PropertyObjectInstance<?> propertyFooter,
+                                PropertyObjectInstance<?> propertyBackground, PropertyObjectInstance<?> propertyForeground) {
         super(entity);
         this.propertyObject = propertyObject;
         this.toDraw = toDraw;
@@ -45,6 +48,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         this.propertyReadOnly = propertyReadOnly;
         this.propertyFooter = propertyFooter;
         this.propertyBackground = propertyBackground;
+        this.propertyForeground = propertyForeground;
     }
 
     public PropertyObjectInstance getPropertyObjectInstance() {
@@ -193,4 +197,30 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         }
     }
 
+    public class ForegroundReaderInstance implements PropertyReaderInstance {
+        public PropertyObjectInstance getPropertyObjectInstance() {
+            return propertyForeground;
+        }
+
+        public byte getTypeID() {
+            return PropertyReadType.CELL_FOREGROUND;
+        }
+
+        public int getID() {
+            return PropertyDrawInstance.this.getID();
+        }
+
+        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
+            List<ObjectInstance> result = PropertyDrawInstance.this.getKeysObjectsList();
+            if (!panelProperties.contains(this)) {
+                result = BaseUtils.mergeList(GroupObjectInstance.getObjects(toDraw.getUpTreeGroups()), result);
+            }
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return ServerResourceBundle.getString("logics.foreground") + "(" + PropertyDrawInstance.this.toString() + ")";
+        }
+    }
 }

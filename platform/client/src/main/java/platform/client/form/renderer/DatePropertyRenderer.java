@@ -27,6 +27,7 @@ public class DatePropertyRenderer extends LabelPropertyRenderer
             setText(format.format(DateConverter.sqlToDate((java.sql.Date)value)));
         } else
             setText("");
+        setForeground(UIManager.getColor("TextField.foreground"));
         setSelected(isSelected, hasFocus);
     }
 

@@ -43,6 +43,7 @@ import static platform.base.BaseUtils.nullTrim;
 public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
     public CaptionReader captionReader = new CaptionReader();
     public BackgroundReader backgroundReader = new BackgroundReader();
+    public ForegroundReader foregroundReader = new ForegroundReader();
     public FooterReader footerReader = new FooterReader();
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
@@ -597,11 +598,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public class BackgroundReader implements ClientPropertyReader {
         public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-            List<ClientObject> result = ClientPropertyDraw.this.getKeysObjectsList(classViews, controllers);
-            if (!panelProperties.contains(this)) {
-                result = BaseUtils.mergeList(ClientGroupObject.getObjects(groupObject.getUpTreeGroups()), result);
-            }
-            return result;
+            return ClientPropertyDraw.this.getKeysObjectsList(panelProperties, classViews, controllers);
         }
 
         public ClientGroupObject getGroupObject() {
@@ -614,6 +611,24 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
             controller.updateCellBackgroundValues(ClientPropertyDraw.this, readKeys);
+        }
+    }
+
+    public class ForegroundReader implements ClientPropertyReader {
+        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+            return ClientPropertyDraw.this.getKeysObjectsList(panelProperties, classViews, controllers);
+        }
+
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public boolean shouldBeDrawn(ClientFormController form) {
+            return ClientPropertyDraw.this.shouldBeDrawn(form);
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
+            controller.updateCellForegroundValues(ClientPropertyDraw.this, readKeys);
         }
     }
 }

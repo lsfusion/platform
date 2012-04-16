@@ -47,7 +47,8 @@ public class InstanceFactory {
                     parentInstances.put(getInstance(parentObject.getKey()), getInstance(parentObject.getValue()));
             }
 
-            groupInstances.put(entity, new GroupObjectInstance(entity, objects, entity.propertyBackground != null ? getInstance(entity.propertyBackground) : null, parentInstances));
+            groupInstances.put(entity, new GroupObjectInstance(entity, objects, entity.propertyBackground != null ? getInstance(entity.propertyBackground) : null,
+                    entity.propertyForeground != null ? getInstance(entity.propertyForeground) : null, parentInstances));
         }
 
         return groupInstances.get(entity);
@@ -97,7 +98,8 @@ public class InstanceFactory {
                     entity.propertyCaption == null ? null : getInstance(entity.propertyCaption),
                     entity.propertyReadOnly == null ? null : getInstance(entity.propertyReadOnly),
                     entity.propertyFooter == null ? null : getInstance(entity.propertyFooter),
-                    entity.propertyBackground == null ? null : getInstance(entity.propertyBackground)));
+                    entity.propertyBackground == null ? null : getInstance(entity.propertyBackground),
+                    entity.propertyForeground == null ? null : getInstance(entity.propertyForeground)));
         }
 
         return propertyDrawInstances.get(entity);

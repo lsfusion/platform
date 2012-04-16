@@ -121,4 +121,8 @@ public class PropertyController implements CellViewListener {
     public void setBackground(Object color) {
         view.setBackground(color);
     }
+
+    public void setForeground(Object color) {
+        view.setForeground(color);
+    }
 }

@@ -20,6 +20,7 @@ public class GridTableModel extends AbstractTableModel {
     private ClientGroupObjectValue[] columnKeys = new ClientGroupObjectValue[0];
     private String[] columnNames = new String[0];
     private Color[][] backgroundColor = new Color[0][];
+    private Color[][] foregroundColor = new Color[0][];
 
     public void update(ClientGroupObject groupObject,
                        List<ClientPropertyDraw> columnProperties,
@@ -28,7 +29,9 @@ public class GridTableModel extends AbstractTableModel {
                        Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnCaptions,
                        Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values,
                        Map<ClientGroupObjectValue, Object> mapRowBackgroundValues,
-                       Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapBackgroundValues) {
+                       Map<ClientGroupObjectValue, Object> mapRowForegroundValues,
+                       Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapBackgroundValues,
+                       Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapForegroundValues) {
 
         List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
         List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
@@ -61,17 +64,20 @@ public class GridTableModel extends AbstractTableModel {
         if (data.length == 0 || data[0].length != columnProps.length || data.length != rowKeys.size()) {
             data = new Object[rowKeys.size()][columnProps.length];
             backgroundColor = new Color[rowKeys.size()][columnProps.length];
+            foregroundColor = new Color[rowKeys.size()][columnProps.length];
         }
 
         for (int i = 0; i < rowKeys.size(); ++i) {
             ClientGroupObjectValue rowKey = rowKeys.get(i);
             Object rowBackground = mapRowBackgroundValues.get(rowKey);
+            Object rowForeground = mapRowForegroundValues.get(rowKey);
 
             for (int j = 0; j < columnProps.length; ++j) {
                 ClientGroupObjectValue cellKey = new ClientGroupObjectValue(rowKey, columnKeys[j]);
 
                 Map<ClientGroupObjectValue, Object> propValues = values.get(columnProps[j]);
                 Map<ClientGroupObjectValue, Object> backgroundValues = mapBackgroundValues.get(columnProps[j]);
+                Map<ClientGroupObjectValue, Object> foregroundValues = mapForegroundValues.get(columnProps[j]);
 
                 data[i][j] = propValues != null ? propValues.get(cellKey) : null;
 
@@ -81,6 +87,14 @@ public class GridTableModel extends AbstractTableModel {
                     backgroundColor[i][j] = (Color) backgroundValues.get(cellKey);
                 } else {
                     backgroundColor[i][j] = null;
+                }
+
+                if (rowForeground != null) {
+                    foregroundColor[i][j] = (Color) rowForeground;
+                } else if (foregroundValues != null) {
+                    foregroundColor[i][j] = (Color) foregroundValues.get(cellKey);
+                } else {
+                    foregroundColor[i][j] = null;
                 }
             }
         }
@@ -166,5 +180,9 @@ public class GridTableModel extends AbstractTableModel {
 
     public Color getBackgroundColor(int row, int column) {
         return backgroundColor[row][column];
+    }
+
+    public Color getForegroundColor(int row, int column) {
+        return foregroundColor[row][column];
     }
 }

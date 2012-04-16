@@ -425,6 +425,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LP defaultBackgroundColor;
     public LP defaultOverrideBackgroundColor;
+    public LP defaultForegroundColor;
+    public LP defaultOverrideForegroundColor;
 
     public LP sidCountry;
     protected LP generateDatesCountry;
@@ -1083,6 +1085,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);
         defaultOverrideBackgroundColor = addSUProp("defaultOverrideBackgroundColor", true, getString("logics.default.background.color"), Union.OVERRIDE, yellowColor, defaultBackgroundColor);
+        defaultForegroundColor = addDProp("defaultForegroundColor", getString("logics.default.foreground.color"), ColorClass.instance);
+        defaultOverrideForegroundColor = addSUProp("defaultOverrideForegroundColor", true, getString("logics.default.foreground.color"), Union.OVERRIDE, redColor, defaultForegroundColor);
 
         entryDictionary = addDProp("entryDictionary", getString("logics.dictionary"), dictionary, dictionaryEntry);
         termDictionary = addDProp(recognizeGroup, "termDictionary", getString("logics.dictionary.termin"), StringClass.get(50), dictionaryEntry);
@@ -2311,7 +2315,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private AdminFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.global.parameters"));
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, disableEmail, webHost, nameDefaultCountry, barcodePrefix, defaultBackgroundColor, restartServerAction, cancelRestartServerAction, checkAggregationsAction, recalculateAction, recalculateFollowsAction, packAction, runGarbageCollector});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, emailAccount, emailPassword,
+                    emailBlindCarbonCopy, disableEmail, webHost, nameDefaultCountry, barcodePrefix, defaultBackgroundColor,
+                    defaultForegroundColor, restartServerAction, cancelRestartServerAction, checkAggregationsAction, recalculateAction,
+                    recalculateFollowsAction, packAction, runGarbageCollector});
         }
     }
 

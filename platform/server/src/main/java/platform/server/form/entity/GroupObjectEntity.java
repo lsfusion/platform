@@ -61,6 +61,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public Integer pageSize;
 
     public PropertyObjectEntity<?> propertyBackground;
+    public PropertyObjectEntity<?> propertyForeground;
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
@@ -72,13 +73,14 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         pool.writeObject(outStream, banClassView);
         pool.serializeObject(outStream, treeGroup);
         pool.serializeObject(outStream, propertyBackground);
+        pool.serializeObject(outStream, propertyForeground);
         pool.serializeObject(outStream, filterProperty);
         outStream.writeBoolean(isParent != null);
         if (isParent != null) {
             pool.serializeMap(outStream, isParent);
         }
         pool.writeObject(outStream, pageSize);
-        pool.serializeObject(outStream, reportPathProp);
+//        pool.serializeObject(outStream, reportPathProp);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -87,12 +89,13 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         banClassView = pool.readObject(inStream);
         treeGroup = pool.deserializeObject(inStream);
         propertyBackground = pool.deserializeObject(inStream);
+        propertyForeground = pool.deserializeObject(inStream);
         filterProperty = pool.deserializeObject(inStream);
         if (inStream.readBoolean()) {
             isParent = pool.deserializeMap(inStream);
         }
         pageSize = pool.readObject(inStream);
-        reportPathProp = pool.deserializeObject(inStream);
+//        reportPathProp = pool.deserializeObject(inStream);
     }
 
     public Map<ObjectEntity, PropertyObjectEntity> isParent = null;

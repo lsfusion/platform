@@ -474,6 +474,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     @Override
+    public Color getForegroundColor(int row, int column) {
+        return null;
+    }
+
+    @Override
     public ClientFormController getForm() {
         return form;
     }

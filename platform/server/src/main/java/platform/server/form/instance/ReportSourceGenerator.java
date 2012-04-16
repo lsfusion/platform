@@ -155,7 +155,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
                 for (GroupObjectInstance group : groups) {
                     if (group.propertyBackground != null) {
-                        propertyList.add(new Pair<String, PropertyReaderInstance>(group.propertyBackground.property.getSID(), group));
+                        propertyList.add(new Pair<String, PropertyReaderInstance>(group.propertyBackground.property.getSID(), group.rowBackgroundReader));
                     }
                 }
 

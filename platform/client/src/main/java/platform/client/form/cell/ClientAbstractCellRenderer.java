@@ -53,6 +53,11 @@ public class ClientAbstractCellRenderer extends JComponent
             }
         }
 
+        Color foregroundColor = cellTable.getForegroundColor(row, column);
+        if (foregroundColor != null) {
+            comp.setForeground(foregroundColor);
+        }
+
         renderers.add(comp);
 
         return comp;

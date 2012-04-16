@@ -93,8 +93,12 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).footerReader;
             case PropertyReadType.CELL_BACKGROUND:
                 return clientForm.getProperty(inStream.readInt()).backgroundReader;
+            case PropertyReadType.CELL_FOREGROUND:
+                return clientForm.getProperty(inStream.readInt()).foregroundReader;
             case PropertyReadType.ROW_BACKGROUND:
-                return clientForm.getGroupObject(inStream.readInt());
+                return clientForm.getGroupObject(inStream.readInt()).rowBackgroundReader;
+            case PropertyReadType.ROW_FOREGROUND:
+                return clientForm.getGroupObject(inStream.readInt()).rowForegroundReader;
             default:
                 throw new IOException();
         }

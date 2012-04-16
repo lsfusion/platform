@@ -43,7 +43,11 @@ public interface GroupObjectLogicsSupplier extends LogicsSupplier {
 
     void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground);
 
+    void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground);
+
     void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values);
 
     void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues);
+
+    void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues);
 }

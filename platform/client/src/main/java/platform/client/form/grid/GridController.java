@@ -339,8 +339,16 @@ public class GridController {
         table.updateCellBackgroundValues(property, cellBackgroundValues);
     }
 
+    public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues) {
+        table.updateCellForegroundValues(property, cellForegroundValues);
+    }
+
     public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
         table.updateRowBackgroundValues(rowBackground);
+    }
+
+    public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground) {
+        table.updateRowForegroundValues(rowForeground);
     }
 
     public void selectObject(ClientGroupObjectValue currentObject) {

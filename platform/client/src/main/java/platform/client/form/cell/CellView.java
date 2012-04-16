@@ -15,5 +15,6 @@ public interface CellView {
     void setCaption(String caption);
     void setToolTip(String caption);
     void setBackground(Object background);
+    void setForeground(Object foreground);
     void changeViewType(ClassViewType type);
 }

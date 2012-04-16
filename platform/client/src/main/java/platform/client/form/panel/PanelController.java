@@ -59,6 +59,7 @@ public class PanelController {
         columnKeys.remove(property);
         captions.remove(property);
         cellBackgroundValues.remove(property);
+        cellForegroundValues.remove(property);
         values.remove(property);
     }
 
@@ -86,6 +87,14 @@ public class PanelController {
         for (Map<ClientGroupObjectValue, PropertyController> propControllers : properties.values()) {
             for (PropertyController controller : propControllers.values()) {
                 controller.setBackground(value);
+            }
+        }
+    }
+
+    public void setRowForeground(Object value) {
+        for (Map<ClientGroupObjectValue, PropertyController> propControllers : properties.values()) {
+            for (PropertyController controller : propControllers.values()) {
+                controller.setForeground(value);
             }
         }
     }
@@ -175,6 +184,7 @@ public class PanelController {
         logicsSupplier.updateToolbar();
 
         setRowBackground(rowBackground);
+        setRowForeground(rowForeground);
 
         for (Map.Entry<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> updateCellBackgroundValues : cellBackgroundValues.entrySet()) {
             Map<ClientGroupObjectValue, PropertyController> propControllers = properties.get(updateCellBackgroundValues.getKey());
@@ -183,6 +193,17 @@ public class PanelController {
                 // так как может быть autoHide'ута
                 if (propController != null && rowBackground == null) {
                     propController.setBackground(updateKeys.getValue());
+                }
+            }
+        }
+
+        for (Map.Entry<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> updateCellForegroundValues : cellForegroundValues.entrySet()) {
+            Map<ClientGroupObjectValue, PropertyController> propControllers = properties.get(updateCellForegroundValues.getKey());
+            for (Map.Entry<ClientGroupObjectValue, Object> updateKeys : updateCellForegroundValues.getValue().entrySet()) {
+                PropertyController propController = propControllers.get(updateKeys.getKey());
+                // так как может быть autoHide'ута
+                if (propController != null && rowForeground == null) {
+                    propController.setForeground(updateKeys.getValue());
                 }
             }
         }
@@ -207,14 +228,24 @@ public class PanelController {
     }
 
     protected Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    protected Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellForegroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     public void updateCellBackgroundValue(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
         this.cellBackgroundValues.put(property, cellBackgroundValues);
     }
 
+    public void updateCellForegroundValue(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues) {
+        this.cellForegroundValues.put(property, cellForegroundValues);
+    }
+
     private Object rowBackground;
+    private Object rowForeground;
 
     public void updateRowBackgroundValue(Object rowBackground) {
         this.rowBackground = rowBackground;
+    }
+
+    public void updateRowForegroundValue(Object rowForeground) {
+        this.rowForeground = rowForeground;
     }
 }

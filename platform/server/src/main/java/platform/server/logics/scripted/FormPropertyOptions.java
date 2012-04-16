@@ -17,6 +17,7 @@ public class FormPropertyOptions {
     private MappedProperty showIf;
     private PropertyObjectEntity readOnlyIf;
     private PropertyObjectEntity background;
+    private PropertyObjectEntity foreground;
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
     private ClassViewType forceViewType;
@@ -68,6 +69,14 @@ public class FormPropertyOptions {
 
     public void setBackground(PropertyObjectEntity background) {
         this.background = background;
+    }
+
+    public PropertyObjectEntity getForeground() {
+        return foreground;
+    }
+
+    public void setForeground(PropertyObjectEntity foreground) {
+        this.foreground = foreground;
     }
 
     public PropertyObjectEntity getHeader() {
@@ -129,6 +138,7 @@ public class FormPropertyOptions {
         merged.setShowIf(nvl(overrides.getShowIf(), showIf));
         merged.setReadOnlyIf(nvl(overrides.getReadOnlyIf(), readOnlyIf));
         merged.setBackground(nvl(overrides.getBackground(), background));
+        merged.setForeground(nvl(overrides.getForeground(), foreground));
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));
         merged.setForceViewType(nvl(overrides.getForceViewType(), forceViewType));

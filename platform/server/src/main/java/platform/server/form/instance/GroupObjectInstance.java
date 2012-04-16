@@ -29,6 +29,7 @@ import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.IsClassProperty;
 import platform.server.logics.property.Property;
 import platform.server.session.*;
@@ -39,20 +40,16 @@ import java.util.*;
 import static platform.interop.ClassViewType.GRID;
 import static platform.interop.ClassViewType.HIDE;
 
-public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, PropertyReaderInstance {
+public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
     public final PropertyObjectInstance propertyBackground;
+    public final PropertyObjectInstance propertyForeground;
     final static int DIRECTION_DOWN = 1;
     final static int DIRECTION_UP = 2;
     final static int DIRECTION_CENTER = 3;
 
-    public PropertyObjectInstance getPropertyObjectInstance() {
-        return propertyBackground;
-    }
-
-    public byte getTypeID() {
-        return PropertyReadType.ROW_BACKGROUND;
-    }
+    RowBackgroundReaderInstance rowBackgroundReader = new RowBackgroundReaderInstance();
+    RowForegroundReaderInstance rowForegroundReader = new RowForegroundReaderInstance();
 
     public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
         return curClassView == ClassViewType.GRID ? GroupObjectInstance.getObjects(getUpTreeGroups()) : new ArrayList<ObjectInstance>();
@@ -94,13 +91,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
     }
 
-    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, PropertyObjectInstance propertyBackground, Map<ObjectInstance, PropertyObjectInstance> parent) {
+    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, PropertyObjectInstance propertyBackground, PropertyObjectInstance propertyForeground, Map<ObjectInstance, PropertyObjectInstance> parent) {
 
         this.entity = entity;
 
         this.objects = objects;
 
         this.propertyBackground = propertyBackground;
+        this.propertyForeground = propertyForeground;
 
         for(ObjectInstance object : objects)
             object.groupTo = this;
@@ -829,5 +827,51 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 return key.getType();
             }
         });                
+    }
+
+    public class RowBackgroundReaderInstance implements PropertyReaderInstance {
+        public PropertyObjectInstance getPropertyObjectInstance() {
+            return propertyBackground;
+        }
+
+        public byte getTypeID() {
+            return PropertyReadType.ROW_BACKGROUND;
+        }
+
+        public int getID() {
+            return GroupObjectInstance.this.getID();
+        }
+
+        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
+            return GroupObjectInstance.this.getKeysObjectsList(panelProperties);
+        }
+
+        @Override
+        public String toString() {
+            return ServerResourceBundle.getString("logics.background") + " (" + GroupObjectInstance.this.toString() + ")";
+        }
+    }
+
+    public class RowForegroundReaderInstance implements PropertyReaderInstance {
+        public PropertyObjectInstance getPropertyObjectInstance() {
+            return propertyForeground;
+        }
+
+        public byte getTypeID() {
+            return PropertyReadType.ROW_FOREGROUND;
+        }
+
+        public int getID() {
+            return GroupObjectInstance.this.getID();
+        }
+
+        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
+            return GroupObjectInstance.this.getKeysObjectsList(panelProperties);
+        }
+
+        @Override
+        public String toString() {
+            return ServerResourceBundle.getString("logics.foreground") + " (" + GroupObjectInstance.this.toString() + ")";
+        }
     }
 }

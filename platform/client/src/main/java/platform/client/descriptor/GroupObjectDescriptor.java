@@ -26,6 +26,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
     private ClassViewType initClassView = ClassViewType.GRID;
     private List<ClassViewType> banClassViewList = new ArrayList<ClassViewType>();
     private PropertyObjectDescriptor propertyBackground;
+    private PropertyObjectDescriptor propertyForeground;
     private PropertyDrawDescriptor filterProperty;
 
     public List<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
@@ -107,6 +108,15 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         updateDependency(this, "propertyBackground");
     }
 
+    public PropertyObjectDescriptor getPropertyForeground() {
+        return propertyForeground;
+    }
+
+    public void setPropertyForeground(PropertyObjectDescriptor propertyForeground) {
+        this.propertyForeground = propertyForeground;
+        updateDependency(this, "propertyForeground");
+    }
+
     public PropertyDrawDescriptor getFilterProperty() {
         return filterProperty;
     }
@@ -123,6 +133,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         pool.writeObject(outStream, banClassViewList);
         pool.serializeObject(outStream, parent);
         pool.serializeObject(outStream, propertyBackground);
+        pool.serializeObject(outStream, propertyForeground);
         pool.serializeObject(outStream, filterProperty);
         outStream.writeBoolean(!isParent.isEmpty());
         if (!isParent.isEmpty()) {
@@ -137,6 +148,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         banClassViewList = pool.readObject(inStream);
         parent = pool.deserializeObject(inStream);
         propertyBackground = pool.deserializeObject(inStream);
+        propertyForeground = pool.deserializeObject(inStream);
         filterProperty = pool.deserializeObject(inStream);
         if (inStream.readBoolean()) {
             isParent = pool.deserializeMap(inStream);

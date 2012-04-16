@@ -244,17 +244,16 @@ public class ScriptingFormEntity extends FormEntity {
 
         PropertyObjectEntity backgroundProperty = options.getBackground();
         if (backgroundProperty != null && !backgroundProperty.property.getType().equals(ColorClass.instance)) {
-            LP backgroundLP = LM.getLPBySID(backgroundProperty.property.getSID());
-            Object[] params = new Object[backgroundLP.listInterfaces.size() + 2];
-            params[0] = LM.baseLM.defaultOverrideBackgroundColor;
-            params[1] = backgroundLP;
-            for (int i = 0; i < backgroundLP.listInterfaces.size(); i++) {
-                params[i + 2] = i + 1;
-            }
-            Collection<ObjectEntity> objects = backgroundProperty.getObjectInstances();
-            property.propertyBackground = addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
+            property.propertyBackground = addGroundPropertyObject(backgroundProperty, true);
         } else {
             property.propertyBackground = backgroundProperty;
+        }
+
+        PropertyObjectEntity foregroundProperty = options.getForeground();
+        if (foregroundProperty != null && !foregroundProperty.property.getType().equals(ColorClass.instance)) {
+            property.propertyForeground = addGroundPropertyObject(foregroundProperty, false);
+        } else {
+            property.propertyForeground = foregroundProperty;
         }
 
         property.propertyReadOnly = options.getReadOnlyIf();
@@ -278,6 +277,18 @@ public class ScriptingFormEntity extends FormEntity {
         if (hintTable != null && hintTable) {
             addHintsIncrementTable(property.propertyObject.property);
         }
+    }
+
+    private PropertyObjectEntity addGroundPropertyObject(PropertyObjectEntity groundProperty, boolean back) {
+        LP backgroundLP = LM.getLPBySID(groundProperty.property.getSID());
+        Object[] params = new Object[backgroundLP.listInterfaces.size() + 2];
+        params[0] = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
+        params[1] = backgroundLP;
+        for (int i = 0; i < backgroundLP.listInterfaces.size(); i++) {
+            params[i + 2] = i + 1;
+        }
+        Collection<ObjectEntity> objects = groundProperty.getObjectInstances();
+        return addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
     }
 
     private void setPropertDrawAlias(String alias, PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
