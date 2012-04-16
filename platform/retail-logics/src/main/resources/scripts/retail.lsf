@@ -9050,34 +9050,29 @@ sumVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде, за �
      (UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, priceWarePriceChangeDocumentDetail (priceChangeDocumentDetail)),
      (UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, dataWareRangePriceChangeDocumentDetail(priceChangeDocumentDetail)));
 
-sumDetailVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде' (priceChangeDocumentDetail) =
-    UNION OVERRIDE 0 IF priceChangeDocumentDetail IS priceChangeDocumentDetail, sumVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) * quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+sumDetailVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде' (priceChangeDocumentDetail) = round0(
+    sumVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) * quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 totalSumImporterPricePriceChangeDocument 'Сумма изготовителя' (priceChangeDocument) = GROUP SUM
     importerPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 
-totalSumSupplierPricePriceChangeDocumentDetail 'Новая сумма поставщика' (priceChangeDocumentDetail)=
-    supplierPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+totalSumSupplierPricePriceChangeDocumentDetail 'Новая сумма поставщика' (priceChangeDocumentDetail)= round0(
+    supplierPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
 totalSumSupplierPricePriceChangeDocument 'Новая сумма поставщика' (priceChangeDocument) = GROUP SUM
     totalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-totalSumMarkupPriceChangeDocumentDetail 'Новая сумма надбавки' (priceChangeDocumentDetail)=
-    sumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
-totalSumMarkupPriceChangeDocument 'Новая сумма надбавки' (priceChangeDocument) = GROUP SUM
-    totalSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)
-        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-totalSumRetailVATPriceChangeDocumentDetail 'Новая сумма розничного НДС' (priceChangeDocumentDetail)=
-    sumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+totalSumRetailVATPriceChangeDocumentDetail 'Новая сумма розничного НДС' (priceChangeDocumentDetail)= round0(
+    sumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
 totalSumRetailVATPriceChangeDocument 'Новая сумма розничного НДС' (priceChangeDocument) = GROUP SUM
     totalSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-totalSumWarePriceChangeDocumentDetail 'Новая сумма посуды' (priceChangeDocumentDetail)=
-    priceWarePriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+totalSumWarePriceChangeDocumentDetail 'Новая сумма посуды' (priceChangeDocumentDetail)= round0(
+    priceWarePriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
 totalSumWarePriceChangeDocument 'Новая сумма посуды' (priceChangeDocument) = GROUP SUM
     totalSumWarePriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
@@ -9087,6 +9082,19 @@ totalSumVatWarePriceChangeDocument 'Новая сумма НДС по посуд
 
 quantityPriceChangeDocument 'Количество' (priceChangeDocument) = GROUP SUM quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)
     BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+
+totalSumMarkupPriceChangeDocumentDetail 'Новая сумма надбавки' (priceChangeDocumentDetail)=
+//    sumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+     retailSumChangeDocumentDetail(priceChangeDocumentDetail) (-)
+     totalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+     totalSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+     totalSumWarePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+     sumDetailVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+totalSumMarkupPriceChangeDocument 'Новая сумма надбавки' (priceChangeDocument) = GROUP SUM
+    totalSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)
+        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 
 numberPriceChangeDocumentDetail 'Номер строки' (priceChangeDocumentDetail) =
@@ -9116,8 +9124,8 @@ oldDataWareRangePriceChangeDocumentDetail 'НДС по посуде' (priceChang
 oldSumVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде, за ед.' (priceChangeDocumentDetail) = [round0(X*Y/(100+Y))](
      oldPriceWarePriceChangeDocumentDetail (priceChangeDocumentDetail), oldDataWareRangePriceChangeDocumentDetail(priceChangeDocumentDetail));
 
-oldSumDetailVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде' (priceChangeDocumentDetail) =
-    oldSumVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) * quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+oldSumDetailVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде' (priceChangeDocumentDetail) = round0(
+    oldSumVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) * quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 commonMarkupPriceChangeDocumentDetail 'Общий процент надбавки от цены изготовителя' (priceChangeDocumentDetail) = [(X/Y-1)*100](
     supplierPriceChangeDocumentDetail(priceChangeDocumentDetail), importerPriceChangeDocumentDetail(priceChangeDocumentDetail));
@@ -9128,35 +9136,42 @@ oldTotalSumImporterPricePriceChangeDocument 'Старая сумма изгот�
 
 
 
-oldTotalSumSupplierPricePriceChangeDocumentDetail 'Старая сумма поставщика' (priceChangeDocumentDetail) =
-    oldSupplierPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+oldTotalSumSupplierPricePriceChangeDocumentDetail 'Старая сумма поставщика' (priceChangeDocumentDetail) = round0(
+    oldSupplierPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
 oldTotalSumSupplierPricePriceChangeDocument 'Старая сумма поставщика' (priceChangeDocument) = GROUP SUM
     oldTotalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 
-oldTotalSumMarkupPriceChangeDocumentDetail 'Старая сумма надбавки' (priceChangeDocumentDetail) =
-    oldSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
-oldTotalSumMarkupPriceChangeDocument 'Старая сумма надбавки' (priceChangeDocument) = GROUP SUM
-    oldTotalSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)
-        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
-
-
-oldTotalSumRetailVATPriceChangeDocumentDetail 'Старая сумма розничного НДС' (priceChangeDocumentDetail) =
-    oldSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+oldTotalSumRetailVATPriceChangeDocumentDetail 'Старая сумма розничного НДС' (priceChangeDocumentDetail) = round0(
+    oldSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
 oldTotalSumRetailVATPriceChangeDocument 'Старая сумма розничного НДС' (priceChangeDocument) = GROUP SUM
     oldTotalSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 
-oldTotalSumWarePriceChangeDocumentDetail 'Старая сумма посуды' (priceChangeDocumentDetail) =
-    oldPriceWarePriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+oldTotalSumWarePriceChangeDocumentDetail 'Старая сумма посуды' (priceChangeDocumentDetail) = round0(
+    oldPriceWarePriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
 oldTotalSumWarePriceChangeDocument 'Старая сумма посуды' (priceChangeDocument) = GROUP SUM
     oldTotalSumWarePriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 oldTotalSumVatWarePriceChangeDocument 'Старая сумма НДС по посуде' (priceChangeDocument) =  GROUP SUM
     oldSumDetailVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail)
+        BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+
+oldTotalSumMarkupPriceChangeDocumentDetail 'Старая сумма надбавки' (priceChangeDocumentDetail) =
+//    oldSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
+     oldRetailSumChangeDocumentDetail(priceChangeDocumentDetail) (-)
+     oldTotalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+     oldTotalSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+     oldTotalSumWarePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+     oldSumDetailVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+
+oldTotalSumMarkupPriceChangeDocument 'Старая сумма надбавки' (priceChangeDocument) = GROUP SUM
+    oldTotalSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
                          // ---------Дельта  показателей переоценки--------------- //
@@ -9199,6 +9214,8 @@ revaluationCommitteePriceChangeDocument 'Комиссия переоценки �
 revaluationCommitteePriceChangeDocument(priceChangeDocument) <- revaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument))
     ON ASSIGN priceChangeDocument IS priceChangeDocument;
 
+isRevaluationCommitteePriceChangeDocument(priceChangeDocument) = priceChangeDocument IS priceChangeDocument AND revaluationCommitteePriceChangeDocument(priceChangeDocument);
+
 nameRevaluationCommitteePriceChangeDocument 'Комиссия переоценки' (priceChangeDocument) = name(revaluationCommitteePriceChangeDocument(priceChangeDocument));
 commonNameEmployeeCommitteePriceChangeDocument 'Сотрудники комиссии' (priceChangeDocument) = commonNameEmployeeCommittee(revaluationCommitteePriceChangeDocument(priceChangeDocument));
 inPriceChangeDocumentEmployee (priceChangeDocument, employee) = inCommitteeEmployee(revaluationCommitteePriceChangeDocument(priceChangeDocument), employee);
@@ -9211,11 +9228,11 @@ FORM actOfRevaluation 'Акт переоценки' PRINT
     PROPERTIES(pc) SELECTOR  numberPriceChangeDocument, seriesPriceChangeDocument, objectClassName, isPostedPriceChangeDocument,
                              nameDepartmentStorePriceChangeDocument, datePriceChangeDocument, nameRevaluationCommitteePriceChangeDocument,
                              commonNameChairmanPriceChangeDocument, nameOfficerChairmanPriceChangeDocument, commonNameEmployeeCommitteePriceChangeDocument,
-                             quantityPriceChangeDocument, numberDisposalPriceChangeDocument,
+                             quantityPriceChangeDocument, numberDisposalPriceChangeDocument, isRevaluationCommitteePriceChangeDocument,
                              oldTotalSumSupplierPricePriceChangeDocument, oldTotalSumMarkupPriceChangeDocument, oldTotalSumRetailVATPriceChangeDocument,
                              oldTotalSumWarePriceChangeDocument, oldTotalSumVatWarePriceChangeDocument, oldRetailSumChangeDocument,
-                             totalSumSupplierPricePriceChangeDocument, totalSumMarkupPriceChangeDocument, totalSumMarkupPriceChangeDocument,
-                             totalSumWarePriceChangeDocument, totalSumVatWarePriceChangeDocument, retailSumChangeDocumentDetail,
+                             totalSumSupplierPricePriceChangeDocument, totalSumMarkupPriceChangeDocument, totalSumRetailVATPriceChangeDocument,
+                             totalSumWarePriceChangeDocument, totalSumVatWarePriceChangeDocument, retailSumChangeDocument,
                              diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
                              diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument
 
