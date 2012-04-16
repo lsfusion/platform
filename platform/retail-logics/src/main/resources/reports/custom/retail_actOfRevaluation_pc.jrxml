@@ -62,7 +62,7 @@
 	<field name="retail_diffTotalSumVatWarePriceChangeDocument" class="java.lang.Double"/>
 	<field name="retail_accountSumChangeDocument" class="java.lang.Double"/>
 	<field name="retail_isRevaluationCommitteePriceChangeDocument" class="java.lang.Boolean"/>
-	<group name="captionGroup1" isReprintHeaderOnEachPage="true">
+	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{pc})]]></groupExpression>
 		<groupHeader>
 			<band height="13" splitType="Prevent">
