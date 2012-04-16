@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pc" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
@@ -65,8 +65,53 @@
 	<group name="captionGroup1" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[String.valueOf($F{pc})]]></groupExpression>
 		<groupHeader>
-			<band splitType="Prevent"/>
-			<band/>
+			<band height="13" splitType="Prevent">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="167" y="0" width="635" height="13"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement/>
+					<textFieldExpression><![CDATA[$F{retail_commonNameEmployeeCommitteePriceChangeDocument}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="10" y="0" width="158" height="13"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement/>
+					<textFieldExpression><![CDATA["Членов комиссии:"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="13">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="167" y="0" width="635" height="13"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement/>
+					<textFieldExpression><![CDATA[$F{retail_numberDisposalPriceChangeDocument}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="10" y="0" width="158" height="13"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement/>
+					<textFieldExpression><![CDATA["На основании приказа:"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="15">
+				<textField isBlankWhenNull="true">
+					<reportElement positionType="Float" x="10" y="0" width="158" height="13"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement/>
+					<textFieldExpression><![CDATA["Провели переоценку товаров \n"+
+"Переоцененный товар промаркирован"]]></textFieldExpression>
+				</textField>
+			</band>
 		</groupHeader>
 	</group>
 	<group name="textGroup1">
@@ -281,7 +326,7 @@
 					<textElement/>
 					<textFieldExpression><![CDATA["Сумма наценки/уценки"]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="167" y="42" width="635" height="13"/>
 					<box>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -290,7 +335,7 @@
 					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_oldRetailSumChangeDocument})+
 " "+"белорусских рублей"]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="167" y="55" width="635" height="13"/>
 					<box>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -299,7 +344,7 @@
 					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_retailSumChangeDocument})+
 " "+"белорусских рублей"]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="167" y="68" width="635" height="13"/>
 					<box>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -308,7 +353,7 @@
 					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_accountSumChangeDocument})+
 " "+"белорусских рублей"]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="167" y="29" width="635" height="13"/>
 					<box>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -483,7 +528,7 @@
 		</groupHeader>
 	</group>
 	<title>
-		<band height="139">
+		<band height="97">
 			<textField isBlankWhenNull="true">
 				<reportElement x="10" y="38" width="792" height="13"/>
 				<box>
@@ -527,32 +572,7 @@ $F{retail_numberPriceChangeDocument}]]></textFieldExpression>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA["Комиссия в составе: председателя" ]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="177" y="97" width="625" height="13"/>
-				<box>
-					<pen lineWidth="0.0" lineStyle="Solid"/>
-				</box>
-				<textElement/>
-				<textFieldExpression><![CDATA[$F{retail_commonNameEmployeeCommitteePriceChangeDocument}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="177" y="110" width="625" height="13"/>
-				<box>
-					<pen lineWidth="0.0" lineStyle="Solid"/>
-				</box>
-				<textElement/>
-				<textFieldExpression><![CDATA[$F{retail_numberDisposalPriceChangeDocument}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="10" y="123" width="792" height="13"/>
-				<box>
-					<pen lineWidth="0.0" lineStyle="Solid"/>
-				</box>
-				<textElement/>
-				<textFieldExpression><![CDATA["Провели переоценку товаров \n"+
-"Переоцененный товар промаркирован"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Комиссия в составе: председателя"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="464" y="8" width="198" height="12"/>
@@ -563,28 +583,12 @@ $F{retail_numberPriceChangeDocument}]]></textFieldExpression>
 				<textFieldExpression><![CDATA["_________________ Утверждаю"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="177" y="84" width="625" height="13"/>
+				<reportElement x="167" y="84" width="635" height="13"/>
 				<box>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</box>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_commonNameChairmanPriceChangeDocument}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="10" y="97" width="158" height="13"/>
-				<box>
-					<pen lineWidth="0.0" lineStyle="Solid"/>
-				</box>
-				<textElement/>
-				<textFieldExpression><![CDATA["Членов комиссии:" ]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="10" y="110" width="158" height="13"/>
-				<box>
-					<pen lineWidth="0.0" lineStyle="Solid"/>
-				</box>
-				<textElement/>
-				<textFieldExpression><![CDATA["На основании приказа:" ]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
