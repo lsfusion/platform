@@ -160,7 +160,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (askConfirm &&
                 !(value == null && changeType instanceof ClientActionClass && !(ownerComponent instanceof ButtonCellView))) {
             int n = JOptionPane.showConfirmDialog(
-                    null,
+                    SwingUtilities.getRoot(ownerComponent),
                     baseType.getConformedMessage() + (caption != null ? " \"" + caption + "\"?" : ""),
                     "LS Fusion",
                     JOptionPane.YES_NO_OPTION);
