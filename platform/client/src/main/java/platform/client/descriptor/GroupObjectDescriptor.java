@@ -27,6 +27,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
     private List<ClassViewType> banClassViewList = new ArrayList<ClassViewType>();
     private PropertyObjectDescriptor propertyBackground;
     private PropertyObjectDescriptor propertyForeground;
+    private PropertyObjectDescriptor reportPathProperty;
     private PropertyDrawDescriptor filterProperty;
 
     public List<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
@@ -140,6 +141,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
             pool.serializeMap(outStream, isParent);
         }
         pool.writeObject(outStream, pageSize);
+        pool.serializeObject(outStream, reportPathProperty);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -154,6 +156,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
             isParent = pool.deserializeMap(inStream);
         }
         pageSize = pool.readObject(inStream);
+        reportPathProperty = pool.deserializeObject(inStream);
 
         client = pool.context.getGroupObject(ID);
     }
