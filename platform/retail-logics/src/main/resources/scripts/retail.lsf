@@ -8587,8 +8587,8 @@ FORM consignmentTwo 'ТН-2' PRINT
     FILTERS consignmentConsignmentDetail(d) == c
 ;
 
-toPrintConsignmentOne 'ТТН-1' (consignment) = ACTION FORM consignmentOne OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
-toPrintConsignmentTwo 'ТН-2' (consignment) = ACTION FORM consignmentTwo OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
+toPrintConsignmentOne 'ТТН-1' (consignment) = ACTION FORM consignmentOne OBJECTS c IMAGE 'print.png' IN printGroup;
+toPrintConsignmentTwo 'ТН-2' (consignment) = ACTION FORM consignmentTwo OBJECTS c IMAGE 'print.png' IN printGroup;
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
 @metaCodeInputMultipleItems(shipment);
@@ -10667,7 +10667,7 @@ showFormSpecificationsStatement 'Заказы' (statement) = ACTION FORM specifi
 
 @metaCodeInputMultipleItems (statement);
 
-toPrintActOfRevaluationStatement 'Акт переоценки' (statement) = toPrintActOfRevaluation(uniquePriceChangeStatement(statement));
+toPrintActOfRevaluationStatement 'Акт переоценки' (statement) = toPrintActOfRevaluation(uniquePriceChangeStatement(statement)) IN printGroup;
 
 FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
@@ -10788,29 +10788,35 @@ DESIGN statements FROM DEFAULT {
     PROPERTY(objectClassName) {
         preferredCharWidth = 15;
     }
-    PROPERTY (toPrintConsignmentOne(st)) {
-        panelLocation = TOOLBAR;
-    }
-    PROPERTY (toPrintConsignmentTwo(st)) {
-        panelLocation = TOOLBAR;
-    }
-    PROPERTY (toPrintActOfRevaluationStatement(st)) {
-        panelLocation = TOOLBAR;
-    }
+
     PROPERTY (delete(st)) {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
-    st.historyGroup {
-        childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
+
+    NEW footer.container BEFORE functions.box {
+        childConstraints = TO THE RIGHT;
+
+        ADD st.historyGroup {
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 1;
+        }
+
+        ADD st.postedGroup {
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 1;
+        }
+
+        ADD st.printGroup{
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 1;
+        }
+        POSITION st.historyGroup TO THE LEFT st.postedGroup;
+        POSITION st.postedGroup TO THE LEFT st.printGroup;
+        POSITION st.historyGroup TO THE LEFT st.printGroup;
     }
-    st.postedGroup {
-        childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
-    }
-    POSITION st.historyGroup TO THE LEFT st.postedGroup;
-    ADD d.grid.box BEFORE st.historyGroup;
+
+ //   ADD d.box BEFORE footer.container;
 }
 
 //----------------------------------- Формы чеков -------------------------------------------------//
