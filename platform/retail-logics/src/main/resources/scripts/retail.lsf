@@ -28,6 +28,7 @@ CLASS ABSTRACT postedObject 'Объект с возможностью закры
 TABLE postedObject (postedObject);
 
 GROUP postedGroup 'Информация о закрытии' : baseGroup;
+GROUP printGroup 'Печатные формы' : baseGroup;
 
 timeClosed 'Время закрытия' = DATA DATETIME (postedObject) IN postedGroup;
 userClosed 'Закрыт пользователем' = DATA customUser (postedObject) IN idGroup;
@@ -48,7 +49,6 @@ GROUP carConsignmentGroup 'Автомобиль' : baseGroup;
 GROUP issuanceConsignmentGroup 'Отпуск' : baseGroup;
 GROUP loadingConsignmentGroup 'ПРР' : baseGroup;
 GROUP sumConsignmentGroup 'Суммы' : baseGroup;
-GROUP printGroup 'Печать' : baseGroup;
 
 // ----------------------------------- Нумераторы ------------------------------------------ //
 
@@ -9264,8 +9264,8 @@ FORM priceChangeDocuments 'Акты переоценки'
 
 //------------------------------------------- Приход товара----------------------------------------------------//
 
-toPrintPricesRegister 'Реестр цен' (shipment) = ACTION FORM pricesRegister OBJECTS s TOOLBAR IMAGE 'print.png';
-toPrintActOfRevaluationShipment 'Акт переоценки' (shipment) = toPrintActOfRevaluation(uniquePriceChangeShipment(shipment));
+toPrintPricesRegister 'Реестр цен' (shipment) = ACTION FORM pricesRegister OBJECTS s IMAGE 'print.png' IN printGroup;
+toPrintActOfRevaluationShipment 'Акт переоценки' (shipment) = toPrintActOfRevaluation(uniquePriceChangeShipment(shipment)) IN printGroup;
 
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
@@ -9404,12 +9404,15 @@ DESIGN shipments FROM DEFAULT {
     PROPERTY(objectClassName) {
         preferredCharWidth = 15;
     }
-    PROPERTY (toPrintActOfRevaluationShipment(s)) {
-        panelLocation = TOOLBAR;
-    }
+
     PROPERTY (delete(s)) {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
+    }
+
+    s.printGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
     }
 
     s.historyGroup {
@@ -9421,6 +9424,9 @@ DESIGN shipments FROM DEFAULT {
         fillHorizontal = 1;
     }
     POSITION s.historyGroup TO THE LEFT s.postedGroup;
+    POSITION s.postedGroup TO THE LEFT s.printGroup;
+    POSITION s.historyGroup TO THE LEFT s.printGroup;
+
     ADD d.grid.box BEFORE s.historyGroup;
 }
 
