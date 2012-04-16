@@ -67,7 +67,7 @@
 		<groupHeader>
 			<band height="13" splitType="Prevent">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="167" y="0" width="635" height="13"/>
+					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="185" y="0" width="617" height="13"/>
 					<box>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
@@ -75,7 +75,7 @@
 					<textFieldExpression><![CDATA[$F{retail_commonNameEmployeeCommitteePriceChangeDocument}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="10" y="0" width="158" height="13"/>
+					<reportElement positionType="Float" x="10" y="0" width="175" height="13"/>
 					<box>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
@@ -85,7 +85,7 @@
 			</band>
 			<band height="13">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="167" y="0" width="635" height="13"/>
+					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="185" y="0" width="617" height="13"/>
 					<box>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
@@ -93,7 +93,7 @@
 					<textFieldExpression><![CDATA[$F{retail_numberDisposalPriceChangeDocument}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="10" y="0" width="158" height="13"/>
+					<reportElement positionType="Float" x="10" y="0" width="175" height="13"/>
 					<box>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
@@ -101,15 +101,23 @@
 					<textFieldExpression><![CDATA["На основании приказа:"]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="15">
+			<band height="26">
 				<textField isBlankWhenNull="true">
-					<reportElement positionType="Float" x="10" y="0" width="158" height="13"/>
+					<reportElement positionType="Float" x="10" y="0" width="175" height="13"/>
 					<box>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA["Провели переоценку товаров \n"+
-"Переоцененный товар промаркирован"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Провели переоценку товаров"
+]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement positionType="Float" x="10" y="13" width="175" height="13"/>
+					<box>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement/>
+					<textFieldExpression><![CDATA["Переоцененный товар промаркирован"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -567,7 +575,7 @@ $F{retail_numberPriceChangeDocument}]]></textFieldExpression>
 				<textFieldExpression><![CDATA["на " +platform.base.BaseUtils.formatRussian($F{retail_datePriceChangeDocument})+" года."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="10" y="84" width="158" height="13"/>
+				<reportElement x="10" y="84" width="175" height="13"/>
 				<box>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</box>
@@ -583,7 +591,7 @@ $F{retail_numberPriceChangeDocument}]]></textFieldExpression>
 				<textFieldExpression><![CDATA["_________________ Утверждаю"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="167" y="84" width="635" height="13"/>
+				<reportElement x="185" y="84" width="617" height="13"/>
 				<box>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</box>
