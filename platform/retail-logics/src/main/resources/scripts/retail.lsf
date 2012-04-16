@@ -53,6 +53,7 @@ GROUP printGroup 'Печать' : baseGroup;
 // ----------------------------------- Нумераторы ------------------------------------------ //
 
 CLASS numerator 'Нумератор' : named;
+TABLE numerator (numerator);
 
 seriesNumerator 'Серия' = DATA STRING[2] (numerator) IN recognizeGroup FIXEDCHARWIDTH 3;
 
@@ -346,7 +347,7 @@ META metaCodePostedObject (object)
     isPosted###object 'Закрыт' (object) = object IS object##Posted;
 
     post###object 'Закрыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object##Posted; } ] (object)
-                                    IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
+                                    IF object IS object AND NOT object IS object##Posted CONFIRM;
 
     unpost###object 'Открыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object; } ] (object)
                                       IF object IS object##Posted TOOLBAR CONFIRM;
@@ -523,7 +524,7 @@ META metaCodeTotals (object)
 
 
     totalSumSupplierPrice###object 'Сумма без НДС' (object) = GROUP SUM totalSumSupplierPrice###object##Detail(object##Detail)
-        BY object###object##Detail(object##Detail);
+        BY object###object##Detail(object##Detail) PERSISTENT;
 
     totalSumWare###object 'Сумма посуды' (object) = GROUP SUM totalSumWare###object##Detail(object##Detail)
         BY object###object##Detail(object##Detail);
@@ -610,6 +611,7 @@ canonicalNameItemGroup 'Каноническое имя' (itemGroup) = castToStr
 
 // ----------------------------------- Единицы измерения ------------------------------------------ //
 CLASS unitOfMeasure 'Единица измерения' : doubleNamed, externalObject;
+TABLE unitOfMeasure (unitOfMeasure);
 
 unitOfMeasureUnitOfMeasure 'Базовая ед.изм. ИД' = DATA unitOfMeasure(unitOfMeasure) IN idGroup;
 shortNameUnitOfMeasureUnitOfMeasure 'Базовая ед.изм.' (unitOfMeasure) = shortName(unitOfMeasureUnitOfMeasure(unitOfMeasure)) IN baseGroup;
@@ -634,6 +636,7 @@ PROPERTIES(u) ADDFORM, EDITFORM, delete;
 
 // ------------------------------------ Цвета ------------------------------------------------ //
 CLASS color 'Цвет' : named;
+TABLE color (color);
 
 FORM color 'Цвет'
 OBJECTS c=color FIXED PANEL
@@ -641,6 +644,7 @@ PROPERTIES(c) name;
 
 // ------------------------------------ Вкусы ------------------------------------------------------ //
 CLASS taste 'Вкус' : named;
+TABLE taste(taste);
 
 FORM taste 'Вкус'
 OBJECTS t=taste FIXED PANEL
@@ -651,6 +655,7 @@ PROPERTIES(t) name;
 
 //------------------------------------ Сорта-категории --------------------------------- //
 CLASS sort 'Сорт/Категория' : named;
+TABLE sort(sort);
 
 FORM sort 'Сорт/Категория'
 OBJECTS s=sort FIXED PANEL
@@ -658,6 +663,7 @@ PROPERTIES(s) name;
 
 //------------------------------------ Упаковки ----------------------------------------//
 CLASS pack 'Упаковка' : doubleNamed;
+TABLE pack(pack);
 
 FORM pack 'Упаковка'
 OBJECTS p=pack FIXED PANEL
@@ -665,6 +671,7 @@ PROPERTIES(p) name, shortName;
 
 //------------------------------------ Особенности изготовления ------------------------//
 CLASS specialty 'Особенность' : doubleNamed;
+TABLE specialty(specialty);
 
 FORM specialty 'Особенность'
 OBJECTS s=specialty FIXED PANEL
@@ -672,6 +679,7 @@ PROPERTIES(s) name, shortName;
 
 //------------------------------------ Размеры/Калибры/Габариты ------------------------//
 CLASS size 'Размер/калибр' : doubleNamed;
+TABLE size(size);
 
 FORM size 'Размер/калибр'
 OBJECTS s=size FIXED PANEL
@@ -679,6 +687,7 @@ PROPERTIES(s) name, shortName;
 
 //------------------------------------ Степень охлаждения ------------------------//
 CLASS coolingDegree 'Степень охлаждения' : doubleNamed;
+TABLE coolingDegree(coolingDegree);
 
 FORM coolingDegree 'Степень охлаждения'
 OBJECTS c=coolingDegree FIXED PANEL
@@ -686,6 +695,7 @@ PROPERTIES(c) name, shortName;
 
 //------------------------------- Строки 1-торг ------------------------------------//
 CLASS rowTorg1 'Строка формы 1-торг' : named;
+TABLE rowTorg1(rowTorg1);
 
 FORM rowTorg1 'Строка формы 1-торг'
 OBJECTS r=rowTorg1 FIXED PANEL
@@ -693,6 +703,7 @@ PROPERTIES(r) name;
 
 //------------------------------- Виды ------------------------------------//
 CLASS typeItem 'Вид' : named;
+TABLE typeItem(typeItem);
 
 FORM typeItem 'Вид'
 OBJECTS t=typeItem FIXED PANEL
@@ -700,6 +711,7 @@ PROPERTIES(t) name;
 
 //--------------------------------- Форма товара (особенности нарезки/разделки)  --------------------------//
 CLASS formItem 'Форма товара' : named;
+TABLE formItem(formItem);
 
 FORM formItem 'Форма товара'
 OBJECTS f=formItem FIXED PANEL
@@ -714,6 +726,7 @@ PROPERTIES(f) name;
 
 //---------------------------------- Норма отходов ------------------------------------//
 CLASS rateWaste 'Норма отходов' : named, externalObject;
+TABLE rateWaste(rateWaste);
 
 percentRateWaste 'Норма,%' = DATA DOUBLE (rateWaste) IN baseGroup;
 
@@ -728,8 +741,13 @@ CLASS ABSTRACT stock 'Склад' : named;
 // ----------------------------------- Магазин ----------------------------------------- //
 
 CLASS store 'Магазин' : named, externalObject;
+TABLE store (store);
+
 CLASS tradingNetwork 'Торговая сеть' : named, externalObject; // "Рублевский", "Базар"
+TABLE tradingNetwork (tradingNetwork);
+
 CLASS storeType 'Формат магазина' : named; //Мини, Супер, ...
+TABLE storeType (storeType);
 
 companyStore 'Юридическое лицо магазина (ИД)' = DATA company (store);
 nameCompanyStore 'Компания' (store) = name(companyStore(store)) IN baseGroup;
@@ -757,6 +775,8 @@ inStoreTypeTradingNetwork(storeType, tradingNetwork) = tradingNetworkStoreType(s
 // ----------------------------------- Торговая площадь -------------------------------------------------- //
 
 CLASS tradingSquare 'Торговая площадь' : named;
+TABLE tradingSquare(tradingSquare);
+
 squareTradingSquare 'Размер торговой площади' = DATA DOUBLE (tradingSquare) IN baseGroup;
 departmentStoreTradingSquare 'Отдел торговой площади (ИД)' = DATA departmentStore (tradingSquare);
 nameDepartmentStoreTradingSquare 'Отдел торговой площади' (tradingSquare) = name(departmentStoreTradingSquare(tradingSquare)) IN baseGroup;
@@ -844,6 +864,7 @@ CLASS STATIC printOrientation 'Ориентация' {
 }
 
 CLASS labelType 'Тип ценника' : named;
+TABLE labelType(labelType);
 
 widthLabelType 'Ширина' = DATA INTEGER (labelType);
 heightLabelType 'Высота' = DATA INTEGER (labelType);
@@ -853,6 +874,7 @@ nameOrientationLabelType 'Ориентация' (labelType) = name(orientationLa
 
 fileTemplateLabelType 'Файл шаблона' = DATA STRING[200] (labelType);
 
+TABLE labelTypeDepartmentStore (labelType, departmentStore);
 inLabelTypeDepartmentStore 'Включен' (labelType, departmentStore) = DATA BOOLEAN (labelType, departmentStore);
 
 defaultLabelTypeDepartmentStore = DATA labelType (departmentStore);
@@ -913,9 +935,14 @@ TABLE sku(sku);
 CLASS item 'Товар' : sku, externalObject;
 TABLE item(item);
 
+TABLE itemDate (item, DATE);
+
 CLASS ware 'Посуда' : sku, named, externalObject;
+TABLE ware(ware);
+TABLE wareDate(ware, DATE);
 
 CLASS brand 'Бренд' : named, externalObject;
+TABLE brand(brand);
 
 CLASS STATIC groupProduct 'Группа изделий для печати заборного листа'
 {
@@ -1088,6 +1115,7 @@ loadImageItem 'Загрузить изображение' (item) = ACTION LOADFI
 // ----------------------------------- Атрибуты ------------------------------------------ //
 
 CLASS ABSTRACT itemAttribute 'Атрибут товара' : named;
+TABLE itemAttribute(itemAttribute);
 
 TABLE itemItemAttribute(item, itemAttribute);
 
@@ -1253,7 +1281,7 @@ nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAt
 
 // ---------------------------------------------------------------------------------------- //
 
-TABLE departmentStoreDate (object, DATE);
+TABLE departmentStoreDate (departmentStore, DATE);
 
 TABLE stringDate (STRING[14], DATE);
 
@@ -1362,6 +1390,7 @@ DESIGN barcodeInput FROM DEFAULT {
 
 // ----------------------------------- Компоненты ------------------------------------------ //
 CLASS component 'Компонент' : sku, named;
+TABLE component(component);
 
 nettoBruttoCoeffComponent 'Сезонный коэффициент пересчета сырья из нетто в брутто' (component) = DATA DOUBLE (component) IN manufactoryGroup;
 percentHumidityFlourDepartmentStoreComponent '% влажности муки' = DATA DOUBLE (departmentStore, component) IN manufactoryGroup;
@@ -1387,6 +1416,7 @@ CLASS STATIC genType 'Тип генерации' {
 };
 
 CLASS genTimeTable 'Генерация графика' : historyObject;
+TABLE genTimeTable(genTimeTable);
 
 //общие свойства
 genTimeTableType 'Тип генерации графика (ИД)' = DATA genType (genTimeTable);
@@ -1462,14 +1492,13 @@ PROPERTIES(g) ADDFORM, EDITFORM, delete;
 GROUP employeeGroup 'Пользовательская информация' : baseGroup;
 
 CLASS ABSTRACT person 'Физическое лицо';
+TABLE person (person);
+
 CLASS employee 'Сотрудник' : person, customUser;
-CLASS employeeSystem 'Операционная система';
+TABLE employee(employee);
+
 CLASS officer 'Должность' ;
-
-
-nameEmployeeSystem 'Операционная система' = DATA STRING[100] (employeeSystem) IN employeeGroup;
-employeeSystemEmployee(employee) = DATA employeeSystem (employee) IN idGroup;
-nameEmployeeSystemEmployee 'Операционная система на рабочем месте пользователя' (employee) = nameEmployeeSystem(employeeSystemEmployee(employee)) IN employeeGroup;
+TABLE officer(officer);
 
 nameOfficer 'Должность' = DATA STRING[100] (officer) IN baseGroup;
 officerEmployee(employee) = DATA officer (employee) IN idGroup;
@@ -1502,7 +1531,7 @@ FORM officer 'Должность'
 
 FORM employee 'Сотрудник'
     OBJECTS e=employee FIXED PANEL
-    PROPERTIES(e)      userFirstName, userLastName, nameOfficerEmployee, phoneEmployee, nameEmployeeSystemEmployee,
+    PROPERTIES(e)      userFirstName, userLastName, nameOfficerEmployee, phoneEmployee,
                        shortNameLanguageEmployee, numberEmployee, passwordEmployee, dataEmployee
 
     TREE treeStore t=tradingNetwork, st=storeType, s=store, ds=departmentStore
@@ -1597,9 +1626,11 @@ CLASS STATIC tax 'Налоги'
 nameTax 'Наименование налога' = DATA STRING[200] (tax) IN baseGroup;
 
 CLASS range 'Шкала';
+TABLE range(range);
 dataRange 'Шкала' = DATA INTEGER (range);
 
 CLASS rate 'История изменений шкалы' : historyObject;
+TABLE rate(rate);
 rangeRate 'Шкала ИД' = DATA range (rate) IN idGroup;
 taxRange 'Налог ИД' = DATA tax (range) IN idGroup;
 nameTaxRange 'Налог' (range) = name(taxRange(range)) IN baseGroup;
@@ -1743,7 +1774,7 @@ DESIGN retailRangeItem FROM DEFAULT {
 
 showFormRetailRangeItem 'Шкала' (item) = ACTION FORM retailRangeItem OBJECTS i MODAL SHORTCUT dataRetailRangeItem DEFAULT;
 
-overrideRateRangeItemVal 'НДС (ИД)' (item, date) = UNION OVERRIDE retailRangeItemVal(item, date), suppliersRangeItemVal(item, date) IN idGroup;
+overrideRateRangeItemVal 'НДС (ИД)' (item, date) = UNION OVERRIDE suppliersRangeItemVal(item, date), retailRangeItemVal(item, date) IN idGroup;
 
 overrideRateRangeItem 'НДС (ИД)' (item) = UNION OVERRIDE retailRangeItem(item), suppliersRangeItem(item) IN idGroup; // на текущую дату
 
@@ -2297,6 +2328,7 @@ FORM itemGroupDialog 'Товарные группы'
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
 
 CLASS assortment 'Ассортимент' : named;
+TABLE assortment (assortment);
 itemAssortment 'Товар включен в ассортимент' = DATA BOOLEAN (assortment, item);
 infoAssortment 'Описание' = DATA STRING[100] (assortment) IN baseGroup;
 
@@ -2320,6 +2352,8 @@ FILTERS itemAssortment(a, i);
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
 
 CLASS ABSTRACT committee 'Комиссия' : named;
+TABLE committee (committee);
+
 CLASS revaluationCommittee 'Комиссия переоценки' : committee;
 CLASS inventoryCommittee 'Комиссия для инвентаризации' : committee;
 CLASS registerCommittee 'Комиссия для реестра цен' : committee;
@@ -2578,6 +2612,7 @@ GROUP banksGroup 'Информация о банке' : baseGroup;
 
 CLASS bank 'Банк' : named, externalObject;
 TABLE bank (bank);
+TABLE bankDate (bank, DATE);
 
 MFOBank 'Код МФО' = DATA STRING[9] (bank) IN banksGroup;
 departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN banksGroup;
@@ -2616,6 +2651,7 @@ noteAccount 'Примечание'  = DATA STRING[50] (account) IN accountGroup;
 
 // ----------------------------------- Форма собственности ------------------------------------------ //
 CLASS ownership 'Форма собственности' : named;
+TABLE ownership (ownership);
 shortNameOwnership 'Cокращенное название' = DATA STRING[10] (ownership) IN baseGroup FIXEDCHARWIDTH 6;
 shortNameToOwnership (string) = GROUP UNIQUE ownership BY shortNameOwnership (ownership) WHERE ownership IS ownership;
 
@@ -2624,12 +2660,13 @@ OBJECTS o=ownership FIXED PANEL
 PROPERTIES(o) name, shortNameOwnership;
 
 // ----------------------------------- Лицензия ------------------------------------------ //
-GROUP licensGroup 'Лицензиионная информация' : baseGroup;
-CLASS license 'Лицензия' ;
+GROUP licenseGroup 'Лицензионная информация' : baseGroup;
+CLASS license 'Лицензия';
+TABLE license (license);
 
-dataLicense 'Номер лицензии' = DATA STRING[100] (license) IN licensGroup;
-dateFromLicense 'Действует с ' = DATA DATE (license) IN licensGroup;
-dateToLicense 'Действует по ' = DATA DATE (license) IN licensGroup;
+dataLicense 'Номер лицензии' = DATA STRING[100] (license) IN licenseGroup;
+dateFromLicense 'Действует с ' = DATA DATE (license) IN licenseGroup;
+dateToLicense 'Действует по ' = DATA DATE (license) IN licenseGroup;
 
 //tabaccoLicense 'Табачная' = DATA BOOLEAN  (license) IN licensGroup;
 
@@ -2700,6 +2737,8 @@ TABLE legalEntityDate (legalEntity, DATE);
 GROUP contractGroup 'Общая информация' : baseGroup;
 
 CLASS ABSTRACT contract 'Договор';
+TABLE contract (contract);
+TABLE contractDate (contract, DATE);
 CLASS contractProvider 'Договор с поставщиком' : contract;
 
 CLASS STATIC contractType 'Тип договора'
@@ -3090,6 +3129,7 @@ FORM customers 'Покупатели'
 
 //--------------------------------------Дисконтные карточки------------------------------------------------------------------//
 CLASS discountCard 'Дисконтная карта';
+TABLE discountCard (discountCard);
 
 numberDiscountCard 'Номер дисконтной карты' (discountCard) = //DATA INTEGER (discountCard);
         PARTITION SUM 1 IF discountCard IS discountCard
@@ -3119,6 +3159,7 @@ GROUP orderSupplierGroup 'Информация о заказе' : publicGroup;
 GROUP dateOrderSupplierGroup 'Даты' : publicGroup;
 
 CLASS preliminaryOrder 'Предварительный заказ' : historyObject;
+TABLE preliminaryOrder (preliminaryOrder);
 
 dateOrderPreliminaryOrder 'Дата заказа' = DATA DATE (preliminaryOrder) IN baseGroup;
 dateSupplyPreliminaryOrder 'Дата поставки' = DATA DATE (preliminaryOrder) IN baseGroup;
@@ -3133,9 +3174,14 @@ TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 @metaCodeDoubleObjectDateProperty(timeTable, supplier, departmentStore, 'Поставка', BOOLEAN, baseGroup);
 
 CLASS ABSTRACT order 'Заказ' : historyObject, numberedObject;
+//TABLE order(order);
+
 CLASS orderSupplier 'Заказ поставщику' : order;
 CLASS orderSupplierPosted 'Закрытый заказ поставщику' :orderSupplier, postedObject;
 //CLASS orderStock 'Заказ складу' :order;
+
+TABLE orderSupplier(orderSupplier);
+TABLE orderSupplierItem(orderSupplier, item);
 
 dataOrderSupplier 'Номер заказа' (orderSupplier) = DATA INTEGER (orderSupplier) IN orderSupplierGroup;
 maxDataOrderSupplier = UNION OVERRIDE 0, [GROUP MAX dataOrderSupplier(orderSupplier)]();
@@ -3844,11 +3890,15 @@ DESIGN stores FROM DEFAULT {
 
 //---------------------------- Модели оборудования ----------------------------------------//
 CLASS ABSTRACT model 'Модель' : named;
+TABLE model (model);
+
 CLASS cashRegisterModel 'Модель касс' : model;
 CLASS scalesModel 'Модель весов' : model;
 CLASS checkModel 'Модель прайс чекеров' : model;
 
 CLASS frontOffice 'Фронт офис';
+TABLE frontOffice (frontOffice);
+
 nameFrontOffice 'Версия фронт офиса на кассе' = DATA STRING[100] (frontOffice) IN baseGroup;
 
 noteModel 'Примечание' = DATA STRING[200] (model) IN baseGroup;
@@ -3863,6 +3913,8 @@ dateToCashRegisterModel 'Дата, до которой модель внесен
 maxProductModel 'MAX допустимое колич.товаров' = DATA INTEGER (model) IN baseGroup;
 
 CLASS flash 'Прошивка';
+TABLE flash (flash);
+
 nameFlash 'Модель весов/версия прошивки' = DATA STRING[100] (flash) IN baseGroup;
 
 flashScalesModel 'Прошивка (ИД)' = DATA flash (scalesModel) IN idGroup;
@@ -3872,6 +3924,8 @@ folderScalesModel 'Папка на сервере весов с драйверо
 compositionScalesModel 'Число знаков в доп.тексте(составе товара)' = DATA INTEGER (scalesModel) IN baseGroup;
 
 CLASS modelCheck 'Модель чекера';
+TABLE modelCheck (modelCheck);
+
 nameModelCheck 'Модель прайс чекера' = DATA STRING[100] (modelCheck) IN baseGroup;
 
 modelCheckModel 'Модель (ИД)' = DATA modelCheck (checkModel) IN idGroup;
@@ -3919,6 +3973,7 @@ EDIT scalesModel OBJECT s;
 
 //---------------------------- Сервера управления оборудования -----------------------------//
 CLASS equipmentServer 'Сервер оборудования' : named;
+TABLE equipmentServer (equipmentServer);
 sidEquipmentServer 'Идентификатор' = DATA STRING[20] (equipmentServer) IN baseGroup;
 
 //---------------------------- группы оборудования ----------------------------------------//
@@ -4144,6 +4199,7 @@ FORM groupsCheck 'Группы прайс чекеров'
 // ----------------------------------- Группы пользователей -------------------------------------------------- //
 
 CLASS groupUser 'Группы пользователей';
+TABLE groupUser (groupUser);
 
 nameGroupUser 'Наименование группы' = DATA STRING[100] (groupUser) IN baseGroup;
 sidGroupUser 'Идентификатор' = DATA STRING[20] (groupUser) IN baseGroup;
@@ -4183,7 +4239,7 @@ FORM groupUser 'Группa пользователей'
     OBJECTS gru=groupUser FIXED PANEL
     OBJECTS e=employee, c=cashRegister, d=departmentStore
     PROPERTIES(gru)  nameGroupUser, sidGroupUser
-    PROPERTIES(e)    nameGroupUserEmployee, userFirstName, userLastName, phoneEmployee, nameActionEmployee, nameEmployeeSystemEmployee,
+    PROPERTIES(e)    nameGroupUserEmployee, userFirstName, userLastName, phoneEmployee, nameActionEmployee,
                      shortNameLanguageEmployee, numberEmployee, passwordEmployee, dataEmployee
     PROPERTIES(c)    READONLY nameStoreDepartmentStoreCashRegister, nameDepartmentStoreCashRegister, nameGroupMachineryCashRegister, numberCashRegister, nppMachinery
     PROPERTIES(e, c) includedEmployeeCashRegister, dateFromEmployeeCashRegister, dateToEmployeeCashRegister
@@ -4243,7 +4299,10 @@ DESIGN groupsUser FROM DEFAULT {
 
 //---------------------------- Рецепты блюд ----------------------------------------//
 CLASS recipe 'Рецепт' : named;
+TABLE recipe (recipe);
+
 CLASS recipeDetail 'Сырье рецепта';
+TABLE recipeDetail (recipeDetail);
 
 dishRecipe  'Блюдо (ИД)' = DATA item (recipe) IN idGroup;
 CONSTRAINT dishRecipe (recipe) AND NOT isManufacturedItem(dishRecipe(recipe)) CHECKED MESSAGE 'Блюдо должно производиться';
@@ -4289,6 +4348,9 @@ FORM recipes 'Рецепты блюд'
 //---------------------------- Товар на оборудовании ----------------------------------------//
 
 CLASS stage 'Ячейка';
+TABLE stage(stage);
+TABLE stageGroupMachinery(stage, groupMachinery);
+
 valueStage 'Ячейка' = DATA INTEGER (stage) IN baseGroup;
 barcodeStageGroupMachinery 'Штрих-код ИД' = DATA barcode (stage, groupMachinery) IN idGroup;
 priceStageGroupMachinery 'Розничная цена для штрих-кода' (stage, groupMachinery) = DATA DOUBLE (stage, groupMachinery) IN baseGroup;
@@ -4344,7 +4406,7 @@ CLASS ABSTRACT outBalanceItemLedger 'Внешний расход' : balanceItemL
 CLASS ABSTRACT outUserBalanceItemLedger 'Внешний расход с указанной партией' : outBalanceItemLedger;
 CLASS ABSTRACT outAutoBalanceItemLedger 'Внешний расход с автоматической себестоимостью' : outBalanceItemLedger;
 
-//CLASS ABSTRACT inBalanceItemLedger 'Внутренний приход' : balanceItemLedger;
+CLASS ABSTRACT inBalanceItemLedger 'Внутренний приход' : balanceItemLedger;
 
 //---------------------------- Суммовые регистры ----------------------------------------//
 
@@ -4372,6 +4434,7 @@ TABLE priceChangeDocumentDetail (priceChangeDocumentDetail);
 
 //---------------------------- Загрузка в ВУ  ----------------------------------------//
 CLASS ABSTRACT priceTransactionDocument 'Документ, требующий загрузки в оборудование';
+TABLE priceTransactionDocument (priceTransactionDocument);
 
 //---------------------------- Карты проработки (разруба) ----------------------------------------//
 GROUP cutGroup 'Разделка' : baseGroup;
@@ -4379,14 +4442,21 @@ GROUP actGroup 'Акт' : publicGroup;
 GROUP itemStudyOutputDetailInfo 'Ценовый характеристики п/ф' : publicGroup;
 
 CLASS cutting 'Карта проработки (разделки)' : named, numeratedObject;
+TABLE cutting (cutting);
+
 CLASS detailCutting 'Компонента';
+TABLE detailCutting (detailCutting);
 
 CLASS actOfStudy 'Акт проработки (разделки)' : historyObject, numeratedObject, priceTransactionDocument;
-CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStudy, postedObject;
 TABLE actOfStudy (actOfStudy);
 
+CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStudy, postedObject;
+
 CLASS studyInputDetail 'Строка проработки (вход)' : outAutoBalanceItemLedger;
+TABLE studyInputDetail(studyInputDetail);
+
 CLASS studyOutputDetail 'Строка проработки (выход)' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
+TABLE studyOutputDetail(studyOutputDetail);
 
 @metaCodePostedObject (actOfStudy);
       //      ??????????????????? не понятно что делать с процентом надбавок ??????????????????????   //
@@ -4507,7 +4577,7 @@ CONSTRAINT taxRange(retailRangeStudyInputDetail(studyInputDetail)) != tax.taxNDS
 
 
 studyInputDetailStudyOutputDetail = DATA studyInputDetail (studyOutputDetail) IN idGroup;
-actOfStudyStudyOutputDetail(studyOutputDetail) = actOfStudyStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
+actOfStudyStudyOutputDetail(studyOutputDetail) = actOfStudyStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail)) PERSISTENT;
 
 itemStudyOutputDetail 'Товар' = DATA item (studyOutputDetail) IN idGroup;
 shortNameUnitOfMeasureItemStudyOutputDetail 'Ед.изм.' (studyOutputDetail) = shortNameUnitOfMeasureItem(itemStudyOutputDetail(studyOutputDetail)) IN actGroup;
@@ -4595,7 +4665,10 @@ totalOutputItemActOfStudy 'Приход сумма' (item, actOfStudy) = GROUP S
 //---------------------------- Документы изменяющие суммы при разрубе --------------------------------//
 
 CLASS consumption 'Расходный документ (разруб)' : outAccountSumDocumentLedger;
+TABLE consumption (consumption);
+
 CLASS parish 'Приходный документ (разруб)' : incAccountSumDocumentLedger;
+TABLE parish (parish);
 
 isActOfStudy(actOfStudy) = actOfStudy IS actOfStudy AND contractorDepartmentStoreActOfStudy(actOfStudy);
 
@@ -4626,7 +4699,7 @@ descriptionParish 'Название документа' (parish) = castParishObj
 
 descriptionStudyOutputDetail 'Название документа' (studyOutputDetail) = castParishObjectsToString100(
     seriesNumberObject(actOfStudyStudyOutputDetail(studyOutputDetail)), dateActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail)),
-    nameContractorDepartmentStoreActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail)));
+    nameContractorDepartmentStoreActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail))) PERSISTENT;
 
         //  расходный документ //
 @metaCodeSingleAggregation(actOfStudy, consumption, isActOfStudy);
@@ -4841,10 +4914,12 @@ showSeriesNumberCuttingStudyInputDetail 'Карта проработки' = ACTI
 
 CLASS inventory 'Инвентаризация (открытая)' : historyObject, numeratedObject;
 TABLE inventory (inventory);
+
 CLASS inventoryPosted 'Инвентаризация (закрытая)' : inventory, postedObject;
 
 CLASS listInventory 'Опись (открытая)';
 TABLE listInventory (listInventory);
+
 CLASS listInventoryPosted 'Опись (закрытая)' : listInventory, postedObject;
 
 CLASS ABSTRACT collationSheet 'Сличительная ведомость' : outAccountSumDocumentLedger;
@@ -4853,8 +4928,13 @@ TABLE collationSheet (collationSheet);
 CLASS registerCollationSheet 'Сличительная ведомость по описи' : collationSheet;
 CLASS remainsCollationSheet 'Сличительная ведомость по остаткам' : collationSheet;
 CLASS manyCollationSheet 'Сличительная ведомость по множеству товаров' : collationSheet;
+
 CLASS pageList 'Страница описи';
+TABLE pageList (pageList);
+
 CLASS detailPage 'Строка';
+TABLE detailPage (detailPage);
+
 CLASS STATIC typeOfAddition 'Тип сличительной ведомости' {
     register 'Товары из описей',
     remains 'Товары по остаткам',
@@ -5040,12 +5120,10 @@ includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE
 //priceAccountCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item) ON ASSIGN includeCollationSheetItem(collationSheet, item); //CHANGE item IS item AND collationSheet IS collationSheet;
 
 shortageQuantityCountedCollationSheetItem 'Количество, недостача' (collationSheet, item) =
-    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, balanceCollationSheetItem(collationSheet, item)) -
-    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, quantityCountedCollationSheetItem(collationSheet, item));
+    balanceCollationSheetItem(collationSheet, item) (-) quantityCountedCollationSheetItem(collationSheet, item);
 
 shortageTotalCollationSheetItem 'Сумма, недостача' (collationSheet, item) =
-    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalBalansCollationSheetItem(collationSheet, item)) -
-    (UNION OVERRIDE 0 IF collationSheet IS collationSheet AND item IS item, totalCollationSheetItem(collationSheet, item));
+    totalBalansCollationSheetItem(collationSheet, item) (-) totalCollationSheetItem(collationSheet, item);
 
 quantityCountedItemByCollationSheet 'Количество посчитано по ведомости' (collationSheet) =
     GROUP SUM quantityCountedCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
@@ -5122,13 +5200,26 @@ descriptionCollationSheet 'Название документа' (collationSheet)
 
 //---------------------------- Изменение остатка инвентаризации ----------------------------//
 
-CLASS inventoryLedger 'Изменение остатка инвентаризации' : outAutoBalanceItemLedger;
-TABLE inventoryLedgerTable (inventoryLedger);
+CLASS ABSTRACT inventoryLedger 'Изменение остатка инвентаризации' : balanceItemLedger; // todo : опять же для ClassWhere
+TABLE inventoryLedger (inventoryLedger);
 
-needToLedgerCollationSheetItem (collationSheet, item) = shortageQuantityCountedCollationSheetItem(collationSheet, item) != 0
+CLASS outInventoryLedger 'Недостача инвентаризации' : inventoryLedger, outAutoBalanceItemLedger;
+CLASS inInventoryLedger 'Излишки инвентаризации' : inventoryLedger, inBalanceItemLedger;
+
+needToOutLedgerCollationSheetItem (collationSheet, item) = shortageQuantityCountedCollationSheetItem(collationSheet, item) > 0
     AND isPostedInventory(inventoryCollationSheet(collationSheet)) AND includeCollationSheetItem(collationSheet, item);
 
-@metaCodeDoubleAggregation(collationSheet, item, inventoryLedger, needToLedgerCollationSheetItem);
+needToInLedgerCollationSheetItem (collationSheet, item) = shortageQuantityCountedCollationSheetItem(collationSheet, item) < 0
+    AND isPostedInventory(inventoryCollationSheet(collationSheet)) AND includeCollationSheetItem(collationSheet, item);
+
+@metaCodeDoubleAggregation(collationSheet, item, outInventoryLedger, needToOutLedgerCollationSheetItem);
+@metaCodeDoubleAggregation(collationSheet, item, inInventoryLedger, needToInLedgerCollationSheetItem);
+
+collationSheetInventoryLedger(inventoryLedger) = UNION EXCLUSIVE collationSheetOutInventoryLedger(inventoryLedger),
+                                                                 collationSheetInInventoryLedger(inventoryLedger);
+
+itemInventoryLedger(inventoryLedger) = UNION EXCLUSIVE itemOutInventoryLedger(inventoryLedger),
+                                                       itemInInventoryLedger(inventoryLedger);
 
 inventoryInventoryLedger(inventoryLedger) = inventoryCollationSheet(collationSheetInventoryLedger(inventoryLedger));
 
@@ -5136,6 +5227,10 @@ dateTimeInventoryLedger(inventoryLedger) = dateTimeInventory(inventoryInventoryL
 isPostedInventoryLedger(inventoryLedger) = isPostedInventory(inventoryInventoryLedger(inventoryLedger));
 departmentStoreInventoryLedger(inventoryLedger) = departmentStoreCollationSheet(collationSheetInventoryLedger(inventoryLedger));
 nameDepartmentStoreInventoryLedger 'Подразделение' (inventoryLedger) = name(departmentStoreInventoryLedger(inventoryLedger)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+quantityOutInventoryLedger = shortageQuantityCountedCollationSheetItem(collationSheetOutInventoryLedger(inventoryLedger), itemOutInventoryLedger(inventoryLedger));
+quantityInInventoryLedger = -shortageQuantityCountedCollationSheetItem(collationSheetInInventoryLedger(inventoryLedger), itemInInventoryLedger(inventoryLedger));
+
 quantityInventoryLedger 'Недостача, количество' (inventoryLedger) = shortageQuantityCountedCollationSheetItem(collationSheetInventoryLedger(inventoryLedger), itemInventoryLedger(inventoryLedger)) MINCHARWIDTH 12 PREFCHARWIDTH 12;
 shortageTotalInventoryLedger 'Недостача, сумма' (inventoryLedger) = shortageTotalCollationSheetItem(collationSheetInventoryLedger(inventoryLedger), itemInventoryLedger(inventoryLedger)) MINCHARWIDTH 12 PREFCHARWIDTH 12;
 
@@ -5143,7 +5238,13 @@ nameAttributeItemInventoryLedger 'Товар' (inventoryLedger) = nameAttributeI
 
 barcodeExInventoryLedger 'Щтрих-код' (inventoryLedger) =  barcodeEx(barcodeSku(itemInventoryLedger(inventoryLedger)));
 
-descriptionInventoryLedger 'Название документа' (inventoryLedger) = descriptionCollationSheet(collationSheetInventoryLedger(inventoryLedger));
+descriptionOutInventoryLedger 'Название документа' (inventoryLedger) =
+    [FORMULA STRING[200] '\'Недостача по инвентаризации \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
+    nameCollationSheet(collationSheetOutInventoryLedger(inventoryLedger)), dateCollationSheet(collationSheetOutInventoryLedger(inventoryLedger)));
+
+descriptionInInventoryLedger 'Название документа' (inventoryLedger) =
+    [FORMULA STRING[200] '\'Излишек по инвентаризации \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
+    nameCollationSheet(collationSheetInInventoryLedger(inventoryLedger)), dateCollationSheet(collationSheetInInventoryLedger(inventoryLedger)));
 
 //--------------------------------Формы по инвентаризации см. в конце-------------------//
 
@@ -5154,7 +5255,10 @@ GROUP customerGroup 'Покупатель' : documentPrmGroup;
 GROUP itemSpecificationDetailInfo 'Информация по товару' : baseGroup;
 
 CLASS specification 'Счет-фактура': historyObject, numeratedObject;
+TABLE specification(specification);
+
 CLASS objectiveAcquiring 'Цель приобретения' : named;
+TABLE objectiveAcquiring (objectiveAcquiring);
 
 CLASS specificationDetail 'Строка документа';
 TABLE specificationDetail (specificationDetail);
@@ -5509,6 +5613,8 @@ goodsAcceptedStatement 'Принял грузополучатель' (statement)
 loadingExecuterStatement 'Исполнитель ПРР' (statement) = DATA employee(statement);
 
 CLASS wayOfLoading 'Способ ПРР' : named;
+TABLE wayOfLoading (wayOfLoading);
+
 nameWayOfLoading 'Способ ПРР' (wayOfLoading) = name(wayOfLoading) IF wayOfLoading IS wayOfLoading IN baseGroup;
 //усложнение из-за бага
 
@@ -5535,7 +5641,11 @@ sumGrossWeightStatement 'Общая масса груза, т.' (statement) = GR
 
 //---------------------------- Кассовые отчеты ----------------------------------------//
 CLASS cashReport 'Кассовый отчет' : transaction;
+TABLE cashReport (cashReport);
+
 CLASS cashDocument 'Кассовый документ';
+TABLE cashDocument (cashDocument);
+
 CLASS incomeCashOrder 'ПКО': cashDocument;
 CLASS outcomeCashOrder 'РКО': cashDocument;
 CLASS bankCardsReport 'Отчет по банковским карточкам': cashDocument;
@@ -5555,19 +5665,21 @@ infoCashDocument 'Основание документа' (cashDocument) = UNION 
 inCashReportDocument 'Документ в текущем кассовом отчете' (cashReport, cashDocument) = reportCashDocument(cashDocument)==cashReport;
 
 FORM cashReport 'Кассовый отчет'
-OBJECTS r=cashReport FIXED PANEL
-OBJECTS d=cashDocument
-PROPERTIES (r) numberCashReport, startDateCashReport, endDateCashReport
-PROPERTIES (d) objectClassName, numberCashDocument, infoCashDocument, sumCashDocument, ADDOBJ, delete
-FILTERS inCashReportDocument(r,d)
-EDIT cashReport OBJECT r;
+    OBJECTS r=cashReport FIXED PANEL
+    OBJECTS d=cashDocument
+    PROPERTIES (r) numberCashReport, startDateCashReport, endDateCashReport
+    PROPERTIES (d) objectClassName, numberCashDocument, infoCashDocument, sumCashDocument, ADDOBJ, delete
+    FILTERS inCashReportDocument(r,d)
+    EDIT cashReport OBJECT r
+;
 
 FORM cashReports 'Кассовые отчеты'
-OBJECTS r=cashReport, d=cashDocument
-PROPERTIES (r) startDateCashReport, endDateCashReport
-PROPERTIES (r) ADDFORM, EDITFORM, delete
-PROPERTIES (d) READONLY numberCashDocument, sumCashDocument
-FILTERS inCashReportDocument(r,d);
+    OBJECTS r=cashReport, d=cashDocument
+    PROPERTIES (r) startDateCashReport, endDateCashReport
+    PROPERTIES (r) ADDFORM, EDITFORM, delete
+    PROPERTIES (d) READONLY numberCashDocument, sumCashDocument
+    FILTERS inCashReportDocument(r,d)
+;
 
 //---------------------------- Приход товара от поставщика ----------------------------------------//
 CLASS shipment 'Поставка' : incAccountSumDocumentLedger, historyObject, numberedObject, priceTransactionDocument;
@@ -5951,6 +6063,7 @@ CLASS writeOffDetail 'Строка списания' : outAutoBalanceItemLedger;
 @metaCodeObjectWithPostEx (writeOff, 'Закрытое списание');
 
 CLASS reasonOff 'Причина списания' : named;
+TABLE reasonOff (reasonOff);
 
 reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
 nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN documentPrmGroup;
@@ -6170,11 +6283,11 @@ innerArrivalInnerFlow 'Приход отдел по расходу' (innerFlow) 
 
 isArrivedInnerFlow (innerFlow) = innerFlow IS innerFlow AND innerArrivalInnerFlow (innerFlow);
 
-innerFlowInnerArrivalDetail (innerArrivalDetail) = innerFlowInnerArrival(innerArrivalInnerArrivalDetail(innerArrivalDetail));
+innerFlowInnerArrivalDetail (innerArrivalDetail) = innerFlowInnerArrival(innerArrivalInnerArrivalDetail(innerArrivalDetail)) PERSISTENT;
 
-numberArrival 'Номер накладной' (innerArrival) = numberObject(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup;
-seriesArrival 'Серия накладной' (innerArrival) = seriesObject(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup;
-seriesNumberArrival 'Серия/Номер' (innerArrival) = seriesNumberObject(innerFlowInnerArrival(innerArrival));
+numberArrival 'Номер накладной' (innerArrival) = numberObject(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup PERSISTENT;
+seriesArrival 'Серия накладной' (innerArrival) = seriesObject(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup PERSISTENT;
+seriesNumberArrival 'Серия/Номер' (innerArrival) = seriesNumberObject(innerFlowInnerArrival(innerArrival)) PERSISTENT;
 
 senderDepartmentInnerArrival 'Отдел-отправитель (ИД)' (innerArrival) = DATA departmentStore(innerArrival);
 nameSenderDepartmentInnerArrival 'Отдел-отправитель' (innerArrival) = name(senderDepartmentInnerArrival(innerArrival)) IN documentPrmGroup;
@@ -6362,8 +6475,12 @@ needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDet
 needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 
 CLASS wastage 'Списание отходов' : outAccountSumDocumentLedger, historyObject;
+TABLE wastage(wastage);
+
 CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
+
 CLASS wastageDetail 'Строка документа': outAutoBalanceItemLedger;
+TABLE wastageDetail(wastageDetail);
 
 @metaCodeDetailAggregation (shipment, wastage, needToWasteShipment);
 
@@ -6734,11 +6851,14 @@ quantityPositionsBill 'Количество позиций в чеке' (bill) =
     BY bill IN documentSumGroup;
 
 CLASS payment 'Оплата по чеку';
+TABLE payment (payment);
+
 CLASS STATIC paymentMeans 'Форма оплаты'{
     cash 'Наличные',
     card 'Карточка'
 };
 CLASS paymentType 'Тип платежа' : named;
+TABLE paymentType (paymentType);
 
 paymentMeansPaymentType (paymentType) = DATA paymentMeans(paymentType);
 namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = name(paymentMeansPaymentType(paymentType)) IN baseGroup;
@@ -6774,6 +6894,8 @@ descriptionBill 'Название документа' (bill) = castBillObjectsTo
 descriptionBillDetail (billDetail) = descriptionBill(billBillDetail(billDetail));
 
 CLASS zReport 'Z-отчет (открытый)' : outAccountSumDocumentLedger, historyObject;
+TABLE zReport (zReport);
+
 CLASS zReportPosted 'Z-отчет (закрытый)' : zReport, postedObject;
 
 @metaCodePostedObject(zReport);
@@ -6847,6 +6969,7 @@ cashRegisterIncomeCashOrder (incomeCashOrder) <- cashRegisterZReport(zReportInco
 
 // документ скидок для товарного отчета
 CLASS saleDiscountDocument 'Скидка по продаже через кассы' : outAccountSumDocumentLedger;
+TABLE saleDiscountDocument (saleDiscountDocument);
 
 needToSaleDiscountDocument (zReport) = TRUE IF discountSumZReport(zReport);
 
@@ -6874,6 +6997,9 @@ isPostedSaleDiscountDocument (saleDiscountDocument) = isPostedZReport(zReportSal
 CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, priceTransactionDocument;
 CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 @metaCodeObjectWithPostEx (userPriceChange, 'Закрытая переоценка товаров');
+
+numberUserPriceChange (userPriceChange) = numberObject(userPriceChange) AND userPriceChange IS userPriceChange;
+seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND userPriceChange IS userPriceChange;
 
 quantityUserPriceChangeDetail 'Кол-во переоценки' = DATA DOUBLE (userPriceChangeDetail);
 quantityItemUserPriceChange 'Кол-во по товару' (item, userPriceChange) = GROUP SUM quantityUserPriceChangeDetail(detail)
@@ -6903,7 +7029,7 @@ castUserPriceChangeToString100=
 descriptionUserPriceChange 'Название документа' (userPriceChange) = castUserPriceChangeToString100(
     seriesNumberObject(userPriceChange), dateUserPriceChange(userPriceChange));
 
-descriptionUserPriceChangeUserPriceChangeDetail 'Название документа' (userPriceChangeDetail) = descriptionUserPriceChange(userPriceChangeUserPriceChangeDetail(userPriceChangeDetail));
+descriptionUserPriceChangeDetail 'Название документа' (userPriceChangeDetail) = descriptionUserPriceChange(userPriceChangeUserPriceChangeDetail(userPriceChangeDetail));
 
 descriptionPriceChangeInnerArrival 'Название документа' (priceChangeInnerArrival) = descriptionInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 
@@ -6978,7 +7104,7 @@ itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                  itemInventoryLedger(ledger),
                                                  itemBillDetail(ledger),
                                                  itemStudyInputDetail(ledger),
-                                                 itemStudyOutputDetail(ledger) PERSISTENT;
+                                                 itemStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
 departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                             departmentStoreReturnSupplierDetail(ledger),
@@ -6990,58 +7116,144 @@ departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipm
                                                             departmentStoreInventoryLedger(ledger),
                                                             departmentStoreBillDetail(ledger),
                                                             departmentStoreStudyInputDetail(ledger),
-                                                            departmentStoreStudyOutputDetail(ledger) PERSISTENT;
+                                                            departmentStoreStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
-descriptionLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
-                                                            descriptionInnerArrivalDetail(ledger),
-                                                            descriptionWriteOffDetail(ledger),
-                                                            descriptionStatementDetail(ledger),
-                                                            descriptionInnerFlowDetail(ledger),
-                                                            descriptionWastageDetail(ledger),
-                                                            descriptionReturnSupplierDetail(ledger),
-                                                            descriptionInventoryLedger(ledger),
-                                                            descriptionUserPriceChangeUserPriceChangeDetail(ledger),
-                                                            descriptionBillDetail(ledger),
-                                                            descriptionStudyOutputDetail(ledger),
-                                                            descriptionStudyInputDetail(ledger) PERSISTENT;
+descriptionBalanceItemLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
+                                                                             descriptionInnerArrivalDetail(ledger),
+                                                                             descriptionWriteOffDetail(ledger),
+                                                                             descriptionStatementDetail(ledger),
+                                                                             descriptionInnerFlowDetail(ledger),
+                                                                             descriptionWastageDetail(ledger),
+                                                                             descriptionReturnSupplierDetail(ledger),
+                                                                             descriptionOutInventoryLedger(ledger),
+                                                                             descriptionInInventoryLedger(ledger),
+                                                                             descriptionBillDetail(ledger),
+                                                                             descriptionStudyOutputDetail(ledger),
+                                                                             descriptionStudyInputDetail(ledger) PERSISTENT;
 
 
 // ---------------------------- Расчет себестоимости -------------------------------- //
 
-quantityBatch 'Кол-во' (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
-                                                 overQuantityStudyOutputDetail(ledger);
+TABLE batch(batch);
+TABLE balanceItemLedgerBatch (balanceItemLedger, batch);
+TABLE batchDepartmentStore(batch, departmentStore);
+
+quantityBatch 'Кол-во в партии' (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
+                                                           overQuantityStudyOutputDetail(ledger) PERSISTENT;
 
 quantityOutAutoBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityWriteOffDetail(ledger),
                                                                      quantityStatementDetail(ledger),
                                                                      quantityInnerFlowDetail(ledger),
                                                                      quantityWastageDetail(ledger),
-                                                                     quantityInventoryLedger(ledger),
+                                                                     quantityOutInventoryLedger(ledger),
                                                                      quantityBillDetail(ledger),
                                                                      quantityStudyInputDetail(ledger);
 
 quantityOutUserBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityReturnSupplierDetail(ledger);
+batchOutUserBalanceItemLedger 'Партия' (ledger) = UNION EXCLUSIVE batchReturnSupplierDetail(ledger);
 
 quantityOutBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityOutAutoBalanceItemLedger(ledger),
                                                                  quantityOutUserBalanceItemLedger(ledger);
 
-quantityBalanceItemLedger 'Количество' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
+quantityInBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInInventoryLedger(ledger);
+
+quantityBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
+                                                              quantityOutBalanceItemLedger(ledger),
+                                                              quantityInInventoryLedger(ledger),
+                                                              quantityInnerArrivalDetail(ledger) PERSISTENT;
+
+signedQuantityBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
                                                                   -quantityOutBalanceItemLedger(ledger),
+                                                                  quantityInInventoryLedger(ledger),
                                                                   quantityInnerArrivalDetail(ledger) PERSISTENT;
 
 // ---------------------------- Остаток по товару -------------------------------- //
 
-currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM quantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
+currentBalanceItemLedger 'Текущий остаток' (item, departmentStore) = GROUP SUM signedQuantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
+                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger) PERSISTENT;
+countBalanceItemLedger 'Кол-во движений' (item, departmentStore) = GROUP SUM 1 AND signedQuantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
                                                           BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger) PERSISTENT;
 
 // без учета текущей даты/времени
 balanceBItemLedgerDateTime (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
-                                                                         -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) >= (dateTime AS DATETIME) AND isPostedBalanceItemLedger(ledger)
+                                                                         -[GROUP SUM signedQuantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) >= (dateTime AS DATETIME) AND isPostedBalanceItemLedger(ledger)
                                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
 
 // с учетом текущей даты/времени
 balanceAItemLedgerDateTime 'Остаток на дату' (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
-                                                                         -[GROUP SUM quantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) > (dateTime AS DATETIME) AND isPostedBalanceItemLedger(ledger)
+                                                                         -[GROUP SUM signedQuantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) > (dateTime AS DATETIME) AND isPostedBalanceItemLedger(ledger)
                                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
+
+
+costBalanceItemLedgerBatch (ledger, batch) = DATA DOUBLE (balanceItemLedger, batch);
+
+signedCostBalanceItemLedgerBatch (ledger, batch) = IF ledger IS outBalanceItemLedger
+                                                        THEN -costBalanceItemLedgerBatch(ledger, batch)
+                                                        ELSE costBalanceItemLedgerBatch(ledger, batch);
+
+currentBalanceBatchLedger 'Текущий остаток' (batch, departmentStore) = GROUP SUM signedCostBalanceItemLedgerBatch (ledger, batch) AND isPostedBalanceItemLedger(ledger)
+                                                          BY batch, departmentStoreBalanceItemLedger(ledger) PERSISTENT;
+
+costedBalanceItemLedger 'Расписано' (ledger) = GROUP SUM costBalanceItemLedgerBatch (ledger, batch) BY ledger PERSISTENT;
+
+quantityBatchBatch 'Кол-во' (ledger, batch) = quantityBatch(ledger) AND batch == ledger;
+
+dateTimeBatch 'Дата/время' (batch) = UNION EXCLUSIVE dateTimeShipmentDetail (batch),
+                                                     dateTimeStudyOutputDetail (batch) PERSISTENT INDEXED;
+
+orderBatch (batch) = LIST (dateTimeBatch(batch), batch) PERSISTENT;
+
+isPostedBatch 'Закрыт' (batch) = UNION EXCLUSIVE isPostedShipmentDetail (batch),
+                                                 isPostedStudyOutputDetail (batch) PERSISTENT;
+
+itemBatch 'Товар (ИД)' (batch) = UNION EXCLUSIVE itemShipmentDetail (batch),
+                                                 itemStudyOutputDetail (batch) PERSISTENT INDEXED;
+
+descriptionBatch 'Описание' (batch) = UNION EXCLUSIVE descriptionShipmentDetail(batch),
+                                                      descriptionStudyOutputDetail(batch) PERSISTENT;
+
+currentBalanceBatch 'Остаток (всего)' = GROUP SUM currentBalanceBatchLedger(batch, departmentStore) BY batch PERSISTENT;
+
+quantityOutUserBalanceItemLedgerBatch (ledger, batch) = quantityOutUserBalanceItemLedger(ledger) AND batch == batchOutUserBalanceItemLedger(ledger);
+quantityOutAutoBalanceItemLedgerBatch (ledger, batch) =
+        PARTITION UNGROUP quantityOutAutoBalanceItemLedger
+                  LIMIT currentBalanceBatchLedger(batch, departmentStoreBalanceItemLedger(ledger)) AND itemBatch(batch) == itemBalanceItemLedger(ledger)
+                  BY ledger
+                  ORDER orderBatch(batch);
+
+quantityOutBalanceItemLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityOutUserBalanceItemLedgerBatch(ledger, batch),
+                                                                    quantityOutAutoBalanceItemLedgerBatch(ledger, batch);
+
+quantityInBalanceItemLedgerBatch (ledger, batch) =
+        PARTITION UNGROUP quantityInBalanceItemLedger
+                  LIMIT (quantityBatch(batch) (-) currentBalanceBatch(batch))
+                    AND countBalanceItemLedger(itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger))
+                    AND itemBatch(batch) == itemBalanceItemLedger(ledger)
+                  BY ledger
+                  ORDER DESC orderBatch(batch);
+
+quantityInnerFlowBatch (innerFlow, batch) = GROUP SUM costBalanceItemLedgerBatch (innerFlowDetail, batch)
+                                                  BY innerFlowInnerFlowDetail(innerFlowDetail), batch;
+
+quantityInnerArrivalBatch (innerArrival, batch) = quantityInnerFlowBatch (innerFlowInnerArrival(innerArrival), batch);
+
+quantityInnerArrivalDetailBatch (ledger, batch) =
+        PARTITION UNGROUP quantityInnerArrivalDetail
+                  LIMIT quantityInnerArrivalBatch(innerArrivalInnerArrivalDetail(ledger), batch)
+                    AND itemBatch(batch) == itemInnerArrivalDetail(ledger)
+                  BY ledger
+                  ORDER DESC orderBatch(batch);
+
+quantityBalanceItemLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityBatchBatch(ledger, batch),
+                                                                 quantityOutBalanceItemLedgerBatch(ledger, batch),
+                                                                 quantityInBalanceItemLedgerBatch(ledger, batch),
+                                                                 quantityInnerArrivalDetailBatch(ledger, batch);
+
+setCostBalanceItemLedgerBatch 'Рассчитать себестоимость' = ACTION (ledger) {
+    SET costBalanceItemLedgerBatch(ledger, batch) <- NULL;
+    SET costBalanceItemLedgerBatch(ledger, batch) <- quantityBalanceItemLedgerBatch(ledger, batch);
+}
+
 
 // --------------------------- Использование регистров количества (автоматическое заполнение) ---------------------------------
 
@@ -7093,12 +7305,17 @@ isPostedImporterPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedSh
 itemImporterPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                    itemInnerArrivalDetail(ledger),
                                                    itemUserPriceChangeDetail(ledger),
-                                                   itemStudyOutputDetail(ledger) PERSISTENT;
+                                                   itemStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
 departmentStoreImporterPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                               departmentStoreInnerArrivalDetail(ledger),
                                                               departmentStoreUserPriceChangeDetail(ledger),
-                                                              departmentStoreStudyOutputDetail(ledger) PERSISTENT;
+                                                              departmentStoreStudyOutputDetail(ledger) PERSISTENT INDEXED;
+
+descriptionImporterPriceLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
+                                                                               descriptionInnerArrivalDetail(ledger),
+                                                                               descriptionUserPriceChangeDetail(ledger),
+                                                                               descriptionStudyOutputDetail(ledger);
 
 priceImporterLedger 'Цена' (ledger) = UNION EXCLUSIVE importerPriceShipmentDetail(ledger),
                                                       importerPriceInnerArrivalDetail(ledger),
@@ -7125,12 +7342,17 @@ isPostedSupplierPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedSh
 itemSupplierPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                    itemInnerArrivalDetail(ledger),
                                                    itemUserPriceChangeDetail(ledger),
-                                                   itemStudyOutputDetail(ledger) PERSISTENT;
+                                                   itemStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
 departmentStoreSupplierPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                               departmentStoreInnerArrivalDetail(ledger),
                                                               departmentStoreUserPriceChangeDetail(ledger),
-                                                              departmentStoreStudyOutputDetail(ledger) PERSISTENT;
+                                                              departmentStoreStudyOutputDetail(ledger) PERSISTENT INDEXED;
+
+descriptionSupplierPriceLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
+                                                                               descriptionInnerArrivalDetail(ledger),
+                                                                               descriptionUserPriceChangeDetail(ledger),
+                                                                               descriptionStudyOutputDetail(ledger);
 
 priceSupplierLedger 'Цена' (ledger) = UNION EXCLUSIVE supplierPriceShipmentDetail(ledger),
                                                       supplierPriceInnerArrivalDetail(ledger),
@@ -7154,11 +7376,15 @@ isPostedWarePriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipme
 
 itemWarePriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                itemInnerArrivalDetail(ledger),
-                                               itemUserPriceChangeDetail(ledger) PERSISTENT;
+                                               itemUserPriceChangeDetail(ledger) PERSISTENT INDEXED;
 
 departmentStoreWarePriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                           departmentStoreInnerArrivalDetail(ledger),
-                                                          departmentStoreUserPriceChangeDetail(ledger) PERSISTENT;
+                                                          departmentStoreUserPriceChangeDetail(ledger) PERSISTENT INDEXED;
+
+descriptionWarePriceLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
+                                                                           descriptionInnerArrivalDetail(ledger),
+                                                                           descriptionUserPriceChangeDetail(ledger);
 
 wareWarePriceLedger(ledger) = UNION EXCLUSIVE wareShipmentDetail(ledger),
                                               wareInnerArrivalDetail(ledger),
@@ -7192,12 +7418,17 @@ isPostedRetailVATLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipme
 itemRetailVATLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                itemInnerArrivalDetail(ledger),
                                                itemUserPriceChangeDetail(ledger),
-                                               itemStudyOutputDetail(ledger) PERSISTENT;
+                                               itemStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
 departmentStoreRetailVATLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                           departmentStoreInnerArrivalDetail(ledger),
                                                           departmentStoreUserPriceChangeDetail(ledger),
-                                                          departmentStoreStudyOutputDetail(ledger) PERSISTENT;
+                                                          departmentStoreStudyOutputDetail(ledger) PERSISTENT INDEXED;
+
+descriptionRetailVATLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
+                                                                           descriptionInnerArrivalDetail(ledger),
+                                                                           descriptionUserPriceChangeDetail(ledger),
+                                                                           descriptionStudyOutputDetail(ledger);
 
 rangeRetailLedger (ledger) = UNION EXCLUSIVE retailRangeShipmentDetail(ledger),
                                              retailRangeInnerArrivalDetail(ledger),
@@ -7234,13 +7465,18 @@ isPostedAccountPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShi
 itemAccountPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                   itemInnerArrivalDetail(ledger),
                                                   itemUserPriceChangeDetail(ledger),
-                                                  itemStudyOutputDetail(ledger) PERSISTENT;
+                                                  itemStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
 
 departmentStoreAccountPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                              departmentStoreInnerArrivalDetail(ledger),
                                                              departmentStoreUserPriceChangeDetail(ledger),
-                                                             departmentStoreStudyOutputDetail(ledger) PERSISTENT;
+                                                             departmentStoreStudyOutputDetail(ledger) PERSISTENT INDEXED;
+
+descriptionAccountPriceLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
+                                                                              descriptionInnerArrivalDetail(ledger),
+                                                                              descriptionUserPriceChangeDetail(ledger),
+                                                                              descriptionStudyOutputDetail(ledger);
 
 
 priceAccountLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger),
@@ -7269,12 +7505,17 @@ isPostedRetailPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShip
 itemRetailPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                  itemInnerArrivalDetail(ledger),
                                                  itemUserPriceChangeDetail(ledger),
-                                                 itemStudyOutputDetail(ledger) PERSISTENT;
+                                                 itemStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
 departmentStoreRetailPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
                                                             departmentStoreInnerArrivalDetail(ledger),
                                                             departmentStoreUserPriceChangeDetail(ledger),
-                                                            departmentStoreStudyOutputDetail(ledger) PERSISTENT;
+                                                            departmentStoreStudyOutputDetail(ledger) PERSISTENT INDEXED;
+
+descriptionRetailPriceLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
+                                                                             descriptionInnerArrivalDetail(ledger),
+                                                                             descriptionUserPriceChangeDetail(ledger),
+                                                                             descriptionStudyOutputDetail(ledger);
 
 priceRetailLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger),
                                                     retailPriceInnerArrivalDetail(ledger),
@@ -7453,7 +7694,7 @@ datePriceChangeReturnSupplier 'Дата' (priceChangeReturnSupplier) = dateRetur
 isPostedPriceChangeReturnSupplier 'Закрыт' (priceChangeReturnSupplier) = isPostedReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 numberPriceChangeReturnSupplier 'Номер накладной' (priceChangeReturnSupplier) = numberObject(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 seriesPriceChangeReturnSupplier 'Серия накладной' (priceChangeReturnSupplier) = seriesObject(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-descriptionPriceChangeReturnSupplier 'Название документа' (priceChangeReturnSupplier) = descriptionReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+descriptionPriceChangeReturnSupplier 'Название документа' (priceChangeReturnSupplier) =  descriptionReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 
 numberDisposalPriceChangeReturnSupplier '№ распоряжения на переоценку' (priceChangeReturnSupplier) =numberDisposalReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 
@@ -7755,6 +7996,8 @@ GROUP snapshotMachineryPriceGroup 'Перезагрузка прайса' : publ
 
 //--------------------Сообщения об ошибках транзакций--------------------//
 CLASS machineryPriceTransactionError 'Ошибка';
+TABLE machineryPriceTransactionError (machineryPriceTransactionError);
+
 dataMachineryPriceTransactionError 'Сообщение об ошибке' = DATA STRING[200] (machineryPriceTransactionError) IN baseGroup;
 dateMachineryPriceTransactionError 'Время возникновения' = DATA DATETIME (machineryPriceTransactionError) IN baseGroup;
 errorTraceMachineryPriceTransactionError 'След исключения' = DATA TEXT (machineryPriceTransactionError) IN baseGroup;
@@ -8646,17 +8889,17 @@ isPostedPriceChangeDocument 'Закрыт' (priceChangeDocument) = UNION EXCLUSI
                                                                              isPostedPriceChangeInnerArrival(priceChangeDocument),
                                                                              isPostedUserPriceChange(priceChangeDocument) PERSISTENT;
 
-numberPriceChangeDocument 'Номер накладной' (priceChangeDocument) = UNION EXCLUSIVE numberPriceChangeShipment(priceChangeDocument),
+numberPriceChangeDocument 'Номер документа' (priceChangeDocument) = UNION EXCLUSIVE numberPriceChangeShipment(priceChangeDocument),
                                                                                     numberPriceChangeReturnSupplier(priceChangeDocument),
                                                                                     numberPriceChangeInnerArrival(priceChangeDocument),
                                                                                     numberPriceChangeStatement(priceChangeDocument),
-                                                                                    numberObject(priceChangeDocument) PERSISTENT;
+                                                                                    numberUserPriceChange(priceChangeDocument) PERSISTENT;
 
-seriesPriceChangeDocument 'Серия накладной' (priceChangeDocument) = UNION EXCLUSIVE seriesPriceChangeShipment(priceChangeDocument),
+seriesPriceChangeDocument 'Серия документа' (priceChangeDocument) = UNION EXCLUSIVE seriesPriceChangeShipment(priceChangeDocument),
                                                                                     seriesPriceChangeReturnSupplier(priceChangeDocument),
                                                                                     seriesPriceChangeInnerArrival(priceChangeDocument),
                                                                                     seriesPriceChangeStatement (priceChangeDocument),
-                                                                                    seriesObject(priceChangeDocument) PERSISTENT;
+                                                                                    seriesUserPriceChange(priceChangeDocument) PERSISTENT;
 
 numberDisposalPriceChangeDocument '№ распоряжения на переоценку' (priceChangeDocument) = UNION EXCLUSIVE
                                                                                     numberDisposalPriceChangeShipment(priceChangeDocument),
@@ -9144,7 +9387,7 @@ FORM shipments 'Поставки'
                             createSnapshotShipmentMachineryPriceTransaction FORCE PANEL SHOWIF isPostedShipment(s),
                             toPrintActOfRevaluationShipment FORCE PANEL SHOWIF needToPriceChangeShipment(s), toPrintPricesRegister FORCE PANEL,
                             ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
-                            postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
+                            postShipment FORCE GRID SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d) READONLY  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
@@ -10799,7 +11042,7 @@ curDateLastMovedItemOver(item, departmentStore) =
 curDateLastMovedUnionBalanceItem(item, departmentStore) =
     TRUE IF currentBalanceItemLedger(item, departmentStore) OR TRUE IF curDateLastMovedItemOver(item, departmentStore);
 
-FORM balanceItemDepartment 'Остатки по отделам на дату'
+FORM balanceItemDepartment 'Остатки на дату'
 
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
@@ -10830,37 +11073,37 @@ FORM balanceItemDepartment 'Остатки по отделам на дату'
         FILTER 'Товары с движением не позднее' 'F9' dateLastMovedUnionBalanceItem(i, dep, t)
 
     OBJECTS apl=accountPriceLedger
-    PROPERTIES (apl) descriptionLedger, dateTimeAccountPriceLedger, priceAccountLedger
+    PROPERTIES (apl) descriptionAccountPriceLedger, dateTimeAccountPriceLedger, priceAccountLedger
     FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
     ORDER BY dateTimeAccountPriceLedger DESC
 
     OBJECTS rpl=retailPriceLedger
-    PROPERTIES (rpl) descriptionLedger, dateTimeRetailPriceLedger, priceRetailLedger
+    PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, priceRetailLedger
     FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
     ORDER BY dateTimeRetailPriceLedger DESC
 
     OBJECTS bil=balanceItemLedger
-    PROPERTIES(bil) descriptionLedger, dateTimeBalanceItemLedger, quantityBalanceItemLedger READONLY
+    PROPERTIES(bil) descriptionBalanceItemLedger, dateTimeBalanceItemLedger, signedQuantityBalanceItemLedger READONLY
     FILTERS isPostedBalanceItemLedger(bil) AND itemBalanceItemLedger(bil)==i AND departmentStoreBalanceItemLedger(bil)==dep
     ORDER BY dateTimeBalanceItemLedger DESC
 
     OBJECTS ipl=importerPriceLedger
-    PROPERTIES(ipl) descriptionLedger, dateTimeImporterPriceLedger, priceImporterLedger
+    PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, priceImporterLedger
     FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
     ORDER BY dateTimeImporterPriceLedger DESC
 
     OBJECTS spl=supplierPriceLedger
-    PROPERTIES(spl) descriptionLedger, dateTimeSupplierPriceLedger, priceSupplierLedger
+    PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, priceSupplierLedger
     FILTERS isPostedSupplierPriceLedger(spl) AND itemSupplierPriceLedger(spl)==i AND departmentStoreSupplierPriceLedger(spl)==dep
     ORDER BY dateTimeSupplierPriceLedger DESC
 
     OBJECTS rvl=retailVATLedger
-    PROPERTIES(rvl) descriptionLedger, dateTimeRetailVATLedger, dataRetailLedger
+    PROPERTIES(rvl) descriptionRetailVATLedger, dateTimeRetailVATLedger, dataRetailLedger
     FILTERS isPostedRetailVATLedger(rvl) AND itemRetailVATLedger(rvl)==i AND departmentStoreRetailVATLedger(rvl)==dep
     ORDER BY dateTimeRetailVATLedger DESC
 
     OBJECTS wpl= warePriceLedger
-    PROPERTIES(wpl) descriptionLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, priceWareWarePriceLedger
+    PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, priceWareWarePriceLedger
     FILTERS isPostedWarePriceLedger(wpl) AND itemWarePriceLedger(wpl)==i AND departmentStoreWarePriceLedger(wpl)==dep
     ORDER BY dateTimeWarePriceLedger DESC
 ;
@@ -10902,7 +11145,7 @@ DESIGN balanceItemDepartment FROM DEFAULT {
     }
 }
 
-FORM curBalanceItemDepartment 'Текущие остатки по отделам'
+FORM curBalanceItemDepartment 'Текущие остатки'
 
     TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
@@ -10912,9 +11155,10 @@ FORM curBalanceItemDepartment 'Текущие остатки по отделам
     PROPERTIES READONLY name(g)
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
-    PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  barcodeBarcodeSku
-    FILTERS           hasParentItemGroupSku(g, i),
+    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameDep=name(dep)  //  barcodeBarcodeSku
+    FILTERS           nameAttributeItemGroupItem (g, i),
                       inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
+    ORDER BY          nameIt
 
 
     PROPERTIES(i, dep) READONLY currentBalanceItemLedger, currentPriceImporterLedger, currentPriceSupplierLedger,
@@ -10928,39 +11172,51 @@ FORM curBalanceItemDepartment 'Текущие остатки по отделам
         FILTER 'Товары с движением не позднее' 'F9' curDateLastMovedUnionBalanceItem(i, dep)
 
     OBJECTS apl=accountPriceLedger
-    PROPERTIES (apl) descriptionLedger, dateTimeAccountPriceLedger, priceAccountLedger
+    PROPERTIES (apl) descriptionAccountPriceLedger, dateTimeAccountPriceLedger, priceAccountLedger
     FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
     ORDER BY dateTimeAccountPriceLedger DESC
 
     OBJECTS rpl=retailPriceLedger
-    PROPERTIES (rpl) descriptionLedger, dateTimeRetailPriceLedger, priceRetailLedger
+    PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, priceRetailLedger
     FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
     ORDER BY dateTimeRetailPriceLedger DESC
 
     OBJECTS bil=balanceItemLedger
-    PROPERTIES(bil) descriptionLedger, dateTimeBalanceItemLedger, quantityBalanceItemLedger READONLY
+    PROPERTIES(bil) descriptionBalanceItemLedger, dateTimeBalanceItemLedger, signedQuantityBalanceItemLedger READONLY, setCostBalanceItemLedgerBatch
     FILTERS isPostedBalanceItemLedger(bil) AND itemBalanceItemLedger(bil)==i AND departmentStoreBalanceItemLedger(bil)==dep
     ORDER BY dateTimeBalanceItemLedger DESC
 
     OBJECTS ipl=importerPriceLedger
-    PROPERTIES(ipl) descriptionLedger, dateTimeImporterPriceLedger, priceImporterLedger
+    PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, priceImporterLedger
     FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
     ORDER BY dateTimeImporterPriceLedger DESC
 
     OBJECTS spl=supplierPriceLedger
-    PROPERTIES(spl) descriptionLedger, dateTimeSupplierPriceLedger, priceSupplierLedger
+    PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, priceSupplierLedger
     FILTERS isPostedSupplierPriceLedger(spl) AND itemSupplierPriceLedger(spl)==i AND departmentStoreSupplierPriceLedger(spl)==dep
     ORDER BY dateTimeSupplierPriceLedger DESC
 
     OBJECTS rvl=retailVATLedger
-    PROPERTIES(rvl) descriptionLedger, dateTimeRetailVATLedger, dataRetailLedger
+    PROPERTIES(rvl) descriptionRetailVATLedger, dateTimeRetailVATLedger, dataRetailLedger
     FILTERS isPostedRetailVATLedger(rvl) AND itemRetailVATLedger(rvl)==i AND departmentStoreRetailVATLedger(rvl)==dep
     ORDER BY dateTimeRetailVATLedger DESC
 
-    OBJECTS wpl= warePriceLedger
-    PROPERTIES(wpl) descriptionLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, priceWareWarePriceLedger
+    OBJECTS wpl=warePriceLedger
+    PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, priceWareWarePriceLedger
     FILTERS isPostedWarePriceLedger(wpl) AND itemWarePriceLedger(wpl)==i AND departmentStoreWarePriceLedger(wpl)==dep
     ORDER BY dateTimeWarePriceLedger DESC
+
+    OBJECTS bt=batch
+    PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, quantityBatch
+    PROPERTIES(bt, dep) READONLY currentBalanceBatchLedger
+    FILTERS isPostedBatch(bt) AND itemBatch(bt)==i
+    ORDER BY dateTimeBatch DESC
+
+//    OBJECTS bbl=balanceItemLedger
+//    PROPERTIES(bbl) descriptionBalanceItemLedger, bblDateTime = dateTimeBalanceItemLedger, signedQuantityBalanceItemLedger READONLY
+//    PROPERTIES(bbl, bt) signedCostBalanceItemLedgerBatch
+//    FILTERS isPostedBalanceItemLedger(bbl) AND costBalanceItemLedgerBatch(bbl, bt)
+//    ORDER BY bblDateTime DESC
 ;
 
 DESIGN curBalanceItemDepartment FROM DEFAULT {
@@ -10984,6 +11240,11 @@ DESIGN curBalanceItemDepartment FROM DEFAULT {
                     title = 'Изменение цен';
                     tabbedPane = TRUE;
                     ADD bil.box;
+//                    NEW batchCont {
+//                        title = 'Партии';
+                        ADD bt.box;
+//                        ADD bbl.box;
+//                    }
                     ADD apl.box;
                     ADD rpl.box;
                     ADD ipl.box;
@@ -10998,6 +11259,15 @@ DESIGN curBalanceItemDepartment FROM DEFAULT {
         ADD functions.box;
     }
 }
+
+FORM costItemLedger 'Себестоимость'
+    OBJECTS bil = balanceItemLedger
+    PROPERTIES(bil) dateTimeBalanceItemLedger, descriptionBalanceItemLedger, quantityBalanceItemLedger
+
+    OBJECTS bt = batch
+    PROPERTIES(bt)  dateTimeBatch, descriptionBatch, quantityBatch
+    PROPERTIES(bil, bt) costBalanceItemLedgerBatch FORCE GRID
+;
 
 //---------------------------------------------- Форма поставки товаров в отдел -------------------------------------//
 
@@ -11207,6 +11477,7 @@ NAVIGATOR {
         ADD balanceItemDepartment;
         ADD sumAccountDocumentLedger;
         ADD priceChangeDocuments;
+        ADD costItemLedger;
     }
     NEW printedForms 'Печатные формы' TO formsToolbar{
         ADD pricesRegister;

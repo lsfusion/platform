@@ -603,10 +603,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         tableFactory.include("userTable", user);
         tableFactory.include("customUser", customUser);
+        tableFactory.include("userRole", userRole);
+        tableFactory.include("policy", policy);
         tableFactory.include("loginSID", StringClass.get(30), StringClass.get(30));
         tableFactory.include("countryDate", country, DateClass.instance);
         tableFactory.include("objectObjectDate", baseClass, baseClass, DateClass.instance);
-        tableFactory.include("country", country, DateClass.instance);
+        tableFactory.include("country", country);
         tableFactory.include("navigatorElement", navigatorElement);
         tableFactory.include("abstractGroup", abstractGroup);
         tableFactory.include("property", property);
@@ -616,6 +618,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         tableFactory.include("launch", launch);
         tableFactory.include("transaction", transaction);
         tableFactory.include("named", baseClass.named);
+        tableFactory.include("sidClass", baseClass.sidClass);
         tableFactory.include("barcodeObject", barcodeObject);
         tableFactory.include("emailObject", emailObject);
         tableFactory.include("externalObject", externalObject);
@@ -868,7 +871,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         nameToCountry = addAGProp("nameToCountry", getString("logics.country"), country, name);
 
         nameToPolicy = addAGProp("nameToPolicy", getString("logics.policy"), policy, name);
-        policyDescription = addDProp(baseGroup, "description", getString("logics.policy.description"), StringClass.get(100), policy);
+        policyDescription = addDProp(baseGroup, "policyDescription", getString("logics.policy.description"), StringClass.get(100), policy);
 
         userRolePolicyOrder = addDProp(baseGroup, "userRolePolicyOrder", getString("logics.policy.order"), IntegerClass.instance, userRole, policy);
         userPolicyOrder = addJProp(baseGroup, "userPolicyOrder", getString("logics.policy.order"), userRolePolicyOrder, userMainRole, 1, 2);
