@@ -311,5 +311,9 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
     public void addDoubleCellToRow(Object cell, String separator, int precision) {
         addCellToRow(cell, true, precision, null, separator, true);
     }
+    
+    public void addConstantStringCellToRow(String constant, String separator) {
+        row +=constant + separator;
+    }
 
 }
