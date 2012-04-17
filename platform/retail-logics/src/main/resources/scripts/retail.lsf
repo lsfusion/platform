@@ -5719,6 +5719,13 @@ supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipmen
 nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN documentHeaderGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40 IN documentPrmGroup;
 
+castThreeObjectsToString200 = FORMULA STRING[200] 'CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \'  \' || CAST($3 AS TEXT)';
+
+consigneeShipment 'Грузополучатель' (shipment) = castThreeObjectsToString200(
+    name(storeDepartmentStore(departmentStoreShipment(shipment))),
+    name(companyStore(storeDepartmentStore(departmentStoreShipment(shipment)))),
+    name(departmentStoreShipment(shipment))) IN documentPrmGroup;
+
 contractShipment 'Договор' (shipment) = DATA contract (shipment) IN idGroup;
 
 contractShipment (shipment) <- overrideContractCompanySupplier(companyStore(storeDepartmentStore(departmentStoreShipment(shipment))), supplierShipment(shipment))
@@ -5726,6 +5733,8 @@ contractShipment (shipment) <- overrideContractCompanySupplier(companyStore(stor
                                ON CHANGE supplierShipment(shipment);
 
 numberContractShipment 'Договор' (shipment) = numberContract(contractShipment(shipment)) IN documentPrmGroup;
+
+dateContractShipment 'Договор от' (shipment) = dateFromContract(contractShipment(shipment)) IN documentPrmGroup;
 
 carryingChargesShipment 'Транспортные расходы' (shipment) = DATA DOUBLE (shipment) IN documentSumGroup;
 
@@ -5860,6 +5869,7 @@ retailPriceShipmentDetail 'Новая розничная цена' (shipmentDeta
 
 retailPriceShipmentDetail (shipmentDetail) <- calculatedRetailPriceShipmentDetail (shipmentDetail)
     ON CHANGE calculatedRetailPriceShipmentDetail (shipmentDetail);
+
 
 @metaCodeTotals (shipment);
 
@@ -8662,7 +8672,8 @@ nameHeadManShipment 'Зав. магазином' (shipment) = nameHeadManCommitt
 
 FORM pricesRegister 'Реестр цен' PRINT
     OBJECTS s=shipment FIXED PANEL
-    PROPERTIES (s)  SELECTOR numberObject, dateShipment, nameDepartmentStoreShipment, nameSupplierShipment,
+    PROPERTIES (s)  SELECTOR numberObject, objectClassName, dateShipment, nameDepartmentStoreShipment,
+                    numberContractShipment, dateContractShipment,  nameSupplierShipment, consigneeShipment,
                     totalQuantityShipment, supportSumPriceShipment, totalSumSupplierVATShipment,
                     totalSumWareShipment, totalSumVatWareShipment, exSumSupplierShipment, totalSumMarkupShipment,
                     fullDetailVatShipment, retailSumShipment, nameRegisterCommitteeShipment,
