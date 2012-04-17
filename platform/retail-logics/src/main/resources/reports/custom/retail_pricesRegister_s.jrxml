@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="s" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="0.9090909090909095"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.zoom" value="1.6105100000000012"/>
+	<property name="ireport.x" value="178"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" forecolor="#FFFFFF" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -86,97 +86,45 @@
 	</group>
 	<title>
 		<band height="94">
-			<staticText>
-				<reportElement style="GroupCellStyle1" x="173" y="0" width="115" height="13"/>
-				<textElement/>
-				<text><![CDATA[РЕЕСТР РОЗНИЧНЫХ ЦЕН]]></text>
-			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="288" y="0" width="57" height="13"/>
+				<reportElement style="GroupCellStyle0" x="180" y="0" width="335" height="13"/>
 				<textElement/>
-				<textFieldExpression><![CDATA[$F{retail_numberObject}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="365" y="0" width="110" height="13"/>
-				<textElement/>
-				<textFieldExpression><![CDATA[$F{retail_dateShipment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["РЕЕСТР РОЗНИЧНЫХ ЦЕН "+$F{retail_numberObject}+" от "+$F{retail_dateShipment}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement style="GroupCellStyle1" x="345" y="0" width="20" height="13"/>
-				<textElement/>
-				<text><![CDATA[от]]></text>
-			</staticText>
-			<staticText>
-				<reportElement style="GroupCellStyle1" x="173" y="26" width="115" height="13"/>
+				<reportElement style="GroupCellStyle0" x="180" y="26" width="105" height="13"/>
 				<textElement/>
 				<text><![CDATA[Грузополучатель]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle1" x="173" y="13" width="115" height="13"/>
+				<reportElement style="GroupCellStyle0" x="180" y="13" width="105" height="13"/>
 				<textElement/>
 				<text><![CDATA[Грузоотправитель]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="288" y="13" width="187" height="13"/>
+				<reportElement style="GroupCellStyle0" x="285" y="13" width="230" height="13"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_nameSupplierShipment}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="288" y="26" width="187" height="13"/>
+				<reportElement style="GroupCellStyle0" x="285" y="26" width="230" height="13"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_consigneeShipment}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement style="GroupCellStyle1" x="173" y="39" width="115" height="13"/>
-				<textElement/>
-				<text><![CDATA[Основание: Накладная №]]></text>
-			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="288" y="39" width="57" height="13"/>
+				<reportElement style="GroupCellStyle0" x="180" y="39" width="335" height="13"/>
 				<textElement/>
-				<textFieldExpression><![CDATA[$F{retail_numberObject}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Основание: Накладная № "+$F{retail_numberObject}+" от "+$F{retail_dateShipment}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement style="GroupCellStyle1" x="345" y="39" width="20" height="13"/>
-				<textElement/>
-				<text><![CDATA[от]]></text>
-			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="365" y="39" width="110" height="13"/>
+				<reportElement style="GroupCellStyle0" x="180" y="52" width="335" height="13"/>
 				<textElement/>
-				<textFieldExpression><![CDATA[$F{retail_dateShipment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Договор: № "+$F{retail_numberContractShipment}+" от "+$F{retail_dateContractShipment}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement style="GroupCellStyle1" x="173" y="52" width="60" height="13" forecolor="#000000"/>
-				<textElement>
-					<paragraph lineSpacing="AtLeast"/>
-				</textElement>
-				<text><![CDATA[Договор: №]]></text>
-			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="233" y="52" width="55" height="13"/>
+				<reportElement style="GroupCellStyle0" x="180" y="65" width="335" height="13"/>
 				<textElement/>
-				<textFieldExpression><![CDATA[$F{retail_numberContractShipment}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement style="GroupCellStyle1" x="288" y="52" width="15" height="13"/>
-				<textElement/>
-				<text><![CDATA[от]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="303" y="52" width="62" height="13"/>
-				<textElement/>
-				<textFieldExpression><![CDATA[$F{retail_dateContractShipment}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement style="GroupCellStyle1" x="173" y="65" width="70" height="13"/>
-				<textElement/>
-				<text><![CDATA[Вид операции:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="243" y="65" width="122" height="13"/>
-				<textElement/>
-				<textFieldExpression><![CDATA[$F{objectClassName}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Вид операции: "+$F{objectClassName}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

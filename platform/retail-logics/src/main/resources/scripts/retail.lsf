@@ -5723,11 +5723,11 @@ supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipmen
 nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN documentHeaderGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40 IN documentPrmGroup;
 
-castThreeObjectsToString200 = FORMULA STRING[200] 'CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \'  \' || CAST($3 AS TEXT)';
+castThreeObjectsToString200 = FORMULA STRING[200] 'CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' отдел  \' || CAST($3 AS TEXT)';
 
 consigneeShipment 'Грузополучатель' (shipment) = castThreeObjectsToString200(
-    name(storeDepartmentStore(departmentStoreShipment(shipment))),
     name(companyStore(storeDepartmentStore(departmentStoreShipment(shipment)))),
+    name(storeDepartmentStore(departmentStoreShipment(shipment))),
     name(departmentStoreShipment(shipment))) IN documentPrmGroup;
 
 contractShipment 'Договор' (shipment) = DATA contract (shipment) IN idGroup;
