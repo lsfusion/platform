@@ -21,7 +21,7 @@
 	<detail>
 		<band height="23">
 			<textField>
-				<reportElement x="167" y="14" width="120" height="8"/>
+				<reportElement x="159" y="14" width="119" height="8"/>
 				<box>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</box>
@@ -31,10 +31,10 @@
 				<textFieldExpression><![CDATA["подпись"]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="167" y="13" width="120" height="1"/>
+				<reportElement x="159" y="13" width="119" height="1"/>
 			</line>
 			<textField>
-				<reportElement x="303" y="14" width="191" height="8"/>
+				<reportElement x="309" y="14" width="186" height="8"/>
 				<box>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</box>
@@ -44,10 +44,10 @@
 				<textFieldExpression><![CDATA["Ф.И.О."]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="303" y="13" width="191" height="1"/>
+				<reportElement x="309" y="13" width="186" height="1"/>
 			</line>
 			<textField isBlankWhenNull="true">
-				<reportElement x="303" y="0" width="191" height="13"/>
+				<reportElement x="309" y="0" width="186" height="13"/>
 				<box>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</box>
