@@ -160,7 +160,7 @@
 				<text><![CDATA[Вид операции:]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="243" y="65" width="100" height="13"/>
+				<reportElement style="GroupCellStyle1" x="243" y="65" width="122" height="13"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{objectClassName}]]></textFieldExpression>
 			</textField>
