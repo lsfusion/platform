@@ -8659,8 +8659,8 @@ FORM consignmentTwo 'ТН-2' PRINT
     FILTERS consignmentConsignmentDetail(d) == c
 ;
 
-toPrintConsignmentOne 'ТТН-1' (consignment) = ACTION FORM consignmentOne OBJECTS c IMAGE 'print.png' IN printGroup;
-toPrintConsignmentTwo 'ТН-2' (consignment) = ACTION FORM consignmentTwo OBJECTS c IMAGE 'print.png' IN printGroup;
+toPrintConsignmentOne 'ТТН-1' (consignment) = ACTION FORM consignmentOne OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
+toPrintConsignmentTwo 'ТН-2' (consignment) = ACTION FORM consignmentTwo OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
 @metaCodeInputMultipleItems(shipment);
@@ -9329,7 +9329,7 @@ FORM actOfRevaluation 'Акт переоценки' PRINT
                              inPriceChangeDocumentEmployee(pc, e)
 ;
 
-toPrintActOfRevaluation 'Акт переоценки' (priceChangeDocument) = ACTION FORM actOfRevaluation OBJECTS pc TOOLBAR IMAGE 'print.png' CONFIRM;
+toPrintActOfRevaluation 'Акт переоценки' (priceChangeDocument) = ACTION FORM actOfRevaluation OBJECTS pc IMAGE 'print.png' IN printGroup CONFIRM;
 
 
 FORM priceChangeDocuments 'Акты переоценки'
@@ -9339,7 +9339,6 @@ FORM priceChangeDocuments 'Акты переоценки'
                             nameSenderDepartmentPriceChangeInnerArrival,
                             diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
                             diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument, nameRevaluationCommitteePriceChangeDocument
-    PROPERTIES(pc) FORCE PANEL toPrintActOfRevaluation
 
     OBJECTS pcd=priceChangeDocumentDetail
     PROPERTIES(pcd) READONLY nameItemPriceChangeDocumentDetail, quantityPriceChangeDocumentDetail,
@@ -9349,12 +9348,14 @@ FORM priceChangeDocuments 'Акты переоценки'
                              oldRetailPriceChangeDocumentDetail, retailPriceChangeDocumentDetail,
                              oldPriceWarePriceChangeDocumentDetail, priceWarePriceChangeDocumentDetail
 
+    PROPERTIES(pc) FORCE PANEL toPrintActOfRevaluation
+
     FILTERS documentPriceChangeDocumentDetail(pcd) == pc
 ;
 
 //------------------------------------------- Приход товара----------------------------------------------------//
 
-toPrintPricesRegister 'Реестр цен' (shipment) = ACTION FORM pricesRegister OBJECTS s IMAGE 'print.png' IN printGroup;
+toPrintPricesRegister 'Реестр цен' (shipment) = ACTION FORM pricesRegister OBJECTS s IMAGE 'print.png' IN printGroup CONFIRM;
 toPrintActOfRevaluationShipment 'Акт переоценки' (shipment) = toPrintActOfRevaluation(uniquePriceChangeShipment(shipment)) IN printGroup;
 
 FORM shipment 'Поставка'
@@ -9524,7 +9525,7 @@ DESIGN shipments FROM DEFAULT {
 
 @metaCodeInputMultipleItemsSupplier(returnSupplier);
 
-toPrintActOfRevaluationReturnSupplier 'Акт переоценки' (returnSupplier) = toPrintActOfRevaluation(uniquePriceChangeReturnSupplier(returnSupplier));
+toPrintActOfRevaluationReturnSupplier 'Акт переоценки' (returnSupplier) = toPrintActOfRevaluation(uniquePriceChangeReturnSupplier(returnSupplier)) IN printGroup;
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
     OBJECTS b=shipmentDetail    //
@@ -10272,6 +10273,8 @@ FORM userPriceChanges 'Переоценки товаров'
                    statusPrintPriceTransactionDocument BACKGROUND showPrintLabelTransactionUserPriceChange(u),
                    statusEquipmentPriceTransactionDocument BACKGROUND showCreateMachineryPriceTransactionUserPriceChange(u)
 
+    PROPERTIES (u) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
     PROPERTIES (u)          createUserPriceChangeLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionUserPriceChange(u),
                             createSnapshotUserPriceChangeLabelTransaction FORCE PANEL SHOWIF isPostedUserPriceChange(u),
                             createUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionUserPriceChange(u),
@@ -10304,6 +10307,26 @@ DESIGN userPriceChanges FROM DEFAULT {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
+        u.printGroup {
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 1;
+        }
+
+        u.historyGroup {
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 1;
+        }
+
+        u.postedGroup {
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 1;
+        }
+
+        POSITION u.historyGroup TO THE LEFT u.postedGroup;
+        POSITION u.postedGroup TO THE LEFT u.printGroup;
+        POSITION u.historyGroup TO THE LEFT u.printGroup;
+
+        ADD d.grid.box BEFORE u.historyGroup;
 }
 
 
