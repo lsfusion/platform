@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="s" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.6105100000000012"/>
-	<property name="ireport.x" value="178"/>
+	<property name="ireport.x" value="228"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" forecolor="#FFFFFF" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -87,42 +87,42 @@
 	<title>
 		<band height="94">
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" x="180" y="0" width="335" height="13"/>
+				<reportElement style="GroupCellStyle1" x="180" y="0" width="335" height="13"/>
 				<textElement/>
 				<textFieldExpression><![CDATA["РЕЕСТР РОЗНИЧНЫХ ЦЕН "+$F{retail_numberObject}+" от "+$F{retail_dateShipment}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="180" y="26" width="105" height="13"/>
+				<reportElement style="GroupCellStyle1" x="180" y="26" width="105" height="13"/>
 				<textElement/>
 				<text><![CDATA[Грузополучатель]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="180" y="13" width="105" height="13"/>
+				<reportElement style="GroupCellStyle1" x="180" y="13" width="105" height="13"/>
 				<textElement/>
 				<text><![CDATA[Грузоотправитель]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" x="285" y="13" width="230" height="13"/>
+				<reportElement style="GroupCellStyle1" x="285" y="13" width="230" height="13"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_nameSupplierShipment}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" x="285" y="26" width="230" height="13"/>
+				<reportElement style="GroupCellStyle1" x="285" y="26" width="230" height="13"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_consigneeShipment}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" x="180" y="39" width="335" height="13"/>
+				<reportElement style="GroupCellStyle1" x="180" y="39" width="335" height="13"/>
 				<textElement/>
 				<textFieldExpression><![CDATA["Основание: Накладная № "+$F{retail_numberObject}+" от "+$F{retail_dateShipment}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" x="180" y="52" width="335" height="13"/>
+				<reportElement style="GroupCellStyle1" x="180" y="52" width="335" height="13"/>
 				<textElement/>
 				<textFieldExpression><![CDATA["Договор: № "+$F{retail_numberContractShipment}+" от "+$F{retail_dateContractShipment}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" x="180" y="65" width="335" height="13"/>
+				<reportElement style="GroupCellStyle1" x="180" y="65" width="335" height="13"/>
 				<textElement/>
 				<textFieldExpression><![CDATA["Вид операции: "+$F{objectClassName}]]></textFieldExpression>
 			</textField>
@@ -251,7 +251,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_overSupplierMarkupShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_overSupplierMarkupShipmentDetail}==0?"":$F{retail_overSupplierMarkupShipmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" stretchType="RelativeToBandHeight" x="325" y="0" width="40" height="11" backcolor="#FFFFFF"/>
