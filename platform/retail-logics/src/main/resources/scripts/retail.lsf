@@ -3353,10 +3353,12 @@ minDateSupplyOrderSupplier (supplier, departmentStore, date) = GROUP MIN dateSup
                                                                          BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder), date;
 
 nextDateOrderSupplier 'Дата следующей поставки' (orderSupplier) = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
-nextDateOrderSupplier (orderSupplier) <- [UNION OVERRIDE periodicitySupply(supplierOrderSupplier(orderSupplier)),
-                                                        minDateSupplyOrderSupplier(supplierOrderSupplier(orderSupplier),
-                                                        departmentStoreOrderSupplier(orderSupplier),
-                                                        dateOrderSupplier(orderSupplier))] (orderSupplier)
+nextDateOrderSupplier (orderSupplier) <- [UNION OVERRIDE addDate2(dateOrderSupplier(orderSupplier),
+                                                                  periodicitySupply(supplierOrderSupplier(orderSupplier))),
+                                                         minDateSupplyOrderSupplier(
+                                                                  supplierOrderSupplier(orderSupplier),
+                                                                  departmentStoreOrderSupplier(orderSupplier),
+                                                                  dateOrderSupplier(orderSupplier))] (orderSupplier)
                                          ON ASSIGN supplierOrderSupplier(orderSupplier);
 
 quantityDaysAfterNextOrder 'Дней до следующей поставки' (orderSupplier) =
