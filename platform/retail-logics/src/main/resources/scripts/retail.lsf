@@ -5601,6 +5601,8 @@ trailerStatement 'Прицеп' (statement) = DATA STRING[10] (statement);
 driverCarStatement 'Водитель' (statement) = DATA STRING[40] (statement);
 waybillStatement 'Путевой лист' (statement) = DATA STRING[20] (statement);
 
+UNPCustomerStatement 'УНП получателя' (statement) = UNPLegalEntity(customerStatement(statement));
+
 transportPayerStatement 'Заказчик перевозки (ИД)' (statement) = DATA legalEntity (statement);
 
 shipmentBaseStatement 'Основание отпуска' (statement) = DATA STRING[30] (statement);
@@ -5618,10 +5620,10 @@ readdressingStatement 'Переадресовка' (statement) = DATA STRING[50]
 issuanceAllowedStatement 'Отпуск разрешил' (statement) = DATA employee(statement);
 issuanceExecutedStatement 'Отпуск произвел' (statement) = DATA employee(statement);
 
-forwarderStatement 'Товар к перевозке принял (экспедитор)' (statement) = DATA STRING[40] (statement);
+forwarderStatement 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (statement) = DATA STRING[40] (statement);
 
-warrantStatement 'По доверенности' (statement) = DATA STRING[30](statement);
-warrantHolderStatement 'Доверенность выдана на' (statement) = DATA STRING[100](statement);
+warrantStatement 'По доверенности (номер, дата)' (statement) = DATA STRING[30](statement);
+warrantHolderStatement 'По доверенности выданной (наименование орг-ии)' (statement) = DATA STRING[100](statement);
 
 goodsAcceptedStatement 'Принял грузополучатель' (statement) = DATA STRING[40] (statement);
 
@@ -6248,6 +6250,8 @@ transportPayerInnerFlow 'Заказчик перевозки (ИД)' (innerFlow)
 
 shipmentBaseInnerFlow 'Основание отпуска' (innerFlow) = DATA STRING[30] (innerFlow);
 
+UNPRecipientInnerFlow 'УНП получателя' (innerFlow) = UNPLegalEntity(companyStore(storeDepartmentStore(recipientDepartmentInnerFlow(innerFlow))));
+
 dataLoadingPlaceInnerFlow 'Пункт погрузки' (innerFlow) = DATA STRING[50] (innerFlow);
 loadingPlaceInnerFlow 'Пункт погрузки' (innerFlow) = UNION OVERRIDE addressStore(storeDepartmentStore(departmentStoreInnerFlow(innerFlow))),
                                                        dataLoadingPlaceInnerFlow (innerFlow);
@@ -6261,10 +6265,10 @@ readdressingInnerFlow 'Переадресовка' (innerFlow) = DATA STRING[50]
 issuanceAllowedInnerFlow 'Отпуск разрешил' (innerFlow) = DATA employee(innerFlow);
 issuanceExecutedInnerFlow 'Отпуск произвел' (innerFlow) = DATA employee(innerFlow);
 
-forwarderInnerFlow 'Товар к перевозке принял (экспедитор)' (innerFlow) = DATA STRING[40] (innerFlow);
+forwarderInnerFlow 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (innerFlow) = DATA STRING[40] (innerFlow);
 
-warrantInnerFlow 'По доверенности' (innerFlow) = DATA STRING[30](innerFlow);
-warrantHolderInnerFlow 'Доверенность выдана на' (innerFlow) = DATA STRING[100](innerFlow);
+warrantInnerFlow 'По доверенности (номер, дата)' (innerFlow) = DATA STRING[30](innerFlow);
+warrantHolderInnerFlow 'По доверенности выданной (наименование орг-ии)' (innerFlow) = DATA STRING[100](innerFlow);
 
 goodsAcceptedInnerFlow 'Принял грузополучатель' (innerFlow) = DATA STRING[40] (innerFlow);
 
@@ -6777,6 +6781,8 @@ transportPayerReturnSupplier 'Заказчик перевозки (ИД)' (retur
 
 shipmentBaseReturnSupplier 'Основание отпуска' (returnSupplier) = DATA STRING[30] (returnSupplier);
 
+UNPSupplierReturnSupplier 'УНП получателя' (returnSupplier) = UNPLegalEntity(supplierReturnSupplier(returnSupplier));
+
 dataLoadingPlaceReturnSupplier 'Пункт погрузки' (returnSupplier) = DATA STRING[50] (returnSupplier);
 loadingPlaceReturnSupplier 'Пункт погрузки' (returnSupplier) = UNION OVERRIDE addressStore(storeDepartmentStore(departmentStoreReturnSupplier(returnSupplier))),
                                                                               dataLoadingPlaceReturnSupplier (returnSupplier);
@@ -6790,10 +6796,10 @@ readdressingReturnSupplier 'Переадресовка' (returnSupplier) = DATA 
 issuanceAllowedReturnSupplier 'Отпуск разрешил' (returnSupplier) = DATA employee(returnSupplier);
 issuanceExecutedReturnSupplier 'Отпуск произвел' (returnSupplier) = DATA employee(returnSupplier);
 
-forwarderReturnSupplier 'Товар к перевозке принял (экспедитор)' (returnSupplier) = DATA STRING[40] (returnSupplier);
+forwarderReturnSupplier 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (returnSupplier) = DATA STRING[40] (returnSupplier);
 
-warrantReturnSupplier 'По доверенности' (returnSupplier) = DATA STRING[30](returnSupplier);
-warrantHolderReturnSupplier 'Доверенность выдана на' (returnSupplier) = DATA STRING[100](returnSupplier);
+warrantReturnSupplier 'По доверенности (номер, дата)' (returnSupplier) = DATA STRING[30](returnSupplier);
+warrantHolderReturnSupplier 'По доверенности выданной (наименование орг-ии)' (returnSupplier) = DATA STRING[100](returnSupplier);
 
 goodsAcceptedReturnSupplier 'Принял грузополучатель' (returnSupplier) = DATA STRING[40] (returnSupplier);
 
@@ -8466,6 +8472,33 @@ transportPayerConsignment 'Заказчик перевозки (ИД)' (consignm
                                                                                     transportPayerReturnSupplier (consignment),
                                                                                     transportPayerInnerFlow (consignment);
 
+departmentStoreConsignment 'Отдел (ИД)' (consignment) = UNION EXCLUSIVE departmentStoreStatement (consignment),
+                                                                        departmentStoreReturnSupplier (consignment),
+                                                                        departmentStoreInnerFlow (consignment);
+
+//UNPRecipientConsignment 'УНП получателя' (consignment) = UNION EXCLUSIVE UNPCustomerStatement (consignment),
+//                                                                         UNPSupplierReturnSupplier (consignment),
+//                                                                         UNPRecipientInnerFlow (consignment);
+
+recipientConsignment 'Получатель (ИД)' (consignment) = UNION EXCLUSIVE   customerStatement(consignment),
+                                                                         supplierReturnSupplier(consignment),
+                                                                         companyStore(storeDepartmentStore(recipientDepartmentInnerFlow(consignment)));
+
+senderConsignment 'Отправитель ИД' (consignment) = companyStore(storeDepartmentStore(departmentStoreConsignment(consignment)));
+
+UNPSenderConsignment 'УНП отправителя' (consignment) = UNPLegalEntity(senderConsignment(consignment));
+UNPRecipientConsignment 'УНП получателя' (consignment) = UNPLegalEntity(recipientConsignment(consignment));
+
+dateConsignment 'Дата' (consignment) = UNION EXCLUSIVE dateStatement (consignment),
+                                                       dateReturnSupplier (consignment),
+                                                       dateInnerFlow (consignment);
+
+addressSenderConsignment 'Юридический адресс отправителя' (consignment) = addressLegalEntityVal(senderConsignment(consignment), dateConsignment(consignment));
+addressRecipientConsignment 'Юридический адресс получателя' (consignment) = addressLegalEntityVal(recipientConsignment(consignment), dateConsignment(consignment));
+
+fullNameSenderConsignment 'Наименование для накладных отправителя' (consignment) = fullNameLegalEntity(senderConsignment(consignment));
+fullNameRecipientConsignment 'Наименование для накладных получателя' (consignment) = fullNameLegalEntity(recipientConsignment(consignment));
+
 nameTransportPayerConsignment 'Заказчик перевозки ' (consignment) =
     [FORMULA STRING[100] 'CAST($1 AS TEXT) ||  \' , \' || CAST($2 AS TEXT)']
     (name(transportPayerConsignment(consignment)), UNPLegalEntity(transportPayerConsignment(consignment))) IN carConsignmentGroup;
@@ -8506,17 +8539,17 @@ shipmentBaseConsignment 'Основание отпуска' (consignment) = UNIO
                                                                             shipmentBaseReturnSupplier (consignment),
                                                                             shipmentBaseInnerFlow (consignment) IN issuanceConsignmentGroup;
 
-forwarderConsignment 'Товар к перевозке принял (экспедитор)' (consignment) = UNION EXCLUSIVE forwarderStatement(consignment),
+forwarderConsignment 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (consignment) = UNION EXCLUSIVE forwarderStatement(consignment),
                                                                                              forwarderReturnSupplier(consignment),
                                                                                              forwarderInnerFlow(consignment) IN issuanceConsignmentGroup;
 
-warrantConsignment 'По доверенности' (consignment) = UNION EXCLUSIVE warrantStatement (consignment),
-                                                                     warrantReturnSupplier (consignment),
-                                                                     warrantInnerFlow (consignment) IN issuanceConsignmentGroup;
+warrantConsignment 'По доверенности (номер, дата)' (consignment) = UNION EXCLUSIVE warrantStatement (consignment),
+                                                                                   warrantReturnSupplier (consignment),
+                                                                                   warrantInnerFlow (consignment) IN issuanceConsignmentGroup;
 
-warrantHolderConsignment 'Доверенность выдана на' (consignment) = UNION EXCLUSIVE warrantHolderStatement (consignment),
-                                                                                  warrantHolderReturnSupplier (consignment),
-                                                                                  warrantHolderInnerFlow (consignment) IN issuanceConsignmentGroup;
+warrantHolderConsignment 'По доверенности выданной (наименование орг-ии)' (consignment) = UNION EXCLUSIVE warrantHolderStatement (consignment),
+                                                                                                          warrantHolderReturnSupplier (consignment),
+                                                                                                          warrantHolderInnerFlow (consignment) IN issuanceConsignmentGroup;
 
 goodsAcceptedConsignment 'Принял грузополучатель' (consignment) = UNION EXCLUSIVE goodsAcceptedStatement (consignment),
                                                                                   goodsAcceptedReturnSupplier (consignment),
@@ -8625,14 +8658,15 @@ consignmentConsignmentDetail (consignmentDetail) = UNION EXCLUSIVE statementStat
 FORM consignmentOne 'ТТН-1' PRINT
     OBJECTS c=consignment FIXED PANEL
 
-    PROPERTIES (c) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+    PROPERTIES (c) dateConsignment, carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
                    nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
                    readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                    commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                    arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
                    sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
-                   sumCostConsignmentDetail, totalSumVATConsignmentDetail
+                   sumCostConsignmentDetail, totalSumVATConsignmentDetail, UNPRecipientConsignment, UNPSenderConsignment,
+                   addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment, fullNameRecipientConsignment
 
     OBJECTS d=consignmentDetail
 
@@ -8646,9 +8680,11 @@ FORM consignmentOne 'ТТН-1' PRINT
 FORM consignmentTwo 'ТН-2' PRINT
     OBJECTS c=consignment FIXED PANEL
 
-    PROPERTIES (c) shipmentBaseConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
+    PROPERTIES (c) dateConsignment, shipmentBaseConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
-                   sumQuantityConsignment, sumCostConsignmentDetail, totalSumVATConsignmentDetail
+                   sumQuantityConsignment, sumCostConsignmentDetail, totalSumVATConsignmentDetail, UNPRecipientConsignment,
+                   UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
+                   fullNameRecipientConsignment
 
     OBJECTS d=consignmentDetail
 
