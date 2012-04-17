@@ -551,11 +551,14 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                     QueryTranslator equalTranslator = innerWhere.keyEqual.getTranslator();
                     innerResult = createInner(equalTranslator.translate(outerInner), query.translateQuery(equalTranslator).and(innerWhere.where));
                 } else {
+                    Query splitQuery;
                     if(splitJoins.size()>1) // если не изменилось, то ничего не делаем чтобы при паковке цикла не было (да )
-                        query = query.andSplit(innerWhere.where);
-                    else
+                        splitQuery = query.andSplit(innerWhere.where);
+                    else {
                         query.splitWhere = innerWhere.where;
-                    innerResult = createInnerBase(outerInner, query);
+                        splitQuery = query;
+                    }
+                    innerResult = createInnerBase(outerInner, splitQuery);
                 }
 
                 // берем keyEquals
