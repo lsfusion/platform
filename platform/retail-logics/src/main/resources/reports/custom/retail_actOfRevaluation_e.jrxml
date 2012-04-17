@@ -19,14 +19,14 @@
 	<field name="commonName" class="java.lang.String"/>
 	<field name="retail_nameOfficerEmployee" class="java.lang.String"/>
 	<detail>
-		<band height="26">
+		<band height="23">
 			<textField>
-				<reportElement x="167" y="14" width="120" height="10"/>
+				<reportElement x="167" y="14" width="120" height="8"/>
 				<box>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
-					<font size="7"/>
+					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["подпись"]]></textFieldExpression>
 			</textField>
@@ -34,12 +34,12 @@
 				<reportElement x="167" y="13" width="120" height="1"/>
 			</line>
 			<textField>
-				<reportElement x="303" y="14" width="191" height="10"/>
+				<reportElement x="303" y="14" width="191" height="8"/>
 				<box>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
-					<font size="7"/>
+					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Ф.И.О."]]></textFieldExpression>
 			</textField>
