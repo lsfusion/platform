@@ -83,7 +83,7 @@
 				<textFieldExpression><![CDATA[$F{retail_numberObject}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="365" y="0" width="87" height="13"/>
+				<reportElement style="GroupCellStyle1" x="365" y="0" width="110" height="13"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_dateShipment}]]></textFieldExpression>
 			</textField>
@@ -103,12 +103,12 @@
 				<text><![CDATA[Грузоотправитель]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="288" y="13" width="164" height="13"/>
+				<reportElement style="GroupCellStyle1" x="288" y="13" width="187" height="13"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_nameSupplierShipment}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="288" y="26" width="164" height="13"/>
+				<reportElement style="GroupCellStyle1" x="288" y="26" width="187" height="13"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_consigneeShipment}]]></textFieldExpression>
 			</textField>
@@ -128,7 +128,7 @@
 				<text><![CDATA[от]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" x="365" y="39" width="87" height="13"/>
+				<reportElement style="GroupCellStyle1" x="365" y="39" width="110" height="13"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_dateShipment}]]></textFieldExpression>
 			</textField>
