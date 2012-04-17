@@ -5994,6 +5994,7 @@ toFillShipmentDetailsShipment 'Заполнить поставку из зака
             SET itemShipmentDetail(s) <- item AS item;
             SET quantityShipmentDetail(s) <- sumQuantityOrderedItemShipment(item, shipment);
             SET supplierPriceShipmentDetail(s) <- priceOrderItemShipment(item, shipment);
+            SET shipmentShipmentDetail (s) <- shipment AS shipment;
         };
     };
 } IN shipmentOrderGroup CONFIRM;
@@ -9674,15 +9675,6 @@ DESIGN returnSupplier FROM DEFAULT {
 }
 
 DESIGN returnSuppliers FROM DEFAULT{
-    ADD PROPERTY(toPrintConsignmentOne(r)){
-        panelLocation=TOOLBAR;
-    }
-    ADD PROPERTY(toPrintConsignmentTwo(r)){
-        panelLocation=TOOLBAR;
-    }
-    ADD PROPERTY(toPrintActOfRevaluationReturnSupplier(r)){
-        panelLocation=TOOLBAR;
-    }
 
     ADD PROPERTY(delete(r)){
         panelLocation=TOOLBAR;
@@ -9697,7 +9689,14 @@ DESIGN returnSuppliers FROM DEFAULT{
         childConstraints = TO THE BOTTOM;
         fillHorizontal = 1;
     };
+    ADD r.printGroup BEFORE functions.box {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    };
+
     POSITION r.historyGroup TO THE LEFT r.postedGroup;
+    POSITION r.postedGroup TO THE LEFT r.printGroup;
+    POSITION r.historyGroup TO THE LEFT r.printGroup;
 }
 
 DESIGN commonInfoBatchReturnSupplierDetail FROM DEFAULT {
@@ -10401,6 +10400,8 @@ FORM innerFlows 'Расходы в другие отделы'
     PROPERTIES (f) READONLY objectClassName, numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
                             nameRecipientDepartmentInnerFlow, quantityInnerFlowDetailsInnerFlow,
                             totalQuantityInnerFlow, accountSumInnerFlow
+
+    PROPERTIES(f) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
     PROPERTIES (f) FORCE PANEL toPrintConsignmentOne, toPrintConsignmentTwo
 
     PROPERTIES (f) ADDFORM, EDITFORM SHOWIF isDraftInnerFlow(f), delete FORCE PANEL SHOWIF isDraftInnerFlow(f),
@@ -10418,19 +10419,34 @@ DESIGN innerFlows FROM DEFAULT {
     PROPERTY(objectClassName) {
         preferredCharWidth = 15;
     }
-    PROPERTY (toPrintConsignmentOne(f)) {
-        panelLocation = TOOLBAR;
-    }
-    PROPERTY (toPrintConsignmentTwo(f)) {
-        panelLocation = TOOLBAR;
-    }
+
     PROPERTY (delete(f)) {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
+    f.printGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    }
+
+    f.historyGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    }
+
+    f.postedGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    }
+
+    POSITION f.historyGroup TO THE LEFT f.postedGroup;
+    POSITION f.postedGroup TO THE LEFT f.printGroup;
+    POSITION f.historyGroup TO THE LEFT f.printGroup;
+
+    ADD d.grid.box BEFORE f.historyGroup;
 }
 
-toPrintActOfRevaluationInnerArrival 'Акт переоценки' (innerArrival) = toPrintActOfRevaluation(uniquePriceChangeInnerArrival(innerArrival));
+toPrintActOfRevaluationInnerArrival 'Акт переоценки' (innerArrival) = toPrintActOfRevaluation(uniquePriceChangeInnerArrival(innerArrival)) IN printGroup;
 
 
 FORM innerArrival 'Приход из другого отдела'
@@ -10526,6 +10542,7 @@ FORM innerArrivals 'Приходы из других отделов'
                             ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
                             postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
 
+    PROPERTIES(a) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) READONLY numberInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
@@ -10540,13 +10557,32 @@ DESIGN innerArrivals FROM DEFAULT {
     PROPERTY(objectClassName) {
         preferredCharWidth = 15;
     }
-    PROPERTY (toPrintActOfRevaluationInnerArrival(a)) {
-        panelLocation = TOOLBAR;
-    }
+
     PROPERTY (delete(a)) {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
+
+    a.printGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    }
+
+    a.historyGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    }
+
+    a.postedGroup {
+        childConstraints = TO THE BOTTOM;
+        fillHorizontal = 1;
+    }
+
+    POSITION a.historyGroup TO THE LEFT a.postedGroup;
+    POSITION a.postedGroup TO THE LEFT a.printGroup;
+    POSITION a.historyGroup TO THE LEFT a.printGroup;
+
+    ADD d.grid.box BEFORE a.historyGroup;
 }
 
 
@@ -10838,15 +10874,11 @@ FORM statements 'Отгрузки из розницы'
     PROPERTIES (st)  READONLY objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameDepartmentStoreStatement,
                      nameCustomerStatement, quantityStatementDetailsStatement, totalQuantityStatement,
                      sumWithoutNDSStatement, sumNDSStatement, sumStatement
-    PROPERTIES (st)  FORCE PANEL toPrintConsignmentOne, toPrintConsignmentTwo, toPrintActOfRevaluationStatement SHOWIF needToPriceChangeStatement(st)
-
+    PROPERTIES (st)  FORCE PANEL toPrintConsignmentOne, toPrintConsignmentTwo, toPrintActOfRevaluationStatement SHOWIF needToPriceChangeStatement(st),
+                     nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (st)  ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
                      postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
-
-    PROPERTIES (st)  FORCE PANEL  nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-
-
 
     OBJECTS d=statementDetail
     PROPERTIES (d)   READONLY numberStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
