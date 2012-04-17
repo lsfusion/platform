@@ -483,7 +483,7 @@ public class CompiledQuery<K,V> {
                         if((pushWhere = whereJoins.getGroupPushWhere(Collections.singletonMap(key, innerJoin.group.get(key)), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.distinct.get(key)))!=null)
                             fullWhere = fullWhere.and(pushWhere);
 
-                if(fullWhere.isFalse()) // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
+                if(fullWhere.pack().isFalse()) // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
                     return getEmptySelect(groupWhere);
 
                 Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
@@ -540,7 +540,7 @@ public class CompiledQuery<K,V> {
                     if((pushWhere = whereJoins.getPartitionPushWhere(innerJoin.getJoins(), innerJoin.getPartitions(), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
                         fullWhere = fullWhere.and(pushWhere);
 
-                    if(fullWhere.isFalse()) // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
+                    if(fullWhere.pack().isFalse()) // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
                         return getEmptySelect(innerWhere);
                 }
 
@@ -624,7 +624,7 @@ public class CompiledQuery<K,V> {
                 if((pushWhere = whereJoins.getGroupPushWhere(innerJoin.getJoins(), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
                     fullWhere = fullWhere.and(pushWhere);
 
-                if(fullWhere.isFalse())
+                if(fullWhere.pack().isFalse())
                     return getEmptySelect(innerWhere);
 
                 Map<String, String> keySelect = new HashMap<String, String>();
@@ -763,7 +763,7 @@ public class CompiledQuery<K,V> {
                 if((pushWhere = whereJoins.getGroupPushWhere(staticGroup, upWheres, innerJoin, keyStat, initialWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
                     fullWhere = fullWhere.and(pushWhere);
 
-                if(fullWhere.isFalse())
+                if(fullWhere.pack().isFalse())
                     return getEmptySelect(initialWhere);
 
                 String outerParams = null;
