@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="s" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.1000000000000003"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="41"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -80,12 +80,12 @@
 				<textElement/>
 				<text><![CDATA[РЕЕСТР РОЗНИЧНЫХ ЦЕН]]></text>
 			</staticText>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="305" y="12" width="100" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_numberObject}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="425" y="12" width="100" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_dateShipment}]]></textFieldExpression>
@@ -105,12 +105,12 @@
 				<textElement/>
 				<text><![CDATA[Грузоотправитель]]></text>
 			</staticText>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="305" y="32" width="220" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_nameSupplierShipment}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="305" y="52" width="220" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_consigneeShipment}]]></textFieldExpression>
@@ -120,7 +120,7 @@
 				<textElement/>
 				<text><![CDATA[Основание: Накладная №]]></text>
 			</staticText>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="297" y="72" width="100" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_numberObject}]]></textFieldExpression>
@@ -130,7 +130,7 @@
 				<textElement/>
 				<text><![CDATA[от]]></text>
 			</staticText>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="417" y="72" width="100" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_dateShipment}]]></textFieldExpression>
@@ -140,7 +140,7 @@
 				<textElement/>
 				<text><![CDATA[Договор: №]]></text>
 			</staticText>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="238" y="92" width="94" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_numberContractShipment}]]></textFieldExpression>
@@ -150,7 +150,7 @@
 				<textElement/>
 				<text><![CDATA[от]]></text>
 			</staticText>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="352" y="92" width="100" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_dateContractShipment}]]></textFieldExpression>
@@ -160,8 +160,8 @@
 				<textElement/>
 				<text><![CDATA[Вид операции:]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="250" y="112" width="100" height="20"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="285" y="112" width="100" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{objectClassName}]]></textFieldExpression>
 			</textField>
@@ -432,13 +432,13 @@
 				<textElement/>
 				<text><![CDATA[Реестр цен проверил]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="130" y="18" width="100" height="20"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="165" y="18" width="100" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_nameFormedManShipment}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="130" y="38" width="100" height="20"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="165" y="38" width="100" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_nameCheckedManShipment}]]></textFieldExpression>
 			</textField>
@@ -448,8 +448,8 @@
 				<text><![CDATA[Товар промаркировал
 и выдал в продажу]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="361" y="38" width="100" height="20"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="396" y="38" width="100" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_nameLabeledManShipment}]]></textFieldExpression>
 			</textField>
@@ -463,12 +463,12 @@
 				<textElement/>
 				<text><![CDATA[Зав. магазином]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="555" y="18" width="100" height="20"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="590" y="18" width="100" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_nameAccountantManShipment}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="555" y="38" width="100" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{retail_nameHeadManShipment}]]></textFieldExpression>
