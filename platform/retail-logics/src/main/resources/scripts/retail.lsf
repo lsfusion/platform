@@ -7029,7 +7029,7 @@ descriptionSaleDiscountDocument (saleDiscountDocument) = castZReportObjectsToStr
 isPostedSaleDiscountDocument (saleDiscountDocument) = isPostedZReport(zReportSaleDiscountDocument(saleDiscountDocument));
 //----------------------------------------------- Переоценка товара ---------------------------------------------------//
 
-CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, priceTransactionDocument;
+CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, priceTransactionDocument, historyObject;
 CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 @metaCodeObjectWithPostEx (userPriceChange, 'Закрытая переоценка товаров');
 
