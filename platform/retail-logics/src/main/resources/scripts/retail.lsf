@@ -2785,6 +2785,8 @@ nameTypeContract 'Тип договора' (contract) = name(UNION OVERRIDE cont
                                                                  typeContract(contract)) IN contractGroup;
 dateFromContract 'Дата начала договора' = DATA DATE (contract) IN contractGroup;
 dateToContract 'Дата окончания договора' = DATA DATE (contract) IN contractGroup;
+isOperatingContract 'Действуюший договор?' (contract, date) =
+    (dateFromContract(contract) < (date AS DATE)) AND (dateToContract(contract) > (date AS DATE));
 currencyContract 'Валюта взаиморасчетов' = DATA STRING[20] (contract) IN contractGroup; // может и не надо   или справочником
 warnContract 'За сколько дней предупредить об окончании' = DATA INTEGER (contract) IN contractGroup;
 banContract 'За сколько дней запретить закупку товара' = DATA INTEGER (contract) IN contractGroup;
@@ -5748,6 +5750,11 @@ numberContractShipment 'Договор' (shipment) = numberContract(contractShip
 
 dateContractShipment 'Договор от' (shipment) = dateFromContract(contractShipment(shipment)) IN documentPrmGroup;
 
+isSupplierContractShipment (shipment, contract) = supplierShipment(shipment) == supplierContract(contract);
+isCompanyContractShipment (shipment, contract) =
+    companyStore(storeDepartmentStore(departmentStoreShipment(shipment))) == companyContract(contract);
+isOperatingContractShipment (shipment, contract) = isOperatingContract(contract, dateShipment(shipment));
+
 carryingChargesShipment 'Транспортные расходы' (shipment) = DATA DOUBLE (shipment) IN documentSumGroup;
 
 inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) = DATA BOOLEAN (shipment, orderSupplier)
@@ -6096,6 +6103,39 @@ FORM ordersShipment 'Заказы'
 ;
 
 showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OBJECTS s MODAL SHORTCUT ordersShipment DEFAULT;
+
+//----------------------------------Договоры поставки------------------------------------------------------------------//
+
+FORM contractShipment 'Договоры'
+
+    OBJECTS s=shipment FIXED PANEL
+    PROPERTIES(s) READONLY numberObject, nameDepartmentStoreShipment, nameSupplierShipment
+
+    OBJECTS c=contract
+    PROPERTIES(c) READONLY numberContract, nameCompanyContract, nameSupplierContract,
+                   nameTypeContract, dateFromContract, dateToContract
+
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    ORDER BY nameCompanyContract, nameSupplierContract
+
+    FILTERS isSupplierContractShipment(s, c),
+            isCompanyContractShipment(s, c),
+            isOperatingContractShipment(s, c)
+    DIALOG contract OBJECT c
+;
+
+DESIGN contractShipment FROM DEFAULT {
+    main{
+
+        NEW shipment BEFORE c.box{
+            title = 'Поставка';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(nameDepartmentStoreShipment);
+            ADD PROPERTY(nameSupplierShipment);
+        }
+    }
+}
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 CLASS writeOff 'Списание' : outAccountSumDocumentLedger, historyObject, numeratedObject;
@@ -6625,6 +6665,11 @@ contractReturnSupplier (returnSupplier) <- overrideContractCompanySupplier(compa
                                ON CHANGE supplierReturnSupplier(returnSupplier);
 
 numberContractReturnSupplier 'Договор' (returnSupplier) = numberContract(contractReturnSupplier(returnSupplier)) IN documentPrmGroup;
+
+isSupplierContractReturnSupplier (returnSupplier, contract) = supplierReturnSupplier(returnSupplier) == supplierContract(contract);
+isCompanyContractReturnSupplier (returnSupplier, contract) =
+    companyStore(storeDepartmentStore(departmentStoreReturnSupplier(returnSupplier))) == companyContract(contract);
+isOperatingContractReturnSupplier (returnSupplier, contract) = isOperatingContract(contract, dateReturnSupplier(returnSupplier));
 
 numberDisposalReturnSupplier '№ распоряжения на переоценку' (returnSupplier) = DATA STRING[30] (returnSupplier) IN documentPrmGroup;
 
@@ -9661,6 +9706,39 @@ DESIGN shipments FROM DEFAULT {
     ADD d.grid.box BEFORE s.historyGroup;
 }
 
+//----------------------------------Договоры возврата------------------------------------------------------------------//
+
+FORM contractReturnSupplier 'Договоры'
+
+    OBJECTS r=returnSupplier FIXED PANEL
+    PROPERTIES(r) READONLY numberObject, nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier
+
+    OBJECTS c=contract
+    PROPERTIES(c) READONLY numberContract, nameCompanyContract, nameSupplierContract,
+                   nameTypeContract, dateFromContract, dateToContract
+
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    ORDER BY nameCompanyContract, nameSupplierContract
+
+    FILTERS isSupplierContractReturnSupplier(r, c),
+            isCompanyContractReturnSupplier(r, c),
+            isOperatingContractReturnSupplier(r, c)
+    DIALOG contract OBJECT c
+;
+
+DESIGN contractReturnSupplier FROM DEFAULT {
+    main{
+
+        NEW returnSupplier BEFORE c.box{
+            title = 'Возврат поставщику';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(nameDepartmentStoreReturnSupplier);
+            ADD PROPERTY(nameSupplierReturnSupplier);
+        }
+    }
+}
+
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
 @metaCodeInputMultipleItemsSupplier(returnSupplier);
@@ -11865,6 +11943,8 @@ NAVIGATOR {
             ADD specialty;
             ADD coolingDegree;
             ADD formItem;
+            ADD contractShipment;
+            ADD contractReturnSupplier;
         //    ADD numberInPack;
             ADD rateWaste;
             ADD addNameisPortionBarItem;
