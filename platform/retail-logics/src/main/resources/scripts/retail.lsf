@@ -8733,26 +8733,52 @@ FORM consignmentOne 'ТТН-1' PRINT
     FILTERS consignmentConsignmentDetail(d) == c
 ;
 
-FORM consignmentTwo 'ТН-2' PRINT
-    OBJECTS c=consignment FIXED PANEL
+//FORM consignmentTwo 'ТН-2' PRINT
+//    OBJECTS c=consignment FIXED PANEL
+//
+//    PROPERTIES (c) dateConsignment, shipmentBaseConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
+//                   forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
+//                   sumQuantityConsignment, sumCostConsignmentDetail, totalSumVATConsignmentDetail, UNPRecipientConsignment,
+//                   UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
+//                   fullNameRecipientConsignment
+//
+//    OBJECTS d=consignmentDetail
+//
+//    PROPERTIES(d) nameItemConsignmentDetail, shortNameConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
+//                  costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
+//                  noteInnerFlowDetail
+//
+//    FILTERS consignmentConsignmentDetail(d) == c
+//;
+META metaCodeConsignmentTwo(prop, caption)//            (consignmentTwoHorizontal, caption)
 
-    PROPERTIES (c) dateConsignment, shipmentBaseConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
-                   forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
-                   sumQuantityConsignment, sumCostConsignmentDetail, totalSumVATConsignmentDetail, UNPRecipientConsignment,
-                   UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
-                   fullNameRecipientConsignment
+    FORM prop caption PRINT
+        OBJECTS c=consignment FIXED PANEL
 
-    OBJECTS d=consignmentDetail
+        PROPERTIES (c) dateConsignment, shipmentBaseConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
+                       forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
+                       sumQuantityConsignment, sumCostConsignmentDetail, totalSumVATConsignmentDetail, UNPRecipientConsignment,
+                       UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
+                       fullNameRecipientConsignment
 
-    PROPERTIES(d) nameItemConsignmentDetail, shortNameConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
-                  costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
-                  noteInnerFlowDetail
+        OBJECTS d=consignmentDetail
 
-    FILTERS consignmentConsignmentDetail(d) == c
-;
+        PROPERTIES(d) nameItemConsignmentDetail, shortNameConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
+                      costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
+                      noteInnerFlowDetail
+
+        FILTERS consignmentConsignmentDetail(d) == c
+    ;
+toPrint###prop caption (consignment) = ACTION FORM prop OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
+
+END
+
+@metaCodeConsignmentTwo(consignmentTwoVertical, 'ТН-2, вертикальная');
+@metaCodeConsignmentTwo(consignmentTwoHorizontal, 'ТН-2, горизонтальная');
 
 toPrintConsignmentOne 'ТТН-1' (consignment) = ACTION FORM consignmentOne OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
-toPrintConsignmentTwo 'ТН-2' (consignment) = ACTION FORM consignmentTwo OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
+//toPrintConsignmentTwo 'ТН-2, горизонтальная' (consignment) = ACTION FORM consignmentTwo OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
+//toPrintConsignmentTwo 'ТН-2, вертикальная' (consignment) = ACTION FORM consignmentTwo OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
 @metaCodeInputMultipleItems(shipment);
@@ -9675,7 +9701,7 @@ FORM returnSuppliers 'Возвраты поставщику'
                            totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier, retailSumReturnSupplier
     PROPERTIES (r) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES(r) FORCE PANEL toPrintConsignmentOne, toPrintConsignmentTwo, toPrintActOfRevaluationReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
+    PROPERTIES(r) FORCE PANEL toPrintConsignmentOne, toPrintConsignmentTwoHorizontal, toPrintConsignmentTwoVertical, toPrintActOfRevaluationReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
     PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
                   ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
@@ -10517,7 +10543,7 @@ FORM innerFlows 'Расходы в другие отделы'
                             totalQuantityInnerFlow, accountSumInnerFlow
 
     PROPERTIES(f) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-    PROPERTIES (f) FORCE PANEL toPrintConsignmentOne, toPrintConsignmentTwo
+    PROPERTIES (f) FORCE PANEL toPrintConsignmentOne, toPrintConsignmentTwoHorizontal, toPrintConsignmentTwoVertical
 
     PROPERTIES (f) ADDFORM, EDITFORM SHOWIF isDraftInnerFlow(f), delete FORCE PANEL SHOWIF isDraftInnerFlow(f),
                    postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
@@ -10989,7 +11015,7 @@ FORM statements 'Отгрузки из розницы'
     PROPERTIES (st)  READONLY objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameDepartmentStoreStatement,
                      nameCustomerStatement, quantityStatementDetailsStatement, totalQuantityStatement,
                      sumWithoutNDSStatement, sumNDSStatement, sumStatement
-    PROPERTIES (st)  FORCE PANEL toPrintConsignmentOne, toPrintConsignmentTwo, toPrintActOfRevaluationStatement SHOWIF needToPriceChangeStatement(st),
+    PROPERTIES (st)  FORCE PANEL toPrintConsignmentOne, toPrintConsignmentTwoHorizontal, toPrintConsignmentTwoVertical, toPrintActOfRevaluationStatement SHOWIF needToPriceChangeStatement(st),
                      nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (st)  ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
@@ -11754,7 +11780,8 @@ NAVIGATOR {
         ADD pricesRegister;
         ADD actOfRevaluation;
         ADD consignmentOne;
-        ADD consignmentTwo;
+        ADD consignmentTwoHorizontal;
+        ADD consignmentTwoVertical;
     }
 
     ADD adminElement TO formsTree {
