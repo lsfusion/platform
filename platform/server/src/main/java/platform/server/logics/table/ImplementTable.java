@@ -1,5 +1,6 @@
 package platform.server.logics.table;
 
+import org.apache.poi.hssf.record.formula.functions.T;
 import platform.base.BaseUtils;
 import platform.server.classes.ValueClass;
 import platform.server.data.*;
@@ -89,6 +90,11 @@ public class ImplementTable extends DataTable {
         return COMPARE_DIFF;
     }
 
+    public <T> boolean equalClasses(Map<T, ValueClass> mapClasses) {
+        int compResult = compare(mapClasses, new HashMap<T, KeyField>());
+        return compResult == COMPARE_EQUAL || compResult == COMPARE_UP;
+    }
+
     public void include(List<ImplementTable> tables, boolean toAdd, Set<ImplementTable> checks) {
 
         Iterator<ImplementTable> i = tables.iterator();
@@ -124,6 +130,14 @@ public class ImplementTable extends DataTable {
             if(parentTable!=null) return parentTable;
         }
 
+        return new MapKeysTable<T>(this,mapCompare);
+    }
+
+    public <T> MapKeysTable<T> getMapKeysTable(Map<T, ValueClass> classes) {
+        Map<T,KeyField> mapCompare = new HashMap<T,KeyField>();
+        int relation = compare(classes, mapCompare);
+        if(relation==COMPARE_DOWN || relation==COMPARE_DIFF)
+            return null;
         return new MapKeysTable<T>(this,mapCompare);
     }
 

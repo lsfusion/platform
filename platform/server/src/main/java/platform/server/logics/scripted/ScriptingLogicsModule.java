@@ -33,6 +33,7 @@ import platform.server.logics.panellocation.ShortcutPanelLocation;
 import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.logics.table.ImplementTable;
 import platform.server.mail.AttachmentFormat;
 import platform.server.mail.EmailActionProperty;
 import platform.server.mail.EmailActionProperty.FormStorageType;
@@ -430,9 +431,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return true;
     }
 
-    public void addSettingsToProperty(LP<?> property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent) throws ScriptingErrorLog.SemanticErrorException {
+    public void addSettingsToProperty(LP<?> property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent, String table) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addSettingsToProperty(" + property.property.getSID() + ", " + name + ", " + caption + ", " +
-                           namedParams + ", " + groupName + ", " + isPersistent + ");");
+                           namedParams + ", " + groupName + ", " + isPersistent  + ", " + table + ");");
         checkDuplicateProperty(name);
         checkDistinctParameters(namedParams);
         checkNamedParams(property, namedParams);
@@ -442,10 +443,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.property.caption = (caption == null ? name : transformStringLiteral(caption));
         addPropertyToGroup(property.property, group);
 
+        ImplementTable targetTable = null;
+        if (table != null) {
+            targetTable = baseLM.tableFactory.getImplementTable(table);
+            if (targetTable == null) {
+                errLog.emitNotFoundError(parser, "table", table);
+            } else if (!targetTable.equalClasses(property.property.getMapClasses())) {
+                errLog.emitWrongClassesForTable(parser, name, table);
+            }
+        }
         if (property.property instanceof StoredDataProperty) {
-            property.property.markStored(baseLM.tableFactory);
+            property.property.markStored(baseLM.tableFactory, targetTable);
         } else if (isPersistent && (property.property instanceof AggregateProperty)) {
-            addPersistent(property);
+            addPersistent(property, targetTable);
         }
 
         checkPropertyValue(property, name);

@@ -28,6 +28,7 @@ import platform.server.logics.property.actions.*;
 import platform.server.logics.property.actions.flow.*;
 import platform.server.logics.property.derived.*;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.logics.table.ImplementTable;
 import platform.server.mail.AttachmentFormat;
 import platform.server.mail.EmailActionProperty;
 
@@ -2236,15 +2237,19 @@ public abstract class LogicsModule {
         baseLM.addIndex(lps);
     }
 
-    private void addPersistent(AggregateProperty property) {
+    protected void addPersistent(LP lp) {
+        addPersistent((AggregateProperty) lp.property, null);
+    }
+
+    protected void addPersistent(LP lp, ImplementTable table) {
+        addPersistent((AggregateProperty) lp.property, table);
+    }
+
+    private void addPersistent(AggregateProperty property, ImplementTable table) {
         assert !baseLM.isGeneratedSID(property.getSID());
 
         baseLM.logger.debug("Initializing stored property " + property + "...");
-        property.markStored(baseLM.tableFactory);
-    }
-
-    protected void addPersistent(LP lp) {
-        addPersistent((AggregateProperty) lp.property);
+        property.markStored(baseLM.tableFactory, table);
     }
 
     public <T extends PropertyInterface> LP<T> addOldProp(LP<T> lp) {

@@ -1140,17 +1140,19 @@ propertyObject returns [LP property]
 commonPropertySettings[LP property, String propertyName, String caption, List<String> namedParams]
 @init {
 	String groupName = null;
+	String table = null;
 	boolean isPersistent = false;
 	Boolean isLoggable = null;
 }
 @after {
 	if (inPropParseState()) {
-		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent);
+		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, table);
 		self.makeLoggable(property, isLoggable);
 	}
 }
 	: 	(	'IN' name=compoundID { groupName = $name.sid; }
 		|	'PERSISTENT' { isPersistent = true; }
+		|	'TABLE' tbl = ID { table = $tbl.text; }
 		|	panelLocationSetting [property]
 		|	fixedCharWidthSetting [property]
 		|	minCharWidthSetting [property]

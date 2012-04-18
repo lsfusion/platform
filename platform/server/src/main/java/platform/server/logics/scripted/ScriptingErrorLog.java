@@ -362,6 +362,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "class cannot be built-in or abstract");
     }
 
+    public void emitWrongClassesForTable(LsfLogicsParser parser, String property, String table) throws SemanticErrorException {
+        emitSimpleError(parser, format("property '%s' can't be included into '%s' table: wrong classes", property, table));
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

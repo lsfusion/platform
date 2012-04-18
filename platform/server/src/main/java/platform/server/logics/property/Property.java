@@ -45,6 +45,7 @@ import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.derived.OnChangeProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
+import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.serialization.ServerIdentitySerializable;
@@ -548,7 +549,19 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public ClassWhere<Field> fieldClassWhere;
 
     public void markStored(TableFactory tableFactory) {
-        MapKeysTable<T> mapTable = tableFactory.getMapTable(getMapClasses());
+        markStored(tableFactory, null);
+    }
+
+    public void markStored(TableFactory tableFactory, ImplementTable table) {
+        MapKeysTable<T> mapTable = null;
+
+        if (table != null) {
+            mapTable = table.getMapKeysTable(getMapClasses());
+        }
+        if (mapTable == null) {
+            mapTable = tableFactory.getMapTable(getMapClasses());
+        }
+
         PropertyField field = new PropertyField(getSID(), getType());
         fieldClassWhere = getClassWhere(mapTable, field);
         mapTable.table.addField(field, fieldClassWhere);

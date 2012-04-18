@@ -57,12 +57,21 @@ public class TableFactory {
         return result;
     }
 
+    public <T> ImplementTable getImplementTable(String tableName) {
+        for (ImplementTable table : getImplementTables()) {
+            if (table.name.equals(tableName)) {
+                return table;
+            }
+        }
+        return null;
+    }
+
     public <T> MapKeysTable<T> getMapTable(Map<T, ValueClass> findItem) {
         for(ImplementTable implementTable : implementTables[findItem.size()]) {
             MapKeysTable<T> mapTable = implementTable.getMapTable(findItem);
             if(mapTable!=null) return mapTable;
         }
-        throw new RuntimeException("No table found");    
+        throw new RuntimeException("No table found");
     }
 
     public void fillDB(SQLSession sql, BaseClass baseClass) throws SQLException {
