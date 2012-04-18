@@ -223,7 +223,7 @@
 				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_costWithVATConsignmentDetail}) + " рублей"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="118" y="328" width="17" height="12"/>
+				<reportElement style="GroupCellStyle0" x="118" y="331" width="17" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -566,7 +566,7 @@
 				<textFieldExpression><![CDATA["К оплате"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="164" y="411" width="46" height="12"/>
+				<reportElement style="GroupCellStyle0" x="164" y="411" width="45" height="12"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
@@ -657,7 +657,7 @@
 				<textFieldExpression><![CDATA[" "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="209" y="447" width="46" height="12"/>
+				<reportElement style="GroupCellStyle0" x="209" y="447" width="45" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -725,7 +725,7 @@
 				<textFieldExpression><![CDATA["По заказу"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="209" y="435" width="46" height="12"/>
+				<reportElement style="GroupCellStyle0" x="209" y="435" width="45" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -753,7 +753,7 @@
 				<textFieldExpression><![CDATA["_____________________________________________________"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="209" y="423" width="46" height="12"/>
+				<reportElement style="GroupCellStyle0" x="209" y="423" width="45" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -774,7 +774,7 @@
 				<textFieldExpression><![CDATA[" "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="164" y="459" width="46" height="12"/>
+				<reportElement style="GroupCellStyle0" x="164" y="459" width="45" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -823,7 +823,7 @@
 				<textFieldExpression><![CDATA[" "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="164" y="447" width="46" height="12"/>
+				<reportElement style="GroupCellStyle0" x="164" y="447" width="45" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -1068,7 +1068,7 @@
 				<textFieldExpression><![CDATA["К оплате"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="249" y="214" width="51" height="10"/>
+				<reportElement style="GroupCellStyle0" x="250" y="214" width="50" height="10"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
@@ -1143,7 +1143,7 @@
 				<text><![CDATA[II ПОГРУЗОЧНО-РАЗГРУЗОЧНЫЕ ОПЕРАЦИИ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" x="249" y="236" width="51" height="12"/>
+				<reportElement style="GroupCellStyle0" x="250" y="236" width="50" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -1267,7 +1267,7 @@
 				<textFieldExpression><![CDATA["Разгрузка"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="413" y="236" width="83" height="12"/>
+				<reportElement style="GroupCellStyle0" x="413" y="236" width="79" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -1344,7 +1344,7 @@
 				<textFieldExpression><![CDATA["Дополнительные услуги(экспедирование)"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="413" y="214" width="83" height="10"/>
+				<reportElement style="GroupCellStyle0" x="413" y="214" width="79" height="10"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
