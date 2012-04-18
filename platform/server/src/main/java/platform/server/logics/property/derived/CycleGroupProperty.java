@@ -1,6 +1,5 @@
 package platform.server.logics.property.derived;
 
-import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.interop.Compare;
 import platform.server.Settings;
@@ -70,10 +69,10 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         if(toChange!=null) {
             Map<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
             Expr resultExpr = getChangeExpr(change, propChanges, toChangeKeys);
-            DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, propChanges, toChangeKeys))), propChanges, null).changes;
+            DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, propChanges, toChangeKeys))), propChanges).changes;
             if(changedWhere!=null) {
                 if (Settings.instance.isCalculateGroupDataChanged())
-                    getExpr(change.mapKeys, dataChanges.add(propChanges), changedWhere);
+                    getExpr(change.getMapExprs(), dataChanges.add(propChanges), changedWhere);
                 else
                     changedWhere.add(change.where);
             }

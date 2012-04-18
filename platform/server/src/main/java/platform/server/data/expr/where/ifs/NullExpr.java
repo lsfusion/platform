@@ -20,6 +20,8 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.caches.hash.HashContext;
 import platform.interop.Compare;
 import platform.base.TwinImmutableInterface;
+import platform.server.logics.NullValue;
+import platform.server.logics.ObjectValue;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -106,5 +108,9 @@ public class NullExpr extends Expr {
 
     public Set<BaseExpr> getBaseExprs() {
         return new HashSet<BaseExpr>();
+    }
+
+    public ObjectValue getObjectValue() {
+        return NullValue.instance;
     }
 }

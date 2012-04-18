@@ -2,7 +2,6 @@ package platform.server.logics.property;
 
 import platform.base.identity.IdentityObject;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
@@ -20,6 +19,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -68,11 +68,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return interfaceValues.get((P) this);
     }
 
-    public Expr mapIncrementExpr(Map<P, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere, IncrementType incrementType) {
-        return mapExpr(joinImplement);
+    public void mapFillDepends(Collection<Property> depends) {
     }
 
-    public void mapFillDepends(Collection<Property> depends) {
+    public Set<OldProperty> mapOldDepends() {
+        return new HashSet<OldProperty>();
     }
 
     public int compareTo(P o) {
@@ -82,7 +82,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     // для того чтобы "попробовать" изменения (на самом деле для кэша)
     public Expr changeExpr;
 
-    public MapDataChanges<P> mapJoinDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    public MapDataChanges<P> mapJoinDataChanges(Map<P, ? extends Expr> mapKeys, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges) {
         return new MapDataChanges<P>();
     }
 

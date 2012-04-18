@@ -5,6 +5,7 @@ import platform.base.OrderedMap;
 import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.action.ClientAction;
+import platform.server.classes.ActionClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
@@ -16,6 +17,7 @@ import platform.server.form.entity.LogFormEntity;
 import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.*;
 import platform.server.logics.property.*;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.*;
 
 import javax.swing.*;
@@ -51,48 +53,57 @@ public class LP<T extends PropertyInterface> {
     }
 
     public <D extends PropertyInterface> void setDerivedChange(LP<D> valueProperty, Object... params) {
-        setDerivedChange(valueProperty, null, params);
+        setDerivedChange(false, valueProperty, params);
+    }
+    
+    public <D extends PropertyInterface> void setDerivedValueChange(LP<D> valueProperty, Object... params) {
+        setDerivedChange(true, valueProperty, params); // assert что все интерфейсы есть
     }
 
-    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, LP<D> valueProperty, Object... params) {
-        setDerivedChange(valueChanged, valueProperty, null, params);
+    private <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, LP<D> valueProperty, Object... params) {
+        setDerivedChange(valueChanged, valueProperty, 0, params);
     }
 
-    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, int whereNum, LP<D> valueProperty, Object... params) {
-        setDerivedChange(valueChanged, valueProperty, whereNum, null, params);
-    }
-
-    public <D extends PropertyInterface> void setDerivedChange(LP<D> valueProperty, BusinessLogics<?> BL, Object... params) {
-        if(params[0] instanceof Boolean)
-            setDerivedChange((Boolean)params[0], valueProperty, BL, Arrays.copyOfRange(params,1,params.length));
-        else
-            setDerivedChange(false, valueProperty, BL, params);
-    }
-
-    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, LP<D> valueProperty, BusinessLogics<?> BL, Object... params) {
-        setDerivedChange(valueChanged, valueProperty, 0, BL, params);
-    }
-
-    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, LP<D> valueProperty, int whereNum, BusinessLogics<?> BL, Object... params) {
+    private <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, LP<D> valueProperty, int whereNum, Object... params) {
         setDerivedChange(valueChanged, false, valueProperty, whereNum, params);
+    }
+
+    public void setEventAction(Object... params) {
+        assert property instanceof ActionProperty;
+        setDerivedChange(new LP(DerivedProperty.createStatic(true, ActionClass.instance).property), params);
+    }
+
+    public void setEventForcedAction(Object... params) {
+        assert property instanceof ActionProperty || property instanceof JoinProperty; // там все еще местами Join на Action используется
+        setDerivedForcedChange(new LP(DerivedProperty.createStatic(true, ActionClass.instance).property), params);
     }
 
     public <D extends PropertyInterface> void setDerivedForcedChange(LP<D> valueProperty, Object... params) {
         setDerivedForcedChange(false, valueProperty, params);
     }
 
-    public <D extends PropertyInterface> void setDerivedForcedChange(boolean valueChanged, LP<D> valueProperty, Object... params) {
+    public <D extends PropertyInterface> void setDerivedValueForcedChange(LP<D> valueProperty, Object... params) {
+        setDerivedForcedChange(true, valueProperty, params); // params только с интерфейсами
+    }
+
+    private <D extends PropertyInterface> void setDerivedForcedChange(boolean valueChanged, LP<D> valueProperty, Object... params) {
         setDerivedForcedChange(valueChanged, 0, valueProperty, params);
+    }
+
+    // для DCProp
+    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, int whereNum, LP<D> valueProperty, Object... params) {
+        setDerivedChange(valueChanged, valueProperty, whereNum, params);
     }
 
     public <D extends PropertyInterface> void setDerivedForcedChange(boolean valueChanged, int whereNum, LP<D> valueProperty, Object... params) {
         setDerivedChange(valueChanged, true, valueProperty, whereNum, params);
     }
 
+    // для DSL
     public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, boolean forceChanged, LP<D> valueProperty, Object... params) {
         setDerivedChange(valueChanged, forceChanged, valueProperty, 0, params);
     }
-    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, boolean setChanged, LP<D> valueProperty, int whereNum, Object... params) {
+    private <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, boolean setChanged, LP<D> valueProperty, int whereNum, Object... params) {
         int intValue = valueProperty.listInterfaces.size();
         List<PropertyInterfaceImplement<T>> defImplements = readImplements(listInterfaces, params);
 

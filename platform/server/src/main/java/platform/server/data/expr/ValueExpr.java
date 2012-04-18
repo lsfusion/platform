@@ -17,6 +17,7 @@ import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
 import java.math.BigInteger;
 import java.util.HashSet;
@@ -157,5 +158,10 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
     }
     public ValueExpr(DataObject dataObject) {
         this(dataObject.object, dataObject.objectClass);
+    }
+
+    @Override
+    public ObjectValue getObjectValue() {
+        return getDataObject();
     }
 }

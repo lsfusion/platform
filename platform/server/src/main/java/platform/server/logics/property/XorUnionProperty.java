@@ -58,9 +58,9 @@ public class XorUnionProperty extends IncrementUnionProperty {
             Where siblingWhere = Where.FALSE;
             for(PropertyMapImplement<?, Interface> siblingOperand : operands) // считаем where сиблингов и потом ими xor'им change
                 if(siblingOperand!=operand)
-                    siblingWhere = siblingWhere.xor(siblingOperand.mapExpr(change.mapKeys, propChanges).getWhere());
+                    siblingWhere = siblingWhere.xor(siblingOperand.mapExpr(change.getMapExprs(), propChanges).getWhere());
             WhereBuilder operandWhere = new WhereBuilder();
-            result = result.add(operand.mapDataChanges(new PropertyChange<Interface>(change.mapKeys, ValueExpr.get(change.expr.getWhere().xor(siblingWhere)), change.where), operandWhere, propChanges));
+            result = result.add(operand.mapDataChanges(new PropertyChange<Interface>(change, ValueExpr.get(change.expr.getWhere().xor(siblingWhere))), operandWhere, propChanges));
             change = change.and(operandWhere.toWhere().not());
             if(changedWhere!=null) changedWhere.add(operandWhere.toWhere());
         }

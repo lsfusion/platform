@@ -166,7 +166,7 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
     public <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop) {
         Collection<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat, orderTop, false);
         if(!tryExclusive || whereJoins.size()<=1 || whereJoins.size() > Settings.instance.getLimitExclusiveCount())
-            return new Pair<Collection<GroupJoinsWhere>, Boolean>(whereJoins, false);
+            return new Pair<Collection<GroupJoinsWhere>, Boolean>(whereJoins, whereJoins.size()<=1);
         List<GroupJoinsWhere> sortedWhereJoins = GroupWhere.sort(whereJoins);
         long sortedComplexity = getComplexity(sortedWhereJoins);
         if(sortedComplexity > Settings.instance.getLimitExclusiveComplexity())

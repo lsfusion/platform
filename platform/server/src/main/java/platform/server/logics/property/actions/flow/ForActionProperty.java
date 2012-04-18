@@ -1,6 +1,7 @@
 package platform.server.logics.property.actions.flow;
 
 import platform.base.OrderedMap;
+import platform.server.data.expr.Expr;
 import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
@@ -83,11 +84,12 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
 
     private Set<Map<I, DataObject>> readRows(DataSession session, Map<ClassPropertyInterface, DataObject> keys, Modifier modifier) throws SQLException {
-        Query<I, PropertyInterfaceImplement<I>> query = new Query<I, PropertyInterfaceImplement<I>>(innerInterfaces);
-        query.putKeyWhere(crossJoin(mapInterfaces, keys));
-        query.and(ifProp.mapExpr(query.mapKeys, modifier).getWhere());
+        Query<I, PropertyInterfaceImplement<I>> query = new Query<I, PropertyInterfaceImplement<I>>(innerInterfaces, crossJoin(mapInterfaces, keys));
+        Map<I,Expr> mapExprs = query.getMapExprs();
+
+        query.and(ifProp.mapExpr(mapExprs, modifier).getWhere());
         for (PropertyInterfaceImplement<I> order : orders.keySet()) {
-            query.properties.put(order, order.mapExpr(query.mapKeys, modifier));
+            query.properties.put(order, order.mapExpr(mapExprs, modifier));
         }
         return query.executeClasses(session, orders).keySet();
     }

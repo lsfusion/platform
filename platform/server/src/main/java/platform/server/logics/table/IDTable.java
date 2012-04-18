@@ -52,12 +52,10 @@ public class IDTable extends GlobalTable {
 
     @IdentityLazy
     private Query<KeyField, PropertyField> getGenerateQuery(int idType) {
-        Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(this);
-        platform.server.data.query.Join<PropertyField> joinTable = joinAnd(Collections.singletonMap(key, query.mapKeys.get(key)));
+        Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(this, Collections.singletonMap(key, new DataObject(idType, SystemClass.instance)));
+        platform.server.data.query.Join<PropertyField> joinTable = join(query.getMapExprs());
         query.and(joinTable.getWhere());
         query.properties.put(value, joinTable.getExpr(value));
-
-        query.and(query.mapKeys.get(key).compare(new ValueExpr(idType, SystemClass.instance), Compare.EQUALS));
         return query;
     }
 
@@ -83,8 +81,7 @@ public class IDTable extends GlobalTable {
 
     @IdentityLazy
     private Query<KeyField, PropertyField> getReserveQuery(int idType, Integer ID) {
-        Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(this);
-        updateQuery.putKeyWhere(Collections.singletonMap(key, new DataObject(idType, SystemClass.instance)));
+        Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(this, Collections.singletonMap(key, new DataObject(idType, SystemClass.instance)));
         updateQuery.properties.put(value,new ValueExpr(ID+1, SystemClass.instance));
         return updateQuery;
     }

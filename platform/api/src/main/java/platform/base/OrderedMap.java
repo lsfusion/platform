@@ -20,6 +20,10 @@ public class OrderedMap<K,V> extends LinkedHashMap<K,V> {
             put(item, value);
     }
 
+    public OrderedMap(K key, V value) {
+        put(key, value);
+    }
+
     private void reverse(Iterator<Map.Entry<K,V>> i) {
         if(i.hasNext()) {
             Map.Entry<K,V> entry = i.next();

@@ -555,11 +555,11 @@ public abstract class LogicsModule {
         return addAProp(new StopActionProperty(genSID(), caption, header));
     }
 
-    protected <C extends PropertyInterface> LP addSetPropertyAProp(AbstractGroup group, String name, String caption, int interfaces, int resInterfaces, Object... params) {
+    protected <C extends PropertyInterface, W extends PropertyInterface> LP addSetPropertyAProp(AbstractGroup group, String name, String caption, int interfaces, int resInterfaces, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
-        return addProperty(group, new LP<ClassPropertyInterface>(new ChangeActionProperty<C, PropertyInterface>(name, caption,
-                                                                                                             innerInterfaces, (List) readImplements.subList(0, resInterfaces),
+        return addProperty(group, new LP<ClassPropertyInterface>(new ChangeActionProperty<C, W, PropertyInterface>(name, caption,
+                                                                                                             innerInterfaces, (List) readImplements.subList(0, resInterfaces), (PropertyMapImplement<W, PropertyInterface>) DerivedProperty.createStatic(true, LogicalClass.instance),
                                                                                                              (PropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
     }
 

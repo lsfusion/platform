@@ -2,15 +2,13 @@ package platform.server.logics.property.derived;
 
 import platform.base.BaseUtils;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
-import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
+import platform.server.session.PropertySet;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -56,22 +54,25 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
     }
 
     @Override
-    protected void proceedNotNull(Map<Interface<T>, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
-        Map<PropertyInterfaceImplement<T>, Interface<T>> aggrInterfaces = BaseUtils.reverse(getMapInterfaces());
+    protected void proceedNotNull(PropertySet<Interface<T>> set, DataSession session, Modifier modifier, boolean notNull) throws SQLException {
+        if(notNull) {
+            Map<PropertyInterfaceImplement<T>, Interface<T>> aggrInterfaces = BaseUtils.reverse(getMapInterfaces());
 
-        for(Map<Interface<T>, DataObject> row : new Query<Interface<T>, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet()) {
-            DataObject aggrObject = session.addObject();
+            for(Map<Interface<T>, DataObject> row : set.executeClasses(session.sql, session.env, session.baseClass)) {
+                DataObject aggrObject = session.addObject();
 
-            Map<PropertyInterfaceImplement<T>, DataObject> interfaceValues = BaseUtils.join(aggrInterfaces, row);
-            Map<T, DataObject> propValues = BaseUtils.merge(Collections.singletonMap(aggrInterface, aggrObject), // aggrInterface = aggrObject, остальные из row'а читаем
-                    BaseUtils.filterKeys(interfaceValues, BaseUtils.remove(innerInterfaces, aggrInterface)));
+                Map<PropertyInterfaceImplement<T>, DataObject> interfaceValues = BaseUtils.join(aggrInterfaces, row);
+                Map<T, DataObject> propValues = BaseUtils.merge(Collections.singletonMap(aggrInterface, aggrObject), // aggrInterface = aggrObject, остальные из row'а читаем
+                        BaseUtils.filterKeys(interfaceValues, BaseUtils.remove(innerInterfaces, aggrInterface)));
 
-            if(whereProp instanceof PropertyMapImplement)
-                ((PropertyMapImplement<?,T>)whereProp).mapNotNull(propValues, session, modifier);
-            for(Map.Entry<PropertyInterfaceImplement<T>, DataObject> propertyInterface : BaseUtils.filterKeys(interfaceValues, groupProps).entrySet())
-                if(propertyInterface.getKey() instanceof PropertyMapImplement)
-                    ((PropertyMapImplement<?,T>)propertyInterface.getKey()).execute(propValues, session, propertyInterface.getValue().object, modifier);
-        }
+                if(whereProp instanceof PropertyMapImplement)
+                    ((PropertyMapImplement<?,T>)whereProp).mapNotNull(propValues, session, modifier, true, false); // потому как только что добавился объект
+                for(Map.Entry<PropertyInterfaceImplement<T>, DataObject> propertyInterface : BaseUtils.filterKeys(interfaceValues, groupProps).entrySet())
+                    if(propertyInterface.getKey() instanceof PropertyMapImplement)
+                        ((PropertyMapImplement<?,T>)propertyInterface.getKey()).execute(propValues, session, propertyInterface.getValue().object, modifier);
+            }
+        } else
+            super.proceedNotNull(set, session, modifier, notNull);
     }
 
     @Override

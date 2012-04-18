@@ -203,5 +203,9 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     public abstract Stat getTypeStat(Where fullWhere);
 
     public abstract Set<BaseExpr> getBaseExprs();
+    
+    public ObjectValue getObjectValue() {
+        return null;
+    }
 }
 

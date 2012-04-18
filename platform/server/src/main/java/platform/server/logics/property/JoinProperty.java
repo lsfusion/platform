@@ -107,10 +107,11 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     private static MapDataChanges<Interface> getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges, PropertyInterfaceImplement<Interface> changeImp, PropertyInterfaceImplement<Interface> valueImp) {
-        Expr toChangeExpr = valueImp.mapExpr(change.mapKeys, propChanges);
+        Map<Interface, Expr> mapExprs = change.getMapExprs();
+        Expr toChangeExpr = valueImp.mapExpr(mapExprs, propChanges);
         Where toChangeWhere = change.expr.getWhere();
-        return changeImp.mapJoinDataChanges(change.mapKeys, toChangeExpr.and(toChangeWhere), // меняем на новое значение, если надо и скидываем в null если было какое-то  
-                change.where.and(toChangeWhere.or(toChangeExpr.compare(changeImp.mapExpr(change.mapKeys, propChanges),Compare.EQUALS))), changedWhere, propChanges);
+        return changeImp.mapJoinDataChanges(mapExprs, toChangeExpr.and(toChangeWhere), // меняем на новое значение, если надо и скидываем в null если было какое-то
+                change.where.and(toChangeWhere.or(toChangeExpr.compare(changeImp.mapExpr(mapExprs, propChanges),Compare.EQUALS))), changedWhere, propChanges);
     }
 
     @Override
@@ -131,15 +132,16 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         if(implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProperty = (AndFormulaProperty)implement.property;
+            Map<Interface, Expr> mapExprs = change.getMapExprs();
             Where where = Where.TRUE;
             for(AndFormulaProperty.Interface andInterface : andProperty.interfaces)
                 if(andInterface != andProperty.objectInterface) {
-                    Where andWhere = implement.mapping.get(andInterface).mapExpr(change.mapKeys, propChanges).getWhere();
+                    Where andWhere = implement.mapping.get(andInterface).mapExpr(mapExprs, propChanges).getWhere();
                     if(((AndFormulaProperty.AndInterface)andInterface).not)
                         andWhere = andWhere.not();
                     where = where.and(andWhere);
                 }
-            return implement.mapping.get(andProperty.objectInterface).mapJoinDataChanges(change.mapKeys, change.expr, change.where.and(where), changedWhere, propChanges);
+            return implement.mapping.get(andProperty.objectInterface).mapJoinDataChanges(mapExprs, change.expr, change.where.and(where), changedWhere, propChanges);
         }
 
         if(implement.property.isOnlyNotZero)
@@ -150,7 +152,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             for(Map.Entry<T,PropertyInterfaceImplement<Interface>> interfaceMap : implement.mapping.entrySet())
                 if(interfaceMap.getValue() instanceof Interface)
                     mapInterfaces.put(interfaceMap.getKey(), (Interface) interfaceMap.getValue());
-            return implement.property.getJoinDataChanges(getJoinImplements(change.mapKeys, propChanges, null), change.expr, change.where, propChanges, changedWhere).map(mapInterfaces);
+            return implement.property.getJoinDataChanges(getJoinImplements(change.getMapExprs(), propChanges, null), change.expr, change.where, propChanges, changedWhere).map(mapInterfaces);
         }
         if(implement.mapping.size()==1 && !implementChange && implement.property.aggProp) {
             // пока тупо MGProp'им назад
@@ -159,7 +161,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             Expr groupExpr = GroupExpr.create(Collections.singletonMap(0, implement.property.getExpr(Collections.singletonMap(BaseUtils.single(implement.property.interfaces), keyExpr), propChanges)),
                     keyExpr, keyExpr.isClass(implementSingle.property.getCommonClasses().value.getUpSet()), GroupType.ANY, Collections.singletonMap(0, change.expr));
             return implementSingle.mapDataChanges(
-                    new PropertyChange<Interface>(change.mapKeys, groupExpr, change.where), changedWhere, propChanges);
+                    new PropertyChange<Interface>(change, groupExpr), changedWhere, propChanges);
         }
 
         return super.calculateDataChanges(change, changedWhere, propChanges);

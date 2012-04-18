@@ -1,14 +1,11 @@
 package platform.server.logics.property;
 
-import platform.base.Result;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.logics.DataObject;
 import platform.server.session.*;
 
-import java.sql.SQLException;
 import java.util.*;
 
 public class CaseUnionProperty extends AbstractCaseUnionProperty {
@@ -56,7 +53,7 @@ public class CaseUnionProperty extends AbstractCaseUnionProperty {
     protected MapDataChanges<Interface> calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         MapDataChanges<Interface> result = new MapDataChanges<Interface>();
         for(Case operand : cases) {
-            Where caseWhere = operand.where.mapExpr(change.mapKeys, propChanges).getWhere();
+            Where caseWhere = operand.where.mapExpr(change.getMapExprs(), propChanges).getWhere();
             result = result.add(operand.property.mapDataChanges(change.and(caseWhere), changedWhere, propChanges));
             change = change.and(caseWhere.not());
         }

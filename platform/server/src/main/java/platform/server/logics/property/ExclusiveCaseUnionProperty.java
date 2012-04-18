@@ -51,7 +51,7 @@ public abstract class ExclusiveCaseUnionProperty extends AbstractCaseUnionProper
         MapDataChanges<Interface> result = new MapDataChanges<Interface>();
         for(Case operand : getCases())
             result = result.add(operand.property.mapDataChanges(
-                    change.and(operand.where.mapExpr(change.mapKeys, propChanges).getWhere()), changedWhere, propChanges));
+                    change.and(operand.where.mapExpr(change.getMapExprs(), propChanges).getWhere()), changedWhere, propChanges));
         return result;
     }
 }

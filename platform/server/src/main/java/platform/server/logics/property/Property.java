@@ -19,7 +19,6 @@ import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
-import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
 import platform.server.data.query.MapKeysInterface;
@@ -185,19 +184,20 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return !getClassWhere().andCompatible(new ClassWhere<T>(interfaceClasses)).isFalse();
     }
 
-    
-    private boolean calculateIsFull() {
+    public boolean isFull(Collection<T> checkInterfaces) {
         ClassWhere<T> classWhere = getClassWhere();
         if(classWhere.isFalse())
             return false;
-        for (AbstractClassWhere.And where : classWhere.wheres) {
-            for (T i : interfaces)
+        for (AbstractClassWhere.And<T> where : classWhere.wheres) {
+            for (T i : checkInterfaces)
                 if(where.get(i)==null)
                     return false;
-            if(where.containsNullValue())
-                return false;
         }
         return true;
+    }
+    
+    private boolean calculateIsFull() {
+        return isFull(interfaces);
     }
     private Boolean isFull;
     private static ThreadLocal<Boolean> isFullRunning = new ThreadLocal<Boolean>();
@@ -501,14 +501,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         assert isStored();
 
         // оптимизация
-        if(!Settings.instance.isEnableApplySingleStored() || DataSession.notFitClasses(this, changeTable))
+        if(!Settings.instance.isEnableApplySingleStored() || DataSession.notFitKeyClasses(this, changeTable))
             return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(createChangeTable(), changeTable);
         if(DataSession.fitClasses(this, changeTable))
             return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(changeTable, createChangeTable());
 
         PropertyChange<T> change = SinglePropertyTableUsage.getChange(changeTable);
 
-        Map<KeyField, KeyExpr> mapKeys = crossJoin(mapTable.mapKeys, change.mapKeys);
+        Map<KeyField, Expr> mapKeys = crossJoin(mapTable.mapKeys, change.getMapExprs());
         Where classWhere = fieldClassWhere.getWhere(merge(mapKeys, Collections.singletonMap(field, change.expr)))
                             .or(mapTable.table.getClasses().getWhere(mapKeys).and(change.expr.getWhere().not())); // или если меняет на null, assert что fitKeyClasses
 
@@ -621,11 +621,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public Object read(SQLSession session, Map<T, DataObject> keys, Modifier modifier, QueryEnvironment env) throws SQLException {
         String readValue = "readvalue";
-        Query<T, Object> readQuery = new Query<T, Object>(this);
-
-        readQuery.putKeyWhere(keys);
-
-        readQuery.properties.put(readValue, getExpr(readQuery.mapKeys, modifier));
+        Query<T, Object> readQuery = new Query<T, Object>(new ArrayList<T>());
+        readQuery.properties.put(readValue, getExpr(DataObject.getMapExprs(keys), modifier));
         return BaseUtils.singleValue(readQuery.execute(session, env)).get(readValue);
     }
 
@@ -692,9 +689,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return result;
     }
 
-    public MapDataChanges<T> getDataChanges(PropertyChange<T> change, Modifier modifier, WhereBuilder changedWhere) {
-        return getDataChanges(change, modifier.getPropertyChanges(), changedWhere);
+    public MapDataChanges<T> getDataChanges(PropertyChange<T> change, Modifier modifier) {
+        return getDataChanges(change, modifier.getPropertyChanges());
     }
+
+    public MapDataChanges<T> getDataChanges(PropertyChange<T> change, PropertyChanges propChanges) {
+        return getDataChanges(change, propChanges, null);
+    }
+
     @Message("message.core.property.data.changes")
     @PackComplex
     @ThisMessage
@@ -708,11 +710,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 TimePropertyChange<T> timeProperty = timeChange.getValue();
                 dataChanges = dataChanges.add(
                         timeProperty.property.getDataChanges(
-                                new PropertyChange<ClassPropertyInterface>(
-                                        join(timeProperty.mapInterfaces, change.mapKeys),
-                                        new TimeExpr(timeChange.getKey()), calculateChangedWhere.toWhere()
-                                ), propChanges, null
-                        ).map(timeProperty.mapInterfaces)
+                                new PropertyChange<T>(change, new TimeExpr(timeChange.getKey()), calculateChangedWhere.toWhere()
+                                ).map(timeProperty.mapInterfaces), propChanges).map(timeProperty.mapInterfaces)
                 );
             }
             if (changedWhere != null && !timeChanges.isEmpty()) {
@@ -774,9 +773,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return result;
     }
 
-    public void setJoinNotNull(Map<T, KeyExpr> implementKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
+    public void setJoinNotNull(Map<T, ? extends Expr> implementKeys, Where where, DataSession session, Modifier modifier, boolean notNull) throws SQLException {
         Map<T, KeyExpr> mapKeys = getMapKeys();
-        setNotNull(mapKeys, GroupExpr.create(implementKeys, where, mapKeys).getWhere(), session, modifier);
+        setNotNull(mapKeys, GroupExpr.create(implementKeys, where, mapKeys).getWhere(), session, modifier, notNull);
     }
 
     public PropertyMapImplement<T, T> getImplement() {
@@ -1001,13 +1000,17 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         Collection<Property> props = new ArrayList<Property>();
         if((options & PropertyFollows.RESOLVE_TRUE)!=0 && implement.property.hasSet(true)) { // оптимизационная проверка
             assert interfaces.size() == implement.mapping.size(); // assert что количество
-            PropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true);
-            setAction.mapDerivedChange(IncrementType.SET, implement.reverse(this));
+            PropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, true);
+            setAction.mapDerivedChange(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)));
+//            PropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, false);
+//            setAction.mapDerivedChange(DerivedProperty.createAndNot(getChanged(IncrementType.SET), implement).map(BaseUtils.reverse(implement.mapping)));
             lm.addProp(setAction.property);
         } 
         if((options & PropertyFollows.RESOLVE_FALSE)!=0 && hasSet(false)) {
-            PropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false);
-            setAction.mapDerivedChange(IncrementType.DROP, implement);
+            PropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, true);
+            setAction.mapDerivedChange(implement.mapChanged(IncrementType.DROP));
+//            PropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, false);
+//            setAction.mapDerivedChange(DerivedProperty.createAnd(this, implement.mapChanged(IncrementType.DROP)));
             lm.addProp(setAction.property);
         }
 
@@ -1018,23 +1021,42 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return props;
     }
 
-    public <D extends PropertyInterface> void setDerivedChange(IncrementType incrementType, PropertyMapImplement<?, T> onChangeImplement) {
+    public <D extends PropertyInterface> void setDerivedChange(PropertyMapImplement<?, T> whereImplement) {
         assert this instanceof ActionProperty;
-        setDerivedChange(true, incrementType, DerivedProperty.<T>createStatic(true, ActionClass.instance), onChangeImplement);
+        setDerivedChange(DerivedProperty.<T>createStatic(true, ActionClass.instance), whereImplement);
     }
 
-    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, IncrementType incrementType, PropertyMapImplement<D, T> valueImplement, PropertyMapImplement<?, T> onChangeImplement) {
-        setDerivedChange(valueChanged, incrementType, valueImplement, new ArrayList<PropertyMapImplement<?, T>>(), Collections.<PropertyMapImplement<?, T>>singletonList(onChangeImplement));
-    }
-
-    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, IncrementType incrementType, PropertyMapImplement<D, T> valueImplement, Collection<PropertyMapImplement<?, T>> whereImplements, Collection<PropertyMapImplement<?, T>> onChangeImplements) {
-        setDerivedChange(valueChanged, incrementType, BaseUtils.<PropertyImplement<D, PropertyInterfaceImplement<T>>>immutableCast(valueImplement), whereImplements, onChangeImplements);
-    }
-    
-    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, IncrementType incrementType, PropertyImplement<D, PropertyInterfaceImplement<T>> valueImplement, Collection<PropertyMapImplement<?, T>> whereImplements, Collection<PropertyMapImplement<?, T>> onChangeImplements) {
+    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, IncrementType incrementType, PropertyImplement<D, PropertyInterfaceImplement<T>> valueImplement, List<PropertyMapImplement<?, T>> whereImplements, Collection<PropertyMapImplement<?, T>> onChangeImplements) {
+        // нужно onChange обернуть в getChange, and where, and change implement'ы
         if(!valueChanged)
             valueImplement = new PropertyImplement<D, PropertyInterfaceImplement<T>>(valueImplement.property.getOld(), valueImplement.mapping);
-        DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(this, valueImplement, whereImplements, onChangeImplements, incrementType);
+
+        List<PropertyMapImplement<?, T>> onChangeWhereImplements = new ArrayList<PropertyMapImplement<?, T>>();
+        for(PropertyMapImplement<?, T> onChangeImplement : onChangeImplements)
+            onChangeWhereImplements.add(onChangeImplement.mapChanged(incrementType));
+        for(PropertyInterfaceImplement<T> mapping : valueImplement.mapping.values())
+            if(mapping instanceof PropertyMapImplement)
+                onChangeWhereImplements.add(((PropertyMapImplement<?, T>) mapping).mapChanged(IncrementType.CHANGE));
+
+        PropertyMapImplement<?, T> where;
+        if(onChangeWhereImplements.size() > 0) {
+            PropertyMapImplement<?, T> onChangeWhere;
+            if(onChangeWhereImplements.size()==1)
+                where = BaseUtils.single(onChangeWhereImplements);
+            else
+                where = DerivedProperty.createUnion(interfaces, onChangeWhereImplements);
+            if(whereImplements.size()>0)
+                where = DerivedProperty.createAnd(interfaces, where, whereImplements);
+        } else { // по сути новая ветка, assert что whereImplements > 0
+            where = whereImplements.get(0);
+            if(whereImplements.size() > 1)
+                where = DerivedProperty.createAnd(interfaces, where, whereImplements.subList(1, whereImplements.size()));
+        }
+        setDerivedChange(DerivedProperty.createJoin(valueImplement), where);
+    }
+
+    public <D extends PropertyInterface> void setDerivedChange(PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<?, T> whereImplement) {
+        DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(this, valueImplement, whereImplement);
         // запишем в DataProperty
         for(UserProperty dataProperty : getDataChanges())
             dataProperty.derivedChange = derivedChange;
@@ -1048,28 +1070,36 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return null;
     }
 
-    public void setNotNull(Map<T, DataObject> values, DataSession session, Modifier modifier) throws SQLException {
-        Map<T, KeyExpr> mapKeys = getMapKeys();
-        setNotNull(mapKeys, EqualsWhere.compareValues(mapKeys, values), session, modifier);
+    public void setNotNull(Map<T, DataObject> values, DataSession session, Modifier modifier, boolean notNull, boolean check) throws SQLException {
+        setNotNull(values, new HashMap<T, KeyExpr>(), Where.TRUE, session, modifier, notNull, check);
     }
-
-    public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
-        proceedNotNull(mapKeys, where.and(getExpr(mapKeys, session.modifier).getWhere().not()), session, modifier);
+    public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier, boolean notNull) throws SQLException {
+        setNotNull(new HashMap<T, DataObject>(), mapKeys, where, session, modifier, notNull);
     }
-    public void setNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
-        proceedNull(mapKeys, where.and(getExpr(mapKeys, modifier).getWhere()), session, modifier);
+    public void setNotNull(Map<T, DataObject> mapValues, Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier, boolean notNull) throws SQLException {
+        setNotNull(mapValues, mapKeys, where, session, modifier, notNull, true);
+    }
+    public void setNotNull(Map<T, DataObject> mapValues, Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier, boolean notNull, boolean check) throws SQLException {
+        setNotNull(new PropertySet<T>(mapValues, mapKeys, where), session, modifier, notNull, check);
+    }
+    public void setNotNull(PropertySet<T> set, DataSession session, Modifier modifier, boolean notNull, boolean check) throws SQLException {
+        if(check) {
+            Where where = getExpr(set.getMapExprs(), session.modifier).getWhere();
+            if(notNull)
+                where = where.not();
+            set = set.and(where);
+        }
+        proceedNotNull(set, session, modifier, notNull);
     }
 
     // assert что where содержит getWhere().not
-    protected void proceedNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
-        Expr defaultExpr = getDefaultExpr(mapKeys);
-        if(defaultExpr!=null)
-            session.execute(this, new PropertyChange<T>(mapKeys, defaultExpr, where), modifier, null, null);
-    }
-
-    // assert что where содержит getWhere()
-    protected void proceedNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
-        session.execute(this, new PropertyChange<T>(mapKeys, CaseExpr.NULL, where), modifier, null, null);
+    protected void proceedNotNull(PropertySet<T> set, DataSession session, Modifier modifier, boolean notNull) throws SQLException {
+        if(notNull) {
+            Expr defaultExpr = getDefaultExpr(set.getMapExprs());
+            if(defaultExpr!=null)
+                session.execute(this, new PropertyChange<T>(set, defaultExpr), modifier, null, null);
+        } else
+            session.execute(this, new PropertyChange<T>(set, CaseExpr.NULL), modifier, null, null);
     }
 
     protected boolean hasSet(boolean notNull) {

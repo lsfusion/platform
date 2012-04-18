@@ -902,9 +902,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         hostnameComputerCreated = addJProp(historyGroup, "hostnameComputerCreated", getString("logics.computercreated"), hostname, computerCreated, 1);
         hostnameComputerCreated.setMinimumCharWidth(10); hostnameComputerCreated.setPreferredCharWidth(20);
         
-        timeCreated.setDerivedChange(true, currentDateTime, is(historyObject), 1);
-        userCreated.setDerivedChange(true, currentUser, is(historyObject), 1);
-        computerCreated.setDerivedChange(true, currentComputer, is(historyObject), 1);
+        timeCreated.setDerivedValueChange(currentDateTime, is(historyObject), 1);
+        userCreated.setDerivedValueChange(currentUser, is(historyObject), 1);
+        computerCreated.setDerivedValueChange(currentComputer, is(historyObject), 1);
 
         restartServerAction = addJProp(getString("logics.server.stop"), andNot1, addRestartActionProp(), isServerRestarting);
         runGarbageCollector = addGarbageCollectorActionProp();
@@ -1054,10 +1054,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
-        sessionUser.setDerivedChange(currentUser, true, is(session), 1);
+        sessionUser.setDerivedValueChange(currentUser, is(session), 1);
         addJProp(baseGroup, getString("logics.session.user"), name, sessionUser, 1);
         LP sessionDate = addDProp(baseGroup, "sessionDate", getString("logics.session.date"), DateTimeClass.instance, session);
-        sessionDate.setDerivedChange(currentDateTime, true, is(session), 1);
+        sessionDate.setDerivedValueChange(currentDateTime, is(session), 1);
 
         objectByName = addMGProp(idGroup, "objectByName", getString("logics.object.name"), object(baseClass.named), name, 1);
         seekObjectName = addJProp(true, getString("logics.object.search"), addSAProp(null), objectByName, 1);

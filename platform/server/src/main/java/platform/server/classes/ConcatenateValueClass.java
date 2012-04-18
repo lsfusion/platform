@@ -40,7 +40,10 @@ public class ConcatenateValueClass implements ValueClass {
     }
 
     public String getSID() {
-        throw new RuntimeException("not supported");
+        String sID = "";
+        for(ValueClass valueClass : valueClasses)
+            sID = (sID.length()==0?"":sID+"_")  + valueClass.getSID();
+        return sID;
     }
 
     public String getCaption() {

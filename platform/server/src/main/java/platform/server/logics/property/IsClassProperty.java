@@ -8,9 +8,7 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
@@ -80,19 +78,11 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     @Override
-    protected void proceedNotNull(Map<ClassPropertyInterface, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
+    protected void proceedNotNull(PropertySet<ClassPropertyInterface> set, DataSession session, Modifier modifier, boolean notNull) throws SQLException {
         ValueClass valueClass = getInterfaceClass();
         if(valueClass instanceof ConcreteObjectClass)
-            for(Map<ClassPropertyInterface, DataObject> row : new Query<ClassPropertyInterface, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet())
-                session.changeClass(BaseUtils.singleValue(row), (ConcreteObjectClass) valueClass);
-    }
-
-    @Override
-    protected void proceedNull(Map<ClassPropertyInterface, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier) throws SQLException {
-        ValueClass valueClass = getInterfaceClass();
-        if(valueClass instanceof ConcreteObjectClass)
-            for(Map<ClassPropertyInterface, DataObject> row : new Query<ClassPropertyInterface, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet())
-                session.changeClass(BaseUtils.singleValue(row), session.baseClass.unknown);
+            for(Map<ClassPropertyInterface, DataObject> row : set.executeClasses(session.sql, session.env, session.baseClass))
+                session.changeClass(BaseUtils.singleValue(row), notNull ? (ConcreteObjectClass) valueClass : session.baseClass.unknown);
     }
 
     public static Set<Property> getParentProps(CustomClass customClass) {

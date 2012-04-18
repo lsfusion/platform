@@ -12,6 +12,7 @@ import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.pull.ExclPullWheres;
 import platform.server.data.query.innerjoins.GroupJoinsWhere;
 import platform.server.data.sql.SQLSyntax;
@@ -26,6 +27,7 @@ import platform.server.session.DataSession;
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.base.BaseUtils.filterKeys;
 import static platform.base.BaseUtils.immutableCast;
 
 // запрос JoinSelect
@@ -41,6 +43,25 @@ public class Query<K,V> extends IQuery<K,V> {
 
     public Query(Collection<K> keys) {
         this(KeyExpr.getMapKeys(keys));
+    }
+
+    private Map<K, DataObject> mapValues;
+    public Query(Map<K,KeyExpr> mapKeys, Where where, Map<K, DataObject> mapValues) {
+        this(mapKeys, where.and(CompareWhere.compareValues(filterKeys(mapKeys, mapValues.keySet()), mapValues)));
+        
+        this.mapValues = mapValues;
+    }
+
+    public Query(Collection<K> keys, Map<K, DataObject> mapValues) {
+        this(KeyExpr.getMapKeys(keys), Where.TRUE, mapValues);
+    }
+
+    public Query(MapKeysInterface<K> mapInterface, Map<K, DataObject> mapValues) {
+        this(mapInterface.getMapKeys(), Where.TRUE, mapValues);
+    }
+
+    public Map<K, Expr> getMapExprs() {
+        return BaseUtils.override(mapKeys, DataObject.getMapExprs(mapValues));
     }
 
     public Query(Map<K,KeyExpr> mapKeys,Map<V, Expr> properties,Where where) {
@@ -186,11 +207,6 @@ public class Query<K,V> extends IQuery<K,V> {
 
     public void and(Where addWhere) {
         where = where.and(addWhere);
-    }
-
-    public void putKeyWhere(Map<K, DataObject> keyValues) {
-        for(Map.Entry<K,DataObject> mapKey : keyValues.entrySet())
-            and(mapKeys.get(mapKey.getKey()).compare(mapKey.getValue(), Compare.EQUALS));
     }
 
     public Query(Query<K,V> query, boolean pack) {

@@ -312,10 +312,9 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return new SessionTable(session, keys, BaseUtils.mergeSet(properties, addProps.keySet()), count, new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
                 // записать в эту таблицу insertSessionSelect из текущей + default поля
-                Query<KeyField, PropertyField> moveData = new Query<KeyField, PropertyField>(keys);
-                platform.server.data.query.Join<PropertyField> prevJoin = join(BaseUtils.filterKeys(moveData.mapKeys, SessionTable.this.keys));
+                Query<KeyField, PropertyField> moveData = new Query<KeyField, PropertyField>(keys, addKeys);
+                platform.server.data.query.Join<PropertyField> prevJoin = join(BaseUtils.filterKeys(moveData.getMapExprs(), SessionTable.this.keys));
                 moveData.and(prevJoin.getWhere());
-                moveData.putKeyWhere(addKeys);
                 moveData.properties.putAll(prevJoin.getExprs());
                 moveData.properties.putAll(DataObject.getMapExprs(addProps));
                 session.insertSessionSelect(name, moveData, QueryEnvironment.empty);

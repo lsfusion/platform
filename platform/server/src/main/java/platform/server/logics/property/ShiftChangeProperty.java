@@ -7,7 +7,6 @@ import platform.server.caches.IdentityLazy;
 import platform.server.classes.IntegralClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.where.Where;
@@ -104,14 +103,15 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
     @Override
     protected MapDataChanges<Interface<P>> calculateDataChanges(PropertyChange<Interface<P>> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         Map<P, Interface<P>> mapInterfaces = getMapInterfaces();
-        Map<P, KeyExpr> mapKeys = BaseUtils.join(mapInterfaces, change.mapKeys);
+        PropertyChange<P> mapChange = change.map(mapInterfaces);
+        Map<P, Expr> mapExprs = mapChange.getMapExprs();
 
-        Where reverseWhere = reverse.mapExpr(mapKeys, propChanges).getWhere();
-        Expr propertyExpr = property.getExpr(mapKeys, propChanges);
+        Where reverseWhere = reverse.mapExpr(mapExprs, propChanges).getWhere();
+        Expr propertyExpr = property.getExpr(mapExprs, propChanges);
         ValueExpr shiftExpr = new ValueExpr(1, (IntegralClass) property.getType());
 
-        return property.getDataChanges(new PropertyChange<P>(mapKeys, propertyExpr.diff(shiftExpr).and(propertyExpr.compare(shiftExpr, Compare.EQUALS).not()).
-            ifElse(reverseWhere,propertyExpr.sum(shiftExpr)), change.where), propChanges, changedWhere).
-                add(reverse.mapJoinDataChanges(mapKeys, CaseExpr.NULL, reverseWhere, null, propChanges)).map(mapInterfaces); // reverse'им
+        return property.getDataChanges(new PropertyChange<P>(mapChange, propertyExpr.diff(shiftExpr).and(propertyExpr.compare(shiftExpr, Compare.EQUALS).not()).
+            ifElse(reverseWhere,propertyExpr.sum(shiftExpr))), propChanges, changedWhere).
+                add(reverse.mapJoinDataChanges(mapExprs, CaseExpr.NULL, reverseWhere, null, propChanges)).map(mapInterfaces); // reverse'им
     }
 }

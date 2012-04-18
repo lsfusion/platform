@@ -9,6 +9,7 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableClassExpr;
+import platform.server.logics.DataObject;
 
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,8 @@ public interface MapTranslate extends MapObject {
     <V extends Value> QuickSet<V> translateValues(QuickSet<V> set);
     
     <K extends Value, V> QuickMap<K,V> translateValuesMapKeys(QuickMap<K, V> map);
+
+    <K> Map<K, DataObject> translateDataObjects(Map<K, DataObject> map);
 
     List<Expr> translate(List<Expr> list);
 

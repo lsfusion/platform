@@ -2390,9 +2390,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 for (int i = 1; i <= prop.listInterfaces.size(); i++)
                     params[i] = i;
                 if (isDerivedChange)
-                    emailNotificationProperty.setDerivedChange(LM.addCProp(ActionClass.instance, true), params);
+                    emailNotificationProperty.setEventAction(params);
                 else
-                    emailNotificationProperty.setDerivedForcedChange(LM.addCProp(ActionClass.instance, true), params);
+                    emailNotificationProperty.setEventForcedAction(params);
             }
         }
     }

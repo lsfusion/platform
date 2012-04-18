@@ -26,11 +26,10 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
     }
 
     public PropertyChange<P> getPropertyChange(Expr expr) throws SQLException {
-        Map<P, KeyExpr> mapKeys = property.getMapKeys();
-        return new PropertyChange<P>(mapKeys,expr,CompareWhere.compareValues(mapKeys,mapping));
+        return new PropertyChange<P>(expr, mapping);
     }
 
     public boolean canBeChanged(Modifier modifier) throws SQLException {
-        return !property.getDataChanges(getPropertyChange(property.changeExpr), modifier, null).changes.isEmpty();
+        return !property.getDataChanges(getPropertyChange(property.changeExpr), modifier).changes.isEmpty();
     }
 }

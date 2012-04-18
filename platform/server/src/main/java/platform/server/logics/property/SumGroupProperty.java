@@ -2,7 +2,6 @@ package platform.server.logics.property;
 
 import platform.base.QuickSet;
 import platform.interop.Compare;
-import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.cases.CaseExpr;
@@ -74,13 +73,10 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
 
     // такая же помошь компилятору как и при getExpr в GroupProperty
     private Where getGroupKeys(PropertyChange<Interface<I>> propertyChange, Map<I, KeyExpr> mapKeys, Map<I, Expr> mapValueKeys) {
-        Map<BaseExpr, BaseExpr> exprValues = propertyChange.where.getExprValues();
         Map<PropertyInterfaceImplement<I>, Expr> changeValues = new HashMap<PropertyInterfaceImplement<I>, Expr>();
-        for(Map.Entry<Interface<I>, KeyExpr> mapKey : propertyChange.mapKeys.entrySet()) {
-            BaseExpr exprValue = exprValues.get(mapKey.getValue());
-            if(exprValue!=null)
-                changeValues.put(mapKey.getKey().implement, exprValue);
-        }
+        for(Map.Entry<Interface<I>, Expr> keyValue : propertyChange.getMapExprs().entrySet())
+            changeValues.put(keyValue.getKey().implement, keyValue.getValue());
+
         Where valueWhere = Where.TRUE;
         for(Map.Entry<I, KeyExpr> mapKey : KeyExpr.getMapKeys(innerInterfaces).entrySet()) {
             Expr expr = changeValues.get(mapKey.getKey());
@@ -113,7 +109,7 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
             DataChanges dataChanges = groupProperty.mapJoinDataChanges(mapKeys, distributeExpr, distributeExpr.getWhere().or(nullWhere).and(valueWhere), null, propChanges).changes;
             if(changedWhere!=null) {
                 if (Settings.instance.isCalculateGroupDataChanged())
-                    getExpr(propertyChange.mapKeys, dataChanges.add(propChanges), changedWhere);
+                    getExpr(propertyChange.getMapExprs(), dataChanges.add(propChanges), changedWhere);
                 else
                     changedWhere.add(propertyChange.where);
             }

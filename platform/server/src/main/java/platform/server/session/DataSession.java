@@ -6,6 +6,7 @@ import platform.base.Pair;
 import platform.interop.action.ClientAction;
 import platform.server.Message;
 import platform.server.ParamMessage;
+import platform.server.Settings;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
@@ -79,6 +80,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     private Transaction applyTransaction; // restore point
 
     private void startTransaction() throws SQLException {
+        if(Settings.instance.isApplyVolatileStats())
+            sql.pushVolatileStats(null);
         sql.startTransaction();
     }
     private void checkTransaction() {
@@ -91,6 +94,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
             applyTransaction = null;
         }
         sql.rollbackTransaction();
+        if(Settings.instance.isApplyVolatileStats())
+            sql.popVolatileStats(null);
 
 //        checkSessionTableMap();
     }
@@ -113,6 +118,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     private void commitTransaction() throws SQLException {
         applyTransaction = null;
         sql.commitTransaction();
+        if(Settings.instance.isApplyVolatileStats())
+            sql.popVolatileStats(null);
     }
 
     public static Set<IsClassProperty> getProperties(Set<CustomClass> addClasses, Set<CustomClass> removeClasses) {
@@ -360,7 +367,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
 
         changeClass(addClasses, removeClasses, toClass, change, sql, groupLast);
 
-        newClasses.put(change,toClass);
+        newClasses.put(change, toClass);
 
         if(groupLast) // по тем по кому не было restart'а new -> to
             updateProperties(getFilterChanges(addClasses, removeClasses));
@@ -381,10 +388,30 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         }
     }
 
+    
+    // для оптимизации
+    private MapDataChanges<ClassPropertyInterface> getUserDataChanges(UserProperty property, PropertyChange<ClassPropertyInterface> change) {
+        Pair<Map<ClassPropertyInterface, DataObject>, ObjectValue> simple;
+        if((simple = change.getSimple())!=null) {
+            if(property.fitClasses(getCurrentClasses(simple.first),
+                    simple.second instanceof DataObject ? getCurrentClass((DataObject) simple.second) : null))
+                return property.newDataChanges(change);
+            else
+                return new MapDataChanges<ClassPropertyInterface>();
+        }
+        return null;
+    }
     public <P extends PropertyInterface> List<ClientAction> execute(Property<P> property, PropertyChange<P> change, Modifier modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
         if(executeForm!=null) // assert что сама форма modifier и session ее же
             executeForm.form.fireChange(property, change);
-        return execute(property.getDataChanges(change, modifier, null), executeForm, mapObjects);
+
+        MapDataChanges<P> userDataChanges = null;
+        if(property instanceof UserProperty && property.timeChanges.isEmpty()) { // оптимизация
+            userDataChanges = (MapDataChanges<P>) getUserDataChanges((UserProperty)property, (PropertyChange<ClassPropertyInterface>) change);
+//            assert userDataChanges == null || BaseUtils.hashEquals(userDataChanges,property.getDataChanges(change, modifier));
+//            из-за того что DataSession знает конкретные значения, а в модифайере все прячется в таблицы, верхний assertion не работает
+        }
+        return execute(userDataChanges!=null?userDataChanges:property.getDataChanges(change, modifier), executeForm, mapObjects);
     }
 
     public <P extends PropertyInterface> List<ClientAction> execute(MapDataChanges<P> mapChanges, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
@@ -406,6 +433,13 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
             return value.objectClass;
         else
             return newClass;
+    }
+
+    public <K> Map<K, ConcreteClass> getCurrentClasses(Map<K, DataObject> map) {
+        Map<K, ConcreteClass> result = new HashMap<K, ConcreteClass>();
+        for(Map.Entry<K, DataObject> entry : map.entrySet())
+            result.put(entry.getKey(), getCurrentClass(entry.getValue()));
+        return result;
     }
 
     public ObjectValue getCurrentValue(ObjectValue value) {
@@ -474,6 +508,10 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
 
     public static <T extends PropertyInterface> boolean fitClasses(Property<T> property, SinglePropertyTableUsage<T> change) {
         return change.getClassWhere(property.mapTable.mapKeys, property.field).means(property.fieldClassWhere);
+    }
+
+    public static <T extends PropertyInterface> boolean notFitKeyClasses(Property<T> property, SinglePropertyTableUsage<T> change) {
+        return change.getClassWhere(property.mapTable.mapKeys).and(property.mapTable.table.getClasses()).isFalse();
     }
 
     public static <T extends PropertyInterface> boolean notFitClasses(Property<T> property, SinglePropertyTableUsage<T> change) {
@@ -595,7 +633,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
                 pendingExecute.put(property, pendingPropExecute);
             }
 
-            for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propertyChange.getQuery().executeClasses(sql, env, baseClass).entrySet().iterator(); iterator.hasNext();) {
+            for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propertyChange.executeClasses(sql, env, baseClass).entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> executeRow = iterator.next();
                 Map<ClassPropertyInterface, DataObject> executeKeys = executeRow.getKey();
                 ObjectValue executeValue = executeRow.getValue().get("value");
@@ -617,7 +655,13 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
             changed.and(property.getExpr(changed.mapKeys, incrementApply).getWhere()); // только на измененные смотрим
             OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>> result = changed.executeClasses(sql, new OrderedMap<String, Boolean>(), 30, baseClass, env);
             if (result.size() > 0) {
-                NoPropertyTableUsage keysTable = new NoPropertyTableUsage<T>(new ArrayList<T>(property.interfaces), property.interfaceTypeGetter);
+                final Map<T, ValueClass> classes = property.getNoDBInterfaces();
+
+                NoPropertyTableUsage keysTable = new NoPropertyTableUsage<T>(new ArrayList<T>(property.interfaces), new Type.Getter<T>() {
+                    public Type getType(T key) {
+                        return classes.get(key).getType();
+                    }
+                });
                 keysTable.writeKeys(sql, result.keyList());
                 Map keysMap = keysTable.getMapKeys();
 
@@ -630,7 +674,6 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
                 Query<T,String> detailed = new Query<T,String>(keysMap);
                 detailed.and(keysTable.getWhere(keysMap));
 
-                Map<T, ValueClass> classes = property.getNoDBInterfaces();
                 int interfaceIndex = 0;
                 for(T propertyInterface : property.interfaces) {
                     ValueClass valueClass = classes.get(propertyInterface);

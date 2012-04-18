@@ -3,14 +3,17 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.server.caches.IdentityLazy;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.UnknownClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.data.type.Type;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.session.*;
 
@@ -59,14 +62,36 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         return propChanges.getUsedChanges(getClassDepends());
     }
 
+
+    private boolean fitClass(ConcreteClass concreteClass, ValueClass valueClass) {
+        // unknown, custom, concatenateClassSet
+        if(concreteClass instanceof ValueClass)
+            return valueClass.isCompatibleParent((ValueClass) concreteClass);
+        else {
+            assert concreteClass instanceof UnknownClass; // с concatenate'ами надо будет разбираться
+            return false;
+        }
+    }
+    public boolean fitClasses(Map<ClassPropertyInterface, ConcreteClass> mapValues, ConcreteClass value) { // оптимизация
+        if(value!=null && !fitClass(value, getValueClass()))
+            return false;
+        for(Map.Entry<ClassPropertyInterface, ConcreteClass> interfaceValue : mapValues.entrySet())
+            if(!fitClass(interfaceValue.getValue(), interfaceValue.getKey().interfaceClass))
+                return false;
+        return true;
+    }
+
     @Override
     protected MapDataChanges<ClassPropertyInterface> calculateDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        change = change.and(getInterfaceClassProperty().mapExpr(change.mapKeys, propChanges, null).getWhere().and(getValueClassProperty().mapExpr(Collections.singletonMap("value", change.expr), propChanges, null).getWhere().or(change.expr.getWhere().not())));
+        change = change.and(getInterfaceClassProperty().mapExpr(change.getMapExprs(), propChanges, null).getWhere().and(getValueClassProperty().mapExpr(Collections.singletonMap("value", change.expr), propChanges, null).getWhere().or(change.expr.getWhere().not())));
         if(change.where.isFalse()) // чтобы не плодить пустые change'и
             return new MapDataChanges<ClassPropertyInterface>();
 
         if(changedWhere !=null) changedWhere.add(change.where); // помечаем что можем обработать тока подходящие по интерфейсу классы
-        // изменяет себя, если классы совпадают
+        return newDataChanges(change);
+    }
+
+    public MapDataChanges<ClassPropertyInterface> newDataChanges(PropertyChange<ClassPropertyInterface> change) {
         return new MapDataChanges<ClassPropertyInterface>(new DataChanges(this, change), Collections.singletonMap(this, getIdentityInterfaces()));
     }
 

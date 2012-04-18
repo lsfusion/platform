@@ -7,6 +7,7 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableClassExpr;
+import platform.server.logics.DataObject;
 
 import java.util.*;
 
@@ -143,6 +144,13 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
         QuickMap<K,U> result = new SimpleMap<K,U>();
         for(int i=0;i<map.size;i++)
             result.add(translate(map.getKey(i)), map.getValue(i));
+        return result;
+    }
+
+    public <K> Map<K, DataObject> translateDataObjects(Map<K, DataObject> map) {
+        Map<K, DataObject> result = new HashMap<K, DataObject>();
+        for(Map.Entry<K, DataObject> entry : map.entrySet())
+            result.put(entry.getKey(), translate(entry.getValue().getExpr()).getDataObject());
         return result;
     }
 

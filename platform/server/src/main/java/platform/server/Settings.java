@@ -457,4 +457,14 @@ public class Settings {
     public void setDisableWrapComplexity(boolean disableWrapComplexity) {
         this.disableWrapComplexity = disableWrapComplexity;
     }
+
+    public boolean applyVolatileStats = false;
+
+    public boolean isApplyVolatileStats() {
+        return applyVolatileStats;
+    }
+
+    public void setApplyVolatileStats(boolean applyVolatileStats) {
+        this.applyVolatileStats = applyVolatileStats;
+    }
 }

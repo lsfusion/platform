@@ -90,6 +90,6 @@ public class ImportProperty <P extends PropertyInterface> {
             changeWhere = changeWhere.and(implement.property.getExpr(mapKeys).compare(changeExpr, Compare.EQUALS).not());
         }
 
-        return implement.property.getDataChanges(new PropertyChange<P>(mapKeys, changeExpr, changeWhere), session.modifier, null);
+        return implement.property.getDataChanges(new PropertyChange<P>(mapKeys, changeExpr, changeWhere), session.modifier);
     }
 }

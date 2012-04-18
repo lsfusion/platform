@@ -22,6 +22,8 @@ import platform.server.data.type.ClassReader;
 import platform.server.data.type.NullReader;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
+import platform.server.logics.NullValue;
+import platform.server.logics.ObjectValue;
 
 import java.util.*;
 
@@ -253,5 +255,12 @@ public class CaseExpr extends Expr {
         for(ExprCase exprCase : cases)
             result.add(exprCase.data);
         return result;
+    }
+
+    @Override
+    public ObjectValue getObjectValue() {
+        if(cases.size()==0)
+            return NullValue.instance;
+        return super.getObjectValue();
     }
 }

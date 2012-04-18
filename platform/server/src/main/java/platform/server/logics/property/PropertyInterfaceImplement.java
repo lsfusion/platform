@@ -23,9 +23,8 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> {
     Expr mapExpr(Map<P, ? extends Expr> joinImplement, Modifier modifier);
     Expr mapExpr(Map<P, ? extends Expr> joinImplement);
 
-    Expr mapIncrementExpr(Map<P, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere, IncrementType incrementType);
-
-    abstract void mapFillDepends(Collection<Property> depends);
+    void mapFillDepends(Collection<Property> depends);
+    Set<OldProperty> mapOldDepends();
 
     Object read(ExecutionContext context, Map<P, DataObject> interfaceValues) throws SQLException;
     Object read(DataSession session, Map<P, DataObject> interfaceValues, Modifier modifier) throws SQLException;
@@ -33,7 +32,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> {
 
     public PropertyMapImplement<?, P> mapChangeImplement(Map<P, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException;
 
-    MapDataChanges<P> mapJoinDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges);
+    MapDataChanges<P> mapJoinDataChanges(Map<P, ? extends Expr> mapKeys, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges);
 
     void fill(Set<P> interfaces, Set<PropertyMapImplement<?,P>> properties);
     public <K extends PropertyInterface> PropertyInterfaceImplement<K> map(Map<P,K> remap);

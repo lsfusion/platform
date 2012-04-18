@@ -667,12 +667,8 @@ public class SQLSession extends MutableObject {
     public boolean isRecord(Table table, Map<KeyField, DataObject> keyFields) throws SQLException {
 
         // по сути пустое кол-во ключей
-        Query<KeyField, String> query = new Query<KeyField, String>(keyFields.keySet());
-        query.putKeyWhere(keyFields);
-
-        // сначала закинем KeyField'ы и прогоним Select
-        query.and(table.joinAnd(query.mapKeys).getWhere());
-
+        Query<KeyField, String> query = new Query<KeyField, String>(new ArrayList<KeyField>());
+        query.and(table.join(DataObject.getMapExprs(keyFields)).getWhere());
         return query.execute(this).size() > 0;
     }
 
@@ -683,8 +679,7 @@ public class SQLSession extends MutableObject {
 
     public void updateRecords(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) throws SQLException {
         if(!propFields.isEmpty()) {
-            Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(table);
-            updateQuery.putKeyWhere(keyFields);
+            Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(table, keyFields);
             updateQuery.properties.putAll(ObjectValue.getMapExprs(propFields));
 
             // есть запись нужно Update лупить
@@ -704,18 +699,10 @@ public class SQLSession extends MutableObject {
 
     public Object readRecord(Table table, Map<KeyField, DataObject> keyFields, PropertyField field) throws SQLException {
         // по сути пустое кол-во ключей
-        Query<KeyField, String> query = new Query<KeyField, String>(keyFields.keySet());
-
-        // сначала закинем KeyField'ы и прогоним Select
-        Expr fieldExpr = table.joinAnd(query.mapKeys).getExpr(field);
-        query.putKeyWhere(keyFields);
+        Query<KeyField, String> query = new Query<KeyField, String>(new ArrayList<KeyField>());
+        Expr fieldExpr = table.join(DataObject.getMapExprs(keyFields)).getExpr(field);
         query.properties.put("result", fieldExpr);
-        query.and(fieldExpr.getWhere());
-        OrderedMap<Map<KeyField, Object>, Map<String, Object>> result = query.execute(this);
-        if (result.size() > 0)
-            return result.singleValue().get("result");
-        else
-            return null;
+        return query.execute(this).singleValue().get("result");
     }
 
     public void truncate(String table) throws SQLException {
