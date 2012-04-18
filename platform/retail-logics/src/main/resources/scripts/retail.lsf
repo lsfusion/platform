@@ -6290,11 +6290,17 @@ grossWeightInnerFlowDetail 'Масса груза, т.' (innerFlowDetail) =
 sumGrossWeightInnerFlow 'Общая масса груза, т.' (innerFlow) = GROUP SUM grossWeightInnerFlowDetail(innerFlowDetail)
     BY innerFlowInnerFlowDetail(innerFlowDetail);
 
-castNoteInnerFlowDetailToString100=
+castTripleNoteInnerFlowDetailToString=
     FORMULA STRING[200] '\'РОЦ: \' || CAST($1 AS TEXT) ||  \'; Оптовая надбавка: \' || CAST($2 AS TEXT)||  \'; Торговая наценка: \' || CAST($3 AS TEXT)';
 
-noteInnerFlowDetail 'Примечание' (innerFlowDetail) = castNoteInnerFlowDetailToString100(
-    importerPriceInnerFlowDetail(innerFlowDetail), supplierMarkupInnerFlowDetail(innerFlowDetail), retailMarkupInnerFlowDetail(innerFlowDetail));
+castDoubleNoteInnerFlowDetailToString=
+    FORMULA STRING[200] '\'РОЦ: \' || CAST($1 AS TEXT) ||  \'; Торговая наценка: \' || CAST($2 AS TEXT)';
+
+noteInnerFlowDetail 'Примечание' (innerFlowDetail) =
+    IF supplierMarkupInnerFlowDetail(innerFlowDetail)!=0
+    THEN castTripleNoteInnerFlowDetailToString(importerPriceInnerFlowDetail(innerFlowDetail),
+                    supplierMarkupInnerFlowDetail(innerFlowDetail), retailMarkupInnerFlowDetail(innerFlowDetail))
+    ELSE castDoubleNoteInnerFlowDetailToString(importerPriceInnerFlowDetail(innerFlowDetail), retailMarkupInnerFlowDetail(innerFlowDetail));
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 GROUP pricingInnerArrivalDetailInfo 'Дополнительные ценовый параметры' : publicGroup;
