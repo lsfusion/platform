@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="s" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.3310000000000026"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="11"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" forecolor="#FFFFFF" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -87,7 +87,7 @@
 				<staticText>
 					<reportElement style="GroupCellStyle0" x="0" y="0" width="210" height="22" forecolor="#000000"/>
 					<textElement textAlignment="Center" verticalAlignment="Top"/>
-					<text><![CDATA["ВСЕГО"]]></text>
+					<text><![CDATA[ВСЕГО]]></text>
 				</staticText>
 				<staticText>
 					<reportElement style="GroupCellStyle0" x="210" y="0" width="20" height="22"/>
