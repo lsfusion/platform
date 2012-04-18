@@ -8548,8 +8548,8 @@ dateConsignment 'Дата' (consignment) = UNION EXCLUSIVE dateStatement (consig
                                                        dateReturnSupplier (consignment),
                                                        dateInnerFlow (consignment);
 
-addressSenderConsignment 'Юридический адресс отправителя' (consignment) = addressLegalEntityVal(senderConsignment(consignment), dateConsignment(consignment));
-addressRecipientConsignment 'Юридический адресс получателя' (consignment) = addressLegalEntityVal(recipientConsignment(consignment), dateConsignment(consignment));
+addressSenderConsignment 'Юридический адрес отправителя' (consignment) = addressLegalEntityVal(senderConsignment(consignment), dateConsignment(consignment));
+addressRecipientConsignment 'Юридический адрес получателя' (consignment) = addressLegalEntityVal(recipientConsignment(consignment), dateConsignment(consignment));
 
 fullNameSenderConsignment 'Наименование для накладных отправителя' (consignment) = fullNameLegalEntity(senderConsignment(consignment));
 fullNameRecipientConsignment 'Наименование для накладных получателя' (consignment) = fullNameLegalEntity(recipientConsignment(consignment));
@@ -8713,7 +8713,8 @@ consignmentConsignmentDetail (consignmentDetail) = UNION EXCLUSIVE statementStat
 FORM consignmentOne 'ТТН-1' PRINT
     OBJECTS c=consignment FIXED PANEL
 
-    PROPERTIES (c) dateConsignment, carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+    PROPERTIES (c) dateConsignment, UNPRecipientConsignment, UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
+                   fullNameRecipientConsignment, carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
                    nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
                    readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
