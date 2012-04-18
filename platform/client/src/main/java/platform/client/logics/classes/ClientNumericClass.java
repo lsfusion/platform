@@ -61,6 +61,11 @@ public class ClientNumericClass extends ClientDoubleClass {
     }
 
     @Override
+    public String toString() {
+        return ClientResourceBundle.getString("logics.classes.number") + '[' + length + ',' + precision + ']';
+    }
+
+    @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
 

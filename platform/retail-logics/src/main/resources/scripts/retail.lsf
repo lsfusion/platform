@@ -1,5 +1,12 @@
 MODULE retail;
 
+// Кол-ва - NUMERIC[14,3]
+// Цены - NUMERIC[14,2]
+// Суммы - NUMERIC[16,2]
+// Ставка налога - NUMERIC[10,5]
+// Надбавка - NUMERIC[8,3]
+// Норма списания отходов - NUMERIC[10,4]
+
 IMPORT BaseLogicsModule;
 
 floor = FORMULA DOUBLE 'floor($1)';
@@ -515,7 +522,7 @@ META metaCodeTotals (object)
         priceWare###object##Detail (object##Detail), dataWareRange###object##Detail(object##Detail));
 
     sumDetailVatWare###object##Detail 'Сумма НДС по посуде' (object##Detail) =
-        sumVatWare###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
+        quantity###object##Detail(object##Detail) * sumVatWare###object##Detail(object##Detail);
 
     withoutWarePrice###object##Detail 'Цена без посуды' (object##Detail) = retailPrice###object##Detail(object##Detail) (-)
         priceWare###object##Detail(object##Detail);
@@ -533,7 +540,7 @@ META metaCodeTotals (object)
         sumMarkup###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
 
     totalSumSupplierPrice###object##Detail 'Сумма без НДС' (object##Detail) = supplierPrice###object##Detail(object##Detail)*quantity###object##Detail(object##Detail) PERSISTENT;
-    totalSumWare###object##Detail 'Сумма посуды' (object##Detail) = priceWare###object##Detail (object##Detail)*quantity###object##Detail(object##Detail);
+    totalSumWare###object##Detail 'Сумма посуды' (object##Detail) = quantity###object##Detail(object##Detail) * priceWare###object##Detail (object##Detail);
 
 
     totalSumSupplierPrice###object 'Сумма без НДС' (object) = GROUP SUM totalSumSupplierPrice###object##Detail(object##Detail)
@@ -559,15 +566,19 @@ META metaCodeTotals (object)
     sumSupplierVAT###object##Detail 'Сумма НДС, за ед.' (object##Detail) = [round0(X*Y/100)](
         supplierPrice###object##Detail(object##Detail), dataSuppliersRange###object##Detail(object##Detail));
 
+    calcSumDetailSupplierVAT###object##Detail 'Сумма НДС (расч.)' (object##Detail) =
+        quantity###object##Detail(object##Detail) * sumSupplierVAT###object##Detail(object##Detail);
+
     sumDetailSupplierVAT###object##Detail 'Сумма НДС' (object##Detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
-    sumDetailSupplierVAT###object##Detail(object##Detail) <-
-        sumSupplierVAT###object##Detail(object##Detail) * quantity###object##Detail(object##Detail)
-        ON CHANGE quantity###object##Detail(object##Detail);
+    sumDetailSupplierVAT###object##Detail(object##Detail) <- calcSumDetailSupplierVAT###object##Detail(object##Detail)
+                                                   ON CHANGE calcSumDetailSupplierVAT###object##Detail(object##Detail);
+
+    calcSumSupplier###object##Detail 'Сумма с НДС (расч.)' (object##Detail) =
+        sumSupplierPrice###object##Detail(object##Detail) (+) sumDetailSupplierVAT###object##Detail(object##Detail);
 
     sumSupplier###object##Detail 'Сумма с НДС' (object##Detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
-    sumSupplier###object##Detail(object##Detail) <-
-    (sumSupplierPrice###object##Detail(object##Detail) (+) sumDetailSupplierVAT###object##Detail(object##Detail))
-        ON CHANGE quantity###object##Detail(object##Detail);
+    sumSupplier###object##Detail(object##Detail) <- calcSumSupplier###object##Detail(object##Detail)
+                                          ON CHANGE calcSumSupplier###object##Detail(object##Detail);
 
     totalSumSupplierVAT###object 'Общая сумма НДС поставщика (без посуды)' (object) =
         GROUP SUM sumDetailSupplierVAT###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
@@ -831,11 +842,14 @@ CLASS STATIC itemStatus 'Статус товара'
 
 storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) AUTOSET;
 nameStoreDepartmentStore 'Магазин' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
+
 revaluationCommitteeDepartmentStore 'Комиссия переоценки (ИД)' = DATA revaluationCommittee (departmentStore);
 nameRevaluationCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+isRevaluationCommitteeDepartmentStore 'По умолчанию' (revaluationCommittee, departmentStore) = revaluationCommitteeDepartmentStore(departmentStore) == revaluationCommittee;
 
 registerCommitteeDepartmentStore 'Комиссия для реестра (ИД)' = DATA registerCommittee (departmentStore);
 nameRegisterCommitteeDepartmentStore 'Комиссия для реестра' (departmentStore) = name(registerCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+isRegisterCommitteeDepartmentStore 'По умолчанию' (registerCommittee, departmentStore) = registerCommitteeDepartmentStore(departmentStore) == registerCommittee;
 
 controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
 deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
@@ -1640,7 +1654,7 @@ nameTax 'Наименование налога' = DATA STRING[200] (tax) IN base
 
 CLASS range 'Шкала';
 TABLE range(range);
-dataRange 'Шкала' = DATA INTEGER (range);
+dataRange 'Шкала' = DATA INTEGER (range) AGGPROP;
 
 CLASS rate 'История изменений шкалы' : historyObject;
 TABLE rate(rate);
@@ -1669,7 +1683,7 @@ isUnitsTypeRange(range) = rangeTypeRange(range) == rangeType.units;
 
 rangeTypeRange(range) <- rangeType.common ON ASSIGN range IS range;     /// потом согласовать, какое значение должно быть по-умолчанию ///
 
-dataRate 'Значение ставки' = DATA DOUBLE (rate) IN recognizeGroup;
+dataRate 'Значение ставки' = DATA NUMERIC[10,5] (rate) IN recognizeGroup;
 dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
 dateToRate 'Действует по' = DATA DATE (rate) IN baseGroup;
 
@@ -1686,7 +1700,7 @@ inTaxRange(tax, range) = taxRange(range) == tax;
 actingRateDate(rate, date) = rate IF dateFromRate(rate) <= date AND NOT dateToRate(rate) < date AND date AS DATE;
 actingRateRangeDate(range, date) = GROUP MAX actingRateDate(rate, date) BY rangeRate(rate), date;
 dataActingRateRangeDate 'На дату' (range, date) = dataRate(actingRateRangeDate(range, date));
-actingRateRange 'Действующая ИД' (range) = actingRateRangeDate(range, currentDate()) IN idGroup;
+actingRateRange 'Действующая ИД' (range) = actingRateRangeDate(range, currentDate()) IN idGroup PERSISTENT;
 dataActingRateRange 'Действующая ставка' (range) = dataRate(actingRateRange(range)) IN baseGroup;
 dateFromActingRateRange 'Действует с' (range) = dateFromRate(actingRateRange(range)) IN baseGroup;
 dateToActingRateRange 'Действует по' (range) = dateToRate(actingRateRange(range)) IN baseGroup;
@@ -2438,7 +2452,7 @@ FORM registerCommittee 'Комиссия для реестра цен'
 
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY depName = name
-    PROPERTIES(c, dep) inCommitteeDepartmentStore
+    PROPERTIES(c, dep) inCommitteeDepartmentStore, isRegisterCommitteeDepartmentStore
     FILTERS            inTradingNetworkStoreTypeStoreDepartment(t, st, s, dep)
     ORDER BY depName
 
@@ -2491,7 +2505,7 @@ FORM revaluationCommittee 'Комиссия переоценки'
 
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY depName = name
-    PROPERTIES(c, dep) inCommitteeDepartmentStore
+    PROPERTIES(c, dep) inCommitteeDepartmentStore, isRevaluationCommitteeDepartmentStore
     FILTERS            inTradingNetworkStoreTypeStoreDepartment(t, st, s, dep)
     ORDER BY depName
 
@@ -4557,7 +4571,7 @@ percAllowancesCuttingStudyInputDetail 'Процент надбавок, %' (stud
 percLossesCuttingStudyInputDetail 'Процент потерь, %' (studyInputDetail) = overPercLossesCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
 percSweepsCuttingStudyInputDetail 'Процент зачисток, %' (studyInputDetail) = overPercSweepsCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
 
-quantityStudyInputDetail 'Количество для разруба' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
+quantityStudyInputDetail 'Количество для разруба' (studyInputDetail) = DATA NUMERIC[14,3] (studyInputDetail);
 
 retailPriceStudyInputDetail 'Цена за ед.' (studyInputDetail) = DATA DOUBLE (studyInputDetail);
 totalStudyInputDetail 'Сумма' (studyInputDetail) = retailPriceStudyInputDetail(studyInputDetail)*quantityStudyInputDetail(studyInputDetail);
@@ -4593,7 +4607,7 @@ itemStudyOutputDetail 'Товар' = DATA item (studyOutputDetail) IN idGroup;
 shortNameUnitOfMeasureItemStudyOutputDetail 'Ед.изм.' (studyOutputDetail) = shortNameUnitOfMeasureItem(itemStudyOutputDetail(studyOutputDetail)) IN actGroup;
 captionItemStudyOutputDetail 'Наименование компонента' (studyOutputDetail) = captionItem (itemStudyOutputDetail(studyOutputDetail)) IN actGroup;
 factorStudyOutputDetail 'Рассчетный коэффициент цены' = DATA DOUBLE (studyOutputDetail) IN actGroup;
-percGoodsStudyOutputDetail '% выхода компонента (п/ф)' = DATA DOUBLE (studyOutputDetail) IN actGroup;
+percGoodsStudyOutputDetail '% выхода компонента (п/ф)' = DATA NUMERIC[10,5] (studyOutputDetail) IN actGroup;
 percAllowancesStudyOutputDetail 'Процент надбавок, %' = DATA DOUBLE (studyOutputDetail) IN actGroup;
 overPercAllowancesStudyOutputDetail (studyOutputDetail) = UNION OVERRIDE 0 IF studyOutputDetail IS studyOutputDetail,
                                                                          percAllowancesStudyOutputDetail(studyOutputDetail);
@@ -4602,9 +4616,9 @@ quantityStudyInputDetailStudyOutputDetail (studyOutputDetail) = quantityStudyInp
 retailPriceStudyInputDetailStudyOutputDetail (studyOutputDetail) = retailPriceStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
 
 quantityStudyOutputDetail 'Количество выхода п/ф' (studyOutputDetail) =  [X*Y/100]
-    (percGoodsStudyOutputDetail(studyOutputDetail), quantityStudyInputDetailStudyOutputDetail(studyOutputDetail));
+    (quantityStudyInputDetailStudyOutputDetail(studyOutputDetail), percGoodsStudyOutputDetail(studyOutputDetail));
 
-actualQuantityStudyOutputDetail 'Фактический выхода п/ф'(studyOutputDetail) = DATA DOUBLE (studyOutputDetail);
+actualQuantityStudyOutputDetail 'Фактический выхода п/ф'(studyOutputDetail) = DATA NUMERIC[14,3] (studyOutputDetail);
 overQuantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE quantityStudyOutputDetail(studyOutputDetail),
                                                                   actualQuantityStudyOutputDetail(studyOutputDetail);
 
@@ -5063,7 +5077,7 @@ nameDetailPage 'Номер строки' (detailPage) = PARTITION SUM 1 IF detai
 skuBarcodeDetailPage 'Товар (ИД)' (detailPage) =  skuBarcode(barcodeDetailPage(detailPage)) IN idGroup;
 nameAttributeItemDetailPage 'Товар' (detailPage) = nameAttributeItem(skuBarcodeDetailPage(detailPage)) IN recognizeGroup;
 
-quantityCountedDetailPage 'Количество посчитано' = DATA DOUBLE (detailPage) IN baseGroup;
+quantityCountedDetailPage 'Количество посчитано' = DATA NUMERIC[14,3] (detailPage) IN baseGroup;
 CONSTRAINT quantityCountedDetailPage(detailPage) < 0 MESSAGE 'Количество должно быть положительным';
 
 
@@ -5107,7 +5121,7 @@ nameTypeOfAdditionCollationSheet 'Тип сличительной ведомос
 typeOfAdditionListInventory(listInventory) = typeOfAdditionDepartmentStoreInventoryOver(departmentStoreListInventory(listInventory), inventoryListInventory(listInventory)) IN idGroup;
 
 
-balanceCollationSheetItem 'Количество остаток' (collationSheet, item) = DATA DOUBLE (collationSheet, item) IN baseGroup;
+balanceCollationSheetItem 'Количество остаток' (collationSheet, item) = DATA NUMERIC[14,3] (collationSheet, item) IN baseGroup;
 
 priceAccountCollationSheetItem 'Учетная цена, за ед.' (collationSheet, item) = DATA DOUBLE (collationSheet, item) IN baseGroup;
 
@@ -5444,7 +5458,7 @@ statusSpecification 'Расход' (specification) = CASE
 
 //количество-цены по строкам
 
-quantityStatementDetail 'Количество' (statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
+quantityStatementDetail 'Количество' (statementDetail) = DATA NUMERIC[14,3] (statementDetail) IN baseGroup;
 
 retailPriceStatementDetail 'Цена товара (розн.)'(statementDetail) = DATA DOUBLE (statementDetail) IN baseGroup;
 sumStatementDetail 'Сумма с НДС' (statementDetail) = round0(retailPriceStatementDetail(statementDetail)*quantityStatementDetail(statementDetail))IN baseGroup;
@@ -5818,14 +5832,14 @@ dataWareRangeShipmentDetail 'НДС по посуде' (shipmentDetail) =
 
 inWareShipmentDetail 'Товар в посуде' (shipmentDetail) = inWareItem(itemShipmentDetail(shipmentDetail));
 
-priceWareShipmentDetail 'Цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+priceWareShipmentDetail 'Цена посуды' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN baseGroup;
 
 priceWareShipmentDetail (shipmentDetail) <- priceWareVal (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
                                             ON CHANGE itemShipmentDetail(shipmentDetail);
 
 sumPriceWareShipmentDetail 'Сумма посуды' (shipmentDetail) = quantityShipmentDetail(shipmentDetail) * priceWareShipmentDetail(shipmentDetail);
 
-retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
+retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail) = DATA NUMERIC[8,3] (shipmentDetail) IN baseGroup;
 
 retailMarkupShipmentDetail(shipmentDetail) <-
     markupItemDepartmentVal (itemShipmentDetail(shipmentDetail),
@@ -5865,9 +5879,9 @@ nonRoundRetailPriceShipmentDetail 'Цена розничная (неокругл
 
 calculatedRetailPriceShipmentDetail 'Новая розничная цена (расч.)' (shipmentDetail) = IF isFixPriceShipmentDetail(shipmentDetail)
     THEN roundMinus1(importerPriceShipmentDetail(shipmentDetail) (+) priceWareShipmentDetail(shipmentDetail))
-    ELSE roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail) (+) priceWareShipmentDetail(shipmentDetail)) PERSISTENT;
+    ELSE roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail) (+) priceWareShipmentDetail(shipmentDetail));
 
-retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail);
+retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = DATA NUMERIC[14,3] (shipmentDetail);
 
 retailPriceShipmentDetail (shipmentDetail) <- calculatedRetailPriceShipmentDetail (shipmentDetail)
     ON CHANGE calculatedRetailPriceShipmentDetail (shipmentDetail);
@@ -5935,7 +5949,7 @@ isAllowPriceItemShipment 'Доспустимая цена поставки' (shi
     supplierPriceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail));
 
 //старые ценовые параметры для переоценок
-curRetailPriceShipmentDetail 'Текущая розничная цена' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
+curRetailPriceShipmentDetail 'Текущая розничная цена' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
 
 curRetailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
 curDataRetailRangeShipmentDetail 'Текущий НДС розничный,%' (shipmentDetail) = dataActingRateRangeDate(curRetailRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo;
@@ -5945,10 +5959,10 @@ curDataRetailRangeShipmentDetail 'Текущий НДС розничный,%' (s
 //    itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail),
 //    subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
-curImporterPriceShipmentDetail 'Текущая цена изготовителя/импортера' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
-curSupplierPriceShipmentDetail 'Текущая цена поставщика' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
+curImporterPriceShipmentDetail 'Текущая цена изготовителя/импортера' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
+curSupplierPriceShipmentDetail 'Текущая цена поставщика' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
 
-curPriceWareShipmentDetail 'Текущая цена посуды' (shipmentDetail) = DATA DOUBLE (shipmentDetail) IN pricingShipmentDetailInfo;
+curPriceWareShipmentDetail 'Текущая цена посуды' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
 curWareShipmentDetail = DATA ware (shipmentDetail) IN idGroup;
 curNameWareShipmentDetail 'Текущая посуда' (shipmentDetail) = name(curWareShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
@@ -5996,7 +6010,7 @@ toFillShipmentDetailsShipment 'Заполнить поставку из зака
     };
 } IN shipmentOrderGroup CONFIRM;
 
-percentRateWasteShipmentDetail 'Процент для списания отходов' (shipmentDetail) = DATA DOUBLE (shipmentDetail);
+percentRateWasteShipmentDetail 'Процент для списания отходов' (shipmentDetail) = DATA NUMERIC[10,4] (shipmentDetail);
 
 percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShipmentDetail(shipmentDetail))
     ON CHANGE itemShipmentDetail(shipmentDetail);
@@ -6094,7 +6108,7 @@ TABLE reasonOff (reasonOff);
 reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
 nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN documentPrmGroup;
 
-quantityWriteOffDetail 'Кол-во для строки списания' = DATA INTEGER (writeOffDetail) IN baseGroup;
+quantityWriteOffDetail 'Кол-во для строки списания' = DATA NUMERIC[14,3] (writeOffDetail) IN baseGroup;
 
 quantityWriteOff 'Общее кол-во' (writeOff) = GROUP SUM quantityWriteOffDetail(writeOffDetail)
                                                     BY writeOffWriteOffDetail(writeOffDetail) IN documentSumGroup;
@@ -6170,7 +6184,7 @@ CLASS innerFlowDetail 'Строка расхода в отдел' : outAutoBalan
 recipientDepartmentInnerFlow 'Отдел-получатель (ИД)' (innerFlow) = DATA departmentStore(innerFlow);
 nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentPrmGroup;
 
-quantityInnerFlowDetail 'Количество' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
+quantityInnerFlowDetail 'Количество' (innerFlowDetail) = DATA NUMERIC[14,3] (innerFlowDetail) IN baseGroup;
 
 retailPriceInnerFlowDetail 'Розничная цена' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
 
@@ -6336,8 +6350,8 @@ CONSTRAINT innerFlowInnerArrival(p1) == innerFlowInnerArrival(p2) AND p1 != p2 C
 senderDepartmentInnerArrival (innerArrival) <- departmentStoreInnerFlow(innerFlowInnerArrival(innerArrival))
     ON CHANGE innerFlowInnerArrival(innerArrival);
 
-quantityInnerArrivalDetail 'Количество' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN baseGroup;
-retailPriceInnerArrivalDetail 'Цена розничная' (innerArrivalDetail) = DATA DOUBLE (innerArrivalDetail) IN baseGroup;
+quantityInnerArrivalDetail 'Количество' (innerArrivalDetail) = DATA NUMERIC[14,3] (innerArrivalDetail) IN baseGroup;
+retailPriceInnerArrivalDetail 'Цена розничная' (innerArrivalDetail) = DATA NUMERIC[14,2] (innerArrivalDetail) IN baseGroup;
 
 priceItemInnerArrival 'Цена (максим.)' (item, innerArrival) = priceItemInnerFlow (
     item, innerFlowInnerArrival(innerArrival));
@@ -6549,7 +6563,7 @@ numberWastageDetail 'Номер строки' (wastageDetail) =
     ORDER wastageDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
 
 quantityWastageDetail 'Количество списания '(wastageDetail) = [X*Y/100](
-    percentRateWasteWastageDetail (wastageDetail), quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail)));
+    quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail)), percentRateWasteWastageDetail (wastageDetail));
 
 quantityWastage 'Общее количество' (wastage) = GROUP SUM quantityWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail);
 
@@ -6653,7 +6667,7 @@ batchReturnSupplierDetail 'Партия (ИД)' = DATA shipmentDetail (returnSup
 
 commonInfoBatchReturnSupplierDetail 'Партия' (returnSupplierDetail) = descriptionShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail));
 
-quantityReturnSupplierDetail 'Количество' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
+quantityReturnSupplierDetail 'Количество' (returnSupplierDetail) = DATA NUMERIC[14,3] (returnSupplierDetail) IN baseGroup;
 
 importerPriceReturnSupplierDetail 'Цена изготовителя' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail) IN baseGroup;
 importerPriceReturnSupplierDetail (returnSupplierDetail) <- importerPriceShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
@@ -6866,7 +6880,7 @@ numberBill 'Номер чека' (bill) = DATA INTEGER (bill) IN documentHeaderG
 
 barcodeExBillDetail 'Штрих-код' (billDetail) = DATA STRING[14] (billDetail);
 
-quantityBillDetail 'Количество продажи' (billDetail) = DATA DOUBLE (billDetail);
+quantityBillDetail 'Количество продажи' (billDetail) = DATA NUMERIC[14,3] (billDetail);
 priceBillDetail 'Цена продажи' (billDetail) = DATA DOUBLE (billDetail);
 sumBillDetail 'Сумма продажи' (billDetail) = priceBillDetail(billDetail)*quantityBillDetail(billDetail);
 discountSumBillDetail 'Сумма скидки' (billDetail) = DATA DOUBLE (billDetail);
@@ -7229,7 +7243,7 @@ balanceAItemLedgerDateTime 'Остаток на дату' (item, departmentStore
                                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
 
 
-costBalanceItemLedgerBatch 'Расписано' (ledger, batch) = DATA DOUBLE (balanceItemLedger, batch);
+costBalanceItemLedgerBatch 'Расписано' (ledger, batch) = DATA NUMERIC[14,3] (balanceItemLedger, batch);
 
 signedCostBalanceItemLedgerBatch (ledger, batch) = IF ledger IS outBalanceItemLedger
                                                         THEN -costBalanceItemLedgerBatch(ledger, batch)
@@ -7239,7 +7253,8 @@ currentBalanceBatchLedger 'Текущий остаток' (batch, departmentStor
                                                           BY batch, departmentStoreBalanceItemLedger(ledger) PERSISTENT;
 
 costedBalanceItemLedger 'Расписано' (ledger) = GROUP SUM costBalanceItemLedgerBatch (ledger, batch) BY ledger PERSISTENT;
-needToCostBalanceItemLedger 'Требуется расчет себестоимости' (ledger) = quantityBalanceItemLedger(ledger) AND NOT quantityBalanceItemLedger(ledger) == costedBalanceItemLedger(ledger);
+needToCostBalanceItemLedger 'Требуется расчет себестоимости' (ledger) = quantityBalanceItemLedger(ledger) > 0 AND isPostedBalanceItemLedger(ledger)
+                                                                        AND NOT quantityBalanceItemLedger(ledger) == costedBalanceItemLedger(ledger);
 
 quantityBatchBatch 'Кол-во' (ledger, batch) = quantityBatch(ledger) AND batch == ledger;
 
@@ -7322,7 +7337,7 @@ resetBalanceItemLedgerBatchCost 'Перерассчитать себестоим
             SET costBalanceItemLedgerBatch(ledger, batch) AND dateBalanceItemLedger(ledger) >= (d AS DATE) <- NULL;
             EXEC apply();
 
-            FOR dateBalanceItemLedger(ledger) >= (d AS DATE) ORDER orderBalanceItemLedger(ledger) DO {
+            FOR dateBalanceItemLedger(ledger) >= (d AS DATE) AND isPostedBalanceItemLedger(ledger) ORDER orderBalanceItemLedger(ledger) DO {
                 SET costBalanceItemLedgerBatch(ledger, batch) <- quantityBalanceItemLedgerBatch(ledger, batch);
                 EXEC apply();
             }
@@ -10274,6 +10289,13 @@ FORM addPercMarkupUserPriceChange 'Изменить наценку товара'
     PROPERTIES (u) percMarkupUserPriceChange
 ;
 
+DESIGN addPercMarkupUserPriceChange FROM DEFAULT {
+    PROPERTY (percMarkupUserPriceChange) {
+        caption = 'Введите наценку';
+        font = 'Tahoma bold 64';
+        panelLabelAbove = TRUE;
+    }
+}
 
 showFormAddPercMarkupUserPriceChange 'Изменить наценку товара' (userPriceChange) = ACTION (userPriceChange) {
         FORM addPercMarkupUserPriceChange OBJECTS u = userPriceChange AS userPriceChange MODAL;
@@ -10294,6 +10316,14 @@ FORM addPercDiscountUserPriceChange 'Сделать скидку'
     OBJECTS u=userPriceChange FIXED PANEL
     PROPERTIES (u) percDiscountUserPriceChange
 ;
+
+DESIGN addPercDiscountUserPriceChange FROM DEFAULT {
+    PROPERTY (percDiscountUserPriceChange) {
+        caption = 'Введите скидку';
+        font = 'Tahoma bold 64';
+        panelLabelAbove = TRUE;
+    }
+}
 
 showFormAddPercDiscountUserPriceChange 'Сделать скидку' (userPriceChange) = ACTION (userPriceChange) {
         FORM addPercDiscountUserPriceChange OBJECTS u = userPriceChange AS userPriceChange MODAL;
