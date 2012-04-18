@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="s" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.3310000000000026"/>
-	<property name="ireport.x" value="456"/>
+	<property name="ireport.x" value="113"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" forecolor="#FFFFFF" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -89,7 +89,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" x="180" y="0" width="335" height="13"/>
 				<textElement/>
-				<textFieldExpression><![CDATA["РЕЕСТР РОЗНИЧНЫХ ЦЕН "+$F{retail_numberObject}+" от "+$F{retail_dateShipment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["РЕЕСТР РОЗНИЧНЫХ ЦЕН №"+$F{retail_numberObject}+" от "+platform.base.BaseUtils.formatRussian($F{retail_dateShipment})]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement style="GroupCellStyle1" x="180" y="26" width="105" height="13"/>
@@ -114,17 +114,17 @@
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" x="180" y="39" width="335" height="13"/>
 				<textElement/>
-				<textFieldExpression><![CDATA["Основание: Накладная № "+$F{retail_numberObject}+" от "+$F{retail_dateShipment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Основание: Накладная № "+$F{retail_numberObject}+" от "+platform.base.BaseUtils.formatRussian($F{retail_dateShipment})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" x="180" y="52" width="335" height="13"/>
 				<textElement/>
-				<textFieldExpression><![CDATA["Договор: № "+$F{retail_numberContractShipment}+" от "+$F{retail_dateContractShipment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Договор: № "+$F{retail_numberContractShipment}+" от "+platform.base.BaseUtils.formatRussian($F{retail_dateContractShipment})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" x="180" y="65" width="335" height="13"/>
 				<textElement/>
-				<textFieldExpression><![CDATA["Вид операции: "+$F{objectClassName}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Вид операции: Поставка"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
