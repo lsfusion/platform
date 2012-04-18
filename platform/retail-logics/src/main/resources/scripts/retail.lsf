@@ -8558,6 +8558,7 @@ senderConsignment 'Отправитель ИД' (consignment) = companyStore(sto
 
 UNPSenderConsignment 'УНП отправителя' (consignment) = UNPLegalEntity(senderConsignment(consignment));
 UNPRecipientConsignment 'УНП получателя' (consignment) = UNPLegalEntity(recipientConsignment(consignment));
+UNPTransportPayerConsignment 'УНП заказчика перевозки' (consignment) = UNPLegalEntity(transportPayerConsignment(consignment));
 
 dateConsignment 'Дата' (consignment) = UNION EXCLUSIVE dateStatement (consignment),
                                                        dateReturnSupplier (consignment),
@@ -8565,9 +8566,13 @@ dateConsignment 'Дата' (consignment) = UNION EXCLUSIVE dateStatement (consig
 
 addressSenderConsignment 'Юридический адрес отправителя' (consignment) = addressLegalEntityVal(senderConsignment(consignment), dateConsignment(consignment));
 addressRecipientConsignment 'Юридический адрес получателя' (consignment) = addressLegalEntityVal(recipientConsignment(consignment), dateConsignment(consignment));
+addressTransportPayerConsignment 'Юридический адрес заказчика перевозки' (consignment) =
+    addressLegalEntityVal(transportPayerConsignment(consignment), dateConsignment(consignment));
 
 fullNameSenderConsignment 'Наименование для накладных отправителя' (consignment) = fullNameLegalEntity(senderConsignment(consignment));
 fullNameRecipientConsignment 'Наименование для накладных получателя' (consignment) = fullNameLegalEntity(recipientConsignment(consignment));
+fullNameTransportPayerConsignment 'Наименование для накладных заказчика перевозки' (consignment) =
+    fullNameLegalEntity(transportPayerConsignment(consignment));
 
 nameTransportPayerConsignment 'Заказчик перевозки ' (consignment) =
     [FORMULA STRING[100] 'CAST($1 AS TEXT) ||  \' , \' || CAST($2 AS TEXT)']
