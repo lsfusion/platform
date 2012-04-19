@@ -8802,7 +8802,7 @@ costConsignmentDetail 'Стоимость' (consignmentDetail) = UNION EXCLUSIVE
                                                                         accountSumInnerFlowDetail (consignmentDetail);
 
 sumCostConsignmentDetail 'Общая стоимость' (consignment) = UNION EXCLUSIVE sumStatement(consignment),
-                                                                           totalSumSupplierReturnSupplier(consignment),
+                                                                           totalSumSupplierPriceReturnSupplier(consignment),
                                                                            accountSumInnerFlow(consignment) IN sumConsignmentGroup;
 
 vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION EXCLUSIVE dataActingRateRangeStatementDetail (consignmentDetail),

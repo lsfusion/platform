@@ -488,7 +488,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{retail_nameItemConsignmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" mode="Transparent" x="369" y="0" width="53" height="18"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
@@ -551,7 +551,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{retail_vatConsignmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" mode="Transparent" x="329" y="0" width="40" height="18"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
