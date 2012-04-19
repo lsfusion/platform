@@ -8900,7 +8900,8 @@ META metaCodeTransportConsignment(prop, caption)
 
         PROPERTIES(d) nameItemConsignmentDetail, shortNameConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
-                      packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteInnerFlowDetail
+                      packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteInnerFlowDetail,
+                      nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, dataWareRangeReturnSupplierDetail
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
