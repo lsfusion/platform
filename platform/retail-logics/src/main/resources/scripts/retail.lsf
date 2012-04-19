@@ -8707,6 +8707,11 @@ raceQuantityConsignment 'Количество ездок' (consignment) = UNION 
                                                                            raceQuantityReturnSupplier(consignment),
                                                                            raceQuantityInnerFlow(consignment) IN carConsignmentGroup;
 
+quantityConsignmentDetailsConsignment 'Количество строк' (consignment) = UNION EXCLUSIVE quantityStatementDetailsStatement(consignment),
+                                                                           quantityReturnSupplierDetailsReturnSupplier(consignment),
+                                                                           quantityInnerFlowDetailsInnerFlow(consignment) IN carConsignmentGroup;
+
+
 // для накладной (спецификация)
 nameItemConsignmentDetail 'Наименование товара' (consignmentDetail) = UNION EXCLUSIVE nameAttributeItem(itemStatementDetail(consignmentDetail)),
                                                                                       nameAttributeItem(itemReturnSupplierDetail(consignmentDetail)),
@@ -8786,7 +8791,7 @@ META metaCodeConsignmentTwo(prop, caption)
                        forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                        sumQuantityConsignment, sumCostConsignmentDetail, totalSumVATConsignmentDetail, UNPRecipientConsignment,
                        UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
-                       fullNameRecipientConsignment, numberObject, seriesObject
+                       fullNameRecipientConsignment, numberObject, seriesObject, quantityConsignmentDetailsConsignment
 
         OBJECTS d=consignmentDetail
 
@@ -8817,7 +8822,8 @@ META metaCodeTransportConsignment(prop, caption)
                        arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
                        sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
                        sumCostConsignmentDetail, totalSumVATConsignmentDetail, UNPRecipientConsignment, UNPSenderConsignment,
-                       addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment, fullNameRecipientConsignment
+                       addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment, fullNameRecipientConsignment,
+                       quantityConsignmentDetailsConsignment
 
         OBJECTS d=consignmentDetail
 
@@ -8833,12 +8839,6 @@ END
 
 @metaCodeTransportConsignment(transportConsignmentVerticalA, 'ТТН-1, вертикальная (сторона А)');
 @metaCodeTransportConsignment(transportConsignmentHorizontalB, 'ТТН-1, горизонтальная (сторона Б)');
-
-//toPrintTransportConsignmentVerticalA 'ТТН-1, вертикальная (сторона А)' (consignment) =
-//    ACTION FORM transportConsignmentVerticalA OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
-//
-//toPrintTransportConsignmentHorizontalB 'ТТН-1, вертикальная (сторона Б)' (consignment) =
-//    ACTION FORM transportConsignmentHorizontalB OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
 @metaCodeInputMultipleItems(shipment);
