@@ -521,8 +521,8 @@ META metaCodeTotals (object)
     sumVatWare###object##Detail 'Сумма НДС по посуде, за ед.' (object##Detail) = [round0(X*Y/(100+Y))](
         priceWare###object##Detail (object##Detail), dataWareRange###object##Detail(object##Detail));
 
-    sumDetailVatWare###object##Detail 'Сумма НДС по посуде' (object##Detail) =
-        quantity###object##Detail(object##Detail) * sumVatWare###object##Detail(object##Detail);
+    sumDetailVatWare###object##Detail 'Сумма НДС по посуде' (object##Detail) = round0(
+        quantity###object##Detail(object##Detail) * sumVatWare###object##Detail(object##Detail));
 
     withoutWarePrice###object##Detail 'Цена без посуды' (object##Detail) = retailPrice###object##Detail(object##Detail) (-)
         priceWare###object##Detail(object##Detail);
@@ -530,17 +530,19 @@ META metaCodeTotals (object)
     sumRetailVAT###object##Detail 'Сумма НДС за ед. (без посуды)' (object##Detail) = [X*Y/(100+Y)](
         withoutWarePrice###object##Detail(object##Detail), dataRetailRange###object##Detail(object##Detail));
 
-    sumDetailVat###object##Detail 'Сумма НДС (без посуды)' (object##Detail) =
-        sumRetailVAT###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
+    sumDetailVat###object##Detail 'Сумма НДС (без посуды)' (object##Detail) = round0(
+        sumRetailVAT###object##Detail(object##Detail) * quantity###object##Detail(object##Detail));
 
     sumMarkup###object##Detail 'Сумма надбавки, за ед.' (object##Detail) = withoutWarePrice###object##Detail(object##Detail) (-)
         sumRetailVAT###object##Detail(object##Detail) (-) supplierPrice###object##Detail(object##Detail);
 
-    sumDetailMarkup###object##Detail 'Сумма надбавки' (object##Detail) =
-        sumMarkup###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
+    sumDetailMarkup###object##Detail 'Сумма надбавки' (object##Detail) = round0(
+        sumMarkup###object##Detail(object##Detail) * quantity###object##Detail(object##Detail));
 
-    totalSumSupplierPrice###object##Detail 'Сумма без НДС' (object##Detail) = supplierPrice###object##Detail(object##Detail)*quantity###object##Detail(object##Detail) PERSISTENT;
-    totalSumWare###object##Detail 'Сумма посуды' (object##Detail) = quantity###object##Detail(object##Detail) * priceWare###object##Detail (object##Detail);
+    totalSumSupplierPrice###object##Detail 'Сумма без НДС' (object##Detail) = round0(
+        supplierPrice###object##Detail(object##Detail)*quantity###object##Detail(object##Detail)) PERSISTENT;
+    totalSumWare###object##Detail 'Сумма посуды' (object##Detail) = round0(
+        quantity###object##Detail(object##Detail) * priceWare###object##Detail (object##Detail));
 
 
     totalSumSupplierPrice###object 'Сумма без НДС' (object) = GROUP SUM totalSumSupplierPrice###object##Detail(object##Detail)
@@ -560,14 +562,14 @@ META metaCodeTotals (object)
 
     //для цен и НДС поставщика
 
-    sumSupplierPrice###object##Detail 'Сумма без НДС' (object##Detail) =
-        supplierPrice###object##Detail(object##Detail) * quantity###object##Detail(object##Detail);
+    sumSupplierPrice###object##Detail 'Сумма без НДС' (object##Detail) = round0(
+        supplierPrice###object##Detail(object##Detail) * quantity###object##Detail(object##Detail));
 
     sumSupplierVAT###object##Detail 'Сумма НДС, за ед.' (object##Detail) = [round0(X*Y/100)](
         supplierPrice###object##Detail(object##Detail), dataSuppliersRange###object##Detail(object##Detail));
 
-    calcSumDetailSupplierVAT###object##Detail 'Сумма НДС (расч.)' (object##Detail) =
-        quantity###object##Detail(object##Detail) * sumSupplierVAT###object##Detail(object##Detail);
+    calcSumDetailSupplierVAT###object##Detail 'Сумма НДС (расч.)' (object##Detail) = round0(
+        quantity###object##Detail(object##Detail) * sumSupplierVAT###object##Detail(object##Detail));
 
     sumDetailSupplierVAT###object##Detail 'Сумма НДС' (object##Detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
     sumDetailSupplierVAT###object##Detail(object##Detail) <- calcSumDetailSupplierVAT###object##Detail(object##Detail)
@@ -1089,7 +1091,7 @@ isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGro
 lengthItem 'Длина товара' = DATA INTEGER (item) IN sizeGroup;
 widthItem 'Ширина товара' = DATA INTEGER (item) IN sizeGroup;
 heightItem 'Высота товара' = DATA INTEGER (item) IN sizeGroup;
-grossWeightItem 'Вес брутто товара' = DATA DOUBLE (item) IN manufactoryGroup;
+grossWeightItem 'Вес брутто товара (кг)' = DATA DOUBLE (item) IN manufactoryGroup;
 lengthPackItem 'Длина упаковки' = DATA INTEGER (item) IN sizeGroup;
 widthPackItem 'Ширина упаковки' = DATA INTEGER (item) IN sizeGroup;
 heightPackItem 'Высота упаковки' = DATA DOUBLE (item) IN sizeGroup;
@@ -5561,7 +5563,8 @@ priceItemInnerFlow 'Цена (максим.)' (item, innerFlow) = GROUP MAX reta
     IF innerFlowInnerFlowDetail(innerFlowDetail) == innerFlow
     BY itemInnerFlowDetail(innerFlowDetail), innerFlowInnerFlowDetail(innerFlowDetail);
 
-accountSumInnerFlowDetail 'Сумма' (innerFlowDetail) = quantityInnerFlowDetail(innerFlowDetail) * retailPriceInnerFlowDetail (innerFlowDetail) IN baseGroup;
+accountSumInnerFlowDetail 'Сумма' (innerFlowDetail) = round0(
+    quantityInnerFlowDetail(innerFlowDetail) * retailPriceInnerFlowDetail (innerFlowDetail)) IN baseGroup;
 
 importerPriceInnerFlowDetail 'Цена изготовителя' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
 supplierPriceInnerFlowDetail 'Цена поставщика' (innerFlowDetail) = DATA DOUBLE (innerFlowDetail) IN baseGroup;
@@ -5605,7 +5608,8 @@ withoutWarePriceInnerFlowDetail 'Цена без посуды' (innerFlowDetail)
 sumRetailVATUnitInnerFlowDetail 'Сумма НДС за ед.' (innerFlowDetail) = [X*Y/(100+Y)](
     withoutWarePriceInnerFlowDetail(innerFlowDetail), dataRetailRangeInnerFlowDetail(innerFlowDetail));
 
-sumRetailVATInnerFlowDetail 'Сумма розничного НДС' (innerFlowDetail) = sumRetailVATUnitInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail);
+sumRetailVATInnerFlowDetail 'Сумма розничного НДС' (innerFlowDetail) = round0(
+    sumRetailVATUnitInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail));
 
 totalSumRetailVATInnerFlow 'Сумма розничного НДС' (innerFlow) = GROUP SUM sumRetailVATInnerFlowDetail(innerFlowDetail)
     BY innerFlowInnerFlowDetail(innerFlowDetail);
@@ -8814,8 +8818,8 @@ sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION EXCLUSIV
                                                                           sumRetailVATInnerFlowDetail (consignmentDetail);
 
 totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNION EXCLUSIVE sumNDSStatement (consignment),
-                                                                                      totalSumIncVATReturnSupplier (consignment),
-                                                                                      totalSumRetailVATInnerFlow (consignment) IN sumConsignmentGroup;
+                                                                               totalSumIncVATReturnSupplier (consignment),
+                                                                               totalSumRetailVATInnerFlow (consignment) IN sumConsignmentGroup;
 
 costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION EXCLUSIVE sumStatementDetail (consignmentDetail),
                                                                                  sumSupplierReturnSupplierDetail (consignmentDetail),
@@ -8834,9 +8838,9 @@ sumPackQuantityConsignment 'Общее количество грузовых м�
                                                                                             sumPackQuantityReturnSupplier(consignment),
                                                                                             sumPackQuantityInnerFlow(consignment) IN sumConsignmentGroup;
 
-grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = UNION EXCLUSIVE grossWeightStatementDetail(consignmentDetail),
+grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = round3(UNION EXCLUSIVE grossWeightStatementDetail(consignmentDetail),
                                                                                      grossWeightReturnSupplierDetail(consignmentDetail),
-                                                                                     grossWeightInnerFlowDetail(consignmentDetail);
+                                                                                     grossWeightInnerFlowDetail(consignmentDetail));
 
 sumGrossWeightConsignmentDetail 'Общая масса груза, т.' (consignment) = UNION EXCLUSIVE sumGrossWeightStatement(consignment),
                                                                                         sumGrossWeightReturnSupplier(consignment),
