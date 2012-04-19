@@ -8832,7 +8832,7 @@ META metaCodeTransportConsignment(prop, caption)
 END
 
 @metaCodeTransportConsignment(transportConsignmentVerticalA, 'ТТН-1, вертикальная (сторона А)');
-@metaCodeTransportConsignment(transportConsignmentHorizontalB, 'ТТН-1, вертикальная (сторона Б)');
+@metaCodeTransportConsignment(transportConsignmentHorizontalB, 'ТТН-1, горизонтальная (сторона Б)');
 
 //toPrintTransportConsignmentVerticalA 'ТТН-1, вертикальная (сторона А)' (consignment) =
 //    ACTION FORM transportConsignmentVerticalA OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
