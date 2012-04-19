@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="c" pageWidth="595" pageHeight="842" columnWidth="575" leftMargin="10" rightMargin="10" topMargin="10" bottomMargin="10">
-	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.zoom" value="4.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
@@ -65,9 +65,9 @@
 	<group name="textGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{c})]]></groupExpression>
 		<groupHeader>
-			<band height="25" splitType="Prevent">
+			<band height="21" splitType="Prevent">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="90" y="0" width="465" height="18"/>
+					<reportElement x="90" y="0" width="465" height="12"/>
 					<box topPadding="0" leftPadding="0" bottomPadding="2" rightPadding="0">
 						<topPen lineWidth="0.0"/>
 						<leftPen lineWidth="0.0"/>
@@ -78,13 +78,13 @@
 					<textFieldExpression><![CDATA[$F{retail_fullNameSenderConsignment}+", "+$F{retail_addressSenderConsignment}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement positionType="Float" x="90" y="18" width="465" height="1"/>
+					<reportElement positionType="Float" x="90" y="13" width="465" height="1"/>
 					<graphicElement>
 						<pen lineWidth="1.0" lineStyle="Solid"/>
 					</graphicElement>
 				</line>
 				<staticText>
-					<reportElement x="0" y="0" width="90" height="18"/>
+					<reportElement x="0" y="0" width="90" height="12"/>
 					<box>
 						<topPen lineWidth="0.0"/>
 						<leftPen lineWidth="0.0"/>
@@ -95,7 +95,7 @@
 					<text><![CDATA[Грузоотправитель:]]></text>
 				</staticText>
 				<staticText>
-					<reportElement positionType="Float" x="90" y="18" width="465" height="7"/>
+					<reportElement positionType="Float" x="90" y="14" width="465" height="7"/>
 					<box>
 						<topPen lineWidth="0.0"/>
 						<leftPen lineWidth="0.0"/>
@@ -108,9 +108,9 @@
 					<text><![CDATA[(наименование, адрес)]]></text>
 				</staticText>
 			</band>
-			<band height="25">
+			<band height="21">
 				<staticText>
-					<reportElement x="0" y="0" width="90" height="18"/>
+					<reportElement x="0" y="0" width="90" height="12"/>
 					<box>
 						<topPen lineWidth="0.0"/>
 						<leftPen lineWidth="0.0"/>
@@ -121,7 +121,7 @@
 					<text><![CDATA[Грузополучатель:]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="90" y="0" width="465" height="18"/>
+					<reportElement x="90" y="0" width="465" height="12"/>
 					<box bottomPadding="2">
 						<topPen lineWidth="0.0"/>
 						<leftPen lineWidth="0.0"/>
@@ -132,7 +132,7 @@
 					<textFieldExpression><![CDATA[$F{retail_fullNameRecipientConsignment}+", "+$F{retail_addressRecipientConsignment}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement positionType="Float" x="90" y="18" width="465" height="7"/>
+					<reportElement positionType="Float" x="90" y="14" width="465" height="7"/>
 					<box>
 						<topPen lineWidth="0.0"/>
 						<leftPen lineWidth="0.0"/>
@@ -145,12 +145,12 @@
 					<text><![CDATA[(наименование, адрес)]]></text>
 				</staticText>
 				<line>
-					<reportElement positionType="Float" x="90" y="18" width="465" height="1"/>
+					<reportElement positionType="Float" x="90" y="13" width="465" height="1"/>
 				</line>
 			</band>
-			<band height="25">
+			<band height="21">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="90" y="0" width="465" height="18"/>
+					<reportElement x="90" y="0" width="465" height="12"/>
 					<box bottomPadding="2">
 						<topPen lineWidth="0.0"/>
 						<leftPen lineWidth="0.0"/>
@@ -161,7 +161,7 @@
 					<textFieldExpression><![CDATA[$F{retail_shipmentBaseConsignment}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="0" y="0" width="90" height="20"/>
+					<reportElement x="0" y="0" width="90" height="12"/>
 					<box>
 						<topPen lineWidth="0.0"/>
 						<leftPen lineWidth="0.0"/>
@@ -172,10 +172,10 @@
 					<text><![CDATA[Основание отпуска:]]></text>
 				</staticText>
 				<line>
-					<reportElement positionType="Float" x="90" y="18" width="465" height="1"/>
+					<reportElement positionType="Float" x="90" y="13" width="465" height="1"/>
 				</line>
 				<staticText>
-					<reportElement positionType="Float" x="90" y="18" width="465" height="7"/>
+					<reportElement positionType="Float" x="90" y="14" width="465" height="7"/>
 					<box>
 						<topPen lineWidth="0.0"/>
 						<leftPen lineWidth="0.0"/>
@@ -742,9 +742,9 @@
 		</groupFooter>
 	</group>
 	<title>
-		<band height="53">
+		<band height="42">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="0" y="30" width="575" height="20"/>
+				<reportElement x="0" y="26" width="575" height="16"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -757,7 +757,7 @@
 				<textFieldExpression><![CDATA["№ "+$F{retail_seriesObject}+" "+$F{retail_numberObject}+" ОТ "+platform.base.BaseUtils.formatRussian($F{retail_dateConsignment})+" года"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="10" width="575" height="20"/>
+				<reportElement x="0" y="10" width="575" height="16"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>

@@ -9975,15 +9975,15 @@ DESIGN returnSuppliers FROM DEFAULT{
 
     ADD r.historyGroup BEFORE functions.box {
         childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
+//        fillHorizontal = 1;
     };
     ADD r.postedGroup BEFORE functions.box {
         childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
+//        fillHorizontal = 1;
     };
     ADD r.printGroup BEFORE functions.box {
         childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
+//        fillHorizontal = 1;
     };
 
     POSITION r.historyGroup TO THE LEFT r.postedGroup;
@@ -10733,7 +10733,7 @@ FORM innerFlows 'Расходы в другие отделы'
     PROPERTIES(f) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
     PROPERTIES (f) FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
                                toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,
-                               toPrintConsignmentTwoHorizontal, toPrintConsignmentTwoVertical
+                               toPrintConsignmentTwoHorizontal, toPrintConsignmentTwoVertical, toPrintConsignmentTwoAttach
 
     PROPERTIES (f) ADDFORM, EDITFORM SHOWIF isDraftInnerFlow(f), delete FORCE PANEL SHOWIF isDraftInnerFlow(f),
                    postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
@@ -10757,17 +10757,17 @@ DESIGN innerFlows FROM DEFAULT {
     }
     f.printGroup {
         childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
+//        fillHorizontal = 1;
     }
 
     f.historyGroup {
         childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
+//        fillHorizontal = 1;
     }
 
     f.postedGroup {
         childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
+//        fillHorizontal = 1;
     }
 
     POSITION f.historyGroup TO THE LEFT f.postedGroup;
@@ -11207,7 +11207,7 @@ FORM statements 'Отгрузки из розницы'
                      sumWithoutNDSStatement, sumNDSStatement, sumStatement
     PROPERTIES (st)  FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
                      toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,  toPrintConsignmentTwoHorizontal,
-                     toPrintConsignmentTwoVertical, toPrintActOfRevaluationStatement SHOWIF needToPriceChangeStatement(st),
+                     toPrintConsignmentTwoVertical, toPrintConsignmentTwoAttach, toPrintActOfRevaluationStatement SHOWIF needToPriceChangeStatement(st),
                      nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (st)  ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
@@ -11236,17 +11236,17 @@ DESIGN statements FROM DEFAULT {
 
         ADD st.historyGroup {
             childConstraints = TO THE BOTTOM;
-            fillHorizontal = 1;
+//            fillHorizontal = 1;
         }
 
         ADD st.postedGroup {
             childConstraints = TO THE BOTTOM;
-            fillHorizontal = 1;
+//            fillHorizontal = 1;
         }
 
         ADD st.printGroup{
             childConstraints = TO THE BOTTOM;
-            fillHorizontal = 1;
+//            fillHorizontal = 1;
         }
         POSITION st.historyGroup TO THE LEFT st.postedGroup;
         POSITION st.postedGroup TO THE LEFT st.printGroup;
