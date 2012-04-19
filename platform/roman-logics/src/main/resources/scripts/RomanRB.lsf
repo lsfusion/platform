@@ -158,6 +158,10 @@ sidDeclarationInnerInvoice 'Декларация инвойса' (innerInvoice) 
 
 inDeclarationInnerInvoice 'Инвойс в декларации' (declaration, innerInvoice) = declarationInnerInvoice(innerInvoice) == declaration;
 
+CONSTRAINT declarationInnerInvoice(innerInvoice) AND NOT(freightInnerInvoice(innerInvoice) IS freightArrived)
+    MESSAGE 'Инвойс используется в декларации';
+
+
 forDeclaration(declaration, innerInvoice) = inDeclarationInnerInvoice(declaration, innerInvoice) OR declaration AS declaration AND NOT declarationInnerInvoice(innerInvoice);
 
 CONSTRAINT customStoreDeclaration(declarationInnerInvoice(innerInvoice)) != customStoreInnerInvoice(innerInvoice) CHECKED
@@ -239,7 +243,7 @@ sidCustomCategory10DeclarationDetail 'ТН ВЭД товара' (declarationDeta
 // сертификация
 certificatedDeclarationDetail 'Необходимость сертификации' (declarationDetail) = certificatedCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) IN baseGroup;
 
-quantityCertificatedDeclarationDetail 'Кол-во для экспертизы' = DATA DOUBLE(declarationDetail);
+quantityCertificatedDeclarationDetail 'Кол-во для экспертизы' = DATA INTEGER(declarationDetail);
 
 certificateDeclarationDetail 'Сертификат партии (ИД)' = DATA certificate(declarationDetail) IN idGroup;
 temporalCertificateDeclarationDetail 'Временный сертификат партии (ИД)' = DATA temporalCertificate(declarationDetail) IN idGroup;
@@ -260,8 +264,8 @@ quantityNoCertificateDeclaration 'Кол-во без сертификатов' (
                                                                                   IF isCertificatePreparedDeclarationDetail(declarationDetail)
                                                                                   BY declarationDeclarationDetail(declarationDetail) PERSISTENT;
 
-CONSTRAINT quantityNoCertificateDeclaration(declaration)>0 AND declaration IS preparedDeclaration
-   MESSAGE 'Не у всех товаров требующих сертификации заданы сертификаты';
+//CONSTRAINT quantityNoCertificateDeclaration(declaration)>0 AND declaration IS preparedDeclaration
+//   MESSAGE 'Не у всех товаров требующих сертификации заданы сертификаты';
 
 // Для таможенных платежей
 rateExchangeDeclaration 'Курс обмена' (declaration) = nearestRateExchange(typeExchangePayCustom(),
@@ -286,7 +290,7 @@ dutyDeclarationDetail 'Пошлина (расч.)' (declarationDetail) = UNION M
                       netWeightDeclarationDetail(declarationDetail) * dutySumCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty()),
                       priceDeclarationDetail(declarationDetail) * (dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty())/100) PERSISTENT;
 
-dutyDataDeclarationDetail 'Пошлина товара' = DATA DOUBLE(declarationDetail) IN baseGroup;
+dutyDataDeclarationDetail 'Пошлина товара' = DATA NUMERIC[14,2](declarationDetail) IN baseGroup;
 dutyDataDeclarationDetail (declarationDetail) <- dutyDeclarationDetail(declarationDetail) ON ASSIGN declarationDeclarationDetail(declarationDetail) IS preparedDeclaration;   //dateDeclarationDetail(declarationDetail);
 
 rateDutyDeclarationDetail 'Пошлина товара (конверт.)' (declarationDetail) = round0(dutyDataDeclarationDetail(declarationDetail) *
@@ -307,7 +311,7 @@ NDSPercentDeclarationDetail 'НДС (%)' (declarationDetail) = UNION OVERRIDE ND
 NDSDeclarationDetail 'НДС товара (расч.)' (declarationDetail) = round2(priceDutyDeclarationDetail(declarationDetail) *
                                                                        NDSPercentDeclarationDetail(declarationDetail)/100) PERSISTENT;
 
-NDSDataDeclarationDetail 'НДС товара' = DATA DOUBLE(declarationDetail) IN baseGroup;
+NDSDataDeclarationDetail 'НДС товара' = DATA NUMERIC[14,2](declarationDetail) IN baseGroup;
 NDSDataDeclarationDetail (declarationDetail) <- NDSDeclarationDetail(declarationDetail) ON ASSIGN declarationDeclarationDetail(declarationDetail) IS preparedDeclaration;
 
 rateNDSDeclarationDetail 'НДС товара (конверт.)' (declarationDetail) = round0(NDSDataDeclarationDetail(declarationDetail) *
@@ -322,7 +326,7 @@ sumRegistrationDeclarationDetail 'За оформление' (declarationDetail)
 sumRegistrationDeclaration 'За оформление (расч.)' (declaration) = GROUP MAX sumRegistrationDeclarationDetail(declarationDetail)
                                                                           BY declarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
 
-sumRegistrationDataDeclaration 'За оформление' = DATA DOUBLE(declaration) IN baseGroup;
+sumRegistrationDataDeclaration 'За оформление' = DATA NUMERIC[14,2](declaration) IN baseGroup;
 sumRegistrationDataDeclaration (declaration) <- sumRegistrationDeclaration(declaration) ON ASSIGN declaration IS preparedDeclaration;;
 
 rateSumRegistrationDeclaration 'За оформление (конверт.)' (declaration) = round0(sumRegistrationDataDeclaration(declaration) *
@@ -335,7 +339,7 @@ totalCustomSum 'Сумма платежей' (declaration) = UNION SUM dutyDecla
 declarationCorrection 'Декларация КТС (ИД)' = DATA declaration(correction) IN idGroup;
 inDeclarationCorrection (declaration, correction) = declarationCorrection(correction)==declaration;
 
-priceCorrectionDeclarationDetail 'Скорректированная стоимость' = DATA DOUBLE(correction, declarationDetail) IN baseGroup;
+priceCorrectionDeclarationDetail 'Скорректированная стоимость' = DATA NUMERIC[14,2](correction, declarationDetail) IN baseGroup;
 
 correctionPriceDeclarationDetail 'Скорректированная стоимость' (declarationDetail) = GROUP MAX priceCorrectionDeclarationDetail(correction, declarationDetail) BY declarationDetail PERSISTENT;
 
@@ -344,7 +348,7 @@ correctionDutyDeclarationDetail 'Скорректированная пошлин
                                 correctionPriceDeclarationDetail(declarationDetail) * (dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty())/100))
                                 IF correctionPriceDeclarationDetail(declarationDetail) PERSISTENT;
 
-correctionDutyDataDeclarationDetail 'Скорректированная пошлина' = DATA DOUBLE(declarationDetail) IN baseGroup;
+correctionDutyDataDeclarationDetail 'Скорректированная пошлина' = DATA NUMERIC[14,2](declarationDetail) IN baseGroup;
 correctionDutyDataDeclarationDetail(declarationDetail) <- correctionDutyDeclarationDetail(declarationDetail) ON ASSIGN declarationDeclarationDetail(declarationDetail) IS preparedDeclaration;
 
 correctionPriceDutyDeclarationDetail 'Стоимость с пошлиной'(declarationDetail) = UNION SUM correctionPriceDeclarationDetail(declarationDetail),
@@ -353,7 +357,7 @@ correctionPriceDutyDeclarationDetail 'Стоимость с пошлиной'(de
 correctionNDSDeclarationDetail 'Скорректированный НДС (расч.)' (declarationDetail) = round2(correctionPriceDutyDeclarationDetail(declarationDetail) *
                                                                                             NDSPercentDeclarationDetail(declarationDetail)/100) PERSISTENT;
 
-correctionNDSDataDeclarationDetail 'Скорректированный НДС' = DATA DOUBLE(declarationDetail) IN baseGroup;
+correctionNDSDataDeclarationDetail 'Скорректированный НДС' = DATA NUMERIC[14,2](declarationDetail) IN baseGroup;
 correctionNDSDataDeclarationDetail(declarationDetail) <- correctionNDSDeclarationDetail(declarationDetail) ON ASSIGN declarationDeclarationDetail(declarationDetail) IS preparedDeclaration;
 
 diffDutyDeclarationDetail 'Разница пошлин' (declarationDetail) = correctionDutyDataDeclarationDetail(declarationDetail) - dutyDataDeclarationDetail(declarationDetail)
@@ -442,8 +446,8 @@ numberGroupDeclaration 'Номер' (groupDeclaration) =
 
 inDeclarationGroupDeclaration (declaration, groupDeclaration) = declarationGroupDeclaration(groupDeclaration)==declaration;
 
-dutyGroupDeclaration 'Пошлина' = DATA DOUBLE(groupDeclaration) IN baseGroup;
-NDSGroupDeclaration 'НДС' = DATA DOUBLE(groupDeclaration) IN baseGroup;
+dutyGroupDeclaration 'Пошлина' = DATA NUMERIC[14,2](groupDeclaration) IN baseGroup;
+NDSGroupDeclaration 'НДС' = DATA NUMERIC[14,2](groupDeclaration) IN baseGroup;
 
 TABLE groupstring (object, object, object, object, STRING[200]);
 
@@ -654,35 +658,91 @@ FORM innerInvoices 'Инвойсы РБ'
 ;
 
 // документы расценки
-CLASS ABSTRACT priceChangeDocument 'Документ изменения цен';
+CLASS ABSTRACT priceChangeDocument 'Документ изменения цен' : transaction;
 CLASS basePriceChangeDocument 'Расценка' : priceChangeDocument;
 CLASS discountPriceChangeDocument 'Уценка' : priceChangeDocument;
 
+CLASS coefficientRetail 'Коэффициент надбавки';
+
 TABLE priceChangeDocumentSku(priceChangeDocument, sku);
 
+dateCoefficientRetail 'Дата введения' = DATA DATE(coefficientRetail) IN baseGroup;
+markupCoefficientRetail 'Множитель' = DATA NUMERIC[14,3](coefficientRetail) IN baseGroup;
+
+uniqueCoefficientRetail() = GROUP UNIQUE coefficientRetail BY dateCoefficientRetail(coefficientRetail)
+                                                        WHERE coefficientRetail IS coefficientRetail;
+
 sidPriceChangeDocument 'Номер' = DATA STRING[10] (priceChangeDocument) IN baseGroup;
-datePriceChangeDocument 'Дата документа' = DATA DATE(priceChangeDocument) IN baseGroup;
+//datePriceChangeDocument 'Дата документа' = DATA DATE(priceChangeDocument) IN baseGroup;
 isDiscountPriceChangeDocument 'Распродажа' = DATA BOOLEAN(priceChangeDocument) IN baseGroup;
 keepDiscountPriceChangeDocument 'Учитывать скидки' = DATA BOOLEAN(priceChangeDocument) IN baseGroup;
 
-priceInPriceChangeDocumentSku 'Цена первого поставщика' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
-priceFullPriceChangeDocumentSku 'Цена с затратами' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
-RRPPriceChangeDocumentSku 'Рекомендуемая цена' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
-ratePriceChangeDocumentSku 'Обменный курс' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
-priceRetailPriceChangeDocumentSku 'Розничная цена' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
+priceInPriceChangeDocumentSku 'Цена первого поставщика' = DATA NUMERIC[14,2](basePriceChangeDocument, sku) IN baseGroup;
+priceFullPriceChangeDocumentSku 'Цена с затратами' = DATA NUMERIC[14,2](basePriceChangeDocument, sku) IN baseGroup;
+RRPPriceChangeDocumentSku 'Рекомендуемая цена' = DATA NUMERIC[14,2](basePriceChangeDocument, sku) IN baseGroup;
+//ratePriceChangeDocumentSku 'Обменный курс' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
 
-basePriceChangeDocumentSku 'Цена без уценки' = DATA DOUBLE(discountPriceChangeDocument, sku) IN baseGroup;
-markdownPriceChangeDocumentSku 'Цена с уценкой' = DATA DOUBLE(discountPriceChangeDocument, sku) IN baseGroup;
+ratePriceChangeDocumentSku 'Обменный курс' (basePriceChangeDocument, sku) = nearestRateExchange(typeExchangeRetail(),
+                                                                            currencyTypeExchange(typeExchangeSTX()),
+                                                                            basePriceChangeDocument) AND sku IS sku;
+
+percentMarkupPriceChangeDocumentSku 'Надбавка (%)' = DATA NUMERIC[14,2](basePriceChangeDocument, sku) IN baseGroup;
+
+coefficientRetailDate(coefficientRetail, date) = coefficientRetail IF dateCoefficientRetail(coefficientRetail) <= date AND date AS DATE;
+actingCoefficientRetailDate(date) = GROUP MAX dateCoefficientRetail(coefficientRetailDate(coefficientRetail, date)) BY date;
+
+coefficientRetailPriceChangeDocument 'Коэффициент документа' (basePriceChangeDocument) = uniqueCoefficientRetail(actingCoefficientRetailDate(date(basePriceChangeDocument))) IN idGroup;
+markupCoefficientRetailPriceChangeDocumentSku 'Коэффициент документа' (basePriceChangeDocument, sku) = markupCoefficientRetail(coefficientRetailPriceChangeDocument(basePriceChangeDocument))
+                                                                                                       AND sku IS sku IN baseGroup;
+
+priceOutPriceChangeDocumentSku 'Цена с надбавкой' (basePriceChangeDocument, sku) = round2(priceInPriceChangeDocumentSku(basePriceChangeDocument, sku) *
+                                                                                          markupCoefficientRetailPriceChangeDocumentSku(basePriceChangeDocument, sku));
+
+priceOutPriceChangeDocumentArticle 'Цена с надбавкой' (basePriceChangeDocument, article) = GROUP MAX priceOutPriceChangeDocumentSku(basePriceChangeDocument, sku)
+                                                                                                  BY basePriceChangeDocument, articleSku(sku);
+
+priceOutPriceChangeDocumentArticleSku 'Цена с надбавкой' (basePriceChangeDocument, sku) = priceOutPriceChangeDocumentArticle(basePriceChangeDocument, articleSku(sku));
+
+priceSkuDate 'Предыдущая цена' (sku, date) = GROUP MAX priceOutPriceChangeDocumentArticleSku(basePriceChangeDocument, sku)
+                                                    IF date(basePriceChangeDocument)<date AND date IS DATE BY sku, date;
+
+previousPriceChangeDocumentSku 'Предыдущая цена' (basePriceChangeDocument, sku) = priceSkuDate(sku, date(basePriceChangeDocument)) AND basePriceChangeDocument IS basePriceChangeDocument;
+
+priceRetailPriceChangeDocumentSku 'Розничная цена' = DATA NUMERIC[14,2](basePriceChangeDocument, sku) IN baseGroup;
+
+basePriceChangeDocumentSku 'Цена без уценки' = DATA NUMERIC[14,2](discountPriceChangeDocument, sku) IN baseGroup;
+markdownPriceChangeDocumentSku 'Цена с уценкой' = DATA NUMERIC[14,2](discountPriceChangeDocument, sku) IN baseGroup;
+
+rateExchangeFreightSku 'Курс обмена' (freight, sku) = nearestRateExchange(typeExchangeRetail(),
+                                                                          currencyFreight(freight),
+                                                                          freight) AND sku IS sku;
+
+
+FORM coefficientRetail 'Коэффициент надбавки'
+
+    OBJECTS c=coefficientRetail FIXED PANEL
+    PROPERTIES(c) dateCoefficientRetail, markupCoefficientRetail
+
+    EDIT coefficientRetail OBJECT c
+;
+
+FORM coefficientRetails 'История коэффициентов'
+
+    OBJECTS c=coefficientRetail
+    PROPERTIES(c) READONLY dateCoefficientRetail, markupCoefficientRetail
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+;
+
 
 FORM priceChangeDocument 'Документ изменений цен'
 
     OBJECTS p=basePriceChangeDocument FIXED PANEL
-    PROPERTIES(p) sidPriceChangeDocument, datePriceChangeDocument, isDiscountPriceChangeDocument, keepDiscountPriceChangeDocument
+    PROPERTIES(p) sidPriceChangeDocument, date, isDiscountPriceChangeDocument, keepDiscountPriceChangeDocument
 
     OBJECTS s=sku
     PROPERTIES(s) barcode, sidArticleSku
-    PROPERTIES (p, s) priceInPriceChangeDocumentSku, priceFullPriceChangeDocumentSku, RRPPriceChangeDocumentSku,
-                      ratePriceChangeDocumentSku, priceRetailPriceChangeDocumentSku
+    PROPERTIES (p, s) priceInPriceChangeDocumentSku, RRPPriceChangeDocumentSku,
+                      previousPriceChangeDocumentSku, priceOutPriceChangeDocumentArticleSku, ratePriceChangeDocumentSku
 
     FILTERS priceInPriceChangeDocumentSku (p, s)
     EDIT basePriceChangeDocument OBJECT p
@@ -691,24 +751,26 @@ FORM priceChangeDocument 'Документ изменений цен'
 FORM priceChangeDocuments 'Документы изменений цен'
 
     OBJECTS p=basePriceChangeDocument
-    PROPERTIES(p) READONLY sidPriceChangeDocument, datePriceChangeDocument, isDiscountPriceChangeDocument, keepDiscountPriceChangeDocument
+    PROPERTIES(p) READONLY sidPriceChangeDocument, date, isDiscountPriceChangeDocument, keepDiscountPriceChangeDocument
     PROPERTIES(p) ADDFORM, EDITFORM, delete
 
     OBJECTS s=sku
     PROPERTIES(s) READONLY barcode, sidArticleSku
-    PROPERTIES (p, s) priceInPriceChangeDocumentSku, priceFullPriceChangeDocumentSku, RRPPriceChangeDocumentSku,
-                      ratePriceChangeDocumentSku, priceRetailPriceChangeDocumentSku
+    PROPERTIES (p, s) READONLY priceInPriceChangeDocumentSku, RRPPriceChangeDocumentSku,
+                               previousPriceChangeDocumentSku, priceOutPriceChangeDocumentArticleSku
 
     FILTERS priceInPriceChangeDocumentSku (p, s)
 ;
+
 
 
 toCreatePriceChangeDocument 'Заполнить документ из фрахта' =  ACTION (freight) NEWSESSION {
     ADDOBJ basePriceChangeDocument;
     FOR p == addedObject() DO {
         SET priceInPriceChangeDocumentSku(p, sku) <- priceInFreightSku(freight, sku);
-        SET priceFullPriceChangeDocumentSku(p, sku) <- priceFullDutyNDSFreightSku(freight, sku);
+        //SET priceFullPriceChangeDocumentSku(p, sku) <- priceFullDutyNDSFreightSku(freight, sku);
         SET RRPPriceChangeDocumentSku(p, sku) <- RRPFreightSku(freight, sku);
+        SET ratePriceChangeDocumentSku(p, sku) <- rateExchangeFreightSku(freight, sku);
         FORM priceChangeDocument OBJECTS p=addedObject() MODAL;
         IF formResult() == formResult.ok THEN {
             EXEC apply();
@@ -737,6 +799,7 @@ NAVIGATOR {
     prices {
         ADD priceChangeDocuments;
         ADD freights;
+        ADD coefficientRetails;
     }
 
     adminElement {
@@ -744,5 +807,6 @@ NAVIGATOR {
         ADD declaration;
         ADD priceChangeDocument;
         ADD declarationInvoices;
+        ADD coefficientRetail;
     }
 }

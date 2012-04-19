@@ -119,6 +119,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP articleCompositeItem;
     public LP itemSupplierArticleSIDColorSIDSizeSID;
     public LP round2;
+    public LP multiplyNumeric2;
     private LP articleSku;
     public ConcreteCustomClass order;
     private ConcreteCustomClass typeInvoice;
@@ -249,6 +250,8 @@ public class RomanLogicsModule extends LogicsModule {
     public LP nameTypeExchangeCustom;
     public LP typeExchangePayCustom;
     public LP nameTypeExchangePayCustom;
+    public LP typeExchangeRetail;
+    public LP nameTypeExchangeRetail;
     private LP currencyCustom;
     private LP nameCurrencyCustom;
     public LP currencyPayCustom;
@@ -1528,7 +1531,9 @@ public class RomanLogicsModule extends LogicsModule {
         idGroup.add(baseLM.objectValue);
         baseLM.delete.property.askConfirm = true;
 
-        round2 = addSFProp("round2", "round(CAST((prm1) as numeric), 2)", DoubleClass.instance, 1);
+        round2 = addSFProp("round2", "round(CAST((prm1) as numeric), 2)", NumericClass.get(14, 2), 1);
+
+        multiplyNumeric2 = addMFProp("multiplyNumeric2", NumericClass.get(14, 3), 2);
 
         typeSupplier = is(simpleSupplier);
         //typeSupplier = addCUProp("typeSupplier", addCProp(LogicalClass.instance, true, hugoBossSupplier), addCProp(LogicalClass.instance, true, gerryWeberSupplier), addCProp(LogicalClass.instance, true, sOliverSupplier), addCProp(LogicalClass.instance, true, babyPhatSupplier));
@@ -1542,7 +1547,7 @@ public class RomanLogicsModule extends LogicsModule {
         // rate
         currencyTypeExchange = addDProp(idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
         nameCurrencyTypeExchange = addJProp(baseGroup, "nameCurrencyTypeExchange", "Валюта типа обмена (наим.)", baseLM.name, currencyTypeExchange, 1);
-        rateExchange = addDProp(baseGroup, "rateExchange", "Курс обмена", DoubleClass.instance, typeExchange, currency, DateClass.instance);
+        rateExchange = addDProp(baseGroup, "rateExchange", "Курс обмена", NumericClass.get(10, 6), typeExchange, currency, DateClass.instance);
         typeExchangeSTX = addDProp(idGroup, "typeExchangeSTX", "Тип обмена валют для STX (ИД)", typeExchange);
         nameTypeExchangeSTX = addJProp(baseGroup, "nameTypeExchangeSTX", "Тип обмена валют для STX", baseLM.name, typeExchangeSTX);
         typeExchangeCustom = addDProp(idGroup, "typeExchangeCustom", "Тип обмена валют для мин.цен (ИД)", typeExchange);
@@ -1553,7 +1558,10 @@ public class RomanLogicsModule extends LogicsModule {
         nameCurrencyCustom = addJProp(baseGroup, "nameCurrencyCustom", "Валюта мин.цен", baseLM.name, currencyCustom);
         currencyPayCustom = addDProp(idGroup, "currencyPayCustom", "Валюта для платежей (ИД)", currency);
         nameCurrencyPayCustom = addJProp(baseGroup, "nameCurrencyPayCustom", "Валюта для платежей", baseLM.name, currencyPayCustom);
-        NDSPercentCustom = addDProp(baseGroup, "NDSPercentCustom", "НДС", DoubleClass.instance);
+        typeExchangeRetail = addDProp(idGroup, "typeExchangeRetail", "Тип обмена для розницы", typeExchange);
+        nameTypeExchangeRetail = addJProp(baseGroup, "nameTypeExchangeRetail", "Тип обмена для розницы", baseLM.name, typeExchangeRetail);
+
+        NDSPercentCustom = addDProp(baseGroup, "NDSPercentCustom", "НДС", NumericClass.get(14, 2));
 
         //lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, greater2, 3, 4, is(DateClass.instance), 4);
         lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, addJProp(baseLM.greater2, 3, baseLM.date, 4), 1, 2, 3, 4, is(baseLM.transaction), 4);
@@ -1713,10 +1721,10 @@ public class RomanLogicsModule extends LogicsModule {
 
         countRelationCustomCategory10 = addSGProp("countRelationCustomCategory10", true, "Кол-во групп", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), relationCustomCategory10SubCategory, 1, 2), 1);
 
-        minPriceCustomCategory10SubCategory = addDProp(baseGroup, "minPriceCustomCategory10SubCategory", "Минимальная цена ($)", DoubleClass.instance, customCategory10, subCategory);
-        minPriceCustomCategory10SubCategoryCountry = addDProp("minPriceCustomCategory10SubCategoryCountry", "Минимальная цена для страны ($)", DoubleClass.instance, customCategory10, subCategory, baseLM.country);
-        dutyPercentCustomCategory10TypeDuty = addDProp("dutyPercentCustomCategory10TypeDuty", "в %", DoubleClass.instance, customCategory10, typeDuty);
-        dutySumCustomCategory10TypeDuty = addDProp("dutySumCustomCategory10TypeDuty", "в евро", DoubleClass.instance, customCategory10, typeDuty);
+        minPriceCustomCategory10SubCategory = addDProp(baseGroup, "minPriceCustomCategory10SubCategory", "Минимальная цена ($)", NumericClass.get(14, 2), customCategory10, subCategory);
+        minPriceCustomCategory10SubCategoryCountry = addDProp("minPriceCustomCategory10SubCategoryCountry", "Минимальная цена для страны ($)", NumericClass.get(14, 2), customCategory10, subCategory, baseLM.country);
+        dutyPercentCustomCategory10TypeDuty = addDProp("dutyPercentCustomCategory10TypeDuty", "в %", NumericClass.get(14, 2), customCategory10, typeDuty);
+        dutySumCustomCategory10TypeDuty = addDProp("dutySumCustomCategory10TypeDuty", "в евро", NumericClass.get(14, 2), customCategory10, typeDuty);
 
         customCategory6CustomCategoryOrigin = addDProp(idGroup, "customCategory6CustomCategoryOrigin", "Код(6)", customCategory6, customCategoryOrigin);
         customCategory4CustomCategoryOrigin = addJProp(idGroup, "customCategory4CustomCategoryOrigin", "Код(4)", customCategory4CustomCategory6, customCategory6CustomCategoryOrigin, 1);
@@ -1885,11 +1893,11 @@ public class RomanLogicsModule extends LogicsModule {
         dateDepartureShipment = addDProp(baseGroup, "dateDepartureShipment", "Дата отгрузки", DateClass.instance, shipment);
         dateArrivalShipment = addDProp(baseGroup, "dateArrivalShipment", "Дата прихода на STX", DateClass.instance, shipment);
         quantityPalletShipment = addDProp(baseGroup, "quantityPalletShipment", "Кол-во паллет", IntegerClass.instance, shipment);
-        netWeightShipment = addDProp(baseGroup, "netWeightShipment", "Вес нетто", DoubleClass.instance, shipment);
-        grossWeightShipment = addDProp(baseGroup, "grossWeightShipment", "Вес брутто", DoubleClass.instance, shipment);
+        netWeightShipment = addDProp(baseGroup, "netWeightShipment", "Вес нетто", NumericClass.get(14, 3), shipment);
+        grossWeightShipment = addDProp(baseGroup, "grossWeightShipment", "Вес брутто", NumericClass.get(14, 3), shipment);
 
-        grossWeightPallet = addDProp(baseGroup, "grossWeightPallet", "Вес брутто", DoubleClass.instance, pallet);
-        quantityBoxShipment = addDProp(baseGroup, "quantityBoxShipment", "Кол-во коробов", DoubleClass.instance, shipment);
+        grossWeightPallet = addDProp(baseGroup, "grossWeightPallet", "Вес брутто", NumericClass.get(14, 3), pallet);
+        quantityBoxShipment = addDProp(baseGroup, "quantityBoxShipment", "Кол-во коробов", IntegerClass.instance, shipment);
 
         // Item
         articleCompositeItem = addDProp(idGroup, "articleCompositeItem", "Артикул (ИД)", articleComposite, item);
@@ -2115,11 +2123,11 @@ public class RomanLogicsModule extends LogicsModule {
         addItemSIDArticleSupplierColorSizeBarcode = addJProp(true, "Ввод товара", addItemArticleCompositeColorSizeBarcode, articleSIDSupplier, 1, 2, 3, 4, 5);
 
         // Weight
-        netWeightArticle = addDProp(supplierAttributeGroup, "netWeightArticle", "Вес нетто (ориг.)", DoubleClass.instance, article);
+        netWeightArticle = addDProp(supplierAttributeGroup, "netWeightArticle", "Вес нетто (ориг.)", NumericClass.get(14, 3), article);
         netWeightArticleSku = addJProp(intraAttributeGroup, "netWeightArticleSku", "Вес нетто (ориг.)", netWeightArticle, articleSku, 1);
-        netWeightArticleSize = addDProp(intraAttributeGroup, "netWeightArticleSize", "Вес нетто размера", DoubleClass.instance, article, sizeSupplier);
+        netWeightArticleSize = addDProp(intraAttributeGroup, "netWeightArticleSize", "Вес нетто размера", NumericClass.get(14, 3), article, sizeSupplier);
 
-        netWeightDataSku = addDProp(intraAttributeGroup, "netWeightDataSku", "Вес нетто", DoubleClass.instance, sku);
+        netWeightDataSku = addDProp(intraAttributeGroup, "netWeightDataSku", "Вес нетто", NumericClass.get(14, 3), sku);
         netWeightArticleSizeSku = addJProp(intraAttributeGroup, true, "netWeightArticleSizeSku", "Вес нетто", netWeightArticleSize, articleSku, 1, sizeSupplierItem, 1);
         netWeightSku = addSUProp(intraAttributeGroup, "netWeightSku", "Вес нетто (ед.)", Union.OVERRIDE, netWeightArticleSku, netWeightArticleSizeSku);
 
@@ -2243,7 +2251,7 @@ public class RomanLogicsModule extends LogicsModule {
         customCategory9Sku = addJProp(baseGroup, "customCategory9Sku", "ТН ВЭД", customCategory9CustomCategory10, customCategory10Sku, 1);
         sidCustomCategory10Sku = addJProp(baseGroup, "sidCustomCategory10Sku", "ТН ВЭД", sidCustomCategory10, customCategory10Sku, 1);
 
-        diffCountRelationCustomCategory10Sku = addJProp("diffCountRelationCustomCategory10Sku", baseLM.greater2, addJProp(countRelationCustomCategory10, customCategory10Sku, 1), 1, addCProp("1", DoubleClass.instance, 1));
+        diffCountRelationCustomCategory10Sku = addJProp("diffCountRelationCustomCategory10Sku", baseLM.greater2, addJProp(countRelationCustomCategory10, customCategory10Sku, 1), 1, addCProp("1", IntegerClass.instance, 1));
         diffCountRelationCustomCategory10FreightSku = addJProp("diffCountRelationCustomCategory10FreightSku", baseLM.and1, diffCountRelationCustomCategory10Sku, 2, is(freight), 1);
 
         subCategoryDataSku = addDProp(idGroup, "subCategoryDataSku", "Дополнительное деление (ИД)", subCategory, sku);
@@ -2331,10 +2339,10 @@ public class RomanLogicsModule extends LogicsModule {
         genderPricat = addDProp(baseGroup, "genderPricat", "Пол", StringClass.get(10), pricat);
         originalNamePricat = addDProp(baseGroup, "originalNamePricat", "Наименование (ориг.)", StringClass.get(50), pricat);
         countryPricat = addDProp(baseGroup, "countryPricat", "Страна происхождения", StringClass.get(20), pricat);
-        netWeightPricat = addDProp(baseGroup, "netWeightPricat", "Вес нетто", DoubleClass.instance, pricat);
+        netWeightPricat = addDProp(baseGroup, "netWeightPricat", "Вес нетто", NumericClass.get(14, 3), pricat);
         compositionPricat = addDProp(baseGroup, "compositionPricat", "Состав", StringClass.get(50), pricat);
-        pricePricat = addDProp(baseGroup, "pricePricat", "Цена", DoubleClass.instance, pricat);
-        rrpPricat = addDProp(baseGroup, "RRP", "Рекомендованная цена", DoubleClass.instance, pricat);
+        pricePricat = addDProp(baseGroup, "pricePricat", "Цена", NumericClass.get(14, 4), pricat);
+        rrpPricat = addDProp(baseGroup, "RRP", "Рекомендованная цена", NumericClass.get(14, 4), pricat);
         destinationPricat = addDProp("destinationPricat", "Пункт назначения", destination, pricat);
         supplierPricat = addDProp("supplierPricat", "Поставщик", supplier, pricat);
         barcodeToPricat = addAGProp("barcodeToPricat", "штрих-код", barcodePricat);
@@ -2343,7 +2351,7 @@ public class RomanLogicsModule extends LogicsModule {
         gerryWeberImportPricat = addProperty(null, new LP<ClassPropertyInterface>(new GerryWeberPricatCSVImportActionProperty(genSID(), this, gerryWeberSupplier)));
 
         // кол-во заказа
-        quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", DoubleClass.instance, list, sku);
+        quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", IntegerClass.instance, list, sku);
         quantityListSku = quantityDataListSku; //addJProp(baseGroup, "quantityListSku", true, "Кол-во", baseLM.and1, quantityDataListSku, 1, 2, numberListSku, 1, 2);
         quantityDataList = addSGProp(baseGroup, "quantityDataList", "Кол-во", quantityDataListSku, 1);
 
@@ -2384,8 +2392,8 @@ public class RomanLogicsModule extends LogicsModule {
         quantityListArticle = addDGProp(baseGroup, "quantityListArticle", "Кол-во (итог)",
                 1, false, // кол-во объектов для порядка и ascending/descending
                 quantityListSku, 1, articleSku, 2,
-                addCUProp(addCProp(DoubleClass.instance, Double.MAX_VALUE, list, articleSingle),
-                        addCProp(DoubleClass.instance, Double.MAX_VALUE, order, item),
+                addCUProp(addCProp(IntegerClass.instance, 9999999, list, articleSingle),
+                        addCProp(IntegerClass.instance, 9999999, order, item),
                         addJProp(baseLM.and1, orderedSimpleInvoiceSku, 1, 2, is(item), 2), // если не артикул (простой), то пропорционально заказано
                         addJProp(baseLM.and1, orderedSupplierBoxSku, 1, 2, is(item), 2)), 1, 2, // ограничение (максимально-возможное число)
                 2);
@@ -2396,7 +2404,7 @@ public class RomanLogicsModule extends LogicsModule {
         quantityListArticleCompositeColorSize = addDGProp(baseGroup, "quantityListArticleCompositeColorSize", "Кол-во",
                 1, false,
                 quantityListSku, 1, articleCompositeItem, 2, colorSupplierItem, 2, sizeSupplierItem, 2,
-                addCProp(DoubleClass.instance, Double.MAX_VALUE, list, sku), 1, 2,
+                addCProp(IntegerClass.instance, 9999999, list, sku), 1, 2,
                 2);
         quantityListArticleCompositeColorSize.property.setFixedCharWidth(2);
 
@@ -2429,17 +2437,17 @@ public class RomanLogicsModule extends LogicsModule {
         dateToOrderArticleSku = addJProp(baseGroup, "dateToOrderArticleSku", "Дата по", dateToOrderArticle, 1, articleSku, 2);
 
         // цены
-        priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, priceDocument, article);
+        priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", NumericClass.get(14, 4), priceDocument, article);
         //priceRateDocumentArticle = addJProp(baseGroup, "priceRateDocumentArticle", true, "Цена (конверт.)", round2, addJProp(baseLM.multiplyDouble2, priceDocumentArticle, 1, 2, addJProp(nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
 
-        priceDataDocumentItem = addDProp(baseGroup, "priceDataDocumentItem", "Цена по товару", DoubleClass.instance, priceDocument, item);
+        priceDataDocumentItem = addDProp(baseGroup, "priceDataDocumentItem", "Цена по товару", NumericClass.get(14, 4), priceDocument, item);
         priceArticleDocumentSku = addJProp(baseGroup, "priceArticleDocumentItem", "Цена по артикулу", priceDocumentArticle, 1, articleSku, 2);
         priceDocumentSku = addSUProp(baseGroup, "priceDocumentSku", true, "Цена", Union.OVERRIDE, priceArticleDocumentSku, priceDataDocumentItem);
 
-        priceRateDocumentSku = addJProp(baseGroup, "priceRateDocumentSku", true, "Цена (конверт.)", round2, addJProp(baseLM.multiplyDouble2, priceDocumentSku, 1, 2, addJProp(nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
+        priceRateDocumentSku = addJProp(baseGroup, "priceRateDocumentSku", true, "Цена (конверт.)", round2, addJProp(multiplyNumeric2, priceDocumentSku, 1, 2, addJProp(nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
 
-        RRPDocumentArticle = addDProp(baseGroup, "RRPDocumentArticle", "Рекомендованная цена", DoubleClass.instance, priceDocument, article);
-        RRPRateDocumentArticle = addJProp(baseGroup, "RRPRateDocumentArticle", true, "Рекомендованная цена (конверт.)", round2, addJProp(baseLM.multiplyDouble2, RRPDocumentArticle, 1, 2, addJProp(nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
+        RRPDocumentArticle = addDProp(baseGroup, "RRPDocumentArticle", "Рекомендованная цена", NumericClass.get(14, 4), priceDocument, article);
+        RRPRateDocumentArticle = addJProp(baseGroup, "RRPRateDocumentArticle", true, "Рекомендованная цена (конверт.)", round2, addJProp(multiplyNumeric2, RRPDocumentArticle, 1, 2, addJProp(nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
         RRPRateDocumentSku = addJProp(baseGroup, "RRPRateDocumentSku", "Рекомендованная цена (конверт.)", RRPRateDocumentArticle, 1, articleSku, 2);
 
         priceSupplierBoxSku = addJProp(baseGroup, "priceSupplierBoxSku", "Цена", priceDocumentSku, boxInvoiceSupplierBox, 1, 2);
@@ -2449,15 +2457,15 @@ public class RomanLogicsModule extends LogicsModule {
         // todo : не работает
         priceDocumentArticle.setDerivedForcedChange(priceOrderedInvoiceArticle, 1, 2, numberDocumentArticle, 1, 2);
 
-        sumSupplierBoxSku = addJProp(baseGroup, "sumSupplierBoxSku", "Сумма", baseLM.multiplyDouble2, quantityListSku, 1, 2, priceSupplierBoxSku, 1, 2);
-        sumDocumentSku = addJProp(baseGroup, "sumDocumentSku", "Сумма", baseLM.multiplyDouble2, quantityDocumentSku, 1, 2, priceDocumentSku, 1, 2);
+        sumSupplierBoxSku = addJProp(baseGroup, "sumSupplierBoxSku", "Сумма", multiplyNumeric2, quantityListSku, 1, 2, priceSupplierBoxSku, 1, 2);
+        sumDocumentSku = addJProp(baseGroup, "sumDocumentSku", "Сумма", multiplyNumeric2, quantityDocumentSku, 1, 2, priceDocumentSku, 1, 2);
 
-        netWeightDocumentArticle = addJProp(baseGroup, "netWeightDocumentArticle", "Общий вес по артикулу", baseLM.multiplyDouble2, quantityDocumentArticle, 1, 2, netWeightArticle, 2);
-        netWeightDocumentSku = addJProp(baseGroup, "netWeightDocumentSku", "Общий вес по sku", baseLM.multiplyDouble2, quantityDocumentSku, 1, 2, netWeightSku, 2);
+        netWeightDocumentArticle = addJProp(baseGroup, "netWeightDocumentArticle", "Общий вес по артикулу", multiplyNumeric2, quantityDocumentArticle, 1, 2, netWeightArticle, 2);
+        netWeightDocumentSku = addJProp(baseGroup, "netWeightDocumentSku", "Общий вес по sku", multiplyNumeric2, quantityDocumentSku, 1, 2, netWeightSku, 2);
         netWeightDocument = addSGProp(baseGroup, "netWeightDocument", "Общий вес", netWeightDocumentSku, 1);
 
         sumDocumentArticle = addSGProp(baseGroup, "sumDocumentArticle", "Сумма", sumDocumentSku, 1, articleSku, 2);
-        sumSimpleInvoiceArticle = addJProp(baseGroup, "sumSimpleInvoiceArticle", "Сумма по артикулу", baseLM.multiplyDouble2, priceDocumentArticle, 1, 2, quantitySimpleInvoiceArticle, 1, 2);
+        sumSimpleInvoiceArticle = addJProp(baseGroup, "sumSimpleInvoiceArticle", "Сумма по артикулу", multiplyNumeric2, priceDocumentArticle, 1, 2, quantitySimpleInvoiceArticle, 1, 2);
 
         sumSimpleInvoice = addSGProp(baseGroup, "sumSimpleInvoice", "Сумма", sumSimpleInvoiceArticle, 1);
         sumInvoicedDocument = addSGProp(baseGroup, "sumInvoicedDocument", "Сумма", sumDocumentSku, 1);
@@ -2465,7 +2473,7 @@ public class RomanLogicsModule extends LogicsModule {
         sumDocument = addSUProp(baseGroup, "sumDocument", "Сумма документа", Union.SUM, sumInvoicedDocument, sumSimpleInvoice);
 
         // route
-        percentShipmentRoute = addDProp(baseGroup, "percentShipmentRoute", "Процент", DoubleClass.instance, shipment, route);
+        percentShipmentRoute = addDProp(baseGroup, "percentShipmentRoute", "Процент", NumericClass.get(14, 2), shipment, route);
 
         percentShipmentRouteSku = addJProp(baseGroup, "percentShipmentRouteSku", "Процент", baseLM.and1, percentShipmentRoute, 1, 2, is(sku), 3);
 
@@ -2494,7 +2502,7 @@ public class RomanLogicsModule extends LogicsModule {
         freightDirectInvoice = addDProp(baseGroup, "freightDirectInvoice", "Фрахт (ИД)", freight, directInvoice);
         equalsDirectInvoiceFreight = addJProp(baseGroup, "equalsDirectInvoiceFreight", "Вкл.", baseLM.equals2, freightDirectInvoice, 1, 2);
 
-        grossWeightDirectInvoice = addDProp(baseGroup, "grossWeightDirectInvoice", "Вес брутто", DoubleClass.instance, directInvoice);
+        grossWeightDirectInvoice = addDProp(baseGroup, "grossWeightDirectInvoice", "Вес брутто", NumericClass.get(14, 3), directInvoice);
         palletNumberDirectInvoice = addDProp(baseGroup, "palletNumberDirectInvoice", "Кол-во паллет", IntegerClass.instance, directInvoice);
 
         freightShippedDirectInvoice = addJProp(baseGroup, "freightShippedDirectInvoice", "Инвойс отгружен", is(freightShipped), freightDirectInvoice, 1);
@@ -2621,7 +2629,7 @@ public class RomanLogicsModule extends LogicsModule {
         sidSupplierBoxShipmentDetail = addJProp(baseGroup, "sidSupplierBoxShipmentDetail", "Номер короба поставщика", sidSupplierBox, supplierBoxShipmentDetail, 1);
         barcodeSupplierBoxShipmentDetail = addJProp(baseGroup, "barcodeSupplierBoxShipmentDetail", "Штрих-код короба поставщика", baseLM.barcode, supplierBoxShipmentDetail, 1);
 
-        quantityShipmentDetail = addDProp(baseGroup, "quantityShipmentDetail", "Кол-во", DoubleClass.instance, shipmentDetail);
+        quantityShipmentDetail = addDProp(baseGroup, "quantityShipmentDetail", "Кол-во", NumericClass.get(14, 2), shipmentDetail);
 
         userShipmentDetail = addDCProp(idGroup, "userShipmentDetail", "Пользователь (ИД)", baseLM.currentUser, true, is(shipmentDetail), 1);
         nameUserShipmentDetail = addJProp(baseGroup, "nameUserShipmentDetail", "Пользователь", baseLM.name, userShipmentDetail, 1);
@@ -2630,7 +2638,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         addBoxShipmentDetailBoxShipmentSupplierBoxStockSku = addJProp(true, "Добавить строку поставки",
                 addAAProp(boxShipmentDetail, boxShipmentBoxShipmentDetail, supplierBoxShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
-                1, 2, 3, 4, addCProp(DoubleClass.instance, 1));
+                1, 2, 3, 4, addCProp(NumericClass.get(14, 2), 1));
 
         addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode = addJProp(true, "Добавить строку поставки",
                 addBoxShipmentDetailBoxShipmentSupplierBoxStockSku,
@@ -2638,7 +2646,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         addSimpleShipmentDetailSimpleShipmentStockSku = addJProp(true, "Добавить строку поставки",
                 addAAProp(simpleShipmentDetail, simpleShipmentSimpleShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
-                1, 2, 3, addCProp(DoubleClass.instance, 1));
+                1, 2, 3, addCProp(NumericClass.get(14, 2), 1));
 
         addSimpleShipmentSimpleShipmentDetailStockBarcode = addJProp(true, "Добавить строку поставки",
                 addSimpleShipmentDetailSimpleShipmentStockSku,
@@ -2730,8 +2738,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityShipDimensionShipmentSku = addSGProp(baseGroup, "quantityShipDimensionShipmentSku", "Оприход. (короб)", quantityShipDimensionShipmentStockSku, 1, 2, 4);
 
-        zeroQuantityListSku = addSUProp(baseGroup, "zeroQuantityListSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, list, sku), quantityListSku);
-        zeroQuantityShipDimensionShipmentSku = addSUProp(baseGroup, "zeroQuantityShipDimensionShipmentSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipDimension, shipment, sku), quantityShipDimensionShipmentSku);
+        zeroQuantityListSku = addSUProp(baseGroup, "zeroQuantityListSku", "кол-во", Union.OVERRIDE, addCProp(IntegerClass.instance, 0, list, sku), quantityListSku);
+        zeroQuantityShipDimensionShipmentSku = addSUProp(baseGroup, "zeroQuantityShipDimensionShipmentSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0, shipDimension, shipment, sku), quantityShipDimensionShipmentSku);
 
         diffListShipSku = addJProp(baseLM.diff2, zeroQuantityListSku, 1, 3, zeroQuantityShipDimensionShipmentSku, 1, 2, 3);
 
@@ -2759,8 +2767,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityShipment = addSGProp(baseGroup, "quantityShipment", true, "Оприходовано", quantityShipmentSku, 1);
 
-        zeroQuantityShipmentSku = addSUProp(baseGroup, "zeroQuantityShipmentSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipment, sku), quantityShipmentSku);
-        zeroInvoicedShipmentSku = addSUProp(baseGroup, "zeroInvoicedShipmentSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipment, sku), invoicedShipmentSku);
+        zeroQuantityShipmentSku = addSUProp(baseGroup, "zeroQuantityShipmentSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0, shipment, sku), quantityShipmentSku);
+        zeroInvoicedShipmentSku = addSUProp(baseGroup, "zeroInvoicedShipmentSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0, shipment, sku), invoicedShipmentSku);
         diffShipmentSku = addJProp(baseLM.diff2, zeroQuantityShipmentSku, 1, 2, zeroInvoicedShipmentSku, 1, 2);
 
         quantityStockSku = addSGProp(baseGroup, "quantityStockSku", true, true, "Оприход. в короб для транспортировки", quantityShipmentStockSku, 2, 3);
@@ -2775,7 +2783,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         freightShippedFreightBox = addJProp(baseGroup, "freightShippedFreightBox", is(freightShipped), freightFreightBox, 1);
 
-        sumInInvoiceStockSku = addJProp(baseGroup, "sumInInvoiceStockSku", "Сумма в коробе", baseLM.multiplyDouble2, addJProp(baseLM.andNot1, quantityInvoiceStockSku, 1, 2, 3, freightShippedFreightBox, 2), 1, 2, 3, priceInInvoiceStockSku, 1, 2, 3);
+        sumInInvoiceStockSku = addJProp(baseGroup, "sumInInvoiceStockSku", "Сумма в коробе", multiplyNumeric2, addJProp(baseLM.andNot1, quantityInvoiceStockSku, 1, 2, 3, freightShippedFreightBox, 2), 1, 2, 3, priceInInvoiceStockSku, 1, 2, 3);
 
         sumStockedSku = addSGProp(baseGroup, "sumStockedSku", true, "Сумма на приемке", sumInInvoiceStockSku, 3);
         quantityAllSku = addSGProp(baseGroup, "quantityAllSku", true, "Кол-во на приемке", quantityStockSku, 2);
@@ -2810,15 +2818,15 @@ public class RomanLogicsModule extends LogicsModule {
         quantityShipmentArticleColorSize = addSGProp(baseGroup, "quantityShipmentArticleColorSize", "Всего оприход. (артикул-цвет-размер)", quantityShipmentSku, 1, articleSku, 2, colorSupplierItem, 2, sizeSupplierItem, 2);
         quantityShipmentSize = addSGProp(baseGroup, "quantityShipmentSize", "Всего оприход. (размер)", quantityShipmentArticleSize, 1, 3);
 
-        oneShipmentArticle = addJProp(baseGroup, "oneShipmentArticle", "Первый артикул", baseLM.equals2, quantityShipmentArticle, 1, 2, addCProp(DoubleClass.instance, 1));
-        oneShipmentArticleColor = addJProp(baseGroup, "oneShipmentArticleColor", "Первый артикул-цвет", baseLM.equals2, quantityShipmentArticleColor, 1, 2, 3, addCProp(DoubleClass.instance, 1));
-        oneShipmentArticleSize = addJProp(baseGroup, "oneShipmentArticleSize", "Первый артикул-размер", baseLM.equals2, quantityShipmentArticleSize, 1, 2, 3, addCProp(DoubleClass.instance, 1));
+        oneShipmentArticle = addJProp(baseGroup, "oneShipmentArticle", "Первый артикул", baseLM.equals2, quantityShipmentArticle, 1, 2, addCProp(NumericClass.get(14, 2), 1));
+        oneShipmentArticleColor = addJProp(baseGroup, "oneShipmentArticleColor", "Первый артикул-цвет", baseLM.equals2, quantityShipmentArticleColor, 1, 2, 3, addCProp(NumericClass.get(14, 2), 1));
+        oneShipmentArticleSize = addJProp(baseGroup, "oneShipmentArticleSize", "Первый артикул-размер", baseLM.equals2, quantityShipmentArticleSize, 1, 2, 3, addCProp(NumericClass.get(14, 2), 1));
 
         oneShipmentArticleSku = addJProp(baseGroup, "oneShipmentArticleSku", "Первый артикул", oneShipmentArticle, 1, articleSku, 2);
         oneShipmentArticleColorSku = addJProp(baseGroup, "oneShipmentArticleColorSku", "Первый артикул-цвет", oneShipmentArticleColor, 1, articleSku, 2, colorSupplierItem, 2);
         oneShipmentArticleSizeSku = addJProp(baseGroup, "oneShipmentArticleSizeSku", "Первый артикул-размер", oneShipmentArticleSize, 1, articleSku, 2, sizeSupplierItem, 2);
 
-        oneShipmentSku = addJProp(baseGroup, "oneShipmentSku", "Первый SKU", baseLM.equals2, quantityShipmentSku, 1, 2, addCProp(DoubleClass.instance, 1));
+        oneShipmentSku = addJProp(baseGroup, "oneShipmentSku", "Первый SKU", baseLM.equals2, quantityShipmentSku, 1, 2, addCProp(NumericClass.get(14, 2), 1));
 
         oneArticleSkuShipmentDetail = addJProp(baseGroup, "oneArticleSkuShipmentDetail", "Первый артикул", oneShipmentArticleSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
         oneArticleColorShipmentDetail = addJProp(baseGroup, "oneArticleColorShipmentDetail", "Первый артикул-цвет", oneShipmentArticleColorSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
@@ -2853,7 +2861,7 @@ public class RomanLogicsModule extends LogicsModule {
         stockToTransfer = addDProp(idGroup, "stockToTransfer", "Место хранения (на) (ИД)", stock, transfer);
         barcodeStockToTransfer = addJProp(baseGroup, "barcodeStockToTransfer", "Штрих-код МХ (на)", baseLM.barcode, stockToTransfer, 1);
 
-        quantityTransferSku = addDProp(baseGroup, "quantityTransferStockSku", "Кол-во перемещения", DoubleClass.instance, transfer, sku);
+        quantityTransferSku = addDProp(baseGroup, "quantityTransferStockSku", "Кол-во перемещения", NumericClass.get(14, 2), transfer, sku);
 
         outcomeTransferStockSku = addSGProp(baseGroup, "outcomeTransferStockSku", "Расход по ВП", quantityTransferSku, stockFromTransfer, 1, 2);
         incomeTransferStockSku = addSGProp(baseGroup, "incomeTransferStockSku", "Приход по ВП", quantityTransferSku, stockToTransfer, 1, 2);
@@ -2872,15 +2880,15 @@ public class RomanLogicsModule extends LogicsModule {
                 percentShipmentRouteSku,
                 invoicedShipmentSku, 1, 3);
 
-        zeroQuantityShipmentRouteSku = addSUProp(baseGroup, "zeroQuantityShipmentRouteSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipment, route, sku), quantityShipmentRouteSku);
-        zeroInvoicedShipmentRouteSku = addSUProp(baseGroup, "zeroInvoicedShipmentRouteSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipment, route, sku), invoicedShipmentRouteSku);
+        zeroQuantityShipmentRouteSku = addSUProp(baseGroup, "zeroQuantityShipmentRouteSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0, shipment, route, sku), quantityShipmentRouteSku);
+        zeroInvoicedShipmentRouteSku = addSUProp(baseGroup, "zeroInvoicedShipmentRouteSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0, shipment, route, sku), invoicedShipmentRouteSku);
 
         diffShipmentRouteSku = addJProp(baseLM.greater2, zeroQuantityShipmentRouteSku, 1, 2, 3, zeroInvoicedShipmentRouteSku, 1, 2, 3);
 
-        sumShipmentRouteSku = addJProp("sumShipmentRouteSku", "Сумма", baseLM.multiplyDouble2, invoicedShipmentRouteSku, 1, 2, 3, priceShipmentSku, 1, 3);
+        sumShipmentRouteSku = addJProp("sumShipmentRouteSku", "Сумма", multiplyNumeric2, invoicedShipmentRouteSku, 1, 2, 3, priceShipmentSku, 1, 3);
         sumShipmentRoute = addSGProp("sumShipmentRoute", "Сумма (ожид.)", sumShipmentRouteSku, 1, 2);
 
-        sumShipmentSku = addJProp("sumShipmentSku", "Сумма (оприход.)", baseLM.multiplyDouble2, priceShipmentSku, 1, 2, quantityShipmentSku, 1, 2);
+        sumShipmentSku = addJProp("sumShipmentSku", "Сумма (оприход.)", multiplyNumeric2, priceShipmentSku, 1, 2, quantityShipmentSku, 1, 2);
 
         sumShipmentArticleColor = addSGProp("sumShipmentArticleColor", "Сумма (оприход.)", sumShipmentSku, 1, articleSku, 2, colorSupplierItem, 2);
         sumShipment = addSGProp("sumShipment", "Сумма (ожид.)", sumShipmentRoute, 1);
@@ -2902,9 +2910,9 @@ public class RomanLogicsModule extends LogicsModule {
                 quantityShipDimensionStock, 1, 2), true);
 
         // Freight
-        tonnageFreightType = addDProp(baseGroup, "tonnageFreightType", "Тоннаж (кг)", DoubleClass.instance, freightType);
+        tonnageFreightType = addDProp(baseGroup, "tonnageFreightType", "Тоннаж (кг)", NumericClass.get(14, 3), freightType);
         palletCountFreightType = addDProp(baseGroup, "palletCountFreightType", "Кол-во паллет", IntegerClass.instance, freightType);
-        volumeFreightType = addDProp(baseGroup, "volumeFreightType", "Объем", DoubleClass.instance, freightType);
+        volumeFreightType = addDProp(baseGroup, "volumeFreightType", "Объем", NumericClass.get(14, 3), freightType);
 
         descriptionFreight = addDProp(baseGroup, "descriptionFreight", "Описание машины", StringClass.get(50), freight);
 
@@ -2912,20 +2920,20 @@ public class RomanLogicsModule extends LogicsModule {
         nameFreightTypeFreight = addJProp(baseGroup, "nameFreightTypeFreight", "Тип машины", baseLM.name, freightTypeFreight, 1);
 
         tonnageFreight = addJProp(baseGroup, "tonnageFreight", "Тоннаж (кг)", tonnageFreightType, freightTypeFreight, 1);
-        tonnageDataFreight = addDProp(baseGroup, "tonnageDataFreight", "Тоннаж (кг)", DoubleClass.instance, freight);
+        tonnageDataFreight = addDProp(baseGroup, "tonnageDataFreight", "Тоннаж (кг)", NumericClass.get(14, 3), freight);
         palletCountFreight = addJProp(baseGroup, "palletCountFreight", "Кол-во паллет", palletCountFreightType, freightTypeFreight, 1);
-        palletCountDataFreight = addDProp(baseGroup, "palletCountDataFreight", "Кол-во паллет", DoubleClass.instance, freight);
+        palletCountDataFreight = addDProp(baseGroup, "palletCountDataFreight", "Кол-во паллет", IntegerClass.instance, freight);
         volumeFreight = addJProp(baseGroup, "volumeFreight", "Объём", volumeFreightType, freightTypeFreight, 1);
-        volumeDataFreight = addDProp(baseGroup, "volumeDataFreight", "Объем груза", DoubleClass.instance, freight);
+        volumeDataFreight = addDProp(baseGroup, "volumeDataFreight", "Объем груза", NumericClass.get(14, 3), freight);
 
         currencyFreight = addDProp(idGroup, "currencyFreight", "Валюта (ИД)", currency, freight);
         nameCurrencyFreight = addJProp(baseGroup, "nameCurrencyFreight", "Валюта", baseLM.name, currencyFreight, 1);
         nameCurrencyFreight.setFixedCharWidth(10);
         symbolCurrencyFreight = addJProp(baseGroup, "symbolCurrencyFreight", "Валюта", symbolCurrency, currencyFreight, 1);
 
-        sumFreightFreight = addDProp(baseGroup, "sumFreightFreight", "Стоимость", DoubleClass.instance, freight);
-        insuranceFreight = addDProp(baseGroup, "insuranceFreight", "Страховка", DoubleClass.instance, freight);
-        insuranceFreightBrandSupplier = addDProp(baseGroup, "insuranceFreightBrandSupplier", "Страховка за бренд", DoubleClass.instance, freight, brandSupplier);
+        sumFreightFreight = addDProp(baseGroup, "sumFreightFreight", "Стоимость", NumericClass.get(14, 2), freight);
+        insuranceFreight = addDProp(baseGroup, "insuranceFreight", "Страховка", NumericClass.get(14, 2), freight);
+        insuranceFreightBrandSupplier = addDProp(baseGroup, "insuranceFreightBrandSupplier", "Страховка за бренд", NumericClass.get(14, 2), freight, brandSupplier);
         insuranceFreightBrandSupplierArticle = addJProp(baseGroup, "insuranceFreightBrandSupplierArticle", "Страховка за бренд", insuranceFreightBrandSupplier, 1, brandSupplierArticle, 2);
         insuranceFreightBrandSupplierSku = addJProp(baseGroup, "insuranceFreightBrandSupplierSku", "Страховка за бренд", insuranceFreightBrandSupplier, 1, brandSupplierArticleSku, 2);
 
@@ -3102,25 +3110,25 @@ public class RomanLogicsModule extends LogicsModule {
         compositionFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "compositionFreightArticleCompositionCountryCategory", "Состав",
                 mainCompositionFreightSku, 1, articleSku, 2, mainCompositionOriginFreightSku, 1, 2, countryOfOriginFreightSku, 1, 2, customCategory10FreightSku, 1, 2);
 
-        netWeightStockSku = addJProp(baseGroup, "netWeightStockSku", "Вес нетто", baseLM.multiplyDouble2, quantityStockSku, 1, 2, netWeightSku, 2);
+        netWeightStockSku = addJProp(baseGroup, "netWeightStockSku", "Вес нетто", multiplyNumeric2, quantityStockSku, 1, 2, netWeightSku, 2);
         netWeightStockArticle = addSGProp(baseGroup, "netWeightStockArticle", "Вес нетто", netWeightStockSku, 1, articleSku, 2);
         netWeightStock = addSGProp(baseGroup, "netWeightStock", "Вес нетто короба", netWeightStockSku, 1);
 
-        netWeightFreightSku = addDProp(baseGroup, "netWeightFreightSku", "Вес нетто (ед.)", DoubleClass.instance, freight, sku);
+        netWeightFreightSku = addDProp(baseGroup, "netWeightFreightSku", "Вес нетто (ед.)", NumericClass.get(14, 3), freight, sku);
         netWeightFreightSku.setDerivedValueForcedChange(addJProp(baseLM.and1, netWeightSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         addConstraint(addJProp("Для SKU должен быть задан вес нетто", and(true, false), is(freightChanged), 1, netWeightFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
-        netWeightImporterFreightUnitSku = addJProp(baseGroup, "netWeightImporterFreightUnitSku", "Вес нетто", baseLM.multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(netWeightFreightSku, freightFreightUnit, 1, 2), 2, 3);
+        netWeightImporterFreightUnitSku = addJProp(baseGroup, "netWeightImporterFreightUnitSku", "Вес нетто", multiplyNumeric2, quantityImporterStockSku, 1, 2, 3, addJProp(netWeightFreightSku, freightFreightUnit, 1, 2), 2, 3);
         netWeightImporterFreightUnitArticle = addSGProp(baseGroup, "netWeightImporterFreightUnitArticle", true, "Вес нетто", netWeightImporterFreightUnitSku, 1, 2, articleSku, 3);
 
         netWeightImporterFreightUnitTypeInvoice = addSGProp(baseGroup, "netWeightImporterFreightUnitTypeInvoice", "Вес нетто", netWeightImporterFreightUnitArticle, 1, 2, addJProp(typeInvoiceFreightArticle, freightFreightUnit, 2, 3), 1, 2, 3);
 
         netWeightImporterFreightUnit = addSGProp(baseGroup, "netWeightImporterFreightUnit", "Вес нетто", netWeightImporterFreightUnitSku, 1, 2);
 
-        netWeightImporterFreightSku = addJProp(baseGroup, "netWeightImporterFreightSku", "Вес нетто", baseLM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
-        netWeightProxyImporterFreightSku = addJProp(baseGroup, "netWeightProxyImporterFreightSku", "Вес нетто", baseLM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
-        netWeightDirectImporterFreightSku = addJProp(baseGroup, "netWeightDirectImporterFreightSku", "Вес нетто", baseLM.multiplyDouble2, quantityDirectImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
+        netWeightImporterFreightSku = addJProp(baseGroup, "netWeightImporterFreightSku", "Вес нетто", multiplyNumeric2, quantityImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
+        netWeightProxyImporterFreightSku = addJProp(baseGroup, "netWeightProxyImporterFreightSku", "Вес нетто", multiplyNumeric2, quantityProxyImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
+        netWeightDirectImporterFreightSku = addJProp(baseGroup, "netWeightDirectImporterFreightSku", "Вес нетто", multiplyNumeric2, quantityDirectImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
 
         netWeightImporterFreightArticle = addSGProp(baseGroup, "netWeightImporterFreightArticle", true, "Вес нетто", netWeightImporterFreightSku, 1, 2, articleSku, 3);
 
@@ -3152,7 +3160,7 @@ public class RomanLogicsModule extends LogicsModule {
         currentPalletRoute = addJProp(true, "currentPalletRoute", "Тек. паллета (ИД)", currentPalletRouteUser, 1, baseLM.currentUser);
         barcodeCurrentPalletRoute = addJProp("barcodeCurrentPalletRoute", "Тек. паллета (штрих-код)", baseLM.barcode, currentPalletRoute, 1);
 
-        sumNetWeightFreightSku = addJProp(baseGroup, "sumNetWeightFreightSku", "Вес нетто (всего)", baseLM.multiplyDouble2, quantityFreightSku, 1, 2, netWeightSku, 2);
+        sumNetWeightFreightSku = addJProp(baseGroup, "sumNetWeightFreightSku", "Вес нетто (всего)", multiplyNumeric2, quantityFreightSku, 1, 2, netWeightSku, 2);
 
         grossWeightCurrentPalletRoute = addJProp(true, "grossWeightCurrentPalletRoute", "Вес брутто", grossWeightPallet, currentPalletRoute, 1);
         grossWeightFreight = addSUProp(baseGroup, "freightGrossWeight", true, "Вес брутто (фрахт)", Union.SUM,
@@ -3164,14 +3172,14 @@ public class RomanLogicsModule extends LogicsModule {
                 grossWeightFreight, 1);
 
         grossWeightFreightSkuAggr = addJProp(baseGroup, "grossWeightFreightSkuAggr", "Вес брутто", baseLM.divideDouble3, sumGrossWeightFreightSku, 1, 2, quantityFreightSku, 1, 2);
-        grossWeightFreightSku = addDProp(baseGroup, "grossWeightFreightSku", "Вес брутто", DoubleClass.instance, freight, sku);
+        grossWeightFreightSku = addDProp(baseGroup, "grossWeightFreightSku", "Вес брутто", NumericClass.get(14, 3), freight, sku);
         grossWeightFreightSku.setDerivedValueForcedChange(addJProp(baseLM.and1, grossWeightFreightSkuAggr, 1, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         addConstraint(addJProp("Для SKU должен быть задан вес брутто", and(true, false), is(freightChanged), 1, grossWeightFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
-        grossWeightImporterFreightSku = addJProp(baseGroup, "grossWeightImporterFreightSku", "Вес брутто", baseLM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, grossWeightFreightSku, 2, 3);
-        grossWeightProxyImporterFreightSku = addJProp(baseGroup, "grossWeightProxyImporterFreightSku", "Вес брутто", baseLM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, grossWeightFreightSku, 2, 3);
-        grossWeightDirectImporterFreightSku = addJProp(baseGroup, "grossWeightDirectImporterFreightSku", "Вес брутто", baseLM.multiplyDouble2, quantityDirectImporterFreightSku, 1, 2, 3, grossWeightFreightSku, 2, 3);
+        grossWeightImporterFreightSku = addJProp(baseGroup, "grossWeightImporterFreightSku", "Вес брутто", multiplyNumeric2, quantityImporterFreightSku, 1, 2, 3, grossWeightFreightSku, 2, 3);
+        grossWeightProxyImporterFreightSku = addJProp(baseGroup, "grossWeightProxyImporterFreightSku", "Вес брутто", multiplyNumeric2, quantityProxyImporterFreightSku, 1, 2, 3, grossWeightFreightSku, 2, 3);
+        grossWeightDirectImporterFreightSku = addJProp(baseGroup, "grossWeightDirectImporterFreightSku", "Вес брутто", multiplyNumeric2, quantityDirectImporterFreightSku, 1, 2, 3, grossWeightFreightSku, 2, 3);
 
         grossWeightImporterFreightTypeInvoice = addSGProp(baseGroup, "grossWeightImporterFreightTypeInvoice", "Вес брутто", grossWeightProxyImporterFreightSku, 1, 2, typeInvoiceFreightSku, 2, 3);
         grossWeightImporterFreightCustomCategory6 = addSGProp(baseGroup, "grossWeightImporterFreightCustomCategory6", "Вес брутто", grossWeightProxyImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
@@ -3182,7 +3190,7 @@ public class RomanLogicsModule extends LogicsModule {
         grossWeightImporterFreightSupplier = addSGProp(baseGroup, "grossWeightImporterFreightSupplier", true, "Вес брутто", grossWeightDirectImporterFreightSku, 1, 2, supplierArticleSku, 3);
 
         grossWeightImporterFreight = addSGProp(baseGroup, "grossWeightImporterFreight", "Вес брутто", grossWeightProxyImporterFreightSku, 1, 2);
-        grossWeightImporterFreightUnitSku = addJProp(baseGroup, "grossWeightImporterFreightUnitSku", "Вес брутто", baseLM.multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(grossWeightFreightSku, freightFreightUnit, 2, 3), 1, 2, 3);
+        grossWeightImporterFreightUnitSku = addJProp(baseGroup, "grossWeightImporterFreightUnitSku", "Вес брутто", multiplyNumeric2, quantityImporterStockSku, 1, 2, 3, addJProp(grossWeightFreightSku, freightFreightUnit, 2, 3), 1, 2, 3);
         grossWeightImporterFreightUnitArticle = addSGProp(baseGroup, "grossWeightImporterFreightUnitArticle", "Вес брутто", grossWeightImporterFreightUnitSku, 1, 2, articleSku, 3);
 
         grossWeightImporterFreightUnitTypeInvoice = addSGProp(baseGroup, "grossWeightImporterFreightUnitTypeInvoice", "Вес брутто", grossWeightImporterFreightUnitArticle, 1, 2, addJProp(typeInvoiceFreightArticle, freightFreightUnit, 2, 3), 1, 2, 3);
@@ -3192,7 +3200,7 @@ public class RomanLogicsModule extends LogicsModule {
                 grossWeightProxyImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
 
         // цены, надбавки, пошлины, налоги
-        priceImporterFreightSku = addDProp(baseGroup, "priceImporterFreightSku", "Цена входная", DoubleClass.instance, importer, freight, sku);
+        priceImporterFreightSku = addDProp(baseGroup, "priceImporterFreightSku", "Цена входная", NumericClass.get(14, 2), importer, freight, sku);
 //        priceMaxImporterFreightSku = addMGProp(baseGroup, "priceMaxImporterFreightSku", true, "Цена входная", priceInInvoiceFreightUnitSku, importerDirectInvoice, 1, freightFreightUnit, 2, 3);
         priceProxyImporterFreightSku = addMGProp(baseGroup, "priceProxyImporterFreightSku", true, "Цена входная", priceInShipmentStockSku, importerShipmentFreightBox, 1, 2, freightFreightUnit, 2, 3);
         priceDirectImporterFreightSku = addMGProp(baseGroup, "priceDirectImporterFreightSku", true, "Цена входная", priceRateSupplierBoxSku, importerSupplierBox, 1, freightFreightUnit, 1, 2);
@@ -3200,7 +3208,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         priceInFreightSku = addMGProp(baseGroup, "priceInFreightSku", true, "Цена входная", priceInImporterFreightSku, 2, 3);
 
-        RRPImporterFreightSku = addDProp(baseGroup, "RRPImporterFreightSku", "Цена рекомендованная", DoubleClass.instance, importer, freight, sku);
+        RRPImporterFreightSku = addDProp(baseGroup, "RRPImporterFreightSku", "Цена рекомендованная", NumericClass.get(14, 2), importer, freight, sku);
         RRPProxyImporterFreightSku = addMGProp(baseGroup, "RRPProxyImporterFreightSku", true, "Цена рекомендованная", RRPInShipmentStockSku, importerShipmentFreightBox, 1, 2, freightFreightUnit, 2, 3);
         RRPDirectImporterFreightSku = addMGProp(baseGroup, "RRPDirectImporterFreightSku", true, "Цена рекомендованная", RRPRateSupplierBoxSku, importerSupplierBox, 1, freightFreightUnit, 1, 2);
         RRPInImporterFreightSku = addSUProp(baseGroup, "RRPInImporterFreightSku", "Цена рекомендованная", Union.OVERRIDE, RRPDirectImporterFreightSku, RRPProxyImporterFreightSku, RRPImporterFreightSku);
@@ -3209,8 +3217,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         addConstraint(addJProp("Для SKU должна быть задана входная цена", and(true, false), is(freightPriced), 2, priceInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), false);
 
-        sumInImporterStockSku = addJProp(baseGroup, "sumInImporterStockSku", "Сумма входная", baseLM.multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(priceInImporterFreightSku, 1, freightFreightBox, 2, 3), 1, 2, 3);
-        sumInImporterFreightSku = addJProp(baseGroup, "sumInImporterFreightSku", "Сумма входная", baseLM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, priceInImporterFreightSku, 1, 2, 3);
+        sumInImporterStockSku = addJProp(baseGroup, "sumInImporterStockSku", "Сумма входная", multiplyNumeric2, quantityImporterStockSku, 1, 2, 3, addJProp(priceInImporterFreightSku, 1, freightFreightBox, 2, 3), 1, 2, 3);
+        sumInImporterFreightSku = addJProp(baseGroup, "sumInImporterFreightSku", "Сумма входная", multiplyNumeric2, quantityImporterFreightSku, 1, 2, 3, priceInImporterFreightSku, 1, 2, 3);
 
         contractInProxyImporterStockSku = addMGProp(baseGroup, "contractInProxyImporterStockSku", true, "Договор (ИД)", contractInShipmentStockSku, importerShipmentFreightBox, 1, 2, 2, 3);
         sidContractInProxyImporterStockSku = addJProp(baseGroup, "sidContractInProxyImporterStockSku", "Номер договора", sidContract, contractInProxyImporterStockSku, 1, 2, 3);
@@ -3223,37 +3231,37 @@ public class RomanLogicsModule extends LogicsModule {
         priceFreightImporterFreightSku = addJProp(baseGroup, "priceFreightImporterFreightSku", true, "Цена за фрахт", baseLM.divideDouble2, sumFreightImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
         //priceExpenseImporterFreightSku = addJProp(baseGroup, "priceExpenseImporterFreightSku", "Цена затр.", baseLM.sumDouble2, priceInImporterFreightSku, 1, 2, 3, priceFreightImporterFreightSku, 1, 2, 3);
 
-        markupPercentImporterFreightBrandSupplier = addDProp(baseGroup, "markupPercentImporterFreightBrandSupplier", "Надбавка (%)", DoubleClass.instance, importer, freight, brandSupplier);
+        markupPercentImporterFreightBrandSupplier = addDProp(baseGroup, "markupPercentImporterFreightBrandSupplier", "Надбавка (%)", NumericClass.get(14, 2), importer, freight, brandSupplier);
 
         markupPercentImporterFreightBrandSupplierArticle = addJProp(baseGroup, "markupPercentImporterFreightBrandSupplierArticle", "Надбавка (%)", baseLM.and1, addJProp(markupPercentImporterFreightBrandSupplier, 1, 2, brandSupplierArticle, 3), 1, 2, 3, quantityImporterFreightArticle, 1, 2, 3);
-        markupPercentImporterFreightDataArticle = addDProp(baseGroup, "markupPercentImporterFreightDataArticle", "Надбавка (%)", DoubleClass.instance, importer, freight, article);
+        markupPercentImporterFreightDataArticle = addDProp(baseGroup, "markupPercentImporterFreightDataArticle", "Надбавка (%)", NumericClass.get(14, 2), importer, freight, article);
         markupPercentImporterFreightArticle = addSUProp(baseGroup, "markupPercentImporterFreightArticle", true, "Надбавка (%)", Union.OVERRIDE, markupPercentImporterFreightBrandSupplierArticle, markupPercentImporterFreightDataArticle);
         markupPercentImporterFreightArticleSku = addJProp(baseGroup, "markupPercentImporterFreightArticleSku", "Надбавка (%)", markupPercentImporterFreightArticle, 1, 2, articleSku, 3);
 
-        markupPercentImporterFreightDataSku = addDProp(baseGroup, "markupPercentImporterFreightDataSku", "Надбавка (%)", DoubleClass.instance, importer, freight, sku);
+        markupPercentImporterFreightDataSku = addDProp(baseGroup, "markupPercentImporterFreightDataSku", "Надбавка (%)", NumericClass.get(14, 2), importer, freight, sku);
         markupPercentImporterFreightBrandSupplierSku = addJProp(baseGroup, "markupPercentImporterFreightBrandSupplierSku", true, "Надбавка (%)", baseLM.and1, addJProp(markupPercentImporterFreightBrandSupplier, 1, 2, brandSupplierArticleSku, 3), 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
         markupPercentImporterFreightSku = addSUProp(baseGroup, "markupPercentImporterFreightSku", true, "Надбавка (%)", Union.OVERRIDE, markupPercentImporterFreightArticleSku, markupPercentImporterFreightDataSku);
 
-        sumPercentImporterFreightBrandSupplier = addSGProp(baseGroup, "sumPercentImporterFreightBrandSupplier", true, "Сумма процентов надбавок", addJProp(baseLM.multiplyDouble2, markupPercentImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, brandSupplierArticleSku, 3);
+        sumPercentImporterFreightBrandSupplier = addSGProp(baseGroup, "sumPercentImporterFreightBrandSupplier", true, "Сумма процентов надбавок", addJProp(multiplyNumeric2, markupPercentImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, brandSupplierArticleSku, 3);
         averagePercentImporterFreightBrandSupplier = addJProp(baseGroup, "averagePercentImporterFreightBrandSupplier", "Средний процент надбавки", baseLM.round0, addJProp(baseLM.divideDouble2, sumPercentImporterFreightBrandSupplier, 1, 2, 3, quantityImporterFreightBrandSupplier, 1, 2, 3), 1, 2, 3);
 
         minPriceCustomCategoryFreightSku = addJProp(baseGroup, "minPriceCustomCategoryFreightSku", "Минимальная цена ($)", minPriceCustomCategory10SubCategory, customCategory10FreightSku, 1, 2, subCategoryFreightSku, 1, 2);
         minPriceCustomCategoryCountryFreightSku = addJProp(baseGroup, "minPriceCustomCategoryCountryFreightSku", "Минимальная цена для страны ($)", minPriceCustomCategory10SubCategoryCountry, customCategory10FreightSku, 1, 2, subCategoryFreightSku, 1, 2, countryOfOriginFreightSku, 1, 2);
 
-        minPriceRateCustomCategoryFreightSku = addJProp(baseGroup, "minPriceRateCustomCategoryFreightSku", true, "Минимальная цена (евро)", round2, addJProp(baseLM.multiplyDouble2, minPriceCustomCategoryFreightSku, 1, 2, addJProp(nearestRateExchange, typeExchangeCustom, currencyCustom, 1), 1), 1, 2);
-        minPriceRateCustomCategoryCountryFreightSku = addJProp(baseGroup, "minPriceRateCustomCategoryCountryFreightSku", true, "Минимальная цена (евро)", round2, addJProp(baseLM.multiplyDouble2, minPriceCustomCategoryCountryFreightSku, 1, 2, addJProp(nearestRateExchange, typeExchangeCustom, currencyCustom, 1), 1), 1, 2);
+        minPriceRateCustomCategoryFreightSku = addJProp(baseGroup, "minPriceRateCustomCategoryFreightSku", true, "Минимальная цена (евро)", round2, addJProp(multiplyNumeric2, minPriceCustomCategoryFreightSku, 1, 2, addJProp(nearestRateExchange, typeExchangeCustom, currencyCustom, 1), 1), 1, 2);
+        minPriceRateCustomCategoryCountryFreightSku = addJProp(baseGroup, "minPriceRateCustomCategoryCountryFreightSku", true, "Минимальная цена (евро)", round2, addJProp(multiplyNumeric2, minPriceCustomCategoryCountryFreightSku, 1, 2, addJProp(nearestRateExchange, typeExchangeCustom, currencyCustom, 1), 1), 1, 2);
 
         minPriceRateFreightSku = addSUProp(baseGroup, "minPriceRateFreightSku", "Минимальная цена (евро)", Union.OVERRIDE, minPriceRateCustomCategoryFreightSku, minPriceRateCustomCategoryCountryFreightSku);
         minPriceRateImporterFreightSku = addJProp(baseGroup, "minPriceImporterFreightSku", "Минимальная цена (евро)", baseLM.and1, minPriceRateFreightSku, 2, 3, is(importer), 1);
         minPriceRateImporterFreightArticle = addMGProp(baseGroup, "minPriceRateImporterFreightArticle", true, "Минимальная для артикула за кг", minPriceRateImporterFreightSku, 1, 2, articleSku, 3);
 
-        minPriceRateWeightImporterFreightSku = addJProp(baseGroup, "minPriceRateWeightImporterFreightSku", "Минимальная для веса", round2, addJProp(baseLM.multiplyDouble2, minPriceRateImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3), 1, 2, 3);
+        minPriceRateWeightImporterFreightSku = addJProp(baseGroup, "minPriceRateWeightImporterFreightSku", "Минимальная для веса", round2, addJProp(multiplyNumeric2, minPriceRateImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3), 1, 2, 3);
 
         // sku
         markupInImporterFreightSku = addJProp(baseGroup, "markupInImporterFreightSku", "Надбавка", baseLM.percent2, priceInImporterFreightSku, 1, 2, 3, markupPercentImporterFreightSku, 1, 2, 3);
         priceMarkupInImporterFreightSku = addJProp(baseGroup, "priceMarkupInImporterFreightSku", "Цена выходная", baseLM.sumDouble2, priceInImporterFreightSku, 1, 2, 3, markupInImporterFreightSku, 1, 2, 3);
 
-        priceInOutImporterFreightSku = addDProp(baseGroup, "priceInOutImporterFreightSku", "Цена выходная", DoubleClass.instance, importer, freightPriced, sku);
+        priceInOutImporterFreightSku = addDProp(baseGroup, "priceInOutImporterFreightSku", "Цена выходная", NumericClass.get(14, 2), importer, freightPriced, sku);
         priceInOutImporterFreightSku.setDerivedValueChange(addJProp(baseLM.and1, priceMarkupInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, 3, is(freightPriced), 2, markupPercentImporterFreightSku, 1, 2, 3);
 
         priceImporterFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "priceImporterFreightArticleCompositionCountryCategory", false, "Цена", true, priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
@@ -3263,25 +3271,25 @@ public class RomanLogicsModule extends LogicsModule {
 
         markupInOutImporterFreightSku = addDUProp(baseGroup, "markupInOutImporterFreightSku", "Надбавка", priceInvoiceImporterFreightSku, priceInImporterFreightSku);
 
-        sumInvoiceImporterStockSku = addJProp(baseGroup, "sumInvoiceImporterStockSku", "Сумма", baseLM.multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(priceInvoiceImporterFreightSku, 1, freightFreightBox, 2, 3), 1, 2, 3);
+        sumInvoiceImporterStockSku = addJProp(baseGroup, "sumInvoiceImporterStockSku", "Сумма", multiplyNumeric2, quantityImporterStockSku, 1, 2, 3, addJProp(priceInvoiceImporterFreightSku, 1, freightFreightBox, 2, 3), 1, 2, 3);
 
-        sumImporterFreightSku = addJProp(baseGroup, "sumImporterFreightSku", "Сумма", baseLM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
-        sumProxyImporterFreightSku = addJProp(baseGroup, "sumProxyImporterFreightSku", "Сумма", baseLM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, priceInvoiceImporterFreightSku, 1, 2, 3);
-        sumDirectImporterFreightSku = addJProp(baseGroup, "sumDirectImporterFreightSku", "Сумма", baseLM.multiplyDouble2, quantityDirectImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
+        sumImporterFreightSku = addJProp(baseGroup, "sumImporterFreightSku", "Сумма", multiplyNumeric2, quantityImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
+        sumProxyImporterFreightSku = addJProp(baseGroup, "sumProxyImporterFreightSku", "Сумма", multiplyNumeric2, quantityProxyImporterFreightSku, 1, 2, 3, priceInvoiceImporterFreightSku, 1, 2, 3);
+        sumDirectImporterFreightSku = addJProp(baseGroup, "sumDirectImporterFreightSku", "Сумма", multiplyNumeric2, quantityDirectImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
         sumImporterFreightCustomCategory6 = addSGProp(baseGroup, "sumImporterFreightCustomCategory6", true, "Сумма", sumProxyImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
         sumImporterFreightCustomCategory6Category = addSGProp(baseGroup, "sumImporterFreightCustomCategory6Category", "Сумма", sumProxyImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3, categoryArticleSku, 3);
         sumImporterFreightSupplierCustomCategory6Category = addSGProp(baseGroup, "sumImporterFreightSupplierCustomCategory6Category", "Сумма", sumDirectImporterFreightSku, 1, 2, supplierArticleSku, 3, customCategory6FreightSku, 2, 3, categoryArticleSku, 3);
         sumImporterFreightSupplierCustomCategory6 = addSGProp(baseGroup, "sumImporterFreightSupplierCustomCategory6", true, "Сумма", sumDirectImporterFreightSku, 1, 2, supplierArticleSku, 3, customCategory6FreightSku, 2, 3);
 
-        sumImporterFreightUnitSku = addJProp(baseGroup, "sumImporterFreightUnitSku", "Сумма", baseLM.multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(priceInOutImporterFreightSku, 1, freightFreightUnit, 2, 3), 1, 2, 3);
+        sumImporterFreightUnitSku = addJProp(baseGroup, "sumImporterFreightUnitSku", "Сумма", multiplyNumeric2, quantityImporterStockSku, 1, 2, 3, addJProp(priceInOutImporterFreightSku, 1, freightFreightUnit, 2, 3), 1, 2, 3);
 
         sumImporterFreightUnitArticle = addSGProp(baseGroup, "sumImporterFreightUnitArticle", "Сумма", sumImporterFreightUnitSku, 1, 2, articleSku, 3);
 
-        sumImporterFreightArticleCompositionCountryCategory = addJProp(baseGroup, "sumImporterFreightArticleCompositionCountryCategory", "Сумма", baseLM.multiplyDouble2,
+        sumImporterFreightArticleCompositionCountryCategory = addJProp(baseGroup, "sumImporterFreightArticleCompositionCountryCategory", "Сумма", multiplyNumeric2,
                 quantityImporterFreightArticleCompositionCountryCategory, 1, 2, 3, 4, 5, 6,
                 priceImporterFreightArticleCompositionCountryCategory, 1, 2, 3, 4, 5, 6);
 
-        sumProxyInvoiceImporterFreightSku = addJProp(baseGroup, "sumProxyInvoiceImporterFreightSku", "Сумма в инвойсе", baseLM.multiplyDouble2,
+        sumProxyInvoiceImporterFreightSku = addJProp(baseGroup, "sumProxyInvoiceImporterFreightSku", "Сумма в инвойсе", multiplyNumeric2,
                 quantityProxyImporterFreightSku, 1, 2, 3,
                 priceInvoiceImporterFreightSku, 1, 2, 3);
 
@@ -3293,9 +3301,9 @@ public class RomanLogicsModule extends LogicsModule {
         sumSbivkaImporterFreight = addSGProp(baseGroup, "sumSbivkaImporterFreight", "Сумма выходная", sumProxyImporterFreightSku, 1, 2);
         sumImporterFreightSupplier = addSGProp(baseGroup, "sumImporterFreightSupplier", "Сумма выходная", sumDirectImporterFreightSku, 1, 2, supplierArticleSku, 3);
 
-        sumMarkupInImporterFreightSku = addJProp(baseGroup, "sumMarkupInImporterFreightSku", "Сумма надбавки", baseLM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, markupInOutImporterFreightSku, 1, 2, 3);
-        sumInOutProxyImporterFreightSku = addJProp(baseGroup, "sumInOutProxyImporterFreightSku", "Сумма выходная", baseLM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, priceInvoiceImporterFreightSku, 1, 2, 3);
-        sumInOutDirectImporterFreightSku = addJProp(baseGroup, "sumInOutDirectImporterFreightSku", "Сумма выходная", baseLM.multiplyDouble2, quantityDirectImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
+        sumMarkupInImporterFreightSku = addJProp(baseGroup, "sumMarkupInImporterFreightSku", "Сумма надбавки", multiplyNumeric2, quantityImporterFreightSku, 1, 2, 3, markupInOutImporterFreightSku, 1, 2, 3);
+        sumInOutProxyImporterFreightSku = addJProp(baseGroup, "sumInOutProxyImporterFreightSku", "Сумма выходная", multiplyNumeric2, quantityProxyImporterFreightSku, 1, 2, 3, priceInvoiceImporterFreightSku, 1, 2, 3);
+        sumInOutDirectImporterFreightSku = addJProp(baseGroup, "sumInOutDirectImporterFreightSku", "Сумма выходная", multiplyNumeric2, quantityDirectImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
         sumInOutImporterFreightSku = addSUProp(baseGroup, "sumInOutImporterFreightSku", true, "Сумма выходная", Union.SUM, sumInOutProxyImporterFreightSku, sumInOutDirectImporterFreightSku);
 
         sumInImporterFreightArticle = addSGProp(baseGroup, "sumInImporterFreightArticle", true, "Итого по ценам поставщика (импортер)", sumInImporterFreightSku, 1, 2, articleSku, 3);
@@ -3316,7 +3324,7 @@ public class RomanLogicsModule extends LogicsModule {
         sumInOutImporterFreight = addSGProp(baseGroup, "sumInOutImporterFreight", true, "Сумма выходная", sumInOutImporterFreightSku, 1, 2);
         sumInOutFreight = addSGProp(baseGroup, "sumInOutFreight", true, true, "Сумма выходная", sumInOutImporterFreight, 2);
         // временно так пока система сама не научится либо обнаруживать равные свойства, либо решать проблему с инкрементностью по другому
-        insuranceImporterFreightSku = addJProp("insuranceImporterFreightSku", true, "Сумма за страховку", addSFProp("ROUND(CAST((prm1*prm2/prm3) as NUMERIC(15,3))," + 10 + ")", DoubleClass.instance, 3), sumInOutImporterFreightSku, 1, 2, 3, insuranceFreightBrandSupplierSku, 2, 3, sumInOutFreightBrandSupplierSku, 2, 3);
+        insuranceImporterFreightSku = addJProp("insuranceImporterFreightSku", true, "Сумма за страховку", addSFProp("ROUND(CAST((prm1*prm2/prm3) as NUMERIC(15,3))," + 10 + ")", NumericClass.get(14, 2), 3), sumInOutImporterFreightSku, 1, 2, 3, insuranceFreightBrandSupplierSku, 2, 3, sumInOutFreightBrandSupplierSku, 2, 3);
         //addPGProp(baseGroup, "insuranceImporterFreightSku", false, 2, false, "Сумма страховки",
         //        sumInOutImporterFreightSku,
         //        insuranceFreight, 2);
@@ -3328,7 +3336,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         priceFullKgImporterFreightSku = addJProp(baseGroup, "priceFullKgImporterFreightSku", "Цена за кг", baseLM.divideDouble2, priceFullImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
 
-        sumFullImporterFreightArticle = addSGProp(baseGroup, "sumFullImporterFreightArticle", true, "Сумма", addJProp(baseLM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, priceFullImporterFreightSku, 1, 2, 3), 1, 2, articleSku, 3);
+        sumFullImporterFreightArticle = addSGProp(baseGroup, "sumFullImporterFreightArticle", true, "Сумма", addJProp(multiplyNumeric2, quantityImporterFreightSku, 1, 2, 3, priceFullImporterFreightSku, 1, 2, 3), 1, 2, articleSku, 3);
 
         priceFullKgImporterFreightArticle = addJProp(baseGroup, "priceFullKgImporterFreightArticle", "Цена за кг", baseLM.divideDouble2, sumFullImporterFreightArticle, 1, 2, 3, netWeightImporterFreightArticle, 1, 2, 3);
 
@@ -3338,7 +3346,7 @@ public class RomanLogicsModule extends LogicsModule {
         diffPriceMinPriceImporterFreightSku = addDUProp(baseGroup, "diffPriceMinPriceImporterFreightSku", "Разница цен", minPriceRateImporterFreightSku, priceFullKgImporterFreightSku);
         greaterPriceMinPriceImporterFreightSku = addJProp(baseGroup, "greaterPriceMinPriceImporterFreightSku", "Недостаточность цены", baseLM.greater2, diffPriceMinPriceImporterFreightSku, 1, 2, 3, baseLM.vzero);
 
-        dutyNetWeightFreightSku = addJProp(baseGroup, "dutyNetWeightFreightSku", "Пошлина по весу нетто", baseLM.multiplyDouble2, netWeightFreightSku, 1, 2, addJProp(dutySumCustomCategory10TypeDuty, customCategory10FreightSku, 1, 2, typeDutyDuty), 1, 2);
+        dutyNetWeightFreightSku = addJProp(baseGroup, "dutyNetWeightFreightSku", "Пошлина по весу нетто",multiplyNumeric2, netWeightFreightSku, 1, 2, addJProp(dutySumCustomCategory10TypeDuty, customCategory10FreightSku, 1, 2, typeDutyDuty), 1, 2);
         dutyNetWeightImporterFreightSku = addJProp(baseGroup, "dutyNetWeightImpoterFreightSku", "Пошлина по весу нетто", baseLM.and1, dutyNetWeightFreightSku, 2, 3, is(importer), 1);
 
         dutyPercentImporterFreightSku = addJProp(baseGroup, "dutyPercentImporterFreightSku", "Пошлина по цене", baseLM.percent2, priceFullImporterFreightSku, 1, 2, 3, addJProp(dutyPercentCustomCategory10TypeDuty, customCategory10FreightSku, 2, 3, typeDutyDuty), 1, 2, 3);
@@ -3349,7 +3357,7 @@ public class RomanLogicsModule extends LogicsModule {
         priceFullDutyImporterFreightSku = addSUProp(baseGroup, "priceFullDutyImporterFreightSku", "Цена с пошлиной", Union.SUM, priceFullImporterFreightSku, dutyImporterFreightSku);
         priceInFullDutyImporterFreightSku = addSUProp(baseGroup, "priceInFullDutyImporterFreightSku", "Цена с пошлиной (УУ)", Union.SUM, priceInFullImporterFreightSku, dutyImporterFreightSku);
 
-        sumDutyImporterFreightSku = addJProp(baseGroup, "sumDutyImporterFreightSku", "Сумма пошлины", baseLM.multiplyDouble2, dutyImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
+        sumDutyImporterFreightSku = addJProp(baseGroup, "sumDutyImporterFreightSku", "Сумма пошлины", multiplyNumeric2, dutyImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
         sumDutyImporterFreight = addSGProp(baseGroup, "sumDutyImporterFreight", true, "Сумма пошлины", sumDutyImporterFreightSku, 1, 2);
 
         NDSPercentOriginFreightSku = addJProp(baseGroup, "NDSPercentOriginFreightSku", "НДС (%)", dutyPercentCustomCategory10TypeDuty, customCategory10FreightSku, 1, 2, typeDutyNDS);
@@ -3360,7 +3368,7 @@ public class RomanLogicsModule extends LogicsModule {
         priceFullDutyNDSImporterFreightSku = addSUProp(baseGroup, "priceFullDutyNDSImporterFreightSku", "Цена с расходами", Union.SUM, priceInFullDutyImporterFreightSku, NDSImporterFreightSku);
         priceFullDutyNDSFreightSku = addMGProp(baseGroup, "priceFullDutyNDSFreightSku", true, "Цена с расходами", priceFullDutyNDSImporterFreightSku, 2, 3);
 
-        sumNDSImporterFreightSku = addJProp(baseGroup, "sumNDSImporterFreightSku", "Сумма НДС", baseLM.multiplyDouble2, NDSImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
+        sumNDSImporterFreightSku = addJProp(baseGroup, "sumNDSImporterFreightSku", "Сумма НДС", multiplyNumeric2, NDSImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
         sumNDSImporterFreight = addSGProp(baseGroup, "sumNDSImporterFreight", true, "Сумма НДС", sumNDSImporterFreightSku, 1, 2);
 
         sumRegistrationFreightSku = addJProp(baseGroup, "sumRegistrationFreightSku", "За оформление", dutyPercentCustomCategory10TypeDuty, customCategory10FreightSku, 1, 2, typeDutyRegistration);
@@ -3923,6 +3931,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(nameTypeExchangeSTX);
             addPropertyDraw(nameTypeExchangeCustom);
             addPropertyDraw(nameTypeExchangePayCustom);
+            addPropertyDraw(nameTypeExchangeRetail);
             addPropertyDraw(nameCurrencyCustom);
             addPropertyDraw(nameCurrencyPayCustom);
             addPropertyDraw(NDSPercentCustom);
@@ -5276,6 +5285,7 @@ public class RomanLogicsModule extends LogicsModule {
             objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, nameRouteCreationPalletPallet, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.PANEL);
             setSelector(objPallet, true);
+            setSelector(grossWeightPallet, false);
             setReadOnly(grossWeightPallet, false);
 
             objBox = addSingleGroupObject(freightBox, "Короб для транспортировки", baseLM.barcode, nameRouteCreationFreightBoxFreightBox, quantityStock, netWeightStock);
@@ -8008,30 +8018,30 @@ public class RomanLogicsModule extends LogicsModule {
 
             objArticleComposite = addSingleGroupObject(articleComposite, "Артикул", sidArticle);
             objArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objArticleComposite, true);
+            setSelector(objArticleComposite, true);
 
 //            objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Артикул (новый)", baseLM.objectValue);
 //            objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет поставщика", sidColorSupplier, baseLM.name);
             objColorSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objColorSupplier, true);
+            setSelector(objColorSupplier, true);
 
             objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер поставщика", sidSizeSupplier);
             objSizeSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objSizeSupplier, true);
+            setSelector(objSizeSupplier, true);
 
             objSeasonSupplier = addSingleGroupObject(seasonSupplier, "Сезон поставщика", sidSeasonSupplier, baseLM.name);
             objSeasonSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objSeasonSupplier, true);
+            setSelector(objSeasonSupplier, true);
 
             objThemeSupplier = addSingleGroupObject(themeSupplier, "Тема поставщика", sidThemeSupplier, baseLM.name);
             objThemeSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objThemeSupplier, true);
+            setSelector(objThemeSupplier, true);
 
             objGenderSupplier = addSingleGroupObject(genderSupplier, "Пол поставщика", sidGenderSupplier, baseLM.name);
             objGenderSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objGenderSupplier, true);
+            setSelector(objGenderSupplier, true);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierArticle, objArticleComposite), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColorSupplier), Compare.EQUALS, objSupplier));
