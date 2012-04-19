@@ -53,6 +53,7 @@
 	<field name="retail_fullNameSenderConsignment" class="java.lang.String"/>
 	<field name="retail_fullNameRecipientConsignment" class="java.lang.String"/>
 	<field name="retail_fullNameTransportPayerConsignment" class="java.lang.String"/>
+	<field name="retail_quantityConsignmentDetailsConsignment" class="java.lang.Integer"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="retail_nameItemConsignmentDetail" class="java.lang.String"/>
 	<field name="retail_shortNameConsignmentDetail" class="java.lang.String"/>
@@ -74,6 +75,25 @@
 	</group>
 	<group name="textGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{c})]]></groupExpression>
+		<groupHeader>
+			<band height="12">
+				<printWhenExpression><![CDATA[$F{retail_quantityConsignmentDetailsConsignment}>5]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="555" height="12" backcolor="#FFFFFF"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+						<paragraph firstLineIndent="25"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Ассортимент товара в соответствии с приложением на "+"листах"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
 	</group>
 	<title>
 		<band height="293">
@@ -460,6 +480,7 @@
 	</pageHeader>
 	<detail>
 		<band height="18">
+			<printWhenExpression><![CDATA[$F{retail_quantityConsignmentDetailsConsignment}<6]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" mode="Transparent" x="24" y="0" width="112" height="18"/>
 				<textElement textAlignment="Left">
