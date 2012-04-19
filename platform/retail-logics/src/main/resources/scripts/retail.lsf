@@ -8806,20 +8806,25 @@ sumCostConsignmentDetail 'Общая стоимость' (consignment) = UNION E
                                                                            accountSumInnerFlow(consignment) IN sumConsignmentGroup;
 
 vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION EXCLUSIVE dataActingRateRangeStatementDetail (consignmentDetail),
-                                                                        dataSuppliersRangeReturnSupplierDetail (consignmentDetail),
-                                                                        dataRetailRangeInnerFlowDetail (consignmentDetail);
+                                                                               dataSuppliersRangeReturnSupplierDetail (consignmentDetail),
+                                                                               dataRetailRangeInnerFlowDetail (consignmentDetail);
 
 sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION EXCLUSIVE totalSumNDSStatementDetail (consignmentDetail),
                                                                           sumDetailSupplierVATReturnSupplierDetail (consignmentDetail),
                                                                           sumRetailVATInnerFlowDetail (consignmentDetail);
 
 totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNION EXCLUSIVE sumNDSStatement (consignment),
-                                                                               totalSumIncVATReturnSupplier (consignment),
-                                                                               totalSumRetailVATInnerFlow (consignment) IN sumConsignmentGroup;
+                                                                                      totalSumIncVATReturnSupplier (consignment),
+                                                                                      totalSumRetailVATInnerFlow (consignment) IN sumConsignmentGroup;
 
 costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION EXCLUSIVE sumStatementDetail (consignmentDetail),
                                                                                  sumSupplierReturnSupplierDetail (consignmentDetail),
                                                                                  accountSumInnerFlowDetail (consignmentDetail);
+
+costWithVATConsignment 'Сумма с НДС' (consignment) = UNION EXCLUSIVE sumStatement (consignment),
+                                                                     totalSumSupplierReturnSupplier (consignment),
+                                                                     accountSumInnerFlow (consignment) IN sumConsignmentGroup;
+
 
 packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = UNION EXCLUSIVE packQuantityStatementDetail(consignmentDetail),
                                                                                                packQuantityReturnSupplierDetail(consignmentDetail),
@@ -8851,7 +8856,7 @@ META metaCodeConsignmentTwo(prop, caption)
 
         PROPERTIES (c) dateConsignment, shipmentBaseConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                        forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
-                       sumQuantityConsignment, sumCostConsignmentDetail, totalSumVATConsignmentDetail, UNPRecipientConsignment,
+                       sumQuantityConsignment, sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment, UNPRecipientConsignment,
                        UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
                        fullNameRecipientConsignment, numberObject, seriesObject, quantityConsignmentDetailsConsignment
 
@@ -8883,7 +8888,7 @@ META metaCodeTransportConsignment(prop, caption)
                        commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                        arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
                        sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
-                       sumCostConsignmentDetail, totalSumVATConsignmentDetail, UNPRecipientConsignment, UNPSenderConsignment,
+                       sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment, UNPRecipientConsignment, UNPSenderConsignment,
                        addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment, fullNameRecipientConsignment,
                        quantityConsignmentDetailsConsignment
 
@@ -9828,7 +9833,7 @@ FORM returnSupplier 'Возврат поставщику'
                   commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                   arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
                   sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
-                  sumCostConsignmentDetail, totalSumVATConsignmentDetail
+                  sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment
 
     OBJECTS d=returnSupplierDetail
     PROPERTIES(d) numberReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
@@ -10646,7 +10651,7 @@ FORM innerFlow 'Расход в другой отдел'
                    commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                    arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
                    sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
-                   sumCostConsignmentDetail, totalSumVATConsignmentDetail
+                   sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) numberInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
@@ -11113,7 +11118,7 @@ FORM statement 'Отгрузка из розницы'
                    commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                    arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
                    sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
-                   sumCostConsignmentDetail, totalSumVATConsignmentDetail
+                   sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment
 
     OBJECTS d=statementDetail
     PROPERTIES (d)  numberStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
