@@ -449,7 +449,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (targetTable == null) {
                 errLog.emitNotFoundError(parser, "table", table);
             } else if (!targetTable.equalClasses(property.property.getMapClasses())) {
-                errLog.emitWrongClassesForTable(parser, name, table);
+                // todo : проверка неправильная - должна быть на ClassWhere
+                //errLog.emitWrongClassesForTable(parser, name, table);
             }
         }
         if (property.property instanceof StoredDataProperty) {
