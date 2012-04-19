@@ -9874,8 +9874,8 @@ FORM returnSuppliers 'Возвраты поставщику'
                            totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier, retailSumReturnSupplier
     PROPERTIES (r) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES(r) FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
-                              toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,
+    PROPERTIES(r) FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentVerticalB,
+                              toPrintTransportConsignmentHorizontalA, toPrintTransportConsignmentHorizontalB,
                               toPrintConsignmentTwoHorizontal,
                               toPrintConsignmentTwoVertical, toPrintConsignmentTwoAttach,
                               toPrintActOfRevaluationReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
@@ -10735,8 +10735,8 @@ FORM innerFlows 'Расходы в другие отделы'
                             totalQuantityInnerFlow, accountSumInnerFlow
 
     PROPERTIES(f) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-    PROPERTIES (f) FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
-                               toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,
+    PROPERTIES (f) FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentVerticalB,
+                               toPrintTransportConsignmentHorizontalA, toPrintTransportConsignmentHorizontalB,
                                toPrintConsignmentTwoHorizontal, toPrintConsignmentTwoVertical, toPrintConsignmentTwoAttach
 
     PROPERTIES (f) ADDFORM, EDITFORM SHOWIF isDraftInnerFlow(f), delete FORCE PANEL SHOWIF isDraftInnerFlow(f),
@@ -11209,8 +11209,8 @@ FORM statements 'Отгрузки из розницы'
     PROPERTIES (st)  READONLY objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameDepartmentStoreStatement,
                      nameCustomerStatement, quantityStatementDetailsStatement, totalQuantityStatement,
                      sumWithoutNDSStatement, sumNDSStatement, sumStatement
-    PROPERTIES (st)  FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
-                     toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,  toPrintConsignmentTwoHorizontal,
+    PROPERTIES (st)  FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentVerticalB,
+                     toPrintTransportConsignmentHorizontalA, toPrintTransportConsignmentHorizontalB,  toPrintConsignmentTwoHorizontal,
                      toPrintConsignmentTwoVertical, toPrintConsignmentTwoAttach, toPrintActOfRevaluationStatement SHOWIF needToPriceChangeStatement(st),
                      nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
