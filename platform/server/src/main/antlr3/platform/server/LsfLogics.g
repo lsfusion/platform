@@ -183,6 +183,7 @@ statement
 		|	constraintStatement
 		|	followsStatement
 		|	writeOnChangeStatement
+		|	actionOnChangeStatement
 		|	tableStatement
 		|	loggableStatement
 		|	indexStatement
@@ -1720,6 +1721,22 @@ writeOnChangeStatement
 		';'
 	;
 
+
+actionOnChangeStatement
+@init {
+	boolean anyChange = true;
+	List<String> context;
+}
+@after {
+	if (inPropParseState()) {
+		self.addScriptedActionOnChange($mainProp.name, context, anyChange, $changeExpr.property);	
+	}
+}
+	:	mainProp=propertyWithNamedParams { context = $mainProp.params; }
+		'ON' ('CHANGE' | 'ASSIGN' { anyChange = false; })
+		changeExpr=propertyExpression[context, false]
+		';'
+	;	
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// TABLE STATEMENT /////////////////////////////

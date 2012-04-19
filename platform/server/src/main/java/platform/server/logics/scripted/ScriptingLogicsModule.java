@@ -1307,13 +1307,28 @@ public class ScriptingLogicsModule extends LogicsModule {
                                          LPWithParams valueProp, LPWithParams changeProp) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedWriteOnChange(" + mainPropName + ", " + namedParams + ", " + useOld + ", " + anyChange + ", " + valueProp + ", " + changeProp + ");");
         LP<?> mainProp = findLPByCompoundName(mainPropName);
-        checkProperty(mainProp, mainPropName);
         checkParamCount(mainProp, namedParams.size());
         checkDistinctParameters(namedParams);
 
         List<Object> params = getParamsPlainList(asList(valueProp, changeProp));
 
         mainProp.setDerivedChange(!useOld, !anyChange, valueProp.property, params.subList(1, params.size()).toArray());
+    }
+
+    // Временно
+    public void addScriptedActionOnChange(String mainPropName, List<String> namedParams, boolean anyChange, LPWithParams changeProp) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedActionOnChange(" + mainPropName + ", " + namedParams + ", " + anyChange + ", " + changeProp + ");");
+        LP<?> mainProp = findLPByCompoundName(mainPropName);
+        checkParamCount(mainProp, namedParams.size());
+        checkDistinctParameters(namedParams);
+
+        List<Object> params = getParamsPlainList(asList(changeProp));
+
+        if (anyChange) {
+            mainProp.setEventAction(params.toArray());
+        } else {
+            mainProp.setEventForcedAction(params.toArray());
+        }
     }
 
     public void addScriptedTable(String name, List<String> classIds) throws ScriptingErrorLog.SemanticErrorException {
