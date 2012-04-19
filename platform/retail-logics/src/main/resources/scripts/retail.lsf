@@ -8842,18 +8842,6 @@ END
 @metaCodeTransportConsignment(transportConsignmentVerticalB, 'ТТН-1, вертикальная (сторона Б)');
 @metaCodeTransportConsignment(transportConsignmentHorizontalB, 'ТТН-1, горизонтальная (сторона Б)');
 
-toPrintTransportConsignmentVerticalA 'ТТН-1, вертикальная (сторона А)' (consignment) =
-    ACTION FORM transportConsignmentVerticalA OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
-
-toPrintTransportConsignmentHorizontalA 'ТТН-1, горизонтальная (сторона А)' (consignment) =
-    ACTION FORM transportConsignmentHorizontalA OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
-
-toPrintTransportConsignmentVerticalB 'ТТН-1, вертикальная (сторона Б)' (consignment) =
-    ACTION FORM transportConsignmentVerticalB OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
-
-toPrintTransportConsignmentHorizontalB 'ТТН-1, горизонтальная (сторона Б)' (consignment) =
-    ACTION FORM transportConsignmentHorizontalB OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
-
 //----------------------------------- Формы поступления товара -------------------------------------------------------
 @metaCodeInputMultipleItems(shipment);
 @metaCodeDocumentMachineryPriceTransaction(shipment);
