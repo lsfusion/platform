@@ -9,7 +9,7 @@ MODULE retail;
 
 IMPORT BaseLogicsModule;
 
-floor = FORMULA DOUBLE 'floor($1)';
+ceil = FORMULA DOUBLE 'ceil($1)';
 
 castToString255 = FORMULA STRING[255] 'CAST($1 AS character(255))';
 castToString3 = FORMULA STRING[3] 'CAST($1 AS character(3))';
@@ -1622,8 +1622,6 @@ banMovementDepartmentStoreItem 'Запрет на внутреннее пере�
 reserveDepartmentStoreItem 'Резерв по товару' = DATA DOUBLE (departmentStore, item) IN baseGroup;
 
 topDepartmentStoreItem 'Топ' = DATA INTEGER (departmentStore, item) IN orderGroup;
-quantitySoldItemDepartmentStore 'Продаж в день' = DATA NUMERIC[14,3] (item, departmentStore) IN orderGroup;
-balanceDepartmentStoreItem 'Текущий остаток' = DATA DOUBLE (departmentStore, item) IN orderGroup;
 
 //------------------------------------ Товар с историей -------------------------------------------------------------//
 GROUP historyGroup 'Изменяемые характеристики' : baseGroup;
@@ -6747,7 +6745,7 @@ clearBalanceItemLedgerBatchCost 'Сбросить всю себестоимос�
 // --------------------------- Использование регистров количества (автоматическое заполнение) ---------------------------------
 
 balanceDepartmentStoreItemWriteOff 'Текущий остаток' (writeOffDetail) =
-    balanceDepartmentStoreItem(departmentStoreWriteOffDetail(writeOffDetail), itemWriteOffDetail(writeOffDetail)) PERSISTENT;
+    currentBalanceItemLedger(itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail)) PERSISTENT;
 
 //---------------------------- Ценовые регистры (конкретная реализация) ----------------------------------------//
 
@@ -7060,6 +7058,20 @@ quantitySoldItemDepartmentStoreDateFromTo 'Продано' (item, departmentStor
         quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
         BY itemSalesLedger(ledger), departmentStoreSalesLedger(ledger), dateFrom, dateTo;
 
+averageSoldItemDepartmentStoreDateFromTo 'Продано (в день)' (item, departmentStore, dateFrom, dateTo) =
+        quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) / daysInclBetweenDates(dateFrom, dateTo);
+
+itemDepartmentStoreAverageInterval 'Интервал расчета продаж в день' = DATA INTEGER ();
+
+averageSoldItemDepartmentStore 'Продаж в день' = averageSoldItemDepartmentStoreDateFromTo(item, departmentStore, subtractDate2(currentDate(), itemDepartmentStoreAverageInterval()), currentDate()) PERSISTENT;
+userAverageSoldItemDepartmentStore 'Продаж в день' = DATA NUMERIC[14,3] (item, departmentStore) IN orderGroup;
+
+calcQuantitySoldInterval = ACTION (dateFrom, dateTo) {
+    SET userAverageSoldItemDepartmentStore(item, departmentStore) <- averageSoldItemDepartmentStoreDateFromTo(item, departmentStore, dateFrom AS DATE, dateTo AS DATE);
+}
+calcCurrentQuantitySoldInterval 'Пересчитать однодневные продажи' = ACTION () NEWSESSION AUTOAPPLY {
+    EXEC calcQuantitySoldInterval(subtractDate2(currentDate(), itemDepartmentStoreAverageInterval()), currentDate());
+}
 
 //--------------------------------------Заказ------------------------------------------------------------------//
 
@@ -7081,7 +7093,7 @@ TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
 @metaCodeDoubleObjectDateProperty(timeTable, supplier, departmentStore, 'Поставка', BOOLEAN, baseGroup);
 
-CLASS ABSTRACT order 'Заказ' : historyObject, numberedObject;
+CLASS ABSTRACT order 'Заказ' : historyObject, numeratedObject;
 //TABLE order(order);
 
 CLASS orderSupplier 'Заказ поставщику' : order;
@@ -7091,16 +7103,11 @@ CLASS orderSupplierPosted 'Закрытый заказ поставщику' :or
 TABLE orderSupplier(orderSupplier);
 TABLE orderSupplierItem(orderSupplier, item);
 
-dataOrderSupplier 'Номер заказа' (orderSupplier) = DATA INTEGER (orderSupplier) IN orderSupplierGroup;
-maxDataOrderSupplier = UNION OVERRIDE 0, [GROUP MAX dataOrderSupplier(orderSupplier)]();
-nextDataOrderSupplier = maxDataOrderSupplier() + 1;
-dataOrderSupplier (orderSupplier) <- OLD nextDataOrderSupplier() ON ASSIGN orderSupplier IS orderSupplier;
-
 departmentStoreOrderSupplier 'Отдел заказа (ИД)' = DATA departmentStore (orderSupplier);
-nameDepartmentStoreOrderSupplier 'Отдел заказа' (orderSupplier) = name(departmentStoreOrderSupplier(orderSupplier));
+nameDepartmentStoreOrderSupplier 'Отдел заказа' (orderSupplier) = name(departmentStoreOrderSupplier(orderSupplier)) IN documentHeaderGroup;
 
 supplierOrderSupplier 'Поставщик заказа (ИД)' = DATA supplier (orderSupplier);
-nameSupplierOrderSupplier 'Поставщик заказа' (orderSupplier) = name(supplierOrderSupplier(orderSupplier));
+nameSupplierOrderSupplier 'Поставщик заказа' (orderSupplier) = name(supplierOrderSupplier(orderSupplier)) IN documentPrmGroup;
 
 curDateOrderSupplier 'Дата заказа' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
 curDateOrderSupplier (orderSupplier) <- currentDate() ON ASSIGN departmentStoreOrderSupplier(orderSupplier);
@@ -7110,21 +7117,13 @@ dateOrderSupplier (orderSupplier) <- addDate2(currentDate(),1) ON ASSIGN departm
 preliminaryOrderOrderSupplier 'Предварительный заказ заказа' = DATA preliminaryOrder (orderSupplier);
 
 preliminaryOrderToOrderSupplier 'Заказ по предварительному заказу' (preliminaryOrder) = GROUP UNIQUE orderSupplier BY preliminaryOrderOrderSupplier(orderSupplier);
-dataOrderPreliminaryOrder 'Номер заказа для предварительного заказа' (preliminaryOrder) = dataOrderSupplier(preliminaryOrderToOrderSupplier(preliminaryOrder));
+dataOrderPreliminaryOrder 'Номер заказа для предварительного заказа' (preliminaryOrder) = seriesNumberObject(preliminaryOrderToOrderSupplier(preliminaryOrder));
 
 completePercentageOrderSupplier 'Процент выполнения' (orderSupplier) = DATA DOUBLE (orderSupplier) IN orderSupplierGroup;
-allowablePercentOrderSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (orderSupplier) IN supplierGroup;
+allowablePercentOrderSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (orderSupplier) IN documentPrmGroup;
 
-//quantityPackItemOver 'Количество в грузовом месте' (item) = UNION OVERRIDE 1 IF item IS item, quantityPackItem(item);
-quantitySoldItemDepartmentStoreOver 'Продаж в день' (item, departmentStore) =
-    UNION OVERRIDE 0 IF (departmentStore IS departmentStore AND item IS item), quantitySoldItemDepartmentStore(item, departmentStore);
-balanceDepartmentStoreItemOver 'Текущий остаток' (departmentStore, item) =
-    UNION OVERRIDE 0 IF (departmentStore IS departmentStore AND item IS item), balanceDepartmentStoreItem(departmentStore, item);
-minReserveItemOver 'Минимальный резерв' (item) = UNION OVERRIDE 0 IF item IS item, minReserveItem(item);
-//minQuantityOrderItemOver 'Минимальный заказ' (item) = UNION OVERRIDE 0 IF item IS item, minQuantityOrderItem(item);
-
-packQuantityItemOrderSupplier 'Заказ(мест)' = DATA DOUBLE (orderSupplier, item);
-sumQuantityItemOrderSupplier 'Заказ(единиц)' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item);
+packQuantityItemOrderSupplier 'Заказ(мест)' = DATA NUMERIC[14,3] (orderSupplier, item);
+sumQuantityItemOrderSupplier 'Заказ(единиц)' (orderSupplier, item) = DATA NUMERIC[14,3] (orderSupplier, item);
 sumQuantityItemOrderSupplier (orderSupplier, item) <- (UNION OVERRIDE 1 IF item IS item, quantityPackItem(item)) * packQuantityItemOrderSupplier(orderSupplier, item)
                                                       ON CHANGE packQuantityItemOrderSupplier(orderSupplier, item);
 priceSupplierItemOrderSupplier 'Цена поставщика' (orderSupplier, item) = DATA DOUBLE (orderSupplier, item);
@@ -7214,7 +7213,7 @@ lastOrderSupplierVal 'Последний заказ(ИД)' (orderSupplier, item)
      BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier), item
      ORDER dateOrderSupplier(orderSupplier);
 lastOrderSupplier 'Последний заказ' (orderSupplier, item) =
-     castFiveObjectsToString100(dataOrderSupplier(lastOrderSupplierVal(orderSupplier, item)),
+     castFiveObjectsToString100(seriesNumberObject(lastOrderSupplierVal(orderSupplier, item)),
                                 dateOrderSupplier(lastOrderSupplierVal(orderSupplier, item)),
                                 packQuantityItemOrderSupplier(lastOrderSupplierVal(orderSupplier, item), item),
                                 retailPriceItemOrderSupplier(lastOrderSupplierVal(orderSupplier, item), item),
@@ -7258,18 +7257,25 @@ nextDateOrderSupplier (orderSupplier) <- [UNION OVERRIDE addDate2(dateOrderSuppl
 
 quantityDaysAfterNextOrder 'Дней до следующей поставки' (orderSupplier) =
     daysInclBetweenDates(curDateOrderSupplier(orderSupplier), nextDateOrderSupplier(orderSupplier)) IN dateOrderSupplierGroup;
+
 CONSTRAINT nextDateOrderSupplier(orderSupplier) < dateOrderSupplier(orderSupplier) MESSAGE 'Дата поставки не должна превышать дату поставки следующей поставки';
-quantityRealizationItemNextOrder 'Предполагаемое количество реализации товара до следующей поставки' (orderSupplier, item) =
-    quantityDaysAfterNextOrder(orderSupplier)*quantitySoldItemDepartmentStoreOver(item, departmentStoreOrderSupplier(orderSupplier));
-balance2DepartmentStoreItem 'Величина остатков товара за вычетом минимального резерва' (orderSupplier, item) =
-    balanceDepartmentStoreItemOver(departmentStoreOrderSupplier(orderSupplier), item) (-) minReserveItemOver(item);
-isEnoughItem 'Достаточно ли остатков товара' (orderSupplier, item) =
-    balanceDepartmentStoreItemOver(departmentStoreOrderSupplier(orderSupplier), item) (-) quantityRealizationItemNextOrder(orderSupplier, item) < minReserveItemOver(item);
+
+currentBalanceOrderSupplierItem 'Текущий остаток' (orderSupplier, item) = currentBalanceItemLedger(item, departmentStoreOrderSupplier(orderSupplier));
+
+quantityToSellNextOrder 'Предполагаемое количество реализации товара до следующей поставки' (orderSupplier, item) =
+    averageSoldItemDepartmentStore(item, departmentStoreOrderSupplier(orderSupplier)) * daysInclBetweenDates(currentDate(), nextDateOrderSupplier(orderSupplier));
+
+balanceExtraDepartmentStoreItem 'Величина остатков товара за вычетом минимального резерва' (orderSupplier, item) =
+    currentBalanceOrderSupplierItem(orderSupplier, item) (-) (minReserveItem(item) IF orderSupplier IS orderSupplier);
+
+quantityNeededOrderSupplierItem 'Кол-во товара для заказа' (orderSupplier, item) =
+    quantityToSellNextOrder (orderSupplier, item) (-) balanceExtraDepartmentStoreItem(orderSupplier, item);
+
 recommendCountOrderSupplier 'Рекомендуемый заказ' (orderSupplier, item) =
-    IF isEnoughItem(orderSupplier, item) THEN
-    (UNION MAX floor((quantityRealizationItemNextOrder(orderSupplier, item)-balance2DepartmentStoreItem(orderSupplier, item))/
-    (UNION OVERRIDE 1 IF item IS item, quantityPackItem(item))), ((UNION OVERRIDE 0 IF item IS item, minQuantityOrderItem(item)) IF orderSupplier IS orderSupplier))
-    ELSE 0 IF (orderSupplier IS orderSupplier AND item IS item);
+    (UNION MAX ceil(quantityNeededOrderSupplierItem(orderSupplier, item) /
+                     (UNION OVERRIDE 1 IF item IS item, quantityPackItem(item))),
+               (minQuantityOrderItem(item) IF orderSupplier IS orderSupplier))
+    IF quantityNeededOrderSupplierItem(orderSupplier, item) > 0;
 
 isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentVal (
     supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
@@ -7283,7 +7289,7 @@ isOrderDatePreliminaryOrder (preliminaryOrder, date) = dateOrderPreliminaryOrder
 inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) = DATA BOOLEAN (shipment, orderSupplier)
     IN idGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
-ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(dataOrderSupplier(orderSupplier))
+ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(seriesNumberObject(orderSupplier))
     IF inShipmentOrder(shipment, orderSupplier), ', ' BY shipment IN shipmentOrderGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
 isSupplierShipmentOrder 'Заявка поставщика поставки' (shipment, orderSupplier) = supplierShipment(shipment)== supplierOrderSupplier(orderSupplier);
@@ -7331,7 +7337,7 @@ FORM ordersShipment 'Заказы'
     OBJECTS o=orderSupplier
 
     PROPERTIES (s, o) inShipmentOrder
-    PROPERTIES (o) READONLY dataOrderSupplier, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
+    PROPERTIES (o) READONLY numberObject, seriesObject, curDateOrderSupplier, dateOrderSupplier, nameDepartmentStoreOrderSupplier,
           nameSupplierOrderSupplier, completePercentageOrderSupplier, totalSumOrderSupplier, timeCreated, nameUserCreated
 
     FILTERS isSupplierShipmentOrder (s, o),
@@ -7504,8 +7510,9 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
 };
 //nextDateOrderSupplier (orderSupplier) <- nextDateOrder(preliminaryOrderOrderSupplier(orderSupplier)) ON ASSIGN orderSupplier;
 
+// todo : здесь вообще-то нужно заполнять только ассортиментом данного поставщика, а не всем подряд как сейчас
 fillInOrderSupplier 'Заполнить заказ рекомендованным количеством' = ACTION (orderSupplier) {
-    FOR recommendCountOrderSupplier(orderSupplier, item AS item) > 0 DO {
+    FOR recommendCountOrderSupplier(orderSupplier, item AS item) DO {
         SET packQuantityItemOrderSupplier(orderSupplier, item) <- recommendCountOrderSupplier(orderSupplier, item AS item) ;
     };
 };
@@ -7545,7 +7552,8 @@ FORM orderSupplier 'Заказ поставщику'
 
     OBJECTS o=orderSupplier FIXED PANEL
 
-    PROPERTIES(o)          numberObject, seriesObject, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
+    PROPERTIES(o)          nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
+                           curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
                            quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
                            nameSupplierOrderSupplier, totalSumOrderSupplier, totalSumVatOrderSupplier,
                            totalFullSumOrderSupplier, allowablePercentOrderSupplier
@@ -7566,7 +7574,8 @@ FORM orderSupplier 'Заказ поставщику'
                                     lastOrderSupplier(o, i), priceWareOrderSupplier(o, i), numberDataRangeWareOrderSupplier(o, i),
                                     dataWareRangeOrderSupplier(o, i)
 
-    PROPERTIES(o, i)       recommendCountOrderSupplier, priceSupplierItemOrderSupplier, numberSuppliersRangeOrderSupplier,
+    PROPERTIES             currentBalanceOrderSupplierItem(o, i), quantityToSellNextOrder(o, i), minReserveItem(i), recommendCountOrderSupplier(o, i)
+    PROPERTIES(o, i)       priceSupplierItemOrderSupplier, numberSuppliersRangeOrderSupplier,
                            dataSuppliersRangeOrderSupplier, sumWareOrderSupplier, sumDetailVatItemOrderSupplier,
                            fullSumItemOrderSupplier
 
@@ -7583,25 +7592,33 @@ FORM orderSupplier 'Заказ поставщику'
 
 DESIGN orderSupplier FROM DEFAULT {
 
-    o.box {
-        childConstraints = TO THE RIGHT;
-        NEW headerLeft {
-            childConstraints = TO THE BOTTOM;
-            ADD o.panel;
-            ADD PROPERTY(allowablePercentOrderSupplier);
+    main {
+
+        NEW header.box BEFORE o.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerLeft {
+                childConstraints = TO THE BOTTOM;
+                ADD o.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameDepartmentStoreOrderSupplier);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                }
+                ADD o.documentPrmGroup;
+            }
+            ADD o.dateOrderSupplierGroup{
+                childConstraints = TO THE BOTTOM;
+            };
             ADD o.orderSupplierGroup {
-                childConstraints = TO THE RIGHT;
-                ADD PROPERTY(numberObject);
-                ADD PROPERTY(seriesObject);
+                childConstraints = TO THE BOTTOM;
             };
         }
-        ADD o.dateOrderSupplierGroup{
-            childConstraints = TO THE BOTTOM;
-            };
     }
 
     POSITION treeGroup.box TO THE LEFT i.box;
-    POSITION treeGroup.box TO THE BOTTOM o.box;
+    POSITION treeGroup.box TO THE BOTTOM header.box;
 
     i.grid {
         fillHorizontal = 4;
@@ -7655,9 +7672,9 @@ FORM orderSuppliers 'Заказы поставщику'
 
     PROPERTIES(o, i) READONLY  topItem, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
 
-    PROPERTIES(i) READONLY quantityPackItem, minQuantityOrderItem
+    PROPERTIES(i) READONLY     quantityPackItem, minQuantityOrderItem
 
-    PROPERTIES(o, i) READONLY  recommendCountOrderSupplier, priceSupplierItemOrderSupplier, numberSuppliersRangeOrderSupplier,
+    PROPERTIES(o, i) READONLY  priceSupplierItemOrderSupplier, numberSuppliersRangeOrderSupplier,
                                dataSuppliersRangeOrderSupplier, sumWareOrderSupplier, sumDetailVatItemOrderSupplier,
                                fullSumItemOrderSupplier
 
@@ -8452,7 +8469,6 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
     PROPERTIES(e)    dataMachineryPriceTransactionError, dateMachineryPriceTransactionError
     PROPERTIES(e)  FORCE PANEL  errorTraceMachineryPriceTransactionError
     FILTERS machineryPriceTransactionMachineryPriceTransactionError(e) == t
-
 ;
 
 DESIGN machineryPriceTransactions FROM DEFAULT {
@@ -8465,7 +8481,7 @@ DESIGN machineryPriceTransactions FROM DEFAULT {
             maximumSize = ( -1, 300);
         }
 
-        NEW specContainer {
+        NEW specContainer BEFORE functions.box {
             tabbedPane = TRUE;
             ADD b.box;
             NEW errorContainer {
@@ -11635,7 +11651,7 @@ FORM curBalanceItemDepartment 'Текущие остатки'
 
     PROPERTIES(i, dep) READONLY currentBalanceItemLedger, currentPriceImporterLedger, currentPriceSupplierLedger,
                                 currentPriceAccountLedger, dataCurrentRetailLedger, currentPriceRetailLedger,
-                                currentPriceWareLedger, dateLastMovedItem
+                                currentPriceWareLedger, dateLastMovedItem, averageSoldItemDepartmentStore
 
     PROPERTIES countDayMovedItem(dep) TODRAW dsi FORCE PANEL
 
@@ -11788,6 +11804,7 @@ FORM salesItemDepartmentStore 'Продажи по товарам'
 
     PROPERTIES        balanceBItemLedgerDate(i, dep, dFrom),
                       quantitySoldItemDepartmentStoreDateFromTo(i, dep, dFrom, dTo),
+                      averageSoldItemDepartmentStoreDateFromTo(i, dep, dFrom, dTo),
                       balanceAItemLedgerDate(i, dep, dTo)
 ;
 
@@ -11875,10 +11892,16 @@ nameDefaultNumeratorDocuments 'Нумератор для документов' =
 
 numeratorObject(object) <- defaultNumeratorDocuments() ON ASSIGN object IS numeratedObject;
 
+defaultNumeratorOrders = DATA numerator ();
+nameDefaultNumeratorOrders 'Нумератор для заказов' = name(defaultNumeratorOrders());
+
+numeratorOrder(order) = numeratorObject(order) AND order IS order;
+numeratorOrder(order) <- defaultNumeratorOrders() ON ASSIGN order IS order;
+
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
 FORM parameters 'Параметры'
-    PROPERTIES() nameDefaultNumeratorDocuments;
+    PROPERTIES() nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, itemDepartmentStoreAverageInterval, calcCurrentQuantitySoldInterval;
 ;
 
 //---------------------------------------------- Импорт данных -----------------------------------------------------//

@@ -698,7 +698,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         squareInteger = addSFProp("(prm1)*(prm1)", IntegerClass.instance, 1);
         squareDouble = addSFProp("(prm1)*(prm1)", DoubleClass.instance, 1);
         sqrtDouble2 = addSFProp("round(sqrt(prm1),2)", DoubleClass.instance, 1);
-        divideDouble = addSFProp("((prm1)/(prm2))", DoubleClass.instance, 2);
+        divideDouble = addSFProp("divideDouble", "((prm1)/(prm2))", DoubleClass.instance, 2);
         divideDouble2 = addSFProp("divideDouble2", "round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),2)", DoubleClass.instance, 2);
         divideDouble3 = addSFProp("divideDouble3", "round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),3)", DoubleClass.instance, 2);
         divideInteger = addSFProp("CAST(((prm1)/(prm2)) as integer)", IntegerClass.instance, 2);
