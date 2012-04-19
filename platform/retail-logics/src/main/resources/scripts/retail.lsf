@@ -8850,6 +8850,8 @@ consignmentConsignmentDetail (consignmentDetail) = UNION EXCLUSIVE statementStat
                                                                    returnSupplierReturnSupplierDetail(consignmentDetail),
                                                                    innerFlowInnerFlowDetail(consignmentDetail);
 
+//isReturnSupplier (consignment) = consignment IS returnSupplier;
+
 // ---------------------------- Формы для накладных --------------------------------- //
 
 
@@ -8862,7 +8864,8 @@ META metaCodeConsignmentTwo(prop, caption)
                        forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                        sumQuantityConsignment, sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment, UNPRecipientConsignment,
                        UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
-                       fullNameRecipientConsignment, numberObject, seriesObject, quantityConsignmentDetailsConsignment
+                       fullNameRecipientConsignment, numberObject, seriesObject, quantityConsignmentDetailsConsignment,
+                       nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, dataWareRangeReturnSupplierDetail
 
         OBJECTS d=consignmentDetail
 
