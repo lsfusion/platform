@@ -8736,7 +8736,7 @@ priceConsignmentDetail 'Цена' (consignmentDetail) = UNION EXCLUSIVE retailPr
                                                                     retailPriceInnerFlowDetail(consignmentDetail);
 
 costConsignmentDetail 'Стоимость' (consignmentDetail) = UNION EXCLUSIVE sumStatementDetail (consignmentDetail),
-                                                                        sumSupplierReturnSupplierDetail (consignmentDetail),
+                                                                        sumSupplierPriceReturnSupplierDetail (consignmentDetail),
                                                                         accountSumInnerFlowDetail (consignmentDetail);
 
 sumCostConsignmentDetail 'Общая стоимость' (consignment) = UNION EXCLUSIVE sumStatement(consignment),
@@ -8757,7 +8757,7 @@ totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNIO
 
 costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION EXCLUSIVE sumStatementDetail (consignmentDetail),
                                                                                  sumSupplierReturnSupplierDetail (consignmentDetail),
-                                                                                 sumRetailVATInnerFlowDetail (consignmentDetail);
+                                                                                 accountSumInnerFlowDetail (consignmentDetail);
 
 packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = UNION EXCLUSIVE packQuantityStatementDetail(consignmentDetail),
                                                                                                packQuantityReturnSupplierDetail(consignmentDetail),
