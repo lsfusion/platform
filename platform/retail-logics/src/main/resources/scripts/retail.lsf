@@ -6363,8 +6363,8 @@ discountCardBill (bill) = DATA discountCard(bill);
 numberDiscountCardBill 'Номер дисконтной карты' (bill) = numberDiscountCard(discountCardBill(bill));
 nameCustomerDiscountCardBill 'Держатель дисконтной карты' (bill) = nameCustomerDiscountCard(discountCardBill(bill));
 
-sumPayment 'Сумма платежа' (payment) = DATA DOUBLE(payment);
-numberPayment 'Номер платежа' (payment) = DATA INTEGER(payment);
+sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
+numberPayment 'Номер платежа' (payment) = DATA INTEGER (payment);
 
 totalSumPaymentBill (bill) = GROUP SUM sumPayment(payment)
     BY billPayment(payment);
@@ -6584,7 +6584,7 @@ dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateT
                                                                   dateTimeStudyInputDetail(ledger),
                                                                   dateTimeStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
-dateBalanceItemLedger 'Дата' (ledger) = dateInTime(dateTimeBalanceItemLedger(ledger));
+dateBalanceItemLedger 'Дата' (ledger) = dateInTime(dateTimeBalanceItemLedger(ledger)) PERSISTENT;
 
 orderBalanceItemLedger (ledger) = LIST(dateTimeBalanceItemLedger(ledger), ledger);
 
@@ -6663,19 +6663,19 @@ quantityOutUserBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quanti
 batchOutUserBalanceItemLedger 'Партия' (ledger) = UNION EXCLUSIVE batchReturnSupplierDetail(ledger);
 
 quantityOutBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityOutAutoBalanceItemLedger(ledger),
-                                                                 quantityOutUserBalanceItemLedger(ledger);
+                                                                 quantityOutUserBalanceItemLedger(ledger) PERSISTENT;
 
-quantityInBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInInventoryLedger(ledger);
+quantityInAutoBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInInventoryLedger(ledger);
 
-quantityBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
-                                                              quantityOutBalanceItemLedger(ledger),
-                                                              quantityInInventoryLedger(ledger),
-                                                              quantityInnerArrivalDetail(ledger) PERSISTENT;
+quantityInBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
+                                                                quantityInAutoBalanceItemLedger(ledger),
+                                                                quantityInnerArrivalDetail(ledger) PERSISTENT;
 
-signedQuantityBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
-                                                                  -quantityOutBalanceItemLedger(ledger),
-                                                                  quantityInInventoryLedger(ledger),
-                                                                  quantityInnerArrivalDetail(ledger) PERSISTENT;
+quantityBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInBalanceItemLedger(ledger),
+                                                              quantityOutBalanceItemLedger(ledger) PERSISTENT;
+
+signedQuantityBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInBalanceItemLedger(ledger),
+                                                                    -quantityOutBalanceItemLedger(ledger) PERSISTENT;
 
 // ---------------------------- Остаток по товару -------------------------------- //
 
@@ -6683,6 +6683,32 @@ currentBalanceItemLedger 'Текущий остаток' (item, departmentStore)
                                                           BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger) PERSISTENT;
 countBalanceItemLedger 'Кол-во движений' (item, departmentStore) = GROUP SUM 1 AND signedQuantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
                                                           BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger) PERSISTENT;
+
+TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
+
+quantityInItemDepartmentStoreDate (item, departmentStore, date) = GROUP SUM quantityInBalanceItemLedger(ledger) AND isPostedBalanceItemLedger(ledger)
+                                                                        BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateBalanceItemLedger(ledger) PERSISTENT;
+
+quantityOutItemDepartmentStoreDate (item, departmentStore, date) = GROUP SUM quantityOutBalanceItemLedger(ledger) AND isPostedBalanceItemLedger(ledger)
+                                                                         BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateBalanceItemLedger(ledger) PERSISTENT;
+
+quantityItemDepartmentStoreDate (item, departmentStore, date) = quantityInItemDepartmentStoreDate(item, departmentStore, date)
+                                                                (+)
+                                                                quantityOutItemDepartmentStoreDate(item, departmentStore, date) PERSISTENT;
+
+signedQuantityItemDepartmentStoreDate (item, departmentStore, date) = quantityInItemDepartmentStoreDate(item, departmentStore, date)
+                                                                      (-)
+                                                                      quantityOutItemDepartmentStoreDate(item, departmentStore, date) PERSISTENT;
+
+// без учета текущей даты/времени
+balanceBItemLedgerDate 'Остаток на начало дня' (item, departmentStore, date) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND date IS DATE,
+                                                                                         -[GROUP SUM signedQuantityItemDepartmentStoreDate (item, departmentStore, dateIn) AND dateIn >= (date AS DATE)
+                                                                                                 BY item, departmentStore, date](item, departmentStore, date);
+
+// с учетом текущей даты/времени
+balanceAItemLedgerDate 'Остаток на конец дня' (item, departmentStore, date) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND date IS DATE,
+                                                                                         -[GROUP SUM signedQuantityItemDepartmentStoreDate (item, departmentStore, dateIn) AND dateIn > (date AS DATE)
+                                                                                                 BY item, departmentStore, date](item, departmentStore, date);
 
 // без учета текущей даты/времени
 balanceBItemLedgerDateTime 'Остаток на начало дня' (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
@@ -6693,16 +6719,6 @@ balanceBItemLedgerDateTime 'Остаток на начало дня' (item, depa
 balanceAItemLedgerDateTime 'Остаток на конец дня' (item, departmentStore, dateTime) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND dateTime IS DATETIME,
                                                                          -[GROUP SUM signedQuantityBalanceItemLedger (ledger) AND dateTimeBalanceItemLedger(ledger) > (dateTime AS DATETIME) AND isPostedBalanceItemLedger(ledger)
                                                                          BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateTime](item, departmentStore, dateTime);
-
-// без учета текущей даты/времени
-balanceBItemLedgerDate 'Остаток на начало дня' (item, departmentStore, date) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND date IS DATE,
-                                                                         -[GROUP SUM signedQuantityBalanceItemLedger (ledger) AND dateBalanceItemLedger(ledger) >= (date AS DATE) AND isPostedBalanceItemLedger(ledger)
-                                                                         BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), date](item, departmentStore, date);
-
-// с учетом текущей даты/времени
-balanceAItemLedgerDate 'Остаток на конец дня' (item, departmentStore, date) = UNION SUM currentBalanceItemLedger(item, departmentStore) AND date IS DATE,
-                                                                         -[GROUP SUM signedQuantityBalanceItemLedger (ledger) AND dateBalanceItemLedger(ledger) > (date AS DATE) AND isPostedBalanceItemLedger(ledger)
-                                                                         BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), date](item, departmentStore, date);
 
 costBalanceItemLedgerBatch 'Расписано' (ledger, batch) = DATA NUMERIC[14,3] (balanceItemLedger, batch);
 
@@ -6749,7 +6765,7 @@ quantityOutBalanceItemLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityOutU
                                                                     quantityOutAutoBalanceItemLedgerBatch(ledger, batch);
 
 quantityInBalanceItemLedgerBatch (ledger, batch) =
-        PARTITION UNGROUP quantityInBalanceItemLedger
+        PARTITION UNGROUP quantityInAutoBalanceItemLedger
                   LIMIT (quantityBatch(batch) (-) currentBalanceBatch(batch))
                     AND countBalanceItemLedger(itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger))
                     AND itemBatch(batch) == itemBalanceItemLedger(ledger)
@@ -7132,19 +7148,30 @@ quantitySoldItemDepartmentStoreDateFromTo 'Продано' (item, departmentStor
         quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
         BY itemSalesLedger(ledger), departmentStoreSalesLedger(ledger), dateFrom, dateTo;
 
-averageSoldItemDepartmentStoreDateFromTo 'Продано (в день)' (item, departmentStore, dateFrom, dateTo) =
-        quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) / daysInclBetweenDates(dateFrom, dateTo);
-
 itemDepartmentStoreAverageInterval 'Интервал расчета продаж в день' = DATA INTEGER ();
 
-averageSoldItemDepartmentStore 'Продаж в день' = averageSoldItemDepartmentStoreDateFromTo(item, departmentStore, subtractDate2(currentDate(), itemDepartmentStoreAverageInterval()), currentDate()) PERSISTENT;
-userAverageSoldItemDepartmentStore 'Продаж в день' = DATA NUMERIC[14,3] (item, departmentStore) IN orderGroup;
+averageSoldItemDepartmentStore 'Продаж в день' = DATA NUMERIC[14,3] (item, departmentStore) IN orderGroup;
 
 calcQuantitySoldInterval = ACTION (dateFrom, dateTo) {
-    SET userAverageSoldItemDepartmentStore(item, departmentStore) <- averageSoldItemDepartmentStoreDateFromTo(item, departmentStore, dateFrom AS DATE, dateTo AS DATE);
+    LOCAL balance = NUMERIC[14,3] (item, departmentStore);
+    LOCAL days = INTEGER (item, departmentStore);
+    LOCAL dateCur = DATE();
+
+    SET dateCur() <- (dateFrom AS DATE);
+    SET balance(item, departmentStore) <- balanceBItemLedgerDate(item, departmentStore, dateFrom);
+
+    WHILE dateCur() <= (dateTo AS DATE) DO {
+        SET days(item, departmentStore) <- days(item, departmentStore) (+)
+                   (1 IF ((balance(item, departmentStore) > 0) OR (quantityItemDepartmentStoreDate(item, departmentStore, dateCur()) > 0)));
+        SET balance(item, departmentStore) <- balance(item, departmentStore) (+)
+                   signedQuantityItemDepartmentStoreDate(item, departmentStore, dateCur());
+        SET dateCur() <- addDate2(dateCur(), 1);
+    }
+
+    SET averageSoldItemDepartmentStore(item, departmentStore) <- quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) / days(item, departmentStore);
 }
 calcCurrentQuantitySoldInterval 'Пересчитать однодневные продажи' = ACTION () NEWSESSION AUTOAPPLY {
-    EXEC calcQuantitySoldInterval(subtractDate2(currentDate(), itemDepartmentStoreAverageInterval()), currentDate());
+    EXEC calcQuantitySoldInterval(subtractDate2(currentDate(), itemDepartmentStoreAverageInterval()), subtractDate2(currentDate(), 1));
 }
 
 //--------------------------------------Заказ------------------------------------------------------------------//
@@ -7642,7 +7669,7 @@ FORM orderSupplier 'Заказ поставщику'
     PROPERTIES(o, i)       topItem, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
 
     PROPERTIES(i) quantityPackItem, minQuantityOrderItem
-    PROPERTIES FORCE PANEL nameWareOrderSupplier(o, i), numberSuppliersRangeOrderSupplier(o, i)
+    PROPERTIES FORCE PANEL nameWareOrderSupplier(o, i)
     PROPERTIES FORCE PANEL READONLY articleItem(i), nameCountryItem(i), retailPriceItemOrderSupplier(o, i),
                                     nameinActionItemOrderSupplier(o, i), banMovementDepartmentStoreOrderSupplier(o, i),
                                     lastOrderSupplier(o, i), priceWareOrderSupplier(o, i), numberDataRangeWareOrderSupplier(o, i),
@@ -9237,13 +9264,13 @@ balanceDepartmentStoreItemSpecificationDetail 'Текущий остаток' (s
 quantityItemBySpecificationDetail(specificationDetail) = quantityItemSpecification( itemSpecificationDetail(specificationDetail), specificationSpecificationDetail(specificationDetail));
 highlightSpecificationDetail(specificationDetail) =  quantityItemBySpecificationDetail(specificationDetail) > balanceDepartmentStoreItemSpecificationDetail(specificationDetail);
 
-quantityItemDepartmentStoreDate 'Количество выставленного товара' (departmentStore, item, date) = GROUP SUM
+reservedItemDepartmentStoreDate 'Количество выставленного товара' (departmentStore, item, date) = GROUP SUM
     quantitySpecificationDetail(specificationDetail)
     IF dateToSpecification(specificationSpecificationDetail(specificationDetail)) >= date AND date AS DATE
     BY departmentStoreSpecificationDetail(specificationDetail), itemSpecificationDetail(specificationDetail), date;
 
 
-quantityExhibitedItemBySpecificationDetail(specificationDetail) = quantityItemDepartmentStoreDate(departmentStoreSpecificationDetail(specificationDetail),
+quantityExhibitedItemBySpecificationDetail(specificationDetail) = reservedItemDepartmentStoreDate(departmentStoreSpecificationDetail(specificationDetail),
     itemSpecificationDetail(specificationDetail), dateSpecification(specificationSpecificationDetail(specificationDetail)));
 
 availableQuantityItemBySpecificationDetail 'Доступное к-во, с учетом непросроченных с/ф' (specificationDetail) =
@@ -11882,7 +11909,6 @@ FORM salesItemDepartmentStore 'Продажи по товарам'
 
     PROPERTIES        balanceBItemLedgerDate(i, dep, dFrom),
                       quantitySoldItemDepartmentStoreDateFromTo(i, dep, dFrom, dTo),
-                      averageSoldItemDepartmentStoreDateFromTo(i, dep, dFrom, dTo),
                       balanceAItemLedgerDate(i, dep, dTo)
 ;
 
