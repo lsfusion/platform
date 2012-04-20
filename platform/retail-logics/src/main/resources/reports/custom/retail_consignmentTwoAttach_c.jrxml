@@ -58,6 +58,8 @@
 	<field name="retail_totalSumWareReturnSupplierDetail" class="java.lang.Double"/>
 	<field name="retail_isReturnSupplierConsignment" class="java.lang.Boolean"/>
 	<field name="retail_sumDetailVatWareReturnSupplierDetail" class="java.lang.Double"/>
+	<field name="retail_priceWareWithoutVATReturnSupplierDetail" class="java.lang.Double"/>
+	<field name="retail_totalSumWareWithoutVATReturnSupplierDetail" class="java.lang.Double"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -1020,7 +1022,7 @@
 				<textElement textAlignment="Right">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_totalSumWareReturnSupplierDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_totalSumWareWithoutVATReturnSupplierDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="24" height="12" backcolor="#FFFFFF">
@@ -1059,7 +1061,7 @@
 				<textElement textAlignment="Right">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_priceWareReturnSupplierDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_priceWareWithoutVATReturnSupplierDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="24" y="0" width="136" height="12">

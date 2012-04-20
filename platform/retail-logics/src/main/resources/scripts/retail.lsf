@@ -8962,7 +8962,8 @@ META metaCodeConsignmentTwo(prop, caption)
         PROPERTIES(d) nameItemConsignmentDetail, shortNameConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
                       noteInnerFlowDetail, nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, totalSumWareReturnSupplierDetail,
-                      dataWareRangeReturnSupplierDetail, sumDetailVatWareReturnSupplierDetail
+                      dataWareRangeReturnSupplierDetail, sumDetailVatWareReturnSupplierDetail, priceWareWithoutVATReturnSupplierDetail,
+                      totalSumWareWithoutVATReturnSupplierDetail
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
