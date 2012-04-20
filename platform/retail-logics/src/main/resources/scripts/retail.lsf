@@ -521,6 +521,9 @@ META metaCodeTotals (object)
     sumVatWare###object##Detail 'Сумма НДС по посуде, за ед.' (object##Detail) = [round0(X*Y/(100+Y))](
         priceWare###object##Detail (object##Detail), dataWareRange###object##Detail(object##Detail));
 
+    priceWareWithoutVAT###object##Detail '' (object##Detail) = priceWare###object##Detail (object##Detail) (-)
+        sumVatWare###object##Detail(object##Detail);
+
     sumDetailVatWare###object##Detail 'Сумма НДС по посуде' (object##Detail) = round0(
         quantity###object##Detail(object##Detail) * sumVatWare###object##Detail(object##Detail));
 
@@ -544,6 +547,8 @@ META metaCodeTotals (object)
     totalSumWare###object##Detail 'Сумма посуды' (object##Detail) = round0(
         quantity###object##Detail(object##Detail) * priceWare###object##Detail (object##Detail));
 
+    totalSumWareWithoutVAT###object##Detail 'Сумма посуды (без НДС)' (object##Detail) =
+        totalSumWare###object##Detail(object##Detail) (-) sumDetailVatWare###object##Detail(object##Detail);
 
     totalSumSupplierPrice###object 'Сумма без НДС' (object) = GROUP SUM totalSumSupplierPrice###object##Detail(object##Detail)
         BY object###object##Detail(object##Detail) PERSISTENT;
@@ -562,8 +567,11 @@ META metaCodeTotals (object)
 
     //для цен и НДС поставщика
 
-    sumSupplierPrice###object##Detail 'Сумма без НДС' (object##Detail) = round0(
+    sumSupplierPrice###object##Detail 'Сумма без НДС (без посуды)' (object##Detail) = round0(
         supplierPrice###object##Detail(object##Detail) * quantity###object##Detail(object##Detail));
+
+    sumSupplierPriceWithWare###object##Detail 'Сумма без НДС (с посудой)' (object##Detail) =
+        sumSupplierPrice###object##Detail(object##Detail) (+) totalSumWareWithoutVAT###object##Detail(object##Detail);
 
     sumSupplierVAT###object##Detail 'Сумма НДС, за ед.' (object##Detail) = [round0(X*Y/100)](
         supplierPrice###object##Detail(object##Detail), dataSuppliersRange###object##Detail(object##Detail));
@@ -587,6 +595,9 @@ META metaCodeTotals (object)
 
     totalSumCleanSupplier###object 'Общая сумма поставщика с НДС (без посуды)' (object) =
         GROUP SUM sumSupplier###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
+
+    totalSumSupplierPriceWithWare###object 'Общая сумма поставщика без НДС (с посудой)' (object) =
+        GROUP SUM sumSupplierPriceWithWare###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
 
     totalSumIncVAT###object 'Общая сумма НДС' (object) =
         totalSumSupplierVAT###object(object) (+) totalSumVatWare###object(object) IN documentSumGroup PERSISTENT;
@@ -8977,7 +8988,7 @@ META metaCodeTransportConsignment(prop, caption)
                        sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
                        sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment, UNPRecipientConsignment, UNPSenderConsignment,
                        addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment, fullNameRecipientConsignment,
-                       quantityConsignmentDetailsConsignment, sumWareReturnSupplier
+                       quantityConsignmentDetailsConsignment, sumWareReturnSupplier, totalSumSupplierPriceWithWareReturnSupplier
 
         OBJECTS d=consignmentDetail
 
@@ -8985,7 +8996,8 @@ META metaCodeTransportConsignment(prop, caption)
                       costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
                       packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteInnerFlowDetail,
                       nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, dataWareRangeReturnSupplierDetail,
-                      sumWareReturnSupplierDetail
+                      priceWareWithoutVATReturnSupplierDetail, sumWareReturnSupplierDetail, totalSumWareWithoutVATReturnSupplierDetail,
+                      sumDetailVatWareReturnSupplierDetail
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
