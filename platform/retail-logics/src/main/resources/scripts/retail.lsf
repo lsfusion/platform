@@ -5138,14 +5138,14 @@ downtimeStatement 'Время простоя' (statement) = DATA STRING[10] (sta
 
 raceQuantityStatement 'Количество ездок' (statement) = DATA INTEGER (statement);
 
-packQuantityStatementDetail 'Количество грузовых мест' (statementDetail) = quantityStatementDetail(statementDetail)/
-    UNION OVERRIDE 1 IF statementDetail IS statementDetail, quantityPackItem(itemStatementDetail(statementDetail));
+packQuantityStatementDetail 'Количество грузовых мест' (statementDetail) = round0(quantityStatementDetail(statementDetail)/
+    UNION OVERRIDE 1 IF statementDetail IS statementDetail, quantityPackItem(itemStatementDetail(statementDetail)));
 
 sumPackQuantityStatement 'Общее количество грузовых мест' (statement) = GROUP SUM packQuantityStatementDetail(statementDetail)
     BY statementStatementDetail(statementDetail) IN sumConsignmentGroup;
 
-grossWeightStatementDetail 'Масса груза, т.' (statementDetail) =
-    grossWeightItem(itemStatementDetail(statementDetail))*quantityStatementDetail(statementDetail)/1000;
+grossWeightStatementDetail 'Масса груза, т.' (statementDetail) = round3(
+    grossWeightItem(itemStatementDetail(statementDetail))*quantityStatementDetail(statementDetail)/1000);
 
 sumGrossWeightStatement 'Общая масса груза, т.' (statement) = GROUP SUM grossWeightStatementDetail(statementDetail)
     BY statementStatementDetail(statementDetail) IN sumConsignmentGroup;
@@ -5720,14 +5720,14 @@ downtimeInnerFlow 'Время простоя' (innerFlow) = DATA STRING[10] (inn
 
 raceQuantityInnerFlow 'Количество ездок' (innerFlow) = DATA INTEGER (innerFlow);
 
-packQuantityInnerFlowDetail 'Количество грузовых мест' (innerFlowDetail) = quantityInnerFlowDetail(innerFlowDetail)/
-    UNION OVERRIDE 1 IF innerFlowDetail IS innerFlowDetail, quantityPackItem(itemInnerFlowDetail(innerFlowDetail));
+packQuantityInnerFlowDetail 'Количество грузовых мест' (innerFlowDetail) = round0(quantityInnerFlowDetail(innerFlowDetail)/
+    UNION OVERRIDE 1 IF innerFlowDetail IS innerFlowDetail, quantityPackItem(itemInnerFlowDetail(innerFlowDetail)));
 
 sumPackQuantityInnerFlow 'Общее количество грузовых мест' (innerFlow) = GROUP SUM packQuantityInnerFlowDetail(innerFlowDetail)
     BY innerFlowInnerFlowDetail(innerFlowDetail);
 
-grossWeightInnerFlowDetail 'Масса груза, т.' (innerFlowDetail) =
-    grossWeightItem(itemInnerFlowDetail(innerFlowDetail))*quantityInnerFlowDetail(innerFlowDetail)/1000;
+grossWeightInnerFlowDetail 'Масса груза, т.' (innerFlowDetail) = round3(
+    grossWeightItem(itemInnerFlowDetail(innerFlowDetail))*quantityInnerFlowDetail(innerFlowDetail)/1000);
 
 sumGrossWeightInnerFlow 'Общая масса груза, т.' (innerFlow) = GROUP SUM grossWeightInnerFlowDetail(innerFlowDetail)
     BY innerFlowInnerFlowDetail(innerFlowDetail);
@@ -6268,14 +6268,14 @@ downtimeReturnSupplier 'Время простоя' (returnSupplier) = DATA STRIN
 
 raceQuantityReturnSupplier 'Количество ездок' (returnSupplier) = DATA INTEGER (returnSupplier);
 
-packQuantityReturnSupplierDetail 'Количество грузовых мест' (returnSupplierDetail) = quantityReturnSupplierDetail(returnSupplierDetail)/
-    UNION OVERRIDE 1 IF returnSupplierDetail IS returnSupplierDetail, quantityPackItem(itemReturnSupplierDetail(returnSupplierDetail));
+packQuantityReturnSupplierDetail 'Количество грузовых мест' (returnSupplierDetail) = round0(quantityReturnSupplierDetail(returnSupplierDetail)/
+    UNION OVERRIDE 1 IF returnSupplierDetail IS returnSupplierDetail, quantityPackItem(itemReturnSupplierDetail(returnSupplierDetail)));
 
 sumPackQuantityReturnSupplier 'Общее количество грузовых мест' (returnSupplier) = GROUP SUM packQuantityReturnSupplierDetail(returnSupplierDetail)
     BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN sumConsignmentGroup;
 
-grossWeightReturnSupplierDetail 'Масса груза, т.' (returnSupplierDetail) =
-    grossWeightItem(itemReturnSupplierDetail(returnSupplierDetail))*quantityReturnSupplierDetail(returnSupplierDetail)/1000;
+grossWeightReturnSupplierDetail 'Масса груза, т.' (returnSupplierDetail) = round3(
+    grossWeightItem(itemReturnSupplierDetail(returnSupplierDetail))*quantityReturnSupplierDetail(returnSupplierDetail)/1000);
 
 sumGrossWeightReturnSupplier 'Общее количество грузовых мест' (returnSupplier) = GROUP SUM packQuantityReturnSupplierDetail(returnSupplierDetail)
     BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN sumConsignmentGroup;
@@ -8952,16 +8952,18 @@ packQuantityConsignmentDetail 'Количество грузовых мест' (
                                                                                                packQuantityInnerFlowDetail(consignmentDetail);
 
 sumPackQuantityConsignment 'Общее количество грузовых мест' (consignment) = UNION EXCLUSIVE sumPackQuantityStatement(consignment),
-                                                                                            sumPackQuantityReturnSupplier(consignment),
-                                                                                            sumPackQuantityInnerFlow(consignment) IN sumConsignmentGroup;
+                                                                                       sumPackQuantityReturnSupplier(consignment),
+                                                                                       sumPackQuantityInnerFlow(consignment) IN sumConsignmentGroup;
 
-grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = round3(UNION EXCLUSIVE grossWeightStatementDetail(consignmentDetail),
+grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = UNION EXCLUSIVE grossWeightStatementDetail(consignmentDetail),
                                                                                      grossWeightReturnSupplierDetail(consignmentDetail),
-                                                                                     grossWeightInnerFlowDetail(consignmentDetail));
+                                                                                     grossWeightInnerFlowDetail(consignmentDetail);
 
 sumGrossWeightConsignmentDetail 'Общая масса груза, т.' (consignment) = UNION EXCLUSIVE sumGrossWeightStatement(consignment),
                                                                                         sumGrossWeightReturnSupplier(consignment),
                                                                                         sumGrossWeightInnerFlow(consignment) IN sumConsignmentGroup;
+
+sumKgGrossWeightConsignment(consignment) = sumGrossWeightConsignmentDetail(consignment)*1000;
 
 consignmentConsignmentDetail (consignmentDetail) = UNION EXCLUSIVE statementStatementDetail(consignmentDetail),
                                                                    returnSupplierReturnSupplierDetail(consignmentDetail),
@@ -9013,10 +9015,11 @@ META metaCodeTransportConsignment(prop, caption)
                        forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                        commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                        arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
-                       sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
+                       sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail, sumKgGrossWeightConsignment,
                        sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment, UNPRecipientConsignment, UNPSenderConsignment,
                        addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment, fullNameRecipientConsignment,
-                       quantityConsignmentDetailsConsignment, sumWareReturnSupplier, totalSumSupplierPriceWithWareReturnSupplier
+                       quantityConsignmentDetailsConsignment, sumWareReturnSupplier, totalSumSupplierPriceWithWareReturnSupplier,
+                       seriesObject, numberObject, isReturnSupplierConsignment
 
         OBJECTS d=consignmentDetail
 
@@ -9025,7 +9028,7 @@ META metaCodeTransportConsignment(prop, caption)
                       packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteInnerFlowDetail,
                       nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, dataWareRangeReturnSupplierDetail,
                       priceWareWithoutVATReturnSupplierDetail, sumWareReturnSupplierDetail, totalSumWareWithoutVATReturnSupplierDetail,
-                      sumDetailVatWareReturnSupplierDetail
+                      sumDetailVatWareReturnSupplierDetail, totalSumWareReturnSupplierDetail
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
@@ -9037,7 +9040,7 @@ END
 @metaCodeTransportConsignment(transportConsignmentHorizontalA, 'ТТН-1, горизонтальная (сторона А)');
 @metaCodeTransportConsignment(transportConsignmentVerticalB, 'ТТН-1, вертикальная (сторона Б)');
 @metaCodeTransportConsignment(transportConsignmentHorizontalB, 'ТТН-1, горизонтальная (сторона Б)');
-
+@metaCodeTransportConsignment(transportConsignmentAttach, 'Приложение к ТТН-1');
 //----------------------------------- Формы поступления товара -------------------------------------------------------
 @metaCodeInputMultipleItems(shipment);
 @metaCodeDocumentMachineryPriceTransaction(shipment);
@@ -10008,7 +10011,7 @@ FORM returnSuppliers 'Возвраты поставщику'
 
     PROPERTIES(r) FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
                               toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,
-                              toPrintConsignmentTwoHorizontal,
+                              toPrintTransportConsignmentAttach, toPrintConsignmentTwoHorizontal,
                               toPrintConsignmentTwoVertical, toPrintConsignmentTwoAttach,
                               toPrintActOfRevaluationReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
@@ -10869,7 +10872,8 @@ FORM innerFlows 'Расходы в другие отделы'
     PROPERTIES(f) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
     PROPERTIES (f) FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
                                toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,
-                               toPrintConsignmentTwoHorizontal, toPrintConsignmentTwoVertical, toPrintConsignmentTwoAttach
+                               toPrintTransportConsignmentAttach, toPrintConsignmentTwoHorizontal, toPrintConsignmentTwoVertical,
+                               toPrintConsignmentTwoAttach
 
     PROPERTIES (f) ADDFORM, EDITFORM SHOWIF isDraftInnerFlow(f), delete FORCE PANEL SHOWIF isDraftInnerFlow(f),
                    postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
@@ -11342,7 +11346,8 @@ FORM statements 'Отгрузки из розницы'
                      nameCustomerStatement, quantityStatementDetailsStatement, totalQuantityStatement,
                      sumWithoutNDSStatement, sumNDSStatement, sumStatement
     PROPERTIES (st)  FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
-                     toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,  toPrintConsignmentTwoHorizontal,
+                     toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,
+                     toPrintTransportConsignmentAttach, toPrintConsignmentTwoHorizontal,
                      toPrintConsignmentTwoVertical, toPrintConsignmentTwoAttach, toPrintActOfRevaluationStatement SHOWIF needToPriceChangeStatement(st),
                      nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -12176,6 +12181,7 @@ NAVIGATOR {
         ADD transportConsignmentHorizontalA;
         ADD transportConsignmentVerticalB;
         ADD transportConsignmentHorizontalB;
+        ADD transportConsignmentAttach;
         ADD consignmentTwoHorizontal;
         ADD consignmentTwoVertical;
         ADD consignmentTwoAttach;
