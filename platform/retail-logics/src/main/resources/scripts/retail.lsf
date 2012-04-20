@@ -3675,6 +3675,7 @@ FORM equipmentServer 'Серверы оборудования'
     PROPERTIES(l) READONLY dataEquipmentServerLog, dateEquipmentServerLog
     PROPERTIES(l) delete
 
+    FILTERS equipmentServerEquipmentServerError (e) == es
     FILTERS equipmentServerEquipmentServerLog (l) == es
 
 ;
