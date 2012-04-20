@@ -9044,14 +9044,18 @@ END
 @metaCodeDocumentLabelTransaction(shipment);
 
 toShowPriceImporterShipment 'Есть оптовая надбавка' (shipment) = DATA BOOLEAN (shipment) IN documentPrmGroup;
-toShowPriceImporterShipmentDetail (shipmentDetail) = toShowPriceImporterShipment(shipmentShipmentDetail(shipmentDetail));
-//todo
-supplierMarkupShipmentDetail(shipmentDetail) => toShowPriceImporterShipmentDetail(shipmentDetail) RESOLVE ALL;
+
+quantityMarkupDetailsShipment 'Количество строк с оптовой надбавкой' (shipment) = GROUP SUM 1
+    IF supplierMarkupShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail);
+
+quantityMarkupDetailsShipment(shipment) => toShowPriceImporterShipment(shipment) RESOLVE FALSE;
 
 toShowWareShipment 'Есть стеклопосуда' (shipment) = DATA BOOLEAN (shipment) IN documentPrmGroup;
-toShowWareShipmentDetail (shipmentDetail) = toShowWareShipment(shipmentShipmentDetail(shipmentDetail));
-//todo
-wareShipmentDetail(shipmentDetail) => toShowWareShipmentDetail(shipmentDetail) RESOLVE ALL;
+
+quantityWareDetailsShipment 'Количество строк с посудой' (shipment) = GROUP SUM 1
+    IF wareShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail);
+
+quantityWareDetailsShipment(shipment) => toShowWareShipment(shipment) RESOLVE FALSE;
 
 nameFormedManShipment 'Цены сформировал' (shipment) = nameFormedManCommittee(registerCommitteeShipment(shipment));
 nameCheckedManShipment 'Реестр проверил' (shipment) = nameCheckedManCommittee(registerCommitteeShipment(shipment));
