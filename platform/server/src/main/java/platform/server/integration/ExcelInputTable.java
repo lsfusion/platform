@@ -5,18 +5,13 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.xml.sax.SAXException;
 import platform.server.classes.DateClass;
-import platform.server.classes.DoubleClass;
 
-import java.io.*;
-import java.text.DateFormat;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
-import java.util.Date;
-import java.util.TimeZone;
-
-import org.xml.sax.SAXException;
 
 /**
  * User: DAle
@@ -44,9 +39,9 @@ public class ExcelInputTable implements ImportInputTable {
             Cell cell = sheet.getRow(row).getCell(column);
             if (cell != null) {
                 if (cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC)
-                    return new DecimalFormat("#").format(sheet.getRow(row).getCell(column).getNumericCellValue());
+                    return new DecimalFormat("#.######").format(cell.getNumericCellValue());
                 else
-                    return sheet.getRow(row).getCell(column).getStringCellValue();
+                    return cell.getStringCellValue();
             } else
                 return "";
         }
@@ -55,13 +50,12 @@ public class ExcelInputTable implements ImportInputTable {
 
     public String getCellString(ImportField field, int row, int column) throws ParseException {
         Cell cell = sheet.getRow(row).getCell(column);
-        if (field.getType() == DoubleClass.instance && cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC) {
-            return new DecimalFormat("#").format(sheet.getRow(row).getCell(column).getNumericCellValue());
-        } else if (field.getType() == DateClass.instance && cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC) {
-            Date date = cell.getDateCellValue();
-            DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
-            format.setTimeZone(TimeZone.getTimeZone("GMT"));
-            return format.format(date);
+        if (cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC) {
+            if (field.getType() != DateClass.instance) {
+                return new DecimalFormat("#.######").format(cell.getNumericCellValue());
+            } else {
+                return DateClass.getDateFormat().format(cell.getDateCellValue());
+            }
         } else {
             return getCellString(row, column);
         }
