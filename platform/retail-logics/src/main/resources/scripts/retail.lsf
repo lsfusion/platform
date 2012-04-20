@@ -8929,7 +8929,7 @@ consignmentConsignmentDetail (consignmentDetail) = UNION EXCLUSIVE statementStat
                                                                    returnSupplierReturnSupplierDetail(consignmentDetail),
                                                                    innerFlowInnerFlowDetail(consignmentDetail);
 
-//isReturnSupplier (consignment) = consignment IS returnSupplier;
+isReturnSupplierConsignment (consignment) = consignment IS returnSupplier;
 
 // ---------------------------- Формы для накладных --------------------------------- //
 
@@ -8944,13 +8944,14 @@ META metaCodeConsignmentTwo(prop, caption)
                        sumQuantityConsignment, sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment, UNPRecipientConsignment,
                        UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
                        fullNameRecipientConsignment, numberObject, seriesObject, quantityConsignmentDetailsConsignment,
-                       nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, dataWareRangeReturnSupplierDetail
+                       isReturnSupplierConsignment
 
         OBJECTS d=consignmentDetail
 
         PROPERTIES(d) nameItemConsignmentDetail, shortNameConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
-                      noteInnerFlowDetail
+                      noteInnerFlowDetail, nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, totalSumWareReturnSupplierDetail,
+                      dataWareRangeReturnSupplierDetail, sumDetailVatWareReturnSupplierDetail
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
