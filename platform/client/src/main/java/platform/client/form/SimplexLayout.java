@@ -529,7 +529,15 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             for (Component comp2 : contComponents)
                 if (comp1 != comp2 && !getConstraint(comp2).intersects.containsKey(constraints.get(comp1))) {
 
-                    if (getConstraint(comp1).intersects.containsKey(constraints.get(comp2))) {
+                    if (parent instanceof ClientFormSplitPane) {
+                        ClientFormSplitPane split = (ClientFormSplitPane) parent;
+                        DoNotIntersectSimplexConstraint constraint = split.getOrientation() == JSplitPane.HORIZONTAL_SPLIT
+                                ? DoNotIntersectSimplexConstraint.TOTHE_RIGHT
+                                : DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+                        Component component1 = comp1.equals(split.getLeftComponent()) ? comp1 : comp2;
+                        Component component2 = comp1.equals(split.getLeftComponent()) ? comp2 : comp1;
+                        constraint.fillConstraint(solver, infos.get(component1), infos.get(component2), getConstraint(component1), getConstraint(component2), null);
+                    } else if (getConstraint(comp1).intersects.containsKey(constraints.get(comp2))) {
                         getConstraint(comp1).intersects.get(constraints.get(comp2)).fillConstraint(solver, infos.get(comp1), infos.get(comp2), getConstraint(comp1), getConstraint(comp2), null);
                     } else {
 
@@ -646,6 +654,38 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             objFnc.set(info.B, (type == SimplexLayout.PREFERRED ? -1.0 : (constraint.directions.B + ((constraint.fillVertical > 0) ? 1 : 0.0))));
             objFnc.set(info.R, (type == SimplexLayout.PREFERRED ? -1.0 : (constraint.directions.R + ((constraint.fillHorizontal > 0) ? 1 : 0.0))));
             // }
+
+            if (component instanceof ClientFormSplitPane && ((ClientFormSplitPane) component).getDividerLocation() != -1) {
+                ClientFormSplitPane splitPane = (ClientFormSplitPane) component;
+                SimplexComponentInfo leftInfo = infos.get(splitPane.getLeftComponent());
+                SimplexComponentInfo rightInfo = infos.get(splitPane.getRightComponent());
+
+                double coef1;
+                solver.addColumn(new double[0]);
+                solver.addColumn(new double[0]);
+                int var1 = solver.getNcolumns();
+                int var2 = solver.getNcolumns();
+                int[] leftIndexes, rightIndexes;
+
+                if (splitPane.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
+                    coef1 = (double) splitPane.getDividerLocation() / (double) splitPane.getHeight();
+                    leftIndexes =  new int[]{info.B, info.T, leftInfo.B, leftInfo.T, var1};
+                    rightIndexes = new int[]{info.B, info.T, rightInfo.B, rightInfo.T, var2};
+                } else {
+                    coef1 = (double) splitPane.getDividerLocation() / (double) splitPane.getWidth();
+                    leftIndexes = new int[]{info.R, info.L, leftInfo.R, leftInfo.L, var1};
+                    rightIndexes = new int[]{info.R, info.L, rightInfo.R, rightInfo.L, var2};
+                }
+
+                solver.addConstraintex(1, new double[]{1}, new int[]{var1}, LpSolve.GE, 0);
+                solver.addConstraintex(5, new double[]{coef1, -coef1, -1, 1, 1}, leftIndexes, LpSolve.GE, 0);
+                objFnc.add(-10000.0);
+
+                solver.addConstraintex(1, new double[]{1}, new int[]{var2}, LpSolve.GE, 0);
+                double coef2 = 1 - coef1;
+                solver.addConstraintex(5, new double[]{coef2, -coef2, -1, 1, 1}, rightIndexes, LpSolve.GE, 0);
+                objFnc.add(-10000.0);
+            }
         }
 
         if (type == SimplexLayout.DEFAULT) {
@@ -683,6 +723,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             }
 
             int height = (int) Math.round(coords[info.B - 1] - coords[info.T - 1]);
+            int width = (int) Math.round(coords[info.R - 1] - coords[info.L - 1]);
+
             Integer parentHeight = null;
             int prefTabAreaHeight = 0;
             if (comp.getParent() != null) {
@@ -706,6 +748,10 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
+                } else if (comp.getParent() instanceof ClientFormSplitPane) {
+                    ClientFormSplitPane split = (ClientFormSplitPane) comp.getParent();
+                    if (split.getDividerLocation() == -1)
+                        split.setDividerLocation(split.getOrientation() == JSplitPane.VERTICAL_SPLIT ? height : width);
                 }
             }
             if (parentHeight != null) {
@@ -714,8 +760,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                 height = Math.min(height, parentHeight - prefTabAreaHeight);
             }
             heights.put(comp, height);
-            comp.setBounds((int) Math.round(coords[info.L - 1] - LP), (int) Math.round(coords[info.T - 1] - TP),
-                    (int) Math.round(coords[info.R - 1] - coords[info.L - 1]), height);
+            comp.setBounds((int) Math.round(coords[info.L - 1] - LP), (int) Math.round(coords[info.T - 1] - TP), width, height);
         }
 
     }

@@ -6,6 +6,7 @@ grammar LsfLogics;
 	import platform.base.OrderedMap;
 	import platform.interop.ClassViewType;
 	import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+	import platform.interop.form.layout.ContainerType;
 	import platform.interop.navigator.FormShowType;
 	import platform.server.data.Union;
 	import platform.server.data.expr.query.PartitionType;
@@ -2097,6 +2098,7 @@ componentPropertyValue returns [Object value]
 	|	cons=simplexConstraintLiteral { $value = $cons.val; }
 	|	ins=insetsLiteral { $value = $ins.val; }
 	|	panLoc=panelLocationLiteral { $value = $panLoc.val; }
+	|   contType=containerTypeLiteral { $value = $contType.val; }
 	;
 
 
@@ -2333,6 +2335,13 @@ panelLocationLiteral returns [PanelLocationView val]
 }
 	:	'TOOLBAR' { toolbar = true; }
 	|	'SHORTCUT' { toolbar = false; } (onlyProp=propertySelector { property = $onlyProp.propertyView; })? ('DEFAULT' { defaultProperty = true; })?
+	;
+
+containerTypeLiteral returns [byte val]
+	:	'CONTAINER' { $val = ContainerType.CONTAINER; }	
+	|	'TABBED' { $val = ContainerType.TABBED_PANE; }
+	|	'SPLITH' { $val = ContainerType.SPLIT_PANE_HORIZONTAL; }
+	|	'SPLITV' { $val = ContainerType.SPLIT_PANE_VERTICAL; }
 	;
 
 emailRecipientTypeLiteral returns [Message.RecipientType val]

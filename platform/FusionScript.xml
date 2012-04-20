@@ -52,6 +52,7 @@
       <keyword name="CONCAT" />
       <keyword name="CONFIRM" />
       <keyword name="CONSTRAINT" />
+      <keyword name="CONTAINER" />
       <keyword name="CUSTOM" />
       <keyword name="CUSTOMFILE" />
       <keyword name="CYCLES" />
@@ -187,12 +188,15 @@
       <keyword name="SHORTCUT" />
       <keyword name="SHOW" />
       <keyword name="SHOWIF" />
+      <keyword name="SPLITH" />
+      <keyword name="SPLITV" />
       <keyword name="STATIC" />
       <keyword name="STEP" />
       <keyword name="STRICT" />
       <keyword name="STRING" />
       <keyword name="SUBJECT" />
       <keyword name="SUM" />
+      <keyword name="TABBED" />
       <keyword name="TABLE" />
       <keyword name="TEXT" />
       <keyword name="TEXTHALIGN" />

@@ -7,6 +7,7 @@ import platform.base.identity.IDGenerator;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.*;
+import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
@@ -1947,31 +1948,31 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             ContainerView container = design.createContainer();
-            container.tabbedPane = true;
+            container.type = ContainerType.TABBED_PANE;
 
             ContainerView defaultPolicyContainer = design.createContainer(getString("logics.policy.default"));
             ContainerView defaultFormsContainer = design.createContainer(getString("logics.forms"));
-            defaultFormsContainer.tabbedPane = true;
+            defaultFormsContainer.type = ContainerType.TABBED_PANE;
             defaultFormsContainer.add(design.getTreeContainer(treeDefaultForm));
             defaultFormsContainer.add(design.getGroupObjectContainer(objDefaultForm.groupTo));
             ContainerView defaultPropertyContainer = design.createContainer(getString("logics.property.properties"));
-            defaultPropertyContainer.tabbedPane = true;
+            defaultPropertyContainer.type = ContainerType.TABBED_PANE;
             defaultPropertyContainer.add(design.getTreeContainer(treeDefaultProperty));
             defaultPropertyContainer.add(design.getGroupObjectContainer(objDefaultProperty.groupTo));
-            defaultPolicyContainer.tabbedPane = true;
+            defaultPolicyContainer.type = ContainerType.TABBED_PANE;
             defaultPolicyContainer.add(defaultFormsContainer);
             defaultPolicyContainer.add(defaultPropertyContainer);
 
             ContainerView rolesContainer = design.createContainer(getString("logics.policy.roles"));
             ContainerView rolePolicyContainer = design.createContainer();
-            rolePolicyContainer.tabbedPane = true;
+            rolePolicyContainer.type = ContainerType.TABBED_PANE;
             ContainerView formsContainer = design.createContainer(getString("logics.forms"));
-            formsContainer.tabbedPane = true;
+            formsContainer.type = ContainerType.TABBED_PANE;
             formsContainer.add(design.getTreeContainer(treeFormObject));
             formsContainer.add(design.getGroupObjectContainer(objForm.groupTo));
             rolePolicyContainer.add(formsContainer);
             ContainerView propertiesContainer = design.createContainer(getString("logics.property.properties"));
-            propertiesContainer.tabbedPane = true;
+            propertiesContainer.type = ContainerType.TABBED_PANE;
             propertiesContainer.add(design.getTreeContainer(treePropertyObject));
             propertiesContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
             rolePolicyContainer.add(propertiesContainer);
@@ -2059,7 +2060,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             dropColumnsContainer.add(design.getGroupObjectContainer(objDropColumn.groupTo));
 
             ContainerView container = design.createContainer();
-            container.tabbedPane = true;
+            container.type = ContainerType.TABBED_PANE;
             container.add(modelContainer);
             container.add(dropColumnsContainer);
 
@@ -2102,7 +2103,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             ContainerView container = design.createContainer();
-            container.tabbedPane = true;
+            container.type = ContainerType.TABBED_PANE;
 
             ContainerView treeContainer = design.createContainer(getString("logics.tree"));
             ContainerView tableContainer = design.createContainer(getString("logics.tables.table"));
@@ -2172,7 +2173,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objNotification.groupTo));
             specContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
             specContainer.add(textContainer);
-            specContainer.tabbedPane = true;
+            specContainer.type = ContainerType.TABBED_PANE;
 
             addDefaultOrder(getPropertyDraw(SIDProperty, objProperty), true);
             return design;

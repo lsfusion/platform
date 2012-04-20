@@ -1,6 +1,7 @@
 package platform.server.form.view;
 
 import platform.interop.form.layout.AbstractContainer;
+import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -15,7 +16,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     public String title;
     public String description;
 
-    public boolean tabbedPane = false;
+    public byte type = ContainerType.CONTAINER;
 
     public boolean gwtVertical = true;
     public boolean gwtIsLayout = false;
@@ -120,7 +121,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         pool.writeString(outStream, title);
         pool.writeString(outStream, description);
 
-        outStream.writeBoolean(tabbedPane);
+        outStream.writeByte(type);
         outStream.writeBoolean(gwtVertical);
         outStream.writeBoolean(gwtIsLayout);
     }
@@ -134,7 +135,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         title = pool.readString(inStream);
         description = pool.readString(inStream);
 
-        tabbedPane = inStream.readBoolean();
+        type = inStream.readByte();
         gwtVertical = inStream.readBoolean();
         gwtIsLayout = inStream.readBoolean();
     }

@@ -10,6 +10,7 @@ import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.gwt.view.GContainer;
 import platform.interop.form.layout.AbstractContainer;
+import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
@@ -26,7 +27,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     public List<ClientComponent> children = new ArrayList<ClientComponent>();
 
-    private boolean tabbedPane = false;
+    private byte type = ContainerType.CONTAINER;
 
     public boolean gwtVertical;
     public boolean gwtIsLayout;
@@ -49,7 +50,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         pool.writeString(outStream, title);
         pool.writeString(outStream, description);
 
-        outStream.writeBoolean(tabbedPane);
+        outStream.writeByte(type);
         outStream.writeBoolean(gwtVertical);
         outStream.writeBoolean(gwtIsLayout);
     }
@@ -63,7 +64,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         title = pool.readString(inStream);
         description = pool.readString(inStream);
 
-        tabbedPane = inStream.readBoolean();
+        type = inStream.readByte();
         gwtVertical = inStream.readBoolean();
         gwtIsLayout = inStream.readBoolean();
     }
@@ -165,13 +166,20 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         updateDependency(this, "description");
     }
 
-    public boolean getTabbedPane() {
-        return tabbedPane;
+    public byte getType() {
+        return type;
     }
 
-    public void setTabbedPane(boolean tabbedPane) {
-        this.tabbedPane = tabbedPane;
-        updateDependency(this, "tabbedPane");
+    public void setType(byte type) {
+        this.type = type;
+    }
+
+    public boolean isTabbedPane() {
+        return type == ContainerType.TABBED_PANE;
+    }
+
+    public boolean isSplitPane() {
+        return type == ContainerType.SPLIT_PANE_HORIZONTAL || type == ContainerType.SPLIT_PANE_VERTICAL;
     }
 
     @Override
@@ -216,7 +224,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     public void initGwtComponent(GContainer container) {
         super.initGwtComponent(container);
         container.title = title;
-        container.tabbedPane = tabbedPane;
+        container.type = type;
         container.gwtVertical = gwtVertical;
         container.gwtIsLayout = gwtIsLayout;
     }

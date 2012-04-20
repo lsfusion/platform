@@ -7,6 +7,7 @@ import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.*;
+import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.server.classes.*;
@@ -2037,7 +2038,7 @@ public class VEDLogicsModule extends LogicsModule {
                 }
 
                 pageContainer.add(printCont);
-                pageContainer.tabbedPane = true;
+                pageContainer.type = ContainerType.TABBED_PANE;
             }
 
             PropertyDrawView objectValueView = design.get(getPropertyDraw(baseLM.objectValue, objDoc));

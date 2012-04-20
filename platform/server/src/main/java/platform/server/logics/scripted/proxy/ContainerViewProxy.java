@@ -20,8 +20,8 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         target.description = description;
     }
 
-    public void setTabbedPane(boolean tabbedPane) {
-        target.tabbedPane = tabbedPane;
+    public void setType(byte type) {
+        target.type = type;
     }
 
     public void setGwtVertical(boolean gwtVertical) {

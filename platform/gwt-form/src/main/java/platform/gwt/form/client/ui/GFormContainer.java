@@ -1,12 +1,11 @@
 package platform.gwt.form.client.ui;
 
-import com.google.gwt.event.logical.shared.AttachEvent;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.widgets.Canvas;
-import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.layout.*;
 import com.smartgwt.client.widgets.tab.Tab;
 import com.smartgwt.client.widgets.tab.TabSet;
+import platform.gwt.base.shared.GContainerType;
 import platform.gwt.view.GComponent;
 import platform.gwt.view.GContainer;
 
@@ -45,7 +44,7 @@ public class GFormContainer {
     }
 
     public boolean isTabbed() {
-        return key.tabbedPane;
+        return key.type == GContainerType.TABBED_PANE;
     }
 
     public Layout getComponent() {
@@ -54,7 +53,7 @@ public class GFormContainer {
 
     public void addBorder() {
         String title = key.title;
-        if (title != null && key.container != null && !key.container.tabbedPane) {
+        if (title != null && key.container != null && key.container.type != GContainerType.TABBED_PANE) {
             containerComponent.setGroupTitle(key.title);
             containerComponent.setIsGroup(true);
             containerComponent.setLayoutTopMargin(3);
@@ -104,7 +103,8 @@ public class GFormContainer {
     }
 
     public boolean needToBeHidden() {
-        return containerComponent.getMembers().length == 0 /*children.isEmpty()*/ || (key.container != null && key.container.tabbedPane && !containerComponent.isVisible());
+        return containerComponent.getMembers().length == 0 /*children.isEmpty()*/ || (key.container != null &&
+                key.container.type == GContainerType.TABBED_PANE && !containerComponent.isVisible());
     }
 
     public boolean drawsChild(GComponent child) {

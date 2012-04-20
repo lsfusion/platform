@@ -77,7 +77,14 @@ public abstract class ClientFormLayout extends JPanel {
     // метод рекурсивно создает для каждого ClientContainer свой ClientFormContainer или ClientFormTabbedPane
     private void createContainerViews(ClientContainer container) {
 
-        JComponent formContainer = (container.getTabbedPane() ? new ClientFormTabbedPane(container, layoutManager) : new ClientFormContainer(container));
+        JComponent formContainer;
+        if (container.isTabbedPane()) {
+            formContainer = new ClientFormTabbedPane(container, layoutManager);
+        } else if (container.isSplitPane()) {
+            formContainer = new ClientFormSplitPane(container, layoutManager, this);
+        } else {
+            formContainer = new ClientFormContainer(container);
+        }
 
         if (container.container == null) {
             mainContainer = formContainer;
@@ -93,7 +100,7 @@ public abstract class ClientFormLayout extends JPanel {
         // нельзя перегружать LayoutManager у JTabbedPane, который не наследуется от TabbedPaneLayout
         // поскольку он при расположении заполняют кучу private field'ов, которые в дальнейшем используются при отрисовке JTabbedPane
         // вместо этого SimplexLayout передается в ClientFormTabbedPane и работает как бы "дополнительным" LayoutManager
-        if (!container.getTabbedPane()) {
+        if (!container.isTabbedPane() && !container.isSplitPane()) {
             formContainer.setLayout(layoutManager);
         }
 

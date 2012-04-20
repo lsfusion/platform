@@ -2131,7 +2131,7 @@ DESIGN item FROM DEFAULT {
             }
         }
         NEW item.box BEFORE b.box {
-            tabbedPane = TRUE;
+            type = TABBED;
             NEW primary.box {
                 title = 'Основные данные';
                 fillVertical = 1.0;
@@ -3037,7 +3037,7 @@ DESIGN supplier FROM DEFAULT {
         }
 
         NEW prop.box BEFORE functions.box{
-            tabbedPane = TRUE;
+            type = TABBED;
             ADD a.box;
             NEW firstCase {
                 title = 'Компания-договор';
@@ -3124,7 +3124,7 @@ DESIGN company FROM DEFAULT {
        }
 
        NEW firstCase BEFORE functions.box {
-            tabbedPane = TRUE;
+            type = TABBED;
             ADD a.box;
             NEW v.box { title = 'Поставщик-договор'; }
             ADD s.box IN v.box;
@@ -3242,7 +3242,7 @@ DESIGN departmentStore FROM DEFAULT {
         };
 
         NEW prop.box BEFORE functions.box{
-            tabbedPane = TRUE;
+            type = TABBED;
             ADD e.box{
                     title = 'Сотрудники';
                 };
@@ -3407,7 +3407,7 @@ PROPERTIES(m) ADDFORM, EDITFORM, delete;                // либо так ка�
 //DESIGN models FROM DEFAULT {
 //    main{
 //       ADD prop1.box BEFORE functions.box{
-//            tabbedPane = TRUE;
+//            type = TABBED;
 //            ADD c.box;
 //            ADD s.box;
 //            ADD ch.box;
@@ -3696,7 +3696,7 @@ DESIGN equipmentServer FROM DEFAULT {
     main {
 
         NEW specContainer {
-            tabbedPane = TRUE;
+            type = TABBED;
             ADD e.box;
             ADD l.box;
         }
@@ -3790,7 +3790,7 @@ FILTERS includedEmployeeCashRegister(e, c),
 DESIGN groupsUser FROM DEFAULT {
     main{
        NEW prop.box BEFORE functions.box {
-            tabbedPane = TRUE;
+            type = TABBED;
             ADD c.box;
             ADD d.box;
        }
@@ -4317,7 +4317,7 @@ DESIGN cutting FROM DEFAULT {
        preferredSize = (1024, 768);
 
        NEW cut.box BEFORE functions.box{
-            tabbedPane = TRUE;
+            type = TABBED;
             ADD d.box;
             NEW caseOneBox {
                 title = 'Подразделение';
@@ -8583,7 +8583,7 @@ DESIGN machineryPriceTransactions FROM DEFAULT {
         }
 
         NEW specContainer BEFORE functions.box {
-            tabbedPane = TRUE;
+            type = TABBED;
             ADD b.box;
             NEW errorContainer {
                title = 'Сообщения об ошибках';
@@ -9790,7 +9790,7 @@ DESIGN shipment FROM DEFAULT{
     main{
         preferredSize = (1024, 768);
         NEW specification.box BEFORE functions.box{
-            tabbedPane = TRUE;
+            type = TABBED;
             ADD d.box {
                 childConstraints = TO THE BOTTOM;
                 title = 'Спецификация';
@@ -10024,7 +10024,7 @@ FORM returnSuppliers 'Возвраты поставщику'
 DESIGN returnSupplier FROM DEFAULT {
 
     NEW specification.box BEFORE functions.box{
-        tabbedPane = TRUE;
+        type = TABBED;
 
         ADD d.box{
             title = 'Спецификация';
@@ -10461,7 +10461,7 @@ DESIGN inventory FROM DEFAULT {
         }
 
         NEW secondCase BEFORE functions.box {
-                tabbedPane = TRUE;
+                type = TABBED;
                 NEW z.box { title = 'Описи';
                     fillVertical = 5;
                     ADD treeDepartmentStore.box { fillHorizontal = 2;};
@@ -10806,7 +10806,7 @@ DESIGN innerFlow FROM DEFAULT{
         preferredSize = (1024, 768);
 
         NEW specification.box BEFORE functions.box{
-            tabbedPane = TRUE;
+            type = TABBED;
             ADD d.box{
                 title = 'Спецификация';
                 ADD d.grid{
@@ -10944,7 +10944,7 @@ DESIGN innerArrival FROM DEFAULT{
     main{
         preferredSize = (1024, 768);
         NEW specification.box BEFORE functions.box{
-            tabbedPane = TRUE;
+            type = TABBED;
             ADD d.box {
                 childConstraints = TO THE BOTTOM;
                 title = 'Спецификация';
@@ -11280,7 +11280,7 @@ DESIGN statement FROM DEFAULT {
         preferredSize = (1024, 768);
 
         NEW specification.box BEFORE functions.box{
-            tabbedPane = TRUE;
+            type = TABBED;
             ADD d.box{
                 title = 'Спецификация';
                 ADD d.panel{
@@ -11727,7 +11727,7 @@ DESIGN balanceItemDepartment FROM DEFAULT {
                 NEW ledger.box {
                     fillVertical = 1;
                     title = 'Изменение цен';
-                    tabbedPane = TRUE;
+                    type = TABBED;
                     ADD bil.box;
                     ADD apl.box;
                     ADD rpl.box;
@@ -11832,7 +11832,7 @@ DESIGN curBalanceItemDepartment FROM DEFAULT {
                 NEW ledger.box {
                     fillVertical = 1;
                     title = 'Изменение цен';
-                    tabbedPane = TRUE;
+                    type = TABBED;
                     ADD bil.box;
                     ADD bt.box;
                     ADD apl.box;

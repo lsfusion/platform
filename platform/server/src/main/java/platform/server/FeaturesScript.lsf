@@ -649,8 +649,10 @@ DESIGN storeArticle FROM DEFAULT {
             //здесь всё так же можно применять команды ADD, POSITION и т.д.
             NEW child1 {
                 // так контейнер будет отображаться в виде табов
-                // соответсвует в Java: container.tabbedPane = true;
-                tabbedPane = TRUE;
+                // соответсвует в Java: container.type = ContainerType.TABBED_PANE;
+                type = TABBED;
+                // а так - в виде SplitPane'а: type = SPLITV
+                //                             type = SPLITH
 
                 NEW child2;
 

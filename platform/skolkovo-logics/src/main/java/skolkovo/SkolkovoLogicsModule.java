@@ -15,6 +15,7 @@ import platform.interop.Compare;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.OpenFileClientAction;
+import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.Settings;
 import platform.server.classes.*;
@@ -4749,7 +4750,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             specContainer.add(design.getGroupObjectContainer(objPatent.groupTo));
             specContainer.add(design.getGroupObjectContainer(objAcademic.groupTo));
             specContainer.add(design.getGroupObjectContainer(objNonRussianSpecialist.groupTo));
-            specContainer.tabbedPane = true;
+            specContainer.type = ContainerType.TABBED_PANE;
 
             design.getMainContainer().addBefore(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup), specContainer);
 
@@ -4989,7 +4990,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             specContainer.add(mapContainer);
             specContainer.add(dopContainer);
 
-            specContainer.tabbedPane = true;
+            specContainer.type = ContainerType.TABBED_PANE;
             return design;
 
         }
@@ -5790,7 +5791,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //            design.getPanelContainer(objProject.groupTo).add(design.getGroupPropertyContainer((GroupObjectEntity)null, importGroup));
 
             ContainerView specContainer = design.createContainer();
-            specContainer.tabbedPane = true;
+            specContainer.type = ContainerType.TABBED_PANE;
 
             ContainerView projectMainInformationContainer = design.createContainer();
             projectMainInformationContainer.add(design.get(nameNativeEntity));
@@ -6019,7 +6020,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objApplication.groupTo));
             specContainer.add(foresightContainer);
             specContainer.add(expertizContainer);
-            specContainer.tabbedPane = true;
+            specContainer.type = ContainerType.TABBED_PANE;
 
             design.get(objApplication.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 400));
 
@@ -6268,7 +6269,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             specContainer.add(design.getGroupObjectContainer(objVote.groupTo));
             specContainer.add(design.getGroupObjectContainer(objExtraCluster.groupTo));
             specContainer.add(foresightContainer);
-            specContainer.tabbedPane = true;
+            specContainer.type = ContainerType.TABBED_PANE;
 
             design.setPanelLabelAbove(design.get(getPropertyDraw(commentExpertForesight)), true);
 
@@ -7033,7 +7034,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objConference.groupTo));
             specContainer.add(design.getGroupObjectContainer(objExpert.groupTo));
             specContainer.add(textContainer);
-            specContainer.tabbedPane = true;
+            specContainer.type = ContainerType.TABBED_PANE;
 
             return design;
         }

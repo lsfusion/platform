@@ -580,7 +580,7 @@ FORM declaration 'Декларация'
 DESIGN declaration FROM DEFAULT{
     main {
 //        NEW document.box BEFORE dd.box {
-//            tabbedPane = TRUE;
+//            type = TABBED;
 //            ADD ii.box;
 //            ADD c.box;
 //        }
