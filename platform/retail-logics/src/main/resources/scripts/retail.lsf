@@ -6122,6 +6122,12 @@ priceWareReturnSupplierDetail 'Цена посуды' (returnSupplierDetail) = D
 priceWareReturnSupplierDetail (returnSupplierDetail) <- priceWareShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                         ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
 
+sumWareReturnSupplierDetail 'Сумма по посуде' (returnSupplierDetail) =
+    priceWareReturnSupplierDetail(returnSupplierDetail)*quantityReturnSupplierDetail(returnSupplierDetail);
+
+sumWareReturnSupplier 'Общая сумма по посуде' (returnSupplier) = GROUP SUM sumWareReturnSupplierDetail(returnSupplierDetail)
+    BY returnSupplierReturnSupplierDetail(returnSupplierDetail);
+
 dataWareRangeReturnSupplierDetail 'НДС по посуде, %' (returnSupplierDetail) = DATA DOUBLE (returnSupplierDetail);
 dataWareRangeReturnSupplierDetail (returnSupplierDetail) <- dataWareRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                             ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
@@ -8970,14 +8976,15 @@ META metaCodeTransportConsignment(prop, caption)
                        sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail,
                        sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment, UNPRecipientConsignment, UNPSenderConsignment,
                        addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment, fullNameRecipientConsignment,
-                       quantityConsignmentDetailsConsignment
+                       quantityConsignmentDetailsConsignment, sumWareReturnSupplier
 
         OBJECTS d=consignmentDetail
 
         PROPERTIES(d) nameItemConsignmentDetail, shortNameConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
                       packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteInnerFlowDetail,
-                      nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, dataWareRangeReturnSupplierDetail
+                      nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, dataWareRangeReturnSupplierDetail,
+                      sumWareReturnSupplierDetail
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
