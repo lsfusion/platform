@@ -5,7 +5,6 @@ import platform.interop.RemoteLoaderInterface;
 import retail.api.remote.*;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.rmi.*;
@@ -18,6 +17,7 @@ public class EquipmentServer {
     private Thread thread;
 
     protected final static Logger logger = Logger.getLogger(EquipmentServer.class);
+    Map<String, Object> handlerMap = new HashMap<String, Object>();
 
     public EquipmentServer(final String equServerID, final String serverUrl, final int millis) {
 
@@ -59,6 +59,7 @@ public class EquipmentServer {
                         if (remote != null) {
 
                             processTransactionInfo(remote, equServerID);
+                            sendSalesInfo(remote, equServerID);
                             logger.info("transaction complete");
                         }
 
@@ -95,28 +96,64 @@ public class EquipmentServer {
 
             for (Map.Entry<String, List<MachineryInfo>> entry : handlerModelMap.entrySet()) {
                 if (entry.getKey() != null) {
-
                     try {
-                        Object clsHandler;
-                        if (entry.getKey().trim().split("\\$").length == 1) {
-                            Class cls = Class.forName(entry.getKey().trim());
-                            clsHandler = cls.newInstance();
-                        } else {
-                            Class outerClass = Class.forName(entry.getKey().trim().split("\\$")[0]);
-                            Class innerClass = Class.forName(entry.getKey().trim());
-                            clsHandler = innerClass.getDeclaredConstructors()[0].newInstance(outerClass.newInstance());
-                        }
+                        Object clsHandler = getHandler(entry.getValue().get(0).handlerModel.trim());
                         transaction.sendTransaction(clsHandler, entry.getValue());
                     } catch (Exception e) {
-                        remote.errorReport(transaction.id, e);
+                        remote.errorTransactionReport(transaction.id, e);
                         return;
                     }
                 }
             }
-
             remote.succeedTransaction(transaction.id);
         }
+    }
 
+    private void sendSalesInfo(RetailRemoteInterface remote, String equServerID) throws SQLException, IOException {
+        List<CashRegisterInfo> cashRegisterInfoList = remote.readCashRegisterInfo(equServerID);
+
+        Map<String, List<MachineryInfo>> handlerModelMap = new HashMap<String, List<MachineryInfo>>();
+        for (CashRegisterInfo cashRegister : cashRegisterInfoList) {
+            if (!handlerModelMap.containsKey(cashRegister.nameModel))
+                handlerModelMap.put(cashRegister.nameModel, new ArrayList());
+            handlerModelMap.get(cashRegister.nameModel).add(cashRegister);
+        }
+
+        for (Map.Entry<String, List<MachineryInfo>> entry : handlerModelMap.entrySet()) {
+            if (entry.getKey() != null) {
+
+                try {
+                    Object clsHandler = getHandler(entry.getValue().get(0).handlerModel.trim());
+                    SalesBatch salesBatch = ((CashRegisterHandler) clsHandler).readSalesInfo(cashRegisterInfoList);
+                    String result = remote.sendSalesInfo(salesBatch.salesInfoList, equServerID);
+                    if (result != null)
+                        remote.errorEquipmentServerReport(equServerID, result);
+                    else
+                        ((CashRegisterHandler) clsHandler).finishReadingSalesInfo(salesBatch);
+                } catch (Exception e) {
+                    remote.errorEquipmentServerReport(equServerID, e.toString());
+                    return;
+                }
+            }
+        }
+    }
+
+    private Object getHandler(String handlerModel) throws ClassNotFoundException, IllegalAccessException, InstantiationException, InvocationTargetException {
+        Object clsHandler;
+        if (handlerMap.containsKey(handlerModel))
+            clsHandler = handlerMap.get(handlerModel);
+        else {
+            if (handlerModel.split("\\$").length == 1) {
+                Class cls = Class.forName(handlerModel);
+                clsHandler = cls.newInstance();
+            } else {
+                Class outerClass = Class.forName(handlerModel.split("\\$")[0]);
+                Class innerClass = Class.forName(handlerModel);
+                clsHandler = innerClass.getDeclaredConstructors()[0].newInstance(outerClass.newInstance());
+            }
+            handlerMap.put(handlerModel, clsHandler);
+        }
+        return clsHandler;
     }
 
     private static Comparator<TransactionInfo> COMPARATOR = new Comparator<TransactionInfo>() {

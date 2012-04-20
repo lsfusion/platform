@@ -2,16 +2,18 @@ import org.xBaseJ.DBF;
 import org.xBaseJ.Util;
 import org.xBaseJ.fields.*;
 import org.xBaseJ.xBaseJException;
-import retail.api.remote.CashRegisterHandler;
-import retail.api.remote.CashRegisterInfo;
-import retail.api.remote.ItemInfo;
-import retail.api.remote.TransactionCashRegisterInfo;
+import retail.api.remote.*;
 
 import java.io.*;
+import java.sql.Time;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class MaxishopHandler implements CashRegisterHandler {
+public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> {
 
     public MaxishopHandler() {
     }
@@ -63,18 +65,18 @@ public class MaxishopHandler implements CashRegisterHandler {
             for (String directory : directoriesList) {
                 File folder = new File(directory.trim());
                 folder.mkdir();
-                folder = new File(directory.trim()+"/SEND");
+                folder = new File(directory.trim() + "/SEND");
                 folder.mkdir();
 
                 Util.setxBaseJProperty("ignoreMissingMDX", "true");
 
-                DBF file = new DBF(directory + "/SEND/" + transactionInfo.dateTimeCode + ".dbf", DBF.DBASEIV, true, "CP866");
+                String path = directory + "/SEND/" + transactionInfo.dateTimeCode;
+                DBF file = new DBF(path + ".DBF", DBF.DBASEIV, true, "CP866");
 
 
-
-                file.addField(new Field[] {POSNO, CMD, ERRNO, PLUCODE, ECRID, NAME, PRICE1, PRICE2, PRICE3, PRICE4,
-                PRICE5, PRICE6, SELPRICE, MANPRICE, TAXNO, DISCNO, PLUSUPP, PLUPACK, QUANTPACK, DEPNO, GROUPNO,
-                SERTNO, SERTDATE, PQTY2, PQTY3, PQTY4, PQTY5, PQTY6, PMINPRICE, PSTATUS, PMATVIEN});
+                file.addField(new Field[]{POSNO, CMD, ERRNO, PLUCODE, ECRID, NAME, PRICE1, PRICE2, PRICE3, PRICE4,
+                        PRICE5, PRICE6, SELPRICE, MANPRICE, TAXNO, DISCNO, PLUSUPP, PLUPACK, QUANTPACK, DEPNO, GROUPNO,
+                        SERTNO, SERTDATE, PQTY2, PQTY3, PQTY4, PQTY5, PQTY6, PMINPRICE, PSTATUS, PMATVIEN});
 
                 for (ItemInfo item : transactionInfo.itemsList) {
                     PLUCODE.put(item.barcodeEx);
@@ -83,11 +85,101 @@ public class MaxishopHandler implements CashRegisterHandler {
                     file.write();
                 }
                 file.close();
+
+                File fileOut = new File(path + ".OUT");
+                fileOut.createNewFile();
+
             }
         } catch (xBaseJException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
+    }
+
+    @Override
+    public SalesBatch readSalesInfo(List<CashRegisterInfo> cashRegisterInfoList) {
+
+        Map<String, String> cashRegisterDirectories = new HashMap<String, String>();
+        for (CashRegisterInfo cashRegister : cashRegisterInfoList) {
+            if ((cashRegister.directory != null) && (!cashRegisterDirectories.containsValue(cashRegister.directory)))
+                cashRegisterDirectories.put(cashRegister.cashRegisterNumber, cashRegister.directory);
+            if ((cashRegister.port != null) && (!cashRegisterDirectories.containsValue(cashRegister.port)))
+                cashRegisterDirectories.put(cashRegister.cashRegisterNumber, cashRegister.port);
+        }
+        List<SalesInfo> salesInfoList = new ArrayList<SalesInfo>();
+        List<String> readFiles = new ArrayList<String>();
+        for (Map.Entry<String, String> entry : cashRegisterDirectories.entrySet()) {
+            try {
+                if (entry.getValue() != null) {
+                    File directory = new File(entry.getValue().trim() + "/READ/");
+                    if (directory.isDirectory())
+                        for (String fileName : directory.list(new DBFFilter())) {
+                            String filePath = entry.getValue().trim() + "/READ/" + fileName;
+                            DBF importFile = new DBF(filePath);
+                            readFiles.add(filePath);
+                            int recordCount = importFile.getRecordCount();
+                            int numberBillDetail = 1;
+                            Integer oldBillNumber = -1;
+                            for (int i = 0; i < recordCount; i++) {
+                                importFile.read();
+                                String postType = new String(importFile.getField("JFPOSTYPE").getBytes(), "Cp1251").trim();
+                                if ("P".equals(postType)) {
+                                    Integer zReportNumber = new Integer(new String(importFile.getField("JFZNO").getBytes(), "Cp1251").trim());
+                                    Integer billNumber = new Integer(new String(importFile.getField("JFCHECKNO").getBytes(), "Cp1251").trim());
+                                    java.sql.Date date = new java.sql.Date(new SimpleDateFormat("yyyymmdd").parse(new String(importFile.getField("JFDATE").getBytes(), "Cp1251").trim()).getTime());
+                                    String timeString = new String(importFile.getField("JFTIME").getBytes(), "Cp1251").trim();
+                                    Time time = Time.valueOf(timeString.substring(0, 2) + ":" + timeString.substring(2, 4) + ":" + timeString.substring(4, 6));
+                                    Double sumBill = new Double(new String(importFile.getField("JFTOTSUM").getBytes(), "Cp1251").trim());
+                                    String barcodeBillDetail = new String(importFile.getField("JFPLUCODE").getBytes(), "Cp1251").trim().replace("E", "");
+                                    Double quantityBillDetail = new Double(new String(importFile.getField("JFQUANT").getBytes(), "Cp1251").trim());
+                                    Double priceBillDetail = new Double(new String(importFile.getField("JFPRICE").getBytes(), "Cp1251").trim());
+                                    Double discountSumBillDetail = new Double(new String(importFile.getField("JFDISCSUM").getBytes(), "Cp1251").trim());
+                                    Double sumBillDetail = round10(priceBillDetail * quantityBillDetail - discountSumBillDetail);
+
+                                    if (oldBillNumber.equals(billNumber)) {
+                                        numberBillDetail = 1;
+                                        oldBillNumber = billNumber;
+                                    }
+                                    salesInfoList.add(new SalesInfo(entry.getKey(), zReportNumber, billNumber, date, time, sumBill, barcodeBillDetail,
+                                            quantityBillDetail, priceBillDetail, sumBillDetail, discountSumBillDetail, numberBillDetail, fileName));
+                                    numberBillDetail++;
+                                }
+                            }
+                            importFile.close();
+                        }
+                }
+            } catch (xBaseJException e) {
+                e.printStackTrace();
+            } catch (ParseException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        }
+
+        return new MaxishopSalesBatch(salesInfoList, readFiles);
+    }
+
+    @Override
+    public void finishReadingSalesInfo(MaxishopSalesBatch salesBatch) {
+        for (String readFile : salesBatch.readFiles) {
+            File f = new File(readFile);
+            f.delete();
+            f = new File(readFile.substring(0, readFile.length() - 3) + "OUT");
+            f.delete();
+        }
+    }
+
+    class DBFFilter implements FilenameFilter {
+        public boolean accept(File dir, String name) {
+            return (name.endsWith(".DBF") && new File(dir + "/" + name.substring(0, name.length() - 3) + "OUT").exists());
+        }
+    }
+
+    private Double round10(Double value) {
+        return Double.valueOf(Math.round(value / 10) * 10);
     }
 }

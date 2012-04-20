@@ -3420,10 +3420,28 @@ PROPERTIES(s) name, nameFlashScalesModel, noteModel, handlerModel, useModel, max
               folderScalesModel, lettersModel, compositionScalesModel
 EDIT scalesModel OBJECT s;
 
-//---------------------------- Сервера управления оборудования -----------------------------//
+//---------------------------- Сервера управления оборудования ----------------------------//
 CLASS equipmentServer 'Сервер оборудования' : named;
 TABLE equipmentServer (equipmentServer);
 sidEquipmentServer 'Идентификатор' = DATA STRING[20] (equipmentServer) IN baseGroup;
+sidToEquipmentServer(equipmentServer)  = GROUP UNIQUE equipmentServer BY sidEquipmentServer (equipmentServer) WHERE equipmentServer IS equipmentServer;
+
+//---------------------------- Ошибки сервера оборудования ----------------------------//
+CLASS equipmentServerError 'Ошибки';
+TABLE equipmentServerError (equipmentServerError);
+
+dataEquipmentServerError 'Сообщение об ошибке' = DATA STRING[200] (equipmentServerError) IN baseGroup;
+dateEquipmentServerError 'Время возникновения' = DATA DATETIME (equipmentServerError) IN baseGroup;
+equipmentServerEquipmentServerError 'Сервер оборудования (ID)' = DATA equipmentServer(equipmentServerError) IN baseGroup;
+
+//---------------------------- Лог сервера оборудования ----------------------------//
+CLASS equipmentServerLog 'Лог';
+TABLE equipmentServerLog (equipmentServerLog);
+
+dataEquipmentServerLog 'Сообщение' = DATA TEXT (equipmentServerLog) IN baseGroup;
+dateEquipmentServerLog 'Время' = DATA DATETIME (equipmentServerLog) IN baseGroup;
+equipmentServerEquipmentServerLog 'Сервер оборудования (ID)' = DATA equipmentServer(equipmentServerLog) IN baseGroup;
+
 
 //---------------------------- группы оборудования ----------------------------------------//
 
@@ -3446,6 +3464,7 @@ nameDepartmentStoreGroupMachinery 'Подразделение' (groupMachinery) 
 
 equipmentServerGroupMachinery 'Сервер оборудования (ИД)' = DATA equipmentServer (groupMachinery);
 nameEquipmentServerGroupMachinery 'Сервер оборудования' (groupMachinery) = name(equipmentServerGroupMachinery(groupMachinery));
+sidEquipmentServerGroupMachinery 'Сервер оборудования' (groupMachinery) = sidEquipmentServer(equipmentServerGroupMachinery(groupMachinery));
 
 //---------------------------- типы оборудования  ----------------------------------------//
 CLASS ABSTRACT machinery 'Оборудование';
@@ -3645,6 +3664,32 @@ FORM groupsCheck 'Группы прайс чекеров'
     FILTERS isGroupCheckCheck(grch, ch)
 ;
 
+FORM equipmentServer 'Серверы оборудования'
+    OBJECTS es=equipmentServer, e = equipmentServerError, l = equipmentServerLog
+    PROPERTIES(es)  READONLY sidEquipmentServer
+    PROPERTIES(es)  ADDFORM, EDITFORM, delete
+
+    PROPERTIES(e) READONLY dataEquipmentServerError, dateEquipmentServerError
+    PROPERTIES(e) delete
+
+    PROPERTIES(l) READONLY dataEquipmentServerLog, dateEquipmentServerLog
+    PROPERTIES(l) delete
+
+    FILTERS equipmentServerEquipmentServerLog (l) == es
+
+;
+
+DESIGN equipmentServer FROM DEFAULT {
+
+    main {
+
+        NEW specContainer {
+            tabbedPane = TRUE;
+            ADD e.box;
+            ADD l.box;
+        }
+    }
+}
 // ----------------------------------- Группы пользователей -------------------------------------------------- //
 
 CLASS groupUser 'Группы пользователей';
@@ -6243,7 +6288,7 @@ dateTimeBillDetail (billDetail) = dateTimeBill(billBillDetail(billDetail));
 
 departmentStoreBillDetail (billDetail) = departmentStoreBill(billBillDetail(billDetail));
 
-numberBillDetail 'Номер строки' (billDetail) =
+numberPartBillDetail 'Номер строки' (billDetail) =
     PARTITION SUM 1 IF billDetail IS billDetail BY billBillDetail(billDetail)
     ORDER billDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
 
@@ -6258,7 +6303,7 @@ barcodeExBillDetail 'Штрих-код' (billDetail) = DATA STRING[14] (billDeta
 
 quantityBillDetail 'Количество продажи' (billDetail) = DATA NUMERIC[14,3] (billDetail);
 priceBillDetail 'Цена продажи' (billDetail) = DATA NUMERIC[14,2] (billDetail);
-sumBillDetail 'Сумма продажи' (billDetail) = priceBillDetail(billDetail)*quantityBillDetail(billDetail);
+sumBillDetail 'Сумма продажи' (billDetail) = DATA NUMERIC[16,2] (billDetail);
 discountSumBillDetail 'Сумма скидки' (billDetail) = DATA NUMERIC[16,2] (billDetail);
 
 sumBill 'Сумма чека' (bill) = GROUP SUM sumBillDetail(billDetail)
@@ -6290,6 +6335,8 @@ TABLE paymentType (paymentType);
 
 paymentMeansPaymentType (paymentType) = DATA paymentMeans(paymentType);
 namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = name(paymentMeansPaymentType(paymentType)) IN baseGroup;
+sidPaymentType 'Идентификатор' = DATA STRING[10] (paymentType) IN baseGroup;
+sidToTypePayment (tp) = GROUP UNIQUE paymentType BY sidPaymentType(paymentType) WHERE paymentType IS paymentType;
 
 billPayment 'Чек (ИД)' (payment) = DATA bill (payment);
 numberBillPayment 'Чек' (payment) = numberBill(billPayment(payment));
@@ -6299,6 +6346,7 @@ numberDiscountCardBill 'Номер дисконтной карты' (bill) = num
 nameCustomerDiscountCardBill 'Держатель дисконтной карты' (bill) = nameCustomerDiscountCard(discountCardBill(bill));
 
 sumPayment 'Сумма платежа' (payment) = DATA DOUBLE(payment);
+numberPayment 'Номер платежа' (payment) = DATA INTEGER(payment);
 
 totalSumPaymentBill (bill) = GROUP SUM sumPayment(payment)
     BY billPayment(payment);
@@ -6337,6 +6385,10 @@ dateTimeZReport (zReport) = GROUP MAX dateTimeBill(bill) BY zReportBill(bill);
 
 zReportBillDetail (billDetail) = zReportBill(billBillDetail(billDetail));
 
+numberBillDetail 'Номер позиции чека' = DATA INTEGER (billDetail);
+zReportBillBillDetailToBillDetail (zReport, bill, billDetail) = GROUP UNIQUE billDetail BY numberZReport(zReportBillDetail(billDetail)), numberBill(billBillDetail(billDetail)), numberBillDetail(billDetail) WHERE billDetail IS billDetail;
+zReportBillPaymentToPayment (zReport, bill, number) = GROUP UNIQUE payment BY numberZReport(zReportBill(billPayment(payment))), numberBill(billPayment(payment)), numberPayment(payment) WHERE payment IS payment;
+
 isPostedBill(bill) = isPostedZReport(zReportBill(bill));
 isPostedBillDetail (billDetail) = isPostedBill(billBillDetail(billDetail));
 
@@ -6345,6 +6397,10 @@ numberCashRegisterZReport 'Касса Z-отчета' (zReport) = numberCashRegi
 
 cashRegisterBill 'Касса (ИД)' (bill) = cashRegisterZReport(zReportBill(bill));
 numberCashRegisterBill 'Касса ' (bill) = numberCashRegister(cashRegisterBill(bill)) IN documentHeaderGroup;
+
+numberToZReport (zReport) = GROUP UNIQUE zReport BY numberZReport (zReport) WHERE zReport IS zReport;
+numberCashRegisterToCashRegister (cashRegister) = GROUP UNIQUE cashRegister BY numberCashRegister (cashRegister) WHERE cashRegister IS cashRegister;
+zReportBillToBill (zReport, bill) = GROUP UNIQUE bill BY numberZReportBill (bill), numberBill (bill) WHERE bill IS bill;
 
 departmentStoreZReport (zReport) = DATA departmentStore(zReport);
 nameDepartmentStoreZReport 'Отдел Z-отчета' (zReport) = name(departmentStoreZReport(zReport));
@@ -11991,6 +12047,7 @@ NAVIGATOR {
             ADD stages;
             ADD cashReports;
             ADD labelTypes;
+            ADD equipmentServer;
         }
         NEW producing 'Производство'{
             ADD cuttings;
