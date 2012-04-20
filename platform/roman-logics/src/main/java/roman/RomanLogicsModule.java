@@ -1547,7 +1547,7 @@ public class RomanLogicsModule extends LogicsModule {
         // rate
         currencyTypeExchange = addDProp(idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
         nameCurrencyTypeExchange = addJProp(baseGroup, "nameCurrencyTypeExchange", "Валюта типа обмена (наим.)", baseLM.name, currencyTypeExchange, 1);
-        rateExchange = addDProp(baseGroup, "rateExchange", "Курс обмена", NumericClass.get(10, 6), typeExchange, currency, DateClass.instance);
+        rateExchange = addDProp(baseGroup, "rateExchange", "Курс обмена", NumericClass.get(15, 8), typeExchange, currency, DateClass.instance);
         typeExchangeSTX = addDProp(idGroup, "typeExchangeSTX", "Тип обмена валют для STX (ИД)", typeExchange);
         nameTypeExchangeSTX = addJProp(baseGroup, "nameTypeExchangeSTX", "Тип обмена валют для STX", baseLM.name, typeExchangeSTX);
         typeExchangeCustom = addDProp(idGroup, "typeExchangeCustom", "Тип обмена валют для мин.цен (ИД)", typeExchange);
@@ -2351,11 +2351,11 @@ public class RomanLogicsModule extends LogicsModule {
         gerryWeberImportPricat = addProperty(null, new LP<ClassPropertyInterface>(new GerryWeberPricatCSVImportActionProperty(genSID(), this, gerryWeberSupplier)));
 
         // кол-во заказа
-        quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", IntegerClass.instance, list, sku);
+        quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", NumericClass.get(14, 2), list, sku);
         quantityListSku = quantityDataListSku; //addJProp(baseGroup, "quantityListSku", true, "Кол-во", baseLM.and1, quantityDataListSku, 1, 2, numberListSku, 1, 2);
         quantityDataList = addSGProp(baseGroup, "quantityDataList", "Кол-во", quantityDataListSku, 1);
 
-        quantitySimpleInvoiceArticle = addDProp(baseGroup, "quantitySimpleInvoiceArticle", "Кол-во", IntegerClass.instance, simpleInvoice, articleComposite);
+        quantitySimpleInvoiceArticle = addDProp(baseGroup, "quantitySimpleInvoiceArticle", "Кол-во", NumericClass.get(14, 4), simpleInvoice, articleComposite);
         quantitySimpleInvoice = addSGProp(baseGroup, "quantitySimpleInvoice", true, true, "Кол-во в документе", quantityListSku, documentList, 1, 2);
 
         quantityDocumentSku = addSGProp(baseGroup, "quantityDocumentSku", true, true, "Кол-во в документе", quantityListSku, documentList, 1, 2);
@@ -2392,8 +2392,8 @@ public class RomanLogicsModule extends LogicsModule {
         quantityListArticle = addDGProp(baseGroup, "quantityListArticle", "Кол-во (итог)",
                 1, false, // кол-во объектов для порядка и ascending/descending
                 quantityListSku, 1, articleSku, 2,
-                addCUProp(addCProp(IntegerClass.instance, 9999999, list, articleSingle),
-                        addCProp(IntegerClass.instance, 9999999, order, item),
+                addCUProp(addCProp(NumericClass.get(14, 2), 9999999, list, articleSingle),
+                        addCProp(NumericClass.get(14, 2), 9999999, order, item),
                         addJProp(baseLM.and1, orderedSimpleInvoiceSku, 1, 2, is(item), 2), // если не артикул (простой), то пропорционально заказано
                         addJProp(baseLM.and1, orderedSupplierBoxSku, 1, 2, is(item), 2)), 1, 2, // ограничение (максимально-возможное число)
                 2);
@@ -2404,7 +2404,7 @@ public class RomanLogicsModule extends LogicsModule {
         quantityListArticleCompositeColorSize = addDGProp(baseGroup, "quantityListArticleCompositeColorSize", "Кол-во",
                 1, false,
                 quantityListSku, 1, articleCompositeItem, 2, colorSupplierItem, 2, sizeSupplierItem, 2,
-                addCProp(IntegerClass.instance, 9999999, list, sku), 1, 2,
+                addCProp(NumericClass.get(14, 2), 9999999, list, sku), 1, 2,
                 2);
         quantityListArticleCompositeColorSize.property.setFixedCharWidth(2);
 
@@ -2738,7 +2738,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityShipDimensionShipmentSku = addSGProp(baseGroup, "quantityShipDimensionShipmentSku", "Оприход. (короб)", quantityShipDimensionShipmentStockSku, 1, 2, 4);
 
-        zeroQuantityListSku = addSUProp(baseGroup, "zeroQuantityListSku", "кол-во", Union.OVERRIDE, addCProp(IntegerClass.instance, 0, list, sku), quantityListSku);
+        zeroQuantityListSku = addSUProp(baseGroup, "zeroQuantityListSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0, list, sku), quantityListSku);
         zeroQuantityShipDimensionShipmentSku = addSUProp(baseGroup, "zeroQuantityShipDimensionShipmentSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0, shipDimension, shipment, sku), quantityShipDimensionShipmentSku);
 
         diffListShipSku = addJProp(baseLM.diff2, zeroQuantityListSku, 1, 3, zeroQuantityShipDimensionShipmentSku, 1, 2, 3);
