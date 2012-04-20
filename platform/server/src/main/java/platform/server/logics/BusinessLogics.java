@@ -1627,7 +1627,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             list.add(firstKey.property);
         }
-        return BaseUtils.reverse(list);
+        return BaseUtils.reverseThis(list);
     }
 
     @IdentityLazy

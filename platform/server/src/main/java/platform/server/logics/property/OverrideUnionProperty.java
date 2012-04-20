@@ -3,7 +3,10 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.*;
+import platform.server.session.MapDataChanges;
+import platform.server.session.PropertyChange;
+import platform.server.session.PropertyChanges;
+import platform.server.session.StructChanges;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +17,7 @@ public class OverrideUnionProperty extends CaseUnionProperty {
         List<Case> result = new ArrayList<Case>();
         for(PropertyMapImplement<?, Interface> operand : operands)
             result.add(new Case(operand, operand));
-        return BaseUtils.reverse(result);
+        return BaseUtils.reverseThis(result);
     }
     public OverrideUnionProperty(String sID, String caption, List<Interface> interfaces, List<PropertyMapImplement<?, Interface>> operands) {
         super(sID, caption, interfaces, getCases(operands));

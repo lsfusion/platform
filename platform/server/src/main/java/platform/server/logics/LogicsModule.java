@@ -402,7 +402,7 @@ public abstract class LogicsModule {
         while (i > 0 && (params[i] == null || params[i] instanceof ValueClass))
             backClasses.add((ValueClass) params[i--]);
         params = copyOfRange(params, 0, i + 1);
-        ValueClass[] overrideClasses = BaseUtils.reverse(backClasses).toArray(new ValueClass[0]);
+        ValueClass[] overrideClasses = BaseUtils.reverseThis(backClasses).toArray(new ValueClass[0]);
 
         boolean defaultChanged = false;
         if (params[0] instanceof Boolean) {

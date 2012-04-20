@@ -1366,18 +1366,13 @@ public class BaseUtils {
         return BaseUtils.single(map.entrySet());
     }
 
-    private static <K> void reverse(Iterator<K> i, List<K> result) {
-        if (i.hasNext()) {
-            K item = i.next();
-            reverse(i, result);
-            result.add(item);
-        }
+    public static <K> List<K> reverse(List<K> col) {
+        return reverseThis(new ArrayList<K>(col));
     }
 
-    public static <K> List<K> reverse(List<K> col) {
-        List<K> result = new ArrayList<K>();
-        reverse(col.iterator(), result);
-        return result;
+    public static <K> List<K> reverseThis(List<K> col) {
+        Collections.reverse(col);
+        return col;
     }
 
     public static int objectToInt(Integer value) {
