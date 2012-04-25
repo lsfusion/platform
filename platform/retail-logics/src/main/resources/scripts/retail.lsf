@@ -6411,7 +6411,7 @@ numberPayment 'Номер платежа' (payment) = DATA INTEGER (payment);
 totalSumPaymentBill (bill) = GROUP SUM sumPayment(payment)
     BY billPayment(payment);
 
-CONSTRAINT sumBill (bill) != UNION OVERRIDE 0 IF bill IS bill, totalSumPaymentBill(bill) MESSAGE 'Сумма платежей по чеку не соответствует сумме чека';
+//CONSTRAINT sumBill (bill) != UNION OVERRIDE 0 IF bill IS bill, totalSumPaymentBill(bill) MESSAGE 'Сумма платежей по чеку не соответствует сумме чека';
 
 // todo: проверить работает ли CONSTRAINT
 
@@ -6468,7 +6468,7 @@ numberCashRegisterZReport 'Касса Z-отчета' (zReport) = numberCashRegi
 cashRegisterBill 'Касса (ИД)' (bill) = cashRegisterZReport(zReportBill(bill));
 numberCashRegisterBill 'Касса ' (bill) = numberCashRegister(cashRegisterBill(bill)) IN documentHeaderGroup;
 
-numberToZReport (zReport) = GROUP UNIQUE zReport BY numberZReport (zReport) WHERE zReport IS zReport;
+numberToZReportPosted (zReportPosted) = GROUP UNIQUE zReportPosted BY numberZReport (zReportPosted) WHERE zReportPosted IS zReportPosted;
 numberCashRegisterToCashRegister (cashRegister) = GROUP UNIQUE cashRegister BY numberCashRegister (cashRegister) WHERE cashRegister IS cashRegister;
 zReportBillToBill (zReport, bill) = GROUP UNIQUE bill BY numberZReportBill (bill), numberBill (bill) WHERE bill IS bill;
 
