@@ -464,12 +464,12 @@
 				<textElement>
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["ПОСТАВЩИК И ЕГО АДРЕС: "+$F{retail_fullNameCompanySpecification}+" "+$F{retail_addressCompanySpecification}+
-", р/сч "+$F{retail_dataAccountCompanySpecification}+" в ЦБУ № "+$F{retail_CBUBankAccountCompanySpecification}+
-" "+$F{retail_departmentBankAccountCompanySpecification}+" "+$F{retail_nameBankAccountCompanySpecification}+
-", адрес банка "+$F{retail_addressBankAccountCompanySpecification}+", код "+$F{retail_MFOBankAccountCompanySpecification}+
-", УНП "+$F{retail_UNPCompanySpecification}+", "+
-"тел/факс.: "+$F{retail_phoneCompanySpecification}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["ПОСТАВЩИК И ЕГО АДРЕС: "+($F{retail_fullNameCompanySpecification}!=null?$F{retail_fullNameCompanySpecification}:"")+" "+($F{retail_addressCompanySpecification}!=null?$F{retail_addressCompanySpecification}:"")+
+", р/сч "+($F{retail_dataAccountCompanySpecification}!=null?$F{retail_dataAccountCompanySpecification}:"")+($F{retail_CBUBankAccountCompanySpecification}!=null?(" в ЦБУ № "+$F{retail_CBUBankAccountCompanySpecification}):"")+
+" "+($F{retail_departmentBankAccountCompanySpecification}!=null?$F{retail_departmentBankAccountCompanySpecification}:"")+" "+($F{retail_nameBankAccountCompanySpecification}!=null?$F{retail_nameBankAccountCompanySpecification}:"")+
+", адрес банка "+($F{retail_addressBankAccountCompanySpecification}!=null?$F{retail_addressBankAccountCompanySpecification}:"")+", код "+($F{retail_MFOBankAccountCompanySpecification}!=null?$F{retail_MFOBankAccountCompanySpecification}:"")+
+", УНП "+($F{retail_UNPCompanySpecification}!=null?$F{retail_UNPCompanySpecification}:"")+
+($F{retail_phoneCompanySpecification}!=null?(", тел/факс.: "+$F{retail_phoneCompanySpecification}):"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="10" y="79" width="555" height="14"/>
@@ -482,12 +482,12 @@
 				<textElement>
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["ПЛАТЕЛЬЩИК И ЕГО АДРЕС: "+$F{retail_fullNameCustomerSpecification}+" "+$F{retail_addressCustomerSpecification}+
-", р/сч "+$F{retail_dataAccountCustomerSpecification}+" в ЦБУ № "+$F{retail_CBUBankAccountCustomerSpecification}+
-" "+$F{retail_departmentBankAccountCustomerSpecification}+" "+$F{retail_nameBankAccountCustomerSpecification}+
-", адрес банка "+$F{retail_addressBankAccountCustomerSpecification}+", код "+$F{retail_MFOBankAccountCustomerSpecification}+
-", УНП "+$F{retail_UNPCustomerSpecification}+", "+
-"тел/факс.: "+$F{retail_phoneCustomerSpecification}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["ПЛАТЕЛЬЩИК И ЕГО АДРЕС: "+($F{retail_fullNameCustomerSpecification}!=null?$F{retail_fullNameCustomerSpecification}:"")+" "+($F{retail_addressCustomerSpecification}!=null?$F{retail_addressCustomerSpecification}:"")+
+", р/сч "+($F{retail_dataAccountCustomerSpecification}!=null?$F{retail_dataAccountCustomerSpecification}:"")+($F{retail_CBUBankAccountCustomerSpecification}!=null?(" в ЦБУ № "+$F{retail_CBUBankAccountCustomerSpecification}):"")+
+" "+($F{retail_departmentBankAccountCustomerSpecification}!=null?$F{retail_departmentBankAccountCustomerSpecification}:"")+" "+($F{retail_nameBankAccountCustomerSpecification}!=null?$F{retail_nameBankAccountCustomerSpecification}:"")+
+", адрес банка "+($F{retail_addressBankAccountCustomerSpecification}!=null?$F{retail_addressBankAccountCustomerSpecification}:"")+", код "+($F{retail_MFOBankAccountCustomerSpecification}!=null?$F{retail_MFOBankAccountCustomerSpecification}:"")+
+", УНП "+($F{retail_UNPCustomerSpecification}!=null?$F{retail_UNPCustomerSpecification}:"")+
+($F{retail_phoneCustomerSpecification}!=null?(", тел/факс.: "+$F{retail_phoneCustomerSpecification}):"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="10" y="103" width="555" height="12"/>
