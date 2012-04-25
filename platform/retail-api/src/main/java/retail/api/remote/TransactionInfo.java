@@ -1,8 +1,7 @@
 package retail.api.remote;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 public abstract class TransactionInfo <M extends MachineryInfo> implements Serializable {
@@ -12,5 +11,5 @@ public abstract class TransactionInfo <M extends MachineryInfo> implements Seria
     public List<ItemInfo> itemsList;
     public List<M> machineryInfoList;
 
-    public abstract void sendTransaction(Object handler, List<M> machineryInfoList) throws FileNotFoundException, UnsupportedEncodingException;
+    public abstract void sendTransaction(Object handler, List<M> machineryInfoList) throws IOException;
 }

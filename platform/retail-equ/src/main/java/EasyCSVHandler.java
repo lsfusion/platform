@@ -16,7 +16,7 @@ public class EasyCSVHandler {
         }
 
         @Override
-        public void sendTransaction(TransactionCashRegisterInfo transactionInfo, List<CashRegisterInfo> machineryInfoList) throws UnsupportedEncodingException, FileNotFoundException {
+        public void sendTransaction(TransactionCashRegisterInfo transactionInfo, List<CashRegisterInfo> machineryInfoList) throws IOException {
 
             List<String> directoriesList = new ArrayList<String>();
             for (CashRegisterInfo cashRegisterInfo : machineryInfoList) {
@@ -58,7 +58,7 @@ public class EasyCSVHandler {
         }
 
         @Override
-        public void sendTransaction(TransactionPriceCheckerInfo transactionInfo, List<PriceCheckerInfo> machineryInfoList) throws UnsupportedEncodingException, FileNotFoundException {
+        public void sendTransaction(TransactionPriceCheckerInfo transactionInfo, List<PriceCheckerInfo> machineryInfoList) throws IOException {
 
             List<String> directoriesList = new ArrayList<String>();
             for (PriceCheckerInfo priceCheckerInfo : machineryInfoList) {
@@ -98,7 +98,7 @@ public class EasyCSVHandler {
         }
 
         @Override
-        public void sendTransaction(TransactionScalesInfo transactionInfo, List<ScalesInfo> machineryInfoList) throws UnsupportedEncodingException, FileNotFoundException {
+        public void sendTransaction(TransactionScalesInfo transactionInfo, List<ScalesInfo> machineryInfoList) throws IOException {
 
             List<String> directoriesList = new ArrayList<String>();
             for (ScalesInfo scalesInfo : machineryInfoList) {

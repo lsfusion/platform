@@ -1,11 +1,6 @@
 package retail.api.remote;
 
-import retail.api.remote.CashRegisterInfo;
-import retail.api.remote.ItemInfo;
-import retail.api.remote.TransactionInfo;
-
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 import java.util.List;
 
 public class TransactionCashRegisterInfo extends TransactionInfo<CashRegisterInfo> {
@@ -20,7 +15,7 @@ public class TransactionCashRegisterInfo extends TransactionInfo<CashRegisterInf
     }
 
     @Override
-    public void sendTransaction(Object handler, List<CashRegisterInfo> machineryInfoList) throws FileNotFoundException, UnsupportedEncodingException {
+    public void sendTransaction(Object handler, List<CashRegisterInfo> machineryInfoList) throws IOException {
         ((CashRegisterHandler)handler).sendTransaction(this, machineryInfoList);
     }
 }

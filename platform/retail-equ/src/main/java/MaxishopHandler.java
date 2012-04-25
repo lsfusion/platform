@@ -19,7 +19,7 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
     }
 
     @Override
-    public void sendTransaction(TransactionCashRegisterInfo transactionInfo, List<CashRegisterInfo> machineryInfoList) throws IOException, FileNotFoundException {
+    public void sendTransaction(TransactionCashRegisterInfo transactionInfo, List<CashRegisterInfo> machineryInfoList) throws IOException {
 
         try {
             NumField POSNO = new NumField("POSNO", 5, 0);
