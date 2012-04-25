@@ -6411,7 +6411,7 @@ numberPayment 'Номер платежа' (payment) = DATA INTEGER (payment);
 totalSumPaymentBill (bill) = GROUP SUM sumPayment(payment)
     BY billPayment(payment);
 
-//CONSTRAINT sumBill (bill) != UNION OVERRIDE 0 IF bill IS bill, totalSumPaymentBill(bill) MESSAGE 'Сумма платежей по чеку не соответствует сумме чека';
+CONSTRAINT sumBill (bill) != UNION OVERRIDE 0 IF bill IS bill, totalSumPaymentBill(bill) MESSAGE 'Сумма платежей по чеку не соответствует сумме чека';
 
 // todo: проверить работает ли CONSTRAINT
 
