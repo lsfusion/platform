@@ -19,7 +19,7 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
     }
 
     @Override
-    public void sendTransaction(TransactionCashRegisterInfo transactionInfo, List<CashRegisterInfo> machineryInfoList) throws UnsupportedEncodingException, FileNotFoundException {
+    public void sendTransaction(TransactionCashRegisterInfo transactionInfo, List<CashRegisterInfo> machineryInfoList) throws IOException, FileNotFoundException {
 
         try {
             NumField POSNO = new NumField("POSNO", 5, 0);
@@ -91,9 +91,7 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
 
             }
         } catch (xBaseJException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new RuntimeException(e.toString());
         }
     }
 
