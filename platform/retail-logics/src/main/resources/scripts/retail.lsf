@@ -6351,7 +6351,7 @@ discountSumBillReturnDetail 'Сумма скидки' (billDetail) = DATA NUMERI
 quantityBillDetail 'Количество' (billDetail) = quantityBillReturnDetail(billDetail) OR quantityBillSaleDetail(billDetail);
 priceBillDetail 'Цена' (billDetail) = priceBillReturnDetail(billDetail) OR priceBillSaleDetail(billDetail);
 sumBillDetail 'Сумма' (billDetail) = sumBillReturnDetail(billDetail) OR sumBillSaleDetail(billDetail);
-discountSumBillDetail 'Сумма' (billDetail) = discountSumBillReturnDetail(billDetail) OR discountSumBillSaleDetail(billDetail);
+discountSumBillDetail 'Сумма скидки' (billDetail) = discountSumBillReturnDetail(billDetail) OR discountSumBillSaleDetail(billDetail);
 
 sumSaleBill 'Сумма продажи' (bill) = GROUP SUM sumBillSaleDetail(billDetail)
     BY billBillSaleDetail (billDetail) IN documentSumGroup PERSISTENT;
@@ -6427,8 +6427,11 @@ castBillObjectsToString100=
 descriptionBill 'Название документа' (bill) = castBillObjectsToString100(
     numberBill(bill), dateTimeBill(bill));
 
-descriptionBillSaleDetail (billDetail) = descriptionBill(billBillSaleDetail(billDetail));
-descriptionBillReturnDetail (billDetail) = descriptionBill(billBillReturnDetail(billDetail));
+descriptionBillSaleDetail (billDetail) = [FORMULA STRING[200] '\'Продажа № \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT) '] (
+                                          numberBill(billBillSaleDetail(billDetail)), dateTimeBill(billBillSaleDetail(billDetail)));
+
+descriptionBillReturnDetail (billDetail) = [FORMULA STRING[200] '\'Возврат № \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT) '] (
+                                            numberBill(billBillReturnDetail(billDetail)), dateTimeBill(billBillReturnDetail(billDetail)));
 
 descriptionBillDetail (billDetail) = descriptionBillReturnDetail(billDetail) OR descriptionBillSaleDetail(billDetail);
 
