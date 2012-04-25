@@ -495,7 +495,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_sumCostConsignmentDetail}) + " белорусских рублей"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_costWithVATConsignment}) + " белорусских рублей"]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="21">
