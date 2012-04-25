@@ -136,7 +136,7 @@ setValueNumeratedObject 'Сгенерировать номер' = ACTION (numera
 } IN numberedGroup SHORTCUT numberObject;
 
 // todo : не работает
-//setValueNumeratedObject(numeratedObject) <- TRUE ON CHANGE numeratorObject(numeratedObject);
+setValueNumeratedObject(numeratedObject) ON CHANGE numeratorObject(numeratedObject);
 
 // ----------------------------------- Шаблоны ------------------------------------------ //
 
@@ -3907,13 +3907,15 @@ TABLE warePriceLedger (warePriceLedger);
 CLASS ABSTRACT balanceItemLedger 'Изменение остатка по товару';
 TABLE balanceItemLedger (balanceItemLedger);
 
-CLASS ABSTRACT batch 'Партия' : balanceItemLedger, importerPriceLedger; // todo : смотри выше
+CLASS ABSTRACT inBalanceItemLedger 'Расход' : balanceItemLedger;
+CLASS ABSTRACT outBalanceItemLedger 'Расход' : balanceItemLedger;
 
-CLASS ABSTRACT outBalanceItemLedger 'Внешний расход' : balanceItemLedger;
+CLASS ABSTRACT batch 'Партия' : inBalanceItemLedger, importerPriceLedger; // todo : смотри выше
+
 CLASS ABSTRACT outUserBalanceItemLedger 'Внешний расход с указанной партией' : outBalanceItemLedger;
 CLASS ABSTRACT outAutoBalanceItemLedger 'Внешний расход с автоматической себестоимостью' : outBalanceItemLedger;
 
-CLASS ABSTRACT inBalanceItemLedger 'Внутренний приход' : balanceItemLedger;
+CLASS ABSTRACT inAutoBalanceItemLedger 'Внутренний приход с автоматической себестоимостью' : inBalanceItemLedger;
 
 //---------------------------- Разные маркеры ----------------------------------------//
 
@@ -4715,7 +4717,7 @@ CLASS ABSTRACT inventoryLedger 'Изменение остатка инвента
 TABLE inventoryLedger (inventoryLedger);
 
 CLASS outInventoryLedger 'Недостача инвентаризации' : inventoryLedger, outAutoBalanceItemLedger;
-CLASS inInventoryLedger 'Излишки инвентаризации' : inventoryLedger, inBalanceItemLedger;
+CLASS inInventoryLedger 'Излишки инвентаризации' : inventoryLedger, inAutoBalanceItemLedger;
 
 needToOutLedgerCollationSheetItem (collationSheet, item) = shortageQuantityCountedCollationSheetItem(collationSheet, item) > 0
     AND isPostedInventory(inventoryCollationSheet(collationSheet)) AND includeCollationSheetItem(collationSheet, item);
@@ -6286,8 +6288,12 @@ sumGrossWeightReturnSupplier 'Общее масса груза, т.' (returnSupp
 CLASS bill 'Чек' : historyObject;
 TABLE bill (bill);
 
-CLASS billDetail 'Строка чека' : outAutoBalanceItemLedger, salesLedger;
-TABLE billDetail (billDetail);
+CLASS ABSTRACT billDetail 'Строка чека';
+CLASS billSaleDetail 'Строка продажи' : billDetail, outAutoBalanceItemLedger, salesLedger;
+CLASS billReturnDetail 'Строка возврата' : billDetail, inAutoBalanceItemLedger;
+
+TABLE billSaleDetail (billSaleDetail);
+TABLE billReturnDetail (billReturnDetail);
 
 dateBill 'Дата документа' (bill) = DATA DATE (bill) IN documentHeaderGroup;
 dateBill (bill) <- currentDate() ON ASSIGN bill AS bill;
@@ -6301,17 +6307,29 @@ departmentStoreBill 'Отдел документа (ИД)' (bill) = DATA departm
 nameDepartmentStoreBill 'Отдел документа' (bill) = name(departmentStoreBill(bill)) IN documentHeaderGroup
     MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
-billBillDetail 'Строка документа' = DATA bill (billDetail) IN idGroup;
+billBillSaleDetail 'Строка продажи' = DATA bill (billSaleDetail);
+billBillReturnDetail 'Строка возврата' = DATA bill (billReturnDetail);
 
-dateTimeBillDetail (billDetail) = dateTimeBill(billBillDetail(billDetail));
+billBillDetail 'Строка документа' (billDetail) = billBillReturnDetail(billDetail) OR billBillSaleDetail(billDetail);
 
-departmentStoreBillDetail (billDetail) = departmentStoreBill(billBillDetail(billDetail));
+dateTimeBillSaleDetail (billDetail) = dateTimeBill(billBillSaleDetail(billDetail));
+dateTimeBillReturnDetail (billDetail) = dateTimeBill(billBillReturnDetail(billDetail));
+
+dateTimeBillDetail (billDetail) = dateTimeBillReturnDetail(billDetail) OR dateTimeBillSaleDetail(billDetail);
+
+departmentStoreBillSaleDetail (billDetail) = departmentStoreBill(billBillSaleDetail(billDetail));
+departmentStoreBillReturnDetail (billDetail) = departmentStoreBill(billBillReturnDetail(billDetail));
+
+departmentStoreBillDetail (billDetail) = departmentStoreBillReturnDetail(billDetail) OR departmentStoreBillSaleDetail(billDetail);
 
 numberPartBillDetail 'Номер строки' (billDetail) =
     PARTITION SUM 1 IF billDetail IS billDetail BY billBillDetail(billDetail)
     ORDER billDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
 
-itemBillDetail 'Товар (ИД)' (billDetail) = DATA item (billDetail) IN idGroup;
+itemBillSaleDetail 'Товар (ИД)' = DATA item (billSaleDetail);
+itemBillReturnDetail 'Товар (ИД)' = DATA item (billReturnDetail);
+
+itemBillDetail (billDetail) = itemBillReturnDetail(billDetail) OR itemBillSaleDetail(billDetail);
 
 nameAttributeItemBillDetail 'Товар' (billDetail) =
     nameAttributeItem(itemBillDetail(billDetail)) IN recognizeGroup;
@@ -6320,16 +6338,36 @@ numberBill 'Номер чека' (bill) = DATA INTEGER (bill) IN documentHeaderG
 
 barcodeExBillDetail 'Штрих-код' (billDetail) = DATA STRING[14] (billDetail);
 
-quantityBillDetail 'Количество продажи' (billDetail) = DATA NUMERIC[14,3] (billDetail);
-priceBillDetail 'Цена продажи' (billDetail) = DATA NUMERIC[14,2] (billDetail);
-sumBillDetail 'Сумма продажи' (billDetail) = DATA NUMERIC[16,2] (billDetail);
-discountSumBillDetail 'Сумма скидки' (billDetail) = DATA NUMERIC[16,2] (billDetail);
+quantityBillSaleDetail 'Количество' (billDetail) = DATA NUMERIC[14,3] (billSaleDetail);
+priceBillSaleDetail 'Цена' (billDetail) = DATA NUMERIC[14,2] (billSaleDetail);
+sumBillSaleDetail 'Сумма' (billDetail) = DATA NUMERIC[16,2] (billSaleDetail);
+discountSumBillSaleDetail 'Сумма скидки' (billDetail) = DATA NUMERIC[16,2] (billSaleDetail);
 
-sumBill 'Сумма чека' (bill) = GROUP SUM sumBillDetail(billDetail)
-    BY billBillDetail (billDetail) IN documentSumGroup PERSISTENT;
+quantityBillReturnDetail 'Количество' (billDetail) = DATA NUMERIC[14,3] (billReturnDetail);
+priceBillReturnDetail 'Цена' (billDetail) = DATA NUMERIC[14,2] (billReturnDetail);
+sumBillReturnDetail 'Сумма' (billDetail) = DATA NUMERIC[16,2] (billReturnDetail);
+discountSumBillReturnDetail 'Сумма скидки' (billDetail) = DATA NUMERIC[16,2] (billReturnDetail);
 
-discountSumBill 'Сумма скидки в чеке' (bill) = GROUP SUM discountSumBillDetail(billDetail) IF billBillDetail (billDetail) == bill
-    BY billBillDetail (billDetail) IN documentSumGroup;
+quantityBillDetail 'Количество' (billDetail) = quantityBillReturnDetail(billDetail) OR quantityBillSaleDetail(billDetail);
+priceBillDetail 'Цена' (billDetail) = priceBillReturnDetail(billDetail) OR priceBillSaleDetail(billDetail);
+sumBillDetail 'Сумма' (billDetail) = sumBillReturnDetail(billDetail) OR sumBillSaleDetail(billDetail);
+discountSumBillDetail 'Сумма' (billDetail) = discountSumBillReturnDetail(billDetail) OR discountSumBillSaleDetail(billDetail);
+
+sumSaleBill 'Сумма продажи' (bill) = GROUP SUM sumBillSaleDetail(billDetail)
+    BY billBillSaleDetail (billDetail) IN documentSumGroup PERSISTENT;
+
+sumReturnBill 'Сумма возврата' (bill) = GROUP SUM sumBillReturnDetail(billDetail)
+    BY billBillReturnDetail (billDetail) IN documentSumGroup PERSISTENT;
+
+sumBill 'Сумма чека' (bill) = sumSaleBill(bill) (-) sumReturnBill(bill);
+
+discountSumSaleBill 'Сумма скидки (продажи)' (bill) = GROUP SUM discountSumBillSaleDetail(billDetail)
+    BY billBillSaleDetail (billDetail) IN documentSumGroup;
+
+discountSumReturnBill 'Сумма скидки (возврат)' (bill) = GROUP SUM discountSumBillReturnDetail(billDetail)
+    BY billBillReturnDetail (billDetail) IN documentSumGroup;
+
+discountSumBill 'Сумма скидки' (bill) = discountSumSaleBill(bill) (-) discountSumReturnBill(bill);
 
 quantityBillDetailsBill 'Количество строк в чеке' (bill) = GROUP SUM 1 IF billBillDetail (billDetail) == bill
     BY billBillDetail (billDetail) IN documentSumGroup;
@@ -6340,7 +6378,10 @@ quantityItemBill 'Количество по товару в чеке' (item, bil
 quantityPositionsBill 'Количество позиций в чеке' (bill) = GROUP SUM 1 IF quantityItemBill (item, bill)
     BY bill IN documentSumGroup;
 
-retailRangeBillDetail 'Шкала (ИД)' (billDetail) = DATA range (billDetail);
+retailRangeBillSaleDetail 'Шкала (ИД)' = DATA range (billSaleDetail);
+retailRangeBillReturnDetail 'Шкала (ИД)' = DATA range (billReturnDetail);
+
+retailRangeBillDetail (billDetail) = retailRangeBillReturnDetail(billDetail) OR retailRangeBillSaleDetail(billDetail);
 
 CLASS payment 'Оплата по чеку';
 TABLE payment (payment);
@@ -6386,7 +6427,10 @@ castBillObjectsToString100=
 descriptionBill 'Название документа' (bill) = castBillObjectsToString100(
     numberBill(bill), dateTimeBill(bill));
 
-descriptionBillDetail (billDetail) = descriptionBill(billBillDetail(billDetail));
+descriptionBillSaleDetail (billDetail) = descriptionBill(billBillSaleDetail(billDetail));
+descriptionBillReturnDetail (billDetail) = descriptionBill(billBillReturnDetail(billDetail));
+
+descriptionBillDetail (billDetail) = descriptionBillReturnDetail(billDetail) OR descriptionBillSaleDetail(billDetail);
 
 CLASS zReport 'Z-отчет (открытый)' : outAccountSumDocumentLedger, historyObject;
 TABLE zReport (zReport);
@@ -6409,7 +6453,11 @@ zReportBillBillDetailToBillDetail (zReport, bill, billDetail) = GROUP UNIQUE bil
 zReportBillPaymentToPayment (zReport, bill, number) = GROUP UNIQUE payment BY numberZReport(zReportBill(billPayment(payment))), numberBill(billPayment(payment)), numberPayment(payment) WHERE payment IS payment;
 
 isPostedBill(bill) = isPostedZReport(zReportBill(bill));
-isPostedBillDetail (billDetail) = isPostedBill(billBillDetail(billDetail));
+
+isPostedBillSaleDetail (billDetail) = isPostedBill(billBillSaleDetail(billDetail));
+isPostedBillReturnDetail (billDetail) = isPostedBill(billBillReturnDetail(billDetail));
+
+isPostedBillDetail (billDetail) = isPostedBillReturnDetail(billDetail) OR isPostedBillSaleDetail(billDetail);
 
 cashRegisterZReport (zReport) = DATA cashRegister(zReport);
 numberCashRegisterZReport 'Касса Z-отчета' (zReport) = numberCashRegister(cashRegisterZReport(zReport));
@@ -6446,15 +6494,15 @@ quantityZReportBill 'Количество по товару в Z-отчете' (
 quantityPositionsZReport 'Количество товаров в Z-отчете' (zReport) = GROUP SUM 1 IF quantityZReportBill (item, zReport)
     BY zReport IN documentSumGroup;
 
-addBillDetailBarcodeFill 'Добавить строку по штрих-коду' = ACTION (bill) {
+addBillDetailBarcodeFill 'Добавить продажу по штрих-коду' = ACTION (bill) {
     FORM barcodeInput MODAL;
 
     IF formResult() == formResult.ok THEN {
          SET tmpSku() <- skuBarcodeStringDate(chosenString('barcode'), dateBill(bill));
          IF tmpSku() IS item THEN {
-             ADDOBJ billDetail;
+             ADDOBJ billSaleDetail;
              FOR o == addedObject() DO {
-                 SET billBillDetail(o) <- bill AS bill;
+                 SET billBillSaleDetail(o) <- bill AS bill;
                  SET itemBillDetail(o) <- tmpSku();
                  SET barcodeExBillDetail(o) <- chosenString('barcode');
             //   SET quantity###object##Detail(o) <- amountBarcode(valueBarcodeToDate(chosenString('barcode'), date###object(object)));
@@ -6657,7 +6705,7 @@ quantityOutAutoBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quanti
                                                                      quantityInnerFlowDetail(ledger),
                                                                      quantityWastageDetail(ledger),
                                                                      quantityOutInventoryLedger(ledger),
-                                                                     quantityBillDetail(ledger),
+                                                                     quantityBillSaleDetail(ledger),
                                                                      quantityStudyInputDetail(ledger);
 
 quantityOutUserBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityReturnSupplierDetail(ledger);
@@ -6666,7 +6714,8 @@ batchOutUserBalanceItemLedger 'Партия' (ledger) = UNION EXCLUSIVE batchRet
 quantityOutBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityOutAutoBalanceItemLedger(ledger),
                                                                  quantityOutUserBalanceItemLedger(ledger) PERSISTENT;
 
-quantityInAutoBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInInventoryLedger(ledger);
+quantityInAutoBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInInventoryLedger(ledger),
+                                                                    quantityBillReturnDetail(ledger);
 
 quantityInBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
                                                                 quantityInAutoBalanceItemLedger(ledger),
@@ -7111,33 +7160,33 @@ ledgerPriceBarcodeDepartmentStore 'Текущая цена по учету' (bar
 // --------------------------- Продажные регистры  ---------------------------------
 TABLE salesLedger(salesLedger);
 
-dateTimeSalesLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeBillDetail(ledger),
+dateTimeSalesLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeBillSaleDetail(ledger),
                                                             dateTimeStatementDetail(ledger) PERSISTENT INDEXED;
 
 dateSalesLedger 'Дата' (ledger) = dateInTime(dateTimeSalesLedger(ledger)) PERSISTENT INDEXED;
 
-isPostedSalesLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedBillDetail(ledger),
+isPostedSalesLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedBillSaleDetail(ledger),
                                                         isPostedStatementDetail(ledger) PERSISTENT;
 
-itemSalesLedger (ledger) = UNION EXCLUSIVE itemBillDetail(ledger),
+itemSalesLedger (ledger) = UNION EXCLUSIVE itemBillSaleDetail(ledger),
                                            itemStatementDetail(ledger) PERSISTENT INDEXED;
 
 nameItemSalesLedger 'Товар' (ledger) = nameAttributeItem(itemSalesLedger(ledger));
 
-departmentStoreSalesLedger (ledger) = UNION EXCLUSIVE departmentStoreBillDetail(ledger),
+departmentStoreSalesLedger (ledger) = UNION EXCLUSIVE departmentStoreBillSaleDetail(ledger),
                                                       departmentStoreStatementDetail(ledger) PERSISTENT INDEXED;
 nameDepartmentStoreSalesLedger 'Отдел магазина' (ledger) = name(departmentStoreSalesLedger(ledger));
 
-descriptionSalesLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionBillDetail(ledger),
+descriptionSalesLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionBillSaleDetail(ledger),
                                                                        descriptionStatementDetail(ledger);
 
 quantitySalesLedger 'Кол-во' (ledger) = quantityBalanceItemLedger(ledger) AND ledger IS salesLedger;
 
-retailSumSalesLedger 'Сумма продажи' (ledger) = UNION EXCLUSIVE sumBillDetail(ledger),
+retailSumSalesLedger 'Сумма продажи' (ledger) = UNION EXCLUSIVE sumBillSaleDetail(ledger),
                                                                 sumStatementDetail(ledger) PERSISTENT;
 
-retailRangeSalesLedger 'НДС (ИД)' (ledger) = UNION EXCLUSIVE retailRangeBillDetail(ledger),
-                                                               retailRangeStatementDetail(ledger) PERSISTENT;
+retailRangeSalesLedger 'НДС (ИД)' (ledger) = UNION EXCLUSIVE retailRangeBillSaleDetail(ledger),
+                                                             retailRangeStatementDetail(ledger) PERSISTENT;
 dataRetailRangeSalesLedger 'НДС, %' (ledger) = dataActingRateRangeDate(retailRangeSalesLedger(ledger), dateSalesLedger(ledger));
 
 vatSumSalesLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
@@ -12017,7 +12066,8 @@ defaultNumeratorOrders = DATA numerator ();
 nameDefaultNumeratorOrders 'Нумератор для заказов' = name(defaultNumeratorOrders());
 
 numeratorOrder(order) = numeratorObject(order) AND order IS order;
-numeratorOrder(order) <- defaultNumeratorOrders() ON ASSIGN order IS order;
+// todo : включение этого derived'а отключает верхний derived
+//numeratorOrder(order) <- defaultNumeratorOrders() ON ASSIGN order IS order;
 
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
