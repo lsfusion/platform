@@ -2,9 +2,13 @@ package platform.server.data.expr;
 
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
+import platform.server.caches.IdentityLazy;
+import platform.server.caches.ManualLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteValueClass;
+import platform.server.classes.DataClass;
+import platform.server.classes.IntegralClass;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.stat.CalculateJoin;
@@ -17,10 +21,10 @@ import platform.server.data.query.JoinData;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+
+import static platform.base.BaseUtils.nullEquals;
+import static platform.base.BaseUtils.nullHash;
 
 public class FormulaExpr extends StaticClassExpr {
 
@@ -82,14 +86,14 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     public String getSource(CompileSource compile) {
-        return getSource(formula, params, valueClass.getType(), compile);
+        return getSource(formula, params, getSelfType(), compile);
      }
 
     public Type getType(KeyType keyType) {
-        return valueClass.getType();
+        return getStaticClass().getType();
     }
     public Stat getTypeStat(KeyStat keyStat) {
-        return valueClass.getTypeStat();
+        return getStaticClass().getTypeStat();
     }
 
     @ParamLazy
@@ -111,18 +115,41 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     public boolean twins(TwinImmutableInterface o) {
-        return formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params) && valueClass.equals(((FormulaExpr) o).valueClass);
+        return formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params) && nullEquals(valueClass, ((FormulaExpr) o).valueClass);
     }
 
     protected boolean isComplex() {
         return true;
     }
     protected int hash(HashContext hashContext) {
-        return valueClass.hashCode()*31*31 + hashOuter(params, hashContext) *31 + formula.hashCode();
+        return (nullHash(valueClass) * 31 * 31) + (hashOuter(params, hashContext) * 31) + formula.hashCode();
+    }
+
+    public static Type getCompatibleType(Collection<? extends Expr> exprs) {
+        assert exprs.size()>0;
+
+        IntegralClass type = null;
+        for(Expr expr : exprs)
+            if(!(expr instanceof KeyExpr)) {
+                IntegralClass exprType = (IntegralClass) expr.getSelfType();
+                if(type==null)
+                    type = exprType;
+                else
+                    type = (IntegralClass)type.getCompatible(exprType);
+            }
+        return type;
+    }
+
+    @IdentityLazy
+    private DataClass getCompatibleClass() {
+        return (DataClass) getCompatibleType(params.values());
     }
 
     public ConcreteValueClass getStaticClass() {
-        return valueClass;
+        if(valueClass==null)
+            return getCompatibleClass();
+        else
+            return valueClass;
     }
 
     // для мн-вого наследования

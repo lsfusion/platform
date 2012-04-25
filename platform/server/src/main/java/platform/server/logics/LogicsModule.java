@@ -827,6 +827,14 @@ public abstract class LogicsModule {
         return addProperty(group, false, new LP<ClassPropertyInterface>(timeProperty.property));
     }
 
+    protected LP addSFProp(String name, String formula, int paramCount) {
+        return addSFProp(name, formula, null, paramCount);
+    }
+
+    protected LP addSFProp(String formula, int paramCount) {
+        return addSFProp(formula, (ConcreteValueClass)null, paramCount);
+    }
+
     protected LP addSFProp(String formula, ConcreteValueClass value, int paramCount) {
         return addSFProp(genSID(), formula, value, paramCount);
     }
@@ -859,10 +867,16 @@ public abstract class LogicsModule {
         return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), ServerResourceBundle.getString("logics.join"), intNum, separator, false)));
     }
 
+
+    protected LP addMFProp(String name, int paramCount) {
+        return addMFProp(name, null, paramCount);
+    }
     protected LP addMFProp(String name, ConcreteValueClass value, int paramCount) {
         return addProperty(null, new LP<StringFormulaProperty.Interface>(new MultiplyFormulaProperty(name, value, paramCount)));
     }
-
+    protected LP addMFProp(int paramCount) {
+        return addMFProp(genSID(), null, paramCount);
+    }
     protected LP addMFProp(ConcreteValueClass value, int paramCount) {
         return addMFProp(genSID(), value, paramCount);
     }

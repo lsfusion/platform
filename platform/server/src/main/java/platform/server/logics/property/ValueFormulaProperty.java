@@ -7,7 +7,7 @@ import java.util.List;
 // вообще Collection
 abstract class ValueFormulaProperty<T extends PropertyInterface> extends FormulaProperty<T> {
 
-    ConcreteValueClass value;
+    ConcreteValueClass value; // can be null
 
     protected ValueFormulaProperty(String sID, String caption, List<T> interfaces, ConcreteValueClass value) {
         super(sID, caption, interfaces);

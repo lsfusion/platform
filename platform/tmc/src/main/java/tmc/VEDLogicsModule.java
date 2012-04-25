@@ -635,7 +635,7 @@ public class VEDLogicsModule extends LogicsModule {
         round0 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),0))", DoubleClass.instance, 1);
         padl = addSFProp("lpad(prm1,12,'0')", StringClass.get(12), 1);
 
-        LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
+        LP multiplyDouble2 = addMFProp(2);
 
         LP onlyPositive = addJProp(baseLM.and1, 1, baseLM.positive, 1);
         LP min = addSFProp(FormulaExpr.MIN2, DoubleClass.instance, 2);

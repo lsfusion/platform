@@ -40,8 +40,8 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         throw new RuntimeException("not found");
     }
 
-    public StringFormulaProperty(String sID, ConcreteValueClass iValue, String formula, int paramCount) {
-        super(sID,formula,getInterfaces(paramCount),iValue);
+    public StringFormulaProperty(String sID, ConcreteValueClass valueClass, String formula, int paramCount) {
+        super(sID,formula,getInterfaces(paramCount),valueClass);
         this.formula = formula;
 
         finalizeInit();

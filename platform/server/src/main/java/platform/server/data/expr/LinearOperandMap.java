@@ -14,18 +14,7 @@ import java.util.*;
 public class LinearOperandMap extends HashMap<Expr,Integer> {
 
     public IntegralClass getType() {
-        assert size()>0;
-
-        IntegralClass type = null;
-        for(Expr expr : keySet())
-            if(!(expr instanceof KeyExpr)) {
-                IntegralClass exprType = (IntegralClass) expr.getSelfType();
-                if(type==null)
-                    type = exprType;
-                else
-                    type = (IntegralClass)type.getCompatible(exprType);
-            }
-        return type;        
+        return (IntegralClass) FormulaExpr.getCompatibleType(keySet());
     }
 
     private void add(LinearOperandMap map, int coeff) {

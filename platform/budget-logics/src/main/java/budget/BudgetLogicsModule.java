@@ -185,7 +185,7 @@ public class BudgetLogicsModule extends LogicsModule {
         LP personEndWorkDay = addDProp(baseGroup, "personEndWorkDay", "День окончания раб.", IntegerClass.instance, person);
 
         addJProp(payerGroup, "Плательщик", baseLM.name, operationPayer, 1);
-        LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
+        LP multiplyDouble2 = addMFProp(2);
         LP divDouble = addSFProp("((prm1+0.0)/(prm2))", DoubleClass.instance, 2);
         LP calcCoef = addSFProp("((prm1+0.0)/((prm2)*8))", DoubleClass.instance, 2);
         LP calcExtraCoef = addSFProp("(round((0.0+(prm1)*(prm2))/(prm3)))", DoubleClass.instance, 3);

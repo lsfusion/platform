@@ -1534,7 +1534,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         round2 = addSFProp("round2", "round(CAST((prm1) as numeric), 2)", NumericClass.get(14, 2), 1);
 
-        multiplyNumeric2 = addMFProp("multiplyNumeric2", NumericClass.get(14, 3), 2);
+        multiplyNumeric2 = addMFProp("multiplyNumeric2", 2);
 
         typeSupplier = is(simpleSupplier);
         //typeSupplier = addCUProp("typeSupplier", addCProp(LogicalClass.instance, true, hugoBossSupplier), addCProp(LogicalClass.instance, true, gerryWeberSupplier), addCProp(LogicalClass.instance, true, sOliverSupplier), addCProp(LogicalClass.instance, true, babyPhatSupplier));
