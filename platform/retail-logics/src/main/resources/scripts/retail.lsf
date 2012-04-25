@@ -6278,7 +6278,7 @@ sumPackQuantityReturnSupplier 'Общее количество грузовых 
 grossWeightReturnSupplierDetail 'Масса груза, т.' (returnSupplierDetail) = round3(
     grossWeightItem(itemReturnSupplierDetail(returnSupplierDetail))*quantityReturnSupplierDetail(returnSupplierDetail)/1000);
 
-sumGrossWeightReturnSupplier 'Общее количество грузовых мест' (returnSupplier) = GROUP SUM packQuantityReturnSupplierDetail(returnSupplierDetail)
+sumGrossWeightReturnSupplier 'Общее масса груза, т.' (returnSupplier) = GROUP SUM grossWeightReturnSupplierDetail(returnSupplierDetail)
     BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN sumConsignmentGroup;
 
 //----------------------------------------------- Чеки ---------------------------------------------------//
@@ -8953,8 +8953,8 @@ packQuantityConsignmentDetail 'Количество грузовых мест' (
                                                                                                packQuantityInnerFlowDetail(consignmentDetail);
 
 sumPackQuantityConsignment 'Общее количество грузовых мест' (consignment) = UNION EXCLUSIVE sumPackQuantityStatement(consignment),
-                                                                                       sumPackQuantityReturnSupplier(consignment),
-                                                                                       sumPackQuantityInnerFlow(consignment) IN sumConsignmentGroup;
+                                                                                            sumPackQuantityReturnSupplier(consignment),
+                                                                                            sumPackQuantityInnerFlow(consignment) IN sumConsignmentGroup;
 
 grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = UNION EXCLUSIVE grossWeightStatementDetail(consignmentDetail),
                                                                                      grossWeightReturnSupplierDetail(consignmentDetail),
