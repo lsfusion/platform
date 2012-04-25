@@ -34,6 +34,7 @@ grammar LsfLogics;
 	import java.awt.*;
 	import org.antlr.runtime.BitSet;
 	import java.util.List;
+	import java.sql.Date;
 
 	import static java.util.Arrays.asList;
 	import static platform.interop.form.layout.SingleSimplexConstraint.*;
@@ -2238,21 +2239,22 @@ nonEmptyPropertyExpressionList[List<String> context, boolean dynamic] returns [L
 literal returns [LP property]
 @init {
 	ScriptingLogicsModule.ConstType cls = null;
-	String text = null;
+	Object value = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addConstantProp(cls, text);	
+		$property = self.addConstantProp(cls, value);	
 	}
 }
-	: 	strInt=uintLiteral	{ cls = ScriptingLogicsModule.ConstType.INT; text = $strInt.text; }
-	|	strLong=ulongLiteral { cls = ScriptingLogicsModule.ConstType.LONG; text = $strLong.text; }
-	|	strReal=udoubleLiteral	{ cls = ScriptingLogicsModule.ConstType.REAL; text = $strReal.text; }
-	|	str=STRING_LITERAL	{ cls = ScriptingLogicsModule.ConstType.STRING; text = $str.text; }  
-	|	str=LOGICAL_LITERAL	{ cls = ScriptingLogicsModule.ConstType.LOGICAL; text = $str.text; }
-	|	str=DATE_LITERAL { cls = ScriptingLogicsModule.ConstType.DATE; text = $str.text; }
-	|	strEnum=strictCompoundID { cls = ScriptingLogicsModule.ConstType.ENUM; text = $strEnum.sid; } 
-	|	strNull=NULL_LITERAL { cls = ScriptingLogicsModule.ConstType.NULL; }
+	: 	vint=uintLiteral	{ cls = ScriptingLogicsModule.ConstType.INT; value = $vint.val; }
+	|	vlong=ulongLiteral	{ cls = ScriptingLogicsModule.ConstType.LONG; value = $vlong.val; }
+	|	vreal=udoubleLiteral	{ cls = ScriptingLogicsModule.ConstType.REAL; value = $vreal.val; }
+	|	vstr=stringLiteral	{ cls = ScriptingLogicsModule.ConstType.STRING; value = $vstr.val; }  
+	|	vbool=booleanLiteral	{ cls = ScriptingLogicsModule.ConstType.LOGICAL; value = $vbool.val; }
+	|	vdate=dateLiteral	{ cls = ScriptingLogicsModule.ConstType.DATE; value = $vdate.val; }
+	|	venum=strictCompoundID { cls = ScriptingLogicsModule.ConstType.ENUM; value = $venum.sid; } 
+	|	vnull=NULL_LITERAL { cls = ScriptingLogicsModule.ConstType.NULL; }
+	|	vcolor=colorLiteral { cls = ScriptingLogicsModule.ConstType.COLOR; value = $vcolor.val; }		
 	;
 	
 classId returns [String sid]
@@ -2274,6 +2276,7 @@ multiCompoundID returns [String sid]
 
 colorLiteral returns [Color val]
 	:	c=COLOR_LITERAL { $val = Color.decode($c.text); }
+	|	'RGB' '(' r=uintLiteral ',' g=uintLiteral ',' b=uintLiteral ')' { $val = new Color($r.val, $g.val, $b.val); } 
 	;
 
 stringLiteral returns [String val]
@@ -2294,6 +2297,10 @@ doubleLiteral returns [double val]
 }
 	:	(MINUS {isMinus=true;})?
 		ud=udoubleLiteral { $val = isMinus ? -$ud.val : $ud.val; }
+	;
+
+dateLiteral returns [java.sql.Date val]
+	:	date=DATE_LITERAL { $val = self.dateLiteralToDate($date.text); }
 	;
 
 booleanLiteral returns [boolean val]

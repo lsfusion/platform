@@ -80,7 +80,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private Map<String, LP<?>> currentLocalProperties = new HashMap<String, LP<?>>();
 
     public enum State {GROUP, CLASS, PROP, TABLE, INDEX}
-    public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, LONG, DATE, NULL }
+    public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, LONG, DATE, COLOR, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, UNIQUE, EQUAL}
@@ -1125,23 +1125,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(res, resUsedParams);
     }
 
-    public LP<?> addConstantProp(ConstType type, String text) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addConstantProp(" + type + ", " + text + ");");
+    public LP<?> addConstantProp(ConstType type, Object value) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addConstantProp(" + type + ", " + value + ");");
 
         switch (type) {
-            case INT: return addCProp(IntegerClass.instance, Integer.parseInt(text));
-            case LONG: return addCProp(LongClass.instance, Long.parseLong(text.substring(0, text.length() - 1)));
-            case REAL: return addCProp(DoubleClass.instance, Double.parseDouble(text));
-            case STRING: text = transformStringLiteral(text); return addCProp(StringClass.get(text.length()), text);
-            case LOGICAL: return addCProp(LogicalClass.instance, text.equals("TRUE"));
-            case DATE: return addCProp(DateClass.instance, DateLiteralToDate(text));
-            case ENUM: return addStaticClassConst(text);
+            case INT: return addCProp(IntegerClass.instance, value);
+            case LONG: return addCProp(LongClass.instance, value);
+            case REAL: return addCProp(DoubleClass.instance, value);
+            case STRING: return addCProp(StringClass.get(((String)value).length()), value);
+            case LOGICAL: return addCProp(LogicalClass.instance, value);
+            case DATE: return addCProp(DateClass.instance, value);
+            case ENUM: return addStaticClassConst((String) value);
+            case COLOR: return addCProp(ColorClass.instance, value);
             case NULL: return baseLM.vnull;
         }
         return null;
     }
 
-    private java.sql.Date DateLiteralToDate(String text) {
+    public java.sql.Date dateLiteralToDate(String text) {
         return new java.sql.Date(Integer.parseInt(text.substring(0, 4)) - 1900, Integer.parseInt(text.substring(5, 7)) - 1, Integer.parseInt(text.substring(8, 10)));
     }
 
