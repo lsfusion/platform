@@ -807,7 +807,7 @@ inTradingNetworkStoreTypeStore (tradingNetwork, storeType, store) = UNION OVERRI
     tradingNetworkStore(store) == tradingNetwork AND NOT storeType,
     store IS store AND NOT storeType AND NOT tradingNetwork;
 
-inStoreTypeTradingNetwork(storeType, tradingNetwork) = tradingNetworkStoreType(storeType) == tradingNetwork;
+inTradingNetworkStoreType(tradingNetwork, storeType) = tradingNetworkStoreType(storeType) == tradingNetwork;
 
 // ----------------------------------- Торговая площадь -------------------------------------------------- //
 
@@ -926,7 +926,7 @@ FORM labelType 'Тип ценника'
 
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore(st, s)
+    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS d=departmentStore
     PROPERTIES(d) READONLY depName = name
@@ -1579,7 +1579,7 @@ FORM employee 'Сотрудник'
 
     PROPERTIES(ds, e)  includeDepartmentStoreEmployee
 
-    FILTERS   inStoreTypeTradingNetwork (st, t),
+    FILTERS   inTradingNetworkStoreType (t, st),
               inStoreTypeStore (st, s),
               inStoreDepartment (s, ds)
 
@@ -2089,7 +2089,7 @@ FORM item 'Товар'
     // Управленческие параметры
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore (st, s)
+    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore (st, s)
 
     OBJECTS dt=DATE FIXED PANEL, sp=supplier FIXED PANEL, d=departmentStore
     PROPERTIES (d) name
@@ -2459,7 +2459,7 @@ FORM registerCommittee 'Комиссия для реестра цен'
 
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
     PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS            stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore(st, s)
+    FILTERS            stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY depName = name
@@ -2512,7 +2512,7 @@ FORM revaluationCommittee 'Комиссия переоценки'
 
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
     PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS            stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore(st, s)
+    FILTERS            stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY depName = name
@@ -2567,7 +2567,7 @@ FORM inventoryCommittee 'Комиссия для инвентаризации'
 
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
     PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS            stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore(st, s)
+    FILTERS            stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY depName = name
@@ -2990,7 +2990,7 @@ FORM supplier 'Поставщик'
     PROPERTIES(co, s, c) equalsCompanySupplierContract
 
     FILTERS stringEqualsAll(y),
-        inStoreTypeTradingNetwork (st, t),
+        inTradingNetworkStoreType (t, st),
         inStoreTypeStore (st, so),
         inTradingNetworkStoreTypeStoreDepartment(t, st, so, d),
         inSupplierContract(s, c),
@@ -3257,7 +3257,7 @@ DESIGN departmentStore FROM DEFAULT {
 FORM departmentStores 'Отделы магазинов'
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore(st, s)
+    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS d=departmentStore
     PROPERTIES(d) READONLY depName = name
@@ -3296,7 +3296,7 @@ FORM tradingNetwork 'Торговая сеть'
     OBJECTS s=storeType
     PROPERTIES(s) name
     PROPERTIES(s) ADDOBJ, delete
-    FILTERS inStoreTypeTradingNetwork(s, n)
+    FILTERS inTradingNetworkStoreType(n, s)
 
     EDIT tradingNetwork OBJECT n
 ;
@@ -3306,7 +3306,7 @@ FORM stores 'Магазины'
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st)//, dumb1(st)
 
     FILTERS stringEqualsAll(a)
-    FILTERS inStoreTypeTradingNetwork (st, t)
+    FILTERS inTradingNetworkStoreType (t, st)
 
     PROPERTIES(t)          addT=ADDFORM FORCE PANEL, editT=EDITFORM FORCE PANEL, delete FORCE PANEL//FORCE PANEL
 
@@ -4287,7 +4287,7 @@ FORM cutting 'Карта проработки'
 
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
         PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
-        FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, t), inStoreTypeStore(st, s)
+        FILTERS stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
 
         OBJECTS dep=departmentStore
         PROPERTIES(dep) READONLY depName = name
@@ -10346,7 +10346,7 @@ FORM nameDepartmentByInventory 'Подразделения для инвента
     TREE treeStore t=tradingNetwork, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY name(t), name(st), name(s), name(ds)
 
-    FILTERS inStoreTypeTradingNetwork (st, t),
+    FILTERS inTradingNetworkStoreType (t, st),
             inStoreTypeStore (st, s),
             inStoreDepartment (s, ds)
 
@@ -11709,7 +11709,7 @@ FORM balanceItemDepartment 'Остатки на дату'
 
     TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, tn), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
 
     TREE treeGroups g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY gname = name(g)
@@ -11810,7 +11810,7 @@ FORM curBalanceItemDepartment 'Текущие остатки'
 
     TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, tn), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
 
     TREE treeGroups g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY gname = name(g)
@@ -11964,7 +11964,7 @@ FORM salesItemDepartmentStore 'Продажи по товарам'
 
     TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, tn), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
 
     TREE treeGroups g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY gname = name(g)
@@ -12014,7 +12014,7 @@ FORM isSupplierItemDepartmentStore 'Ассортимент товаров в п�
 
     TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inStoreTypeTradingNetwork (st, tn), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
 
     TREE treeGroups g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY name(g)
