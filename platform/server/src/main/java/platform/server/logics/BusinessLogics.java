@@ -59,6 +59,7 @@ import platform.server.session.PropertyChange;
 import java.io.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Timestamp;
@@ -954,9 +955,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    public SQLSession getGlobalSql() throws SQLException { // подразумевает synchronized использование
+    public SQLSession getIDSql() throws SQLException { // подразумевает synchronized использование
         try {
-            return createSQL();
+            return createSQL(Connection.TRANSACTION_READ_COMMITTED);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -1496,7 +1497,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected abstract void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException;
 
     public SQLSession createSQL() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        return new SQLSession(adapter);
+        return createSQL(-1);
+    }
+
+    public SQLSession createSQL(int isolationLevel) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        return new SQLSession(adapter, isolationLevel);
     }
 
     public DataSession createSession() throws SQLException {
@@ -1523,7 +1528,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         return getRestartController().isPendingRestart();
                     }
                 },
-                LM.baseClass, LM.baseClass.named, LM.session, LM.name, LM.recognizeGroup, LM.transaction, LM.date, LM.currentDate, LM.currentSession, getGlobalSql());
+                LM.baseClass, LM.baseClass.named, LM.session, LM.name, LM.recognizeGroup, LM.transaction, LM.date, LM.currentDate, LM.currentSession, getIDSql());
     }
 
     public List<Property> getProperties() {

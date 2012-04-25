@@ -49,8 +49,14 @@ public class SQLSession extends MutableObject {
     public final static String computerParam = "fjruwidskldsor";
 
     public SQLSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        this(adapter, -1);
+    }
+
+    private final int isolationLevel;
+    public SQLSession(DataAdapter adapter, int isolationLevel) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
         connectionPool = adapter;
+        this.isolationLevel = isolationLevel;
     }
 
     private void needPrivate() throws SQLException { // получает unique connection
@@ -88,16 +94,25 @@ public class SQLSession extends MutableObject {
         }
     }
 
+    private int prevIsolation;
     public void startTransaction() throws SQLException {
         needPrivate();
 
-        if(inTransaction++ == 0)
+        if(inTransaction++ == 0) {
+            if(isolationLevel > 0) {
+                prevIsolation = privateConnection.getTransactionIsolation();
+                privateConnection.setTransactionIsolation(isolationLevel);
+            }
             setACID(privateConnection, true);
+        }
     }
 
     private void endTransaction() throws SQLException {
-        if(--inTransaction == 0)
+        if(--inTransaction == 0) {
             setACID(privateConnection, false);
+            if(isolationLevel > 0)
+                privateConnection.setTransactionIsolation(prevIsolation);
+        }
 
         transactionTables.clear();
 
