@@ -14,9 +14,7 @@ import platform.base.DateConverter;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.server.auth.SecurityPolicy;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.StringClass;
+import platform.server.classes.*;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
@@ -427,6 +425,14 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         retailLM.getLPByName("dateEquipmentServerError").execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
 
         session.apply(getBL());
+    }
+
+    @Override
+    public Integer readEquipmentServerDelay(String equipmentServer) throws SQLException {
+        DataSession session = getBL().createSession();
+        Integer equipmentServerID = (Integer) retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
+        Integer delay = (Integer)retailLM.getLPByName("delayEquipmentServer").read(session, session.modifier, new DataObject(equipmentServerID, (ConcreteClass) retailLM.getClassByName("equipmentServer")));
+        return delay;
     }
 
     private String dateTimeCode(Timestamp timeStamp) {

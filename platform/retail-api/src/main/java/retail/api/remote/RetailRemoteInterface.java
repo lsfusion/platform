@@ -20,4 +20,7 @@ public interface RetailRemoteInterface extends RemoteLogicsInterface {
     void errorTransactionReport(Integer transactionID, Exception exception) throws RemoteException, SQLException;
 
     void errorEquipmentServerReport(String equipmentServer, String message) throws RemoteException, SQLException;
+    
+    Integer readEquipmentServerDelay(String equipmentServer) throws RemoteException, SQLException;
+   
 }

@@ -18,8 +18,9 @@ public class EquipmentServer {
 
     protected final static Logger logger = Logger.getLogger(EquipmentServer.class);
     Map<String, Object> handlerMap = new HashMap<String, Object>();
+    EquipmentServerSettings equipmentServerSettings;
 
-    public EquipmentServer(final String equServerID, final String serverUrl, final int millis) {
+    public EquipmentServer(final String equServerID, final String serverUrl) {
 
         thread = new Thread(new Runnable() {
 
@@ -28,6 +29,7 @@ public class EquipmentServer {
             @Override
             public void run() {
 
+                int millis = 10000;
                 while (true) {
 
                     try {
@@ -50,6 +52,9 @@ public class EquipmentServer {
                             if (remoteLoader != null) {
                                 try {
                                     remote = (RetailRemoteInterface) remoteLoader.getRemoteLogics();
+                                    equipmentServerSettings = new EquipmentServerSettings(remote.readEquipmentServerDelay(equServerID));
+                                    if (equipmentServerSettings.delay != null)
+                                        millis = equipmentServerSettings.delay;
                                 } catch (RemoteException e) {
                                     logger.error("Get remote logics error : " + e);
                                 }

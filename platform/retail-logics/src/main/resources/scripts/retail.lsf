@@ -3436,6 +3436,7 @@ CLASS equipmentServer 'Сервер оборудования' : named;
 TABLE equipmentServer (equipmentServer);
 sidEquipmentServer 'Идентификатор' = DATA STRING[20] (equipmentServer) IN baseGroup;
 sidToEquipmentServer(equipmentServer)  = GROUP UNIQUE equipmentServer BY sidEquipmentServer (equipmentServer) WHERE equipmentServer IS equipmentServer;
+delayEquipmentServer 'Задержка'= DATA INTEGER(equipmentServer) IN baseGroup;
 
 //---------------------------- Ошибки сервера оборудования ----------------------------//
 CLASS equipmentServerError 'Ошибки';
@@ -3678,7 +3679,7 @@ FORM groupsCheck 'Группы прайс чекеров'
 FORM equipmentServer 'Серверы оборудования'
     OBJECTS es=equipmentServer, e = equipmentServerError, l = equipmentServerLog
     PROPERTIES(es)  READONLY sidEquipmentServer
-    PROPERTIES(es)  ADDFORM, EDITFORM, delete
+    PROPERTIES(es)  delayEquipmentServer, ADDFORM, EDITFORM, delete
 
     PROPERTIES(e) READONLY dataEquipmentServerError, dateEquipmentServerError
     PROPERTIES(e) delete
