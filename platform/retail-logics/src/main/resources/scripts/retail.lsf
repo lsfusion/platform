@@ -3086,6 +3086,7 @@ FORM company 'Компания'
                    dateToContract, currencyContract, noteContract, delayContract
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
 
+    PROPERTIES(co, a) equalsLegalEntityAccount
     PROPERTIES(co, s)    numberOverrideContractCompanySupplier
     PROPERTIES(co, s, c) equalsCompanySupplierContract
     FILTERS inCompanyContract(co, c),
@@ -3149,6 +3150,9 @@ FORM customer 'Покупатель'
     OBJECTS a=account
     PROPERTIES(a)      dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount,
                        MFOBankAccount, noteAccount, ADDOBJ, delete
+
+    PROPERTIES(cu, a) equalsLegalEntityAccount
+
     FILTERS inCustomerAccount(cu, a)
 
     EDIT customer OBJECT cu
@@ -4776,23 +4780,30 @@ TABLE objectiveAcquiring (objectiveAcquiring);
 CLASS specificationDetail 'Строка документа';
 TABLE specificationDetail (specificationDetail);
 
+dateSpecification 'Дата документа' (specification) = DATA DATE (specification) IN documentHeaderGroup;
+dateSpecification (specification) <- currentDate() ON ASSIGN specification AS specification;
+
 customerSpecification(specification) = DATA customer (specification) IN idGroup;
 nameCustomerSpecification 'Покупатель' (specification) = name(customerSpecification(specification)) IN customerGroup;
 fullNameCustomerSpecification 'Полное наименование' (specification) = fullNameLegalEntity(customerSpecification(specification)) IN customerGroup;
-UNPCustomerSpecification 'УНП' (specification) = UNPLegalEntity(customerSpecification(specification)) IN customerGroup;
-addressCustomerSpecification 'Юридический адрес' (specification) = addressLegalEntity(customerSpecification(specification)) IN customerGroup;
+UNPCustomerSpecification 'УНП покупателя' (specification) = UNPLegalEntity(customerSpecification(specification)) IN customerGroup;
+addressCustomerSpecification 'Юридический адрес' (specification) = addressLegalEntityVal(customerSpecification(specification), dateSpecification(specification)) IN customerGroup;
 nameOwnershipCustomerSpecification 'Форма собственности' (specification) = nameOwnershipLegalEntity(customerSpecification(specification)) IN customerGroup;
 postAddressCustomerSpecification 'Почтовый адрес' (specification) = postAddressLegalEntity(customerSpecification(specification)) IN customerGroup;
 managerCustomerSpecification 'Руководитель' (specification) = managerLegalEntity(customerSpecification(specification)) IN customerGroup;
-phoneCustomerSpecification 'Телефон' (specification) = phoneLegalEntity(customerSpecification(specification)) IN customerGroup;
+phoneCustomerSpecification 'Телефон покупателя' (specification) = phoneLegalEntityVal(customerSpecification(specification), dateSpecification(specification)) IN customerGroup;
 
 objectiveAcquiringSpecification(specification) = DATA objectiveAcquiring (specification) IN idGroup;
 nameObjectiveAcquiringSpecification 'Цель приобретения' (specification) = name(objectiveAcquiringSpecification(specification)) IN documentPrmGroup;
 
-// расчетный счет, банк, и т.д.
+accountCustomerSpecification 'Р/сч. покупателя ИД' (specification) = overrideAccountLegalEntity(customerSpecification(specification));
+dataAccountCustomerSpecification 'Р/сч. покупателя' (specification) = dataAccount(accountCustomerSpecification(specification));
+nameBankAccountCustomerSpecification 'Банк покупателя' (specification) = nameBankAccount(accountCustomerSpecification(specification));
+addressBankAccountCustomerSpecification 'Адрес банка покупателя' (specification) = addressBankVal(bankAccount(accountCustomerSpecification(specification)), dateSpecification(specification));
+MFOBankAccountCustomerSpecification 'Код МФО банка покупателя' (specification) = MFOBankAccount(accountCustomerSpecification(specification));
+departmentBankAccountCustomerSpecification 'Отдел банка покупателя' (specification) = departmentBankAccount(accountCustomerSpecification(specification));
+CBUBankAccountCustomerSpecification 'ЦБУ банка покупателя' (specification) = CBUBankAccount(accountCustomerSpecification(specification));
 
-dateSpecification 'Дата документа' (specification) = DATA DATE (specification) IN documentHeaderGroup;
-dateSpecification (specification) <- currentDate() ON ASSIGN specification AS specification;
 
 timeSpecification 'Время документа' (specification) = DATA TIME (specification) IN documentHeaderGroup;
     timeSpecification (specification) <- currentTime() ON ASSIGN specification AS specification;
@@ -4811,6 +4822,21 @@ departmentStoreSpecification 'Отдел документа (ИД)' (specificati
 nameDepartmentStoreSpecification 'Отдел документа' (specification) = name(departmentStoreSpecification(specification))
     IN documentHeaderGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
+companySpecification 'Компания ИД' (specification) = companyStore(storeDepartmentStore(departmentStoreSpecification(specification)));
+UNPCompanySpecification 'УНП компании' (specification) = UNPLegalEntity(companySpecification(specification));
+fullNameCompanySpecification 'Полное наименование компании' (specification) = fullNameLegalEntity(companySpecification(specification));
+addressCompanySpecification 'Юридический адрес компании' (specification) = addressLegalEntityVal(companySpecification(specification), dateSpecification(specification));
+
+accountCompanySpecification 'Р/сч. компании ИД' (specification) = overrideAccountLegalEntity(companySpecification(specification));
+dataAccountCompanySpecification 'Р/сч. компании' (specification) = dataAccount(accountCompanySpecification(specification));
+
+nameBankAccountCompanySpecification 'Банк компании' (specification) = nameBankAccount(accountCompanySpecification(specification));
+addressBankAccountCompanySpecification 'Адрес банка компании' (specification) = addressBankVal(bankAccount(accountCompanySpecification(specification)), dateSpecification(specification));
+MFOBankAccountCompanySpecification 'Код МФО банка компании' (specification) = MFOBankAccount(accountCompanySpecification(specification));
+departmentBankAccountCompanySpecification 'Отдел банка компании' (specification) = departmentBankAccount(accountCompanySpecification(specification));
+CBUBankAccountCompanySpecification 'ЦБУ банка компании' (specification) = CBUBankAccount(accountCompanySpecification(specification));
+phoneCompanySpecification 'Телефон компании' (specification) = phoneLegalEntityVal(companySpecification(specification), dateSpecification(specification)) IN customerGroup;
+
 noteSpecification 'Примечание' = DATA STRING[100] (specification) IN additionalInfo;
 
 specificationSpecificationDetail 'Строка документа (ИД)' = DATA specification (specificationDetail) IN idGroup;
@@ -4826,6 +4852,8 @@ itemSpecificationDetail 'Товар (ИД)' (specificationDetail) = DATA item (s
 
 nameAttributeItemSpecificationDetail 'Товар' (specificationDetail) =
     nameAttributeItem(itemSpecificationDetail(specificationDetail)) IN recognizeGroup;
+
+shortNameUnitOfMeasureSpecificationDetail 'Ед. изм.' (specificationDetail) = shortNameUnitOfMeasureItem(itemSpecificationDetail(specificationDetail));
 
 barcodeExSkuSpecificationDetail 'Штрих-код товара' (specificationDetail) =
     barcodeEx(barcodeSku(itemSpecificationDetail(specificationDetail))) IN baseGroup;
@@ -9799,6 +9827,29 @@ FORM priceChangeDocuments 'Акты переоценки'
     FILTERS documentPriceChangeDocumentDetail(pcd) == pc
 ;
 
+FORM specificationPrint 'Счет-фактура' PRINT
+    OBJECTS sp=specification FIXED PANEL
+    PROPERTIES (sp) SELECTOR seriesNumberObject, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification,
+                    fullNameCustomerSpecification, UNPCustomerSpecification, addressCustomerSpecification,
+                    dataAccountCustomerSpecification, nameBankAccountCustomerSpecification, addressBankAccountCustomerSpecification,
+                    MFOBankAccountCustomerSpecification, departmentBankAccountCustomerSpecification, CBUBankAccountCustomerSpecification,
+                    fullNameCompanySpecification, addressCompanySpecification, UNPCompanySpecification,
+                    dataAccountCompanySpecification, nameBankAccountCompanySpecification, addressBankAccountCompanySpecification,
+                    MFOBankAccountCompanySpecification, departmentBankAccountCompanySpecification, CBUBankAccountCompanySpecification,
+                    nameObjectiveAcquiringSpecification, noteSpecification, phoneCustomerSpecification, phoneCompanySpecification,
+                    quantitySpecification, sumWithoutNDSSpecification, sumNDSSpecification, sumSpecification
+
+    OBJECTS d=specificationDetail
+    PROPERTIES (d) READONLY numberSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
+                   shortNameUnitOfMeasureSpecificationDetail, quantitySpecificationDetail,
+                   retailPriceSpecificationDetail, sumWithoutNDSSpecificationDetail, dataActingRateRangeSpecificationDetail,
+                   sumNDSSpecificationDetail, totalSumNDSSpecificationDetail, sumSpecificationDetail
+
+    FILTERS inSpecificationSpecificationDetail(sp, d)
+;
+
+toPrintSpecification 'Счет-фактура'(specification) = ACTION FORM specificationPrint OBJECTS sp IMAGE 'print.png' IN printGroup TOOLBAR CONFIRM;
+
 //------------------------------------------- Приход товара----------------------------------------------------//
 
 toPrintPricesRegister 'Реестр цен' (shipment) = ACTION FORM pricesRegister OBJECTS s IMAGE 'print.png' IN printGroup CONFIRM;
@@ -11112,7 +11163,6 @@ DESIGN innerArrivals FROM DEFAULT {
 
 //------------------------------------формы: Отпуск из розницы-------------------------//
 
-
 FORM specificationForm 'Отгрузки по данной с/ф'
     OBJECTS sp=specification FIXED PANEL
     PROPERTIES (sp) READONLY seriesObject, numberObject, nameDepartmentStoreSpecification, dateSpecification, timeSpecification,
@@ -11255,9 +11305,10 @@ FORM specifications 'Счет-фактуры'
     PROPERTIES (sp) READONLY numberObject, seriesObject, dateSpecification, timeSpecification, nameDepartmentStoreSpecification,
                              nameCustomerSpecification, dateToSpecification, quantityDetailInSpecification, quantitySpecification,
                              sumWithoutNDSSpecification, sumNDSSpecification, sumSpecification
-    PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
+    PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp), toPrintSpecification
 
     PROPERTIES (sp)          ADDFORM, EDITFORM, delete
+
 
     OBJECTS d=specificationDetail
     PROPERTIES (d) READONLY  numberSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
@@ -12239,6 +12290,7 @@ NAVIGATOR {
         ADD consignmentTwoHorizontal;
         ADD consignmentTwoVertical;
         ADD consignmentTwoAttach;
+        ADD specificationPrint;
     }
 
     ADD adminElement TO formsTree {
