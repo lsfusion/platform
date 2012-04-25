@@ -111,6 +111,10 @@ public class LP<T extends PropertyInterface> {
                 BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue, intValue + whereNum)),
                 BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue + whereNum, defImplements.size())));
     }
+    private <D extends PropertyInterface> void setDerivedChange(Object... params) {
+        List<PropertyInterfaceImplement<T>> listImplements = readImplements(listInterfaces, params);
+        property.setDerivedChange(listImplements.get(0), (PropertyMapImplement<PropertyInterface,T>) listImplements.get(1));
+    }
 
     public List<T> listGroupInterfaces;
     public void setDG(boolean ascending, Object... params) {
