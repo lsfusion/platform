@@ -24,6 +24,14 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     protected SessionData<?> table;
     protected Map<KeyField, K> mapKeys;
     protected Map<PropertyField, V> mapProps;
+    
+    public Collection<K> getKeys() {
+        return mapKeys.values();
+    }
+
+    public Collection<V> getValues() {
+        return mapProps.values();
+    }
 
     public Map<K, KeyExpr> getMapKeys() {
         return KeyExpr.getMapKeys(mapKeys.values());
@@ -126,24 +134,6 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         query.properties.putAll(tableJoin.getExprs());
         query.and(tableJoin.getWhere());
         return query.execute(session, orders, 0, env);
-    }
-
-    public SessionTableUsage(SessionData<?> table, Map<KeyField, K> mapKeys, Map<PropertyField, V> mapProps) {
-        this.table = table;
-        this.mapKeys = mapKeys;
-        this.mapProps = mapProps;
-    }
-    
-    public SessionTableUsage(SessionTableUsage<K,V> usage) {
-        this(usage.table, usage.mapKeys, usage.mapProps);
-    }
-
-    public <MK> SessionTableUsage<MK, V> map(Map<K, MK> remapKeys) {
-        return new SessionTableUsage<MK, V>(table, BaseUtils.join(mapKeys, remapKeys), mapProps);
-    }
-
-    public <MK, MV> SessionTableUsage<MK, MV> map(Map<K, MK> remapKeys, Map<V, MV> remapProps) {
-        return new SessionTableUsage<MK, MV>(table, BaseUtils.join(mapKeys, remapKeys), BaseUtils.join(mapProps, remapProps));
     }
 
     public <B> ClassWhere<B> getClassWhere(V property, Map<K, ? extends B> remapKeys, B mapProp) {

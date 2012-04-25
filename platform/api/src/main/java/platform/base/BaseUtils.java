@@ -344,6 +344,13 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K> Map<K, K> toMap(Collection<K> collection) {
+        Map<K, K> result = new HashMap<K, K>();
+        for (K object : collection)
+            result.put(object, object);
+        return result;
+    }
+
     public static <K, V> Map<K, V> toMap(List<K> from, List<V> to) {
         assert from.size() == to.size();
         Map<K, V> result = new HashMap<K, V>();

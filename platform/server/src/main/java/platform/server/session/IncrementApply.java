@@ -50,6 +50,7 @@ public class IncrementApply extends OverrideModifier {
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
         prevTable.addRows(session.sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, session.env); // если он уже был в базе он не заместится
         increment.addChange(property);
+        tableUsage.drop(session.sql);
     }
 
     public Map<ImplementTable, Collection<Property>> groupPropertiesByTables() {

@@ -543,16 +543,21 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
                 incrementApply.updateApplyStart((OldProperty<D>)depend, dependChange, baseClass);
             }
         }
-        savePropertyChanges(property.mapTable.table, Collections.singleton((Property) property), change.map(property.mapTable.mapKeys, (Property)property));
+        savePropertyChanges(property.mapTable.table, Collections.singletonMap("value", (Property) property), property.mapTable.mapKeys, change);
     }
 
-    private void savePropertyChanges(Table implementTable, Collection<Property> props, SessionTableUsage<KeyField, Property> changeTable) throws SQLException {
+    private void savePropertyChanges(Table implementTable, SessionTableUsage<KeyField, Property> changeTable) throws SQLException {
+        savePropertyChanges(implementTable, BaseUtils.toMap(changeTable.getValues()), BaseUtils.toMap(changeTable.getKeys()), changeTable);
+    }
+
+    private <K,V> void savePropertyChanges(Table implementTable, Map<V, Property> props, Map<K, KeyField> mapKeys, SessionTableUsage<K, V> changeTable) throws SQLException {
         Query<KeyField, PropertyField> modifyQuery = new Query<KeyField, PropertyField>(implementTable);
-        Join<Property> join = changeTable.join(modifyQuery.mapKeys);
-        for (Property property : props)
-            modifyQuery.properties.put(property.field, join.getExpr(property));
+        Join<V> join = changeTable.join(BaseUtils.join(mapKeys, modifyQuery.mapKeys));
+        for (Map.Entry<V, Property> property : props.entrySet())
+            modifyQuery.properties.put(property.getValue().field, join.getExpr(property.getKey()));
         modifyQuery.and(join.getWhere());
         sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery, env));
+        changeTable.drop(sql);
     }
 
     public String apply(final BusinessLogics<?> BL, List<ClientAction> actions, boolean onlyCheck) throws SQLException {
@@ -591,7 +596,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
 
         // записываем в базу, то что туда еще не сохранено, приходится сохранять группами, так могут не подходить по классам
         for (Map.Entry<ImplementTable, Collection<Property>> groupTable : incrementApply.groupPropertiesByTables().entrySet())
-            savePropertyChanges(groupTable.getKey(), groupTable.getValue(), incrementApply.readSave(groupTable.getKey(), groupTable.getValue()));
+            savePropertyChanges(groupTable.getKey(), incrementApply.readSave(groupTable.getKey(), groupTable.getValue()));
 
         for (Map.Entry<DataObject, ConcreteObjectClass> newClass : newClasses.entrySet())
             newClass.getValue().saveClassChanges(sql, newClass.getKey());
@@ -711,6 +716,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
                     resultString += "    " + infoStr + '\n';
                 }
 
+                keysTable.drop(sql);
                 return resultString;
             }
         }

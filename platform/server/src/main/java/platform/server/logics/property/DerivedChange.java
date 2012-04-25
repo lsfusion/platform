@@ -16,6 +16,7 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
     private final PropertyMapImplement<?, C> where;
 
     public DerivedChange(Property<C> writeTo, PropertyInterfaceImplement<C> writeFrom, PropertyMapImplement<?, C> where) {
+        assert where.property.noDB();
         this.writeTo = writeTo;
         this.writeFrom = writeFrom;
         this.where = where;
@@ -35,6 +36,24 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
         return result;
     }
 
+    @IdentityLazy
+    private boolean isWhereFull() {
+        return !where.mapIsFull(writeTo.interfaces);
+    }
+
+    public boolean hasEventChanges(PropertyChanges propChanges) {
+        return hasEventChanges(propChanges.getStruct());
+    }
+
+    public boolean hasEventChanges(StructChanges changes) {
+        return changes.hasChanges(changes.getUsedChanges(getDepends())); // если в where нет изменений, то получится бред когда в "верхней" сессии
+    }
+
+    public QuickSet<Property> getUsedDataChanges(StructChanges changes) {
+        assert hasEventChanges(changes);
+        return QuickSet.add(writeTo.getUsedDataChanges(changes), changes.getUsedChanges(getDepends()));
+    }
+
     private PropertyChange<C> getDerivedChange(PropertyChanges changes) {
         Map<C,KeyExpr> mapKeys = writeTo.getMapKeys();
         Where changeWhere = where.mapExpr(mapKeys, changes).getWhere();
@@ -48,24 +67,6 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
         return new PropertyChange<C>(mapKeys, writeExpr, changeWhere);
     }
 
-    @IdentityLazy
-    private boolean isWhereFull() {
-        return !where.mapIsFull(writeTo.interfaces);
-    }
-
-    public boolean hasEventChanges(PropertyChanges propChanges) {
-        return hasEventChanges(propChanges.getStruct());
-    }
-
-    public boolean hasEventChanges(StructChanges changes) {
-        return changes.hasChanges(changes.getUsedChanges(getDepends())); // если в where нет изменений то из assertion'а что
-    }
-
-    public QuickSet<Property> getUsedDataChanges(StructChanges changes) {
-        assert hasEventChanges(changes);
-        return QuickSet.add(writeTo.getUsedDataChanges(changes), changes.getUsedChanges(getDepends()));
-    }
-    
     public DataChanges getDataChanges(PropertyChanges changes) {
         return writeTo.getDataChanges(getDerivedChange(changes), changes).changes;
     }

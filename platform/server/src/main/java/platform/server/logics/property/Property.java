@@ -517,6 +517,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         assert DataSession.fitClasses(this, fit);
         assert DataSession.fitKeyClasses(this, fit);
         assert DataSession.notFitClasses(this, notFit); // из-за эвристики с not могут быть накладки
+        changeTable.drop(session.sql);
         return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(fit,notFit);
     }
 
@@ -1055,7 +1056,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         setDerivedChange(DerivedProperty.createJoin(valueImplement), where);
     }
 
-    public <D extends PropertyInterface> void setDerivedChange(PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<?, T> whereImplement) {
+    public <D extends PropertyInterface, W extends PropertyInterface> void setDerivedChange(PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
+        if(!whereImplement.property.noDB())
+            whereImplement = whereImplement.mapChanged(IncrementType.SET);
+        
         DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(this, valueImplement, whereImplement);
         // запишем в DataProperty
         for(UserProperty dataProperty : getDataChanges())

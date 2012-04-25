@@ -18,10 +18,6 @@ public class NoPropertyTableUsage<K> extends SessionTableUsage<K,Object> {
         });
     }
 
-    public NoPropertyTableUsage(NoPropertyTableUsage<K> usage) {
-        super(usage);
-    }
-
     public void insertRecord(SQLSession session, Map<K, DataObject> keyFields, boolean update, boolean groupLast) throws SQLException {
         insertRecord(session, keyFields, new HashMap<Object, ObjectValue>(), update, groupLast);
     }

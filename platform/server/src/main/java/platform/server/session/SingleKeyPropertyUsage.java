@@ -24,10 +24,6 @@ public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
         }, propertyType);
     }
 
-    public SingleKeyPropertyUsage(SessionTableUsage<String, String> usage) {
-        super(usage);
-    }
-
     public void insertRecord(SQLSession session, DataObject keyObject, ObjectValue propertyObject, boolean update, boolean groupLast) throws SQLException {
         insertRecord(session, Collections.singletonMap("key", keyObject),Collections.singletonMap("value", propertyObject), update, groupLast);
     }
