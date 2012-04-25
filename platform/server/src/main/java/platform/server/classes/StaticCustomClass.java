@@ -73,6 +73,7 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
             // ищем класс с таким sID, если не находим создаем
             Query<String, Object> findClass = new Query<String, Object>(Collections.singleton("key"));
             findClass.and(classSID.getExpr(session.modifier, BaseUtils.singleValue(findClass.mapKeys)).compare(new ValueExpr(sidObject, StringClass.get(sidObject.length())), Compare.EQUALS));
+            findClass.and(BaseUtils.singleValue(findClass.mapKeys).isClass(this.getUpSet()));
             findClass.properties.put("name", name.getExpr(session.modifier, BaseUtils.singleValue(findClass.mapKeys)));
             OrderedMap<Map<String, Object>, Map<Object, Object>> result = findClass.execute(session.sql, session.env);
             if (result.size() == 0) { // не найдено добавляем новый объект и заменяем ему classID и title

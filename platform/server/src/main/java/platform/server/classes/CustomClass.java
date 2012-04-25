@@ -8,7 +8,6 @@ import platform.server.caches.ManualLazy;
 import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.classes.sets.CustomClassSet;
 import platform.server.classes.sets.UpClassSet;
-import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
@@ -21,7 +20,6 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.IsClassProperty;
 import platform.server.logics.property.Property;
-import platform.server.logics.property.SessionDataProperty;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -109,9 +107,11 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     public ConcreteCustomClass findConcreteClassID(int idClass) {
         CustomClass cls = findClassID(idClass);
+        if (cls == null)
+            throw new RuntimeException(ServerResourceBundle.getString("classes.there.is.an.object.of.not.existing.class.in.the.database")+" : " + idClass + ")");
         if (! (cls instanceof ConcreteCustomClass))
             throw new RuntimeException(ServerResourceBundle.getString("classes.there.is.an.object.of.abstract.class.in.the.database")+" : " + idClass + ")");
-        return (ConcreteCustomClass) findClassID(idClass);
+        return (ConcreteCustomClass) cls;
     }
 
     public CustomClassSet commonParents(CustomClass toCommon) {

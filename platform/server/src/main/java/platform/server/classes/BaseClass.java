@@ -124,12 +124,6 @@ public class BaseClass extends AbstractCustomClass {
             if (customClass instanceof StaticCustomClass)
                 modifiedNames.putAll(((StaticCustomClass) customClass).fillIDs(session, name, classSID, usedSIds, usedIds));
 
-        // применение переименования классов вынесено сюда, поскольку objectClass.fillIDs() вызывается раньше проставления ID'шников - не срабатывает execute()
-        for (Object object : modifiedNames.keySet()) {
-            logger.info("renaming class with id " + object + " to " + modifiedNames.get(object));
-            name.execute(modifiedNames.get(object), session, session.getDataObject(object, ObjectType.instance));
-        }
-
         int free = 0;
         for (CustomClass customClass : allClasses)
             if (customClass instanceof AbstractCustomClass) {
@@ -137,6 +131,12 @@ public class BaseClass extends AbstractCustomClass {
                     free++;
                 customClass.ID = free++;
             }
+
+        // применение переименования классов вынесено сюда, поскольку objectClass.fillIDs() вызывается раньше проставления ID'шников - не срабатывает execute()
+        for (Object object : modifiedNames.keySet()) {
+            logger.info("renaming class with id " + object + " to " + modifiedNames.get(object));
+            name.execute(modifiedNames.get(object), session, session.getDataObject(object, ObjectType.instance));
+        }
     }
 
     public void updateClassStat(SQLSession session) throws SQLException {
