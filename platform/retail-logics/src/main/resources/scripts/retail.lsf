@@ -7518,10 +7518,10 @@ minAllowPriceItemShipment 'Минимально допустимая цена в
 
 //    priceOrderItemShipment (item, shipment) * (100 - [UNION OVERRIDE 0 IF shipment IS shipment, allowablePercentSupplier (supplierShipment(shipment))](shipment))/100;
 CONSTRAINT supplierPriceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail))
-    AND isPostedShipmentDetail (shipmentDetail) MESSAGE 'Цена поставки больше цены заказа';
+    AND isPostedShipmentDetail (shipmentDetail) AND allowablePercentSupplier (supplierShipment(shipmentShipmentDetail(shipmentDetail))) MESSAGE 'Цена поставки больше цены заказа';
 
 CONSTRAINT supplierPriceShipmentDetail (shipmentDetail) < minAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail))
-    AND isPostedShipmentDetail (shipmentDetail) MESSAGE 'Цена поставки меньше цены заказа';
+    AND isPostedShipmentDetail (shipmentDetail) AND allowablePercentSupplier (supplierShipment(shipmentShipmentDetail(shipmentDetail))) MESSAGE 'Цена поставки меньше цены заказа';
 
 isAllowPriceItemShipment 'Доспустимая цена поставки' (shipmentDetail) =
     supplierPriceShipmentDetail (shipmentDetail) > maxAllowPriceItemShipment (itemShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail)) OR
