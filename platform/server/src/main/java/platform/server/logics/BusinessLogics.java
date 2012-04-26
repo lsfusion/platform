@@ -754,7 +754,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             setPropertyNotifications();
             setNotNullProperties();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error while create BL", e);
             String msg = e.getMessage();
             int errorTagPos = msg.indexOf("[error]"); // todo [dale]: надо как-то получше это реализовать
             if (errorTagPos > 0) {
