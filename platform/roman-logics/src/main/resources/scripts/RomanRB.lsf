@@ -722,7 +722,9 @@ priceRetailPriceChangeDocumentSku 'Розничная цена' =  IF isPrevious
                                                     ELSE priceOutPriceChangeDocumentArticleSku(basePriceChangeDocument, sku);
 
 priceRetailRatePriceChangeDocumentSku 'Розничная цена (руб.)' = roundMinus1(priceRetailPriceChangeDocumentSku(basePriceChangeDocument, sku) *
-                                                                     ratePriceChangeDocumentSku(basePriceChangeDocument, sku));
+                                                                            ratePriceChangeDocumentSku(basePriceChangeDocument, sku));
+
+
 
 //priceRetailPriceChangeDocumentSku 'Розничная цена' = DATA NUMERIC[14,2](basePriceChangeDocument, sku) IN baseGroup;
 
