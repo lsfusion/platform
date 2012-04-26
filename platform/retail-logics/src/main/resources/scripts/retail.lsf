@@ -10259,22 +10259,44 @@ DESIGN returnSuppliers FROM DEFAULT{
         askConfirm=TRUE;
     }
 
-    ADD r.historyGroup BEFORE functions.box {
-        childConstraints = TO THE BOTTOM;
-//        fillHorizontal = 1;
-    };
-    ADD r.postedGroup BEFORE functions.box {
-        childConstraints = TO THE BOTTOM;
-//        fillHorizontal = 1;
-    };
     ADD r.printGroup BEFORE functions.box {
+        childConstraints = TO THE RIGHT;
+        NEW ttn1{
+            childConstraints = TO THE RIGHT;
+            title = 'ТТН-1';
+            NEW a{
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(toPrintTransportConsignmentVerticalA);
+                ADD PROPERTY(toPrintTransportConsignmentHorizontalA);
+                ADD PROPERTY(toPrintTransportConsignmentAttach);
+            }
+            NEW b{
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(toPrintTransportConsignmentVerticalB);
+                ADD PROPERTY(toPrintTransportConsignmentHorizontalB);
+            }
+        }
+        NEW tn{
+            childConstraints = TO THE BOTTOM;
+            title = 'ТН-2';
+            ADD PROPERTY(toPrintConsignmentTwoVertical);
+            ADD PROPERTY(toPrintConsignmentTwoHorizontal);
+            ADD PROPERTY(toPrintConsignmentTwoAttach);
+        }
+//        fillHorizontal = 1;
+    };
+
+    ADD r.historyGroup BEFORE r.printGroup{
+        childConstraints = TO THE BOTTOM;
+//        fillHorizontal = 1;
+    };
+    ADD r.postedGroup BEFORE r.printGroup{
         childConstraints = TO THE BOTTOM;
 //        fillHorizontal = 1;
     };
 
     POSITION r.historyGroup TO THE LEFT r.postedGroup;
     POSITION r.postedGroup TO THE LEFT r.printGroup;
-    POSITION r.historyGroup TO THE LEFT r.printGroup;
 }
 
 DESIGN commonInfoBatchReturnSupplierDetail FROM DEFAULT {
@@ -11051,24 +11073,45 @@ DESIGN innerFlows FROM DEFAULT {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
-    f.printGroup {
+
+    ADD f.printGroup BEFORE functions.box {
+        childConstraints = TO THE RIGHT;
+        NEW ttn1{
+            childConstraints = TO THE RIGHT;
+            title = 'ТТН-1';
+            NEW a{
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(toPrintTransportConsignmentVerticalA);
+                ADD PROPERTY(toPrintTransportConsignmentHorizontalA);
+                ADD PROPERTY(toPrintTransportConsignmentAttach);
+            }
+            NEW b{
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(toPrintTransportConsignmentVerticalB);
+                ADD PROPERTY(toPrintTransportConsignmentHorizontalB);
+            }
+        }
+        NEW tn{
+            childConstraints = TO THE BOTTOM;
+            title = 'ТН-2';
+            ADD PROPERTY(toPrintConsignmentTwoVertical);
+            ADD PROPERTY(toPrintConsignmentTwoHorizontal);
+            ADD PROPERTY(toPrintConsignmentTwoAttach);
+        }
+//        fillHorizontal = 1;
+    }
+
+    ADD f.historyGroup BEFORE f.printGroup{
         childConstraints = TO THE BOTTOM;
 //        fillHorizontal = 1;
     }
 
-    f.historyGroup {
-        childConstraints = TO THE BOTTOM;
-//        fillHorizontal = 1;
-    }
-
-    f.postedGroup {
+    ADD f.postedGroup BEFORE f.printGroup{
         childConstraints = TO THE BOTTOM;
 //        fillHorizontal = 1;
     }
 
     POSITION f.historyGroup TO THE LEFT f.postedGroup;
-    POSITION f.postedGroup TO THE LEFT f.printGroup;
-    POSITION f.historyGroup TO THE LEFT f.printGroup;
 
     ADD d.grid.box BEFORE f.historyGroup;
 }
@@ -11550,23 +11593,44 @@ DESIGN statements FROM DEFAULT {
     NEW footer.container BEFORE functions.box {
         childConstraints = TO THE RIGHT;
 
-        ADD st.historyGroup {
+        ADD st.printGroup BEFORE functions.box {
+            childConstraints = TO THE RIGHT;
+            NEW ttn1{
+                childConstraints = TO THE RIGHT;
+                title = 'ТТН-1';
+                NEW a{
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(toPrintTransportConsignmentVerticalA);
+                    ADD PROPERTY(toPrintTransportConsignmentHorizontalA);
+                    ADD PROPERTY(toPrintTransportConsignmentAttach);
+                }
+                NEW b{
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(toPrintTransportConsignmentVerticalB);
+                    ADD PROPERTY(toPrintTransportConsignmentHorizontalB);
+                }
+            }
+            NEW tn{
+                childConstraints = TO THE BOTTOM;
+                title = 'ТН-2';
+                ADD PROPERTY(toPrintConsignmentTwoVertical);
+                ADD PROPERTY(toPrintConsignmentTwoHorizontal);
+                ADD PROPERTY(toPrintConsignmentTwoAttach);
+            }
+    //        fillHorizontal = 1;
+        }
+
+        ADD st.historyGroup BEFORE st.printGroup{
             childConstraints = TO THE BOTTOM;
 //            fillHorizontal = 1;
         }
 
-        ADD st.postedGroup {
+        ADD st.postedGroup BEFORE st.printGroup{
             childConstraints = TO THE BOTTOM;
 //            fillHorizontal = 1;
         }
 
-        ADD st.printGroup{
-            childConstraints = TO THE BOTTOM;
-//            fillHorizontal = 1;
-        }
         POSITION st.historyGroup TO THE LEFT st.postedGroup;
-        POSITION st.postedGroup TO THE LEFT st.printGroup;
-        POSITION st.historyGroup TO THE LEFT st.printGroup;
     }
 
  //   ADD d.box BEFORE footer.container;
