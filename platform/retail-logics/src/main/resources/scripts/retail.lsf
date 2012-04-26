@@ -5,7 +5,7 @@ MODULE retail;
 // Суммы - NUMERIC[16,2]
 // Ставка налога - NUMERIC[10,5]
 // Надбавка - NUMERIC[8,3]
-// Норма списания отходов - NUMERIC[10,4]
+// Норма списания отходов - NUMERIC[10,3]
 
 IMPORT BaseLogicsModule;
 
@@ -770,7 +770,7 @@ PROPERTIES(f) name;
 CLASS rateWaste 'Норма отходов' : named, externalObject;
 TABLE rateWaste(rateWaste);
 
-percentRateWaste 'Норма,%' = DATA NUMERIC[10,4] (rateWaste) IN baseGroup;
+percentRateWaste 'Норма,%' = DATA NUMERIC[10,3] (rateWaste) IN baseGroup;
 
 FORM rateWaste 'Норма отходов'
 OBJECTS r=rateWaste FIXED PANEL
@@ -5480,7 +5480,7 @@ curPriceWareShipmentDetail 'Текущая цена посуды' (shipmentDetai
 curWareShipmentDetail = DATA ware (shipmentDetail) IN idGroup;
 curNameWareShipmentDetail 'Текущая посуда' (shipmentDetail) = name(curWareShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-percentRateWasteShipmentDetail 'Процент для списания отходов' (shipmentDetail) = DATA NUMERIC[10,4] (shipmentDetail);
+percentRateWasteShipmentDetail 'Процент для списания отходов' (shipmentDetail) = DATA NUMERIC[10,3] (shipmentDetail);
 
 percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShipmentDetail(shipmentDetail))
     ON CHANGE itemShipmentDetail(shipmentDetail);

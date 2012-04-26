@@ -38,15 +38,15 @@ public class EquipmentServer {
                             try {
                                 remoteLoader = (RemoteLoaderInterface) Naming.lookup(MessageFormat.format("rmi://{0}/BusinessLogicsLoader", serverUrl));
                             } catch (ConnectException e) {
-                                logger.error("Naming lookup error : " + e);
+                                logger.error("Naming lookup error : ", e);
                             } catch (NoSuchObjectException e) {
-                                logger.error("Naming lookup error : " + e);
+                                logger.error("Naming lookup error : ", e);
                             } catch (RemoteException e) {
-                                logger.error("Naming lookup error : " + e);
+                                logger.error("Naming lookup error : ", e);
                             } catch (MalformedURLException e) {
-                                logger.error("Naming lookup error : " + e);
+                                logger.error("Naming lookup error : ", e);
                             } catch (NotBoundException e) {
-                                logger.error("Naming lookup error : " + e);
+                                logger.error("Naming lookup error : ", e);
                             }
 
                             if (remoteLoader != null) {
@@ -56,7 +56,7 @@ public class EquipmentServer {
                                     if (equipmentServerSettings.delay != null)
                                         millis = equipmentServerSettings.delay;
                                 } catch (RemoteException e) {
-                                    logger.error("Get remote logics error : " + e);
+                                    logger.error("Get remote logics error : ", e);
                                 }
                             }
                         }
@@ -69,14 +69,14 @@ public class EquipmentServer {
                         }
 
                     } catch (Exception e) {
-                        logger.error("Unhandled exception : " + e);
+                        logger.error("Unhandled exception : ", e);
                         remote = null;
                     }
 
                     try {
                         Thread.sleep(millis);
                     } catch (InterruptedException e) {
-                        logger.info("Thread has been interrupted : " + e);
+                        logger.info("Thread has been interrupted : ", e);
                         break;
                     }
                 }

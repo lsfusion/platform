@@ -8,7 +8,6 @@
     <bean id="equipmentServer" class="retail.equipment.EquipmentServer">
         <constructor-arg value="equServer1"/>
         <constructor-arg value="localhost:7652"/>
-        <constructor-arg type="int" value="10000"/>
     </bean>
 
 </beans>
