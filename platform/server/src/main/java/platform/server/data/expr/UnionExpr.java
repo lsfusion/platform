@@ -62,7 +62,7 @@ public abstract class UnionExpr extends NotNullExpr implements StaticClassExprIn
     }
 
     public Stat getStatValue(KeyStat keyStat) {
-        throw new RuntimeException("not supported yet"); //return getTypeStat(keyStat);
+        return FormulaExpr.getStatValue(this, keyStat);
     }
 
     private static void fillOrderedExprs(BaseExpr baseExpr, BaseExpr fromExpr, OrderedMap<BaseExpr, Collection<BaseExpr>> orderedExprs) {
