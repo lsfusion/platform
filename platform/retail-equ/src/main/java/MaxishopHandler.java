@@ -64,9 +64,11 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
 
             for (String directory : directoriesList) {
                 File folder = new File(directory.trim());
-                folder.mkdir();
+                if(!folder.exists() && !folder.mkdir())
+                    throw new RuntimeException("The folder " + folder.getAbsolutePath() + " can not be created");
                 folder = new File(directory.trim() + "/SEND");
-                folder.mkdir();
+                if(!folder.exists() && !folder.mkdir())
+                    throw new RuntimeException("The folder " + folder.getAbsolutePath() + " can not be created");
 
                 Util.setxBaseJProperty("ignoreMissingMDX", "true");
 
@@ -87,11 +89,12 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
                 file.close();
 
                 File fileOut = new File(path + ".OUT");
-                fileOut.createNewFile();
+                if(!fileOut.exists() && !fileOut.createNewFile())
+                    throw new RuntimeException("The file " + fileOut.getAbsolutePath() + " can not be created");
 
             }
         } catch (xBaseJException e) {
-            throw new RuntimeException(e.toString());
+            throw new RuntimeException(e.toString(), e.getCause());
         }
     }
 
@@ -104,7 +107,7 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
                 cashRegisterDirectories.put(cashRegister.cashRegisterNumber, cashRegister.directory);
             if ((cashRegister.port != null) && (!cashRegisterDirectories.containsValue(cashRegister.port)))
                 cashRegisterDirectories.put(cashRegister.cashRegisterNumber, cashRegister.port);
-            if(cashRegister.roundSales!=null)
+            if (cashRegister.roundSales != null)
                 cashRegisterRoundSales.put(cashRegister.cashRegisterNumber, cashRegister.roundSales);
         }
         List<SalesInfo> salesInfoList = new ArrayList<SalesInfo>();
@@ -150,7 +153,7 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
                         }
                 }
             } catch (xBaseJException e) {
-                throw new RuntimeException(e.toString());
+                throw new RuntimeException(e.toString(), e.getCause());
             }
         }
 
@@ -161,9 +164,11 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
     public void finishReadingSalesInfo(MaxishopSalesBatch salesBatch) {
         for (String readFile : salesBatch.readFiles) {
             File f = new File(readFile);
-            f.delete();
+            if (!f.delete())
+                throw new RuntimeException("The file " + f.getAbsolutePath() + " can not be deleted");
             f = new File(readFile.substring(0, readFile.length() - 3) + "OUT");
-            f.delete();
+            if (!f.delete())
+                throw new RuntimeException("The file " + f.getAbsolutePath() + " can not be deleted");
         }
     }
 
@@ -174,7 +179,7 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
     }
 
     private Double roundSales(Double value, Integer roundSales) {
-        Integer round = roundSales!=null ? roundSales : 50;
-        return Double.valueOf(Math.round(value / round) * round);
+        Integer round = roundSales != null ? roundSales : 50;
+        return (double) Math.round(value / round) * round;
     }
 }
