@@ -8619,6 +8619,10 @@ META metaCodeDocumentMachineryPriceTransaction (document)
     } SHORTCUT statusEquipmentPriceTransactionDocument CONFIRM;
 
     showCreateMachineryPriceTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT sentPriceTransactionDocument(document);
+    backgroundCreateMachineryPriceTransaction###document 'Цвет' (document) = IF countProcessPriceTransactionDocument(document) THEN
+                                                                                RGB(255,255,128)
+                                                                             ELSE
+                                                                                RGB(212,255,212) IF showCreateMachineryPriceTransaction###document(document);
 END
 
 FORM machineryPriceTransaction 'Загрузка прайса в оборудование'
@@ -8828,7 +8832,7 @@ META metaCodeDocumentLabelTransaction (document)
     } SHORTCUT statusPrintPriceTransactionDocument CONFIRM;
 
     showPrintLabelTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT printedPriceTransactionDocument(document);
-
+    backgroundPrintLabelTransaction###document 'Цвет' (document) = RGB(212,255,212) IF showPrintLabelTransaction###document(document);
 END
 
 // ---------------------------- Атрибуты для накладной --------------------------------- //
@@ -9970,8 +9974,8 @@ FORM shipments 'Поставки'
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
                             nameSupplierShipment, quantityShipmentDetailsShipment, totalSumSupplierPriceShipment, totalSumIncVATShipment,
                             totalSumSupplierShipment, retailSumShipment,
-                            statusPrintPriceTransactionDocument BACKGROUND showPrintLabelTransactionShipment(s),
-                            statusEquipmentPriceTransactionDocument BACKGROUND showCreateMachineryPriceTransactionShipment(s)
+                            statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionShipment(s),
+                            statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionShipment(s)
 
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -10825,8 +10829,8 @@ FORM userPriceChanges 'Переоценки товаров'
     PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
                    diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
                    diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument,
-                   statusPrintPriceTransactionDocument BACKGROUND showPrintLabelTransactionUserPriceChange(u),
-                   statusEquipmentPriceTransactionDocument BACKGROUND showCreateMachineryPriceTransactionUserPriceChange(u)
+                   statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionUserPriceChange(u),
+                   statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionUserPriceChange(u)
 
     PROPERTIES (u) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -11112,8 +11116,8 @@ FORM innerArrivals 'Приходы из других отделов'
     OBJECTS a=innerArrival
     PROPERTIES (a) READONLY objectClassName, numberArrival, seriesArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
                             nameSenderDepartmentInnerArrival, quantityInnerArrivalDetailsInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival,
-                            statusPrintPriceTransactionDocument BACKGROUND showPrintLabelTransactionInnerArrival(a),
-                            statusEquipmentPriceTransactionDocument BACKGROUND showCreateMachineryPriceTransactionInnerArrival(a)
+                            statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionInnerArrival(a),
+                            statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionInnerArrival(a)
 
     PROPERTIES (a)          createInnerArrivalLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionInnerArrival(a),
                             createSnapshotInnerArrivalLabelTransaction FORCE PANEL SHOWIF isPostedInnerArrival(a),
@@ -11685,8 +11689,8 @@ FORM actOfStudies 'Акты проработки'
     OBJECTS a=actOfStudy
     PROPERTIES(a)  READONLY objectClassName, numberObject, seriesObject, dateActOfStudy, timeActOfStudy, nameDepartmentStoreActOfStudy,
                             nameContractorDepartmentStoreActOfStudy, quantityOutputActOfStudy, subtotalOutputActOfStudy, quantityInputActOfStudy, subtotalInputActOfStudy,
-                            statusPrintPriceTransactionDocument BACKGROUND showPrintLabelTransactionActOfStudy(a),
-                            statusEquipmentPriceTransactionDocument BACKGROUND showCreateMachineryPriceTransactionActOfStudy(a)
+                            statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionActOfStudy(a),
+                            statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionActOfStudy(a)
 
     PROPERTIES(a) READONLY FORCE PANEL timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed
 
