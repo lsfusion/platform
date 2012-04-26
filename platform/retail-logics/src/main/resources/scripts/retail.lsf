@@ -3452,6 +3452,7 @@ CLASS equipmentServerError 'Ошибки';
 TABLE equipmentServerError (equipmentServerError);
 
 dataEquipmentServerError 'Сообщение об ошибке' = DATA STRING[200] (equipmentServerError) IN baseGroup;
+erTraceEquipmentServerError 'След ошибки' = DATA TEXT (equipmentServerError) IN baseGroup;
 dateEquipmentServerError 'Время возникновения' = DATA DATETIME (equipmentServerError) IN baseGroup;
 equipmentServerEquipmentServerError 'Сервер оборудования (ID)' = DATA equipmentServer(equipmentServerError) IN baseGroup;
 
@@ -3698,6 +3699,7 @@ FORM equipmentServer 'Серверы оборудования'
 
     PROPERTIES(e) READONLY dataEquipmentServerError, dateEquipmentServerError
     PROPERTIES(e) delete
+    PROPERTIES(e) FORCE PANEL erTraceEquipmentServerError
 
     PROPERTIES(l) READONLY dataEquipmentServerLog, dateEquipmentServerLog
     PROPERTIES(l) delete
@@ -3711,9 +3713,17 @@ DESIGN equipmentServer FROM DEFAULT {
 
     main {
 
-        NEW specContainer {
+        NEW specContainer BEFORE functions.box {
             type = TABBED;
+
+            NEW errorContainer {
+            title = 'Ошибки';
             ADD e.box;
+            PROPERTY(erTraceEquipmentServerError(e)) {
+               fillHorizontal = 1;
+               panelLabelAbove = TRUE;
+               }
+            }
             ADD l.box;
         }
     }

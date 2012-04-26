@@ -163,10 +163,10 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
     @Override
     public void finishReadingSalesInfo(MaxishopSalesBatch salesBatch) {
         for (String readFile : salesBatch.readFiles) {
-            File f = new File(readFile);
+            File f = new File(readFile.substring(0, readFile.length() - 3) + "OUT");
             if (!f.delete())
                 throw new RuntimeException("The file " + f.getAbsolutePath() + " can not be deleted");
-            f = new File(readFile.substring(0, readFile.length() - 3) + "OUT");
+            f = new File(readFile);
             if (!f.delete())
                 throw new RuntimeException("The file " + f.getAbsolutePath() + " can not be deleted");
         }
@@ -174,7 +174,7 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
 
     class DBFFilter implements FilenameFilter {
         public boolean accept(File dir, String name) {
-            return (name.endsWith(".DBF") && new File(dir + "/" + name.substring(0, name.length() - 3) + "OUT").exists());
+            return (name.toLowerCase().endsWith(".dbf") && new File(dir + "/" + name.substring(0, name.length() - 3) + "OUT").exists());
         }
     }
 

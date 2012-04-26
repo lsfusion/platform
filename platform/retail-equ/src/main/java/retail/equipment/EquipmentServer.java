@@ -52,7 +52,7 @@ public class EquipmentServer {
                             if (remoteLoader != null) {
                                 try {
                                     remote = (RetailRemoteInterface) remoteLoader.getRemoteLogics();
-                                    equipmentServerSettings = new EquipmentServerSettings(remote.readEquipmentServerDelay(equServerID));
+                                    equipmentServerSettings = remote.readEquipmentServerDelay(equServerID);
                                     if (equipmentServerSettings.delay != null)
                                         millis = equipmentServerSettings.delay;
                                 } catch (RemoteException e) {
@@ -132,11 +132,11 @@ public class EquipmentServer {
                     SalesBatch salesBatch = ((CashRegisterHandler) clsHandler).readSalesInfo(cashRegisterInfoList);
                     String result = remote.sendSalesInfo(salesBatch.salesInfoList, equServerID);
                     if (result != null)
-                        remote.errorEquipmentServerReport(equServerID, result);
+                        remote.errorEquipmentServerReport(equServerID, new Throwable(result));
                     else
                         ((CashRegisterHandler) clsHandler).finishReadingSalesInfo(salesBatch);
                 } catch (Exception e) {
-                    remote.errorEquipmentServerReport(equServerID, e.toString());
+                    remote.errorEquipmentServerReport(equServerID, e.fillInStackTrace());
                     return;
                 }
             }

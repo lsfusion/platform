@@ -69,7 +69,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
     @Override
     public List<TransactionInfo> readTransactionInfo(String equServerID) throws SQLException {
-        DataSession session = getBL().createSession();
+        DataSession session = createSession();
         List<TransactionInfo> transactionList = new ArrayList<TransactionInfo>();
 
         LP isMachineryPriceTransaction = retailLM.is(retailLM.getClassByName("machineryPriceTransaction"));
@@ -229,7 +229,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
     @Override
     public List<CashRegisterInfo> readCashRegisterInfo(String equServerID) throws RemoteException, SQLException {
-        DataSession session = getBL().createSession();
+        DataSession session = createSession();
         List<CashRegisterInfo> cashRegisterInfoList = new ArrayList<CashRegisterInfo>();
 
         LP isGroupMachinery = retailLM.is(retailLM.getClassByName("groupMachinery"));
@@ -286,7 +286,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     @Override
     public String sendSalesInfo(List<SalesInfo> salesInfoList, String equipmentServer) throws IOException, SQLException {
 
-        DataSession session = getBL().createSession();
+        DataSession session = createSession();
         ImportField cashRegisterField = new ImportField(retailLM.getLPByName("numberCashRegister"));
         ImportField zReportNumberField = new ImportField(retailLM.getLPByName("numberZReport"));
 
@@ -443,20 +443,20 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         new IntegrationService(session, new ImportTable(paymentImportFields, dataPayment), Arrays.asList(paymentKey, paymentTypeKey, billKey),
                 paymentProperties).synchronize(true);
 
-        return session.apply(getBL());
+        return session.apply(this);
     }
 
     @Override
     public void succeedTransaction(Integer transactionID) throws SQLException {
-        DataSession session = getBL().createSession();
+        DataSession session = createSession();
         retailLM.getLPByName("succeededMachineryPriceTransaction").execute(true, session,
                 session.getDataObject(transactionID, retailLM.getClassByName("machineryPriceTransaction").getType()));
-        session.apply(getBL());
+        session.apply(this);
     }
 
     @Override
     public void errorTransactionReport(Integer transactionID, Exception e) throws RemoteException, SQLException {
-        DataSession session = getBL().createSession();
+        DataSession session = createSession();
         DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("machineryPriceTransactionError"), session.modifier);
         retailLM.getLPByName("machineryPriceTransactionMachineryPriceTransactionError").execute(transactionID, session, errorObject);
         retailLM.getLPByName("dataMachineryPriceTransactionError").execute(e.toString(), session, errorObject);
@@ -465,27 +465,31 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         e.printStackTrace(new PrintStream(os));
         retailLM.getLPByName("errorTraceMachineryPriceTransactionError").execute(os.toString(), session, errorObject);
 
-        session.apply(getBL());
+        session.apply(this);
     }
 
     @Override
-    public void errorEquipmentServerReport(String equipmentServer, String message) throws RemoteException, SQLException {
-        DataSession session = getBL().createSession();
+    public void errorEquipmentServerReport(String equipmentServer, Throwable exception) throws RemoteException, SQLException {
+        DataSession session = createSession();
         DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerError"), session.modifier);
         Object equipmentServerObject = retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
         retailLM.getLPByName("equipmentServerEquipmentServerError").execute(equipmentServerObject, session, errorObject);
-        retailLM.getLPByName("dataEquipmentServerError").execute(message, session, errorObject);
+        retailLM.getLPByName("dataEquipmentServerError").execute(exception.toString(), session, errorObject);
+        OutputStream os = new ByteArrayOutputStream();
+        exception.printStackTrace(new PrintStream(os));
+        retailLM.getLPByName("erTraceEquipmentServerError").execute(os.toString(), session, errorObject);
+
         retailLM.getLPByName("dateEquipmentServerError").execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
 
-        session.apply(getBL());
+        session.apply(this);
     }
 
     @Override
-    public Integer readEquipmentServerDelay(String equipmentServer) throws SQLException {
-        DataSession session = getBL().createSession();
+    public EquipmentServerSettings readEquipmentServerDelay(String equipmentServer) throws SQLException {
+        DataSession session = createSession();
         Integer equipmentServerID = (Integer) retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
         Integer delay = (Integer) retailLM.getLPByName("delayEquipmentServer").read(session, session.modifier, new DataObject(equipmentServerID, (ConcreteClass) retailLM.getClassByName("equipmentServer")));
-        return delay;
+        return new EquipmentServerSettings(delay);
     }
 
     private String dateTimeCode(Timestamp timeStamp) {
