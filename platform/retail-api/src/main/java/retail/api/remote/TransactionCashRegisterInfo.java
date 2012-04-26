@@ -1,6 +1,12 @@
 package retail.api.remote;
 
+import retail.api.remote.CashRegisterInfo;
+import retail.api.remote.ItemInfo;
+import retail.api.remote.TransactionInfo;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 public class TransactionCashRegisterInfo extends TransactionInfo<CashRegisterInfo> {

@@ -236,16 +236,21 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         Map<Object, KeyExpr> keys = isGroupMachinery.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
+        query.properties.put("roundSalesGroupMachinery", retailLM.getLPByName("roundSalesGroupMachinery").getExpr(key));
         query.and(retailLM.getLPByName("sidEquipmentServerGroupMachinery").getExpr(key).compare(new DataObject(equServerID, StringClass.get(20)), Compare.EQUALS));
 
         OrderedMap<Map<Object, DataObject>, Map<Object, ObjectValue>> result = query.executeClasses(session);
-        List<Object> groupMachineryObjects = new ArrayList<Object>();
+        List<Object[]> groupMachineryObjects = new ArrayList<Object[]>();
         for (Map.Entry<Map<Object, DataObject>, Map<Object, ObjectValue>> entry : result.entrySet()) {
             DataObject groupMachineryObject = entry.getKey().values().iterator().next();
-            groupMachineryObjects.add(groupMachineryObject);
+            Integer roundSalesGroupMachinery = (Integer) entry.getValue().get("roundSalesGroupMachinery").getValue();
+            groupMachineryObjects.add(new Object[] {groupMachineryObject, roundSalesGroupMachinery});
         }
 
-        for (Object groupMachinery : groupMachineryObjects) {
+        for (Object[] groupMachinery : groupMachineryObjects) {
+            DataObject groupMachineryObject = (DataObject) groupMachinery[0];
+            Integer roundSalesGroupMachinery = (Integer) groupMachinery[1];
+
             LP isCashRegister = LM.is(retailLM.getClassByName("cashRegister"));
 
             Map<Object, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
@@ -260,7 +265,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             cashRegisterQuery.properties.put("handlerCashRegisterModelCashRegister", retailLM.getLPByName("handlerCashRegisterModelCashRegister").getExpr(cashRegisterKey));
 
             cashRegisterQuery.and(isCashRegister.property.getExpr(cashRegisterKeys).getWhere());
-            cashRegisterQuery.and(retailLM.getLPByName("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare(((DataObject) groupMachinery).getExpr(), Compare.EQUALS));
+            cashRegisterQuery.and(retailLM.getLPByName("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare((groupMachineryObject).getExpr(), Compare.EQUALS));
 
             OrderedMap<Map<Object, Object>, Map<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
 
@@ -272,7 +277,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 String numberCashRegister = (String) values.getValue().get("numberCashRegister");
                 String nameModel = (String) values.getValue().get("nameCashRegisterModelCashRegister");
                 String handlerModel = (String) values.getValue().get("handlerCashRegisterModelCashRegister");
-                cashRegisterInfoList.add(new CashRegisterInfo(nppMachinery, numberCashRegister, nameModel, handlerModel, portMachinery, directoryCashRegister));
+                cashRegisterInfoList.add(new CashRegisterInfo(nppMachinery, numberCashRegister, nameModel, handlerModel, portMachinery, directoryCashRegister, roundSalesGroupMachinery));
             }
         }
         return cashRegisterInfoList;

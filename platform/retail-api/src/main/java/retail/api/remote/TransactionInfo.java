@@ -1,6 +1,7 @@
 package retail.api.remote;
 
 import java.io.IOException;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 

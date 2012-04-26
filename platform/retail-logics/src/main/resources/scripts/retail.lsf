@@ -3470,6 +3470,7 @@ CLASS groupCheck 'Группы прайс чекеров' : groupMachinery;
 
 nameGroupMachinery 'Наименование группы' = DATA STRING[200] (groupMachinery) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 transferGroupMachinery 'Передать товар на группу оборудования' = DATA BOOLEAN (groupMachinery) IN baseGroup;
+roundSalesGroupMachinery 'Округление цен до' = DATA INTEGER (groupMachinery) IN baseGroup;
 
 cellGroupScales 'Помещать на ценники номера ячеек с этой группы' = DATA BOOLEAN (groupScales) IN baseGroup;
 sidSectionGroupScales 'Код отдела в Set Retail' = DATA INTEGER (groupScales) IN baseGroup;
@@ -3607,6 +3608,7 @@ FORM check 'Прайс чекер'
 FORM groupScales 'Группа весов'
     OBJECTS grs=groupScales FIXED PANEL
     PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                    roundSalesGroupMachinery,
                     transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales,
                     filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grs)
 
@@ -3620,7 +3622,7 @@ FORM groupScales 'Группа весов'
 
 FORM groupsScales 'Группы весов'
     OBJECTS grs=groupScales
-    PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+    PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, roundSalesGroupMachinery,
                          transferGroupMachinery, filterItemsGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
     PROPERTIES(grs) ADDFORM, EDITFORM, delete
 
@@ -3633,7 +3635,8 @@ FORM groupsScales 'Группы весов'
 FORM groupCashRegister 'Группа касс'
 
     OBJECTS grc=groupCashRegister FIXED PANEL
-    PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery,
+    PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                    roundSalesGroupMachinery, transferGroupMachinery,
                     filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grc)
 
     OBJECTS c=cashRegister
@@ -3649,7 +3652,8 @@ FORM groupCashRegister 'Группа касс'
 
 FORM groupsCashRegister 'Группы касс'
     OBJECTS grc=groupCashRegister, c=cashRegister
-    PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery, filterItemsGroupMachinery
+    PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                     roundSalesGroupMachinery, transferGroupMachinery, filterItemsGroupMachinery
     PROPERTIES(grc)  ADDFORM, EDITFORM, delete
 
     PROPERTIES(c) READONLY nppMachinery, descriptionMachinery, portMachinery,
@@ -3660,7 +3664,8 @@ FORM groupsCashRegister 'Группы касс'
 
 FORM groupCheck 'Группа прайс чекеров'
     OBJECTS grch=groupCheck FIXED PANEL
-    PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery,
+    PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                     roundSalesGroupMachinery, transferGroupMachinery,
                      filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grch)
 
     OBJECTS ch=check
@@ -3672,7 +3677,8 @@ FORM groupCheck 'Группа прайс чекеров'
 
 FORM groupsCheck 'Группы прайс чекеров'
     OBJECTS grch=groupCheck
-    PROPERTIES(grch) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, transferGroupMachinery, filterItemsGroupMachinery
+    PROPERTIES(grch) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                              roundSalesGroupMachinery, transferGroupMachinery, filterItemsGroupMachinery
     PROPERTIES(grch)          ADDFORM, EDITFORM, delete
 
     OBJECTS ch=check

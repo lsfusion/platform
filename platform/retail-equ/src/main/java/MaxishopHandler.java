@@ -96,14 +96,16 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
     }
 
     @Override
-    public SalesBatch readSalesInfo(List<CashRegisterInfo> cashRegisterInfoList) {
-
+    public SalesBatch readSalesInfo(List<CashRegisterInfo> cashRegisterInfoList) throws IOException, ParseException {
         Map<String, String> cashRegisterDirectories = new HashMap<String, String>();
+        Map<String, Integer> cashRegisterRoundSales = new HashMap<String, Integer>();
         for (CashRegisterInfo cashRegister : cashRegisterInfoList) {
             if ((cashRegister.directory != null) && (!cashRegisterDirectories.containsValue(cashRegister.directory)))
                 cashRegisterDirectories.put(cashRegister.cashRegisterNumber, cashRegister.directory);
             if ((cashRegister.port != null) && (!cashRegisterDirectories.containsValue(cashRegister.port)))
                 cashRegisterDirectories.put(cashRegister.cashRegisterNumber, cashRegister.port);
+            if(cashRegister.roundSales!=null)
+                cashRegisterRoundSales.put(cashRegister.cashRegisterNumber, cashRegister.roundSales);
         }
         List<SalesInfo> salesInfoList = new ArrayList<SalesInfo>();
         List<String> readFiles = new ArrayList<String>();
@@ -133,9 +135,9 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
                                     Double quantityBillDetail = new Double(new String(importFile.getField("JFQUANT").getBytes(), "Cp1251").trim());
                                     Double priceBillDetail = new Double(new String(importFile.getField("JFPRICE").getBytes(), "Cp1251").trim());
                                     Double discountSumBillDetail = new Double(new String(importFile.getField("JFDISCSUM").getBytes(), "Cp1251").trim());
-                                    Double sumBillDetail = round10(priceBillDetail * quantityBillDetail - discountSumBillDetail);
+                                    Double sumBillDetail = roundSales(priceBillDetail * quantityBillDetail - discountSumBillDetail, cashRegisterRoundSales.get(entry.getKey()));
 
-                                    if (oldBillNumber.equals(billNumber)) {
+                                    if (!oldBillNumber.equals(billNumber)) {
                                         numberBillDetail = 1;
                                         oldBillNumber = billNumber;
                                     }
@@ -148,13 +150,7 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
                         }
                 }
             } catch (xBaseJException e) {
-                e.printStackTrace();
-            } catch (ParseException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                throw new RuntimeException(e.toString());
             }
         }
 
@@ -177,7 +173,8 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
         }
     }
 
-    private Double round10(Double value) {
-        return Double.valueOf(Math.round(value / 10) * 10);
+    private Double roundSales(Double value, Integer roundSales) {
+        Integer round = roundSales!=null ? roundSales : 50;
+        return Double.valueOf(Math.round(value / round) * round);
     }
 }
