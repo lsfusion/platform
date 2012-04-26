@@ -465,10 +465,10 @@
 					<font size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["ПОСТАВЩИК И ЕГО АДРЕС: "+($F{retail_fullNameCompanySpecification}!=null?$F{retail_fullNameCompanySpecification}:"")+" "+($F{retail_addressCompanySpecification}!=null?$F{retail_addressCompanySpecification}:"")+
-", р/сч "+($F{retail_dataAccountCompanySpecification}!=null?$F{retail_dataAccountCompanySpecification}:"")+($F{retail_CBUBankAccountCompanySpecification}!=null?(" в ЦБУ № "+$F{retail_CBUBankAccountCompanySpecification}):"")+
+", р/сч "+($F{retail_dataAccountCompanySpecification}!=null?$F{retail_dataAccountCompanySpecification}:"")+($F{retail_CBUBankAccountCompanySpecification}!=null?(" в ЦБУ "+$F{retail_CBUBankAccountCompanySpecification}):"")+
 " "+($F{retail_departmentBankAccountCompanySpecification}!=null?$F{retail_departmentBankAccountCompanySpecification}:"")+" "+($F{retail_nameBankAccountCompanySpecification}!=null?$F{retail_nameBankAccountCompanySpecification}:"")+
-", адрес банка "+($F{retail_addressBankAccountCompanySpecification}!=null?$F{retail_addressBankAccountCompanySpecification}:"")+", код "+($F{retail_MFOBankAccountCompanySpecification}!=null?$F{retail_MFOBankAccountCompanySpecification}:"")+
-", УНП "+($F{retail_UNPCompanySpecification}!=null?$F{retail_UNPCompanySpecification}:"")+
+($F{retail_addressBankAccountCompanySpecification}!=null?(", адрес банка "+$F{retail_addressBankAccountCompanySpecification}):"")+($F{retail_MFOBankAccountCompanySpecification}!=null?(", код "+$F{retail_MFOBankAccountCompanySpecification}):"")+
+($F{retail_UNPCompanySpecification}!=null?(", УНП "+$F{retail_UNPCompanySpecification}):"")+
 ($F{retail_phoneCompanySpecification}!=null?(", тел/факс.: "+$F{retail_phoneCompanySpecification}):"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -483,10 +483,10 @@
 					<font size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["ПЛАТЕЛЬЩИК И ЕГО АДРЕС: "+($F{retail_fullNameCustomerSpecification}!=null?$F{retail_fullNameCustomerSpecification}:"")+" "+($F{retail_addressCustomerSpecification}!=null?$F{retail_addressCustomerSpecification}:"")+
-", р/сч "+($F{retail_dataAccountCustomerSpecification}!=null?$F{retail_dataAccountCustomerSpecification}:"")+($F{retail_CBUBankAccountCustomerSpecification}!=null?(" в ЦБУ № "+$F{retail_CBUBankAccountCustomerSpecification}):"")+
+", р/сч "+($F{retail_dataAccountCustomerSpecification}!=null?$F{retail_dataAccountCustomerSpecification}:"")+($F{retail_CBUBankAccountCustomerSpecification}!=null?(" в ЦБУ "+$F{retail_CBUBankAccountCustomerSpecification}):"")+
 " "+($F{retail_departmentBankAccountCustomerSpecification}!=null?$F{retail_departmentBankAccountCustomerSpecification}:"")+" "+($F{retail_nameBankAccountCustomerSpecification}!=null?$F{retail_nameBankAccountCustomerSpecification}:"")+
-", адрес банка "+($F{retail_addressBankAccountCustomerSpecification}!=null?$F{retail_addressBankAccountCustomerSpecification}:"")+", код "+($F{retail_MFOBankAccountCustomerSpecification}!=null?$F{retail_MFOBankAccountCustomerSpecification}:"")+
-", УНП "+($F{retail_UNPCustomerSpecification}!=null?$F{retail_UNPCustomerSpecification}:"")+
+($F{retail_addressBankAccountCustomerSpecification}!=null?(", адрес банка "+$F{retail_addressBankAccountCustomerSpecification}):"")+", код "+($F{retail_MFOBankAccountCustomerSpecification}!=null?$F{retail_MFOBankAccountCustomerSpecification}:"")+
+($F{retail_UNPCustomerSpecification}!=null?(", УНП "+$F{retail_UNPCustomerSpecification}):"")+
 ($F{retail_phoneCustomerSpecification}!=null?(", тел/факс.: "+$F{retail_phoneCustomerSpecification}):"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -514,7 +514,7 @@
 				<textElement>
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["ОПЛАТИТЬ ДО "+ platform.base.BaseUtils.formatRussian($F{retail_dateToSpecification})+" ГОДА."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["ОПЛАТИТЬ ДО "+ ($F{retail_dateToSpecification}!=null?(platform.base.BaseUtils.formatRussian($F{retail_dateToSpecification})+" ГОДА."):"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="10" y="127" width="555" height="12"/>
@@ -540,7 +540,7 @@
 				<textElement>
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Цель приобретения товара: "+ $F{retail_nameObjectiveAcquiringSpecification}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Цель приобретения товара: "+ ($F{retail_nameObjectiveAcquiringSpecification}!=null?$F{retail_nameObjectiveAcquiringSpecification}:"")]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
