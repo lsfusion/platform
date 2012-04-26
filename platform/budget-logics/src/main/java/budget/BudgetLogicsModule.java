@@ -448,7 +448,7 @@ public class BudgetLogicsModule extends LogicsModule {
         totalMisOper = addSGProp(outGroup, "Всего по опер. расходу ком.", misOperVal, opDep, 1, transactionMonth, 1, transactionYear, 1, outCur, 1);
 
         //LP rateBC = addJProp(nearestExchangeRate, curCurrency, 1, 2, 3, baseCurrency, addJProp(dateByMY, 1, 2), 1, 2);
-        //LP salaryInBC = addJProp("К выплате в БВ", multiplyDouble2, roundSalary, 1, 2, 3, rateBC, 1, 2, 3);
+        //LP salaryInBC = addJProp("К выплате в БВ", multiply, roundSalary, 1, 2, 3, rateBC, 1, 2, 3);
         //personDepartSumInBC = addSGProp("Всего к выплате в БВ", salaryInBC, personDepartment, 3, 1, 2);
 
         // Обороты в базовой валюте
@@ -486,12 +486,12 @@ public class BudgetLogicsModule extends LogicsModule {
         nameCurInvestment = addJProp(baseGroup, "nameCurInvestment", "Валюта", baseLM.name, curInvestment, 1);
 
         exchangeBaseRateInvestment = addJProp("exchangeBaseRateInvestment", "Курс", exchangeRateCurrencyTransaction, curInvestment, 1, 1);
-        sumBaseInvestment = addJProp("sumBaseInvestment", "Сумма (БВ)", baseLM.round0, addJProp(multiplyDouble2, sumInvestment, 1, exchangeBaseRateInvestment, 1), 1);
+        sumBaseInvestment = addJProp("sumBaseInvestment", "Сумма (БВ)", addJProp(baseLM.round, 1, addCProp(IntegerClass.instance, 0)), addJProp(multiplyDouble2, sumInvestment, 1, exchangeBaseRateInvestment, 1), 1);
 
         sumInvestmentInvestor = addSGProp("sumInvestmentInvestor", "Проинвестировано", sumBaseInvestment, investorInvestment, 1);
         investmentTotal = addSGProp("investmentTotal", "Всего проинвестировано", sumBaseInvestment);
 
-        shareInvestor = addJProp("shareInvestor", "Доля (%)", baseLM.share2, sumInvestmentInvestor, 1, investmentTotal);
+        shareInvestor = addJProp("shareInvestor", "Доля (%)", baseLM.share, sumInvestmentInvestor, 1, investmentTotal);
 
         initNavigators();
     }

@@ -15,6 +15,10 @@ castToString255 = FORMULA STRING[255] 'CAST($1 AS character(255))';
 castToString3 = FORMULA STRING[3] 'CAST($1 AS character(3))';
 isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE 0 END';
 
+round0 (number) = round(number, 0);
+roundMinus1 (number) = round(number, -1);
+round3 (number) = round(number, 3);
+
 CLASS doubleNamed 'Объект с кратким наименованием' : named;
 
 shortName 'Краткое наименование' = DATA STRING[5] (doubleNamed) IN baseGroup;
@@ -5456,7 +5460,7 @@ curDataRetailRangeShipmentDetail 'Текущий НДС розничный,%' (s
 //oldPriceShipmentDetail 'Старая цена поставщика'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 //oldPriceShipmentDetail(shipmentDetail) <- priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail),
 //    itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail),
-//    subtractDate2(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
+//    subtractDate(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
 
 curImporterPriceShipmentDetail 'Текущая цена изготовителя/импортера' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
 curSupplierPriceShipmentDetail 'Текущая цена поставщика' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
@@ -7258,13 +7262,13 @@ calcQuantitySoldInterval = ACTION (dateFrom, dateTo) {
                    (1 IF ((balance(item, departmentStore) > 0) OR (quantityItemDepartmentStoreDate(item, departmentStore, dateCur()) > 0)));
         SET balance(item, departmentStore) <- balance(item, departmentStore) (+)
                    signedQuantityItemDepartmentStoreDate(item, departmentStore, dateCur());
-        SET dateCur() <- addDate2(dateCur(), 1);
+        SET dateCur() <- sumDate(dateCur(), 1);
     }
 
     SET averageSoldItemDepartmentStore(item, departmentStore) <- quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) / days(item, departmentStore);
 }
 calcCurrentQuantitySoldInterval 'Пересчитать однодневные продажи' = ACTION () NEWSESSION AUTOAPPLY {
-    EXEC calcQuantitySoldInterval(subtractDate2(currentDate(), itemDepartmentStoreAverageInterval()), subtractDate2(currentDate(), 1));
+    EXEC calcQuantitySoldInterval(subtractDate(currentDate(), itemDepartmentStoreAverageInterval()), subtractDate(currentDate(), 1));
 }
 
 //--------------------------------------Заказ------------------------------------------------------------------//
@@ -7306,7 +7310,7 @@ nameSupplierOrderSupplier 'Поставщик заказа' (orderSupplier) = na
 curDateOrderSupplier 'Дата заказа' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
 curDateOrderSupplier (orderSupplier) <- currentDate() ON ASSIGN departmentStoreOrderSupplier(orderSupplier);
 dateOrderSupplier 'Дата поставки' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
-dateOrderSupplier (orderSupplier) <- addDate2(currentDate(),1) ON ASSIGN departmentStoreOrderSupplier(orderSupplier);
+dateOrderSupplier (orderSupplier) <- sumDate(currentDate(),1) ON ASSIGN departmentStoreOrderSupplier(orderSupplier);
 
 preliminaryOrderOrderSupplier 'Предварительный заказ заказа' = DATA preliminaryOrder (orderSupplier);
 
@@ -7441,7 +7445,7 @@ minDateSupplyOrderSupplier (supplier, departmentStore, date) = GROUP MIN dateSup
                                                                          BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder), date;
 
 nextDateOrderSupplier 'Дата следующей поставки' (orderSupplier) = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
-nextDateOrderSupplier (orderSupplier) <- [UNION OVERRIDE addDate2(dateOrderSupplier(orderSupplier),
+nextDateOrderSupplier (orderSupplier) <- [UNION OVERRIDE sumDate(dateOrderSupplier(orderSupplier),
                                                                   periodicitySupply(supplierOrderSupplier(orderSupplier))),
                                                          minDateSupplyOrderSupplier(
                                                                   supplierOrderSupplier(orderSupplier),
@@ -7520,7 +7524,7 @@ controlSupplierDepartmentStoreShipment(shipment) <- controlSupplierDepartmentSto
 CONSTRAINT controlSupplierDepartmentStoreShipment (shipment) AND percentOrderedShipmentDetailsShipment(shipment)<surePercentSupplierShipment (shipment)
             MESSAGE 'Процент заказанных позиций для поставки меньше допустимого для данного поставщика';
 
-isAvailableOrderShipment 'Заявка допустимая для заказа' (shipment, orderSupplier) = dateShipment (shipment) <= addDate2(dateOrderSupplier (orderSupplier), UNION OVERRIDE 0 IF shipment IS shipment, afterDaysSupplier (supplierShipment(shipment)));
+isAvailableOrderShipment 'Заявка допустимая для заказа' (shipment, orderSupplier) = dateShipment (shipment) <= sumDate(dateOrderSupplier (orderSupplier), UNION OVERRIDE 0 IF shipment IS shipment, afterDaysSupplier (supplierShipment(shipment)));
 
 @metaCodePostedObject (orderSupplier);
 
@@ -7613,7 +7617,7 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
                 SET tmpDate() <- startDateGenTimeTable(tmpGTT());
                 // ищем первую дату начиная со стартовой с нужным днем недели
                 WHILE DOWInDate(tmpDate()) != dow AS DOW DO {
-                    SET tmpDate() <- addDate2(tmpDate(), 1);
+                    SET tmpDate() <- sumDate(tmpDate(), 1);
                 };
 
                 // итерируемся по всем датам через период * 7 дней
@@ -7622,11 +7626,11 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
                     FOR o == addedObject() DO {
                         SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
                         SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
-                        SET dateOrderPreliminaryOrder(o) <- subtractDate2(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
+                        SET dateOrderPreliminaryOrder(o) <- subtractDate(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
                         SET dateSupplyPreliminaryOrder(o) <- tmpDate();
                         SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
                     };
-                    SET tmpDate() <- addDate2(tmpDate(), periodGenTimeTable(tmpGTT()) * 7);
+                    SET tmpDate() <- sumDate(tmpDate(), periodGenTimeTable(tmpGTT()) * 7);
                 };
             };
         };
@@ -7641,12 +7645,12 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
                     FOR o == addedObject() DO {
                         SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
                         SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
-                        SET dateOrderPreliminaryOrder(o) <- subtractDate2(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
+                        SET dateOrderPreliminaryOrder(o) <- subtractDate(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
                         SET dateSupplyPreliminaryOrder(o) <- tmpDate();
                         SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
                     };
                 };
-                SET tmpDate() <- addDate2(tmpDate(), dayAfterGenTimeTable(tmpGTT()));
+                SET tmpDate() <- sumDate(tmpDate(), dayAfterGenTimeTable(tmpGTT()));
             };
         };
 
@@ -7666,17 +7670,17 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
                         IF UNION OVERRIDE numberDOWInDate(tmpDateS()) == 0, numberDOWInDate(tmpDateS()) == 6 THEN {
                             IF numberDOW(transferDayGenTimeTable(tmpGTT())) == 1 THEN {
                                 // если нужно переносить на понедельник, то добавляем
-                                WHILE numberDOWInDate(tmpDateS()) != 1 DO SET tmpDateS() <- addDate2(tmpDateS(), 1);
+                                WHILE numberDOWInDate(tmpDateS()) != 1 DO SET tmpDateS() <- sumDate(tmpDateS(), 1);
                             } ELSE {
                                 // если нужно переносить на пятницу, то отнимаем
-                                WHILE numberDOWInDate(tmpDateS()) != 5 DO SET tmpDateS() <- subtractDate2(tmpDateS(), 1);
+                                WHILE numberDOWInDate(tmpDateS()) != 5 DO SET tmpDateS() <- subtractDate(tmpDateS(), 1);
                             };
                         };
                         SET dateSupplyPreliminaryOrder(o) <- tmpDateS();
-                        SET dateOrderPreliminaryOrder(o) <- subtractDate2(tmpDateS(), dayBeforeGenTimeTable(tmpGTT()));
+                        SET dateOrderPreliminaryOrder(o) <- subtractDate(tmpDateS(), dayBeforeGenTimeTable(tmpGTT()));
                     };
                 };
-                SET tmpDate() <- addDate2(tmpDate(), 1);
+                SET tmpDate() <- sumDate(tmpDate(), 1);
             };
         };
 
@@ -7690,12 +7694,12 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
                     FOR o == addedObject() DO {
                         SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
                         SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
-                        SET dateOrderPreliminaryOrder(o) <- subtractDate2(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
+                        SET dateOrderPreliminaryOrder(o) <- subtractDate(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
                         SET dateSupplyPreliminaryOrder(o) <- tmpDate();
                         SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
                     };
                 };
-                SET tmpDate() <- addDate2(tmpDate(), 1);
+                SET tmpDate() <- sumDate(tmpDate(), 1);
             };
         };
 
@@ -11798,13 +11802,13 @@ dateLastMovedItem 'Дата последнего движения товара' 
     BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger) PERSISTENT;
 
 dateLastMovedItemOver(item, departmentStore, date) =
-    (dateLastMovedItem(item, departmentStore) AND (date AS DATETIME)) >= addDate2(dateInTime(date), -countDayMovedItemOver(departmentStore));
+    (dateLastMovedItem(item, departmentStore) AND (date AS DATETIME)) >= sumDate(dateInTime(date), -countDayMovedItemOver(departmentStore));
 
 dateLastMovedUnionBalanceItem(item, departmentStore, date) =
     TRUE IF balanceAItemLedgerDateTime(item, departmentStore, date) OR TRUE IF dateLastMovedItemOver(item, departmentStore, date);
 
 curDateLastMovedItemOver(item, departmentStore) =
-    dateLastMovedItem(item, departmentStore) >= addDate2(currentDate(), -countDayMovedItemOver(departmentStore));
+    dateLastMovedItem(item, departmentStore) >= sumDate(currentDate(), -countDayMovedItemOver(departmentStore));
 
 curDateLastMovedUnionBalanceItem(item, departmentStore) =
     TRUE IF currentBalanceItemLedger(item, departmentStore) OR TRUE IF curDateLastMovedItemOver(item, departmentStore);

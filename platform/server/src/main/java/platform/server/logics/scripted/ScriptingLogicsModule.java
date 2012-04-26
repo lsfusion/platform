@@ -574,13 +574,13 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private LP<?> getArithProp(String op) {
         if (op.equals("+")) {
-            return baseLM.sumDouble2;
+            return baseLM.sum;
         } else if (op.equals("-")) {
-            return baseLM.subtractDouble2;
+            return baseLM.subtract;
         } else if (op.equals("*")) {
-            return baseLM.multiplyDouble2;
+            return baseLM.multiply;
         } else if (op.equals("/")) {
-            return baseLM.divideDouble2;
+            return baseLM.divide;
         }
         assert false;
         return null;
@@ -779,7 +779,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedUnaryMinusProp(LPWithParams prop) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(baseLM.minusDouble, asList(prop));
+        return addScriptedJProp(baseLM.minus, asList(prop));
     }
 
     private List<Integer> mergeAllParams(List<LPWithParams> lpList) {

@@ -3,6 +3,9 @@ MODULE RB;
 IMPORT BaseLogicsModule;
 IMPORT RomanLogicsModule;
 
+round0 (number) = round(number, 0);
+roundMinus1 (number) = round(number, -1);
+
 META metaCodeSingleAggregation (primObject, aggrObject, aggrProperty)
 
     primObject###aggrObject = DATA primObject (aggrObject);

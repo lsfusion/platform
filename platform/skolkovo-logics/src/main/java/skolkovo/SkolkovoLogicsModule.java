@@ -1578,11 +1578,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         idGroup.add(baseLM.objectValue);
 
-        previousDate = addJProp("previousDate", "Вчерашняя дата", baseLM.subtractDate2, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1));
+        previousDate = addJProp("previousDate", "Вчерашняя дата", baseLM.subtractDate, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1));
         monthInPreviousDate = addJProp("monthInPreviousDate", "Вчерашний месяц", baseLM.numberMonthInDate, previousDate);
         yearInPreviousDate = addJProp("yearInPreviousDate", "Вчерашний год", baseLM.yearInDate, previousDate);
 
-        // monthInYeasterdayDate = addJProp("monthInYeasterdayDate", "Вчерашний месяц", baseLM.numberMonthInDate, addJProp(baseLM.addDate2, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1)));
+        // monthInYeasterdayDate = addJProp("monthInYeasterdayDate", "Вчерашний месяц", baseLM.numberMonthInDate, addJProp(baseLM.sumDate, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1)));
         isNewMonth = addJProp("isNewMonth", "Начало месяца", baseLM.diff2, baseLM.currentMonth, monthInPreviousDate);
 
         nameNative = addDProp(recognizeGroup, "nameNative", "Имя", InsensitiveStringClass.get(2000), multiLanguageNamed);
@@ -2747,8 +2747,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         businessExpertVote = addDProp(baseGroup, "businessExpertVote", "Выбран как бизнес", LogicalClass.instance, expert, voteR2);
 
         dateStartVote = addJProp(baseGroup, "dateStartVote", true, "Дата начала", baseLM.and1, baseLM.date, 1, is(vote), 1);
-//        dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", addDate2, dateStartVote, 1, requiredPeriod);
-        aggrDateEndVote = addJProp(baseGroup, "aggrDateEndVote", "Дата окончания (агр.)", baseLM.addDate2, dateStartVote, 1, requiredPeriod);
+//        dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", sumDate, dateStartVote, 1, requiredPeriod);
+        aggrDateEndVote = addJProp(baseGroup, "aggrDateEndVote", "Дата окончания (агр.)", baseLM.sumDate, dateStartVote, 1, requiredPeriod);
         dateEndVote = addDProp(baseGroup, "dateEndVote", "Дата окончания", DateClass.instance, vote);
         dateEndVote.setDerivedValueForcedChange(aggrDateEndVote, 1, dateStartVote, 1);
 
@@ -2887,7 +2887,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         percentNeeded = addDProp(baseGroup, "percentNeeded", "Процент для положительного решения", DoubleClass.instance);
         percentNeededVote = addDProp(baseGroup, "percentNeededVote", "Процент голосования", DoubleClass.instance, voteR2);
 
-        quantityNeededVote = addJProp(baseGroup, "quantityNeededVote", "Треб. количество голосов", baseLM.percent2, quantityDoneVote, 1, percentNeededVote, 1);
+        quantityNeededVote = addJProp(baseGroup, "quantityNeededVote", "Треб. количество голосов", baseLM.percent, quantityDoneVote, 1, percentNeededVote, 1);
 
         quantityDoneNewVote = addSGProp(voteResultGroup, "quantityDoneNewVote", true, "Проголосовало (нов.)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneNewExpertVote, 1, 2), 2); // сколько новых экспертов высказалось
@@ -2937,16 +2937,17 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), enoughDocumentsCorExpertVote, 1, 2), 2); // сколько экспертов высказалось
         quantityEnoughDocumentsVote.setFixedCharWidth(3);
 
+        LP multiplyBy2 = addSFProp("((prm1)*2)", 1);
         acceptedInClusterVote = addJProp(voteResultGroup, "acceptedInClusterVote", "Соотв-ие кластеру", baseLM.greater2,
-                addJProp(baseLM.multiplyIntegerBy2, quantityInClusterVote, 1), 1,
+                addJProp(multiplyBy2, quantityInClusterVote, 1), 1,
                 quantityDoneVote, 1);
 
         acceptedInnovativeVote = addJProp(voteResultGroup, "acceptedInnovativeVote", "Инновац.", baseLM.greater2,
-                addJProp(baseLM.multiplyIntegerBy2, quantityInnovativeVote, 1), 1,
+                addJProp(multiplyBy2, quantityInnovativeVote, 1), 1,
                 quantityDoneVote, 1);
 
         acceptedForeignVote = addJProp(voteResultGroup, "acceptedForeignVote", "Иностр. специалист", baseLM.greater2,
-                addJProp(baseLM.multiplyIntegerBy2, quantityForeignVote, 1), 1,
+                addJProp(multiplyBy2, quantityForeignVote, 1), 1,
                 quantityDoneVote, 1);
 
         acceptedCompetitiveAdvantagesVote = addJProp(voteResultGroup, "acceptedCompetitiveAdvantagesVote", "Конкур. преим.", baseLM.groeq2,
@@ -2965,7 +2966,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 quantityInternationalExperienceVote, 1, quantityNeededVote, 1);
 
         acceptedEnoughDocumentsVote = addJProp(voteResultGroup, "acceptedEnoughDocumentsVote", "Достаточно голосов", baseLM.groeq2,
-                addJProp(baseLM.multiplyIntegerBy2, quantityEnoughDocumentsVote, 1), 1,
+                addJProp(multiplyBy2, quantityEnoughDocumentsVote, 1), 1,
                 quantityDoneVote, 1);
 
         acceptedVoteR1 = addJProp("acceptedVoteR1", true, "Положительно", and(false, false),
@@ -3070,8 +3071,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addMGProp(addJProp(and(false), numberCluster, 2, inProjectCluster, 1, 2), 1), 1);
 
         lastClusterProject = addJProp("lastClusterProject", true, "Последний кластер (ИД)", clusterNumber,
-                addJProp(baseLM.minusInteger,
-                        addMGProp(addJProp(and(false), addJProp(baseLM.minusInteger, numberCluster, 1), 2, inProjectCluster, 1, 2), 1), 1), 1);
+                addJProp(baseLM.minus,
+                        addMGProp(addJProp(and(false), addJProp(baseLM.minus, numberCluster, 1), 2, inProjectCluster, 1, 2), 1), 1), 1);
 
         finalClusterProject = addSUProp("finalClusterProject", true, "Тек. кластер (ИД)", Union.OVERRIDE, lastClusterProject, currentClusterProject, clusterAcceptedProject);
         nameNativeFinalClusterProject = addJProp(projectInformationGroup, "nameNativeFinalClusterProject", "Тек. кластер", nameNative, finalClusterProject, 1);
@@ -3222,7 +3223,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         dateFormalControl = addJProp("dateFormalControl", "Дата экспертизы", baseLM.dateInTime, dateTimeFormalControl, 1);
         resultNoticedFormalControl = addDProp("resultNoticedFormalControl", "Отослано уведомление", LogicalClass.instance, formalControl);
         dateResultNoticedFormalControl = addDProp("dateResultNoticedFormalControl", "Дата отсылки уведомления", DateClass.instance, formalControl);
-        overdueDateFormalControl = addJProp("overdueDateFormalControl", "Дата просрочки формальной экспертизы", baseLM.addDate2, addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateResultNoticedFormalControl, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate2, overduePeriod, addCProp(IntegerClass.instance, 1)));
+        overdueDateFormalControl = addJProp("overdueDateFormalControl", "Дата просрочки формальной экспертизы", baseLM.sumDate, addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateResultNoticedFormalControl, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         addNotEnoughDocumentsFCResult = addJProp(formalControlResultGroup, true, "addNotEnoughDocumentsFCResult", "Неполный перечень документов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "notEnoughDocuments"));
         addNoListOfExpertsFCResult = addJProp(formalControlResultGroup, true, "Отсутствует перечень экспертов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "noListOfExperts"));
@@ -3269,9 +3270,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         LCMinDateProjectActionProject = addMGProp("LCMinDateProjectActionProject", true, "Дата первой отсылки ЮП", true, dateResultNoticedLegalCheck, projectActionLegalCheck, 1, projectLegalCheck, 1);
         minDateLegalCheck = addJProp("minDateLegalCheck", "Дата отсылки", LCMinDateProjectActionProject, projectActionLegalCheck, 1, projectLegalCheck, 1);
-        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.addDate2,
+        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.sumDate,
                 addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, minDateLegalCheck, 1, addCProp(IntegerClass.instance, 1)), 1,
-                addJProp(baseLM.subtractDate2, overduePeriod, addCProp(IntegerClass.instance, 1)));
+                addJProp(baseLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         userLegalCheck = addDCProp("userLegalCheck", "Пользователь ЮП (ИД)", true, baseLM.currentUser, resultLegalCheck, 1);
         nameUserLegalCheck = addJProp("nameUserLegalCheck", "Пользователь ЮП", baseLM.name, userLegalCheck, 1);
@@ -3464,7 +3465,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameResultOriginalDocsCheck = addJProp("nameResultOriginalDocsCheck", "Проверка оригиналов документов", baseLM.name, resultOriginalDocsCheck, 1);
 
         dateOriginalDocsCheck = addJProp("dateOriginalDocsCheck", "Дата отправки уведомления", baseLM.dateInTime, dateTimeOriginalDocsCheck, 1);
-        overdueDateOriginalDocsCheck = addJProp("overdueDateOriginalDocsCheck", "Дата просрочки подачи оригиналов документов", baseLM.addDate2, addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateOriginalDocsCheck, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate2, overduePeriod, addCProp(IntegerClass.instance, 1)));
+        overdueDateOriginalDocsCheck = addJProp("overdueDateOriginalDocsCheck", "Дата просрочки подачи оригиналов документов", baseLM.sumDate, addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateOriginalDocsCheck, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         dateFirstSubmitOriginalDocsProject = addMGProp("dateFirstSubmitOriginalDocsProject", true, "Дата первой подачи документов", true, baseLM.date, projectOriginalDocsCheck, 1);
 
@@ -3603,43 +3604,43 @@ public class SkolkovoLogicsModule extends LogicsModule {
         quantityIsR2DoneExpert = addSGProp("quantityIsR2DoneExpert", "Проголосовал R2",
                                 addJProp(and(false, false), addCProp(IntegerClass.instance, 1), doneNewExpertVote, 1, 2, isR2ProjectVote, 2), 1);
 
-        percentDoneExpert = addJProp(expertResultGroup, "percentDoneExpert", "Проголосовал (%)", baseLM.share2, quantityDoneExpert, 1, quantityTotalExpert, 1);
+        percentDoneExpert = addJProp(expertResultGroup, "percentDoneExpert", "Проголосовал (%)", baseLM.share, quantityDoneExpert, 1, quantityTotalExpert, 1);
 
         LP quantityClusterExpert = addSGProp("quantityClusterExpert", "Соотв-ие кластеру (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inClusterNewExpertVote, 1, 2), 1);
-        percentInClusterExpert = addJProp(expertResultGroup, "percentInClusterExpert", "Соотв-ие кластеру (%)", baseLM.share2, quantityClusterExpert, 1, quantityIsR1DoneExpert, 1);
+        percentInClusterExpert = addJProp(expertResultGroup, "percentInClusterExpert", "Соотв-ие кластеру (%)", baseLM.share, quantityClusterExpert, 1, quantityIsR1DoneExpert, 1);
 
         LP quantityInnovativeExpert = addSGProp("quantityInnovativeExpert", "Инновац. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), innovativeNewExpertVote, 1, 2), 1);
-        percentInnovativeExpert = addJProp(expertResultGroup, "percentInnovativeExpert", "Инновац. (%)", baseLM.share2, quantityInnovativeExpert, 1, quantityIsR1DoneExpert, 1);
+        percentInnovativeExpert = addJProp(expertResultGroup, "percentInnovativeExpert", "Инновац. (%)", baseLM.share, quantityInnovativeExpert, 1, quantityIsR1DoneExpert, 1);
 
         LP quantityForeignExpert = addSGProp("quantityForeignExpert", "Иностр. специалист (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), foreignNewExpertVote, 1, 2), 1);
-        percentForeignExpert = addJProp(expertResultGroup, "percentForeignExpert", "Иностр. специалист (%)", baseLM.share2, quantityForeignExpert, 1, quantityIsR1DoneExpert, 1);
+        percentForeignExpert = addJProp(expertResultGroup, "percentForeignExpert", "Иностр. специалист (%)", baseLM.share, quantityForeignExpert, 1, quantityIsR1DoneExpert, 1);
 
         LP quantityCompetitiveAdvantagesExpert = addSGProp("quantityCompetitiveAdvantagesExpert", "Конкур. преим. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), competitiveAdvantagesCorExpertVote, 1, 2), 1);
-        percentCompetitiveAdvantagesExpert = addJProp(expertResultGroup, "percentCompetitiveAdvantagesExpert", "Конкур. преим. (%)", baseLM.share2, quantityCompetitiveAdvantagesExpert, 1, quantityIsR2DoneExpert, 1);
+        percentCompetitiveAdvantagesExpert = addJProp(expertResultGroup, "percentCompetitiveAdvantagesExpert", "Конкур. преим. (%)", baseLM.share, quantityCompetitiveAdvantagesExpert, 1, quantityIsR2DoneExpert, 1);
 
         LP quantityCommercePotentialExpert = addSGProp("quantityCommercePotentialExpert", "Потенциал коммерц. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), commercePotentialCorExpertVote, 1, 2), 1);
-        percentCommercePotentialExpert = addJProp(expertResultGroup, "percentCommercePotentialExpert", "Потенциал коммерц. (%)", baseLM.share2, quantityCommercePotentialExpert, 1, quantityIsR2DoneExpert, 1);
+        percentCommercePotentialExpert = addJProp(expertResultGroup, "percentCommercePotentialExpert", "Потенциал коммерц. (%)", baseLM.share, quantityCommercePotentialExpert, 1, quantityIsR2DoneExpert, 1);
 
         LP quantityCanBeImplementedExpert = addSGProp("quantityCanBeImplementedExpert", "Теоретически реализуем (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), canBeImplementedCorExpertVote, 1, 2), 1);
-        percentCanBeImplementedExpert = addJProp(expertResultGroup, "percentCanBeImplementedExpert", "Теоретически реализуем (%)", baseLM.share2, quantityCanBeImplementedExpert, 1, quantityIsR2DoneExpert, 1);
+        percentCanBeImplementedExpert = addJProp(expertResultGroup, "percentCanBeImplementedExpert", "Теоретически реализуем (%)", baseLM.share, quantityCanBeImplementedExpert, 1, quantityIsR2DoneExpert, 1);
 
         LP quantityHaveExpertiseExpert = addSGProp("quantityHaveExpertiseExpert", "Наличие экспертизы (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), haveExpertiseCorExpertVote, 1, 2), 1);
-        percentHaveExpertiseExpert = addJProp(expertResultGroup, "percentHaveExpertiseExpert", "Наличие экспертизы (%)", baseLM.share2, quantityHaveExpertiseExpert, 1, quantityIsR2DoneExpert, 1);
+        percentHaveExpertiseExpert = addJProp(expertResultGroup, "percentHaveExpertiseExpert", "Наличие экспертизы (%)", baseLM.share, quantityHaveExpertiseExpert, 1, quantityIsR2DoneExpert, 1);
 
         LP quantityInternationalExperienceExpert = addSGProp("quantityInternationalExperienceExpert", "Международный опыт (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), internationalExperienceCorExpertVote, 1, 2), 1);
-        percentInternationalExperienceExpert = addJProp(expertResultGroup, "percentInternationalExperienceExpert", "Международный опыт (%)", baseLM.share2, quantityInternationalExperienceExpert, 1, quantityIsR2DoneExpert, 1);
+        percentInternationalExperienceExpert = addJProp(expertResultGroup, "percentInternationalExperienceExpert", "Международный опыт (%)", baseLM.share, quantityInternationalExperienceExpert, 1, quantityIsR2DoneExpert, 1);
 
         LP quantityEnoughDocumentsExpert = addSGProp("quantityEnoughDocumentsExpert", "Достаточно голосов (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), enoughDocumentsCorExpertVote, 1, 2), 1);
-        percentEnoughDocumentsExpert = addJProp(expertResultGroup, "percentEnoughDocumentsExpert", "Достаточно голосов (%)", baseLM.share2, quantityEnoughDocumentsExpert, 1, quantityIsR2DoneExpert, 1);
+        percentEnoughDocumentsExpert = addJProp(expertResultGroup, "percentEnoughDocumentsExpert", "Достаточно голосов (%)", baseLM.share, quantityEnoughDocumentsExpert, 1, quantityIsR2DoneExpert, 1);
 
         prevDateStartVote = addOProp("prevDateStartVote", "Пред. засед. (старт)", PartitionType.PREVIOUS, dateStartVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
         prevDateVote = addOProp("prevDateVote", "Пред. засед. (окончание)", PartitionType.PREVIOUS, dateEndVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
@@ -3994,7 +3995,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         residency = addDProp(baseGroup, "residency", "Признак резидентства", LogicalClass.instance, baseLM.country);
         residencyCountryExpert = addJProp("residencyCountryExpert", "Резидент", residency, countryExpert, 1);
-        moneyQuantityDoneExpertMonthYear = addJProp("moneyQuantityDoneExpertMonthYear", "ЗП эксперта за мес.", baseLM.round0, addJProp(baseLM.multiplyDouble2, quantityDoneExpertMonthYear, 1, 2, 3, rateExpert), 1, 2, 3);
+        moneyQuantityDoneExpertMonthYear = addJProp("moneyQuantityDoneExpertMonthYear", "ЗП эксперта за мес.", addJProp(baseLM.round, 1, addCProp(IntegerClass.instance, 0)), addJProp(baseLM.multiply, quantityDoneExpertMonthYear, 1, 2, 3, rateExpert), 1, 2, 3);
 
         baseCurrency = addDProp(baseGroup, "baseCurrency", "Базовая валюта", LogicalClass.instance, currency);
         baseCurrencyExpert = addJProp("baseCurrencyExpert", "Базовая валюта", baseCurrency, currencyExpert, 1);
@@ -4119,9 +4120,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         // статистика заявок
 
-        daysSubmitApplicationDate = addJProp("daysSubmitApplicationDate", "Кол-во дней заявки", baseLM.subtractInteger2, dateApplication, 1, object(DateClass.instance), 2);
+        daysSubmitApplicationDate = addJProp("daysSubmitApplicationDate", "Кол-во дней заявки", baseLM.subtractInteger, dateApplication, 1, object(DateClass.instance), 2);
 
-        weekSubmitApplicationDate = addJProp("weekSubmitApplicationDate", "Неделя заявки", baseLM.divideNegativeInteger, daysSubmitApplicationDate, 1, 2, addCProp(IntegerClass.instance, 7));
+        weekSubmitApplicationDate = addJProp("weekSubmitApplicationDate", "Неделя заявки", baseLM.divideIntegerNeg, daysSubmitApplicationDate, 1, 2, addCProp(IntegerClass.instance, 7));
 
         oneApplicationDateDate = addJProp(and(false, false, false), addCProp(IntegerClass.instance, 1, application, DateClass.instance, DateClass.instance), 1, 2, 3,
                                             addJProp(baseLM.groeq2, dateApplication, 1, 2), 1, 2,
@@ -4152,7 +4153,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nonClusterApplicationsStatusAplicationSubmitDateDate = addSGProp("nonClusterApplicationsStatusAplicationSubmitDateDate", "Итого не указано", addJProp(baseLM.and1, oneApplicationDateDate, 1, 2, 3, nonClusterApplication, 1), statusApplication, 1, 2, 3);
 
         averageWeekApplSubmitDateDate = addJProp("averageApplSubmitDateDate", "Среднее кол-во заявок в неделю",
-                baseLM.divideInteger0, applicationsSubmitDateDate, 1, 2, baseLM.weeksNullInclBetweenDates, 1, 2);
+                baseLM.divideIntegerRnd, applicationsSubmitDateDate, 1, 2, baseLM.weeksNullInclBetweenDates, 1, 2);
 
         applicationsSubmitDateWeek = addSGProp("applicationsSubmitDateWeek", "Кол-во поступивших заявок",              // с даты
                 addJProp(and(false, false), addCProp(IntegerClass.instance, 1, application, DateClass.instance), 1, 2,
@@ -4162,8 +4163,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         // подсчет дат нахождения заявки на стороне заявителя
         daysClaimerFirstOriginalDocsProject = addJProp("daysClaimerFirstOriginalDocumentsProject", "Кол-во дней подачи документов в бумажном виде (первый раз)", baseLM.and1,
-                addIfElseUProp(addJProp(baseLM.subtractInteger2, dateFirstSubmitOriginalDocsProject, 1, datePositiveStatusLegalCheckProject, 1),
-                        addJProp(baseLM.subtractInteger2, dateFirstSubmitOriginalDocsProject, 1, dateDecisionNoticedProject, 1),
+                addIfElseUProp(addJProp(baseLM.subtractInteger, dateFirstSubmitOriginalDocsProject, 1, datePositiveStatusLegalCheckProject, 1),
+                        addJProp(baseLM.subtractInteger, dateFirstSubmitOriginalDocsProject, 1, dateDecisionNoticedProject, 1),
                         hasPreliminaryVoteProject, 1), 1, isStatusProject, 1);
 
         isClaimerFirstOriginalDocsProjectDate = addJProp("isClaimerFirstOriginalDocsProjectDate", "На стороне заявителя подача документов в бумажном виде (первый раз)", baseLM.and1,
@@ -4172,7 +4173,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         hasPreliminaryVoteProject, 1), 1, 2, isStatusProject, 1);
 
         daysClaimerExtraOriginalDocsProject = addSGProp("daysClaimerExtraOriginalDocsProject", true, "Кол-во дней подачи документов в бумажном виде (повторно)",
-                addJProp(baseLM.subtractInteger2, dateSubmitOriginalDocsCheck, 1, datePrevOriginalDocsCheck, 1), projectOriginalDocsCheck, 1);
+                addJProp(baseLM.subtractInteger, dateSubmitOriginalDocsCheck, 1, datePrevOriginalDocsCheck, 1), projectOriginalDocsCheck, 1);
 
         isClaimerExtraOriginalDocsProjectDate = addMGProp("isClaimerExtraOriginalDocsProjectDate", "На стороне заявителя подача документов в бумажном виде (повторно)",
                 addJProp(baseLM.betweenDates, 2, datePrevOriginalDocsCheck, 1, dateSubmitOriginalDocsCheck, 1), projectOriginalDocsCheck, 1, 2);
@@ -4181,7 +4182,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isClaimerOriginalDocsProjectDate = addSUProp("isClaimerOriginalDocsProjectDate", "На стороне заявителя подача документов в бумажном виде", Union.OVERRIDE, isClaimerFirstOriginalDocsProjectDate, isClaimerExtraOriginalDocsProjectDate);
 
         daysClaimerPreliminaryFormalControlProject = addSGProp("daysClaimerPreliminaryFormalControlProject", true, "Кол-во дней формальной экспертизы (предв. экспертиза)",
-                addJProp(baseLM.and1, addJProp(baseLM.subtractInteger2, dateSubmitFormalControl, 1, datePrevFormalControl, 1), 1, isPreliminaryFormalControl, 1),
+                addJProp(baseLM.and1, addJProp(baseLM.subtractInteger, dateSubmitFormalControl, 1, datePrevFormalControl, 1), 1, isPreliminaryFormalControl, 1),
                         projectFormalControl, 1);
 
         isClaimerPreliminaryFormalControlProjectDate = addMGProp("isClaimerPreliminaryFormalControlProjectDate", "На стороне заявителя формальной экспертизы (предв. экспертиза)",
@@ -4189,7 +4190,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         projectFormalControl, 1, 2);
 
         daysClaimerStatusFormalControlProject = addSGProp("daysClaimerStatusFormalControlProject", true, "Кол-во дней формальной экспертизы (статус)",
-                addJProp(baseLM.and1, addJProp(baseLM.subtractInteger2, dateSubmitFormalControl, 1, datePrevFormalControl, 1), 1, isStatusFormalControl, 1),
+                addJProp(baseLM.and1, addJProp(baseLM.subtractInteger, dateSubmitFormalControl, 1, datePrevFormalControl, 1), 1, isStatusFormalControl, 1),
                         projectFormalControl, 1);
 
         isClaimerStatusFormalControlProjectDate = addMGProp("isClaimerStatusFormalControlProjectDate", "На стороне заявителя формальной экспертизы (статус)",
@@ -4197,7 +4198,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         projectFormalControl, 1, 2);
 
         daysClaimerPreliminaryLegalCheckProject = addSGProp("daysClaimerPreliminaryLegalCheckProject", true, "Кол-во дней юридической проверки (предв. экспертиза)",
-                addJProp(baseLM.and1, addJProp(baseLM.subtractInteger2, dateSubmitLegalCheck, 1, datePrevLegalCheck, 1), 1, isPreliminaryLegalCheck, 1),
+                addJProp(baseLM.and1, addJProp(baseLM.subtractInteger, dateSubmitLegalCheck, 1, datePrevLegalCheck, 1), 1, isPreliminaryLegalCheck, 1),
                         projectLegalCheck, 1);
 
         isClaimerPreliminaryLegalCheckProjectDate = addMGProp("isClaimerPreliminaryLegalCheckProjectDate", "На стороне заявителя юридической проверки (предв. экспертиза)",
@@ -4205,7 +4206,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         projectLegalCheck, 1, 2);
 
         daysClaimerStatusLegalCheckProject = addSGProp("daysClaimerStatusLegalCheckProject", true, "Кол-во дней юридической проверки (статус)",
-                addJProp(baseLM.and1, addJProp(baseLM.subtractInteger2, dateSubmitLegalCheck, 1, datePrevLegalCheck, 1), 1, isStatusLegalCheck, 1),
+                addJProp(baseLM.and1, addJProp(baseLM.subtractInteger, dateSubmitLegalCheck, 1, datePrevLegalCheck, 1), 1, isStatusLegalCheck, 1),
                         projectLegalCheck, 1);
 
         isClaimerStatusLegalCheckProjectDate = addMGProp("isClaimerStatusLegalCheckProjectDate", "На стороне заявителя юридической проверки (статус)",
@@ -4235,7 +4236,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateSubmittedToRegisterApplication = addJProp("dateSubmittedToRegisterApplication", "дата внесения в реестр участников", dateSubmittedToRegisterProject, projectApplicationStatus, 1);
 
-        daysCommonApplication =  addJProp("daysCommonApplication", "Общее к-во дней заявки", baseLM.subtractInteger2, dateSubmittedToRegisterApplication, 1, dateApplicationStatus, 1);
+        daysCommonApplication =  addJProp("daysCommonApplication", "Общее к-во дней заявки", baseLM.subtractInteger, dateSubmittedToRegisterApplication, 1, dateApplicationStatus, 1);
         daysStatusApplication =  addDUProp("daysStatusApplication", "Кол-во дней рассмотрения заявки на статус", daysCommonApplication, daysClaimerApplication);
 
         // даты для статусов-проектов
@@ -4305,8 +4306,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isWorkDaysNormalPeriodStatus = addDProp(baseGroup, "isWorkDaysNormalPeriodStatus", "В рабочих днях", LogicalClass.instance, projectStatus);
         overdueDateStatusProject = addIfElseUProp(baseGroup, "overdueDateStatusProject", true, "Дата просрочки статуса",
                 addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateInStatusProject, 1, normalPeriodStatusProject, 1),
-                addJProp(baseLM.addDate2, dateInStatusProject, 1, normalPeriodStatusProject, 1), addJProp(isWorkDaysNormalPeriodStatus, statusProject, 1), 1);
-        quantityDaysToOverdueDateStatusProject = addJProp("quantityDaysToOverdueDateStatusProject", true, "Количество дней до просрочки", baseLM.subtractInteger2, overdueDateStatusProject, 1, baseLM.currentDate);
+                addJProp(baseLM.sumDate, dateInStatusProject, 1, normalPeriodStatusProject, 1), addJProp(isWorkDaysNormalPeriodStatus, statusProject, 1), 1);
+        quantityDaysToOverdueDateStatusProject = addJProp("quantityDaysToOverdueDateStatusProject", true, "Количество дней до просрочки", baseLM.subtractInteger, overdueDateStatusProject, 1, baseLM.currentDate);
         quantityDaysToOverdueDateStatusProject.setFixedCharWidth(4);
 
         dateInStatusApplication = addIfElseUProp(idGroup, "dateInStatusApplication", "Дата статуса", addJProp(dateDecisionNoticedProject, projectApplication, 1), addJProp(dateInStatusProject, projectApplication, 1), isPreliminaryAfterStatusApplication, 1);
@@ -4314,8 +4315,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         normalPeriodStatusApplication.setFixedCharWidth(2);
         overdueDateStatusApplication = addIfElseUProp(baseGroup, "overdueDateStatusApplication", "Дата просрочки статуса",
                 addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateInStatusApplication, 1, normalPeriodStatusApplication, 1),
-                addJProp(baseLM.addDate2, dateInStatusApplication, 1, normalPeriodStatusApplication, 1), addJProp(isWorkDaysNormalPeriodStatus, statusApplication, 1), 1);
-        quantityDaysToOverdueDateStatusApplication = addJProp("quantityDaysToOverdueDateStatusApplication", "Количество дней до просрочки", baseLM.subtractInteger2, overdueDateStatusApplication, 1, baseLM.currentDate);
+                addJProp(baseLM.sumDate, dateInStatusApplication, 1, normalPeriodStatusApplication, 1), addJProp(isWorkDaysNormalPeriodStatus, statusApplication, 1), 1);
+        quantityDaysToOverdueDateStatusApplication = addJProp("quantityDaysToOverdueDateStatusApplication", "Количество дней до просрочки", baseLM.subtractInteger, overdueDateStatusApplication, 1, baseLM.currentDate);
         quantityDaysToOverdueDateStatusApplication.setFixedCharWidth(4);
 
         oneApplications = addJProp("oneApplications", "К-во заявок" ,and(false,true, true),  addCProp(IntegerClass.instance, 1), is(application), 1, inactiveApplication, 1, inTestApplication, 1);
@@ -4337,9 +4338,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nonClusterApplicationsTypeProjectStatusCluster = addSGProp("nonClusterApplicationsTypeProjectStatusCluster", "Не указано", addJProp(baseLM.andNot1, oneApplications, 1, quantityClusterApplication, 1), typeProjectStatusApplication, 1, finalClusterApplication, 1);
         nonClusterApplicationsTypeProjectStatus = addSGProp("nonClusterApplicationsTypeProjectStatus", "Не указано", addJProp(baseLM.andNot1, oneApplications, 1, quantityClusterApplication, 1), typeProjectStatusApplication, 1);
 
-        percentSumApplicationsTypeProjectStatusCluster = addJProp("percentSumApplicationsTypeProjectStatusCluster", "(%) по кластеру", baseLM.share2, sumApplicationsTypeProjectStatusCluster, 1, 2, sumApplicationsCluster, 2);
-        percentNonClusterApplicationsTypeProjectStatus = addJProp("percentNonClusterApplicationsTypeProjectStatus", "(%) не указано", baseLM.share2, nonClusterApplicationsTypeProjectStatus, 1, nonClusterApplicationsSubmit);
-        percentApplicationsTypeProjectStatus = addJProp("percentApplicationsTypeProjectStatus", "Итого (%)", baseLM.share2, sumApplicationsTypeProjectStatus, 1, sumSubmitApplications);
+        percentSumApplicationsTypeProjectStatusCluster = addJProp("percentSumApplicationsTypeProjectStatusCluster", "(%) по кластеру", baseLM.share, sumApplicationsTypeProjectStatusCluster, 1, 2, sumApplicationsCluster, 2);
+        percentNonClusterApplicationsTypeProjectStatus = addJProp("percentNonClusterApplicationsTypeProjectStatus", "(%) не указано", baseLM.share, nonClusterApplicationsTypeProjectStatus, 1, nonClusterApplicationsSubmit);
+        percentApplicationsTypeProjectStatus = addJProp("percentApplicationsTypeProjectStatus", "Итого (%)", baseLM.share, sumApplicationsTypeProjectStatus, 1, sumSubmitApplications);
 
         registerApplicationDateTo = addJProp(and(false, false, false), object(application), 1,
                  addJProp(baseLM.lsoeq2, dateSubmittedToRegisterApplication, 1, 2), 1, 2,     // заявки по  дату
@@ -4352,7 +4353,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         submitRegisterApplicationsDateTo = addSGProp("submitRegisterApplicationsDateTo", "К-во заявок всего",  oneRegisterApplicationDateTo, 2);
 
         averageDaysRegisterApplicationsDateTo = addJProp("averageDaysRegisterApplicationsDateTo", "Средний срок рассмотрения зявки на статус",
-                baseLM.divideInteger0, submitDaysRegisterApplicationDateTo, 1, submitRegisterApplicationsDateTo, 1);
+                baseLM.divideIntegerRnd, submitDaysRegisterApplicationDateTo, 1, submitRegisterApplicationsDateTo, 1);
 
         statusApplicationDateDate = addJProp(and(false, false, false, false), inActTestApplication, 1,
                                             addJProp(baseLM.groeq2, dateSubmittedToRegisterApplication, 1, 2), 1, 2,
@@ -4362,10 +4363,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         statusApplicationsSubmitDateDate =  addSGProp("statusApplicationsSubmitDateDate", "К-во заявок", addJProp(addCProp(IntegerClass.instance, 1, application), statusApplicationDateDate, 1, 2, 3), 2, 3);
         daysStatusApplicationsSubmitDateDate = addSGProp("daysStatusApplicationsSubmitDateDate", "Дней на статус", addJProp(daysStatusApplication, statusApplicationDateDate, 1, 2, 3), 2, 3);
-        averageDaysStatusApplicationsSubmitDateDate = addJProp("averageDaysStatusApplicationsSubmitDateDate", "Средний срок, на статус",baseLM.divideInteger0, daysStatusApplicationsSubmitDateDate, 1, 2, statusApplicationsSubmitDateDate, 1, 2);
+        averageDaysStatusApplicationsSubmitDateDate = addJProp("averageDaysStatusApplicationsSubmitDateDate", "Средний срок, на статус",baseLM.divideIntegerRnd, daysStatusApplicationsSubmitDateDate, 1, 2, statusApplicationsSubmitDateDate, 1, 2);
 
-        daysSubmitRegisterApplicationDate = addJProp("daysSubmitRegisterApplicationDate", "Кол-во дней заявки", baseLM.subtractInteger2, dateSubmittedToRegisterApplication, 1, object(DateClass.instance), 2);
-        weekSubmitRegisterApplicationDate = addJProp("weekSubmitRegisterApplicationDate", "Неделя заявки", baseLM.divideNegativeInteger, daysSubmitRegisterApplicationDate, 1, 2, addCProp(IntegerClass.instance, 7));
+        daysSubmitRegisterApplicationDate = addJProp("daysSubmitRegisterApplicationDate", "Кол-во дней заявки", baseLM.subtractInteger, dateSubmittedToRegisterApplication, 1, object(DateClass.instance), 2);
+        weekSubmitRegisterApplicationDate = addJProp("weekSubmitRegisterApplicationDate", "Неделя заявки", baseLM.divideIntegerNeg, daysSubmitRegisterApplicationDate, 1, 2, addCProp(IntegerClass.instance, 7));
 
         submitDaysRegisterApplicationDateWeek = addSGProp("submitDaysRegisterApplicationDateWeek", "Дней на статус", addJProp(daysStatusApplication, inActTestApplicationDate, 1, 2), 2, weekSubmitRegisterApplicationDate, 1, 2);
         submitRegisterApplicationsDateWeek = addSGProp("submitRegisterApplicationsDateWeek", "К-во заявок за неделю", addJProp(addCProp(IntegerClass.instance, 1, application), inActTestApplicationDate, 1, 2), 2, weekSubmitRegisterApplicationDate, 1, 2);
@@ -4373,9 +4374,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         risingRegisterApplicationsDateWeek = addOProp("risingRegisterApplicationsDateWeek", "К-во заявок, нарастающий", PartitionType.SUM, submitRegisterApplicationsDateWeek, true, true, 1, 1, 2);
 
         averageDaysRegisterApplicationsDateWeekWeek = addJProp("averageDaysRegisterApplicationsDateWeekWeek", "Ср.срок на статус, за нед.",
-                baseLM.divideInteger0, submitDaysRegisterApplicationDateWeek, 1, 2, submitRegisterApplicationsDateWeek, 1, 2);
+                baseLM.divideIntegerRnd, submitDaysRegisterApplicationDateWeek, 1, 2, submitRegisterApplicationsDateWeek, 1, 2);
         averageDaysRegisterApplicationsDateWeek = addJProp("averageDaysRegisterApplicationsDateWeek", "Ср.срок на статус, нарастающий",
-                baseLM.divideInteger0, risingDaysRegisterApplicationDateWeek, 1, 2, risingRegisterApplicationsDateWeek, 1, 2);
+                baseLM.divideIntegerRnd, risingDaysRegisterApplicationDateWeek, 1, 2, risingRegisterApplicationsDateWeek, 1, 2);
 
         textConference = addDProp("textConference", "Текст", TextClass.instance, expertConference);
         inConferenceExpert = addDProp("inConferenceExpert", "Вкл", LogicalClass.instance, expertConference, expert);

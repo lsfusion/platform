@@ -125,33 +125,27 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP betweenDates;
     public LP object1, and1, andNot1;
     public LP equals2, diff2;
-    public LP sumDouble2;
-    public LP subtractDouble2;
-    protected LP deltaDouble2;
-    public LP multiplyDouble2;
-    public LP sumInteger2;
-    public LP sumInteger3;
-    public LP subtractInteger2;
-    public LP subtractInclInteger2;
-    public LP multiplyIntegerBy2;
-    protected LP squareInteger;
-    protected LP squareDouble;
-    protected LP sqrtDouble2;
-    public LP divideDouble;
-    public LP divideDouble2;
-    public LP divideDouble3;
+    public LP sum;
+    public LP subtract;
+    protected LP delta;
+    public LP multiply;
+    public LP subtractInteger;
+    public LP subtractIntegerIncl;
+    protected LP sqr;
+    protected LP sqrt;
+    public LP divide;
     public LP divideInteger;
-    public LP divideNegativeInteger;
-    public LP divideInteger0;
-    public LP addDate2;
-    public LP subtractDate2;
+    public LP divideIntegerNeg;
+    public LP divideIntegerRnd;
+    public LP sumDate;
+    public LP subtractDate;
     public LP toDateTime;
     public LP string2;
     public LP insensitiveString2;
     protected LP concat2;
     public LP percent;
     public LP percent2;
-    public LP share2;
+    public LP share;
     public LP weekInDate;
     public LP numberDOWInDate;
     public LP numberMonthInDate;
@@ -175,18 +169,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP charLength;
     public LP positive, negative;
 
-    public LP round0;
-    public LP roundMinus1;
-    public LP round3;
+    public LP round;
 
     public LP minusInteger;
-    public LP minusDouble;
+    public LP minus;
 
     public LP dumb1;
     public LP dumb2;
 
     protected LP castText;
-    protected LP addText2;
 
     public LP<?> name;
     public LP<?> date;
@@ -687,43 +678,39 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         greater22 = addJProp(greater2, concat2, 1, 2, concat2, 3, 4);
         less22 = addJProp(less2, concat2, 1, 2, concat2, 3, 4);
         diff2 = addCFProp("diff2", Compare.NOT_EQUALS);
-        sumDouble2 = addSFProp("sumDouble2", "((prm1)+(prm2))", 2);
-        subtractDouble2 = addSFProp("subtractDouble2", "((prm1)-(prm2))", 2);
-        deltaDouble2 = addSFProp("deltaDouble2", "abs((prm1)-(prm2))", 2);
-        multiplyDouble2 = addMFProp("multiplyDouble2", 2);
-        sumInteger2 = addSFProp("sumInteger2", "((prm1)+(prm2))", 2);
-        sumInteger3 = addSFProp("sumInteger3", "((prm1)+(prm2)+(prm3))", 3);
-        subtractInteger2 = addSFProp("subtractInteger2", "((prm1)-(prm2))", IntegerClass.instance, 2);
-        subtractInclInteger2 = addSFProp("subtractInclInteger2", "((prm1)-(prm2)+1)", IntegerClass.instance, 2);
-        multiplyIntegerBy2 = addSFProp("((prm1)*2)", 1);
-        squareInteger = addSFProp("(prm1)*(prm1)", 1);
-        squareDouble = addSFProp("(prm1)*(prm1)", 1);
-        sqrtDouble2 = addSFProp("round(sqrt(prm1),2)", 1);
-        divideDouble = addSFProp("divideDouble", "((prm1)/(prm2))", 2);
-        divideDouble2 = addSFProp("divideDouble2", "round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),2)", DoubleClass.instance, 2);
-        divideDouble3 = addSFProp("divideDouble3", "round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),3)", DoubleClass.instance, 2);
-        divideInteger = addSFProp("CAST(((prm1)/(prm2)) as integer)", IntegerClass.instance, 2);
-        divideNegativeInteger = addSFProp("CASE WHEN (prm1)<0 THEN -CAST(((-(prm1)-1)/(prm2)) as integer) ELSE CAST(((prm1)/(prm2)) as integer) END", IntegerClass.instance, 2);
-        divideInteger0 = addSFProp("CAST(round((prm1)/(prm2),0) as integer)", IntegerClass.instance, 2);
-        addDate2 = addSFProp("addDate2", "((prm1)+(prm2))", DateClass.instance, 2);
-        subtractDate2 = addSFProp("subtractDate2", "((prm1)-(prm2))", DateClass.instance, 2);
-        toDateTime = addSFProp("toDateTime", "to_timestamp(CAST(prm1 as char(10)) || CAST(prm2 as char(8)), \'YYYY-MM-DDHH24:MI:SS\')", DateTimeClass.instance, 2);
-        percent = addSFProp("((prm1)*(prm2)/100)", 2);
-        percent2 = addSFProp("round(CAST(((prm1)*(prm2)/100) as numeric), 2)", DoubleClass.instance, 2);
-        share2 = addSFProp("round(CAST(((prm1)*100/(prm2)) as numeric), 2)", DoubleClass.instance, 2);
+        between = addJProp("between", getString("logics.between"), and1, groeq2, 1, 2, groeq2, 3, 1);
+
+        sum = addSFProp("sum", "((prm1)+(prm2))", 2);
+        sumDate = addSFProp("sumDate", "((prm1)+(prm2))", DateClass.instance, 2);
+
+        multiply = addMFProp("multiply", 2);
+
+        subtract = addSFProp("subtract", "((prm1)-(prm2))", 2);
+        delta = addSFProp("delta", "abs((prm1)-(prm2))", 2);
+        subtractDate = addSFProp("subtractDate", "((prm1)-(prm2))", DateClass.instance, 2);
+        subtractInteger = addSFProp("subtractInteger", "((prm1)-(prm2))", IntegerClass.instance, 2);
+        subtractIntegerIncl = addSFProp("subtractIntegerIncl", "((prm1)-(prm2)+1)", IntegerClass.instance, 2);
+
+        divide = addSFProp("divide", "((prm1)/(prm2))", 2);
+        divideInteger = addSFProp("divideInteger", "CAST(((prm1)/(prm2)) as integer)", IntegerClass.instance, 2);
+        divideIntegerNeg = addSFProp("divideIntegerNeg", "CASE WHEN (prm1)<0 THEN -CAST(((-(prm1)-1)/(prm2)) as integer) ELSE CAST(((prm1)/(prm2)) as integer) END", IntegerClass.instance, 2);
+        divideIntegerRnd = addSFProp("divideIntegerRnd", "CAST(round((prm1)/(prm2),0) as integer)", IntegerClass.instance, 2);
+
+        sqr = addSFProp("sqr", "(prm1)*(prm1)", 1);
+        sqrt = addSFProp("sqrt", "sqrt(prm1)", 1);
+        percent = addSFProp("percent", "((prm1)*(prm2)/100)", 2);
+        share = addSFProp("share", "((prm1)*100/(prm2))", 2);
+
         jumpWorkdays = addSFProp("jumpWorkdays(prm1, prm2, prm3)", DateClass.instance, 3); //1 - country, 2 - date, 3 - days to jump
         completeBarcode = addSFProp("completeBarcode(prm1)", StringClass.get(13), 1);
-        between = addJProp("between", getString("logics.between"), and1, groeq2, 1, 2, groeq2, 3, 1);
+
         vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
         vnull = addProperty(privateGroup, new LP<PropertyInterface>(new NullValueProperty()));
 
-        round0 = addSFProp("round0", "round(CAST(prm1 as numeric), 0)", DoubleClass.instance, 1);
-        roundMinus1 = addSFProp("roundMinus1", "round(CAST(prm1 as numeric), -1)", DoubleClass.instance, 1);
-        round3 = addSFProp("round3", "round(CAST(prm1 as numeric), 3)", DoubleClass.instance, 1);
+        round = addSFProp("round", "round(CAST((prm1) as numeric),prm2)", 2);
 
-        minusInteger = addSFProp("(-(prm1))", IntegerClass.instance, 1);
-        minusDouble = addSFProp("(-(prm1))", DoubleClass.instance, 1);
+        minus = addSFProp("minus", "(-(prm1))", 1);
 
         actionTrue = addCProp("ActionTrue", ActionClass.instance, true);
 
@@ -731,7 +718,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         dumb2 = dumb(2);
 
         castText = addSFProp("CAST((prm1) as text)", TextClass.instance, 1);
-        addText2 = addSFProp("((prm1)+(prm2))", TextClass.instance, 2);
 
         charLength = addSFProp("char_length(prm1)", IntegerClass.instance, 1);
 
@@ -744,6 +730,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         yearInDate = addSFProp("yearInDate", "(extract(year from (prm1)))", IntegerClass.instance, 1);
         dayInDate = addSFProp("dayInDate", "(extract(day from (prm1)))", IntegerClass.instance, 1);
         dateInTime = addSFProp("dateInTime", "(CAST((prm1) as date))", DateClass.instance, 1);
+        toDateTime = addSFProp("toDateTime", "to_timestamp(CAST(prm1 as char(10)) || CAST(prm2 as char(8)), \'YYYY-MM-DDHH24:MI:SS\')", DateTimeClass.instance, 2);
 
         timeInDateTime = addSFProp("timeInDateTime", "(CAST((prm1) as time))", TimeClass.instance, 1);
 
@@ -751,7 +738,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         numberToMonth = addAGProp("numberToMonth", getString("logics.month.id"), numberMonth);
         monthInDate = addJProp("monthInDate", getString("logics.month.id"), numberToMonth, numberMonthInDate, 1);
 
-        numberDOW = addJProp(baseGroup, "numberDOW", true, getString("logics.week.day.number"), subtractInteger2,
+        numberDOW = addJProp(baseGroup, "numberDOW", true, getString("logics.week.day.number"), subtractInteger,
                 addOProp("numberDOWP1", getString("logics.week.day.number.plus.one"), PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(DOW), 1), true, false, 0, 1), 1,
                 addCProp(IntegerClass.instance, 1));
         numberToDOW = addAGProp("numberToDOW", getString("logics.week.day.id"), numberDOW);
@@ -775,7 +762,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
         onlyNotZero.property.isOnlyNotZero = true;
 
-        daysInclBetweenDates = addJProp("daysInclBetweenDates", getString("logics.date.quantity.days"), and(false, false), addJProp(subtractInclInteger2, 2, 1), 1, 2, is(DateClass.instance), 1, is(DateClass.instance), 2);
+        daysInclBetweenDates = addJProp("daysInclBetweenDates", getString("logics.date.quantity.days"), and(false, false), addJProp(subtractIntegerIncl, 2, 1), 1, 2, is(DateClass.instance), 1, is(DateClass.instance), 2);
         weeksInclBetweenDates = addJProp("weeksInclBetweenDates", getString("logics.date.quantity.weeks"), divideInteger, daysInclBetweenDates, 1, 2, addCProp(IntegerClass.instance, 7));
         weeksNullInclBetweenDates = addJProp("weeksNullInclBetweenDates", getString("logics.date.quantity.weeks"), onlyNotZero, weeksInclBetweenDates, 1, 2);
 
