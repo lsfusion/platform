@@ -18,6 +18,7 @@ isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2
 round0 (number) = round(number, 0);
 roundMinus1 (number) = round(number, -1);
 round3 (number) = round(number, 3);
+round1 (number) = round(number, 1);
 
 CLASS doubleNamed 'Объект с кратким наименованием' : named;
 
@@ -522,7 +523,7 @@ END
 
 META metaCodeTotals (object)
 
-    sumVatWare###object##Detail 'Сумма НДС по посуде, за ед.' (object##Detail) = [round0(X*Y/(100+Y))](
+    sumVatWare###object##Detail 'Сумма НДС по посуде, за ед.' (object##Detail) = [round1(X*Y/(100+Y))](
         priceWare###object##Detail (object##Detail), dataWareRange###object##Detail(object##Detail));
 
     priceWareWithoutVAT###object##Detail '' (object##Detail) = priceWare###object##Detail (object##Detail) (-)
