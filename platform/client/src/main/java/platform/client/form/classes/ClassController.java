@@ -51,14 +51,6 @@ public class ClassController {
             protected void needToBeRevalidated() {
                 form.dropLayoutCaches();
             }
-
-            protected void widthDecreased() {
-                object.classChooser.constraints.fillHorizontal *= 0.95 ;
-            }
-
-            protected void widthIncreased() {
-                object.classChooser.constraints.fillHorizontal = 0.95 * object.classChooser.constraints.fillHorizontal + 0.05;
-            }
         };
 
         formLayout.add(object.classChooser, classContainer);

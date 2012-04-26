@@ -29,6 +29,10 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         this.description = description;
     }
 
+    public void setType(byte type) {
+        this.type = type;
+    }
+
     public void setGwtVertical(boolean gwtVertical) {
         this.gwtVertical = gwtVertical;
     }

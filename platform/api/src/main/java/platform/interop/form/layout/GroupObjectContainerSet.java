@@ -54,7 +54,7 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.gridContainer = factory.createContainer(); // контейнер грида внутрь
         set.gridContainer.setDescription(getString("form.layout.grid.part"));
         set.gridContainer.setSID(GRID_CONTAINER + group.getID());
-        set.gridContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+        set.gridContainer.setType(ContainerType.SPLIT_PANE_HORIZONTAL);
         set.groupContainer.add((T) set.gridContainer);
 
         set.panelContainer = factory.createContainer(); // контейнер панели

@@ -55,13 +55,13 @@ public class GroupObjectController extends AbstractGroupObjectController {
             grid = new GridController(groupObject.grid, this, form);
             addGroupObjectActions(grid.getView());
 
-            grid.addView(formLayout);
-
             for (ClientObject object : groupObject.objects) {
 
                 objects.put(object, new ObjectController(object, form));
                 objects.get(object).addView(formLayout);
             }
+
+            grid.addView(formLayout);
 
             showType = new ShowTypeController(groupObject.showType, this, form) {
 

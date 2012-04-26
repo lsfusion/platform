@@ -174,6 +174,15 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         this.type = type;
     }
 
+    public String getStringType() {  // usage через reflection
+        return ContainerType.getTypeNamesList().get((int) type);
+    }
+
+    public void setStringType(String type) {
+        this.type = (byte) ContainerType.getTypeNamesList().indexOf(type);
+        updateDependency(this, "stringType");
+    }
+
     public boolean isTabbedPane() {
         return type == ContainerType.TABBED_PANE;
     }

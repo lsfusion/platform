@@ -5,11 +5,15 @@ import platform.client.descriptor.editor.base.NorthBoxPanel;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementCheckBox;
+import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
 import platform.client.descriptor.increment.editor.IncrementTextEditor;
 import platform.client.logics.ClientContainer;
+import platform.interop.form.layout.ContainerType;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.List;
+import java.util.*;
 
 
 public class ContainerEditor extends JTabbedPane implements NodeEditor {
@@ -21,7 +25,12 @@ public class ContainerEditor extends JTabbedPane implements NodeEditor {
                 new TitledPanel(ClientResourceBundle.getString("descriptor.editor.common.identificator"), new IncrementTextEditor(descriptor, "sID"))));
 
         addTab(ClientResourceBundle.getString("descriptor.editor.display.display"), new NorthBoxPanel(
-                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.display.bookmarks"), descriptor, "tabbedPane")),
+                new TitledPanel(ClientResourceBundle.getString("descriptor.editor.display.container.type"), new JComboBox(new IncrementSingleListSelectionModel(descriptor, "stringType") {
+                    @Override
+                    public java.util.List<?> getSingleList() {
+                        return ContainerType.getTypeNamesList();
+                    }
+                })),
                 new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.display.default.component"), descriptor, "defaultComponent")),
                 new SizesEditor(descriptor),
                 new ComponentDesignEditor(ClientResourceBundle.getString("descriptor.editor.display.design"), descriptor.design)));

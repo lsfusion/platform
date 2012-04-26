@@ -69,20 +69,19 @@ public class GridController {
         for (final ClientObject object : key.groupObject.objects) {
             if (object.classChooser.show) {
                 ToolbarGridButton classButton = new ToolbarGridButton("/images/side_expand.png", ClientResourceBundle.getString("form.tree.show", object.caption)) {
-                    ActionListener collapseListener = new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            setVisible(true);
-                        }
-                    };
-
                     public void addListener() {
                         addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
-                                ClassContainer container = groupObjectController.getObjectsMap().get(object).classController.getClassContainer(); 
-                                container.expandTree();
-                                setVisible(false);
-                                if (!Arrays.asList(container.getCollapseButton().getActionListeners()).contains(collapseListener))
-                                    container.getCollapseButton().addActionListener(collapseListener);
+                                ClassContainer container = groupObjectController.getObjectsMap().get(object).classController.getClassContainer();
+                                if (!container.isExpanded) {
+                                    container.expandTree();
+                                    setIcon(new ImageIcon(getClass().getResource("/images/side_hide.gif")));
+                                    setToolTipText(ClientResourceBundle.getString("form.tree.hide", object.caption));
+                                } else {
+                                    container.collapseTree();
+                                    setIcon(new ImageIcon(getClass().getResource("/images/side_expand.png")));
+                                    setToolTipText(ClientResourceBundle.getString("form.tree.show", object.caption));
+                                }
                             }
                         });
                     }

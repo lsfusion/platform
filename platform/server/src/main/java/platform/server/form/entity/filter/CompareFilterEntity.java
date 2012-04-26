@@ -22,6 +22,10 @@ public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     public OrderEntity<?> value;
 
+    // нельзя удалять - используется при сериализации
+    public CompareFilterEntity() {
+    }
+
     public CompareFilterEntity(PropertyObjectEntity<P> property, Compare compare, OrderEntity<?> value) {
         this(property, compare, value, true);
     }

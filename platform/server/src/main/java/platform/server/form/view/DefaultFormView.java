@@ -1,16 +1,15 @@
 package platform.server.form.view;
 
-import platform.interop.form.layout.ContainerFactory;
-import platform.interop.form.layout.FormContainerSet;
-import platform.interop.form.layout.GroupObjectContainerSet;
-import platform.interop.form.layout.TreeGroupContainerSet;
+import platform.interop.form.layout.*;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.TreeGroupEntity;
 import platform.server.logics.property.group.AbstractGroup;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DefaultFormView extends FormView {
@@ -80,9 +79,21 @@ public class DefaultFormView extends FormView {
                 filterContainers.put(clientGroup, groupSet.getFilterContainer());
                 gridContainers.put(clientGroup, groupSet.getGridContainer());
 
-                for (ObjectView clientObject : clientGroup) {
-                    // перемещаем classChooser в самое начало
-                    groupSet.getGridContainer().add(0, clientObject.classChooser);
+                if (clientGroup.size() == 1) {
+                    groupSet.getGridContainer().add(0, clientGroup.get(0).classChooser);
+                } else if (clientGroup.size() > 1) {
+                    List<ContainerView> containers = new ArrayList<ContainerView>();
+                    for (int i = 0; i < clientGroup.size() - 1; i++) {
+                        ContainerView container = new ContainerView();
+                        container.type = ContainerType.SPLIT_PANE_HORIZONTAL;
+                        container.add(clientGroup.get(i).classChooser);
+                        containers.add(container);
+                    }
+                    containers.get(containers.size() - 1).add(clientGroup.get(clientGroup.size() - 1).classChooser);
+                    for (int i = containers.size() - 1; i > 0; i++) {
+                        containers.get(i - 1).add(containers.get(i));
+                    }
+                    groupSet.getGridContainer().add(0, containers.get(0));
                 }
             }
 

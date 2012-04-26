@@ -7,10 +7,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
 
 public class ClientFormSplitPane extends JSplitPane implements AutoHideableContainer {
     private LayoutManager2 layout;
+    public int dividerPosition = -1;
 
     public ClientFormSplitPane(ClientContainer key, LayoutManager2 layout, final ClientFormLayout formLayout) {
         super(key.getType() == ContainerType.SPLIT_PANE_HORIZONTAL ? JSplitPane.HORIZONTAL_SPLIT : JSplitPane.VERTICAL_SPLIT, false);
@@ -38,5 +38,9 @@ public class ClientFormSplitPane extends JSplitPane implements AutoHideableConta
         } else {
             super.addImpl(comp, constraints, index);
         }
+    }
+
+    public boolean areBothVisible() {
+        return leftComponent != null && leftComponent.isVisible() && rightComponent != null && rightComponent.isVisible();
     }
 }
