@@ -11364,11 +11364,17 @@ FORM specifications 'Счет-фактуры'
 ;
 
 DESIGN specifications FROM DEFAULT {
-    ADD sp.box;
-    ADD d.box {
-        ADD PROPERTY (toPrintSpecification(sp));
+    sp.box;
+    d.box {
+        d.panel {
+            childConstraints = TO THE RIGHT;
+            NEW caseOne{
+                title = 'Печатные формы';
+                ADD PROPERTY (toPrintSpecification(sp));
+            }
+        }
     }
-    ADD functions.box;
+    functions.box;
 }
 
 FORM specificationsStatement 'Счета'
