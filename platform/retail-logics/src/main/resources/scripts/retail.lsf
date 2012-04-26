@@ -9870,7 +9870,7 @@ FORM specificationPrint 'Счет-фактура' PRINT
     FILTERS inSpecificationSpecificationDetail(sp, d)
 ;
 
-toPrintSpecification 'Счет-фактура'(specification) = ACTION FORM specificationPrint OBJECTS sp IMAGE 'print.png' IN printGroup TOOLBAR CONFIRM;
+toPrintSpecification 'Счет-фактура'(specification) = ACTION FORM specificationPrint OBJECTS sp IMAGE 'print.png' IN printGroup CONFIRM;
 
 //------------------------------------------- Приход товара----------------------------------------------------//
 
@@ -11345,10 +11345,9 @@ FORM specifications 'Счет-фактуры'
     PROPERTIES (sp) READONLY numberObject, seriesObject, dateSpecification, timeSpecification, nameDepartmentStoreSpecification,
                              nameCustomerSpecification, dateToSpecification, quantityDetailInSpecification, quantitySpecification,
                              sumWithoutNDSSpecification, sumNDSSpecification, sumSpecification
-    PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp), toPrintSpecification
+    PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
 
     PROPERTIES (sp)          ADDFORM, EDITFORM, delete
-
 
     OBJECTS d=specificationDetail
     PROPERTIES (d) READONLY  numberSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
@@ -11356,6 +11355,7 @@ FORM specifications 'Счет-фактуры'
                              sumWithoutNDSSpecificationDetail, dataActingRateRangeSpecificationDetail,
                              sumNDSSpecificationDetail, totalSumNDSSpecificationDetail, sumSpecificationDetail
 
+    PROPERTIES      FORCE PANEL toPrintSpecification(sp) TODRAW d
     FILTERS         inSpecificationSpecificationDetail(sp, d)
 
     FILTERGROUP filters6
@@ -11363,7 +11363,13 @@ FORM specifications 'Счет-фактуры'
             FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp)
 ;
 
-
+DESIGN specifications FROM DEFAULT {
+    ADD sp.box;
+    ADD d.box {
+        ADD PROPERTY (toPrintSpecification(sp));
+    }
+    ADD functions.box;
+}
 
 FORM specificationsStatement 'Счета'
     OBJECTS st=statement FIXED PANEL
