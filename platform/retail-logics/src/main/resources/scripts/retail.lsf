@@ -4943,6 +4943,12 @@ FORM objectiveAcquiring 'Цель приобретения'
     PROPERTIES(oa) name
 ;
 
+cleanAllSpecificationDetailsSpecification 'Очистить документ' = ACTION (specification) {
+    FOR specificationSpecificationDetail (specificationDetail) == specification DO {
+      EXEC delete(specificationDetail AS specificationDetail);
+    };
+} IN documentPrmGroup TOOLBAR CONFIRM;
+
 //---------------------------- Документ на отгрузку из розницы ----------------------------------------//
 
 GROUP specificationGroup 'Счет-фактуры' : publicGroup;
@@ -9193,7 +9199,7 @@ FORM writeOff 'Списание'
                                     balanceDepartmentStoreItemWriteOff(d), minReserveItemDepartmentWriteOff(d),
                                     maxReserveItemDepartmentWriteOff(d), dateLastShipment(d)
 
-    PROPERTIES inputMultipleItemsWriteOff(w) TODRAW d, addWriteOffDetailBarcode(w) TODRAW d
+    PROPERTIES inputMultipleItemsWriteOff(w) TODRAW d, addWriteOffDetailBarcode(w) TODRAW d, cleanAllWriteOffDetailsWriteOff(w) FORCE PANEL TODRAW d
     FILTERS inWriteOffWriteOffDetail(w, d)
 
     EDIT writeOff OBJECT w
@@ -9227,6 +9233,12 @@ DESIGN writeOff FROM DEFAULT{
 
             ADD w.documentSumGroup {
                 childConstraints = TO THE BOTTOM;
+            }
+        }
+
+        d.box {
+            PROPERTY (cleanAllWriteOffDetailsWriteOff(w)) {
+                panelLocation = TOOLBAR;
             }
         }
 
@@ -9888,7 +9900,7 @@ FORM shipment 'Поставка'
                                dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curPriceWareShipmentDetail SHOWIF inWareShipmentDetail(d)
 
 
-    PROPERTIES inputMultipleItemsShipment(s) TODRAW d, addShipmentDetailBarcode(s) TODRAW d
+    PROPERTIES inputMultipleItemsShipment(s) TODRAW d, addShipmentDetailBarcode(s) TODRAW d, cleanAllShipmentDetailsShipment(s) FORCE PANEL TODRAW d
 
     FILTERS inShipmentShipmentDetail(s, d)
 
@@ -9915,6 +9927,9 @@ DESIGN shipment FROM DEFAULT{
             ADD d.box {
                 childConstraints = TO THE BOTTOM;
                 title = 'Спецификация';
+                PROPERTY (cleanAllShipmentDetailsShipment(s)) {
+                    panelLocation = TOOLBAR;
+                }
                 ADD d.pricingShipmentDetailInfo {
                     childConstraints = TO THE BOTTOM;
                 };
@@ -10100,7 +10115,7 @@ FORM returnSupplier 'Возврат поставщику'
                   nameWareReturnSupplierDetail, priceWareReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
                   retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
-    PROPERTIES inputMultipleItemsSupplierReturnSupplier(r) TODRAW d, addReturnSupplierDetailBarcode(r) TODRAW d
+    PROPERTIES inputMultipleItemsSupplierReturnSupplier(r) TODRAW d, addReturnSupplierDetailBarcode(r) TODRAW d, cleanAllReturnSupplierDetailsReturnSupplier(r) FORCE PANEL TODRAW d
     PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
                                     curDataSupplierRangeReturnSupplierDetail(d), curRetailPriceReturnSupplierDetail(d),
                                     curDataRetailRangeReturnSupplierDetail(d),
@@ -10149,6 +10164,9 @@ DESIGN returnSupplier FROM DEFAULT {
 
         ADD d.box{
             title = 'Спецификация';
+            PROPERTY (cleanAllReturnSupplierDetailsReturnSupplier(r)) {
+                panelLocation = TOOLBAR;
+            }
             ADD d.grid{
                 fillVertical = 12;
             };
@@ -10776,7 +10794,8 @@ FORM userPriceChange 'Переоценка товаров'
 
     PROPERTIES showFormAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
                showFormAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u),
-               inputMultipleItemsBalanceUserPriceChange(u) TODRAW d, addUserPriceChangeDetailBarcode(u) TODRAW d
+               inputMultipleItemsBalanceUserPriceChange(u) TODRAW d, addUserPriceChangeDetailBarcode(u) TODRAW d,
+               cleanAllUserPriceChangeDetailsUserPriceChange(u) FORCE PANEL TODRAW d
 
     FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
 
@@ -10811,6 +10830,11 @@ DESIGN userPriceChange FROM DEFAULT {
             }
         }
 
+        d.box {
+            PROPERTY (cleanAllUserPriceChangeDetailsUserPriceChange(u)) {
+                panelLocation = TOOLBAR;
+            }
+        }
         PROPERTY(importerPriceUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(supplierPriceUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(retailMarkupPriceChangeDocumentDetail) { background = #FFFFCC; }
@@ -10916,7 +10940,7 @@ FORM innerFlow 'Расход в другой отдел'
                    dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, priceWareInnerFlowDetail,
                    retailPriceInnerFlowDetail, accountSumInnerFlowDetail, ADDOBJ, delete
 
-    PROPERTIES inputMultipleItemsInnerFlow(f) TODRAW d, addInnerFlowDetailBarcode(f) TODRAW d
+    PROPERTIES inputMultipleItemsInnerFlow(f) TODRAW d, addInnerFlowDetailBarcode(f) TODRAW d, cleanAllInnerFlowDetailsInnerFlow(f) FORCE PANEL TODRAW d
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 
     EDIT innerFlow OBJECT f
@@ -10930,6 +10954,9 @@ DESIGN innerFlow FROM DEFAULT{
             type = TABBED;
             ADD d.box{
                 title = 'Спецификация';
+                PROPERTY (cleanAllInnerFlowDetailsInnerFlow(f)) {
+                    panelLocation = TOOLBAR;
+                }
                 ADD d.grid{
                     fillVertical = 12;
                 };
@@ -11038,7 +11065,7 @@ FORM innerArrival 'Приход из другого отдела'
     OBJECTS a=innerArrival FIXED PANEL
     PROPERTIES (a) nameDepartmentStoreInnerArrival, numberArrival SHOWIF departmentStoreInnerArrival(a), seriesArrival SHOWIF departmentStoreInnerArrival(a),
                    dateInnerArrival SHOWIF innerFlowInnerArrival(a), timeInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
-                   cleanAllInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a), toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a),
+                   toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a),
                    noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), totalQuantityInnerArrival SHOWIF innerFlowInnerArrival(a),
                    accountSumInnerArrival SHOWIF innerFlowInnerArrival(a), numberDisposalInnerArrival SHOWIF needToPriceChangeInnerArrival(a)
 
@@ -11050,7 +11077,7 @@ FORM innerArrival 'Приход из другого отдела'
     PROPERTIES (d) FORCE PANEL curImporterPriceInnerArrivalDetail, curSupplierPriceInnerArrivalDetail, curNameWareInnerArrivalDetail,
                    curPriceWareInnerArrivalDetail, curDataRetailRangeInnerArrivalDetail, curRetailPriceInnerArrivalDetail
 
-    PROPERTIES inputMultipleItemsInnerArrival(a) TODRAW d, addInnerArrivalDetailBarcode(a) TODRAW d
+    PROPERTIES inputMultipleItemsInnerArrival(a) TODRAW d, addInnerArrivalDetailBarcode(a) TODRAW d, cleanAllInnerArrivalDetailsInnerArrival(a) FORCE PANEL  TODRAW d // SHOWIF innerFlowInnerArrival(a)
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
 
     OBJECTS i=item
@@ -11070,6 +11097,9 @@ DESIGN innerArrival FROM DEFAULT{
             ADD d.box {
                 childConstraints = TO THE BOTTOM;
                 title = 'Спецификация';
+                PROPERTY (cleanAllInnerArrivalDetailsInnerArrival(a)) {
+                    panelLocation = TOOLBAR;
+                }
                 d.pricingInnerArrivalDetailInfo {
                     childConstraints = TO THE RIGHTBOTTOM;
                 }
@@ -11262,7 +11292,7 @@ FORM specification 'Счет-фактура'
     PROPERTIES FORCE PANEL READONLY articleItemSpecificationDetail(d), nameCountryItemSpecificationDetail(d), balanceDepartmentStoreItemSpecificationDetail(d)
                    BACKGROUND highlightSpecificationDetail(d), availableQuantityItemBySpecificationDetail(d) BACKGROUND NotNullAvailableQuantityItemBySpecificationDetail(d)
 
-    PROPERTIES inputMultipleItemsSpecification(sp) TODRAW d, addSpecificationDetailBarcode(sp) TODRAW d
+    PROPERTIES inputMultipleItemsSpecification(sp) TODRAW d, addSpecificationDetailBarcode(sp) TODRAW d, cleanAllSpecificationDetailsSpecification(sp) FORCE PANEL TODRAW d
     FILTERS inSpecificationSpecificationDetail(sp, d)
 
     EDIT specification OBJECT sp
@@ -11390,7 +11420,7 @@ FORM statement 'Отгрузка из розницы'
                                 balanceDepartmentStoreItemStatementDetail BACKGROUND highlightStatementDetail(d)
 
 
-    PROPERTIES      inputMultipleItemsStatement(st) TODRAW d, addStatementDetailBarcode(st) TODRAW d
+    PROPERTIES      inputMultipleItemsStatement(st) TODRAW d, addStatementDetailBarcode(st) TODRAW d, cleanAllStatementDetailsStatement(st) FORCE PANEL TODRAW d
 
     FILTERS         inStatementStatementDetail(st, d)
 
@@ -11405,6 +11435,10 @@ DESIGN statement FROM DEFAULT {
             type = TABBED;
             ADD d.box{
                 title = 'Спецификация';
+                PROPERTY (cleanAllStatementDetailsStatement(st)) {
+                    panelLocation = TOOLBAR;
+                }
+
                 ADD d.panel{
                     POSITION d.pricingStatementDetailInfo TO THE LEFT d.itemStatementDetailInfo;
                 }
