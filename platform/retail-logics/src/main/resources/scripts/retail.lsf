@@ -1090,7 +1090,7 @@ inWareItem 'Товар в посуде' (item) = item IS item AND wareItem(item)
 @metaCodeShowItemAttribute(Ware, 'Показывать посуду', displayGroup);
 
 isContainerItem 'Тара' = DATA BOOLEAN (item) IN headGroup;
-@metaCodeShowItemAttribute(Container, 'Показывать явл-ся ли тарой', displayGroup);
+//@metaCodeShowItemAttribute(Container, 'Показывать явл-ся ли тарой', displayGroup);
 
 manufacturerItem 'Производитель (ИД)' = DATA legalEntity (item) IN idGroup;
 nameManufacturerItem 'Производитель' (item) = name(manufacturerItem(item)) IN headGroup;
@@ -1117,13 +1117,13 @@ isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGro
 lengthItem 'Длина товара' = DATA NUMERIC[8,2] (item) IN sizeGroup;
 widthItem 'Ширина товара' = DATA NUMERIC[8,2] (item) IN sizeGroup;
 heightItem 'Высота товара' = DATA NUMERIC[8,2] (item) IN sizeGroup;
-grossWeightItem 'Вес брутто товара (кг)' = DATA NUMERIC[9,3] (item) IN manufactoryGroup;
+grossWeightItem 'Вес брутто (кг)' = DATA NUMERIC[9,3] (item) IN orderGroup;
 lengthPackItem 'Длина упаковки' = DATA NUMERIC[8,2] (item) IN sizeGroup;
 widthPackItem 'Ширина упаковки' = DATA NUMERIC[8,2] (item) IN sizeGroup;
 heightPackItem 'Высота упаковки' = DATA NUMERIC[8,2] (item) IN sizeGroup;
 grossWeightPackItem 'Вес брутто упаковки' = DATA NUMERIC[9,3] (item) IN manufactoryGroup;
 volumeItem 'Объём' = DATA NUMERIC[9,3] (item) IN sizeGroup;
-netWeightItem 'Вес нетто' = DATA NUMERIC[9,3] (item) IN orderGroup;
+netWeightItem 'Вес нетто (кг)' = DATA NUMERIC[9,3] (item) IN orderGroup;
 quantityPackItem 'Количество в грузовом месте' = DATA NUMERIC[9,3] (item) IN orderGroup;
 
 //retailGroup
@@ -2056,9 +2056,9 @@ FORM item 'Товар'
                   nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), nameFormItemItem SHOWIF toShowFormItem(i),
 
                   shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameCountryItem SHOWIF toShowCountry(i),
-                  nameManufacturerItem SHOWIF toShowManufacturer(i), isContainerItem SHOWIF toShowContainer(i),
+                  nameManufacturerItem SHOWIF toShowManufacturer(i), isContainerItem,
                   isWeightItem, isManufacturedItem,
-                  compositionMenuItem SHOWIF isManufacturedItem(i), grossWeightItem SHOWIF isManufacturedItem(i),
+                  compositionMenuItem SHOWIF isManufacturedItem(i),
                   grossWeightPackItem SHOWIF isManufacturedItem(i), isCrudeItem SHOWIF isManufacturedItem(i),
                   nameGroupProductItem SHOWIF isManufacturedItem(i), standartItem SHOWIF isManufacturedItem(i),
                   normOutItem SHOWIF isManufacturedItem(i), groupMenuItem SHOWIF isManufacturedItem(i),
@@ -2087,7 +2087,7 @@ FORM item 'Товар'
 
                   controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem,
 
-                  netWeightItem, quantityPackItem, minQuantityOrderItem, minReserveItem, numberInPackItem,
+                  netWeightItem, grossWeightItem, quantityPackItem, minQuantityOrderItem, minReserveItem, numberInPackItem,
 
                   bonusReturnItem, nameReturnItem, hintItem, bonusItem,
 
@@ -2315,7 +2315,7 @@ FORM itemGroup 'Товарная группа'
                    showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
                    showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                    showArticleItemGroup, showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
-                   showRateWasteItemGroup, showWareItemGroup, showManufacturerItemGroup, showContainerItemGroup
+                   showRateWasteItemGroup, showWareItemGroup, showManufacturerItemGroup
     EDIT itemGroup OBJECT g
 ;
 
@@ -2340,7 +2340,7 @@ FORM itemGroups 'Товарные группы'
                      showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
                      showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                      showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
-                     showRateWasteItemGroup, showWareItemGroup, showManufacturerItemGroup, showContainerItemGroup, delete
+                     showRateWasteItemGroup, showWareItemGroup, showManufacturerItemGroup, delete
 
     ORDER BY canonicalNameItemGroup
 
