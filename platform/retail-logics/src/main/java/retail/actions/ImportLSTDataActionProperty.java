@@ -3,6 +3,7 @@ package retail.actions;
 import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
+import platform.base.Words;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DateClass;
@@ -35,6 +36,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
     @Override
     public void execute(ExecutionContext context) throws SQLException {
+        
+        Words.toString(12345.1234);
+        
         String path = retailLM.getLPByName("importLSTDirectory").read(context).toString().trim();
         if (!"".equals(path)) {
             Boolean importInactive = retailLM.getLPByName("importInactive").read(context) != null;
