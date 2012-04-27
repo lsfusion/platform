@@ -8722,6 +8722,8 @@ timeLabelTransaction (transaction) <- currentTime() ON ASSIGN transaction IS lab
 
 departmentStoreLabelTransaction = DATA departmentStore (labelTransaction);
 nameDepartmentStoreLabelTransaction 'Отдел магазина' (transaction) = name(departmentStoreLabelTransaction(transaction));
+nameStoreLabelTransaction 'Магазин' (transaction) = name(storeDepartmentStore(departmentStoreLabelTransaction(transaction)));
+nameCompanyLabelTransaction 'Компания' (transaction) = name(companyStore(storeDepartmentStore(departmentStoreLabelTransaction(transaction))));
 
 labelTypeLabelTransaction = DATA labelType (labelTransaction);
 nameLabelTypeLabelTransaction 'Тип ценника' (transaction) = name(labelTypeLabelTransaction(transaction));
@@ -8749,26 +8751,32 @@ inLabelTransactionBarcode 'Вкл' (labelTransaction, barcode) = DATA BOOLEAN (l
 quantityLabelTransactionBarcode 'Кол-во' (labelTransaction, barcode) = DATA INTEGER (labelTransaction, barcode);
 nameLabelTransactionBarcode 'Наименование' = DATA STRING[255] (labelTransaction, barcode);
 priceLabelTransactionBarcode 'Цена' = DATA NUMERIC[14,2] (labelTransaction, barcode);
+shortNameUnitOfMeasureLabelTransactionBarcode 'Ед. изм.' =  DATA STRING[5] (labelTransaction, barcode);
+countryLabelTransactionBarcode 'Страна'  = DATA STRING[255] (labelTransaction, barcode);
 
 FORM printLabelTransaction 'Печать ценников' PRINT
     OBJECTS l = labelTransaction REPORTFILE fileTemplateLabelTransaction(l) FIXED PANEL
-    PROPERTIES(l) READONLY nameLabelTypeLabelTransaction, nameDepartmentStoreLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
+    PROPERTIES(l) READONLY nameLabelTypeLabelTransaction, nameDepartmentStoreLabelTransaction, descriptionLabelTransaction,
+                  dateLabelTransaction, timeLabelTransaction, nameStoreLabelTransaction, nameCompanyLabelTransaction
 
     OBJECTS b = barcode
     PROPERTIES(l, b) READONLY inLabelTransactionBarcode
     PROPERTIES(b)    READONLY barcodeEx
-    PROPERTIES(l, b) READONLY quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode
+    PROPERTIES(l, b) READONLY quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode,
+                     shortNameUnitOfMeasureLabelTransactionBarcode, countryLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
 ;
 
 FORM customLabelTransaction 'Печать ценников'
     OBJECTS l = labelTransaction FIXED PANEL
-    PROPERTIES(l) nameLabelTypeLabelTransaction, nameDepartmentStoreLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
+    PROPERTIES(l) nameLabelTypeLabelTransaction, nameDepartmentStoreLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction,
+                  nameStoreLabelTransaction, nameCompanyLabelTransaction
 
     OBJECTS b = barcode
     PROPERTIES(l, b)          inLabelTransactionBarcode
     PROPERTIES(b)    READONLY barcodeEx
-    PROPERTIES(l, b)          quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode
+    PROPERTIES(l, b)          quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode,
+                              shortNameUnitOfMeasureLabelTransactionBarcode, countryLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
 ;
 
@@ -8799,6 +8807,8 @@ createLabelTransactionFillParams 'Заполнить параметры' = ACTIO
 
     SET nameLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- nameSkuBarcode(barcode);
     SET priceLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- ledgerPriceBarcodeDepartmentStore(barcode, departmentStore);
+    SET shortNameUnitOfMeasureLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- shortNameUnitOfMeasureItem(skuBarcode(barcode));
+    SET countryLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- countryItem(skuBarcode(barcode));
 }
 
 createLabelTransaction 'Распечатать ценники' = ACTION (departmentStore, date) {

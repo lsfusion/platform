@@ -527,7 +527,7 @@
 				<textElement>
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Получение товара происходит по доверенности с указанием ОКПО И УНП, пратежного поручения, паспорта после поступления денег на расчетный счет ПОСТАВЩИКА"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Получение товара происходит по доверенности с указанием ОКПО И УНП, платежного поручения, паспорта после поступления денег на расчетный счет ПОСТАВЩИКА"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="10" y="139" width="555" height="12"/>
