@@ -10268,20 +10268,27 @@ DESIGN returnSuppliers FROM DEFAULT{
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(toPrintTransportConsignmentVerticalA);
                 ADD PROPERTY(toPrintTransportConsignmentHorizontalA);
-                ADD PROPERTY(toPrintTransportConsignmentAttach);
             }
             NEW b{
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(toPrintTransportConsignmentVerticalB);
                 ADD PROPERTY(toPrintTransportConsignmentHorizontalB);
             }
+            NEW c{
+                ADD PROPERTY(toPrintTransportConsignmentAttach);
+            }
         }
         NEW tn{
-            childConstraints = TO THE BOTTOM;
+            childConstraints = TO THE RIGHT;
             title = 'ТН-2';
-            ADD PROPERTY(toPrintConsignmentTwoVertical);
-            ADD PROPERTY(toPrintConsignmentTwoHorizontal);
-            ADD PROPERTY(toPrintConsignmentTwoAttach);
+            NEW a1{
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(toPrintConsignmentTwoVertical);
+                ADD PROPERTY(toPrintConsignmentTwoHorizontal);
+            }
+            NEW b1{
+                ADD PROPERTY(toPrintConsignmentTwoAttach);
+            }
         }
 //        fillHorizontal = 1;
     };
@@ -11083,23 +11090,30 @@ DESIGN innerFlows FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(toPrintTransportConsignmentVerticalA);
                 ADD PROPERTY(toPrintTransportConsignmentHorizontalA);
-                ADD PROPERTY(toPrintTransportConsignmentAttach);
             }
             NEW b{
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(toPrintTransportConsignmentVerticalB);
                 ADD PROPERTY(toPrintTransportConsignmentHorizontalB);
             }
+            NEW c{
+                ADD PROPERTY(toPrintTransportConsignmentAttach);
+            }
         }
         NEW tn{
-            childConstraints = TO THE BOTTOM;
+            childConstraints = TO THE RIGHT;
             title = 'ТН-2';
-            ADD PROPERTY(toPrintConsignmentTwoVertical);
-            ADD PROPERTY(toPrintConsignmentTwoHorizontal);
-            ADD PROPERTY(toPrintConsignmentTwoAttach);
+            NEW a1{
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(toPrintConsignmentTwoVertical);
+                ADD PROPERTY(toPrintConsignmentTwoHorizontal);
+            }
+            NEW b1{
+                ADD PROPERTY(toPrintConsignmentTwoAttach);
+            }
         }
 //        fillHorizontal = 1;
-    }
+    };
 
     ADD f.historyGroup BEFORE f.printGroup{
         childConstraints = TO THE BOTTOM;
@@ -11602,20 +11616,27 @@ DESIGN statements FROM DEFAULT {
                     childConstraints = TO THE BOTTOM;
                     ADD PROPERTY(toPrintTransportConsignmentVerticalA);
                     ADD PROPERTY(toPrintTransportConsignmentHorizontalA);
-                    ADD PROPERTY(toPrintTransportConsignmentAttach);
                 }
                 NEW b{
                     childConstraints = TO THE BOTTOM;
                     ADD PROPERTY(toPrintTransportConsignmentVerticalB);
                     ADD PROPERTY(toPrintTransportConsignmentHorizontalB);
                 }
+                NEW c{
+                    ADD PROPERTY(toPrintTransportConsignmentAttach);
+                }
             }
             NEW tn{
-                childConstraints = TO THE BOTTOM;
+                childConstraints = TO THE RIGHT;
                 title = 'ТН-2';
-                ADD PROPERTY(toPrintConsignmentTwoVertical);
-                ADD PROPERTY(toPrintConsignmentTwoHorizontal);
-                ADD PROPERTY(toPrintConsignmentTwoAttach);
+                NEW a1{
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(toPrintConsignmentTwoVertical);
+                    ADD PROPERTY(toPrintConsignmentTwoHorizontal);
+                }
+                NEW b1{
+                    ADD PROPERTY(toPrintConsignmentTwoAttach);
+                }
             }
     //        fillHorizontal = 1;
         }
