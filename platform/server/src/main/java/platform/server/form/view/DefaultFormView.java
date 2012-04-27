@@ -84,13 +84,13 @@ public class DefaultFormView extends FormView {
                 } else if (clientGroup.size() > 1) {
                     List<ContainerView> containers = new ArrayList<ContainerView>();
                     for (int i = 0; i < clientGroup.size() - 1; i++) {
-                        ContainerView container = new ContainerView();
+                        ContainerView container = createContainer();
                         container.type = ContainerType.SPLIT_PANE_HORIZONTAL;
                         container.add(clientGroup.get(i).classChooser);
                         containers.add(container);
                     }
                     containers.get(containers.size() - 1).add(clientGroup.get(clientGroup.size() - 1).classChooser);
-                    for (int i = containers.size() - 1; i > 0; i++) {
+                    for (int i = containers.size() - 1; i > 0; i--) {
                         containers.get(i - 1).add(containers.get(i));
                     }
                     groupSet.getGridContainer().add(0, containers.get(0));
