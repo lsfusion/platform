@@ -5316,7 +5316,7 @@ isManufacturedShipmentDetail 'Товар производится?' (shipmentDet
 isWeightShipmentDetail 'Весовой товар?' (shipmentDetail) = isWeightItem(itemShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo;
 
 nameinActionItemDepartmentShipmentDetail 'Товар акции?' (shipmentDetail) = name(inActionItemDepartmentVal(itemShipmentDetail(shipmentDetail),
-    departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
+    departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 3;
 
 hintShipmentDetail 'Подсказка по товару' (shipmentDetail) = hintItem(itemShipmentDetail(shipmentDetail)) IN itemShipmentDetailInfo MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
@@ -5324,7 +5324,7 @@ nameCountryShipmentDetail 'Страна производства/происхо�
     name(countryItem(itemShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоценку' (shipmentDetail) = name(banRevaluationItemDepartmentVal(itemShipmentDetail(shipmentDetail),
-    departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 2;
+    departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))) IN itemShipmentDetailInfo FIXEDCHARWIDTH 3;
 
 supplierShipmentDetail 'Поставщик (ИД)' (shipmentDetail) = supplierShipment(shipmentShipmentDetail(shipmentDetail));
 
@@ -6146,7 +6146,7 @@ isWeightReturnSupplierDetail 'Весовой товар?' (returnSupplierDetail)
 nameinActionItemDepartmentReturnSupplierDetail 'Товар акции?' (returnSupplierDetail) =
     name(inActionItemDepartmentVal(itemReturnSupplierDetail(returnSupplierDetail),
     departmentStoreReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail)),
-    dateReturnSupplierDetail(returnSupplierDetail))) IN itemReturnSupplierDetailInfo FIXEDCHARWIDTH 2;
+    dateReturnSupplierDetail(returnSupplierDetail))) IN itemReturnSupplierDetailInfo FIXEDCHARWIDTH 3;
 
 hintReturnSupplierDetail 'Подсказка по товару' (returnSupplierDetail) =
     hintItem(itemReturnSupplierDetail(returnSupplierDetail)) IN itemReturnSupplierDetailInfo;
@@ -6157,7 +6157,7 @@ nameCountryReturnSupplierDetail 'Страна производства/прои�
 namebanRevaluationItemDepartmentReturnSupplierDetail 'Запрет на переоценку' (returnSupplierDetail) =
     name(banRevaluationItemDepartmentVal(itemReturnSupplierDetail(returnSupplierDetail),
     departmentStoreReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail)),
-    dateReturnSupplierDetail(returnSupplierDetail))) IN itemReturnSupplierDetailInfo FIXEDCHARWIDTH 2;
+    dateReturnSupplierDetail(returnSupplierDetail))) IN itemReturnSupplierDetailInfo FIXEDCHARWIDTH 3;
 
 // количество/цены по строкам
 
