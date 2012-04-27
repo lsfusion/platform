@@ -37,7 +37,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     @Override
     public void execute(ExecutionContext context) throws SQLException {
         
-        //Words.toString(12345.1234);
+        Words.toString(1.1234);
         
         String path = retailLM.getLPByName("importLSTDirectory").read(context).toString().trim();
         if (!"".equals(path)) {

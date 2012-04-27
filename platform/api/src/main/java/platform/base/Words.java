@@ -82,10 +82,10 @@ public class Words {
                 if (mny >= 10) {
                     result.append(digit[mny - 10][dec2]);
                 } else {
-                    int sex = 0;
-                    if (isFractalPart != null)
-                        sex = isFractalPart ? 1 : ("0".equals(a_power[i][0]) ? 0 : 1);
-                    if (mny >= 1) result.append(digit[mny][sex]);
+                    //int sex = 1;
+                    //if (isFractalPart != null)
+                    //    sex = isFractalPart ? 1 : ("0".equals(a_power[i][0]) ? 0 : 1);
+                    if (mny >= 1) result.append(digit[mny][1]);
                 }
                 switch (mny) {
                     case 1:
