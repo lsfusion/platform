@@ -980,6 +980,9 @@ TABLE sku(sku);
 CLASS item 'Товар' : sku, externalObject;
 TABLE item(item);
 
+CLASS ABSTRACT legalEntity 'Юридическое лицо' : named, externalObject;
+TABLE legalEntity (legalEntity);
+
 TABLE itemDate (item, DATE);
 
 CLASS ware 'Посуда' : sku, named, externalObject;
@@ -1085,6 +1088,13 @@ nameWareItem 'Посуда' = name(wareItem(item)) IN retailGroup;
 inWareItem 'Товар в посуде' (item) = item IS item AND wareItem(item);
 
 @metaCodeShowItemAttribute(Ware, 'Показывать посуду', displayGroup);
+
+isContainerItem 'Тара' = DATA BOOLEAN (item) IN headGroup;
+@metaCodeShowItemAttribute(Container, 'Показывать явл-ся ли тарой', displayGroup);
+
+manufacturerItem 'Производитель (ИД)' = DATA legalEntity (item) IN idGroup;
+nameManufacturerItem 'Производитель' (item) = name(manufacturerItem(item)) IN headGroup;
+@metaCodeShowItemAttribute(Manufacturer, 'Показывать производителя', displayGroup);
 
 //equipmentGroup
 isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN headGroup;
@@ -2045,9 +2055,9 @@ FORM item 'Товар'
                   nameTasteItem SHOWIF toShowTaste(i), hallmarkItem SHOWIF toShowHallmark(i), articleItem SHOWIF toShowArticle(i),
                   nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), nameFormItemItem SHOWIF toShowFormItem(i),
 
-                  shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameCountryItem SHOWIF toShowCountry(i), isWeightItem,
-
-                  isManufacturedItem,
+                  shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameCountryItem SHOWIF toShowCountry(i),
+                  nameManufacturerItem SHOWIF toShowManufacturer(i), isContainerItem SHOWIF toShowContainer(i),
+                  isWeightItem, isManufacturedItem,
                   compositionMenuItem SHOWIF isManufacturedItem(i), grossWeightItem SHOWIF isManufacturedItem(i),
                   grossWeightPackItem SHOWIF isManufacturedItem(i), isCrudeItem SHOWIF isManufacturedItem(i),
                   nameGroupProductItem SHOWIF isManufacturedItem(i), standartItem SHOWIF isManufacturedItem(i),
@@ -2305,7 +2315,7 @@ FORM itemGroup 'Товарная группа'
                    showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
                    showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                    showArticleItemGroup, showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
-                   showRateWasteItemGroup, showWareItemGroup
+                   showRateWasteItemGroup, showWareItemGroup, showManufacturerItemGroup, showContainerItemGroup
     EDIT itemGroup OBJECT g
 ;
 
@@ -2330,7 +2340,7 @@ FORM itemGroups 'Товарные группы'
                      showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
                      showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                      showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
-                     showRateWasteItemGroup, showWareItemGroup, delete
+                     showRateWasteItemGroup, showWareItemGroup, showManufacturerItemGroup, showContainerItemGroup, delete
 
     ORDER BY canonicalNameItemGroup
 
@@ -2713,9 +2723,6 @@ dateToLicense 'Действует по ' = DATA DATE (license) IN licenseGroup;
 GROUP lawGroup 'Юридическая информация' : publicGroup;
 GROUP contactGroup 'Контактная информация' : publicGroup;
 GROUP docGroup 'Для договора' : publicGroup;
-
-CLASS ABSTRACT legalEntity 'Юридическое лицо' : named, externalObject;
-TABLE legalEntity (legalEntity);
 
 ownershipLegalEntity 'Форма собственности (ИД)' = DATA ownership (legalEntity) IN idGroup;
 
@@ -8753,6 +8760,7 @@ nameLabelTransactionBarcode 'Наименование' = DATA STRING[255] (label
 priceLabelTransactionBarcode 'Цена' = DATA NUMERIC[14,2] (labelTransaction, barcode);
 shortNameUnitOfMeasureLabelTransactionBarcode 'Ед. изм.' =  DATA STRING[5] (labelTransaction, barcode);
 countryLabelTransactionBarcode 'Страна'  = DATA STRING[255] (labelTransaction, barcode);
+manufacturerLabelTransactionBarcode 'Производитель'  = DATA STRING[255] (labelTransaction, barcode);
 
 FORM printLabelTransaction 'Печать ценников' PRINT
     OBJECTS l = labelTransaction REPORTFILE fileTemplateLabelTransaction(l) FIXED PANEL
@@ -8763,7 +8771,7 @@ FORM printLabelTransaction 'Печать ценников' PRINT
     PROPERTIES(l, b) READONLY inLabelTransactionBarcode
     PROPERTIES(b)    READONLY barcodeEx
     PROPERTIES(l, b) READONLY quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode,
-                     shortNameUnitOfMeasureLabelTransactionBarcode, countryLabelTransactionBarcode
+                     shortNameUnitOfMeasureLabelTransactionBarcode, countryLabelTransactionBarcode, manufacturerLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
 ;
 
@@ -8776,7 +8784,7 @@ FORM customLabelTransaction 'Печать ценников'
     PROPERTIES(l, b)          inLabelTransactionBarcode
     PROPERTIES(b)    READONLY barcodeEx
     PROPERTIES(l, b)          quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode,
-                              shortNameUnitOfMeasureLabelTransactionBarcode, countryLabelTransactionBarcode
+                              shortNameUnitOfMeasureLabelTransactionBarcode, countryLabelTransactionBarcode, manufacturerLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
 ;
 
@@ -8809,6 +8817,7 @@ createLabelTransactionFillParams 'Заполнить параметры' = ACTIO
     SET priceLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- ledgerPriceBarcodeDepartmentStore(barcode, departmentStore);
     SET shortNameUnitOfMeasureLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- shortNameUnitOfMeasureItem(skuBarcode(barcode));
     SET countryLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- countryItem(skuBarcode(barcode));
+    SET manufacturerLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- manufacturerItem(skuBarcode(barcode));
 }
 
 createLabelTransaction 'Распечатать ценники' = ACTION (departmentStore, date) {

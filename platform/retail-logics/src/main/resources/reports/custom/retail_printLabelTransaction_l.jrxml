@@ -42,6 +42,7 @@
 	<field name="retail_nameCompanyLabelTransaction" class="java.lang.String"/>
 	<field name="retail_shortNameUnitOfMeasureLabelTransactionBarcode" class="java.lang.String"/>
 	<field name="retail_countryLabelTransactionBarcode" class="java.lang.String"/>
+	<field name="retail_manufacturerLabelTransactionBarcode" class="java.lang.String"/>
 	<detail>
 		<band height="130">
 			<textField isBlankWhenNull="true">
@@ -136,7 +137,7 @@
 				<textFieldExpression><![CDATA[$F{retail_barcodeEx}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="94" y="106" width="109" height="12">
+				<reportElement style="DefaultStyle" x="93" y="98" width="109" height="8">
 					<printWhenExpression><![CDATA[$F{retail_shortNameUnitOfMeasureLabelTransactionBarcode}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -145,7 +146,7 @@
 					<bottomPen lineWidth="0.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
-				<textElement verticalAlignment="Top">
+				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="lsf.TimesNewRoman" size="4"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Ед.изм.: "+$F{retail_shortNameUnitOfMeasureLabelTransactionBarcode}]]></textFieldExpression>
@@ -160,7 +161,7 @@
 					<bottomPen lineWidth="0.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top">
+				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="lsf.TimesNewRoman" size="4"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Страна: "+$F{retail_countryLabelTransactionBarcode}]]></textFieldExpression>
@@ -189,6 +190,21 @@
 					<pen lineWidth="0.5"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" x="93" y="106" width="109" height="12">
+					<printWhenExpression><![CDATA[$F{retail_manufacturerLabelTransactionBarcode}!=null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="lsf.TimesNewRoman" size="4"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Производитель: "+$F{retail_manufacturerLabelTransactionBarcode}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 </jasperReport>
