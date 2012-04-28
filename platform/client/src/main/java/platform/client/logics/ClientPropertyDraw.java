@@ -19,6 +19,7 @@ import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.gwt.view.GPropertyDraw;
 import platform.interop.ClassViewType;
+import platform.interop.PropertyEditType;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.layout.SimplexConstraints;
@@ -63,7 +64,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean showEditKey;
 
     public Boolean focusable;
-    public boolean readOnly;
+    public PropertyEditType editType = PropertyEditType.EDITABLE;
 
     public boolean panelLabelAbove;
 
@@ -136,6 +137,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public void setShowEditKey(boolean showKey) {
         showEditKey = showKey;
         updateDependency(this, "showEditKey");
+    }
+
+    public boolean isReadOnly() {
+        return editType.equals(PropertyEditType.READONLY);
     }
 
     private ClientGroupObject getClientGroupObject(Collection<ClientGroupObject> groups, int groupID) {
@@ -374,7 +379,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         format = pool.readObject(inStream);
 
         focusable = pool.readObject(inStream);
-        readOnly = inStream.readBoolean();
+        editType = PropertyEditType.deserialize(inStream.readByte());
 
         panelLabelAbove = inStream.readBoolean();
 
@@ -554,7 +559,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             gwtPropertyDraw.baseType = baseType.getGwtType();
             gwtPropertyDraw.changeType = changeType.getGwtType();
             gwtPropertyDraw.iconPath = design.iconPath;
-            gwtPropertyDraw.readOnly = readOnly;
+            gwtPropertyDraw.editType = editType;
             gwtPropertyDraw.focusable = focusable;
             gwtPropertyDraw.checkEquals = checkEquals;
         }

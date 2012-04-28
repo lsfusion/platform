@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.FormEventType;
+import platform.interop.PropertyEditType;
 import platform.interop.action.AudioClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.layout.ContainerType;
@@ -3789,7 +3790,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseGroup);
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addFormActions(this, objCategory);
 
@@ -3820,7 +3821,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objArticleComposite = addSingleGroupObject(articleComposite, "Артикул", sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameCategoryArticle, mainCompositionOriginArticle);
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addFormActions(this, objArticleComposite);
 
@@ -3837,7 +3838,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objColor = addSingleGroupObject(colorSupplier, "Цвет поставщика", sidColorSupplier, baseLM.name, nameSupplierColorSupplier);
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addFormActions(this, objColor);
 
@@ -3853,7 +3854,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objSeason = addSingleGroupObject(seasonSupplier, "Сезон поставщика", sidSeasonSupplier, nameSupplierSeasonSupplier);
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addFormActions(this, objSeason);
 
@@ -3869,7 +3870,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objGender = addSingleGroupObject(genderSupplier, "Пол поставщика", sidGenderSupplier, nameSupplierGenderSupplier/*, nameGenderSupplierSku*/);
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addFormActions(this, objGender);
 
@@ -3885,7 +3886,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objTheme = addSingleGroupObject(themeSupplier, "Тема поставщика", sidThemeSupplier, baseLM.name, nameSupplierThemeSupplier);
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addFormActions(this, objTheme);
 
@@ -3901,7 +3902,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objSize = addSingleGroupObject(sizeSupplier, "Размер поставщика", sidSizeSupplier, nameSupplierSizeSupplier, orderSizeSupplier);
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addFormActions(this, objSize);
 
@@ -3990,7 +3991,7 @@ public class RomanLogicsModule extends LogicsModule {
             objDateRate = addSingleGroupObject(DateClass.instance, "Дата", baseLM.objectValue);
 
             addPropertyDraw(rateExchange, objTypeExchange, objCurrency, objDateRate);
-            setReadOnly(rateExchange, true, objDateRate.groupTo);
+            setEditType(rateExchange, PropertyEditType.READONLY, objDateRate.groupTo);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(rateExchange, objTypeExchange, objCurrency, objDateRate)));
         }
 
@@ -4024,8 +4025,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(relationStoreSupplier, objStore, objSupplier);
             addPropertyDraw(sidDestinationSupplier, objStore, objSupplier);
-            setReadOnly(objSupplier, true);
-            setReadOnly(relationStoreSupplier, false);
+            setEditType(objSupplier, PropertyEditType.READONLY);
+            setEditType(relationStoreSupplier, PropertyEditType.EDITABLE);
         }
 
         @Override
@@ -4131,7 +4132,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(orderSizeSupplier, objSizeSupplier).forceViewType = ClassViewType.HIDE;
 
             objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", baseLM.selection, sidColorSupplier, baseLM.name);
-            setReadOnly(sidColorSupplier, true, objColorSupplier.groupTo);
+            setEditType(sidColorSupplier, PropertyEditType.READONLY, objColorSupplier.groupTo);
 
             addActionsOnObjectChange(objSIDColorSupplier, addPropertyObject(executeAddColorDocument, objOrder, objArticle, objColorSupplier));
 
@@ -4255,7 +4256,7 @@ public class RomanLogicsModule extends LogicsModule {
                     nameCountrySupplierOfOriginArticleSku, nameCountryOfOriginSku, netWeightSku,
                     mainCompositionOriginSku, additionalCompositionOriginSku, baseLM.delete}, objSku);
 
-            setReadOnly(sidArticleSku, true, objSku.groupTo);
+            setEditType(sidArticleSku, PropertyEditType.READONLY, objSku.groupTo);
 
             addPropertyDraw(priceDocumentSku, objOrder, objSku);
             addPropertyDraw(quantityDocumentSku, objOrder, objSku);
@@ -4271,9 +4272,8 @@ public class RomanLogicsModule extends LogicsModule {
             CompareFilterEntity invoiceSupplierFilter = new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier);
             addFixedFilter(invoiceSupplierFilter);
 
-            setSelector(objSupplier, true);
-            setSelector(importOrderActionGroup, false, objSupplier.groupTo);
-            setReadOnly(importOrderActionGroup, false, objSupplier.groupTo);
+            setEditType(objSupplier, PropertyEditType.SELECTOR);
+            setEditType(importOrderActionGroup, PropertyEditType.EDITABLE, objSupplier.groupTo);
 
             //addDefaultOrder(numberListArticle, true);
         }
@@ -4376,7 +4376,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(orderSizeSupplier, objSizeSupplier).forceViewType = ClassViewType.HIDE;
 
             objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", baseLM.selection, sidColorSupplier, baseLM.name);
-            setReadOnly(sidColorSupplier, true, objColorSupplier.groupTo);
+            setEditType(sidColorSupplier, PropertyEditType.READONLY, objColorSupplier.groupTo);
 
             addActionsOnObjectChange(objSIDColorSupplier, addPropertyObject(executeAddColorDocument, objList, objArticle, objColorSupplier));
 
@@ -4558,7 +4558,7 @@ public class RomanLogicsModule extends LogicsModule {
                     nameCountrySupplierOfOriginArticleSku, nameCountryOfOriginSku, netWeightSku,
                     mainCompositionOriginSku, additionalCompositionOriginSku, baseLM.delete}, objSku);
 
-            setReadOnly(sidArticleSku, true, objSku.groupTo);
+            setEditType(sidArticleSku, PropertyEditType.READONLY, objSku.groupTo);
 
             addPropertyDraw(priceDocumentSku, objInvoice, objSku);
             addPropertyDraw(quantityDocumentSku, objInvoice, objSku);
@@ -4584,9 +4584,8 @@ public class RomanLogicsModule extends LogicsModule {
                     objInvoice
             ).forceViewType = ClassViewType.PANEL;*/
 
-            setSelector(objSupplier, true);
-            setSelector(importInvoiceActionGroup, false, objSupplier.groupTo);
-            setReadOnly(importInvoiceActionGroup, false, objSupplier.groupTo);
+            setEditType(objSupplier, PropertyEditType.SELECTOR);
+            setEditType(importInvoiceActionGroup, PropertyEditType.EDITABLE, objSupplier.groupTo);
 
             //addDefaultOrder(numberListArticle, true);
         }
@@ -4641,7 +4640,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс");
             objInvoice.groupTo.setSingleClassView(ClassViewType.GRID);
-            setReadOnly(objInvoice, true);
+            setEditType(objInvoice, PropertyEditType.READONLY);
 
             addPropertyDraw(inInvoiceShipment, objInvoice, objShipment);
             addPropertyDraw(objInvoice, baseLM.date, sidDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
@@ -4664,7 +4663,7 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objOrder), Compare.EQUALS, objSupplier));
 
-            setSelector(objSupplier, true);
+            setEditType(objSupplier, PropertyEditType.SELECTOR);
 
         }
 
@@ -4700,7 +4699,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSku = addSingleGroupObject(1, "sku", sku, "Товар", baseLM.barcode);
             objSku.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objSku, true);
+            setEditType(objSku, PropertyEditType.READONLY);
 
             skuPrintFA = addFAProp("Печать штрих-кода", this, objSku);
         }
@@ -4767,7 +4766,7 @@ public class RomanLogicsModule extends LogicsModule {
             //getPropertyDraw(nameOriginCategoryArticleSku).forceViewType = ClassViewType.GRID;
             //getPropertyDraw(netWeightArticleSku).forceViewType = ClassViewType.GRID;            
 
-            setReadOnly(supplierAttributeGroup, true, objSku.groupTo);
+            setEditType(supplierAttributeGroup, PropertyEditType.READONLY, objSku.groupTo);
 
             addPropertyDraw(invoicedShipmentSku, objShipment, objSku);
             addPropertyDraw(quantityShipmentSku, objShipment, objSku);
@@ -5037,22 +5036,22 @@ public class RomanLogicsModule extends LogicsModule {
             if (box)
                 addActionsOnObjectChange(objSIDSupplierBox, addPropertyObject(seekSupplierBoxSIDSupplier, objSIDSupplierBox, objSupplier));
 
-            setReadOnly(baseLM.name, true, objRoute.groupTo);
-            setReadOnly(percentShipmentRouteSku, true, objRoute.groupTo);
-            setReadOnly(itemAttributeGroup, true, objSku.groupTo);
-            setReadOnly(sidArticleSku, true, objSku.groupTo);
+            setEditType(baseLM.name, PropertyEditType.READONLY, objRoute.groupTo);
+            setEditType(percentShipmentRouteSku, PropertyEditType.READONLY, objRoute.groupTo);
+            setEditType(itemAttributeGroup, PropertyEditType.READONLY, objSku.groupTo);
+            setEditType(sidArticleSku, PropertyEditType.READONLY, objSku.groupTo);
 
-            setReadOnly(baseGroup, true, objShipmentDetail.groupTo);
-            setReadOnly(supplierAttributeGroup, true, objShipmentDetail.groupTo);
-            setReadOnly(sidSupplierBoxShipmentDetail, false, objShipmentDetail.groupTo);
-            setReadOnly(barcodeSupplierBoxShipmentDetail, false, objShipmentDetail.groupTo);
-            setReadOnly(barcodeStockShipmentDetail, false, objShipmentDetail.groupTo);
+            setEditType(baseGroup, PropertyEditType.READONLY, objShipmentDetail.groupTo);
+            setEditType(supplierAttributeGroup, PropertyEditType.READONLY, objShipmentDetail.groupTo);
+            setEditType(sidSupplierBoxShipmentDetail, PropertyEditType.EDITABLE, objShipmentDetail.groupTo);
+            setEditType(barcodeSupplierBoxShipmentDetail, PropertyEditType.EDITABLE, objShipmentDetail.groupTo);
+            setEditType(barcodeStockShipmentDetail, PropertyEditType.EDITABLE, objShipmentDetail.groupTo);
 
-            setSelector(objSupplier, true);
-            setSelector(objShipment, true);
+            setEditType(objSupplier, PropertyEditType.SELECTOR);
+            setEditType(objShipment, PropertyEditType.SELECTOR);
 
             if (box) {
-                setSelector(objSupplierBox, true);
+                setEditType(objSupplierBox, PropertyEditType.SELECTOR);
 
                 findItemBox = addPropertyDraw(addMFAProp(null, "Поиск по артикулу",
                             findItemFormBox,
@@ -5246,7 +5245,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.objectValue, baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, descriptionFreight, tonnageDataFreight, grossWeightFreight, volumeDataFreight, palletCountDataFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setSelector(objFreight, true);
+            setEditType(objFreight, PropertyEditType.SELECTOR);
 
             LP highlightColor = addCProp(ColorClass.instance, new Color(128, 255, 128));
             PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffPalletFreight, 1), objFreight);
@@ -5255,8 +5254,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
-            setReadOnly(objPallet, true);
-            setReadOnly(grossWeightPallet, false);
+            setEditType(objPallet, PropertyEditType.READONLY);
+            setEditType(grossWeightPallet, PropertyEditType.EDITABLE);
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetFreight, objBarcode, objFreight));
 
@@ -5299,13 +5298,12 @@ public class RomanLogicsModule extends LogicsModule {
 
             objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, nameRouteCreationPalletPallet, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setSelector(objPallet, true);
-            setSelector(grossWeightPallet, false);
-            setReadOnly(grossWeightPallet, false);
+            setEditType(objPallet, PropertyEditType.SELECTOR);
+            setEditType(grossWeightPallet, PropertyEditType.EDITABLE);
 
             objBox = addSingleGroupObject(freightBox, "Короб для транспортировки", baseLM.barcode, nameRouteCreationFreightBoxFreightBox, quantityStock, netWeightStock);
             objBox.groupTo.setSingleClassView(ClassViewType.GRID);
-            setReadOnly(objBox, true);
+            setEditType(objBox, PropertyEditType.READONLY);
 
             addPropertyDraw(equalsPalletFreightBox, objBox, objPallet);
 
@@ -5320,7 +5318,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objSku, sidArticleSku, nameArticleSku, nameBrandSupplierArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
             addPropertyDraw(quantityShipmentStockSku, objShipment, objBox, objSku);
-            setReadOnly(objSku, true);
+            setEditType(objSku, PropertyEditType.READONLY);
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.seekBarcodeAction, objBarcode));
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetPalletFreightBox, objBarcode, objPallet));
@@ -5363,7 +5361,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, descriptionFreight, volumeDataFreight, tonnageDataFreight, grossWeightFreight, volumeDataFreight, palletCountDataFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objFreight, true);
+            setEditType(objFreight, PropertyEditType.READONLY);
 //            addObjectActions(this, objFreight);
 
             PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(128, 255, 128)), diffPalletFreight, 1), objFreight);
@@ -5377,19 +5375,19 @@ public class RomanLogicsModule extends LogicsModule {
 
             objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, grossWeightPallet, freightBoxNumberPallet, nameRouteCreationPalletPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
-            setReadOnly(objPallet, true);
+            setEditType(objPallet, PropertyEditType.READONLY);
 
             addPropertyDraw(equalsPalletFreight, objPallet, objFreight);
 
             objSku = addSingleGroupObject(sku, "SKU", sidArticleSku, nameArticleSku, nameBrandSupplierArticleSku, sidColorSupplierItem, sidSizeSupplierItem);
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
             addPropertyDraw(quantityPalletSku, objPallet, objSku);
-            setReadOnly(objSku, true);
+            setEditType(objSku, PropertyEditType.READONLY);
 
             objDirectInvoice = addSingleGroupObject(directInvoice, "Инвойс напрямую", baseLM.date, sidDocument, nameImporterDirectInvoice, nameDestinationDestinationDocument, grossWeightDirectInvoice, palletNumberDirectInvoice);
-            setReadOnly(objDirectInvoice, true);
-            setReadOnly(grossWeightDirectInvoice, false);
-            setReadOnly(palletNumberDirectInvoice, false);
+            setEditType(objDirectInvoice, PropertyEditType.READONLY);
+            setEditType(grossWeightDirectInvoice, PropertyEditType.EDITABLE);
+            setEditType(palletNumberDirectInvoice, PropertyEditType.EDITABLE);
 
             addPropertyDraw(equalsDirectInvoiceFreight, objDirectInvoice, objFreight);
 
@@ -5486,7 +5484,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objCreate.setAddOnTransaction();
 
             objFreightBox = addSingleGroupObject(2, "freightBox", freightBox, "Короба для транспортировки", baseLM.barcode);
-            setReadOnly(objFreightBox, true);
+            setEditType(objFreightBox, PropertyEditType.READONLY);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationFreightBoxFreightBox, objFreightBox), Compare.EQUALS, objCreate));
 
@@ -5522,7 +5520,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objCreate.setAddOnTransaction();
 
             objPallet = addSingleGroupObject(2, "pallet", pallet, "Паллеты для транспортировки", baseLM.barcode);
-            setReadOnly(objPallet, true);
+            setEditType(objPallet, PropertyEditType.READONLY);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationPalletPallet, objPallet), Compare.EQUALS, objCreate));
 
@@ -5559,7 +5557,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objCreate.setAddOnTransaction();
 
             objSku = addSingleGroupObject(sku, "Товары", baseLM.barcode);
-            setReadOnly(objSku, true);
+            setEditType(objSku, PropertyEditType.READONLY);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationSkuSku, objSku), Compare.EQUALS, objCreate));
 
@@ -5594,7 +5592,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objCreate.setAddOnTransaction();
 
             objStamp = addSingleGroupObject(stamp, "Таможенные марки", sidStamp, baseLM.delete);
-            setReadOnly(objStamp, true);
+            setEditType(objStamp, PropertyEditType.READONLY);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationStampStamp, objStamp), Compare.EQUALS, objCreate));
 
@@ -5798,7 +5796,7 @@ public class RomanLogicsModule extends LogicsModule {
             addObjectActions(this, objSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
-            setReadOnly(objSku, true);
+            setEditType(objSku, PropertyEditType.READONLY);
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -5846,7 +5844,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(balanceSku, objSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
-            setReadOnly(objSku, true);
+            setEditType(objSku, PropertyEditType.READONLY);
 
             addFixedFilter(new OrFilterEntity(
                                new CompareFilterEntity(addPropertyObject(invoicedBetweenDateBrandSupplier, objBrand, objDateFrom, objDateTo), Compare.GREATER, addPropertyObject(baseLM.vzero)),
@@ -6151,15 +6149,15 @@ public class RomanLogicsModule extends LogicsModule {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku2.groupTo);
 
-            setReadOnly(objSupplier, true);
-            setReadOnly(objBrand, true);
-            setReadOnly(objInvoice, true);
-            setReadOnly(objPallet, true);
-            setReadOnly(objBox, true);
-            setReadOnly(objArticle, true);
-            setReadOnly(objArticle2, true);
-            setReadOnly(objSku, true);
-            setReadOnly(objSku2, true);
+            setEditType(objSupplier, PropertyEditType.READONLY);
+            setEditType(objBrand, PropertyEditType.READONLY);
+            setEditType(objInvoice, PropertyEditType.READONLY);
+            setEditType(objPallet, PropertyEditType.READONLY);
+            setEditType(objBox, PropertyEditType.READONLY);
+            setEditType(objArticle, PropertyEditType.READONLY);
+            setEditType(objArticle2, PropertyEditType.READONLY);
+            setEditType(objSku, PropertyEditType.READONLY);
+            setEditType(objSku2, PropertyEditType.READONLY);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierBrandSupplier, objBrand), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(palletFreightBox, objBox), Compare.EQUALS, objPallet));
@@ -6237,11 +6235,11 @@ public class RomanLogicsModule extends LogicsModule {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku2.groupTo);
 
-            setReadOnly(objSupplier, true);
-            setReadOnly(objInvoice, true);
-            setReadOnly(objBox, true);
-            setReadOnly(objSku, true);
-            setReadOnly(objSku2, true);
+            setEditType(objSupplier, PropertyEditType.READONLY);
+            setEditType(objInvoice, PropertyEditType.READONLY);
+            setEditType(objBox, PropertyEditType.READONLY);
+            setEditType(objSku, PropertyEditType.READONLY);
+            setEditType(objSku2, PropertyEditType.READONLY);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(boxInvoiceSupplierBox, objBox), Compare.EQUALS, objInvoice));
@@ -6326,7 +6324,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objFreight = addSingleGroupObject(freightComplete, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objFreight, true);
+            setEditType(objFreight, PropertyEditType.READONLY);
 
             objImporter = addSingleGroupObject(importer, "Импортёр", baseLM.name, addressSubject);
 
@@ -6370,18 +6368,18 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
             addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
 
-            setReadOnly(baseGroup, true, objSku.groupTo);
-            setReadOnly(publicGroup, true, objSku.groupTo);
-            setReadOnly(sidGenderArticleSku, false, objSku.groupTo);
-            setReadOnly(nameTypeFabricArticleSku, false, objSku.groupTo);
-            setReadOnly(sidCustomCategory10Sku, false, objSku.groupTo);
-            setReadOnly(nameSubCategoryDataSku, false, objSku.groupTo);
-            setReadOnly(nameCountrySku, false, objSku.groupTo);
-            setReadOnly(netWeightSku, false, objSku.groupTo);
-            setReadOnly(mainCompositionOriginSku, false, objSku.groupTo);
-            setReadOnly(additionalCompositionOriginSku, false, objSku.groupTo);
-            setReadOnly(mainCompositionSku, false, objSku.groupTo);
-            setReadOnly(additionalCompositionSku, false, objSku.groupTo);
+            setEditType(baseGroup, PropertyEditType.READONLY, objSku.groupTo);
+            setEditType(publicGroup, PropertyEditType.READONLY, objSku.groupTo);
+            setEditType(sidGenderArticleSku, PropertyEditType.EDITABLE, objSku.groupTo);
+            setEditType(nameTypeFabricArticleSku, PropertyEditType.EDITABLE, objSku.groupTo);
+            setEditType(sidCustomCategory10Sku, PropertyEditType.EDITABLE, objSku.groupTo);
+            setEditType(nameSubCategoryDataSku, PropertyEditType.EDITABLE, objSku.groupTo);
+            setEditType(nameCountrySku, PropertyEditType.EDITABLE, objSku.groupTo);
+            setEditType(netWeightSku, PropertyEditType.EDITABLE, objSku.groupTo);
+            setEditType(mainCompositionOriginSku, PropertyEditType.EDITABLE, objSku.groupTo);
+            setEditType(additionalCompositionOriginSku, PropertyEditType.EDITABLE, objSku.groupTo);
+            setEditType(mainCompositionSku, PropertyEditType.EDITABLE, objSku.groupTo);
+            setEditType(additionalCompositionSku, PropertyEditType.EDITABLE, objSku.groupTo);
 
             objSkuFreight = addSingleGroupObject(sku, "Позиции фрахта", baseLM.selection, baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
                     sidSizeSupplierItem, nameBrandSupplierArticleSku, nameArticleSku);
@@ -6694,7 +6692,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             invoiceExportFormImporterFreight = addFAProp("Экспорт", this, objImporter, objFreight, objTypeInvoice);
 
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
         }
     }
 
@@ -7402,9 +7400,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             objFreight = addSingleGroupObject(freightChanged, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameFreightTypeFreight, nameCurrencyFreight, sumFreightFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objFreight, true);
-            setReadOnly(nameCurrencyFreight, false);
-            setReadOnly(sumFreightFreight, false);
+            setEditType(objFreight, PropertyEditType.READONLY);
+            setEditType(nameCurrencyFreight, PropertyEditType.EDITABLE);
+            setEditType(sumFreightFreight, PropertyEditType.EDITABLE);
 
             addPropertyDraw(sumInCurrentYear);
             addPropertyDraw(sumInOutCurrentYear);
@@ -7451,8 +7449,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
-            setReadOnly(baseGroup, true, objSku.groupTo);
-            setReadOnly(publicGroup, true, objSku.groupTo);
+            setEditType(baseGroup, PropertyEditType.READONLY, objSku.groupTo);
+            setEditType(publicGroup, PropertyEditType.READONLY, objSku.groupTo);
 
             addPropertyDraw(nameCountryOfOriginFreightSku, objFreight, objSku);
             addPropertyDraw(netWeightFreightSku, objFreight, objSku);
@@ -7838,8 +7836,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, nameCustomStoreFreight, formLogFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, netWeightInvoicedFreight, grossWeightFreight, palletNumberFreight, freightBoxNumberFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.GRID);
-            setReadOnly(objFreight, true);
-            setReadOnly(formLogFreight, false);
+            setEditType(objFreight, PropertyEditType.READONLY);
+            setEditType(formLogFreight, PropertyEditType.EDITABLE);
             //addFixedFilter(new NotFilterEntity(new CompareFilterEntity(addPropertyObject(is(freightShipped), objFreight), Compare.EQUALS, addPropertyObject(baseLM.vtrue))));
 
             createFreight = addPropertyDraw(freightCreateFA, objFreight);
@@ -7869,14 +7867,14 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(quantityPalletFreightBetweenDate, objDateFrom, objDateTo);
 
             objShipment = addSingleGroupObject(shipment, "Поставка", baseLM.date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);
-            setReadOnly(objShipment, true);
+            setEditType(objShipment, PropertyEditType.READONLY);
             addPropertyDraw(quantityShipmentFreight, objShipment, objFreight);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.GREATER_EQUALS, objDateFrom));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.LESS_EQUALS, objDateTo));
 
             objInvoice = addSingleGroupObject(invoice, "Инвойс");
             objInvoice.groupTo.setSingleClassView(ClassViewType.GRID);
-            setReadOnly(objInvoice, true);
+            setEditType(objInvoice, PropertyEditType.READONLY);
             addPropertyDraw(inInvoiceFreight, objInvoice, objFreight);
             addPropertyDraw(objInvoice, baseLM.date, nameSupplierDocument, sidDocument, nameDestinationDestinationDocument, sumDocument, nameCurrencyDocument, netWeightDocument, quantityDocument);
 
@@ -7950,8 +7948,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             setForceViewType(baseGroup, ClassViewType.GRID, objSku.groupTo);
 
-            setReadOnly(baseGroup, true, objSku.groupTo);
-            setReadOnly(publicGroup, true, objSku.groupTo);
+            setEditType(baseGroup, PropertyEditType.READONLY, objSku.groupTo);
+            setEditType(publicGroup, PropertyEditType.READONLY, objSku.groupTo);
 
             addPropertyDraw(objFreight, objSku, sidCustomCategory10FreightSku, nameCountryOfOriginFreightSku, mainCompositionFreightSku, additionalCompositionFreightSku);
             addPropertyDraw(objImporter, objFreight, objSku, netWeightImporterFreightSku, grossWeightImporterFreightSku);
@@ -8033,30 +8031,30 @@ public class RomanLogicsModule extends LogicsModule {
 
             objArticleComposite = addSingleGroupObject(articleComposite, "Артикул", sidArticle);
             objArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setSelector(objArticleComposite, true);
+            setEditType(objArticleComposite, PropertyEditType.SELECTOR);
 
 //            objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Артикул (новый)", baseLM.objectValue);
 //            objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет поставщика", sidColorSupplier, baseLM.name);
             objColorSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setSelector(objColorSupplier, true);
+            setEditType(objColorSupplier, PropertyEditType.SELECTOR);
 
             objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер поставщика", sidSizeSupplier);
             objSizeSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setSelector(objSizeSupplier, true);
+            setEditType(objSizeSupplier, PropertyEditType.SELECTOR);
 
             objSeasonSupplier = addSingleGroupObject(seasonSupplier, "Сезон поставщика", sidSeasonSupplier, baseLM.name);
             objSeasonSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setSelector(objSeasonSupplier, true);
+            setEditType(objSeasonSupplier, PropertyEditType.SELECTOR);
 
             objThemeSupplier = addSingleGroupObject(themeSupplier, "Тема поставщика", sidThemeSupplier, baseLM.name);
             objThemeSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setSelector(objThemeSupplier, true);
+            setEditType(objThemeSupplier, PropertyEditType.SELECTOR);
 
             objGenderSupplier = addSingleGroupObject(genderSupplier, "Пол поставщика", sidGenderSupplier, baseLM.name);
             objGenderSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setSelector(objGenderSupplier, true);
+            setEditType(objGenderSupplier, PropertyEditType.SELECTOR);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierArticle, objArticleComposite), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColorSupplier), Compare.EQUALS, objSupplier));
@@ -8089,8 +8087,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSku = addSingleGroupObject(sku, "Товар", nameSupplierArticleSku, baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
             objSku.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objSku, true);
-            setReadOnly(baseLM.barcode, false, objSku.groupTo);
+            setEditType(objSku, PropertyEditType.READONLY);
+            setEditType(baseLM.barcode, PropertyEditType.EDITABLE, objSku.groupTo);
 
             skuEditFA = addMFAProp(actionGroup, "Редактировать товар", this, new ObjectEntity[] {objSku}, true);
             skuEditFA.setImage("edit.png");
@@ -8151,7 +8149,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(invoicedShipmentSku, objShipment, objSku);
             if (box)
                 addPropertyDraw(quantityListSku, objSupplierBox, objSku);
-            setReadOnly(objSku, true);
+            setEditType(objSku, PropertyEditType.READONLY);
 
             objShipmentDetail = addSingleGroupObject(box ? boxShipmentDetail : simpleShipmentDetail, "Строка поставки");
 
@@ -8186,7 +8184,7 @@ public class RomanLogicsModule extends LogicsModule {
                     addActionsOnOk(addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteSku, objShipment, objRoute, objSku));
             }
 
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addDefaultOrder(sidArticleSku, true);
         }
@@ -8228,13 +8226,10 @@ public class RomanLogicsModule extends LogicsModule {
             addObjectActions(this, objPricat);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierPricat, objPricat), Compare.EQUALS, objSupplier));
-            setSelector(objSupplier, true);
-            setSelector(importPricatSupplier, false);
-            setSelector(hugoBossImportPricat, false);
-            setSelector(gerryWeberImportPricat, false);
-            setReadOnly(importPricatSupplier, false, objSupplier.groupTo);
-            setReadOnly(hugoBossImportPricat, false, objSupplier.groupTo);
-            setReadOnly(gerryWeberImportPricat, false, objSupplier.groupTo);
+            setEditType(objSupplier, PropertyEditType.SELECTOR);
+            setEditType(importPricatSupplier, PropertyEditType.EDITABLE);
+            setEditType(hugoBossImportPricat, PropertyEditType.EDITABLE);
+            setEditType(gerryWeberImportPricat, PropertyEditType.EDITABLE);
         }
     }
 

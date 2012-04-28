@@ -88,7 +88,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
     @Override
     public boolean isCellEditable(Object node, int column) {
         ClientPropertyDraw property = getProperty(node, column);
-        return column != 0 && property != null && !property.readOnly;
+        return column != 0 && property != null && !property.isReadOnly();
     }
 
     public Object getPropertyValue(Object node, ClientPropertyDraw property) {

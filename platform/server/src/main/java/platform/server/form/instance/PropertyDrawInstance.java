@@ -88,7 +88,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public boolean isReadOnly() {
-        return entity.readOnly && !entity.isSelector();
+        return entity.isReadOnly() || (entity.isSelector() && !isSingleSimplePanel());
     }
 
     private boolean isSingleSimplePanel() { // дебильновато но временно так

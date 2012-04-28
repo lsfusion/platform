@@ -5,6 +5,7 @@ import paas.properties.StartConfigurationActionProperty;
 import paas.properties.StopConfigurationActionProperty;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.PropertyEditType;
 import platform.server.classes.*;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -197,7 +198,7 @@ public class PaasLogicsModule extends LogicsModule {
 
             objProject = addSingleGroupObject(project, "Проект", baseLM.name, projectOwnerName);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(baseLM.name, true, objProject.groupTo);
+            setEditType(baseLM.name, PropertyEditType.READONLY, objProject.groupTo);
             addObjectActions(this, objProject);
 
             objModule = addSingleGroupObject(module, "Модуль");

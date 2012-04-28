@@ -9,6 +9,7 @@ import platform.client.descriptor.editor.base.NorthBoxPanel;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.*;
 import platform.interop.ClassViewType;
+import platform.interop.PropertyEditType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -74,7 +75,11 @@ public class PropertyDrawEditor extends GroupElementEditor {
         });
 
         TitledPanel shouldBeLastPanel = new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.object.editor.should.be.last"), descriptor, "shouldBeLast"));
-        TitledPanel readOnlyPanel = new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.object.editor.read.only"), descriptor, "readOnly"));
+        TitledPanel editTypePanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.edit.type"), new JComboBox(new IncrementSingleListSelectionModel(descriptor, "editType") {
+            public List<?> getSingleList() {
+                return PropertyEditType.typeNameList();
+            }
+        }));
         TitledPanel focusablePanel = new TitledPanel(null, new IncrementTristateCheckBox(ClientResourceBundle.getString("descriptor.editor.object.editor.focusable"), descriptor, "focusable"));
 
         TitledPanel forceTypePanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.viewtype"), new JComboBox(new IncrementSingleListSelectionModel(descriptor, "forceViewType") {
@@ -96,7 +101,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
                 propertyBackgroundPanel,
                 propertyForegroundPanel,
                 shouldBeLastPanel,
-                readOnlyPanel,
+                editTypePanel,
                 focusablePanel,
                 forceTypePanel,
                 editKeyPanel));

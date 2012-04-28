@@ -214,9 +214,9 @@ public class LsfLogicsParserPresentationTest {
         PropertyDrawEntity inc2Prop = propDraw("incomeQuantity2");
         PropertyDrawEntity sizeProp = propDraw("storeSizeName");
 
-        assertTrue(nameProp.readOnly);
-        assertTrue(incProp.readOnly);
-        assertFalse(inc2Prop.readOnly);
+        assertTrue(nameProp.isReadOnly());
+        assertTrue(incProp.isReadOnly());
+        assertFalse(inc2Prop.isReadOnly());
 
         assertEquals(sizeProp.propertyBackground.property, findPBySID("storeSize"));
         assertEquals(incProp.propertyCaption.property, findPBySID("outcomeQuantity"));
@@ -242,10 +242,10 @@ public class LsfLogicsParserPresentationTest {
         PropertyDrawEntity out2Prop = propDraw("outcomeQuantity2");
 
         //1я строка
-        assertFalse(nameProp.readOnly);
-        assertTrue(name2Prop.readOnly);
-        assertTrue(incProp.readOnly);
-        assertFalse(inc2Prop.readOnly);
+        assertFalse(nameProp.isReadOnly());
+        assertTrue(name2Prop.isReadOnly());
+        assertTrue(incProp.isReadOnly());
+        assertFalse(inc2Prop.isReadOnly());
 
         //2я строка
         //check if showif is ok

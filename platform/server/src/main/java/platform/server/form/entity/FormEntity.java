@@ -9,6 +9,7 @@ import platform.base.identity.IDGenerator;
 import platform.base.serialization.CustomSerializable;
 import platform.interop.ClassViewType;
 import platform.interop.FormEventType;
+import platform.interop.PropertyEditType;
 import platform.interop.action.ClientResultAction;
 import platform.interop.navigator.FormShowType;
 import platform.server.classes.ValueClass;
@@ -971,103 +972,52 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             property.propertyReadOnly = condition;
     }
 
-    public void setReadOnly(AbstractGroup group, boolean readOnly, GroupObjectEntity groupObject) {
-
+    public void setEditType(AbstractGroup group, PropertyEditType editType, GroupObjectEntity groupObject) {
         for (PropertyDrawEntity property : getProperties(group, groupObject)) {
-            setReadOnly(property, readOnly);
+            setEditType(property, editType);
         }
     }
 
-    public void setReadOnly(LP property, boolean readOnly) {
-        setReadOnly(property.property, readOnly);
+    public void setEditType(LP property, PropertyEditType editType) {
+        setEditType(property.property, editType);
     }
 
-    public void setReadOnly(LP property, boolean readOnly, GroupObjectEntity groupObject) {
-        setReadOnly(property.property, readOnly, groupObject);
+    public void setEditType(LP property, PropertyEditType editType, GroupObjectEntity groupObject) {
+        setEditType(property.property, editType, groupObject);
     }
 
-    public void setReadOnly(AbstractNode property, boolean readOnly) {
-
+    public void setEditType(AbstractNode property, PropertyEditType editType) {
         for (PropertyDrawEntity propertyView : getProperties(property)) {
-            setReadOnly(propertyView, readOnly);
+            setEditType(propertyView, editType);
         }
     }
 
-    public void setReadOnly(Property property, boolean readOnly, GroupObjectEntity groupObject) {
-
+    public void setEditType(Property property, PropertyEditType editType, GroupObjectEntity groupObject) {
         for (PropertyDrawEntity propertyView : getProperties(property, groupObject)) {
-            setReadOnly(propertyView, readOnly);
+            setEditType(propertyView, editType);
         }
     }
 
-    public void setReadOnly(boolean readOnly, GroupObjectEntity groupObject) {
+    public void setEditType(PropertyEditType editType, GroupObjectEntity groupObject) {
         for (PropertyDrawEntity propertyView : getProperties(groupObject)) {
-            setReadOnly(propertyView, readOnly);
+            setEditType(propertyView, editType);
         }
     }
 
-    public void setReadOnly(boolean readOnly) {
+    public void setEditType(PropertyEditType editType) {
         for (PropertyDrawEntity propertyView : propertyDraws) {
-            setReadOnly(propertyView, readOnly);
+            setEditType(propertyView, editType);
         }
     }
 
-    public void setReadOnly(ObjectEntity objectEntity, boolean readOnly) {
+    public void setEditType(ObjectEntity objectEntity, PropertyEditType editType) {
         for (PropertyDrawEntity property : getProperties(objectEntity.groupTo)) {
-            setReadOnly(property, readOnly);
+            setEditType(property, editType);
         }
     }
 
-    public void setReadOnly(PropertyDrawEntity property, boolean readOnly) {
-        property.readOnly = readOnly;
-    }
-
-    public void setSelector(PropertyDrawEntity property, boolean selector) {
-        property.setSelector(selector);
-    }
-
-    public void setSelector(ObjectEntity objectEntity, boolean selector) {
-        for (PropertyDrawEntity property : getProperties(objectEntity.groupTo)) {
-            setSelector(property, selector);
-        }
-    }
-
-    public void setSelector(boolean selector, GroupObjectEntity groupObject) {
-        for (PropertyDrawEntity propertyView : getProperties(groupObject)) {
-            setSelector(propertyView, selector);
-        }
-    }
-
-    public void setSelector(boolean selector) {
-        for (PropertyDrawEntity propertyView : propertyDraws) {
-            setSelector(propertyView, selector);
-        }
-    }
-
-    public void setSelector(AbstractNode property, boolean selector) {
-        for (PropertyDrawEntity propertyView : getProperties(property)) {
-            setSelector(propertyView, selector);
-        }
-    }
-
-    public void setSelector(Property property, boolean selector, GroupObjectEntity groupObject) {
-        for (PropertyDrawEntity propertyView : getProperties(property, groupObject)) {
-            setSelector(propertyView, selector);
-        }
-    }
-
-    public void setSelector(LP property, boolean selector) {
-        setSelector(property.property, selector);
-    }
-
-    public void setSelector(LP property, boolean selector, GroupObjectEntity groupObject) {
-        setSelector(property.property, selector, groupObject);
-    }
-
-    public void setSelector(AbstractGroup group, boolean selector, GroupObjectEntity groupObject) {
-        for (PropertyDrawEntity property : getProperties(group, groupObject)) {
-            setSelector(property, selector);
-        }
+    public void setEditType(PropertyDrawEntity property, PropertyEditType editType) {
+        property.setEditType(editType);
     }
 
     public void addDefaultOrder(LP lp, boolean ascending) {

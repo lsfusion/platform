@@ -1,6 +1,7 @@
 package platform.server.form.entity;
 
 import platform.interop.ClassViewType;
+import platform.interop.PropertyEditType;
 import platform.server.classes.CustomClass;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
@@ -14,7 +15,7 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends BaseClassForm
 
 //        LM.addObjectActions(this, object);
 
-        setReadOnly(true);
+        setEditType(PropertyEditType.READONLY);
 
         if (!cls.dialogReadOnly)
             LM.addFormActions(this, object);

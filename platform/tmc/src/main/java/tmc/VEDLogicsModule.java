@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.PropertyEditType;
 import platform.interop.action.*;
 import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -2991,7 +2992,7 @@ public class VEDLogicsModule extends LogicsModule {
         private ReturnSaleInvoiceRetailFormEntity(NavigatorElement parent, boolean toAdd, String sID, boolean allStores) {
             super(parent, sID, toAdd, returnSaleInvoiceRetail, commitSaleInvoiceArticleRetail, allStores);
 
-            setReadOnly(true, objInner.groupTo);
+            setEditType(PropertyEditType.READONLY, objInner.groupTo);
         }
 
         @Override
@@ -3034,7 +3035,7 @@ public class VEDLogicsModule extends LogicsModule {
             getPropertyDraw(orderUserName).forceViewType = ClassViewType.HIDE;
             //addPropertyDraw(returnArticleSalePay, objArt);
 
-            setReadOnly(true, objInner.groupTo);
+            setEditType(PropertyEditType.READONLY, objInner.groupTo);
 
             PropertyObjectEntity shopImplement = addPropertyObject(currentShop);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(subjectOutOrder, objInner), Compare.EQUALS, shopImplement));
@@ -3807,8 +3808,8 @@ public class VEDLogicsModule extends LogicsModule {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0)));
             addRegularFilterGroup(inCouponGroup);
 
-            setReadOnly(objArt, true);
-            setReadOnly(xorCouponArticle, false);
+            setEditType(objArt, PropertyEditType.READONLY);
+            setEditType(xorCouponArticle, PropertyEditType.EDITABLE);
         }
     }
 

@@ -2,6 +2,7 @@ package platform.server.form.view;
 
 import platform.base.OrderedMap;
 import platform.base.identity.IDGenerator;
+import platform.interop.PropertyEditType;
 import platform.interop.form.layout.*;
 import platform.server.classes.LogicalClass;
 import platform.server.data.type.Type;
@@ -549,44 +550,44 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         this.caption = caption;
     }
 
-    public void setEnabled(AbstractGroup group, boolean readOnly, GroupObjectEntity groupObject) {
-        setFocusable(group, readOnly, groupObject);
-        entity.setReadOnly(group, !readOnly, groupObject);
+    public void setEnabled(AbstractGroup group, boolean enabled, GroupObjectEntity groupObject) {
+        setFocusable(group, enabled, groupObject);
+        entity.setEditType(group, PropertyEditType.getReadonlyType(!enabled), groupObject);
     }
 
-    public void setEnabled(LP property, boolean readOnly) {
-        setFocusable(property, readOnly);
-        entity.setReadOnly(property, !readOnly);
+    public void setEnabled(LP property, boolean enabled) {
+        setFocusable(property, enabled);
+        entity.setEditType(property, PropertyEditType.getReadonlyType(!enabled));
     }
 
-    public void setEnabled(LP property, boolean readOnly, GroupObjectEntity groupObject) {
-        setFocusable(property, readOnly, groupObject);
-        entity.setReadOnly(property, !readOnly, groupObject);
+    public void setEnabled(LP property, boolean enabled, GroupObjectEntity groupObject) {
+        setFocusable(property, enabled, groupObject);
+        entity.setEditType(property, PropertyEditType.getReadonlyType(!enabled), groupObject);
     }
 
-    public void setEnabled(Property property, boolean readOnly) {
-        setFocusable(property, readOnly);
-        entity.setReadOnly(property, !readOnly);
+    public void setEnabled(Property property, boolean enabled) {
+        setFocusable(property, enabled);
+        entity.setEditType(property, PropertyEditType.getReadonlyType(!enabled));
     }
 
-    public void setEnabled(Property property, boolean readOnly, GroupObjectEntity groupObject) {
-        setFocusable(property, readOnly, groupObject);
-        entity.setReadOnly(property, !readOnly, groupObject);
+    public void setEnabled(Property property, boolean enabled, GroupObjectEntity groupObject) {
+        setFocusable(property, enabled, groupObject);
+        entity.setEditType(property, PropertyEditType.getReadonlyType(!enabled), groupObject);
     }
 
-    public void setEnabled(boolean readOnly, GroupObjectEntity groupObject) {
-        setFocusable(readOnly, groupObject);
-        entity.setReadOnly(!readOnly, groupObject);
+    public void setEnabled(boolean enabled, GroupObjectEntity groupObject) {
+        setFocusable(enabled, groupObject);
+        entity.setEditType(PropertyEditType.getReadonlyType(!enabled), groupObject);
     }
 
-    public void setEnabled(ObjectEntity objectEntity, boolean readOnly) {
-        setFocusable(objectEntity, readOnly);
-        entity.setReadOnly(objectEntity, !readOnly);
+    public void setEnabled(ObjectEntity objectEntity, boolean enabled) {
+        setFocusable(objectEntity, enabled);
+        entity.setEditType(objectEntity, PropertyEditType.getReadonlyType(!enabled));
     }
 
-    public void setEnabled(PropertyDrawView property, boolean readOnly) {
-        setFocusable(property, readOnly);
-        entity.setReadOnly(property.entity, !readOnly);
+    public void setEnabled(PropertyDrawView property, boolean enabled) {
+        setFocusable(property, enabled);
+        entity.setEditType(property.entity, PropertyEditType.getReadonlyType(!enabled));
     }
 
     public void setEditKey(LP property, KeyStroke keyStroke, GroupObjectEntity groupObject) {

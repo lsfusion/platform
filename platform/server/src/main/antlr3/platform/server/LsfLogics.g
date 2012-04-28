@@ -5,6 +5,7 @@ grammar LsfLogics;
 
 	import platform.base.OrderedMap;
 	import platform.interop.ClassViewType;
+	import platform.interop.PropertyEditType;
 	import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 	import platform.interop.form.layout.ContainerType;
 	import platform.interop.navigator.FormShowType;
@@ -468,9 +469,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 @init {
 	$options = new FormPropertyOptions();
 }
-	:	(	'READONLY' 	{ $options.setReadOnly(true); }
-		|	'EDITABLE' 	{ $options.setReadOnly(false); }
-		|	'SELECTOR' 	{ $options.setSelector(true); }
+	:	(	editType = propertyEditTypeLiteral { $options.setEditType($editType.val); }
 		|	'HINTNOUPDATE' { $options.setHintNoUpdate(true); }
 		|	'HINTTABLE' { $options.setHintTable(true); }
 		|	'COLUMNS' '(' ids=nonEmptyIdList ')' { $options.setColumns(getGroupObjectsList($ids.ids)); }
@@ -2349,6 +2348,12 @@ containerTypeLiteral returns [byte val]
 	|	'TABBED' { $val = ContainerType.TABBED_PANE; }
 	|	'SPLITH' { $val = ContainerType.SPLIT_PANE_HORIZONTAL; }
 	|	'SPLITV' { $val = ContainerType.SPLIT_PANE_VERTICAL; }
+	;
+
+propertyEditTypeLiteral returns [PropertyEditType val]
+	:	'EDITABLE' { $val = PropertyEditType.EDITABLE; }
+	|	'READONLY' { $val = PropertyEditType.READONLY; }
+	|	'SELECTOR' { $val = PropertyEditType.SELECTOR; }
 	;
 
 emailRecipientTypeLiteral returns [Message.RecipientType val]

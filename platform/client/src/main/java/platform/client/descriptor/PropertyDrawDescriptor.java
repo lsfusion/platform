@@ -10,6 +10,7 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
+import platform.interop.PropertyEditType;
 import platform.interop.form.layout.GroupObjectContainerSet;
 
 import java.io.DataInputStream;
@@ -29,7 +30,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
     private PropertyObjectDescriptor propertyBackground;
     private PropertyObjectDescriptor propertyForeground;
 
-    private boolean readOnly;
+    private PropertyEditType editType;
 
     public PropertyDrawDescriptor() {
     }
@@ -182,14 +183,14 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         return client.focusable;
     }
 
-    public void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
-        client.readOnly = readOnly;
-        getContext().updateDependency(this, "readOnly");
+    public void setEditType(String editType) { // usage через reflection
+        this.editType = PropertyEditType.valueOf(editType);
+        client.editType = PropertyEditType.valueOf(editType);
+        getContext().updateDependency(this, "editType");
     }
 
-    public boolean getReadOnly() {
-        return readOnly;
+    public PropertyEditType getEditType() {
+        return editType;
     }
 
     public String getCaption() {
@@ -212,7 +213,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         pool.serializeObject(outStream, propertyForeground);
 
         outStream.writeBoolean(shouldBeLast);
-        outStream.writeBoolean(readOnly);
+        outStream.writeByte(editType.serialize());
         outStream.writeBoolean(forceViewType != null);
         if (forceViewType != null) {
             pool.writeString(outStream, forceViewType.name());
@@ -230,7 +231,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         propertyForeground = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
-        readOnly = inStream.readBoolean();
+        editType = PropertyEditType.deserialize(inStream.readByte());
         if (inStream.readBoolean()) {
             forceViewType = ClassViewType.valueOf(pool.readString(inStream));
         }

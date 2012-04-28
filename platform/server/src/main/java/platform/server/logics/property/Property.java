@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.base.*;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.PropertyEditType;
 import platform.interop.action.ClientAction;
 import platform.server.Message;
 import platform.server.Settings;
@@ -895,7 +896,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 logPropertyView = BaseUtils.nvl(view.get(view.entity.getPropertyDraw(logFormProperty.property, groupObject)), logPropertyView);
             }
             if (logPropertyView != null) {
-                logPropertyView.entity.readOnly = false; //бывает, что проставляют true для всего groupObject'а
+                logPropertyView.entity.setEditType(PropertyEditType.EDITABLE); //бывает, что проставляют READONLY для всего groupObject'а
                 logPropertyView.setPanelLocation(new ShortcutPanelLocationView(propertyView));
             }
         }

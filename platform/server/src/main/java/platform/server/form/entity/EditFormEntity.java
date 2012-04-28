@@ -1,6 +1,7 @@
 package platform.server.form.entity;
 
 import platform.interop.ClassViewType;
+import platform.interop.PropertyEditType;
 import platform.server.classes.CustomClass;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
@@ -16,7 +17,7 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEn
 
         PropertyDrawEntity objectValue = getPropertyDraw(LM.objectValue, object);
         if (objectValue != null)
-            objectValue.readOnly = true;
+            objectValue.setEditType(PropertyEditType.READONLY);
     }
 
     public EditFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {

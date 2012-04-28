@@ -11,6 +11,7 @@ import platform.gwt.view.GridDataRecord;
 import platform.gwt.view.logics.FormLogicsProvider;
 import platform.gwt.view.renderer.FormFieldTypeRenderer;
 import platform.gwt.view.renderer.GTypeRenderer;
+import platform.interop.PropertyEditType;
 
 import java.io.Serializable;
 
@@ -43,7 +44,7 @@ public abstract class GType implements Serializable {
         FormItem item = property.changeType.createPanelFormItem(formLogics, property);
         item.setAttribute("readOnly",
                           item.getAttributeAsBoolean("readOnly") != null && item.getAttributeAsBoolean("readOnly")
-                          || property.readOnly
+                          || property.editType == PropertyEditType.READONLY
                           || !formLogics.isEditingEnabled());
 
         item.setTitle(property.caption != null ? property.caption : "");

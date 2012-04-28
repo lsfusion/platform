@@ -1,6 +1,7 @@
 package platform.server.logics.scripted;
 
 import platform.interop.ClassViewType;
+import platform.interop.PropertyEditType;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 
@@ -9,8 +10,7 @@ import java.util.List;
 import static platform.base.BaseUtils.nvl;
 
 public class FormPropertyOptions {
-    private Boolean readOnly;
-    private Boolean selector;
+    private PropertyEditType editType;
     private Boolean hintNoUpdate;
     private Boolean hintTable;
     private List<GroupObjectEntity> columns;
@@ -23,20 +23,12 @@ public class FormPropertyOptions {
     private ClassViewType forceViewType;
     private GroupObjectEntity toDraw;
 
-    public Boolean getReadOnly() {
-        return readOnly;
+    public PropertyEditType getEditType() {
+        return editType;
     }
 
-    public void setReadOnly(Boolean readOnly) {
-        this.readOnly = readOnly;
-    }
-
-    public Boolean getSelector() {
-        return selector;
-    }
-
-    public void setSelector(Boolean selector) {
-        this.selector = selector;
+    public void setEditType(PropertyEditType editType) {
+        this.editType = editType;
     }
 
     public List<GroupObjectEntity> getColumns() {
@@ -130,8 +122,7 @@ public class FormPropertyOptions {
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
-        merged.setReadOnly(nvl(overrides.getReadOnly(), readOnly));
-        merged.setSelector(nvl(overrides.getSelector(), selector));
+        merged.setEditType(nvl(overrides.getEditType(), editType));
         merged.setHintNoUpdate(nvl(overrides.getHintNoUpdate(), hintNoUpdate));
         merged.setHintTable(nvl(overrides.getHintTable(), hintTable));
         merged.setColumns(nvl(overrides.getColumns(), columns));

@@ -12,6 +12,7 @@ import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.PropertyEditType;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.OpenFileClientAction;
@@ -5034,13 +5035,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inTestCluster, objCluster))));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
 
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
-            setReadOnly(inProjectCluster, false);
-//            setReadOnly(includeProjectClusterForesight, false);
-            setReadOnly(isRootInProjectForesight, false);
-            setReadOnly(openApplicationProjectAction, false);
-            setReadOnly(exportProjectDocumentsAction, false);
+            setEditType(inProjectCluster, PropertyEditType.EDITABLE);
+//            setEditType(includeProjectClusterForesight, PropertyEditType.EDITABLE);
+            setEditType(isRootInProjectForesight, PropertyEditType.EDITABLE);
+            setEditType(openApplicationProjectAction, PropertyEditType.EDITABLE);
+            setEditType(exportProjectDocumentsAction, PropertyEditType.EDITABLE);
 
             addActionsOnOk(addPropertyObject(setPositiveResultForesightCheckProject, objProject));
 
@@ -5114,7 +5115,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProject = addSingleGroupObject(1, "project", project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, sidResultForesightCheckProject, langProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(sidResultForesightCheckProject, objProject)));
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addInlineEAForm(emailForesightCheckProjectEA, this, objProject, 1);
         }
@@ -5131,7 +5132,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProject = addSingleGroupObject(1, "project", project, "Проект", positiveLegalResultProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject, datePositiveLegalResultProject, dateNotificationPeriodProject);      //    уточнить дату
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addInlineEAForm(emailNotificationProjectEA, this, objProject, 1);
         }
@@ -5147,7 +5148,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProject = addSingleGroupObject(1, "project", project, "Проект", nameResultForesightCheckProject, dateResultForesightCheckProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));   // или        positiveResultForesightCheckProject
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addInlineEAForm(emailForesightClaimerProjectEA, this, objProject, 1);
         }
@@ -5166,7 +5167,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     nameNativeClaimerProject, emailClaimerProject, dateSentForTranslationProject, dateToSentForTranslationProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveResultForesightCheckProject, objProject)));   // или             positiveLegalResultProject
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addInlineEAForm(emailBureauTrProjectEA, this, objProject, 1);
         }
@@ -5183,7 +5184,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProject = addSingleGroupObject(1, "project", project, "Проект", positiveLegalResultProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject, datePositiveLegalResultProject, resultNeedVoteProject, dateResultNeedVoteProject, dateOverdueResultNeedVoteProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addInlineEAForm(emailNeedVoteProjectEA, this, objProject, 1);
 
@@ -5203,7 +5204,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addPropertyDraw(objProject, translationGroup);
                 objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(transferredProject, objProject)));
-                setReadOnly(true);
+                setEditType(PropertyEditType.READONLY);
 
                 addInlineEAForm(emailTransferredProjectEA, this, objProject, 1);
             }
@@ -5240,8 +5241,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(needForesightCheckProject, objProject)));
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(withdrawnProject, objProject))));
 
-            setReadOnly(true, objProject.groupTo);
-            setReadOnly(actionGroup, false);
+            setEditType(PropertyEditType.READONLY, objProject.groupTo);
+            setEditType(actionGroup, PropertyEditType.EDITABLE);
         }
 
         @Override
@@ -5380,9 +5381,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(projectFilterGroup);
 
-            setReadOnly(true, objProject.groupTo);
-            setReadOnly(nameUserLegalCheck, true);
-            setReadOnly(actionGroup, false);
+            setEditType(PropertyEditType.READONLY, objProject.groupTo);
+            setEditType(nameUserLegalCheck, PropertyEditType.READONLY);
+            setEditType(actionGroup, PropertyEditType.EDITABLE);
 
             addDefaultOrder(updateDateProject, false);
 
@@ -5658,7 +5659,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objDocumentTemplate = addSingleGroupObject(documentTemplate, "Шаблон документов", baseLM.name);
             objDocumentTemplate.groupTo.setSingleClassView(ClassViewType.PANEL);
-            setReadOnly(objDocumentTemplate, true);
+            setEditType(objDocumentTemplate, PropertyEditType.READONLY);
             addPropertyDraw(generateDocumentsProjectDocumentType, objProject, objDocumentTemplate);
 
             objDocument = addSingleGroupObject(document, nameTypeDocument, nameLanguageDocument, postfixDocument, loadFileDocument, openFileDocument);
@@ -5764,9 +5765,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
 //            setPageSize(0);
 
-            setReadOnly(true, objCluster.groupTo);
-            setReadOnly(inProjectCluster, false);
-            setReadOnly(inClaimerProjectCluster, false);
+            setEditType(PropertyEditType.READONLY, objCluster.groupTo);
+            setEditType(inProjectCluster, PropertyEditType.EDITABLE);
+            setEditType(inClaimerProjectCluster, PropertyEditType.EDITABLE);
 
             addDefaultOrder(getPropertyDraw(dateProject, objProject), true);
             addDefaultOrder(numberCluster, true);
@@ -5943,7 +5944,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(logStatusProject, objProject, objSession)));
 
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
         }
     }
 
@@ -5996,10 +5997,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectApplication, objApplication), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
 
-            setReadOnly(true);
-            setReadOnly(openCompleteApplicationProjectActionApplication, false);
-            setReadOnly(exportProjectDocumentsActionApplication, false);
-            setReadOnly(openFileDecisionVote, false);
+            setEditType(PropertyEditType.READONLY);
+            setEditType(openCompleteApplicationProjectActionApplication, PropertyEditType.EDITABLE);
+            setEditType(exportProjectDocumentsActionApplication, PropertyEditType.EDITABLE);
+            setEditType(openFileDecisionVote, PropertyEditType.EDITABLE);
 
             addDefaultOrder(dateApplication, true);
         }
@@ -6054,7 +6055,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inProjectCluster, objProject, objCluster)));
 
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
         }
     }
 
@@ -6087,8 +6088,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                                 "Только активные"), true);
                         addRegularFilterGroup(inactiveFilterGroup);
 
-            setReadOnly(true);
-//            setReadOnly(baseLM.selection, false);
+            setEditType(PropertyEditType.READONLY);
+//            setEditType(baseLM.selection, PropertyEditType.EDITABLE);
         }
     }
 
@@ -6160,12 +6161,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             if (restricted) {
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(voteResultExpertVote, objExpert, objVote)));
-                setReadOnly(true);
+                setEditType(PropertyEditType.READONLY);
             }
-//            setReadOnly(true, objVote.groupTo);
-//            setReadOnly(true, objExpert.groupTo);
-//            setReadOnly(allowedEmailLetterExpertVote, false);
-//            setReadOnly(emailClosedVote, false);
+//            setEditType(PropertyEditType.READONLY, objVote.groupTo);
+//            setEditType(PropertyEditType.READONLY, objExpert.groupTo);
+//            setEditType(allowedEmailLetterExpertVote, PropertyEditType.EDITABLE);
+//            setEditType(emailClosedVote, PropertyEditType.EDITABLE);
 
             setPageSize(0);
 
@@ -6238,8 +6239,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(primClusterExpert, objExtraCluster, objExpert))));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(clusterInExpertForesight, objExpert, objForesight)));
-//            setReadOnly(true, objVote.groupTo);
-//            setReadOnly(allowedEmailLetterExpertVote, false);
+//            setEditType(PropertyEditType.READONLY, objVote.groupTo);
+//            setEditType(allowedEmailLetterExpertVote, PropertyEditType.EDITABLE);
 
 //            setPageSize(0);
 
@@ -6309,7 +6310,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addDefaultOrder(nameNativeShortClusterExpert, true);
             addDefaultOrder(baseLM.userLastName, true);
 
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
             setPageSize(0);
         }
     }
@@ -6511,7 +6512,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addInlineEAForm(emailLetterExpertVoteEA, this, objExpert, 1, objVote, 2);
 
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
         }
 
         @Override
@@ -6531,7 +6532,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addInlineEAForm(emailAuthExpertEA, this, objExpert, 1);
 
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
         }
     }
 
@@ -6548,7 +6549,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addInlineEAForm(emailAuthProfileExpertEA, this, objExpert, 1);
 
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
         }
     }
 
@@ -6565,7 +6566,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addInlineEAForm(emailReminderProfileExpertEA, this, objExpert, 1);
 
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
         }
     }
 
@@ -6627,7 +6628,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addInlineEAForm(emailConferenceExpertEA, this, objConference, 1, objExpert, 2);
 
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
         }
     }
 
@@ -6666,8 +6667,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             voteStartFormVote = addFAProp("Созыв заседания", this, objVote);
             addPropertyDraw(readInformation).toDraw = objVote.groupTo;
 
-            setReadOnly(true);
-//            setReadOnly(readInformation, false);
+            setEditType(PropertyEditType.READONLY);
+//            setEditType(readInformation, PropertyEditType.EDITABLE);
         }
         @Override
         public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
@@ -6719,8 +6720,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             voteProtocolFormVote = addFAProp("Протокол заседания", this, objVote);
             addPropertyDraw(readInformation).toDraw = objVote.groupTo;
-            setReadOnly(true);
-//            setReadOnly(readInformation, false);
+            setEditType(PropertyEditType.READONLY);
+//            setEditType(readInformation, PropertyEditType.EDITABLE);
         }
 
         @Override
@@ -6782,8 +6783,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             addRegularFilterGroup(filterGroupExpertVote);
 
-            setReadOnly(true);
-            setReadOnly(false, objDateFrom.groupTo);
+            setEditType(PropertyEditType.READONLY);
+            setEditType(PropertyEditType.EDITABLE, objDateFrom.groupTo);
         }
 
         @Override
@@ -6858,8 +6859,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             addRegularFilterGroup(filterGroupExpertVote);
 
-            setReadOnly(true);
-            setReadOnly(false, objDateFrom.groupTo);
+            setEditType(PropertyEditType.READONLY);
+            setEditType(PropertyEditType.EDITABLE, objDateFrom.groupTo);
         }
 
         @Override
@@ -6931,7 +6932,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(executiveIS, objFormalControl).toDraw = objFormalControl.groupTo;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(sidResultFormalControl, objFormalControl)));
-//            setReadOnly(true);
+//            setEditType(PropertyEditType.READONLY);
             addInlineEAForm(emailFondFormalControlEA, this, objFormalControl, 1);
             addInlineEAForm(emailFondFormalControlEA, projectCompleteR2Native, projectCompleteR2Native.objProject, projectFormalControl, 1);
             addInlineEAForm(emailFondFormalControlEA, projectCompleteR2Foreign, projectCompleteR2Foreign.objProject, projectFormalControl, 1);
@@ -7167,7 +7168,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addAttachEAForm(emailLetterExpertMonthYearEA, this, AttachmentFormat.DOCX, objMonth, 1, objYear, 2);
             //     setPageSize(0);
             addPropertyDraw(readInformation).toDraw = objYear.groupTo;
-            setReadOnly(readInformation, true);
+            setEditType(readInformation, PropertyEditType.READONLY);
         }
     }
 
@@ -7236,7 +7237,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Статус", true);
             objStatus = addSingleGroupObject(genID(), "Status", projectStatus, "Статус", numberProjectStatus, baseLM.name, oficialNameProjectStatus);
 
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
 
             addDefaultOrder(getPropertyDraw(numberProjectStatus, objStatus), true);
         }

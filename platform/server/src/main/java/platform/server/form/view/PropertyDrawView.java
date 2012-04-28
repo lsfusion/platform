@@ -194,7 +194,7 @@ public class PropertyDrawView extends ComponentView {
 
         pool.writeObject(outStream, format);
         pool.writeObject(outStream, focusable);
-        outStream.writeBoolean(entity.readOnly);
+        outStream.writeByte(entity.getEditType().serialize());
 
         outStream.writeBoolean(panelLabelAbove);
 

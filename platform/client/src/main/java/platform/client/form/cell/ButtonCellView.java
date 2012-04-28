@@ -40,7 +40,7 @@ public class ButtonCellView extends ClientButton implements CellView {
 
         setToolTip(key.caption);
 
-        if (key.readOnly) {
+        if (key.isReadOnly()) {
             setEnabled(false);
         }
 

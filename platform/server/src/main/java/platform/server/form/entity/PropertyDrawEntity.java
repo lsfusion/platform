@@ -2,6 +2,7 @@ package platform.server.form.entity;
 
 import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
+import platform.interop.PropertyEditType;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
 import platform.server.form.instance.PropertyDrawInstance;
@@ -19,8 +20,7 @@ import java.util.List;
 
 public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, ServerIdentitySerializable {
 
-    public boolean readOnly;
-    private boolean selector;
+    private PropertyEditType editType = PropertyEditType.EDITABLE;
 
     public PropertyObjectEntity<P> propertyObject;
     
@@ -77,14 +77,24 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.propertyForeground = propertyForeground;
     }
 
-    public boolean isSelector() {
-        return selector;
+    public PropertyEditType getEditType() {
+        return editType;
     }
 
-    public void setSelector(boolean selector) {
-        this.selector = selector;
-        if (selector)
-            readOnly = true;
+    public void setEditType(PropertyEditType editType) {
+        this.editType = editType;
+    }
+
+    public boolean isSelector() {
+        return editType.equals(PropertyEditType.SELECTOR);
+    }
+
+    public boolean isReadOnly() {
+        return editType.equals(PropertyEditType.READONLY);
+    }
+
+    public boolean isEditable() {
+        return editType.equals(PropertyEditType.EDITABLE);
     }
 
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView defaultView) {
@@ -102,7 +112,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         pool.serializeObject(outStream, propertyForeground);
 
         outStream.writeBoolean(shouldBeLast);
-        outStream.writeBoolean(readOnly);
+        outStream.writeByte(editType.serialize());
         outStream.writeBoolean(forceViewType != null);
         if (forceViewType != null) {
             pool.writeString(outStream, forceViewType.name());
@@ -120,7 +130,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         propertyForeground = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
-        readOnly = inStream.readBoolean();
+        editType = PropertyEditType.deserialize(inStream.readByte());
         if (inStream.readBoolean()) {
             forceViewType = ClassViewType.valueOf(pool.readString(inStream));
         }

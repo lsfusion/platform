@@ -227,12 +227,8 @@ public class ScriptingFormEntity extends FormEntity {
     }
 
     public void applyPropertyOptions(PropertyDrawEntity property, FormPropertyOptions options) {
-        if (options.getReadOnly() != null) {
-            property.readOnly = options.getReadOnly();
-        }
-
-        if (options.getSelector() != null) {
-            property.setSelector(options.getSelector());
+        if (options.getEditType() != null) {
+            property.setEditType(options.getEditType());
         }
 
         if (options.getColumns() != null) {

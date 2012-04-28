@@ -6,6 +6,7 @@ import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.PropertyEditType;
 import platform.interop.action.*;
 import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -1805,7 +1806,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             super(parent, sID, getString("logics.user.users"));
 
             ObjectEntity objUser = addSingleGroupObject(customUser, nameUserMainRole, name, userLogin, email, barcode);
-            setReadOnly(objUser, true);
+            setEditType(objUser, PropertyEditType.READONLY);
 
             addFormActions(this, objUser);
         }
@@ -1823,7 +1824,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             objUser.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objRole = addSingleGroupObject(userRole, name, userRoleSID);
-            setReadOnly(objRole, true);
+            setEditType(objRole, PropertyEditType.READONLY);
             
             addPropertyDraw(objUser, objRole, inUserMainRole);
         }
@@ -1912,8 +1913,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(parentProperty, objProps), Compare.EQUALS, objTreeProps));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(parentProperty, objDefaultProps), Compare.EQUALS, objTreeDefaultProps));
 
-            setReadOnly(navigatorElementSID, true);
-            setReadOnly(navigatorElementCaption, true);
+            setEditType(navigatorElementSID, PropertyEditType.READONLY);
+            setEditType(navigatorElementCaption, PropertyEditType.READONLY);
 
             PropertyDrawEntity balanceDraw = getPropertyDraw(userRolePolicyOrder, objPolicy.groupTo);
             PropertyDrawEntity sidDraw = getPropertyDraw(userRoleSID, objUserRole.groupTo);
@@ -1983,7 +1984,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             ObjectEntity objConnection = addSingleGroupObject(connection, baseGroup, true);
             ObjectEntity objForm = addSingleGroupObject(navigatorElement, getString("logics.forms.opened.forms"), baseGroup, true);
 
-//            setReadOnly(baseGroup, true);
+//            setEditType(baseGroup, PropertyEditType.READONLY);
 
             addPropertyDraw(objConnection, objForm, baseGroup, true);
 
@@ -2003,7 +2004,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             super(parent, sID, getString("logics.launch.log"));
 
             ObjectEntity objLaunch = addSingleGroupObject(launch, baseGroup, true);
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
         }
     }
 
@@ -2021,13 +2022,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             objKey = addSingleGroupObject(tableKey, getString("logics.tables.keys"), baseGroup);
             objColumn = addSingleGroupObject(tableColumn, getString("logics.tables.columns"), baseGroup);
             objDropColumn = addSingleGroupObject(dropColumn, getString("logics.tables.deleted.column"), baseGroup);
-            setReadOnly(objDropColumn, true);
-            setReadOnly(dropDropColumn, false);
+            setEditType(objDropColumn, PropertyEditType.READONLY);
+            setEditType(dropDropColumn, PropertyEditType.EDITABLE);
 
             recalculateStats = addPropertyDraw(addAProp(new RecalculateStatsActionProperty("recalculateStats", getString("logics.tables.recalculate.stats"))));
             addPropertyDraw(recalculateAggregationTableColumn, objColumn);
 
-            setReadOnly(propertyNameTableColumn, true);
+            setEditType(propertyNameTableColumn, PropertyEditType.READONLY);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(tableTableKey, objKey), Compare.EQUALS, objTable));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(tableTableColumn, objColumn), Compare.EQUALS, objTable));
@@ -2079,10 +2080,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(parentProperty, objProps), Compare.EQUALS, objTreeProps));
 
-            setReadOnly(true);
-            setReadOnly(userLoggableProperty, false);
-            setReadOnly(storedProperty, false);
-            setReadOnly(isSetNotNullProperty, false);
+            setEditType(PropertyEditType.READONLY);
+            setEditType(userLoggableProperty, PropertyEditType.EDITABLE);
+            setEditType(storedProperty, PropertyEditType.EDITABLE);
+            setEditType(isSetNotNullProperty, PropertyEditType.EDITABLE);
         }
 
         @Override
@@ -2128,8 +2129,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addObjectActions(this, objNotification);
             addPropertyDraw(objProperty, captionProperty, SIDProperty);
             setForceViewType(textNotification, ClassViewType.PANEL);
-            setReadOnly(captionProperty, true);
-            setReadOnly(SIDProperty, true);
+            setEditType(captionProperty, PropertyEditType.READONLY);
+            setEditType(SIDProperty, PropertyEditType.READONLY);
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(
@@ -2194,11 +2195,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(formPropertyDraw, objPropertyDraw), Compare.EQUALS, objTreeForm));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(currentUser), Compare.EQUALS, objUser));
 
-            setReadOnly(true);
-            setReadOnly(nameShowPropertyDraw, false);
-            setReadOnly(nameShowPropertyDrawCustomUser, false);
-            setReadOnly(columnWidthPropertyDrawCustomUser, false);
-            setReadOnly(columnWidthPropertyDraw, false);
+            setEditType(PropertyEditType.READONLY);
+            setEditType(nameShowPropertyDraw, PropertyEditType.EDITABLE);
+            setEditType(nameShowPropertyDrawCustomUser, PropertyEditType.EDITABLE);
+            setEditType(columnWidthPropertyDrawCustomUser, PropertyEditType.EDITABLE);
+            setEditType(columnWidthPropertyDraw, PropertyEditType.EDITABLE);
         }
     }
 
@@ -2210,7 +2211,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             super(parent, sID, getString("logics.tables.exceptions"));
             objExceptions = addSingleGroupObject(exception, getString("logics.tables.exceptions"), messageException, clientClientException, loginClientException, typeException, dateException);
             addPropertyDraw(erTraceException, objExceptions).forceViewType = ClassViewType.PANEL;
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
         }
 
         @Override
@@ -2256,7 +2257,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 mainObjects[i].groupTo.setSingleClassView(ClassViewType.PANEL);
                 PropertyDrawEntity objectValue = getPropertyDraw(BaseLogicsModule.this.objectValue, mainObjects[i]);
                 if (objectValue != null) {
-                    objectValue.readOnly = true;
+                    objectValue.setEditType(PropertyEditType.READONLY);
                 }
             }
 
@@ -2371,7 +2372,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             addInlineEAForm(emailUserPassUser, this, objUser, 1);
 
-            setReadOnly(true);
+            setEditType(PropertyEditType.READONLY);
         }
     }
 

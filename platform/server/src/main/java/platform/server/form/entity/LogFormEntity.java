@@ -2,6 +2,7 @@ package platform.server.form.entity;
 
 import platform.base.Result;
 import platform.interop.ClassViewType;
+import platform.interop.PropertyEditType;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.logics.BaseLogicsModule;
@@ -106,7 +107,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
         addFixedFilter(new NotNullFilterEntity(addPropertyObject(logProperty, entities)));
 
-        setReadOnly(true);
+        setEditType(PropertyEditType.READONLY);
     }
 
     private static ValueClass[] getValueClassesList(LP<?> property) {

@@ -7,6 +7,7 @@ import com.smartgwt.client.widgets.grid.ListGridRecord;
 import platform.gwt.view.classes.GType;
 import platform.gwt.view.logics.FormLogicsProvider;
 import platform.gwt.view.renderer.GTypeRenderer;
+import platform.interop.PropertyEditType;
 
 public class GPropertyDraw extends GComponent {
     public int ID;
@@ -18,11 +19,11 @@ public class GPropertyDraw extends GComponent {
     public String iconPath;
     public Boolean focusable;
     public boolean checkEquals;
-    public boolean readOnly;
+    public PropertyEditType editType = PropertyEditType.EDITABLE;
 
     public ListGridField createGridField(FormLogicsProvider formLogics) {
         ListGridField gridField = baseType.createGridField(formLogics, this);
-        gridField.setCanEdit(!readOnly);
+        gridField.setCanEdit(!(editType == PropertyEditType.EDITABLE));
         if (baseType != changeType) {
             gridField.setEditorType(changeType.createEditorType(formLogics, this));
         }
