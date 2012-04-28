@@ -4,6 +4,7 @@ import platform.client.logics.ClientContainer;
 import platform.interop.form.layout.ContainerType;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -23,6 +24,8 @@ public class ClientFormSplitPane extends JSplitPane implements AutoHideableConta
                 formLayout.dropCaches();
             }
         });
+
+        ((BasicSplitPaneUI) getUI()).getDivider().setBorder(BorderFactory.createEtchedBorder());
     }
 
     @Override
