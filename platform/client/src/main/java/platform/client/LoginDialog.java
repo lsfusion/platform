@@ -222,12 +222,12 @@ public class LoginDialog extends JDialog {
             FileWriter fileWr = new FileWriter(OSUtils.getUserFile(configName));
             fileWr.write(result.getServerHost() + '\n');
             fileWr.write(result.getServerPort() + '\n');
-            fileWr.write(result.getServerDB() + '\n');
             fileWr.write(result.getUserName() + '\n');
             fileWr.write(String.valueOf(savePassword.isSelected()) + '\n');
             if (savePassword.isSelected()) {
                 fileWr.write(Base64.encodeBase64String(result.getPassword().getBytes()) + '\n');
             }
+            fileWr.write(result.getServerDB() + '\n');
             fileWr.close();
         } catch (IOException e) {
             e.printStackTrace();
