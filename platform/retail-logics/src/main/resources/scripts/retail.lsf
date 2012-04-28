@@ -4097,6 +4097,13 @@ quantityStudyInputDetail 'Количество для разруба' (studyInpu
 retailPriceStudyInputDetail 'Цена за ед.' (studyInputDetail) = DATA NUMERIC[14,2] (studyInputDetail);
 totalStudyInputDetail 'Сумма' (studyInputDetail) = retailPriceStudyInputDetail(studyInputDetail)*quantityStudyInputDetail(studyInputDetail);
 subtotalInputActOfStudy 'Расход сумма' (actOfStudy) = GROUP SUM totalStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail) IN documentSumGroup;
+//subtotalByItemInputActOfStudy 'Расход сумма, товар' (actOfStudy) =
+//    GROUP SUM totalStudyInputDetail(studyInputDetail) AND NOT isContainerItem(itemStudyInputDetail(studyInputDetail))
+//        BY actOfStudyStudyInputDetail(studyInputDetail) IN documentSumGroup;
+//subtotalByContainerInputActOfStudy 'Расход сумма, тара' (actOfStudy) =
+//    GROUP SUM totalStudyInputDetail(studyInputDetail) IF isContainerItem(itemStudyInputDetail(studyInputDetail))
+//        BY actOfStudyStudyInputDetail(studyInputDetail) IN documentSumGroup;
+
 quantityInputActOfStudy 'Расход к-во' (actOfStudy) = GROUP SUM quantityStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail) IN documentSumGroup;
 
 dateStudyInputDetail 'Дата' (studyInputDetail) = dateActOfStudy(actOfStudyStudyInputDetail(studyInputDetail)) PERSISTENT;
@@ -4159,6 +4166,13 @@ totalStudyOutputDetail 'Сумма' (studyOutputDetail)= retailPriceStudyOutputD
 subtotalStudyInputDetail 'Итого сумма  прихода п/ф по товару' (studyInputDetail) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY studyInputDetailStudyOutputDetail(studyOutputDetail);
 
 subtotalOutputActOfStudy 'Приход сумма' (actOfStudy) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail) IN documentSumGroup;
+//subtotalByItemOutputActOfStudy 'Приход сумма, товар' (actOfStudy) =
+//    GROUP SUM totalStudyOutputDetail(studyOutputDetail) AND NOT isContainerItem(itemStudyOutputDetail(studyOutputDetail))
+//        BY actOfStudyStudyOutputDetail(studyOutputDetail) IN documentSumGroup;
+//subtotalByContainerOutputActOfStudy 'Приход сумма, тара' (actOfStudy) =
+//    GROUP SUM totalStudyOutputDetail(studyOutputDetail) IF isContainerItem(itemStudyOutputDetail(studyOutputDetail))
+//        BY actOfStudyStudyOutputDetail(studyOutputDetail) IN documentSumGroup;
+
 quantityOutputActOfStudy 'Приход к-во' (actOfStudy) = GROUP SUM overQuantityStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail) IN documentSumGroup;
 
 notTotalPercGoodsStudyInputDetail (studyInputDetail)= GROUP SUM percGoodsStudyOutputDetail(studyOutputDetail) BY studyInputDetailStudyOutputDetail(studyOutputDetail);
@@ -4225,6 +4239,9 @@ seriesInputParish 'Серия приходной накладной' (parish) = 
 
 dateTimeParish 'Дата/время' (parish) = dateTimeActOfStudy(actOfStudyParish(parish));
 subtotalParish 'Сумма прихода' (parish) = subtotalOutputActOfStudy(actOfStudyParish(parish));
+//subtotalByItemParish 'Сумма прихода, товар' (parish) = subtotalByItemOutputActOfStudy(actOfStudyParish(parish));
+//subtotalByContainerParish 'Сумма прихода, тара' (parish) = subtotalByContainerOutputActOfStudy(actOfStudyParish(parish));
+
 departmentStoreParish (parish) = departmentStoreActOfStudy(actOfStudyParish(parish));
 isPostedParish (parish) = isPostedActOfStudy(actOfStudyParish(parish));
 dateParish (parish) = dateActOfStudy(actOfStudyParish(parish));
@@ -4251,6 +4268,9 @@ descriptionStudyOutputDetail 'Название документа' (studyOutputD
 
 dateTimeConsumption 'Дата/время' (consumption) = dateTimeActOfStudy(actOfStudyConsumption(consumption));
 subtotalConsumption 'Сумма расхода' (consumption) = subtotalInputActOfStudy(actOfStudyConsumption(consumption));
+//subtotalByItemConsumption 'Сумма расхода, товар' (consumption) = subtotalByItemInputActOfStudy(actOfStudyConsumption(consumption));
+//subtotalByContainerConsumption 'Сумма расхода, тара' (consumption) = subtotalByContainerInputActOfStudy(actOfStudyConsumption(consumption));
+
 departmentStoreConsumption (consumption) = departmentStoreActOfStudy(actOfStudyConsumption(consumption));
 isPostedConsumption (consumption) = isPostedActOfStudy(actOfStudyConsumption(consumption));
 dateConsumption (consumption) = dateActOfStudy(actOfStudyConsumption(consumption));
@@ -4688,6 +4708,13 @@ shortageQuantityCountedItemByCollationSheet 'Недостача (к-во) по �
 shortageTotalItemByCollationSheet 'Недостача (сумма) по ведомости' (collationSheet) =
     GROUP SUM shortageTotalCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet IN baseGroup;
 
+shortageTotalByItemCollationSheet 'Недостача (сумма) по ведомости, товар' (collationSheet) =
+    GROUP SUM shortageTotalCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) AND NOT isContainerItem(item)
+        BY collationSheet IN baseGroup;
+shortageTotalByContainerCollationSheet 'Недостача (сумма) по ведомости, тара' (collationSheet) =
+    GROUP SUM shortageTotalCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) AND isContainerItem(item)
+        BY collationSheet IN baseGroup;
+
 priceByCollationSheetItem 'Цена из описи, за ед.' (collationSheet, item) = GROUP EQUAL priceAccountDetailPage(detailPage) BY collationSheetListInventory(listInventoryDetailPage(detailPage)), skuBarcodeDetailPage(detailPage);
 
 notEqualsPriceByCollationSheetItem(collationSheet, item) =  priceByCollationSheetItem(collationSheet, item) != priceAccountCollationSheetItem(collationSheet, item);
@@ -5044,6 +5071,13 @@ priceByItemStatement(item, statement) = GROUP EQUAL retailPriceStatementDetail(s
 
 totalQuantityStatement 'Общее количество' (statement) = GROUP SUM quantityStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN documentSumGroup;
 sumStatement 'Общая сумма с НДС' (statement) = GROUP SUM sumStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN documentSumGroup;
+
+sumByItemStatement 'Общая сумма с НДС, товар' (statement) =
+    GROUP SUM sumStatementDetail(statementDetail) AND NOT isContainerItem(itemStatementDetail(statementDetail))
+        BY statementStatementDetail(statementDetail) IN documentSumGroup;
+sumByContainerStatement 'Общая сумма с НДС, тара' (statement) =
+    GROUP SUM sumStatementDetail(statementDetail) IF isContainerItem(itemStatementDetail(statementDetail))
+        BY statementStatementDetail(statementDetail) IN documentSumGroup;
 
 sumWithoutNDSStatementDetail 'Сумма без НДС' (statementDetail) = sumStatementDetail(statementDetail) (-) totalSumNDSStatementDetail(statementDetail);
 sumWithoutNDSStatement 'Общая сумма без НДС' (statement) = sumStatement(statement) (-) sumNDSStatement(statement) IN documentSumGroup;
@@ -5448,6 +5482,13 @@ diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentD
 retailSumShipmentDetail 'Розничная сумма' (shipmentDetail) = quantityShipmentDetail(shipmentDetail) * retailPriceShipmentDetail(shipmentDetail);
 retailSumShipment 'Розничная сумма' (shipment) = GROUP SUM retailSumShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN documentSumGroup PERSISTENT;
 
+retailSumByItemShipment 'Розничная сумма, товар' (shipment) =
+    GROUP SUM retailSumShipmentDetail(shipmentDetail) AND NOT isContainerItem(itemShipmentDetail(shipmentDetail))
+        BY shipmentShipmentDetail(shipmentDetail) IN documentSumGroup PERSISTENT;
+retailSumByContainerShipment 'Розничная сумма, тара' (shipment) =
+    GROUP SUM retailSumShipmentDetail(shipmentDetail) IF isContainerItem(itemShipmentDetail(shipmentDetail))
+        BY shipmentShipmentDetail(shipmentDetail) IN documentSumGroup PERSISTENT;
+
 registerCommitteeShipment(shipment) = DATA registerCommittee(shipment);
 nameRegisterCommitteeShipment 'Комиссия для реестра цен' (shipment) = commonName(registerCommitteeShipment(shipment)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
@@ -5637,6 +5678,13 @@ dataSuppliersRangeWriteOffDetail 'НДС поставщика,%' (writeOffDetail
 accountSumWriteOffDetail 'Сумма' (writeOffDetail) = accountPriceWriteOffDetail(writeOffDetail)*quantityWriteOffDetail(writeOffDetail);
 accountSumWriteOff 'Общая сумма' (writeOff) = GROUP SUM accountSumWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN documentSumGroup;
 
+accountSumByItemWriteOff 'Общая сумма, товар' (writeOff) =
+    GROUP SUM accountSumWriteOffDetail(writeOffDetail) AND NOT isContainerItem(itemWriteOffDetail(writeOffDetail))
+        BY writeOffWriteOffDetail(writeOffDetail) IN documentSumGroup;
+accountSumByContainerWriteOff 'Общая сумма, тара' (writeOff) =
+    GROUP SUM accountSumWriteOffDetail(writeOffDetail) IF isContainerItem(itemWriteOffDetail(writeOffDetail))
+        BY writeOffWriteOffDetail(writeOffDetail) IN documentSumGroup;
+
 articleItemWriteOff 'Артикул производителя/поставщика' (writeOffDetail) = articleItem(itemWriteOffDetail(writeOffDetail));
 nameCountryItemWriteOff 'Страна' (writeOffDetail) = nameCountryItem(itemWriteOffDetail(writeOffDetail));
 
@@ -5707,6 +5755,13 @@ totalQuantityInnerFlow 'Общее количество' (innerFlow) = GROUP SUM
 
 accountSumInnerFlow 'Общая сумма' (innerFlow) = GROUP SUM accountSumInnerFlowDetail (innerFlowDetail)
     IF innerFlowInnerFlowDetail (innerFlowDetail) == innerFlow BY innerFlowInnerFlowDetail(innerFlowDetail) IN documentSumGroup;
+
+accountSumByItemInnerFlow 'Общая сумма, товар' (innerFlow) =
+    GROUP SUM accountSumInnerFlowDetail (innerFlowDetail) AND NOT isContainerItem(itemInnerFlowDetail(innerFlowDetail))
+        BY innerFlowInnerFlowDetail(innerFlowDetail) IN documentSumGroup;
+accountSumByContainerInnerFlow 'Общая сумма, тара' (innerFlow) =
+    GROUP SUM accountSumInnerFlowDetail (innerFlowDetail) IF isContainerItem(itemInnerFlowDetail(innerFlowDetail))
+        BY innerFlowInnerFlowDetail(innerFlowDetail) IN documentSumGroup;
 
 castInnerFlowObjectsToString100=
     FORMULA STRING[200] '\'Расход в отдел \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
@@ -5932,6 +5987,12 @@ totalQuantityInnerArrival 'Общее количество' (innerArrival) = GRO
 accountSumInnerArrival 'Общая сумма' (innerArrival) = GROUP SUM accountSumInnerArrivalDetail (innerArrivalDetail)
     BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN documentSumGroup;
 
+accountSumByItemInnerArrival 'Общая сумма, товар' (innerArrival) =
+    GROUP SUM accountSumInnerArrivalDetail (innerArrivalDetail) AND NOT isContainerItem(itemInnerArrivalDetail(innerArrivalDetail))
+        BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN documentSumGroup;
+accountSumByContainerInnerArrival 'Общая сумма, тара' (innerArrival) =
+    GROUP SUM accountSumInnerArrivalDetail (innerArrivalDetail) IF isContainerItem(itemInnerArrivalDetail(innerArrivalDetail))
+        BY innerArrivalInnerArrivalDetail(innerArrivalDetail) IN documentSumGroup;
 
 // ---------------------------------- Дооценка на внутреннем перемещении (приход) ------------------------------------------
 
@@ -6075,6 +6136,13 @@ sumWastageDetail 'Сумма' (wastageDetail) = quantityWastageDetail(wastageDet
 
 totalSumWastage 'Общая сумма' (wastage) = GROUP SUM sumWastageDetail (wastageDetail)
     IF  wastageWastageDetail(wastageDetail) == wastage BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
+
+//totalSumByItemWastage 'Общая сумма, товар' (wastage) =
+//    GROUP SUM sumWastageDetail (wastageDetail) AND NOT isContainerItem(itemWastageDetail(wastageDetail))
+//        BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
+//totalSumByContainerWastage 'Общая сумма, тара' (wastage) =
+//    GROUP SUM sumWastageDetail (wastageDetail)IF  isContainerItem(itemWastageDetail(wastageDetail))
+//        BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
 
 castWastageObjectsToString100=
     FORMULA STRING[200] '\'Списание отходов \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
@@ -8110,9 +8178,15 @@ curPriceWareReturnSupplierDetail (returnSupplierDetail) <- priceWareBLedgerDateT
 
 retailSumReturnSupplierDetail 'Розничная сумма' (returnSupplierDetail) =
     quantityReturnSupplierDetail(returnSupplierDetail) * retailPriceReturnSupplierDetail(returnSupplierDetail);
-retailSumReturnSupplier 'Розничная сумма' (returnSupplier) = GROUP SUM retailSumReturnSupplierDetail(shipmentDetail)
+retailSumReturnSupplier 'Розничная сумма' (returnSupplier) = GROUP SUM retailSumReturnSupplierDetail(returnSupplierDetail)
                                                              BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN documentSumGroup;
 
+retailSumByItemReturnSupplier 'Розничная сумма, товар' (returnSupplier) =
+    GROUP SUM retailSumReturnSupplierDetail(returnSupplierDetail) AND NOT isContainerItem(itemReturnSupplierDetail(returnSupplierDetail))
+        BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN documentSumGroup;
+retailSumByContainerReturnSupplier 'Розничная сумма, тара' (returnSupplier) =
+    GROUP SUM retailSumReturnSupplierDetail(returnSupplierDetail) IF isContainerItem(itemReturnSupplierDetail(returnSupplierDetail))
+        BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN documentSumGroup;
 // ---------------------------------- Переоценка на возврате ------------------------------------------
 
 CLASS priceChangeReturnSupplier 'Переоценка на возврате' : priceChangeDocument;
@@ -9601,6 +9675,12 @@ accountSumChangeDocumentDetail 'Сумма переоценки' (priceChangeDoc
 
 accountSumChangeDocument 'Сумма переоценки' (priceChangeDocument) = GROUP SUM accountSumChangeDocumentDetail(priceChangeDocumentDetail)
                                                                           BY  documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+accountSumByItemChangeDocument 'Сумма переоценки, товар' (priceChangeDocument) =
+    GROUP SUM accountSumChangeDocumentDetail(priceChangeDocumentDetail) AND NOT isContainerItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail))
+        BY  documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+accountSumByContainerChangeDocument 'Сумма переоценки, тара' (priceChangeDocument) =
+    GROUP SUM accountSumChangeDocumentDetail(priceChangeDocumentDetail) IF isContainerItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail))
+        BY  documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 warePriceChangeDocumentDetail 'Новая посуда' (priceChangeDocumentDetail) = UNION EXCLUSIVE
                                                                             warePriceChangeShipmentDetail(priceChangeDocumentDetail),
@@ -10340,6 +10420,10 @@ CONSTRAINT commonMarkupPriceChangeDocumentDetail (priceChangeDocumentDetail) >
 
 //------------------------------------ Изменение учетных сумм ------------------------------------------//
 
+GROUP ledgerByItemGroup 'Суммы по товару' : baseGroup;
+GROUP ledgerByContainerGroup 'Суммы по таре' : baseGroup;
+GROUP ledgerGroup 'Суммы общие' : baseGroup;
+
 dateTimeAccountSumDocumentLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipment(ledger),
                                                                          dateTimeReturnSupplier(ledger),
                                                                          dateTimeInnerArrival(ledger),
@@ -10404,30 +10488,92 @@ departmentStoreAccountSumDocumentLedger (ledger) = UNION EXCLUSIVE departmentSto
                                                                    departmentStoreParish(ledger),
                                                                    departmentStoreConsumption(ledger) PERSISTENT;
 
-
-
 nameDepartmentStoreAccountSumDocumentLedger 'Отдел магазина' (ledger) = name(departmentStoreAccountSumDocumentLedger(ledger));
 
 sumIncAccountDocumentLedger 'Сумма прихода' (ledger) = UNION EXCLUSIVE retailSumShipment(ledger),
                                                                        accountSumInnerArrival(ledger),
                                                                        accountSumChangeDocument(ledger),
-                                                                       subtotalParish(ledger) PERSISTENT;
+                                                                       subtotalParish(ledger) PERSISTENT IN ledgerGroup;
+
+sumIncAccountByItemDocumentLedger 'Сумма прихода, товар' (ledger) = UNION EXCLUSIVE retailSumByItemShipment(ledger),
+                                                                       accountSumByItemInnerArrival(ledger),
+                                                                       accountSumByItemChangeDocument(ledger) PERSISTENT IN ledgerByItemGroup;//      subtotalByItemParish(ledger)
+
+sumIncAccountByContainerDocumentLedger 'Сумма прихода, тара' (ledger) = UNION EXCLUSIVE retailSumByContainerShipment(ledger),
+                                                                       accountSumByContainerInnerArrival(ledger),
+                                                                       accountSumByContainerChangeDocument(ledger) PERSISTENT IN ledgerByContainerGroup; //  subtotalByContainerParish(ledger)
+
 sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSIVE accountSumWriteOff(ledger),
                                                                        retailSumReturnSupplier(ledger),
                                                                        accountSumInnerFlow(ledger),
                                                                        sumStatement(ledger),
                                                                        totalSumWastage(ledger),
-                                                                       totalSumSupplierReturnSupplier(ledger),
+        // наверное лишнее                                             totalSumSupplierReturnSupplier(ledger),
                                                                        shortageTotalItemByCollationSheet(ledger),
                                                                        sumZReport(ledger),
                                                                        sumSaleDiscountDocument(ledger),
-                                                                       subtotalConsumption(ledger) PERSISTENT;
+                                                                       subtotalConsumption(ledger) PERSISTENT IN ledgerGroup;
+
+
+sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledger) = UNION EXCLUSIVE accountSumByItemWriteOff(ledger),
+                                                                       retailSumByItemReturnSupplier(ledger),
+                                                                       accountSumByItemInnerFlow(ledger),
+                                                                       sumByItemStatement(ledger),
+                                                                       shortageTotalByItemCollationSheet(ledger),
+                                                                       sumZReport(ledger),
+                                                                       sumSaleDiscountDocument(ledger) PERSISTENT IN ledgerByItemGroup; // subtotalByItemConsumption(ledger), totalSumByItemWastage(ledger),
+
+sumOutAccountByContainerDocumentLedger 'Сумма расхода, тара' (ledger) = UNION EXCLUSIVE accountSumByContainerWriteOff(ledger),
+                                                                       retailSumByContainerReturnSupplier(ledger),
+                                                                       accountSumByContainerInnerFlow(ledger),
+                                                                       sumByContainerStatement(ledger),
+                                                                       shortageTotalByContainerCollationSheet(ledger) PERSISTENT IN ledgerByContainerGroup;
+//                                                                       sumZReport(ledger),
+//                                                                       sumSaleDiscountDocument(ledger),
+//                                                                       subtotalByContainerConsumption(ledger)
+//                                                                        totalSumByContainerWastage(ledger),
+quantityIncAccountSumDocumentLedger 'Количество приходных док-ов' (departmentStore, dtFrom, dtTo)=
+    GROUP SUM 1 IF incAccountSumDocumentLedger AS incAccountSumDocumentLedger AND isPostedAccountSumDocumentLedger(incAccountSumDocumentLedger)
+        AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) >= (dtFrom AS DATE) AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) <= (dtTo AS DATE)
+            BY departmentStoreAccountSumDocumentLedger(incAccountSumDocumentLedger), dtFrom, dtTo IN ledgerGroup;
+
+quantityOutAccountSumDocumentLedger 'Количество расходных док-ов' (departmentStore, dtFrom, dtTo)=
+    GROUP SUM 1 IF outAccountSumDocumentLedger AS outAccountSumDocumentLedger AND isPostedAccountSumDocumentLedger(outAccountSumDocumentLedger)
+        AND dateAccountSumDocumentLedger(outAccountSumDocumentLedger) >= (dtFrom AS DATE) AND dateAccountSumDocumentLedger(outAccountSumDocumentLedger) <= (dtTo AS DATE)
+            BY departmentStoreAccountSumDocumentLedger(outAccountSumDocumentLedger), dtFrom, dtTo IN ledgerGroup;
+
+
+totalSumIncAccountSumByItemDocumentLedger 'Общая сумма прихода, товар' (departmentStore, dtFrom, dtTo)=
+    GROUP SUM sumIncAccountByItemDocumentLedger(incAccountSumDocumentLedger)  AND isPostedAccountSumDocumentLedger(incAccountSumDocumentLedger)
+        AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) >= (dtFrom AS DATE) AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) <= (dtTo AS DATE)
+            BY departmentStoreAccountSumDocumentLedger(incAccountSumDocumentLedger), dtFrom, dtTo IN ledgerByItemGroup;
+totalSumIncAccountSumByContainerDocumentLedger 'Общая сумма прихода, тара' (departmentStore, dtFrom, dtTo)=
+    GROUP SUM sumIncAccountByContainerDocumentLedger(incAccountSumDocumentLedger) AND isPostedAccountSumDocumentLedger(incAccountSumDocumentLedger)
+        AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) >= (dtFrom AS DATE) AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) <= (dtTo AS DATE)
+            BY departmentStoreAccountSumDocumentLedger(incAccountSumDocumentLedger), dtFrom, dtTo IN ledgerByContainerGroup;
+
+
+totalSumOutAccountSumByItemDocumentLedger 'Общая сумма расхода, товар' (departmentStore, dtFrom, dtTo)=
+    GROUP SUM sumOutAccountByItemDocumentLedger(outAccountSumDocumentLedger) AND isPostedAccountSumDocumentLedger(outAccountSumDocumentLedger)
+        AND dateAccountSumDocumentLedger(outAccountSumDocumentLedger) >= (dtFrom AS DATE) AND dateAccountSumDocumentLedger(outAccountSumDocumentLedger) <= (dtTo AS DATE)
+            BY departmentStoreAccountSumDocumentLedger(outAccountSumDocumentLedger), dtFrom, dtTo IN ledgerByItemGroup;
+totalSumOutAccountSumByContainerDocumentLedger 'Общая сумма расхода, тара' (departmentStore, dtFrom, dtTo)=
+    GROUP SUM sumOutAccountByContainerDocumentLedger(outAccountSumDocumentLedger) AND isPostedAccountSumDocumentLedger(outAccountSumDocumentLedger)
+        AND dateAccountSumDocumentLedger(outAccountSumDocumentLedger) >= (dtFrom AS DATE) AND dateAccountSumDocumentLedger(outAccountSumDocumentLedger) <= (dtTo AS DATE)
+            BY departmentStoreAccountSumDocumentLedger(outAccountSumDocumentLedger), dtFrom, dtTo IN ledgerByContainerGroup;
 
 sumAccountDocumentLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumIncAccountDocumentLedger(ledger), -sumOutAccountDocumentLedger(ledger) PERSISTENT;
+
+sumAccountByItemDocumentLedger 'Сумма, товар' (ledger) = UNION EXCLUSIVE sumIncAccountByItemDocumentLedger(ledger), -sumOutAccountByItemDocumentLedger(ledger) PERSISTENT;
+sumAccountByContainerDocumentLedger 'Сумма, тара' (ledger) = UNION EXCLUSIVE sumIncAccountByContainerDocumentLedger(ledger), -sumOutAccountByContainerDocumentLedger(ledger) PERSISTENT;
 
 currentSumAccountDocumentLedger 'Текущий остаток по документам' (departmentStore) = GROUP SUM sumAccountDocumentLedger (ledger) AND isPostedAccountSumDocumentLedger(ledger)
                                                                                            BY departmentStoreAccountSumDocumentLedger(ledger) PERSISTENT;
 
+currentSumAccountByItemDocumentLedger 'Текущий остаток по документам, товар' (departmentStore) = GROUP SUM sumAccountByItemDocumentLedger (ledger) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                                           BY departmentStoreAccountSumDocumentLedger(ledger) PERSISTENT;
+currentSumAccountByContainerDocumentLedger 'Текущий остаток по документам, тара' (departmentStore) = GROUP SUM sumAccountByContainerDocumentLedger (ledger) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                                           BY departmentStoreAccountSumDocumentLedger(ledger) PERSISTENT;
 //без учета текущей даты/времени
 sumAccountBDocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND dateTime IS DATETIME,
                                                                          -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateTimeAccountSumDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedAccountSumDocumentLedger(ledger)
@@ -10435,7 +10581,31 @@ sumAccountBDocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM curren
 
 sumAccountBDocumentLedgerDate 'Остаток на начало' (departmentStore, date) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND date IS DATE,
                                                                             -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) >= (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                            BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date);
+                                                                            BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date) IN ledgerGroup;
+
+sumAccountByItemBDocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountByItemDocumentLedger(departmentStore) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM sumAccountByItemDocumentLedger (ledger) AND dateTimeAccountSumDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                         BY departmentStoreAccountSumDocumentLedger(ledger), dateTime](departmentStore, dateTime);
+
+sumAccountByItemBDocumentLedgerDate 'Остаток на начало, товар' (departmentStore, date) = UNION SUM currentSumAccountByItemDocumentLedger(departmentStore) AND date IS DATE,
+                                                                            -[GROUP SUM sumAccountByItemDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) >= (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                            BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date) IN ledgerByItemGroup;
+
+sumAccountByContainerBDocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountByContainerDocumentLedger(departmentStore) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM sumAccountByContainerDocumentLedger (ledger) AND dateTimeAccountSumDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                         BY departmentStoreAccountSumDocumentLedger(ledger), dateTime](departmentStore, dateTime);
+
+sumAccountByContainerBDocumentLedgerDate 'Остаток на начало, тара' (departmentStore, date) = UNION SUM currentSumAccountByContainerDocumentLedger(departmentStore) AND date IS DATE,
+                                                                            -[GROUP SUM sumAccountByContainerDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) >= (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                            BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date) IN ledgerByContainerGroup;
+
+subtotalIncAccountSumByItemDocumentLedger 'Итого с остатком, товар' (departmentStore, dtFrom, dtTo) = UNION SUM
+    sumAccountByItemBDocumentLedgerDate(departmentStore, dtFrom) AND dtTo AS DATE,
+    totalSumIncAccountSumByItemDocumentLedger(departmentStore, dtFrom, dtTo) IN ledgerByItemGroup;
+subtotalIncAccountSumByContainerDocumentLedger 'Итого с остатком, тара' (departmentStore, dtFrom, dtTo) = UNION SUM
+    sumAccountByContainerBDocumentLedgerDate(departmentStore, dtFrom) AND dtTo AS DATE,
+    totalSumIncAccountSumByContainerDocumentLedger(departmentStore, dtFrom, dtTo) IN ledgerByContainerGroup;
+
 
 //с учетом текущей даты/времени
 sumAccountADocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND dateTime IS DATETIME,
@@ -10444,17 +10614,43 @@ sumAccountADocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM curren
 
 sumAccountADocumentLedgerDate 'Остаток на конец' (departmentStore, date) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND date IS DATE,
                                                                            -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) > (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                           BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date);
+                                                                           BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date) IN ledgerGroup;
 
-FORM sumAccountDocumentLedger 'Товарный отчет'
+sumAccountByItemADocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountByItemDocumentLedger(departmentStore) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM sumAccountByItemDocumentLedger (ledger) AND dateTimeAccountSumDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                         BY departmentStoreAccountSumDocumentLedger(ledger), dateTime](departmentStore, dateTime);
+
+sumAccountByItemADocumentLedgerDate 'Остаток на конец, товар' (departmentStore, date) = UNION SUM currentSumAccountByItemDocumentLedger(departmentStore) AND date IS DATE,
+                                                                           -[GROUP SUM sumAccountByItemDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) > (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                           BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date) IN ledgerByItemGroup;
+
+sumAccountByContainerADocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountByContainerDocumentLedger(departmentStore) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM sumAccountByContainerDocumentLedger (ledger) AND dateTimeAccountSumDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                         BY departmentStoreAccountSumDocumentLedger(ledger), dateTime](departmentStore, dateTime);
+
+sumAccountByContainerADocumentLedgerDate 'Остаток на конец, тара' (departmentStore, date) = UNION SUM currentSumAccountByContainerDocumentLedger(departmentStore) AND date IS DATE,
+                                                                           -[GROUP SUM sumAccountByContainerDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) > (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
+                                                                           BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date) IN ledgerByContainerGroup;
+
+nameCompanyDepartmentStore 'Компания' (departmentStore) = name(companyStore(storeDepartmentStore(departmentStore)));
+UNPDepartmentStore 'УНП' (departmentStore) = UNPLegalEntity(companyStore(storeDepartmentStore(departmentStore)));
+// ------------------------- Печатная форма----------------------------- //
+FORM sumAccountDocumentLedgerPrint 'Товарный отчет' PRINT
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
             ds = departmentStore FIXED PANEL
-    PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo), name(ds) SELECTOR
+    PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
+    PROPERTIES(ds) SELECTOR name, nameStoreDepartmentStore, nameCompanyDepartmentStore, UNPDepartmentStore
 
-    PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountADocumentLedgerDate(ds, dtTo)
+    PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountByItemBDocumentLedgerDate(ds, dtFrom), sumAccountByContainerBDocumentLedgerDate(ds, dtFrom),
+               sumAccountByItemADocumentLedgerDate(ds, dtFrom), sumAccountByContainerADocumentLedgerDate(ds, dtFrom), sumAccountADocumentLedgerDate(ds, dtTo)
+    PROPERTIES(ds, dtFrom, dtTo) quantityIncAccountSumDocumentLedger, quantityOutAccountSumDocumentLedger,
+               totalSumIncAccountSumByItemDocumentLedger, totalSumIncAccountSumByContainerDocumentLedger,
+               subtotalIncAccountSumByItemDocumentLedger, subtotalIncAccountSumByContainerDocumentLedger,
+               totalSumOutAccountSumByItemDocumentLedger, totalSumOutAccountSumByContainerDocumentLedger
 
     OBJECTS il = incAccountSumDocumentLedger
-    PROPERTIES(il) READONLY iDateTime = dateTimeAccountSumDocumentLedger, objectClassName, descriptionDocumentLedger, sumIncAccountDocumentLedger
+    PROPERTIES(il) SELECTOR iDateTime = dateTimeAccountSumDocumentLedger, objectClassName, descriptionDocumentLedger,
+                   sumIncAccountByItemDocumentLedger, sumIncAccountByContainerDocumentLedger, sumIncAccountDocumentLedger
     FILTERS isPostedAccountSumDocumentLedger(il),
             departmentStoreAccountSumDocumentLedger(il) == ds,
             dateAccountSumDocumentLedger(il) >= dtFrom,
@@ -10462,7 +10658,52 @@ FORM sumAccountDocumentLedger 'Товарный отчет'
     ORDER BY iDateTime
 
     OBJECTS ol = outAccountSumDocumentLedger
-    PROPERTIES(ol) READONLY oDateTime = dateTimeAccountSumDocumentLedger, objectClassName, descriptionDocumentLedger, sumOutAccountDocumentLedger
+    PROPERTIES(ol) SELECTOR oDateTime = dateTimeAccountSumDocumentLedger, objectClassName, descriptionDocumentLedger,
+                   sumOutAccountByItemDocumentLedger, sumOutAccountByContainerDocumentLedger, sumOutAccountDocumentLedger
+    FILTERS isPostedAccountSumDocumentLedger(ol),
+            departmentStoreAccountSumDocumentLedger(ol) == ds,
+            dateAccountSumDocumentLedger(ol) >= dtFrom,
+            dateAccountSumDocumentLedger(ol) <= dtTo
+    ORDER BY oDateTime
+;
+
+DESIGN sumAccountDocumentLedgerPrint FROM DEFAULT {
+    PROPERTY(objFrom) {
+        caption = 'Дата (с)';
+    }
+    PROPERTY(objTo) {
+        caption = 'Дата (по)';
+    }
+}
+toPrintAccountDocumentLedger 'Тов. отчет' (departmentStore, dtInFrom, dtOutTo) =
+    ACTION FORM sumAccountDocumentLedgerPrint OBJECTS ds = (departmentStore AS departmentStore), dtFrom = (dtInFrom AS DATE), dtTo = (dtOutTo AS DATE)  IMAGE 'print.png' IN printGroup CONFIRM;
+
+
+FORM sumAccountDocumentLedger 'Товарный отчет'
+    OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
+            ds = departmentStore FIXED PANEL
+    PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo), name(ds) SELECTOR
+
+    PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountByItemBDocumentLedgerDate(ds, dtFrom), sumAccountByContainerBDocumentLedgerDate(ds, dtFrom),
+               sumAccountByItemADocumentLedgerDate(ds, dtFrom), sumAccountByContainerADocumentLedgerDate(ds, dtFrom), sumAccountADocumentLedgerDate(ds, dtTo)
+    PROPERTIES(ds, dtFrom, dtTo) quantityIncAccountSumDocumentLedger, quantityOutAccountSumDocumentLedger,
+               totalSumIncAccountSumByItemDocumentLedger, totalSumIncAccountSumByContainerDocumentLedger,
+               subtotalIncAccountSumByItemDocumentLedger, subtotalIncAccountSumByContainerDocumentLedger,
+               totalSumOutAccountSumByItemDocumentLedger, totalSumOutAccountSumByContainerDocumentLedger,
+               toPrintAccountDocumentLedger
+
+    OBJECTS il = incAccountSumDocumentLedger
+    PROPERTIES(il) READONLY iDateTime = dateTimeAccountSumDocumentLedger, objectClassName, descriptionDocumentLedger,
+                   sumIncAccountByItemDocumentLedger, sumIncAccountByContainerDocumentLedger, sumIncAccountDocumentLedger
+    FILTERS isPostedAccountSumDocumentLedger(il),
+            departmentStoreAccountSumDocumentLedger(il) == ds,
+            dateAccountSumDocumentLedger(il) >= dtFrom,
+            dateAccountSumDocumentLedger(il) <= dtTo
+    ORDER BY iDateTime
+
+    OBJECTS ol = outAccountSumDocumentLedger
+    PROPERTIES(ol) READONLY oDateTime = dateTimeAccountSumDocumentLedger, objectClassName, descriptionDocumentLedger,
+                   sumOutAccountByItemDocumentLedger, sumOutAccountByContainerDocumentLedger, sumOutAccountDocumentLedger
     FILTERS isPostedAccountSumDocumentLedger(ol),
             departmentStoreAccountSumDocumentLedger(ol) == ds,
             dateAccountSumDocumentLedger(ol) >= dtFrom,
@@ -12466,6 +12707,7 @@ NAVIGATOR {
         ADD consignmentTwoVertical;
         ADD consignmentTwoAttach;
         ADD specificationPrint;
+        ADD sumAccountDocumentLedgerPrint;
     }
 
     ADD adminElement TO formsTree {
