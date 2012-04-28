@@ -113,7 +113,7 @@ dateInnerInvoice 'Дата инвойса' (innerInvoice) = UNION EXCLUSIVE date
 contractFormedInvoice 'Договор инвойса (ИД)' (formedInvoice) = contractImporterFreight(importerFormedInvoice(formedInvoice),
                                                                                        freightFormedInvoice(formedInvoice)) IN idGroup;
 
-//sidContractFormedInvoice 'Договор инвойса' (formedInvoice) = sidContractFormedInvoice(contractFormedInvoice(formedInvoice)) IN
+//sidContractFormedInvoice 'Договор инвойса' (formedInvoice) = sidContractFormedInvoice(contractFormedInvoice(formedInvoice));
 
 
 quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityProxyImporterFreightSku(importerFormedInvoice(formedInvoice),
@@ -673,7 +673,6 @@ priceFromDiapasonPrices 'от' = DATA NUMERIC[14,3](diapasonPrices) IN baseGroup
 priceToDiapasonPrices 'до' = DATA NUMERIC[14,3](diapasonPrices) IN baseGroup;
 priceConversionDiapasonPrices 'Округлённая цена' = DATA NUMERIC[14,3](diapasonPrices) IN baseGroup;
 
-
 TABLE priceChangeDocumentSku(priceChangeDocument, sku);
 
 dateCoefficientRetail 'Дата введения' = DATA DATE(coefficientRetail) IN baseGroup;
@@ -683,14 +682,16 @@ uniqueCoefficientRetail() = GROUP UNIQUE coefficientRetail BY dateCoefficientRet
                                                         WHERE coefficientRetail IS coefficientRetail;
 
 sidPriceChangeDocument 'Номер' = DATA STRING[10] (priceChangeDocument) IN baseGroup;
-//datePriceChangeDocument 'Дата документа' = DATA DATE(priceChangeDocument) IN baseGroup;
+timePriceChangeDocument 'Время документа' = DATA TIME(priceChangeDocument) IN baseGroup;
+
+dateTimePriceChangeDocument 'Дата/время документа' (priceChangeDocument) = toDateTime(date(priceChangeDocument), timePriceChangeDocument(priceChangeDocument));
+
 isDiscountPriceChangeDocument 'Распродажа' = DATA BOOLEAN(priceChangeDocument) IN baseGroup;
 keepDiscountPriceChangeDocument 'Учитывать скидки' = DATA BOOLEAN(priceChangeDocument) IN baseGroup;
 
 priceInPriceChangeDocumentSku 'Цена первого поставщика' = DATA NUMERIC[14,2](basePriceChangeDocument, sku) IN baseGroup;
 priceFullPriceChangeDocumentSku 'Цена с затратами' = DATA NUMERIC[14,2](basePriceChangeDocument, sku) IN baseGroup;
 RRPPriceChangeDocumentSku 'Рекомендуемая цена' = DATA NUMERIC[14,2](basePriceChangeDocument, sku) IN baseGroup;
-//ratePriceChangeDocumentSku 'Обменный курс' = DATA DOUBLE(basePriceChangeDocument, sku) IN baseGroup;
 
 ratePriceChangeDocumentSku 'Обменный курс' (basePriceChangeDocument, sku) = nearestRateExchange(typeExchangeRetail(),
                                                                             currencyTypeExchange(typeExchangeSTX()),
@@ -713,10 +714,11 @@ priceOutPriceChangeDocumentArticle 'Цена с надбавкой' (basePriceCh
 
 priceOutPriceChangeDocumentArticleSku 'Цена с надбавкой' (basePriceChangeDocument, sku) = priceOutPriceChangeDocumentArticle(basePriceChangeDocument, articleSku(sku));
 
-priceSkuDate 'Предыдущая цена' (sku, date) = GROUP MAX priceOutPriceChangeDocumentArticleSku(basePriceChangeDocument, sku)
-                                                    IF date(basePriceChangeDocument)<date AND date IS DATE BY sku, date;
+priceSkuDate 'Предыдущая цена' (sku, dateTime) = GROUP MAX priceOutPriceChangeDocumentArticleSku(basePriceChangeDocument, sku)
+                                                        IF dateTimePriceChangeDocument(basePriceChangeDocument) < dateTime AND dateTime IS DATETIME BY sku, dateTime;
 
-previousPriceChangeDocumentSku 'Предыдущая цена' (basePriceChangeDocument, sku) = priceSkuDate(sku, date(basePriceChangeDocument)) AND basePriceChangeDocument IS basePriceChangeDocument;
+previousPriceChangeDocumentSku 'Предыдущая цена' (basePriceChangeDocument, sku) = priceSkuDate(sku, dateTimePriceChangeDocument(basePriceChangeDocument)) AND
+                                                                                  basePriceChangeDocument IS basePriceChangeDocument;
 
 isPreviousPriceChangeDocumentSku 'Взять предыдущую' = DATA BOOLEAN (basePriceChangeDocument, sku);
 
@@ -724,12 +726,12 @@ priceRetailPriceChangeDocumentSku 'Розничная цена' =  IF isPrevious
                                                          previousPriceChangeDocumentSku (basePriceChangeDocument, sku)
                                                     ELSE priceOutPriceChangeDocumentArticleSku(basePriceChangeDocument, sku);
 
-priceRetailRatePriceChangeDocumentSku 'Розничная цена (руб.)' = roundMinus1(priceRetailPriceChangeDocumentSku(basePriceChangeDocument, sku) *
-                                                                            ratePriceChangeDocumentSku(basePriceChangeDocument, sku));
+priceRetailRatePriceChangeDocumentSku 'Розничная цена (руб.)' = round0(priceRetailPriceChangeDocumentSku(basePriceChangeDocument, sku) *
+                                                                       ratePriceChangeDocumentSku(basePriceChangeDocument, sku));
 
-
-
-//priceRetailPriceChangeDocumentSku 'Розничная цена' = DATA NUMERIC[14,2](basePriceChangeDocument, sku) IN baseGroup;
+percentNDSPriceChangeDocumentSku 'НДС (%)' = DATA NUMERIC[14,3](basePriceChangeDocument, sku) IN baseGroup;
+sumNDSPriceChangeDocumentSku 'НДС (руб.)' = [round0(X*Y/(Y+100))](priceRetailRatePriceChangeDocumentSku(basePriceChangeDocument, sku),
+                                                                  percentNDSPriceChangeDocumentSku(basePriceChangeDocument, sku));
 
 basePriceChangeDocumentSku 'Цена без уценки' = DATA NUMERIC[14,2](discountPriceChangeDocument, sku) IN baseGroup;
 markdownPriceChangeDocumentSku 'Цена с уценкой' = DATA NUMERIC[14,2](discountPriceChangeDocument, sku) IN baseGroup;
@@ -758,13 +760,14 @@ FORM coefficientRetails 'История коэффициентов'
 FORM priceChangeDocument 'Документ изменений цен'
 
     OBJECTS p=basePriceChangeDocument FIXED PANEL
-    PROPERTIES(p) sidPriceChangeDocument, date, isDiscountPriceChangeDocument, keepDiscountPriceChangeDocument
+    PROPERTIES(p) sidPriceChangeDocument, date, timePriceChangeDocument
 
     OBJECTS s=sku
     PROPERTIES(s) barcode, sidArticleSku
     PROPERTIES (p, s) priceInPriceChangeDocumentSku, RRPPriceChangeDocumentSku, previousPriceChangeDocumentSku,
                       priceOutPriceChangeDocumentArticleSku, isPreviousPriceChangeDocumentSku,
-                      priceRetailPriceChangeDocumentSku, ratePriceChangeDocumentSku, priceRetailRatePriceChangeDocumentSku
+                      priceRetailPriceChangeDocumentSku, ratePriceChangeDocumentSku, priceRetailRatePriceChangeDocumentSku,
+                      percentNDSPriceChangeDocumentSku, sumNDSPriceChangeDocumentSku
 
     FILTERS priceInPriceChangeDocumentSku (p, s)
     EDIT basePriceChangeDocument OBJECT p
@@ -773,14 +776,15 @@ FORM priceChangeDocument 'Документ изменений цен'
 FORM priceChangeDocuments 'Документы изменений цен'
 
     OBJECTS p=basePriceChangeDocument
-    PROPERTIES(p) READONLY sidPriceChangeDocument, date, isDiscountPriceChangeDocument, keepDiscountPriceChangeDocument
+    PROPERTIES(p) READONLY sidPriceChangeDocument, date, timePriceChangeDocument
     PROPERTIES(p) ADDFORM, EDITFORM, delete
 
     OBJECTS s=sku
     PROPERTIES(s) READONLY barcode, sidArticleSku
     PROPERTIES (p, s) READONLY priceInPriceChangeDocumentSku, RRPPriceChangeDocumentSku, previousPriceChangeDocumentSku,
                                priceOutPriceChangeDocumentArticleSku, isPreviousPriceChangeDocumentSku,
-                               priceRetailPriceChangeDocumentSku, ratePriceChangeDocumentSku, priceRetailRatePriceChangeDocumentSku
+                               priceRetailPriceChangeDocumentSku, ratePriceChangeDocumentSku, priceRetailRatePriceChangeDocumentSku,
+                               percentNDSPriceChangeDocumentSku, sumNDSPriceChangeDocumentSku
 
     FILTERS priceInPriceChangeDocumentSku (p, s)
 ;
