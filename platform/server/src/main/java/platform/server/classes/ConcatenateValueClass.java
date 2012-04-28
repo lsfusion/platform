@@ -24,7 +24,10 @@ public class ConcatenateValueClass implements ValueClass {
     }
 
     public AndClassSet getUpSet() {
-        throw new RuntimeException("not supported");
+        AndClassSet[] upClasses = new AndClassSet[valueClasses.length];
+        for(int i=0;i<valueClasses.length;i++)
+            upClasses[i] = valueClasses[i].getUpSet();
+        return new ConcatenateClassSet(upClasses);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
