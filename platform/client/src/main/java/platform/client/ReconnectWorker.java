@@ -24,8 +24,8 @@ public final class ReconnectWorker extends SwingWorker<RemoteLoaderInterface, In
 
     private RemoteLoaderInterface remoteLoader;
 
-    public ReconnectWorker(String serverHost, String serverPort) {
-        this.serverUrl = MessageFormat.format("rmi://{0}:{1}/BusinessLogicsLoader", serverHost, serverPort);
+    public ReconnectWorker(String serverHost, String serverPort, String serverDB) {
+        this.serverUrl = MessageFormat.format("rmi://{0}:{1}/{2}/BusinessLogicsLoader", serverHost, serverPort, serverDB);
         dlg = new ProgressDialog();
     }
 

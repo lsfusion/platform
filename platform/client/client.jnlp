@@ -18,6 +18,7 @@
         <property name="platform.client.formset" value="cashregister"/>
         <property name="platform.client.hostname" value="localhost"/>
         <property name="platform.client.hostport" value="7652"/>
+        <property name="platform.client.db" value="default"/>
         <jar href="client-prod.jar"/>
     </resources>
     <application-desc>

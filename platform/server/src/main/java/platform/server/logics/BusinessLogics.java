@@ -75,6 +75,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteContextObject implements RemoteLogicsInterface, InitializingBean {
     protected List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
     final public BaseLogicsModule<T> LM;
+    public String dbName;
     public List<LogicsModule> getLogicModules() {
         return logicModules;
     }
@@ -2274,6 +2275,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public String getName() throws RemoteException {
         return getClass().getSimpleName();
+    }
+    
+    public String getDBName() {
+        return dbName;
     }
 
     public String getDisplayName() throws RemoteException {

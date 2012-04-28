@@ -11,6 +11,7 @@ import platform.server.lifecycle.LifecycleManager;
 import platform.server.net.ServerInstanceLocator;
 
 import java.io.IOException;
+import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -105,9 +106,19 @@ public class BusinessLogicsBootstrap {
     }
 
     private static void initRMIRegistry() throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException {
-        registry = LocateRegistry.createRegistry(BL.getExportPort());
-        registry.rebind("AppTerminal", new ApplicationTerminalImpl(BL.getExportPort()));
-        registry.rebind("BusinessLogicsLoader", new BusinessLogicsLoader(BL));
+        try {
+            registry.list();
+            throw new RuntimeException("The base is already started");
+        } catch (NullPointerException e) {
+            registry = LocateRegistry.createRegistry(BL.getExportPort());
+            try {
+                String dbName = BL.getDBName();
+                registry.bind((dbName!=null? dbName : "default")  + "/AppTerminal", new ApplicationTerminalImpl(BL.getExportPort()));
+                registry.bind((dbName!=null? dbName : "default") + "/BusinessLogicsLoader", new BusinessLogicsLoader(BL));
+            } catch (AlreadyBoundException e2) {
+                throw new RuntimeException("Error binding");
+            }
+        }
     }
 
     private static void initSpringContext() {

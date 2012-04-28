@@ -33,6 +33,7 @@ public class LoginDialog extends JDialog {
     private JCheckBox savePassword;
     private JLabel warning;
     private JPanel warningPanel;
+    private JComboBox serverDB;
     private String waitMessage = ClientResourceBundle.getString("dialog.please.wait");
     private LoginInfo defaultLoginInfo;
     private boolean autoLogin = false;
@@ -127,6 +128,12 @@ public class LoginDialog extends JDialog {
             serverHost.setSelectedItem(item);
         }
 
+        String db = this.defaultLoginInfo.getServerDB();
+        if (db != null) {
+            ((MutableComboBoxModel) serverDB.getModel()).addElement(db);
+            serverDB.setSelectedItem(db);
+        }
+
         if (this.defaultLoginInfo.getUserName() != null) {
             loginField.setText(this.defaultLoginInfo.getUserName());
         }
@@ -202,7 +209,7 @@ public class LoginDialog extends JDialog {
         } else {
             serverInfo = getServerInfo(item.toString());
         }
-        result = defaultLoginInfo = new LoginInfo(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), loginField.getText(), new String(passwordField.getPassword()));
+        result = defaultLoginInfo = new LoginInfo(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), String.valueOf(serverDB.getSelectedItem()), loginField.getText(), new String(passwordField.getPassword()));
 
         storeServerData();
         setVisible(false);
@@ -215,6 +222,7 @@ public class LoginDialog extends JDialog {
             FileWriter fileWr = new FileWriter(OSUtils.getUserFile(configName));
             fileWr.write(result.getServerHost() + '\n');
             fileWr.write(result.getServerPort() + '\n');
+            fileWr.write(result.getServerDB() + '\n');
             fileWr.write(result.getUserName() + '\n');
             fileWr.write(String.valueOf(savePassword.isSelected()) + '\n');
             if (savePassword.isSelected()) {
@@ -240,6 +248,10 @@ public class LoginDialog extends JDialog {
                 if (loginInfo.getServerPort() != null) {
                     serverPort = loginInfo.getServerPort();
                 }
+                String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "default";
+                if (loginInfo.getServerDB() != null) {
+                    serverDB = loginInfo.getServerDB();
+                }
                 String userName = scanner.hasNextLine() ? scanner.nextLine() : "";
                 if (loginInfo.getUserName() != null) {
                     userName = loginInfo.getUserName();
@@ -256,7 +268,7 @@ public class LoginDialog extends JDialog {
                     password = loginInfo.getPassword();
                 }
 
-                return new LoginInfo(serverHost, serverPort, userName, password);
+                return new LoginInfo(serverHost, serverPort, serverDB, userName, password);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -338,24 +350,30 @@ public class LoginDialog extends JDialog {
         panel1.setLayout(new GridLayoutManager(4, 1, new Insets(4, 4, 4, 4), -1, -1));
         contentPane.add(panel1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(24, 48), null, 0, false));
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(3, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel2.setLayout(new GridLayoutManager(4, 2, new Insets(0, 0, 0, 0), -1, -1));
         panel1.add(panel2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final JLabel label2 = new JLabel();
         label2.setText(ClientResourceBundle.getString("dialog.login"));
-        panel2.add(label2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel2.add(label2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label3 = new JLabel();
         label3.setText(ClientResourceBundle.getString("dialog.password"));
-        panel2.add(label3, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel2.add(label3, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         loginField = new JTextField();
-        panel2.add(loginField, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        panel2.add(loginField, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         passwordField = new JPasswordField();
-        panel2.add(passwordField, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        panel2.add(passwordField, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label4 = new JLabel();
         label4.setText(ClientResourceBundle.getString("dialog.server"));
         panel2.add(label4, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         serverHost = new JComboBox();
         serverHost.setEditable(true);
         panel2.add(serverHost, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label5 = new JLabel();
+        label5.setText(ClientResourceBundle.getString("dialog.database"));
+        panel2.add(label5, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        serverDB = new JComboBox();
+        serverDB.setEditable(true);
+        panel2.add(serverDB, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
         panel3.setPreferredSize(new Dimension(300, 100));
         panel3.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
@@ -388,6 +406,7 @@ public class LoginDialog extends JDialog {
         warningPanel.add(warning, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 1, false));
         label2.setLabelFor(loginField);
         label3.setLabelFor(passwordField);
+        label5.setLabelFor(serverDB);
     }
 
     /**

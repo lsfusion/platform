@@ -34,6 +34,7 @@ public final class LoginAction {
 
     public String serverHost;
     private String serverPort;
+    private String serverDB;
     private String user;
     private String password;
     private boolean autoLogin;
@@ -47,16 +48,17 @@ public final class LoginAction {
     private LoginAction() {
         serverHost = System.getProperty(PLATFORM_CLIENT_HOSTNAME);
         serverPort = System.getProperty(PLATFORM_CLIENT_HOSTPORT);
+        serverDB = System.getProperty(PLATFORM_CLIENT_DB);
         user = System.getProperty(PLATFORM_CLIENT_USER);
         password = System.getProperty(PLATFORM_CLIENT_PASSWORD);
         autoLogin = Boolean.getBoolean(PLATFORM_CLIENT_AUTOLOGIN);
-        loginInfo = new LoginInfo(serverHost, serverPort, user, password);
+        loginInfo = new LoginInfo(serverHost, serverPort, serverDB, user, password);
 
         loginDialog = new LoginDialog(loginInfo);
     }
 
     public boolean login() throws MalformedURLException, NotBoundException, RemoteException {
-        boolean needData = serverHost == null || serverPort == null || user == null || password == null;
+        boolean needData = serverHost == null || serverPort == null || serverDB == null | user == null || password == null;
         if (!autoLogin || needData) {
             loginDialog.setAutoLogin(autoLogin);
             loginInfo = loginDialog.login();
@@ -98,6 +100,7 @@ public final class LoginAction {
 
             serverHost = loginInfo.getServerHost();
             serverPort = loginInfo.getServerPort();
+            serverDB = loginInfo.getServerDB();
             user = loginInfo.getUserName();
             password = loginInfo.getPassword();
         }
@@ -113,7 +116,7 @@ public final class LoginAction {
 
         try {
             //Нужно сразу инициализировать Main.remoteLoader, т.к. используется для загрузки классов в ClientRMIClassLoaderSpi
-            Main.remoteLoader = remoteLoader = new ReconnectWorker(loginInfo.getServerHost(), loginInfo.getServerPort()).connect();
+            Main.remoteLoader = remoteLoader = new ReconnectWorker(loginInfo.getServerHost(), loginInfo.getServerPort(), loginInfo.getServerDB()).connect();
             if (remoteLoader == null) {
                 return CANCELED;
             }

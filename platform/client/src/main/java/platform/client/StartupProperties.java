@@ -6,6 +6,8 @@ public class StartupProperties {
 
     public static final String PLATFORM_CLIENT_HOSTPORT = "platform.client.hostport";
 
+    public static final String PLATFORM_CLIENT_DB = "platform.client.db";
+
     public static final String PLATFORM_CLIENT_LOGICSNAME = "platform.client.logicsname";
 
     public static final String PLATFORM_CLIENT_USER = "platform.client.user";

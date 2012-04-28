@@ -83,6 +83,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         super("SkolkovoLogicsModule");
         setBaseLogicsModule(baseLM);
         this.BL = BL;
+        this.BL.dbName = "skolkovo";
     }
 
     private LP dateResultForesightCheckProject;
