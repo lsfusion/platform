@@ -5,7 +5,6 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.session.PropertyChanges;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,10 +23,10 @@ public class SumUnionProperty extends IncrementUnionProperty {
         return operands.keySet();
     }
 
-    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Expr result = Expr.NULL;
         for(Map.Entry<PropertyMapImplement<?,Interface>,Integer> operandCoeff : operands.entrySet())
-            result = result.sum(operandCoeff.getKey().mapExpr(joinImplement, propChanges, changedWhere).scale(operandCoeff.getValue()));
+            result = result.sum(operandCoeff.getKey().mapExpr(joinImplement, propClasses, propChanges, changedWhere).scale(operandCoeff.getValue()));
         return result;
     }
 

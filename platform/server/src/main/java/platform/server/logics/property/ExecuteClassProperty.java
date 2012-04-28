@@ -3,7 +3,6 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.QuickSet;
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
@@ -12,7 +11,6 @@ import platform.server.session.StructChanges;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 public abstract class ExecuteClassProperty extends ExecuteProperty {
 
@@ -26,8 +24,8 @@ public abstract class ExecuteClassProperty extends ExecuteProperty {
 
     protected abstract Expr getValueExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement);
     
-    protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return getValueExpr(joinImplement).and(getInterfaceClassProperty().mapExpr(joinImplement, propChanges, changedWhere).getWhere());
+    protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return getValueExpr(joinImplement).and(getInterfaceClassProperty().mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere());
     }
 
     @Override

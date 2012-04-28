@@ -32,7 +32,7 @@ public class DeconcatenateProperty extends FormulaProperty<DeconcatenateProperty
         finalizeInit();
     }
 
-    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return DeconcatenateExpr.create(BaseUtils.singleValue(joinImplement),part,baseClass);
     }
 }

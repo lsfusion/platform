@@ -4,7 +4,6 @@ import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.PropertyChanges;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,7 @@ public class MaxUnionProperty extends IncrementUnionProperty {
         return true;
     }
 
-    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         throw new RuntimeException("not supported"); // используется simple increment
     }
 
@@ -28,11 +27,11 @@ public class MaxUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
         Expr result = null;
         for(PropertyMapImplement<?, Interface> operand : operands) {
-            Expr operandExpr = operand.mapExpr(joinImplement, propChanges, changedWhere);
+            Expr operandExpr = operand.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
             if(result==null)
                 result = operandExpr;
             else

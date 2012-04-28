@@ -6,7 +6,6 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
 
 import java.util.*;
@@ -48,35 +47,51 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     protected final Collection<I> innerInterfaces;
 
     protected Map<Interface<I>, Expr> getGroupImplements(Map<I, ? extends Expr> mapKeys, PropertyChanges changes) {
-        return getGroupImplements(mapKeys, changes, null);
+        return getGroupImplements(mapKeys, false, changes);
+    }
+
+    protected Map<Interface<I>, Expr> getGroupImplements(Map<I, ? extends Expr> mapKeys, boolean propClasses, PropertyChanges changes) {
+        return getGroupImplements(mapKeys, propClasses, changes, null);
     }
 
     protected Map<Interface<I>, Expr> getGroupImplements(Map<I, ? extends Expr> mapKeys, PropertyChanges changes, WhereBuilder changedWhere) {
+        return getGroupImplements(mapKeys, false, changes, changedWhere);
+    }
+
+    protected Map<Interface<I>, Expr> getGroupImplements(Map<I, ? extends Expr> mapKeys, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
         Map<Interface<I>, Expr> group = new HashMap<Interface<I>, Expr>();
         for(Interface<I> propertyInterface : interfaces)
-            group.put(propertyInterface,propertyInterface.implement.mapExpr(mapKeys, changes, changedWhere));
+            group.put(propertyInterface,propertyInterface.implement.mapExpr(mapKeys, propClasses, changes, changedWhere));
         return group;
     }
 
     protected OrderedMap<Expr, Boolean> getOrderImplements(Map<I, ? extends Expr> joinImplement, PropertyChanges changes) {
-        return getOrderImplements(joinImplement, changes, null);
+        return getOrderImplements(joinImplement, false, changes);
     }
 
-    protected OrderedMap<Expr, Boolean> getOrderImplements(Map<I, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere) {
+    protected OrderedMap<Expr, Boolean> getOrderImplements(Map<I, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes) {
+        return getOrderImplements(joinImplement, propClasses, changes, null);
+    }
+
+    protected OrderedMap<Expr, Boolean> getOrderImplements(Map<I, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
         OrderedMap<Expr, Boolean> result = new OrderedMap<Expr, Boolean>();
         for(Map.Entry<PropertyInterfaceImplement<I>, Boolean> order : getOrders().entrySet())
-            result.put(order.getKey().mapExpr(joinImplement, changes, changedWhere), order.getValue());
+            result.put(order.getKey().mapExpr(joinImplement, propClasses, changes, changedWhere), order.getValue());
         return result;
     }
 
     protected List<Expr> getExprImplements(Map<I, ? extends Expr> joinImplement, PropertyChanges changes) {
-        return getExprImplements(joinImplement, changes, null);
+        return getExprImplements(joinImplement, false, changes, null);
     }
 
-    protected List<Expr> getExprImplements(Map<I, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere) {
+    protected List<Expr> getExprImplements(Map<I, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes) {
+        return getExprImplements(joinImplement, propClasses, changes, null);
+    }
+
+    protected List<Expr> getExprImplements(Map<I, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
         List<Expr> exprs = new ArrayList<Expr>();
         for(PropertyInterfaceImplement<I> expr : getProps())
-            exprs.add(expr.mapExpr(joinImplement, changes, changedWhere));
+            exprs.add(expr.mapExpr(joinImplement, propClasses, changes, changedWhere));
         return exprs;
     }
 

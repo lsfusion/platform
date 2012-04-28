@@ -34,7 +34,7 @@ public abstract class DataProperty extends UserProperty {
         return QuickSet.EMPTY();
     }
 
-    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         throw new RuntimeException("should not be"); // так как stored должен
     }
 

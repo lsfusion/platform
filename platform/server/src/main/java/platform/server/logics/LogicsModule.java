@@ -1676,6 +1676,12 @@ public abstract class LogicsModule {
         return addProperty(group, persistent, new LP<UnionProperty.Interface>(property, listInterfaces));
     }
 
+    protected LP addAUProp(AbstractGroup group, String name, boolean persistent, String caption, ValueClass valueClass, ValueClass... interfaces) {
+        List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(interfaces.length);
+        return addProperty(group, persistent, new LP<UnionProperty.Interface>(
+                new ExclusiveUnionProperty(name, caption, listInterfaces, valueClass, BaseUtils.buildMap(listInterfaces, toList(interfaces))), listInterfaces));
+    }
+
     protected LP addCaseUProp(AbstractGroup group, String name, boolean persistent, String caption, Object... params) {
         List<LI> list = readLI(params);
         int intNum = ((LMI) list.get(1)).lp.listInterfaces.size(); // берем количество интерфейсов у первого case'а

@@ -38,7 +38,7 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
 
     @IdentityLazy
     private boolean isWhereFull() {
-        return !where.mapIsFull(writeTo.interfaces);
+        return where.mapIsFull(writeTo.interfaces);
     }
 
     public boolean hasEventChanges(PropertyChanges propChanges) {
@@ -62,8 +62,8 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
 
         Map<C, ? extends Expr> mapExprs = PropertyChange.simplifyExprs(mapKeys, changeWhere);
         Expr writeExpr = writeFrom.mapExpr(mapExprs, changes);
-        if(!isWhereFull())
-            changeWhere = changeWhere.and(writeExpr.getWhere().or(writeTo.getExpr(mapExprs, changes).getWhere()));
+//        if(!isWhereFull())
+//            changeWhere = changeWhere.and(writeExpr.getWhere().or(writeTo.getExpr(mapExprs, changes).getWhere()));
         return new PropertyChange<C>(mapKeys, writeExpr, changeWhere);
     }
 

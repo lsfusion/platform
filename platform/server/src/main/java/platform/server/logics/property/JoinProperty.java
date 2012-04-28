@@ -49,14 +49,18 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     private Map<T, Expr> getJoinImplements(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return getJoinImplements(joinImplement, false, propChanges, changedWhere);
+    }
+
+    private Map<T, Expr> getJoinImplements(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Map<T, Expr> result = new HashMap<T, Expr>();
         for(Map.Entry<T,PropertyInterfaceImplement<Interface>> interfaceImplement : implement.mapping.entrySet())
-            result.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapExpr(joinImplement, propChanges, changedWhere));
+            result.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapExpr(joinImplement, propClasses, propChanges, changedWhere));
         return result;
     }
 
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return implement.property.getExpr(getJoinImplements(joinImplement, propChanges, changedWhere), propChanges, changedWhere);
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return implement.property.getExpr(getJoinImplements(joinImplement, propClasses, propChanges, changedWhere), propClasses, propChanges, changedWhere);
     }
 
     @Override

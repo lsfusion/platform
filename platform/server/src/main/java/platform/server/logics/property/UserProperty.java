@@ -6,15 +6,8 @@ import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.UnknownClass;
 import platform.server.classes.ValueClass;
-import platform.server.classes.sets.AndClassSet;
-import platform.server.data.Field;
-import platform.server.data.KeyField;
-import platform.server.data.PropertyField;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.table.MapKeysTable;
 import platform.server.session.*;
 
 import java.sql.SQLException;
@@ -33,8 +26,9 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         super(sID, caption, getInterfaces(classes));
     }
 
-    public CommonClasses<ClassPropertyInterface> getCommonClasses() {
-        return new CommonClasses<ClassPropertyInterface>(IsClassProperty.getMapClasses(interfaces), getValueClass());
+    @Override
+    public ClassWhere<Object> getClassValueWhere() {
+        return new ClassWhere<Object>(BaseUtils.<Object, ValueClass>add(IsClassProperty.getMapClasses(interfaces), "value", getValueClass()), true);
     }
 
     public DerivedChange<?,?> derivedChange = null;
@@ -96,14 +90,6 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
     }
 
     public abstract ValueClass getValueClass();
-
-    public ClassWhere<Field> getClassWhere(MapKeysTable<ClassPropertyInterface> mapTable, PropertyField storedField) {
-        Map<Field, AndClassSet> result = new HashMap<Field, AndClassSet>();
-        for(Map.Entry<ClassPropertyInterface, KeyField> mapKey : mapTable.mapKeys.entrySet())
-            result.put(mapKey.getValue(), mapKey.getKey().interfaceClass.getUpSet());
-        result.put(storedField, getValueClass().getUpSet());
-        return new ClassWhere<Field>(result);
-    }
 
     protected boolean useSimpleIncrement() {
         return false;

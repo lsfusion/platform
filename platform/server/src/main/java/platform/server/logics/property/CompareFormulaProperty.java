@@ -43,7 +43,7 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
         return interfaces;
     }
 
-    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return ValueExpr.get(joinImplement.get(operator1).compare(joinImplement.get(operator2), compare));
     }
 }

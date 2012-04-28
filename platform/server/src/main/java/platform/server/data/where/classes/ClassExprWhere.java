@@ -169,7 +169,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
             for(Map.Entry<K, ? extends BaseExpr> mapEntry : map.entrySet()) {
                 AndClassSet classSet = mapEntry.getValue().getAndClassSet(andWhere);
 //                assert classSet!=null;  для outputClasses и других элементов настройки БЛ, где могут быть висячие ключи
-                if(!andTrans.add(mapEntry.getKey(), classSet)) {
+                if(classSet!=null && !andTrans.add(mapEntry.getKey(), classSet)) {
                     isFalse = true;
                     break;
                 }

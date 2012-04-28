@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.WhereBuilder;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.PropertyChanges;
 
 import java.util.List;
@@ -28,9 +29,9 @@ public class ChangedProperty<T extends PropertyInterface> extends SimpleIncremen
         depends.add(property.getOld());
     }
 
-    protected Expr calculateExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         WhereBuilder changedIncrementWhere = new WhereBuilder();
-        property.getIncrementExpr(joinImplement, changedIncrementWhere, propChanges, type);
+        property.getIncrementExpr(joinImplement, changedIncrementWhere, propClasses, propChanges, type);
         if(changedWhere!=null) changedWhere.add(changedIncrementWhere.toWhere());
         return ValueExpr.get(changedIncrementWhere.toWhere());
     }

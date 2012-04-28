@@ -4,7 +4,6 @@ import platform.base.OrderedMap;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
 
 import java.util.Collection;
@@ -51,18 +50,19 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
         return !isStored();
     }
 
-    protected Expr calculateNewExpr(Map<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges) {
+    protected Expr calculateNewExpr(Map<Interface<I>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges) {
         Map<I, Expr> mapKeys = getGroupKeys(joinImplement);
 
-        return GroupExpr.create(getGroupImplements(mapKeys, propChanges), getExprImplements(mapKeys, propChanges),
-                                getOrderImplements(mapKeys, propChanges), getGroupType(), joinImplement);
+        return GroupExpr.create(getGroupImplements(mapKeys, propClasses, propChanges), getExprImplements(mapKeys, propClasses, propChanges),
+                                getOrderImplements(mapKeys, propClasses, propChanges), getGroupType(), joinImplement);
     }
 
-    protected Expr calculateExpr(Map<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-
+    protected Expr calculateExpr(Map<Interface<I>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        assert assertPropClasses(propClasses, propChanges, changedWhere);
         if(!hasChanges(propChanges) || (changedWhere==null && noIncrement()))
-            return calculateNewExpr(joinImplement, propChanges);
+            return calculateNewExpr(joinImplement, propClasses, propChanges);
 
+        assert !propClasses;
         return calculateIncrementExpr(joinImplement, propChanges, getExpr(joinImplement), changedWhere);
     }
 

@@ -87,41 +87,41 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
         return result;
     }
 
-    protected Map<PropertyInterfaceImplement<T>,Expr> getPartitionImplements(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Map<PropertyInterfaceImplement<T>,Expr> getPartitionImplements(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Map<PropertyInterfaceImplement<T>,Expr> result = new HashMap<PropertyInterfaceImplement<T>,Expr>();
         for(PropertyInterfaceImplement<T> partition : partitions)
-            result.put(partition,partition.mapExpr(joinImplement, propChanges, changedWhere));
+            result.put(partition,partition.mapExpr(joinImplement, propClasses, propChanges, changedWhere));
         return result;
     }
 
-    protected OrderedMap<Expr, Boolean> getOrderImplements(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected OrderedMap<Expr, Boolean> getOrderImplements(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         OrderedMap<Expr, Boolean> result = new OrderedMap<Expr, Boolean>();
         for(Map.Entry<PropertyInterfaceImplement<T>, Boolean> order : orders.entrySet())
-            result.put(order.getKey().mapExpr(joinImplement, propChanges, changedWhere), order.getValue());
+            result.put(order.getKey().mapExpr(joinImplement, propClasses, propChanges, changedWhere), order.getValue());
         return result;
     }
 
-    protected List<Expr> getExprImplements(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected List<Expr> getExprImplements(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         List<Expr> exprs = new ArrayList<Expr>();
         for(PropertyInterfaceImplement<T> extra : props)
-            exprs.add(extra.mapExpr(joinImplement, propChanges, changedWhere));
+            exprs.add(extra.mapExpr(joinImplement, propClasses, propChanges, changedWhere));
         return exprs;
     }
 
-    protected Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
         Map<KeyExpr, Expr> mapExprs = new HashMap<KeyExpr, Expr>();
         Map<T, ? extends Expr> mapKeys = getGroupKeys(joinImplement, mapExprs);
 
         WhereBuilder orderWhere = cascadeWhere(changedWhere);
-        Map<PropertyInterfaceImplement<T>,Expr> partitionImplements = getPartitionImplements(mapKeys, propChanges, orderWhere);
-        OrderedMap<Expr, Boolean> orderExprs = getOrderImplements(mapKeys, propChanges, orderWhere);
-        List<Expr> exprs = getExprImplements(mapKeys, propChanges, orderWhere);
+        Map<PropertyInterfaceImplement<T>,Expr> partitionImplements = getPartitionImplements(mapKeys, propClasses, propChanges, orderWhere);
+        OrderedMap<Expr, Boolean> orderExprs = getOrderImplements(mapKeys, propClasses, propChanges, orderWhere);
+        List<Expr> exprs = getExprImplements(mapKeys, propClasses, propChanges, orderWhere);
 
         if(changedWhere!=null) { // изменившиеся ряды (orderWhere) -> ряды с изменившимися partition'ами -> изменившиеся записи
             changedWhere.add(getPartitionWhere(orderWhere.toWhere(), partitionImplements, exprs, orderExprs, mapExprs));
-            changedWhere.add(getPartitionWhere(orderWhere.toWhere(), getPartitionImplements(mapKeys, PropertyChanges.EMPTY, null),
-                    getExprImplements(mapKeys, PropertyChanges.EMPTY, null), getOrderImplements(mapKeys, PropertyChanges.EMPTY, null), mapExprs));
+            changedWhere.add(getPartitionWhere(orderWhere.toWhere(), getPartitionImplements(mapKeys, propClasses, PropertyChanges.EMPTY, null),
+                    getExprImplements(mapKeys, propClasses, PropertyChanges.EMPTY, null), getOrderImplements(mapKeys, propClasses, PropertyChanges.EMPTY, null), mapExprs));
         }
 
         return PartitionExpr.create(partitionType, exprs, orderExprs, new HashSet<Expr>(partitionImplements.values()), mapExprs);

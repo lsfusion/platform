@@ -49,6 +49,10 @@ public class PropertyImplement<P extends PropertyInterface, T> extends TwinImmut
     }
 
     public Expr mapExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere) {
-        return property.getExpr(BaseUtils.join(mapping, joinImplement), changes, changedWhere);
+        return mapExpr(joinImplement, false, changes, changedWhere);
+    }
+
+    public Expr mapExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
+        return property.getExpr(BaseUtils.join(mapping, joinImplement), propClasses, changes, changedWhere);
     }
 }

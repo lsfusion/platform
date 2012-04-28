@@ -47,7 +47,7 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         finalizeInit();
     }
 
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
         Map<String, Expr> params = new HashMap<String, Expr>();
         for(Interface propertyInterface : interfaces)

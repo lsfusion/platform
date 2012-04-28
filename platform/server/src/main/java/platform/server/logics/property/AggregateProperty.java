@@ -76,14 +76,4 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         query.properties.put("value", calculateClassExpr(query.mapKeys));
         return query.getClassWhere(Collections.singleton("value"));
     }
-
-    @IdentityLazy
-    public CommonClasses<T> getCommonClasses() {
-        Map<Object, ValueClass> mapClasses = getClassValueWhere().getCommonParent(BaseUtils.<Object, T, String>merge(interfaces, Collections.singleton("value")));
-        return new CommonClasses<T>(BaseUtils.filterKeys(mapClasses, interfaces), mapClasses.get("value"));
-    }
-
-    public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
-        return getClassValueWhere().remap(BaseUtils.<Object, T, String, Field>merge(mapTable.mapKeys, Collections.singletonMap("value", storedField)));
-    }
 }

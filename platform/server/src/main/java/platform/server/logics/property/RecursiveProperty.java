@@ -5,8 +5,6 @@ import platform.base.Result;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.IntegralClass;
-import platform.server.classes.LogicalClass;
-import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -166,11 +164,12 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         step.mapFillDepends(depends);
     }
 
-    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-
+    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        assert assertPropClasses(propClasses, propChanges, changedWhere);
         if(!hasChanges(propChanges) || (changedWhere==null && !isStored()))
             return calculateNewExpr(joinImplement, propChanges);
 
+        assert !propClasses;
         return calculateIncrementExpr(joinImplement, propChanges, getExpr(joinImplement), changedWhere);
     }
 

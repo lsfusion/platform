@@ -4,14 +4,11 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import platform.base.BaseUtils;
-import platform.base.QuickSet;
 import platform.server.Settings;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.IQuery;
-import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.instance.FormInstance;
@@ -66,8 +63,8 @@ public class AutoHintsAspect {
         FormInstance catchHint = catchAutoHint.get();
         return catchHint!=null && !catchHint.isHintIncrement(property) && catchHint.allowHintIncrement(property); // неправильно так как может быть не changed
     } 
-    @Around("execution(* platform.server.logics.property.Property.getQuery(platform.server.session.PropertyChanges,platform.server.logics.property.PropertyQueryType,java.util.Map)) && target(property) && args(propChanges, queryType, interfaceValues)")
-    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges, PropertyQueryType queryType, Map interfaceValues) throws Throwable {
+    @Around("execution(* platform.server.logics.property.Property.getQuery(boolean,platform.server.session.PropertyChanges,platform.server.logics.property.PropertyQueryType,java.util.Map)) && target(property) && args(propClasses, propChanges, queryType, interfaceValues)")
+    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map interfaceValues) throws Throwable {
         assert property.isFull();
 
         IQuery<?, String> result = (IQuery) thisJoinPoint.proceed();
@@ -98,26 +95,26 @@ public class AutoHintsAspect {
                         }
                     }
                 } else // запускаем getQuery уже без interfaceValues, соответственно уже оно если надо (в смысле что статистика будет нормальной) кинет exception
-                    property.getQuery(propChanges, PropertyQueryType.FULLCHANGED, new HashMap());
+                    property.getQuery(propClasses, propChanges, PropertyQueryType.FULLCHANGED, new HashMap());
         }
         return result;
     }
 
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("execution(* platform.server.logics.property.Property.getJoinExpr(java.util.Map,platform.server.session.PropertyChanges,platform.server.data.where.WhereBuilder)) " +
-            "&& target(property) && args(joinExprs,propChanges,changedWhere)")
-    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
+    @Around("execution(* platform.server.logics.property.Property.getJoinExpr(java.util.Map,boolean,platform.server.session.PropertyChanges,platform.server.data.where.WhereBuilder)) " +
+            "&& target(property) && args(joinExprs,propClasses,propChanges,changedWhere)")
+    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, Property property, boolean propClasses,  Map joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
         if(!property.isFull() || !allowHint(property))
             return thisJoinPoint.proceed();
 
         WhereBuilder cascadeWhere = Property.cascadeWhere(changedWhere);
-        Expr result = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, propChanges, cascadeWhere});
+        Expr result = (Expr) thisJoinPoint.proceed(new Object[]{property, propClasses, joinExprs, propChanges, cascadeWhere});
 
         long complexity = max(result.getComplexity(false), (changedWhere != null ? cascadeWhere.toWhere().getComplexity(false) : 0));
         if(complexity > Settings.instance.getLimitHintIncrementComplexity() && property.hasChanges(propChanges))
-            property.getQuery(propChanges, PropertyQueryType.FULLCHANGED, new HashMap()); // по аналогии с верхним
+            property.getQuery(propClasses, propChanges, PropertyQueryType.FULLCHANGED, new HashMap()); // по аналогии с верхним
         
         if(changedWhere!=null) changedWhere.add(cascadeWhere.toWhere());
         return result;

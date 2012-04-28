@@ -660,7 +660,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
             changed.and(property.getExpr(changed.mapKeys, incrementApply).getWhere()); // только на измененные смотрим
             OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>> result = changed.executeClasses(sql, new OrderedMap<String, Boolean>(), 30, baseClass, env);
             if (result.size() > 0) {
-                final Map<T, ValueClass> classes = property.getNoDBInterfaces();
+                // для constraint'ов
+                final Map<T, ValueClass> classes = property.getCommonClasses().interfaces;
 
                 NoPropertyTableUsage keysTable = new NoPropertyTableUsage<T>(new ArrayList<T>(property.interfaces), new Type.Getter<T>() {
                     public Type getType(T key) {

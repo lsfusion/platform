@@ -24,7 +24,7 @@ public class NullValueProperty extends FormulaProperty<PropertyInterface>{
     }
 
     @Override
-    protected Expr calculateExpr(Map<PropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<PropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return CaseExpr.NULL;
     }
 }

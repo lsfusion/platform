@@ -20,7 +20,7 @@ public abstract class CurrentEnvironmentFormulaProperty extends FormulaProperty<
         this.paramClass = paramClass;
     }
 
-    protected Expr calculateExpr(Map<PropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<PropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return new CurrentEnvironmentExpr(paramString, paramClass);
     }
 }

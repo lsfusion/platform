@@ -44,6 +44,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return mapExpr(joinImplement);
     }
 
+    public Expr mapExpr(Map<P, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
+        return mapExpr(joinImplement);
+    }
+
     public Expr mapExpr(Map<P, ? extends Expr> joinImplement, PropertyChanges propChanges) {
         return mapExpr(joinImplement);
     }

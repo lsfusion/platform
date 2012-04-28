@@ -39,20 +39,20 @@ public class WrapComplexityAspect {
         return wrapExpr;
     }
 
-    public <T extends PropertyInterface> Expr getJoinExpr(ProceedingJoinPoint thisJoinPoint, Property<T> property, Map<T, ? extends Expr> joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
+    public <T extends PropertyInterface> Expr getJoinExpr(ProceedingJoinPoint thisJoinPoint, Property<T> property, Map<T, ? extends Expr> joinExprs, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         if(Settings.instance.isDisableWrapComplexity() || !property.isFull()) // если ключей не хватает wrapp'ить нельзя
             return (Expr) thisJoinPoint.proceed();
         WhereBuilder cascadeWhere = Property.cascadeWhere(changedWhere);
-        return wrapComplexity((Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, propChanges, cascadeWhere}),
+        return wrapComplexity((Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, propClasses, propChanges, cascadeWhere}),
                 changedWhere!=null?cascadeWhere.toWhere():null, property, joinExprs, changedWhere);
     }
-    @Around("execution(* platform.server.logics.property.Property.getJoinExpr(java.util.Map,platform.server.session.PropertyChanges,platform.server.data.where.WhereBuilder)) " +
-            "&& target(property) && args(joinExprs,propChanges,changedWhere)")
-    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
-        return getJoinExpr(thisJoinPoint, property, joinExprs, propChanges, changedWhere);
+    @Around("execution(* platform.server.logics.property.Property.getJoinExpr(java.util.Map,boolean,platform.server.session.PropertyChanges,platform.server.data.where.WhereBuilder)) " +
+            "&& target(property) && args(joinExprs,propClasses,propChanges,changedWhere)")
+    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map joinExprs, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
+        return getJoinExpr(thisJoinPoint, property, joinExprs, propClasses, propChanges, changedWhere);
     }
 
-    public <T extends PropertyInterface> IQuery<T, String> getQuery(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges, PropertyQueryType queryType, Map<T, ? extends Expr> interfaceValues) throws Throwable {
+    public <T extends PropertyInterface> IQuery<T, String> getQuery(ProceedingJoinPoint thisJoinPoint, Property property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map<T, ? extends Expr> interfaceValues) throws Throwable {
         assert property.isFull();
         IQuery<T, String> query = (IQuery<T, String>) thisJoinPoint.proceed();
         
@@ -77,8 +77,9 @@ public class WrapComplexityAspect {
             return wrappedQuery;
         }
     }
-    @Around("execution(* platform.server.logics.property.Property.getQuery(platform.server.session.PropertyChanges,platform.server.logics.property.PropertyQueryType,java.util.Map)) && target(property) && args(propChanges, queryType, interfaceValues)")
-    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges, PropertyQueryType queryType, Map interfaceValues) throws Throwable {
-        return getQuery(thisJoinPoint, property, propChanges, queryType, interfaceValues);
+    @Around("execution(* platform.server.logics.property.Property.getQuery(boolean,platform.server.session.PropertyChanges,platform.server.logics.property.PropertyQueryType,java.util.Map)) " +
+            "&& target(property) && args(propClasses, propChanges, queryType, interfaceValues)")
+    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map interfaceValues) throws Throwable {
+        return getQuery(thisJoinPoint, property, propClasses, propChanges, queryType, interfaceValues);
     }
 }

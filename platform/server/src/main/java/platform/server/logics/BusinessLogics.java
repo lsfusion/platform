@@ -731,6 +731,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 module.initProperties();
             }
 
+            finishAbstract();
+
             finishLogInit();
 
             LM.initClassForms();
@@ -772,6 +774,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             errors = "\n" + syntaxErrors + errors;
             throw new RuntimeException(errors);
         }
+    }
+
+    protected void finishAbstract() {
+        List<ExclusiveUnionProperty> abstractUnions = new ArrayList<ExclusiveUnionProperty>();
+        for (Property property : getProperties())
+            if(property instanceof ExclusiveUnionProperty && ((ExclusiveUnionProperty)property).isAbstract()) {
+                property.finalizeInit();
+                abstractUnions.add((ExclusiveUnionProperty) property);
+            }
+        
+        for(ExclusiveUnionProperty abstractUnion : abstractUnions)
+            assert abstractUnion.checkClasses();
     }
 
     private void finishLogInit() {

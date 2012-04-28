@@ -22,10 +22,10 @@ public class CaseUnionProperty extends AbstractCaseUnionProperty {
         finalizeInit();
     }
 
-    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         CaseExprInterface exprCases = Expr.newCases();
         for(Case propCase : cases)
-            exprCases.add(propCase.where.mapExpr(joinImplement, propChanges, changedWhere).getWhere(), propCase.property.mapExpr(joinImplement, propChanges, changedWhere));
+            exprCases.add(propCase.where.mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere(), propCase.property.mapExpr(joinImplement, propClasses, propChanges, changedWhere));
         return exprCases.getFinal();
     }
 

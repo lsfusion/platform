@@ -73,7 +73,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     public ValueClass getInterfaceClass() {
         return BaseUtils.single(interfaces).interfaceClass;
     }
-    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return ValueExpr.get(BaseUtils.singleValue(joinImplement).isClass(getInterfaceClass().getUpSet()));
     }
 
@@ -112,7 +112,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
     public Where getRemoveWhere(Expr joinExpr, PropertyChanges newChanges) {
         WhereBuilder changedWhere = new WhereBuilder();
-        getIncrementExpr(Collections.singletonMap(BaseUtils.single(interfaces), joinExpr), changedWhere, newChanges, IncrementType.DROP);
+        getIncrementExpr(Collections.singletonMap(BaseUtils.single(interfaces), joinExpr), changedWhere, false, newChanges, IncrementType.DROP);
         return changedWhere.toWhere();
     }
 }

@@ -126,7 +126,11 @@ public class LP<T extends PropertyInterface> {
     public <T extends PropertyInterface> void setDG(boolean ascending, boolean over, List<PropertyInterfaceImplement<T>> listImplements) {
         ((SumGroupProperty<T>)property).setDataChanges(new OrderedMap<PropertyInterfaceImplement<T>, Boolean>(listImplements.subList(1, listImplements.size()), ascending),
                 (PropertyMapImplement<?, T>) listImplements.get(0), over);
+    }
 
+    public void addOperand(Object... params) {
+        PropertyMapImplement<?, UnionProperty.Interface> operand = (PropertyMapImplement<?, UnionProperty.Interface>) readImplements(listInterfaces, params).get(0);
+        ((ExclusiveUnionProperty)property).addOperand(operand);
     }
 
     public Map<T, DataObject> getMapValues(DataObject... objects) {

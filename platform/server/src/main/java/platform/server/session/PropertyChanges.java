@@ -142,7 +142,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return new PropertyChanges(this, add);
     }
 
-    private boolean isEmpty() {
+    public boolean isEmpty() {
         return changes.isEmpty();
     }
 

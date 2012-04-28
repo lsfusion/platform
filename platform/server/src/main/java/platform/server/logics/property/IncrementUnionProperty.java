@@ -2,7 +2,6 @@ package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
 
 import java.util.List;
@@ -14,13 +13,16 @@ public abstract class IncrementUnionProperty extends UnionProperty {
         super(sID, caption, interfaces);
     }
 
-    protected abstract Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere);
+    protected abstract Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere);
     protected abstract Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere);
 
     @Override
-    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        assert assertPropClasses(propClasses, propChanges, changedWhere);
         if(!hasChanges(propChanges) || !isStored())
-            return calculateNewExpr(joinImplement, propChanges, changedWhere);
+            return calculateNewExpr(joinImplement, propClasses, propChanges, changedWhere);
+
+        assert !propClasses;
         return calculateIncrementExpr(joinImplement, propChanges, getExpr(joinImplement), changedWhere);
     }
 }

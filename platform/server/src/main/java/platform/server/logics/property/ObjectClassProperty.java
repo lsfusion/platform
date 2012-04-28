@@ -62,7 +62,7 @@ public class ObjectClassProperty extends ExecuteProperty {
         return QuickSet.EMPTY();
     }
 
-    protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return BaseUtils.singleValue(joinImplement).classExpr(baseClass);
     }
 

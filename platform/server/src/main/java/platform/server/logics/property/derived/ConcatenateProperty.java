@@ -40,7 +40,7 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
         return it.next();
     }
 
-    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         List<Expr> exprs = new ArrayList<Expr>();
         for(int i=0;i<interfaces.size();i++) // assertion что порядок сохранился
             exprs.add(joinImplement.get(getInterface(i)));

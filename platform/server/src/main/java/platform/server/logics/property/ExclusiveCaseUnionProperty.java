@@ -15,10 +15,10 @@ public abstract class ExclusiveCaseUnionProperty extends AbstractCaseUnionProper
     protected abstract Iterable<Case> getCases();
 
     @Override
-    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         CaseExprInterface exprCases = Expr.newCases();
         for(Case propCase : getCases())
-            exprCases.add(propCase.where.mapExpr(joinImplement, propChanges, changedWhere).getWhere(), propCase.property.mapExpr(joinImplement, propChanges, changedWhere));
+            exprCases.add(propCase.where.mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere(), propCase.property.mapExpr(joinImplement, propClasses, propChanges, changedWhere));
         return exprCases.getFinal();
     }
 

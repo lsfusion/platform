@@ -26,10 +26,10 @@ public abstract class FormulaUnionProperty extends UnionProperty {
     }
 
     @Override
-    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Map<String, Expr> paramExprs = new HashMap<String, Expr>();
         for(Map.Entry<String, PropertyMapImplement<?, Interface>> param : getParams().entrySet())
-            paramExprs.put(param.getKey(), param.getValue().mapExpr(joinImplement, propChanges, changedWhere));
+            paramExprs.put(param.getKey(), param.getValue().mapExpr(joinImplement, propClasses, propChanges, changedWhere));
         return new FormulaUnionExpr(getFormula(), getDataClass(), paramExprs);
     }
 
