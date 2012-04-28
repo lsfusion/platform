@@ -263,7 +263,10 @@ public class LoginDialog extends JDialog {
                 if (loginInfo.getPassword() != null) {
                     password = loginInfo.getPassword();
                 }
-                String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "default";
+                String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "";
+                if(serverDB.isEmpty()) {
+                    serverDB = "default";
+                }
                 if (loginInfo.getServerDB() != null) {
                     serverDB = loginInfo.getServerDB();
                 }
