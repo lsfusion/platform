@@ -106,15 +106,16 @@ public class BusinessLogicsBootstrap {
     }
 
     private static void initRMIRegistry() throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException {
-        try {
+        registry = LocateRegistry.getRegistry(BL.getExportPort());
+        try {            
             registry.list();
             throw new RuntimeException("The base is already started");
-        } catch (NullPointerException e) {
+        } catch (RemoteException e) {
             registry = LocateRegistry.createRegistry(BL.getExportPort());
             try {
-                String dbName = BL.getDBName();
-                registry.bind((dbName!=null? dbName : "default")  + "/AppTerminal", new ApplicationTerminalImpl(BL.getExportPort()));
-                registry.bind((dbName!=null? dbName : "default") + "/BusinessLogicsLoader", new BusinessLogicsLoader(BL));
+                String dbName = BL.getDBName()==null ? "default" : BL.getDBName();
+                registry.bind(dbName + "/AppTerminal", new ApplicationTerminalImpl(BL.getExportPort()));
+                registry.bind(dbName + "/BusinessLogicsLoader", new BusinessLogicsLoader(BL));
             } catch (AlreadyBoundException e2) {
                 throw new RuntimeException("Error binding");
             }

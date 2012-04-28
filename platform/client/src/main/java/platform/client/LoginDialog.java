@@ -248,10 +248,6 @@ public class LoginDialog extends JDialog {
                 if (loginInfo.getServerPort() != null) {
                     serverPort = loginInfo.getServerPort();
                 }
-                String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "default";
-                if (loginInfo.getServerDB() != null) {
-                    serverDB = loginInfo.getServerDB();
-                }
                 String userName = scanner.hasNextLine() ? scanner.nextLine() : "";
                 if (loginInfo.getUserName() != null) {
                     userName = loginInfo.getUserName();
@@ -266,6 +262,10 @@ public class LoginDialog extends JDialog {
                 }
                 if (loginInfo.getPassword() != null) {
                     password = loginInfo.getPassword();
+                }
+                String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "default";
+                if (loginInfo.getServerDB() != null) {
+                    serverDB = loginInfo.getServerDB();
                 }
 
                 return new LoginInfo(serverHost, serverPort, serverDB, userName, password);

@@ -58,7 +58,7 @@ public final class LoginAction {
     }
 
     public boolean login() throws MalformedURLException, NotBoundException, RemoteException {
-        boolean needData = serverHost == null || serverPort == null || serverDB == null | user == null || password == null;
+        boolean needData = serverHost == null || serverPort == null || serverDB == null || user == null || password == null;
         if (!autoLogin || needData) {
             loginDialog.setAutoLogin(autoLogin);
             loginInfo = loginDialog.login();
