@@ -12381,17 +12381,20 @@ DESIGN curBalanceItemDepartment FROM DEFAULT {
     main{
         preferredSize = (1024, 768);
 
-        NEW firstCase {
-                fillHorizontal = 1;
-                childConstraints = TO THE BOTTOM;
+        NEW topContainer {
+            type = SPLITH;
+
+            NEW firstBottom {
+                type = SPLITV;
                 ADD treeStore.box {title = 'Магазины';};
                 ADD treeGroups.box {title = 'Товарные группы';};
-        }
+            }
 
-        NEW secondCase {
+            NEW secondCase {
+                type = SPLITV;
                 fillHorizontal = 2;
                 childConstraints = TO THE BOTTOM;
-                ADD dsi.box {fillVertical = 2;}
+                ADD dsi.box { fillVertical = 2; }
 
                 NEW ledger.box {
                     fillVertical = 1;
@@ -12406,9 +12409,8 @@ DESIGN curBalanceItemDepartment FROM DEFAULT {
                     ADD rvl.box;
                     ADD wpl.box;
                 }
-
+            }
         }
-        POSITION firstCase TO THE LEFT secondCase;
 
         ADD functions.box;
     }
