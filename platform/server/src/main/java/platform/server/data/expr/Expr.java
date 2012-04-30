@@ -102,8 +102,9 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }
 
     public Expr sum(Expr expr) {
-        if(getWhere().means(expr.getWhere().not())) // если не пересекаются то возвращаем case
-            return nvl(expr);
+        // нельзя делать эту оптимизацию так как идет проверка на 0 в логике
+//        if(getWhere().means(expr.getWhere().not())) // если не пересекаются то возвращаем case
+//            return nvl(expr);
 
         LinearOperandMap map = new LinearOperandMap();
         map.add(this,1);
