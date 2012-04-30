@@ -382,7 +382,67 @@ END
 
 // ----------------------------------- Свойства изменения объектов в Posted ------------------------------------------ //
 
-META metaCodePostedObject (object)
+META defineDocumentTables (object)
+    TABLE object (object);
+    TABLE object##Detail (object##Detail);
+END
+
+META defineDocumentRelation (object)
+    object###object##Detail 'Строка документа' = DATA object (object##Detail) IN idGroup;
+    in###object###object##Detail(object, object##Detail) = object###object##Detail(object##Detail) == object;
+
+    quantity###object##Details###object 'Количество строк в документе' (object) =
+        GROUP SUM 1 IF in###object###object##Detail(object, object##Detail) BY object PERSISTENT;
+END
+
+// Время
+
+META defineDocumentHeaderTime (object)
+    date###object 'Дата документа' (object) = DATA DATE (object) IN documentHeaderGroup;
+    date###object (object) <- currentDate() ON ASSIGN object AS object;
+
+    time###object 'Время документа' (object) = DATA TIME (object) IN documentHeaderGroup;
+    time###object (object) <- currentTime() ON ASSIGN object AS object;
+
+    dateTime###object 'Дата/время документа' (object) = toDateTime(date###object(object), time###object(object));
+END
+
+META defineDocumentDetailTime (object)
+    date###object##Detail 'Дата документа' (object##Detail) = date###object(object###object##Detail(object##Detail));
+    dateTime###object##Detail 'Дата/время документа' (object##Detail) = dateTime###object(object###object##Detail(object##Detail));
+END
+
+META defineDocumentTime (object)
+    @defineDocumentHeaderTime(object);
+    @defineDocumentDetailTime(object);
+END
+
+// Отдел магазина
+
+META defineDocumentHeaderDepartmentStore (object)
+    departmentStore###object 'Отдел документа (ИД)' (object) = DATA departmentStore(object) IN idGroup;
+    nameDepartmentStore###object 'Отдел документа' (object) = name(departmentStore###object(object)) IN documentHeaderGroup
+            MINCHARWIDTH 20 PREFCHARWIDTH 40;;
+END
+
+META defineDocumentDetailDepartmentStore (object)
+    departmentStore###object##Detail 'Отдел магазина (ИД)' (object##Detail) = departmentStore###object(object###object##Detail(object##Detail));
+END
+
+META defineDocumentDepartmentStore (object)
+    @defineDocumentHeaderDepartmentStore(object);
+    @defineDocumentDetailDepartmentStore(object);
+END
+
+// Примечание
+
+META defineDocumentNote (object)
+    note###object 'Примечание' = DATA STRING[100] (object) IN additionalInfo MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup;
+END
+
+// Проведение
+
+META defineDocumentHeaderPosted (object)
 
     isDraft###object 'Открыт' (object) = object IS object AND NOT object IS object##Posted;
     isPosted###object 'Закрыт' (object) = object IS object##Posted;
@@ -392,50 +452,25 @@ META metaCodePostedObject (object)
 
     unpost###object 'Распровести' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object; } ] (object)
                                       IF object IS object##Posted TOOLBAR CONFIRM;
-
 END
 
-// ----------------------------------- Свойства для объектов Posted ------------------------------------------ //
-META metaCodeObjectWithPost (object, caption, captionPosted, documentClass, detailClass)
-
-    CLASS object caption : documentClass;
-    CLASS object##Detail 'Строка документа' : detailClass;
-
-    @metaCodeObjectWithPostEx(object, captionPosted);
+META defineDocumentDetailPosted (object)
+    isPosted###object##Detail 'Закрыт' (object##Detail) = isPosted###object(object###object##Detail(object##Detail));
+    isNotPosted###object##Detail 'Открыт' (object##Detail) = object##Detail IS object##Detail AND NOT isPosted###object##Detail(object##Detail);
 END
 
-META metaCodeObjectWithPostEx (object, captionPosted)
+META defineDocumentPosted (object)
+    @defineDocumentHeaderPosted(object);
+    @defineDocumentDetailPosted(object);
+END
 
-    TABLE object (object);
-
-    CLASS object##Posted captionPosted : object, postedObject;
-
-    TABLE object##Detail (object##Detail);
-
-    date###object 'Дата документа' (object) = DATA DATE (object) IN documentHeaderGroup;
-    date###object (object) <- currentDate() ON ASSIGN object AS object;
-
-    time###object 'Время документа' (object) = DATA TIME (object) IN documentHeaderGroup;
-    time###object (object) <- currentTime() ON ASSIGN object AS object;
-
-    dateTime###object 'Дата/время документа' (object) = toDateTime(date###object(object), time###object(object));
-
-    departmentStore###object 'Отдел документа (ИД)' (object) = DATA departmentStore(object) IN idGroup;
-
-    nameDepartmentStore###object 'Отдел документа' (object) = name(departmentStore###object(object)) IN documentHeaderGroup
-            MINCHARWIDTH 20 PREFCHARWIDTH 40;;
-
-    note###object 'Примечание' = DATA STRING[100] (object) IN additionalInfo MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup;
-
-    object###object##Detail 'Строка документа' = DATA object (object##Detail) IN idGroup;
-
-    in###object###object##Detail(object, object##Detail) = object###object##Detail(object##Detail) == object;
-
+META defineDocumentDetailNumber (object)
     number###object##Detail 'Номер строки' (object##Detail) =
         PARTITION SUM 1 IF object##Detail IS object##Detail BY object###object##Detail(object##Detail)
         ORDER object##Detail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
+END
 
-    departmentStore###object##Detail 'Отдел магазина (ИД)' (object##Detail) = departmentStore###object(object###object##Detail(object##Detail));
+META defineDocumentDetailItem (object)
 
     item###object##Detail 'Товар (ИД)' (object##Detail) = DATA item (object##Detail) IN idGroup;
 
@@ -448,8 +483,9 @@ META metaCodeObjectWithPostEx (object, captionPosted)
     barcodeExSku###object##Detail 'Штрих-код товара' (object) =
         barcodeEx(barcodeSku(item###object##Detail (object))) IN baseGroup;
 
-    quantity###object##Details###object 'Количество строк в документе' (object) =
-        GROUP SUM 1 IF in###object###object##Detail(object, object##Detail) BY object PERSISTENT;
+END
+
+META defineDocumentDetailItemActions (object)
 
     add###object##DetailBarcode 'Добавить строку по штрих-коду' = ACTION (object) {
         FORM barcodeInput MODAL;
@@ -475,12 +511,25 @@ META metaCodeObjectWithPostEx (object, captionPosted)
         };
     } IN documentPrmGroup CONFIRM;
 
-    @metaCodePostedObject (object);
+END
 
-    date###object##Detail 'Дата документа' (object##Detail) = date###object(object###object##Detail(object##Detail));
-    dateTime###object##Detail 'Дата/время документа' (object##Detail) = dateTime###object(object###object##Detail(object##Detail));
-    isPosted###object##Detail 'Закрыт' (object##Detail) = isPosted###object(object###object##Detail(object##Detail));
-    isNotPosted###object##Detail 'Открыт' (object##Detail) = object##Detail IS object##Detail AND NOT isPosted###object##Detail(object##Detail);
+// ----------------------------------- Свойства для объектов Posted ------------------------------------------ //
+META metaCodeObjectWithPostEx (object)
+
+    @defineDocumentTables(object);
+
+    @defineDocumentRelation(object);
+
+    @defineDocumentTime(object);
+    @defineDocumentDepartmentStore(object);
+    @defineDocumentNote(object);
+
+    @defineDocumentDetailNumber(object);
+
+    @defineDocumentDetailItem(object);
+    @defineDocumentDetailItemActions(object);
+
+    @defineDocumentPosted(object);
 
 END
 
@@ -4027,7 +4076,7 @@ TABLE studyInputDetail(studyInputDetail);
 CLASS studyOutputDetail 'Строка проработки (выход)' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
 TABLE studyOutputDetail(studyOutputDetail);
 
-@metaCodePostedObject (actOfStudy);
+@defineDocumentHeaderPosted (actOfStudy);
       //      ??????????????????? не понятно что делать с процентом надбавок ??????????????????????   //
 
 //sidCutting 'Номер карты (из сборника и прочее)' = DATA INTEGER (cutting) IN cutGroup;
@@ -4538,7 +4587,7 @@ GROUP adverbGroup 'Итого' : baseGroup;
 
 castToString30 = FORMULA STRING[30] '$1 || CAST ($2 AS character(20))';
 
-@metaCodePostedObject (inventory) ;
+@defineDocumentHeaderPosted (inventory) ;
 
 nameInventory 'Название инвентаризации' = DATA STRING[100] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
@@ -5030,7 +5079,9 @@ GROUP pricingStatementDetailInfo 'Дополнительные ценовые п
 
 CLASS statement 'Выписка из розницы' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
 CLASS statementDetail 'Строка выписки из розницы' : outAutoBalanceItemLedger, salesLedger, consignmentDetail;
-@metaCodeObjectWithPostEx(statement, 'Закрытая выписка из розницы');
+CLASS statementPosted 'Закрытая выписка из розницы' : statement, postedObject;
+
+@metaCodeObjectWithPostEx(statement);
 
 //    шапка документа поставки
 customerStatement 'Покупатель (ИД)' (statement) = DATA customer (statement) IN idGroup;
@@ -5325,7 +5376,9 @@ FORM cashReports 'Кассовые отчеты'
 //---------------------------- Приход товара от поставщика ----------------------------------------//
 CLASS shipment 'Поставка' : incAccountSumDocumentLedger, historyObject, numberedObject, priceTransactionDocument;
 CLASS shipmentDetail 'Строка поставки' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger, warePriceLedger;
-@metaCodeObjectWithPostEx(shipment, 'Закрытая поставка');
+CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObject;
+
+@metaCodeObjectWithPostEx(shipment);
 
 GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
 GROUP additionalInfo 'Дополнительно' : baseGroup;
@@ -5642,7 +5695,9 @@ curPriceWarePriceChangeShipmentDetail 'Текущая цена посуды' (pr
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 CLASS writeOff 'Списание' : outAccountSumDocumentLedger, historyObject, numeratedObject;
 CLASS writeOffDetail 'Строка списания' : outAutoBalanceItemLedger;
-@metaCodeObjectWithPostEx (writeOff, 'Закрытое списание');
+CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
+
+@metaCodeObjectWithPostEx (writeOff);
 
 CLASS reasonOff 'Причина списания' : named;
 TABLE reasonOff (reasonOff);
@@ -5728,7 +5783,9 @@ descriptionWriteOffDetail 'Название документа' (writeOffDetail)
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
 CLASS innerFlow 'Расход в отдел' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
 CLASS innerFlowDetail 'Строка расхода в отдел' : outAutoBalanceItemLedger, consignmentDetail;
-@metaCodeObjectWithPostEx (innerFlow, 'Закрытый расход в отдел');
+CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow, postedObject;
+
+@metaCodeObjectWithPostEx (innerFlow);
 
 recipientDepartmentInnerFlow 'Отдел-получатель (ИД)' (innerFlow) = DATA departmentStore(innerFlow);
 nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentPrmGroup;
@@ -5881,7 +5938,9 @@ GROUP consumptionGroup 'Расход': baseGroup;
 
 CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, historyObject, priceTransactionDocument;
 CLASS innerArrivalDetail 'Строка прихода в отдел' : balanceItemLedger, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
-@metaCodeObjectWithPostEx (innerArrival, 'Закрытый приход в отдел');
+CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerArrival, postedObject;
+
+@metaCodeObjectWithPostEx (innerArrival);
 
 innerFlowInnerArrival 'Накладная отгрузки с отдела-отправителя (ИД)' (innerArrival) = DATA innerFlowPosted (innerArrival);
 
@@ -6186,7 +6245,9 @@ FORM wastages 'Списания отходов'
 
 CLASS returnSupplier 'Возврат поставщику' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
 CLASS returnSupplierDetail 'Строка возврата поставщику' : outUserBalanceItemLedger, consignmentDetail;
-@metaCodeObjectWithPostEx(returnSupplier, 'Закрытый возврат поставщику');
+CLASS returnSupplierPosted 'Закрытый возврат поставщику' : returnSupplier, postedObject;
+
+@metaCodeObjectWithPostEx(returnSupplier);
 
 // шапка документа "Возврат поставщику"
 supplierReturnSupplier 'Поставщик (ИД)' (returnSupplier) = DATA supplier (returnSupplier) IN idGroup;
@@ -6599,7 +6660,7 @@ TABLE zReport (zReport);
 
 CLASS zReportPosted 'Z-отчет (закрытый)' : zReport, postedObject;
 
-@metaCodePostedObject(zReport);
+@defineDocumentHeaderPosted(zReport);
 
 dateOpenZReport 'Дата открытия Z-отчета' (zReport) = DATA DATE(zReport);
 numberZReport 'Номер Z-отчета' (zReport) = DATA INTEGER(zReport);
@@ -6709,7 +6770,9 @@ isPostedSaleDiscountDocument (saleDiscountDocument) = isPostedZReport(zReportSal
 
 CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, priceTransactionDocument, historyObject;
 CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
-@metaCodeObjectWithPostEx (userPriceChange, 'Закрытая переоценка товаров');
+CLASS userPriceChangePosted 'Закрытая переоценка товаров' : userPriceChange, postedObject;
+
+@metaCodeObjectWithPostEx (userPriceChange);
 
 numberUserPriceChange (userPriceChange) = numberObject(userPriceChange) AND userPriceChange IS userPriceChange;
 seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND userPriceChange IS userPriceChange;
@@ -7658,7 +7721,7 @@ CONSTRAINT controlSupplierDepartmentStoreShipment(shipment) == yesNo.yes AND NOT
 
 isAvailableOrderShipment 'Заявка допустимая для заказа' (shipment, orderSupplier) = dateShipment (shipment) <= sumDate(dateOrderSupplier (orderSupplier), UNION OVERRIDE 0 IF shipment IS shipment, afterDaysSupplier (supplierShipment(shipment)));
 
-@metaCodePostedObject (orderSupplier);
+@defineDocumentHeaderPosted(orderSupplier);
 
 FORM ordersShipment 'Заказы'
     OBJECTS s=shipment FIXED PANEL
