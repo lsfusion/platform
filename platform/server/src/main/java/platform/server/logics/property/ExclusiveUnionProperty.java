@@ -33,6 +33,14 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
         return super.getOldDepends();
     }
 
+    @Override
+    public Set<ChangedProperty> getChangedDepends() {
+        if(isAbstract())
+            return new HashSet<ChangedProperty>();
+
+        return super.getChangedDepends();
+    }
+
     public ExclusiveUnionProperty(String sID, String caption, List<Interface> interfaces, Collection<PropertyMapImplement<?, Interface>> operands) {
         super(sID, caption, interfaces);
         this.operands = operands;

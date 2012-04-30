@@ -5,8 +5,10 @@ import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.session.*;
 
+import java.sql.SQLException;
 import java.util.*;
 
 public class DerivedChange<D extends PropertyInterface, C extends PropertyInterface> {
@@ -15,11 +17,12 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
     private final PropertyInterfaceImplement<C> writeFrom;
     private final PropertyMapImplement<?, C> where;
 
-    public DerivedChange(Property<C> writeTo, PropertyInterfaceImplement<C> writeFrom, PropertyMapImplement<?, C> where) {
+    public DerivedChange(Property<C> writeTo, PropertyInterfaceImplement<C> writeFrom, PropertyMapImplement<?, C> where, int options) {
         assert where.property.noDB();
         this.writeTo = writeTo;
         this.writeFrom = writeFrom;
         this.where = where;
+        this.options = options;
     }
 
     public Set<Property> getDepends() {
@@ -67,7 +70,24 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
         return new PropertyChange<C>(mapKeys, writeExpr, changeWhere);
     }
 
+    public MapDataChanges<C> getMapDataChanges(PropertyChanges changes) {
+        return writeTo.getDataChanges(getDerivedChange(changes), changes);
+    }
+
     public DataChanges getDataChanges(PropertyChanges changes) {
-        return writeTo.getDataChanges(getDerivedChange(changes), changes).changes;
+        return getMapDataChanges(changes).changes;
+    }
+
+    public final static int RESOLVE = 1; // обозначает что where - SET или DROP свойства, и выполнение этого event'а не имеет смысла
+    private final int options;
+
+    public <T extends PropertyInterface> void resolve(DataSession session) throws SQLException {
+        if((options & RESOLVE)==0)
+            return;
+
+        PropertyChanges changes = session.getPropertyChanges();
+        for(ChangedProperty<T> changedProperty : where.property.getChangedDepends())
+            changes = changes.add(new PropertyChanges(changedProperty, changedProperty.getFullChange(session)));
+        session.execute(getMapDataChanges(changes), null, new HashMap<C, PropertyObjectInterfaceInstance>());
     }
 }

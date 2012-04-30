@@ -2102,6 +2102,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    public void recalculateFollows(DataSession session) throws SQLException {
+        for(Property property : getPropertyList())
+            if(property.isDerived())
+                ((UserProperty)property).derivedChange.resolve(session);
+    }
+
     public void updateStats() throws SQLException {
         updateStats(true); // чтобы сами таблицы статистики получили статистику
         if(!"true".equals(System.getProperty("platform.server.logics.donotcalculatestats")))

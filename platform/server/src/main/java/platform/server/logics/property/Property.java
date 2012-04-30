@@ -690,6 +690,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return result;
     }
 
+    public Set<ChangedProperty> getChangedDepends() {
+        Set<ChangedProperty> result = new HashSet<ChangedProperty>();
+        for(Property<?> property : getDepends(false)) // derived'ы в общем то не интересуют так как используется в singleApply
+            result.addAll(property.getChangedDepends());
+        return result;
+    }
+
     public Collection<MaxChangeProperty<?, T>> getMaxChangeProperties(Collection<Property> properties) {
         Collection<MaxChangeProperty<?, T>> result = new ArrayList<MaxChangeProperty<?, T>>();
         for (Property<?> property : properties)
@@ -1017,14 +1024,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         if((options & PropertyFollows.RESOLVE_TRUE)!=0 && implement.property.hasSet(true)) { // оптимизационная проверка
             assert interfaces.size() == implement.mapping.size(); // assert что количество
             PropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, true);
-            setAction.mapDerivedChange(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)));
+            setAction.mapDerivedChange(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)), DerivedChange.RESOLVE);
 //            PropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, false);
 //            setAction.mapDerivedChange(DerivedProperty.createAndNot(getChanged(IncrementType.SET), implement).map(BaseUtils.reverse(implement.mapping)));
             lm.addProp(setAction.property);
         } 
         if((options & PropertyFollows.RESOLVE_FALSE)!=0 && hasSet(false)) {
             PropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, true);
-            setAction.mapDerivedChange(implement.mapChanged(IncrementType.DROP));
+            setAction.mapDerivedChange(implement.mapChanged(IncrementType.DROP), DerivedChange.RESOLVE);
 //            PropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, false);
 //            setAction.mapDerivedChange(DerivedProperty.createAnd(this, implement.mapChanged(IncrementType.DROP)));
             lm.addProp(setAction.property);
@@ -1037,9 +1044,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return props;
     }
 
-    public <D extends PropertyInterface> void setDerivedChange(PropertyMapImplement<?, T> whereImplement) {
+    public <D extends PropertyInterface> void setDerivedChange(PropertyMapImplement<?, T> whereImplement, int options) {
         assert this instanceof ActionProperty;
-        setDerivedChange(DerivedProperty.<T>createStatic(true, ActionClass.instance), whereImplement);
+        setDerivedChange(DerivedProperty.<T>createStatic(true, ActionClass.instance), whereImplement, options);
     }
 
     public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, IncrementType incrementType, PropertyImplement<D, PropertyInterfaceImplement<T>> valueImplement, List<PropertyMapImplement<?, T>> whereImplements, Collection<PropertyMapImplement<?, T>> onChangeImplements) {
@@ -1072,10 +1079,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public <D extends PropertyInterface, W extends PropertyInterface> void setDerivedChange(PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
+        setDerivedChange(valueImplement, whereImplement, 0);
+    }
+
+    public <D extends PropertyInterface, W extends PropertyInterface> void setDerivedChange(PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement, int options) {
         if(!whereImplement.property.noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET);
-        
-        DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(this, valueImplement, whereImplement);
+
+        DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(this, valueImplement, whereImplement, options);
         // запишем в DataProperty
         for(UserProperty dataProperty : getDataChanges())
             dataProperty.derivedChange = derivedChange;

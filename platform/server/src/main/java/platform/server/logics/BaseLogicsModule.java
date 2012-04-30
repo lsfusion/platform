@@ -1717,6 +1717,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         @Override
         public void execute(ExecutionContext context) throws SQLException {
             DataSession session = BL.createSession();
+            BL.recalculateFollows(session);
             session.apply(BL);
             session.close();
 
