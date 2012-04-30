@@ -17,8 +17,9 @@ isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2
 
 round0 (number) = round(number, 0);
 roundMinus1 (number) = round(number, -1);
-round3 (number) = round(number, 3);
 round1 (number) = round(number, 1);
+round2 (number) = round(number, 2);
+round3 (number) = round(number, 3);
 
 CLASS doubleNamed 'Объект с кратким наименованием' : named;
 
@@ -387,29 +388,37 @@ META defineDocumentTables (object)
     TABLE object##Detail (object##Detail);
 END
 
-META defineDocumentRelation (object)
-    object###object##Detail 'Строка документа' = DATA object (object##Detail) IN idGroup;
-    in###object###object##Detail(object, object##Detail) = object###object##Detail(object##Detail) == object;
+META defineDocumentRelationCustom (object, detail)
+    object###detail##Detail 'Строка документа' = DATA object (detail##Detail) IN idGroup;
+    in###object###detail##Detail(iobject, idetail) = object###detail##Detail(idetail) == iobject;
 
-    quantity###object##Details###object 'Количество строк в документе' (object) =
-        GROUP SUM 1 IF in###object###object##Detail(object, object##Detail) BY object PERSISTENT;
+    quantity###object##Details###object 'Количество строк в документе' (iobject) =
+        GROUP SUM 1 IF in###object###detail##Detail(iobject, idetail) BY iobject PERSISTENT;
+END
+
+META defineDocumentRelation (object)
+    @defineDocumentRelationCustom(object, object);
 END
 
 // Время
 
 META defineDocumentHeaderTime (object)
-    date###object 'Дата документа' (object) = DATA DATE (object) IN documentHeaderGroup;
+    date###object 'Дата документа' = DATA DATE (object) IN documentHeaderGroup;
     date###object (object) <- currentDate() WHEN ASSIGNED(object AS object);
 
-    time###object 'Время документа' (object) = DATA TIME (object) IN documentHeaderGroup;
+    time###object 'Время документа' = DATA TIME (object) IN documentHeaderGroup;
     time###object (object) <- currentTime() WHEN ASSIGNED(object AS object);
 
     dateTime###object 'Дата/время документа' (object) = toDateTime(date###object(object), time###object(object));
 END
 
+META defineDocumentDetailTimeCustom (object, detail)
+    date###detail##Detail 'Дата документа' = date###object(object###detail##Detail(detail));
+    dateTime###detail##Detail 'Дата/время документа' (detail) = dateTime###object(object###detail##Detail(detail));
+END
+
 META defineDocumentDetailTime (object)
-    date###object##Detail 'Дата документа' (object##Detail) = date###object(object###object##Detail(object##Detail));
-    dateTime###object##Detail 'Дата/время документа' (object##Detail) = dateTime###object(object###object##Detail(object##Detail));
+    @defineDocumentDetailTimeCustom(object, object);
 END
 
 META defineDocumentTime (object)
@@ -420,13 +429,17 @@ END
 // Отдел магазина
 
 META defineDocumentHeaderDepartmentStore (object)
-    departmentStore###object 'Отдел документа (ИД)' (object) = DATA departmentStore(object) IN idGroup;
+    departmentStore###object 'Отдел документа (ИД)' = DATA departmentStore(object) IN idGroup;
     nameDepartmentStore###object 'Отдел документа' (object) = name(departmentStore###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 20 PREFCHARWIDTH 40;;
 END
 
+META defineDocumentDetailDepartmentStoreCustom (object, detail)
+    departmentStore###detail##Detail 'Отдел магазина (ИД)' (idetail) = departmentStore###object(object###detail##Detail(idetail));
+END
+
 META defineDocumentDetailDepartmentStore (object)
-    departmentStore###object##Detail 'Отдел магазина (ИД)' (object##Detail) = departmentStore###object(object###object##Detail(object##Detail));
+    @defineDocumentDetailDepartmentStoreCustom (object, object);
 END
 
 META defineDocumentDepartmentStore (object)
@@ -455,8 +468,8 @@ META defineDocumentHeaderPosted (object)
 END
 
 META defineDocumentDetailPosted (object)
-    isPosted###object##Detail 'Закрыт' (object##Detail) = isPosted###object(object###object##Detail(object##Detail));
-    isNotPosted###object##Detail 'Открыт' (object##Detail) = object##Detail IS object##Detail AND NOT isPosted###object##Detail(object##Detail);
+    isPosted###object##Detail 'Закрыт' (detail) = isPosted###object(object###object##Detail(detail));
+    isNotPosted###object##Detail 'Открыт' (detail) = detail IS object##Detail AND NOT isPosted###object##Detail(detail);
 END
 
 META defineDocumentPosted (object)
@@ -465,28 +478,25 @@ META defineDocumentPosted (object)
 END
 
 META defineDocumentDetailIndex (object)
-    index###object##Detail 'Номер строки' (object##Detail) =
-        PARTITION SUM 1 IF object##Detail IS object##Detail BY object###object##Detail(object##Detail)
-        ORDER object##Detail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
+    index###object##Detail 'Номер строки' (detail) =
+        PARTITION SUM 1 IF detail IS object##Detail BY object###object##Detail(detail)
+        ORDER detail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
 END
 
 META defineDocumentDetailNumbered (object)
-
-    //шапка документа поставки
-    number###object##Detail 'Номер накладной' (object##Detail) = numberObject(object###object##Detail(object##Detail));
-    series###object##Detail 'Серия накладной' (object##Detail) = seriesObject(object###object##Detail(object##Detail));
-
+    number###object##Detail 'Номер накладной' (detail) = numberObject(object###object##Detail(detail));
+    series###object##Detail 'Серия накладной' (detail) = seriesObject(object###object##Detail(detail));
 END
 
 META defineDocumentDetailItem (object)
 
-    item###object##Detail 'Товар (ИД)' (object##Detail) = DATA item (object##Detail) IN idGroup;
+    item###object##Detail 'Товар (ИД)' = DATA item (object##Detail) IN idGroup;
 
-    nameAttributeItem###object##Detail 'Товар' (object##Detail) =
-        nameAttributeItem(item###object##Detail(object##Detail)) IN recognizeGroup;
+    nameAttributeItem###object##Detail 'Товар' (detail) =
+        nameAttributeItem(item###object##Detail(detail)) IN recognizeGroup;
 
-    shortNameUnitOfMeasureItem###object##Detail 'Ед. изм.' (object##Detail) =
-        shortNameUnitOfMeasureItem(item###object##Detail(object##Detail)) IN baseGroup;
+    shortNameUnitOfMeasureItem###object##Detail 'Ед. изм.' (detail) =
+        shortNameUnitOfMeasureItem(item###object##Detail(detail)) IN baseGroup;
 
     barcodeExSku###object##Detail 'Штрих-код товара' (object) =
         barcodeEx(barcodeSku(item###object##Detail (object))) IN baseGroup;
@@ -519,6 +529,44 @@ META defineDocumentDetailItemActions (object)
         };
     } IN documentPrmGroup CONFIRM;
 
+END
+
+META defineDocumentDetailQuantity (object)
+    quantity###object##Detail 'Кол-во' = DATA NUMERIC[14,3] (object##Detail);
+END
+
+META defineDocumentDetailPrice (object)
+    importerPrice###object##Detail 'Цена изготовителя/импортера' = DATA NUMERIC[14,2] (object##Detail);
+    supplierPrice###object##Detail 'Цена поставщика' = DATA NUMERIC[14,2] (object##Detail);
+
+    retailRange###object##Detail = DATA range (object##Detail);
+    numberRetailRange###object##Detail 'НДС розничный, номер' (detail) = dataRange(retailRange###object##Detail(detail));
+    dataRetailRange###object##Detail 'НДС розничный, %' (detail) =
+       dataActingRateRangeDate(retailRange###object##Detail(detail), date###object##Detail(detail));
+
+    CONSTRAINT taxRange(retailRange###object##Detail(detail)) != tax.taxNDS CHECKED BY retailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+    retailPrice###object##Detail 'Розничная цена' = DATA NUMERIC[14,2] (object##Detail);
+END
+
+META defineDocumentDetailSum (object)
+    retailSum###object##Detail 'Розничная сумма' (detail) = quantity###object##Detail(detail) * retailPrice###object##Detail(detail);
+END
+
+META defineDocumentHeaderQuantityCustom (object, detail)
+    quantity###detail 'Кол-во (всего)' (object) = GROUP SUM quantity###detail##Detail(idetail) BY object###detail##Detail(idetail) IN documentSumGroup;
+END
+
+META defineDocumentHeaderQuantity (object)
+    @defineDocumentHeaderQuantityCustom(object, object);
+END
+
+META defineDocumentHeaderSumCustom (object, detail)
+    retailSum###detail 'Розничная сумма' (object) = GROUP SUM retailSum###detail##Detail(idetail) BY object###detail##Detail(idetail) IN documentSumGroup;
+END
+
+META defineDocumentHeaderSum (object)
+    @defineDocumentHeaderSumCustom(object, object);
 END
 
 // ----------------------------------- Свойства для объектов Posted ------------------------------------------ //
@@ -4111,40 +4159,45 @@ TABLE actOfStudy (actOfStudy);
 
 CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStudy, postedObject;
 
+// шапка дакта
+@defineDocumentHeaderTime(actOfStudy);
+@defineDocumentHeaderDepartmentStore(actOfStudy);
+@defineDocumentHeaderPosted (actOfStudy);
+
 CLASS studyInputDetail 'Строка проработки (вход)' : outAutoBalanceItemLedger;
 TABLE studyInputDetail(studyInputDetail);
 
 CLASS studyOutputDetail 'Строка проработки (выход)' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
 TABLE studyOutputDetail(studyOutputDetail);
 
-@defineDocumentHeaderTime(actOfStudy);
-@defineDocumentHeaderDepartmentStore(actOfStudy);
-@defineDocumentHeaderPosted (actOfStudy);
+// строки расхода
+@defineDocumentRelationCustom(actOfStudy, studyInput);
 
+@defineDocumentDetailDepartmentStoreCustom(actOfStudy, studyInput);
+@defineDocumentDetailTimeCustom(actOfStudy, studyInput);
+
+@defineDocumentDetailItem(studyInput);
+
+@defineDocumentDetailQuantity(studyInput);
+@defineDocumentDetailPrice(studyInput);
+@defineDocumentDetailSum(studyInput);
+
+@defineDocumentHeaderQuantityCustom(actOfStudy, studyInput);
+@defineDocumentHeaderSumCustom(actOfStudy, studyInput);
+
+// custom информация по акту
 contractorDepartmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idGroup;
 nameContractorDepartmentStoreActOfStudy 'Отдел-контрагент' (actOfStudy) = name(contractorDepartmentStoreActOfStudy(actOfStudy)) IN documentPrmGroup;
 
-waybillOutputActOfStudy 'Номер расходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN documentPrmGroup FIXEDCHARWIDTH 7;
-waybillInputActOfStudy 'Номер приходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN documentPrmGroup FIXEDCHARWIDTH 7;
+numberOutputActOfStudy 'Номер расходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN documentPrmGroup FIXEDCHARWIDTH 7;
+numberInputActOfStudy 'Номер приходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN documentPrmGroup FIXEDCHARWIDTH 7;
 
 seriesOutputActOfStudy 'Серия расходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN documentPrmGroup FIXEDCHARWIDTH 3;
 seriesInputActOfStudy 'Серия приходной накладной' (actOfStudy) = DATA STRING[2] (actOfStudy) IN documentPrmGroup FIXEDCHARWIDTH 3;
 
-castActOfStudyObjectsToString100=
-    FORMULA STRING[200] '\'Акт разруба \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
-
-descriptionActOfStudy 'Название документа' (actOfStudy) = castActOfStudyObjectsToString100(
+descriptionActOfStudy 'Название документа' (actOfStudy) =
+    [FORMULA STRING[200] '\'Акт разруба \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'] (
     seriesNumberObject(actOfStudy), dateActOfStudy(actOfStudy), nameContractorDepartmentStoreActOfStudy(actOfStudy));
-
-actOfStudyStudyInputDetail = DATA actOfStudy (studyInputDetail) IN idGroup;
-
-departmentStoreStudyInputDetail (studyInputDetail) = departmentStoreActOfStudy(actOfStudyStudyInputDetail(studyInputDetail));
-
-itemStudyInputDetail = DATA item (studyInputDetail) IN idGroup;
-nameAttributeItemStudyInputDetail 'Товар' (studyInputDetail) = nameAttributeItem(itemStudyInputDetail(studyInputDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
-
-counterStudyInputDetail 'Порядковый номер' (studyInputDetail) = PARTITION SUM 1 IF studyInputDetail IS studyInputDetail
-    BY actOfStudyStudyInputDetail(studyInputDetail) ORDER studyInputDetail IN baseGroup;
 
 cuttingStudyInputDetail = DATA cutting (studyInputDetail) IN idGroup;
 seriesNumberCuttingStudyInputDetail 'Номер карты' (studyInputDetail) = seriesNumberObject(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
@@ -4155,38 +4208,16 @@ percAllowancesCuttingStudyInputDetail 'Процент надбавок, %' (stud
 percLossesCuttingStudyInputDetail 'Процент потерь, %' (studyInputDetail) = percLossesCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
 percSweepsCuttingStudyInputDetail 'Процент зачисток, %' (studyInputDetail) = percSweepsCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
 
-quantityStudyInputDetail 'Количество для разруба' (studyInputDetail) = DATA NUMERIC[14,3] (studyInputDetail);
-
-retailPriceStudyInputDetail 'Цена за ед.' (studyInputDetail) = DATA NUMERIC[14,2] (studyInputDetail);
-totalStudyInputDetail 'Сумма' (studyInputDetail) = retailPriceStudyInputDetail(studyInputDetail)*quantityStudyInputDetail(studyInputDetail);
-subtotalInputActOfStudy 'Расход сумма' (actOfStudy) = GROUP SUM totalStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail) IN documentSumGroup;
-//subtotalByItemInputActOfStudy 'Расход сумма, товар' (actOfStudy) =
-//    GROUP SUM totalStudyInputDetail(studyInputDetail) AND NOT isContainerItem(itemStudyInputDetail(studyInputDetail))
-//        BY actOfStudyStudyInputDetail(studyInputDetail) IN documentSumGroup;
-//subtotalByContainerInputActOfStudy 'Расход сумма, тара' (actOfStudy) =
-//    GROUP SUM totalStudyInputDetail(studyInputDetail) IF isContainerItem(itemStudyInputDetail(studyInputDetail))
-//        BY actOfStudyStudyInputDetail(studyInputDetail) IN documentSumGroup;
-
-quantityInputActOfStudy 'Расход к-во' (actOfStudy) = GROUP SUM quantityStudyInputDetail(studyInputDetail) BY actOfStudyStudyInputDetail(studyInputDetail) IN documentSumGroup;
-
-dateStudyInputDetail 'Дата' (studyInputDetail) = dateActOfStudy(actOfStudyStudyInputDetail(studyInputDetail)) PERSISTENT;
-
-importerPriceStudyInputDetail 'Цена изготовителя/импортера' (studyInputDetail) = DATA NUMERIC[14,2] (studyInputDetail);
-supplierPriceStudyInputDetail 'Цена поставщика' (studyInputDetail) = DATA NUMERIC[14,2] (studyInputDetail);
-
-retailRangeStudyInputDetail(studyInputDetail) = DATA range (studyInputDetail) IN idGroup;
-numberRetailRangeStudyInputDetail 'Номер НДС розничный' (studyInputDetail) = dataRange(retailRangeStudyInputDetail(studyInputDetail));
-
-dataRetailRangeStudyInputDetail 'НДС розничный,%' (studyInputDetail) =
-   dataActingRateRangeDate(retailRangeStudyInputDetail(studyInputDetail),  dateStudyInputDetail(studyInputDetail)) IN baseGroup;
-CONSTRAINT taxRange(retailRangeStudyInputDetail(studyInputDetail)) != tax.taxNDS CHECKED BY retailRangeStudyInputDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+// строки расхода
 
 studyInputDetailStudyOutputDetail = DATA studyInputDetail (studyOutputDetail) IN idGroup;
 actOfStudyStudyOutputDetail(studyOutputDetail) = actOfStudyStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail)) PERSISTENT;
 
-itemStudyOutputDetail 'Товар' = DATA item (studyOutputDetail) IN idGroup;
-shortNameUnitOfMeasureItemStudyOutputDetail 'Ед.изм.' (studyOutputDetail) = shortNameUnitOfMeasureItem(itemStudyOutputDetail(studyOutputDetail)) IN actGroup;
-captionItemStudyOutputDetail 'Наименование компонента' (studyOutputDetail) = captionItem (itemStudyOutputDetail(studyOutputDetail)) IN actGroup;
+@defineDocumentDetailDepartmentStoreCustom(actOfStudy, studyOutput);
+@defineDocumentDetailTimeCustom(actOfStudy, studyOutput);
+
+@defineDocumentDetailItem(studyOutput);
+
 factorStudyOutputDetail 'Рассчетный коэффициент цены' = DATA NUMERIC[8,3] (studyOutputDetail) IN actGroup;
 percGoodsStudyOutputDetail '% выхода компонента (п/ф)' = DATA NUMERIC[10,5] (studyOutputDetail) IN actGroup;
 
@@ -4194,64 +4225,39 @@ percAllowancesStudyOutputDetail 'Процент надбавок, %' = DATA NUME
 overPercAllowancesStudyOutputDetail (studyOutputDetail) = UNION OVERRIDE 0 IF studyOutputDetail IS studyOutputDetail,
                                                                          percAllowancesStudyOutputDetail(studyOutputDetail);
 
-quantityStudyInputDetailStudyOutputDetail (studyOutputDetail) = quantityStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
-retailPriceStudyInputDetailStudyOutputDetail (studyOutputDetail) = retailPriceStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
+calculatedStudyOutputDetail 'Количество выхода п/ф' (studyOutputDetail) =  [X*Y/100]
+    (quantityStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail)), percGoodsStudyOutputDetail(studyOutputDetail));
 
-quantityStudyOutputDetail 'Количество выхода п/ф' (studyOutputDetail) =  [X*Y/100]
-    (quantityStudyInputDetailStudyOutputDetail(studyOutputDetail), percGoodsStudyOutputDetail(studyOutputDetail));
+actualQuantityStudyOutputDetail 'Фактический выход п/ф'(studyOutputDetail) = DATA NUMERIC[14,3] (studyOutputDetail);
+quantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE calculatedStudyOutputDetail(studyOutputDetail),
+                                                              actualQuantityStudyOutputDetail(studyOutputDetail);
 
-actualQuantityStudyOutputDetail 'Фактический выхода п/ф'(studyOutputDetail) = DATA NUMERIC[14,3] (studyOutputDetail);
-overQuantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE quantityStudyOutputDetail(studyOutputDetail),
-                                                                  actualQuantityStudyOutputDetail(studyOutputDetail);
+@defineDocumentDetailPrice(studyOutput);
+@defineDocumentDetailSum(studyOutput);
 
-// свойство для засылки в кассы
-quantityItemActOfStudy (item, actOfStudy) = GROUP SUM actualQuantityStudyOutputDetail(studyOutputDetail)
-                                                      BY itemStudyOutputDetail(studyOutputDetail),
-                                                         actOfStudyStudyOutputDetail(studyOutputDetail);
+@defineDocumentHeaderQuantityCustom(actOfStudy, studyOutput);
+@defineDocumentHeaderSumCustom(actOfStudy, studyOutput);
 
 notRoundRetailPriceStudyOutputDetail 'Цена' (studyOutputDetail) = [X*Y*(100+Z)/100]
-    (factorStudyOutputDetail(studyOutputDetail), retailPriceStudyInputDetailStudyOutputDetail(studyOutputDetail), overPercAllowancesStudyOutputDetail(studyOutputDetail));
+    (retailPriceStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail)), factorStudyOutputDetail(studyOutputDetail), overPercAllowancesStudyOutputDetail(studyOutputDetail));
 roundRetailPriceStudyOutputDetail 'Округленная цена' (studyOutputDetail) = roundMinus1(notRoundRetailPriceStudyOutputDetail(studyOutputDetail));
-
-retailPriceStudyOutputDetail 'Розничная цена' (studyOutputDetail) = DATA NUMERIC[14,2] (studyOutputDetail);
-
-totalStudyOutputDetail 'Сумма' (studyOutputDetail)= retailPriceStudyOutputDetail(studyOutputDetail) * overQuantityStudyOutputDetail(studyOutputDetail);
-
-subtotalStudyInputDetail 'Итого сумма  прихода п/ф по товару' (studyInputDetail) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY studyInputDetailStudyOutputDetail(studyOutputDetail);
-
-subtotalOutputActOfStudy 'Приход сумма' (actOfStudy) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail) IN documentSumGroup;
-//subtotalByItemOutputActOfStudy 'Приход сумма, товар' (actOfStudy) =
-//    GROUP SUM totalStudyOutputDetail(studyOutputDetail) AND NOT isContainerItem(itemStudyOutputDetail(studyOutputDetail))
-//        BY actOfStudyStudyOutputDetail(studyOutputDetail) IN documentSumGroup;
-//subtotalByContainerOutputActOfStudy 'Приход сумма, тара' (actOfStudy) =
-//    GROUP SUM totalStudyOutputDetail(studyOutputDetail) IF isContainerItem(itemStudyOutputDetail(studyOutputDetail))
-//        BY actOfStudyStudyOutputDetail(studyOutputDetail) IN documentSumGroup;
-
-quantityOutputActOfStudy 'Приход к-во' (actOfStudy) = GROUP SUM overQuantityStudyOutputDetail(studyOutputDetail) BY actOfStudyStudyOutputDetail(studyOutputDetail) IN documentSumGroup;
 
 notTotalPercGoodsStudyInputDetail (studyInputDetail)= GROUP SUM percGoodsStudyOutputDetail(studyOutputDetail) BY studyInputDetailStudyOutputDetail(studyOutputDetail);
 totalPercGoodsStudyInputDetail 'Итого % выхода по товару' (studyInputDetail) = notTotalPercGoodsStudyInputDetail(studyInputDetail) (+)
     percLossesCuttingStudyInputDetail(studyInputDetail)(+) percSweepsCuttingStudyInputDetail(studyInputDetail);
 highlightStudyInputDetail(studyInputDetail) = totalPercGoodsStudyInputDetail(studyInputDetail) > 100;
 
-
-departmentStoreStudyOutputDetail(studyOutputDetail) = departmentStoreStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail));
-
-dateStudyOutputDetail 'Дата' (studyOutputDetail) = dateStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail)) PERSISTENT;
-
 importerPriceForStudyOutputDetail(studyOutputDetail)  = importerPriceStudyInputDetail (studyInputDetailStudyOutputDetail(studyOutputDetail));
 countImporterPriceStudyOutputDetail (studyOutputDetail) = factorStudyOutputDetail(studyOutputDetail) * importerPriceForStudyOutputDetail(studyOutputDetail);
-roundImporterPriceStudyOutputDetail 'Округленная цена импортера' (studyOutputDetail) = roundMinus1(countImporterPriceStudyOutputDetail(studyOutputDetail));
+roundImporterPriceStudyOutputDetail 'Округленная цена импортера' (studyOutputDetail) = round2(countImporterPriceStudyOutputDetail(studyOutputDetail));
 
 curImporterPriceStudyOutputDetail 'Текущая цена изгтовителя/импортера' (studyOutputDetail) = DATA NUMERIC[14,2] (studyOutputDetail) IN itemStudyOutputDetailInfo;
-importerPriceStudyOutputDetail 'Цена изгтовителя/импортера' (studyOutputDetail) = DATA NUMERIC[14,2] (studyOutputDetail) IN baseGroup;
 
 supplierPriceForStudyOutputDetail(studyOutputDetail)  = supplierPriceStudyInputDetail (studyInputDetailStudyOutputDetail(studyOutputDetail));
 countSupplierPriceStudyOutputDetail (studyOutputDetail) = factorStudyOutputDetail(studyOutputDetail) * supplierPriceForStudyOutputDetail(studyOutputDetail);
 roundSupplierPriceStudyOutputDetail 'Округленная цена поставщика' (studyOutputDetail) = roundMinus1(countImporterPriceStudyOutputDetail(studyOutputDetail));
 
 curSupplierPriceStudyOutputDetail 'Текущая цена поставщика' (studyOutputDetail) = DATA NUMERIC[14,2] (studyOutputDetail) IN itemStudyOutputDetailInfo;
-supplierPriceStudyOutputDetail 'Цена поставщика' (studyOutputDetail) = DATA NUMERIC[14,2] (studyOutputDetail) IN baseGroup;
 
 curRetailPriceStudyOutputDetail 'Текущая розничная цена' (studyOutputDetail) = DATA NUMERIC[14,2] (studyOutputDetail) IN itemStudyOutputDetailInfo;
 
@@ -4263,17 +4269,11 @@ curDataRetailRangeStudyOutputDetail 'Текущий НДС розничный,%'
 CONSTRAINT taxRange(curRetailRangeStudyOutputDetail(studyOutputDetail)) != tax.taxNDS CHECKED BY curRetailRangeStudyOutputDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 
-retailRangeStudyOutputDetail(studyOutputDetail) = DATA range (studyOutputDetail);
-numberRetailRangeStudyOutputDetail 'НДС номер' (studyOutputDetail) = dataRange(retailRangeStudyOutputDetail(studyOutputDetail));
-dataRetailRangeStudyOutputDetail 'НДС розничный,%' (studyOutputDetail) =
-   dataActingRateRangeDate(retailRangeStudyOutputDetail(studyOutputDetail),  dateStudyOutputDetail(studyOutputDetail));
-
-
 quantityInputItemActOfStudy 'Расход количество' (item, actOfStudy) = GROUP SUM quantityStudyInputDetail(studyInputDetail) BY itemStudyInputDetail(studyInputDetail), actOfStudyStudyInputDetail(studyInputDetail);
-quantityOutputItemActOfStudy 'Приход количество (фактическое)' (item, actOfStudy) = GROUP SUM overQuantityStudyOutputDetail(studyOutputDetail) BY itemStudyOutputDetail(studyOutputDetail), actOfStudyStudyOutputDetail(studyOutputDetail);
+quantityOutputItemActOfStudy 'Приход количество (фактическое)' (item, actOfStudy) = GROUP SUM quantityStudyOutputDetail(studyOutputDetail) BY itemStudyOutputDetail(studyOutputDetail), actOfStudyStudyOutputDetail(studyOutputDetail);
 
-totalInputItemActOfStudy 'Расход сумма' (item, actOfStudy) = GROUP SUM totalStudyInputDetail(studyInputDetail) BY itemStudyInputDetail(studyInputDetail), actOfStudyStudyInputDetail(studyInputDetail);
-totalOutputItemActOfStudy 'Приход сумма' (item, actOfStudy) = GROUP SUM totalStudyOutputDetail(studyOutputDetail) BY itemStudyOutputDetail(studyOutputDetail), actOfStudyStudyOutputDetail(studyOutputDetail);
+totalInputItemActOfStudy 'Расход сумма' (item, actOfStudy) = GROUP SUM retailSumStudyInputDetail(studyInputDetail) BY itemStudyInputDetail(studyInputDetail), actOfStudyStudyInputDetail(studyInputDetail);
+totalOutputItemActOfStudy 'Приход сумма' (item, actOfStudy) = GROUP SUM retailSumStudyOutputDetail(studyOutputDetail) BY itemStudyOutputDetail(studyOutputDetail), actOfStudyStudyOutputDetail(studyOutputDetail);
 
 //---------------------------- Документы изменяющие суммы при разрубе --------------------------------//
 
@@ -4288,11 +4288,11 @@ isActOfStudy(actOfStudy) = actOfStudy IS actOfStudy AND contractorDepartmentStor
          //  приходный документ //
 @metaCodeSingleAggregation(actOfStudy, parish, isActOfStudy);
 
-waybillInputParish 'Номер приходной накладной' (parish) = waybillInputActOfStudy(actOfStudyParish(parish));
+numberInputParish 'Номер приходной накладной' (parish) = numberInputActOfStudy(actOfStudyParish(parish));
 seriesInputParish 'Серия приходной накладной' (parish) = seriesInputActOfStudy(actOfStudyParish(parish));
 
 dateTimeParish 'Дата/время' (parish) = dateTimeActOfStudy(actOfStudyParish(parish));
-subtotalParish 'Сумма прихода' (parish) = subtotalOutputActOfStudy(actOfStudyParish(parish));
+subtotalParish 'Сумма прихода' (parish) = retailSumStudyOutput(actOfStudyParish(parish));
 //subtotalByItemParish 'Сумма прихода, товар' (parish) = subtotalByItemOutputActOfStudy(actOfStudyParish(parish));
 //subtotalByContainerParish 'Сумма прихода, тара' (parish) = subtotalByContainerOutputActOfStudy(actOfStudyParish(parish));
 
@@ -4321,7 +4321,7 @@ descriptionStudyOutputDetail 'Название документа' (studyOutputD
 @metaCodeSingleAggregation(actOfStudy, consumption, isActOfStudy);
 
 dateTimeConsumption 'Дата/время' (consumption) = dateTimeActOfStudy(actOfStudyConsumption(consumption));
-subtotalConsumption 'Сумма расхода' (consumption) = subtotalInputActOfStudy(actOfStudyConsumption(consumption));
+subtotalConsumption 'Сумма расхода' (consumption) = retailSumStudyInput(actOfStudyConsumption(consumption));
 //subtotalByItemConsumption 'Сумма расхода, товар' (consumption) = subtotalByItemInputActOfStudy(actOfStudyConsumption(consumption));
 //subtotalByContainerConsumption 'Сумма расхода, тара' (consumption) = subtotalByContainerInputActOfStudy(actOfStudyConsumption(consumption));
 
@@ -4349,11 +4349,9 @@ descriptionStudyInputDetail 'Название документа' (studyInputDet
 
 //---------------------------- Изменение остатка и цены при разрубе --------------------------------//
 
-dateTimeStudyOutputDetail 'Дата/время' (studyOutputDetail) = dateTimeActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail));
-isPostedStudyOutputDetail 'Закрыт' (studyOutputDetail)= isPostedActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail));
+isPostedStudyOutputDetail 'Закрыт' (studyOutputDetail) = isPostedActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail));
 
-dateTimeStudyInputDetail 'Дата/время' (studyInputDetail) = dateTimeActOfStudy(actOfStudyStudyInputDetail(studyInputDetail));
-isPostedStudyInputDetail 'Закрыт' (studyInputDetail)  = isPostedActOfStudy(actOfStudyStudyInputDetail(studyInputDetail));
+isPostedStudyInputDetail 'Закрыт' (studyInputDetail) = isPostedActOfStudy(actOfStudyStudyInputDetail(studyInputDetail));
 
 toFillStudyOutputDetailsStudyInputDetail 'Заполнить данные для п/ф' (studyInputDetail) =  ACTION (studyInputDetail) {
     FOR cuttingCuttingDetail(cuttingDetail) == cuttingStudyInputDetail(studyInputDetail) DO {
@@ -6908,7 +6906,7 @@ TABLE balanceItemLedgerBatch (balanceItemLedger, batch);
 TABLE batchDepartmentStore(batch, departmentStore);
 
 quantityBatch 'Кол-во в партии' (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
-                                                           overQuantityStudyOutputDetail(ledger) PERSISTENT;
+                                                           quantityStudyOutputDetail(ledger) PERSISTENT;
 
 quantityOutAutoBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityWriteOffDetail(ledger),
                                                                      quantityStatementDetail(ledger),
@@ -12141,8 +12139,8 @@ FORM actOfStudy 'Акт проработки'
 
     PROPERTIES(a)   nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreActOfStudy,
                     dateActOfStudy, timeActOfStudy, nameContractorDepartmentStoreActOfStudy,
-                    quantityOutputActOfStudy, subtotalOutputActOfStudy, quantityInputActOfStudy, subtotalInputActOfStudy,
-                    waybillOutputActOfStudy, seriesOutputActOfStudy, waybillInputActOfStudy, seriesInputActOfStudy
+                    quantityStudyOutput, retailSumStudyOutput, quantityStudyInput, retailSumStudyInput,
+                    numberOutputActOfStudy, seriesOutputActOfStudy, numberInputActOfStudy, seriesInputActOfStudy
 
     OBJECTS sid=studyInputDetail
     OBJECTS sod=studyOutputDetail
@@ -12152,20 +12150,20 @@ FORM actOfStudy 'Акт проработки'
     PROPERTIES(sid) READONLY dateCuttingStudyInputDetail, descriptionCuttingStudyInputDetail,
                     percAllowancesCuttingStudyInputDetail, percLossesCuttingStudyInputDetail, percSweepsCuttingStudyInputDetail
     PROPERTIES(sid) importerPriceStudyInputDetail, supplierPriceStudyInputDetail, numberRetailRangeStudyInputDetail, dataRetailRangeStudyInputDetail,
-                    retailPriceStudyInputDetail, quantityStudyInputDetail, totalStudyInputDetail,
+                    retailPriceStudyInputDetail, quantityStudyInputDetail, retailSumStudyInputDetail,
                     totalPercGoodsStudyInputDetail BACKGROUND highlightStudyInputDetail(sid) READONLY, ADDOBJ, delete
 
     PROPERTIES(sid) toFillStudyOutputDetailsStudyInputDetail FORCE PANEL SHOWIF showNotStudyInputDetailStudyOutputDetail(sid,sod),
                     cleanAllStudyInputDetail FORCE PANEL
 
-    PROPERTIES(sod) captionItemStudyOutputDetail, shortNameUnitOfMeasureItemStudyOutputDetail, importerPriceStudyOutputDetail, supplierPriceStudyOutputDetail,
+    PROPERTIES(sod) nameAttributeItemStudyOutputDetail, shortNameUnitOfMeasureItemStudyOutputDetail, importerPriceStudyOutputDetail, supplierPriceStudyOutputDetail,
                     numberRetailRangeStudyOutputDetail, dataRetailRangeStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
-                    retailPriceStudyOutputDetail, quantityStudyOutputDetail, actualQuantityStudyOutputDetail, totalStudyOutputDetail
+                    retailPriceStudyOutputDetail, calculatedStudyOutputDetail, actualQuantityStudyOutputDetail, retailSumStudyOutputDetail
 
     PROPERTIES(sod) FORCE PANEL curImporterPriceStudyOutputDetail, curSupplierPriceStudyOutputDetail, curNumberRetailRangeStudyOutputDetail,
                     curDataRetailRangeStudyOutputDetail, curRetailPriceStudyOutputDetail
 
-    FILTERS         actOfStudyStudyInputDetail(sid)==a,
+    FILTERS         actOfStudyStudyInputDetail(sid) == a,
                     studyInputDetailStudyOutputDetail(sod) == sid
 
     EDIT actOfStudy OBJECT a
@@ -12197,14 +12195,14 @@ DESIGN actOfStudy FROM DEFAULT {
 
                 NEW headerOut {
                     title = 'Расходная накладная';
-                    ADD PROPERTY(waybillOutputActOfStudy);
+                    ADD PROPERTY(numberOutputActOfStudy);
                     ADD PROPERTY(seriesOutputActOfStudy);
                 }
                 POSITION a.documentPrmGroup TO THE LEFT headerOut;
 
                 NEW headerIn {
                     title = 'Приходная накладная';
-                    ADD PROPERTY(waybillInputActOfStudy);
+                    ADD PROPERTY(numberInputActOfStudy);
                     ADD PROPERTY(seriesInputActOfStudy);
                 }
                 POSITION a.documentPrmGroup TO THE LEFT headerIn;
@@ -12223,7 +12221,7 @@ FORM actOfStudies 'Акты проработки'
 
     OBJECTS a=actOfStudy
     PROPERTIES(a)  READONLY objectClassName, numberObject, seriesObject, dateActOfStudy, timeActOfStudy, nameDepartmentStoreActOfStudy,
-                            nameContractorDepartmentStoreActOfStudy, quantityOutputActOfStudy, subtotalOutputActOfStudy, quantityInputActOfStudy, subtotalInputActOfStudy,
+                            nameContractorDepartmentStoreActOfStudy, quantityStudyOutput, retailSumStudyOutput, quantityStudyInput, retailSumStudyInput,
                             statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionActOfStudy(a),
                             statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionActOfStudy(a)
 
