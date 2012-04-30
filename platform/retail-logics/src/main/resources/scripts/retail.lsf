@@ -292,7 +292,7 @@ META metaCodeIsPriceChangeWrong(prop)
 //            departmentStorePriceChange###prop(priceChange###prop##PriceChange###prop##Detail(priceChange###prop##Detail)),
 //            datePriceChange###prop(priceChange###prop##PriceChange###prop##Detail(priceChange###prop##Detail))) == yesNo.yes;
 
-    CONSTRAINT isPriceChangeWrong###prop (priceChange###prop##Detail) MESSAGE 'Ученка товара запрещена';
+    CONSTRAINT isPriceChangeWrong###prop (priceChange###prop##Detail) MESSAGE 'Уценка товара запрещена';
 
 END
 
@@ -2967,12 +2967,13 @@ DESIGN contract FROM DEFAULT {
 
 FORM contracts 'Договоры'
     OBJECTS c=contract
-    PROPERTIES(c) READONLY numberContract, nameCompanyContract, nameSupplierContract, nameformContract,
-                   nameTypeContract, dateFromContract, dateToContract, warnContract, banContract,
-                   delayContract
+    PROPERTIES(c) READONLY numberContract, nameCompanyContract, nameSupplierContract,
+                   nameTypeContract, dateFromContract, dateToContract
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
     ORDER BY nameCompanyContract, nameSupplierContract
+
+    DIALOG contract OBJECT c
 ;
 
 FORM supplier 'Поставщик'
@@ -5351,10 +5352,14 @@ numberContractShipment 'Договор' (shipment) = numberContract(contractShip
 
 dateContractShipment 'Договор от' (shipment) = dateFromContract(contractShipment(shipment)) IN documentPrmGroup;
 
-isSupplierContractShipment (shipment, contract) = supplierShipment(shipment) == supplierContract(contract);
-isCompanyContractShipment (shipment, contract) =
-    companyStore(storeDepartmentStore(departmentStoreShipment(shipment))) == companyContract(contract);
-isOperatingContractShipment (shipment, contract) = isOperatingContract(contract, dateShipment(shipment));
+isSupplierContractShipment (shipment) = supplierShipment(shipment) == supplierContract(contractShipment(shipment));
+isCompanyContractShipment (shipment) =
+    companyStore(storeDepartmentStore(departmentStoreShipment(shipment))) == companyContract(contractShipment(shipment));
+isOperatingContractShipment (shipment) = isOperatingContract(contractShipment(shipment), dateShipment(shipment));
+
+CONSTRAINT contractShipment(shipment) AND NOT isSupplierContractShipment(shipment) CHECKED BY contractShipment MESSAGE 'Выберите договор данного поставщика';
+CONSTRAINT contractShipment(shipment) AND NOT isCompanyContractShipment(shipment) CHECKED BY contractShipment MESSAGE 'Выберите договор данного юр. лица';
+CONSTRAINT contractShipment(shipment) AND NOT isOperatingContractShipment(shipment) CHECKED BY contractShipment MESSAGE 'Выберите действующий договор';
 
 carryingChargesShipment 'Транспортные расходы' (shipment) = DATA NUMERIC[16,2] (shipment) IN documentSumGroup;
 
@@ -5615,39 +5620,6 @@ curWarePriceChangeShipmentDetail 'Текущая посуда' (priceChangeShipm
 curPriceWarePriceChangeShipmentDetail 'Текущая цена посуды' (priceChangeShipmentDetail) = curPriceWareShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 
 @metaCodeIsPriceChangeWrong(shipment);
-
-//----------------------------------Договоры поставки------------------------------------------------------------------//
-
-FORM contractShipment 'Договоры'
-
-    OBJECTS s=shipment FIXED PANEL
-    PROPERTIES(s) READONLY numberObject, nameDepartmentStoreShipment, nameSupplierShipment
-
-    OBJECTS c=contract
-    PROPERTIES(c) READONLY numberContract, nameCompanyContract, nameSupplierContract,
-                   nameTypeContract, dateFromContract, dateToContract
-
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
-    ORDER BY nameCompanyContract, nameSupplierContract
-
-    FILTERS isSupplierContractShipment(s, c),
-            isCompanyContractShipment(s, c),
-            isOperatingContractShipment(s, c)
-    DIALOG contract OBJECT c
-;
-
-DESIGN contractShipment FROM DEFAULT {
-    main{
-
-        NEW shipment BEFORE c.box{
-            title = 'Поставка';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY(numberObject);
-            ADD PROPERTY(nameDepartmentStoreShipment);
-            ADD PROPERTY(nameSupplierShipment);
-        }
-    }
-}
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 CLASS writeOff 'Списание' : outAccountSumDocumentLedger, historyObject, numeratedObject;
@@ -6209,10 +6181,17 @@ contractReturnSupplier (returnSupplier) <- overrideContractCompanySupplier(compa
 
 numberContractReturnSupplier 'Договор' (returnSupplier) = numberContract(contractReturnSupplier(returnSupplier)) IN documentPrmGroup;
 
-isSupplierContractReturnSupplier (returnSupplier, contract) = supplierReturnSupplier(returnSupplier) == supplierContract(contract);
-isCompanyContractReturnSupplier (returnSupplier, contract) =
-    companyStore(storeDepartmentStore(departmentStoreReturnSupplier(returnSupplier))) == companyContract(contract);
-isOperatingContractReturnSupplier (returnSupplier, contract) = isOperatingContract(contract, dateReturnSupplier(returnSupplier));
+isSupplierContractReturnSupplier (returnSupplier) =
+    supplierReturnSupplier(returnSupplier) == supplierContract(contractReturnSupplier(returnSupplier));
+isCompanyContractReturnSupplier (returnSupplier) =
+    companyStore(storeDepartmentStore(departmentStoreReturnSupplier(returnSupplier))) == companyContract(contractReturnSupplier(returnSupplier));
+isOperatingContractReturnSupplier (returnSupplier) =
+    isOperatingContract(contractReturnSupplier(returnSupplier), dateReturnSupplier(returnSupplier));
+
+CONSTRAINT contractReturnSupplier(returnSupplier) AND NOT isSupplierContractReturnSupplier(returnSupplier) CHECKED BY contractReturnSupplier MESSAGE 'Выберите договор данного поставщика';
+CONSTRAINT contractReturnSupplier(returnSupplier) AND NOT isCompanyContractReturnSupplier(returnSupplier) CHECKED BY contractReturnSupplier MESSAGE 'Выберите договор данного юр. лица';
+CONSTRAINT contractReturnSupplier(returnSupplier) AND NOT isOperatingContractReturnSupplier(returnSupplier) CHECKED BY contractReturnSupplier MESSAGE 'Выберите действующий договор';
+
 
 numberDisposalReturnSupplier '№ распоряжения на переоценку' (returnSupplier) = DATA STRING[30] (returnSupplier) IN documentPrmGroup;
 
@@ -6783,7 +6762,7 @@ isPriceChangeWrongUserPriceChange (userPriceChangeDetail) =
 //        departmentStoreUserPriceChangeDetail(userPriceChangeDetail),
 //        dateUserPriceChangeDetail(userPriceChangeDetail)) == yesNo.yes;
 
-CONSTRAINT isPriceChangeWrongUserPriceChange (userPriceChangeDetail) MESSAGE 'Ученка товара запрещена';
+CONSTRAINT isPriceChangeWrongUserPriceChange (userPriceChangeDetail) MESSAGE 'Уценка товара запрещена';
 
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
@@ -10194,39 +10173,6 @@ DESIGN shipments FROM DEFAULT {
     ADD d.grid.box BEFORE s.historyGroup;
 }
 
-//----------------------------------Договоры возврата------------------------------------------------------------------//
-
-FORM contractReturnSupplier 'Договоры'
-
-    OBJECTS r=returnSupplier FIXED PANEL
-    PROPERTIES(r) READONLY numberObject, nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier
-
-    OBJECTS c=contract
-    PROPERTIES(c) READONLY numberContract, nameCompanyContract, nameSupplierContract,
-                   nameTypeContract, dateFromContract, dateToContract
-
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
-    ORDER BY nameCompanyContract, nameSupplierContract
-
-    FILTERS isSupplierContractReturnSupplier(r, c),
-            isCompanyContractReturnSupplier(r, c),
-            isOperatingContractReturnSupplier(r, c)
-    DIALOG contract OBJECT c
-;
-
-DESIGN contractReturnSupplier FROM DEFAULT {
-    main{
-
-        NEW returnSupplier BEFORE c.box{
-            title = 'Возврат поставщику';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY(numberObject);
-            ADD PROPERTY(nameDepartmentStoreReturnSupplier);
-            ADD PROPERTY(nameSupplierReturnSupplier);
-        }
-    }
-}
-
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
 @metaCodeInputMultipleItemsSupplier(returnSupplier);
@@ -12790,8 +12736,6 @@ NAVIGATOR {
             ADD specialty;
             ADD coolingDegree;
             ADD formItem;
-            ADD contractShipment;
-            ADD contractReturnSupplier;
         //    ADD numberInPack;
             ADD rateWaste;
             ADD addNameisPortionBarItem;
