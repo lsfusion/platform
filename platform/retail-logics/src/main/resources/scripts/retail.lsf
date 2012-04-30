@@ -1805,7 +1805,7 @@ inTaxRange(tax, range) = taxRange(range) == tax;
 actingRateDate(rate, date) = rate IF dateFromRate(rate) <= date AND NOT dateToRate(rate) < date AND date AS DATE;
 actingRateRangeDate(range, date) = GROUP MAX actingRateDate(rate, date) BY rangeRate(rate), date;
 dataActingRateRangeDate 'На дату' (range, date) = dataRate(actingRateRangeDate(range, date));
-actingRateRange 'Действующая ИД' (range) = actingRateRangeDate(range, currentDate()) IN idGroup PERSISTENT;
+actingRateRange 'Действующая ставка (ИД)' (range) = actingRateRangeDate(range, currentDate()) IN idGroup PERSISTENT;
 dataActingRateRange 'Действующая ставка' (range) = dataRate(actingRateRange(range)) IN baseGroup;
 dateFromActingRateRange 'Действует с' (range) = dateFromRate(actingRateRange(range)) IN baseGroup;
 dateToActingRateRange 'Действует по' (range) = dateToRate(actingRateRange(range)) IN baseGroup;
@@ -4076,8 +4076,35 @@ GROUP itemStudyOutputDetailInfo 'Ценовый характеристики п/
 CLASS cutting 'Карта проработки (разделки)' : named, numeratedObject;
 TABLE cutting (cutting);
 
-CLASS detailCutting 'Компонента';
-TABLE detailCutting (detailCutting);
+CLASS cuttingDetail 'Компонента';
+TABLE cuttingDetail (cuttingDetail);
+
+dateCutting 'Дата создания' = DATA DATE (cutting) IN cutGroup;
+dateCutting(cutting) <- currentDate() WHEN ASSIGNED(cutting IS cutting);
+
+useCutting 'Используется' = DATA BOOLEAN (cutting) IN cutGroup;
+descriptionCutting 'Описание' = DATA STRING[200] (cutting) IN cutGroup;
+
+percAllowancesCutting 'Процент надбавок, %' = DATA NUMERIC[8,3] (cutting) IN cutGroup;
+percLossesCutting 'Процент потерь, %' = DATA NUMERIC[8,3] (cutting) IN cutGroup;
+percSweepsCutting 'Процент зачисток, %' = DATA NUMERIC[8,3] (cutting) IN cutGroup;
+
+inDepartmentStoreCutting 'В каких подразделениях разрешено использовать карту' = DATA BOOLEAN (departmentStore, cutting) IN baseGroup;
+
+@defineDocumentRelation(cutting);
+@defineDocumentDetailItem(cutting);
+
+factorCuttingDetail 'Рассчетный коэффициент цены' = DATA NUMERIC[8,3] (cuttingDetail) IN cutGroup;
+percGoodsCuttingDetail '% выхода компонента (п/ф)' = DATA NUMERIC[8,3] (cuttingDetail) IN cutGroup;
+
+notTotalPercGoodsCuttingDetail (cutting) = GROUP SUM percGoodsCuttingDetail(cuttingDetail) BY cuttingCuttingDetail(cuttingDetail);
+totalPercGoodsCutting 'Итого % выхода по карте проработки (разделки)' (cutting) = notTotalPercGoodsCuttingDetail(cutting) (+)
+    percLossesCutting(cutting) (+) percSweepsCutting(cutting);
+highlightCutting(cutting) = totalPercGoodsCutting(cutting) > 100;
+
+inItemCutting 'Вкл.' = DATA BOOLEAN (item, cutting) IN cutGroup;
+
+// Акты проработки
 
 CLASS actOfStudy 'Акт проработки (разделки)' : historyObject, numeratedObject, priceTransactionDocument;
 TABLE actOfStudy (actOfStudy);
@@ -4090,60 +4117,9 @@ TABLE studyInputDetail(studyInputDetail);
 CLASS studyOutputDetail 'Строка проработки (выход)' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
 TABLE studyOutputDetail(studyOutputDetail);
 
+@defineDocumentHeaderTime(actOfStudy);
+@defineDocumentHeaderDepartmentStore(actOfStudy);
 @defineDocumentHeaderPosted (actOfStudy);
-      //      ??????????????????? не понятно что делать с процентом надбавок ??????????????????????   //
-
-//sidCutting 'Номер карты (из сборника и прочее)' = DATA INTEGER (cutting) IN cutGroup;
-
-dateCutting 'Дата создания' = DATA DATE (cutting) IN cutGroup;
-dateCutting(cutting) <- currentDate() WHEN ASSIGNED(cutting IS cutting);
-
-useCutting 'Используется' = DATA BOOLEAN (cutting) IN cutGroup;
-//             номер из сборника.....
-descriptionCutting 'Описание' = DATA STRING[200] (cutting) IN cutGroup;
-
-percAllowancesCutting 'Процент надбавок, %' = DATA NUMERIC[8,3] (cutting) IN baseGroup;
-overPercAllowancesCutting 'Процент надбавок, %' (cutting) = UNION OVERRIDE 0 IF cutting IS cutting, percAllowancesCutting(cutting) IN cutGroup;
-
-percLossesCutting 'Процент потерь, %' = DATA NUMERIC[8,3] (cutting) IN baseGroup;
-overPercLossesCutting 'Процент потерь, %' (cutting) = UNION OVERRIDE 0 IF cutting IS cutting, percLossesCutting(cutting) IN cutGroup;
-
-percSweepsCutting 'Процент зачисток, %' = DATA NUMERIC[8,3] (cutting) IN baseGroup;
-overPercSweepsCutting 'Процент зачисток, %' (cutting) = UNION OVERRIDE 0 IF cutting IS cutting, percSweepsCutting(cutting) IN cutGroup;
-
-inDepartmentStoreCutting 'В каких подразделениях разрешено использовать карту' = DATA BOOLEAN (departmentStore, cutting) IN baseGroup;
-
-cuttingDetailCutting 'Строка (ИД)' = DATA cutting (detailCutting) IN idGroup;
-itemDetailCutting 'Товар (ИД)' = DATA item (detailCutting) IN idGroup;
-shortNameUnitOfMeasureItemDetailCutting 'Ед.изм.' (detailCutting) = shortNameUnitOfMeasureItem(itemDetailCutting(detailCutting)) IN cutGroup;
-captionItemDetailCutting 'Наименование компонента' (detailCutting) = captionItem (itemDetailCutting(detailCutting)) IN cutGroup;
-factorDetailCutting 'Рассчетный коэффициент цены' = DATA NUMERIC[8,3] (detailCutting) IN cutGroup;
-percGoodsDetailCutting '% выхода компонента (п/ф)' = DATA NUMERIC[8,3] (detailCutting) IN cutGroup;
-
-notTotalPercGoodsDetailCutting (cutting) = GROUP SUM percGoodsDetailCutting(detailCutting) BY cuttingDetailCutting(detailCutting);
-totalPercGoodsDetailCutting 'Итого % выхода по карте проработки (разделки)' (cutting) = notTotalPercGoodsDetailCutting(cutting) (+)
-    overPercLossesCutting(cutting) (+) overPercSweepsCutting(cutting);
-highlightCutting(cutting) = totalPercGoodsDetailCutting(cutting) > 100;
-
-uniqueDetailCuttingCutting 'Компонента по карте переработки и товару' (cutting, item) = GROUP UNIQUE detailCutting BY cuttingDetailCutting(detailCutting), itemDetailCutting(detailCutting);
-isCuttingDetailCutting(cutting, detailCutting) = cuttingDetailCutting(detailCutting) == cutting;
-
-inItemCutting 'Вкл.' = DATA BOOLEAN (item, cutting) IN cutGroup;
-
-// Акты проработки
-
-departmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idGroup;
-nameDepartmentStoreActOfStudy 'Отдел документа' (actOfStudy) = name(departmentStoreActOfStudy(actOfStudy));
-//numberActOfStudy 'Номер акта' = DATA STRING[10] (actOfStudy) IN baseGroup;
-
-dateActOfStudy 'Дата документа' (actOfStudy) = DATA DATE (actOfStudy) IN documentHeaderGroup;
-dateActOfStudy (actOfStudy) <- currentDate() WHEN ASSIGNED(actOfStudy AS actOfStudy);
-
-timeActOfStudy 'Время документа' (actOfStudy) = DATA TIME (actOfStudy) IN documentHeaderGroup;
-timeActOfStudy (actOfStudy) <- currentTime() WHEN ASSIGNED(actOfStudy AS actOfStudy);
-
-dateTimeActOfStudy 'Дата/время документа' (actOfStudy) = toDateTime(dateActOfStudy(actOfStudy), timeActOfStudy(actOfStudy));
-
 
 contractorDepartmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idGroup;
 nameContractorDepartmentStoreActOfStudy 'Отдел-контрагент' (actOfStudy) = name(contractorDepartmentStoreActOfStudy(actOfStudy)) IN documentPrmGroup;
@@ -4175,9 +4151,9 @@ seriesNumberCuttingStudyInputDetail 'Номер карты' (studyInputDetail) =
 dateCuttingStudyInputDetail 'Дата создания карты' (studyInputDetail) = dateCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
 descriptionCuttingStudyInputDetail 'Описание' (studyInputDetail) = descriptionCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-percAllowancesCuttingStudyInputDetail 'Процент надбавок, %' (studyInputDetail) = overPercAllowancesCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
-percLossesCuttingStudyInputDetail 'Процент потерь, %' (studyInputDetail) = overPercLossesCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
-percSweepsCuttingStudyInputDetail 'Процент зачисток, %' (studyInputDetail) = overPercSweepsCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
+percAllowancesCuttingStudyInputDetail 'Процент надбавок, %' (studyInputDetail) = percAllowancesCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
+percLossesCuttingStudyInputDetail 'Процент потерь, %' (studyInputDetail) = percLossesCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
+percSweepsCuttingStudyInputDetail 'Процент зачисток, %' (studyInputDetail) = percSweepsCutting (cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
 
 quantityStudyInputDetail 'Количество для разруба' (studyInputDetail) = DATA NUMERIC[14,3] (studyInputDetail);
 
@@ -4205,16 +4181,6 @@ dataRetailRangeStudyInputDetail 'НДС розничный,%' (studyInputDetail)
    dataActingRateRangeDate(retailRangeStudyInputDetail(studyInputDetail),  dateStudyInputDetail(studyInputDetail)) IN baseGroup;
 CONSTRAINT taxRange(retailRangeStudyInputDetail(studyInputDetail)) != tax.taxNDS CHECKED BY retailRangeStudyInputDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
-//inDepartmentStoreCuttingByStudyInputDetail(studyInputDetail) = inDepartmentStoreCutting(departmentStoreStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail));
-//inItemCuttingByStudyInputDetail (studyInputDetail) = inItemCutting(itemStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail));
-//useCuttingStudyInputDetail 'Используется' (studyInputDetail) = useCutting(cuttingStudyInputDetail(studyInputDetail));
-//
-//useCuttingByStudyInputDetail 'Пригодная карта для товара, подразделения и исп-ся' (studyInputDetail) =
-//    inItemCutting(itemStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail)) AND
-//    inDepartmentStoreCutting(departmentStoreStudyInputDetail(studyInputDetail), cuttingStudyInputDetail(studyInputDetail)) AND
-//    useCuttingStudyInputDetail(studyInputDetail);
-
-
 studyInputDetailStudyOutputDetail = DATA studyInputDetail (studyOutputDetail) IN idGroup;
 actOfStudyStudyOutputDetail(studyOutputDetail) = actOfStudyStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail)) PERSISTENT;
 
@@ -4223,6 +4189,7 @@ shortNameUnitOfMeasureItemStudyOutputDetail 'Ед.изм.' (studyOutputDetail) =
 captionItemStudyOutputDetail 'Наименование компонента' (studyOutputDetail) = captionItem (itemStudyOutputDetail(studyOutputDetail)) IN actGroup;
 factorStudyOutputDetail 'Рассчетный коэффициент цены' = DATA NUMERIC[8,3] (studyOutputDetail) IN actGroup;
 percGoodsStudyOutputDetail '% выхода компонента (п/ф)' = DATA NUMERIC[10,5] (studyOutputDetail) IN actGroup;
+
 percAllowancesStudyOutputDetail 'Процент надбавок, %' = DATA NUMERIC[8,3] (studyOutputDetail) IN actGroup;
 overPercAllowancesStudyOutputDetail (studyOutputDetail) = UNION OVERRIDE 0 IF studyOutputDetail IS studyOutputDetail,
                                                                          percAllowancesStudyOutputDetail(studyOutputDetail);
@@ -4389,13 +4356,13 @@ dateTimeStudyInputDetail 'Дата/время' (studyInputDetail) = dateTimeActO
 isPostedStudyInputDetail 'Закрыт' (studyInputDetail)  = isPostedActOfStudy(actOfStudyStudyInputDetail(studyInputDetail));
 
 toFillStudyOutputDetailsStudyInputDetail 'Заполнить данные для п/ф' (studyInputDetail) =  ACTION (studyInputDetail) {
-    FOR cuttingDetailCutting(detailCutting) == cuttingStudyInputDetail(studyInputDetail) DO {
+    FOR cuttingCuttingDetail(cuttingDetail) == cuttingStudyInputDetail(studyInputDetail) DO {
         ADDOBJ studyOutputDetail;
         FOR sod == addedObject() DO {
-            SET itemStudyOutputDetail(sod) <- itemDetailCutting(detailCutting);
-            SET factorStudyOutputDetail(sod) <- factorDetailCutting(detailCutting);
-            SET percGoodsStudyOutputDetail(sod) <- percGoodsDetailCutting(detailCutting);
-            SET percAllowancesStudyOutputDetail(sod) <- overPercAllowancesCutting(cuttingDetailCutting(detailCutting));
+            SET itemStudyOutputDetail(sod) <- itemCuttingDetail(cuttingDetail);
+            SET factorStudyOutputDetail(sod) <- factorCuttingDetail(cuttingDetail);
+            SET percGoodsStudyOutputDetail(sod) <- percGoodsCuttingDetail(cuttingDetail);
+            SET percAllowancesStudyOutputDetail(sod) <- percAllowancesCutting(cuttingCuttingDetail(cuttingDetail));
             SET retailPriceStudyOutputDetail(sod) <- roundRetailPriceStudyOutputDetail(sod);
             SET importerPriceStudyOutputDetail(sod) <- roundImporterPriceStudyOutputDetail(sod);
             SET supplierPriceStudyOutputDetail(sod) <- roundSupplierPriceStudyOutputDetail(sod);
@@ -4416,13 +4383,13 @@ cleanAllStudyInputDetail 'Очистить документ' = ACTION (studyInpu
 
 FORM cutting 'Карта проработки'
     OBJECTS c=cutting FIXED PANEL
-    OBJECTS d=detailCutting
+    OBJECTS d=cuttingDetail
     PROPERTIES(c)      nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, descriptionCutting, dateCutting,
-                       useCutting, overPercAllowancesCutting, overPercLossesCutting, overPercSweepsCutting
-    PROPERTIES(c)      totalPercGoodsDetailCutting TODRAW d FORCE PANEL  BACKGROUND highlightCutting(c)
+                       useCutting, percAllowancesCutting, percLossesCutting, percSweepsCutting
+    PROPERTIES(c)      totalPercGoodsCutting TODRAW d FORCE PANEL  BACKGROUND highlightCutting(c)
 
 
-    PROPERTIES(d)      captionItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting, ADDOBJ, delete
+    PROPERTIES(d)      nameAttributeItemCuttingDetail, shortNameUnitOfMeasureItemCuttingDetail, factorCuttingDetail, percGoodsCuttingDetail, ADDOBJ, delete
 
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
         PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
@@ -4445,7 +4412,7 @@ FORM cutting 'Карта проработки'
     PROPERTIES(dep, c) inDepartmentStoreCutting
     PROPERTIES(i, c)   inItemCutting
 
-    FILTERS isCuttingDetailCutting(c, d)
+    FILTERS inCuttingCuttingDetail(c, d)
     FILTERGROUP filters7
         FILTER 'Показывать подразделения только для данной карты' 'F10' inDepartmentStoreCutting(dep, c)
     FILTERGROUP filters8
@@ -4456,9 +4423,9 @@ FORM cutting 'Карта проработки'
 
 DESIGN cutting FROM DEFAULT {
     main{
-       preferredSize = (1024, 768);
+        preferredSize = (1024, 768);
 
-       NEW cut.box BEFORE functions.box{
+        NEW cut.box BEFORE functions.box{
             type = TABBED;
             ADD d.box;
             NEW caseOneBox {
@@ -4481,18 +4448,18 @@ DESIGN cutting FROM DEFAULT {
                 };
                 POSITION treeGroup.box TO THE LEFT i.box;
             }
-       }
-   }
+        }
+    }
 }
 
 FORM cuttings 'Карты проработки'
     OBJECTS c=cutting
-    PROPERTIES(c)      READONLY numberObject, seriesObject, descriptionCutting, dateCutting, useCutting, overPercAllowancesCutting,
-                       overPercLossesCutting, overPercSweepsCutting
+    PROPERTIES(c)      READONLY numberObject, seriesObject, descriptionCutting, dateCutting, useCutting, percAllowancesCutting,
+                       percLossesCutting, percSweepsCutting
     PROPERTIES(c)      ADDFORM, EDITFORM, delete
 
-    OBJECTS d=detailCutting
-    PROPERTIES(d)      READONLY captionItemDetailCutting, shortNameUnitOfMeasureItemDetailCutting, factorDetailCutting, percGoodsDetailCutting
+    OBJECTS d=cuttingDetail
+    PROPERTIES(d)      READONLY nameAttributeItemCuttingDetail, shortNameUnitOfMeasureItemCuttingDetail, factorCuttingDetail, percGoodsCuttingDetail
 
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY nameStoreDepartmentStore, name
@@ -4504,10 +4471,10 @@ FORM cuttings 'Карты проработки'
 
     PROPERTIES(i, c) READONLY inItemCutting
 
-    FILTERS   isCuttingDetailCutting(c, d),
+    FILTERS   inCuttingCuttingDetail(c, d),
               inDepartmentStoreCutting(dep, c),
               inItemCutting(i, c)
-    ORDER BY           nameStoreDepartmentStore, seriesObject, numberObject, captionItemDetailCutting, name
+    ORDER BY           nameStoreDepartmentStore, seriesObject, numberObject, nameAttributeItemCuttingDetail, name
     FILTERGROUP filters1
         FILTER 'Только используемые' 'F10' useCutting(c) DEFAULT
 
@@ -4537,8 +4504,8 @@ FORM seriesNumberCuttingStudyInputDetail 'Возможные карты прор
     PROPERTIES         READONLY nameAttributeItem(i)
 
     OBJECTS c=cutting
-    PROPERTIES(c)      READONLY seriesNumberObject, descriptionCutting, dateCutting, useCutting, overPercAllowancesCutting, overPercLossesCutting,
-                       overPercSweepsCutting, totalPercGoodsDetailCutting
+    PROPERTIES(c)      READONLY seriesNumberObject, descriptionCutting, dateCutting, useCutting, percAllowancesCutting, percLossesCutting,
+                       percSweepsCutting, totalPercGoodsCutting
 
     FILTERS            inDepartmentStoreCutting(dep, c),
                        inItemCutting(i, c),
