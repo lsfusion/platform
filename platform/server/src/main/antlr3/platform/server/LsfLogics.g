@@ -186,7 +186,6 @@ statement
 		|	constraintStatement
 		|	followsStatement
 		|	writeOnChangeStatement
-		|	actionOnChangeStatement
 		|	tableStatement
 		|	loggableStatement
 		|	indexStatement
@@ -890,6 +889,7 @@ expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParam
 	|	partDef=partitionPropertyDefinition[context, dynamic] { $property = $partDef.property; }
 	|	recDef=recursivePropertyDefinition[context, dynamic] { $property = $recDef.property; } 
 	|	concatDef=concatenationPropertyDefinition[context, dynamic] { $property = $concatDef.property; }
+	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	constDef=literal { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
@@ -1097,6 +1097,25 @@ concatenationPropertyDefinition[List<String> context, boolean dynamic] returns [
 			list=nonEmptyPropertyExpressionList[context, dynamic] 
 		')' 
 	;
+
+sessionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedSpecialProp($name.text, $expr.property);
+	}
+}
+	:	name=specialPropertyName 
+		'(' 
+			expr=propertyExpression[context, dynamic] 
+		')'
+	;
+
+specialPropertyName
+	:	('PREV') 
+	| 	('CHANGED')
+	| 	('ASSIGNED')
+	;
+
 
 formulaPropertyDefinition returns [LP property]
 @after {
@@ -1704,40 +1723,23 @@ followsResolveType returns [Integer type]
 
 writeOnChangeStatement
 @init {
-	boolean old = false;
-	boolean anyChange = true;
 	List<String> context;
+	LPWithParams value = null;
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedWriteOnChange($mainProp.name, context, old, anyChange, $valueExpr.property, $changeExpr.property);
+		self.addScriptedWriteOnChange($mainProp.name, context, value, $changeExpr.property);
 	}
 }
 	:	mainProp=propertyWithNamedParams { context = $mainProp.params; }
-		'<-'
-		('OLD' { old = true; })?
-		valueExpr=propertyExpression[context, false]
-		'ON' ('CHANGE' | 'ASSIGN' { anyChange = false; })
+		(
+			'<-'
+			valueExpr=propertyExpression[context, false] { value = $valueExpr.property; }
+		)?
+		'WHEN'
 		changeExpr=propertyExpression[context, false]
 		';'
 	;
-
-
-actionOnChangeStatement
-@init {
-	boolean anyChange = true;
-	List<String> context;
-}
-@after {
-	if (inPropParseState()) {
-		self.addScriptedActionOnChange($mainProp.name, context, anyChange, $changeExpr.property);	
-	}
-}
-	:	mainProp=propertyWithNamedParams { context = $mainProp.params; }
-		'ON' ('CHANGE' | 'ASSIGN' { anyChange = false; })
-		changeExpr=propertyExpression[context, false]
-		';'
-	;	
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// TABLE STATEMENT /////////////////////////////

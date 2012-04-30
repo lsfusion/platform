@@ -27,7 +27,7 @@
       <keyword name="APPLY" />
       <keyword name="AS" />
       <keyword name="ASC" />
-      <keyword name="ASSIGN" />
+      <keyword name="ASSIGNED" />
       <keyword name="ATTACH" />
       <keyword name="AUTOAPPLY" />
       <keyword name="AUTOSET" />
@@ -42,8 +42,8 @@
       <keyword name="CASE" />
       <keyword name="CC" />
       <keyword name="CENTER" />
-      <keyword name="CHANGE" />
       <keyword name="CHANGECLASS" />
+      <keyword name="CHANGED" />
       <keyword name="CHECK" />
       <keyword name="CHECKED" />
       <keyword name="CLASS" />
@@ -150,8 +150,6 @@
       <keyword name="OBJECT" />
       <keyword name="OBJECTS" />
       <keyword name="OBJVALUE" />
-      <keyword name="OLD" />
-      <keyword name="ON" />
       <keyword name="OPENFILE" />
       <keyword name="OR" />
       <keyword name="ORDER" />
@@ -165,6 +163,7 @@
       <keyword name="PERSISTENT" />
       <keyword name="POSITION" />
       <keyword name="PREFCHARWIDTH" />
+      <keyword name="PREV" />
       <keyword name="PRINT" />
       <keyword name="PROPERTIES" />
       <keyword name="PROPERTY" />

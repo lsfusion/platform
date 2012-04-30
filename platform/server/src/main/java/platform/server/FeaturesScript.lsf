@@ -49,6 +49,7 @@ CLASS STATIC storeSize 'Размер склада'
 //                                                                                                 [REGEXP '<expression>' ['<regExp message>']] [LOGGABLE] [ECHO] [INDEXED]
 //                                                                                                 [AGGPROP];
 // Если именованные параметры не указываются, то они выводятся из propertyExpression
+// Специальные имена свойств: PREV, CHANGED, ASSIGNED
 
 // Data property
 // Expression syntax:
@@ -185,7 +186,7 @@ testFormula(store, article) = sum12(incomeQuantity(store, article), outcomeQuant
 // *  /
 // - (unary)
 //
-// Instances: 5, 5L, 6.35, TRUE, 'some string', staticClass.object, 2011_10_25, NULL
+// Instances: 5, 5L, 6.35, TRUE, 'some string', staticClass.object, 2011_10_25, NULL, #ff0000, RGB(255, 0, 0)
 balanceQuantity(store, article) = incomeQuantity(store, article) - outcomeQuantity(store, article);
 
 foo(store, article) = 5 * incomeQuantity($1, $2) - outcomeQuantity($1, $2);
@@ -316,7 +317,9 @@ CONSTRAINT foo(store, article) > 1000 CHECKED MESSAGE 'ошибка: >1000';
 
 //////////////WRITEONCHANGE STATEMENT////////////
 // Syntax:
-// propertyName(param1, ..., paramN) <- [OLD] valuePropertyExpression ON (ASSIGN | CHANGE) changePropertyExpression
+// propertyName(param1, ..., paramN) <- valuePropertyExpression WHEN changePropertyExpression
+// or
+// actionPropertyName(param1, ..., paramN) WHEN changePropertyExpression
 
 
 //////////////// FORM STATEMENT /////////////////

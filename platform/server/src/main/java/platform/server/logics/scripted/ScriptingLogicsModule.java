@@ -32,6 +32,7 @@ import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.panellocation.ShortcutPanelLocation;
 import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.ImplementTable;
 import platform.server.mail.AttachmentFormat;
@@ -1288,6 +1289,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         addConstraint(property, type, checkedProps);
     }
 
+    public LPWithParams addScriptedSpecialProp(String propType, LPWithParams property) {
+        scriptLogger.info("addScriptedSpecialProp(" + propType + ", " + property + ");");
+        LP<?> newProp = null;
+        if (propType.equals("PREV")) {
+            newProp = addOldProp(property.property);
+        } else if (propType.equals("CHANGED")) {
+            newProp = addCHProp(property.property, IncrementType.CHANGE);
+        } else if (propType.equals("ASSIGNED")) {
+            newProp = addCHProp(property.property, IncrementType.SET);
+        }
+        return new LPWithParams(newProp, property.usedParams);
+    }
+
     public void addScriptedFollows(String mainPropName, List<String> namedParams, List<Integer> options, List<LPWithParams> props) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedFollows(" + mainPropName + ", " + namedParams + ", " + options + ", " + props + ");");
         LP<?> mainProp = findLPByCompoundName(mainPropName);
@@ -1304,32 +1318,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addScriptedWriteOnChange(String mainPropName, List<String> namedParams, boolean useOld, boolean anyChange,
-                                         LPWithParams valueProp, LPWithParams changeProp) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedWriteOnChange(" + mainPropName + ", " + namedParams + ", " + useOld + ", " + anyChange + ", " + valueProp + ", " + changeProp + ");");
+    public void addScriptedWriteOnChange(String mainPropName, List<String> namedParams, LPWithParams valueProp, LPWithParams changeProp) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedWriteOnChange(" + mainPropName + ", " + namedParams + ", " + valueProp + ", " + changeProp + ");");
         LP<?> mainProp = findLPByCompoundName(mainPropName);
         checkParamCount(mainProp, namedParams.size());
         checkDistinctParameters(namedParams);
 
-        List<Object> params = getParamsPlainList(asList(valueProp, changeProp));
-
-        mainProp.setDerivedChange(!useOld, !anyChange, valueProp.property, params.subList(1, params.size()).toArray());
-    }
-
-    // Временно
-    public void addScriptedActionOnChange(String mainPropName, List<String> namedParams, boolean anyChange, LPWithParams changeProp) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedActionOnChange(" + mainPropName + ", " + namedParams + ", " + anyChange + ", " + changeProp + ");");
-        LP<?> mainProp = findLPByCompoundName(mainPropName);
-        checkParamCount(mainProp, namedParams.size());
-        checkDistinctParameters(namedParams);
-
-        List<Object> params = getParamsPlainList(asList(changeProp));
-
-        if (anyChange) {
-            mainProp.setEventAction(params.toArray());
+        List<Object> params;
+        if (valueProp != null) {
+            params = getParamsPlainList(asList(valueProp, changeProp));
         } else {
-            mainProp.setEventForcedAction(params.toArray());
+            params = getParamsPlainList(asList(changeProp));
+            params.add(0, new LP(DerivedProperty.createStatic(true, ActionClass.instance).property));
         }
+        mainProp.setDerivedChange(params.toArray());
     }
 
     public void addScriptedTable(String name, List<String> classIds) throws ScriptingErrorLog.SemanticErrorException {

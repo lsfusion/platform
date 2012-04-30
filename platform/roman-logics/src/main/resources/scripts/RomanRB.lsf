@@ -294,7 +294,7 @@ dutyDeclarationDetail 'Пошлина (расч.)' (declarationDetail) = UNION M
                       priceDeclarationDetail(declarationDetail) * (dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty())/100) PERSISTENT;
 
 dutyDataDeclarationDetail 'Пошлина товара' = DATA NUMERIC[14,2](declarationDetail) IN baseGroup;
-dutyDataDeclarationDetail (declarationDetail) <- dutyDeclarationDetail(declarationDetail) ON ASSIGN declarationDeclarationDetail(declarationDetail) IS preparedDeclaration;   //dateDeclarationDetail(declarationDetail);
+dutyDataDeclarationDetail (declarationDetail) <- dutyDeclarationDetail(declarationDetail) WHEN ASSIGNED(declarationDeclarationDetail(declarationDetail) IS preparedDeclaration);   //dateDeclarationDetail(declarationDetail);
 
 rateDutyDeclarationDetail 'Пошлина товара (конверт.)' (declarationDetail) = round0(dutyDataDeclarationDetail(declarationDetail) *
                                                                                    rateExchangeDeclarationDetail(declarationDetail)) IN baseGroup PERSISTENT;
@@ -315,7 +315,7 @@ NDSDeclarationDetail 'НДС товара (расч.)' (declarationDetail) = rou
                                                                        NDSPercentDeclarationDetail(declarationDetail)/100) PERSISTENT;
 
 NDSDataDeclarationDetail 'НДС товара' = DATA NUMERIC[14,2](declarationDetail) IN baseGroup;
-NDSDataDeclarationDetail (declarationDetail) <- NDSDeclarationDetail(declarationDetail) ON ASSIGN declarationDeclarationDetail(declarationDetail) IS preparedDeclaration;
+NDSDataDeclarationDetail (declarationDetail) <- NDSDeclarationDetail(declarationDetail) WHEN ASSIGNED(declarationDeclarationDetail(declarationDetail) IS preparedDeclaration);
 
 rateNDSDeclarationDetail 'НДС товара (конверт.)' (declarationDetail) = round0(NDSDataDeclarationDetail(declarationDetail) *
                                                                               rateExchangeDeclarationDetail(declarationDetail)) IN baseGroup PERSISTENT;
@@ -330,7 +330,7 @@ sumRegistrationDeclaration 'За оформление (расч.)' (declaration)
                                                                           BY declarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
 
 sumRegistrationDataDeclaration 'За оформление' = DATA NUMERIC[14,2](declaration) IN baseGroup;
-sumRegistrationDataDeclaration (declaration) <- sumRegistrationDeclaration(declaration) ON ASSIGN declaration IS preparedDeclaration;;
+sumRegistrationDataDeclaration (declaration) <- sumRegistrationDeclaration(declaration) WHEN ASSIGNED(declaration IS preparedDeclaration);
 
 rateSumRegistrationDeclaration 'За оформление (конверт.)' (declaration) = round0(sumRegistrationDataDeclaration(declaration) *
                                                                                  rateExchangeDeclaration(declaration)) IN baseGroup PERSISTENT;
@@ -352,7 +352,7 @@ correctionDutyDeclarationDetail 'Скорректированная пошлин
                                 IF correctionPriceDeclarationDetail(declarationDetail) PERSISTENT;
 
 correctionDutyDataDeclarationDetail 'Скорректированная пошлина' = DATA NUMERIC[14,2](declarationDetail) IN baseGroup;
-correctionDutyDataDeclarationDetail(declarationDetail) <- correctionDutyDeclarationDetail(declarationDetail) ON ASSIGN declarationDeclarationDetail(declarationDetail) IS preparedDeclaration;
+correctionDutyDataDeclarationDetail(declarationDetail) <- correctionDutyDeclarationDetail(declarationDetail) WHEN ASSIGNED(declarationDeclarationDetail(declarationDetail) IS preparedDeclaration);
 
 correctionPriceDutyDeclarationDetail 'Стоимость с пошлиной'(declarationDetail) = UNION SUM correctionPriceDeclarationDetail(declarationDetail),
                                                                                            correctionDutyDataDeclarationDetail(declarationDetail);
@@ -361,7 +361,7 @@ correctionNDSDeclarationDetail 'Скорректированный НДС (ра�
                                                                                             NDSPercentDeclarationDetail(declarationDetail)/100) PERSISTENT;
 
 correctionNDSDataDeclarationDetail 'Скорректированный НДС' = DATA NUMERIC[14,2](declarationDetail) IN baseGroup;
-correctionNDSDataDeclarationDetail(declarationDetail) <- correctionNDSDeclarationDetail(declarationDetail) ON ASSIGN declarationDeclarationDetail(declarationDetail) IS preparedDeclaration;
+correctionNDSDataDeclarationDetail(declarationDetail) <- correctionNDSDeclarationDetail(declarationDetail) WHEN ASSIGNED(declarationDeclarationDetail(declarationDetail) IS preparedDeclaration);
 
 diffDutyDeclarationDetail 'Разница пошлин' (declarationDetail) = correctionDutyDataDeclarationDetail(declarationDetail) - dutyDataDeclarationDetail(declarationDetail)
                                                                  IF correctionPriceDeclarationDetail(declarationDetail);

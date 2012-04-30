@@ -14,17 +14,24 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.LogFormEntity;
+import platform.server.logics.BaseLogicsModule;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.panellocation.PanelLocation;
-import platform.server.logics.*;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
-import platform.server.session.*;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
+import platform.server.session.PropertyChange;
 
 import javax.swing.*;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static platform.base.BaseUtils.immutableCast;
 import static platform.server.logics.PropertyUtils.mapImplement;
 import static platform.server.logics.PropertyUtils.readImplements;
 
@@ -111,7 +118,8 @@ public class LP<T extends PropertyInterface> {
                 BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue, intValue + whereNum)),
                 BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue + whereNum, defImplements.size())));
     }
-    private <D extends PropertyInterface> void setDerivedChange(Object... params) {
+
+    public <D extends PropertyInterface> void setDerivedChange(Object... params) {
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(listInterfaces, params);
         property.setDerivedChange(listImplements.get(0), (PropertyMapImplement<PropertyInterface,T>) listImplements.get(1));
     }

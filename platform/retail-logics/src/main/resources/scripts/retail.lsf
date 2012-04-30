@@ -62,9 +62,9 @@ computerClosed 'Закрыт на компьютере' = DATA computer (postedO
 nameUserClosed 'Закрыт пользователем' (postedObject) = commonName(userClosed(postedObject)) IN postedGroup;
 hostnameComputerClosed 'Закрыт на компьютере' (postedObject) = hostname(computerClosed(postedObject)) IN postedGroup;
 
-timeClosed(postedObject) <- currentDateTime() ON ASSIGN postedObject IS postedObject;
-userClosed(postedObject) <- currentUser() ON ASSIGN postedObject IS postedObject;
-computerClosed(postedObject) <- currentComputer() ON ASSIGN postedObject IS postedObject;
+timeClosed(postedObject) <- currentDateTime() WHEN ASSIGNED(postedObject IS postedObject);
+userClosed(postedObject) <- currentUser() WHEN ASSIGNED(postedObject IS postedObject);
+computerClosed(postedObject) <- currentComputer() WHEN ASSIGNED(postedObject IS postedObject);
 
 GROUP documentHeaderGroup 'Шапка документа' : baseGroup;
 GROUP documentSumGroup 'Суммы документа': publicGroup;
@@ -88,7 +88,7 @@ maxValueNumerator 'Макс. значение' = DATA LONG (numerator) IN recogn
 stringLengthNumerator 'Длина' = DATA INTEGER (numerator) IN baseGroup;
 
 curValueNumerator 'Тек. значение' = DATA LONG (numerator) IN recognizeGroup;
-curValueNumerator(numerator) <- minValueNumerator(numerator) ON ASSIGN numerator IS numerator;
+curValueNumerator(numerator) <- minValueNumerator(numerator) WHEN ASSIGNED(numerator IS numerator);
 
 lpadStringWithZero = FORMULA STRING[18] 'lpad(CAST($1 AS text),$2,\'0\')';
 
@@ -141,7 +141,7 @@ setValueNumeratedObject 'Сгенерировать номер' = ACTION (numera
 } IN numberedGroup SHORTCUT numberObject;
 
 // todo : не работает
-setValueNumeratedObject(numeratedObject) ON CHANGE numeratorObject(numeratedObject);
+setValueNumeratedObject(numeratedObject) WHEN CHANGED(numeratorObject(numeratedObject));
 
 // ----------------------------------- Шаблоны ------------------------------------------ //
 
@@ -376,7 +376,7 @@ META metaCodeShowItemAttribute (attribute, caption, group)
 
     show##attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN group;
     toShow##attribute caption (item) = show##attribute##ItemGroup(itemGroupSku(item));
-    show##attribute##ItemGroup(itemGroup) <- TRUE ON ASSIGN itemGroup IS itemGroup;
+    show##attribute##ItemGroup(itemGroup) <- TRUE WHEN ASSIGNED(itemGroup IS itemGroup);
 
 END
 
@@ -399,10 +399,10 @@ END
 
 META defineDocumentHeaderTime (object)
     date###object 'Дата документа' (object) = DATA DATE (object) IN documentHeaderGroup;
-    date###object (object) <- currentDate() ON ASSIGN object AS object;
+    date###object (object) <- currentDate() WHEN ASSIGNED(object AS object);
 
     time###object 'Время документа' (object) = DATA TIME (object) IN documentHeaderGroup;
-    time###object (object) <- currentTime() ON ASSIGN object AS object;
+    time###object (object) <- currentTime() WHEN ASSIGNED(object AS object);
 
     dateTime###object 'Дата/время документа' (object) = toDateTime(date###object(object), time###object(object));
 END
@@ -659,14 +659,14 @@ META metaCodeTotals (object)
 
     sumDetailSupplierVAT###object##Detail 'Сумма НДС' (object##Detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
     sumDetailSupplierVAT###object##Detail(object##Detail) <- calcSumDetailSupplierVAT###object##Detail(object##Detail)
-                                                   ON CHANGE calcSumDetailSupplierVAT###object##Detail(object##Detail);
+                                                   WHEN CHANGED(calcSumDetailSupplierVAT###object##Detail(object##Detail));
 
     calcSumSupplier###object##Detail 'Сумма с НДС (расч.)' (object##Detail) =
         sumSupplierPrice###object##Detail(object##Detail) (+) sumDetailSupplierVAT###object##Detail(object##Detail);
 
     sumSupplier###object##Detail 'Сумма с НДС' (object##Detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
     sumSupplier###object##Detail(object##Detail) <- calcSumSupplier###object##Detail(object##Detail)
-                                          ON CHANGE calcSumSupplier###object##Detail(object##Detail);
+                                          WHEN CHANGED(calcSumSupplier###object##Detail(object##Detail));
 
     totalSumSupplierVAT###object 'Общая сумма НДС поставщика (без посуды)' (object) =
         GROUP SUM sumDetailSupplierVAT###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
@@ -897,7 +897,7 @@ departmentStoreTradingSquare 'Отдел торговой площади (ИД)'
 nameDepartmentStoreTradingSquare 'Отдел торговой площади' (tradingSquare) = name(departmentStoreTradingSquare(tradingSquare)) IN baseGroup;
 
 dateTradingSquare 'Дата' = DATA DATE (tradingSquare) IN baseGroup;
-dateTradingSquare (square) <- currentDate() ON ASSIGN square IS tradingSquare;
+dateTradingSquare (square) <- currentDate() WHEN ASSIGNED(square IS tradingSquare);
 
 FORM tradingSquare 'Торговая площадь'
     OBJECTS s=tradingSquare FIXED PANEL
@@ -1578,7 +1578,7 @@ CONSTRAINT transferDayGenTimeTable(genTimeTable) != DOW.friday AND transferDayGe
 inMonthGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, month);
 inDayGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, DOW);
 inAllMonthGenTable 'Включить все месяцы' = DATA BOOLEAN (genTimeTable);
-inMonthGenTimeTable(genTimeTable, month) <- inAllMonthGenTable(genTimeTable) ON ASSIGN inAllMonthGenTable(genTimeTable) AND month IS month;
+inMonthGenTimeTable(genTimeTable, month) <- inAllMonthGenTable(genTimeTable) WHEN ASSIGNED(inAllMonthGenTable(genTimeTable) AND month IS month);
 
 toShowGenWeek (genTimeTable) = genTimeTableType(genTimeTable) == genType.genWeek;
 toShowGenDay (genTimeTable) = genTimeTableType(genTimeTable) == genType.genDays;
@@ -1780,7 +1780,7 @@ inRangeStoreDefault 'Вкл.' (range, store) = DATA BOOLEAN (range, store) IN ba
 inRangeStore 'Вкл.' (range, store) = inRangeStoreDefault(range, store)  IF rangeTypeRange(range) == rangeType.units IN baseGroup;
 isUnitsTypeRange(range) = rangeTypeRange(range) == rangeType.units;
 
-rangeTypeRange(range) <- rangeType.common ON ASSIGN range IS range;     /// потом согласовать, какое значение должно быть по-умолчанию ///
+rangeTypeRange(range) <- rangeType.common WHEN ASSIGNED(range IS range);     /// потом согласовать, какое значение должно быть по-умолчанию ///
 
 dataRate 'Значение ставки' = DATA NUMERIC[10,5] (rate) IN recognizeGroup;
 dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
@@ -4090,7 +4090,7 @@ TABLE studyOutputDetail(studyOutputDetail);
 //sidCutting 'Номер карты (из сборника и прочее)' = DATA INTEGER (cutting) IN cutGroup;
 
 dateCutting 'Дата создания' = DATA DATE (cutting) IN cutGroup;
-dateCutting(cutting) <- currentDate() ON ASSIGN cutting IS cutting;
+dateCutting(cutting) <- currentDate() WHEN ASSIGNED(cutting IS cutting);
 
 useCutting 'Используется' = DATA BOOLEAN (cutting) IN cutGroup;
 //             номер из сборника.....
@@ -4131,10 +4131,10 @@ nameDepartmentStoreActOfStudy 'Отдел документа' (actOfStudy) = nam
 //numberActOfStudy 'Номер акта' = DATA STRING[10] (actOfStudy) IN baseGroup;
 
 dateActOfStudy 'Дата документа' (actOfStudy) = DATA DATE (actOfStudy) IN documentHeaderGroup;
-dateActOfStudy (actOfStudy) <- currentDate() ON ASSIGN actOfStudy AS actOfStudy;
+dateActOfStudy (actOfStudy) <- currentDate() WHEN ASSIGNED(actOfStudy AS actOfStudy);
 
 timeActOfStudy 'Время документа' (actOfStudy) = DATA TIME (actOfStudy) IN documentHeaderGroup;
-timeActOfStudy (actOfStudy) <- currentTime() ON ASSIGN actOfStudy AS actOfStudy;
+timeActOfStudy (actOfStudy) <- currentTime() WHEN ASSIGNED(actOfStudy AS actOfStudy);
 
 dateTimeActOfStudy 'Дата/время документа' (actOfStudy) = toDateTime(dateActOfStudy(actOfStudy), timeActOfStudy(actOfStudy));
 
@@ -4600,9 +4600,9 @@ castToString30 = FORMULA STRING[30] '$1 || CAST ($2 AS character(20))';
 nameInventory 'Название инвентаризации' = DATA STRING[100] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 dateInventory 'Дата документа' = DATA DATE (inventory) IN documentHeaderGroup;
-dateInventory(inventory) <- currentDate() ON ASSIGN inventory IS inventory;
+dateInventory(inventory) <- currentDate() WHEN ASSIGNED(inventory IS inventory);
 timeInventory 'Время документа' = DATA TIME (inventory) IN documentHeaderGroup;
-timeInventory(inventory) <- currentTime() ON ASSIGN inventory IS inventory;
+timeInventory(inventory) <- currentTime() WHEN ASSIGNED(inventory IS inventory);
 
 noteInventory 'Примечание (основание)' = DATA STRING[500] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 infoInventory 'Дополнительная информация по инвентаризации' = DATA STRING[500] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
@@ -4763,7 +4763,7 @@ includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE
     (UNION OVERRIDE inManyCollationSheetItem(collationSheet, item), collationSheet IS manyCollationSheet IF quantityCountedCollationSheetItem(collationSheet, item)),
     (collationSheet IS remainsCollationSheet IF UNION OVERRIDE balanceCollationSheetItem(collationSheet, item) != 0, TRUE IF quantityCountedCollationSheetItem(collationSheet, item));
 
-//priceAccountCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item) ON ASSIGN includeCollationSheetItem(collationSheet, item); //CHANGE item IS item AND collationSheet IS collationSheet;
+//priceAccountCollationSheetItem(collationSheet, item) <- accountPriceCollationSheetItem(collationSheet, item) WHEN ASSIGNED(includeCollationSheetItem(collationSheet, item)); //CHANGE item IS item AND collationSheet IS collationSheet;
 
 shortageQuantityCountedCollationSheetItem 'Количество, недостача' (collationSheet, item) =
     balanceCollationSheetItem(collationSheet, item) (-) quantityCountedCollationSheetItem(collationSheet, item);
@@ -4917,7 +4917,7 @@ CLASS specificationDetail 'Строка документа';
 TABLE specificationDetail (specificationDetail);
 
 dateSpecification 'Дата документа' (specification) = DATA DATE (specification) IN documentHeaderGroup;
-dateSpecification (specification) <- currentDate() ON ASSIGN specification AS specification;
+dateSpecification (specification) <- currentDate() WHEN ASSIGNED(specification AS specification);
 
 customerSpecification(specification) = DATA customer (specification) IN idGroup;
 nameCustomerSpecification 'Покупатель' (specification) = name(customerSpecification(specification)) IN customerGroup;
@@ -4942,7 +4942,7 @@ CBUBankAccountCustomerSpecification 'ЦБУ банка покупателя' (sp
 
 
 timeSpecification 'Время документа' (specification) = DATA TIME (specification) IN documentHeaderGroup;
-    timeSpecification (specification) <- currentTime() ON ASSIGN specification AS specification;
+    timeSpecification (specification) <- currentTime() WHEN ASSIGNED(specification AS specification);
 
 dateTimeSpecification 'Дата/время документа' (specification) = toDateTime(dateSpecification(specification), timeSpecification(specification));
 
@@ -5034,7 +5034,7 @@ specificationsTaxNDSSpecificationDetail(specificationDetail) = tax.taxNDS IF spe
 rangeSpecificationDetail (specificationDetail) = DATA range (specificationDetail) IN baseGroup;
 dataActingRateRangeSpecificationDetail 'Ставка НДС расчетная,%' (specificationDetail) = dataActingRateRangeDate(rangeSpecificationDetail(specificationDetail), dateSpecification(specificationSpecificationDetail(specificationDetail))) IN baseGroup;
 rangeSpecificationDetail (specificationDetail) <- rangeToTaxStore(specificationsTaxNDSSpecificationDetail(specificationDetail),
-                                storeDepartmentStore(departmentStoreSpecificationDetail(specificationDetail))) ON ASSIGN specificationDetail IS specificationDetail;
+                                storeDepartmentStore(departmentStoreSpecificationDetail(specificationDetail))) WHEN ASSIGNED(specificationDetail IS specificationDetail);
 
 
 sumNDSSpecificationDetail 'НДС за ед.' (specificationDetail) = round0(dataActingRateRangeSpecificationDetail(specificationDetail)*retailPriceSpecificationDetail(specificationDetail)/100) IN baseGroup;
@@ -5100,7 +5100,7 @@ numberDisposalStatement '№ распоряжения на переоценку'
 revaluationCommitteeStatement 'Комиссия переоценки ИД' (statement) = DATA revaluationCommittee (statement) IN idGroup;
 nameRevaluationCommitteeStatement 'Комиссия переоценки' (statement) = name(revaluationCommitteeStatement(statement)) IN documentPrmGroup;
 revaluationCommitteeStatement(statement) <- revaluationCommitteeDepartmentStore(departmentStoreStatement(statement))
-    ON ASSIGN statement IS statement;
+    WHEN ASSIGNED(statement IS statement);
 
 inStatementSpecification 'Включить в накладную' (statement, specification) = DATA BOOLEAN (statement, specification)
     IN idGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
@@ -5131,7 +5131,7 @@ sumStatementDetail 'Сумма с НДС' (statementDetail) = round0(retailPrice
 //departmentStoreStatementDetail(statementDetail) = departmentStoreStatement(statementStatementDetail(statementDetail));
 //retailPriceStatementDetail(statementDetail) <- retailPriceItemDepartmentVal (itemStatementDetail(statementDetail),
 //                                                                   departmentStoreStatementDetail(statementDetail),
-//                                                                   dateStatement(statementStatementDetail(statementDetail))) ON CHANGE itemStatementDetail(statementDetail);
+//                                                                   dateStatement(statementStatementDetail(statementDetail))) WHEN CHANGED(itemStatementDetail(statementDetail));
 
 curRetailPriceStatementDetail 'Текущая розничная цена' (statementDetail) = DATA NUMERIC[14,2] (statementDetail) IN pricingStatementDetailInfo;
 
@@ -5140,7 +5140,7 @@ curRetailPriceStatementDetail 'Текущая розничная цена' (stat
 rangeStatementDetail (statementDetail) = DATA range (statementDetail) IN idGroup;
 dataActingRateRangeStatementDetail 'Ставка НДС расчетная' (statementDetail) = dataActingRateRangeDate(rangeStatementDetail(statementDetail),  dateStatement(statementStatementDetail(statementDetail))) IN documentSumGroup;
 rangeStatementDetail (statementDetail) <- rangeToTaxStore(tax.taxNDS,
-                                          storeDepartmentStore(departmentStoreStatementDetail(statementDetail))) ON ASSIGN statementDetail IS statementDetail;
+                                          storeDepartmentStore(departmentStoreStatementDetail(statementDetail))) WHEN ASSIGNED(statementDetail IS statementDetail);
 numberRangeStatementDetail 'НДС номер' (statementDetail) = dataRange(rangeStatementDetail(statementDetail));
 
 CONSTRAINT taxRange(rangeStatementDetail(statementDetail)) != tax.taxNDS CHECKED BY rangeStatementDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
@@ -5202,7 +5202,7 @@ toFillStatementDetailsStatement 'Заполнить отгрузку на осн
 
 wareStatementDetail 'Текущая посуда' (statementDetail) = DATA ware(statementDetail) IN idGroup;
 nameWareStatementDetail 'Текущая посуда' (statementDetail) = name(wareStatementDetail(statementDetail)) IN pricingStatementDetailInfo;
-//wareStatementDetail(statementDetail) <- wareItem(itemStatementDetail(statementDetail)) ON CHANGE itemStatementDetail(statementDetail);
+//wareStatementDetail(statementDetail) <- wareItem(itemStatementDetail(statementDetail)) WHEN CHANGED(itemStatementDetail(statementDetail));
 
 priceWareStatementDetail 'Текущая цена посуды' (statementDetail) = DATA NUMERIC[14,2] (statementDetail) IN pricingStatementDetailInfo;
 
@@ -5416,7 +5416,7 @@ contractShipment 'Договор' (shipment) = DATA contract (shipment) IN idGro
 
 contractShipment (shipment) <- overrideContractCompanySupplier(companyStore(storeDepartmentStore(departmentStoreShipment(shipment))), supplierShipment(shipment))
                                IF (countContracts(supplierShipment(shipment), departmentStoreShipment(shipment)) == 1)
-                               ON CHANGE supplierShipment(shipment);
+                               WHEN CHANGED(supplierShipment(shipment));
 
 numberContractShipment 'Договор' (shipment) = numberContract(contractShipment(shipment)) IN documentPrmGroup;
 
@@ -5460,7 +5460,7 @@ numberDisposalShipment '№ распоряжения на переоценку' 
 revaluationCommitteeShipment 'Комиссия переоценки ИД' (shipment) = DATA revaluationCommittee (shipment) IN idGroup;
 nameRevaluationCommitteeShipment 'Комиссия переоценки' (shipment) = name(revaluationCommitteeShipment(shipment)) IN documentPrmGroup;
 revaluationCommitteeShipment(shipment) <- revaluationCommitteeDepartmentStore(departmentStoreShipment(shipment))
-    ON ASSIGN shipment IS shipment;
+    WHEN ASSIGNED(shipment IS shipment);
 
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
@@ -5487,7 +5487,7 @@ dataSuppliersRangeShipmentDetail 'НДС поставщика,%' (shipmentDetail
 
 CONSTRAINT taxRange(suppliersRangeShipmentDetail(shipmentDetail)) != tax.taxNDS CHECKED BY suppliersRangeShipmentDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
-suppliersRangeShipmentDetail(shipmentDetail) <- suppliersRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+suppliersRangeShipmentDetail(shipmentDetail) <- suppliersRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 retailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
 numberRetailRangeShipmentDetail 'НДС розничный, номер' (shipmentDetail) = dataRange(retailRangeShipmentDetail(shipmentDetail));
@@ -5496,12 +5496,12 @@ dataRetailRangeShipmentDetail 'НДС розничный,%' (shipmentDetail) = d
 
 CONSTRAINT taxRange(retailRangeShipmentDetail(shipmentDetail)) != tax.taxNDS CHECKED BY retailRangeShipmentDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
-retailRangeShipmentDetail(shipmentDetail) <- retailRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+retailRangeShipmentDetail(shipmentDetail) <- retailRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 wareShipmentDetail 'Посуда (ИД)' (shipmentDetail) = DATA ware(shipmentDetail) IN idGroup;
 nameWareShipmentDetail 'Посуда' (shipmentDetail) = name(wareShipmentDetail(shipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
 
-wareShipmentDetail(shipmentDetail) <- wareItem(itemShipmentDetail(shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+wareShipmentDetail(shipmentDetail) <- wareItem(itemShipmentDetail(shipmentDetail)) WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 dataWareRangeShipmentDetail 'НДС по посуде' (shipmentDetail) =
     dataActingRateRangeDate(rangeWareVal(wareShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)),
@@ -5512,7 +5512,7 @@ inWareShipmentDetail 'Товар в посуде' (shipmentDetail) = inWareItem(
 priceWareShipmentDetail 'Цена посуды' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN baseGroup;
 
 priceWareShipmentDetail (shipmentDetail) <- priceWareVal (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
-                                            ON CHANGE itemShipmentDetail(shipmentDetail);
+                                            WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 sumPriceWareShipmentDetail 'Сумма посуды' (shipmentDetail) = quantityShipmentDetail(shipmentDetail) * priceWareShipmentDetail(shipmentDetail);
 
@@ -5521,10 +5521,10 @@ retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail
 retailMarkupShipmentDetail(shipmentDetail) <-
     markupItemDepartmentVal (itemShipmentDetail(shipmentDetail),
     departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
-    ON CHANGE itemShipmentDetail(shipmentDetail);
+    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN pricingShipmentDetailInfo;
-isFixPriceShipmentDetail(shipmentDetail) <- isFixPriceItem (itemShipmentDetail (shipmentDetail)) ON CHANGE itemShipmentDetail(shipmentDetail);
+isFixPriceShipmentDetail(shipmentDetail) <- isFixPriceItem (itemShipmentDetail (shipmentDetail)) WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 notRoundImporterPriceShipmentDetail 'Цена изготовителя/импортера (неокругленная)' (shipmentDetail) =
      IF isFixPriceShipmentDetail(shipmentDetail) THEN
@@ -5561,7 +5561,7 @@ calculatedRetailPriceShipmentDetail 'Новая розничная цена (р�
 retailPriceShipmentDetail 'Новая розничная цена' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail);
 
 retailPriceShipmentDetail (shipmentDetail) <- calculatedRetailPriceShipmentDetail (shipmentDetail)
-    ON CHANGE calculatedRetailPriceShipmentDetail (shipmentDetail);
+    WHEN CHANGED(calculatedRetailPriceShipmentDetail (shipmentDetail));
 
 
 @metaCodeTotals (shipment);
@@ -5590,7 +5590,7 @@ registerCommitteeShipment(shipment) = DATA registerCommittee(shipment);
 nameRegisterCommitteeShipment 'Комиссия для реестра цен' (shipment) = commonName(registerCommitteeShipment(shipment)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
 registerCommitteeShipment(shipment) <- registerCommitteeDepartmentStore(departmentStoreShipment(shipment))
-    ON ASSIGN shipment IS shipment;
+    WHEN ASSIGNED(shipment IS shipment);
 //--------------------показатели для реестра цен----------------------------//
 
 supportSumPriceShipmentDetail 'Сумма пост-ка с посудой без НДС' (shipmentDetail) = sumSupplierPriceShipmentDetail(shipmentDetail) (+) sumPriceWareShipmentDetail(shipmentDetail) (-) sumDetailVatWareShipmentDetail(shipmentDetail);
@@ -5616,7 +5616,7 @@ curDataRetailRangeShipmentDetail 'Текущий НДС розничный,%' (s
 //oldPriceShipmentDetail 'Старая цена поставщика'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
 //oldPriceShipmentDetail(shipmentDetail) <- priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail),
 //    itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail),
-//    subtractDate(dateShipmentDetail(shipmentDetail),1)) ON CHANGE itemShipmentDetail(shipmentDetail);
+//    subtractDate(dateShipmentDetail(shipmentDetail),1)) WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 curImporterPriceShipmentDetail 'Текущая цена изготовителя/импортера' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
 curSupplierPriceShipmentDetail 'Текущая цена поставщика' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
@@ -5628,7 +5628,7 @@ curNameWareShipmentDetail 'Текущая посуда' (shipmentDetail) = name(
 percentRateWasteShipmentDetail 'Процент для списания отходов' (shipmentDetail) = DATA NUMERIC[10,3] (shipmentDetail);
 
 percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShipmentDetail(shipmentDetail))
-    ON CHANGE itemShipmentDetail(shipmentDetail);
+    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 castShipmentObjectsToString100=
     FORMULA STRING[200] '\'Приход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
@@ -5720,7 +5720,7 @@ wareWriteOffDetail = DATA ware (writeOffDetail) IN idGroup;
 nameWareWriteOffDetail 'Посуда' (writeOffDetail) = name(wareWriteOffDetail(writeOffDetail)) IN baseGroup;
 priceWareWriteOffDetail 'Цена посуды' (writeOffDetail) = DATA NUMERIC[14,2] (writeOffDetail) IN baseGroup;
 
-wareWriteOffDetail(writeOffDetail) <- wareItem(itemWriteOffDetail(writeOffDetail)) ON CHANGE itemWriteOffDetail(writeOffDetail);
+wareWriteOffDetail(writeOffDetail) <- wareItem(itemWriteOffDetail(writeOffDetail)) WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
 
 dataWareRangeWriteOffDetail 'НДС по посуде' (writeOffDetail) =
     dataActingRateRangeDate(rangeWareVal(wareWriteOffDetail(writeOffDetail), dateWriteOffDetail(writeOffDetail)),
@@ -5738,7 +5738,7 @@ accountPriceWriteOffDetail 'Цена учётная' = DATA NUMERIC[14,2] (write
 retailPriceWriteOffDetail 'Розничная цена' (writeOffDetail) = DATA NUMERIC[14,2] (writeOffDetail) IN baseGroup;
 
 suppliersRangeWriteOffDetail(writeOffDetail) = DATA range (writeOffDetail) IN idGroup;
-suppliersRangeWriteOffDetail(writeOffDetail) <- suppliersRangeItemVal(itemWriteOffDetail(writeOffDetail), dateWriteOffDetail(writeOffDetail)) ON CHANGE itemWriteOffDetail(writeOffDetail);
+suppliersRangeWriteOffDetail(writeOffDetail) <- suppliersRangeItemVal(itemWriteOffDetail(writeOffDetail), dateWriteOffDetail(writeOffDetail)) WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
 dataSuppliersRangeWriteOffDetail 'НДС поставщика,%' (writeOffDetail) = dataActingRateRangeDate
     (suppliersRangeWriteOffDetail(writeOffDetail), dateWriteOffDetail(writeOffDetail));
 // сами по себе не нужны, только чтобы сработал метакод....
@@ -5845,7 +5845,7 @@ descriptionInnerFlowDetail 'Название документа' (innerFlowDetai
 
 wareInnerFlowDetail 'Посуда (ИД)' (innerFlowDetail) = DATA ware(innerFlowDetail) IN baseGroup;
 nameWareInnerFlowDetail 'Посуда' (innerFlowDetail) = name(wareInnerFlowDetail(innerFlowDetail));
-//wareInnerFlowDetail(innerFlowDetail) <- wareItem(itemInnerFlowDetail(innerFlowDetail)) ON CHANGE itemInnerFlowDetail(innerFlowDetail);
+//wareInnerFlowDetail(innerFlowDetail) <- wareItem(itemInnerFlowDetail(innerFlowDetail)) WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
 priceWareInnerFlowDetail 'Цена посуды' (innerFlowDetail) = DATA NUMERIC[14,2] (innerFlowDetail) IN baseGroup;
 
 
@@ -5962,7 +5962,7 @@ seriesNumberArrival 'Серия/Номер' (innerArrival) = seriesNumberObject(
 senderDepartmentInnerArrival 'Отдел-отправитель (ИД)' (innerArrival) = DATA departmentStore(innerArrival);
 nameSenderDepartmentInnerArrival 'Отдел-отправитель' (innerArrival) = name(senderDepartmentInnerArrival(innerArrival)) IN documentPrmGroup;
 
-dateInnerArrival (innerArrival) <- dateInnerFlow(innerFlowInnerArrival(innerArrival)) ON CHANGE innerFlowInnerArrival(innerArrival);
+dateInnerArrival (innerArrival) <- dateInnerFlow(innerFlowInnerArrival(innerArrival)) WHEN CHANGED(innerFlowInnerArrival(innerArrival));
 
 CONSTRAINT recipientDepartmentInnerFlow(innerFlowInnerArrival(innerArrival)) != departmentStoreInnerArrival(innerArrival) CHECKED BY innerFlowInnerArrival
     MESSAGE 'Накладная с другого отдела';
@@ -5970,7 +5970,7 @@ CONSTRAINT recipientDepartmentInnerFlow(innerFlowInnerArrival(innerArrival)) != 
 CONSTRAINT innerFlowInnerArrival(p1) == innerFlowInnerArrival(p2) AND p1 != p2 CHECKED BY innerFlowInnerArrival MESSAGE 'Накладная задействована в другом приходе';
 
 senderDepartmentInnerArrival (innerArrival) <- departmentStoreInnerFlow(innerFlowInnerArrival(innerArrival))
-    ON CHANGE innerFlowInnerArrival(innerArrival);
+    WHEN CHANGED(innerFlowInnerArrival(innerArrival));
 
 quantityInnerArrivalDetail 'Количество' (innerArrivalDetail) = DATA NUMERIC[14,3] (innerArrivalDetail) IN baseGroup;
 retailPriceInnerArrivalDetail 'Цена розничная' (innerArrivalDetail) = DATA NUMERIC[14,2] (innerArrivalDetail) IN baseGroup;
@@ -5980,13 +5980,13 @@ priceItemInnerArrival 'Цена (максим.)' (item, innerArrival) = priceIte
                // todo: derived зацикливает, придумать что-то другое
 //retailPriceInnerArrivalDetail (innerArrivalDetail) <- priceItemInnerArrival(
 //    itemInnerArrivalDetail(innerArrivalDetail), innerArrivalInnerArrivalDetail(innerArrivalDetail))
-//    ON CHANGE itemInnerArrivalDetail (innerArrivalDetail);
+//    WHEN CHANGED(itemInnerArrivalDetail (innerArrivalDetail));
 
 numberDisposalInnerArrival '№ распоряжения на переоценку' (innerArrival) = DATA STRING[30] (innerArrival) IN documentPrmGroup;
 revaluationCommitteeInnerArrival 'Комиссия переоценки ИД' (innerArrival) = DATA revaluationCommittee (innerArrival) IN idGroup;
 nameRevaluationCommitteeInnerArrival 'Комиссия переоценки' (innerArrival) = name(revaluationCommitteeInnerArrival(innerArrival)) IN documentPrmGroup;
 revaluationCommitteeInnerArrival(innerArrival) <- revaluationCommitteeDepartmentStore(departmentStoreInnerArrival(innerArrival))
-    ON ASSIGN innerArrival IS innerArrival;
+    WHEN ASSIGNED(innerArrival IS innerArrival);
 
 curRetailPriceInnerArrivalDetail 'Текущая розничная цена' (innerArrivalDetail) = DATA NUMERIC[14,2] (innerArrivalDetail) IN pricingInnerArrivalDetailInfo;
 
@@ -6004,7 +6004,7 @@ importerPriceItemInnerArrival 'Цена изготовителя (максим.)
 
 //importerPriceInnerArrivalDetail (innerArrivalDetail) <- importerPriceItemInnerArrival(
 //    itemInnerArrivalDetail(innerArrivalDetail), innerArrivalInnerArrivalDetail(innerArrivalDetail))
-//    ON CHANGE itemInnerArrivalDetail (innerArrivalDetail);
+//    WHEN CHANGED(itemInnerArrivalDetail (innerArrivalDetail));
 
 retailRangeInnerArrivalDetail(innerArrivalDetail) = DATA range (innerArrivalDetail) IN idGroup;
 numberRetailRangeInnerArrivalDetail 'НДС номер' (innerArrivalDetail) = dataRange(retailRangeInnerArrivalDetail(innerArrivalDetail));
@@ -6019,7 +6019,7 @@ curDataRetailRangeInnerArrivalDetail 'Текущий НДС, %' (innerArrivalDet
 wareInnerArrivalDetail 'Посуда (ИД)' (innerArrivalDetail) = DATA ware(innerArrivalDetail) IN baseGroup;
 nameWareInnerArrivalDetail 'Посуда' (innerArrivalDetail) = name(wareInnerArrivalDetail(innerArrivalDetail));
 priceWareInnerArrivalDetail 'Цена посуды' (innerArrivalDetail) = DATA NUMERIC[14,2] (innerArrivalDetail) IN baseGroup;
-//wareInnerArrivalDetail(innerArrivalDetail) <- wareItem(itemInnerArrivalDetail(innerArrivalDetail)) ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
+//wareInnerArrivalDetail(innerArrivalDetail) <- wareItem(itemInnerArrivalDetail(innerArrivalDetail)) WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
 curWareInnerArrivalDetail(innerArrivalDetail) = DATA ware (innerArrivalDetail) IN idGroup;
 curNameWareInnerArrivalDetail 'Текущая посуда' (innerArrivalDetail) = name(curWareInnerArrivalDetail(innerArrivalDetail)) IN pricingInnerArrivalDetailInfo MINCHARWIDTH 20 PREFCHARWIDTH 20;
@@ -6266,7 +6266,7 @@ contractReturnSupplier 'Договор' (returnSupplier) = DATA contract (return
 
 contractReturnSupplier (returnSupplier) <- overrideContractCompanySupplier(companyStore(storeDepartmentStore(departmentStoreReturnSupplier(returnSupplier))), supplierReturnSupplier(returnSupplier))
                                IF (countContracts(supplierReturnSupplier(returnSupplier), departmentStoreReturnSupplier(returnSupplier)) == 1)
-                               ON CHANGE supplierReturnSupplier(returnSupplier);
+                               WHEN CHANGED(supplierReturnSupplier(returnSupplier));
 
 numberContractReturnSupplier 'Договор' (returnSupplier) = numberContract(contractReturnSupplier(returnSupplier)) IN documentPrmGroup;
 
@@ -6286,13 +6286,13 @@ numberDisposalReturnSupplier '№ распоряжения на переоцен
 revaluationCommitteeReturnSupplier 'Комиссия переоценки ИД' (returnSupplier) = DATA revaluationCommittee (returnSupplier) IN idGroup;
 nameRevaluationCommitteeReturnSupplier 'Комиссия переоценки' (returnSupplier) = name(revaluationCommitteeReturnSupplier(returnSupplier)) IN documentPrmGroup;
 revaluationCommitteeReturnSupplier(returnSupplier) <- revaluationCommitteeDepartmentStore(departmentStoreReturnSupplier(returnSupplier))
-    ON ASSIGN returnSupplier IS returnSupplier;
+    WHEN ASSIGNED(returnSupplier IS returnSupplier);
 
 
 returnLossSupplierReturnSupplier '% потерь при возврате' (returnSupplier) = DATA NUMERIC[8,3] (returnSupplier) IN documentPrmGroup;
 
 returnLossSupplierReturnSupplier (returnSupplier) <- returnLossSupplier(supplierReturnSupplier(returnSupplier))
-    ON CHANGE supplierReturnSupplier(returnSupplier);
+    WHEN CHANGED(supplierReturnSupplier(returnSupplier));
 
 // информация по товару
 
@@ -6332,20 +6332,20 @@ quantityReturnSupplierDetail 'Количество' (returnSupplierDetail) = DAT
 
 importerPriceReturnSupplierDetail 'Цена изготовителя' (returnSupplierDetail) = DATA NUMERIC[14,2] (returnSupplierDetail) IN baseGroup;
 importerPriceReturnSupplierDetail (returnSupplierDetail) <- importerPriceShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                    ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+                                                    WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
 
 supplierPriceReturnSupplierDetail 'Цена поставщика' (returnSupplierDetail) = DATA NUMERIC[14,2] (returnSupplierDetail) IN baseGroup;
 supplierPriceReturnSupplierDetail (returnSupplierDetail) <- supplierPriceShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                    ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+                                                    WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
 
 
 supplierMarkupReturnSupplierDetail 'Оптовая надбавка/торговая скидка, %' (returnSupplierDetail) = DATA NUMERIC[8,3] (returnSupplierDetail) IN baseGroup;
 supplierMarkupReturnSupplierDetail (returnSupplierDetail) <- overSupplierMarkupShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                             ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+                                                             WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
 
 suppliersRangeReturnSupplierDetail (returnSupplierDetail) = DATA range (returnSupplierDetail) IN idGroup;
 suppliersRangeReturnSupplierDetail (returnSupplierDetail) <- suppliersRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                             ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+                                                             WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
 
 numberSupplierRangeReturnSupplierDetail 'НДС поставщика, номер' (returnSupplierDetail) =
     dataRange(suppliersRangeReturnSupplierDetail(returnSupplierDetail));
@@ -6354,12 +6354,12 @@ dataSuppliersRangeReturnSupplierDetail 'НДС поставщика, %' (returnS
 
 wareReturnSupplierDetail 'Посуда (ИД)' (returnSupplierDetail) = DATA ware (returnSupplierDetail);
 wareReturnSupplierDetail (returnSupplierDetail) <- wareShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                   ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+                                                   WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
 nameWareReturnSupplierDetail 'Посуда ' (returnSupplierDetail) = name(wareReturnSupplierDetail(returnSupplierDetail));
 
 priceWareReturnSupplierDetail 'Цена посуды' (returnSupplierDetail) = DATA NUMERIC[14,2] (returnSupplierDetail);
 priceWareReturnSupplierDetail (returnSupplierDetail) <- priceWareShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                        ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+                                                        WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
 
 sumWareReturnSupplierDetail 'Сумма по посуде' (returnSupplierDetail) =
     priceWareReturnSupplierDetail(returnSupplierDetail)*quantityReturnSupplierDetail(returnSupplierDetail);
@@ -6369,11 +6369,11 @@ sumWareReturnSupplier 'Общая сумма по посуде' (returnSupplier)
 
 dataWareRangeReturnSupplierDetail 'НДС по посуде, %' (returnSupplierDetail) = DATA NUMERIC[10,5] (returnSupplierDetail);
 dataWareRangeReturnSupplierDetail (returnSupplierDetail) <- dataWareRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                            ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+                                                            WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
 
 retailRangeReturnSupplierDetail(returnSupplierDetail) = DATA range (returnSupplierDetail) IN idGroup;
 retailRangeReturnSupplierDetail(returnSupplierDetail) <- retailRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                         ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+                                                         WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
 
 numberRetailRangeReturnSupplierDetail 'НДС розничный, номер' =
     dataRange(retailRangeReturnSupplierDetail(returnSupplierDetail));
@@ -6382,11 +6382,11 @@ dataRetailRangeReturnSupplierDetail 'НДС розничный, %' =
 
 retailMarkupReturnSupplierDetail 'Торговая надбавка, %' = DATA NUMERIC[8,3] (returnSupplierDetail) IN baseGroup;
 retailMarkupReturnSupplierDetail (returnSupplierDetail) <- retailMarkupShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                           ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+                                                           WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
 
 retailPriceReturnSupplierDetail 'Розничная цена' = DATA NUMERIC[14,2] (returnSupplierDetail) IN baseGroup;
 retailPriceReturnSupplierDetail (returnSupplierDetail) <- retailPriceShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
-                                                          ON CHANGE batchReturnSupplierDetail(returnSupplierDetail);
+                                                          WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
 
 @metaCodeTotals(returnSupplier);
 
@@ -6521,10 +6521,10 @@ TABLE billSaleDetail (billSaleDetail);
 TABLE billReturnDetail (billReturnDetail);
 
 dateBill 'Дата документа' (bill) = DATA DATE (bill) IN documentHeaderGroup;
-dateBill (bill) <- currentDate() ON ASSIGN bill AS bill;
+dateBill (bill) <- currentDate() WHEN ASSIGNED(bill AS bill);
 
 timeBill 'Время документа' (bill) = DATA TIME (bill) IN documentHeaderGroup;
-timeBill (bill) <- currentTime() ON ASSIGN bill AS bill;
+timeBill (bill) <- currentTime() WHEN ASSIGNED(bill AS bill);
 
 dateTimeBill 'Дата/время документа' (bill) = toDateTime(dateBill(bill), timeBill(bill));
 
@@ -6701,9 +6701,9 @@ departmentStoreZReport (zReport) = DATA departmentStore(zReport);
 nameDepartmentStoreZReport 'Отдел Z-отчета' (zReport) = name(departmentStoreZReport(zReport));
 
 departmentStoreZReport(zReport) <- departmentStoreCashRegister(cashRegisterZReport(zReport))
-    ON CHANGE cashRegisterZReport(zReport);
+    WHEN CHANGED(cashRegisterZReport(zReport));
 
-departmentStoreBill (bill) <- departmentStoreZReport(zReportBill(bill)) ON CHANGE zReportBill(bill);
+departmentStoreBill (bill) <- departmentStoreZReport(zReportBill(bill)) WHEN CHANGED(zReportBill(bill));
 
 castZReportObjectsToString100=
     FORMULA STRING[200] '\'Продажа по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)';
@@ -6743,8 +6743,8 @@ addBillDetailBarcodeFill 'Добавить продажу по штрих-код
 
 @metaCodeSingleAggregation(zReport, incomeCashOrder, isPostedZReport);
 
-sumCashDocument (incomeCashOrder) <- sumZReport(zReportIncomeCashOrder(incomeCashOrder)) ON ASSIGN incomeCashOrder IS incomeCashOrder;
-cashRegisterIncomeCashOrder (incomeCashOrder) <- cashRegisterZReport(zReportIncomeCashOrder(incomeCashOrder)) ON ASSIGN incomeCashOrder IS incomeCashOrder;
+sumCashDocument (incomeCashOrder) <- sumZReport(zReportIncomeCashOrder(incomeCashOrder)) WHEN ASSIGNED(incomeCashOrder IS incomeCashOrder);
+cashRegisterIncomeCashOrder (incomeCashOrder) <- cashRegisterZReport(zReportIncomeCashOrder(incomeCashOrder)) WHEN ASSIGNED(incomeCashOrder IS incomeCashOrder);
 
 // документ скидок для товарного отчета
 CLASS saleDiscountDocument 'Скидка по продаже через кассы' : outAccountSumDocumentLedger;
@@ -6790,7 +6790,7 @@ numberDisposalUserPriceChange '№ распоряжения на переоце�
 revaluationCommitteeUserPriceChange 'Комиссия переоценки ИД' (userPriceChange) = DATA revaluationCommittee (userPriceChange) IN idGroup;
 nameRevaluationCommitteeUserPriceChange 'Комиссия переоценки' (userPriceChange) = name(revaluationCommitteeUserPriceChange(userPriceChange)) IN documentPrmGroup;
 revaluationCommitteeUserPriceChange(userPriceChange) <- revaluationCommitteeDepartmentStore(departmentStoreUserPriceChange(userPriceChange))
-    ON ASSIGN userPriceChange IS userPriceChange;
+    WHEN ASSIGNED(userPriceChange IS userPriceChange);
 
 importerPriceUserPriceChangeDetail 'Цена изготовителя' = DATA NUMERIC[14,2] (userPriceChangeDetail);
 supplierPriceUserPriceChangeDetail 'Цена поставщика' = DATA NUMERIC[14,2] (userPriceChangeDetail);
@@ -6819,13 +6819,13 @@ descriptionUserPriceChangeDetail 'Название документа' (userPric
 descriptionPriceChangeInnerArrival 'Название документа' (priceChangeInnerArrival) = descriptionInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 
 wareUserPriceChangeDetail 'Посуда (ИД)' (userPriceChangeDetail) = DATA ware(userPriceChangeDetail) IN baseGroup;
-wareUserPriceChangeDetail(userPriceChangeDetail) <- wareItem(itemUserPriceChangeDetail(userPriceChangeDetail)) ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+wareUserPriceChangeDetail(userPriceChangeDetail) <- wareItem(itemUserPriceChangeDetail(userPriceChangeDetail)) WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
 priceWareUserPriceChangeDetail 'Цена посуды' (userPriceChangeDetail) = DATA NUMERIC[14,2] (userPriceChangeDetail) IN baseGroup;
 
 wareRangeUserPriceChangeDetail  (userPriceChangeDetail) = DATA range (userPriceChangeDetail);
 wareRangeUserPriceChangeDetail (userPriceChangeDetail) <- rangeWareVal(wareUserPriceChangeDetail(userPriceChangeDetail),
-    dateUserPriceChangeDetail(userPriceChangeDetail)) ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+    dateUserPriceChangeDetail(userPriceChangeDetail)) WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
 numberWareRangeUserPriceChangeDetail 'НДС,номер по посуде' (userPriceChangeDetail) = dataRange(
     wareRangeUserPriceChangeDetail(userPriceChangeDetail));
@@ -6839,7 +6839,7 @@ curPriceWareUserPriceChangeDetail 'Текущая цена посуды' (userPr
 
 curWareRangeUserPriceChangeDetail  (userPriceChangeDetail) = DATA range (userPriceChangeDetail);
 curWareRangeUserPriceChangeDetail (userPriceChangeDetail) <- rangeWareVal(curWareUserPriceChangeDetail(userPriceChangeDetail),
-    dateUserPriceChangeDetail(userPriceChangeDetail)) ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+    dateUserPriceChangeDetail(userPriceChangeDetail)) WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
 curNumberWareRangeUserPriceChangeDetail 'Тек. НДС,номер по посуде' (userPriceChangeDetail) = dataRange(
     curWareRangeUserPriceChangeDetail(userPriceChangeDetail));
@@ -7506,9 +7506,9 @@ supplierOrderSupplier 'Поставщик заказа (ИД)' = DATA supplier (
 nameSupplierOrderSupplier 'Поставщик заказа' (orderSupplier) = name(supplierOrderSupplier(orderSupplier)) IN documentPrmGroup;
 
 curDateOrderSupplier 'Дата заказа' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
-curDateOrderSupplier (orderSupplier) <- currentDate() ON ASSIGN departmentStoreOrderSupplier(orderSupplier);
+curDateOrderSupplier (orderSupplier) <- currentDate() WHEN ASSIGNED(departmentStoreOrderSupplier(orderSupplier));
 dateOrderSupplier 'Дата поставки' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
-dateOrderSupplier (orderSupplier) <- sumDate(currentDate(),1) ON ASSIGN departmentStoreOrderSupplier(orderSupplier);
+dateOrderSupplier (orderSupplier) <- sumDate(currentDate(),1) WHEN ASSIGNED(departmentStoreOrderSupplier(orderSupplier));
 
 preliminaryOrderOrderSupplier 'Предварительный заказ заказа' = DATA preliminaryOrder (orderSupplier);
 
@@ -7521,14 +7521,14 @@ allowablePercentOrderSupplier 'Допустимый % изменения цен 
 packQuantityItemOrderSupplier 'Заказ(мест)' = DATA NUMERIC[14,3] (orderSupplier, item);
 sumQuantityItemOrderSupplier 'Заказ(единиц)' (orderSupplier, item) = DATA NUMERIC[14,3] (orderSupplier, item);
 sumQuantityItemOrderSupplier (orderSupplier, item) <- (UNION OVERRIDE 1 IF item IS item, quantityPackItem(item)) * packQuantityItemOrderSupplier(orderSupplier, item)
-                                                      ON CHANGE packQuantityItemOrderSupplier(orderSupplier, item);
+                                                      WHEN CHANGED(packQuantityItemOrderSupplier(orderSupplier, item));
 priceSupplierItemOrderSupplier 'Цена поставщика' (orderSupplier, item) = DATA NUMERIC[14,2] (orderSupplier, item);
 priceSupplierItemOrderSupplier (orderSupplier, item) <- priceSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier))
-    ON ASSIGN packQuantityItemOrderSupplier(orderSupplier, item);
+    WHEN ASSIGNED(packQuantityItemOrderSupplier(orderSupplier, item));
 
 suppliersRangeItemDateOrderSupplier 'Шкала' (orderSupplier, item) = DATA range (orderSupplier, item) IN idGroup;
 suppliersRangeItemDateOrderSupplier (orderSupplier, item) <- suppliersRangeItemVal(item, dateOrderSupplier(orderSupplier))
-                                                             ON ASSIGN packQuantityItemOrderSupplier(orderSupplier, item);
+                                                             WHEN ASSIGNED(packQuantityItemOrderSupplier(orderSupplier, item));
 numberSuppliersRangeOrderSupplier 'НДС поставщика, номер' (orderSupplier, item) =
     dataRange(suppliersRangeItemDateOrderSupplier(orderSupplier, item));
 dataSuppliersRangeOrderSupplier 'НДС поставщика, %' (orderSupplier, item) =
@@ -7542,12 +7542,12 @@ retailPriceItemOrderSupplier 'Розничная цена' (orderSupplier, item)
     UNION OVERRIDE 0 IF (orderSupplier IS orderSupplier AND item IS item), retailPriceItemOrderSupplierVal(orderSupplier, item);
 
 wareOrderSupplier 'Посуда (ИД)' (orderSupplier, item) = DATA ware (orderSupplier, item);
-wareOrderSupplier (orderSupplier, item) <- wareItem(item) ON ASSIGN packQuantityItemOrderSupplier(orderSupplier, item);
+wareOrderSupplier (orderSupplier, item) <- wareItem(item) WHEN ASSIGNED(packQuantityItemOrderSupplier(orderSupplier, item));
 nameWareOrderSupplier 'Посуда' (orderSupplier, item) = name(wareOrderSupplier(orderSupplier, item));
 priceWareOrderSupplier 'Цена посуды' (orderSupplier, item) = priceWareVal(wareOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier));
 dataRangeWareOrderSupplier 'Шкала(ИД)' (orderSupplier, item) = DATA range (orderSupplier, item) IN idGroup;
 dataRangeWareOrderSupplier (orderSupplier, item) <- rangeWareVal(wareOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier))
-                                                    ON CHANGE wareOrderSupplier(orderSupplier, item);
+                                                    WHEN CHANGED(wareOrderSupplier(orderSupplier, item));
 numberDataRangeWareOrderSupplier 'Шкала НДС посуды' (orderSupplier, item) =
     dataRange(dataRangeWareOrderSupplier(orderSupplier, item));
 dataWareRangeOrderSupplier 'НДС посуды, %' (orderSupplier, item) =
@@ -7649,7 +7649,7 @@ nextDateOrderSupplier (orderSupplier) <- [UNION OVERRIDE sumDate(dateOrderSuppli
                                                                   supplierOrderSupplier(orderSupplier),
                                                                   departmentStoreOrderSupplier(orderSupplier),
                                                                   dateOrderSupplier(orderSupplier))] (orderSupplier)
-                                         ON ASSIGN supplierOrderSupplier(orderSupplier);
+                                         WHEN ASSIGNED(supplierOrderSupplier(orderSupplier));
 
 quantityDaysAfterNextOrder 'Дней до следующей поставки' (orderSupplier) =
     daysInclBetweenDates(curDateOrderSupplier(orderSupplier), nextDateOrderSupplier(orderSupplier)) IN dateOrderSupplierGroup;
@@ -7715,9 +7715,9 @@ percentOrderedShipmentDetailsShipment 'Процент позиций поста�
     UNION OVERRIDE 1 IF shipment IS shipment, quantityShipmentDetailsShipment(shipment)) IN shipmentOrderGroup;
 
 surePercentSupplierShipment 'Обязательный % заказанных товаров в прих. накладной' (shipment) = UNION OVERRIDE 0 AND shipment IS shipment, [DATA INTEGER (shipment)](shipment);
-surePercentSupplierShipment (shipment) <- surePercentSupplier(supplierShipment (shipment)) ON CHANGE supplierShipment(shipment);
+surePercentSupplierShipment (shipment) <- surePercentSupplier(supplierShipment (shipment)) WHEN CHANGED(supplierShipment(shipment));
 controlSupplierDepartmentStoreShipment 'Контролировать ассортимент поставщика' (shipment) = DATA yesNo(shipment);
-controlSupplierDepartmentStoreShipment(shipment) <- controlSupplierDepartmentStore (supplierShipment(shipment), departmentStoreShipment(shipment)) ON CHANGE supplierShipment(shipment); //неполный случай, нужно доделывать
+controlSupplierDepartmentStoreShipment(shipment) <- controlSupplierDepartmentStore (supplierShipment(shipment), departmentStoreShipment(shipment)) WHEN CHANGED(supplierShipment(shipment)); //неполный случай, нужно доделывать
 
 enoughOrderedShipmentDetailsShipment(shipment) = percentOrderedShipmentDetailsShipment(shipment) >= surePercentSupplierShipment (shipment);
 
@@ -7906,7 +7906,7 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
         EXEC apply();
     };
 };
-//nextDateOrderSupplier (orderSupplier) <- nextDateOrder(preliminaryOrderOrderSupplier(orderSupplier)) ON ASSIGN orderSupplier;
+//nextDateOrderSupplier (orderSupplier) <- nextDateOrder(preliminaryOrderOrderSupplier(orderSupplier)) WHEN ASSIGNED(orderSupplier);
 
 // todo : здесь вообще-то нужно заполнять только ассортиментом данного поставщика, а не всем подряд как сейчас
 fillInOrderSupplier 'Заполнить заказ рекомендованным количеством' = ACTION (orderSupplier) {
@@ -8154,141 +8154,141 @@ DESIGN timeTableDate FROM DEFAULT {
 
 balanceBeforeShipmentShipmentDetail (shipmentDetail) <- balanceBItemLedgerDateTime (
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                ON CHANGE itemShipmentDetail(shipmentDetail);
+                WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 balanceBeforeInnerArrivalInnerArrivalDetail(innerArrivalDetail) <- balanceBItemLedgerDateTime (
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
+                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
 
 curImporterPriceShipmentDetail (shipmentDetail) <- priceImporterBLedgerDateTime (
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                ON CHANGE itemShipmentDetail(shipmentDetail);
+                WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 curSupplierPriceShipmentDetail (shipmentDetail) <- priceSupplierBLedgerDateTime (
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                ON CHANGE itemShipmentDetail(shipmentDetail);
+                WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 curRetailRangeShipmentDetail (shipmentDetail) <- rangeRetailBLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                ON CHANGE itemShipmentDetail(shipmentDetail);
+                WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 curRetailPriceShipmentDetail (shipmentDetail) <- priceAccountBLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                ON CHANGE itemShipmentDetail(shipmentDetail);
+                WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 curPriceWareShipmentDetail (shipmentDetail) <- priceWareBLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                ON CHANGE wareShipmentDetail(shipmentDetail);
+                WHEN CHANGED(wareShipmentDetail(shipmentDetail));
 
 curWareShipmentDetail (shipmentDetail)  <- wareBLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                ON CHANGE itemShipmentDetail(shipmentDetail);
+                WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 
 accountPriceWriteOffDetail (writeOffDetail) <- priceAccountBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
-                ON CHANGE itemWriteOffDetail(writeOffDetail);
+                WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
 
 //retailPriceWriteOffDetail 'Розничная цена' (writeOffDetail) = priceRetailBLedgerDateTime (
 //                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail));
 retailPriceWriteOffDetail (writeOffDetail) <- priceRetailBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
-                ON CHANGE itemWriteOffDetail(writeOffDetail);
+                WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
 
 supplierPriceWriteOffDetail (writeOffDetail) <- priceSupplierBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
-                ON CHANGE itemWriteOffDetail(writeOffDetail);
+                WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
 
 wareWriteOffDetail (writeOffDetail)  <- wareBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
-                ON CHANGE itemWriteOffDetail(writeOffDetail);
+                WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
 
 priceWareWriteOffDetail (writeOffDetail) <- priceWareBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
-                ON CHANGE itemWriteOffDetail(writeOffDetail);
+                WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
 
 retailRangeWriteOffDetail (writeOffDetail) <- rangeRetailBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
-                ON CHANGE itemWriteOffDetail(writeOffDetail);
+                WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
 
 
 retailPriceInnerFlowDetail (innerFlowDetail) <- priceRetailBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
-                ON CHANGE itemInnerFlowDetail(innerFlowDetail);
+                WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
 
 importerPriceInnerFlowDetail (innerFlowDetail) <- priceImporterBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
-                ON CHANGE itemInnerFlowDetail(innerFlowDetail);
+                WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
 
 supplierPriceInnerFlowDetail (innerFlowDetail) <- priceSupplierBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
-                ON CHANGE itemInnerFlowDetail(innerFlowDetail);
+                WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
 
 retailRangeInnerFlowDetail (innerFlowDetail) <- rangeRetailBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
-                ON CHANGE itemInnerFlowDetail(innerFlowDetail);
+                WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
 
 priceWareInnerFlowDetail (innerFlowDetail) <- priceWareBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
-                ON CHANGE itemInnerFlowDetail(innerFlowDetail);
+                WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
 
 wareInnerFlowDetail (innerFlowDetail) <- wareBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
-                ON CHANGE itemInnerFlowDetail(innerFlowDetail);
+                WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
 
 
 curRetailPriceInnerArrivalDetail (innerArrivalDetail) <- priceRetailBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
+                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
 curImporterPriceInnerArrivalDetail (innerArrivalDetail) <- priceImporterBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
+                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
 curSupplierPriceInnerArrivalDetail (innerArrivalDetail) <- priceSupplierBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
+                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
 curRetailRangeInnerArrivalDetail (innerArrivalDetail) <- rangeRetailBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
+                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
 curPriceWareInnerArrivalDetail (innerArrivalDetail) <- priceWareBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
+                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
 curWareInnerArrivalDetail (innerArrivalDetail) <- wareBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                ON CHANGE itemInnerArrivalDetail(innerArrivalDetail);
+                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
 curRetailPriceReturnSupplierDetail (returnSupplierDetail) <- priceAccountBLedgerDateTime(
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
+                dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
 curSupplierRangeReturnSupplierDetail (returnSupplierDetail) <- suppliersRangeItemVal(
                 itemReturnSupplierDetail(returnSupplierDetail), dateReturnSupplierDetail(returnSupplierDetail))
-                ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
+                WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
 curRetailRangeReturnSupplierDetail (returnSupplierDetail) <- rangeRetailBLedgerDateTime(
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
+                dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
 curImporterPriceReturnSupplierDetail (returnSupplierDetail) <- priceImporterBLedgerDateTime (
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
+                dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
 curSupplierPriceReturnSupplierDetail (returnSupplierDetail) <- priceSupplierBLedgerDateTime (
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
+                dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
 curWareReturnSupplierDetail (returnSupplierDetail)  <- wareBLedgerDateTime(
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
+                dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
 curPriceWareReturnSupplierDetail (returnSupplierDetail) <- priceWareBLedgerDateTime(
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail)) ON CHANGE itemReturnSupplierDetail(returnSupplierDetail);
+                dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
 retailSumReturnSupplierDetail 'Розничная сумма' (returnSupplierDetail) =
     quantityReturnSupplierDetail(returnSupplierDetail) * retailPriceReturnSupplierDetail(returnSupplierDetail);
@@ -8346,14 +8346,14 @@ curImporterPriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
     priceImporterBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                                  departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                                  dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
-                                 ON CHANGE itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+                                 WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
 
 curSupplierPriceChangeReturnSupplierDetail 'Текущая цена поставщика' (priceChangeReturnSupplierDetail) = DATA NUMERIC[14,2] (priceChangeReturnSupplierDetail);
 curSupplierPriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
     priceSupplierBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                                  departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                                  dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
-                                 ON CHANGE itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+                                 WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
 
 
 importerPriceChangeReturnSupplierDetail 'Новая цена изготовителя' (priceChangeReturnSupplierDetail) =
@@ -8382,14 +8382,14 @@ curWarePriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
     wareBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                         departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                         dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
-                        ON CHANGE itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+                        WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
 
 curPriceWarePriceChangeReturnSupplierDetail 'Текущая цена посуды' (priceChangeReturnSupplierDetail) = DATA NUMERIC[14,2] (priceChangeReturnSupplierDetail);
 curPriceWarePriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
     priceWareBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                              departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                              dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
-                             ON CHANGE itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
+                             WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
 
 @metaCodeIsPriceChangeWrong(returnSupplier);
 //----------------------------------- Подбор товаров -------------------------------------------------------
@@ -8595,10 +8595,10 @@ equipmentServerMachineryPriceTransaction (transaction) = equipmentServerGroupMac
 sidEquipmentServerMachineryPriceTransaction (transaction) = sidEquipmentServer(equipmentServerMachineryPriceTransaction (transaction));
 
 dateMachineryPriceTransaction 'Дата' = DATA DATE (machineryPriceTransaction);
-dateMachineryPriceTransaction (transaction) <- currentDate() ON ASSIGN transaction IS machineryPriceTransaction;
+dateMachineryPriceTransaction (transaction) <- currentDate() WHEN ASSIGNED(transaction IS machineryPriceTransaction);
 
 timeMachineryPriceTransaction 'Время' = DATA TIME (machineryPriceTransaction);
-timeMachineryPriceTransaction (transaction) <- currentTime() ON ASSIGN transaction IS machineryPriceTransaction;
+timeMachineryPriceTransaction (transaction) <- currentTime() WHEN ASSIGNED(transaction IS machineryPriceTransaction);
 
 dateTimeMachineryPriceTransaction 'Дата/время' (transaction) = toDateTime(dateMachineryPriceTransaction(transaction), timeMachineryPriceTransaction(transaction));
 
@@ -8656,7 +8656,7 @@ descriptionMachineryPriceTransaction 'Основание' (document) = UNION OVE
                                                                              commentMachineryPriceTransaction(document);
 
 sentPriceTransactionDocument 'Принят к загрузке в оборудование' = DATA BOOLEAN (priceTransactionDocument);
-sentPriceTransactionDocument(document) <- NULL ON ASSIGN isDraftPriceTransactionDocument(document);
+sentPriceTransactionDocument(document) <- NULL WHEN ASSIGNED(isDraftPriceTransactionDocument(document));
 
 // todo : это свойство тоже не становится PERSISTENT
 countProcessPriceTransactionDocument 'Кол-во ожидающих транзакций' (document) = GROUP SUM 1 IF processMachineryPriceTransaction(transaction)
@@ -8912,10 +8912,10 @@ CLASS labelTransaction 'Печать ценников' : historyObject;
 TABLE labelTransaction(labelTransaction);
 
 dateLabelTransaction 'Дата' = DATA DATE (labelTransaction);
-dateLabelTransaction (transaction) <- currentDate() ON ASSIGN transaction IS labelTransaction;
+dateLabelTransaction (transaction) <- currentDate() WHEN ASSIGNED(transaction IS labelTransaction);
 
 timeLabelTransaction 'Время' = DATA TIME (labelTransaction);
-timeLabelTransaction (transaction) <- currentTime() ON ASSIGN transaction IS labelTransaction;
+timeLabelTransaction (transaction) <- currentTime() WHEN ASSIGNED(transaction IS labelTransaction);
 
 departmentStoreLabelTransaction = DATA departmentStore (labelTransaction);
 nameDepartmentStoreLabelTransaction 'Отдел магазина' (transaction) = name(departmentStoreLabelTransaction(transaction));
@@ -8931,7 +8931,7 @@ CONSTRAINT labelTypeLabelTransaction(transaction) AND NOT inLabelTypeDepartmentS
 fileTemplateLabelTransaction 'Файл шаблона' (transaction) = fileTemplateLabelType(labelTypeLabelTransaction(transaction));
 
 printedPriceTransactionDocument 'Распечатан' = DATA BOOLEAN (priceTransactionDocument);
-printedPriceTransactionDocument(document) <- NULL ON ASSIGN isDraftPriceTransactionDocument(document);
+printedPriceTransactionDocument(document) <- NULL WHEN ASSIGNED(isDraftPriceTransactionDocument(document));
 
 priceTransactionDocumentLabelTransaction = DATA priceTransactionDocument (labelTransaction);
 descriptionLabelTransaction 'Основание загрузки' (transaction) =
@@ -9502,96 +9502,96 @@ DESIGN writeOffs FROM DEFAULT {
 
 retailPriceSpecificationDetail (specificationDetail) <- priceRetailBLedgerDateTime(
                 itemSpecificationDetail(specificationDetail), departmentStoreSpecificationDetail(specificationDetail), dateTimeSpecificationDetail(specificationDetail))
-                ON CHANGE itemSpecificationDetail(specificationDetail);
+                WHEN CHANGED(itemSpecificationDetail(specificationDetail));
 
 retailPriceStudyInputDetail (studyInputDetail) <- priceRetailBLedgerDateTime(
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                ON CHANGE itemStudyInputDetail(studyInputDetail);
+                WHEN CHANGED(itemStudyInputDetail(studyInputDetail));
 
 importerPriceStudyInputDetail (studyInputDetail) <- priceImporterBLedgerDateTime (
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                ON CHANGE itemStudyInputDetail(studyInputDetail);
+                WHEN CHANGED(itemStudyInputDetail(studyInputDetail));
 
 supplierPriceStudyInputDetail (studyInputDetail) <- priceSupplierBLedgerDateTime (
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                ON CHANGE itemStudyInputDetail(studyInputDetail);
+                WHEN CHANGED(itemStudyInputDetail(studyInputDetail));
 
 retailRangeStudyInputDetail (studyInputDetail) <- rangeRetailBLedgerDateTime(
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                ON CHANGE itemStudyInputDetail(studyInputDetail);
+                WHEN CHANGED(itemStudyInputDetail(studyInputDetail));
 
 curImporterPriceStudyOutputDetail (studyOutputDetail) <- priceImporterBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-                ON CHANGE itemStudyOutputDetail(studyOutputDetail);
+                WHEN CHANGED(itemStudyOutputDetail(studyOutputDetail));
 
 curSupplierPriceStudyOutputDetail (studyOutputDetail) <- priceSupplierBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-                ON CHANGE itemStudyOutputDetail(studyOutputDetail);
+                WHEN CHANGED(itemStudyOutputDetail(studyOutputDetail));
 
 curRetailRangeStudyOutputDetail (studyOutputDetail) <- rangeRetailBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-                ON CHANGE itemStudyOutputDetail(studyOutputDetail);
+                WHEN CHANGED(itemStudyOutputDetail(studyOutputDetail));
 
 curRetailPriceStudyOutputDetail (studyOutputDetail) <- priceRetailBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-                ON CHANGE itemStudyOutputDetail(studyOutputDetail);
+                WHEN CHANGED(itemStudyOutputDetail(studyOutputDetail));
 
 
 importerPriceStatementDetail (statementDetail) <- priceImporterBLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                ON CHANGE itemStatementDetail(statementDetail);
+                WHEN CHANGED(itemStatementDetail(statementDetail));
 
 supplierPriceStatementDetail (statementDetail) <- priceSupplierBLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                ON CHANGE itemStatementDetail(statementDetail);
+                WHEN CHANGED(itemStatementDetail(statementDetail));
 
 retailRangeStatementDetail (statementDetail) <- rangeRetailBLedgerDateTime(
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                ON CHANGE itemStatementDetail(statementDetail);
+                WHEN CHANGED(itemStatementDetail(statementDetail));
 
 curRetailPriceStatementDetail (statementDetail) <- priceRetailBLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                ON CHANGE itemStatementDetail(statementDetail);
+                WHEN CHANGED(itemStatementDetail(statementDetail));
 
 retailPriceStatementDetail (statementDetail) <- priceRetailBLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                ON CHANGE itemStatementDetail(statementDetail);
+                WHEN CHANGED(itemStatementDetail(statementDetail));
 
 priceWareStatementDetail (statementDetail) <- priceWareBLedgerDateTime(
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                ON CHANGE itemStatementDetail(statementDetail);
+                WHEN CHANGED(itemStatementDetail(statementDetail));
 
 wareStatementDetail (statementDetail) <- wareBLedgerDateTime(
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                ON CHANGE itemStatementDetail(statementDetail);
+                WHEN CHANGED(itemStatementDetail(statementDetail));
 
 curRetailPriceUserPriceChangeDetail(userPriceChangeDetail) <- priceRetailBLedgerDateTime(
                 itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
-                ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+                WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
 curImporterPriceUserPriceChangeDetail (userPriceChangeDetail) <- priceImporterBLedgerDateTime(
                 itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
-                ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+                WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
 curSupplierPriceUserPriceChangeDetail (userPriceChangeDetail) <- priceSupplierBLedgerDateTime(
                 itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
-                ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+                WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
 curRetailRangeUserPriceChangeDetail (userPriceChangeDetail) <- rangeRetailBLedgerDateTime(
                 itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
-                ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+                WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
 curPriceWareUserPriceChangeDetail (userPriceChangeDetail) <- priceWareBLedgerDateTime(
                 itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
-                ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+                WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
 curWareUserPriceChangeDetail (userPriceChangeDetail) <- wareBLedgerDateTime(
                 itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
-                ON CHANGE itemUserPriceChangeDetail(userPriceChangeDetail);
+                WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
 retailRangeBillDetail (billDetail) <- rangeRetailBLedgerDateTime(
                 itemBillDetail(billDetail), departmentStoreBillDetail(billDetail), dateTimeBillDetail(billDetail))
-                ON CHANGE itemBillDetail(billDetail);
+                WHEN CHANGED(itemBillDetail(billDetail));
 
 balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) = balanceBItemLedgerDateTime(
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail)) IN itemStatementDetailInfo;
@@ -9626,11 +9626,11 @@ noOverdueSpecificationStatement 'Непросроченные с/ф' (specificat
 
 priceAccountDetailPage(detailPage) <- priceAccountBLedgerDateTime(
                 skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeInventory(inventoryDetailPage(detailPage)))
-                ON CHANGE skuBarcodeDetailPage(detailPage);
+                WHEN CHANGED(skuBarcodeDetailPage(detailPage));
 
 priceAccountCollationSheetItem(collationSheet, item) <- priceAccountBLedgerDateTime(
                 item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
-                ON ASSIGN includeCollationSheetItem(collationSheet, item);
+                WHEN ASSIGNED(includeCollationSheetItem(collationSheet, item));
 
 fillBalanceInventory 'Заполнить остатки' (inventory) = ACTION(inventory) {
     SET balanceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet)==inventory  AND item IS item
@@ -10020,7 +10020,7 @@ diffTotalSumVatWarePriceChangeDocument 'Изменение суммы НДС п�
 
 //revaluationCommitteePriceChangeDocument 'Комиссия переоценки ИД' (priceChangeDocument) = DATA revaluationCommittee(priceChangeDocument);
 //revaluationCommitteePriceChangeDocument(priceChangeDocument) <- revaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument))
-//    ON ASSIGN priceChangeDocument IS priceChangeDocument;
+//    WHEN ASSIGNED(priceChangeDocument IS priceChangeDocument);
 
 isRevaluationCommitteePriceChangeDocument(priceChangeDocument) = priceChangeDocument IS priceChangeDocument AND revaluationCommitteePriceChangeDocument(priceChangeDocument);
 
@@ -12658,14 +12658,14 @@ DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
 defaultNumeratorDocuments = DATA numerator ();
 nameDefaultNumeratorDocuments 'Нумератор для документов' = name(defaultNumeratorDocuments());
 
-numeratorObject(object) <- defaultNumeratorDocuments() ON ASSIGN object IS numeratedObject;
+numeratorObject(object) <- defaultNumeratorDocuments() WHEN ASSIGNED(object IS numeratedObject);
 
 defaultNumeratorOrders = DATA numerator ();
 nameDefaultNumeratorOrders 'Нумератор для заказов' = name(defaultNumeratorOrders());
 
 numeratorOrder(order) = numeratorObject(order) AND order IS order;
 // todo : включение этого derived'а отключает верхний derived
-//numeratorOrder(order) <- defaultNumeratorOrders() ON ASSIGN order IS order;
+//numeratorOrder(order) <- defaultNumeratorOrders() WHEN ASSIGNED(order IS order);
 
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
