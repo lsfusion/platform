@@ -51,7 +51,7 @@
 	<field name="retail_sumNDSSpecification" class="java.lang.Double"/>
 	<field name="retail_sumSpecification" class="java.lang.Double"/>
 	<field name="d" class="java.lang.Integer"/>
-	<field name="retail_numberSpecificationDetail" class="java.lang.Integer"/>
+	<field name="retail_indexSpecificationDetail" class="java.lang.Integer"/>
 	<field name="retail_barcodeExSkuSpecificationDetail" class="java.lang.String"/>
 	<field name="retail_nameAttributeItemSpecificationDetail" class="java.lang.String"/>
 	<field name="retail_quantitySpecificationDetail" class="java.lang.Double"/>

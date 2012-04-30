@@ -57,7 +57,7 @@
 	<field name="retail_dateContractShipment" class="java.util.Date"/>
 	<field name="objectClassName" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
-	<field name="retail_numberShipmentDetail" class="java.lang.Integer"/>
+	<field name="retail_indexShipmentDetail" class="java.lang.Integer"/>
 	<field name="retail_barcodeExSkuShipmentDetail" class="java.lang.String"/>
 	<field name="retail_nameAttributeItemShipmentDetail" class="java.lang.String"/>
 	<field name="retail_shortNameUnitOfMeasureItemShipmentDetail" class="java.lang.String"/>
@@ -491,7 +491,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_numberShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_indexShipmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="210" y="0" width="20" height="22" backcolor="#FFFFFF"/>

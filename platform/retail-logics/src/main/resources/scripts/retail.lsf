@@ -4975,14 +4975,11 @@ phoneCompanySpecification 'Телефон компании' (specification) = ph
 
 noteSpecification 'Примечание' = DATA STRING[100] (specification) IN additionalInfo;
 
-specificationSpecificationDetail 'Строка документа (ИД)' = DATA specification (specificationDetail) IN idGroup;
-inSpecificationSpecificationDetail (specification, specificationDetail) = specificationSpecificationDetail(specificationDetail) == specification;
+@defineDocumentRelation(specification);
 
 dateTimeSpecificationDetail 'Дата/время отгрузки' (specificationDetail) = dateTimeSpecification(specificationSpecificationDetail(specificationDetail));
 
-numberSpecificationDetail 'Номер строки' (specificationDetail) =
-    PARTITION SUM 1 IF specificationDetail IS specificationDetail BY specificationSpecificationDetail(specificationDetail)
-    ORDER specificationDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
+@defineDocumentDetailIndex(specification);
 
 itemSpecificationDetail 'Товар (ИД)' (specificationDetail) = DATA item (specificationDetail) IN idGroup;
 
@@ -4993,9 +4990,6 @@ shortNameUnitOfMeasureSpecificationDetail 'Ед. изм.' (specificationDetail) 
 
 barcodeExSkuSpecificationDetail 'Штрих-код товара' (specificationDetail) =
     barcodeEx(barcodeSku(itemSpecificationDetail(specificationDetail))) IN baseGroup;
-
-quantityDetailInSpecification 'Количество строк в документе' (specification) =
-        GROUP SUM 1 IF inSpecificationSpecificationDetail (specification, specificationDetail) BY specification;
 
     addSpecificationDetailBarcode 'Добавить строку по штрих-коду' = ACTION (specification) {
         FORM barcodeInput MODAL;
@@ -6193,9 +6187,7 @@ barcodeExSkuWastageDetail 'Штрих-код' (wastageDetail) = barcodeExSkuShip
 
 percentRateWasteWastageDetail 'Процент списания' (wastageDetail) = percentRateWasteShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 
-numberWastageDetail 'Номер строки' (wastageDetail) =
-    PARTITION SUM 1 IF wastageDetail IS wastageDetail BY wastageWastageDetail(wastageDetail)
-    ORDER wastageDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
+@defineDocumentDetailIndex(wastage);
 
 quantityWastageDetail 'Количество списания '(wastageDetail) = [X*Y/100](
     quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail)), percentRateWasteWastageDetail (wastageDetail));
@@ -6240,7 +6232,7 @@ FORM wastages 'Списания отходов'
                    quantityWastageDetailsWastage, quantityWastage, totalSumWastage
 
     OBJECTS d=wastageDetail
-    PROPERTIES (d) READONLY numberWastageDetail, barcodeExSkuWastageDetail, nameAttributeItemWastageDetail, quantityWastageDetail, retailPriceWastageDetail, sumWastageDetail
+    PROPERTIES (d) READONLY indexWastageDetail, barcodeExSkuWastageDetail, nameAttributeItemWastageDetail, quantityWastageDetail, retailPriceWastageDetail, sumWastageDetail
 
     FILTERS wastageWastageDetail(d)== w;
 ;
@@ -10101,10 +10093,10 @@ FORM specificationPrint 'Счет-фактура' PRINT
                     quantitySpecification, sumWithoutNDSSpecification, sumNDSSpecification, sumSpecification
 
     OBJECTS d=specificationDetail
-    PROPERTIES (d) READONLY numberSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
-                   shortNameUnitOfMeasureSpecificationDetail, quantitySpecificationDetail,
-                   retailPriceSpecificationDetail, sumWithoutNDSSpecificationDetail, dataActingRateRangeSpecificationDetail,
-                   sumNDSSpecificationDetail, totalSumNDSSpecificationDetail, sumSpecificationDetail
+    PROPERTIES (d) READONLY indexSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
+                            shortNameUnitOfMeasureSpecificationDetail, quantitySpecificationDetail,
+                            retailPriceSpecificationDetail, sumWithoutNDSSpecificationDetail, dataActingRateRangeSpecificationDetail,
+                            sumNDSSpecificationDetail, totalSumNDSSpecificationDetail, sumSpecificationDetail
 
     FILTERS inSpecificationSpecificationDetail(sp, d)
 ;
@@ -11742,7 +11734,7 @@ FORM specification 'Счет-фактура'
                     quantitySpecification, sumWithoutNDSSpecification, sumNDSSpecification, sumSpecification
 
     OBJECTS d=specificationDetail
-    PROPERTIES (d) numberSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail, quantitySpecificationDetail,
+    PROPERTIES (d) indexSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail, quantitySpecificationDetail,
                    retailPriceSpecificationDetail, sumWithoutNDSSpecificationDetail, dataActingRateRangeSpecificationDetail,
                    sumNDSSpecificationDetail, totalSumNDSSpecificationDetail, sumSpecificationDetail,
                    ADDOBJ, delete
@@ -11801,14 +11793,14 @@ DESIGN specification FROM DEFAULT{
 FORM specifications 'Счет-фактуры'
     OBJECTS sp=specification
     PROPERTIES (sp) READONLY numberObject, seriesObject, dateSpecification, timeSpecification, nameDepartmentStoreSpecification,
-                             nameCustomerSpecification, dateToSpecification, quantityDetailInSpecification, quantitySpecification,
+                             nameCustomerSpecification, dateToSpecification, quantitySpecificationDetailsSpecification, quantitySpecification,
                              sumWithoutNDSSpecification, sumNDSSpecification, sumSpecification
     PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
 
     PROPERTIES (sp)          ADDFORM, EDITFORM, delete
 
     OBJECTS d=specificationDetail
-    PROPERTIES (d) READONLY  numberSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
+    PROPERTIES (d) READONLY  indexSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
                              quantitySpecificationDetail, retailPriceSpecificationDetail,
                              sumWithoutNDSSpecificationDetail, dataActingRateRangeSpecificationDetail,
                              sumNDSSpecificationDetail, totalSumNDSSpecificationDetail, sumSpecificationDetail
