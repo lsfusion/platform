@@ -464,10 +464,18 @@ META defineDocumentPosted (object)
     @defineDocumentDetailPosted(object);
 END
 
-META defineDocumentDetailNumber (object)
-    number###object##Detail 'Номер строки' (object##Detail) =
+META defineDocumentDetailIndex (object)
+    index###object##Detail 'Номер строки' (object##Detail) =
         PARTITION SUM 1 IF object##Detail IS object##Detail BY object###object##Detail(object##Detail)
         ORDER object##Detail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
+END
+
+META defineDocumentDetailNumbered (object)
+
+    //шапка документа поставки
+    number###object##Detail 'Номер накладной' (object##Detail) = numberObject(object###object##Detail(object##Detail));
+    series###object##Detail 'Серия накладной' (object##Detail) = seriesObject(object###object##Detail(object##Detail));
+
 END
 
 META defineDocumentDetailItem (object)
@@ -514,7 +522,7 @@ META defineDocumentDetailItemActions (object)
 END
 
 // ----------------------------------- Свойства для объектов Posted ------------------------------------------ //
-META metaCodeObjectWithPostEx (object)
+META defineDocumentDefaultProperties (object)
 
     @defineDocumentTables(object);
 
@@ -524,7 +532,7 @@ META metaCodeObjectWithPostEx (object)
     @defineDocumentDepartmentStore(object);
     @defineDocumentNote(object);
 
-    @defineDocumentDetailNumber(object);
+    @defineDocumentDetailIndex(object);
 
     @defineDocumentDetailItem(object);
     @defineDocumentDetailItemActions(object);
@@ -5081,7 +5089,7 @@ CLASS statement 'Выписка из розницы' : outAccountSumDocumentLedg
 CLASS statementDetail 'Строка выписки из розницы' : outAutoBalanceItemLedger, salesLedger, consignmentDetail;
 CLASS statementPosted 'Закрытая выписка из розницы' : statement, postedObject;
 
-@metaCodeObjectWithPostEx(statement);
+@defineDocumentDefaultProperties(statement);
 
 //    шапка документа поставки
 customerStatement 'Покупатель (ИД)' (statement) = DATA customer (statement) IN idGroup;
@@ -5378,19 +5386,16 @@ CLASS shipment 'Поставка' : incAccountSumDocumentLedger, historyObject, 
 CLASS shipmentDetail 'Строка поставки' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger, warePriceLedger;
 CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObject;
 
-@metaCodeObjectWithPostEx(shipment);
+@defineDocumentDefaultProperties(shipment);
+@defineDocumentDetailNumbered(shipment);
 
 GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
 GROUP additionalInfo 'Дополнительно' : baseGroup;
 
-//шапка документа поставки
-numberObjectDetail 'Номер накладной' (shipmentDetail) = numberObject(shipmentShipmentDetail(shipmentDetail));
-seriesObjectDetail 'Серия накладной' (shipmentDetail) = seriesObject(shipmentShipmentDetail(shipmentDetail));
-
 sidShipmentDetail 'Уникальный номер накладной' (shipmentDetail) = DATA STRING[50] (shipmentDetail) IN documentHeaderGroup;
 
 sidNumberSeriesToShipmentDetail (sid, number, series) = GROUP UNIQUE shipmentDetail
-            BY sidShipmentDetail (shipmentDetail), numberObjectDetail (shipmentDetail), seriesObjectDetail (shipmentDetail)
+            BY sidShipmentDetail (shipmentDetail), numberShipmentDetail (shipmentDetail), seriesShipmentDetail (shipmentDetail)
             WHERE shipmentDetail IS shipmentDetail;
 
 numberSeriesToShipment (number, series) = GROUP UNIQUE shipment BY numberObject(shipment), seriesObject(shipment) WHERE shipment IS shipment;
@@ -5697,7 +5702,7 @@ CLASS writeOff 'Списание' : outAccountSumDocumentLedger, historyObject, 
 CLASS writeOffDetail 'Строка списания' : outAutoBalanceItemLedger;
 CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
 
-@metaCodeObjectWithPostEx (writeOff);
+@defineDocumentDefaultProperties (writeOff);
 
 CLASS reasonOff 'Причина списания' : named;
 TABLE reasonOff (reasonOff);
@@ -5785,7 +5790,7 @@ CLASS innerFlow 'Расход в отдел' : outAccountSumDocumentLedger, hist
 CLASS innerFlowDetail 'Строка расхода в отдел' : outAutoBalanceItemLedger, consignmentDetail;
 CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow, postedObject;
 
-@metaCodeObjectWithPostEx (innerFlow);
+@defineDocumentDefaultProperties (innerFlow);
 
 recipientDepartmentInnerFlow 'Отдел-получатель (ИД)' (innerFlow) = DATA departmentStore(innerFlow);
 nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentPrmGroup;
@@ -5940,7 +5945,7 @@ CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, h
 CLASS innerArrivalDetail 'Строка прихода в отдел' : balanceItemLedger, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerArrival, postedObject;
 
-@metaCodeObjectWithPostEx (innerArrival);
+@defineDocumentDefaultProperties(innerArrival);
 
 innerFlowInnerArrival 'Накладная отгрузки с отдела-отправителя (ИД)' (innerArrival) = DATA innerFlowPosted (innerArrival);
 
@@ -6247,7 +6252,7 @@ CLASS returnSupplier 'Возврат поставщику' : outAccountSumDocume
 CLASS returnSupplierDetail 'Строка возврата поставщику' : outUserBalanceItemLedger, consignmentDetail;
 CLASS returnSupplierPosted 'Закрытый возврат поставщику' : returnSupplier, postedObject;
 
-@metaCodeObjectWithPostEx(returnSupplier);
+@defineDocumentDefaultProperties(returnSupplier);
 
 // шапка документа "Возврат поставщику"
 supplierReturnSupplier 'Поставщик (ИД)' (returnSupplier) = DATA supplier (returnSupplier) IN idGroup;
@@ -6772,7 +6777,7 @@ CLASS userPriceChange 'Переоценка товаров' : priceChangeDocumen
 CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 CLASS userPriceChangePosted 'Закрытая переоценка товаров' : userPriceChange, postedObject;
 
-@metaCodeObjectWithPostEx (userPriceChange);
+@defineDocumentDefaultProperties(userPriceChange);
 
 numberUserPriceChange (userPriceChange) = numberObject(userPriceChange) AND userPriceChange IS userPriceChange;
 seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND userPriceChange IS userPriceChange;
@@ -9393,7 +9398,7 @@ FORM pricesRegister 'Реестр цен' PRINT
                     nameHeadManShipment
 
     OBJECTS d=shipmentDetail
-    PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, shortNameUnitOfMeasureItemShipmentDetail, quantityShipmentDetail,
+    PROPERTIES (d)  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, shortNameUnitOfMeasureItemShipmentDetail, quantityShipmentDetail,
                     importerPriceShipmentDetail, supportSumPriceShipmentDetail, overSupplierMarkupShipmentDetail, sumDetailSupplierVATShipmentDetail, dataSuppliersRangeShipmentDetail,
                     sumPriceWareShipmentDetail, priceWareShipmentDetail, sumDetailVatWareShipmentDetail, dataWareRangeShipmentDetail,
                     exSumSupplierShipmentDetail, percMarkupShipmentDetail, sumDetailMarkupShipmentDetail, dataRetailRangeShipmentDetail,
@@ -9411,7 +9416,7 @@ FORM writeOff 'Списание'
                    dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, accountSumWriteOff
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) numberWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
+    PROPERTIES (d) indexWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
                    accountPriceWriteOffDetail, accountSumWriteOffDetail, ADDOBJ, delete
 
     PROPERTIES FORCE PANEL READONLY articleItemWriteOff(d), nameCountryItemWriteOff(d), retailPriceWriteOffDetail(d),
@@ -9477,7 +9482,7 @@ FORM writeOffs 'Списания'
 
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) READONLY numberWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
+    PROPERTIES (d) READONLY indexWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
                    accountPriceWriteOffDetail, accountSumWriteOffDetail
 
     FILTERS inWriteOffWriteOffDetail(w, d)
@@ -10121,7 +10126,7 @@ FORM shipment 'Поставка'
                    nameRevaluationCommitteeShipment SHOWIF needToPriceChangeShipment(s)
 
     OBJECTS d=shipmentDetail
-    PROPERTIES (d)  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
+    PROPERTIES (d)  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
                     supplierPriceShipmentDetail BACKGROUND isAllowPriceItemShipment(d), supplierMarkupShipmentDetail SHOWIF toShowPriceImporterShipment(s),
                     importerPriceShipmentDetail READONLY SHOWIF toShowPriceImporterShipment(s), dateFitToShipmentDetail,
                     balanceBeforeShipmentShipmentDetail, numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail,
@@ -10238,7 +10243,7 @@ FORM shipments 'Поставки'
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
     OBJECTS d=shipmentDetail
-    PROPERTIES (d) READONLY  numberShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
+    PROPERTIES (d) READONLY  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
                              supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateFitToShipmentDetail,
                              balanceBeforeShipmentShipmentDetail, numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail,
                              sumDetailSupplierVATShipmentDetail, sumSupplierShipmentDetail, nameWareShipmentDetail, priceWareShipmentDetail,
@@ -10286,7 +10291,7 @@ toPrintActOfRevaluationReturnSupplier 'Акт переоценки' (returnSuppl
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
     OBJECTS b=shipmentDetail    //
-    PROPERTIES(b) READONLY seriesObjectDetail, numberObjectDetail, dateShipmentDetail,
+    PROPERTIES(b) READONLY seriesShipmentDetail, numberShipmentDetail, dateShipmentDetail,
                            quantityShipmentDetail, supplierPriceShipmentDetail, dataSuppliersRangeShipmentDetail,
                            retailPriceShipmentDetail
     DIALOG shipmentDetail OBJECT b;     // batchShipment
@@ -10311,7 +10316,7 @@ FORM returnSupplier 'Возврат поставщику'
                   sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment
 
     OBJECTS d=returnSupplierDetail
-    PROPERTIES(d) numberReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
+    PROPERTIES(d) indexReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
                   commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
                   supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail READONLY, numberSupplierRangeReturnSupplierDetail,
                   dataSuppliersRangeReturnSupplierDetail, sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
@@ -10351,7 +10356,7 @@ FORM returnSuppliers 'Возвраты поставщику'
                   ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
 
     OBJECTS d=returnSupplierDetail
-    PROPERTIES(d) READONLY numberReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
+    PROPERTIES(d) READONLY indexReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
                            commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
                            supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail,
                            dataSuppliersRangeReturnSupplierDetail, sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
@@ -11203,7 +11208,7 @@ FORM userPriceChange 'Переоценка товаров'
                    noteUserPriceChange, numberDisposalUserPriceChange, nameRevaluationCommitteeUserPriceChange
 
     OBJECTS d=userPriceChangeDetail
-    PROPERTIES (d) numberUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
+    PROPERTIES (d) indexUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
                    curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                    curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
                    oldRetailMarkupPriceChangeDocumentDetail, retailMarkupPriceChangeDocumentDetail,
@@ -11290,7 +11295,7 @@ FORM userPriceChanges 'Переоценки товаров'
                             postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
 
     OBJECTS d=userPriceChangeDetail
-    PROPERTIES (d) READONLY numberUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
+    PROPERTIES (d) READONLY indexUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
                             curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                             curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
                             oldRetailMarkupPriceChangeDocumentDetail, retailMarkupPriceChangeDocumentDetail,
@@ -11358,7 +11363,7 @@ FORM innerFlow 'Расход в другой отдел'
                    sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment
 
     OBJECTS d=innerFlowDetail
-    PROPERTIES (d) numberInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
+    PROPERTIES (d) indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                    quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
                    dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, priceWareInnerFlowDetail,
                    retailPriceInnerFlowDetail, accountSumInnerFlowDetail, ADDOBJ, delete
@@ -11443,7 +11448,7 @@ FORM innerFlows 'Расходы в другие отделы'
                    postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
 
     OBJECTS d=innerFlowDetail
-    PROPERTIES (d) READONLY numberInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
+    PROPERTIES (d) READONLY indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                             quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
                             dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, priceWareInnerFlowDetail,
                             retailPriceInnerFlowDetail, accountSumInnerFlowDetail
@@ -11522,7 +11527,8 @@ FORM innerArrival 'Приход из другого отдела'
                    nameRevaluationCommitteeInnerArrival SHOWIF needToPriceChangeInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
-    PROPERTIES (d) SHOWIF innerFlowInnerArrival(a) numberInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
+    PROPERTIES (d) SHOWIF innerFlowInnerArrival(a)
+                   indexInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
                    quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail, supplierPriceInnerArrivalDetail, numberRetailRangeInnerArrivalDetail,
                    dataRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail, priceWareInnerArrivalDetail, retailPriceInnerArrivalDetail,
                    accountSumInnerArrivalDetail, ADDOBJ, delete
@@ -11612,10 +11618,10 @@ FORM innerArrivals 'Приходы из других отделов'
     PROPERTIES(a) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS d=innerArrivalDetail
-    PROPERTIES (d) READONLY numberInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
-                   quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail,
-                   numberRetailRangeInnerArrivalDetail, dataRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail,
-                   priceWareInnerArrivalDetail, retailPriceInnerArrivalDetail, accountSumInnerArrivalDetail
+    PROPERTIES (d) READONLY indexInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
+                            quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail,
+                            numberRetailRangeInnerArrivalDetail, dataRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail,
+                            priceWareInnerArrivalDetail, retailPriceInnerArrivalDetail, accountSumInnerArrivalDetail
 
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
 ;
@@ -11665,8 +11671,8 @@ FORM specificationForm 'Отгрузки по данной с/ф'
     PROPERTIES (st) READONLY seriesNumberObject, dateStatement, nameCustomerStatement, nameDepartmentStoreStatement,
                              noteStatement, totalQuantityStatement, sumNDSStatement, sumStatement
 
-     OBJECTS d=statementDetail
-    PROPERTIES (d)  READONLY numberStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
+    OBJECTS d=statementDetail
+    PROPERTIES (d)  READONLY indexStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
                              retailPriceStatementDetail, sumWithoutNDSStatementDetail, numberRangeStatementDetail,
                              dataActingRateRangeStatementDetail, sumNDSStatementDetail, totalSumNDSStatementDetail,
                              sumStatementDetail, noteStatementDetail
@@ -11873,7 +11879,7 @@ FORM statement 'Отгрузка из розницы'
                    sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment
 
     OBJECTS d=statementDetail
-    PROPERTIES (d)  numberStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
+    PROPERTIES (d)  indexStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
                     retailPriceStatementDetail, sumWithoutNDSStatementDetail, numberRangeStatementDetail, dataActingRateRangeStatementDetail,
                     sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail,
                     noteStatementDetail, ADDOBJ, delete
@@ -11967,9 +11973,9 @@ FORM statements 'Отгрузки из розницы'
                      postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
 
     OBJECTS d=statementDetail
-    PROPERTIES (d)   READONLY numberStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
-                     retailPriceStatementDetail, sumWithoutNDSStatementDetail, numberRangeStatementDetail, dataActingRateRangeStatementDetail,
-                     sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail, noteStatementDetail
+    PROPERTIES (d)   READONLY indexStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
+                              retailPriceStatementDetail, sumWithoutNDSStatementDetail, numberRangeStatementDetail, dataActingRateRangeStatementDetail,
+                              sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail, noteStatementDetail
 
     FILTERS          inStatementStatementDetail(st, d)
 ;
