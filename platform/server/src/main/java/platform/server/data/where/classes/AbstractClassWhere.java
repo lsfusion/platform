@@ -371,7 +371,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
         // теоретически таже логика что и для and'ов потому как все элементы независимы и соответственно все равно, что and, что or
         public boolean containsAll(Or<K> who, Or<K> what) {
-            return what.containsAll(who);
+            return who.containsAll(what);
         }
 
         public Or<K> intersect(Or<K> where1, Or<K> where2) {
