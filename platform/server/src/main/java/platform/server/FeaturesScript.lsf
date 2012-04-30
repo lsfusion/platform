@@ -315,7 +315,7 @@ CONSTRAINT foo(store, article) > 1000 CHECKED MESSAGE 'ошибка: >1000';
 //foo(store, article) => foo2(store, article) RESOLVE NOTHING;
 
 
-//////////////WRITEONCHANGE STATEMENT////////////
+////////////////WRITEWHEN STATEMENT//////////////
 // Syntax:
 // propertyName(param1, ..., paramN) <- valuePropertyExpression WHEN changePropertyExpression
 // or

@@ -185,7 +185,7 @@ statement
 		|	propertyStatement
 		|	constraintStatement
 		|	followsStatement
-		|	writeOnChangeStatement
+		|	writeWhenStatement
 		|	tableStatement
 		|	loggableStatement
 		|	indexStatement
@@ -1718,17 +1718,17 @@ followsResolveType returns [Integer type]
 
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////// CHANGE STATEMENT ////////////////////////////
+////////////////////////////////// WRITE STATEMENT /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-writeOnChangeStatement
+writeWhenStatement
 @init {
 	List<String> context;
 	LPWithParams value = null;
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedWriteOnChange($mainProp.name, context, value, $changeExpr.property);
+		self.addScriptedWriteWhen($mainProp.name, context, value, $whenExpr.property);
 	}
 }
 	:	mainProp=propertyWithNamedParams { context = $mainProp.params; }
@@ -1737,7 +1737,7 @@ writeOnChangeStatement
 			valueExpr=propertyExpression[context, false] { value = $valueExpr.property; }
 		)?
 		'WHEN'
-		changeExpr=propertyExpression[context, false]
+		whenExpr=propertyExpression[context, false]
 		';'
 	;
 

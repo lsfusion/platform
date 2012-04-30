@@ -1318,17 +1318,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addScriptedWriteOnChange(String mainPropName, List<String> namedParams, LPWithParams valueProp, LPWithParams changeProp) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedWriteOnChange(" + mainPropName + ", " + namedParams + ", " + valueProp + ", " + changeProp + ");");
+    public void addScriptedWriteWhen(String mainPropName, List<String> namedParams, LPWithParams valueProp, LPWithParams whenProp) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedWriteWhen(" + mainPropName + ", " + namedParams + ", " + valueProp + ", " + whenProp + ");");
         LP<?> mainProp = findLPByCompoundName(mainPropName);
         checkParamCount(mainProp, namedParams.size());
         checkDistinctParameters(namedParams);
 
         List<Object> params;
         if (valueProp != null) {
-            params = getParamsPlainList(asList(valueProp, changeProp));
+            params = getParamsPlainList(asList(valueProp, whenProp));
         } else {
-            params = getParamsPlainList(asList(changeProp));
+            params = getParamsPlainList(asList(whenProp));
             params.add(0, new LP(DerivedProperty.createStatic(true, ActionClass.instance).property));
         }
         mainProp.setDerivedChange(params.toArray());
