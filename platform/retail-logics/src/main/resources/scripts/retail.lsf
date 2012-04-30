@@ -280,6 +280,22 @@ META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type,
 
 END
 
+//------------------------------------ Проверка на запрет переоценки ------------------------------------------------- //
+
+META metaCodeIsPriceChangeWrong(prop)
+
+    isPriceChangeWrong###prop (priceChange###prop##Detail) =
+        retailPriceChange###prop##Detail(priceChange###prop##Detail) < curRetailPriceChange###prop##Detail(priceChange###prop##Detail)
+          IF banMarkdownItem(itemPriceChange###prop##Detail(priceChange###prop##Detail)) == TRUE;
+//        IF banRevaluationItemDepartmentVal(
+//            itemPriceChange###prop##Detail(priceChange###prop##Detail),
+//            departmentStorePriceChange###prop(priceChange###prop##PriceChange###prop##Detail(priceChange###prop##Detail)),
+//            datePriceChange###prop(priceChange###prop##PriceChange###prop##Detail(priceChange###prop##Detail))) == yesNo.yes;
+
+    CONSTRAINT isPriceChangeWrong###prop (priceChange###prop##Detail) MESSAGE 'Ученка товара запрещена';
+
+END
+
 // ----------------------------------- Свойство объект1-объект2-объект3-дата------------------------------------------ //
 META metaCodeTripleObjectDateProperty(prop, object1, object2, object3, caption, type, group)
 
@@ -5187,6 +5203,8 @@ retailPriceChangeStatementDetail 'Новая розничная цена' (price
 warePriceChangeStatementDetail 'Текущая посуда' (priceChangeStatementDetail) = wareStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail)) IN baseGroup;
 priceWarePriceChangeStatementDetail 'Текущая цена посуды' (priceChangeStatementDetail) =  priceWareStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail)) IN baseGroup;
 
+@metaCodeIsPriceChangeWrong(statement);
+
 // для накладной (шапка и хвост)
 carStatement 'Автомобиль' (statement) = DATA STRING[30] (statement);
 ownerCarStatement 'Владелец автомобиля' (statement) = DATA STRING[100] (statement);
@@ -5595,6 +5613,8 @@ priceWarePriceChangeShipmentDetail 'Новая цена посуды' (priceChan
 
 curWarePriceChangeShipmentDetail 'Текущая посуда' (priceChangeShipmentDetail) = curWareShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
 curPriceWarePriceChangeShipmentDetail 'Текущая цена посуды' (priceChangeShipmentDetail) = curPriceWareShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+
+@metaCodeIsPriceChangeWrong(shipment);
 
 //----------------------------------Договоры поставки------------------------------------------------------------------//
 
@@ -6071,6 +6091,8 @@ priceWarePriceChangeInnerArrivalDetail 'Новая цена посуды' (price
 
 curWarePriceChangeInnerArrivalDetail 'Текущая посуда' (priceChangeInnerArrivalDetail) = curWareInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
 curPriceWarePriceChangeInnerArrivalDetail 'Текущая цена посуды' (priceChangeInnerArrivalDetail) = curPriceWareInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail)) IN baseGroup;
+
+@metaCodeIsPriceChangeWrong(innerArrival);
 
 //----------------------------------- Списание отходов по нормам -------------------------------------------------//
 needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDetail(shipmentDetail);
@@ -6751,6 +6773,17 @@ isUserPriceChangeDetail(userPriceChangeDetail) = userPriceChangeDetail IS userPr
 
 TABLE itemDepartmentStore (item, departmentStore);
 
+//------------------------------------ Проверка на запрет переоценки ------------------------------------------------- //
+
+isPriceChangeWrongUserPriceChange (userPriceChangeDetail) =
+    retailPriceUserPriceChangeDetail(userPriceChangeDetail) < curRetailPriceUserPriceChangeDetail(userPriceChangeDetail)
+    IF banMarkdownItem(itemUserPriceChangeDetail(userPriceChangeDetail)) == TRUE;
+//    IF banRevaluationItemDepartmentVal(
+//        itemUserPriceChangeDetail(userPriceChangeDetail),
+//        departmentStoreUserPriceChangeDetail(userPriceChangeDetail),
+//        dateUserPriceChangeDetail(userPriceChangeDetail)) == yesNo.yes;
+
+CONSTRAINT isPriceChangeWrongUserPriceChange (userPriceChangeDetail) MESSAGE 'Ученка товара запрещена';
 
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
@@ -8276,6 +8309,7 @@ curPriceWarePriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
                              dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
                              ON CHANGE itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
 
+@metaCodeIsPriceChangeWrong(returnSupplier);
 //----------------------------------- Подбор товаров -------------------------------------------------------
 
 quantityInputItem 'Кол-во' = SESSION DATA NUMERIC[14,3] (item);
@@ -9646,6 +9680,7 @@ dataRetailRangePriceChangeDocumentDetail 'Новый НДС, %' (priceChangeDocu
                                                                                                       dataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                       dataRetailRangePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                       dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+
 
 oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE curRetailPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                          curRetailPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
