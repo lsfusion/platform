@@ -1647,6 +1647,12 @@ nameDepartmentByEmployee 'Отделы' (employee) =
      GROUP CONCAT name(departmentStore) IF includeDepartmentStoreEmployee(departmentStore, employee), ', '
      BY employee MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
+CONSTRAINT bookkeeperDepartmentStore(departmentStore) AND NOT includeDepartmentStoreEmployee(departmentStore, bookkeeperDepartmentStore(departmentStore))
+    CHECKED BY bookkeeperDepartmentStore MESSAGE 'Бухгалтер не сотрудник отдела';
+CONSTRAINT personCheckDepartmentStore(departmentStore) AND NOT includeDepartmentStoreEmployee(departmentStore, personCheckDepartmentStore(departmentStore))
+    CHECKED BY personCheckDepartmentStore MESSAGE 'Проверяющий не сотрудник отдела';
+CONSTRAINT MRPDepartmentStore(departmentStore) AND NOT includeDepartmentStoreEmployee(departmentStore, MRPDepartmentStore(departmentStore))
+    CHECKED BY MRPDepartmentStore MESSAGE 'МОЛ не сотрудник отдела';
 // ------------------------------------- Скидки ---------------------------------------------------------- //
 
 @metaCodeNameObjectDateProperty(discount, departmentStore, 'Разрешать скидки', yesNo, baseGroup);
@@ -10725,7 +10731,9 @@ FORM sumAccountDocumentLedgerPrint 'Товарный отчет' PRINT
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
             ds = departmentStore FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
-    PROPERTIES(ds) SELECTOR name, nameStoreDepartmentStore, nameCompanyDepartmentStore, UNPDepartmentStore
+    PROPERTIES(ds) SELECTOR name, nameStoreDepartmentStore, nameCompanyDepartmentStore, UNPDepartmentStore,
+    commonNameMRPDepartmentStore, nameOfficerMRPDepartmentStore, commonNameBookkeeperDepartmentStore,
+    nameOfficerBookkeeperDepartmentStore, commonNamePersonCheckDepartmentStore, nameOfficerPersonCheckDepartmentStore
 
     PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountByItemBDocumentLedgerDate(ds, dtFrom), sumAccountByContainerBDocumentLedgerDate(ds, dtFrom),
                sumAccountByItemADocumentLedgerDate(ds, dtFrom), sumAccountByContainerADocumentLedgerDate(ds, dtFrom), sumAccountADocumentLedgerDate(ds, dtTo)
@@ -10768,15 +10776,17 @@ toPrintAccountDocumentLedger 'Тов. отчет' (departmentStore, dtInFrom, dt
 FORM sumAccountDocumentLedger 'Товарный отчет'
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
             ds = departmentStore FIXED PANEL
-    PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo), name(ds) SELECTOR
-
-    PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountByItemBDocumentLedgerDate(ds, dtFrom), sumAccountByContainerBDocumentLedgerDate(ds, dtFrom),
-               sumAccountADocumentLedgerDate(ds, dtTo)
-    PROPERTIES(ds, dtFrom, dtTo) quantityIncAccountSumDocumentLedger, quantityOutAccountSumDocumentLedger,
-               totalSumIncAccountSumByItemDocumentLedger, totalSumIncAccountSumByContainerDocumentLedger,
+    PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
+    PROPERTIES(ds) SELECTOR name
+    PROPERTIES(ds) commonNameMRPDepartmentStore, nameOfficerMRPDepartmentStore, commonNameBookkeeperDepartmentStore,
+                   nameOfficerBookkeeperDepartmentStore, commonNamePersonCheckDepartmentStore, nameOfficerPersonCheckDepartmentStore
+    PROPERTIES READONLY sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountByItemBDocumentLedgerDate(ds, dtFrom), sumAccountByContainerBDocumentLedgerDate(ds, dtFrom),
+                   sumAccountADocumentLedgerDate(ds, dtTo)
+    PROPERTIES(ds, dtFrom, dtTo) READONLY quantityIncAccountSumDocumentLedger, quantityOutAccountSumDocumentLedger,
+                   totalSumIncAccountSumByItemDocumentLedger, totalSumIncAccountSumByContainerDocumentLedger,
 //               subtotalIncAccountSumByItemDocumentLedger, subtotalIncAccountSumByContainerDocumentLedger,
-               totalSumOutAccountSumByItemDocumentLedger, totalSumOutAccountSumByContainerDocumentLedger
-    PROPERTIES sumAccountByItemADocumentLedgerDate(ds, dtFrom), sumAccountByContainerADocumentLedgerDate(ds, dtFrom)
+                   totalSumOutAccountSumByItemDocumentLedger, totalSumOutAccountSumByContainerDocumentLedger
+    PROPERTIES READONLY sumAccountByItemADocumentLedgerDate(ds, dtFrom), sumAccountByContainerADocumentLedgerDate(ds, dtFrom)
 
     PROPERTIES(ds, dtFrom, dtTo) FORCE PANEL toPrintAccountDocumentLedger
 
@@ -10800,8 +10810,42 @@ FORM sumAccountDocumentLedger 'Товарный отчет'
 ;
 
 DESIGN sumAccountDocumentLedger FROM DEFAULT {
+    NEW row BEFORE il.box {
+        childConstraints = TO THE RIGHT;
+        title = 'Комиссия';
+        NEW row1 {
+            title = 'МОЛ';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY (commonNameMRPDepartmentStore(ds)){
+                caption = 'Имя';
+            }
+            ADD PROPERTY (nameOfficerMRPDepartmentStore(ds)){
+                caption = 'Должность';
+            }
+        }
+        NEW row2 {
+            title = 'Проверяющий';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY (commonNamePersonCheckDepartmentStore(ds)){
+                caption = 'Имя';
+            }
+            ADD PROPERTY (nameOfficerPersonCheckDepartmentStore(ds)){
+                caption = 'Должность';
+            }
+        }
+        NEW row3{
+            title = 'Бухгалтер';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY (commonNameBookkeeperDepartmentStore(ds)){
+                caption = 'Имя';
+            }
+            ADD PROPERTY (nameOfficerBookkeeperDepartmentStore(ds)){
+                caption = 'Должность';
+            }
+        }
+    }
 
-    NEW HeaderCase BEFORE il.box{
+    NEW HeaderCase BEFORE row{
         title = 'Суммы';
         childConstraints = TO THE RIGHT;
         ADD ds.ledgerByItemGroup;
