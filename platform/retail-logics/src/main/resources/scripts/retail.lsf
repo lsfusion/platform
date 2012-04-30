@@ -7631,19 +7631,16 @@ isOrderedShipmentDetail 'Товар поставки есть в заказах 
 
 quantityOrderedShipmentDetailsShipment 'Количество позиций, для которых есть заказ' (shipment) = GROUP SUM 1 IF isOrderedShipmentDetail(shipmentDetail) AND shipmentShipmentDetail(shipmentDetail)==shipment BY shipment;
 percentOrderedShipmentDetailsShipment 'Процент позиций поставки, для которых есть заказ' (shipment) =
-    UNION SUM([X*100/Y](
+    UNION OVERRIDE 0 AND shipment IS shipment, [X*100/Y](
     quantityOrderedShipmentDetailsShipment(shipment),
-    UNION OVERRIDE 1 IF shipment IS shipment, quantityShipmentDetailsShipment(shipment))), 0 AND shipment IS shipment IN shipmentOrderGroup;
+    UNION OVERRIDE 1 IF shipment IS shipment, quantityShipmentDetailsShipment(shipment)) IN shipmentOrderGroup;
 
-//bbb = UNION SUM percentOrderedShipmentDetailsShipment(shipment), 0 AND shipment IS shipment;
-
-surePercentSupplierShipment 'Обязательный % заказанных товаров в прих. накладной' (shipment) = DATA INTEGER (shipment);
-surePercentSupplierShipment (shipment) <- surePercentSupplier(supplierShipment (shipment)) (+) 0 ON CHANGE supplierShipment(shipment);
+surePercentSupplierShipment 'Обязательный % заказанных товаров в прих. накладной' (shipment) = UNION OVERRIDE 0 AND shipment IS shipment, [DATA INTEGER (shipment)](shipment);
+surePercentSupplierShipment (shipment) <- surePercentSupplier(supplierShipment (shipment)) ON CHANGE supplierShipment(shipment);
 controlSupplierDepartmentStoreShipment 'Контролировать ассортимент поставщика' (shipment) = DATA yesNo(shipment);
 controlSupplierDepartmentStoreShipment(shipment) <- controlSupplierDepartmentStore (supplierShipment(shipment), departmentStoreShipment(shipment)) ON CHANGE supplierShipment(shipment); //неполный случай, нужно доделывать
 
-enoughOrderedShipmentDetailsShipment(shipment) = TRUE IF (percentOrderedShipmentDetailsShipment(shipment)
-    AND percentOrderedShipmentDetailsShipment(shipment) >= surePercentSupplierShipment (shipment));
+enoughOrderedShipmentDetailsShipment(shipment) = percentOrderedShipmentDetailsShipment(shipment) >= surePercentSupplierShipment (shipment);
 
 CONSTRAINT controlSupplierDepartmentStoreShipment(shipment) == yesNo.yes AND NOT enoughOrderedShipmentDetailsShipment (shipment)
             MESSAGE 'Процент заказанных позиций меньше допустимого для поставщика';
@@ -10033,7 +10030,7 @@ toPrintActOfRevaluationShipment 'Акт переоценки' (shipment) = toPri
 
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
-    PROPERTIES (s) enoughOrderedShipmentDetailsShipment, surePercentSupplierShipment, nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
+    PROPERTIES (s) nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
                    nameSupplierShipment, numberContractShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
                    carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
