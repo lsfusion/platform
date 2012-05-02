@@ -221,6 +221,39 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 }
                 transactionList.add(new TransactionPriceCheckerInfo(groupID, (Integer) transactionObject.getValue(),
                         dateTimeCode, itemTransactionList, priceCheckerInfoList));
+
+
+            } else if (transactionObject.objectClass.equals(retailLM.getClassByName("terminalPriceTransaction"))) {
+                List<TerminalInfo> terminalInfoList = new ArrayList<TerminalInfo>();
+                LP isTerminal = LM.is(retailLM.getClassByName("terminal"));
+
+                Map<Object, KeyExpr> terminalKeys = isTerminal.getMapKeys();
+                KeyExpr terminalKey = BaseUtils.singleValue(terminalKeys);
+                Query<Object, Object> terminalQuery = new Query<Object, Object>(terminalKeys);
+
+                terminalQuery.properties.put("directoryTerminal", retailLM.getLPByName("directoryTerminal").getExpr(terminalKey));
+                terminalQuery.properties.put("portMachinery", retailLM.getLPByName("portMachinery").getExpr(terminalKey));
+                terminalQuery.properties.put("nppMachinery", retailLM.getLPByName("nppMachinery").getExpr(terminalKey));
+                terminalQuery.properties.put("nameTerminalModelTerminal", retailLM.getLPByName("nameTerminalModelTerminal").getExpr(terminalKey));
+                terminalQuery.properties.put("handlerTerminalModelTerminal", retailLM.getLPByName("handlerTerminalModelTerminal").getExpr(terminalKey));
+                terminalQuery.and(isTerminal.property.getExpr(terminalKeys).getWhere());
+                terminalQuery.and(retailLM.getLPByName("groupTerminalTerminal").getExpr(terminalKey).compare(new DataObject(groupID, (ConcreteClass) retailLM.getClassByName("groupTerminal")), Compare.EQUALS));
+
+                if (snapshotTransaction)
+                    terminalQuery.and(retailLM.getLPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), terminalKey).getWhere());
+
+                OrderedMap<Map<Object, Object>, Map<Object, Object>> terminalResult = terminalQuery.execute(session.sql);
+
+                for (Map<Object, Object> values : terminalResult.values()) {
+                    String directory = (String) values.get("directoryTerminal");
+                    String portMachinery = (String) values.get("portMachinery");
+                    Integer nppMachinery = (Integer) values.get("nppMachinery");
+                    String nameModel = (String) values.get("nameTerminalModelTerminal");
+                    String handlerModel = (String) values.get("handlerTerminalModelTerminal");
+                    terminalInfoList.add(new TerminalInfo(directory, nppMachinery, nameModel, handlerModel, portMachinery));
+                }
+                transactionList.add(new TransactionTerminalInfo(groupID, (Integer) transactionObject.getValue(),
+                        dateTimeCode, itemTransactionList, terminalInfoList));
             }
 
         }
@@ -244,7 +277,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         for (Map.Entry<Map<Object, DataObject>, Map<Object, ObjectValue>> entry : result.entrySet()) {
             DataObject groupMachineryObject = entry.getKey().values().iterator().next();
             Integer roundSalesGroupMachinery = (Integer) entry.getValue().get("roundSalesGroupMachinery").getValue();
-            groupMachineryObjects.add(new Object[] {groupMachineryObject, roundSalesGroupMachinery});
+            groupMachineryObjects.add(new Object[]{groupMachineryObject, roundSalesGroupMachinery});
         }
 
         for (Object[] groupMachinery : groupMachineryObjects) {
@@ -387,14 +420,14 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         }
 
         List<ImportField> saleImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
-                numberBillField, numberBillDetailField, barcodeExBillDetailField, quantityBillSaleDetailField, 
+                numberBillField, numberBillDetailField, barcodeExBillDetailField, quantityBillSaleDetailField,
                 priceBillSaleDetailField, sumBillSaleDetailField, discountSumBillSaleDetailField);
 
         List<ImportField> returnImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
                 numberBillField, numberBillDetailField, barcodeExBillDetailField, quantityBillReturnDetailField,
                 priceBillReturnDetailField, sumBillReturnDetailField, discountSumBillReturnDetailField);
 
-        
+
         new IntegrationService(session, new ImportTable(saleImportFields, dataSale), Arrays.asList(zReportKey, cashRegisterKey, billKey, billSaleDetailKey, itemKey),
                 saleProperties).synchronize(true);
 
@@ -485,7 +518,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     }
 
     @Override
-    public EquipmentServerSettings readEquipmentServerDelay(String equipmentServer) throws SQLException {
+    public EquipmentServerSettings readEquipmentServerSettings(String equipmentServer) throws SQLException {
         DataSession session = createSession();
         Integer equipmentServerID = (Integer) retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
         Integer delay = (Integer) retailLM.getLPByName("delayEquipmentServer").read(session, session.modifier, new DataObject(equipmentServerID, (ConcreteClass) retailLM.getClassByName("equipmentServer")));

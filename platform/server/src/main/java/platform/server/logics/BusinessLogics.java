@@ -2296,11 +2296,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public String getName() throws RemoteException {
         return getClass().getSimpleName();
     }
-    
-    public String getDBName() {
+
+    public String getDbName() {
         return dbName;
     }
 
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
+    }
+    
     public String getDisplayName() throws RemoteException {
         return null;
     }

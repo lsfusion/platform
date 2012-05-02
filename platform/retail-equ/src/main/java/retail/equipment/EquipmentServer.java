@@ -20,7 +20,7 @@ public class EquipmentServer {
     Map<String, Object> handlerMap = new HashMap<String, Object>();
     EquipmentServerSettings equipmentServerSettings;
 
-    public EquipmentServer(final String equServerID, final String serverUrl) {
+    public EquipmentServer(final String equServerID, final String serverUrl, final String serverDB) {
 
         thread = new Thread(new Runnable() {
 
@@ -36,7 +36,7 @@ public class EquipmentServer {
                         if (remote == null) {
                             RemoteLoaderInterface remoteLoader = null;
                             try {
-                                remoteLoader = (RemoteLoaderInterface) Naming.lookup(MessageFormat.format("rmi://{0}/BusinessLogicsLoader", serverUrl));
+                                remoteLoader = (RemoteLoaderInterface) Naming.lookup(MessageFormat.format("rmi://{0}/{1}/BusinessLogicsLoader", serverUrl, serverDB));
                             } catch (ConnectException e) {
                                 logger.error("Naming lookup error : ", e);
                             } catch (NoSuchObjectException e) {
@@ -52,7 +52,7 @@ public class EquipmentServer {
                             if (remoteLoader != null) {
                                 try {
                                     remote = (RetailRemoteInterface) remoteLoader.getRemoteLogics();
-                                    equipmentServerSettings = remote.readEquipmentServerDelay(equServerID);
+                                    equipmentServerSettings = remote.readEquipmentServerSettings(equServerID);
                                     if (equipmentServerSettings.delay != null)
                                         millis = equipmentServerSettings.delay;
                                 } catch (RemoteException e) {

@@ -3544,6 +3544,7 @@ TABLE model (model);
 CLASS cashRegisterModel 'Модель касс' : model;
 CLASS scalesModel 'Модель весов' : model;
 CLASS checkModel 'Модель прайс чекеров' : model;
+CLASS terminalModel 'Модель ТСД' : model;
 
 CLASS frontOffice 'Фронт офис';
 TABLE frontOffice (frontOffice);
@@ -3620,6 +3621,11 @@ PROPERTIES(s) name, nameFlashScalesModel, noteModel, handlerModel, useModel, max
               folderScalesModel, lettersModel, compositionScalesModel
 EDIT scalesModel OBJECT s;
 
+FORM terminalModel 'Модель ТСД'
+OBJECTS t=terminalModel FIXED PANEL
+PROPERTIES(t) name, noteModel, handlerModel, useModel, maxProductModel
+EDIT terminalModel OBJECT t;
+
 //---------------------------- Сервера управления оборудования ----------------------------//
 CLASS equipmentServer 'Сервер оборудования' : named;
 TABLE equipmentServer (equipmentServer);
@@ -3653,6 +3659,7 @@ TABLE groupMachinery (groupMachinery);
 CLASS groupScales 'Группы весов' : groupMachinery;
 CLASS groupCashRegister 'Группы касс' : groupMachinery;
 CLASS groupCheck 'Группы прайс чекеров' : groupMachinery;
+CLASS groupTerminal 'Группы ТСД' : groupMachinery;
 
 nameGroupMachinery 'Наименование группы' = DATA STRING[200] (groupMachinery) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 transferGroupMachinery 'Передать товар на группу оборудования' = DATA BOOLEAN (groupMachinery) IN baseGroup;
@@ -3676,6 +3683,7 @@ TABLE machinery(machinery);
 CLASS cashRegister 'Касса' : machinery, computer;
 CLASS scales 'Весы' : machinery;
 CLASS check 'Прайс чекер' : machinery;
+CLASS terminal 'ТСД' : machinery;
 
 isGroupCashRegister (machinery) = machinery IS groupCashRegister;
 groupCashRegisterCashRegister 'Группа (ИД)' = DATA groupCashRegister (cashRegister) IN idGroup;
@@ -3689,16 +3697,22 @@ isGroupCheck (machinery) = machinery IS groupCheck;
 groupCheckCheck 'Группа (ИД)' = DATA groupCheck (check) IN idGroup;
 isGroupCheckCheck (groupCheck, check) = groupCheckCheck(check) == groupCheck;
 
+isTerminal (machinery) = machinery IS terminal;
+groupTerminalTerminal 'Группа (ИД)' = DATA groupTerminal (terminal) IN idGroup;
+isGroupTerminalTerminal (groupTerminal, terminal) = groupTerminalTerminal(terminal) == groupTerminal;
+
 // todo : persistent почему-то не работает
 groupMachineryMachinery 'Группа (ИД)' (machinery) = UNION EXCLUSIVE groupCashRegisterCashRegister(machinery),
                                                                    groupScalesScales(machinery),
-                                                                   groupCheckCheck(machinery);
+                                                                   groupCheckCheck(machinery),
+                                                                   groupTerminalTerminal(machinery);
 nameGroupMachineryMachinery 'Группа' (machinery) = nameGroupMachinery(groupMachineryMachinery(machinery));
 
 
 nameGroupMachineryCashRegister 'Наименование группы' (cashRegister) = nameGroupMachinery(groupCashRegisterCashRegister(cashRegister)) IN baseGroup;
 nameGroupMachineryScales 'Наименование группы' (scales) = nameGroupMachinery(groupScalesScales(scales)) IN baseGroup;
 nameGroupMachineryCheck 'Наименование группы' (check) = nameGroupMachinery(groupCheckCheck(check)) IN baseGroup;
+nameGroupMachineryTerminal 'Наименование группы' (terminal) = nameGroupMachinery(groupTerminalTerminal(terminal)) IN baseGroup;
 
 nppMachinery 'Порядковый номер' = DATA INTEGER (machinery) IN baseGroup;
 descriptionMachinery 'Описание' = DATA STRING[200] (machinery) IN baseGroup;
@@ -3713,6 +3727,11 @@ handlerCashRegisterModelCashRegister 'Обработчик кассы' (cashRegi
 statusCashRegister 'Статус кассы (на момент посл.передачи)' = DATA STRING[200] (cashRegister) IN baseGroup;
 resultCashRegister 'Результат передачи на кассу товаров' = DATA STRING[200] (cashRegister) IN baseGroup;
 dateCashRegister 'Дата фискализации кассового аппарата' = DATA DATE (cashRegister) IN baseGroup;
+
+terminalModelTerminal 'Модель ИД' = DATA terminalModel (terminal) IN idGroup;
+directoryTerminal 'Директория обмена с ТСД' = DATA STRING[100] (terminal) IN baseGroup;
+nameTerminalModelTerminal 'Модель ТСД' (terminal) = name(terminalModelTerminal(terminal)) IN baseGroup;
+handlerTerminalModelTerminal 'Обработчик ТСД' (terminal) = handlerModel(terminalModelTerminal(terminal)) IN baseGroup;
 
 CLASS STATIC feature 'Свойство для оборудования'
 {
@@ -3791,6 +3810,12 @@ FORM check 'Прайс чекер'
     EDIT check OBJECT ch
 ;
 
+FORM terminal 'ТСД'
+    OBJECTS t=terminal FIXED PANEL
+    PROPERTIES(t) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, directoryTerminal, nameTerminalModelTerminal
+    EDIT terminal OBJECT t
+;
+
 FORM groupScales 'Группа весов'
     OBJECTS grs=groupScales FIXED PANEL
     PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
@@ -3826,7 +3851,7 @@ FORM groupCashRegister 'Группа касс'
                     filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grc)
 
     OBJECTS c=cashRegister
-    PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, nameGroupMachineryCashRegister, portMachinery, useMachinery, numberCashRegister, directoryCashRegister, nameCashRegisterModelCashRegister,
+    PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, numberCashRegister, directoryCashRegister, nameCashRegisterModelCashRegister,
                     dateCashRegister, statusCashRegister, resultCashRegister, ADDOBJ, delete
 
     FILTERGROUP filters2
@@ -3870,6 +3895,35 @@ FORM groupsCheck 'Группы прайс чекеров'
     OBJECTS ch=check
     PROPERTIES(ch)   READONLY nppMachinery, descriptionMachinery, nameModelCheckModel, portMachinery, useMachinery
     FILTERS isGroupCheckCheck(grch, ch)
+;
+
+FORM groupTerminal 'Группа ТСД'
+
+    OBJECTS grt=groupTerminal FIXED PANEL
+    PROPERTIES(grt) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                    roundSalesGroupMachinery, transferGroupMachinery,
+                    filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grt)
+
+    OBJECTS t=terminal
+    PROPERTIES(t)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, directoryTerminal, nameTerminalModelTerminal,
+                    ADDOBJ, delete
+
+    FILTERGROUP filters3
+        FILTER 'Показывать только для данной группы' 'F10' isGroupTerminalTerminal(grt, t) DEFAULT
+
+    EDIT groupTerminal OBJECT grt
+;
+
+
+FORM groupsTerminal 'Группы ТСД'
+    OBJECTS grt=groupTerminal, t=terminal
+    PROPERTIES(grt)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                     roundSalesGroupMachinery, transferGroupMachinery, filterItemsGroupMachinery
+    PROPERTIES(grt)  ADDFORM, EDITFORM, delete
+
+    PROPERTIES(t) READONLY nppMachinery, descriptionMachinery, portMachinery,
+                           useMachinery, directoryTerminal, nameTerminalModelTerminal
+    FILTERS isGroupTerminalTerminal(grt, t)
 ;
 
 FORM equipmentServer 'Серверы оборудования'
@@ -8546,14 +8600,17 @@ TABLE machineryPriceTransactionBarcode (machineryPriceTransaction, barcode);
 CLASS cashRegisterPriceTransaction 'Загрузка прайса в кассы' : machineryPriceTransaction;
 CLASS scalesPriceTransaction 'Загрузка прайса в весы' : machineryPriceTransaction;
 CLASS checkPriceTransaction 'Загрузка прайса в прайс чекеры' : machineryPriceTransaction;
+CLASS terminalPriceTransaction 'Загрузка прайса в ТСД' : machineryPriceTransaction;
 
 groupCashRegisterCashRegisterPriceTransaction 'Группа касс' = DATA groupCashRegister (cashRegisterPriceTransaction);
 groupScalesScalesRegisterPriceTransaction 'Группа весов' = DATA groupScales (scalesPriceTransaction);
 groupCheckCheckRegisterPriceTransaction 'Группа прайс чекеров' = DATA groupCheck (checkPriceTransaction);
+groupTerminalTerminalPriceTransaction 'Группа ТСД' = DATA groupTerminal (terminalPriceTransaction);
 
 groupMachineryMachineryPriceTransaction 'Группа оборудования (ИД)' (transaction) = UNION EXCLUSIVE groupCashRegisterCashRegisterPriceTransaction(transaction),
                                                                                                    groupScalesScalesRegisterPriceTransaction(transaction),
-                                                                                                   groupCheckCheckRegisterPriceTransaction(transaction) PERSISTENT;
+                                                                                                   groupCheckCheckRegisterPriceTransaction(transaction),
+                                                                                                   groupTerminalTerminalPriceTransaction(transaction)PERSISTENT;
 
 nameGroupMachineryMachineryPriceTransaction 'Группа оборудования' (transaction) = nameGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
 
@@ -8696,6 +8753,8 @@ snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = 
             ADDOBJ scalesPriceTransaction
         ELSE IF groupMachinery() IS groupCheck THEN
             ADDOBJ checkPriceTransaction
+        ELSE IF groupMachinery() IS groupTerminal THEN
+            ADDOBJ terminalPriceTransaction
         ELSE
             ADDOBJ cashRegisterPriceTransaction;
         FOR t == addedObject() DO {
@@ -8750,6 +8809,8 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                 ADDOBJ scalesPriceTransaction
             ELSE IF groupMachinery IS groupCheck THEN
                 ADDOBJ checkPriceTransaction
+            ELSE IF groupMachinery IS groupTerminal THEN
+                ADDOBJ terminalPriceTransaction
             ELSE
                 ADDOBJ cashRegisterPriceTransaction;
 
@@ -12775,6 +12836,7 @@ NAVIGATOR {
             ADD groupsCashRegister;
             ADD groupsScales;
             ADD groupsCheck;
+            ADD groupsTerminal;
             ADD models;
             ADD stages;
             ADD cashReports;
@@ -12887,6 +12949,7 @@ NAVIGATOR {
             ADD cashRegisterModel;
             ADD scalesModel;
             ADD checkModel;
+            ADD terminalModel;
             ADD assortment;
             ADD typeItem;
             ADD rowTorg1;
@@ -12953,12 +13016,14 @@ NAVIGATOR {
             ADD cashRegister;
             ADD scales;
             ADD check;
+            ADD terminal;
             ADD tax;
             ADD cutting;
             ADD recipe;
             ADD groupCashRegister;
             ADD groupScales;
             ADD groupCheck;
+            ADD groupTerminal;
             ADD component;
             ADD addaddressLegalEntity;
             ADD addressLegalEntity;

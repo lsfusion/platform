@@ -8,6 +8,7 @@
     <bean id="equipmentServer" class="retail.equipment.EquipmentServer">
         <constructor-arg value="equServer1"/>
         <constructor-arg value="localhost:7652"/>
+        <constructor-arg value="default"/>
     </bean>
 
 </beans>

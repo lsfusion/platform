@@ -1,6 +1,8 @@
 package retail.api.remote;
 
-public class EquipmentServerSettings {
+import java.io.Serializable;
+
+public class EquipmentServerSettings implements Serializable {
     public Integer delay;
 
     public EquipmentServerSettings(Integer delay) {

@@ -113,7 +113,7 @@ public class BusinessLogicsBootstrap {
             registry = LocateRegistry.createRegistry(BL.getExportPort());
         }
         try {
-            String dbName = BL.getDBName() == null ? "default" : BL.getDBName();
+            String dbName = BL.getDbName() == null ? "default" : BL.getDbName();
             registry.bind(dbName + "/AppTerminal", new ApplicationTerminalImpl(BL.getExportPort()));
             registry.bind(dbName + "/BusinessLogicsLoader", new BusinessLogicsLoader(BL));
         } catch (AlreadyBoundException e2) {
