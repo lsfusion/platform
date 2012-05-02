@@ -7652,6 +7652,8 @@ isSupplierShipmentOrder 'Заявка поставщика поставки' (sh
 
 isDepartmentStoreShipmentOrder 'Заявка отдела поставки' (shipment, orderSupplier) = departmentStoreShipment(shipment)== departmentStoreOrderSupplier(orderSupplier);
 
+CONSTRAINT sureSupplierDepartmentStoreVal(supplierShipment(shipment), departmentStoreShipment(shipment), dateShipment(shipment)) == yesNo.yes
+    AND NOT inShipmentOrder (shipment, orderSupplier) MESSAGE 'Отсутствует обязательный заказ для данного поставщика';
 
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
 sumQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM
