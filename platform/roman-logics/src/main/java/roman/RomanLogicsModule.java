@@ -2469,7 +2469,7 @@ public class RomanLogicsModule extends LogicsModule {
         priceOrderInvoiceArticle = addJProp(baseLM.and1, priceDocumentArticle, 1, 3, inOrderInvoice, 1, 2);
         priceOrderedInvoiceArticle = addMGProp(baseGroup, "priceOrderedInvoiceArticle", "Цена в заказе", priceOrderInvoiceArticle, 2, 3);
         // todo : не работает
-        priceDocumentArticle.setDerivedForcedChange(priceOrderedInvoiceArticle, 1, 2, numberDocumentArticle, 1, 2);
+        priceDocumentArticle.setEventSet(priceOrderedInvoiceArticle, 1, 2, numberDocumentArticle, 1, 2);
 
         sumSupplierBoxSku = addJProp(baseGroup, "sumSupplierBoxSku", "Сумма", multiplyNumeric2, quantityListSku, 1, 2, priceSupplierBoxSku, 1, 2);
         sumDocumentSku = addJProp(baseGroup, "sumDocumentSku", "Сумма", multiplyNumeric2, quantityDocumentSku, 1, 2, priceDocumentSku, 1, 2);
@@ -3068,12 +3068,12 @@ public class RomanLogicsModule extends LogicsModule {
         quantityFreightCategoryGenderCompositionTypeFabric = addSGProp(baseGroup, "quantityFreightCategoryGenderCompositionTypeFabric", "Кол-во", quantityFreightSku, 1, categoryArticleSku, 2, genderArticleSku, 2, mainCompositionOriginSku, 2, typeFabricArticleSku, 2);
 
         customCategory10FreightSku = addDProp(idGroup, "customCategory10FreightSku", "ТН ВЭД (ИД)", customCategory10, freight, sku);
-        customCategory10FreightSku.setDerivedValueForcedChange(addJProp(baseLM.and1, customCategory10Sku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        customCategory10FreightSku.setEventChangedSet(addJProp(baseLM.and1, customCategory10Sku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         sidCustomCategory10FreightSku = addJProp(baseGroup, "sidCustomCategory10FreightSku", "ТН ВЭД", sidCustomCategory10, customCategory10FreightSku, 1, 2);
         addConstraint(addJProp("Для SKU должен быть задан ТН ВЭД", and(true, false), is(freightChanged), 1, customCategory10FreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
         subCategoryFreightSku = addDProp(idGroup, "subCategoryFreightSku", "Дополнительное деление (ИД)", subCategory, freight, sku);
-        subCategoryFreightSku.setDerivedValueForcedChange(addJProp(baseLM.and1, subCategorySku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        subCategoryFreightSku.setEventChangedSet(addJProp(baseLM.and1, subCategorySku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         nameSubCategoryFreightSku = addJProp(baseGroup, "nameSubCategoryFreightSku", "Дополнительное деление", nameSubCategory, subCategoryFreightSku, 1, 2);
         addConstraint(addJProp("Для SKU должно быть задано дополнительное деление", and(true, false, false), is(freightChanged), 1, subCategoryFreightSku, 1, 2, diffCountRelationCustomCategory10FreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
@@ -3085,10 +3085,10 @@ public class RomanLogicsModule extends LogicsModule {
         quantityDirectImporterFreightSupplierCustomCategory6 = addSGProp(baseGroup, "quantityDirectImporterFreightSupplierCustomCategory6", "Кол-во", quantityDirectImporterFreightSku, 1, 2, supplierArticleSku, 3, customCategory6FreightSku, 2, 3);
 
         mainCompositionOriginFreightSku = addDProp(baseGroup, "mainCompositionOriginFreightSku", "Состав", COMPOSITION_CLASS, freight, sku);
-        mainCompositionOriginFreightSku.setDerivedValueForcedChange(addJProp(baseLM.and1, mainCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        mainCompositionOriginFreightSku.setEventChangedSet(addJProp(baseLM.and1, mainCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         additionalCompositionOriginFreightSku = addDProp(baseGroup, "additionalCompositionOriginFreightSku", "Доп. состав", COMPOSITION_CLASS, freight, sku);
-        additionalCompositionOriginFreightSku.setDerivedValueForcedChange(addJProp(baseLM.and1, additionalCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        additionalCompositionOriginFreightSku.setEventChangedSet(addJProp(baseLM.and1, additionalCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         additionalCompositionOriginFreightSku.property.preferredCharWidth = 40;
         additionalCompositionOriginFreightSku.property.minimumCharWidth = 20;
 
@@ -3096,12 +3096,12 @@ public class RomanLogicsModule extends LogicsModule {
         translationAdditionalCompositionSku = addJProp(actionGroup, true, "translationAdditionalCompositionSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginSku, additionalCompositionSku), dictionaryComposition, 1);
 
         mainCompositionFreightSku = addDProp(baseGroup, "mainCompositionFreightSku", "Состав (перевод)", COMPOSITION_CLASS, freight, sku);
-        mainCompositionFreightSku.setDerivedValueForcedChange(addJProp(baseLM.and1, mainCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        mainCompositionFreightSku.setEventChangedSet(addJProp(baseLM.and1, mainCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         addConstraint(addJProp("Для SKU должен быть задан состав", and(true, false), is(freightChanged), 1, mainCompositionFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
         additionalCompositionFreightSku = addDProp(baseGroup, "additionalCompositionFreightSku", "Доп. состав (перевод)", COMPOSITION_CLASS, freight, sku);
-        additionalCompositionFreightSku.setDerivedValueForcedChange(addJProp(baseLM.and1, additionalCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        additionalCompositionFreightSku.setEventChangedSet(addJProp(baseLM.and1, additionalCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         additionalCompositionFreightSku.property.preferredCharWidth = 40;
         additionalCompositionFreightSku.property.minimumCharWidth = 20;
 
@@ -3109,7 +3109,7 @@ public class RomanLogicsModule extends LogicsModule {
         translationAdditionalCompositionFreightSku = addJProp(actionGroup, true, "translationAdditionalCompositionFreightSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginFreightSku, additionalCompositionFreightSku), dictionaryComposition, 1, 2);
 
         countryOfOriginFreightSku = addDProp(idGroup, "countryOfOriginFreightSku", "Страна (ИД)", baseLM.country, freight, sku);
-        countryOfOriginFreightSku.setDerivedValueForcedChange(addJProp(baseLM.and1, countryOfOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        countryOfOriginFreightSku.setEventChangedSet(addJProp(baseLM.and1, countryOfOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         addConstraint(addJProp("Для SKU должна быть задана страна", and(true, false), is(freightChanged), 1, countryOfOriginFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
@@ -3129,7 +3129,7 @@ public class RomanLogicsModule extends LogicsModule {
         netWeightStock = addSGProp(baseGroup, "netWeightStock", "Вес нетто короба", netWeightStockSku, 1);
 
         netWeightFreightSku = addDProp(baseGroup, "netWeightFreightSku", "Вес нетто (ед.)", NumericClass.get(14, 3), freight, sku);
-        netWeightFreightSku.setDerivedValueForcedChange(addJProp(baseLM.and1, netWeightSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        netWeightFreightSku.setEventChangedSet(addJProp(baseLM.and1, netWeightSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         addConstraint(addJProp("Для SKU должен быть задан вес нетто", and(true, false), is(freightChanged), 1, netWeightFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
@@ -3187,7 +3187,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         grossWeightFreightSkuAggr = addJProp(baseGroup, "grossWeightFreightSkuAggr", "Вес брутто", divideNumeric3, sumGrossWeightFreightSku, 1, 2, quantityFreightSku, 1, 2);
         grossWeightFreightSku = addDProp(baseGroup, "grossWeightFreightSku", "Вес брутто", NumericClass.get(14, 3), freight, sku);
-        grossWeightFreightSku.setDerivedValueForcedChange(addJProp(baseLM.and1, grossWeightFreightSkuAggr, 1, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        grossWeightFreightSku.setEventChangedSet(addJProp(baseLM.and1, grossWeightFreightSkuAggr, 1, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         addConstraint(addJProp("Для SKU должен быть задан вес брутто", and(true, false), is(freightChanged), 1, grossWeightFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
@@ -3278,7 +3278,7 @@ public class RomanLogicsModule extends LogicsModule {
         priceMarkupInImporterFreightSku = addJProp(baseGroup, "priceMarkupInImporterFreightSku", "Цена выходная", sumNumeric2, priceInImporterFreightSku, 1, 2, 3, markupInImporterFreightSku, 1, 2, 3);
 
         priceInOutImporterFreightSku = addDProp(baseGroup, "priceInOutImporterFreightSku", "Цена выходная", NumericClass.get(14, 2), importer, freightPriced, sku);
-        priceInOutImporterFreightSku.setDerivedValueChange(addJProp(baseLM.and1, priceMarkupInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, 3, is(freightPriced), 2, markupPercentImporterFreightSku, 1, 2, 3);
+        priceInOutImporterFreightSku.setEventChanged(addJProp(baseLM.and1, priceMarkupInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, 3, is(freightPriced), 2, markupPercentImporterFreightSku, 1, 2, 3);
 
         priceImporterFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "priceImporterFreightArticleCompositionCountryCategory", false, "Цена", true, priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
 

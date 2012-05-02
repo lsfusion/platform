@@ -2,14 +2,12 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.Pair;
-import platform.base.QuickSet;
 import platform.server.classes.ValueClass;
 import platform.server.session.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
-import java.util.HashSet;
 
 public abstract class ExecuteProperty extends UserProperty {
 
@@ -25,7 +23,7 @@ public abstract class ExecuteProperty extends UserProperty {
     public abstract Set<Property> getChangeProps();
     public abstract Set<Property> getUsedProps();
 
-    public boolean pendingDerivedExecute() {
+    public boolean pendingEventExecute() {
         return getChangeProps().size()==0;
     }
 
@@ -34,17 +32,17 @@ public abstract class ExecuteProperty extends UserProperty {
         assert getDepends().isEmpty();
         Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
         for(Property depend : getUsedProps())
-            result.add(new Pair<Property<?>, LinkType>(depend, LinkType.ACTIONUSED));
-        for(Property depend : getDerivedDepends())
-            result.add(new Pair<Property<?>, LinkType>(depend, LinkType.ACTIONDERIVED));
+            result.add(new Pair<Property<?>, LinkType>(depend, LinkType.USEDACTION));
+        for(Property depend : getEventDepends())
+            result.add(new Pair<Property<?>, LinkType>(depend, LinkType.EVENTACTION));
         return BaseUtils.merge(result, super.calculateLinks());
     }
 
-    public PropertyChange<ClassPropertyInterface> getDerivedChange(Modifier modifier) {
-        return getDerivedChange(modifier.getPropertyChanges());
+    public PropertyChange<ClassPropertyInterface> getEventAction(Modifier modifier) {
+        return getEventAction(modifier.getPropertyChanges());
     }
 
-    public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges changes) {
-        return derivedChange.getDataChanges(changes).get(this);
+    public PropertyChange<ClassPropertyInterface> getEventAction(PropertyChanges changes) {
+        return event.getDataChanges(changes).get(this);
     }
 }

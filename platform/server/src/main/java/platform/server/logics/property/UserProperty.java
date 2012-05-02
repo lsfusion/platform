@@ -31,10 +31,10 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         return new ClassWhere<Object>(BaseUtils.<Object, ValueClass>add(IsClassProperty.getMapClasses(interfaces), "value", getValueClass()), true);
     }
 
-    public DerivedChange<?,?> derivedChange = null;
+    public Event<?,?> event = null;
     
-    protected Set<Property> getDerivedDepends() {
-        return derivedChange !=null ? derivedChange.getDepends() : new HashSet<Property>();
+    protected Set<Property> getEventDepends() {
+        return event !=null ? event.getDepends() : new HashSet<Property>();
     }
 
     @IdentityLazy

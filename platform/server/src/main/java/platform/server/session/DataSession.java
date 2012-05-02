@@ -581,8 +581,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
                     break;
                 }
             }
-            if(property instanceof ExecuteProperty && property.isDerived())
-                executeDerived((ExecuteProperty) property, incrementApply, actions, pendingExecutes); // действия
+            if(property instanceof ExecuteProperty && property.hasEvent())
+                executeEventAction((ExecuteProperty) property, incrementApply, actions, pendingExecutes); // действия
             if(property.isStored()) // постоянно-хранимые свойства
                 readStored(property, incrementApply, BL);
         }
@@ -629,11 +629,11 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         }
     }
 
-    public void executeDerived(@ParamMessage ExecuteProperty property, IncrementApply incrementApply, List<ClientAction> actions, Map<ExecuteProperty, List<ExecutionContext>> pendingExecute) throws SQLException {
-        PropertyChange<ClassPropertyInterface> propertyChange = property.getDerivedChange(incrementApply);
+    public void executeEventAction(@ParamMessage ExecuteProperty property, IncrementApply incrementApply, List<ClientAction> actions, Map<ExecuteProperty, List<ExecutionContext>> pendingExecute) throws SQLException {
+        PropertyChange<ClassPropertyInterface> propertyChange = property.getEventAction(incrementApply);
         if(propertyChange!=null && !propertyChange.isEmpty()) {
             List<ExecutionContext> pendingPropExecute = null;
-            if(property.pendingDerivedExecute()) {
+            if(property.pendingEventExecute()) {
                 pendingPropExecute = new ArrayList<ExecutionContext>();
                 pendingExecute.put(property, pendingPropExecute);
             }

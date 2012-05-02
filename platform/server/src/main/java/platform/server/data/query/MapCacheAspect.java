@@ -143,7 +143,7 @@ public class MapCacheAspect {
 
     public <K extends PropertyInterface> QuickSet<Property> getUsedChanges(Property<K> property, StructChanges implement, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
-        if(!(property instanceof FunctionProperty) && !(property instanceof UserProperty && ((UserProperty)property).derivedChange!=null)) // если не Function или DataProperty с derived, то нету рекурсии и эффективнее просто вы
+        if(!(property instanceof FunctionProperty) && !(property instanceof DataProperty && property.hasEvent())) // если не Function или DataProperty с derived, то нету рекурсии и эффективнее просто вы
             return (QuickSet<Property>) thisJoinPoint.proceed();
 
         return (QuickSet<Property>) CacheAspect.callMethod(property, thisJoinPoint);

@@ -11,13 +11,13 @@ import platform.server.session.*;
 import java.sql.SQLException;
 import java.util.*;
 
-public class DerivedChange<D extends PropertyInterface, C extends PropertyInterface> {
+public class Event<D extends PropertyInterface, C extends PropertyInterface> {
 
     private final Property<C> writeTo; // что меняем
     private final PropertyInterfaceImplement<C> writeFrom;
     private final PropertyMapImplement<?, C> where;
 
-    public DerivedChange(Property<C> writeTo, PropertyInterfaceImplement<C> writeFrom, PropertyMapImplement<?, C> where, int options) {
+    public Event(Property<C> writeTo, PropertyInterfaceImplement<C> writeFrom, PropertyMapImplement<?, C> where, int options) {
         assert where.property.noDB();
         this.writeTo = writeTo;
         this.writeFrom = writeFrom;
@@ -57,7 +57,7 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
         return QuickSet.add(writeTo.getUsedDataChanges(changes), changes.getUsedChanges(getDepends()));
     }
 
-    private PropertyChange<C> getDerivedChange(PropertyChanges changes) {
+    private PropertyChange<C> getChange(PropertyChanges changes) {
         Map<C,KeyExpr> mapKeys = writeTo.getMapKeys();
         Where changeWhere = where.mapExpr(mapKeys, changes).getWhere();
         if(changeWhere.isFalse()) // для оптимизации
@@ -71,7 +71,7 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
     }
 
     public MapDataChanges<C> getMapDataChanges(PropertyChanges changes) {
-        return writeTo.getDataChanges(getDerivedChange(changes), changes);
+        return writeTo.getDataChanges(getChange(changes), changes);
     }
 
     public DataChanges getDataChanges(PropertyChanges changes) {

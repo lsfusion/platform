@@ -121,8 +121,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return crossJoin(mapping, property.getCommonClasses().interfaces);
     }
 
-    public <L extends PropertyInterface> void mapDerivedChange(PropertyMapImplement<L, T> where, int options) {
-        property.setDerivedChange(where.map(BaseUtils.reverse(mapping)), options);
+    public <L extends PropertyInterface> void mapEventAction(PropertyMapImplement<L, T> where, int options) {
+        property.setEventAction(where.map(BaseUtils.reverse(mapping)), options);
     }
     
     public boolean mapIsFull(Collection<T> interfaces) {

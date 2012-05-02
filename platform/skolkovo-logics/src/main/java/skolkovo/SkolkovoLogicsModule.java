@@ -2751,7 +2751,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", sumDate, dateStartVote, 1, requiredPeriod);
         aggrDateEndVote = addJProp(baseGroup, "aggrDateEndVote", "Дата окончания (агр.)", baseLM.sumDate, dateStartVote, 1, requiredPeriod);
         dateEndVote = addDProp(baseGroup, "dateEndVote", "Дата окончания", DateClass.instance, vote);
-        dateEndVote.setDerivedValueForcedChange(aggrDateEndVote, 1, dateStartVote, 1);
+        dateEndVote.setEventChangedSet(aggrDateEndVote, 1, dateStartVote, 1);
 
         weekStartVote = addJProp("weekStartVote", true, "Неделя начала", baseLM.weekInDate, dateStartVote, 1);
         quantityNewExpertWeek = addSGProp("quantityNewExpertWeek", "Кол-во заседаний", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), 1, weekStartVote, 2);
@@ -3140,7 +3140,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         includeProjectClusterForesight = addAProp(actionGroup, new IncludeProjectClusterForesightActionProperty(project, cluster, foresight));
         includeProjectClusterForesight.setImage("include.png");
 
-        baseLM.generateLoginPassword.setEventForcedAction(is(expert), 1);
+        baseLM.generateLoginPassword.setEventSetAction(is(expert), 1);
 
         expertLogin = addAGProp(baseGroup, "expertLogin", "Эксперт (ИД)", baseLM.userLogin);
         disableExpert = addDProp(baseGroup, "disableExpert", "Не акт.", LogicalClass.instance, expert);
@@ -3217,7 +3217,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         updateDateFormalControl = addJProp("updateDateFormalControl", "Дата изменения проекта", updateDateProject, projectFormalControl, 1);
 
         dateTimeSubmitFormalControl = addDProp("dateTimeSubmitFormalControl", "Дата/время отправки проекта", DateTimeClass.instance, formalControl);
-        dateTimeSubmitFormalControl.setDerivedValueForcedChange(updateDateFormalControl, 1, is(formalControl), 1);
+        dateTimeSubmitFormalControl.setEventChangedSet(updateDateFormalControl, 1, is(formalControl), 1);
         dateSubmitFormalControl = addJProp("dateSubmitFormalControl", "Дата отправки проекта", baseLM.dateInTime, dateTimeSubmitFormalControl, 1);
 
         dateTimeFormalControl = addTCProp(Time.DATETIME, "dateTimeFormalControl", true, "Дата/время экспертизы", resultFormalControl);
@@ -3251,7 +3251,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         updateDateLegalCheck = addJProp("updateDateLegalCheck", "Дата изменения проекта", updateDateProject, projectLegalCheck, 1);
 
         dateTimeSubmitLegalCheck = addDProp("dateTimeSubmitLegalCheck", "Дата/время отправки проекта", DateTimeClass.instance, legalCheck);
-        dateTimeSubmitLegalCheck.setDerivedValueForcedChange(updateDateLegalCheck, 1, is(legalCheck), 1);
+        dateTimeSubmitLegalCheck.setEventChangedSet(updateDateLegalCheck, 1, is(legalCheck), 1);
         dateSubmitLegalCheck = addJProp("dateSubmitLegalCheck", "Дата отправки проекта", baseLM.dateInTime, dateTimeSubmitLegalCheck, 1);
 
         resultNoticedLegalCheck = addDProp("resultNoticedLegalCheck", "Отослано уведомление", LogicalClass.instance, legalCheck);
@@ -3264,7 +3264,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectActionLegalCheck = addDProp(idGroup, "projectActionLegalCheck", "Тип заявки (ИД)", projectAction, legalCheck);
         nameProjectActionLegalCheck = addJProp(baseGroup, "nameProjectActionLegalCheck", "Тип заявки", baseLM.name, projectActionLegalCheck, 1);
         nameProjectActionLegalCheck.setPreferredCharWidth(20);
-        projectActionLegalCheck.setDerivedValueChange(addJProp(projectActionProject, projectLegalCheck, 1), 1, is(legalCheck), 1);
+        projectActionLegalCheck.setEventChanged(addJProp(projectActionProject, projectLegalCheck, 1), 1, is(legalCheck), 1);
 
         maxForesightLegalChek = addJProp("maxForesightLegalChek", maxForesightProjectCluster, projectLegalCheck, 1, addJProp(firstClusterProject, projectLegalCheck, 1), 1);
         nameMaxForesightLegalChek = addJProp("nameMaxForesightLegalChek", "Форсайт", nameNative, maxForesightLegalChek, 1);
@@ -3293,7 +3293,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectActionFormalControl = addDProp(idGroup, "projectActionFormalControl", "Тип заявки (ИД)", projectAction, formalControl);
         nameProjectActionFormalControl = addJProp(baseGroup, "nameProjectActionFormalControl", "Тип заявки", baseLM.name, projectActionFormalControl, 1);
         nameProjectActionFormalControl.setPreferredCharWidth(20);
-        projectActionFormalControl.setDerivedValueChange(addJProp(projectActionProject, projectFormalControl, 1), 1, is(formalControl), 1);
+        projectActionFormalControl.setEventChanged(addJProp(projectActionProject, projectFormalControl, 1), 1, is(formalControl), 1);
 
         executeFormalControlProject = addJProp("executeFormalControlProject", true, "Действующая", and(false, false),
                 currentFormalControlProject, 1,
@@ -3423,7 +3423,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 needTranslationProject, 1);
 
         sentForTranslationProject = addDProp(translationGroup, "sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
-        sentForTranslationProject.setDerivedValueForcedChange(addCProp(LogicalClass.instance, true), needTranslationProject, 1);
+        sentForTranslationProject.setEventChangedSet(addCProp(LogicalClass.instance, true), needTranslationProject, 1);
 
         dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, baseLM.currentDate, sentForTranslationProject, 1);
         dateToSentForTranslationProject = addDCProp(translationGroup, "dateToSentForTranslationProject", "Дата до которой д.б. переведен", baseLM.jumpWorkdays, baseLM.defaultCountry, dateSentForTranslationProject, 1, addCProp(IntegerClass.instance, 5));
@@ -3671,7 +3671,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 emailLetterExpertVoteEA, 1, 2, addJProp(letterExpertSubjectLanguage, languageExpert, 1), 1);
         emailLetterExpertVote.setImage("email.png");
         emailLetterExpertVote.property.askConfirm = true;
-        emailLetterExpertVote.setEventForcedAction(inNewExpertVote, 1, 2);
+        emailLetterExpertVote.setEventSetAction(inNewExpertVote, 1, 2);
 
         allowedEmailLetterExpertVote = addJProp(baseGroup, "Письмо о заседании (e-mail)", "Письмо о заседании", baseLM.andNot1, emailLetterExpertVote, 1, 2, voteResultExpertVote, 1, 2);
         allowedEmailLetterExpertVote.property.askConfirm = true;
@@ -3686,14 +3686,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerVote = addJProp(actionGroup, true, "emailClaimerVote", "Письмо о рассмотрении", emailClaimerVoteEA, 1, emailClaimerHeaderVote, 1);
         emailClaimerVote.property.askConfirm = true;
 
-        emailClaimerVote.setEventForcedAction(openedVote, 1);
+        emailClaimerVote.setEventSetAction(openedVote, 1);
 
         emailFondVoteEA = addEAProp(emailIO, vote);
         addEARecipients(emailFondVoteEA, emailFondStartVote);
         emailFondHeaderVote = addJProp("emailFondHeaderVote", "Заголовок уведомления в фонд", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerVote, 1);
         emailFondVote = addJProp(actionGroup, true, "emailFondVote", "Письмо о рассмотрении", emailFondVoteEA, 1, emailFondHeaderVote, 1);
         emailFondVote.property.askConfirm = true;
-        emailFondVote.setEventForcedAction(openedVote, 1);
+        emailFondVote.setEventSetAction(openedVote, 1);
 
         emailNoticeRejectedVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
         addEARecipients(emailNoticeRejectedVoteEA, claimerEmailVote, 1);
@@ -3765,12 +3765,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClosedVote = addJProp(baseGroup, true, "emailClosedVote", "Результаты заседания (e-mail)", emailClosedVoteEA, 1, emailClosedHeaderVote, 1);
         emailClosedVote.setImage("email.png");
         emailClosedVote.property.askConfirm = true;
-        emailClosedVote.setEventForcedAction(closedVote, 1);
+        emailClosedVote.setEventSetAction(closedVote, 1);
 
         emailForesightCheckProjectEA = addEAProp("Решение проверки о соответствии форсайту", project);
         addEARecipients(emailForesightCheckProjectEA, emailIO);
         addEARecipients(emailForesightCheckProjectEA, MimeMessage.RecipientType.CC, emailForesightLC);
-        emailForesightCheckProjectEA.setEventForcedAction(resultForesightCheckProject, 1);
+        emailForesightCheckProjectEA.setEventSetAction(resultForesightCheckProject, 1);
 
         emailNotificationProjectEA = addEAProp(emailIO, project);
         addEARecipients(emailNotificationProjectEA, emailFinalClusterProject, 1);
@@ -3779,7 +3779,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailNotificationProject = addJProp(baseGroup, true, "emailNotificationProject", "Проверка на соответствие направлению деятельности (e-mail)", emailNotificationProjectEA, 1, emailNotificationHeaderProject, 1);
         emailNotificationProject.setImage("email.png");
         emailNotificationProject.property.askConfirm = true;
-        emailNotificationProject.setEventForcedAction(needForesightCheckProject, 1);
+        emailNotificationProject.setEventSetAction(needForesightCheckProject, 1);
 
         emailForesightClaimerProjectEA = addEAProp(emailIO, project);
         addEARecipients(emailForesightClaimerProjectEA, emailClaimerProject, 1);
@@ -3796,7 +3796,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailBureauTrProject = addJProp(baseGroup, true, "emailBureauTrProject", "Письмо в бюро переводов (e-mail)", emailBureauTrProjectEA, 1, addCProp(StringClass.get(2000), "Заявка на перевод. "));
         emailBureauTrProject.setImage("email.png");
         emailBureauTrProject.property.askConfirm = true;
-        emailBureauTrProject.setEventForcedAction(sentForTranslationProject, 1);
+        emailBureauTrProject.setEventSetAction(sentForTranslationProject, 1);
 
         resultNeedVoteProject = addDProp("resultNeedVoteProject", "Отослано уведомление", LogicalClass.instance, project);
         dateResultNeedVoteProject = addDProp("dateResultNeedVoteProject", "Дата отсылки уведомления", DateClass.instance, project);
@@ -3815,7 +3815,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 needVoteProject, 1);
         emailNeedVoteProject.setImage("email.png");
         emailNeedVoteProject.property.askConfirm = true;
-        emailNeedVoteProject.setEventForcedAction(needVoteProject, 1);
+        emailNeedVoteProject.setEventSetAction(needVoteProject, 1);
         dateOverdueResultNeedVoteProject = addJProp("dateOverdueResultNeedVoteProject", "Дата до которой д.б. созвано заседание", baseLM.jumpWorkdays, baseLM.defaultCountry, dateResultNeedVoteProject, 1, addCProp(IntegerClass.instance, 1));
 
         emailTransferredProjectEA = addEAProp(emailIO, project);
@@ -3825,7 +3825,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailTransferredProject = addJProp(baseGroup, true, "emailTransferredProject", "Уведомление о прохождении перевода (e-mail)", emailTransferredProjectEA, 1, emailTransferredHeaderProject, 1);
         emailTransferredProject.setImage("email.png");
         emailTransferredProject.property.askConfirm = true;
-        emailTransferredProject.setEventForcedAction(transferredProject, 1);
+        emailTransferredProject.setEventSetAction(transferredProject, 1);
 
         emailClaimerFormalControlEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, formalControl);
 
@@ -3870,7 +3870,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailFondFormalControl = addJProp(actionGroup, true, "emailFondFormalControl", "Письмо о формальной экспертизе",   emailFondFormalControlEA, 1, emailFondHeaderFormalControl, 1);
         emailFondFormalControl.setImage("email.png");
         emailFondFormalControl.property.askConfirm = true;
-        emailFondFormalControl.setEventForcedAction(resultFormalControl, 1);
+        emailFondFormalControl.setEventSetAction(resultFormalControl, 1);
         nameNativeProjectFormalControl = addJProp(baseGroup, "nameNativeProjectFormalControl", "Проект", nameNativeProject, projectFormalControl, 1);
 
         // для отсылки по юридической проверке
@@ -3923,7 +3923,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerChangeLegalCheck.property.askConfirm = true;
 
         emailClaimerLegalCheckProject = addJProp(actionGroup, true, "emailClaimerLegalCheckProject", "Письмо о формальной экспертизе", emailClaimerLegalCheck, executeLegalCheckProject, 1);
-        emailClaimerLegalCheckProject.setEventForcedAction(positiveResultForesightCheckProject, 1);
+        emailClaimerLegalCheckProject.setEventSetAction(positiveResultForesightCheckProject, 1);
 
         isForeignExpert = addJProp("isForeignExpert", "Иностр.", baseLM.equals2, languageExpert, 1, addCProp(language, "english"));
         localeExpert = addJProp("localeExpert", "Locale", localeLanguage, languageExpert, 1);
@@ -3966,7 +3966,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailAcceptedProject = addJProp(baseGroup, true, "emailAcceptedProject", "Решение о присвоении статуса участника (e-mail)", emailAcceptedProjectEA, 1, emailClaimerAcceptedHeaderProject, 1);
         emailAcceptedProject.setImage("email.png");
         emailAcceptedProject.property.askConfirm = true;
-        emailAcceptedProject.setEventForcedAction(acceptedProject, 1);
+        emailAcceptedProject.setEventSetAction(acceptedProject, 1);
 
         emailToExpert = addJProp("emailToExpert", "Эксперт по e-mail", addJProp(baseLM.and1, 1, is(expert), 1), baseLM.emailToObject, 1);
 
@@ -4016,7 +4016,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailLetterCertificatesExpertMonthYear.property.askConfirm = true;
 
         // так конечно не совсем правильно, если поменяется дата с 01 числа одного месяца на 01 число другого месяца
-        emailLetterCertificatesExpertMonthYear.setEventForcedAction(isNewMonth);
+        emailLetterCertificatesExpertMonthYear.setEventSetAction(isNewMonth);
 
         isPreliminaryAndStatusProjectFormalControl = addJProp(true, "isPreliminaryAndStatusProjectFormalControl", "На предв. экспертизу и статус", isPreliminaryAndStatusProject, projectFormalControl, 1);
         isPreliminaryAndStatusProjectLegalCheck = addJProp(true, "isPreliminaryAndStatusProjectLegalCheck", "На предв. экспертизу и статус", isPreliminaryAndStatusProject, projectLegalCheck, 1);

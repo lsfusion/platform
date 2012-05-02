@@ -7,7 +7,7 @@
 
     <bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
         <constructor-arg value="retail"/>
-        <constructor-arg value="localhost"/>
+        <constructor-arg value="localhost:5434"/>
         <constructor-arg value="postgres"/>
         <constructor-arg value="11111"/>
     </bean>

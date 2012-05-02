@@ -59,69 +59,69 @@ public class LP<T extends PropertyInterface> {
         this.listInterfaces = listInterfaces;
     }
 
-    public <D extends PropertyInterface> void setDerivedChange(LP<D> valueProperty, Object... params) {
-        setDerivedChange(false, valueProperty, params);
+    public <D extends PropertyInterface> void setEvent(LP<D> valueProperty, Object... params) {
+        setEvent(false, valueProperty, params);
     }
     
-    public <D extends PropertyInterface> void setDerivedValueChange(LP<D> valueProperty, Object... params) {
-        setDerivedChange(true, valueProperty, params); // assert что все интерфейсы есть
+    public <D extends PropertyInterface> void setEventChanged(LP<D> valueProperty, Object... params) {
+        setEvent(true, valueProperty, params); // assert что все интерфейсы есть
     }
 
-    private <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, LP<D> valueProperty, Object... params) {
-        setDerivedChange(valueChanged, valueProperty, 0, params);
+    private <D extends PropertyInterface> void setEvent(boolean valueChanged, LP<D> valueProperty, Object... params) {
+        setEvent(valueChanged, valueProperty, 0, params);
     }
 
-    private <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, LP<D> valueProperty, int whereNum, Object... params) {
-        setDerivedChange(valueChanged, false, valueProperty, whereNum, params);
+    private <D extends PropertyInterface> void setEvent(boolean valueChanged, LP<D> valueProperty, int whereNum, Object... params) {
+        setEvent(valueChanged, false, valueProperty, whereNum, params);
     }
 
     public void setEventAction(Object... params) {
         assert property instanceof ActionProperty;
-        setDerivedChange(new LP(DerivedProperty.createStatic(true, ActionClass.instance).property), params);
+        setEvent(new LP(DerivedProperty.createStatic(true, ActionClass.instance).property), params);
     }
 
-    public void setEventForcedAction(Object... params) {
+    public void setEventSetAction(Object... params) {
         assert property instanceof ActionProperty || property instanceof JoinProperty; // там все еще местами Join на Action используется
-        setDerivedForcedChange(new LP(DerivedProperty.createStatic(true, ActionClass.instance).property), params);
+        setEventSet(new LP(DerivedProperty.createStatic(true, ActionClass.instance).property), params);
     }
 
-    public <D extends PropertyInterface> void setDerivedForcedChange(LP<D> valueProperty, Object... params) {
-        setDerivedForcedChange(false, valueProperty, params);
+    public <D extends PropertyInterface> void setEventSet(LP<D> valueProperty, Object... params) {
+        setEventSet(false, valueProperty, params);
     }
 
-    public <D extends PropertyInterface> void setDerivedValueForcedChange(LP<D> valueProperty, Object... params) {
-        setDerivedForcedChange(true, valueProperty, params); // params только с интерфейсами
+    public <D extends PropertyInterface> void setEventChangedSet(LP<D> valueProperty, Object... params) {
+        setEventSet(true, valueProperty, params); // params только с интерфейсами
     }
 
-    private <D extends PropertyInterface> void setDerivedForcedChange(boolean valueChanged, LP<D> valueProperty, Object... params) {
-        setDerivedForcedChange(valueChanged, 0, valueProperty, params);
+    private <D extends PropertyInterface> void setEventSet(boolean valueChanged, LP<D> valueProperty, Object... params) {
+        setEventSet(valueChanged, 0, valueProperty, params);
     }
 
     // для DCProp
-    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, int whereNum, LP<D> valueProperty, Object... params) {
-        setDerivedChange(valueChanged, valueProperty, whereNum, params);
+    public <D extends PropertyInterface> void setEvent(boolean valueChanged, int whereNum, LP<D> valueProperty, Object... params) {
+        setEvent(valueChanged, valueProperty, whereNum, params);
     }
 
-    public <D extends PropertyInterface> void setDerivedForcedChange(boolean valueChanged, int whereNum, LP<D> valueProperty, Object... params) {
-        setDerivedChange(valueChanged, true, valueProperty, whereNum, params);
+    public <D extends PropertyInterface> void setEventSet(boolean valueChanged, int whereNum, LP<D> valueProperty, Object... params) {
+        setEvent(valueChanged, true, valueProperty, whereNum, params);
     }
 
     // для DSL
-    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, boolean forceChanged, LP<D> valueProperty, Object... params) {
-        setDerivedChange(valueChanged, forceChanged, valueProperty, 0, params);
+    public <D extends PropertyInterface> void setEvent(boolean valueChanged, boolean forceChanged, LP<D> valueProperty, Object... params) {
+        setEvent(valueChanged, forceChanged, valueProperty, 0, params);
     }
-    private <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, boolean setChanged, LP<D> valueProperty, int whereNum, Object... params) {
+    private <D extends PropertyInterface> void setEvent(boolean valueChanged, boolean setChanged, LP<D> valueProperty, int whereNum, Object... params) {
         int intValue = valueProperty.listInterfaces.size();
         List<PropertyInterfaceImplement<T>> defImplements = readImplements(listInterfaces, params);
 
-        property.setDerivedChange(valueChanged, setChanged ? IncrementType.SET : IncrementType.LEFTCHANGE, mapImplement(valueProperty, defImplements.subList(0, intValue)),
+        property.setEvent(valueChanged, setChanged ? IncrementType.SET : IncrementType.LEFTCHANGE, mapImplement(valueProperty, defImplements.subList(0, intValue)),
                 BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue, intValue + whereNum)),
                 BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue + whereNum, defImplements.size())));
     }
 
-    public <D extends PropertyInterface> void setDerivedChange(Object... params) {
+    public <D extends PropertyInterface> void setEvent(Object... params) {
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(listInterfaces, params);
-        property.setDerivedChange(listImplements.get(0), (PropertyMapImplement<PropertyInterface,T>) listImplements.get(1));
+        property.setEvent(listImplements.get(0), (PropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
     }
 
     public List<T> listGroupInterfaces;

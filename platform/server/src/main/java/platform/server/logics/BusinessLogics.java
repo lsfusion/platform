@@ -1679,13 +1679,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    public LinkedHashSet<OldProperty> getConstraintDerivedDependProperties() {
+    public LinkedHashSet<OldProperty> getEventDependProperties() {
         LinkedHashSet<OldProperty> result = new LinkedHashSet<OldProperty>();
         for (Property property : getPropertyList()) {
             if (property.isFalse)
                 result.addAll(property.getOldDepends());
-            if (property.isDerived())
-                result.addAll(((UserProperty)property).derivedChange.getOldDepends());
+            if (property.hasEvent())
+                result.addAll(((UserProperty)property).event.getOldDepends());
         }
         return result;
     }
@@ -1695,7 +1695,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // здесь нужно вернуть список stored или тех кто
         List<Property> result = new ArrayList<Property>();
         for (Property property : getPropertyList(onlyCheck))
-            if (property.isStored() || property.isDerived() || property.isFalse)
+            if (property.isStored() || property.hasEvent() || property.isFalse)
                 result.add(property);
         return result;
     }
@@ -1716,7 +1716,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             mapDepends.put(property, new HashSet<Property>());
             fillAppliedDependFrom(property, property, mapDepends);
         }
-        for(OldProperty old : getConstraintDerivedDependProperties())
+        for(OldProperty old : getEventDependProperties())
             fillAppliedDependFrom(old.property, old, mapDepends);
 
         Iterable<Property> propertyList = getPropertyList();
@@ -2104,8 +2104,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void recalculateFollows(DataSession session) throws SQLException {
         for(Property property : getPropertyList())
-            if(property.isDerived())
-                ((UserProperty)property).derivedChange.resolve(session);
+            if(property.hasEvent())
+                ((UserProperty)property).event.resolve(session);
     }
 
     public void updateStats() throws SQLException {
@@ -2376,7 +2376,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Map<Object, KeyExpr> keys = isNotification.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
-        query.properties.put("isDerivedChange", LM.isDerivedChangeNotification.getExpr(session.modifier, key));
+        query.properties.put("isDerivedChange", LM.isEventNotification.getExpr(session.modifier, key));
         query.properties.put("subject", LM.subjectNotification.getExpr(session.modifier, key));
         query.properties.put("text", LM.textNotification.getExpr(session.modifier, key));
         query.properties.put("emailFrom", LM.emailFromNotification.getExpr(session.modifier, key));
@@ -2422,7 +2422,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 if (isDerivedChange)
                     emailNotificationProperty.setEventAction(params);
                 else
-                    emailNotificationProperty.setEventForcedAction(params);
+                    emailNotificationProperty.setEventSetAction(params);
             }
         }
     }

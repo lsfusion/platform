@@ -1024,14 +1024,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         if((options & PropertyFollows.RESOLVE_TRUE)!=0 && implement.property.hasSet(true)) { // оптимизационная проверка
             assert interfaces.size() == implement.mapping.size(); // assert что количество
             PropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, true);
-            setAction.mapDerivedChange(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)), DerivedChange.RESOLVE);
+            setAction.mapEventAction(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)), Event.RESOLVE);
 //            PropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, false);
 //            setAction.mapDerivedChange(DerivedProperty.createAndNot(getChanged(IncrementType.SET), implement).map(BaseUtils.reverse(implement.mapping)));
             lm.addProp(setAction.property);
         } 
         if((options & PropertyFollows.RESOLVE_FALSE)!=0 && hasSet(false)) {
             PropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, true);
-            setAction.mapDerivedChange(implement.mapChanged(IncrementType.DROP), DerivedChange.RESOLVE);
+            setAction.mapEventAction(implement.mapChanged(IncrementType.DROP), Event.RESOLVE);
 //            PropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, false);
 //            setAction.mapDerivedChange(DerivedProperty.createAnd(this, implement.mapChanged(IncrementType.DROP)));
             lm.addProp(setAction.property);
@@ -1044,12 +1044,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return props;
     }
 
-    public <D extends PropertyInterface> void setDerivedChange(PropertyMapImplement<?, T> whereImplement, int options) {
+    public <D extends PropertyInterface> void setEventAction(PropertyMapImplement<?, T> whereImplement, int options) {
         assert this instanceof ActionProperty;
-        setDerivedChange(DerivedProperty.<T>createStatic(true, ActionClass.instance), whereImplement, options);
+        setEvent(DerivedProperty.<T>createStatic(true, ActionClass.instance), whereImplement, options);
     }
 
-    public <D extends PropertyInterface> void setDerivedChange(boolean valueChanged, IncrementType incrementType, PropertyImplement<D, PropertyInterfaceImplement<T>> valueImplement, List<PropertyMapImplement<?, T>> whereImplements, Collection<PropertyMapImplement<?, T>> onChangeImplements) {
+    public <D extends PropertyInterface> void setEvent(boolean valueChanged, IncrementType incrementType, PropertyImplement<D, PropertyInterfaceImplement<T>> valueImplement, List<PropertyMapImplement<?, T>> whereImplements, Collection<PropertyMapImplement<?, T>> onChangeImplements) {
         // нужно onChange обернуть в getChange, and where, and change implement'ы
         if(!valueChanged)
             valueImplement = new PropertyImplement<D, PropertyInterfaceImplement<T>>(valueImplement.property.getOld(), valueImplement.mapping);
@@ -1075,21 +1075,21 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             if(whereImplements.size() > 1)
                 where = DerivedProperty.createAnd(interfaces, where, whereImplements.subList(1, whereImplements.size()));
         }
-        setDerivedChange(DerivedProperty.createJoin(valueImplement), where);
+        setEvent(DerivedProperty.createJoin(valueImplement), where);
     }
 
-    public <D extends PropertyInterface, W extends PropertyInterface> void setDerivedChange(PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
-        setDerivedChange(valueImplement, whereImplement, 0);
+    public <D extends PropertyInterface, W extends PropertyInterface> void setEvent(PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
+        setEvent(valueImplement, whereImplement, 0);
     }
 
-    public <D extends PropertyInterface, W extends PropertyInterface> void setDerivedChange(PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement, int options) {
+    private <D extends PropertyInterface, W extends PropertyInterface> void setEvent(PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement, int options) {
         if(!whereImplement.property.noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET);
 
-        DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(this, valueImplement, whereImplement, options);
+        Event<D,T> event = new Event<D,T>(this, valueImplement, whereImplement, options);
         // запишем в DataProperty
         for(UserProperty dataProperty : getDataChanges())
-            dataProperty.derivedChange = derivedChange;
+            dataProperty.event = event;
     }
 
     protected Expr getDefaultExpr(Map<T, ? extends Expr> mapExprs) {
@@ -1145,8 +1145,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return groupsList;
     }
     
-    public boolean isDerived() {
-        return this instanceof UserProperty && ((UserProperty)this).derivedChange != null;
+    public boolean hasEvent() {
+        return this instanceof UserProperty && ((UserProperty)this).event != null;
     }
 
     protected boolean finalized = false;
@@ -1158,7 +1158,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 property.actionChangeProps.add((ExecuteProperty) this);
     }
 
-    public QuickSet<Property> getUsedDerivedChange(StructChanges propChanges) {
+    public QuickSet<Property> getUsedEventChange(StructChanges propChanges) {
         return QuickSet.EMPTY();
     }
 

@@ -336,7 +336,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP classProperty;
     public LP captionProperty;
     public LP SIDToProperty;
-    public LP isDerivedChangeNotification;
+    public LP isEventNotification;
     public LP emailFromNotification;
     public LP emailToNotification;
     public LP emailToCCNotification;
@@ -841,7 +841,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         connectionConnectTime = addDProp(baseGroup, "connectionConnectTime", getString("logics.connection.connect.time"), DateTimeClass.instance, connection);
         connectionDisconnectTime = addDProp(baseGroup, "connectionDisconnectTime", getString("logics.connection.disconnect.time"), DateTimeClass.instance, connection);
-        connectionDisconnectTime.setDerivedForcedChange(currentDateTime,
+        connectionDisconnectTime.setEventSet(currentDateTime,
                 addJProp(equals2, connectionCurrentStatus, 1, addCProp(connectionStatus, "disconnectedConnection")), 1);
         disconnectConnection = addProperty(null, new LP<ClassPropertyInterface>(new DisconnectActionProperty(BL, this, connection)));
         addJProp(baseGroup, getString("logics.connection.disconnect"), andNot1, getUParams(new LP[]{disconnectConnection, connectionDisconnectTime}, 0));
@@ -893,9 +893,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         hostnameComputerCreated = addJProp(historyGroup, "hostnameComputerCreated", getString("logics.computercreated"), hostname, computerCreated, 1);
         hostnameComputerCreated.setMinimumCharWidth(10); hostnameComputerCreated.setPreferredCharWidth(20);
         
-        timeCreated.setDerivedValueChange(currentDateTime, is(historyObject), 1);
-        userCreated.setDerivedValueChange(currentUser, is(historyObject), 1);
-        computerCreated.setDerivedValueChange(currentComputer, is(historyObject), 1);
+        timeCreated.setEventChanged(currentDateTime, is(historyObject), 1);
+        userCreated.setEventChanged(currentUser, is(historyObject), 1);
+        computerCreated.setEventChanged(currentComputer, is(historyObject), 1);
 
         restartServerAction = addJProp(getString("logics.server.stop"), andNot1, addRestartActionProp(), isServerRestarting);
         runGarbageCollector = addGarbageCollectorActionProp();
@@ -967,7 +967,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         captionProperty = addDProp(baseGroup, "captionProperty", getString("logics.property.caption"), propertyCaptionValueClass, property);
         SIDToProperty = addAGProp("SIDToProperty", getString("logics.property"), SIDProperty);
 
-        isDerivedChangeNotification = addDProp(baseGroup, "isDerivedChangeNotification", getString("logics.notification.for.any.change"), LogicalClass.instance, notification);
+        isEventNotification = addDProp(baseGroup, "isDerivedChangeNotification", getString("logics.notification.for.any.change"), LogicalClass.instance, notification);
         emailFromNotification = addDProp(baseGroup, "emailFromNotification", getString("logics.notification.sender.address"), StringClass.get(50), notification);
         emailToNotification = addDProp(baseGroup, "emailToNotification", getString("logics.notification.recipient.address"), StringClass.get(50), notification);
         emailToCCNotification = addDProp(baseGroup, "emailToCCNotification", getString("logics.notification.copy"), StringClass.get(50), notification);
@@ -1045,10 +1045,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
-        sessionUser.setDerivedValueChange(currentUser, is(session), 1);
+        sessionUser.setEventChanged(currentUser, is(session), 1);
         addJProp(baseGroup, getString("logics.session.user"), name, sessionUser, 1);
         LP sessionDate = addDProp(baseGroup, "sessionDate", getString("logics.session.date"), DateTimeClass.instance, session);
-        sessionDate.setDerivedValueChange(currentDateTime, is(session), 1);
+        sessionDate.setEventChanged(currentDateTime, is(session), 1);
 
         objectByName = addMGProp(idGroup, "objectByName", getString("logics.object.name"), object(baseClass.named), name, 1);
         seekObjectName = addJProp(true, getString("logics.object.search"), addSAProp(null), objectByName, 1);
@@ -2126,7 +2126,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             objProperty = addSingleGroupObject(property, getString("logics.property.properties"));
 
             addPropertyDraw(inNotificationProperty, objNotification, objProperty);
-            addPropertyDraw(objNotification, subjectNotification, textNotification, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification, isDerivedChangeNotification);
+            addPropertyDraw(objNotification, subjectNotification, textNotification, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification, isEventNotification);
             addObjectActions(this, objNotification);
             addPropertyDraw(objProperty, captionProperty, SIDProperty);
             setForceViewType(textNotification, ClassViewType.PANEL);

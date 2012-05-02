@@ -153,7 +153,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
     public <P extends PropertyInterface> PropertyChange<P> getChange(Property<P> property) {
         ModifyChange<P> propChange = getModify(property);
         return PropertyChange.addNull(propChange == null ? null : propChange.change, !(property instanceof DataProperty) ||
-                (propChange != null && propChange.isFinal) ? null : (PropertyChange<P>) ((DataProperty)property).getDerivedChange(this));
+                (propChange != null && propChange.isFinal) ? null : (PropertyChange<P>) ((DataProperty)property).getEventChange(this));
     }
 
     public <P extends PropertyInterface> Expr getChangeExpr(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {

@@ -769,7 +769,7 @@ public class VEDLogicsModule extends LogicsModule {
 
         articleFreeQuantity = addSGProp(moveGroup, "articleFreeQuantity", true, "Свободное кол-во на скл.", balanceSklFreeQuantity, 1, 2);
 
-        innerBalanceCheckDB.setDerivedChange(balanceSklCommitedQuantity, subjectOutOrder, 1, 2, 3);
+        innerBalanceCheckDB.setEvent(balanceSklCommitedQuantity, subjectOutOrder, 1, 2, 3);
 
         addJProp(moveGroup, "Остаток парт. прих.", balanceSklCommitedQuantity, subjectIncOrder, 1, 2, 3);
         addJProp(moveGroup, "Остаток парт. расх.", balanceSklCommitedQuantity, subjectOutOrder, 1, 2, 3);
@@ -984,7 +984,7 @@ public class VEDLogicsModule extends LogicsModule {
         priceNoNDSRetailArticle = addDUProp("Цена продажи без НДС", shopPrice, priceNDSRetailArticle);
 
         LP priceManfrOrderDeliveryArticle = addDProp("priceManfrOrderDeliveryArticle", "Цена изг.", DoubleClass.instance, orderDelivery, article);
-        priceManfrOrderDeliveryArticle.setDerivedValueForcedChange(priceNoNDSOrderArticle, 1, 2, articleQuantity, 1, 2);
+        priceManfrOrderDeliveryArticle.setEventChangedSet(priceNoNDSOrderArticle, 1, 2, articleQuantity, 1, 2);
         priceManfrOrderArticle = addCUProp(documentManfrGroup, "priceManfrOrderArticle", "Цена изг.", priceManfrOrderDeliveryArticle, addMGProp(privateGroup, "maxPriceManfrInnerArticle", "Макс. цена закуп.", addJProp(baseLM.and1, priceManfrOrderDeliveryArticle, 3, 2, innerQuantity, 1, 2, 3), 1, 2));
 
         LP priceExtOrderIncArticle = addCUProp(addJProp(baseLM.and1, priceNoNDSOrderArticle, 1, 2, is(orderDelivery), 1),
@@ -993,16 +993,16 @@ public class VEDLogicsModule extends LogicsModule {
         // с дублированием initRequiredStorePrice, чтобы не делать defaultChanged true
         LP requiredStorePrice = initRequiredStorePrice(priceGroup, "requiredStorePrice", true, "Необх. цена",
                 addJProp(priceGroup, "lastPriceIncStoreArticle", true, "Посл. цена прихода", priceExtOrderIncArticle, currentCommitIncDoc, 1, 2, 2), object(store));
-        revalueShopPrice.setDerivedForcedChange(requiredStorePrice, revalueShop, 1, 2, documentRevalued, 1, 2);
-        returnShopOutPrice.setDerivedForcedChange(currentShopPrice, subjectOutOrder, 1, 2, articleQuantity, 1, 2);
-        incomeShopPrice.setDerivedValueForcedChange(initRequiredStorePrice(privateGroup, genSID(), false, "Необх. цена (прих.)", priceExtOrderIncArticle, subjectIncOrder), 1, 2, commitArticleQuantity, 1, 2);
+        revalueShopPrice.setEventSet(requiredStorePrice, revalueShop, 1, 2, documentRevalued, 1, 2);
+        returnShopOutPrice.setEventSet(currentShopPrice, subjectOutOrder, 1, 2, articleQuantity, 1, 2);
+        incomeShopPrice.setEventChangedSet(initRequiredStorePrice(privateGroup, genSID(), false, "Необх. цена (прих.)", priceExtOrderIncArticle, subjectIncOrder), 1, 2, commitArticleQuantity, 1, 2);
 
         LP saleStorePrice = addCUProp(priceGroup, "Цена прод.", addJProp(baseLM.and1, requiredStorePrice, 1, 2, is(warehouse), 1), currentShopPrice);
-        orderSalePrice.setDerivedForcedChange(saleStorePrice, subjectOutOrder, 1, 2, articleQuantity, 1, 2);
+        orderSalePrice.setEventSet(saleStorePrice, subjectOutOrder, 1, 2, articleQuantity, 1, 2);
         priceAllOrderSaleArticle = addSUProp(documentSumGroup, "Цена прод.", Union.OVERRIDE, addJProp(baseLM.and1, addJProp(saleStorePrice, subjectOutOrder, 1, 2), 1, 2, is(orderDoOut), 1), priceOrderDoArticle);
 
         LP outOfDatePrice = addJProp(and(false, false), baseLM.vtrue, articleBalanceSklCommitedQuantity, 1, 2, addJProp(baseLM.diff2, requiredStorePrice, 1, 2, currentShopPrice, 1, 2), 1, 2);
-        documentRevalued.setDerivedChange(outOfDatePrice, revalueShop, 1, 2);
+        documentRevalued.setEvent(outOfDatePrice, revalueShop, 1, 2);
 
         priceStore = addCUProp("priceStore", true, "Склад (цены)", subjectIncOrder, revalueShop);
         inDocumentPrice = addCUProp("inDocumentPrice", true, "Изм. цены", documentRevalued, commitArticleQuantity);
@@ -1184,7 +1184,7 @@ public class VEDLogicsModule extends LogicsModule {
         sumDiscountPayCouponOrder = addSUProp(documentObligationGroup, "sumDiscountPayCouponOrder", true, "Сумма серт.", Union.SUM, discountSumOrder, orderSalePayCoupon);
 
         LP clientSaleSum = addSGProp("clientSaleSum", true, "Нак. сумма", sumWithDiscountObligationOrder, subjectIncOrder, 1);
-        orderClientSaleSum.setDerivedChange(clientSaleSum, subjectIncOrder, 1);
+        orderClientSaleSum.setEvent(clientSaleSum, subjectIncOrder, 1);
         clientSum = addSUProp(baseGroup, "clientSum", true, "Нак. сумма", Union.SUM, clientSaleSum, clientInitialSum);
         accumulatedClientSum = addJProp("Накопленная сумма", clientSum, subjectIncOrder, 1);
 

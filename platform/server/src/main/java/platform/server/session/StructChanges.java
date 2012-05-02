@@ -51,7 +51,7 @@ public class StructChanges extends TwinImmutableObject {
     public QuickSet<Property> getUsedChanges(Property property) {
         Type propChange = changes.get(property);
         return QuickSet.add(propChange == null ? QuickSet.<Property>EMPTY() : new QuickSet<Property>(property),
-                propChange != null && propChange.isFinal() ? QuickSet.<Property>EMPTY() : property.getUsedDerivedChange(this));
+                propChange != null && propChange.isFinal() ? QuickSet.<Property>EMPTY() : property.getUsedEventChange(this));
     }
 
     public QuickSet<Property> getUsedChanges(Collection<Property> col) {

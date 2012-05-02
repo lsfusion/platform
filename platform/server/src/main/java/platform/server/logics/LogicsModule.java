@@ -1,7 +1,6 @@
 package platform.server.logics;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.poi.hssf.record.formula.functions.T;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Result;
@@ -444,9 +443,9 @@ public abstract class LogicsModule {
         // выполняем само создание свойства
         LP derDataProp = addDProp(group, name, persistent, caption, valueClass, overrideClasses(commonClasses, overrideClasses));
         if (forced)
-            derDataProp.setDerivedForcedChange(defaultChanged, whereNum, derivedProp, params);
+            derDataProp.setEventSet(defaultChanged, whereNum, derivedProp, params);
         else
-            derDataProp.setDerivedChange(defaultChanged, whereNum, derivedProp, params);
+            derDataProp.setEvent(defaultChanged, whereNum, derivedProp, params);
         return derDataProp;
     }
 

@@ -31,6 +31,6 @@ public abstract class ExecuteClassProperty extends ExecuteProperty {
     @Override
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
         return BaseUtils.add(super.calculateLinks(),
-                new Pair<Property<?>, LinkType>(getInterfaceClassProperty().property, LinkType.ACTIONUSED));
+                new Pair<Property<?>, LinkType>(getInterfaceClassProperty().property, LinkType.USEDACTION));
     }
 }

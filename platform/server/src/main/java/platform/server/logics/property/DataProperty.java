@@ -46,7 +46,7 @@ public abstract class DataProperty extends UserProperty {
         context.getSession().changeProperty(this, context.getKeys(), context.getValue(), context.isGroupLast());
     }
 
-    public PropertyChange<ClassPropertyInterface> getDerivedChange(PropertyChanges changes) {
+    public PropertyChange<ClassPropertyInterface> getEventChange(PropertyChanges changes) {
         PropertyChange<ClassPropertyInterface> result = null;
 
         Map<ClassPropertyInterface, KeyExpr> mapKeys = getMapKeys();
@@ -66,8 +66,8 @@ public abstract class DataProperty extends UserProperty {
             result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, classProperty.getRemoveWhere(prevExpr, changes)));
         }
 
-        if(derivedChange!=null && derivedChange.hasEventChanges(changes)) {
-            PropertyChange<ClassPropertyInterface> propertyChange = derivedChange.getDataChanges(changes).get(this);
+        if(event !=null && event.hasEventChanges(changes)) {
+            PropertyChange<ClassPropertyInterface> propertyChange = event.getDataChanges(changes).get(this);
             result = PropertyChange.addNull(result, propertyChange != null ? propertyChange : getNoChange()); // noChange для прикола с stored в aspectgetexpr (там hasChanges стоит, а с null'ом его не будет)
         }
 
@@ -75,25 +75,25 @@ public abstract class DataProperty extends UserProperty {
     }
 
     @Override
-    public QuickSet<Property> getUsedDerivedChange(StructChanges propChanges) {
-        QuickSet<Property> result = super.getUsedDerivedChange(propChanges).merge(value.getProperty().getUsedChanges(propChanges));
+    public QuickSet<Property> getUsedEventChange(StructChanges propChanges) {
+        QuickSet<Property> result = super.getUsedEventChange(propChanges).merge(value.getProperty().getUsedChanges(propChanges));
         for(ClassPropertyInterface remove : interfaces)
             result = result.merge(remove.interfaceClass.getProperty().getUsedChanges(propChanges));
-        if(derivedChange!=null && derivedChange.hasEventChanges(propChanges))
-            result = result.merge(derivedChange.getUsedDataChanges(propChanges));
+        if(event !=null && event.hasEventChanges(propChanges))
+            result = result.merge(event.getUsedDataChanges(propChanges));
         return result;
     }
 
     @Override
     protected void fillDepends(Set<Property> depends, boolean derived) { // для Action'а связь считается слабой
-        if(derived) depends.addAll(getDerivedDepends());
+        if(derived) depends.addAll(getEventDepends());
     }
 
     @Override
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
         Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
         for(Property property : getClassDepends())
-            result.add(new Pair<Property<?>, LinkType>(property, LinkType.ACTIONDERIVED));
+            result.add(new Pair<Property<?>, LinkType>(property, LinkType.EVENTACTION));
         return BaseUtils.merge(super.calculateLinks(), result); // чтобы удаления классов зацеплять
     }
 }
