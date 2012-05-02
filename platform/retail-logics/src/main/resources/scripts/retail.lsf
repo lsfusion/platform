@@ -449,7 +449,7 @@ END
 
 // Примечание
 
-META defineDocumentNote (object)
+META defineDocumentHeaderNote (object)
     note###object 'Примечание' = DATA STRING[100] (object) IN additionalInfo MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup;
 END
 
@@ -616,7 +616,7 @@ META defineDocumentDefaultProperties (object)
 
     @defineDocumentTime(object);
     @defineDocumentDepartmentStore(object);
-    @defineDocumentNote(object);
+    @defineDocumentHeaderNote(object);
 
     @defineDocumentDetailIndex(object);
 
@@ -4586,15 +4586,55 @@ showSeriesNumberCuttingStudyInputDetail 'Карта проработки' = ACTI
 
 //---------------------------- Проведение инвентаризации ----------------------------------------//
 
+CLASS STATIC typeOfAddition 'Тип инвентаризации' {
+    register 'Товары из описей',
+    remains 'Товары по остаткам',
+    many    'Множество товаров'
+};
+
+// Документ инвентаризации
+
 CLASS inventory 'Инвентаризация (открытая)' : historyObject, numeratedObject;
 TABLE inventory (inventory);
 
 CLASS inventoryPosted 'Инвентаризация (закрытая)' : inventory, postedObject;
 
+@defineDocumentHeaderPosted (inventory) ;
+
+@defineDocumentHeaderTime(inventory);
+@defineDocumentHeaderNote(inventory);
+
+nameInventory 'Название инвентаризации' = DATA STRING[100] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+infoInventory 'Дополнительная информация по инвентаризации' = DATA STRING[500] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+
+includeDepartmentStoreInventory 'Вкл' = DATA BOOLEAN (departmentStore, inventory) IN inventoryGroup;
+nameDepartmentInventory 'Отделы документа' (inventory) =
+    GROUP CONCAT name(departmentStore) IF includeDepartmentStoreInventory(departmentStore, inventory), ', ' BY inventory IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 150;
+
+typeOfAdditionInventory(inventory) = DATA typeOfAddition (inventory);
+nameTypeOfAdditionInventory 'Тип инвентаризации' (inventory) = name(typeOfAdditionInventory(inventory)) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+
+userTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory) = DATA typeOfAddition (departmentStore, inventory);
+nameUserTypeOfAdditionDepartmentStoreInventory 'Тип инвентаризации' (departmentStore, inventory) = name(userTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory)) IN inventoryGroup;
+
+typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) = UNION OVERRIDE typeOfAdditionInventory(inventory) AND departmentStore IS departmentStore,
+                                                                                    userTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory);
+
+CONSTRAINT includeDepartmentStoreInventory(departmentStore, inventory) AND NOT typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) MESSAGE 'Ошибка: обязательно задавать тип сличительной ведомости для выбранного отдела';
+userTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory) => includeDepartmentStoreInventory(departmentStore, inventory) RESOLVE FALSE;
+
 CLASS listInventory 'Опись (открытая)';
 TABLE listInventory (listInventory);
 
 CLASS listInventoryPosted 'Опись (закрытая)' : listInventory, postedObject;
+
+CLASS pageList 'Страница описи';
+TABLE pageList (pageList);
+
+CLASS detailPage 'Строка';
+TABLE detailPage (detailPage);
+
+// Сличительная ведомость
 
 CLASS ABSTRACT collationSheet 'Сличительная ведомость' : outAccountSumDocumentLedger;
 TABLE collationSheet (collationSheet);
@@ -4603,81 +4643,29 @@ CLASS registerCollationSheet 'Сличительная ведомость по �
 CLASS remainsCollationSheet 'Сличительная ведомость по остаткам' : collationSheet;
 CLASS manyCollationSheet 'Сличительная ведомость по множеству товаров' : collationSheet;
 
-CLASS pageList 'Страница описи';
-TABLE pageList (pageList);
+@defineDocumentHeaderDepartmentStore(collationSheet);
 
-CLASS detailPage 'Строка';
-TABLE detailPage (detailPage);
+inventoryCollationSheet(collationSheet) = DATA inventory (collationSheet) IN idGroup;
+nameInventoryCollationSheet 'Название инвентаризации' (collationSheet) = nameInventory(inventoryCollationSheet(collationSheet)) IN collationSheetGroup;
 
-CLASS STATIC typeOfAddition 'Тип сличительной ведомости' {
-    register 'Товары из описей',
-    remains 'Товары по остаткам',
-    many    'Множество товаров'
-};
+indexCollationSheet (collationSheet) = PARTITION SUM 1 IF collationSheet IS collationSheet
+    BY inventoryCollationSheet(collationSheet) ORDER collationSheet PERSISTENT;
+
+nameCollationSheet 'Внутренний номер' (collationSheet) = [FORMULA STRING[30] '$1 || \'-\' || CAST ($2 AS character(20))'](
+        seriesNumberObject(inventoryCollationSheet(collationSheet)),
+        indexCollationSheet(collationSheet)) IN collationSheetGroup;
+
+inInventoryCollationSheet(inventory, collationSheet) = inventoryCollationSheet(collationSheet) == inventory;
+inDepartmentStoreCollationSheet(departmentStore, collationSheet) = departmentStoreCollationSheet(collationSheet) == departmentStore;
+
+uniqueCollationSheetDepartmentStoreInventory 'Сличительная ведомость по складу и инвентаризации' (departmentStore, inventory) =
+    GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet);
 
 GROUP inventoryGroup 'Информация об инвентаризации' : publicGroup;
 GROUP collationSheetGroup 'Информация о сличительных ведомостях' : baseGroup;
 GROUP listInventoryGroup 'Информация об описях' : baseGroup;
 GROUP inventoryCommitteeGroup 'Комиссия' : baseGroup;
 GROUP adverbGroup 'Итого' : baseGroup;
-
-castToString30 = FORMULA STRING[30] '$1 || CAST ($2 AS character(20))';
-
-@defineDocumentHeaderPosted (inventory) ;
-
-nameInventory 'Название инвентаризации' = DATA STRING[100] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-
-dateInventory 'Дата документа' = DATA DATE (inventory) IN documentHeaderGroup;
-dateInventory(inventory) <- currentDate() WHEN ASSIGNED(inventory IS inventory);
-timeInventory 'Время документа' = DATA TIME (inventory) IN documentHeaderGroup;
-timeInventory(inventory) <- currentTime() WHEN ASSIGNED(inventory IS inventory);
-
-noteInventory 'Примечание (основание)' = DATA STRING[500] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-infoInventory 'Дополнительная информация по инвентаризации' = DATA STRING[500] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-typeOfAdditionInventory(inventory) = DATA typeOfAddition (inventory) IN idGroup;
-nameTypeOfAdditionInventory 'Тип сличительной ведомости' (inventory) = name(typeOfAdditionInventory(inventory)) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-
-dateTimeInventory 'Выставить остатки на дату/время' (inventory) = toDateTime(dateInventory(inventory), timeInventory(inventory));
-
-departmentStoreCollationSheet(collationSheet) = DATA departmentStore (collationSheet) IN idGroup;
-inventoryCollationSheet(collationSheet) = DATA inventory (collationSheet) IN idGroup;
-nameDepartmentStoreCollationSheet 'Подразделение' (collationSheet) = name(departmentStoreCollationSheet(collationSheet)) IN collationSheetGroup;
-nameInventoryCollationSheet 'Название инвентаризации' (collationSheet) = nameInventory(inventoryCollationSheet(collationSheet)) IN collationSheetGroup;
-inInventoryCollationSheet(inventory, collationSheet) = inventoryCollationSheet(collationSheet) == inventory;
-inDepartmentStoreCollationSheet(departmentStore, collationSheet) = departmentStoreCollationSheet(collationSheet) == departmentStore;
-
-counterCollationSheet (collationSheet) = PARTITION SUM 1 IF collationSheet IS collationSheet
-    BY inventoryCollationSheet(collationSheet) ORDER collationSheet;
-
-nameCollationSheet 'Внутренний номер' (collationSheet) = [FORMULA STRING[30] '$1 || \'-\' || CAST ($2 AS character(20))'](
-        seriesNumberObject(inventoryCollationSheet(collationSheet)),
-        counterCollationSheet(collationSheet)) IN collationSheetGroup;
-
-includeDepartmentStoreInventory 'Включить в инвентаризацию' = DATA BOOLEAN (departmentStore, inventory) IN inventoryGroup;
-uniqueCollationSheetDepartmentStoreInventory 'Сличительная ведомость по скалду и инвентаризации' (departmentStore, inventory) =
-    GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet);
-
-typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) = DATA typeOfAddition (departmentStore, inventory);
-includeTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory) =
-    typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) IF includeDepartmentStoreInventory(departmentStore, inventory) IN inventoryGroup;
-nameTypeOfAdditionDepartmentStoreInventory 'Тип сличительной ведомости' (departmentStore, inventory) =
-    name(includeTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory)) IN documentPrmGroup;
-
-typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory) =
-    (UNION OVERRIDE typeOfAdditionInventory(inventory) AND departmentStore IS departmentStore,
-                    typeOfAdditionDepartmentStoreInventory(departmentStore, inventory))
-    AND includeDepartmentStoreInventory(departmentStore, inventory);
-
-nameTypeOfAdditionDepartmentStoreInventoryOver 'Тип сличительной ведомости' (departmentStore, inventory) = name(typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory)) IN inventoryGroup;
-
-nameDepartmentByInventory 'Отделы документа' (inventory) =
-    GROUP CONCAT name(departmentStore) IF includeDepartmentStoreInventory(departmentStore, inventory), ', ' BY inventory IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 150;
-
-quantityStoreInventory(store, inventory) = GROUP SUM 1 IF includeDepartmentStoreInventory(departmentStore, inventory)  BY storeDepartmentStore(departmentStore), inventory;
-quantityStoreByInventory(inventory) = GROUP SUM 1 IF quantityStoreInventory(store, inventory) BY inventory;
-
-//CONSTRAINT quantityStoreByInventory(inventory) > 1  MESSAGE 'Ошибка: для инвентаризации могут задаваться отделы только в рамках одного магазина';
-CONSTRAINT includeDepartmentStoreInventory(departmentStore, inventory) AND NOT nameTypeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory)  MESSAGE 'Ошибка: обязательно задавать тип сличительной ведомости для выбранного отдела';
 
 inventoryListInventory(listInventory) = DATA inventory (listInventory) IN idGroup AUTOSET;
 nameInventoryListInventory 'Название инвентаризации' (listInventory) = nameInventory(inventoryListInventory(listInventory)) IN listInventoryGroup;
@@ -4690,7 +4678,8 @@ inDepartmentStoreListInventory(departmentStore, listInventory) = departmentStore
 counterListInventory(listInventory) = PARTITION SUM 1 IF listInventory IS listInventory
     BY inventoryListInventory(listInventory), departmentStoreListInventory(listInventory)  ORDER listInventory IN baseGroup;
 
-nameListInventory 'Номер описи' (listInventory) = castToString30('Опись ', counterListInventory(listInventory)) IN listInventoryGroup;
+nameListInventory 'Номер описи' (listInventory) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
+                                                  ('Опись ', counterListInventory(listInventory)) IN listInventoryGroup;
 
 noteListInventory 'Примечание (наименование описи)' = DATA STRING[100] (listInventory) IN listInventoryGroup;
 committeeListInventory(listInventory) = DATA inventoryCommittee (listInventory) IN idGroup;
@@ -4708,7 +4697,8 @@ nameListInventoryPageList 'Номер описи' (pageList) = nameListInventory
 inListInventoryPageList(listInventory, pageList) = listInventoryPageList(pageList) == listInventory;
 sumPageListInventory 'К-во страниц' (listInventory) = GROUP SUM 1 IF pageList IS pageList BY listInventoryPageList(pageList) IN adverbGroup;
 counterPageList(pageList) = PARTITION SUM 1 IF pageList IS pageList BY listInventoryPageList(pageList) ORDER pageList IN baseGroup;
-namePageList 'Номер страницы' (pageList) = castToString30('Страница ', counterPageList(pageList)) IN baseGroup;
+namePageList 'Номер страницы' (pageList) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
+                                           ('Страница ', counterPageList(pageList)) IN baseGroup;
 notePageList 'Примечание к странице' = DATA STRING[100] (pageList) IN baseGroup;
 
 pageListDetailPage(detailPage) = DATA pageList (detailPage) IN idGroup;
@@ -4765,10 +4755,10 @@ quantityCountedCollationSheet 'Количество посчитано' (collati
 totalDetailCollationSheet 'Сумма посчитанного' (collationSheet) = GROUP SUM totalDetailListInventory(listInventory)
     BY collationSheetListInventory(listInventory) IN baseGroup;
 
-typeOfAdditionCollationSheet(collationSheet)= typeOfAdditionDepartmentStoreInventoryOver(departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet));
+typeOfAdditionCollationSheet(collationSheet)= typeOfAdditionDepartmentStoreInventory(departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet));
 nameTypeOfAdditionCollationSheet 'Тип сличительной ведомости' (collationSheet) = name(typeOfAdditionCollationSheet(collationSheet)) IN baseGroup;
 
-typeOfAdditionListInventory(listInventory) = typeOfAdditionDepartmentStoreInventoryOver(departmentStoreListInventory(listInventory), inventoryListInventory(listInventory)) IN idGroup;
+typeOfAdditionListInventory(listInventory) = typeOfAdditionDepartmentStoreInventory(departmentStoreListInventory(listInventory), inventoryListInventory(listInventory)) IN idGroup;
 
 
 balanceCollationSheetItem 'Количество остаток' (collationSheet, item) = DATA NUMERIC[14,3] (collationSheet, item) IN baseGroup;
@@ -4830,19 +4820,19 @@ notEqualsPriceByCollationSheetItem(collationSheet, item) =  priceByCollationShee
 
 // автоматическое создание сличительной ведомости (товары из описей) //
 includeRegisterDepartmentStoreInventory(departmentStore, inventory) = // includeDepartmentStoreInventory(departmentStore, inventory) AND
-    typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory) == typeOfAddition.register;
+    typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.register;
 
 @metaCodeDoublePropsAggregation(departmentStoreCollationSheet, inventoryCollationSheet, registerCollationSheet, includeRegisterDepartmentStoreInventory);
 
 // автоматическое создание сличительной ведомости (по остаткам) //
 includeRemainsDepartmentStoreInventory(departmentStore, inventory) =//        includeDepartmentStoreInventory(departmentStore, inventory) AND
-    typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory) == typeOfAddition.remains;
+    typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.remains;
 
 @metaCodeDoublePropsAggregation(departmentStoreCollationSheet, inventoryCollationSheet, remainsCollationSheet, includeRemainsDepartmentStoreInventory);
 
 // автоматическое создание сличительной ведомости (по множеству товаров) //
 includeManyDepartmentStoreInventory(departmentStore, inventory) =// includeDepartmentStoreInventory(departmentStore, inventory) AND
-    typeOfAdditionDepartmentStoreInventoryOver(departmentStore, inventory) == typeOfAddition.many;
+    typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.many;
 
 @metaCodeDoublePropsAggregation(departmentStoreCollationSheet, inventoryCollationSheet, manyCollationSheet, includeManyDepartmentStoreInventory);
 
@@ -10914,7 +10904,7 @@ DESIGN sumAccountDocumentLedger FROM DEFAULT {
 
 //------------------------------------Формы для инвентаризации------------------------------------------//
 
-FORM nameDepartmentByInventory 'Подразделения для инвентаризации'
+FORM nameDepartmentInventory 'Подразделения для инвентаризации'
     OBJECTS in=inventory FIXED PANEL
     PROPERTIES (in) READONLY seriesNumberObject, nameInventory, dateInventory
 
@@ -10925,12 +10915,12 @@ FORM nameDepartmentByInventory 'Подразделения для инвента
             inStoreTypeStore (st, s),
             inStoreDepartment (s, ds)
 
-    PROPERTIES (ds, in) includeDepartmentStoreInventory, nameTypeOfAdditionDepartmentStoreInventoryOver
+    PROPERTIES (ds, in) includeDepartmentStoreInventory, nameUserTypeOfAdditionDepartmentStoreInventory
 
 ;
 
 showFormNameDepartmentByInventory 'Подразделения для инвентаризации' (inventory) =
-    ACTION FORM nameDepartmentByInventory OBJECTS in MODAL SHORTCUT nameDepartmentByInventory DEFAULT;
+    ACTION FORM nameDepartmentInventory OBJECTS in MODAL SHORTCUT nameDepartmentInventory DEFAULT;
 
 FORM collationSheetItem 'Товары для добавления в сличительную ведомость'
     OBJECTS cs=manyCollationSheet FIXED PANEL
@@ -10997,7 +10987,7 @@ FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
     PROPERTIES (in)  nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
                      nameInventory, nameTypeOfAdditionInventory, dateInventory, timeInventory,
-                     noteInventory, infoInventory, nameDepartmentByInventory, showFormNameDepartmentByInventory, convertPriceInventory,
+                     noteInventory, infoInventory, nameDepartmentInventory, showFormNameDepartmentByInventory, convertPriceInventory,
                      fillBalanceInventory
 
     TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageList
@@ -11063,7 +11053,7 @@ DESIGN inventory FROM DEFAULT {
 
             ADD in.documentHeaderGroup {
                 childConstraints = TO THE RIGHT;
-                ADD PROPERTY(nameDepartmentByInventory);
+                ADD PROPERTY(nameDepartmentInventory);
                 ADD PROPERTY(nameNumeratorObject);
                 ADD PROPERTY(numberObject);
                 ADD PROPERTY(seriesObject);
@@ -11149,7 +11139,7 @@ DESIGN inventory FROM DEFAULT {
 FORM inventories 'Инвентаризации'
     OBJECTS in=inventory
     PROPERTIES(in) READONLY objectClassName, numberObject, seriesObject, dateInventory, timeInventory,
-                            nameDepartmentByInventory, nameInventory, noteInventory
+                            nameDepartmentInventory, nameInventory, noteInventory
 
     PROPERTIES(in) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -13057,7 +13047,7 @@ NAVIGATOR {
             ADD reasonOff;
             ADD writeOff;
             ADD listInventory;
-            ADD nameDepartmentByInventory;
+            ADD nameDepartmentInventory;
             ADD collationSheetItem;
             ADD innerFlow;
             ADD innerArrival;
