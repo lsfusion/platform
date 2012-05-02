@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="l" columnCount="4" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="203" leftMargin="15" rightMargin="15" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="3.0"/>
-	<property name="ireport.x" value="35"/>
+	<property name="ireport.x" value="1"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -111,7 +111,7 @@
 				<textFieldExpression><![CDATA[$F{retail_nameCompanyLabelTransaction}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="93" y="98" width="109" height="8">
+				<reportElement style="DefaultStyle" x="93" y="98" width="110" height="8">
 					<printWhenExpression><![CDATA[$F{retail_shortNameUnitOfMeasureLabelTransactionBarcode}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -126,7 +126,7 @@
 				<textFieldExpression><![CDATA["Ед.изм.: "+$F{retail_shortNameUnitOfMeasureLabelTransactionBarcode}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="93" y="118" width="109" height="12">
+				<reportElement style="DefaultStyle" x="93" y="118" width="110" height="12">
 					<printWhenExpression><![CDATA[$F{retail_countryLabelTransactionBarcode}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -140,32 +140,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Страна: "+$F{retail_countryLabelTransactionBarcode}]]></textFieldExpression>
 			</textField>
-			<line>
-				<reportElement x="0" y="0" width="1" height="130"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="202" y="0" width="1" height="130"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="0" y="0" width="203" height="1"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="0" y="129" width="203" height="1"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="93" y="106" width="109" height="12">
+				<reportElement style="DefaultStyle" x="93" y="106" width="110" height="12">
 					<printWhenExpression><![CDATA[$F{retail_manufacturerLabelTransactionBarcode}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -181,13 +157,36 @@
 			</textField>
 			<componentElement>
 				<reportElement mode="Opaque" x="0" y="98" width="93" height="31" forecolor="#000000">
-					<printWhenExpression><![CDATA[$F{retail_barcodeEx}.length() >= 11]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{retail_barcodeEx}.length() >=11]]></printWhenExpression>
 				</reportElement>
 				<jr:EAN13 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" checksumMode="auto">
 					<jr:codeExpression><![CDATA[$F{retail_barcodeEx}]]></jr:codeExpression>
 				</jr:EAN13>
 			</componentElement>
-			<elementGroup/>
+			<line>
+				<reportElement x="0" y="0" width="203" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="0" y="129" width="203" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="0" y="0" width="1" height="130"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="202" y="0" width="1" height="130"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
 		</band>
 	</detail>
 </jasperReport>

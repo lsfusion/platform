@@ -4133,6 +4133,10 @@ FORM paper 'Документ качества'
     PROPERTIES(p) numberPaper, datePaper, dateToPaper, nameHolderPaper, nameIssuedPaper
 
     EDIT paper OBJECT p
+    EDIT customsCertificate OBJECT p
+    EDIT certificateGGR OBJECT p
+    EDIT certificateConformity OBJECT p
+    EDIT stateExamination OBJECT p
 ;
 
 DESIGN paper FROM DEFAULT {
@@ -5706,7 +5710,31 @@ descriptionShipment 'Название документа' (shipment) = castShipm
 
 descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
 
+//numberPaper 'Номер документа' (paper) = DATA STRING[30] (paper) IN baseGroup;
+//datePaper 'Дата документа' (paper) = DATA DATE (paper) IN baseGroup;
+//dateToPaper 'Срок действия' (paper) = DATA DATE (paper) IN baseGroup;
+//holderPaper 'Держатель ИД' (paper) = DATA legalEntity (paper) IN idGroup;
+//nameHolderPaper 'Наименование держателя' (paper) = name(holderPaper(paper)) IN baseGroup;
+//issuedPaper 'Документ выдал ИД' (paper) = DATA legalEntity (paper) IN idGroup;
+//nameIssuedPaper 'Наименование органа, выдавшего документ' (paper) = name(issuedPaper(paper)) IN baseGroup;
 
+//CLASS customsCertificate 'Таможенный сертификат' : paper;
+//CLASS certificateGGR 'Удостоверение о ГГР' : paper;
+//CLASS certificateConformity 'Сертификат соответствия' : paper;
+//CLASS stateExamination 'Акт гос. сан.-гиг. экспертизы' : paper;
+
+customsCertificateShipmentDetail 'Таможенный сертификат ИД' (shipmentDetail)= DATA customsCertificate (shipmentDetail) IN idGroup;
+certificateGGRShipmentDetail 'Удостоверение о ГГР ИД' (shipmentDetail)= DATA certificateGGR (shipmentDetail) IN idGroup;
+certificateConformityShipmentDetail 'Сертификат соответствия ИД' (shipmentDetail)= DATA certificateConformity (shipmentDetail) IN idGroup;
+stateExaminationShipmentDetail 'Акт гос. сан.-гиг. экспертизы ИД' (shipmentDetail)= DATA stateExamination (shipmentDetail) IN idGroup;
+
+numberCustomsCertificateShipmentDetail 'Номер таможенного свидетельства' (shipmentDetail) = numberPaper(customsCertificateShipmentDetail(shipmentDetail));
+numberCertificateGGRShipmentDetail 'Номер удостоверения о ГГР' (shipmentDetail) = numberPaper(certificateGGRShipmentDetail(shipmentDetail));
+numberCertificateConformityShipmentDetail 'Номер сертификата соответствия' (shipmentDetail) = numberPaper(certificateConformityShipmentDetail(shipmentDetail));
+numberStateExaminationShipmentDetail 'Номер акта гос. сан.-гиг. экспертизы' (shipmentDetail) = numberPaper(stateExaminationShipmentDetail(shipmentDetail));
+
+//CONSTRAINT customsCertificateShipmentDetail(shipmentDetail) AND NOT includeDepartmentStoreEmployee(departmentStore, bookkeeperDepartmentStore(departmentStore))
+//    CHECKED BY bookkeeperDepartmentStore MESSAGE 'Бухгалтер не сотрудник отдела';
 // ---------------------------------- Дооценка на приходе ------------------------------------------
 
 CLASS priceChangeShipment 'Переоценка на приходе' : priceChangeDocument;
@@ -10205,7 +10233,10 @@ FORM shipment 'Поставка'
                     balanceBeforeShipmentShipmentDetail, numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail,
                     sumDetailSupplierVATShipmentDetail, sumSupplierShipmentDetail, nameWareShipmentDetail SHOWIF toShowWareShipment(s),
                     priceWareShipmentDetail SHOWIF toShowWareShipment(s), numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
-                    retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail, ADDOBJ, delete
+                    retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail,
+                    numberCustomsCertificateShipmentDetail SHOWIF toShowPapersShipment(s),  numberCertificateGGRShipmentDetail SHOWIF toShowPapersShipment(s),
+                    numberCertificateConformityShipmentDetail SHOWIF toShowPapersShipment(s), numberStateExaminationShipmentDetail SHOWIF toShowPapersShipment(s),
+                    ADDOBJ, delete
     PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail,
                                controlExpiryShipmentDetail, isManufacturedShipmentDetail, isWeightShipmentDetail, nameinActionItemDepartmentShipmentDetail,
                                hintShipmentDetail, nameCountryShipmentDetail, namebanRevaluationItemDepartmentShipmentDetail,
