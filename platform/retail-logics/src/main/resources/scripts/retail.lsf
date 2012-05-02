@@ -7648,12 +7648,14 @@ inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) =
 ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(seriesNumberObject(orderSupplier))
     IF inShipmentOrder(shipment, orderSupplier), ', ' BY shipment IN shipmentOrderGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
+sumOrdersShipment (shipment) = GROUP SUM 1 IF inShipmentOrder(shipment, orderSupplier) BY shipment;
+
 isSupplierShipmentOrder 'Заявка поставщика поставки' (shipment, orderSupplier) = supplierShipment(shipment)== supplierOrderSupplier(orderSupplier);
 
 isDepartmentStoreShipmentOrder 'Заявка отдела поставки' (shipment, orderSupplier) = departmentStoreShipment(shipment)== departmentStoreOrderSupplier(orderSupplier);
 
 CONSTRAINT sureSupplierDepartmentStoreVal(supplierShipment(shipment), departmentStoreShipment(shipment), dateShipment(shipment)) == yesNo.yes
-    AND NOT inShipmentOrder (shipment, orderSupplier) MESSAGE 'Отсутствует обязательный заказ для данного поставщика';
+    AND NOT sumOrdersShipment (shipment)  MESSAGE 'Отсутствует обязательный заказ для данного поставщика';
 
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
 sumQuantityOrderedItemShipment 'Количество по товару в заказах поставки' (item, shipment) = GROUP SUM
