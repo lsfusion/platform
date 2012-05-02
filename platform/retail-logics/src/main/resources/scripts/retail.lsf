@@ -5441,6 +5441,11 @@ balanceBeforeShipmentShipmentDetail 'Остаток до поставки' (ship
 
 supplierPriceShipmentDetail 'Цена поставщика'(shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN baseGroup;
 
+supplierPriceShipmentDetail(shipmentDetail) <-
+    priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail), itemShipmentDetail(shipmentDetail),
+    departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
+    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
+
 supplierMarkupShipmentDetail 'Оптовая надбавка/торговая скидка, %' (shipmentDetail) = DATA NUMERIC[6,2] (shipmentDetail) IN baseGroup;
 overSupplierMarkupShipmentDetail 'Оптовая надбавка/торговая скидка, %' (shipmentDetail) =
         UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, supplierMarkupShipmentDetail(shipmentDetail);
