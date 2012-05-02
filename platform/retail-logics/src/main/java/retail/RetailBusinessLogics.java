@@ -1,20 +1,14 @@
 package retail;
 
 import net.sf.jasperreports.engine.JRException;
-
-import java.io.*;
-import java.sql.Time;
-import java.sql.Timestamp;
-
-import org.apache.commons.lang.time.DateUtils;
-import org.xBaseJ.DBF;
-import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.server.auth.SecurityPolicy;
-import platform.server.classes.*;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.StringClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
@@ -27,9 +21,10 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 import retail.api.remote.*;
 
+import java.io.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.text.ParseException;
+import java.sql.Timestamp;
 import java.util.*;
 
 /**
@@ -88,7 +83,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         List<Object[]> transactionObjects = new ArrayList<Object[]>();
         for (Map.Entry<Map<Object, DataObject>, Map<Object, ObjectValue>> entry : result.entrySet()) {
             DataObject dateTimeMPT = (DataObject) entry.getValue().get("dateTimeMPT");
-            String groupMachineryMPT = entry.getValue().get("groupMachineryMPT").getValue().toString().trim();
+            DataObject groupMachineryMPT = (DataObject) entry.getValue().get("groupMachineryMPT");
             DataObject transactionObject = entry.getKey().values().iterator().next();
             Boolean snapshotMPT = entry.getValue().get("snapshotMPT") instanceof DataObject;
             transactionObjects.add(new Object[]{groupMachineryMPT, transactionObject, dateTimeCode((Timestamp) dateTimeMPT.getValue()), snapshotMPT});
@@ -97,7 +92,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         List<ItemInfo> itemTransactionList;
         for (Object[] transaction : transactionObjects) {
 
-            String groupID = (String) transaction[0];
+            DataObject groupObject = (DataObject) transaction[0];
             DataObject transactionObject = (DataObject) transaction[1];
             String dateTimeCode = (String) transaction[2];
             Boolean snapshotTransaction = (Boolean) transaction[3];
@@ -139,7 +134,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 cashRegisterQuery.properties.put("handlerCashRegisterModelCashRegister", retailLM.getLPByName("handlerCashRegisterModelCashRegister").getExpr(cashRegisterKey));
 
                 cashRegisterQuery.and(isCashRegister.property.getExpr(cashRegisterKeys).getWhere());
-                cashRegisterQuery.and(retailLM.getLPByName("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare(new DataObject(groupID, (ConcreteClass) retailLM.getClassByName("groupCashRegister")), Compare.EQUALS));
+                cashRegisterQuery.and(retailLM.getLPByName("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare(groupObject, Compare.EQUALS));
                 if (snapshotTransaction)
                     cashRegisterQuery.and(retailLM.getLPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), cashRegisterKey).getWhere());
 
@@ -156,12 +151,12 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     cashRegisterInfoList.add(new CashRegisterInfo(nppMachinery, numberCashRegister, nameModel, handlerModel, portMachinery, directoryCashRegister));
                 }
 
-                transactionList.add(new TransactionCashRegisterInfo(groupID, (Integer) transactionObject.getValue(),
+                transactionList.add(new TransactionCashRegisterInfo((Integer) transactionObject.getValue(),
                         dateTimeCode, itemTransactionList, cashRegisterInfoList));
 
             } else if (transactionObject.objectClass.equals(retailLM.getClassByName("scalesPriceTransaction"))) {
                 List<ScalesInfo> scalesInfoList = new ArrayList<ScalesInfo>();
-                String directory = (String) retailLM.getLPByName("directoryGroupScales").read(session, new DataObject(groupID, (ConcreteClass) retailLM.getClassByName("groupScales")));
+                String directory = (String) retailLM.getLPByName("directoryGroupScales").read(session, groupObject);
 
                 LP isScales = LM.is(retailLM.getClassByName("scales"));
 
@@ -174,7 +169,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 scalesQuery.properties.put("nameScalesModelScales", retailLM.getLPByName("nameScalesModelScales").getExpr(scalesKey));
                 scalesQuery.properties.put("handlerScalesModelScales", retailLM.getLPByName("handlerScalesModelScales").getExpr(scalesKey));
                 scalesQuery.and(isScales.property.getExpr(scalesKeys).getWhere());
-                scalesQuery.and(retailLM.getLPByName("groupScalesScales").getExpr(scalesKey).compare(new DataObject(groupID, (ConcreteClass) retailLM.getClassByName("groupScales")), Compare.EQUALS));
+                scalesQuery.and(retailLM.getLPByName("groupScalesScales").getExpr(scalesKey).compare(groupObject, Compare.EQUALS));
                 if (snapshotTransaction)
                     scalesQuery.and(retailLM.getLPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), scalesKey).getWhere());
 
@@ -188,7 +183,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     scalesInfoList.add(new ScalesInfo(nppMachinery, nameModel, handlerModel, portMachinery, directory));
                 }
 
-                transactionList.add(new TransactionScalesInfo(groupID, (Integer) transactionObject.getValue(),
+                transactionList.add(new TransactionScalesInfo((Integer) transactionObject.getValue(),
                         dateTimeCode, itemTransactionList, scalesInfoList));
 
             } else if (transactionObject.objectClass.equals(retailLM.getClassByName("checkPriceTransaction"))) {
@@ -204,7 +199,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 checkQuery.properties.put("nameCheckModelCheck", retailLM.getLPByName("nameCheckModelCheck").getExpr(checkKey));
                 //checkQuery.properties.put("handlerCheckModelCheck", retailLM.getLPByName("handlerCheckModelCheck").getExpr(checkKey));
                 checkQuery.and(isCheck.property.getExpr(checkKeys).getWhere());
-                checkQuery.and(retailLM.getLPByName("groupCheckCheck").getExpr(checkKey).compare(new DataObject(groupID, (ConcreteClass) retailLM.getClassByName("groupCheck")), Compare.EQUALS));
+                checkQuery.and(retailLM.getLPByName("groupCheckCheck").getExpr(checkKey).compare(groupObject, Compare.EQUALS));
 
                 if (snapshotTransaction)
                     checkQuery.and(retailLM.getLPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), checkKey).getWhere());
@@ -219,7 +214,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     String handlerModel = null;
                     priceCheckerInfoList.add(new PriceCheckerInfo(nppMachinery, nameModel, handlerModel, portMachinery));
                 }
-                transactionList.add(new TransactionPriceCheckerInfo(groupID, (Integer) transactionObject.getValue(),
+                transactionList.add(new TransactionPriceCheckerInfo((Integer) transactionObject.getValue(),
                         dateTimeCode, itemTransactionList, priceCheckerInfoList));
 
 
@@ -237,7 +232,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 terminalQuery.properties.put("nameTerminalModelTerminal", retailLM.getLPByName("nameTerminalModelTerminal").getExpr(terminalKey));
                 terminalQuery.properties.put("handlerTerminalModelTerminal", retailLM.getLPByName("handlerTerminalModelTerminal").getExpr(terminalKey));
                 terminalQuery.and(isTerminal.property.getExpr(terminalKeys).getWhere());
-                terminalQuery.and(retailLM.getLPByName("groupTerminalTerminal").getExpr(terminalKey).compare(new DataObject(groupID, (ConcreteClass) retailLM.getClassByName("groupTerminal")), Compare.EQUALS));
+                terminalQuery.and(retailLM.getLPByName("groupTerminalTerminal").getExpr(terminalKey).compare(groupObject, Compare.EQUALS));
 
                 if (snapshotTransaction)
                     terminalQuery.and(retailLM.getLPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), terminalKey).getWhere());
@@ -252,7 +247,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     String handlerModel = (String) values.get("handlerTerminalModelTerminal");
                     terminalInfoList.add(new TerminalInfo(directory, nppMachinery, nameModel, handlerModel, portMachinery));
                 }
-                transactionList.add(new TransactionTerminalInfo(groupID, (Integer) transactionObject.getValue(),
+                transactionList.add(new TransactionTerminalInfo((Integer) transactionObject.getValue(),
                         dateTimeCode, itemTransactionList, terminalInfoList));
             }
 

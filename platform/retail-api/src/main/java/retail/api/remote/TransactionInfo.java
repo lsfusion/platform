@@ -1,12 +1,10 @@
 package retail.api.remote;
 
 import java.io.IOException;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
 public abstract class TransactionInfo <M extends MachineryInfo> implements Serializable {
-    public String groupID;
     public Integer id;
     public String dateTimeCode;
     public List<ItemInfo> itemsList;
