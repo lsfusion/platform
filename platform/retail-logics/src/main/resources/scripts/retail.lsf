@@ -1823,7 +1823,7 @@ GROUP historyGroup 'Изменяемые характеристики' : baseGro
 
 @metaCodeObjectDateProperty(coefficientNetGrossItem, item, 'Сезонный коэффициент пересчета сырья из нетто в брутто', NUMERIC[8,3], manufactoryGroup);
 
-@metaCodeObjectDateProperty(rateNaturalLossItem, item, 'Норма естественной убыли,%', NUMERIC[8,3], rateGroup);
+//@metaCodeObjectDateProperty(rateNaturalLossItem, item, 'Норма естественной убыли,%', NUMERIC[8,3], rateGroup);
 
 //@metaCodeObjectDateProperty(NDSSupplierItem, item, 'НДС поставщика,%', DOUBLE, historyGroup);
 
@@ -2098,6 +2098,90 @@ FORM taxes 'Налоги'
              inRangeStore(ra, s)
 ;
 
+// ----------------------------------- Справочник норм естественной убыли -------------------------------------------- //
+
+CLASS naturalLossItemGroup 'Группа естественной убыли': named, externalObject;
+
+CLASS subNaturalLossItemGroup 'Группа естественной убыли': named, externalObject;;
+
+    parentNaturalLossItemGroup 'Родительская группа' = DATA naturalLossItemGroup(subNaturalLossItemGroup);
+    percentNaturalLossItemGroup '% естественной убыли' = DATA NUMERIC[10,5] (subNaturalLossItemGroup, month);
+
+    groupNaturalLossItem 'Группа естественной убыли товара(ИД)' = DATA subNaturalLossItemGroup (item);
+    nameGroupNaturalLossItem 'Группа естественной убыли товара' (item) = name(groupNaturalLossItem(item)) IN rateGroup;
+    rateGroupNaturalLossItem 'Норма естественной убыли, %' (item) =
+        percentNaturalLossItemGroup(groupNaturalLossItem(item), monthInDate(currentDate())) IN rateGroup;
+
+    inParentNaturalLossItemGroup(naturalLossItemGroup, subNaturalLossItemGroup) =
+        parentNaturalLossItemGroup(subNaturalLossItemGroup ) == naturalLossItemGroup;
+
+    inParentSubNaturalLossItemGroup (naturalLossItemGroup, subNaturalLossItemGroup) = UNION OVERRIDE
+        parentNaturalLossItemGroup(subNaturalLossItemGroup) == naturalLossItemGroup,
+        subNaturalLossItemGroup IS subNaturalLossItemGroup AND NOT naturalLossItemGroup;
+
+FORM naturalLossItem 'Справочник норм естественной убыли'
+
+    TREE treeNaturalLossItem a=STRING[3], n=naturalLossItemGroup
+    PROPERTIES READONLY OBJVALUE(a)
+    PROPERTIES name(n), ADDOBJ(n), delete(n) FORCE PANEL
+    ORDER BY name
+
+    OBJECTS sg=subNaturalLossItemGroup, m=month
+    PROPERTIES(sg) name, ADDOBJ TODRAW sg, delete FORCE PANEL
+    PROPERTIES(m) READONLY name
+    PROPERTIES percentNaturalLossItemGroup(sg, m)
+    FILTERS stringEqualsAll(a), inParentSubNaturalLossItemGroup(n, sg)
+    ORDER BY name
+;
+
+DESIGN naturalLossItem FROM DEFAULT {
+
+    POSITION treeNaturalLossItem.box TO THE LEFT sg.box;
+    POSITION treeNaturalLossItem.box TO THE LEFT m.box;
+    POSITION m.box TO THE BOTTOM sg.box;
+
+    treeNaturalLossItem.tree {
+        fillHorizontal = 0.5;
+    }
+
+    PROPERTY (delete(n)) {
+        caption = 'Удалить';
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+
+    PROPERTY (delete(sg)) {
+        caption = 'Удалить';
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+
+}
+
+FORM naturalLossItems 'Справочник норм естественной убыли'
+
+    TREE treeNaturalLossItem a=STRING[3], n=naturalLossItemGroup
+    PROPERTIES READONLY OBJVALUE(a), name(n)
+    ORDER BY name
+
+    OBJECTS sg=subNaturalLossItemGroup, m=month
+    PROPERTIES READONLY name(sg), name(m), percentNaturalLossItemGroup(sg, m)
+    FILTERS stringEqualsAll(a), inParentSubNaturalLossItemGroup(n, sg)
+    ORDER BY name
+
+    DIALOG subNaturalLossItemGroup OBJECT sg
+;
+
+DESIGN naturalLossItems FROM DEFAULT {
+
+    POSITION treeNaturalLossItem.box TO THE LEFT sg.box;
+    POSITION treeNaturalLossItem.box TO THE LEFT m.box;
+    POSITION m.box TO THE BOTTOM sg.box;
+
+    treeNaturalLossItem.tree {
+        fillHorizontal = 0.5;
+    }
+}
 
 //------------------------------------ Товар для подразделения с историей -------------------------------------------//
 //maxReserveItemDepartmentDate 'Максимально допустимый товарный запас в днях' = DATA DOUBLE (item, departmentStore, DATE) IN baseGroup;
@@ -2229,7 +2313,7 @@ FORM item 'Товар'
                   normOutItem SHOWIF isManufacturedItem(i), groupMenuItem SHOWIF isManufacturedItem(i),
                   isCutedItem SHOWIF isManufacturedItem(i), coefficientNetGrossItem SHOWIF isManufacturedItem(i), showFormcoefficientNetGrossItem,
 
-                  nameRateWasteItem, percentRateWasteItem, rateNaturalLossItem, showFormrateNaturalLossItem,
+                  nameRateWasteItem, percentRateWasteItem, nameGroupNaturalLossItem, rateGroupNaturalLossItem,
 
                   volumeItem, lengthItem, widthItem, heightItem, lengthPackItem, widthPackItem, heightPackItem,
 
@@ -2537,7 +2621,6 @@ FORM itemGroupDialog 'Товарные группы'
     DIALOG itemGroup OBJECT g
 ;
 
-
 // ----------------------------------- Ассортимент -------------------------------------------------------- //
 
 CLASS assortment 'Ассортимент' : named;
@@ -2819,6 +2902,7 @@ FORM revaluationCommitteeDialog 'Комиссии переоценки'
 
     DIALOG revaluationCommittee OBJECT rc
 ;
+
 // ----------------------------------- Банк ------------------------------------------- //
 
 GROUP banksGroup 'Информация о банке' : baseGroup;
@@ -13032,6 +13116,7 @@ NAVIGATOR {
             ADD specialty;
             ADD coolingDegree;
             ADD formItem;
+            ADD naturalLossItems;
         //    ADD numberInPack;
             ADD rateWaste;
             ADD addNameisPortionBarItem;
@@ -13040,8 +13125,8 @@ NAVIGATOR {
             ADD namebanDiscountItem;
             ADD addcoefficientNetGrossItem;
             ADD coefficientNetGrossItem;
-            ADD addrateNaturalLossItem;
-            ADD rateNaturalLossItem;
+        //    ADD addrateNaturalLossItem;
+        //    ADD rateNaturalLossItem;
             ADD genTimeTables;
             ADD addpriceWare;
             ADD priceWare;
