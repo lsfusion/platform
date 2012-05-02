@@ -25,10 +25,11 @@ public class Event<D extends PropertyInterface, C extends PropertyInterface> {
         this.options = options;
     }
 
-    public Set<Property> getDepends() {
+    public Set<Property> getDepends(boolean includeValue) {
         Set<Property> used = new HashSet<Property>();
-        writeFrom.mapFillDepends(used);
         where.mapFillDepends(used);
+        if(includeValue)
+            writeFrom.mapFillDepends(used);
         return used;
     }
 
@@ -45,16 +46,16 @@ public class Event<D extends PropertyInterface, C extends PropertyInterface> {
     }
 
     public boolean hasEventChanges(PropertyChanges propChanges) {
-        return hasEventChanges(propChanges.getStruct());
+        return hasEventChanges(propChanges.getStruct(), false);
     }
 
-    public boolean hasEventChanges(StructChanges changes) {
-        return changes.hasChanges(changes.getUsedChanges(getDepends())); // если в where нет изменений, то получится бред когда в "верхней" сессии
+    public boolean hasEventChanges(StructChanges changes, boolean cascade) {
+        return changes.hasChanges(changes.getUsedChanges(getDepends(cascade), cascade)); // ради этого все и делается
     }
 
-    public QuickSet<Property> getUsedDataChanges(StructChanges changes) {
-        assert hasEventChanges(changes);
-        return QuickSet.add(writeTo.getUsedDataChanges(changes), changes.getUsedChanges(getDepends()));
+    public QuickSet<Property> getUsedDataChanges(StructChanges changes, boolean cascade) {
+        assert hasEventChanges(changes, cascade);
+        return QuickSet.add(writeTo.getUsedDataChanges(changes), changes.getUsedChanges(getDepends(true), cascade));
     }
 
     private PropertyChange<C> getChange(PropertyChanges changes) {

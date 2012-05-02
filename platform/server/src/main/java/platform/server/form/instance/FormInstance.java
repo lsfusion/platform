@@ -131,16 +131,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public <P extends PropertyInterface> void dropIncrement(PropertyChanges changes) throws SQLException {
         for(Property property : hintsIncrementTable)
-            if(property.hasChanges(changes)) // если зависит от changes - drop'аем
+            if(property.hasChanges(changes, true)) // если зависит от changes - drop'аем
                 increment.remove(property, session.sql);
     }
 
     public Set<Property> getUpdateProperties(PropertyChanges propChanges) {
-        return Property.hasChanges(getUsedProperties(), noUpdate.getPropertyChanges().add(propChanges));
+        return Property.hasChanges(getUsedProperties(), noUpdate.getPropertyChanges().add(propChanges), true);
     }
 
     public Set<Property> getUpdateProperties() {
-        return Property.hasChanges(getUsedProperties(), getPropertyChanges());
+        return Property.hasChanges(getUsedProperties(), getPropertyChanges(), false);
     }
 
     private final WeakReference<FocusListener<T>> weakFocusListener;

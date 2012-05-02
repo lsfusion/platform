@@ -34,7 +34,7 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
     public Event<?,?> event = null;
     
     protected Set<Property> getEventDepends() {
-        return event !=null ? event.getDepends() : new HashSet<Property>();
+        return event !=null ? event.getDepends(true) : new HashSet<Property>();
     }
 
     @IdentityLazy

@@ -444,15 +444,19 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     // возвращает от чего "зависят" изменения - с callback'ов
-    protected abstract QuickSet<Property> calculateUsedChanges(StructChanges propChanges);
+    protected abstract QuickSet<Property> calculateUsedChanges(StructChanges propChanges, boolean cascade);
 
     public QuickSet<Property> getUsedChanges(StructChanges propChanges) {
+        return getUsedChanges(propChanges, false);
+    }
+    // 2-й параметр - "сверху" есть каскадная сессия, поэтому eventChange'ы надо проверять полностью, а не только на where
+    public QuickSet<Property> getUsedChanges(StructChanges propChanges, boolean cascade) {
         if(propChanges.isEmpty()) // чтобы рекурсию разбить
             return QuickSet.EMPTY();
 
         QuickSet<Property> usedChanges;
-        QuickSet<Property> modifyChanges = propChanges.getUsedChanges(this);
-        if(propChanges.hasChanges(modifyChanges) || (propChanges.hasChanges(usedChanges  = calculateUsedChanges(propChanges)) && !modifyChanges.isEmpty()))
+        QuickSet<Property> modifyChanges = propChanges.getUsedChanges(this, cascade);
+        if(propChanges.hasChanges(modifyChanges) || (propChanges.hasChanges(usedChanges  = calculateUsedChanges(propChanges, cascade)) && !modifyChanges.isEmpty()))
             return modifyChanges;
         return usedChanges;
     }
@@ -469,13 +473,16 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return hasChanges(modifier.getPropertyChanges());
     }
     public boolean hasChanges(PropertyChanges propChanges) {
-        StructChanges struct = propChanges.getStruct();
-        return struct.hasChanges(getUsedChanges(struct));
+        return hasChanges(propChanges, false);
     }
-    public static Set<Property> hasChanges(Collection<Property> properties, PropertyChanges propChanges) {
+    public boolean hasChanges(PropertyChanges propChanges, boolean cascade) {
+        StructChanges struct = propChanges.getStruct();
+        return struct.hasChanges(getUsedChanges(struct, cascade));
+    }
+    public static Set<Property> hasChanges(Collection<Property> properties, PropertyChanges propChanges, boolean cascade) {
         Set<Property> result = new HashSet<Property>();
         for (Property<?> updateProperty : properties)
-            if (updateProperty.hasChanges(propChanges))
+            if (updateProperty.hasChanges(propChanges, cascade))
                 result.add(updateProperty);
         return result;
     }
@@ -1158,7 +1165,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 property.actionChangeProps.add((ExecuteProperty) this);
     }
 
-    public QuickSet<Property> getUsedEventChange(StructChanges propChanges) {
+    public QuickSet<Property> getUsedEventChange(StructChanges propChanges, boolean cascade) {
         return QuickSet.EMPTY();
     }
 

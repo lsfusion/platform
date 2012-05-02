@@ -141,7 +141,7 @@ public class MapCacheAspect {
 
     private static boolean checkCaches = false;
 
-    public <K extends PropertyInterface> QuickSet<Property> getUsedChanges(Property<K> property, StructChanges implement, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> QuickSet<Property> getUsedChanges(Property<K> property, StructChanges implement, boolean cascade, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         if(!(property instanceof FunctionProperty) && !(property instanceof DataProperty && property.hasEvent())) // если не Function или DataProperty с derived, то нету рекурсии и эффективнее просто вы
             return (QuickSet<Property>) thisJoinPoint.proceed();
@@ -149,10 +149,10 @@ public class MapCacheAspect {
         return (QuickSet<Property>) CacheAspect.callMethod(property, thisJoinPoint);
     }
 
-    @Around("execution(* platform.server.logics.property.Property.getUsedChanges(platform.server.session.StructChanges)) " +
-            "&& target(property) && args(changes)")
-    public Object callGetUsedChanges(ProceedingJoinPoint thisJoinPoint, Property property, StructChanges changes) throws Throwable {
-        return getUsedChanges(property, changes, thisJoinPoint);
+    @Around("execution(* platform.server.logics.property.Property.getUsedChanges(platform.server.session.StructChanges,boolean)) " +
+            "&& target(property) && args(changes,cascade)")
+    public Object callGetUsedChanges(ProceedingJoinPoint thisJoinPoint, Property property, StructChanges changes, boolean cascade) throws Throwable {
+        return getUsedChanges(property, changes, cascade, thisJoinPoint);
     }
 
 /*    @Around("execution(* platform.server.logics.property.Property.getUsedChanges(platform.server.session.StructChanges)) " +

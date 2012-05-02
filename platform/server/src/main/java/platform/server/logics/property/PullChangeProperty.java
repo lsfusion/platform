@@ -25,7 +25,7 @@ public abstract class PullChangeProperty<T extends PropertyInterface, P extends 
         return QuickSet.add(toChange.getUsedDataChanges(propChanges), onChange.getUsedChanges(propChanges));
     }
 
-    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
+    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return getUsedChanges(onChange,toChange, propChanges);
     }
 

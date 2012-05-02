@@ -62,7 +62,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return getProperty(valueClass, "value").mapExpr(Collections.singletonMap("value", valueExpr), modifier.getPropertyChanges(), null).getWhere();
     }
 
-    public QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
+    public QuickSet<Property> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return QuickSet.EMPTY();
     }
 

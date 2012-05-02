@@ -58,7 +58,7 @@ public class ObjectClassProperty extends ExecuteProperty {
         }
     }
 
-    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
+    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return QuickSet.EMPTY();
     }
 

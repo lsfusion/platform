@@ -30,7 +30,7 @@ public abstract class DataProperty extends UserProperty {
         return interfaces;
     }
 
-    public QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
+    public QuickSet<Property> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return QuickSet.EMPTY();
     }
 
@@ -75,12 +75,12 @@ public abstract class DataProperty extends UserProperty {
     }
 
     @Override
-    public QuickSet<Property> getUsedEventChange(StructChanges propChanges) {
-        QuickSet<Property> result = super.getUsedEventChange(propChanges).merge(value.getProperty().getUsedChanges(propChanges));
+    public QuickSet<Property> getUsedEventChange(StructChanges propChanges, boolean cascade) {
+        QuickSet<Property> result = super.getUsedEventChange(propChanges, cascade).merge(value.getProperty().getUsedChanges(propChanges, cascade));
         for(ClassPropertyInterface remove : interfaces)
-            result = result.merge(remove.interfaceClass.getProperty().getUsedChanges(propChanges));
-        if(event !=null && event.hasEventChanges(propChanges))
-            result = result.merge(event.getUsedDataChanges(propChanges));
+            result = result.merge(remove.interfaceClass.getProperty().getUsedChanges(propChanges, cascade));
+        if(event !=null && event.hasEventChanges(propChanges, cascade))
+            result = result.merge(event.getUsedDataChanges(propChanges, cascade));
         return result;
     }
 

@@ -18,8 +18,8 @@ public abstract class ExecuteClassProperty extends ExecuteProperty {
         super(sID, caption, classes);
     }
 
-    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
-        return getInterfaceClassProperty().property.getUsedChanges(propChanges);
+    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+        return getInterfaceClassProperty().property.getUsedChanges(propChanges, cascade);
     }
 
     protected abstract Expr getValueExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement);

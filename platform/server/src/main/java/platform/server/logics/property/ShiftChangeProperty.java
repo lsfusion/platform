@@ -72,7 +72,7 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         depends.add(getIsClassProperty().property);
     }
 
-    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges) {
+    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return propChanges.getUsedChanges(getDepends());
     }
 
