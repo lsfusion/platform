@@ -169,6 +169,15 @@ testLimitPartition(store, article) = PARTITION UNGROUP testAmount LIMIT STRICT t
 ioQuantity(store, article) = LIST(incomeQuantity(store, article), outcomeQuantity(store, article));
 onlyIncomeQuantity(store, article) = ioQuantity(store, article)[1];
 
+// Abstract property
+// Expression syntax:
+// ABSTRACT returnClass ( [paramClass1, ..., paramClassN] )
+testAbstract(named) = ABSTRACT INTEGER (namedClass);
+// overriding abstract property syntax:
+// propertyName [(namedParam1, ..., namedParamN)] += expression;
+testAbstract += 5 AND named IS article;
+testAbstract(named) += 6 AND named IS store;
+
 // Formula property
 // Expression syntax:
 // FORMULA primitiveType 'formula text $1 + $2'
