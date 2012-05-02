@@ -12964,6 +12964,7 @@ NAVIGATOR {
             ADD itemGroups;
             ADD unitsOfMeasure;
             ADD assortments;
+            ADD naturalLossItem;
             ADD papers;
         }
         NEW shopStructure 'Магазины' {
