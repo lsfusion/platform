@@ -2572,7 +2572,7 @@ CLASS inventoryCommittee 'Комиссия для инвентаризации' 
 CLASS registerCommittee 'Комиссия для реестра цен' : committee;
 
 chairmanCommittee 'Председатель комиссии (ИД)' = DATA employee (committee);
-commonNameChairmanCommittee 'Председатель комиссии' (committee) = commonName(chairmanCommittee(committee)) IN recognizeGroup;
+nameChairmanCommittee 'Председатель комиссии' (committee) = commonName(chairmanCommittee(committee)) IN recognizeGroup;
 nameOfficerChairmanCommittee 'Должность председаетеля' (committee) = nameOfficerEmployee(chairmanCommittee(committee));
 
 inCommitteeEmployee 'Является членом комиссии' (committee, employee) = DATA BOOLEAN (committee, employee);
@@ -2619,11 +2619,11 @@ castOfficerEmployeeToString40 =
      FORMULA STRING[40] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)';
 nameOfficerAndNameEmployee 'Должность ФИО' (employee) = castOfficerEmployeeToString40(nameOfficerEmployee(employee), commonName(employee));
 
-commonNameEmployeeCommittee 'Члены комиссии' (committee) =
+nameOfficerEmployeeCommittee 'Члены комиссии' (committee) =
      GROUP CONCAT nameOfficerAndNameEmployee(employee) IF inCommitteeEmployee(committee, employee), ', '
      BY committee MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
-nameEmployeeByCommittee 'Члены комиссии' (committee) =
+nameEmployeeCommittee 'Члены комиссии' (committee) =
      GROUP CONCAT commonName(employee) IF inCommitteeEmployee(committee, employee), ', '
      BY committee MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
@@ -2688,7 +2688,7 @@ DESIGN registerCommittee FROM DEFAULT {
 
 FORM revaluationCommittee 'Комиссия переоценки'
     OBJECTS c=revaluationCommittee FIXED PANEL
-    PROPERTIES(c)      name, commonNameChairmanCommittee
+    PROPERTIES(c)      name, nameChairmanCommittee
 
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
     PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
@@ -2721,7 +2721,7 @@ DESIGN revaluationCommittee FROM DEFAULT {
         preferredSize = (1024, 768);
 
         NEW OneCase BEFORE e.box {
-            ADD PROPERTY (commonNameChairmanCommittee);
+            ADD PROPERTY (nameChairmanCommittee);
         }
 
         NEW caseOne BEFORE OneCase {
@@ -2743,7 +2743,7 @@ DESIGN revaluationCommittee FROM DEFAULT {
 
 FORM inventoryCommittee 'Комиссия для инвентаризации'
     OBJECTS c=inventoryCommittee FIXED PANEL
-    PROPERTIES(c)      name, commonNameChairmanCommittee
+    PROPERTIES(c)      name, nameChairmanCommittee
 
     TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
     PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
@@ -2776,7 +2776,7 @@ DESIGN inventoryCommittee FROM DEFAULT {
         preferredSize = (1024, 768);
 
         NEW OneCase BEFORE e.box {
-            ADD PROPERTY (commonNameChairmanCommittee);
+            ADD PROPERTY (nameChairmanCommittee);
         }
 
         NEW caseOne BEFORE OneCase {
@@ -2806,7 +2806,7 @@ FORM registerCommitteeDialog 'Комиссии для реестра цен'
 
 FORM inventoryCommitteeDialog 'Комиссии для инвентаризации'
     OBJECTS ic=inventoryCommittee
-    PROPERTIES(ic)      READONLY name, nameDepartmentByCommittee, nameEmployeeByCommittee, commonNameChairmanCommittee
+    PROPERTIES(ic)      READONLY name, nameDepartmentByCommittee, nameEmployeeCommittee, nameChairmanCommittee
     PROPERTIES(ic)      ADDFORM, EDITFORM
 
     DIALOG inventoryCommittee OBJECT ic
@@ -2814,7 +2814,7 @@ FORM inventoryCommitteeDialog 'Комиссии для инвентаризац�
 
 FORM revaluationCommitteeDialog 'Комиссии переоценки'
     OBJECTS rc=revaluationCommittee
-    PROPERTIES(rc)      READONLY name, nameDepartmentByCommittee, nameEmployeeByCommittee, commonNameChairmanCommittee
+    PROPERTIES(rc)      READONLY name, nameDepartmentByCommittee, nameEmployeeCommittee, nameChairmanCommittee
     PROPERTIES(rc)      ADDFORM, EDITFORM
 
     DIALOG revaluationCommittee OBJECT rc
@@ -4684,8 +4684,38 @@ TABLE listInventory (listInventory);
 
 CLASS listInventoryPosted 'Опись (закрытая)' : listInventory, postedObject;
 
+@defineDocumentHeaderDepartmentStore(listInventory);
+@defineDocumentHeaderNote(listInventory);
+
+inventoryListInventory(listInventory) = DATA inventory (listInventory) AUTOSET;
+nameInventoryListInventory 'Название инвентаризации' (listInventory) = nameInventory(inventoryListInventory(listInventory)) IN listInventoryGroup;
+
+indexListInventory(listInventory) = PARTITION SUM 1 IF listInventory IS listInventory
+    BY inventoryListInventory(listInventory), departmentStoreListInventory(listInventory)  ORDER listInventory IN baseGroup;
+
+nameListInventory 'Номер описи' (listInventory) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
+                                                  ('Опись ', indexListInventory(listInventory)) IN listInventoryGroup;
+
+committeeListInventory(listInventory) = DATA inventoryCommittee (listInventory) IN idGroup;
+nameCommitteeListInventory 'Название комиссии' (listInventory) = commonName(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
+nameChairmanCommitteeListInventory 'Председатель комиссии' (listInventory) = nameChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
+nameEmployeeListInventory 'Члены комиссии' (listInventory) = nameEmployeeCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
+
 CLASS pageList 'Страница описи';
 TABLE pageList (pageList);
+
+listInventoryPageList(pageList) = DATA listInventory (pageList) IN idGroup;
+
+indexPageList(pageList) = PARTITION SUM 1 IF pageList IS pageList
+                                      BY listInventoryPageList(pageList)
+                                      ORDER pageList IN baseGroup;
+
+namePageList 'Номер страницы' (pageList) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
+                                           ('Страница ', indexPageList(pageList)) IN baseGroup;
+notePageList 'Примечание к странице' = DATA STRING[100] (pageList) IN baseGroup;
+
+sumPageListInventory 'К-во страниц' (listInventory) = GROUP SUM 1 IF pageList IS pageList
+                                                                  BY listInventoryPageList(pageList);
 
 CLASS detailPage 'Строка';
 TABLE detailPage (detailPage);
@@ -4722,40 +4752,6 @@ GROUP collationSheetGroup 'Информация о сличительных ве
 GROUP listInventoryGroup 'Информация об описях' : baseGroup;
 GROUP inventoryCommitteeGroup 'Комиссия' : baseGroup;
 GROUP adverbGroup 'Итого' : baseGroup;
-
-inventoryListInventory(listInventory) = DATA inventory (listInventory) IN idGroup AUTOSET;
-nameInventoryListInventory 'Название инвентаризации' (listInventory) = nameInventory(inventoryListInventory(listInventory)) IN listInventoryGroup;
-inInventoryListInventory(inventory, listInventory) = inventoryListInventory(listInventory) == inventory;
-
-departmentStoreListInventory(listInventory) = DATA departmentStore (listInventory) IN idGroup AUTOSET;
-nameDepartmentStoreListInventory 'Подразделение' (listInventory) = name(departmentStoreListInventory(listInventory)) IN listInventoryGroup;
-inDepartmentStoreListInventory(departmentStore, listInventory) = departmentStoreListInventory(listInventory) == departmentStore;
-
-counterListInventory(listInventory) = PARTITION SUM 1 IF listInventory IS listInventory
-    BY inventoryListInventory(listInventory), departmentStoreListInventory(listInventory)  ORDER listInventory IN baseGroup;
-
-nameListInventory 'Номер описи' (listInventory) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
-                                                  ('Опись ', counterListInventory(listInventory)) IN listInventoryGroup;
-
-noteListInventory 'Примечание (наименование описи)' = DATA STRING[100] (listInventory) IN listInventoryGroup;
-committeeListInventory(listInventory) = DATA inventoryCommittee (listInventory) IN idGroup;
-inCommitteeListInventoryEmployee 'Сотрудник комиссии' (listInventory, employee) = inCommitteeEmployee(committeeListInventory(listInventory), employee);
-
-commonNameCommitteeListInventory 'Название комиссии' (listInventory) = commonName(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
-commonNameChairmanCommitteeListInventory 'Председатель комиссии' (listInventory) = commonNameChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
-
-commonNameEmployeeListInventory 'Члены комиссии' (listInventory) =
-     GROUP CONCAT commonName(employee) IF inCommitteeListInventoryEmployee(listInventory, employee), ', '
-     BY listInventory IN inventoryCommitteeGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-
-listInventoryPageList(pageList) = DATA listInventory (pageList) IN idGroup;
-nameListInventoryPageList 'Номер описи' (pageList) = nameListInventory(listInventoryPageList(pageList));
-inListInventoryPageList(listInventory, pageList) = listInventoryPageList(pageList) == listInventory;
-sumPageListInventory 'К-во страниц' (listInventory) = GROUP SUM 1 IF pageList IS pageList BY listInventoryPageList(pageList) IN adverbGroup;
-counterPageList(pageList) = PARTITION SUM 1 IF pageList IS pageList BY listInventoryPageList(pageList) ORDER pageList IN baseGroup;
-namePageList 'Номер страницы' (pageList) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
-                                           ('Страница ', counterPageList(pageList)) IN baseGroup;
-notePageList 'Примечание к странице' = DATA STRING[100] (pageList) IN baseGroup;
 
 pageListDetailPage(detailPage) = DATA pageList (detailPage) IN idGroup;
 inPageListDetailPage(pageList, detailPage) = pageListDetailPage(detailPage) == pageList;
@@ -10126,9 +10122,9 @@ diffTotalSumVatWarePriceChangeDocument 'Изменение суммы НДС п�
 isRevaluationCommitteePriceChangeDocument(priceChangeDocument) = priceChangeDocument IS priceChangeDocument AND revaluationCommitteePriceChangeDocument(priceChangeDocument);
 
 nameRevaluationCommitteePriceChangeDocument 'Комиссия переоценки' (priceChangeDocument) = name(revaluationCommitteePriceChangeDocument(priceChangeDocument));
-commonNameEmployeeCommitteePriceChangeDocument 'Сотрудники комиссии' (priceChangeDocument) = commonNameEmployeeCommittee(revaluationCommitteePriceChangeDocument(priceChangeDocument));
+commonNameEmployeeCommitteePriceChangeDocument 'Сотрудники комиссии' (priceChangeDocument) = nameOfficerEmployeeCommittee(revaluationCommitteePriceChangeDocument(priceChangeDocument));
 inPriceChangeDocumentEmployee (priceChangeDocument, employee) = inCommitteeEmployee(revaluationCommitteePriceChangeDocument(priceChangeDocument), employee);
-commonNameChairmanPriceChangeDocument 'Председатель комиссии' (priceChangeDocument) = commonNameChairmanCommittee(revaluationCommitteePriceChangeDocument(priceChangeDocument));
+commonNameChairmanPriceChangeDocument 'Председатель комиссии' (priceChangeDocument) = nameChairmanCommittee(revaluationCommitteePriceChangeDocument(priceChangeDocument));
 nameOfficerChairmanPriceChangeDocument 'Должность' (priceChangeDocument) = nameOfficerChairmanCommittee(revaluationCommitteePriceChangeDocument(priceChangeDocument));
 
                             //----------печатная форма--------//
@@ -11035,7 +11031,7 @@ showFormItemByCollationSheet 'Добавить товар' (collationSheet) = [A
 FORM listInventory 'Опись'
     OBJECTS         li=listInventory FIXED PANEL
     PROPERTIES (li) nameListInventory, nameDepartmentStoreListInventory, nameInventoryListInventory, noteListInventory,
-                    commonNameCommitteeListInventory, commonNameChairmanCommitteeListInventory, commonNameEmployeeListInventory,
+                    nameCommitteeListInventory, nameChairmanCommitteeListInventory, nameEmployeeListInventory,
                     quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, sumPageListInventory
 
     OBJECTS         pl=pageList
@@ -11045,7 +11041,7 @@ FORM listInventory 'Опись'
     PROPERTIES (dp) nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage, priceAccountDetailPage,
                     totalDetailPage, ADDOBJ, delete
 
-    FILTERS inListInventoryPageList(li, pl),
+    FILTERS listInventoryPageList(pl) == li,
             inPageListDetailPage(pl, dp)
 
 EDIT listInventory OBJECT li
@@ -11114,9 +11110,9 @@ FORM inventory 'Инвентаризация'
     PROPERTIES(cs, i) totalCollationSheetItem, totalBalansCollationSheetItem, shortageTotalCollationSheetItem
 
     FILTERS inInventoryDepartmentStoreListInventoryPageListDetailPage(in, ds, li, pl, dp),
-            inInventoryListInventory(in, li),
-            inDepartmentStoreListInventory(ds, li),
-            inListInventoryPageList(li, pl),
+            inventoryListInventory(li) == in,
+            departmentStoreListInventory(li) == ds,
+            listInventoryPageList(pl) == li,
             includeDepartmentStoreInventory(ds, in),
             inInventoryCollationSheet(in,cs),
             includeCollationSheetItem(cs, i),
