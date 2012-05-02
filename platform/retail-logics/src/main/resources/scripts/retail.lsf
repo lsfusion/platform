@@ -4109,7 +4109,59 @@ FORM recipes 'Рецепты блюд'
 
     FILTERS   inRecipeRecipeDetail(r, rd)
 ;
+//---------------------------- Документы качества ----------------------------------------//
 
+CLASS ABSTRACT paper 'Документы качества' : named;
+TABLE paper(paper);
+
+
+CLASS customsCertificate 'Таможенный сертификат' : paper;
+CLASS certificateGGR 'Удостоверение о ГГР' : paper;
+CLASS certificateConformity 'Сертификат соответствия' : paper;
+CLASS stateExamination 'Акт гос. сан.-гиг. экспертизы' : paper;
+
+numberPaper 'Номер документа' (paper) = DATA STRING[30] (paper) IN baseGroup;
+datePaper 'Дата документа' (paper) = DATA DATE (paper) IN baseGroup;
+dateToPaper 'Срок действия' (paper) = DATA DATE (paper) IN baseGroup;
+holderPaper 'Держатель ИД' (paper) = DATA legalEntity (paper) IN idGroup;
+nameHolderPaper 'Наименование держателя' (paper) = name(holderPaper(paper)) IN baseGroup;
+issuedPaper 'Документ выдал ИД' (paper) = DATA legalEntity (paper) IN idGroup;
+nameIssuedPaper 'Наименование органа, выдавшего документ' (paper) = name(issuedPaper(paper)) IN baseGroup;
+
+FORM paper 'Документ качества'
+    OBJECTS p=paper FIXED PANEL
+    PROPERTIES(p) numberPaper, datePaper, dateToPaper, nameHolderPaper, nameIssuedPaper
+
+    EDIT paper OBJECT p
+;
+
+DESIGN paper FROM DEFAULT {
+
+    NEW row BEFORE functions.box{
+        childConstraints = TO THE BOTTOM;
+
+        NEW row1 {
+            title = 'Шапка документа';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(numberPaper(p));
+            ADD PROPERTY(datePaper(p));
+            ADD PROPERTY(dateToPaper(p));
+        }
+        NEW row2 {
+            title = 'Организации';
+            childConstraints = TO THE BOTTOM;
+            ADD PROPERTY(nameHolderPaper(p));
+            ADD PROPERTY(nameIssuedPaper(p));
+        }
+    }
+}
+
+FORM papers 'Документы качества'
+    OBJECTS p=paper
+    PROPERTIES(p)  objectClassName, numberPaper, datePaper, dateToPaper, nameHolderPaper, nameIssuedPaper
+    PROPERTIES(p)  ADDFORM, EDITFORM, delete
+    ORDER BY objectClassName
+;
 
 //---------------------------- Товар на оборудовании ----------------------------------------//
 
@@ -9395,6 +9447,7 @@ quantityMarkupDetailsShipment 'Количество строк с оптовой
 quantityMarkupDetailsShipment(shipment) => toShowPriceImporterShipment(shipment) RESOLVE FALSE;
 
 toShowWareShipment 'Есть стеклопосуда' (shipment) = DATA BOOLEAN (shipment) IN documentPrmGroup;
+toShowPapersShipment 'Документы качества' (shipment) = DATA BOOLEAN (shipment) IN documentPrmGroup;
 
 quantityWareDetailsShipment 'Количество строк с посудой' (shipment) = GROUP SUM 1
     IF wareShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail);
@@ -10142,7 +10195,7 @@ FORM shipment 'Поставка'
                    nameSupplierShipment, numberContractShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
                    carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
-                   noteShipment, toShowPriceImporterShipment, toShowWareShipment, nameRegisterCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s),
+                   noteShipment, toShowPriceImporterShipment, toShowWareShipment, toShowPapersShipment, nameRegisterCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s),
                    nameRevaluationCommitteeShipment SHOWIF needToPriceChangeShipment(s)
 
     OBJECTS d=shipmentDetail
@@ -12800,6 +12853,7 @@ NAVIGATOR {
             ADD itemGroups;
             ADD unitsOfMeasure;
             ADD assortments;
+            ADD papers;
         }
         NEW shopStructure 'Магазины' {
             ADD companies;
@@ -13076,6 +13130,7 @@ NAVIGATOR {
             ADD labelType;
             ADD printLabelTransaction;
             ADD customLabelTransaction;
+            ADD paper;
             ADD dialogDate;
         }
         ADD parameters;

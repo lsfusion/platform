@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="l" columnCount="4" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="203" leftMargin="15" rightMargin="15" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="3.0"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="35"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -45,19 +45,6 @@
 	<field name="retail_manufacturerLabelTransactionBarcode" class="java.lang.String"/>
 	<detail>
 		<band height="130">
-			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="0" y="118" width="94" height="12"/>
-				<box>
-					<topPen lineWidth="0.0"/>
-					<leftPen lineWidth="0.0"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.0"/>
-				</box>
-				<textElement>
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_barcodeEx}]]></textFieldExpression>
-			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" x="56" y="12" width="147" height="36"/>
 				<box>
@@ -124,19 +111,6 @@
 				<textFieldExpression><![CDATA[$F{retail_nameCompanyLabelTransaction}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="0" y="98" width="94" height="20"/>
-				<box>
-					<topPen lineWidth="0.0"/>
-					<leftPen lineWidth="0.0"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.0"/>
-				</box>
-				<textElement>
-					<font fontName="EAN-13" size="16"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_barcodeEx}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" x="93" y="98" width="109" height="8">
 					<printWhenExpression><![CDATA[$F{retail_shortNameUnitOfMeasureLabelTransactionBarcode}!=null]]></printWhenExpression>
 				</reportElement>
@@ -152,7 +126,7 @@
 				<textFieldExpression><![CDATA["Ед.изм.: "+$F{retail_shortNameUnitOfMeasureLabelTransactionBarcode}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="94" y="118" width="109" height="12">
+				<reportElement style="DefaultStyle" x="93" y="118" width="109" height="12">
 					<printWhenExpression><![CDATA[$F{retail_countryLabelTransactionBarcode}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -205,6 +179,15 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Производитель: "+$F{retail_manufacturerLabelTransactionBarcode}]]></textFieldExpression>
 			</textField>
+			<componentElement>
+				<reportElement mode="Opaque" x="0" y="98" width="93" height="31" forecolor="#000000">
+					<printWhenExpression><![CDATA[$F{retail_barcodeEx}.length() >= 11]]></printWhenExpression>
+				</reportElement>
+				<jr:EAN13 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" checksumMode="auto">
+					<jr:codeExpression><![CDATA[$F{retail_barcodeEx}]]></jr:codeExpression>
+				</jr:EAN13>
+			</componentElement>
+			<elementGroup/>
 		</band>
 	</detail>
 </jasperReport>
