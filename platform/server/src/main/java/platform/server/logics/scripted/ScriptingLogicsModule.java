@@ -381,6 +381,26 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public LP<?> addScriptedAbstractProp(String returnClass, List<String> paramClasses) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedAbstractProp(" + returnClass + ", " + paramClasses + ");");
+
+        ValueClass value = findClassByCompoundName(returnClass);
+        ValueClass[] params = new ValueClass[paramClasses.size()];
+        for (int i = 0; i < paramClasses.size(); i++) {
+            params[i] = findClassByCompoundName(paramClasses.get(i));
+        }
+        return addAUProp(null, genSID(), false, "", value, params);
+    }
+
+    public void addImplementationToAbstract(String propName, LPWithParams implement) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addImplementationToAbstract(" + propName + ", " + implement + ");");
+
+        LP<?> mainProperty = findLPByCompoundName(propName);
+        checkAbstractProperty(mainProperty, propName);
+
+        mainProperty.addOperand(getParamsPlainList(asList(implement)).toArray());
+    }
+
     public int getParamIndex(String param, List<String> namedParams, boolean dynamic, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
         int index = -1;
         if (namedParams != null) {
@@ -1890,6 +1910,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         if (needWarning) {
             warningList.add(" Property " + name + " has class where " + property.getClassWhere());
+        }
+    }
+
+    public void checkAbstractProperty(LP<?> property, String propName) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(property.property instanceof ExclusiveUnionProperty && ((ExclusiveUnionProperty)property.property).isAbstract())) {
+            errLog.emitNotAbstractPropertyError(parser, propName);
         }
     }
 

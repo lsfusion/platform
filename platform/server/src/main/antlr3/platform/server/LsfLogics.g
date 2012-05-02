@@ -183,6 +183,7 @@ statement
 	:	(	classStatement
 		|	groupStatement
 		|	propertyStatement
+		|	overrideStatement
 		|	constraintStatement
 		|	followsStatement
 		|	writeWhenStatement
@@ -238,6 +239,7 @@ classParentsList returns [List<String> list]
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// GROUP STATEMENT /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
 groupStatement
 @init {
 	String parent = null;
@@ -900,6 +902,7 @@ expressionUnfriendlyPD[List<String> context, boolean dynamic, boolean innerPD] r
 
 contextIndependentPD[boolean innerPD] returns [LP property]
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; }
+	|	abstractDef=abstractPropertyDefinition { $property = $abstractDef.property; }
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; }
 	|	groupDef=groupPropertyDefinition { $property = $groupDef.property; }
 	|	typeDef=typePropertyDefinition { $property = $typeDef.property; }
@@ -1010,6 +1013,20 @@ dataPropertyDefinition[boolean innerPD] returns [LP property]
 		')'
 	;
 
+
+abstractPropertyDefinition returns [LP property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedAbstractProp($returnClass.sid, $paramClassNames.ids);	
+	}
+}
+	:	'ABSTRACT'
+		returnClass=classId
+		'('
+			paramClassNames=classIdList
+		')'
+	;
+	
 
 unionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
@@ -1652,6 +1669,27 @@ forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams prop
 		)?	
 		'DO' actPDB=actionPropertyDefinitionBody[newContext, false]
 		( {!recursive}?=> 'ELSE' elsePDB=actionPropertyDefinitionBody[context, false])?
+	;
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////OVERRIDE STATEMENT/////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+overrideStatement
+@init {
+	List<String> context = new ArrayList<String>();
+	boolean dynamic = true;
+}
+@after {
+	if (inPropParseState()) {
+		self.addImplementationToAbstract($propName.sid, $expr.property);
+	}
+}
+	:	propName=compoundID
+		('(' list=idList ')' { context = $list.ids; dynamic = false; })?
+		'+='
+		expr=propertyExpression[context, dynamic]
+		';'
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
