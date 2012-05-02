@@ -392,7 +392,7 @@ META defineDocumentRelationCustom (object, detail)
     object###detail##Detail 'Строка документа' = DATA object (detail##Detail) IN idGroup;
     in###object###detail##Detail(iobject, idetail) = object###detail##Detail(idetail) == iobject;
 
-    quantity###object##Details###object 'Количество строк в документе' (iobject) =
+    detailCount###object 'Количество строк в документе' (iobject) =
         GROUP SUM 1 IF in###object###detail##Detail(iobject, idetail) BY iobject PERSISTENT;
 END
 
@@ -429,7 +429,7 @@ END
 // Отдел магазина
 
 META defineDocumentHeaderDepartmentStore (object)
-    departmentStore###object 'Отдел документа (ИД)' = DATA departmentStore(object) IN idGroup;
+    departmentStore###object 'Отдел документа (ИД)' = DATA departmentStore(object) AUTOSET;
     nameDepartmentStore###object 'Отдел документа' (object) = name(departmentStore###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 20 PREFCHARWIDTH 40;;
 END
@@ -553,8 +553,16 @@ META defineDocumentDetailPrice (object)
     retailPrice###object##Detail 'Розничная цена' = DATA NUMERIC[14,2] (object##Detail);
 END
 
+META defineDocumentDetailAccountPrice (object)
+    accountPrice###object##Detail 'Учетная цена' = DATA NUMERIC[14,2] (object##Detail) IN baseGroup;
+END
+
 META defineDocumentDetailSum (object)
     retailSum###object##Detail 'Розничная сумма' (detail) = quantity###object##Detail(detail) * retailPrice###object##Detail(detail);
+END
+
+META defineDocumentDetailAccountSum (object)
+    accountSum###object##Detail 'Учетная сумма' (detail) = quantity###object##Detail(detail) * accountPrice###object##Detail(detail);
 END
 
 META defineDocumentDetailCurPrice (object)
@@ -605,6 +613,14 @@ END
 
 META defineDocumentHeaderItemSum (object)
     @defineDocumentHeaderItemSumCustom(object, object);
+END
+
+META defineDocumentHeaderAccountSumCustom (object, detail)
+    accountSum###detail 'Учетная сумма' (object) = GROUP SUM accountSum###detail##Detail(idetail) BY object###detail##Detail(idetail) IN documentSumGroup;
+END
+
+META defineDocumentHeaderAccountSum (object)
+    @defineDocumentHeaderAccountSumCustom(object, object);
 END
 
 // ----------------------------------- Свойства для объектов Posted ------------------------------------------ //
@@ -4785,24 +4801,49 @@ nameCommitteeListInventory 'Название комиссии' (listInventory) =
 nameChairmanCommitteeListInventory 'Председатель комиссии' (listInventory) = nameChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
 nameEmployeeListInventory 'Члены комиссии' (listInventory) = nameEmployeeCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
 
-CLASS pageList 'Страница описи';
-TABLE pageList (pageList);
+CLASS pageInventory 'Страница описи';
+TABLE pageInventory (pageInventory);
 
-listInventoryPageList(pageList) = DATA listInventory (pageList) IN idGroup;
+listInventoryPageInventory = DATA listInventory (pageInventory) IN idGroup;
 
-indexPageList(pageList) = PARTITION SUM 1 IF pageList IS pageList
-                                      BY listInventoryPageList(pageList)
-                                      ORDER pageList IN baseGroup;
+indexPageInventory(pageInventory) = PARTITION SUM 1 IF pageInventory IS pageInventory
+                                      BY listInventoryPageInventory(pageInventory)
+                                      ORDER pageInventory IN baseGroup;
 
-namePageList 'Номер страницы' (pageList) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
-                                           ('Страница ', indexPageList(pageList)) IN baseGroup;
-notePageList 'Примечание к странице' = DATA STRING[100] (pageList) IN baseGroup;
+namePageInventory 'Номер страницы' (pageInventory) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
+                                           ('Страница ', indexPageInventory(pageInventory)) IN baseGroup;
+notePageInventory 'Примечание к странице' = DATA STRING[100] (pageInventory) IN baseGroup;
 
-sumPageListInventory 'К-во страниц' (listInventory) = GROUP SUM 1 IF pageList IS pageList
-                                                                  BY listInventoryPageList(pageList);
+sumPageInventoryInventory 'К-во страниц' (listInventory) = GROUP SUM 1 IF pageInventory IS pageInventory
+                                                                  BY listInventoryPageInventory(pageInventory);
 
-CLASS detailPage 'Строка';
-TABLE detailPage (detailPage);
+CLASS pageInventoryDetail 'Строка';
+TABLE pageInventoryDetail (pageInventoryDetail);
+
+@defineDocumentRelation(pageInventory);
+
+listInventoryPageInventoryDetail(pageInventoryDetail) = listInventoryPageInventory(pageInventoryPageInventoryDetail(pageInventoryDetail)) PERSISTENT;
+departmentStorePageInventoryDetail(pageInventoryDetail) = departmentStoreListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) PERSISTENT;
+inventoryPageInventoryDetail(pageInventoryDetail) = inventoryListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) PERSISTENT;
+
+dateTimePageInventoryDetail(pageInventoryDetail) = dateTimeInventory(inventoryPageInventoryDetail(pageInventoryDetail)) PERSISTENT;
+
+barcodePageInventoryDetail(pageInventoryDetail) = DATA barcode (pageInventoryDetail) IN idGroup;
+
+barcodeExPageInventoryDetail 'Штрих-код' (pageInventoryDetail) = barcodeEx(barcodePageInventoryDetail(pageInventoryDetail));
+skuBarcodePageInventoryDetail 'Товар (ИД)' (pageInventoryDetail) =  skuBarcode(barcodePageInventoryDetail(pageInventoryDetail));
+nameAttributeItemPageInventoryDetail 'Товар' (pageInventoryDetail) = nameAttributeItem(skuBarcodePageInventoryDetail(pageInventoryDetail)) IN recognizeGroup;
+
+@defineDocumentDetailIndex(pageInventory);
+
+@defineDocumentDetailQuantity(pageInventory);
+@defineDocumentDetailAccountPrice(pageInventory);
+@defineDocumentDetailAccountSum(pageInventory);
+
+@defineDocumentHeaderQuantity(pageInventory);
+@defineDocumentHeaderAccountSum(pageInventory);
+
+CONSTRAINT quantityPageInventoryDetail(pageInventoryDetail) < 0 MESSAGE 'Количество должно быть положительным';
 
 // Сличительная ведомость
 
@@ -4837,58 +4878,28 @@ GROUP listInventoryGroup 'Информация об описях' : baseGroup;
 GROUP inventoryCommitteeGroup 'Комиссия' : baseGroup;
 GROUP adverbGroup 'Итого' : baseGroup;
 
-pageListDetailPage(detailPage) = DATA pageList (detailPage) IN idGroup;
-inPageListDetailPage(pageList, detailPage) = pageListDetailPage(detailPage) == pageList;
-barcodeDetailPage(detailPage) = DATA barcode (detailPage) IN idGroup;
-nameBarcodeDetailPage 'Штрих-код' (detailPage) = barcodeEx(barcodeDetailPage(detailPage)) IN baseGroup;
+detailCountListInventory 'Количество строк' (listInventory) = GROUP SUM detailCountPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN adverbGroup;
+quantityListInventory 'Количество посчитано' (listInventory) = GROUP SUM quantityPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN adverbGroup;
+accountSumListInventory 'Сумма посчитанного' (listInventory) = GROUP SUM accountSumPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN adverbGroup;
 
-departmentStoreDetailPage(detailPage) = departmentStoreListInventory(listInventoryPageList(pageListDetailPage(detailPage))) PERSISTENT;
-listInventoryDetailPage(detailPage) = listInventoryPageList(pageListDetailPage(detailPage)) PERSISTENT;
-inventoryDetailPage(detailPage) = inventoryListInventory(listInventoryPageList(pageListDetailPage(detailPage))) PERSISTENT;
-inListInventoryDetailPage(listInventory, detailPage) = listInventoryDetailPage(detailPage) == listInventory;
-
-nameDetailPage 'Номер строки' (detailPage) = PARTITION SUM 1 IF detailPage IS detailPage
-    BY listInventoryPageList(pageListDetailPage(detailPage)), pageListDetailPage(detailPage)  ORDER detailPage IN baseGroup;
-
-skuBarcodeDetailPage 'Товар (ИД)' (detailPage) =  skuBarcode(barcodeDetailPage(detailPage)) IN idGroup;
-nameAttributeItemDetailPage 'Товар' (detailPage) = nameAttributeItem(skuBarcodeDetailPage(detailPage)) IN recognizeGroup;
-
-quantityCountedDetailPage 'Количество посчитано' = DATA NUMERIC[14,3] (detailPage) IN baseGroup;
-CONSTRAINT quantityCountedDetailPage(detailPage) < 0 MESSAGE 'Количество должно быть положительным';
-
-
-priceAccountDetailPage 'Учетная цена' (detailPage) = DATA NUMERIC[14,2] (detailPage) IN baseGroup;
-
-totalDetailPage 'Сумма' (detailPage) = priceAccountDetailPage(detailPage) * quantityCountedDetailPage(detailPage) IN baseGroup;
-
-quantityDetailPageList 'Количество строк' (pageList) = GROUP SUM 1 IF detailPage IS detailPage BY pageListDetailPage(detailPage) IN baseGroup;
-quantityCountedPageList 'Количество посчитано' (pageList) = GROUP SUM quantityCountedDetailPage(detailPage) BY pageListDetailPage(detailPage) IN baseGroup;
-totalPageList 'Сумма посчитанного' (pageList) = GROUP SUM totalDetailPage(detailPage) BY pageListDetailPage(detailPage) IN baseGroup;
-
-quantityDetailListInventory 'Количество строк' (listInventory) = GROUP SUM quantityDetailPageList(pageList) BY listInventoryPageList(pageList) IN adverbGroup;
-quantityCountedListInventory 'Количество посчитано' (listInventory) = GROUP SUM quantityCountedPageList(pageList) BY listInventoryPageList(pageList) IN adverbGroup;
-totalDetailListInventory 'Сумма посчитанного' (listInventory) = GROUP SUM totalPageList(pageList) BY listInventoryPageList(pageList) IN adverbGroup;
-
-quantityDetailDepartmentStoreInventory 'Количество строк' (departmentStore, inventory) =
-    GROUP SUM quantityDetailListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN adverbGroup;
-
-quantityCountedDepartmentStoreInventory 'Количество посчитано' (departmentStore, inventory) =
-    GROUP SUM quantityCountedListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN adverbGroup;
-
-totalDetailDepartmentStoreInventory 'Сумма посчитанного' (departmentStore, inventory) =
-    GROUP SUM totalDetailListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN adverbGroup;
+detailCountDepartmentStoreInventory 'Количество строк' (departmentStore, inventory) =
+    GROUP SUM detailCountListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN adverbGroup;
+quantityDepartmentStoreInventory 'Количество посчитано' (departmentStore, inventory) =
+    GROUP SUM quantityListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN adverbGroup;
+accountSumDepartmentStoreInventory 'Сумма посчитанного' (departmentStore, inventory) =
+    GROUP SUM accountSumListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN adverbGroup;
 
 collationSheetListInventory(listInventory) = uniqueCollationSheetDepartmentStoreInventory(departmentStoreListInventory(listInventory), inventoryListInventory(listInventory)) IN baseGroup;
 nameCollationSheetListInventory 'Название сл. ведомости' (listInventory) = nameCollationSheet(collationSheetListInventory(listInventory)) IN listInventoryGroup;
 inCollationSheetListInventory(collationSheet, listInventory) = collationSheetListInventory(listInventory) ==  collationSheet;
 
-quantityDetailCollationSheet 'Количество строк' (collationSheet) = GROUP SUM quantityDetailListInventory(listInventory)
+quantityDetailCollationSheet 'Количество строк' (collationSheet) = GROUP SUM detailCountListInventory(listInventory)
     BY collationSheetListInventory(listInventory) IN baseGroup;
 
-quantityCountedCollationSheet 'Количество посчитано' (collationSheet) = GROUP SUM quantityCountedListInventory(listInventory)
+quantityCountedCollationSheet 'Количество посчитано' (collationSheet) = GROUP SUM quantityListInventory(listInventory)
     BY collationSheetListInventory(listInventory) IN baseGroup;
 
-totalDetailCollationSheet 'Сумма посчитанного' (collationSheet) = GROUP SUM totalDetailListInventory(listInventory)
+totalDetailCollationSheet 'Сумма посчитанного' (collationSheet) = GROUP SUM accountSumListInventory(listInventory)
     BY collationSheetListInventory(listInventory) IN baseGroup;
 
 typeOfAdditionCollationSheet(collationSheet)= typeOfAdditionDepartmentStoreInventory(departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet));
@@ -4904,11 +4915,11 @@ priceAccountCollationSheetItem 'Учетная цена, за ед.' (collationS
 totalBalansCollationSheetItem 'Сумма по остаткам' (collationSheet, item) =
     priceAccountCollationSheetItem(collationSheet, item) * balanceCollationSheetItem(collationSheet, item) IN baseGroup;
 
-quantityCountedCollationSheetItem 'Количество посчитано' (collationSheet, item) = GROUP SUM quantityCountedDetailPage(detailPage)
-    BY collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage))), skuBarcodeDetailPage(detailPage);
+quantityCountedCollationSheetItem 'Количество посчитано' (collationSheet, item) = GROUP SUM quantityPageInventoryDetail(pageInventoryDetail)
+    BY collationSheetListInventory(listInventoryPageInventory(pageInventoryPageInventoryDetail(pageInventoryDetail))), skuBarcodePageInventoryDetail(pageInventoryDetail);
 
-totalCollationSheetItem 'Сумма посчитанно' (collationSheet, item) = GROUP SUM totalDetailPage(detailPage)
-    BY collationSheetListInventory(listInventoryPageList(pageListDetailPage(detailPage))), skuBarcodeDetailPage(detailPage);
+totalCollationSheetItem 'Сумма посчитанно' (collationSheet, item) = GROUP SUM accountSumPageInventoryDetail(pageInventoryDetail)
+    BY collationSheetListInventory(listInventoryPageInventory(pageInventoryPageInventoryDetail(pageInventoryDetail))), skuBarcodePageInventoryDetail(pageInventoryDetail);
 
 inManyCollationSheetItem 'Вкл в ведомость' = DATA BOOLEAN (manyCollationSheet, item) IN baseGroup;
 
@@ -4950,25 +4961,25 @@ shortageTotalByContainerCollationSheet 'Недостача (сумма) по в�
     GROUP SUM shortageTotalCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) AND isContainerItem(item)
         BY collationSheet IN baseGroup;
 
-priceByCollationSheetItem 'Цена из описи, за ед.' (collationSheet, item) = GROUP EQUAL priceAccountDetailPage(detailPage) BY collationSheetListInventory(listInventoryDetailPage(detailPage)), skuBarcodeDetailPage(detailPage);
+priceByCollationSheetItem 'Цена из описи, за ед.' (collationSheet, item) = GROUP EQUAL accountPricePageInventoryDetail(pageInventoryDetail) BY collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)), skuBarcodePageInventoryDetail(pageInventoryDetail);
 
 notEqualsPriceByCollationSheetItem(collationSheet, item) =  priceByCollationSheetItem(collationSheet, item) != priceAccountCollationSheetItem(collationSheet, item);
 
 // автоматическое создание сличительной ведомости (товары из описей) //
 includeRegisterDepartmentStoreInventory(departmentStore, inventory) = // includeDepartmentStoreInventory(departmentStore, inventory) AND
-    typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.register;
+    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.register;
 
 @metaCodeDoublePropsAggregation(departmentStoreCollationSheet, inventoryCollationSheet, registerCollationSheet, includeRegisterDepartmentStoreInventory);
 
 // автоматическое создание сличительной ведомости (по остаткам) //
 includeRemainsDepartmentStoreInventory(departmentStore, inventory) =//        includeDepartmentStoreInventory(departmentStore, inventory) AND
-    typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.remains;
+    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.remains;
 
 @metaCodeDoublePropsAggregation(departmentStoreCollationSheet, inventoryCollationSheet, remainsCollationSheet, includeRemainsDepartmentStoreInventory);
 
 // автоматическое создание сличительной ведомости (по множеству товаров) //
 includeManyDepartmentStoreInventory(departmentStore, inventory) =// includeDepartmentStoreInventory(departmentStore, inventory) AND
-    typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.many;
+    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.many;
 
 @metaCodeDoublePropsAggregation(departmentStoreCollationSheet, inventoryCollationSheet, manyCollationSheet, includeManyDepartmentStoreInventory);
 
@@ -4977,13 +4988,13 @@ inInventoryDepartmentStoreListInventory(inventory, departmentStore, listInventor
 sumListInventoryByCollationSheet 'К-во описей' (collationSheet) =
     GROUP SUM 1 IF listInventory IS listInventory BY collationSheetListInventory(listInventory);
 
-sumPageListByCollationSheet 'К-во страниц' (collationSheet) =
-    GROUP SUM 1 IF pageList IS pageList BY collationSheetListInventory(listInventoryPageList(pageList));
+sumPageInventoryByCollationSheet 'К-во страниц' (collationSheet) =
+    GROUP SUM 1 IF pageInventory IS pageInventory BY collationSheetListInventory(listInventoryPageInventory(pageInventory));
 
-inInventoryDepartmentStoreListInventoryPageListDetailPage (inventory, departmentStore, listInventory, pageList, detailPage) = UNION OVERRIDE
-    pageListDetailPage(detailPage) == pageList AND listInventory AND departmentStore AND inventory,
-    listInventoryDetailPage(detailPage) == listInventory AND departmentStore AND NOT pageList AND inventory,
-    departmentStoreDetailPage(detailPage) == departmentStore AND inventory == inventoryDetailPage(detailPage) AND NOT pageList AND NOT listInventory;
+inInventoryDepartmentStoreListInventoryPageInventoryPageInventoryDetail (inventory, departmentStore, listInventory, pageInventory, pageInventoryDetail) = UNION OVERRIDE
+    pageInventoryPageInventoryDetail(pageInventoryDetail) == pageInventory AND listInventory AND departmentStore AND inventory,
+    listInventoryPageInventoryDetail(pageInventoryDetail) == listInventory AND departmentStore AND NOT pageInventory AND inventory,
+    departmentStorePageInventoryDetail(pageInventoryDetail) == departmentStore AND inventory == inventoryPageInventoryDetail(pageInventoryDetail) AND NOT pageInventory AND NOT listInventory;
 
 isDraftListInventory 'Открыт' (listInventory) = listInventory IS listInventory AND NOT listInventory IS listInventoryPosted;
 isPostedListInventory 'Закрыт' (listInventory) = listInventory IS listInventoryPosted;
@@ -6373,7 +6384,7 @@ quantityWastageDetail 'Количество списания '(wastageDetail) = 
 
 quantityWastage 'Общее количество' (wastage) = GROUP SUM quantityWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail);
 
-quantityWastageDetailsWastage 'Количество строк' (wastage) = GROUP SUM 1 IF wastageDetail IS wastageDetail BY wastageWastageDetail(wastageDetail);
+detailCountWastage 'Количество строк' (wastage) = GROUP SUM 1 IF wastageDetail IS wastageDetail BY wastageWastageDetail(wastageDetail);
 
 retailPriceWastageDetail 'Цена розничная' (wastageDetail) = retailPriceShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 supplierPriceWastageDetail 'Цена поставщика' (wastageDetail) = supplierPriceShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
@@ -6408,7 +6419,7 @@ FORM wastages 'Списания отходов'
 
     OBJECTS w=wastage
     PROPERTIES (w) READONLY numberWastage, seriesWastage, dateWastage, timeWastage, nameDepartmentStoreWastage, nameSupplierWastage,
-                   quantityWastageDetailsWastage, quantityWastage, totalSumWastage
+                   detailCountWastage, quantityWastage, totalSumWastage
 
     OBJECTS d=wastageDetail
     PROPERTIES (d) READONLY indexWastageDetail, barcodeExSkuWastageDetail, nameAttributeItemWastageDetail, quantityWastageDetail, retailPriceWastageDetail, sumWastageDetail
@@ -6765,7 +6776,7 @@ discountSumReturnBill 'Сумма скидки (возврат)' (bill) = GROUP 
 
 discountSumBill 'Сумма скидки' (bill) = discountSumSaleBill(bill) (-) discountSumReturnBill(bill);
 
-quantityBillDetailsBill 'Количество строк в чеке' (bill) = GROUP SUM 1 IF billBillDetail (billDetail) == bill
+detailCountBill 'Количество строк в чеке' (bill) = GROUP SUM 1 IF billBillDetail (billDetail) == bill
     BY billBillDetail (billDetail) IN documentSumGroup;
 
 @defineDocumentHeaderItemQuantity(bill);
@@ -7885,7 +7896,7 @@ quantityOrderedShipmentDetailsShipment 'Количество позиций, д�
 percentOrderedShipmentDetailsShipment 'Процент позиций поставки, для которых есть заказ' (shipment) =
     UNION OVERRIDE 0 AND shipment IS shipment, [X*100/Y](
     quantityOrderedShipmentDetailsShipment(shipment),
-    UNION OVERRIDE 1 IF shipment IS shipment, quantityShipmentDetailsShipment(shipment)) IN shipmentOrderGroup;
+    UNION OVERRIDE 1 IF shipment IS shipment, detailCountShipment(shipment)) IN shipmentOrderGroup;
 
 surePercentSupplierShipment 'Обязательный % заказанных товаров в прих. накладной' (shipment) = UNION OVERRIDE 0 AND shipment IS shipment, [DATA INTEGER (shipment)](shipment);
 surePercentSupplierShipment (shipment) <- surePercentSupplier(supplierShipment (shipment)) WHEN CHANGED(supplierShipment(shipment));
@@ -9391,9 +9402,9 @@ raceQuantityConsignment 'Количество ездок' (consignment) = UNION 
                                                                            raceQuantityReturnSupplier(consignment),
                                                                            raceQuantityInnerFlow(consignment) IN carConsignmentGroup;
 
-quantityConsignmentDetailsConsignment 'Количество строк' (consignment) = UNION EXCLUSIVE quantityStatementDetailsStatement(consignment),
-                                                                           quantityReturnSupplierDetailsReturnSupplier(consignment),
-                                                                           quantityInnerFlowDetailsInnerFlow(consignment) IN carConsignmentGroup;
+quantityConsignmentDetailsConsignment 'Количество строк' (consignment) = UNION EXCLUSIVE detailCountStatement(consignment),
+                                                                                         detailCountReturnSupplier(consignment),
+                                                                                         detailCountInnerFlow(consignment) IN carConsignmentGroup;
 
 
 // для накладной (спецификация)
@@ -9656,7 +9667,7 @@ DESIGN writeOff FROM DEFAULT{
 FORM writeOffs 'Списания'
     OBJECTS w=writeOff
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWriteOff, timeWriteOff, nameDepartmentStoreWriteOff,
-                            nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, quantityWriteOffDetailsWriteOff, accountSumWriteOff
+                            nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, detailCountWriteOff, accountSumWriteOff
 
     PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWriteOff(w), delete FORCE PANEL SHOWIF isDraftWriteOff(w),
                    postWriteOff SHOWIF isDraftWriteOff(w), unpostWriteOff SHOWIF isPostedWriteOff(w)
@@ -9805,9 +9816,9 @@ noOverdueSpecificationStatement 'Непросроченные с/ф' (specificat
 
 // --------------------------- Использование регистров (автоматическое заполнение): инвентаризация---------------//
 
-priceAccountDetailPage(detailPage) <- priceAccountBLedgerDateTime(
-                skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeInventory(inventoryDetailPage(detailPage)))
-                WHEN CHANGED(skuBarcodeDetailPage(detailPage));
+accountPricePageInventoryDetail(pageInventoryDetail) <- priceAccountBLedgerDateTime(
+                skuBarcodePageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
+                WHEN CHANGED(skuBarcodePageInventoryDetail(pageInventoryDetail));
 
 priceAccountCollationSheetItem(collationSheet, item) <- priceAccountBLedgerDateTime(
                 item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
@@ -9821,9 +9832,9 @@ fillBalanceInventory 'Заполнить остатки' (inventory) = ACTION(in
 //  todo: зацикливается на includeCollationSheetItem, пока на action поставили - переделать потом
 
 convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
-    SET priceAccountDetailPage(detailPage) AND inventoryDetailPage(detailPage) == inventory <- priceAccountBLedgerDateTime(
-            skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeInventory(inventoryDetailPage(detailPage)))
-            AND inventoryDetailPage(detailPage) == inventory;
+    SET accountPricePageInventoryDetail(pageInventoryDetail) AND inventoryPageInventoryDetail(pageInventoryDetail) == inventory <- priceAccountBLedgerDateTime(
+            skuBarcodePageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
+            AND inventoryPageInventoryDetail(pageInventoryDetail) == inventory;
     SET priceAccountCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- priceAccountBLedgerDateTime(
             item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
             AND inventoryCollationSheet(collationSheet) == inventory;
@@ -9832,9 +9843,9 @@ convertPriceInventory 'Пересчитать цены по всей инвен�
 // todo: какой-то баг, не всегда срабатывает action
 
 convertPriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION(collationSheet) {
-    SET priceAccountDetailPage(detailPage) AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet <- priceAccountBLedgerDateTime(
-            skuBarcodeDetailPage(detailPage), departmentStoreDetailPage(detailPage), dateTimeInventory(inventoryDetailPage(detailPage)))
-            AND collationSheetListInventory(listInventoryDetailPage(detailPage)) == collationSheet;
+    SET accountPricePageInventoryDetail(pageInventoryDetail) AND collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) == collationSheet <- priceAccountBLedgerDateTime(
+            skuBarcodePageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
+            AND collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) == collationSheet;
     SET priceAccountCollationSheetItem(collationSheet, item) <- priceAccountBLedgerDateTime(
             item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
 } CONFIRM;
@@ -10411,7 +10422,7 @@ DESIGN shipment FROM DEFAULT{
 FORM shipments 'Поставки'
     OBJECTS s=shipment
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
-                            nameSupplierShipment, quantityShipmentDetailsShipment, totalSumSupplierPriceShipment, totalSumIncVATShipment,
+                            nameSupplierShipment, detailCountShipment, totalSumSupplierPriceShipment, totalSumIncVATShipment,
                             totalSumSupplierShipment, retailSumShipment,
                             statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionShipment(s),
                             statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionShipment(s)
@@ -11116,17 +11127,17 @@ FORM listInventory 'Опись'
     OBJECTS         li=listInventory FIXED PANEL
     PROPERTIES (li) nameListInventory, nameDepartmentStoreListInventory, nameInventoryListInventory, noteListInventory,
                     nameCommitteeListInventory, nameChairmanCommitteeListInventory, nameEmployeeListInventory,
-                    quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, sumPageListInventory
+                    detailCountListInventory, quantityListInventory, accountSumListInventory, sumPageInventoryInventory
 
-    OBJECTS         pl=pageList
-    PROPERTIES(pl)  namePageList, notePageList FORCE PANEL, quantityDetailPageList, quantityCountedPageList, totalPageList, ADDOBJ, delete
+    OBJECTS         pl=pageInventory
+    PROPERTIES(pl)  namePageInventory, notePageInventory FORCE PANEL, detailCountPageInventory, quantityPageInventory, accountSumPageInventory, ADDOBJ, delete
 
-    OBJECTS         dp=detailPage
-    PROPERTIES (dp) nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage, priceAccountDetailPage,
-                    totalDetailPage, ADDOBJ, delete
+    OBJECTS         dp=pageInventoryDetail
+    PROPERTIES (dp) indexPageInventoryDetail, barcodeExPageInventoryDetail, nameAttributeItemPageInventoryDetail, quantityPageInventoryDetail, accountPricePageInventoryDetail,
+                    accountSumPageInventoryDetail, ADDOBJ, delete
 
-    FILTERS listInventoryPageList(pl) == li,
-            inPageListDetailPage(pl, dp)
+    FILTERS listInventoryPageInventory(pl) == li,
+            pageInventoryPageInventoryDetail(dp) == pl
 
 EDIT listInventory OBJECT li
 ;
@@ -11154,21 +11165,21 @@ FORM inventory 'Инвентаризация'
                      noteInventory, infoInventory, nameDepartmentInventory, showFormNameDepartmentByInventory, convertPriceInventory,
                      fillBalanceInventory
 
-    TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageList
-    PROPERTIES       READONLY name(ds),  nameListInventory(li), namePageList(pl)
+    TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageInventory
+    PROPERTIES       READONLY name(ds),  nameListInventory(li), namePageInventory(pl)
 
-    PROPERTIES(ds, in) READONLY quantityDetailDepartmentStoreInventory, quantityCountedDepartmentStoreInventory, totalDetailDepartmentStoreInventory
+    PROPERTIES(ds, in) READONLY detailCountDepartmentStoreInventory, quantityDepartmentStoreInventory, accountSumDepartmentStoreInventory
 
-    PROPERTIES(li)   READONLY quantityDetailListInventory, quantityCountedListInventory, totalDetailListInventory, objectClassName
+    PROPERTIES(li)   READONLY detailCountListInventory, quantityListInventory, accountSumListInventory, objectClassName
 
     PROPERTIES(li)   ADDFORM, editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), delete FORCE PANEL SHOWIF isDraftListInventory(li), //delete SHOWIF isDraftListInventory(li),      //FORCE PANEL
                      postListInventory FORCE PANEL SHOWIF isDraftListInventory(li), unpostListInventory FORCE PANEL SHOWIF isPostedListInventory(li)
 
-    PROPERTIES(pl)   READONLY quantityDetailPageList, quantityCountedPageList, totalPageList, dumb1
+    PROPERTIES(pl)   READONLY detailCountPageInventory, quantityPageInventory, accountSumPageInventory, dumb1
 
-    OBJECTS          dp=detailPage
-    PROPERTIES (dp)  READONLY nameDetailPage, nameBarcodeDetailPage, nameAttributeItemDetailPage, quantityCountedDetailPage,
-                     priceAccountDetailPage, totalDetailPage
+    OBJECTS          dp=pageInventoryDetail
+    PROPERTIES (dp)  READONLY indexPageInventoryDetail, barcodeExPageInventoryDetail, nameAttributeItemPageInventoryDetail, quantityPageInventoryDetail,
+                     accountPricePageInventoryDetail, accountSumPageInventoryDetail
 
     OBJECTS          cs=collationSheet
 
@@ -11176,7 +11187,7 @@ FORM inventory 'Инвентаризация'
     PROPERTIES (cs)  READONLY nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
                      quantityCountedItemByCollationSheet, balanceItemByCollationSheet, shortageQuantityCountedItemByCollationSheet,
                      totalItemByCollationSheet, totalBalansItemByCollationSheet, shortageTotalItemByCollationSheet,
-                     sumListInventoryByCollationSheet, sumPageListByCollationSheet
+                     sumListInventoryByCollationSheet, sumPageInventoryByCollationSheet
     PROPERTIES (cs)  showFormItemByCollationSheet, convertPriceCollationSheet, delete
 
 
@@ -11193,10 +11204,10 @@ FORM inventory 'Инвентаризация'
 
     PROPERTIES(cs, i) totalCollationSheetItem, totalBalansCollationSheetItem, shortageTotalCollationSheetItem
 
-    FILTERS inInventoryDepartmentStoreListInventoryPageListDetailPage(in, ds, li, pl, dp),
+    FILTERS inInventoryDepartmentStoreListInventoryPageInventoryPageInventoryDetail(in, ds, li, pl, dp),
             inventoryListInventory(li) == in,
             departmentStoreListInventory(li) == ds,
-            listInventoryPageList(pl) == li,
+            listInventoryPageInventory(pl) == li,
             includeDepartmentStoreInventory(ds, in),
             inInventoryCollationSheet(in,cs),
             includeCollationSheetItem(cs, i),
@@ -11657,7 +11668,7 @@ DESIGN innerFlow FROM DEFAULT{
 FORM innerFlows 'Расходы в другие отделы'
     OBJECTS f=innerFlow
     PROPERTIES (f) READONLY objectClassName, numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
-                            nameRecipientDepartmentInnerFlow, quantityInnerFlowDetailsInnerFlow,
+                            nameRecipientDepartmentInnerFlow, detailCountInnerFlow,
                             totalQuantityInnerFlow, accountSumInnerFlow
 
     PROPERTIES(f) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -11675,6 +11686,8 @@ FORM innerFlows 'Расходы в другие отделы'
                             dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, priceWareInnerFlowDetail,
                             retailPriceInnerFlowDetail, accountSumInnerFlowDetail
     FILTERS inInnerFlowInnerFlowDetail(f, d)
+
+    DIALOG innerFlowPosted OBJECT f // todo : здесь наверное надо отдельную форму нарисовать
 ;
 
 DESIGN innerFlows FROM DEFAULT {
@@ -11825,7 +11838,7 @@ DESIGN innerArrival FROM DEFAULT{
 FORM innerArrivals 'Приходы из других отделов'
     OBJECTS a=innerArrival
     PROPERTIES (a) READONLY objectClassName, numberArrival, seriesArrival, dateInnerArrival, timeInnerArrival, nameDepartmentStoreInnerArrival,
-                            nameSenderDepartmentInnerArrival, quantityInnerArrivalDetailsInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival,
+                            nameSenderDepartmentInnerArrival, detailCountInnerArrival, totalQuantityInnerArrival, accountSumInnerArrival,
                             statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionInnerArrival(a),
                             statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionInnerArrival(a)
 
@@ -12023,7 +12036,7 @@ DESIGN specification FROM DEFAULT{
 FORM specifications 'Счет-фактуры'
     OBJECTS sp=specification
     PROPERTIES (sp) READONLY numberObject, seriesObject, dateSpecification, timeSpecification, nameDepartmentStoreSpecification,
-                             nameCustomerSpecification, dateToSpecification, quantitySpecificationDetailsSpecification, quantitySpecification,
+                             nameCustomerSpecification, dateToSpecification, detailCountSpecification, quantitySpecification,
                              sumWithoutNDSSpecification, sumNDSSpecification, sumSpecification
     PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
 
@@ -12183,7 +12196,7 @@ DESIGN statement FROM DEFAULT {
 FORM statements 'Отгрузки из розницы'
     OBJECTS st=statement
     PROPERTIES (st)  READONLY objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameDepartmentStoreStatement,
-                     nameCustomerStatement, quantityStatementDetailsStatement, totalQuantityStatement,
+                     nameCustomerStatement, detailCountStatement, totalQuantityStatement,
                      sumWithoutNDSStatement, sumNDSStatement, sumStatement
     PROPERTIES (st)  FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
                      toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,
@@ -12274,7 +12287,7 @@ FORM bill 'Z-отчет'
 
     OBJECTS b=bill
     PROPERTIES(b) numberBill, dateBill, timeBill, numberCashRegisterBill, nameDepartmentStoreBill READONLY,
-                  numberDiscountCardBill, nameCustomerDiscountCardBill, sumBill, discountSumBill, quantityBillDetailsBill, quantityPositionsBill, ADDOBJ, delete
+                  numberDiscountCardBill, nameCustomerDiscountCardBill, sumBill, discountSumBill, detailCountBill, quantityPositionsBill, ADDOBJ, delete
     FILTERS zReportBill(b)==z
 
     OBJECTS d=billDetail
@@ -12314,7 +12327,7 @@ FORM bills 'Чеки'
     OBJECTS b=bill
     PROPERTIES(b) READONLY  numberBill, dateBill, timeBill, numberCashRegisterBill, nameDepartmentStoreBill,
                             numberDiscountCardBill, nameCustomerDiscountCardBill, sumBill, discountSumBill,
-                            quantityBillDetailsBill, quantityPositionsBill
+                            detailCountBill, quantityPositionsBill
 
     FILTERS zReportBill(b)==z
 
