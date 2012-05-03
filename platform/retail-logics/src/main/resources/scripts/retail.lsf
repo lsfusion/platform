@@ -5926,11 +5926,11 @@ actingPaperDate(paper, date) =  datePaper(paper) <= date AND NOT  dateToPaper(pa
 
 CONSTRAINT customsCertificateShipmentDetail(shipmentDetail) AND NOT actingPaperDate(customsCertificateShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
     CHECKED BY customsCertificateShipmentDetail MESSAGE 'Таможенный сертификат не действующий';
-CONSTRAINT certificateGGRShipmentDetail(shipmentDetail) AND NOT actingPaperDate(certificateGGRShipmentDetail(shipmentDetail), shipmentDetail)
+CONSTRAINT certificateGGRShipmentDetail(shipmentDetail) AND NOT actingPaperDate(certificateGGRShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
     CHECKED BY certificateGGRShipmentDetail MESSAGE 'Удостоверение о ГГР не действующее';
-CONSTRAINT certificateConformityShipmentDetail(shipmentDetail) AND NOT actingPaperDate(certificateConformityShipmentDetail(shipmentDetail), shipmentDetail)
+CONSTRAINT certificateConformityShipmentDetail(shipmentDetail) AND NOT actingPaperDate(certificateConformityShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
     CHECKED BY certificateConformityShipmentDetail MESSAGE 'Сертификат соответствия не действующий';
-CONSTRAINT stateExaminationShipmentDetail(shipmentDetail) AND NOT actingPaperDate(stateExaminationShipmentDetail(shipmentDetail), shipmentDetail)
+CONSTRAINT stateExaminationShipmentDetail(shipmentDetail) AND NOT actingPaperDate(stateExaminationShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
     CHECKED BY stateExaminationShipmentDetail MESSAGE 'Акт гос. сан.-гиг. не действующий';
 // ---------------------------------- Дооценка на приходе ------------------------------------------
 
