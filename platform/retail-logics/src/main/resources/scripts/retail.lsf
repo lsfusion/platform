@@ -851,6 +851,101 @@ PROPERTIES(u) READONLY name, shortName, shortNameUnitOfMeasureUnitOfMeasure, fac
               useUnitOfMeasure, weightUnitOfMeasure, pieceUnitOfMeasure
 PROPERTIES(u) ADDFORM, EDITFORM, delete;
 
+// ----------------------------------- Статистический классификатор ------------------------------------------ //
+
+CLASS statisticGroup 'Статистическая группа' : named, externalObject;
+TABLE statisticGroup(statisticGroup);
+TABLE statisticGroupStatisticGroup (statisticGroup, statisticGroup);
+
+parentStatisticGroup = DATA statisticGroup (statisticGroup);
+nameParentStatisticGroup 'Родительская группа' (statisticGroup) = name(parentStatisticGroup(statisticGroup));
+
+inParentStatisticGroupStatisticGroup (child, parent) = parentStatisticGroup(child) == parent;
+
+
+childNumberStatisticGroup 'Кол-во непосредственных потомков' (statisticGroup) = GROUP SUM 1 BY parentStatisticGroup(group) PERSISTENT;
+
+isLeafStatisticGroup 'Лист' (statisticGroup) = statisticGroup IS statisticGroup AND NOT childNumberStatisticGroup(statisticGroup) PERSISTENT;
+
+hasParentStatisticGroupLevel 'Уровень' (child, parent) = RECURSION 1l AND child IS statisticGroup AND parent == child
+                                                                  STEP 2l AND parent == parentStatisticGroup($parent) PERSISTENT;
+TABLE statisticGroupStructure(statisticGroup, statisticGroup, LONG);
+
+hasParentStatisticGroup 'Уровень' (child, parent) = TRUE AND hasParentStatisticGroupLevel(child, parent);
+
+hasParentAndLeafStatisticGroup (child, parent) = hasParentStatisticGroup(child, parent) AND isLeafStatisticGroup(child);
+
+unitOfMeasureStatisticGroup 'Ед. изм.' (statisticGroup) = DATA unitOfMeasure (statisticGroup);
+shortNameUnitOfMeasureStatisticGroup 'Еденица измерения' (statisticGroup) = shortName(unitOfMeasureStatisticGroup(statisticGroup));
+SidStatisticGroup 'Код группы по ОКРБ 007-2007' (statisticGroup) = DATA STRING[12] (statisticGroup)  MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
+conversionFactorStatisticGroup 'Коэффициент перевода' (statisticGroup) = DATA NUMERIC[14,5] (statisticGroup);
+canonicalNameStatisticGroup 'Каноническое имя' (statisticGroup) = castToString255(
+                           [GROUP CONCAT name(parent), ' / ' BY child ORDER DESC hasParentStatisticGroupLevel(child, parent)](statisticGroup))
+                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+
+canonicalNumberStatisticGroup 'Каноническое код' (statisticGroup) = castToString255(
+                           [GROUP CONCAT SidStatisticGroup(parent), ' / ' BY child ORDER DESC hasParentStatisticGroupLevel(child, parent)](statisticGroup))
+                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+
+canonicalNumberNameStatisticGroup 'Канонический код-название' (statisticGroup) = [FORMULA STRING[100] '$1 || \' / \' || $2'](
+    canonicalNumberStatisticGroup(statisticGroup), name(statisticGroup));
+
+FORM statisticGroup 'Статистическая группа'
+    OBJECTS g=statisticGroup FIXED PANEL
+    PROPERTIES(g)   name, nameParentStatisticGroup, SidStatisticGroup, shortNameUnitOfMeasureStatisticGroup,
+                    conversionFactorStatisticGroup
+
+    EDIT statisticGroup OBJECT g
+;
+
+addStatisticGroup 'Добавить' = ACTION (statisticGroup) NEWSESSION {
+    ADDOBJ statisticGroup;
+    FOR g == addedObject() DO {
+        SET parentStatisticGroup(g) <- statisticGroup AS statisticGroup;
+        FORM statisticGroup OBJECTS g=addedObject() MODAL;
+        IF formResult() == formResult.ok THEN
+            EXEC apply();
+    };
+} TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+
+FORM statisticGroups 'Статистические группы'
+    TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
+    PROPERTIES READONLY name(g), SidStatisticGroup(g)
+    PROPERTIES(g)       addStatisticGroup, EDITFORM
+    ORDER BY SidStatisticGroup
+
+    OBJECTS cg=statisticGroup
+    PROPERTIES(cg)     READONLY canonicalNumberNameStatisticGroup, SidStatisticGroup, shortNameUnitOfMeasureStatisticGroup SHOWIF isLeafStatisticGroup(g),
+                       conversionFactorStatisticGroup SHOWIF isLeafStatisticGroup(g)
+PROPERTIES(cg)  delete
+
+    ORDER BY canonicalNumberNameStatisticGroup
+
+    FILTERGROUP filters
+        FILTER 'Все листья' 'F10' hasParentAndLeafStatisticGroup(cg, g) DEFAULT
+        FILTER 'Всех потомков' 'F9' hasParentStatisticGroup(cg, g)
+        FILTER 'Только непосредственных потомков' 'F8' inParentStatisticGroupStatisticGroup(cg, g)
+;
+
+DESIGN statisticGroups FROM DEFAULT {
+
+    POSITION treeGroups.box TO THE LEFT cg.box;
+
+    treeGroups.tree {
+        fillHorizontal = 0.5;
+    }
+
+}
+
+FORM statisticGroupDialog 'Статистические группы'
+    TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
+    PROPERTIES(g) READONLY name, SidStatisticGroup
+    PROPERTIES(g) addStatisticGroup, EDITFORM
+    ORDER BY SidStatisticGroup
+
+    DIALOG statisticGroup OBJECT g
+;
+
 // ------------------------------------ Цвета ------------------------------------------------ //
 CLASS color 'Цвет' : named;
 TABLE color (color);
@@ -1256,6 +1351,9 @@ rateWasteItem = DATA rateWaste(item) IN idGroup;
 nameRateWasteItem 'Норма отходов' = name(rateWasteItem(item)) IN rateGroup;
 percentRateWasteItem 'Норма отходов,%' = percentRateWaste(rateWasteItem(item)) IN rateGroup;
 @metaCodeShowItemAttribute(RateWaste, 'Показывать норму отходов', displayGroup);
+
+statisticGroupItem = DATA statisticGroup(item) IN idGroup AUTOSET;
+nameStatisticGroupItem 'Статистическая группа' (item) = name(statisticGroupItem(item)) IN rateGroup;
 
 wareItem = DATA ware (item) IN idGroup;
 nameWareItem 'Посуда' = name(wareItem(item)) IN retailGroup;
@@ -2329,7 +2427,7 @@ FORM item 'Товар'
                   normOutItem SHOWIF isManufacturedItem(i), groupMenuItem SHOWIF isManufacturedItem(i),
                   isCutedItem SHOWIF isManufacturedItem(i), coefficientNetGrossItem SHOWIF isManufacturedItem(i), showFormcoefficientNetGrossItem,
 
-                  nameRateWasteItem, percentRateWasteItem, nameGroupNaturalLossItem, rateGroupNaturalLossItem,
+                  nameRateWasteItem, percentRateWasteItem, nameGroupNaturalLossItem, rateGroupNaturalLossItem, nameStatisticGroupItem,
 
                   volumeItem, lengthItem, widthItem, heightItem, lengthPackItem, widthPackItem, heightPackItem,
 
@@ -5819,13 +5917,21 @@ certificateGGRShipmentDetail 'Удостоверение о ГГР ИД' (shipme
 certificateConformityShipmentDetail 'Сертификат соответствия ИД' (shipmentDetail)= DATA certificateConformity (shipmentDetail) IN idGroup;
 stateExaminationShipmentDetail 'Акт гос. сан.-гиг. экспертизы ИД' (shipmentDetail)= DATA stateExamination (shipmentDetail) IN idGroup;
 
-numberCustomsCertificateShipmentDetail 'Номер таможенного свидетельства' (shipmentDetail) = numberPaper(customsCertificateShipmentDetail(shipmentDetail));
-numberCertificateGGRShipmentDetail 'Номер удостоверения о ГГР' (shipmentDetail) = numberPaper(certificateGGRShipmentDetail(shipmentDetail));
-numberCertificateConformityShipmentDetail 'Номер сертификата соответствия' (shipmentDetail) = numberPaper(certificateConformityShipmentDetail(shipmentDetail));
-numberStateExaminationShipmentDetail 'Номер акта гос. сан.-гиг. экспертизы' (shipmentDetail) = numberPaper(stateExaminationShipmentDetail(shipmentDetail));
+numberCustomsCertificateShipmentDetail 'Номер таможенного сертификата' (shipmentDetail) = numberPaper(customsCertificateShipmentDetail(shipmentDetail)) IN recognizeGroup;
+numberCertificateGGRShipmentDetail 'Номер удостоверения о ГГР' (shipmentDetail) = numberPaper(certificateGGRShipmentDetail(shipmentDetail)) IN recognizeGroup;
+numberCertificateConformityShipmentDetail 'Номер сертификата соответствия' (shipmentDetail) = numberPaper(certificateConformityShipmentDetail(shipmentDetail)) IN recognizeGroup;
+numberStateExaminationShipmentDetail 'Номер акта гос. сан.-гиг. экспертизы' (shipmentDetail) = numberPaper(stateExaminationShipmentDetail(shipmentDetail)) IN recognizeGroup;
 
-//CONSTRAINT customsCertificateShipmentDetail(shipmentDetail) AND NOT includeDepartmentStoreEmployee(departmentStore, bookkeeperDepartmentStore(departmentStore))
-//    CHECKED BY bookkeeperDepartmentStore MESSAGE 'Бухгалтер не сотрудник отдела';
+actingPaperDate(paper, date) =  datePaper(paper) <= date AND NOT  dateToPaper(paper) < date AND date AS DATE;
+
+CONSTRAINT customsCertificateShipmentDetail(shipmentDetail) AND NOT actingPaperDate(customsCertificateShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
+    CHECKED BY customsCertificateShipmentDetail MESSAGE 'Таможенный сертификат не действующий';
+CONSTRAINT certificateGGRShipmentDetail(shipmentDetail) AND NOT actingPaperDate(certificateGGRShipmentDetail(shipmentDetail), shipmentDetail)
+    CHECKED BY certificateGGRShipmentDetail MESSAGE 'Удостоверение о ГГР не действующее';
+CONSTRAINT certificateConformityShipmentDetail(shipmentDetail) AND NOT actingPaperDate(certificateConformityShipmentDetail(shipmentDetail), shipmentDetail)
+    CHECKED BY certificateConformityShipmentDetail MESSAGE 'Сертификат соответствия не действующий';
+CONSTRAINT stateExaminationShipmentDetail(shipmentDetail) AND NOT actingPaperDate(stateExaminationShipmentDetail(shipmentDetail), shipmentDetail)
+    CHECKED BY stateExaminationShipmentDetail MESSAGE 'Акт гос. сан.-гиг. не действующий';
 // ---------------------------------- Дооценка на приходе ------------------------------------------
 
 CLASS priceChangeShipment 'Переоценка на приходе' : priceChangeDocument;
@@ -7868,7 +7974,7 @@ inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) =
 ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(seriesNumberObject(orderSupplier))
     IF inShipmentOrder(shipment, orderSupplier), ', ' BY shipment IN shipmentOrderGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
-sumOrdersShipment (shipment) = GROUP SUM 1 IF inShipmentOrder(shipment, orderSupplier) BY shipment;
+sumOrdersShipment (shipment) = GROUP SUM 1 IF inShipmentOrder(shipment, orderSupplier) BY shipment PERSISTENT;
 
 isSupplierShipmentOrder 'Заявка поставщика поставки' (shipment, orderSupplier) = supplierShipment(shipment)== supplierOrderSupplier(orderSupplier);
 
@@ -13055,6 +13161,7 @@ NAVIGATOR {
             ADD wares;
             ADD components;
             ADD itemGroups;
+            ADD statisticGroups;
             ADD unitsOfMeasure;
             ADD assortments;
             ADD naturalLossItem;
@@ -13172,6 +13279,8 @@ NAVIGATOR {
         NEW objects 'Карточки' {
             ADD itemGroup;
             ADD itemGroupDialog;
+            ADD statisticGroup;
+            ADD statisticGroupDialog;
             ADD unitOfMeasure;
             ADD item;
             ADD ware;
