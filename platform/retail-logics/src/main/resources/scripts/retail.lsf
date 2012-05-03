@@ -1426,6 +1426,9 @@ banSailItem 'Запрет продаж товара в указанное вре
 
 
 //manufactoryGroup
+CLASS groupMenu 'Группа меню' : named;
+TABLE groupMenu(groupMenu);
+
 isCrudeItem 'Товар-сырьё для калькуляции?' = DATA BOOLEAN (item) IN manufactoryGroup;
 
 groupProductItem = DATA groupProduct (item) IN idGroup;
@@ -1434,7 +1437,8 @@ nameGroupProductItem 'Группа изделий для печати забор
 compositionMenuItem 'Состав изделия для печати в меню' = DATA STRING[400] (item)IN manufactoryGroup MINCHARWIDTH 50;
 standartItem 'Стандарт изготовления изделия (СТБ и пр.)' = DATA STRING[100] (item) IN manufactoryGroup MINCHARWIDTH 50;
 normOutItem 'Норма выхода для печати в меню и калькуляцию' = DATA STRING[100] (item) IN manufactoryGroup MINCHARWIDTH 50;
-groupMenuItem 'Группа для печати в меню' = DATA STRING[100] (item) IN manufactoryGroup MINCHARWIDTH 50;
+groupMenuItem 'Группа для печати в меню ИД' = DATA groupMenu (item) IN idGroup;
+nameGroupMenuItem 'Группа для печати в меню' = name(groupMenuItem(item)) IN manufactoryGroup MINCHARWIDTH 50;
 isCutedItem 'Товар разрубается/прорабатывается' = DATA BOOLEAN (item) IN manufactoryGroup;
 storageTemperatureItem 'Температура хранения' =  DATA STRING[100] (item) IN equipmentGroup MINCHARWIDTH 50;
 
@@ -2433,7 +2437,7 @@ FORM item 'Товар'
                   compositionMenuItem SHOWIF isManufacturedItem(i),
                   grossWeightPackItem SHOWIF isManufacturedItem(i), isCrudeItem SHOWIF isManufacturedItem(i),
                   nameGroupProductItem SHOWIF isManufacturedItem(i), standartItem SHOWIF isManufacturedItem(i),
-                  normOutItem SHOWIF isManufacturedItem(i), groupMenuItem SHOWIF isManufacturedItem(i),
+                  normOutItem SHOWIF isManufacturedItem(i), nameGroupMenuItem SHOWIF isManufacturedItem(i),
                   isCutedItem SHOWIF isManufacturedItem(i), coefficientNetGrossItem SHOWIF isManufacturedItem(i), showFormcoefficientNetGrossItem,
 
                   nameRateWasteItem, percentRateWasteItem, nameGroupNaturalLossItem, rateGroupNaturalLossItem, nameStatisticGroupItem,
@@ -10129,7 +10133,7 @@ sumRetailVATPriceChangeDocumentDetail 'Сумма НДС за ед.' (priceChang
 sumMarkupPriceChangeDocumentDetail 'Сумма надбавки' (priceChangeDocumentDetail) = withoutWarePricePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
     sumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail) (-) supplierPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-retailMarkupPriceChangeDocumentDetail 'Наценка,%' (priceChangeDocumentDetail) = [X*100/Y](
+retailMarkupPriceChangeDocumentDetail 'Наценка,%' (priceChangeDocumentDetail) = [round2(X*100/Y)](
     sumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail), supplierPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 dataWareRangePriceChangeDocumentDetail 'НДС по посуде' (priceChangeDocumentDetail) =
@@ -10202,7 +10206,7 @@ oldSumRetailVATPriceChangeDocumentDetail 'Сумма НДС за ед.' (priceCh
 oldSumMarkupPriceChangeDocumentDetail 'Сумма надбавки' (priceChangeDocumentDetail) = oldWithoutWarePricePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
     oldSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail) (-) oldSupplierPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-oldRetailMarkupPriceChangeDocumentDetail 'Текущая наценка,%' (priceChangeDocumentDetail) = [X*100/Y](
+oldRetailMarkupPriceChangeDocumentDetail 'Текущая наценка,%' (priceChangeDocumentDetail) = [round2(X*100/Y)](
     oldSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail), oldImporterPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 oldDataWareRangePriceChangeDocumentDetail 'НДС по посуде' (priceChangeDocumentDetail) =
