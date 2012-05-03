@@ -11686,8 +11686,88 @@ FORM innerFlows 'Расходы в другие отделы'
                             dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, priceWareInnerFlowDetail,
                             retailPriceInnerFlowDetail, accountSumInnerFlowDetail
     FILTERS inInnerFlowInnerFlowDetail(f, d)
+;
 
-    DIALOG innerFlowPosted OBJECT f // todo : здесь наверное надо отдельную форму нарисовать
+DESIGN innerFlows FROM DEFAULT {
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+
+    PROPERTY (delete(f)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+
+    ADD f.printGroup BEFORE functions.box {
+        childConstraints = TO THE RIGHT;
+        NEW ttn1{
+            childConstraints = TO THE RIGHT;
+            title = 'ТТН-1';
+            NEW a{
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(toPrintTransportConsignmentVerticalA);
+                ADD PROPERTY(toPrintTransportConsignmentHorizontalA);
+            }
+            NEW b{
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(toPrintTransportConsignmentVerticalB);
+                ADD PROPERTY(toPrintTransportConsignmentHorizontalB);
+            }
+            NEW c{
+                ADD PROPERTY(toPrintTransportConsignmentAttach);
+            }
+        }
+        NEW tn{
+            childConstraints = TO THE RIGHT;
+            title = 'ТН-2';
+            NEW a1{
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(toPrintConsignmentTwoVertical);
+                ADD PROPERTY(toPrintConsignmentTwoHorizontal);
+            }
+            NEW b1{
+                ADD PROPERTY(toPrintConsignmentTwoAttach);
+            }
+        }
+//        fillHorizontal = 1;
+    };
+
+    ADD f.historyGroup BEFORE f.printGroup{
+        childConstraints = TO THE BOTTOM;
+//        fillHorizontal = 1;
+    }
+
+    ADD f.postedGroup BEFORE f.printGroup{
+        childConstraints = TO THE BOTTOM;
+//        fillHorizontal = 1;
+    }
+
+    POSITION f.historyGroup TO THE LEFT f.postedGroup;
+
+    ADD d.grid.box BEFORE f.historyGroup;
+}
+
+
+FORM innerFlowPosted 'Расходы в другие отделы'
+    OBJECTS f=innerFlowPosted
+    PROPERTIES (f) READONLY objectClassName, numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
+                            nameRecipientDepartmentInnerFlow, detailCountInnerFlow,
+                            totalQuantityInnerFlow, accountSumInnerFlow
+
+    PROPERTIES(f) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (f) READONLY FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
+                                        toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,
+                                        toPrintTransportConsignmentAttach, toPrintConsignmentTwoHorizontal, toPrintConsignmentTwoVertical,
+                                        toPrintConsignmentTwoAttach
+
+    OBJECTS d=innerFlowDetail
+    PROPERTIES (d) READONLY indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
+                            quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
+                            dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, priceWareInnerFlowDetail,
+                            retailPriceInnerFlowDetail, accountSumInnerFlowDetail
+    FILTERS inInnerFlowInnerFlowDetail(f, d)
+
+    DIALOG innerFlowPosted OBJECT f
 ;
 
 DESIGN innerFlows FROM DEFAULT {
