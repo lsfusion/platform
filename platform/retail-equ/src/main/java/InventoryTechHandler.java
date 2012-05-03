@@ -1,8 +1,6 @@
 import org.xBaseJ.DBF;
 import org.xBaseJ.Util;
-import org.xBaseJ.fields.*;
 import org.xBaseJ.indexes.Index;
-import org.xBaseJ.indexes.MDX;
 import org.xBaseJ.xBaseJException;
 import retail.api.remote.*;
 
@@ -10,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class InventoryTechHandler implements TerminalHandler<InventoryTechSalesBatch> {
@@ -47,10 +44,10 @@ public class InventoryTechHandler implements TerminalHandler<InventoryTechSalesB
                         fileBarcode.getField("BARCODE").put(item.barcodeEx);
                         fileBarcode.update();
                     } else {
-                        fileBarcode.gotoRecord(fileBarcode.getRecordCount());
                         fileBarcode.getField("ARTICUL").put(item.barcodeEx);
                         fileBarcode.getField("BARCODE").put(item.barcodeEx);
                         fileBarcode.write();
+                        fileBarcode.file.setLength(fileBarcode.file.length()-1);
                     }
                 }
                 fileBarcode.close();
@@ -67,11 +64,11 @@ public class InventoryTechHandler implements TerminalHandler<InventoryTechSalesB
                         fileGoods.getField("PRICE").put(item.price.toString());
                         fileGoods.update();
                     } else {
-                        fileGoods.gotoRecord(fileGoods.getRecordCount());
                         fileGoods.getField("ARTICUL").put(item.barcodeEx);
                         fileGoods.getField("NAME").put(item.name);
                         fileGoods.getField("PRICE").put(item.price.toString());
                         fileGoods.write();
+                        fileGoods.file.setLength(fileGoods.file.length()-1);
                     }
                 }
                 fileGoods.close();

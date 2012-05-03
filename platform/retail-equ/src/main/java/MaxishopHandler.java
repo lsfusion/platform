@@ -85,6 +85,7 @@ public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> 
                     NAME.put(item.name);
                     PRICE1.put(item.price);
                     file.write();
+                    file.file.setLength(file.file.length()-1);
                 }
                 file.close();
 
