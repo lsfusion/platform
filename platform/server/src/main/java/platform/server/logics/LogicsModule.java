@@ -554,11 +554,14 @@ public abstract class LogicsModule {
         return addAProp(new StopActionProperty(genSID(), caption, header));
     }
 
-    protected <C extends PropertyInterface, W extends PropertyInterface> LP addSetPropertyAProp(AbstractGroup group, String name, String caption, int interfaces, int resInterfaces, Object... params) {
+    protected <C extends PropertyInterface, W extends PropertyInterface> LP addSetPropertyAProp(AbstractGroup group, String name, String caption, int interfaces, int resInterfaces,
+                                                                                                boolean conditional, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
+        PropertyMapImplement<W, PropertyInterface> conditionalPart = (PropertyMapImplement<W, PropertyInterface>)
+                (conditional ? readImplements.get(resInterfaces + 2) : DerivedProperty.createStatic(true, LogicalClass.instance));
         return addProperty(group, new LP<ClassPropertyInterface>(new ChangeActionProperty<C, W, PropertyInterface>(name, caption,
-                                                                                                             innerInterfaces, (List) readImplements.subList(0, resInterfaces), (PropertyMapImplement<W, PropertyInterface>) DerivedProperty.createStatic(true, LogicalClass.instance),
+                                                                                                             innerInterfaces, (List) readImplements.subList(0, resInterfaces), conditionalPart,
                                                                                                              (PropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
     }
 
@@ -848,6 +851,10 @@ public abstract class LogicsModule {
 
     protected LP addCFProp(String name, Compare compare) {
         return addProperty(null, new LP<CompareFormulaProperty.Interface>(new CompareFormulaProperty(name, compare)));
+    }
+
+    protected <P extends PropertyInterface> LP addSProp(String name, int intNum) {
+        return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(name, ServerResourceBundle.getString("logics.join"), intNum, " ")));
     }
 
     protected <P extends PropertyInterface> LP addSProp(int intNum) {

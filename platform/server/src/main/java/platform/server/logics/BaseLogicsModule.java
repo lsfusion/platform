@@ -672,7 +672,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         object1 = addAFProp();
         and1 = addAFProp("and1", false);
         andNot1 = addAFProp(true);
-        string2 = addSProp(2);
+        string2 = addSProp("string2", 2);
         insensitiveString2 = addInsensitiveSProp(2);
         concat2 = addCCProp(2);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
