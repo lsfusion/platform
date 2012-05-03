@@ -35,8 +35,6 @@ guestTeamName 'Visitor' = name(guestTeam(game)) IN baseGroup;
 hostGoals 'H Score' (game) = DATA INTEGER (Game) IN baseGroup;
 guestGoals 'V Score' (game) = DATA INTEGER (Game) IN baseGroup;
 
-//guestGoals(game) <- OLD hostGoals(game) ON CHANGE hostGoals(game);
-
 gameWinner(game) = UNION EXCLUSIVE hostTeam(game) IF hostGoals(game) > guestGoals(game),
                                    guestTeam(game) IF hostGoals(game) < guestGoals(game) PERSISTENT;
 
@@ -48,14 +46,14 @@ gameResult(game) = UNION OVERRIDE GameResult.win IF game IS Game, gameResultData
 
 pureWin(game) = hostGoals(game) - guestGoals(game) > 1 OR guestGoals(game) - hostGoals(game) > 1;
 
-gameResult(game) <- GameResult.win ON ASSIGN pureWin(game);
+gameResult(game) <- GameResult.win WHEN ASSIGNED(pureWin(game));
 
 gameResultName 'O/S' (game) = name(gameResult(game)) IN baseGroup;
 
 hostGamesPlayed(team) = GROUP SUM 1 BY hostTeam(game);
 guestGamesPlayed(team) = GROUP SUM 1 BY guestTeam(game);
 
-gamesPlayed 'GP' (team) = UNION SUM hostGamesPlayed(team), guestGamesPlayed(team);
+gamesPlayed 'GP' (team) = hostGamesPlayed(team) (+) guestGamesPlayed(team);
 
 zeroIfTeamResult(obj1, obj2) = 0 IF obj1 IS Team AND obj2 IS GameResult;
 
@@ -89,12 +87,6 @@ conferencePlace 'Conf. PL' (team) = PARTITION SUM 1 BY conference(team)
                                               ORDER DESC points(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team),
                                                          goalsScored(team) - goalsConceded(team), goalsScored(team);
 
-
-//proportion(team) = DATA DOUBLE (Team);
-//ungroupProp(conference) = 10.0 IF conference IS Conference;
-//partitionPropTest(team) = PARTITION UNGROUP ungroupProp PROPORTION STRICT ROUND(2) proportion(team) BY conference(team) ORDER points(team);
-//limitPropTest(team) = PARTITION UNGROUP ungroupProp LIMIT proportion(team) BY conference(team) ORDER points(team), team;
-
 CONSTRAINT hostTeam(team) == guestTeam(team) CHECKED BY hostTeam, guestTeam MESSAGE 'Home and Visitor teams should be different';
 CONSTRAINT extendedGame(game) AND hostGoals(game) > guestGoals(game) + 1 MESSAGE 'Overtime is impossible';
 CONSTRAINT extendedGame(game) AND guestGoals(game) > hostGoals(game) + 1 MESSAGE 'Overtime is impossible';
@@ -105,6 +97,6 @@ FORM MainForm 'Scoreboard'
 OBJECTS game=Game, team=Team
 PROPERTIES(game) gameDate, hostTeamName, hostGoals, guestGoals, guestTeamName, gameResultName
 PROPERTIES(team) place, conferencePlace, teamName, gamesPlayed, gamesWon, gamesWonOT, gamesWonSO,
-                 gamesLostSO, gamesLostOT, gamesLost, goalsScored, goalsConceded, points //,
-//                 proportion, partitionPropTest, limitPropTest
+                 gamesLostSO, gamesLostOT, gamesLost, goalsScored, goalsConceded, points
 PROPERTIES ADDOBJ(game), ADDOBJ(team);
+
