@@ -869,13 +869,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(res,  param.usedParams);
     }
 
-    public LPWithParams addScriptedSetPropertyAProp(List<String> context, LPWithParams toProperty, LPWithParams fromProperty) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedSetPropertyAProp(" + context + ", " + toProperty + ", " + fromProperty + ");");
+    public LPWithParams addScriptedSetPropertyAProp(List<String> context, LPWithParams toProperty, LPWithParams fromProperty, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedSetPropertyAProp(" + context + ", " + toProperty + ", " + fromProperty + ", " + whereProperty + ");");
         if (toProperty.property == null) {
             errLog.emitLeftSideMustBeAProperty(parser);
         }
 
-        List<Integer> allParams = mergeAllParams(asList(toProperty, fromProperty));
+        List<LPWithParams> lpList = BaseUtils.toList(toProperty, fromProperty);
+        if (whereProperty != null) {
+            lpList.add(whereProperty);
+        }
+        List<Integer> allParams = mergeAllParams(lpList);
 
         //все использованные параметры, которые были в старом контексте, идут на вход результирующего свойства
         List<Integer> resultInterfaces = new ArrayList<Integer>();
@@ -892,8 +896,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         paramsList.add(toProperty);
         paramsList.add(fromProperty);
+        if (whereProperty != null) {
+            paramsList.add(whereProperty);
+        }
         List<Object> resultParams = getParamsPlainList(paramsList);
-        LP result = addSetPropertyAProp(null, genSID(), "", allParams.size(), resultInterfaces.size(), resultParams.toArray());
+        LP result = addSetPropertyAProp(null, genSID(), "", allParams.size(), resultInterfaces.size(), whereProperty != null, resultParams.toArray());
         return new LPWithParams(result, resultInterfaces);
     }
 

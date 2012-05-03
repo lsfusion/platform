@@ -1624,16 +1624,19 @@ execActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 setActionPropertyDefinitionBody[List<String> context] returns [LPWithParams property]
 @init {
 	List<String> newContext = new ArrayList<String>(context); 
+	LPWithParams condition = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedSetPropertyAProp(context, $p1.property, $p2.property);
+		$property = self.addScriptedSetPropertyAProp(context, $p1.property, $p2.property, condition);
 	}
 }
 	:	'SET'
 		p1=propertyExpression[newContext, true]
 		'<-'
 		p2=propertyExpression[newContext, false] //no need to use dynamic context, because params should be either on global context or used in the left expression
+		('WHERE'
+		whereExpr=propertyExpression[newContext, false] { condition = $whereExpr.property; })?
 	;
 
 ifActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
