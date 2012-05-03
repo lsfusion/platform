@@ -436,7 +436,8 @@ META defineDocumentHeaderDepartmentStore (object)
 END
 
 META defineDocumentDetailDepartmentStoreCustom (object, detail)
-    departmentStore###detail 'Отдел магазина (ИД)' (idetail) = departmentStore###object(object###detail(idetail));
+    departmentStore###detail (idetail) = departmentStore###object(object###detail(idetail));
+    nameDepartmentStore###detail 'Отдел магазина' (idetail) = name(departmentStore###detail(idetail));
 END
 
 META defineDocumentDetailDepartmentStore (object)
@@ -4963,6 +4964,7 @@ CLASS manyCollationSheet 'Сличительная ведомость по мн�
 
 @defineDocumentRelationCustom(inventory, collationSheet);
 
+@defineDocumentDetailPostedCustom(inventory, collationSheet);
 @defineDocumentDetailIndexCustom(inventory, collationSheet);
 @defineDocumentDetailTimeCustom(inventory, collationSheet);
 
@@ -5126,9 +5128,6 @@ descriptionOutInventoryLedger 'Название документа' (inventoryLe
 descriptionInInventoryLedger 'Название документа' (inventoryLedger) =
     [FORMULA STRING[200] '\'Излишек по инвентаризации \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
     nameCollationSheet(collationSheetInInventoryLedger(inventoryLedger)), dateCollationSheet(collationSheetInInventoryLedger(inventoryLedger)));
-
-//--------------------------------Формы по инвентаризации см. в конце-------------------//
-
 
 //---------------------------- Отгрузка по безналу(розница) ----------------------------//
 
