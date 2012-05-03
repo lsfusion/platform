@@ -13211,6 +13211,7 @@ NAVIGATOR {
             ADD coolingDegree;
             ADD formItem;
             ADD naturalLossItems;
+            ADD innerFlowPosted;
         //    ADD numberInPack;
             ADD rateWaste;
             ADD addNameisPortionBarItem;
