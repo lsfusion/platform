@@ -12,15 +12,11 @@ import platform.server.data.query.Query;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.Where;
 import platform.server.logics.BaseLogicsModule;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public abstract class DataTable extends GlobalTable {
 
@@ -83,6 +79,31 @@ public abstract class DataTable extends GlobalTable {
             for (PropertyField property : properties) {
                 DataObject propertyObject = session.getDataObject(LM.sidToTableColumn.read(session, new DataObject(property.name)), LM.tableColumn.getType());
                 LM.quantityTableColumn.execute(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
+            }
+
+            // не null значения и разреженность колонок
+            Query<Object, Object> notNullQuery = new Query<Object, Object>(new HashMap<Object, KeyExpr>());
+            for (PropertyField property : properties) {
+                Expr exprQuant = GroupExpr.create(new HashMap<Object, Expr>(), one, join.getExpr(property).getWhere(), GroupType.SUM, new HashMap<Object, Expr>());
+                notNullQuery.getWhere().or(exprQuant.getWhere());
+                notNullQuery.properties.put(property, exprQuant);
+            }
+            Map<Map<Object, Object>, Map<Object, Object>> notNullResult = notNullQuery.execute(session.sql, session.env);
+            if (notNullResult.size() != 0){
+                Map<Object, Object> notNulls = BaseUtils.singleValue(notNullResult);
+                int sparseColumns = 0;
+                for (PropertyField property : properties) {
+                    DataObject propertyObject = session.getDataObject(LM.sidToTableColumn.read(session, new DataObject(property.name)), LM.tableColumn.getType());
+                    int notNull = (Integer) BaseUtils.nvl(notNulls.get(property), 0);
+                    int total = (Integer) BaseUtils.nvl(result.get(0), 0);
+                    double perCent = total != 0 ? 100 * (double) notNull / total : 100;
+                    LM.notNullQuantityTableColumn.execute(notNull, session, propertyObject);
+                    LM.perCentNotNullTableColumn.execute(perCent, session, propertyObject);
+                    if (perCent < 50) {
+                        sparseColumns++;
+                    }
+                }
+                LM.sparseColumnsTable.execute(sparseColumns, session, tableObject);
             }
         }
     }

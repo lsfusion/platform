@@ -384,8 +384,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP classTableKey;
     public LP tableTableColumn;
     public LP rowsTable;
+    public LP sparseColumnsTable;
     public LP quantityTableKey;
     public LP quantityTableColumn;
+    public LP notNullQuantityTableColumn;
+    public LP perCentNotNullTableColumn;
     public LP recalculateAggregationTableColumn;
 
     public LP sidDropColumn;
@@ -1031,8 +1034,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         classTableKey = addDProp(baseGroup, "classTableKey", getString("logics.tables.key.class"), StringClass.get(40), tableKey);
         tableTableColumn = addDProp("tableTableColumn", getString("logics.tables.table"), table, tableColumn);
         rowsTable = addDProp(baseGroup, "rowsTable", getString("logics.tables.rows"), IntegerClass.instance, table);
-        quantityTableKey = addDProp(baseGroup, "quantityTableKey", getString("logics.tables.key.distinct.quantity"), IntegerClass.instance, tableKey);
-        quantityTableColumn = addDProp(baseGroup, "quantityTableColumn", getString("logics.tables.column.values.quantity"), IntegerClass.instance, tableColumn);
+        sparseColumnsTable = addDProp(baseGroup, "sparseColumnsTable", getString("logics.tables.sparse.columns"), IntegerClass.instance, table);
+        quantityTableKey = addDProp(baseGroup, "quantityTableKey", getString("logics.tables.key.variety.quantity"), IntegerClass.instance, tableKey);
+        quantityTableColumn = addDProp(baseGroup, "quantityTableColumn", getString("logics.tables.column.variety.quantity"), IntegerClass.instance, tableColumn);
+        notNullQuantityTableColumn = addDProp(baseGroup, "notNullQuantityTableColumn", getString("logics.tables.column.notnull.quantity"), IntegerClass.instance, tableColumn);
+        perCentNotNullTableColumn = addDProp(baseGroup, "perCentNotNullTableColumn", getString("logics.tables.column.notnull.per.cent"), NumericClass.get(6, 2), tableColumn);
         recalculateAggregationTableColumn = addAProp(actionGroup, new RecalculateTableColumnActionProperty(getString("logics.recalculate.aggregations"), tableColumn));
 
         sidDropColumn = addDProp(baseGroup, "sidDropColumn", getString("logics.tables.column.name"), StringClass.get(100), dropColumn);
