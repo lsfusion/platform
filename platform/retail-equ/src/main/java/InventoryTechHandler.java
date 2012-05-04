@@ -93,8 +93,6 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                         fileGoods.getField("PRICE").put(item.price.toString());
                         fileGoods.update();
                     } else {
-                        if (fileGoods.getRecordCount() != 0)
-                            fileGoods.gotoRecord(fileGoods.getRecordCount());
                         fileGoods.getField("ARTICUL").put(item.barcodeEx);
                         fileGoods.getField("NAME").put(item.name);
                         fileGoods.getField("PRICE").put(item.price.toString());
@@ -158,8 +156,6 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                         fileSPRDOC.getField("SPRT1").put(groupName);
                         fileSPRDOC.update();
                     } else {
-                        if (fileSPRDOC.getRecordCount() != 0)
-                            fileSPRDOC.gotoRecord(fileSPRDOC.getRecordCount());
                         fileSPRDOC.getField("CODE").put(id);
                         fileSPRDOC.getField("NAME").put(name);
                         fileSPRDOC.getField("SPRT1").put(groupName);
