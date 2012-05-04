@@ -234,9 +234,6 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 terminalQuery.and(isTerminal.property.getExpr(terminalKeys).getWhere());
                 terminalQuery.and(retailLM.getLPByName("groupTerminalTerminal").getExpr(terminalKey).compare(groupObject, Compare.EQUALS));
 
-                if (snapshotTransaction)
-                    terminalQuery.and(retailLM.getLPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), terminalKey).getWhere());
-
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> terminalResult = terminalQuery.execute(session.sql);
 
                 for (Map<Object, Object> values : terminalResult.values()) {
@@ -248,9 +245,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     terminalInfoList.add(new TerminalInfo(directory, nppMachinery, nameModel, handlerModel, portMachinery));
                 }
                 transactionList.add(new TransactionTerminalInfo((Integer) transactionObject.getValue(),
-                        dateTimeCode, itemTransactionList, terminalInfoList));
+                        dateTimeCode, itemTransactionList, terminalInfoList, snapshotTransaction));
             }
-
         }
         return transactionList;
     }
@@ -309,6 +305,31 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             }
         }
         return cashRegisterInfoList;
+    }
+
+    @Override
+    public List<TerminalDocumentTypeInfo> readTerminalDocumentTypeInfo() throws RemoteException, SQLException {
+        DataSession session = createSession();
+        List<TerminalDocumentTypeInfo> terminalDocumentTypeInfoList = new ArrayList<TerminalDocumentTypeInfo>();
+        LP isTerminalDocumentType = LM.is(retailLM.getClassByName("terminalDocumentType"));
+
+        Map<Object, KeyExpr> terminalDocumentTypeKeys = isTerminalDocumentType.getMapKeys();
+        KeyExpr terminalDocumentTypeKey = BaseUtils.singleValue(terminalDocumentTypeKeys);
+        Query<Object, Object> terminalDocumentTypeQuery = new Query<Object, Object>(terminalDocumentTypeKeys);
+        terminalDocumentTypeQuery.properties.put("idTerminalDocumentType", retailLM.getLPByName("idTerminalDocumentType").getExpr(terminalDocumentTypeKey));
+        terminalDocumentTypeQuery.properties.put("nameTerminalDocumentType", retailLM.getLPByName("nameTerminalDocumentType").getExpr(terminalDocumentTypeKey));
+        terminalDocumentTypeQuery.properties.put("nameGroupTerminalDocumentTypeTerminalDocumentType", retailLM.getLPByName("nameGroupTerminalDocumentTypeTerminalDocumentType").getExpr(terminalDocumentTypeKey));
+        terminalDocumentTypeQuery.and(isTerminalDocumentType.property.getExpr(terminalDocumentTypeKeys).getWhere());
+
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> terminalDocumentTypeResult = terminalDocumentTypeQuery.execute(session.sql);
+
+        for (Map<Object, Object> values : terminalDocumentTypeResult.values()) {
+            String id = (String) values.get("idTerminalDocumentType");
+            String name = (String) values.get("nameTerminalDocumentType");
+            String nameGroup = (String) values.get("nameGroupTerminalDocumentTypeTerminalDocumentType");
+            terminalDocumentTypeInfoList.add(new TerminalDocumentTypeInfo(id, name, nameGroup));
+        }
+        return terminalDocumentTypeInfoList;
     }
 
     @Override

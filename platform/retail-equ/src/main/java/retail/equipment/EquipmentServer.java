@@ -102,7 +102,7 @@ public class EquipmentServer {
             for (Map.Entry<String, List<MachineryInfo>> entry : handlerModelMap.entrySet()) {
                 if (entry.getKey() != null) {
                     try {
-                        Object clsHandler = getHandler(entry.getValue().get(0).handlerModel.trim());
+                        Object clsHandler = getHandler(entry.getValue().get(0).handlerModel.trim(), remote);
                         transaction.sendTransaction(clsHandler, entry.getValue());
                     } catch (Exception e) {
                         remote.errorTransactionReport(transaction.id, e);
@@ -128,7 +128,7 @@ public class EquipmentServer {
             if (entry.getKey() != null) {
 
                 try {
-                    Object clsHandler = getHandler(entry.getValue().get(0).handlerModel.trim());
+                    Object clsHandler = getHandler(entry.getValue().get(0).handlerModel.trim(), remote);
                     SalesBatch salesBatch = ((CashRegisterHandler) clsHandler).readSalesInfo(cashRegisterInfoList);
                     String result = remote.sendSalesInfo(salesBatch.salesInfoList, equServerID);
                     if (result != null)
@@ -143,7 +143,7 @@ public class EquipmentServer {
         }
     }
 
-    private Object getHandler(String handlerModel) throws ClassNotFoundException, IllegalAccessException, InstantiationException, InvocationTargetException {
+    private Object getHandler(String handlerModel, RetailRemoteInterface remote) throws ClassNotFoundException, IllegalAccessException, InstantiationException, InvocationTargetException {
         Object clsHandler;
         if (handlerMap.containsKey(handlerModel))
             clsHandler = handlerMap.get(handlerModel);
@@ -158,6 +158,7 @@ public class EquipmentServer {
             }
             handlerMap.put(handlerModel, clsHandler);
         }
+        ((MachineryHandler)clsHandler).setRemoteObject(remote);
         return clsHandler;
     }
 

@@ -10,7 +10,7 @@ public class EasyCSVHandler {
 
     }
 
-    public class EasyCashRegisterCSVHandler implements CashRegisterHandler<SalesBatch>{
+    public class EasyCashRegisterCSVHandler extends CashRegisterHandler<SalesBatch>{
 
         public EasyCashRegisterCSVHandler() {
         }
@@ -52,7 +52,7 @@ public class EasyCSVHandler {
         }
     }
 
-    public class EasyPriceCheckerCSVHandler implements PriceCheckerHandler{
+    public class EasyPriceCheckerCSVHandler extends PriceCheckerHandler{
 
         public EasyPriceCheckerCSVHandler() {
         }
@@ -80,19 +80,9 @@ public class EasyCSVHandler {
                 writer.close();
             }
         }
-
-        @Override
-        public SalesBatch readSalesInfo(List<CashRegisterInfo> cashRegisterInfoList) {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public void finishReadingSalesInfo(SalesBatch salesBatch) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
     }
 
-    public class EasyScalesCSVHandler implements ScalesHandler{
+    public class EasyScalesCSVHandler extends ScalesHandler{
 
         public EasyScalesCSVHandler() {
         }
@@ -121,16 +111,6 @@ public class EasyCSVHandler {
                 }
                 writer.close();
             }
-        }
-
-        @Override
-        public SalesBatch readSalesInfo(List<CashRegisterInfo> cashRegisterInfoList) {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public void finishReadingSalesInfo(SalesBatch salesBatch) {
-            //To change body of implemented methods use File | Settings | File Templates.
         }
     }
 }

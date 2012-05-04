@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MaxishopHandler implements CashRegisterHandler<MaxishopSalesBatch> {
+public class MaxishopHandler extends CashRegisterHandler<MaxishopSalesBatch> {
 
     public MaxishopHandler() {
     }

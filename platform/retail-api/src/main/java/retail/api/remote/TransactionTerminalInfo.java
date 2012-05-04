@@ -4,13 +4,15 @@ import java.io.IOException;
 import java.util.List;
 
 public class TransactionTerminalInfo extends TransactionInfo<TerminalInfo> {
-
-    public TransactionTerminalInfo(Integer id, String dateTimeCode, List<ItemInfo> itemsList,
-                                   List<TerminalInfo> machineryInfoList) {
+    public Boolean snapshot;
+    
+    public TransactionTerminalInfo(Integer id, String dateTimeCode, List<ItemInfo> itemsList, List<TerminalInfo> machineryInfoList,
+                                   Boolean snapshot) {
         this.id = id;
         this.dateTimeCode = dateTimeCode;
         this.itemsList = itemsList;
         this.machineryInfoList = machineryInfoList;
+        this.snapshot = snapshot;
     }
 
     @Override

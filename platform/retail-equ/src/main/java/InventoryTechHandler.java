@@ -6,11 +6,12 @@ import retail.api.remote.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InventoryTechHandler implements TerminalHandler<InventoryTechSalesBatch> {
+public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatch> {
 
     public InventoryTechHandler() {
     }
@@ -35,7 +36,20 @@ public class InventoryTechHandler implements TerminalHandler<InventoryTechSalesB
 
                 Util.setxBaseJProperty("ignoreMissingMDX", "true");
 
+                if (!new File(directory + "/BARCODE.MDX").exists()) {
+                    File fileBarcodeCDX = new File(directory + "/BARCODE.CDX");
+                    fileBarcodeCDX.renameTo(new File((directory + "/BARCODE.MDX")));
+                }
+
                 DBF fileBarcode = new DBF(directory + "/BARCODE.DBF", "CP866");
+
+                if (transactionInfo.snapshot) {
+                    for (int i = 0; i < fileBarcode.getRecordCount(); i++) {
+                        fileBarcode.gotoRecord(i + 1);
+                        fileBarcode.delete();
+                    }
+                    fileBarcode.pack();
+                }
                 Index fileBarcodeIndex = fileBarcode.createIndex(directory + "/" + transactionInfo.dateTimeCode + "B.NDX", "BARCODE", true, true);
 
                 for (ItemInfo item : transactionInfo.itemsList) {
@@ -44,6 +58,8 @@ public class InventoryTechHandler implements TerminalHandler<InventoryTechSalesB
                         fileBarcode.getField("BARCODE").put(item.barcodeEx);
                         fileBarcode.update();
                     } else {
+                        if (fileBarcode.getRecordCount() != 0)
+                            fileBarcode.gotoRecord(fileBarcode.getRecordCount());
                         fileBarcode.getField("ARTICUL").put(item.barcodeEx);
                         fileBarcode.getField("BARCODE").put(item.barcodeEx);
                         fileBarcode.write();
@@ -51,10 +67,23 @@ public class InventoryTechHandler implements TerminalHandler<InventoryTechSalesB
                     }
                 }
                 fileBarcode.close();
-                if(!fileBarcodeIndex.file.delete())
+                if (!fileBarcodeIndex.file.delete())
                     throw new RuntimeException("File" + fileBarcodeIndex.file.getAbsolutePath() + " can not be deleted");
 
+                if (!new File(directory + "/GOODS.MDX").exists()) {
+                    File fileGoodsCDX = new File(directory + "/GOODS.CDX");
+                    fileGoodsCDX.renameTo(new File(directory + "/GOODS.MDX"));
+                }
+
                 DBF fileGoods = new DBF(directory + "/GOODS.DBF", "CP866");
+
+                if (transactionInfo.snapshot) {
+                    for (int i = 0; i < fileGoods.getRecordCount(); i++) {
+                        fileGoods.gotoRecord(i + 1);
+                        fileGoods.delete();
+                    }
+                    fileGoods.pack();
+                }
                 Index fileGoodsIndex = fileGoods.createIndex(directory + "/" + transactionInfo.dateTimeCode + "G.NDX", "ARTICUL", true, true);
 
                 for (ItemInfo item : transactionInfo.itemsList) {
@@ -64,6 +93,8 @@ public class InventoryTechHandler implements TerminalHandler<InventoryTechSalesB
                         fileGoods.getField("PRICE").put(item.price.toString());
                         fileGoods.update();
                     } else {
+                        if (fileGoods.getRecordCount() != 0)
+                            fileGoods.gotoRecord(fileGoods.getRecordCount());
                         fileGoods.getField("ARTICUL").put(item.barcodeEx);
                         fileGoods.getField("NAME").put(item.name);
                         fileGoods.getField("PRICE").put(item.price.toString());
@@ -72,96 +103,75 @@ public class InventoryTechHandler implements TerminalHandler<InventoryTechSalesB
                     }
                 }
                 fileGoods.close();
-                if(!fileGoodsIndex.file.delete())
+                if (!fileGoodsIndex.file.delete())
                     throw new RuntimeException("File" + fileGoodsIndex.file.getAbsolutePath() + " can not be deleted");
+                fileGoodsIndex.file = null;
+            }
+
+            sendTerminalDocumentTypes(machineryInfoList, remote.readTerminalDocumentTypeInfo());
+
+        } catch (xBaseJException e) {
+            throw new RuntimeException(e.toString(), e.getCause());
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e.toString(), e.getCause());
+        } catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    @Override
+    public void sendTerminalDocumentTypes(List<TerminalInfo> terminalInfoList,
+                                          List<TerminalDocumentTypeInfo> terminalDocumentTypeInfoList) throws IOException {
+        try {
+
+            List<String> directoriesList = new ArrayList<String>();
+            for (TerminalInfo terminalInfo : terminalInfoList) {
+                if ((terminalInfo.port != null) && (!directoriesList.contains(terminalInfo.port.trim())))
+                    directoriesList.add(terminalInfo.port.trim());
+                if ((terminalInfo.directory != null) && (!directoriesList.contains(terminalInfo.directory.trim())))
+                    directoriesList.add(terminalInfo.directory.trim());
+            }
+
+            for (String directory : directoriesList) {
+                File folder = new File(directory.trim());
+                if (!folder.exists() && !folder.mkdir())
+                    throw new RuntimeException("The folder " + folder.getAbsolutePath() + " can not be created");
+
+                Util.setxBaseJProperty("ignoreMissingMDX", "true");
+
+                if (!new File(directory + "/SPRDOC.MDX").exists()) {
+                    File fileBarcodeCDX = new File(directory + "/SPRDOC.CDX");
+                    fileBarcodeCDX.renameTo(new File((directory + "/SPRDOC.MDX")));
+                }
+
+                DBF fileSPRDOC = new DBF(directory + "/SPRDOC.DBF", "CP866");
+
+                Index fileSPRDOCIndex = fileSPRDOC.createIndex(directory + "/" + "SPRDOC.NDX", "CODE", true, true);
+
+                for (TerminalDocumentTypeInfo docType : terminalDocumentTypeInfoList) {
+                    String id = docType.id!=null ? docType.id.trim() : "";
+                    String name = docType.name!=null ? docType.name.trim() : "";
+                    String groupName = docType.groupName!=null ? docType.groupName.trim() : "";
+                    if (fileSPRDOC.findExact(docType.id)) {
+                        fileSPRDOC.getField("CODE").put(id);
+                        fileSPRDOC.getField("NAME").put(name);
+                        fileSPRDOC.getField("SPRT1").put(groupName);
+                        fileSPRDOC.update();
+                    } else {
+                        if (fileSPRDOC.getRecordCount() != 0)
+                            fileSPRDOC.gotoRecord(fileSPRDOC.getRecordCount());
+                        fileSPRDOC.getField("CODE").put(id);
+                        fileSPRDOC.getField("NAME").put(name);
+                        fileSPRDOC.getField("SPRT1").put(groupName);
+                        fileSPRDOC.write();
+                    }
+                }
+                fileSPRDOC.close();
+                if (!fileSPRDOCIndex.file.delete())
+                    throw new RuntimeException("File" + fileSPRDOCIndex.file.getAbsolutePath() + " can not be deleted");
             }
         } catch (xBaseJException e) {
             throw new RuntimeException(e.toString(), e.getCause());
         }
     }
-
-    @Override
-    public SalesBatch readSalesInfo(List<CashRegisterInfo> cashRegisterInfoList) throws IOException, ParseException {
-        /*Map<String, String> cashRegisterDirectories = new HashMap<String, String>();
-        Map<String, Integer> cashRegisterRoundSales = new HashMap<String, Integer>();
-        for (CashRegisterInfo cashRegister : cashRegisterInfoList) {
-            if ((cashRegister.directory != null) && (!cashRegisterDirectories.containsValue(cashRegister.directory)))
-                cashRegisterDirectories.put(cashRegister.cashRegisterNumber, cashRegister.directory);
-            if ((cashRegister.port != null) && (!cashRegisterDirectories.containsValue(cashRegister.port)))
-                cashRegisterDirectories.put(cashRegister.cashRegisterNumber, cashRegister.port);
-            if (cashRegister.roundSales != null)
-                cashRegisterRoundSales.put(cashRegister.cashRegisterNumber, cashRegister.roundSales);
-        }
-        List<SalesInfo> salesInfoList = new ArrayList<SalesInfo>();
-        List<String> readFiles = new ArrayList<String>();
-        for (Map.Entry<String, String> entry : cashRegisterDirectories.entrySet()) {
-            try {
-                if (entry.getValue() != null) {
-                    File directory = new File(entry.getValue().trim() + "/READ/");
-                    if (directory.isDirectory())
-                        for (String fileName : directory.list(new DBFFilter())) {
-                            String filePath = entry.getValue().trim() + "/READ/" + fileName;
-                            DBF importFile = new DBF(filePath);
-                            readFiles.add(filePath);
-                            int recordCount = importFile.getRecordCount();
-                            int numberBillDetail = 1;
-                            Integer oldBillNumber = -1;
-                            for (int i = 0; i < recordCount; i++) {
-                                importFile.read();
-                                String postType = new String(importFile.getField("JFPOSTYPE").getBytes(), "Cp1251").trim();
-                                if ("P".equals(postType)) {
-                                    Integer zReportNumber = new Integer(new String(importFile.getField("JFZNO").getBytes(), "Cp1251").trim());
-                                    Integer billNumber = new Integer(new String(importFile.getField("JFCHECKNO").getBytes(), "Cp1251").trim());
-                                    java.sql.Date date = new java.sql.Date(new SimpleDateFormat("yyyymmdd").parse(new String(importFile.getField("JFDATE").getBytes(), "Cp1251").trim()).getTime());
-                                    String timeString = new String(importFile.getField("JFTIME").getBytes(), "Cp1251").trim();
-                                    Time time = Time.valueOf(timeString.substring(0, 2) + ":" + timeString.substring(2, 4) + ":" + timeString.substring(4, 6));
-                                    Double sumBill = new Double(new String(importFile.getField("JFTOTSUM").getBytes(), "Cp1251").trim());
-                                    String barcodeBillDetail = new String(importFile.getField("JFPLUCODE").getBytes(), "Cp1251").trim().replace("E", "");
-                                    Double quantityBillDetail = new Double(new String(importFile.getField("JFQUANT").getBytes(), "Cp1251").trim());
-                                    Double priceBillDetail = new Double(new String(importFile.getField("JFPRICE").getBytes(), "Cp1251").trim());
-                                    Double discountSumBillDetail = new Double(new String(importFile.getField("JFDISCSUM").getBytes(), "Cp1251").trim());
-                                    Double sumBillDetail = roundSales(priceBillDetail * quantityBillDetail - discountSumBillDetail, cashRegisterRoundSales.get(entry.getKey()));
-
-                                    if (!oldBillNumber.equals(billNumber)) {
-                                        numberBillDetail = 1;
-                                        oldBillNumber = billNumber;
-                                    }
-                                    salesInfoList.add(new SalesInfo(entry.getKey(), zReportNumber, billNumber, date, time, sumBill, barcodeBillDetail,
-                                            quantityBillDetail, priceBillDetail, sumBillDetail, discountSumBillDetail, numberBillDetail, fileName));
-                                    numberBillDetail++;
-                                }
-                            }
-                            importFile.close();
-                        }
-                }
-            } catch (xBaseJException e) {
-                throw new RuntimeException(e.toString(), e.getCause());
-            }
-        }*/
-
-        return new InventoryTechSalesBatch(/*salesInfoList, readFiles*/null, null);
-    }
-
-    @Override
-    public void finishReadingSalesInfo(InventoryTechSalesBatch salesBatch) {
-        /*for (String readFile : salesBatch.readFiles) {
-            File f = new File(readFile.substring(0, readFile.length() - 3) + "OUT");
-            if (!f.delete())
-                throw new RuntimeException("The file " + f.getAbsolutePath() + " can not be deleted");
-            f = new File(readFile);
-            if (!f.delete())
-                throw new RuntimeException("The file " + f.getAbsolutePath() + " can not be deleted");
-        }*/
-    }
-
-    /*   class DBFFilter implements FilenameFilter {
-        public boolean accept(File dir, String name) {
-            return (name.toLowerCase().endsWith(".dbf") && new File(dir + "/" + name.substring(0, name.length() - 3) + "OUT").exists());
-        }
-    }*/
-
-    /* private Double roundSales(Double value, Integer roundSales) {
-        Integer round = roundSales != null ? roundSales : 50;
-        return (double) Math.round(value / round) * round;
-    }*/
 }

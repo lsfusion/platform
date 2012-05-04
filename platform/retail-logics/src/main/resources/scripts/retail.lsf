@@ -3891,6 +3891,12 @@ CLASS groupCashRegister 'Группы касс' : groupMachinery;
 CLASS groupCheck 'Группы прайс чекеров' : groupMachinery;
 CLASS groupTerminal 'Группы ТСД' : groupMachinery;
 
+CLASS groupTerminalDocumentType 'Группа типов документов';
+
+nameGroupTerminalDocumentType 'Наименование группы' = DATA STRING[200] (groupTerminalDocumentType) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+groupTerminalDocumentTypeGroupTerminal 'Группа типов документов (ИД)' = DATA groupTerminalDocumentType (groupTerminal);
+nameGroupTerminalDocumentTypeGroupTerminal 'Группа типов документов' (groupTerminal) = nameGroupTerminalDocumentType(groupTerminalDocumentTypeGroupTerminal(groupTerminal));
+
 nameGroupMachinery 'Наименование группы' = DATA STRING[200] (groupMachinery) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 transferGroupMachinery 'Передать товар на группу оборудования' = DATA BOOLEAN (groupMachinery) IN baseGroup;
 roundSalesGroupMachinery 'Округление цен до' = DATA INTEGER (groupMachinery) IN baseGroup;
@@ -3914,6 +3920,14 @@ CLASS cashRegister 'Касса' : machinery, computer;
 CLASS scales 'Весы' : machinery;
 CLASS check 'Прайс чекер' : machinery;
 CLASS terminal 'ТСД' : machinery;
+
+CLASS terminalDocumentType 'Тип документов';
+
+nameTerminalDocumentType 'Название' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
+idTerminalDocumentType 'Код' = DATA STRING[10] (terminalDocumentType) IN baseGroup;
+groupTerminalDocumentTypeTerminalDocumentType 'Группа типов документов (ИД)' = DATA groupTerminalDocumentType (terminalDocumentType);
+nameGroupTerminalDocumentTypeTerminalDocumentType 'Группа типов документов' (terminalDocumentType) = nameGroupTerminalDocumentType(groupTerminalDocumentTypeTerminalDocumentType(terminalDocumentType));
+isGroupTerminalDocumentTypeTerminalDocumentType (groupTerminalDocumentType, terminalDocumentType) = groupTerminalDocumentTypeTerminalDocumentType(terminalDocumentType) == groupTerminalDocumentType;
 
 isGroupCashRegister (machinery) = machinery IS groupCashRegister;
 groupCashRegisterCashRegister 'Группа (ИД)' = DATA groupCashRegister (cashRegister) IN idGroup;
@@ -4131,7 +4145,7 @@ FORM groupTerminal 'Группа ТСД'
 
     OBJECTS grt=groupTerminal FIXED PANEL
     PROPERTIES(grt) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                    roundSalesGroupMachinery, transferGroupMachinery,
+                    roundSalesGroupMachinery, transferGroupMachinery, nameGroupTerminalDocumentTypeGroupTerminal,
                     filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grt)
 
     OBJECTS t=terminal
@@ -4148,12 +4162,38 @@ FORM groupTerminal 'Группа ТСД'
 FORM groupsTerminal 'Группы ТСД'
     OBJECTS grt=groupTerminal, t=terminal
     PROPERTIES(grt)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                     nameGroupTerminalDocumentTypeGroupTerminal,
                      roundSalesGroupMachinery, transferGroupMachinery, filterItemsGroupMachinery
     PROPERTIES(grt)  ADDFORM, EDITFORM, delete
 
     PROPERTIES(t) READONLY nppMachinery, descriptionMachinery, portMachinery,
                            useMachinery, directoryTerminal, nameTerminalModelTerminal
     FILTERS isGroupTerminalTerminal(grt, t)
+;
+
+FORM groupTerminalDocumentType 'Группа типов документов'
+
+    OBJECTS gtdt=groupTerminalDocumentType FIXED PANEL
+    PROPERTIES(gtdt) nameGroupTerminalDocumentType
+
+    OBJECTS tdt=terminalDocumentType
+    PROPERTIES(tdt)   idTerminalDocumentType, nameTerminalDocumentType, nameGroupTerminalDocumentTypeTerminalDocumentType,
+                    ADDOBJ, delete
+
+    FILTERGROUP filters3
+        FILTER 'Показывать только для данной группы' 'F10' isGroupTerminalDocumentTypeTerminalDocumentType(gtdt, tdt) DEFAULT
+
+    EDIT groupTerminalDocumentType OBJECT gtdt
+;
+
+FORM groupsTerminalDocumentType 'Группы типов документов'
+    OBJECTS gtdt=groupTerminalDocumentType, tdt=terminalDocumentType
+    PROPERTIES(gtdt) nameGroupTerminalDocumentType
+    PROPERTIES(gtdt)  ADDFORM, EDITFORM, delete
+
+    PROPERTIES(tdt) READONLY idTerminalDocumentType, nameTerminalDocumentType, nameGroupTerminalDocumentTypeTerminalDocumentType
+
+    FILTERS groupTerminalDocumentTypeTerminalDocumentType (tdt) == gtdt
 ;
 
 FORM equipmentServer 'Серверы оборудования'
@@ -13052,7 +13092,10 @@ NAVIGATOR {
             ADD groupsCashRegister;
             ADD groupsScales;
             ADD groupsCheck;
-            ADD groupsTerminal;
+            NEW terminals 'ТСД' {
+                ADD groupsTerminal;
+                ADD groupsTerminalDocumentType;
+            }
             ADD models;
             ADD stages;
             ADD cashReports;
@@ -13244,6 +13287,7 @@ NAVIGATOR {
             ADD groupScales;
             ADD groupCheck;
             ADD groupTerminal;
+            ADD groupTerminalDocumentType;
             ADD component;
             ADD addaddressLegalEntity;
             ADD addressLegalEntity;

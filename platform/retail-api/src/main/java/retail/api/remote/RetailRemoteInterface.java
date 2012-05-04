@@ -13,6 +13,8 @@ public interface RetailRemoteInterface extends RemoteLogicsInterface {
 
     List<CashRegisterInfo> readCashRegisterInfo(String equServerID) throws RemoteException, SQLException;
 
+    List<TerminalDocumentTypeInfo> readTerminalDocumentTypeInfo() throws RemoteException, SQLException;
+
     String sendSalesInfo(List<SalesInfo> salesInfoList, String equServerID) throws IOException, SQLException;
     
     void succeedTransaction(Integer transactionID) throws RemoteException, SQLException;
