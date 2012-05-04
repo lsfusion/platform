@@ -3835,6 +3835,21 @@ PROPERTIES(m) ADDFORM, EDITFORM, delete;                // либо так ка�
 //   }
 //}
 
+FORM checkModels 'Модели прайс чекеров'
+OBJECTS m=checkModel
+PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel, handlerModel
+PROPERTIES(m) ADDFORM, EDITFORM, delete;
+
+FORM scalesModels 'Модели весов'
+OBJECTS m=scalesModel
+PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel, handlerModel
+PROPERTIES(m) ADDFORM, EDITFORM, delete;
+
+FORM cashRegistersModels 'Модели касс'
+OBJECTS m=cashRegisterModel
+PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel, handlerModel
+PROPERTIES(m) ADDFORM, EDITFORM, delete;
+
 FORM checkModel 'Модель прайс чекера'
 OBJECTS ch=checkModel FIXED PANEL
 PROPERTIES(ch) name, nameModelCheckModel, noteModel, handlerModel, useModel, maxProductModel
@@ -13089,10 +13104,19 @@ NAVIGATOR {
             ADD banks;
         }
         NEW equipment 'Оборудование' {
-            ADD groupsCashRegister;
-            ADD groupsScales;
-            ADD groupsCheck;
-            NEW terminals 'ТСД' {
+            NEW equipmentCashRegisters 'Кассы'{
+                ADD groupsCashRegister;
+                ADD cashRegistersModels;
+            }
+            NEW equipmentScales 'Весы'{
+                ADD groupsScales;
+                ADD scalesModels;
+            }
+            NEW equipmentChecks 'Прайс чекеры'{
+                ADD groupsCheck;
+                ADD checkModels;
+            }
+            NEW equipmentTerminals 'ТСД' {
                 ADD groupsTerminal;
                 ADD groupsTerminalDocumentType;
             }
