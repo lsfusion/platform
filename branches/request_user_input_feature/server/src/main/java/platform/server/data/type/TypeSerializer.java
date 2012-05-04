@@ -4,11 +4,18 @@ import platform.interop.Data;
 import platform.server.classes.*;
 import platform.server.logics.BusinessLogics;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class TypeSerializer {
+    public static byte[] serializeType(Type type) throws IOException {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+        serializeType(dataStream, type);
+        return outStream.toByteArray();
+    }
 
     public static void serializeType(DataOutputStream outStream, Type type) throws IOException {
         if(type instanceof DataClass) {

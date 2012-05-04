@@ -1,32 +1,22 @@
 package platform.client.form.grid;
 
 import platform.client.form.ClientFormController;
-import platform.client.form.GroupObjectController;
 
 import javax.swing.*;
 import java.awt.*;
 
-public abstract class GridView extends JPanel {
+public class GridView extends JPanel {
     final JScrollPane pane;
 
     private final GridTable gridTable;
+    private final GridController gridController;
 
-    public GridTable getTable() {
-        return gridTable;
-    }
-
-    public GridView(GroupObjectController groupObjectController, ClientFormController form, boolean tabVertical, boolean verticalScroll) {
+    public GridView(GridController igridController, ClientFormController form, boolean tabVertical, boolean verticalScroll) {
         setLayout(new BorderLayout());
 
-        gridTable = new GridTable(groupObjectController, form) {
-            protected void needToBeShown() {
-                GridView.this.needToBeShown();
-            }
+        gridController = igridController;
 
-            protected void needToBeHidden() {
-                GridView.this.needToBeHidden();
-            }
-        };
+        gridTable = new GridTable(this, form);
 
         gridTable.setTabVertical(tabVertical);
 
@@ -49,10 +39,14 @@ public abstract class GridView extends JPanel {
         gridTable.configureWheelScrolling(pane);
 
         add(pane, BorderLayout.CENTER);
-        add(groupObjectController.getToolbarView(), BorderLayout.SOUTH);
+        add(igridController.getGroupController().getToolbarView(), BorderLayout.SOUTH);
     }
 
-    protected abstract void needToBeShown();
+    public GridController getGridController() {
+        return gridController;
+    }
 
-    protected abstract void needToBeHidden();
+    public GridTable getTable() {
+        return gridTable;
+    }
 }

@@ -11,7 +11,7 @@ public abstract class FilterController extends QueryController {
     }
 
     protected QueryView createView() {
-        return new FilterView();
+        return new FilterView(this);
     }
 
     protected int getDestination() {

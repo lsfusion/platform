@@ -6,7 +6,9 @@ import org.aspectj.lang.annotation.Before;
 import platform.base.BaseUtils;
 import platform.interop.RemoteContextInterface;
 import platform.interop.action.ClientAction;
+import platform.interop.form.UserInputResult;
 import platform.interop.remote.RemoteObject;
+import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
@@ -89,8 +91,18 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
     }
 
     @Override
-    public void requestUserInteraction(ClientAction... actions) {
+    public Object requestUserInteraction(ClientAction action) {
+        return requestUserInteraction(new ClientAction[]{action})[0];
+    }
+
+    @Override
+    public Object[] requestUserInteraction(ClientAction... actions) {
         throw new UnsupportedOperationException("requestUserInteraction is not supported");
+    }
+
+    @Override
+    public UserInputResult requestUserInput(Type type, Object oldValue) {
+        throw new UnsupportedOperationException("requestUserInput is not supported");
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive) throws SQLException {

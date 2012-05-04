@@ -1,5 +1,6 @@
 package platform.client.form;
 
+import com.google.common.base.Throwables;
 import platform.client.ClientResourceBundle;
 import platform.interop.form.RemoteFormInterface;
 
@@ -19,11 +20,11 @@ public class ClientModalForm extends JDialog {
     protected final RemoteFormInterface remoteForm;
     private final boolean newSession;
 
-    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean newSession) throws IOException, ClassNotFoundException {
+    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean newSession) {
         this(owner, remoteForm, newSession, false);
     }
 
-    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean newSession, boolean isDialog) throws IOException, ClassNotFoundException {
+    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean newSession, boolean isDialog) {
         super(getWindow(owner), ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
 
         this.remoteForm = remoteForm;
@@ -36,7 +37,11 @@ public class ClientModalForm extends JDialog {
         // делаем, чтобы не выглядел как диалог
         getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
 
-        form = createFormController(isDialog);
+        try {
+            form = createFormController(isDialog);
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
         setTitle(form.getCaption());
 
         add(form.getComponent(), BorderLayout.CENTER);
@@ -82,12 +87,12 @@ public class ClientModalForm extends JDialog {
     protected ClientFormController createFormController(boolean isDialog) throws IOException, ClassNotFoundException {
         return new ClientFormController(remoteForm, null, false, true, newSession) {
             @Override
-            public void okPressed() {
-                setCanClose(true);
-                super.okPressed();
-                if (isCanClose()) {
+            public boolean okPressed() {
+                if (super.okPressed()) {
                     hideDialog();
+                    return true;
                 }
+                return false;
             }
 
             @Override

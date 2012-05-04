@@ -2,13 +2,9 @@ package platform.client.form.grid.groupchange;
 
 import org.apache.log4j.Logger;
 import platform.client.ClientResourceBundle;
-import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ItemAdapter;
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.cell.CellTable;
-import platform.client.form.cell.ClientAbstractCellEditor;
-import platform.client.form.editor.ObjectPropertyEditor;
+import platform.client.form.cell.SingleCellTable;
 import platform.client.form.grid.GridTable;
 import platform.client.form.grid.GridTableModel;
 import platform.client.logics.ClientGroupObjectValue;
@@ -16,7 +12,6 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.KeyStrokes;
 
 import javax.swing.*;
-import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -24,6 +19,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import static javax.swing.JOptionPane.CANCEL_OPTION;
@@ -168,7 +164,9 @@ public class ChangeDialog extends JDialog {
     private void closeDialog(boolean apply) {
         result = apply ? OK_OPTION : CANCEL_OPTION;
         if (valueView instanceof ExactValueView) {
-            SwingUtils.commitEditing(((ExactValueView) valueView).valueTable);
+            if (form.commitCurrentEditing()) {
+                return;
+            }
         }
         setVisible(false);
     }
@@ -209,8 +207,7 @@ public class ChangeDialog extends JDialog {
     }
 
     private class ExactValueView extends GroupValueView {
-        public final CellTable valueTable;
-        private ClientPropertyDraw property;
+        public final ExactValueTable valueTable;
         private Object selectedValue;
 
         public ExactValueView(ColumnProperty property) {
@@ -219,13 +216,6 @@ public class ChangeDialog extends JDialog {
             setBorder(new JComboBox().getBorder());
 
             valueTable = new ExactValueTable();
-            valueTable.getActionMap().put("commitEditingAction", new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    SwingUtils.commitEditing(valueTable);
-                }
-            });
-            valueTable.getInputMap().put(KeyStrokes.getEnter(), "commitEditingAction");
 
             if (property != null) {
                 mainPropertyChanged(property);
@@ -238,13 +228,14 @@ public class ChangeDialog extends JDialog {
             return valueTable.requestFocusInWindow();
         }
 
-        public void mainPropertyChanged(ColumnProperty iproperty) {
-            property = iproperty.property;
-            valueTable.keyChanged(property);
+        public void mainPropertyChanged(ColumnProperty columnProperty) {
+            ClientPropertyDraw property = columnProperty.property;
 
-            valueTable.setValue(gridTable.getSelectedValue(property, iproperty.columnKey));
+            valueTable.setProperty(property);
+            valueTable.setValue(gridTable.getSelectedValue(property, columnProperty.columnKey));
+
             try {
-                selectedValue = form.remoteForm.getPropertyChangeValue(property.getID());
+                selectedValue = form.getPropertyChangeValue(property);
             } catch (RemoteException e) {
                 logger.error(ClientResourceBundle.getString("form.grid.group.groupchange.failed.to.retrieve.property.value"));
                 selectedValue = null;
@@ -257,40 +248,32 @@ public class ChangeDialog extends JDialog {
             return selectedValue;
         }
 
-        private class ExactValueTable extends CellTable {
+        private class ExactValueTable extends SingleCellTable {
             public ExactValueTable() {
                 super(false, new ClientGroupObjectValue());
             }
 
-            protected boolean cellValueChanged(Object value, boolean aggValue) {
+            protected void forceChangeValue(Object value, boolean aggValue) {
                 selectedValue = value;
 
-                TableCellEditor editor = getCellEditor(0, 0);
-                if (editor instanceof ClientAbstractCellEditor) {
-                    PropertyEditorComponent propertyEditor = ((ClientAbstractCellEditor) editor).propertyEditor;
-                    if (propertyEditor instanceof ObjectPropertyEditor) {
-                        try {
-                            value = ((ObjectPropertyEditor) propertyEditor).getCellDisplayValue();
-                        } catch (RemoteException re) {
-                            throw new RuntimeException(ClientResourceBundle.getString("form.grid.group.groupchange.failed.to.obtain.displayed.value"), re);
-                        }
-                    }
-                }
+                //todo: this is broken
+//                TableCellEditor editor = getCellEditor(0, 0);
+//                if (editor instanceof ClientAbstractCellEditor) {
+//                    PropertyEditorComponent propertyEditor = ((ClientAbstractCellEditor) editor).propertyEditor;
+//                    if (propertyEditor instanceof ObjectPropertyEditor) {
+//                        try {
+//                            value = ((ObjectPropertyEditor) propertyEditor).getCellDisplayValue();
+//                        } catch (RemoteException re) {
+//                            throw new RuntimeException(ClientResourceBundle.getString("form.grid.group.groupchange.failed.to.obtain.displayed.value"), re);
+//                        }
+//                    }
+//                }
 
                 setValue(value);
-                return true;
-            }
-
-            public boolean isDataChanging() {
-                return true;
             }
 
             public boolean isPressed(int row, int column) {
                 return false;
-            }
-
-            public ClientPropertyDraw getProperty() {
-                return property;
             }
 
             public Color getBackgroundColor(int row, int column) {
@@ -327,23 +310,17 @@ public class ChangeDialog extends JDialog {
             ClientPropertyDraw property = iproperty.property;
             ClientGroupObjectValue columnKey = iproperty.columnKey;
 
-            int n = gridTable.getColumnCount();
-            int propertiesIDs[] = new int[n];
-            for (int i = 0; i < n; ++i) {
-                propertiesIDs[i] = model.getColumnProperty(i).getID();
-            }
-
             boolean compatible[];
             try {
-                compatible = form.remoteForm.getCompatibleProperties(property.getID(), propertiesIDs);
+                compatible = form.getCompatibleProperties(property, model.getColumnProperties());
             } catch (RemoteException e) {
                 logger.error(ClientResourceBundle.getString("form.grid.group.groupchange.error.reading.is.compatible"), e);
-                compatible = new boolean[n];
+                compatible = new boolean[model.getColumnCount()];
             }
 
-            java.util.List<ColumnProperty> options = new ArrayList<ColumnProperty>();
-            for (int i = 0; i < n; ++i) {
-                if (compatible[i] && !(propertiesIDs[i] == property.getID() && columnKey.equals(model.getColumnKey(i)))) {
+            List<ColumnProperty> options = new ArrayList<ColumnProperty>();
+            for (int i = 0; i < model.getColumnCount(); ++i) {
+                if (compatible[i] && !(model.getColumnProperty(i).getID() == property.getID() && columnKey.equals(model.getColumnKey(i)))) {
                     options.add(new ColumnProperty(model, i));
                 }
             }

@@ -3,15 +3,12 @@ package platform.client.logics.classes;
 import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.editor.CustomFileEditor;
+import platform.client.form.editor.FilePropertyEditor;
 import platform.client.form.renderer.CustomFileRenderer;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.io.File;
-import java.text.Format;
 
 public class ClientCustomFileClass extends ClientFileClass {
 
@@ -38,8 +35,8 @@ public class ClientCustomFileClass extends ClientFileClass {
     }
 
     @Override
-    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
-        return new CustomFileEditor(value, true, false);
+    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new FilePropertyEditor(false);
     }
 
     @Override

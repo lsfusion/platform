@@ -74,7 +74,7 @@ public class KeyInputDialog extends JDialog implements ActionListener {
                 ok = false;
                 setVisible(false);
             }
-            keyText.requestFocus();
+            keyText.requestFocusInWindow();
         }
 
         class WindowListener extends WindowAdapter {

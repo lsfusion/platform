@@ -2,7 +2,7 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class MessageClientAction extends AbstractClientAction {
+public class MessageClientAction extends ExecuteClientAction {
 
     public String message;
     public String caption;
@@ -18,7 +18,7 @@ public class MessageClientAction extends AbstractClientAction {
         this.extended = extended;
     }
 
-    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) throws IOException {
         dispatcher.execute(this);
     }
 }

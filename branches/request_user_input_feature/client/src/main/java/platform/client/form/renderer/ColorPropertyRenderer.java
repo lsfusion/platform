@@ -7,7 +7,7 @@ import platform.client.logics.classes.ClientColorClass;
 import javax.swing.*;
 import java.awt.*;
 
-public class ColorPropertyRenderer extends LabelPropertyRenderer implements PropertyRendererComponent {
+public class ColorPropertyRenderer extends LabelPropertyRenderer {
     Color value;
 
     public ColorPropertyRenderer(ClientPropertyDraw property) {
@@ -39,12 +39,7 @@ public class ColorPropertyRenderer extends LabelPropertyRenderer implements Prop
     }
 
     @Override
-    public void rateSelected() {
-        paintSelected();
-    }
-
-    @Override
-    public void paintSelected() {
+    public void paintAsSelected() {
         setBackground(new Color(value.getRGB() & PropertyRendererComponent.SELECTED_CELL_BACKGROUND.getRGB()));
     }
 }

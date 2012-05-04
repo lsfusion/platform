@@ -5,19 +5,17 @@ import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.cell.CellView;
-import platform.client.form.cell.TableCellView;
+import platform.client.form.cell.DataCellView;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GStringType;
 import platform.gwt.view.classes.GType;
 import platform.interop.Compare;
-import platform.interop.ComponentDesign;
 
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.text.Format;
 
 import static platform.interop.Compare.*;
 
@@ -32,7 +30,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     @Override
     public String getCode() {
-        return getSID()+".instance";
+        return getSID() + ".instance";
     }
 
     @Override
@@ -81,31 +79,31 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         return getPreferredMask();
     }
 
-    abstract public String getPreferredMask();
-
-    protected abstract PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property);
+    public abstract String getPreferredMask();
 
     public CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
-        return new TableCellView(key, columnKey, form);
+        return new DataCellView(form, key, columnKey);
     }
 
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
-        return getComponent(value, property);
+    public PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
+        return getDataClassEditorComponent(value, property);
     }
 
     public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
-        return getEditorComponent(ownerComponent, form, property, value);
+        return getDataClassEditorComponent(value, property);
     }
 
-    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
-        return getComponent(value, property);
+    public PropertyEditorComponent getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
+        return getDataClassEditorComponent(value, property);
     }
+
+    protected abstract PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property);
 
     public boolean shouldBeDrawn(ClientFormController form) {
         return true;
     }
 
-    public String getConformedMessage() {
+    public String getConfirmMessage() {
         return ClientResourceBundle.getString("logics.classes.do.you.really.want.to.edit.property");
     }
 
@@ -114,10 +112,12 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     }
 
     // за исключение классов динамической ширины - так как нету множественного наследования и не хочется каждому прописывать
+    @SuppressWarnings("UnusedDeclaration")
     public ClientType getDefaultType() {
         return this;
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     public ClientClass getDefaultClass(ClientObjectClass baseClass) {
         return this;
     }
@@ -127,7 +127,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     }
 
     @Override
-    public Compare[] getFilerCompares() {
+    public Compare[] getFilterCompares() {
         return new Compare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS};
     }
 

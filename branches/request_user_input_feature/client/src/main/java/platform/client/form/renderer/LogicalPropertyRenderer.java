@@ -5,8 +5,7 @@ import platform.client.form.PropertyRendererComponent;
 import javax.swing.*;
 import java.awt.*;
 
-public class LogicalPropertyRenderer extends JCheckBox
-                          implements PropertyRendererComponent {
+public class LogicalPropertyRenderer extends JCheckBox implements PropertyRendererComponent {
 
     public LogicalPropertyRenderer() {
         super();
@@ -39,7 +38,7 @@ public class LogicalPropertyRenderer extends JCheckBox
     }
 
     @Override
-    public void rateSelected() {
+    public void paintAsSelected() {
         setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
     }
 }

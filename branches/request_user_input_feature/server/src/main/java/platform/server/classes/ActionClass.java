@@ -5,6 +5,7 @@ import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.form.view.report.ReportDrawField;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
@@ -15,6 +16,9 @@ import java.text.Format;
 public class ActionClass extends DataClass<Object> {
 
     public static final ActionClass instance = new ActionClass();
+
+    public static final ObjectValue TRUE = ObjectValue.getValue(true, instance);
+
     private final static String sid = "ActionClass";
     static {
         DataClass.storeClass(sid, instance);

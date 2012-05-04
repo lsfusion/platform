@@ -60,7 +60,7 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
                 if (ch >= '0' && ch <= '9')
                     barcode += ch;
                 if (event.getEventValue() == 1) {
-                    eventBus.enterValue(barcode, SCANNER_SID);
+                    eventBus.fireValueChanged(SCANNER_SID, barcode);
                     barcode = "";
                 }
             }

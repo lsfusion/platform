@@ -4,7 +4,9 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.base.QuickSet;
-import platform.server.caches.*;
+import platform.server.caches.AbstractInnerContext;
+import platform.server.caches.AbstractOuterContext;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;
@@ -13,19 +15,16 @@ import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.query.Stat;
-import platform.server.data.query.Query;
 import platform.server.data.query.Join;
+import platform.server.data.query.Query;
 import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.query.innerjoins.KeyEquals;
-import platform.server.data.query.stat.StatKeys;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.*;
+import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
 import java.util.Collections;
@@ -73,6 +72,14 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
 
     public Map<T, Expr> getMapExprs() {
         return getMapExprs(mapKeys, mapValues, where);
+    }
+
+    public Map<T, KeyExpr> getMapKeys() {
+        return mapKeys;
+    }
+
+    public Map<T, DataObject> getMapValues() {
+        return mapValues;
     }
 
     public PropertyChange(Expr expr, Map<T, DataObject> mapValues) {

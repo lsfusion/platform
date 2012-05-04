@@ -1,13 +1,13 @@
 package tmc.integration.exp.FiscalRegister;
 
-import java.io.IOException;
-
 import com.jacob.com.Dispatch;
-import platform.interop.action.AbstractClientAction;
+import platform.interop.action.ExecuteClientAction;
 import platform.interop.action.ClientActionDispatcher;
 
+import java.io.IOException;
 
-public class CashRegPrintReceiptAction extends AbstractClientAction {
+
+public class CashRegPrintReceiptAction extends ExecuteClientAction {
     final static int FONT = 2;
 
     ReceiptInstance receipt;
@@ -26,7 +26,7 @@ public class CashRegPrintReceiptAction extends AbstractClientAction {
     }
 
     @Override
-    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) throws IOException {
 
         if (dispose) {
             FiscalReg.dispose("Before PrintReceipt");

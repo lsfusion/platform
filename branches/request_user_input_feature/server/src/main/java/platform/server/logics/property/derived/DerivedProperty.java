@@ -2,11 +2,11 @@ package platform.server.logics.property.derived;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.identity.DefaultSIDGenerator;
 import platform.interop.Compare;
 import platform.server.classes.*;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.flow.SetActionProperty;
 
@@ -15,13 +15,11 @@ import java.util.*;
 import static platform.base.BaseUtils.toList;
 
 public class DerivedProperty {
-
-    private static int ids = 0;
-
     public static final String ID_PREFIX_GEN = "GDVID";
-    
+    private static final DefaultSIDGenerator sidGenerator = new DefaultSIDGenerator(ID_PREFIX_GEN);
+
     public static String genID() {
-        return ID_PREFIX_GEN+(ids++);
+        return sidGenerator.genSID();
     }
 
     private static StaticClass formulaClass = DoubleClass.instance;

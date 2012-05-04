@@ -4,8 +4,5 @@ import java.io.IOException;
 import java.io.Serializable;
 
 public interface ClientAction extends Serializable {
-
-    public void dispatch(ClientActionDispatcher dispatcher) throws IOException;
-
-    public boolean isBeforeApply();
+    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException;
 }

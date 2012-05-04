@@ -6,6 +6,10 @@ import javax.swing.*;
 
 public class FilterView extends QueryView {
 
+    FilterView(QueryController controller) {
+        super(controller);
+    }
+
     protected Icon getApplyIcon() {
         return new ImageIcon(getClass().getResource("/images/filt.gif"));
     }

@@ -10,7 +10,8 @@ import platform.base.serialization.CustomSerializable;
 import platform.interop.ClassViewType;
 import platform.interop.FormEventType;
 import platform.interop.PropertyEditType;
-import platform.interop.action.ClientResultAction;
+import platform.interop.action.ClientAction;
+import platform.interop.form.EditActionResult;
 import platform.interop.navigator.FormShowType;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
@@ -21,12 +22,10 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.LogicsModule;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyClassImplement;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.ValueClassWrapper;
+import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerContext;
@@ -439,6 +438,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     private <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P> propertyImplement) {
         PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<P>(genID(), propertyImplement, groupObject);
+
         if (shouldProceedDefaultDraw()) {
             propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this);
         }
@@ -845,7 +845,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return false;
     }
 
-    public ClientResultAction getClientActionOnApply(FormInstance<T> form) {
+    public ClientAction getClientActionOnApply(FormInstance<T> form) {
         return null; // будем возвращать именно null, чтобы меньше данных передавалось        
     }
 

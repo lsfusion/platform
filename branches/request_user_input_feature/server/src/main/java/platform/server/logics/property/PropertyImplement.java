@@ -31,13 +31,17 @@ public class PropertyImplement<P extends PropertyInterface, T> extends TwinImmut
         this.property = property;
         mapping = new HashMap<P, T>();
     }
+    
+    public <L> Map<P, L> join(Map<T, L> map) {
+        return BaseUtils.join(mapping, map);
+    }
 
     public <L> PropertyImplement<P, L> mapImplement(Map<T, L> mapImplement) {
-        return new PropertyImplement<P, L>(property, BaseUtils.join(mapping, mapImplement));
+        return new PropertyImplement<P, L>(property, join(mapImplement));
     }
 
     public <L extends PropertyInterface> PropertyMapImplement<P, L> mapPropertyImplement(Map<T, L> mapImplement) {
-        return new PropertyMapImplement<P, L>(property, BaseUtils.join(mapping, mapImplement));
+        return new PropertyMapImplement<P, L>(property, join(mapImplement));
     }
 
     public boolean twins(TwinImmutableInterface o) {
@@ -53,6 +57,6 @@ public class PropertyImplement<P extends PropertyInterface, T> extends TwinImmut
     }
 
     public Expr mapExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
-        return property.getExpr(BaseUtils.join(mapping, joinImplement), propClasses, changes, changedWhere);
+        return property.getExpr(join(joinImplement), propClasses, changes, changedWhere);
     }
 }

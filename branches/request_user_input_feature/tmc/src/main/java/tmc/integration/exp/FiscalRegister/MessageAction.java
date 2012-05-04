@@ -1,12 +1,12 @@
 package tmc.integration.exp.FiscalRegister;
 
-import platform.interop.action.ClientAction;
+import platform.interop.action.ExecuteClientAction;
 import platform.interop.action.ClientActionDispatcher;
 
 import javax.swing.*;
 import java.io.IOException;
 
-public class MessageAction implements ClientAction {
+public class MessageAction extends ExecuteClientAction {
     public final static int SERIAL_NUM = 0;
     public final static int LAST_DOC_NUM = 1;
     public final static int COUNTER = 2;
@@ -19,7 +19,7 @@ public class MessageAction implements ClientAction {
         this.port = port;
     }
 
-    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) throws IOException {
         String msg = null;
         String caption = null;
 
@@ -35,9 +35,5 @@ public class MessageAction implements ClientAction {
         }
         
         JOptionPane.showMessageDialog(null, msg, caption, JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    public boolean isBeforeApply() {
-        return false;
     }
 }

@@ -1,21 +1,22 @@
 package platform.client.form.renderer;
 
 import platform.client.form.PropertyRendererComponent;
+import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-public class ActionPropertyRenderer extends JButton
-        implements PropertyRendererComponent {
-
+public class ActionPropertyRenderer extends JButton implements PropertyRendererComponent {
     private static final String defaultCaption = "...";
 
     private final Color defaultBackground = getBackground();
     private Border defaultBorder = getBorder();
     private Icon defaultIcon;
 
-    public ActionPropertyRenderer() {
+    public ActionPropertyRenderer(ClientPropertyDraw property) {
+        property.design.designComponent(this);
+        setFocusPainted(false);
     }
 
     public JComponent getComponent() {
@@ -44,7 +45,7 @@ public class ActionPropertyRenderer extends JButton
     }
 
     @Override
-    public void rateSelected() {
+    public void paintAsSelected() {
         setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
     }
 }

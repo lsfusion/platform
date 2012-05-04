@@ -2,7 +2,7 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class OpenFileClientAction extends AbstractClientAction {
+public class OpenFileClientAction extends ExecuteClientAction {
 
     public final byte[] file;
     public final String extension;
@@ -13,7 +13,7 @@ public class OpenFileClientAction extends AbstractClientAction {
     }
 
     @Override
-    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) throws IOException {
         dispatcher.execute(this);
     }
 }

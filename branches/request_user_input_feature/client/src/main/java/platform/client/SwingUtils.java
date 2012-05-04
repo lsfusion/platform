@@ -1,15 +1,16 @@
 package platform.client;
 
+import org.jdesktop.swingx.SwingXUtilities;
 import platform.client.form.ClientFormLayout;
+import platform.client.form.TableTransferHandler;
+import platform.interop.KeyStrokes;
 import sun.swing.SwingUtilities2;
 
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -22,7 +23,6 @@ public class SwingUtils {
     private static Map<String, Icon> icons = new HashMap<String, Icon>();
 
     public static void addFocusTraversalKey(Component comp, int id, KeyStroke key) {
-
         Set keys = comp.getFocusTraversalKeys(id);
         Set newKeys = new HashSet(keys);
         newKeys.add(key);
@@ -30,7 +30,6 @@ public class SwingUtils {
     }
 
     public static void removeFocusable(Container container) {
-
         container.setFocusable(false);
         for (Component comp : container.getComponents()) {
             comp.setFocusable(false);
@@ -49,38 +48,6 @@ public class SwingUtils {
         return (Window) comp;
     }
 
-    public static JTable getJTable(Component comp) {
-
-        while (comp != null && !(comp instanceof JTable)) {
-            comp = comp.getParent();
-        }
-
-        return (JTable) comp;
-    }
-
-    public static boolean commitEditing(JTable table) {
-        if (table.isEditing() && table.getCellEditor() != null) {
-            boolean stopEditing = table.getCellEditor().stopCellEditing();
-            if (!stopEditing) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static JTable commitCurrentEditing() {
-        Component comp = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-        JTable table = getJTable(comp);
-        if (table != null) {
-            if (commitEditing(table)) {
-                return table;
-            }
-        }
-        return null;
-    }
-
     public static Point computeAbsoluteLocation(Component comp) {
         Point result = new Point(0, 0);
         SwingUtilities.convertPointToScreen(result, comp);
@@ -93,40 +60,28 @@ public class SwingUtils {
         return np;
     }
 
-    private final static WeakHashMap<String, Timer> timers = new WeakHashMap<String, Timer>();
+    private final static WeakHashMap<String, SingleActionTimer> timers = new WeakHashMap<String, SingleActionTimer>();
 
     public static void invokeLaterSingleAction(final String actionID, final ActionListener actionListener, int delay) {
-
         stopSingleAction(actionID, false);
 
         if (actionListener != null) {
-
-            final Timer timer = new Timer(delay, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    actionListener.actionPerformed(e);
-                    timers.remove(actionID);
-                }
-            });
-            timer.setRepeats(false);
-
-            timer.start();
+            SingleActionTimer timer = SingleActionTimer.create(actionID, delay, actionListener);
 
             timers.put(actionID, timer);
+
+            timer.start();
         }
     }
 
     public static void stopSingleAction(String actionID, boolean execute) {
-
-        Timer timer = timers.get(actionID);
-        if (timer != null && timer.isRunning()) {
+        SingleActionTimer timer = timers.get(actionID);
+        if (timer != null) {
             if (execute) {
-                ActionListener[] actions = timer.getActionListeners();
-                for (ActionListener action : actions) {
-                    action.actionPerformed(null);
-                }
+                timer.forceExecute();
+            } else {
+                timer.cancel();
             }
-            timer.stop();
-            timers.remove(actionID);
         }
     }
 
@@ -143,9 +98,9 @@ public class SwingUtils {
                 UIManager.getString("OptionPane.noButtonText")};
 
         JOptionPane dialogPane = new JOptionPane(message,
-                messageType,
-                JOptionPane.YES_NO_OPTION,
-                null, options, options[initialValue]);
+                                                 messageType,
+                                                 JOptionPane.YES_NO_OPTION,
+                                                 null, options, options[initialValue]);
 
         addFocusTraversalKey(dialogPane, KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("RIGHT"));
         addFocusTraversalKey(dialogPane, KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("UP"));
@@ -178,7 +133,7 @@ public class SwingUtils {
 
     public static Dimension clipDimension(Dimension toClip, Dimension min, Dimension max) {
         return new Dimension(max(min.width, min(max.width, toClip.width)),
-                max(min.height, min(max.height, toClip.height))
+                             max(min.height, min(max.height, toClip.height))
         );
     }
 
@@ -259,7 +214,7 @@ public class SwingUtils {
 
     public static Dimension getOverridedSize(Dimension base, Dimension override) {
         return new Dimension(override.width == -1 ? base.width : override.width,
-                override.height == -1 ? base.height : override.height);
+                             override.height == -1 ? base.height : override.height);
     }
 
     public static ClientFormLayout getClientFormlayout(Component comp) {
@@ -292,8 +247,9 @@ public class SwingUtils {
                 Window[] ownedWindows = window.getOwnedWindows();
                 if (ownedWindows != null) {
                     Window selectedWindow = getSelectedWindow(ownedWindows);
-                    if (selectedWindow != null)
+                    if (selectedWindow != null) {
                         return selectedWindow;
+                    }
                 }
             }
         }
@@ -306,5 +262,121 @@ public class SwingUtils {
     public static boolean isMenuShortcutKeyDown(InputEvent event) {
         return (event.getModifiers() &
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) != 0;
+    }
+
+    /**
+     * c/p from JXTable.isFocusOwnerDescending
+     */
+    public static boolean isFocusOwnerDescending(Component component) {
+        Component focusOwner = KeyboardFocusManager
+                .getCurrentKeyboardFocusManager().getFocusOwner();
+        if (focusOwner == null) {
+            return false;
+        }
+        if (SwingXUtilities.isDescendingFrom(focusOwner, component)) {
+            return true;
+        }
+        Component permanent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+        return SwingXUtilities.isDescendingFrom(permanent, component);
+    }
+
+    public static void setupClientTable(final JTable table) {
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setSurrendersFocusOnKeystroke(false);
+//        table.setSurrendersFocusOnKeystroke(true);
+        table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+
+        table.getTableHeader().setFocusable(false);
+        table.getTableHeader().setReorderingAllowed(false);
+
+        if (table instanceof TableTransferHandler.TableInterface) {
+            table.setTransferHandler(new TableTransferHandler((TableTransferHandler.TableInterface) table));
+        }
+    }
+
+    public static void setupSingleCellTable(final JTable table) {
+        table.addFocusListener(new FocusListener() {
+            public void focusGained(FocusEvent e) {
+                table.changeSelection(0, 0, false, false);
+            }
+
+            public void focusLost(FocusEvent e) {
+                table.getSelectionModel().clearSelection();
+            }
+        });
+
+        // для таблиц с одной ячейкой будем сами мэнэджить перадачу фокуса,
+        // это нужно потому, что setFocusTraversalKeys на самом деле используется и для дочерних компонентов,
+        // т.е. в случае таблицы - для editorComp
+        // из-за этого при использовании этих кнопок во время редактирования фокус переходит в таблицу без окончания редактирования
+        table.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, new HashSet<AWTKeyStroke>());
+        table.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, new HashSet<AWTKeyStroke>());
+
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "forward-traversal");
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getTab(), "forward-traversal");
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getCtrlTab(), "forward-traversal");
+
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getShiftTab(), "backward-traversal");
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getCtrlShiftTab(), "backward-traversal");
+
+        table.getActionMap().put("forward-traversal", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (table.isEditing() && !table.getCellEditor().stopCellEditing()) {
+                    return;
+                }
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(table);
+            }
+        });
+        table.getActionMap().put("backward-traversal", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (table.isEditing() && !table.getCellEditor().stopCellEditing()) {
+                    return;
+                }
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().focusPreviousComponent(table);
+            }
+        });
+
+        table.getColumnModel().setColumnMargin(2);
+        table.setRowMargin(2);
+        table.setBorder(BorderFactory.createLineBorder(Color.gray));
+    }
+
+    private static final class SingleActionTimer extends Timer {
+        private boolean stopped = false;
+
+        public SingleActionTimer(int delay, final ActionListener actionListener) {
+            super(delay, actionListener);
+            setRepeats(false);
+        }
+
+        public void cancel() {
+            stopped = true;
+            stop();
+        }
+
+        public void forceExecute() {
+            assert getActionListeners().length == 1;
+            getActionListeners()[0].actionPerformed(null);
+        }
+
+        public static SingleActionTimer create(final String actionID, int delay, final ActionListener actionListener) {
+            final SingleActionTimer[] timerHolder = new SingleActionTimer[1];
+            ActionListener timerListener = new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (!timerHolder[0].stopped) {
+                        actionListener.actionPerformed(e);
+                        timerHolder[0].cancel();
+                    }
+                    timers.remove(actionID);
+                }
+            };
+
+            SingleActionTimer timer = new SingleActionTimer(delay, timerListener);
+            timerHolder[0] = timer;
+            return timer;
+        }
     }
 }

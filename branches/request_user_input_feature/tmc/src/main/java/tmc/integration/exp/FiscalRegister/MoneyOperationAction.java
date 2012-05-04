@@ -1,13 +1,13 @@
 package tmc.integration.exp.FiscalRegister;
 
 import com.jacob.com.Dispatch;
-import platform.interop.action.AbstractClientAction;
+import platform.interop.action.ExecuteClientAction;
 import platform.interop.action.ClientActionDispatcher;
 
 import javax.swing.*;
 import java.io.IOException;
 
-public class MoneyOperationAction extends AbstractClientAction {
+public class MoneyOperationAction extends ExecuteClientAction {
     public final static int CASH_IN = 5;
     public final static int CASH_OUT = 6;
     private final static int FONT = 2;
@@ -22,7 +22,7 @@ public class MoneyOperationAction extends AbstractClientAction {
     }
 
     @Override
-    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) throws IOException {
         int n = JOptionPane.showConfirmDialog(
                 null,
                 "Вы действительно хотите выполнить эту операцию?",

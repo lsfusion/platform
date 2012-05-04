@@ -3,6 +3,7 @@ package platform.client.form.editor;
 import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
+import platform.client.form.cell.PropertyTableCellEditor;
 import platform.interop.ComponentDesign;
 import platform.interop.KeyStrokes;
 
@@ -14,9 +15,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.rmi.RemoteException;
-import java.text.ParseException;
 import java.util.EventObject;
 
 
@@ -30,8 +28,8 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditorCom
 
     private JOptionPane optionPane;
 
-    private String btnString1 = ClientResourceBundle.getString("form.editor.save");
-    private String btnString2 = ClientResourceBundle.getString("form.editor.cancel");
+    private String btnSave = ClientResourceBundle.getString("form.editor.save");
+    private String btnCancel = ClientResourceBundle.getString("form.editor.cancel");
     private boolean state;
 
     public TextPropertyEditor(Object value, ComponentDesign design) {
@@ -55,7 +53,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditorCom
         String msgString1 = ClientResourceBundle.getString("form.editor.text");
         Object[] array = {msgString1, this};
 
-        Object[] options = {btnString1, btnString2};
+        Object[] options = {btnSave, btnCancel};
 
         optionPane = new JOptionPane(array,
                 JOptionPane.PLAIN_MESSAGE,
@@ -87,13 +85,15 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditorCom
         );
     }
 
-
     public void clearAndHide() {
         dialog.setVisible(false);
     }
 
+    public void setTableEditor(PropertyTableCellEditor tableEditor) {
+        //пока не нужен
+    }
 
-    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
+    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
         if (KeyStrokes.isSpaceEvent(editEvent)) {
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             int x = (int) Math.min(tableLocation.getX(), screenSize.getWidth() - WIDTH);
@@ -106,7 +106,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditorCom
         }
     }
 
-    public Object getCellEditorValue() throws RemoteException {
+    public Object getCellEditorValue() {
         return textArea.getText();
     }
 
@@ -115,8 +115,8 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditorCom
     }
 
    @Override
-    public String checkValue(Object value) {
-        return null;
+    public boolean stopCellEditing() {
+        return true;
     }
 
     public void propertyChange(PropertyChangeEvent e) {
@@ -133,7 +133,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditorCom
 
             optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
 
-            if (btnString1.equals(value)) {
+            if (btnSave.equals(value)) {
                 state = !(textArea.getText().equals(typedText));
                 typedText = textArea.getText();
                 clearAndHide();

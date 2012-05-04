@@ -5,8 +5,7 @@ import platform.client.form.PropertyRendererComponent;
 import javax.swing.*;
 import java.awt.*;
 
-public class BitPropertyRenderer extends JCheckBox
-                          implements PropertyRendererComponent {
+public class BitPropertyRenderer extends JCheckBox implements PropertyRendererComponent {
 
     public BitPropertyRenderer() {
         super();
@@ -46,7 +45,7 @@ public class BitPropertyRenderer extends JCheckBox
     }
 
     @Override
-    public void rateSelected() {
+    public void paintAsSelected() {
         setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
     }
 }

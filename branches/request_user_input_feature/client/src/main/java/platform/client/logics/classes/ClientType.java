@@ -8,7 +8,6 @@ import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GType;
 import platform.interop.Compare;
-import platform.interop.ComponentDesign;
 
 import java.awt.*;
 import java.io.IOException;
@@ -33,11 +32,11 @@ public interface ClientType {
 
     CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form);
 
-    PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException;
+    PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value);
 
     PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException;
 
-    PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException;
+    PropertyEditorComponent getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value);
 
     Object parseString(String s) throws ParseException;
 
@@ -45,11 +44,11 @@ public interface ClientType {
 
     boolean shouldBeDrawn(ClientFormController form);
     
-    String getConformedMessage();
+    String getConfirmMessage();
 
     ClientTypeClass getTypeClass();
 
-    Compare[] getFilerCompares();
+    Compare[] getFilterCompares();
 
     Compare getDefaultCompare();
 

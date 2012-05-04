@@ -12,11 +12,14 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, ServerIdentitySerializable {
 
@@ -25,9 +28,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public PropertyObjectEntity<P> propertyObject;
     
     public GroupObjectEntity toDraw;
-    public void setToDraw(GroupObjectEntity toDraw) {
-        this.toDraw = toDraw;
-    }
+
+    public String mouseBinding;
+    public Map<KeyStroke, String> keyBindings;
+    public Map<String, PropertyObjectEntity> editActions;
 
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
     public List<GroupObjectEntity> columnGroupObjects = new ArrayList<GroupObjectEntity>();
@@ -41,7 +45,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public boolean shouldBeLast = false;
     public ClassViewType forceViewType = null;
-    public String eventSID = "";
+    public String eventSID = null;
 
     public PropertyDrawEntity() {
     }
@@ -55,6 +59,38 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public PropertyDrawInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
+    }
+
+    public void setToDraw(GroupObjectEntity toDraw) {
+        this.toDraw = toDraw;
+    }
+
+    public void setKeyAction(KeyStroke ks, String actionSID) {
+        if (keyBindings == null) {
+            keyBindings = new HashMap<KeyStroke, String>();
+        }
+        keyBindings.put(ks, actionSID);
+    }
+
+    public void setMouseAction(String actionSID) {
+        mouseBinding = actionSID;
+    }
+
+    public void setEditAction(String actionSID, PropertyObjectEntity editAction) {
+        if (editActions == null) {
+            editActions = new HashMap<String, PropertyObjectEntity>();
+        }
+        editActions.put(actionSID, editAction);
+    }
+
+    public void setKeyEditAction(KeyStroke keyStroke, String actionSID, PropertyObjectEntity editAction) {
+        setKeyAction(keyStroke, actionSID);
+        setEditAction(actionSID, editAction);
+    }
+
+    public void setMouseEditAction(String actionSID, PropertyObjectEntity editAction) {
+        setMouseAction(actionSID);
+        setEditAction(actionSID, editAction);
     }
 
     public void addColumnGroupObject(GroupObjectEntity columnGroupObject) {
@@ -120,6 +156,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         outStream.writeBoolean(forceViewType != null);
         if (forceViewType != null)
             pool.writeString(outStream, forceViewType.name());
+
+        //todo: serialization/deserialzation
+//        pool.writeString(outStream, mouseBinding);
+//        outStream.writeInt(keyBinding == null ? 0 : keyBinding.size());
+//        if (keyBinding != null) {
+//            for (Map.Entry<KeyStroke, String> e : keyBinding.entrySet()) {
+//                pool.writeObject(outStream, e.getKey());
+//                pool.writeString(outStream, e.getValue());
+//            }
+//        }
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {

@@ -97,10 +97,10 @@ public class DockableMainFrame extends MainFrame {
         try {
             NavigatorActionResult result = remoteNavigator.executeNavigatorAction(action.getSID());
             do {
-                dispatcher.dispatchActions(result.actions);
+                Object[] actionResults = dispatcher.dispatchActions(result.actions);
 
                 if (result.resumeInvocation) {
-                    result = remoteNavigator.continueNavigatorAction();
+                    result = remoteNavigator.continueNavigatorAction(actionResults);
                 } else {
                     result = null;
                 }

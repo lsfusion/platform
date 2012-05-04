@@ -1,10 +1,14 @@
 package platform.client.form;
 
+import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
-import platform.client.*;
+import platform.client.Log;
+import platform.client.Main;
+import platform.client.StartupProperties;
+import platform.client.SwingUtils;
 import platform.client.form.queries.ToolbarGridButton;
 import platform.client.form.tree.TreeGroupController;
 import platform.client.logics.*;
@@ -13,20 +17,21 @@ import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.navigator.ClientNavigator;
 import platform.client.remote.proxy.RemoteObjectProxy;
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.*;
-import platform.interop.action.*;
-import platform.interop.form.FormColumnUserPreferences;
-import platform.interop.form.FormUserPreferences;
-import platform.interop.form.RemoteChanges;
-import platform.interop.form.RemoteFormInterface;
+import platform.interop.ClassViewType;
+import platform.interop.KeyStrokes;
+import platform.interop.Order;
+import platform.interop.Scroll;
+import platform.interop.action.CheckFailed;
+import platform.interop.action.ClientAction;
+import platform.interop.form.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.io.*;
+import java.awt.event.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
@@ -35,8 +40,11 @@ import static platform.client.ClientResourceBundle.getString;
 import static platform.interop.Order.*;
 
 public class ClientFormController {
+    private final TableManager tableManager = new TableManager(this);
+    private final SimpleEditPropertyDispatcher simpleDispatcher = new SimpleEditPropertyDispatcher(this);
 
-    public RemoteFormInterface remoteForm;
+    private RemoteFormInterface remoteForm;
+    private boolean busy = false;
 
     private final ClientForm form;
     private final ClientNavigator clientNavigator;
@@ -60,9 +68,15 @@ public class ClientFormController {
 
     private boolean canClose = true;
 
+    private Color defaultApplyBackground;
+
+    private boolean defaultOrdersInitialized = false;
+
     private boolean isDialog;
     private boolean isModal;
     private boolean isNewSession;
+
+    private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<ClientGroupObject, List<ClientPropertyFilter>>();
 
     public final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
 
@@ -103,6 +117,14 @@ public class ClientFormController {
         return ID;
     }
 
+    void setBusy(boolean busy) {
+        this.busy = busy;
+    }
+
+    boolean isBusy() {
+        return busy;
+    }
+
     public KeyStroke getKeyStroke() {
         return form.keyStroke;
     }
@@ -123,50 +145,17 @@ public class ClientFormController {
     // ----------------------------------- Инициализация ---------------------------------- //
     // ------------------------------------------------------------------------------------ //
     void initializeForm() throws IOException {
-
-        formLayout = new ClientFormLayout(form.mainContainer) {
-            boolean firstGainedFocus = true;
-
-            @Override
-            public void gainedFocus() {
-
-                if (remoteForm == null) // типа если сработал closed, то ничего вызывать не надо
-                    return;
-
-                try {
-                    remoteForm.gainedFocus();
-                    if (clientNavigator != null) {
-                        clientNavigator.relevantFormNavigator.currentFormChanged();
-                    }
-
-/*                    //при старте перемещаем фокус на стандартный (только в первый раз, из-за диалогов)
-                    if (firstGainedFocus) {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                getFocusTraversalPolicy().getDefaultComponent(formLayout).requestFocusInWindow();
-                            }
-                        });
-                        firstGainedFocus = false;
-                    }*/
-
-                    // если вдруг изменились данные в сессии
-                    ClientExternalScreen.invalidate(getID());
-                    ClientExternalScreen.repaintAll(getID());
-                } catch (IOException e) {
-                    throw new RuntimeException(getString("form.error.form.activation"), e);
-                }
-            }
-        };
+        formLayout = new ClientFormLayout(this, form.mainContainer);
 
         applyUserProperties();
 
         initializeControllers();
 
+        initializeButtons();
+
         initializeRegularFilters();
 
         initializeDefaultOrders();
-
-        initializeButtons();
 
         applyRemoteChanges();
     }
@@ -281,10 +270,10 @@ public class ClientFormController {
         });
     }
 
-    public void quickEditFilter(int initialFilterPropertyDrawID) {
+    public void quickEditFilter(KeyEvent initFilterKeyEvent, int initialFilterPropertyDrawID) {
         ClientPropertyDraw propertyDraw = form.getProperty(initialFilterPropertyDrawID);
         if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
-            controllers.get(propertyDraw.groupObject).quickEditFilter(propertyDraw);
+            controllers.get(propertyDraw.groupObject).quickEditFilter(initFilterKeyEvent, propertyDraw);
         }
     }
 
@@ -306,38 +295,32 @@ public class ClientFormController {
                 : null;
     }
 
-    public class ClientRegularFilterWrapped {
+    public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException {
+        commitOrCancelCurrentEditing();
+        remoteForm.saveUserPreferences(preferences, forAllUsers);
+    }
 
-        public ClientRegularFilter filter;
-        private String caption;
+    public void commitOrCancelCurrentEditing() {
+        tableManager.commitOrCancelCurrentEditing();
+    }
 
-        public ClientRegularFilterWrapped(String caption) {
-            this(caption, null);
-        }
+    public boolean commitCurrentEditing() {
+        return tableManager.commitCurrentEditing();
+    }
 
-        public ClientRegularFilterWrapped(ClientRegularFilter filter) {
-            this(null, filter);
-        }
+    public void setCurrentEditingTable(JTable currentTable) {
+        tableManager.setCurrentEditingTable(currentTable);
+    }
 
-        public ClientRegularFilterWrapped(String caption, ClientRegularFilter filter) {
-            this.filter = filter;
-            this.caption = caption;
-        }
+    public boolean isEditing() {
+        return tableManager.isEditing();
+    }
 
-        @Override
-        public boolean equals(Object wrapped) {
-            return wrapped instanceof ClientRegularFilterWrapped
-                    && (filter != null ? filter.equals(((ClientRegularFilterWrapped) wrapped).filter) : this == wrapped);
-        }
-
-        @Override
-        public String toString() {
-            return caption == null ? filter.getFullCaption() : caption;
-        }
+    public SimpleEditPropertyDispatcher getSimpleDispatcher() {
+        return simpleDispatcher;
     }
 
     private void initializeButtons() throws RemoteException {
-
         KeyStroke printKeyStroke = KeyStrokes.getPrintKeyStroke();
         KeyStroke editKeyStroke = KeyStrokes.getEditKeyStroke();
         KeyStroke xlsKeyStroke = KeyStrokes.getXlsKeyStroke();
@@ -422,6 +405,7 @@ public class ClientFormController {
     }
 
     private void applyUserProperties() throws RemoteException {
+        commitOrCancelCurrentEditing();
         FormUserPreferences preferences = remoteForm.loadUserPreferences();
 
         if (preferences != null)
@@ -441,9 +425,8 @@ public class ClientFormController {
             String caption = function.caption + " (" + SwingUtils.getKeyStrokeCaption(keyStroke) + ")";
             if (function.iconPath == null) {
                 functionAction.putValue(Action.NAME, caption);
-                actionButton = new ClientButton(functionAction);
-            }
-            else {
+                actionButton = new JButton(functionAction);
+            } else {
                 actionButton = new ToolbarGridButton(function.iconPath, caption) {
                     @Override
                     public void addListener() {
@@ -462,8 +445,6 @@ public class ClientFormController {
         }
         return null;
     }
-
-    private boolean defaultOrdersInitialized = false;
 
     private void initializeDefaultOrders() throws IOException {
         //сначала получаем изменения, чтобы был первоначальный список свойств в таблице
@@ -500,28 +481,26 @@ public class ClientFormController {
         }
 
         do {
-            List<ClientAction> remoteActions = remoteChanges.actions;
-
-            actionDispatcher.dispatchActions(remoteActions, true);
-
-            applyFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.form)), form, controllers));
-
-            actionDispatcher.dispatchActions(remoteActions, false);
+            if (remoteChanges.formChanges != null) {
+                applyFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.formChanges)), form, controllers));
+            }
 
             if (clientNavigator != null) {
                 clientNavigator.relevantClassNavigator.updateCurrentClass(remoteChanges.classID);
             }
 
+            Object[] actionResults = actionDispatcher.dispatchActions(remoteChanges.actions);
+
             if (!remoteChanges.resumeInvocation) {
                 break;
             }
 
-            remoteChanges = remoteForm.resumePausedInvocation();
+            remoteChanges = remoteForm.continueRemoteChanges(actionResults);
             remoteForm.refreshData();
         } while (true);
     }
 
-    private void applyRemoteChanges() throws IOException {
+    public void applyRemoteChanges() throws IOException {
         processRemoteChanges(remoteForm.getRemoteChanges());
     }
 
@@ -568,8 +547,6 @@ public class ClientFormController {
 
     }
 
-    private Color defaultApplyBackground;
-
     private Color getDefaultApplyBackground() {
         if (defaultApplyBackground == null) {
             defaultApplyBackground = buttonApply.getBackground();
@@ -578,10 +555,15 @@ public class ClientFormController {
     }
 
     public void changeGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
-        if (objectValue == null || remoteForm == null)// remoteForm может равняться null, если к моменту вызова форму уже закрыли
+        if (objectValue == null || remoteForm == null) {
+            // remoteForm может равняться null, если к моменту вызова форму уже закрыли
             return;
+        }
 
         if (group.parent != null || !objectValue.equals(controllers.get(group).getCurrentObject())) {
+            commitOrCancelCurrentEditing();
+            SwingUtils.stopSingleAction(group.getActionID(), false);
+
             // если ClientGroupObject в дереве, то вызывать не надо изменение объекта
             if (group.parent == null) {
                 controllers.get(group).setCurrentGroupObject(objectValue);
@@ -592,26 +574,30 @@ public class ClientFormController {
         }
     }
 
-    public void expandGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
-        remoteForm.expandGroupObject(group.getID(), objectValue.serialize());
-
-        applyRemoteChanges();
-    }
-
-    public void collapseGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
-        remoteForm.collapseGroupObject(group.getID(), objectValue.serialize());
-        applyRemoteChanges();
-    }
-
     public void changeGroupObject(ClientGroupObject groupObject, Scroll changeType) throws IOException {
+        commitOrCancelCurrentEditing();
         SwingUtils.stopSingleAction(groupObject.getActionID(), false);
 
         remoteForm.changeGroupObject(groupObject.getID(), changeType.serialize());
         applyRemoteChanges();
     }
 
+    public void expandGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
+        commitOrCancelCurrentEditing();
+        remoteForm.expandGroupObject(group.getID(), objectValue.serialize());
+
+        applyRemoteChanges();
+    }
+
+    public void collapseGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
+        commitOrCancelCurrentEditing();
+        remoteForm.collapseGroupObject(group.getID(), objectValue.serialize());
+        applyRemoteChanges();
+    }
 
     public void changePropertyDraw(ClientPropertyDraw property, ClientGroupObjectValue columnKey, Object value, boolean all, boolean aggValue) throws IOException {
+        assert false:"changePropertyDraw shouldn't be called";
+
         // для глобальных свойств пока не может быть отложенных действий
         if (property.getGroupObject() != null) {
             SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
@@ -620,6 +606,71 @@ public class ClientFormController {
         processRemoteChanges(
                 remoteForm.changePropertyDraw(property.getID(), columnKey.serialize(), BaseUtils.serializeObject(value), all, aggValue)
         );
+    }
+
+    public EditActionResult executeEditAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID) throws IOException {
+        commitOrCancelCurrentEditing();
+
+        // для глобальных свойств пока не может быть отложенных действий
+        if (property.getGroupObject() != null) {
+            SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
+        }
+        return remoteForm.executeEditAction(property.getID(), columnKey.serialize(), actionSID);
+    }
+
+    public EditActionResult continueExecuteEditAction(UserInputResult inputResult) throws RemoteException {
+        return remoteForm.continueExecuteEditAction(inputResult);
+    }
+
+    public EditActionResult continueExecuteEditAction(Object[] actionResults) throws RemoteException {
+        return remoteForm.continueExecuteEditAction(actionResults);
+    }
+
+    public RemoteDialogInterface createChangeEditorDialog(ClientPropertyDraw property) throws RemoteException {
+        assert false;
+        return remoteForm.createChangeEditorDialog(property.getID());
+    }
+
+    public RemoteDialogInterface createObjectEditorDialog(ClientPropertyDraw property) throws RemoteException {
+        assert false;
+        return remoteForm.createObjectEditorDialog(property.getID());
+    }
+
+    public Object getPropertyChangeValue(ClientPropertyDraw property) throws RemoteException {
+        assert false;
+        return remoteForm.getPropertyChangeValue(property.getID());
+    }
+
+    public boolean[] getCompatibleProperties(ClientPropertyDraw mainProperty, ClientPropertyDraw[] otherProperties) throws RemoteException {
+        assert false;
+        int n = otherProperties.length;
+        int propertiesIDs[] = new int[n];
+        for (int i = 0; i < n; ++i) {
+            propertiesIDs[i] = otherProperties[i].getID();
+        }
+
+        return remoteForm.getCompatibleProperties(mainProperty.getID(), propertiesIDs);
+    }
+
+    public void gainedFocus() {
+        //remoteForm может быть == null, если сработал closed, и тогда ничего вызывать не надо
+        if (!isEditing() && remoteForm != null) {
+            if (remoteForm == null)
+                return;
+
+            try {
+                remoteForm.gainedFocus();
+                if (clientNavigator != null) {
+                    clientNavigator.relevantFormNavigator.currentFormChanged();
+                }
+
+                // если вдруг изменились данные в сессии
+                ClientExternalScreen.invalidate(getID());
+                ClientExternalScreen.repaintAll(getID());
+            } catch (IOException e) {
+                throw new RuntimeException(getString("form.error.form.activation"), e);
+            }
+        }
     }
 
     public void pasteExternalTable(List<ClientPropertyDraw> propertyList, List<List<Object>> table) throws IOException {
@@ -648,6 +699,7 @@ public class ClientFormController {
 
     public void groupChangePropertyDraw(ClientPropertyDraw mainProperty, ClientGroupObjectValue mainColumnKey,
                                         ClientPropertyDraw getterProperty, ClientGroupObjectValue getterColumnKey) throws IOException {
+        assert false;
         // для глобальных свойств пока не может быть отложенных действий
         if (mainProperty.getGroupObject() != null) {
             SwingUtils.stopSingleAction(mainProperty.getGroupObject().getActionID(), true);
@@ -660,12 +712,14 @@ public class ClientFormController {
     }
 
     public void changeGridClass(ClientObject object, ClientObjectClass cls) throws IOException {
+        commitOrCancelCurrentEditing();
 
         remoteForm.changeGridClass(object.getID(), cls.ID);
         applyRemoteChanges();
     }
 
     public void switchClassView(ClientGroupObject groupObject) throws IOException {
+        commitOrCancelCurrentEditing();
 
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
@@ -675,6 +729,7 @@ public class ClientFormController {
     }
 
     public void changeClassView(ClientGroupObject groupObject, ClassViewType show) throws IOException {
+        commitOrCancelCurrentEditing();
 
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
@@ -685,6 +740,8 @@ public class ClientFormController {
 
     public void changeOrder(ClientPropertyDraw property, Order modiType, ClientGroupObjectValue columnKey) throws IOException {
         if (defaultOrdersInitialized) {
+            commitOrCancelCurrentEditing();
+
             remoteForm.changePropertyOrder(property.getID(), modiType.serialize(), columnKey.serialize());
             applyRemoteChanges();
         }
@@ -693,8 +750,6 @@ public class ClientFormController {
     @SuppressWarnings({"UnusedDeclaration"})
     public void changeFind(List<ClientPropertyFilter> conditions) {
     }
-
-    private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<ClientGroupObject, List<ClientPropertyFilter>>();
 
     public void changeFilter(ClientGroupObject groupObject, List<ClientPropertyFilter> conditions) throws IOException {
         currentFilters.put(groupObject, conditions);
@@ -721,6 +776,8 @@ public class ClientFormController {
     }
 
     private void applyCurrentFilters() throws IOException {
+        commitOrCancelCurrentEditing();
+
         remoteForm.clearUserFilters();
 
         for (List<ClientPropertyFilter> listFilter : currentFilters.values()) {
@@ -733,6 +790,8 @@ public class ClientFormController {
     }
 
     private void setRegularFilter(ClientRegularFilterGroup filterGroup, ClientRegularFilter filter) throws IOException {
+        commitOrCancelCurrentEditing();
+
         remoteForm.setRegularFilter(filterGroup.getID(), (filter == null) ? -1 : filter.getID());
 
         applyOrders(filter != null ? filter.orders : filterGroup.nullOrders);
@@ -741,29 +800,58 @@ public class ClientFormController {
     }
 
     public int countRecords(int groupObjectID) throws IOException {
+        commitOrCancelCurrentEditing();
+
         return remoteForm.countRecords(groupObjectID);
     }
 
     public Object calculateSum(int propertyID, byte[] columnKeys) throws IOException {
+        commitOrCancelCurrentEditing();
+
         return remoteForm.calculateSum(propertyID, columnKeys);
     }
 
     public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap, Map<Integer,
             List<byte[]>> maxMap, boolean onlyNotNull) throws IOException {
+        commitOrCancelCurrentEditing();
+
         return remoteForm.groupData(groupMap, sumMap, maxMap, onlyNotNull);
     }
 
     public void changePageSize(ClientGroupObject groupObject, Integer pageSize) throws IOException {
-        remoteForm.changePageSize(groupObject.getID(), pageSize);
+        if (!tableManager.isEditing()) {
+            remoteForm.changePageSize(groupObject.getID(), pageSize);
+        }
     }
 
     public void moveGroupObject(ClientGroupObject parentGroup, ClientGroupObjectValue parentKey, ClientGroupObject childGroup, ClientGroupObjectValue childKey, int index) throws IOException {
+        commitOrCancelCurrentEditing();
+
         remoteForm.moveGroupObject(parentGroup.getID(), parentKey.serialize(), childGroup.getID(), childKey.serialize(), index);
 
         applyRemoteChanges();
     }
 
-    void refresh() {
+    public void runSingleGroupReport(GroupObjectController groupController) {
+        commitOrCancelCurrentEditing();
+        try {
+            Main.frame.runSingleGroupReport(remoteForm, groupController.getGroupObject().getID(), getUserPreferences());
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+    }
+
+    public void runSingleGroupXlsExport(GroupObjectController groupController) {
+        commitOrCancelCurrentEditing();
+        try {
+            Main.frame.runSingleGroupXlsExport(remoteForm, groupController.getGroupObject().getID(), getUserPreferences());
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+    }
+
+    public void refresh() {
+        commitOrCancelCurrentEditing();
         try {
             remoteForm.refreshData();
             applyRemoteChanges();
@@ -773,6 +861,8 @@ public class ClientFormController {
     }
 
     void apply(boolean needConfirm) {
+        commitOrCancelCurrentEditing();
+
         try {
             if (needConfirm && !askApplyConfirmation()) {
                 return;
@@ -780,14 +870,14 @@ public class ClientFormController {
 
             Object clientResult = null;
             if (remoteForm.hasClientActionOnApply()) {
-                ClientResultAction actionOnApply = remoteForm.getClientActionOnApply();
+                ClientAction actionOnApply = remoteForm.getClientActionOnApply();
                 if (actionOnApply instanceof CheckFailed) { // чтобы не делать лишний RMI вызов
                     Log.error(((CheckFailed) actionOnApply).message);
                     setCanClose(false);
                     return;
                 } else {
                     try {
-                        clientResult = actionOnApply.dispatchResult(actionDispatcher);
+                        clientResult = actionOnApply.dispatch(actionDispatcher);
                     } catch (Exception e) {
                         throw new RuntimeException(getString("form.error.applying.changes"), e);
                     }
@@ -818,16 +908,23 @@ public class ClientFormController {
         return true;
     }
 
+    public byte[] getPropertyChangeType(ClientPropertyDraw property, ClientGroupObjectValue key, boolean aggValue) throws IOException {
+        assert false;
+        return remoteForm.getPropertyChangeType(property.getID(), key.serialize(), aggValue);
+    }
+
     public void dropLayoutCaches() {
         formLayout.dropCaches();
+    }
+
+    public ClientFormActionDispatcher getActionDispatcher() {
+        return actionDispatcher;
     }
 
     public void closed() {
         // здесь мы сбрасываем ссылку на remoteForm для того, чтобы сборщик мусора быстрее собрал удаленные объекты
         // это нужно, чтобы connection'ы на сервере закрывались как можно быстрее
-        if (remoteForm != null) {
-            remoteForm = null;
-        }
+        remoteForm = null;
     }
 
     public Dimension calculatePreferredSize() {
@@ -846,15 +943,18 @@ public class ClientFormController {
         return property.hideUser == null ? property.hide : property.hideUser;
     }
 
-    public FormUserPreferences getUserPreferences(){
+    public FormUserPreferences getUserPreferences() {
         Map<String, FormColumnUserPreferences> columnPreferences = new HashMap<String, FormColumnUserPreferences>();
-        for (GroupObjectController controller : controllers.values())
-            for (ClientPropertyDraw property : controller.getPropertyDraws())
-                 columnPreferences.put(property.getSID(), new FormColumnUserPreferences(needToHideProperty(property), property.widthUser));
+        for (GroupObjectController controller : controllers.values()) {
+            for (ClientPropertyDraw property : controller.getPropertyDraws()) {
+                columnPreferences.put(property.getSID(), new FormColumnUserPreferences(needToHideProperty(property), property.widthUser));
+            }
+        }
         return new FormUserPreferences(columnPreferences);
     }
-    
+
     void printPressed() {
+        commitOrCancelCurrentEditing();
         try {
             Main.frame.runReport(remoteForm, false, getUserPreferences());
         } catch (Exception e) {
@@ -863,10 +963,12 @@ public class ClientFormController {
     }
 
     void xlsPressed() {
+        commitOrCancelCurrentEditing();
         Main.module.runExcel(remoteForm, getUserPreferences());
     }
 
     void editPressed() {
+        commitOrCancelCurrentEditing();
         try {
             Map<String, String> pathMap = Main.frame.getReportPath(remoteForm, getUserPreferences());
 
@@ -882,6 +984,7 @@ public class ClientFormController {
     }
 
     void cancelPressed() {
+        commitOrCancelCurrentEditing();
         if (dataChanged) {
             try {
                 if (SwingUtils.showConfirmDialog(getComponent(), getString("form.do.you.really.want.to.undo.changes"), null, JOptionPane.WARNING_MESSAGE, SwingUtils.NO_BUTTON) == JOptionPane.YES_OPTION) {
@@ -895,14 +998,22 @@ public class ClientFormController {
     }
 
     void applyPressed() {
+        commitOrCancelCurrentEditing();
         apply(true);
     }
 
     void refreshPressed() {
+        commitOrCancelCurrentEditing();
         refresh();
     }
 
-    public void okPressed() {
+    public boolean okPressed() {
+        if (!commitCurrentEditing()) {
+             return false;
+        }
+
+        setCanClose(true);
+
         try {
             processRemoteChanges(remoteForm.okPressed());
 
@@ -912,6 +1023,8 @@ public class ClientFormController {
         } catch (IOException e) {
             throw new RuntimeException(getString("form.error.closing.dialog"), e);
         }
+
+        return isCanClose();
     }
 
     void closePressed() {
@@ -920,10 +1033,42 @@ public class ClientFormController {
         } catch (IOException e) {
             throw new RuntimeException(getString("form.error.closing.dialog"), e);
         }
-        // по умолчанию больше ничего не делаем
     }
 
     void nullPressed() {
-        //do nothing
+        try {
+            processRemoteChanges(remoteForm.nullPressed());
+        } catch (IOException e) {
+            throw new RuntimeException(getString("form.error.closing.dialog"), e);
+        }
+    }
+
+    public class ClientRegularFilterWrapped {
+        public ClientRegularFilter filter;
+        private String caption;
+
+        public ClientRegularFilterWrapped(String caption) {
+            this(caption, null);
+        }
+
+        public ClientRegularFilterWrapped(ClientRegularFilter filter) {
+            this(null, filter);
+        }
+
+        public ClientRegularFilterWrapped(String caption, ClientRegularFilter filter) {
+            this.filter = filter;
+            this.caption = caption;
+        }
+
+        @Override
+        public boolean equals(Object wrapped) {
+            return wrapped instanceof ClientRegularFilterWrapped
+                    && (filter != null ? filter.equals(((ClientRegularFilterWrapped) wrapped).filter) : this == wrapped);
+        }
+
+        @Override
+        public String toString() {
+            return caption == null ? filter.getFullCaption() : caption;
+        }
     }
 }

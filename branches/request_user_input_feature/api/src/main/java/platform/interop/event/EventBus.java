@@ -4,24 +4,26 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import static platform.base.BaseUtils.nullEquals;
+
 public class EventBus implements Serializable {
 
     private WeakHashMap<ValueEventListener, String> listeners = new WeakHashMap<ValueEventListener, String>();
-
-    public synchronized void raiseEvent(ValueEvent event) {
-        for (Map.Entry<ValueEventListener, String> entry : listeners.entrySet()) {
-            if ((entry.getValue() != null) && (entry.getValue().equals(event.getSID()))) {
-                entry.getKey().actionPerfomed(event);
-            }
-        }
-    }
 
     public synchronized void addListener(ValueEventListener listener, String eventSID) {
         listeners.put(listener, eventSID);
     }
 
-    public void enterValue(Object value, String SID) {
-        raiseEvent(new ValueEvent(SID, value));
+    public void fireValueChanged(String eventSID, Object value) {
+        fireEvent(new ValueEvent(eventSID, value));
+    }
+
+    public synchronized void fireEvent(ValueEvent event) {
+        for (Map.Entry<ValueEventListener, String> entry : listeners.entrySet()) {
+            if (nullEquals(entry.getValue(), event.getSID())) {
+                entry.getKey().actionPerfomed(event);
+            }
+        }
     }
 
     public synchronized void invalidate() {

@@ -2,12 +2,12 @@ package platform.server.form.navigator;
 
 // навигатор работает с абстрактной BL
 
+import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import platform.base.BaseUtils;
-import platform.base.ExceptionUtils;
 import platform.base.IOUtils;
 import platform.base.WeakIdentityHashSet;
 import platform.interop.action.ClientAction;
@@ -38,10 +38,8 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.form.instance.listener.RemoteFormListener;
-import platform.server.form.instance.remote.InvocationHandler;
-import platform.server.form.instance.remote.InvocationResult;
-import platform.server.form.instance.remote.PausableInvocation;
 import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.instance.remote.RemotePausableInvocation;
 import platform.server.form.view.FormView;
 import platform.server.logics.*;
 import platform.server.logics.property.ActionProperty;
@@ -469,29 +467,28 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     private Map<FormEntity, RemoteForm> invalidatedForms = new HashMap<FormEntity, RemoteForm>();
 
     public RemoteFormInterface createForm(FormEntity<T> formEntity, boolean currentSession, boolean interactive) {
-        RemoteForm remoteForm = invalidatedForms.remove(formEntity);
-        if (remoteForm != null) {
-            remoteForm.form.fullRefresh();
-        } else {
-            try {
+        try {
+            RemoteForm remoteForm = invalidatedForms.remove(formEntity);
+            if (remoteForm == null) {
                 DataSession session;
                 FormInstance<T> currentForm = getCurrentForm();
-                if (currentSession && currentForm != null)
+                if (currentSession && currentForm != null) {
                     session = currentForm.session;
-                else
+                } else {
                     session = createSession();
+                }
 
                 FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer, interactive);
                 // все равно подошли объекты или нет
 
                 remoteForm = new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, this);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
             }
-        }
-        openForms.put(formEntity, remoteForm);
+            openForms.put(formEntity, remoteForm);
 
-        return remoteForm;
+            return remoteForm;
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     public RemoteFormInterface createForm(byte[] formState) throws RemoteException {
@@ -605,7 +602,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         }
     }
 
-    public synchronized void invalidate() {
+    public synchronized void invalidate() throws SQLException {
         if (client != null) {
             client.disconnect();
         }
@@ -619,8 +616,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 //        invalidatedForms.clear();
 
         invalidatedForms.putAll(openForms);
-
         openForms.clear();
+
+        for (RemoteForm form : invalidatedForms.values()) {
+            form.invalidate();
+        }
     }
 
     public synchronized ClientCallBackController getClientCallBack() throws RemoteException {
@@ -745,7 +745,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     private final ExecutorService pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this));
-    private PausableInvocation<NavigatorActionResult, RemoteException> pausableInvocation = null;
+    private RemotePausableInvocation<NavigatorActionResult> currentInvocation = null;
 
     @Override
     public NavigatorActionResult executeNavigatorAction(String navigatorActionSID) throws RemoteException {
@@ -760,52 +760,38 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         }
 
         final ActionProperty property = ((NavigatorAction) element).getProperty();
-        final List<ClientAction> result = new ArrayList<ClientAction>();
-
-        pausableInvocation = new PausableInvocation<NavigatorActionResult, RemoteException>(
-                pausablesExecutor,
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        threads.add(Thread.currentThread());
-                        try {
-                            DataSession session = createSession();
-                            result.addAll(
-                                    property.execute(session, true, session.modifier)
-                            );
-                            session.apply(BL);
-                            session.close();
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        } finally {
-                            threads.remove(Thread.currentThread());
-                        }
-                    }
-                },
-                new InvocationHandler<NavigatorActionResult, RemoteException>() {
-                    @Override
-                    public NavigatorActionResult handle(InvocationResult invocationResult) throws RemoteException {
-                        InvocationResult.Status invocationStatus = invocationResult.getStatus();
-                        if (invocationStatus == InvocationResult.Status.EXCEPTION_THROWN) {
-                            ExceptionUtils.emitRemoteException(invocationResult.getThrowable());
-                        }
-
-                        return new NavigatorActionResult(result, invocationStatus == InvocationResult.Status.PAUSED);
-                    }
+        currentInvocation = new RemotePausableInvocation<NavigatorActionResult>(pausablesExecutor) {
+            @Override
+            protected NavigatorActionResult callInvocation() throws Throwable {
+                threads.add(Thread.currentThread());
+                try {
+                    DataSession session = createSession();
+                    List<ClientAction> actions = property.execute(session, true, session.modifier);
+                    session.apply(BL);
+                    session.close();
+                    return new NavigatorActionResult(actions.toArray(new ClientAction[actions.size()]), false);
+                } finally {
+                    threads.remove(Thread.currentThread());
                 }
-        );
+            }
 
-        return pausableInvocation.execute();
+            @Override
+            protected NavigatorActionResult handleUserInteractionRequest(ClientAction... actions) throws RemoteException {
+                return new NavigatorActionResult(actions);
+            }
+        };
+
+        return currentInvocation.execute();
     }
 
     @Override
-    public NavigatorActionResult continueNavigatorAction() throws RemoteException {
-        return pausableInvocation.resume();
+    public NavigatorActionResult continueNavigatorAction(Object[] actionResults) throws RemoteException {
+        return currentInvocation.resumeAfterUserInteraction(actionResults);
     }
 
     @Override
-    public void requestUserInteraction(final ClientAction... acts) {
-        pausableInvocation.pause(new NavigatorActionResult(Arrays.asList(acts), true));
+    public Object[] requestUserInteraction(final ClientAction... acts) {
+        return currentInvocation.pauseForUserInteraction(acts);
     }
 
     @Override
@@ -832,6 +818,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
                 return true;
             }
         }
+        for (RemoteForm form : invalidatedForms.values()) {
+            if (!form.threads.isEmpty()) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -840,6 +831,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             super.killThreads();
         }
         for (RemoteForm form : openForms.values()) {
+            if (!form.threads.isEmpty()) {
+                form.killThreads();
+            }
+        }
+        for (RemoteForm form : invalidatedForms.values()) {
             if (!form.threads.isEmpty()) {
                 form.killThreads();
             }

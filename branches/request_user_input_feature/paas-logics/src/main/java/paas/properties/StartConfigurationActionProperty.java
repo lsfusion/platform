@@ -8,7 +8,6 @@ import platform.server.classes.ValueClass;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 
@@ -35,7 +34,7 @@ public class StartConfigurationActionProperty extends CustomActionProperty {
         } catch (Exception e) {
             logger.warn("Ошибка при попытке запустить приложение: ", e);
 
-            context.getActions().add(new MessageClientAction(e.getMessage(), "Ошибка!"));
+            context.addAction(new MessageClientAction(e.getMessage(), "Ошибка!"));
         }
     }
 

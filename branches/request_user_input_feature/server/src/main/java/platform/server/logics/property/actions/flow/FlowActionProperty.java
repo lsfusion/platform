@@ -30,7 +30,7 @@ public abstract class FlowActionProperty extends ActionProperty {
         }
 
         if (result == FlowResult.THROWS) {
-            throw new IllegalStateException("Action throwed an exception: ...");
+            throw new IllegalStateException("Action thrown an exception: ...");
         }
 
         if (result == FlowResult.BREAK) {

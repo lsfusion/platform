@@ -385,6 +385,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
             FormInstance<?> formInstance = (FormInstance<?>) incrementChange.getKey();
             incrementChange.getValue().properties.addAll(formInstance.getUpdateProperties(changes));
             formInstance.dropIncrement(changes);
+            formInstance.dataChanged = true;
         }
     }
 
@@ -406,7 +407,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
             executeForm.form.fireChange(property, change);
 
         MapDataChanges<P> userDataChanges = null;
-        if(property instanceof UserProperty && property.timeChanges.isEmpty()) { // оптимизация
+        if(property instanceof UserProperty) { // оптимизация
             userDataChanges = (MapDataChanges<P>) getUserDataChanges((UserProperty)property, (PropertyChange<ClassPropertyInterface>) change);
 //            assert userDataChanges == null || BaseUtils.hashEquals(userDataChanges,property.getDataChanges(change, modifier));
 //            из-за того что DataSession знает конкретные значения, а в модифайере все прячется в таблицы, верхний assertion не работает

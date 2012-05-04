@@ -4,66 +4,51 @@ import org.jdesktop.swingx.JXTree;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableModel;
+import platform.client.SwingUtils;
 import platform.client.form.TableTransferHandler;
 import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
 import java.util.Enumeration;
-import java.util.EventObject;
 
 public abstract class ClientFormTreeTable extends JXTreeTable implements TableTransferHandler.TableInterface {
 
     protected ClientFormTreeTable() {
 
+        SwingUtils.setupClientTable(this);
+
         setToggleClickCount(-1);
 
         setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-
-        setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        setSurrendersFocusOnKeystroke(true);
-
-        putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
-
-        getTableHeader().setFocusable(false);
-        getTableHeader().setReorderingAllowed(false);
 
         setShowGrid(true, true);
 
         setupActionMap();
 
-        setTransferHandler(new TableTransferHandler() {
-            @Override
-            protected TableInterface getTable() {
-                return ClientFormTreeTable.this;
-            }
-        });
-
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (SwingUtilities.isRightMouseButton(e)) {
-                    buildShortcut(e.getComponent(), e.getPoint());
-                }
-            }
-        });
-
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
-                    Rectangle rect = getCellRect(getSelectedRow(), getSelectedColumn(), true);
-                    buildShortcut(getComponentAt(rect.getLocation()), new Point(rect.x, rect.y + rect.height - 1));
-                }
-            }
-        });
+//        addMouseListener(new MouseAdapter() {
+//            @Override
+//            public void mousePressed(MouseEvent e) {
+//                if (SwingUtilities.isRightMouseButton(e)) {
+//                    buildShortcut(e.getComponent(), e.getPoint());
+//                }
+//            }
+//        });
+//
+//        addKeyListener(new KeyAdapter() {
+//            @Override
+//            public void keyPressed(KeyEvent e) {
+//                if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
+//                    Rectangle rect = getCellRect(getSelectedRow(), getSelectedColumn(), true);
+//                    buildShortcut(getComponentAt(rect.getLocation()), new Point(rect.x, rect.y + rect.height - 1));
+//                }
+//            }
+//        });
     }
 
     abstract public void buildShortcut(Component component,  Point point);
@@ -77,27 +62,6 @@ public abstract class ClientFormTreeTable extends JXTreeTable implements TableTr
 
         am.put("selectNextColumn", new ExpandAction(true, am.get("selectNextColumn")));
         am.put("selectPreviousColumn", new ExpandAction(false, am.get("selectPreviousColumn")));
-    }
-
-    public boolean editCellAt(int row, int column, EventObject e){
-        if (e instanceof MouseEvent) {
-            // чтобы не срабатывало редактирование при изменении ряда,
-            // потому что всё равно будет апдейт
-            int selRow = getSelectedRow();
-            if (selRow == -1 || selRow != row) {
-                return false;
-            }
-        }
-
-        boolean result = super.editCellAt(row, column, e);
-        if (result) {
-            final Component editor = getEditorComponent();
-            if (editor instanceof JTextComponent) {
-                ((JTextComponent) editor).selectAll();
-            }
-        }
-
-        return result;
     }
 
     /**
@@ -119,8 +83,6 @@ public abstract class ClientFormTreeTable extends JXTreeTable implements TableTr
                ? tree.getNextMatch(prefix, startingRow, forward)
                : null;
     }
-
-    public abstract Object convertValueFromString(String value, int row, int column);
 
     public interface NodeProccessor {
         public void processPath(TreePath nodePath);

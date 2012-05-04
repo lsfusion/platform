@@ -4,14 +4,12 @@ import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.ClassActionPropertyEditor;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.text.Format;
 
 public class ClientClassActionClass extends ClientActionClass {
 
@@ -43,12 +41,10 @@ public class ClientClassActionClass extends ClientActionClass {
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
-
-        //todo:
     }
 
     @Override
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
         return new ClassActionPropertyEditor(ownerComponent, baseClass, defaultClass);
     }
 }

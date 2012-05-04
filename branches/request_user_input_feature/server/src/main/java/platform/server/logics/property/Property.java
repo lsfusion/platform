@@ -30,16 +30,25 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.form.entity.*;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.panellocation.*;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.logics.*;
+import platform.server.form.view.panellocation.PanelLocationView;
+import platform.server.form.view.panellocation.ShortcutPanelLocationView;
+import platform.server.logics.DataObject;
+import platform.server.logics.LogicsModule;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.panellocation.ShortcutPanelLocation;
+import platform.server.logics.property.change.ActionPropertyChangeListener;
+import platform.server.logics.property.change.PropertyChangeListener;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.derived.OnChangeProperty;
@@ -59,12 +68,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-import static platform.base.BaseUtils.crossJoin;
-import static platform.base.BaseUtils.join;
-import static platform.base.BaseUtils.merge;
+import static platform.base.BaseUtils.*;
 
 public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T>, ServerIdentitySerializable {
-
     private String sID;
 
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
@@ -223,8 +229,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
         changeExpr = new PullExpr(toString() + " value");
     }
-
-    public Map<Time, TimePropertyChange<T>> timeChanges = new HashMap<Time, TimePropertyChange<T>>();
 
     protected void fillDepends(Set<Property> depends, boolean derived) {
     }
@@ -714,9 +718,22 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public QuickSet<Property> getUsedDataChanges(StructChanges propChanges) {
         QuickSet<Property> result = new QuickSet<Property>(calculateUsedDataChanges(propChanges));
-        for (TimePropertyChange<T> timeChange : timeChanges.values())
-            result.addAll(timeChange.property.getUsedDataChanges(propChanges));
+
+        for (PropertyChangeListener<T> listener : changeListeners) {
+            result.addAll(listener.getUsedDataChanges(propChanges));
+        }
         return result;
+    }
+
+    private final List<PropertyChangeListener<T>> changeListeners = new ArrayList<PropertyChangeListener<T>>();
+
+    public void addChangeActionListener(PropertyInterface valueInterface, PropertyImplement<ClassPropertyInterface, PropertyInterface> actionListener) {
+        assert actionListener.property instanceof ActionProperty;
+        addChangeListener(new ActionPropertyChangeListener<T>(this, valueInterface, actionListener));
+    }
+
+    public void addChangeListener(PropertyChangeListener<T> changeListener) {
+        changeListeners.add(changeListener);
     }
 
     public MapDataChanges<T> getDataChanges(PropertyChange<T> change, Modifier modifier) {
@@ -732,21 +749,16 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     @ThisMessage
     public MapDataChanges<T> getDataChanges(PropertyChange<T> change, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if (!change.where.isFalse()) {
-            // для оптимизации, если не было изменений
-            WhereBuilder calculateChangedWhere = timeChanges.isEmpty() ? changedWhere : new WhereBuilder();
-            MapDataChanges<T> dataChanges = calculateDataChanges(change, calculateChangedWhere, propChanges);
-            // обновляем свойства времени изменения
-            for (Map.Entry<Time, TimePropertyChange<T>> timeChange : timeChanges.entrySet()) {
-                TimePropertyChange<T> timeProperty = timeChange.getValue();
-                dataChanges = dataChanges.add(
-                        timeProperty.property.getDataChanges(
-                                new PropertyChange<T>(change, new TimeExpr(timeChange.getKey()), calculateChangedWhere.toWhere()
-                                ).map(timeProperty.mapInterfaces), propChanges).map(timeProperty.mapInterfaces)
-                );
+            if (changedWhere == null && !changeListeners.isEmpty()) {
+                changedWhere = new WhereBuilder();
             }
-            if (changedWhere != null && !timeChanges.isEmpty()) {
-                changedWhere.add(calculateChangedWhere.toWhere());
+
+            MapDataChanges<T> dataChanges = calculateDataChanges(change, changedWhere, propChanges);
+
+            for (PropertyChangeListener<T> changeListener : changeListeners) {
+                dataChanges = dataChanges.add(changeListener.getDataChanges(change, propChanges, changedWhere.toWhere()));
             }
+
             return dataChanges;
         }
         return new MapDataChanges<T>();
@@ -967,7 +979,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return this.getSID().equals(sid) ? this : null;
     }
 
-
     public T getInterfaceById(int iID) {
         for (T inter : interfaces) {
             if (inter.getID() == iID) {
@@ -1151,7 +1162,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public List<AbstractGroup> fillGroups(List<AbstractGroup> groupsList) {
         return groupsList;
     }
-    
+
     public boolean hasEvent() {
         return this instanceof UserProperty && ((UserProperty)this).event != null;
     }

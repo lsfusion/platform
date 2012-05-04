@@ -1,16 +1,13 @@
 package platform.client.logics.classes;
 
 import platform.client.ClientResourceBundle;
-import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.DoublePropertyEditor;
 import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GDoubleType;
 import platform.gwt.view.classes.GType;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.*;
@@ -35,10 +32,6 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
 
     public byte getTypeId() {
         return Data.DOUBLE;
-    }
-
-    public Class getJavaClass() {
-        return Double.class;
     }
 
     public Format getDefaultFormat() {
@@ -72,8 +65,8 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
         return reformatString(obj.toString());
     }
 
-    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
-        return new DoublePropertyEditor(value, (NumberFormat) property.getFormat(), property.design, getJavaClass());
+    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new DoublePropertyEditor(value, (NumberFormat) property.getFormat(), property.design);
     }
 
     @Override

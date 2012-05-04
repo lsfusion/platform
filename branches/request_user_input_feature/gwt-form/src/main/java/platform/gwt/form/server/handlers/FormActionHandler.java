@@ -23,7 +23,7 @@ public abstract class FormActionHandler<A extends Action<GetFormResult>> extends
     protected GetFormResult createResult(RemoteFormInterface remoteForm) throws IOException {
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
-        ClientFormChanges clientChanges = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteForm.getRemoteChanges().form)), clientForm, null);
+        ClientFormChanges clientChanges = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteForm.getRemoteChanges().formChanges)), clientForm, null);
 
         String formSessionID = generateRandomSID();
 

@@ -94,7 +94,20 @@ public class InstanceFactory {
                 columnGroupObjects.add(getInstance(columnGroupObject));
             }
 
-            propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(entity, getInstance(entity.propertyObject), getInstance(entity.toDraw), columnGroupObjects,
+            Map<String, PropertyObjectInstance<?>> editActions = null;
+            if (entity.editActions != null) {
+                editActions = new HashMap<String, PropertyObjectInstance<?>>();
+                for (Map.Entry<String, PropertyObjectEntity> i : entity.editActions.entrySet()) {
+                    editActions.put(i.getKey(), getInstance(i.getValue()));
+                }
+            }
+
+            propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(
+                    entity,
+                    getInstance(entity.propertyObject),
+                    getInstance(entity.toDraw),
+                    editActions,
+                    columnGroupObjects,
                     entity.propertyCaption == null ? null : getInstance(entity.propertyCaption),
                     entity.propertyReadOnly == null ? null : getInstance(entity.propertyReadOnly),
                     entity.propertyFooter == null ? null : getInstance(entity.propertyFooter),

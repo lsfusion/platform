@@ -3,14 +3,12 @@ package platform.client.logics.classes;
 import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.editor.DocumentPropertyEditor;
+import platform.client.form.editor.FilePropertyEditor;
 import platform.client.form.renderer.WordPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.text.Format;
 
 public class ClientWordClass extends ClientFileClass {
 
@@ -37,8 +35,8 @@ public class ClientWordClass extends ClientFileClass {
     }
 
     @Override
-    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
-        return new DocumentPropertyEditor(value, ClientResourceBundle.getString("logics.classes.word"), "doc", "docx");
+    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new FilePropertyEditor(ClientResourceBundle.getString("logics.classes.word"), "doc", "docx");
     }
 
     @Override

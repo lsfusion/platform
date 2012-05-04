@@ -9,6 +9,6 @@ public abstract class FindController extends QueryController {
     }
 
     protected QueryView createView() {
-        return new FindView();
+        return new FindView(this);
     }
 }

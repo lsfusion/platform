@@ -2,7 +2,7 @@ package platform.client.form.editor;
 
 import com.toedter.calendar.JSpinnerDateEditor;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.form.grid.GridTable;
+import platform.client.form.cell.PropertyTableCellEditor;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
@@ -10,8 +10,6 @@ import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
-import java.rmi.RemoteException;
 import java.sql.Time;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -20,7 +18,9 @@ import java.text.SimpleDateFormat;
 import java.util.EventObject;
 
 public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEditorComponent {
-    SimpleDateFormat format;
+    private PropertyTableCellEditor tableEditor;
+
+    private final SimpleDateFormat format;
 
     public TimePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
         this.format = format;
@@ -42,7 +42,7 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
         if (condition == WHEN_FOCUSED) {
             if (ke.getKeyCode() == KeyEvent.VK_DELETE) {
                 getEditorComponent().getTextField().setText("");
-                ((GridTable) ke.getSource()).commitEditing();
+                commitEditing();
                 return true;
             }
             return getEditorComponent().processKeyBinding(ks, ke, condition, pressed);
@@ -52,21 +52,26 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
     }
 
     @Override
-    public void requestFocus() {
+    public boolean requestFocusInWindow() {
         // пересылаем фокус в нужный объект
-        getEditor().requestFocusInWindow();
+        return getEditor().requestFocusInWindow();
+    }
+
+    public void setTableEditor(PropertyTableCellEditor tableEditor) {
+        this.tableEditor = tableEditor;
     }
 
     @Override
-    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
+    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
         return this;
     }
 
     @Override
-    public Object getCellEditorValue() throws RemoteException {
+    public Object getCellEditorValue() {
         String text = getEditorComponent().getTextField().getText();
-        if (text.isEmpty())
+        if (text.isEmpty()) {
             return null;
+        }
         return new Time(format.parse(text, new ParsePosition(0)).getTime());
     }
 
@@ -75,13 +80,14 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
     }
 
     @Override
-    public boolean valueChanged() {
+    public boolean stopCellEditing() {
         return true;
     }
 
-    @Override
-    public String checkValue(Object value) {
-        return null;
+    public void commitEditing() {
+        if (!tableEditor.stopCellEditing()) {
+            tableEditor.cancelCellEditing();
+        }
     }
 
     class TimePropertyEditorComponent extends JSpinner.DateEditor {
@@ -130,7 +136,7 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
         @Override
         protected boolean processKeyBinding(final KeyStroke ks, final KeyEvent e, final int condition, final boolean pressed) {
             if (e.getKeyCode() == KeyEvent.VK_DELETE && getTextField().getText().isEmpty()) {
-                ((GridTable) TimePropertyEditor.this.getParent()).commitEditing();
+                commitEditing();
                 return true;
             }
 

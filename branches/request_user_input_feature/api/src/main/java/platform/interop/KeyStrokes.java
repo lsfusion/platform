@@ -18,12 +18,24 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
     }
 
+    public static KeyStroke getBackspace() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0);
+    }
+
     public static KeyStroke getTab() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
     }
 
     public static KeyStroke getShiftTab() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK);
+    }
+
+    public static KeyStroke getCtrlTab() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK);
+    }
+
+    public static KeyStroke getCtrlShiftTab() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
     }
 
     public static KeyStroke getCtrlHome() {
@@ -114,8 +126,16 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);
     }
 
-    public static KeyStroke getGroupCorrectionKeyStroke() {
+    public static KeyStroke getGroupCorrectionDialogKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_F12, InputEvent.CTRL_MASK);
+    }
+
+    public static KeyStroke getGroupCorrectionKeyStroke() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0);
+    }
+
+    public static KeyStroke getObjectEditorDialogEvent() {
+        return getBackspace();
     }
 
     public static boolean isKeyEvent(EventObject event, int keyCode) {
@@ -147,10 +167,41 @@ public class KeyStrokes {
     }
 
     public static boolean isGroupCorrectionEvent(EventObject event) {
-        return isKeyEvent(event, KeyEvent.VK_F12);
+        return event instanceof KeyEvent && getKeyStrokeForEvent((KeyEvent) event).equals(getGroupCorrectionKeyStroke());
     }
 
     public static boolean isObjectEditorDialogEvent(EventObject event) {
-        return isBackSpaceEvent(event);
+        return event instanceof KeyEvent && getKeyStrokeForEvent((KeyEvent) event).equals(getObjectEditorDialogEvent());
+    }
+
+    public static boolean isSuitableStartFilteringEvent(EventObject event) {
+        if (event instanceof KeyEvent) {
+            KeyEvent keyEvent = (KeyEvent) event;
+            isSuitableEditKeyEvent(event);
+            return isSuitableEditKeyEvent(event) &&
+                    !isBackSpaceEvent(keyEvent) &&
+                    !isDeleteEvent(keyEvent);
+        }
+        return false;
+    }
+
+    public static boolean isSuitableEditKeyEvent(EventObject event) {
+        if (event instanceof KeyEvent) {
+            KeyEvent keyEvent = (KeyEvent) event;
+            //будем считать, что если нажата кнопка ALT или CTRL, то явно пользователь не хочет вводить текст
+            return !keyEvent.isActionKey() &&
+                    !keyEvent.isAltDown() &&
+                    !keyEvent.isControlDown() &&
+                    !KeyStrokes.isCharUndefinedEvent(keyEvent) &&
+                    !KeyStrokes.isEscapeEvent(keyEvent);
+        }
+        return true;
+    }
+
+
+    public static KeyStroke getKeyStrokeForEvent(KeyEvent e) {
+        return e.getID() == KeyEvent.KEY_TYPED
+               ? KeyStroke.getKeyStroke(e.getKeyChar())
+               : KeyStroke.getKeyStroke(e.getKeyCode(), e.getModifiers(), e.getID() != KeyEvent.KEY_PRESSED);
     }
 }

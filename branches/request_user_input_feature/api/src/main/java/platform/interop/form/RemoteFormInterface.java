@@ -2,7 +2,7 @@ package platform.interop.form;
 
 import platform.interop.ClassViewType;
 import platform.interop.RemoteContextInterface;
-import platform.interop.action.ClientResultAction;
+import platform.interop.action.ClientAction;
 import platform.interop.remote.PendingRemote;
 
 import java.rmi.RemoteException;
@@ -30,15 +30,17 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     // синхронная проверка на то можно ли менять свойство
     byte[] getPropertyChangeType(int propertyID, byte[] columnKey, boolean aggValue) throws RemoteException;
 
+    public EditActionResult executeEditAction(int propertyID, byte[] columnKey, String actionSID) throws RemoteException;
+    public EditActionResult continueExecuteEditAction(UserInputResult inputResult) throws RemoteException;
+    public EditActionResult continueExecuteEditAction(Object[] actionResults) throws RemoteException;
+
     boolean canChangeClass(int objectID) throws RemoteException;
 
     boolean hasClientActionOnApply() throws RemoteException; // чисто для оптимизации одного RMI вызова
 
-    RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException;
-
     RemoteDialogInterface createObjectEditorDialog(int viewID) throws RemoteException;
 
-    RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException;
+    RemoteDialogInterface createChangeEditorDialog(int viewID) throws RemoteException;
 
     // операции без ответа, можно pendiть до первой операции с ответом
 
@@ -51,7 +53,7 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     RemoteChanges changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException;
 
-    RemoteChanges resumePausedInvocation() throws RemoteException;
+    RemoteChanges continueRemoteChanges(Object[] actionResults) throws RemoteException;
 
     RemoteChanges groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException;
 
@@ -96,10 +98,11 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
 
-    ClientResultAction getClientActionOnApply() throws RemoteException;
+    ClientAction getClientActionOnApply() throws RemoteException;
 
     RemoteChanges okPressed() throws RemoteException;
     RemoteChanges closedPressed() throws RemoteException;
+    RemoteChanges nullPressed() throws RemoteException;
 
     RemoteChanges applyChanges(Object clientResult) throws RemoteException;
 

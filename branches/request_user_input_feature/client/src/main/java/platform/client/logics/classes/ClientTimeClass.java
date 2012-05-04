@@ -23,7 +23,7 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
         return "00:00:00";
     }
 
-    protected PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
+    protected PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new TimePropertyEditor(value, (SimpleDateFormat) property.getFormat(), property.design);
     }
 

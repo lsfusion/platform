@@ -2,7 +2,7 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class MessageFileClientAction extends AbstractClientAction {
+public class MessageFileClientAction implements ClientAction {
 
     public String fileName;
     public String charsetName;
@@ -35,7 +35,7 @@ public class MessageFileClientAction extends AbstractClientAction {
     }
 
     @Override
-    public Object dispatchResult(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
         return dispatcher.execute(this);
     }
 }

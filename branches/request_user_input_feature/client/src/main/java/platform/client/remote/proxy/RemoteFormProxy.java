@@ -1,12 +1,14 @@
 package platform.client.remote.proxy;
 
 import platform.interop.ClassViewType;
-import platform.interop.action.ClientResultAction;
+import platform.interop.action.ClientAction;
 import platform.interop.form.*;
 import platform.interop.remote.MethodInvocation;
 
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RemoteFormProxy<T extends RemoteFormInterface>
         extends RemoteObjectProxy<T>
@@ -119,10 +121,10 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public RemoteChanges resumePausedInvocation() throws RemoteException {
-        logRemoteMethodStartCall("resumePausedInvocation");
-        RemoteChanges result = target.resumePausedInvocation();
-        logRemoteMethodEndCall("resumePausedInvocation", result);
+    public RemoteChanges continueRemoteChanges(Object[] actionResults) throws RemoteException {
+        logRemoteMethodStartCall("continueRemoteChanges");
+        RemoteChanges result = target.continueRemoteChanges(actionResults);
+        logRemoteMethodEndCall("continueRemoteChanges", result);
         return result;
     }
 
@@ -266,8 +268,8 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return target.hasClientActionOnApply();
     }
 
-    public ClientResultAction getClientActionOnApply() throws RemoteException {
-        logRemoteMethodStartCall("applyClientChanges");
+    public ClientAction getClientActionOnApply() throws RemoteException {
+        logRemoteMethodStartCall("getClientActionOnApply");
         return target.getClientActionOnApply();
     }
 
@@ -289,6 +291,13 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodStartCall("closedPressed");
         RemoteChanges result = target.closedPressed();
         logRemoteMethodEndCall("closedPressed", result);
+        return result;
+    }
+
+    public RemoteChanges nullPressed() throws RemoteException {
+        logRemoteMethodStartCall("nullPressed");
+        RemoteChanges result = target.nullPressed();
+        logRemoteMethodEndCall("nullPressed", result);
         return result;
     }
 
@@ -336,6 +345,27 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
+    public EditActionResult executeEditAction(int propertyID, byte[] columnKey, String actionSID) throws RemoteException {
+        logRemoteMethodStartCall("executeEditAction");
+        EditActionResult result = target.executeEditAction(propertyID, columnKey, actionSID);
+        logRemoteMethodEndCall("getPropertyChangeType", result);
+        return result;
+    }
+
+    public EditActionResult continueExecuteEditAction(UserInputResult inputResult) throws RemoteException {
+        logRemoteMethodStartCall("continueExecuteEditAction");
+        EditActionResult result = target.continueExecuteEditAction(inputResult);
+        logRemoteMethodEndCall("continueExecuteEditAction", result);
+        return result;
+    }
+
+    public EditActionResult continueExecuteEditAction(Object[] actionResults) throws RemoteException {
+        logRemoteMethodStartCall("continueExecuteEditAction");
+        EditActionResult result = target.continueExecuteEditAction(actionResults);
+        logRemoteMethodEndCall("continueExecuteEditAction", result);
+        return result;
+    }
+
     @NonFlushRemoteMethod
     private RemoteDialogInterface createDialog(String methodName, Object... args) throws RemoteException {
         List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteDialogProxy.class);
@@ -358,13 +388,8 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @NonPendingRemoteMethod
-    public RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException {
-        return createDialog("createClassPropertyDialog", viewID, value);
-    }
-
-    @NonPendingRemoteMethod
-    public RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException {
-        return createDialog("createEditorPropertyDialog", viewID);
+    public RemoteDialogInterface createChangeEditorDialog(int viewID) throws RemoteException {
+        return createDialog("createChangeEditorDialog", viewID);
     }
 
     @NonPendingRemoteMethod

@@ -2,14 +2,13 @@ package platform.client.logics;
 
 import platform.base.BaseUtils;
 import platform.base.context.ApplicationContext;
-import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.descriptor.PropertyObjectInterfaceDescriptor;
 import platform.client.form.*;
-import platform.client.form.cell.ButtonCellView;
+import platform.client.form.cell.ActionCellView;
 import platform.client.form.cell.CellView;
 import platform.client.logics.classes.ClientActionClass;
 import platform.client.logics.classes.ClientClass;
@@ -18,10 +17,7 @@ import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.gwt.view.GPropertyDraw;
-import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
-import platform.interop.form.RemoteDialogInterface;
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreenConstraints;
 
@@ -31,7 +27,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.text.Format;
 import java.text.ParseException;
 import java.util.*;
@@ -39,6 +34,7 @@ import java.util.List;
 
 import static platform.base.BaseUtils.isRedundantString;
 import static platform.base.BaseUtils.nullTrim;
+import static platform.client.ClientResourceBundle.getString;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
@@ -63,6 +59,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public KeyStroke editKey;
     public boolean showEditKey;
 
+    public EditBindingMap editBindingMap;
+
     public Boolean focusable;
     public PropertyEditType editType = PropertyEditType.EDITABLE;
 
@@ -76,8 +74,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public int preferredCharWidth;
 
     protected transient PropertyRendererComponent renderer;
-
-    // на данный момент ClientFormController нужна для 2-х целей : как owner, создаваемых диалогов и как провайдер RemoteFormInterface, для получения того, что мы вообще редактируем
 
     protected Format format;
 
@@ -156,17 +152,17 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return groupObject;
     }
 
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientGroupObjectValue key, Object value) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientGroupObjectValue key, Object value) throws IOException, ClassNotFoundException {
         ClientType changeType = getPropertyChangeType(form, key, true);
         if (changeType == null) {
             return null;
         }
 
         if (askConfirm &&
-                !(value == null && changeType instanceof ClientActionClass && !(ownerComponent instanceof ButtonCellView))) {
+                !(value == null && changeType instanceof ClientActionClass && !(ownerComponent instanceof ActionCellView))) {
             int n = JOptionPane.showConfirmDialog(
                     SwingUtilities.getRoot(ownerComponent),
-                    baseType.getConformedMessage() + (caption != null ? " \"" + caption + "\"?" : ""),
+                    baseType.getConfirmMessage() + (caption != null ? " \"" + caption + "\"?" : ""),
                     "LS Fusion",
                     JOptionPane.YES_NO_OPTION);
             if (n != JOptionPane.YES_OPTION) {
@@ -174,7 +170,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             }
         }
 
-        return changeType.getEditorComponent(ownerComponent, form, this, value);
+        return changeType.getChangeEditorComponent(ownerComponent, form, this, value);
     }
 
     public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientGroupObjectValue key, Object value) throws IOException, ClassNotFoundException {
@@ -184,16 +180,20 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 : changeType.getObjectEditorComponent(ownerComponent, form, this, value);
     }
 
-    public PropertyEditorComponent getClassComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {
-        return baseType.getClassComponent(form, this, value);
+
+    public PropertyEditorComponent getValueEditorComponent(ClientFormController form, Object value) {
+        return baseType.getValueEditorComponent(form, this, value);
     }
 
-    public RemoteDialogInterface createEditorForm(RemoteFormInterface form) throws RemoteException {
-        return form.createEditorPropertyDialog(getID());
+    public PropertyRendererComponent getRendererComponent() {
+        if (renderer == null) {
+            renderer = baseType.getRendererComponent(caption, this);
+        }
+        return renderer;
     }
 
-    public RemoteDialogInterface createClassForm(RemoteFormInterface form, Integer value) throws RemoteException {
-        return form.createClassPropertyDialog(getID(), BaseUtils.objectToInt(value));
+    public CellView getPanelComponent(ClientFormController form, ClientGroupObjectValue columnKey) {
+        return baseType.getPanelComponent(this, columnKey, form);
     }
 
     public int getMinimumWidth(JComponent comp) {
@@ -266,17 +266,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return new Dimension(getMaximumWidth(comp), getMaximumHeight(comp));
     }
 
-    public PropertyRendererComponent getRendererComponent() {
-        if (renderer == null) {
-            renderer = baseType.getRendererComponent(caption, this);
-        }
-        return renderer;
-    }
-
-    public CellView getPanelComponent(ClientFormController form, ClientGroupObjectValue columnKey) {
-        return baseType.getPanelComponent(this, columnKey, form);
-    }
-
     public Format getFormat() {
         if (format == null) {
             return baseType.getDefaultFormat();
@@ -297,8 +286,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return sID;
     }
 
-    public ClientType getPropertyChangeType(ClientFormController form, ClientGroupObjectValue key, boolean aggValue) throws IOException {
-        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(getID(), key.serialize(), aggValue)));
+    private ClientType getPropertyChangeType(ClientFormController form, ClientGroupObjectValue key, boolean aggValue) throws IOException {
+        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.getPropertyChangeType(this, key, aggValue)));
         if (inStream.readBoolean()) {
             return null;
         }
@@ -307,17 +296,25 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public Object parseString(ClientFormController form, ClientGroupObjectValue key, String s, boolean isDataChanging) throws ParseException {
-        ClientType changeType;
         try {
-            changeType = isDataChanging ? getPropertyChangeType(form, key, false) : baseType;
-            if (changeType == null) {
-                throw new ParseException(ClientResourceBundle.getString("logics.propertyview.can.not.be.changed"), 0);
-            }
-
-            return changeType.parseString(s);
-        } catch (IOException e) {
-            throw new ParseException(ClientResourceBundle.getString("logics.failed.to.retrieve.data.propertychangetype"), 0);
+            return baseType.parseString(s);
+        } catch (Exception e) {
+            throw new ParseException(getString("logics.failed.to.retrieve.data.propertychangetype"), 0);
         }
+
+
+        //TODO: repair Ctrl+V
+//        ClientType changeType;
+//        try {
+//            changeType = isDataChanging ? getPropertyChangeType(form, key, false) : baseType;
+//            if (changeType == null) {
+//                throw new ParseException(getString("logics.propertyview.can.not.be.changed"), 0);
+//            }
+//
+//            return changeType.parseString(s);
+//        } catch (IOException e) {
+//            throw new ParseException(getString("logics.failed.to.retrieve.data.propertychangetype"), 0);
+//        }
     }
 
     public String formatString(Object obj) throws ParseException {
@@ -332,8 +329,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super.customSerialize(pool, outStream, serializationType);
 
         pool.writeString(outStream, caption);
-        pool.writeString(outStream,regexp);
-        pool.writeString(outStream,regexpMessage);
+        pool.writeString(outStream, regexp);
+        pool.writeString(outStream, regexpMessage);
         outStream.writeBoolean(echoSymbols);
         outStream.writeInt(minimumCharWidth);
         outStream.writeInt(maximumCharWidth);
@@ -420,25 +417,28 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
-        eventSID = inStream.readUTF();
+        eventSID = pool.readString(inStream);
 
         creationScript = pool.readString(inStream);
-    }
 
-    public List<ClientObject> getKeysObjectsList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-        List<ClientObject> result = new ArrayList<ClientObject>();
-        for (ClientGroupObject columnGroupObject : columnGroupObjects) {
-            result.addAll(columnGroupObject.getKeysObjectsList(classViews, controllers));
+        String mouseBinding = pool.readString(inStream);
+        if (mouseBinding != null) {
+            editBindingMap = new EditBindingMap();
+            editBindingMap.setMouseAction(mouseBinding);
         }
-        return result;
-    }
 
-    public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-        List<ClientObject> result = getKeysObjectsList(classViews, controllers);
-        if (!panelProperties.contains(this)) {
-            result = BaseUtils.mergeList(ClientGroupObject.getObjects(groupObject.getUpTreeGroups()), result);
+        int keyBindingSize = inStream.readInt();
+
+        if (keyBindingSize > 0) {
+            if (editBindingMap == null) {
+                editBindingMap = new EditBindingMap();
+            }
+            for (int i = 0; i < keyBindingSize; ++i) {
+                KeyStroke keyStroke = pool.readObject(inStream);
+                String actionSID = pool.readString(inStream);
+                editBindingMap.setKeyAction(keyStroke, actionSID);
+            }
         }
-        return result;
     }
 
     public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
@@ -460,7 +460,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return descriptor.getPropertyObject().property.caption + " (" + getID() + ")";
         }
 
-        return ClientResourceBundle.getString("logics.undefined.property");
+        return getString("logics.undefined.property");
     }
 
     // приходится держать ссылку на Descriptor, чтобы правильно отображать caption в Настройка бизнес-логики
@@ -519,14 +519,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                     "%7$s" +
                     "<hr>" +
                     "<b>sID:</b> %2$s<br>" +
-                    "<b>" + ClientResourceBundle.getString("logics.grid") + ":</b> %3$s<br>" +
-                    "<b>" + ClientResourceBundle.getString("logics.objects") + ":</b> %4$s<br>" +
-                    "<b>" + ClientResourceBundle.getString("logics.signature") + ":</b> %6$s <i>%2$s</i> (%5$s)<br>" +
-                    "<b>" + ClientResourceBundle.getString("logics.script") + ":</b> %8$s" +
+                    "<b>" + getString("logics.grid") + ":</b> %3$s<br>" +
+                    "<b>" + getString("logics.objects") + ":</b> %4$s<br>" +
+                    "<b>" + getString("logics.signature") + ":</b> %6$s <i>%2$s</i> (%5$s)<br>" +
+                    "<b>" + getString("logics.script") + ":</b> %8$s" +
                     "</html>";
 
     public static final String editKeyToolTipFormat =
-            "<hr><b>" + ClientResourceBundle.getString("logics.property.edit.key") + ":</b> %1$s<br>";
+            "<hr><b>" + getString("logics.property.edit.key") + ":</b> %1$s<br>";
 
     public String getTooltipText(String caption) {
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
@@ -567,10 +567,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public class CaptionReader implements ClientPropertyReader {
-        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-            return ClientPropertyDraw.this.getKeysObjectsList(classViews, controllers);
-        }
-
         public ClientGroupObject getGroupObject() {
             return ClientPropertyDraw.this.getGroupObject();
         }
@@ -585,10 +581,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public class FooterReader implements ClientPropertyReader {
-        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-            return ClientPropertyDraw.this.getKeysObjectsList(classViews, controllers);
-        }
-
         public ClientGroupObject getGroupObject() {
             return ClientPropertyDraw.this.getGroupObject();
         }
@@ -602,10 +594,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public class BackgroundReader implements ClientPropertyReader {
-        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-            return ClientPropertyDraw.this.getKeysObjectsList(panelProperties, classViews, controllers);
-        }
-
         public ClientGroupObject getGroupObject() {
             return ClientPropertyDraw.this.getGroupObject();
         }
@@ -620,10 +608,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public class ForegroundReader implements ClientPropertyReader {
-        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-            return ClientPropertyDraw.this.getKeysObjectsList(panelProperties, classViews, controllers);
-        }
-
         public ClientGroupObject getGroupObject() {
             return ClientPropertyDraw.this.getGroupObject();
         }

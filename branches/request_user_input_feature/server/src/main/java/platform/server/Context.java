@@ -1,6 +1,8 @@
 package platform.server;
 
 import platform.interop.action.ClientAction;
+import platform.interop.form.UserInputResult;
+import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
@@ -22,7 +24,9 @@ public interface Context {
     void pushActionMessage(String segment);
     String popActionMessage();
 
-    void requestUserInteraction(ClientAction... actions);
+    Object requestUserInteraction(ClientAction action);
+    Object[] requestUserInteraction(ClientAction... actions);
+    UserInputResult requestUserInput(Type type, Object oldValue);
 
     FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive)  throws SQLException;
 

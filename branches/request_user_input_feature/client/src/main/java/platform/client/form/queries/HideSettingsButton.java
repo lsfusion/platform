@@ -1,6 +1,5 @@
 package platform.client.form.queries;
 
-import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.form.ClientFormController;
@@ -11,18 +10,22 @@ import platform.interop.form.FormUserPreferences;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.lang.Boolean;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static platform.client.ClientResourceBundle.getString;
 
 public abstract class HideSettingsButton extends ToolbarGridButton {
 
     public HideSettingsDialog dialog;
 
     public HideSettingsButton() {
-        super("/images/hideSettings.png", ClientResourceBundle.getString("form.grid.hidesettings"));
+        super("/images/hideSettings.png", getString("form.grid.hidesettings"));
     }
 
     public abstract void addListener();
@@ -34,7 +37,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
 
 
         public HideSettingsDialog(Frame owner, final GridTable initialTable, ClientFormController form) throws IOException {
-            super(owner, ClientResourceBundle.getString("form.grid.hidesettings"), true);
+            super(owner, getString("form.grid.hidesettings"), true);
             this.initialTable = initialTable;
             this.form = form;
 
@@ -48,12 +51,12 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
             setLocationRelativeTo(owner);
             setLayout(new BorderLayout());
 
-            TitledPanel groupByPanel = new TitledPanel(ClientResourceBundle.getString("form.grid.displayed.columns"));
+            TitledPanel groupByPanel = new TitledPanel(getString("form.grid.displayed.columns"));
 
             JPanel allFieldsPanel = new JPanel();
             allFieldsPanel.setLayout(new BoxLayout(allFieldsPanel, BoxLayout.Y_AXIS));
 
-            final JButton applyButton = new JButton(ClientResourceBundle.getString("form.grid.hide.apply"));
+            final JButton applyButton = new JButton(getString("form.grid.hide.apply"));
             applyButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
@@ -68,7 +71,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
                 }
             });
 
-            final JButton applyForAllButton = new JButton(ClientResourceBundle.getString("form.grid.hide.apply.for.all"));
+            final JButton applyForAllButton = new JButton(getString("form.grid.hide.apply.for.all"));
             applyForAllButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
@@ -76,7 +79,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
                         if ((permission != null) && (permission == true))
                             applyButtonPressed(true);
                         else
-                            JOptionPane.showMessageDialog(null, ClientResourceBundle.getString("form.grid.hide.not.enough.rights"), ClientResourceBundle.getString("form.grid.hide.error"), JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(null, getString("form.grid.hide.not.enough.rights"), getString("form.grid.hide.error"), JOptionPane.ERROR_MESSAGE);
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
@@ -118,7 +121,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
             JScrollPane groupScrollPane = new JScrollPane();
             groupScrollPane.setViewportView(groupByPanel);
 
-            JButton checkAllButton = new JButton(ClientResourceBundle.getString("form.queries.check.all"));
+            JButton checkAllButton = new JButton(getString("form.queries.check.all"));
             checkAllButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     for (int i = 0; i < groupChecks.size(); i++) {
@@ -142,7 +145,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
                 }
             });
 
-            JButton cancelButton = new JButton(ClientResourceBundle.getString("form.grid.hide.cancel"));
+            JButton cancelButton = new JButton(getString("form.grid.hide.cancel"));
             cancelButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     dialog.setVisible(false);
@@ -156,7 +159,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
             JPanel checkAllPanel = new JPanel();
             checkAllPanel.add(checkAllButton);
 
-            TitledPanel applyButtonsPanel = new TitledPanel(ClientResourceBundle.getString("form.grid.hide.save.settings"));
+            TitledPanel applyButtonsPanel = new TitledPanel(getString("form.grid.hide.save.settings"));
             applyButtonsPanel.add(applyButton, BorderLayout.NORTH);
             applyButtonsPanel.add(applyForAllButton, BorderLayout.SOUTH);
 
@@ -201,8 +204,8 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
                         initialTable.getProperty(i).hideUser = true;
                     }
             }
-            form.remoteForm.saveUserPreferences(new FormUserPreferences(preferences), forAllUsers);
-            JOptionPane.showMessageDialog(this, ClientResourceBundle.getString("form.grid.hide.save.settings.successfully.complete"), ClientResourceBundle.getString("form.grid.hide.save.complete"), JOptionPane.INFORMATION_MESSAGE);
+            form.saveUserPreferences(new FormUserPreferences(preferences), forAllUsers);
+            JOptionPane.showMessageDialog(this, getString("form.grid.hide.save.settings.successfully.complete"), getString("form.grid.hide.save.complete"), JOptionPane.INFORMATION_MESSAGE);
         }
     }
 }

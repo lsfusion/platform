@@ -24,11 +24,6 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
     }
 
     @Override
-    protected PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
-        return new ColorPropertyEditor(value);
-    }
-
-    @Override
     public String getSID() {
         return sID;
     }
@@ -45,6 +40,11 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
     @Override
     public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
         return new ColorPropertyRenderer(property);
+    }
+
+    @Override
+    protected PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new ColorPropertyEditor(value);
     }
 
     @Override

@@ -7,6 +7,8 @@ public interface ClientActionDispatcher {
 
     public void execute(FormClientAction action);
 
+    public void execute(DialogClientAction action);
+
     public Object execute(RuntimeClientAction action);
 
     public void execute(ExportFileClientAction action);
@@ -23,9 +25,9 @@ public interface ClientActionDispatcher {
 
     public void execute(MessageClientAction action);
 
-    public void execute(LogMessageClientAction action);
+    public int execute(ConfirmClientAction action);
 
-    public Object execute(CustomClientAction action);
+    public void execute(LogMessageClientAction action);
 
     public void execute(ApplyClientAction action);
 

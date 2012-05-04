@@ -7,7 +7,6 @@ import platform.server.classes.ValueClass;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 
@@ -29,7 +28,7 @@ public class StopConfigurationActionProperty extends CustomActionProperty {
 
         Integer port = (Integer) paas.paasLM.configurationPort.read(context.getSession(), confObj);
         if (port == null) {
-            context.getActions().add(new MessageClientAction("Порт не задан.", "Ошибка!"));
+            context.addAction(new MessageClientAction("Порт не задан.", "Ошибка!"));
             return;
         }
 

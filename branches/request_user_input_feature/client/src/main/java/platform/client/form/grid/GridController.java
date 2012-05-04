@@ -7,72 +7,54 @@ import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectController;
 import platform.client.form.classes.ClassContainer;
 import platform.client.form.queries.*;
-import platform.client.logics.*;
+import platform.client.logics.ClientGrid;
+import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientObject;
+import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientIntegralClass;
 import platform.interop.Order;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
 
 public class GridController {
 
-    private final ClientGrid key;
-    private FilterController filterController;
+    private final ClientGrid clientGrid;
 
-    public ClientGrid getKey() {
-        return key;
-    }
+    private final FilterController filterController;
 
     private final GridView view;
-
-    public GridView getView() {
-        return view;
-    }
 
     private final GridTable table;
 
     private final ClientFormController form;
 
-    private final GroupObjectController groupObjectController;
+    private final GroupObjectController groupController;
 
-    public GridController(ClientGrid key, GroupObjectController igroupObjectController, ClientFormController iform) {
+    public GridController(GroupObjectController igroupController, ClientFormController iform) {
 
-        this.key = key;
-        groupObjectController = igroupObjectController;
+        groupController = igroupController;
+        clientGrid = groupController.getGroupObject().grid;
         form = iform;
 
-        view = new GridView(groupObjectController, form, key.tabVertical, key.groupObject.needVerticalScroll) {
-            protected void needToBeShown() {
-                if (!hidden && !view.isVisible()) {
-                    view.setVisible(true);
-                }
-            }
-
-            protected void needToBeHidden() {
-                view.setVisible(false);
-            }
-        };
+        view = new GridView(this, form, clientGrid.tabVertical, clientGrid.groupObject.needVerticalScroll);
         table = view.getTable();
-        
+
         boolean hasClassChoosers = false;
-        for (final ClientObject object : key.groupObject.objects) {
+        for (final ClientObject object : clientGrid.groupObject.objects) {
             if (object.classChooser.show) {
                 ToolbarGridButton classButton = new ToolbarGridButton("/images/side_expand.png", ClientResourceBundle.getString("form.tree.show", object.caption)) {
                     public void addListener() {
                         addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
-                                ClassContainer container = groupObjectController.getObjectsMap().get(object).classController.getClassContainer();
+                                ClassContainer container = groupController.getObjectsMap().get(object).classController.getClassContainer();
                                 if (!container.isExpanded) {
                                     container.expandTree();
                                     setIcon(new ImageIcon(getClass().getResource("/images/side_hide.gif")));
@@ -86,52 +68,52 @@ public class GridController {
                         });
                     }
                 };
-                groupObjectController.addToToolbar(classButton);
+                groupController.addToToolbar(classButton);
                 hasClassChoosers = true;
             }
         }
         if (hasClassChoosers)
-            groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
+            groupController.addToToolbar(Box.createHorizontalStrut(5));
 
-        if (key.showFind) {
-            FindController findController = new FindController(groupObjectController) {
-                protected boolean queryChanged() {
+        if (clientGrid.showFind) {
+            FindController findController = new FindController(groupController) {
+                protected void queryChanged() {
                     form.changeFind(getConditions());
                     table.requestFocusInWindow();
-                    return true;
                 }
 
                 public void conditionsUpdated() {}
             };
-            groupObjectController.addToToolbar(findController.getView());
+            groupController.addToToolbar(findController.getView());
             findController.getView().addActions(table);
         }
 
-        if (key.showFilter) {
-            filterController = new FilterController(groupObjectController) {
-                protected boolean queryChanged() {
-
+        if (clientGrid.showFilter) {
+            filterController = new FilterController(groupController) {
+                protected void queryChanged() {
                     try {
-                        form.changeFilter(groupObjectController.getGroupObject(), getConditions());
+                        form.changeFilter(groupController.getGroupObject(), getConditions());
                     } catch (IOException e) {
                         throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
                     }
 
                     table.requestFocusInWindow();
-                    return true;
                 }
+
                 public void conditionsUpdated() {
-                    groupObjectController.moveComponent(getView(), getDestination());
+                    groupController.moveComponent(getView(), getDestination());
                 }
             };
-            groupObjectController.addToToolbar(filterController.getView());
+            groupController.addToToolbar(filterController.getView());
             filterController.getView().addActions(table);
 
-            groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
+            groupController.addToToolbar(Box.createHorizontalStrut(5));
+        } else {
+            filterController = null;
         }
 
-        if (key.showGroupChange) {
-            groupObjectController.addToToolbar(new ToolbarGridButton("/images/groupchange.gif", ClientResourceBundle.getString("form.grid.group.groupchange") +" (Ctrl+F12)") {
+        if (clientGrid.showGroupChange) {
+            groupController.addToToolbar(new ToolbarGridButton("/images/groupchange.gif", ClientResourceBundle.getString("form.grid.group.groupchange") +" (Ctrl+F12)") {
                 @Override
                 public void addListener() {
                     addActionListener(table.getActionMap().get(GridTable.GROUP_CORRECTION_ACTION));
@@ -139,13 +121,13 @@ public class GridController {
             });
         }
 
-        if (key.showCountQuantity) {
-            groupObjectController.addToToolbar(new CountQuantityButton() {
+        if (clientGrid.showCountQuantity) {
+            groupController.addToToolbar(new CountQuantityButton() {
                 public void addListener() {
                     addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             try {
-                                showPopupMenu(form.countRecords(groupObjectController.getGroupObject().getID()));
+                                showPopupMenu(form.countRecords(groupController.getGroupObject().getID()));
                             } catch (IOException ex) {
                                 throw new RuntimeException(ex);
                             }
@@ -155,8 +137,8 @@ public class GridController {
             });
         }
 
-        if (key.showCalculateSum) {
-            groupObjectController.addToToolbar(new CalculateSumButton() {
+        if (clientGrid.showCalculateSum) {
+            groupController.addToToolbar(new CalculateSumButton() {
                 public void addListener() {
                     addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
@@ -179,8 +161,8 @@ public class GridController {
             });
         }
 
-        if (key.showGroup) {
-            groupObjectController.addToToolbar(new GroupButton() {
+        if (clientGrid.showGroup) {
+            groupController.addToToolbar(new GroupButton() {
                 public void addListener() {
                     addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
@@ -217,45 +199,37 @@ public class GridController {
             });
         }
 
-        groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
+        groupController.addToToolbar(Box.createHorizontalStrut(5));
 
-        if (key.showPrintGroupButton && Main.module.isFull()) { // todo [dale]: Можно ли избавиться от if'ов?
-            groupObjectController.addToToolbar(new ToolbarGridButton("/images/reportbw.gif", ClientResourceBundle.getString("form.grid.print.grid")) {
+        if (clientGrid.showPrintGroupButton && Main.module.isFull()) { // todo [dale]: Можно ли избавиться от if'ов?
+            groupController.addToToolbar(new ToolbarGridButton("/images/reportbw.gif", ClientResourceBundle.getString("form.grid.print.grid")) {
                 @Override
                 public void addListener() {
                     addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            try {
-                                Main.frame.runSingleGroupReport(form.remoteForm, groupObjectController.getGroupObject().getID(), form.getUserPreferences());
-                            } catch (Exception ex) {
-                                throw new RuntimeException(ex);
-                            }
+                            form.runSingleGroupReport(groupController);
                         }
                     });
                 }
             });
         }
 
-        if (key.showPrintGroupXlsButton && Main.module.isFull()) {
-            groupObjectController.addToToolbar(new ToolbarGridButton("/images/excelbw.jpg", ClientResourceBundle.getString("form.grid.export.to.xls")) {
+        if (clientGrid.showPrintGroupXlsButton && Main.module.isFull()) {
+            groupController.addToToolbar(new ToolbarGridButton("/images/excelbw.jpg", ClientResourceBundle.getString("form.grid.export.to.xls")) {
                 @Override
                 public void addListener() {
                     addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            try {
-                                Main.frame.runSingleGroupXlsExport(form.remoteForm, groupObjectController.getGroupObject().getID(), form.getUserPreferences());
-                            } catch (Exception ex) {
-                                throw new RuntimeException(ex);
-                            }
+                            form.runSingleGroupXlsExport(groupController);
                         }
                     });
                 }
             });
-            groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
+            groupController.addToToolbar(Box.createHorizontalStrut(5));
         }
 
-        if (key.showHideSettings) {
-            groupObjectController.addToToolbar(new HideSettingsButton() {
+        if (clientGrid.showHideSettings) {
+            groupController.addToToolbar(new HideSettingsButton() {
                 public void addListener() {
                     addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
@@ -265,17 +239,12 @@ public class GridController {
                                 throw new RuntimeException(ex);
                             }
                             dialog.setVisible(true);
-                            try {
-                                form.remoteForm.refreshData();
-                            } catch (RemoteException e1) {
-                                e1.printStackTrace();
-                            }
-                            form.dataChanged = true;
+                            form.refresh();
                         }
                     });
                 }
             });
-            groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
+            groupController.addToToolbar(Box.createHorizontalStrut(5));
 
             table.getTableHeader().addMouseListener(new MouseAdapter() {
                 @Override
@@ -287,15 +256,29 @@ public class GridController {
             });
         }
 
-        if (this.key.minRowCount > 0) { // вообще говоря, так делать неправильно, посколько и HeaderHeight и RowHeight могут изменяться во времени
+        if (clientGrid.minRowCount > 0) { // вообще говоря, так делать неправильно, посколько и HeaderHeight и RowHeight могут изменяться во времени
             Dimension minSize = table.getMinimumSize();
-            minSize.height = Math.max(minSize.height, (int) table.getTableHeader().getPreferredSize().getHeight() + this.key.minRowCount * table.getRowHeight());
+            minSize.height = Math.max(minSize.height, (int) table.getTableHeader().getPreferredSize().getHeight() + clientGrid.minRowCount * table.getRowHeight());
             view.setMinimumSize(minSize);
         }
     }
 
+    void needToBeShown() {
+        if (!hidden && !view.isVisible()) {
+            view.setVisible(true);
+        }
+    }
+
+    void needToBeHidden() {
+        view.setVisible(false);
+    }
+
+    public GridView getGridView() {
+        return view;
+    }
+
     public void addView(ClientFormLayout formLayout) {
-        formLayout.add(key, view);
+        formLayout.add(clientGrid, view);
         for (Map.Entry<ClientPropertyDraw, ExternalScreenComponent> entry : extViews.entrySet()) {
             entry.getKey().externalScreen.add(form.getID(), entry.getValue(), entry.getKey().externalScreenConstraints);
         }
@@ -383,9 +366,9 @@ public class GridController {
         table.selectProperty(propertyDraw);
     }
 
-    public void quickEditFilter(ClientPropertyDraw propertyDraw) {
+    public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw) {
         if (filterController != null) {
-            filterController.quickEditFilter(propertyDraw);
+            filterController.quickEditFilter(initFilterKeyEvent, propertyDraw);
             table.selectProperty(propertyDraw);
         }
     }
@@ -408,5 +391,9 @@ public class GridController {
 
     public void update() {
         table.updateTable();
+    }
+
+    public GroupObjectController getGroupController() {
+        return groupController;
     }
 }

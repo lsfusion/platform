@@ -8,8 +8,10 @@ import platform.client.Log;
 import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.remote.proxy.RemoteFormProxy;
+import platform.interop.KeyStrokes;
 import platform.interop.action.*;
 import platform.interop.exceptions.LoginException;
+import platform.interop.form.RemoteDialogInterface;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -19,7 +21,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.text.DecimalFormat;
-import java.util.List;
 
 public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
@@ -37,17 +38,16 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         return form == null ? Main.frame : form.getComponent();
     }
 
-    public void dispatchActions(List<ClientAction> actions) throws IOException {
-        dispatchActions(actions, true);
-        dispatchActions(actions, false);
-    }
-
-    public void dispatchActions(List<ClientAction> actions, boolean beforeApply) throws IOException {
-        for (ClientAction action : actions) {
-            if (action.isBeforeApply() == beforeApply) {
-                action.dispatch(this);
-            }
+    public Object[] dispatchActions(ClientAction... actions) throws IOException {
+        if (actions == null) {
+            return null;
         }
+
+        Object[] results = new Object[actions.length];
+        for (int i = 0; i < actions.length; i++) {
+            results[i] = actions[i].dispatch(this);
+        }
+        return results;
     }
 
     public void execute(DenyCloseFormClientAction action) {
@@ -75,6 +75,21 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void execute(DialogClientAction action) {
+        AWTEvent currentEvent = EventQueue.getCurrentEvent();
+
+        Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        RemoteDialogInterface dialog = action.dialog;
+        ClientDialog dlg;
+        if (KeyStrokes.isSpaceEvent(currentEvent) || KeyStrokes.isObjectEditorDialogEvent(currentEvent)) {
+            dlg = new ClientNavigatorDialog(owner, dialog, true);
+        } else {
+            dlg = new ClientDialog(owner, dialog, currentEvent, true);
+        }
+
+        dlg.showDialog(false);
     }
 
     public Object execute(RuntimeClientAction action) {
@@ -270,6 +285,10 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         }
     }
 
+    public int execute(ConfirmClientAction action) {
+        return JOptionPane.showConfirmDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.YES_NO_OPTION);
+    }
+
     public class ExtendedMessageDialog extends JDialog {
         public ExtendedMessageDialog(Container owner, String title, String message) {
             super(SwingUtils.getWindow(owner), title, ModalityType.DOCUMENT_MODAL);
@@ -295,10 +314,6 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         } else {
             Log.message(action.message);
         }
-    }
-
-    public Object execute(CustomClientAction action) {
-        return action.execute();
     }
 
     public void execute(ApplyClientAction action) {

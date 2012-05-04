@@ -64,5 +64,5 @@ public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextIn
 
     NavigatorActionResult executeNavigatorAction(String navigatorActionSID) throws RemoteException;
 
-    NavigatorActionResult continueNavigatorAction() throws RemoteException;
+    NavigatorActionResult continueNavigatorAction(Object[] actionResults) throws RemoteException;
 }

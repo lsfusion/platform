@@ -1,33 +1,35 @@
 package platform.client.form.editor;
 
 import platform.base.BaseUtils;
-import platform.client.ClientResourceBundle;
-import platform.client.SwingUtils;
 import platform.client.logics.ClientPropertyDraw;
 
+import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
-import java.text.ParseException;
+import java.awt.event.MouseEvent;
+
+import static platform.client.ClientResourceBundle.getString;
 
 public class StringPropertyEditor extends TextFieldPropertyEditor {
 
-    ClientPropertyDraw property;
-    boolean isClass;
+    private final ClientPropertyDraw property;
+    private final boolean matchRegexp;
 
-    public StringPropertyEditor(boolean isClass, final int length, Object value, ClientPropertyDraw property) {
+    private String currentError = null;
+
+    public StringPropertyEditor(ClientPropertyDraw property, Object value, final int length, boolean matchRegexp) {
         super(property.design);
-        this.isClass = isClass;
+        this.matchRegexp = matchRegexp;
         this.property = property;
 
         setDocument(new PlainDocument() {
-
-            public void insertString(int offset, String  str, AttributeSet attr) throws BadLocationException {
-
+            public void insertString(int offset, String str, AttributeSet attr) throws BadLocationException {
                 if (str == null) return;
 
-                if ((getLength() + str.length()) <= length)
+                if ((getLength() + str.length()) <= length) {
                     super.insertString(offset, str, attr);
+                }
             }
         });
 
@@ -36,21 +38,47 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
         }
     }
 
-    public Object getCellEditorValue(){
+    public Object getCellEditorValue() {
         String text = getText();
-        if (text.isEmpty()) return null;
-        return text;
+        return text.isEmpty() ? null : text;
     }
 
+    @Override
+    public boolean stopCellEditing() {
+        if (!super.stopCellEditing()) {
+            return false;
+        }
+
+        if (matchRegexp && property.regexp != null && getText() != null) {
+            if (!getText().matches(property.regexp)) {
+                showErrorTooltip();
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void showErrorTooltip() {
+        currentError = property.regexpMessage == null
+                       ? getString("form.editor.incorrect.value")
+                       : property.regexpMessage;
+
+        ToolTipManager.sharedInstance().mouseMoved(
+                new MouseEvent(this, 0, 0, 0, 0, 0, 0, false)
+        );
+    }
 
     @Override
-    public String checkValue(Object value) {
-        String text = (String)getCellEditorValue();
-        if (property.regexp != null && text != null && !isClass)
-            if (!text.matches(property.regexp)) {
-                return property.regexpMessage==null ?
-                        ClientResourceBundle.getString("form.editor.incorrect.value") : property.regexpMessage;
-            }
-        return null;
+    public void removeNotify() {
+        ToolTipManager.sharedInstance().mousePressed(
+                new MouseEvent(this, 0, 0, 0, 0, 0, 0, false)
+        );
+        super.removeNotify();
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        return currentError;
     }
 }

@@ -40,10 +40,9 @@ import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
-import java.sql.*;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.*;
-import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 
@@ -258,13 +257,7 @@ public class Main {
     }
 
     private static void initSwing() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
-        //хак для решения проблемы со сканированием...
-        KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultKeyboardFocusManager() {
-            @Override
-            protected void enqueueKeyEvents(long after, Component untilFocused) {
-                super.enqueueKeyEvents(0, untilFocused);
-            }
-        });
+//        FocusOwnerTracer.installFocusTracer();
 
         ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     }
@@ -375,7 +368,7 @@ public class Main {
     }
 
     public static String getMainTitle() {
-        return BaseUtils.nvl(getDisplayName(), PLATFORM_TITLE);
+        return "(NEW) " + BaseUtils.nvl(getDisplayName(), PLATFORM_TITLE);
     }
 
     public static String getDisplayName() {

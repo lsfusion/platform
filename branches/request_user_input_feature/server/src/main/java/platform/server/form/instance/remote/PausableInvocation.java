@@ -1,15 +1,14 @@
 package platform.server.form.instance.remote;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 
-public class PausableInvocation<T, E extends Exception> {
-    private final Runnable invocation;
+public abstract class PausableInvocation<T, E extends Exception> {
     private final ExecutorService invocationsExecutor;
 
-    private InvocationHandler<T, E> currentInvocationHandler;
     private InvocationResult invocationResult;
-    private InvocationHandler<T, E> invocationResultHandler;
+    private Future<?> invocationFuture;
 
     //т.к. это просто вспомогательный объект, то достаточно одного статического
     private final static Object syncObject = new Object();
@@ -17,124 +16,125 @@ public class PausableInvocation<T, E extends Exception> {
     private final SynchronousQueue syncInvocation = new SynchronousQueue();
 
     /**
-     * @param context               контекст
-     * @param invocation              для запуска в рабочем потоке
-     * @param invocationHandler для получения результата в основном потоке
      * @param invocationsExecutor
      */
-    public PausableInvocation(ExecutorService invocationsExecutor, Runnable invocation, InvocationHandler<T, E> invocationHandler) {
+    public PausableInvocation(ExecutorService invocationsExecutor) {
         this.invocationsExecutor = invocationsExecutor;
-        this.invocation = invocation;
-        this.currentInvocationHandler = invocationHandler;
     }
 
     /**
      * Должно вызываться в основном потоке
      */
-    public T execute() throws E {
-        invocationsExecutor.execute(new Runnable() {
+    public final T execute() throws E {
+        invocationFuture = invocationsExecutor.submit(new Runnable() {
             @Override
             public void run() {
-                blockInvocation();
+                try {
+                    blockInvocation();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
 
                 try {
-                    invocation.run();
+                    runInvocation();
                     invocationResult = InvocationResult.FINISHED;
                 } catch (Throwable t) {
                     invocationResult = new InvocationResult(t);
                 }
 
-                releaseMain();
+                try {
+                    releaseMain();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             }
         });
 
         return resume();
     }
 
+    public final void cancel() {
+        invocationFuture.cancel(true);
+    }
+
+    /**
+     * рабочий поток
+     */
+    protected abstract void runInvocation() throws Throwable;
+
+    /**
+     * основной поток
+     */
+    protected abstract T handleThrows(Throwable t) throws E;
+
+    /**
+     * основной поток
+     */
+    protected abstract T handleFinished() throws E;
+
+    /**
+     * основной поток
+     */
+    protected abstract T handlePaused() throws E;
+
     /**
      * Должно вызываться в основном потоке <br/>
-     * для получения результата будет вызываться тот же handler, что и для конечно результата
      */
-    public T resume() throws E {
-        return resume(currentInvocationHandler);
-    }
+    public final T resume() throws E {
+        try {
+            releaseInvocation();
+            blockMain();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
-    /**
-     * Должно вызываться в основном потоке
-     * @param invocationHandler будет использоваться для получения результата
-     */
-    public T resume(InvocationHandler<T, E> invocationHandler) throws E {
-        this.currentInvocationHandler = invocationHandler;
-        this.invocationResultHandler = invocationHandler;
-
-        releaseInvocation();
-        blockMain();
-
-        return invocationResultHandler.handle(invocationResult);
-    }
-
-    /**
-     * Должно вызываться в рабочем потоке. <br/>
-     * для получения результата будет вызываться тот же handler, что и для конечно результата
-     */
-    public void pause() {
-        pause(currentInvocationHandler);
+        switch (invocationResult.getStatus()) {
+            case PAUSED:
+                return handlePaused();
+            case EXCEPTION_THROWN:
+                return handleThrows(invocationResult.getThrowable());
+            case FINISHED:
+                return handleFinished();
+            default:
+                throw new IllegalStateException("Shouldn't happen");
+        }
     }
 
     /**
      * Должно вызываться в рабочем потоке. <br/>
-     * @param result вернётся в качестве результата в основной поток
      */
-    public void pause(final T result) {
-        pause(new InvocationHandler<T, E>() {
-            @Override
-            public T handle(InvocationResult invocationResult) {
-                return result;
-            }
-        });
-    }
-
-    /**
-     * Должно вызываться в рабочем потоке. <br/>
-     * @param invocationHandler будет использоваться для получения результата
-     */
-    public void pause(InvocationHandler<T, E> invocationHandler) {
+    public final void pause() throws InterruptedException {
         invocationResult = InvocationResult.PAUSED;
-        invocationResultHandler = invocationHandler;
 
         releaseMain();
         blockInvocation();
     }
 
-    private void blockMain() {
+    public final boolean isPaused() {
+        return invocationResult == InvocationResult.PAUSED;
+    }
+
+    private void blockMain() throws InterruptedException {
         blockSync(syncMain);
     }
 
-    private void releaseMain() {
+    private void releaseMain() throws InterruptedException {
         releaseSync(syncMain);
     }
 
-    private void blockInvocation() {
+    private void blockInvocation() throws InterruptedException {
         blockSync(syncInvocation);
     }
 
-    private void releaseInvocation() {
+    private void releaseInvocation() throws InterruptedException {
         releaseSync(syncInvocation);
     }
 
-    private void blockSync(SynchronousQueue sync) {
-        try {
-            sync.take();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    private void blockSync(SynchronousQueue sync) throws InterruptedException {
+        sync.take();
     }
 
-    private void releaseSync(SynchronousQueue sync) {
-        try {
-            sync.put(syncObject);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    private void releaseSync(SynchronousQueue sync) throws InterruptedException {
+        sync.put(syncObject);
     }
 }

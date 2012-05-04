@@ -2,24 +2,30 @@ package platform.client.logics.classes;
 
 import platform.interop.Data;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ClientTypeSerializer {
 
+    public static ClientType deserialize(byte[] typeData) throws IOException {
+        return deserialize(new DataInputStream(new ByteArrayInputStream(typeData)));
+    }
+
     public static ClientType deserialize(DataInputStream inStream) throws IOException {
-        if(inStream.readBoolean())
+        if (inStream.readBoolean()) {
             return ClientObjectClass.type;
-        else
-            return (ClientType)(deserializeClientClass(inStream));
+        } else {
+            return (ClientType) (deserializeClientClass(inStream));
+        }
     }
 
     public static void serialize(DataOutputStream outStream, ClientType type) throws IOException {
         boolean objectClass = type instanceof ClientObjectType;
         outStream.writeBoolean(objectClass);
         if (!objectClass) {
-            ((ClientClass)type).serialize(outStream);
+            ((ClientClass) type).serialize(outStream);
         }
     }
 

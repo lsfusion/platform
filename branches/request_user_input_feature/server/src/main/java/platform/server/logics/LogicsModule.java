@@ -25,6 +25,7 @@ import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
 import platform.server.logics.property.actions.flow.*;
+import platform.server.logics.property.change.TimePropertyChangeListener;
 import platform.server.logics.property.derived.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.ImplementTable;
@@ -818,15 +819,16 @@ public abstract class LogicsModule {
     }
 
     protected <P extends PropertyInterface> LP addTCProp(AbstractGroup group, Time time, String name, boolean isStored, String caption, LP<P> changeProp, ValueClass... classes) {
-        TimePropertyChange<P> timeProperty = new TimePropertyChange<P>(isStored, time, name, caption, overrideClasses(changeProp.getMapClasses(), classes), changeProp.listInterfaces);
+        TimePropertyChangeListener<P> timePropertyChangeListener =
+                new TimePropertyChangeListener<P>(changeProp.property, isStored, time, name, caption, overrideClasses(changeProp.getMapClasses(), classes), changeProp.listInterfaces);
 
-        changeProp.property.timeChanges.put(time, timeProperty);
+        changeProp.property.addChangeListener(timePropertyChangeListener);
 
         if (isStored) {
-            timeProperty.property.markStored(baseLM.tableFactory);
+            timePropertyChangeListener.timeProperty.markStored(baseLM.tableFactory);
         }
 
-        return addProperty(group, false, new LP<ClassPropertyInterface>(timeProperty.property));
+        return addProperty(group, false, new LP<ClassPropertyInterface>(timePropertyChangeListener.timeProperty));
     }
 
     protected LP addSFProp(String name, String formula, int paramCount) {

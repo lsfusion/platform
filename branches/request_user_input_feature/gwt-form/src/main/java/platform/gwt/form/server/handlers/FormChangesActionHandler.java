@@ -22,7 +22,7 @@ public abstract class FormChangesActionHandler<A extends Action<FormChangesResul
 
     protected FormChangesResult getRemoteChanges(FormSessionObject form, RemoteChanges remoteChanges) throws IOException {
         ClientFormChanges clientChanges =
-                new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.form)), form.clientForm, null);
+                new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.formChanges)), form.clientForm, null);
         return new FormChangesResult(clientChanges.getGwtFormChangesDTO());
     }
 }

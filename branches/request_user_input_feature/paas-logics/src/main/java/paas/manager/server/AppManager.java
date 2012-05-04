@@ -13,7 +13,7 @@ import paas.PaasBusinessLogics;
 import paas.PaasLogicsModule;
 import paas.PaasUtils;
 import paas.manager.common.ConfigurationEventData;
-import platform.base.NullOutpuStream;
+import platform.base.NullOutputStream;
 import platform.base.OrderedMap;
 import platform.interop.remote.ApplicationTerminal;
 import platform.server.ContextAwareDaemonThreadFactory;
@@ -214,7 +214,7 @@ public final class AppManager {
         commandLine.addArgument(ScriptingBusinessLogics.class.getName());
 
         Executor executor = new DefaultExecutor();
-        executor.setStreamHandler(new PumpStreamHandler(new NullOutpuStream(), new NullOutpuStream()));
+        executor.setStreamHandler(new PumpStreamHandler(new NullOutputStream(), new NullOutputStream()));
 //        executor.setStreamHandler(new PumpStreamHandler());
         executor.setExitValue(0);
 

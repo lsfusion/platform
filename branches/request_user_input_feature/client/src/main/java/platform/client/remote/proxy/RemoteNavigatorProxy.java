@@ -186,7 +186,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     @Override
-    public NavigatorActionResult continueNavigatorAction() throws RemoteException {
-        return target.continueNavigatorAction();
+    public NavigatorActionResult continueNavigatorAction(Object[] actionResults) throws RemoteException {
+        return target.continueNavigatorAction(actionResults);
     }
 }

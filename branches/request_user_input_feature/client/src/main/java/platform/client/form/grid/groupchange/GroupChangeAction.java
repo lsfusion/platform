@@ -19,6 +19,11 @@ public class GroupChangeAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        if (true) {
+            JOptionPane.showMessageDialog(null, "Reimplement group change");
+            return;
+        }
+
         int selectedColumn = gridTable.getSelectedColumn();
         if (selectedColumn < 0 || selectedColumn >= gridTable.getColumnCount()) {
             return;

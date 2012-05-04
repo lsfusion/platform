@@ -2,17 +2,14 @@ package platform.client.logics.classes;
 
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.form.editor.CustomFileEditor;
 import platform.client.form.editor.FilePropertyEditor;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.text.Format;
 
 public class ClientFileActionClass extends ClientActionClass {
 
@@ -61,7 +58,7 @@ public class ClientFileActionClass extends ClientActionClass {
     }
 
     @Override
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
-        return custom ? new CustomFileEditor(value, false, multiple) : new CustomFileEditor(value, false, multiple, filterDescription, filterExtensions);
+    public PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
+        return custom ? new FilePropertyEditor(multiple) : new FilePropertyEditor(multiple, filterDescription, filterExtensions);
     }
 }

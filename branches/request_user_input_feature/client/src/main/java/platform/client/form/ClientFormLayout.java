@@ -14,7 +14,9 @@ import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ClientFormLayout extends JPanel {
+public class ClientFormLayout extends JPanel {
+
+    private final ClientFormController form;
 
     // главный контейнер, который будет использоваться при отрисовке формы
     private JComponent mainContainer;
@@ -35,12 +37,11 @@ public abstract class ClientFormLayout extends JPanel {
     // отображение объектов от сервера на контейнеры для рисования
     private Map<ClientContainer, JComponent> contviews = new HashMap<ClientContainer, JComponent>();
 
-    public abstract void gainedFocus();
-
     @SuppressWarnings({"FieldCanBeLocal"})
     private FocusListener focusListener;
 
-    public ClientFormLayout(ClientContainer topContainer) {
+    public ClientFormLayout(ClientFormController iform, ClientContainer topContainer) {
+        this.form = iform;
 
         // создаем все контейнеры на форме
         createContainerViews(topContainer);
@@ -55,15 +56,14 @@ public abstract class ClientFormLayout extends JPanel {
         // приходится делать StrongRef, иначе он тут же соберется сборщиком мусора так как ContainerFocusListener держит его как WeakReference
         focusListener = new FocusAdapter() {
             public void focusGained(FocusEvent e) {
-                gainedFocus();
+                form.gainedFocus();
             }
         };
 
         ContainerFocusListener.addListener(this, focusListener);
 
         setFocusCycleRoot(true);
-        policy = new FormFocusTraversalPolicy();
-        setFocusTraversalPolicy(policy);
+        setFocusTraversalPolicy(policy = new FormFocusTraversalPolicy());
 
         // вот таким вот маразматичным способом делается, чтобы при нажатии мышкой в ClientFormController фокус оставался на ней, а не уходил куда-то еще
         // теоретически можно найти способ как это сделать не так извращенно, но копаться в исходниках Swing'а очень долго
@@ -169,7 +169,7 @@ public abstract class ClientFormLayout extends JPanel {
         Object oldId = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(key);
 
         String resultId = id;
-        Action resultAction = new ClientActionProxy(action);
+        Action resultAction = new ClientActionProxy(form, action);
         if (oldId != null) {
             Action oldAction = getActionMap().get(oldId);
             if (oldAction != null) {

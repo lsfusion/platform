@@ -9,7 +9,6 @@ import platform.client.form.renderer.DateTimePropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GDateType;
 import platform.gwt.view.classes.GType;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
@@ -46,7 +45,7 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
         return new DateTimePropertyRenderer(property);
     }
 
-    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
+    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new DateTimePropertyEditor(value, (SimpleDateFormat) property.getFormat(), property.design);
     }
 

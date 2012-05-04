@@ -8,7 +8,6 @@ import platform.base.identity.IDGenerator;
 import platform.base.identity.IdentityObject;
 import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
-import platform.client.form.GroupObjectController;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -23,7 +22,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class ClientGroupObject extends IdentityObject implements ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
 
@@ -68,25 +66,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         for (ClientGroupObject group : groups)
             result.addAll(group.objects);
         return result;
-    }
-
-    public List<ClientObject> getKeysObjectsList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-        List<ClientGroupObject> result = new ArrayList<ClientGroupObject>();
-        ClassViewType newType = classViews.get(this);
-
-        if ((newType != null
-             ? newType
-             : controllers == null
-               ? ClassViewType.GRID
-               : controllers.get(this).classView) == ClassViewType.GRID) {
-            result.add(this);
-        }
-
-        return ClientGroupObject.getObjects(result);
-    }
-
-    public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-        return getKeysObjectsList(classViews, controllers);
     }
 
     private static IDGenerator idGenerator = new DefaultIDGenerator();
@@ -217,10 +196,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     public class RowBackgroundReader implements ClientPropertyReader {
-        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-            return ClientGroupObject.this.getKeysObjectsList(classViews, controllers);
-        }
-
         public ClientGroupObject getGroupObject() {
             return ClientGroupObject.this;
         }
@@ -235,10 +210,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     public class RowForegroundReader implements ClientPropertyReader {
-        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-            return ClientGroupObject.this.getKeysObjectsList(classViews, controllers);
-        }
-
         public ClientGroupObject getGroupObject() {
             return ClientGroupObject.this;
         }

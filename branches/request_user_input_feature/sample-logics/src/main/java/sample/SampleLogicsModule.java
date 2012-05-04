@@ -1,10 +1,15 @@
 package sample;
 
 import platform.interop.Compare;
+import platform.interop.action.ConfirmClientAction;
+import platform.interop.action.MessageClientAction;
+import platform.interop.form.UserInputResult;
+import platform.server.Context;
 import platform.server.classes.*;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.CompareFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
@@ -14,10 +19,13 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.CustomActionProperty;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.sql.SQLException;
 
 /**
  * User: DAle
@@ -27,8 +35,8 @@ import java.awt.event.KeyEvent;
 
 public class SampleLogicsModule extends LogicsModule {
 
-    private LP inGroup;
-    private LP inRecGroup;
+//    private LP inGroup;
+//    private LP inRecGroup;
 
     public SampleLogicsModule(BaseLogicsModule<SampleBusinessLogics> baseLM) {
         super("SampleLogicsModule");
@@ -77,6 +85,8 @@ public class SampleLogicsModule extends LogicsModule {
     protected LP balanceQuantity, incQuantity;
     protected LP inStore, parentGroup, articleToGroup;
 
+    private LP annoyingChangeArticleDescriptionAction;
+
     @Override
     public void initProperties() {
         articleDescription = addDProp(baseGroup, "articleDescription", "Описание", StringClass.get(50), descriptedArticle);
@@ -109,17 +119,43 @@ public class SampleLogicsModule extends LogicsModule {
         parentGroup = addDProp(baseGroup, "parentGroup", "Родитель", articleGroup, articleGroup);
         articleToGroup = addDProp(baseGroup, "articleToGroup", "Группа товаров", articleGroup, article);
 
-        inGroup = addDProp(baseGroup, "inGroup", "Входит", LogicalClass.instance, articleGroup, articleGroup);
+//        inGroup = addDProp(baseGroup, "inGroup", "Входит", LogicalClass.instance, articleGroup, articleGroup);
 //        inRecGroup = addRProp(baseGroup, "inRecGroup", true, "Входит (рек)", Cycle.NO, 2, addJProp(baseLM.and1, is(articleGroup), 1, baseLM.equals2, 1, 2), 1, 2, inGroup, 3, 2);
 
+        annoyingChangeArticleDescriptionAction = addProperty(null, new LP(new AnnoyingChangeArticleDescriptionAction(genSID())));
+
         initNavigators();
+    }
+
+    private class AnnoyingChangeArticleDescriptionAction extends CustomActionProperty {
+        protected AnnoyingChangeArticleDescriptionAction(String sID) {
+            super(sID, descriptedArticle);
+        }
+
+        @Override
+        public void execute(ExecutionContext context) throws SQLException {
+            final Context currentContext = Context.context.get();
+
+            for (int i = 0; i < 5; ++i) {
+                if (JOptionPane.OK_OPTION != (Integer)currentContext.requestUserInteraction(new ConfirmClientAction("Попытка №" + i, "Вы уверены, что хотите изменить это свойство?"))) {
+                    currentContext.requestUserInteraction(new MessageClientAction("Too bad :(", ":("));
+                    return;
+                }
+            }
+
+            UserInputResult result = currentContext.requestUserInput(IntegerClass.instance, null);
+            if (!result.isCanceled()) {
+                Object value = result.getValue();
+                context.addActions(
+                        articleDescription.execute(value == null ? null : "Descr # " + value, context.getSession(), context.getSingleKeyValue())
+                );
+            }
+        }
     }
 
     @Override
     public void initIndexes() {
     }
-
-    FormEntity mainAccountForm, salesArticleStoreForm;
 
     private void initNavigators() {
 
@@ -168,16 +204,25 @@ public class SampleLogicsModule extends LogicsModule {
 
     private class StoreArticleFormEntity extends FormEntity {
 
+        private final ObjectEntity objArt;
+
         public StoreArticleFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
+            objArt = addSingleGroupObject(descriptedArticle, "Товар", baseGroup);
 //            objArt.groupTo.initClassView = false; //objArt.groupTo.singleViewType = true;
             ObjectEntity objStore = addSingleGroupObject(store, "Склад", baseGroup);
             ObjectEntity objDoc = addSingleGroupObject(document, "Документ", baseGroup);
 
             addPropertyDraw(objStore, objArt, baseGroup);
             addPropertyDraw(objDoc, objArt, baseGroup);
+
+            PropertyDrawEntity descriptionDraw = getPropertyDraw(articleDescription, objArt);
+            descriptionDraw.setMouseAction("annoyingChange");
+            descriptionDraw.setKeyAction(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "annoyingChange");
+            descriptionDraw.setEditAction("annoyingChange", null);
+
+            descriptionDraw.setKeyEditAction(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "annoyingChange", addPropertyObject(annoyingChangeArticleDescriptionAction, objArt));
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(quantity)));
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(balanceQuantity)));
@@ -186,7 +231,6 @@ public class SampleLogicsModule extends LogicsModule {
     }
 
     private class TreeStoreArticleFormEntity extends FormEntity {
-
         public TreeStoreArticleFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
@@ -230,20 +274,21 @@ public class SampleLogicsModule extends LogicsModule {
             ObjectEntity objArtGroup2 = addSingleGroupObject(articleGroup, baseLM.name, articleGroupDescription);
             addObjectActions(this, objArtGroup2);
 
-            addPropertyDraw(inGroup, objArtGroup1, objArtGroup2);
+//            addPropertyDraw(inGroup, objArtGroup1, objArtGroup2);
+            addPropertyDraw(parentGroup, objArtGroup1, objArtGroup2);
 //            addPropertyDraw(inRecGroup, objArtGroup1, objArtGroup2);
 //            addPropertyDraw(inRecGroup, objArtGroup2, objArtGroup1);
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
-            filterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new NotNullFilterEntity(getPropertyObject(inGroup)),
-                    "В группе",
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
+//            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+//            filterGroup.addFilter(new RegularFilterEntity(genID(),
+//                    new NotNullFilterEntity(getPropertyObject(inGroup)),
+//                    "В группе",
+//                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
 //            filterGroup.addFilter(new RegularFilterEntity(genID(),
 //                    new NotNullFilterEntity(getPropertyObject(inRecGroup)),
 //                    "В рек. группе",
 //                    KeyStroke.getKeyStroke(KeyEvent.VK_F9, InputEvent.SHIFT_DOWN_MASK)));
-            addRegularFilterGroup(filterGroup);
+//            addRegularFilterGroup(filterGroup);
 
 //            addHintsNoUpdate(inRecGroup);
         }

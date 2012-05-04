@@ -2,10 +2,8 @@ package platform.client.logics.classes;
 
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.editor.IntegerPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ComponentDesign;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -48,14 +46,9 @@ abstract public class ClientIntegralClass extends ClientDataClass {
         return format;
     }
 
-    protected abstract Class getJavaClass();
-
     public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
         return new IntegerPropertyRenderer(property);
     }
 
-    @Override
-    protected PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
-        return new IntegerPropertyEditor(value, (NumberFormat) property.getFormat(), property.design, getJavaClass());
-    }
+    public abstract PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property);
 }

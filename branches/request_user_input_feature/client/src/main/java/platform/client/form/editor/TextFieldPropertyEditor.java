@@ -1,19 +1,21 @@
 package platform.client.form.editor;
 
 import platform.client.form.PropertyEditorComponent;
+import platform.client.form.cell.PropertyTableCellEditor;
 import platform.interop.ComponentDesign;
-import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.ParseException;
 import java.util.EventObject;
 
-abstract class TextFieldPropertyEditor extends JFormattedTextField implements PropertyEditorComponent {
-    private boolean selected = false;
+public abstract class TextFieldPropertyEditor extends JFormattedTextField implements PropertyEditorComponent {
+    private static final String CANCEL_EDIT_ACTION = "reset-field-edit";
+
+    protected PropertyTableCellEditor tableEditor;
 
     TextFieldPropertyEditor(ComponentDesign design) {
         super();
@@ -25,41 +27,52 @@ abstract class TextFieldPropertyEditor extends JFormattedTextField implements Pr
             design.designCell(this);
         }
 
-        addMouseListener(new MouseAdapter() {
+        addActionListener(new ActionListener() {
             @Override
-            public void mousePressed(MouseEvent e) {
-                //чтобы выделялся текст при активации компонента мышкой
-                if (!selected) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            selectAll();
-                            selected = true;
-                        }
-                    });
+            public void actionPerformed(ActionEvent e) {
+                if (!tableEditor.stopCellEditing()) {
+                    return;
                 }
+            }
+        });
+
+        getActionMap().put(CANCEL_EDIT_ACTION, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tableEditor.cancelCellEditing();
             }
         });
     }
 
+    public void setTableEditor(PropertyTableCellEditor tableEditor) {
+        this.tableEditor = tableEditor;
+    }
+
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
-        selected = false;
-        //для очистки поля ввода перед записью новых данных
-        if (editEvent instanceof KeyEvent) {
-            if (!KeyStrokes.isCharUndefinedEvent(editEvent) ||
-                    KeyStrokes.isDeleteEvent(editEvent) ||
-                    KeyStrokes.isBackSpaceEvent(editEvent))
-                setValue(null);
-        }
         return this;
     }
 
-    public boolean valueChanged() {
+    public boolean stopCellEditing() {
+        try {
+            commitEdit();
+        } catch (ParseException e) {
+            return false;
+        }
+
         return true;
     }
 
     @Override
-    public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
-        // не ловим ввод, чтобы его словил сам JTable и обработал
-        return (!KeyStrokes.isEnterEvent(ke) && !KeyStrokes.isEscapeEvent(ke)) && super.processKeyBinding(ks, ke, condition, pressed);
+    public Object getCellEditorValue() {
+        return this.getValue();
+    }
+
+    @Override
+    public String toString() {
+        if (tableEditor != null) {
+            return "TextFieldEditor[" + tableEditor.getTable().getName() + "]: " + super.toString();
+        } else {
+            return super.toString();
+        }
     }
 }

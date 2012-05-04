@@ -39,7 +39,7 @@ public class WeightDaemonTask implements IDaemonTask, Serializable {
                 System.out.println(newValue);
                 if ((newValue > 10) && (Math.abs(prev - newValue) > 10)) {
                     double value = newValue / 1000.0;
-                    eventBus.enterValue(value, SCALES_SID);
+                    eventBus.fireValueChanged(SCALES_SID, value);
                     //System.out.println(newValue);
                 }
                 prev = newValue;

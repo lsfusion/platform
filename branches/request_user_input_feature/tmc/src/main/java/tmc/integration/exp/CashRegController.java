@@ -2,9 +2,7 @@ package tmc.integration.exp;
 
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
-import platform.interop.action.ClientResultAction;
 import platform.interop.action.ListClientAction;
-import platform.interop.action.ListClientResultAction;
 import platform.server.classes.DataClass;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.ValueClass;
@@ -54,7 +52,7 @@ public class CashRegController {
         }
     }
 
-    public ClientResultAction getCashRegApplyActions(FormInstance formInstance, int payType,
+    public ClientAction getCashRegApplyActions(FormInstance formInstance, int payType,
                                                      Set<GroupObjectInstance> classGroups,
                                                      PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
                                                      PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
@@ -65,7 +63,7 @@ public class CashRegController {
                                                      PropertyDrawEntity<?> clientSumProp, PropertyDrawEntity<?> discountProp, Set<GroupObjectInstance> obligationGrObj,
                                                      PropertyDrawEntity<?> obligationName, PropertyDrawEntity<?> obligationSum, PropertyDrawEntity<?> obligationBarcode) {
 
-        List<ClientResultAction> actions = new ArrayList<ClientResultAction>();
+        List<ClientAction> actions = new ArrayList<ClientAction>();
 
         cashRegComPort = getCashRegComPort(formInstance);
         if (cashRegComPort > 0) {
@@ -76,7 +74,7 @@ public class CashRegController {
                     clientSumProp, discountProp, obligationGrObj, obligationName, obligationSum, obligationBarcode)));
 
         }
-        return new ListClientResultAction(actions);
+        return new ListClientAction(actions);
     }
 
 

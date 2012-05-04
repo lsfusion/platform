@@ -11,7 +11,6 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GStringType;
 import platform.gwt.view.classes.GType;
 import platform.interop.Compare;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.io.DataInputStream;
@@ -20,7 +19,7 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
 
-import static platform.interop.Compare.*;
+import static platform.interop.Compare.START_WITH;
 
 public class ClientStringClass extends ClientDataClass {
 
@@ -91,15 +90,17 @@ public class ClientStringClass extends ClientDataClass {
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) { return new StringPropertyRenderer(property); }
-
-    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
-        return new StringPropertyEditor(false, length, value, property);
+    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+        return new StringPropertyRenderer(property);
     }
 
     @Override
-    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
-        return new StringPropertyEditor(true, length, value, property);
+    public PropertyEditorComponent getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
+        return new StringPropertyEditor(property, value, length, false);
+    }
+
+    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new StringPropertyEditor(property, value, length, true);
     }
 
     public Object parseString(String s) throws ParseException {
@@ -117,7 +118,7 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     @Override
-    public Compare[] getFilerCompares() {
+    public Compare[] getFilterCompares() {
         return Compare.values();
     }
 

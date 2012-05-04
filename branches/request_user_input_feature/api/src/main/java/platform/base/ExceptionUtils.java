@@ -1,5 +1,6 @@
 package platform.base;
 
+import com.google.common.base.Throwables;
 import platform.interop.exceptions.RemoteServerException;
 
 import java.rmi.RemoteException;
@@ -31,15 +32,12 @@ public class ExceptionUtils {
         return result;
     }
 
-    public static void emitRemoteException(Throwable t) throws RemoteException {
-        if (t == null) {
-            throw new RuntimeException("Internal error: null");
-        } else if (t instanceof RemoteException) {
-            throw (RemoteException)t;
-        } else if (t instanceof RuntimeException) {
-            throw (RuntimeException)t;
-        }
+    public static RemoteException propogateRemoteException(Throwable t) throws RemoteException {
+        Throwables.propagateIfPossible(t, RemoteException.class);
+        throw Throwables.propagate(t);
+    }
 
-        throw new RuntimeException(t);
+    public static void dumpStack() {
+        new Exception("Stack trace").printStackTrace(System.out);
     }
 }

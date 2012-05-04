@@ -1,6 +1,5 @@
 package platform.client.logics.classes;
 
-import jxl.write.DateTime;
 import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.form.PropertyEditorComponent;
@@ -10,7 +9,6 @@ import platform.client.form.renderer.DatePropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GDateType;
 import platform.gwt.view.classes.GType;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
@@ -37,7 +35,7 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
 
     @Override
     public String getPreferredMask() {
-        return "01.01.2001"; // пока так, хотя надо будет переделать в зависимости от Locale  
+        return "01.01.2001"; // пока так, хотя надо будет переделать в зависимости от Locale
     }
 
     public Format getDefaultFormat() {
@@ -48,7 +46,7 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
         return new DatePropertyRenderer(property);
     }
 
-    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
+    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new DatePropertyEditor(value, (SimpleDateFormat) property.getFormat(), property.design);
     }
 

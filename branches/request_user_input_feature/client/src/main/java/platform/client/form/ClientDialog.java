@@ -1,12 +1,15 @@
 package platform.client.form;
 
+import com.google.common.base.Throwables;
 import platform.client.ClientResourceBundle;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.remote.SelectedObject;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.EventObject;
 
 public class ClientDialog extends ClientModalForm {
     public final static int NOT_CHOSEN = 0;
@@ -16,22 +19,26 @@ public class ClientDialog extends ClientModalForm {
     public Object dialogValue;
     public Object displayValue;
 
-    public boolean showQuickFilterOnStartup = true;
+    public KeyEvent initFilterKeyEvent = null;
 
     private RemoteDialogInterface remoteDialog;
 
-    public ClientDialog(Component owner, final RemoteDialogInterface dialog, boolean showQuickFilterOnStartup, boolean isDailog) throws IOException, ClassNotFoundException {
+    public ClientDialog(Component owner, final RemoteDialogInterface dialog, EventObject initFilterEvent, boolean isDailog) {
         super(owner, dialog, false, isDailog); // обозначаем parent'а и модальность
 
-        this.showQuickFilterOnStartup = showQuickFilterOnStartup;
+        this.initFilterKeyEvent = initFilterEvent instanceof KeyEvent ? (KeyEvent) initFilterEvent : null;
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        Boolean undecorated = dialog.isUndecorated();
-        if (undecorated == null || undecorated) {
-            setResizable(false);
-            // делаем, чтобы не выглядел как диалог
-            setUndecorated(true);
+        try {
+            Boolean undecorated = dialog.isUndecorated();
+            if (undecorated == null || undecorated) {
+                setResizable(false);
+                // делаем, чтобы не выглядел как диалог
+                setUndecorated(true);
+            }
+        } catch (RemoteException e) {
+            Throwables.propagate(e);
         }
     }
 
@@ -50,8 +57,8 @@ public class ClientDialog extends ClientModalForm {
             form.selectProperty(initialFilterPropertyDrawID);
         }
 
-        if (showQuickFilterOnStartup && initialFilterPropertyDrawID > 0) {
-            form.quickEditFilter(initialFilterPropertyDrawID);
+        if (initFilterKeyEvent != null && initialFilterPropertyDrawID > 0) {
+            form.quickEditFilter(initFilterKeyEvent, initialFilterPropertyDrawID);
         } else {
             KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(form.getComponent());
         }
@@ -67,11 +74,13 @@ public class ClientDialog extends ClientModalForm {
                 result = VALUE_CHOSEN;
                 dialogValue = null;
                 displayValue = null;
+
+                super.nullPressed();
                 hideDialog();
             }
 
             @Override
-            public void okPressed() {
+            public boolean okPressed() {
                 result = VALUE_CHOSEN;
                 try {
                     SelectedObject selectedObject = remoteDialog.getSelectedObject();
@@ -80,11 +89,17 @@ public class ClientDialog extends ClientModalForm {
                 } catch (RemoteException e) {
                     throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.value.of.dialogue"), e);
                 }
-                hideDialog();
+
+                if (super.okPressed()) {
+                    hideDialog();
+                    return false;
+                }
+                return true;
             }
 
             @Override
             void closePressed() {
+                super.closePressed();
                 hideDialog();
             }
         };

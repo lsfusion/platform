@@ -30,9 +30,8 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
         throw new RuntimeException("not supported");
     }
 
-
     @Override
-    public Compare[] getFilerCompares() {
+    public Compare[] getFilterCompares() {
         return new Compare[] {EQUALS, NOT_EQUALS};
     }
 

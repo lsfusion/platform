@@ -4,10 +4,11 @@ import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.filter.ClientPropertyFilter;
 
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class QueryController implements QueryListener {
+abstract class QueryController {
 
     private final QueryView view;
 
@@ -27,17 +28,19 @@ abstract class QueryController implements QueryListener {
         this.logicsSupplier = logicsSupplier;
 
         view = createView();
-        view.setListener(this);
     }
 
     protected abstract QueryView createView();
 
     // Здесь слушаем наш View
     public void applyPressed() {
-        view.stopEditing();
-        if (queryChanged()) {
-            view.queryApplied();
+        if (!logicsSupplier.getForm().commitCurrentEditing()) {
+            return;
         }
+
+        queryChanged();
+
+        view.queryApplied();
     }
 
     public void addConditionPressed(boolean replace) {
@@ -80,11 +83,13 @@ abstract class QueryController implements QueryListener {
         view.removeAllConditions();
     }
 
-    protected abstract boolean queryChanged();
+    protected abstract void queryChanged();
 
-    public void quickEditFilter(ClientPropertyDraw propertyDraw) {
+    public abstract void conditionsUpdated();
+
+    public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw) {
         addConditionPressed(true, propertyDraw);
-        view.startEditing(propertyDraw);
+        view.startEditing(initFilterKeyEvent, propertyDraw);
     }
 
     public boolean hasActiveFilter() {

@@ -1,16 +1,12 @@
 package platform.client.form.renderer;
 
 import platform.base.DateConverter;
-import platform.client.form.PropertyRendererComponent;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ComponentDesign;
 
 import javax.swing.*;
 import java.sql.Timestamp;
-import java.text.Format;
 
-public class DateTimePropertyRenderer extends LabelPropertyRenderer
-        implements PropertyRendererComponent {
+public class DateTimePropertyRenderer extends LabelPropertyRenderer {
 
     public DateTimePropertyRenderer(ClientPropertyDraw property) {
         super(property);
@@ -24,17 +20,8 @@ public class DateTimePropertyRenderer extends LabelPropertyRenderer
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        if (value != null)
-            setText(format.format(DateConverter.stampToDate((Timestamp) value)));
-        else
-            setText("");
+        setText(value == null ? "" : format.format(DateConverter.stampToDate((Timestamp) value)));
         setForeground(UIManager.getColor("TextField.foreground"));
         setSelected(isSelected, hasFocus);
     }
-
-    @Override
-    public void rateSelected() {
-        super.paintSelected();
-    }
-
 }

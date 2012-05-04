@@ -3,10 +3,7 @@ package platform.server.session;
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
-import platform.base.TwinImmutableObject;
 import platform.server.caches.AbstractValuesContext;
-import platform.server.caches.ManualLazy;
-import platform.server.caches.PackInterface;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
@@ -52,7 +49,7 @@ public class MapDataChanges<P extends PropertyInterface> extends AbstractValuesC
     public <T extends PropertyInterface> MapDataChanges<T> map(Map<P,T> interfaceMap) {
         Map<UserProperty, Map<ClassPropertyInterface,T>> transMap = new HashMap<UserProperty, Map<ClassPropertyInterface,T>>();
         for(Map.Entry<UserProperty,Map<ClassPropertyInterface,P>> entry : map.entrySet())
-            transMap.put(entry.getKey(), BaseUtils.join(entry.getValue(),interfaceMap));
+            transMap.put(entry.getKey(), BaseUtils.rightJoin(entry.getValue(),interfaceMap));
         return new MapDataChanges<T>(changes, transMap);
     }
 

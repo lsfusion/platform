@@ -43,8 +43,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
         if (!treeGroup.plainTreeMode) {
             FilterController filterController = new FilterController(this) {
 
-                protected boolean queryChanged() {
-
+                protected void queryChanged() {
                     try {
                         form.changeFilter(treeGroup, getConditions());
                     } catch (IOException e) {
@@ -52,7 +51,6 @@ public class TreeGroupController extends AbstractGroupObjectController {
                     }
 
                     tree.requestFocusInWindow();
-                    return true;
                 }
 
                 @Override

@@ -7,6 +7,7 @@ import platform.server.classes.DataClass;
 import platform.server.classes.StaticCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.*;
+import platform.server.form.instance.FormCloseType;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.remote.RemoteForm;
@@ -112,10 +113,10 @@ public class FormActionProperty extends CustomActionProperty {
                     new FormClientAction(form.isPrintForm, newSession, isModal, newRemoteForm)
             );
 
-            String formResult = newFormInstance.getFormResult();
+            FormCloseType formResult = newFormInstance.getFormResult();
 
             if (formResultProperty != null) {
-                formResultProperty.execute(formResultClass.getID(formResult), context);
+                formResultProperty.execute(formResultClass.getID(formResult.asString()), context);
             }
 
             if (chosenValueProperty != null) {
@@ -128,7 +129,7 @@ public class FormActionProperty extends CustomActionProperty {
                 }
             }
 
-            if (!seekOnOk.isEmpty() && "ok".equals(formResult)) {
+            if (!seekOnOk.isEmpty() && formResult == FormCloseType.OK) {
                 for (ObjectEntity object : seekOnOk) {
                     try {
                         ObjectInstance objectInstance = newFormInstance.instanceFactory.getInstance(object);
@@ -142,7 +143,7 @@ public class FormActionProperty extends CustomActionProperty {
                     }
                 }
             }
-            if (!closeProperties.isEmpty() && "close".equals(formResult)) {
+            if (!closeProperties.isEmpty() && formResult == FormCloseType.CLOSE) {
                 for (PropertyObjectEntity property : closeProperties) {
                     try {
                         newFormInstance.changeProperty(newFormInstance.instanceFactory.getInstance(property),

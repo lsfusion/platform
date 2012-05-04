@@ -65,7 +65,8 @@ sessionObj() = SESSION DATA object ();
 // Join property
 // Expression syntax:
 // (name | '[' propertyDefinition ']') (param1, ..., paramN)
-storeName 'Склад' (document) = name(store(document)) IN base;
+storeName 'Склад' (document) = commonName(store(document)) IN base;
+//storeName 'Склад' (document) = name(store(document)) IN base;
 storeSizeName = name(storeSize(store)) IN base; // можем не указывать именованные параметры слева от '=', но все равно пользоваться ими
 objectIsStore = [IS store](object);             // аналог: object IS store
 
@@ -201,7 +202,7 @@ balanceQuantity(store, article) = incomeQuantity(store, article) - outcomeQuanti
 foo(store, article) = 5 * incomeQuantity($1, $2) - outcomeQuantity($1, $2);
 foo2(store, article) = - outcomeQuantity(store, article) + 5 * incomeQuantity(store, article);
 bar = incomeQuantity(store, article) * 5 - 3 - 4 + outcomeQuantity(store, article);
-bar2(store, article) = 3.5 * incomeQuantity($1, $2) - (-5 + outcomeQuantity($1, $2));
+bar2(store, article) = 3.5 * incomeQuantity($1, $2) - (5 + outcomeQuantity($1, $2));
 foobar(store, article) = [x*x + y](foo(store, article), bar(store, article));   // lambda-like syntax
 baz(store, article) = bar(store, article) > bar2(store, article) IN base;
 baz2 = foo(s, a) >= 15 == foo2(s, a) >= 15;
@@ -446,12 +447,22 @@ OBJECTS s=STRING[100] 'Email:' FIXED PANEL, u=customUser
 PROPERTIES OBJVALUE(s), userLogin(u), userPassword(u), email(u), ADDOBJ(u), remindPasswordEmail(u, s) TODRAW s
 ;
 
+stime 'Время' (store) = DATA TIME (store) IN base;
+sdate 'Дата' (store) = DATA DATE (store) IN base;
+sdatetime 'ДатаВремя' (store) = DATA DATETIME (store) IN base;
+sword 'Word' (store) = DATA WORDFILE (store) IN base;
+simage 'Image' (store) = DATA IMAGEFILE (store) IN base;
+spdf 'PDF' (store) = DATA PDFFILE (store) IN base;
+scustom 'Custom file' (store) = DATA CUSTOMFILE (store) IN base;
+sexcel 'Excel' (store) = DATA EXCELFILE (store) IN base;
+scolor 'Color' (store) = DATA COLOR (store) IN base;
+
 FORM storeArticle 'По складам'
 OBJECTS s=store '-Склад-', a=article
-PROPERTIES ssel=SELECTION(s), sname=name(s) READONLY, obja=OBJVALUE(a), aname=name(a)
+PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
 PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm()
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
-PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, ssc2=storeSizeCode, storeIsHuge, storeIsHuge2
+PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, sword, simage, spdf, scustom, sexcel, scolor
 PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
 FILTERGROUP filters1
     FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
@@ -691,17 +702,6 @@ DESIGN storeArticle FROM DEFAULT {
     //здесь - компонент для свойства с определённым мэппингом
     PROPERTY(storeSizeName(s)) { caption = 'Имя размера склада'; }
 
-    a.panel {
-        NEW nameContainer {
-            title = 'Отдельный контейнер для имени в панели';
-            ADD PROPERTY(name(a)) {
-                caption = 'Имя (a)';
-                showEditKey = TRUE;
-                clearText = TRUE;
-            }
-        }
-    }
-
     PROPERTY(foo(s, a)) {
         focusable = FALSE;
         panelLabelAbove = TRUE;
@@ -712,7 +712,9 @@ DESIGN storeArticle FROM DEFAULT {
 //    PROPERTY(name(a)) {
     PROPERTY(aname) {
         // настройка свойств, соответсвующих клавишам
+        showEditKey = TRUE;
         editKey = 'ctrl F6';
+        caption = 'Имя (a)';
 
         // шрифт
         headerFont = 'Tahoma bold italic 15';
@@ -720,10 +722,10 @@ DESIGN storeArticle FROM DEFAULT {
         headerFont = 'Tahoma 12';
 
         //toolbar/shortcut. свойство предварительно нужно отправить в панель
-        panelLocation = TOOLBAR;
-        panelLocation = SHORTCUT;
-        panelLocation = SHORTCUT storeSizeName; // единственное свойство, для которого отображается name(a) в shortcut
-        panelLocation = SHORTCUT DEFAULT;   // DEFAULT используется при помещении в shortcut какого-нибудь actionProperty
+//        panelLocation = TOOLBAR;
+//        panelLocation = SHORTCUT;
+//        panelLocation = SHORTCUT storeSizeName; // единственное свойство, для которого отображается name(a) в shortcut
+//        panelLocation = SHORTCUT DEFAULT;   // DEFAULT используется при помещении в shortcut какого-нибудь actionProperty
 //        panelLocation = SHORTCUT storeSizeName DEFAULT;
     }
 
@@ -737,7 +739,7 @@ DESIGN storeArticle FROM DEFAULT {
         childConstraints = TO NOT INTERSECT;
 
         //Insets
-        insetsInside = (-100, -200, 300, 400);
+        insetsInside = ( -100, -200, 300, 400);
     }
     REMOVE setupEx;
 }

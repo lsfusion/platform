@@ -1,6 +1,6 @@
 package platform.client.form.grid;
 
-import platform.base.BaseUtils;
+import com.google.common.base.Preconditions;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
@@ -149,16 +149,7 @@ public class GridTableModel extends AbstractTableModel {
     }
 
     public void setValueAt(Object value, int row, int col) {
-        throw new RuntimeException("things that should not be");
-    }
-
-    public void setValueAt(Object value, int row, int col, boolean multyChange) {
-        if (!multyChange && columnProps[col].checkEquals && BaseUtils.nullEquals(value, data[row][col])) {
-            return;
-        }
-
-        data[row][col] = value;
-        fireTableCellUpdated(row, col);
+        Preconditions.checkState(false, "GridTableModel.setValueAt shouldn't be called!");
     }
 
     public int getPropertyIndex(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
@@ -172,6 +163,10 @@ public class GridTableModel extends AbstractTableModel {
 
     public ClientPropertyDraw getColumnProperty(int index) {
         return columnProps[index];
+    }
+
+    public ClientPropertyDraw[] getColumnProperties() {
+        return columnProps.clone();
     }
 
     public ClientGroupObjectValue getColumnKey(int index) {

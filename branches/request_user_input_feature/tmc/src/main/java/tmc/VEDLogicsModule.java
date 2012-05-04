@@ -2664,7 +2664,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         @Override
-        public ClientResultAction getClientActionOnApply(FormInstance<VEDBusinessLogics> formInstance) {
+        public ClientAction getClientActionOnApply(FormInstance<VEDBusinessLogics> formInstance) {
             if (toAdd) {
 
                 ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
@@ -3079,7 +3079,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         @Override
-        public ClientResultAction getClientActionOnApply(FormInstance formInstance) {
+        public ClientAction getClientActionOnApply(FormInstance formInstance) {
             if (toAdd) {
 
                 ObjectInstance doc = formInstance.instanceFactory.getInstance(objDoc);
@@ -3706,7 +3706,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         @Override
-        public ClientResultAction getClientActionOnApply(FormInstance<VEDBusinessLogics> formInstance) {
+        public ClientAction getClientActionOnApply(FormInstance<VEDBusinessLogics> formInstance) {
             if (toAdd) {
 
                 ObjectInstance doc = formInstance.instanceFactory.getInstance(objDoc);

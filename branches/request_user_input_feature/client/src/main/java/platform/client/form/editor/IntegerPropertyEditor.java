@@ -29,21 +29,4 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
             }
         }
     }
-
-    public Object getCellEditorValue() {
-
-        try {
-            commitEdit();
-        } catch (ParseException e) {
-            return null;
-        }
-
-        return this.getValue();
-    }
-
-   @Override
-    public String checkValue(Object value) {
-        return null;
-    }
-
 }

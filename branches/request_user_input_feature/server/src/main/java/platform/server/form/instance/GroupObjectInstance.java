@@ -32,7 +32,10 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.IsClassProperty;
 import platform.server.logics.property.Property;
-import platform.server.session.*;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
+import platform.server.session.NoPropertyTableUsage;
+import platform.server.session.SessionChanges;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -50,10 +53,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
     RowBackgroundReaderInstance rowBackgroundReader = new RowBackgroundReaderInstance();
     RowForegroundReaderInstance rowForegroundReader = new RowForegroundReaderInstance();
-
-    public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
-        return curClassView == ClassViewType.GRID ? GroupObjectInstance.getObjects(getUpTreeGroups()) : new ArrayList<ObjectInstance>();
-    }
 
     GroupObjectEntity entity;
 
@@ -842,10 +841,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             return GroupObjectInstance.this.getID();
         }
 
-        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
-            return GroupObjectInstance.this.getKeysObjectsList(panelProperties);
-        }
-
         @Override
         public String toString() {
             return ServerResourceBundle.getString("logics.background") + " (" + GroupObjectInstance.this.toString() + ")";
@@ -863,10 +858,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
         public int getID() {
             return GroupObjectInstance.this.getID();
-        }
-
-        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
-            return GroupObjectInstance.this.getKeysObjectsList(panelProperties);
         }
 
         @Override

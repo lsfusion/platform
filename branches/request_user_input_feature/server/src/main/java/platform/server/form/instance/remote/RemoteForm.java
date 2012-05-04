@@ -1,5 +1,6 @@
 package platform.server.form.instance.remote;
 
+import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.JasperDesign;
@@ -8,7 +9,6 @@ import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
-import platform.base.ExceptionUtils;
 import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.interop.ClassViewType;
@@ -16,16 +16,13 @@ import platform.interop.Order;
 import platform.interop.Scroll;
 import platform.interop.action.CheckFailed;
 import platform.interop.action.ClientAction;
-import platform.interop.action.ClientResultAction;
 import platform.interop.action.LogMessageClientAction;
-import platform.interop.form.FormUserPreferences;
-import platform.interop.form.RemoteChanges;
-import platform.interop.form.RemoteDialogInterface;
-import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.*;
 import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
+import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
 import platform.server.form.entity.ObjectEntity;
@@ -53,6 +50,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static platform.base.BaseUtils.deserializeObject;
+import static platform.base.BaseUtils.serializeObject;
+import static platform.server.data.type.TypeSerializer.serializeType;
 import static platform.server.form.entity.GroupObjectHierarchy.ReportNode;
 
 // фасад для работы с клиентом
@@ -65,10 +64,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private final WeakReference<RemoteFormListener> weakRemoteFormListener;
 
     private final boolean checkOnOk;
-
-    private RemoteFormListener getRemoteFormListener() {
-        return weakRemoteFormListener.get();
-    }
 
     public RemoteForm(F form, FormView richDesign, int port, RemoteFormListener remoteFormListener) throws RemoteException {
         this(form, richDesign, port, remoteFormListener, false);
@@ -86,12 +81,29 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
+    public RemoteFormListener getRemoteFormListener() {
+        return weakRemoteFormListener.get();
+    }
+
+    private void emitExceptionIfHasActiveInvocation() {
+        if (currentInvocation != null && currentInvocation.isPaused()) {
+            //стопаем старый рабочий поток, чтобы можно было запустить новый без ожидания окончания старого
+            currentInvocation.cancel();
+            currentInvocation = null;
+            throw new RuntimeException("There is already invocation executing...");
+        }
+    }
+
     public byte[] getReportHierarchyByteArray() {
+        emitExceptionIfHasActiveInvocation();
+
         Map<String, List<String>> dependencies = form.entity.getReportHierarchy().getReportHierarchyMap();
         return getReportHierarchyByteArray(dependencies);
     }
 
     public byte[] getSingleGroupReportHierarchyByteArray(int groupId) {
+        emitExceptionIfHasActiveInvocation();
+
         Map<String, List<String>> dependencies = form.entity.getSingleGroupReportHierarchy(groupId).getReportHierarchyMap();
         return getReportHierarchyByteArray(dependencies);
     }
@@ -109,11 +121,15 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public byte[] getReportDesignsByteArray(boolean toExcel, FormUserPreferences userPreferences) {
+        emitExceptionIfHasActiveInvocation();
+
         return getReportDesignsByteArray(toExcel, null, userPreferences);
     }
 
     /// Отчет по одной группе
     public byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId, FormUserPreferences userPreferences) {
+        emitExceptionIfHasActiveInvocation();
+
         return getReportDesignsByteArray(toExcel, groupId, userPreferences);
     }
 
@@ -140,12 +156,16 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public byte[] getReportSourcesByteArray() {
+        emitExceptionIfHasActiveInvocation();
+
         GroupObjectHierarchy.ReportHierarchy hierarchy = form.entity.getReportHierarchy();
         ReportSourceGenerator<T> sourceGenerator = new ReportSourceGenerator<T>(form, hierarchy, getGridGroups(null));
         return getReportSourcesByteArray(sourceGenerator);
     }
 
     public byte[] getSingleGroupReportSourcesByteArray(int groupId) throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
+
         ReportSourceGenerator<T> sourceGenerator = new ReportSourceGenerator<T>(form, form.entity.getSingleGroupReportHierarchy(groupId),
                 form.entity.getReportHierarchy(), getGridGroups(groupId));
         return getReportSourcesByteArray(sourceGenerator);
@@ -176,9 +196,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 dataStream.writeInt(value.size());
                 for (Map.Entry<List<Object>, Object> valueEntry : value.entrySet()) {
                     for (Object obj : valueEntry.getKey()) {
-                        BaseUtils.serializeObject(dataStream, obj);
+                        serializeObject(dataStream, obj);
                     }
-                    BaseUtils.serializeObject(dataStream, valueEntry.getValue());
+                    serializeObject(dataStream, valueEntry.getValue());
                 }
             }
 
@@ -190,7 +210,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 dataStream.writeInt(value.size());
                 for (List<Object> list : value) {
                     for (Object obj : list) {
-                        BaseUtils.serializeObject(dataStream, obj);
+                        serializeObject(dataStream, obj);
                     }
                 }
             }
@@ -269,6 +289,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public Map<String, String> getReportPath(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) {
+        emitExceptionIfHasActiveInvocation();
+
         Map<String, String> ret = new HashMap<String, String>();
 
         String sid = getDefaultReportSID(toExcel, groupId);
@@ -377,6 +399,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public byte[] getRichDesignByteArray() {
+        emitExceptionIfHasActiveInvocation();
 
         //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
@@ -390,12 +413,16 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void changePageSize(int groupID, Integer pageSize) throws RemoteException {
+        //пока разрешаем вызов changePageSize, т.к. он может прийти при показе модального диалога...
+//        emitExceptionIfHasActiveInvocation();
 
         GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
         form.changePageSize(groupObject, pageSize);
     }
 
     public void gainedFocus() {
+//        emitExceptionIfHasActiveInvocation();
+
         form.gainedFocus();
     }
 
@@ -411,17 +438,18 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 formChanges.logChanges(form, logger);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            Throwables.propagate(e);
         }
 
         return outStream.toByteArray();
     }
 
     public RemoteChanges getRemoteChanges() {
-        return getRemoteChanges(false);
+        emitExceptionIfHasActiveInvocation();
+        return prepareRemoteChanges();
     }
 
-    public RemoteChanges getRemoteChanges(boolean resumeInvocation) {
+    private RemoteChanges prepareRemoteChanges() {
         byte[] formChanges = getFormChangesByteArray();
 
         int objectClassID = 0;
@@ -434,11 +462,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
             updateCurrentClass = null;
         }
-        RemoteChanges result = new RemoteChanges(formChanges, new ArrayList<ClientAction>(actions), objectClassID, resumeInvocation);
+        RemoteChanges result = new RemoteChanges(formChanges, actions.toArray(new ClientAction[actions.size()]), objectClassID, false);
         actions.clear();
         return result;
     }
-
 
     private Map<ObjectInstance, Object> deserializeKeysValues(byte[] keysArray) throws IOException {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(keysArray));
@@ -470,6 +497,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void changeGroupObject(int groupID, byte[] value) {
+        emitExceptionIfHasActiveInvocation();
 
         try {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
@@ -495,6 +523,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void expandGroupObject(int groupId, byte[] groupValues) throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
         try {
             GroupObjectInstance group = form.getGroupObjectInstance(groupId);
             Map<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
@@ -507,6 +536,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void collapseGroupObject(int groupId, byte[] groupValues) throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
         try {
             GroupObjectInstance group = form.getGroupObjectInstance(groupId);
             Map<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
@@ -519,6 +549,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
         try {
             GroupObjectInstance parentGroup = form.getGroupObjectInstance(parentGroupId);
             GroupObjectInstance childGroup = form.getGroupObjectInstance(childGroupId);
@@ -530,6 +561,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void changeGroupObject(int groupID, byte changeType) {
+        emitExceptionIfHasActiveInvocation();
         try {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
             form.changeGroupObject(groupObject, Scroll.deserialize(changeType));
@@ -546,110 +578,99 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private ObjectInstance updateCurrentClass = null;
 
     public RemoteChanges changePropertyDraw(final int propertyID, final byte[] columnKey, final byte[] object, final boolean all, final boolean aggValue) throws RemoteException {
-        return executePausableInvocation(new Runnable() {
+        assert false:"changePropertyDraw shouldn't be used anymore";
+        return executeWithRemoteChanges(new TRunnable() {
             @Override
-            public void run() {
-                try {
-                    PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-                    Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
-                    actions.addAll(form.changeProperty(propertyDraw, keys, deserializeObject(object), RemoteForm.this, all, aggValue));
+            public void run() throws Exception {
+                PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
+                Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
+                actions.addAll(form.changeProperty(propertyDraw, keys, deserializeObject(object), RemoteForm.this, all, aggValue));
 
-                    if (logger.isInfoEnabled()) {
-                        logger.info(String.format("changePropertyDraw: [ID: %1$d, SID: %2$s, all?: %3$s] = %4$s", propertyDraw.getID(), propertyDraw.getsID(), all, deserializeObject(object)));
-                        if (keys.size() > 0) {
-                            logger.info("   columnKeys: ");
-                            for (Map.Entry<ObjectInstance, DataObject> entry : keys.entrySet()) {
-                                logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
-                            }
-                        }
-
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("   current object's values: ");
-                            for (ObjectInstance obj : form.getObjects()) {
-                                logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
-                            }
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("changePropertyDraw: [ID: %1$d, SID: %2$s, all?: %3$s] = %4$s", propertyDraw.getID(), propertyDraw.getsID(), all, deserializeObject(object)));
+                    if (keys.size() > 0) {
+                        logger.info("   columnKeys: ");
+                        for (Map.Entry<ObjectInstance, DataObject> entry : keys.entrySet()) {
+                            logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
                         }
                     }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("   current object's values: ");
+                        for (ObjectInstance obj : form.getObjects()) {
+                            logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                        }
+                    }
                 }
             }
         });
     }
 
     public RemoteChanges groupChangePropertyDraw(final int mainID, final byte[] mainColumnKey, final int getterID, final byte[] getterColumnKey) throws RemoteException {
-        return executePausableInvocation(new Runnable() {
+        assert false:"groupChangePropertyDraw shouldn't be used anymore";
+        return executeWithRemoteChanges(new TRunnable() {
             @Override
-            public void run() {
-                try {
-                    PropertyDrawInstance mainProperty = form.getPropertyDraw(mainID);
-                    PropertyDrawInstance getterProperty = form.getPropertyDraw(getterID);
+            public void run() throws Exception {
+                PropertyDrawInstance mainProperty = form.getPropertyDraw(mainID);
+                PropertyDrawInstance getterProperty = form.getPropertyDraw(getterID);
 
-                    Map<ObjectInstance, DataObject> mainKeys = deserializePropertyKeys(mainProperty, mainColumnKey);
-                    Map<ObjectInstance, DataObject> getterKeys = deserializePropertyKeys(getterProperty, getterColumnKey);
-                    actions.addAll(
-                            form.changeProperty(mainProperty, mainKeys, getterProperty, getterKeys, RemoteForm.this, true, false)
-                    );
+                Map<ObjectInstance, DataObject> mainKeys = deserializePropertyKeys(mainProperty, mainColumnKey);
+                Map<ObjectInstance, DataObject> getterKeys = deserializePropertyKeys(getterProperty, getterColumnKey);
+                actions.addAll(
+                        form.changeProperty(mainProperty, mainKeys, getterProperty, getterKeys, RemoteForm.this, true, false)
+                );
 
-                    if (logger.isInfoEnabled()) {
-                        logger.info(String.format("groupChangePropertyDraw: [mainID: %1$d, mainSID: %2$s, getterID: %3$d, getterSID: %4$s]",
-                                                  mainProperty.getID(), mainProperty.getsID(),
-                                                  getterProperty.getID(), getterProperty.getsID()));
-                        if (mainKeys.size() > 0) {
-                            logger.info("   mainColumnKeys: ");
-                            for (Map.Entry<ObjectInstance, DataObject> entry : mainKeys.entrySet()) {
-                                logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
-                            }
-                        }
-
-                        if (getterKeys.size() > 0) {
-                            logger.info("   getterColumnKeys: ");
-                            for (Map.Entry<ObjectInstance, DataObject> entry : getterKeys.entrySet()) {
-                                logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
-                            }
-                        }
-
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("   current object's values: ");
-                            for (ObjectInstance obj : form.getObjects()) {
-                                logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
-                            }
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("groupChangePropertyDraw: [mainID: %1$d, mainSID: %2$s, getterID: %3$d, getterSID: %4$s]",
+                                              mainProperty.getID(), mainProperty.getsID(),
+                                              getterProperty.getID(), getterProperty.getsID()));
+                    if (mainKeys.size() > 0) {
+                        logger.info("   mainColumnKeys: ");
+                        for (Map.Entry<ObjectInstance, DataObject> entry : mainKeys.entrySet()) {
+                            logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
                         }
                     }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+
+                    if (getterKeys.size() > 0) {
+                        logger.info("   getterColumnKeys: ");
+                        for (Map.Entry<ObjectInstance, DataObject> entry : getterKeys.entrySet()) {
+                            logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                        }
+                    }
+
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("   current object's values: ");
+                        for (ObjectInstance obj : form.getObjects()) {
+                            logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                        }
+                    }
                 }
             }
         });
     }
 
     public RemoteChanges pasteExternalTable(final List<Integer> propertyIDs, final List<List<Object>> table) throws RemoteException {
-        return executePausableInvocation(new Runnable() {
+        emitExceptionIfHasActiveInvocation();
+        return executeWithRemoteChanges(new TRunnable() {
             @Override
-            public void run() {
-                try {
-                    form.pasteExternalTable(propertyIDs, table);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+            public void run() throws Exception {
+                form.pasteExternalTable(propertyIDs, table);
             }
         });
     }
 
     public RemoteChanges pasteMulticellValue(final Map<Integer, List<Map<Integer, Object>>> cells, final Object value) throws RemoteException {
-        return executePausableInvocation(new Runnable() {
+        emitExceptionIfHasActiveInvocation();
+        return executeWithRemoteChanges(new TRunnable() {
             @Override
-            public void run() {
-                try {
-                    form.pasteMulticellValue(cells, value);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+            public void run() throws Exception {
+                form.pasteMulticellValue(cells, value);
             }
         });
     }
 
     public boolean[] getCompatibleProperties(int mainID, int[] propertiesIDs) throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
         try {
             Property mainProperty = form.getPropertyDraw(mainID).getChangeInstance(form.BL, form).property;
 
@@ -667,6 +688,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     @Override
     public Object getPropertyChangeValue(int propertyID) throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
         try {
             return form.getPropertyDraw(propertyID).getChangeInstance(form.BL, form).read(form.session.sql, form, form.session.env);
         } catch (SQLException e) {
@@ -675,26 +697,32 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public boolean canChangeClass(int objectID) throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
         return form.canChangeClass((CustomObjectInstance) form.getObjectInstance(objectID));
     }
 
     public void changeGridClass(int objectID, int idClass) {
+        emitExceptionIfHasActiveInvocation();
         ((CustomObjectInstance) form.getObjectInstance(objectID)).changeGridClass(idClass);
     }
 
     public void switchClassView(int groupID) {
+        emitExceptionIfHasActiveInvocation();
         form.switchClassView(form.getGroupObjectInstance(groupID));
     }
 
     public void changeClassView(int groupID, ClassViewType classView) {
+        emitExceptionIfHasActiveInvocation();
         form.changeClassView(form.getGroupObjectInstance(groupID), classView);
     }
 
     public void changeClassView(int groupID, String classViewName) {
+        emitExceptionIfHasActiveInvocation();
         form.changeClassView(form.getGroupObjectInstance(groupID), ClassViewType.valueOf(classViewName));
     }
 
     public void changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
         PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
         try {
             Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
@@ -705,6 +733,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void clearUserFilters() {
+        emitExceptionIfHasActiveInvocation();
 
         for (GroupObjectInstance group : form.groups) {
             group.clearUserFilters();
@@ -712,6 +741,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public int countRecords(int groupObjectID) {
+        emitExceptionIfHasActiveInvocation();
         try {
             return form.countRecords(groupObjectID);
         } catch (Exception e) {
@@ -720,6 +750,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public Object calculateSum(int propertyID, byte[] columnKeys) {
+        emitExceptionIfHasActiveInvocation();
         try {
             PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
             Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
@@ -731,6 +762,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
                                                      Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) {
+        emitExceptionIfHasActiveInvocation();
         try {
             List<Map<Integer, List<byte[]>>> inMaps = new ArrayList<Map<Integer, List<byte[]>>>(BaseUtils.toList(groupMap, sumMap, maxMap));
             List<Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>> outMaps = new ArrayList<Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>>();
@@ -755,6 +787,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void addFilter(byte[] state) {
+        emitExceptionIfHasActiveInvocation();
         try {
             FilterInstance filter = FilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);
             filter.getApplyObject().addUserFilter(filter);
@@ -766,6 +799,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void setRegularFilter(int groupID, int filterID) {
+        emitExceptionIfHasActiveInvocation();
         form.setRegularFilter(form.getRegularFilterGroup(groupID), filterID);
     }
 
@@ -774,6 +808,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public String getSID() {
+        emitExceptionIfHasActiveInvocation();
         return form.entity.getSID();
     }
 
@@ -802,6 +837,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void refreshData() {
+        emitExceptionIfHasActiveInvocation();
         try {
             form.refreshData();
         } catch (SQLException e) {
@@ -810,10 +846,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public boolean hasClientActionOnApply() {
+        emitExceptionIfHasActiveInvocation();
         return form.entity.hasClientApply();
     }
 
-    public ClientResultAction getClientActionOnApply() throws RemoteException {
+    public ClientAction getClientActionOnApply() throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
         try {
             String result = form.checkApply();
             if (result != null) {
@@ -827,7 +865,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public RemoteChanges applyChanges(final Object clientResult) throws RemoteException {
-        return executePausableInvocation(new Runnable() {
+        emitExceptionIfHasActiveInvocation();
+        return executeWithRemoteChanges(new TRunnable() {
             @Override
             public void run() {
                 applyChanges(clientResult, actions);
@@ -845,50 +884,57 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public RemoteChanges okPressed() throws RemoteException {
-        return executePausableInvocation(new Runnable() {
+        emitExceptionIfHasActiveInvocation();
+        return executeWithRemoteChanges(new TRunnable() {
             @Override
-            public void run() {
-                try {
-                    if (checkOnOk) {
-                        String checkResult = form.checkApply();
-                        if (checkResult != null) {
-                            actions.add(new LogMessageClientAction(checkResult, true));
-                            return;
-                        }
+            public void run() throws Exception {
+                if (checkOnOk) {
+                    String checkResult = form.checkApply();
+                    if (checkResult != null) {
+                        actions.add(new LogMessageClientAction(checkResult, true));
+                        return;
                     }
-
-                    actions.addAll(form.fireOnOk(RemoteForm.this));
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
                 }
+
+                actions.addAll(form.fireOnOk(RemoteForm.this));
             }
         });
     }
 
     public RemoteChanges closedPressed() throws RemoteException {
-        return executePausableInvocation(new Runnable() {
+        emitExceptionIfHasActiveInvocation();
+        return executeWithRemoteChanges(new TRunnable() {
             @Override
-            public void run() {
-                try {
-                    actions.addAll(form.fireOnClose(RemoteForm.this));
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+            public void run() throws Exception {
+                actions.addAll(form.fireOnClose(RemoteForm.this));
+            }
+        });
+    }
+
+    public RemoteChanges nullPressed() throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
+        return executeWithRemoteChanges(new TRunnable() {
+            @Override
+            public void run() throws Exception {
+                actions.addAll(form.fireOnNull(RemoteForm.this));
             }
         });
     }
 
     @Override
     public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
         form.saveUserPreferences(preferences, forAllUsers);
     }
 
     @Override
     public FormUserPreferences loadUserPreferences() throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
         return form.loadUserPreferences();
     }
 
     public void cancelChanges() {
+        emitExceptionIfHasActiveInvocation();
         try {
             form.cancelChanges();
         } catch (SQLException e) {
@@ -924,33 +970,21 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public byte[] getPropertyChangeType(int propertyID, byte[] columnKey, boolean aggValue) {
-
+        assert false:"getPropertyChangeType shouldn't be used anymore";
         try {
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            DataOutputStream dataStream = new DataOutputStream(outStream);
-
             PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
             Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
-            form.serializePropertyEditorType(dataStream, propertyDraw, keys, aggValue);
 
-            return outStream.toByteArray();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException {
-        try {
-            DialogInstance<T> dialogForm = form.createClassPropertyDialog(viewID, value);
-            return new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getRemoteFormListener());
+            return form.serializePropertyChangeType(propertyDraw, keys, aggValue);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public RemoteDialogInterface createObjectEditorDialog(int viewID) throws RemoteException {
+        assert false:"createObjectEditorDialog shouldn't be used anymore";
         try {
-            DialogInstance<T> dialogForm = form.createObjectEditorDialog(viewID);
+            DialogInstance<T> dialogForm = form.createObjectEditorDialog(form.getPropertyDraw(viewID));
             return dialogForm == null
                     ? null
                     : new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getRemoteFormListener());
@@ -959,9 +993,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException {
+    public RemoteDialogInterface createChangeEditorDialog(int viewID) throws RemoteException {
+        assert false:"createChangeEditorDialog shouldn't be used anymore";
         try {
-            DialogInstance<T> dialogForm = form.createEditorPropertyDialog(viewID);
+            DialogInstance<T> dialogForm = form.createChangeEditorDialog(form.getPropertyDraw(viewID));
             return new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getRemoteFormListener());
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -998,45 +1033,123 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return form.BL;
     }
 
+    /**
+     * готовит форму для восстановленного подключения
+     */
+    public void invalidate() throws SQLException {
+        form.refreshData();
+        if (currentInvocation != null && currentInvocation.isPaused()) {
+            try {
+                currentInvocation.cancel();
+            } catch (Exception e) {
+                logger.warn("Exception was thrown, while invalidating form", e);
+            }
+        }
+    }
+
     private final ExecutorService pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this));
-    private PausableInvocation<RemoteChanges, RemoteException> pausableInvocation = null;
-    private RemoteChanges executePausableInvocation(final Runnable runnable) throws RemoteException {
-        pausableInvocation = new PausableInvocation<RemoteChanges, RemoteException>(
-                pausablesExecutor,
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        threads.add(Thread.currentThread());
-                        try {
-                            runnable.run();
-                        } finally {
-                            threads.remove(Thread.currentThread());
-                        }
-                    }
-                },
-                new InvocationHandler<RemoteChanges, RemoteException>() {
-                    @Override
-                    public RemoteChanges handle(InvocationResult invocationResult)  throws RemoteException {
-                        InvocationResult.Status invocationStatus = invocationResult.getStatus();
-                        if (invocationStatus == InvocationResult.Status.EXCEPTION_THROWN) {
-                            ExceptionUtils.emitRemoteException(invocationResult.getThrowable());
-                        }
+    private RemotePausableInvocation<?> currentInvocation = null;
 
-                        return getRemoteChanges(invocationStatus == InvocationResult.Status.PAUSED);
-                    }
+    private <T> T executeInvocation(RemotePausableInvocation<T> invocation) throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
+
+        currentInvocation = invocation;
+        return invocation.execute();
+    }
+
+    private RemoteChanges executeWithRemoteChanges(final TRunnable runnable) throws RemoteException {
+        return executeInvocation(new RemotePausableInvocation<RemoteChanges>(pausablesExecutor) {
+            @Override
+            protected void runInvocation() throws Throwable {
+                threads.add(Thread.currentThread());
+                try {
+                    runnable.run();
+                } finally {
+                    threads.remove(Thread.currentThread());
                 }
-        );
-        return pausableInvocation.execute();
+            }
+
+            @Override
+            protected RemoteChanges handleUserInteractionRequest(ClientAction... acts) {
+                return new RemoteChanges(null, acts, 0, true);
+            }
+
+            @Override
+            protected RemoteChanges handleFinished() throws RemoteException {
+                return prepareRemoteChanges();
+            }
+        });
     }
 
-    public RemoteChanges resumePausedInvocation() throws RemoteException {
-        return pausableInvocation.resume();
+    public RemoteChanges continueRemoteChanges(Object[] actionResults) throws RemoteException {
+        return (RemoteChanges) currentInvocation.resumeAfterUserInteraction(actionResults);
     }
 
-    public void requestUserInteraction(ClientAction... acts) {
-        //мы не синхронизируем actions, потому что реализация предполагает, что работать будут только два потока:
-        //текущий rmi-поток и рабочий поток выполнения вызова. Причём работать они будут по порядку и никогда вместе.
-        Collections.addAll(actions, acts);
-        pausableInvocation.pause();
+    public EditActionResult executeEditAction(final int propertyID, final byte[] columnKey, final String actionSID) throws RemoteException {
+        return executeInvocation(new RemotePausableInvocation<EditActionResult>(pausablesExecutor) {
+            @Override
+            protected EditActionResult callInvocation() throws Throwable {
+                threads.add(Thread.currentThread());
+                try {
+                    PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
+                    Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
+
+                    List<ClientAction> actions = form.executeEditAction(propertyDraw, actionSID, RemoteForm.this, keys);
+
+                    if (logger.isInfoEnabled()) {
+                        logger.info(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
+                        if (keys.size() > 0) {
+                            logger.info("   columnKeys: ");
+                            for (Map.Entry<ObjectInstance, DataObject> entry : keys.entrySet()) {
+                                logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                            }
+                        }
+
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("   current object's values: ");
+                            for (ObjectInstance obj : form.getObjects()) {
+                                logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                            }
+                        }
+                    }
+
+                    if (actions != null) {
+                        RemoteForm.this.actions.addAll(actions);
+                    }
+
+                    return EditActionResult.finished;
+                } finally {
+                    threads.remove(Thread.currentThread());
+                }
+            }
+
+            @Override
+            protected EditActionResult handleUserInteractionRequest(ClientAction... actions) {
+                return new EditActionResult(actions);
+            }
+
+            @Override
+            protected EditActionResult handleUserInputRequest(Type type, Object oldValue) throws Exception {
+                return new EditActionResult(serializeType(type), serializeObject(oldValue));
+            }
+        });
+    }
+
+    public EditActionResult continueExecuteEditAction(UserInputResult inputResult) throws RemoteException {
+        return (EditActionResult) currentInvocation.resumeAfterUserInput(inputResult);
+    }
+
+    public EditActionResult continueExecuteEditAction(Object[] actionResults) throws RemoteException {
+        return (EditActionResult) currentInvocation.resumeAfterUserInteraction(actionResults);
+    }
+
+    public Object[] requestUserInteraction(ClientAction... acts) {
+        assert currentInvocation != null;
+        return currentInvocation.pauseForUserInteraction(acts);
+    }
+
+    public UserInputResult requestUserInput(Type type, Object oldValue) {
+        assert currentInvocation != null;
+        return currentInvocation.pauseForUserInput(type, oldValue);
     }
 }

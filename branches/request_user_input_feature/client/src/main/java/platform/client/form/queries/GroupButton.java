@@ -101,7 +101,7 @@ public abstract class GroupButton extends ToolbarGridButton {
                         if (checkBox.isSelected()) {
                             spinner.setValue(getMaxSpinnerValue() + 1);
                             //ставим фокус на спиннер
-                            ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField().requestFocus();
+                            ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField().requestFocusInWindow();
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
                                     ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField().selectAll();

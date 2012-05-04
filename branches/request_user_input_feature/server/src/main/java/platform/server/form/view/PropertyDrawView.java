@@ -19,7 +19,6 @@ import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -30,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class PropertyDrawView extends ComponentView {
 
@@ -111,7 +111,7 @@ public class PropertyDrawView extends ComponentView {
 
     // предполагается, что для свойств, для которых заголовок динамический (например, группы в колонки),
     // getCaption должно возвращать null
-    private String getCaption() {
+    public String getCaption() {
         return caption != null
                 ? caption
                 : entity.propertyCaption == null
@@ -242,9 +242,19 @@ public class PropertyDrawView extends ComponentView {
         }
 
         entity.propertyObject.property.getCommonClasses().value.serialize(outStream);
-        outStream.writeUTF(entity.eventSID);
+        pool.writeString(outStream, entity.eventSID);
 
         pool.writeString(outStream, entity.propertyObject.getCreationScript());
+
+        pool.writeString(outStream, entity.mouseBinding);
+
+        outStream.writeInt(entity.keyBindings == null ? 0 : entity.keyBindings.size());
+        if (entity.keyBindings != null) {
+            for (Map.Entry<KeyStroke, String> e : entity.keyBindings.entrySet()) {
+                pool.writeObject(outStream, e.getKey());
+                pool.writeString(outStream, e.getValue());
+            }
+        }
     }
 
     @Override

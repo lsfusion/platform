@@ -7,11 +7,11 @@ import platform.client.logics.ClientPropertyDraw;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import java.util.List;
 import java.util.ArrayList;
 
 // приходится наследоваться от JComponent только для того, чтобы поддержать updateUI
-public class ClientAbstractCellRenderer extends JComponent
-                                 implements TableCellRenderer {
+public class ClientAbstractCellRenderer extends JComponent implements TableCellRenderer {
 
     private static final StringPropertyRenderer nullPropertyRenderer = new StringPropertyRenderer(null);
 
@@ -35,7 +35,7 @@ public class ClientAbstractCellRenderer extends JComponent
         }
 
         if (cellTable.isSelected(row, column) && !hasFocus) {
-            currentComp.rateSelected();
+            currentComp.paintAsSelected();
         }
 
         JComponent comp = currentComp.getComponent();
@@ -63,11 +63,11 @@ public class ClientAbstractCellRenderer extends JComponent
         return comp;
     }
 
-    private final java.util.List<JComponent> renderers = new ArrayList<JComponent>();
+    private final List<JComponent> renderers = new ArrayList<JComponent>();
     @Override
     public void updateUI() {
-        for (JComponent comp : renderers)
+        for (JComponent comp : renderers) {
             comp.updateUI();
+        }
     }
-
 }

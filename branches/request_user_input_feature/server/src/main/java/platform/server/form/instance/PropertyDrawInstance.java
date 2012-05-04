@@ -5,18 +5,29 @@ import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
 import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.property.ObjectValueProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.ObjectValueProperty;
-import platform.server.logics.BusinessLogics;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
+
+    private Map<String, PropertyObjectInstance<?>> editActions;
+
+    public PropertyObjectInstance<?> getEditAction(String actionId) {
+        if (editActions == null) {
+            return null;
+        }
+        return editActions.get(actionId);
+    }
 
     public PropertyObjectInstance<P> propertyObject;
 
@@ -37,13 +48,21 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public BackgroundReaderInstance backgroundReader = new BackgroundReaderInstance();
     public ForegroundReaderInstance foregroundReader = new ForegroundReaderInstance();
 
-    public PropertyDrawInstance(PropertyDrawEntity<P> entity, PropertyObjectInstance<P> propertyObject, GroupObjectInstance toDraw, List<GroupObjectInstance> columnGroupObjects,
-                                PropertyObjectInstance<?> propertyCaption, PropertyObjectInstance<?> propertyReadOnly, PropertyObjectInstance<?> propertyFooter,
-                                PropertyObjectInstance<?> propertyBackground, PropertyObjectInstance<?> propertyForeground) {
+    public PropertyDrawInstance(PropertyDrawEntity<P> entity,
+                                PropertyObjectInstance<P> propertyObject,
+                                GroupObjectInstance toDraw,
+                                Map<String, PropertyObjectInstance<?>> editActions,
+                                List<GroupObjectInstance> columnGroupObjects,
+                                PropertyObjectInstance<?> propertyCaption,
+                                PropertyObjectInstance<?> propertyReadOnly,
+                                PropertyObjectInstance<?> propertyFooter,
+                                PropertyObjectInstance<?> propertyBackground,
+                                PropertyObjectInstance<?> propertyForeground) {
         super(entity);
         this.propertyObject = propertyObject;
         this.toDraw = toDraw;
         this.columnGroupObjects = columnGroupObjects;
+        this.editActions = editActions;
         this.propertyCaption = propertyCaption;
         this.propertyReadOnly = propertyReadOnly;
         this.propertyFooter = propertyFooter;
@@ -59,49 +78,21 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return PropertyReadType.DRAW;
     }
 
-    public List<ObjectInstance> getKeysObjectsList() {
-        List<GroupObjectInstance> result = new ArrayList<GroupObjectInstance>();
-        for (GroupObjectInstance columnGroupObject : columnGroupObjects) {
-            if (columnGroupObject.curClassView == ClassViewType.GRID) {
-                result.add(columnGroupObject);
-            }
-        }
-        return GroupObjectInstance.getObjects(result);
-    }
-
-    public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
-        List<ObjectInstance> result = getKeysObjectsList();
-        if (!panelProperties.contains(this)) {
-            result = BaseUtils.mergeList(GroupObjectInstance.getObjects(toDraw.getUpTreeGroups()), result);
-        }
-        return result;
-    }
-
+    //note: используется в диалоге групповой корректировки и в createObjectEditorDialog
     public PropertyObjectInstance<?> getChangeInstance(BusinessLogics<?> BL, FormInstance form) throws SQLException {
         return getChangeInstance(new Result<Property>(), true, BL, form);
     }
+
+    //note: используется только в createChangeEditorDialog, т.е. после реализации changeImplement будет не нужен
     public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, BusinessLogics<?> BL, FormInstance form) throws SQLException {
         return getChangeInstance(aggProp, true, BL, form);
     }
+
     public PropertyObjectInstance<?> getChangeInstance(boolean aggValue, BusinessLogics<?> BL, Map<ObjectInstance, DataObject> mapValues, FormInstance form) throws SQLException {
         return getChangeInstance(new Result<Property>(), aggValue, BL, form).getRemappedPropertyObject(mapValues);
     }
 
-    public boolean isReadOnly() {
-        return entity.isReadOnly() || (entity.isSelector() && !isSingleSimplePanel());
-    }
-
-    private boolean isSingleSimplePanel() { // дебильновато но временно так
-        return !(propertyObject.property instanceof ObjectValueProperty)
-            && toDraw != null && toDraw.curClassView == ClassViewType.PANEL && toDraw.objects.size() == 1
-            && propertyObject.mapping.values().size() == 1
-            && propertyObject.mapping.values().iterator().next() == toDraw.objects.iterator().next()
-            && toDraw.objects.iterator().next().entity.addOnEvent.isEmpty();
-    }
-
-    public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, boolean aggValue, BusinessLogics<?> BL, FormInstance form) throws SQLException {
-        PropertyObjectInstance<?> change = propertyObject.getChangeInstance(aggProp, aggValue, form.session, form);
-
+    private PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, boolean aggValue, BusinessLogics<?> BL, FormInstance form) throws SQLException {
         // если readOnly свойство лежит в groupObject в виде панели с одним входом, то показываем диалог выбора объекта
         if (entity.isSelector() && isSingleSimplePanel()) {
             ObjectInstance singleObject = BaseUtils.single(toDraw.objects);
@@ -113,7 +104,19 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
                             BaseUtils.single(objectValueProperty.interfaces),
                             singleObject));
         }
-        return change;
+        return propertyObject.getChangeInstance(aggProp, aggValue, form.session, form);
+    }
+
+    public boolean isReadOnly() {
+        return entity.isReadOnly() || (entity.isSelector() && !isSingleSimplePanel());
+    }
+
+    private boolean isSingleSimplePanel() { // дебильновато но временно так
+        return !(propertyObject.property instanceof ObjectValueProperty)
+                && toDraw != null && toDraw.curClassView == ClassViewType.PANEL && toDraw.objects.size() == 1
+                && propertyObject.mapping.values().size() == 1
+                && propertyObject.mapping.values().iterator().next() == toDraw.objects.iterator().next()
+                && toDraw.objects.iterator().next().entity.addOnEvent.isEmpty();
     }
 
     public ClassViewType getForceViewType() {
@@ -137,10 +140,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
-            return PropertyDrawInstance.this.getKeysObjectsList();
-        }
-
         @Override
         public String toString() {
             return ServerResourceBundle.getString("logics.property.caption") + "(" + PropertyDrawInstance.this.toString() + ")";
@@ -158,10 +157,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         public int getID() {
             return PropertyDrawInstance.this.getID();
-        }
-
-        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
-            return PropertyDrawInstance.this.getKeysObjectsList();
         }
 
         @Override
@@ -183,14 +178,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
-            List<ObjectInstance> result = PropertyDrawInstance.this.getKeysObjectsList();
-            if (!panelProperties.contains(this)) {
-                result = BaseUtils.mergeList(GroupObjectInstance.getObjects(toDraw.getUpTreeGroups()), result);
-            }
-            return result;
-        }
-
         @Override
         public String toString() {
             return ServerResourceBundle.getString("logics.background") + "(" + PropertyDrawInstance.this.toString() + ")";
@@ -208,14 +195,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         public int getID() {
             return PropertyDrawInstance.this.getID();
-        }
-
-        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
-            List<ObjectInstance> result = PropertyDrawInstance.this.getKeysObjectsList();
-            if (!panelProperties.contains(this)) {
-                result = BaseUtils.mergeList(GroupObjectInstance.getObjects(toDraw.getUpTreeGroups()), result);
-            }
-            return result;
         }
 
         @Override
