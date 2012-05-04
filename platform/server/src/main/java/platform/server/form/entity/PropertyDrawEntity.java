@@ -112,11 +112,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         pool.serializeObject(outStream, propertyForeground);
 
         outStream.writeBoolean(shouldBeLast);
-        outStream.writeByte(editType.serialize());
+
+        outStream.writeBoolean(editType != null);
+        if (editType != null)
+            outStream.writeByte(editType.serialize());
+
         outStream.writeBoolean(forceViewType != null);
-        if (forceViewType != null) {
+        if (forceViewType != null)
             pool.writeString(outStream, forceViewType.name());
-        }
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -130,10 +133,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         propertyForeground = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
-        editType = PropertyEditType.deserialize(inStream.readByte());
-        if (inStream.readBoolean()) {
+        if (inStream.readBoolean())
+            editType = PropertyEditType.deserialize(inStream.readByte());
+        if (inStream.readBoolean())
             forceViewType = ClassViewType.valueOf(pool.readString(inStream));
-        }
     }
 
     @Override
