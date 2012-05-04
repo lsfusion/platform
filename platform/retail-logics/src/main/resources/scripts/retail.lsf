@@ -6557,7 +6557,7 @@ descriptionWastageDetail 'Название документа' (wastageDetail) =
 
 inWastageEmployee (wastage, employee) = inCommitteeEmployee(wastageCommitteeShipment(shipmentWastage(wastage)), employee);
 nameWastageCommitteeWastage 'Комиссия' (wastage) = name(wastageCommitteeShipment(shipmentWastage(wastage)));
-isWastageCommitteeWastage(wastage) = wastage IS wastage AND wastageCommitteeShipment(shipmentWastage(wastage));
+isWastageCommitteeWastage 'Есть комиссия' (wastage) = wastage IS wastage AND wastageCommitteeShipment(shipmentWastage(wastage));
 commonNameEmployee 'Имя' (employee) = commonName(employee) AND employee IS employee;
 
 //-------------------------------Печатная форма---------------------------------//
