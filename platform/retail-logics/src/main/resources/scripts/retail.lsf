@@ -3811,30 +3811,6 @@ nameModelCheck 'Модель прайс чекера' = DATA STRING[100] (modelC
 modelCheckModel 'Модель (ИД)' = DATA modelCheck (checkModel) IN idGroup;
 nameModelCheckModel 'Модель прайс чекера' = nameModelCheck(modelCheckModel(checkModel)) IN baseGroup;
 
-FORM models 'Модели оборудования'
-OBJECTS m=model
-PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel, handlerModel
-PROPERTIES(m) ADDFORM, EDITFORM, delete;                // либо так как ниже//
-//OBJECTS s=scalesModel, ch=checkModel, c=cashModel
-//PROPERTIES(ch) READONLY name, nameModelCheckModel, noteModel, useModel, maxProductModel
-//PROPERTIES(s)  READONLY name, nameFlashScalesModel, noteModel, useModel, maxProductModel, maxTextScalesModel,
-//               folderScalesModel, lettersModel, compositionScalesModel
-//PROPERTIES(c)  READONLY name, nameFrontOfficeCashModel, noteModel, useModel, dateToCashModel, lettersModel
-//PROPERTIES(s) ADDFORM, EDITFORM, delete
-//PROPERTIES(c) ADDFORM, EDITFORM, delete
-//PROPERTIES(ch) ADDFORM, EDITFORM, delete;
-
-//DESIGN models FROM DEFAULT {
-//    main{
-//       ADD prop1.box BEFORE functions.box{
-//            type = TABBED;
-//            ADD c.box;
-//            ADD s.box;
-//            ADD ch.box;
-//    }
-//   }
-//}
-
 FORM checkModels 'Модели прайс чекеров'
 OBJECTS m=checkModel
 PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel, handlerModel
@@ -3847,6 +3823,11 @@ PROPERTIES(m) ADDFORM, EDITFORM, delete;
 
 FORM cashRegistersModels 'Модели касс'
 OBJECTS m=cashRegisterModel
+PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel, handlerModel
+PROPERTIES(m) ADDFORM, EDITFORM, delete;
+
+FORM terminalModels 'Модели ТСД'
+OBJECTS m=terminalModel
 PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel, handlerModel
 PROPERTIES(m) ADDFORM, EDITFORM, delete;
 
@@ -13118,9 +13099,9 @@ NAVIGATOR {
             }
             NEW equipmentTerminals 'ТСД' {
                 ADD groupsTerminal;
+                ADD terminalModels;
                 ADD groupsTerminalDocumentType;
             }
-            ADD models;
             ADD stages;
             ADD cashReports;
             ADD labelTypes;
