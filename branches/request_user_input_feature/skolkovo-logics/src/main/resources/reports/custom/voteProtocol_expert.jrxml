@@ -1,0 +1,685 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="expert" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" fill="Solid" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<field name="expert" class="java.lang.Integer"/>
+	<field name="userFirstName" class="java.lang.String"/>
+	<field name="userLastName" class="java.lang.String"/>
+	<field name="dateExpertVote" class="java.util.Date"/>
+	<field name="nameVoteResultExpertVote" class="java.lang.String"/>
+	<field name="inClusterExpertVote" class="java.lang.Boolean"/>
+	<field name="innovativeExpertVote" class="java.lang.Boolean"/>
+	<field name="foreignExpertVote" class="java.lang.Boolean"/>
+	<field name="competentExpertVote" class="java.lang.Integer"/>
+	<field name="completeExpertVote" class="java.lang.Integer"/>
+	<field name="innovativeCommentExpertVote" class="java.lang.String"/>
+	<field name="completeCommentExpertVote" class="java.lang.String"/>
+	<field name="nameNativeClaimerVote" class="java.lang.String"/>
+	<field name="nameNativeProjectVote" class="java.lang.String"/>
+	<field name="nameNativeClusterVote" class="java.lang.String"/>
+	<field name="connectedExpertVote" class="java.lang.Boolean"/>
+	<field name="documentNameExpert" class="java.lang.String"/>
+	<field name="revisionVote" class="java.lang.String"/>
+	<field name="competitiveAdvantagesExpertVote" class="java.lang.Boolean"/>
+	<field name="commercePotentialExpertVote" class="java.lang.Boolean"/>
+	<field name="canBeImplementedExpertVote" class="java.lang.Boolean"/>
+	<field name="haveExpertiseExpertVote" class="java.lang.Boolean"/>
+	<field name="internationalExperienceExpertVote" class="java.lang.Boolean"/>
+	<field name="enoughDocumentsExpertVote" class="java.lang.Boolean"/>
+	<field name="commentCompetitiveAdvantagesExpertVote" class="java.lang.String"/>
+	<field name="commentCommercePotentialExpertVote" class="java.lang.String"/>
+	<field name="commentCanBeImplementedExpertVote" class="java.lang.String"/>
+	<field name="commentHaveExpertiseExpertVote" class="java.lang.String"/>
+	<field name="commentInternationalExperienceExpertVote" class="java.lang.String"/>
+	<field name="commentEnoughDocumentsExpertVote" class="java.lang.String"/>
+	<field name="sidExpert" class="java.lang.String"/>
+	<field name="readInformation" class="java.lang.Boolean"/>
+	<detail>
+		<band height="181" splitType="Stretch">
+			<break>
+				<reportElement x="0" y="0" width="100" height="1"/>
+			</break>
+			<staticText>
+				<reportElement x="183" y="15" width="196" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[БЮЛЛЕТЕНЬ ОЦЕНКИ ПРОЕКТА]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="39" y="79" width="47" height="20"/>
+				<textElement/>
+				<text><![CDATA[Эксперт:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="39" y="115" width="122" height="20"/>
+				<textElement/>
+				<text><![CDATA[Организация-заявитель:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="39" y="155" width="254" height="20"/>
+				<textElement/>
+				<text><![CDATA[Пожалуйста, заполните бюллетень оценки проекта:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="169" y="79" width="312" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[($F{readInformation}==null?$F{sidExpert}:$F{documentNameExpert})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="39" y="136" width="90" height="20"/>
+				<textElement/>
+				<text><![CDATA[Дата заполнения:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="169" y="136" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.formatRussian($F{dateExpertVote}) + " года"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="169" y="115" width="369" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{nameNativeClaimerVote}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="39" y="52" width="44" height="20"/>
+				<textElement/>
+				<text><![CDATA[Проект:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="169" y="46" width="369" height="33"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{nameNativeProjectVote}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="169" y="99" width="369" height="16"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{connectedExpertVote}==null?"Подтверждаю, что не являюсь заинтересованным лицом по отношению к Соискателю":"Сообщаю, что являюсь заинтересованным лицом по отношению к Соискателю")]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="353">
+			<printWhenExpression><![CDATA[!"R2".equals( $F{revisionVote})]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="39" y="323" width="499" height="18" backcolor="#FFFFFF"/>
+				<box topPadding="4" leftPadding="4" bottomPadding="4" rightPadding="4">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{completeCommentExpertVote}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" mode="Opaque" x="499" y="23" width="40" height="34" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression><![CDATA[($F{connectedExpertVote}==null?($F{inClusterExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="38" y="77" width="461" height="34" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Проект предполагает разработку и/или коммерциализацию уникальных и/или обладающих
+ конкурентными преимуществами перед мировыми аналогами продуктов и/или технологий.]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement positionType="Float" mode="Opaque" x="499" y="77" width="42" height="34" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression><![CDATA[($F{connectedExpertVote}==null?($F{innovativeExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="38" y="111" width="501" height="20" backcolor="#B2CC82"/>
+				<box>
+					<pen lineWidth="2.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="2.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[ Обоснование:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="38" y="169" width="461" height="54" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Проект предполагает участие иностранного (не являющегося гражданином Российской
+Федерации) специалиста, который имеет значительный авторитет в инвестиционной и/или
+исследовательской среде.]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" mode="Opaque" x="499" y="169" width="40" height="54" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression><![CDATA[($F{connectedExpertVote}==null?($F{foreignExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="38" y="243" width="461" height="20" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Оцените Вашу компетенцию по теме проекта (1 - низкая, 5 - высокая)]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" mode="Opaque" x="499" y="243" width="40" height="20" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression><![CDATA[($F{connectedExpertVote}==null?""+$F{competentExpertVote}:"")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="38" y="283" width="461" height="20" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Оцените достаточность представленных материалов для оценки проекта]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" mode="Opaque" x="499" y="283" width="40" height="20" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression><![CDATA[($F{connectedExpertVote}==null?""+$F{completeExpertVote}:"")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="38" y="303" width="501" height="20" backcolor="#B3CC82"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[ Укажите, какая информация по проекту не была предоставлена, но была необходима для оценки проекта]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="38" y="3" width="13" height="20"/>
+				<textElement/>
+				<text><![CDATA[1.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="38" y="57" width="13" height="20"/>
+				<textElement/>
+				<text><![CDATA[2.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="38" y="149" width="13" height="20"/>
+				<textElement/>
+				<text><![CDATA[3.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="38" y="223" width="13" height="20"/>
+				<textElement/>
+				<text><![CDATA[4.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="38" y="263" width="13" height="20"/>
+				<textElement/>
+				<text><![CDATA[5.]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" mode="Opaque" x="38" y="23" width="461" height="34" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression><![CDATA["Проект соответствует направлению "+ $F{nameNativeClusterVote} +"."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" x="38" y="131" width="501" height="18"/>
+				<box topPadding="4" leftPadding="4" bottomPadding="4" rightPadding="4">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{innovativeCommentExpertVote}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="466">
+			<printWhenExpression><![CDATA[!"R1".equals( $F{revisionVote})]]></printWhenExpression>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="52" y="84" width="447" height="39" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Обладают ли создаваемый продукт и (или) технология и (или) ожидаемый результат Прикладных Исследований существенным потенциалом коммерциализации, как минимум, на российском, а в перспективе – на мировом рынке?]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="39" y="84" width="13" height="39"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[2.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="39" y="7" width="13" height="34"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[1.]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" mode="Opaque" x="499" y="7" width="40" height="34" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression><![CDATA[($F{connectedExpertVote}==null?($F{competitiveAdvantagesExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" mode="Opaque" x="52" y="7" width="447" height="34" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression><![CDATA["Обладают ли создаваемый продукт и (или) технология и (или) ожидаемый результат прикладных исследований потенциальными конкурентными преимуществами перед мировыми аналогами?"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement positionType="Float" mode="Opaque" x="499" y="84" width="40" height="39" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression><![CDATA[($F{connectedExpertVote}==null?($F{commercePotentialExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" x="39" y="61" width="501" height="18"/>
+				<box topPadding="4" leftPadding="4" bottomPadding="4" rightPadding="4">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{commentCompetitiveAdvantagesExpertVote}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="39" y="41" width="501" height="20" backcolor="#B2CC82"/>
+				<box>
+					<pen lineWidth="2.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="2.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Приведите обоснование Вашего ответа:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" x="39" y="143" width="501" height="18"/>
+				<box topPadding="4" leftPadding="4" bottomPadding="4" rightPadding="4">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{commentCommercePotentialExpertVote}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="39" y="166" width="13" height="30"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[3.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="39" y="123" width="501" height="20" backcolor="#B2CC82"/>
+				<box>
+					<pen lineWidth="2.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="2.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Приведите обоснование Вашего ответа:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="52" y="239" width="447" height="40" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Обладают ли ключевые исследователи, разработчики и менеджеры проекта (далее - Команда проекта) необходимыми знаниями и опытом для успешной реализации проекта и (или) проведения прикладных Исследований?]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" mode="Opaque" x="501" y="322" width="38" height="34" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression><![CDATA[($F{connectedExpertVote}==null?($F{internationalExperienceExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="52" y="322" width="449" height="34" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Присутствуют ли в Команде проекта специалист или несколько специалистов, обладающих международным опытом в области исследований, разработок и (или) коммерциализации их результатов?]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" mode="Opaque" x="499" y="166" width="40" height="30" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression><![CDATA[($F{connectedExpertVote}==null?($F{canBeImplementedExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="39" y="239" width="13" height="40"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[4.]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" mode="Opaque" x="499" y="239" width="40" height="40" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression><![CDATA[($F{connectedExpertVote}==null?($F{haveExpertiseExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="52" y="166" width="447" height="30" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Является ли проект теоретически реализуемым и не противоречащим основополагающим научным принципам?]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="39" y="376" width="501" height="18" backcolor="#FFFFFF"/>
+				<box topPadding="4" leftPadding="4" bottomPadding="4" rightPadding="4">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{commentInternationalExperienceExpertVote}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="39" y="322" width="13" height="34"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[5.]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" x="39" y="216" width="501" height="18"/>
+				<box topPadding="4" leftPadding="4" bottomPadding="4" rightPadding="4">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{commentCanBeImplementedExpertVote}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="39" y="196" width="501" height="20" backcolor="#B2CC82"/>
+				<box>
+					<pen lineWidth="2.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="2.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Приведите обоснование Вашего ответа:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" x="39" y="299" width="501" height="18"/>
+				<box topPadding="4" leftPadding="4" bottomPadding="4" rightPadding="4">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{commentHaveExpertiseExpertVote}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="39" y="279" width="501" height="20" backcolor="#B2CC82"/>
+				<box>
+					<pen lineWidth="2.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="2.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Приведите обоснование Вашего ответа:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="39" y="356" width="501" height="20" backcolor="#B2CC82"/>
+				<box>
+					<pen lineWidth="2.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="2.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Приведите обоснование Вашего ответа:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="52" y="399" width="447" height="16" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Достаточно ли представленных материалов для оценки проекта?]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" mode="Opaque" x="499" y="399" width="40" height="16" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression><![CDATA[($F{connectedExpertVote}==null?($F{enoughDocumentsExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="39" y="399" width="13" height="16"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[6.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="39" y="415" width="501" height="20" backcolor="#B2CC82"/>
+				<box>
+					<pen lineWidth="2.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="2.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="2.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Укажите, какая информация и (или) документы по проекту не были предоставлены, но были необходимы для оценки проекта:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="39" y="435" width="501" height="18" backcolor="#FFFFFF"/>
+				<box topPadding="4" leftPadding="4" bottomPadding="4" rightPadding="4">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{commentEnoughDocumentsExpertVote}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

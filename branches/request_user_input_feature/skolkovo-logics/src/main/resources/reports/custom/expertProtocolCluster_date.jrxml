@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="date" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DBDBDB" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="GroupCellStyle1" mode="Transparent" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<pen lineStyle="Solid" lineColor="#FFFFFF"/>
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<topPen lineWidth="0.0"/>
+			<leftPen lineWidth="0.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="0.0"/>
+		</box>
+	</style>
+	<parameter name="voteHeader_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="voteHeader_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="voteHeader_params" class="java.util.Map"/>
+	<parameter name="vote_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="vote_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="vote_params" class="java.util.Map"/>
+	<field name="obj2" class="java.util.Date"/>
+	<field name="obj3" class="java.util.Date"/>
+	<field name="dateFrom" class="java.util.Date"/>
+	<field name="dateTo" class="java.util.Date"/>
+	<field name="expert" class="java.lang.Integer"/>
+	<field name="userFirstName" class="java.lang.String"/>
+	<field name="userLastName" class="java.lang.String"/>
+	<field name="quantityDoneClusterExpertDateFromDateTo" class="java.lang.Integer"/>
+	<field name="documentNameExpert" class="java.lang.String"/>
+	<field name="nameNativeClusterExpert" class="java.lang.String"/>
+	<group name="designGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{obj2})+" "+String.valueOf($F{obj3})]]></groupExpression>
+		<groupHeader>
+			<band splitType="Prevent"/>
+		</groupHeader>
+	</group>
+	<group name="captionGroup4">
+		<groupExpression><![CDATA[String.valueOf($F{expert})]]></groupExpression>
+		<groupHeader>
+			<band splitType="Prevent"/>
+		</groupHeader>
+	</group>
+	<group name="textGroup4" isStartNewPage="true">
+		<groupExpression><![CDATA[String.valueOf($F{expert})]]></groupExpression>
+		<groupHeader>
+			<band height="129" splitType="Prevent">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+					<reportElement style="GroupCellStyle1" positionType="Float" mode="Transparent" x="0" y="75" width="582" height="44"/>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression><![CDATA["Член Экспертной коллегии своевременно и надлежащим образом осуществил : " + $F{quantityDoneClusterExpertDateFromDateTo} + " экспертиз за период c " + platform.base.BaseUtils.formatRussian($F{dateFrom}) + " по " + platform.base.BaseUtils.formatRussian($F{dateTo}) + " по заявкам следующих лиц :"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle1" mode="Transparent" x="0" y="10" width="582" height="22"/>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression><![CDATA[$F{documentNameExpert}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle1" positionType="Float" mode="Transparent" x="63" y="40" width="519" height="22"/>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression><![CDATA[$F{nameNativeClusterExpert}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle1" positionType="Float" mode="Transparent" x="0" y="40" width="63" height="22"/>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression><![CDATA["КЛАСТЕР:"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<detail>
+		<band height="30">
+			<subreport>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+				<parametersMapExpression><![CDATA[$P{voteHeader_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{voteHeader_source}]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{voteHeader_report}]]></subreportExpression>
+			</subreport>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement style="GroupCellStyle1" positionType="FixRelativeToBottom" mode="Transparent" x="0" y="8" width="582" height="22"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA["Бюллетени оценки по указанным заявкам прилагаются к настоящему Акту."]]></textFieldExpression>
+			</textField>
+		</band>
+		<band>
+			<subreport>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+				<parametersMapExpression><![CDATA[$P{vote_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{vote_source}]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{vote_report}]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>

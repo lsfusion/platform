@@ -1,0 +1,136 @@
+package platform.client.form.cell;
+
+import platform.base.BaseUtils;
+import platform.client.ClientButton;
+import platform.client.ClientResourceBundle;
+import platform.client.SwingUtils;
+import platform.client.form.ClientFormController;
+import platform.client.form.PropertyEditorComponent;
+import platform.client.form.queries.ToolbarGridButton;
+import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientPropertyDraw;
+import platform.interop.ClassViewType;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+
+public class ButtonCellView extends ClientButton implements CellView {
+    private ClientPropertyDraw key;
+    private ClientGroupObjectValue columnKey;
+    public boolean toToolbar;
+    private String caption;
+
+    @Override
+    public int hashCode() {
+        return key.getID() * 31 + columnKey.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof ButtonCellView && ((ButtonCellView) o).key.equals(key) && ((ButtonCellView) o).columnKey.equals(columnKey);
+    }
+
+    public ButtonCellView(final ClientPropertyDraw key, final ClientGroupObjectValue columnKey, final ClientFormController form) {
+        super(key.getFullCaption());
+        this.key = key;
+        this.columnKey = columnKey;
+
+        setToolTip(key.caption);
+
+        if (key.isReadOnly()) {
+            setEnabled(false);
+        }
+
+        key.design.designComponent(this);
+
+        addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent ae) {
+
+                try {
+
+                    PropertyEditorComponent editor = key.getEditorComponent(ButtonCellView.this, form, columnKey, null);
+                    if (editor != null) {
+                        editor.getComponent(SwingUtils.computeAbsoluteLocation(ButtonCellView.this), getBounds(), null);
+                        if (editor.valueChanged())
+                            listener.cellValueChanged(editor.getCellEditorValue(), true);
+                    }
+
+                } catch (Exception e) {
+                    throw new RuntimeException(ClientResourceBundle.getString("errors.error.while.performing.the.action"), e);
+                }
+            }
+        });
+
+        setDefaultSizes();
+    }
+
+    public JComponent getComponent() {
+        return this;
+    }
+
+    private CellViewListener listener;
+
+    public void addListener(CellViewListener listener) {
+        this.listener = listener;
+    }
+
+    public void setValue(Object value) {
+        setEnabled(value != null);
+    }
+
+    public void startEditing(KeyEvent e) {
+        if (isShowing())
+            doClick(20);
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+//        if (!toToolbar || getIcon() == null) {
+            setText(caption);
+//        } else {
+//            setText("");
+//        }
+    }
+
+    public void setBackground(Object background) {
+        // пока не highlight'им
+    }
+
+    public void setForeground(Object foreground) {
+    }
+
+    public void setToolTip(String caption) {
+        String toolTip = !BaseUtils.isRedundantString(key.toolTip) ? key.toolTip : caption;
+        toolTip += " (sID: " + key.getSID() + ")";
+        if (key.editKey != null) {
+            toolTip += "(" + SwingUtils.getKeyStrokeCaption(key.editKey) + ")";
+        }
+        setToolTipText(toolTip);
+    }
+
+    public void changeViewType(ClassViewType type) {
+        toToolbar = (type == ClassViewType.GRID);
+        setCaption(caption);
+//        if (toToolbar && key.design.getImage() != null) {
+//            setPreferredSize(new Dimension(key.design.getImage().getIconWidth() + 2 + key.getPreferredWidth(this),
+//                                           Math.max(key.design.getImage().getIconHeight() + 2,
+//                                                    ToolbarGridButton.BUTTON_SIZE.height)));
+//            setMaximumSize(new Dimension(key.design.getImage().getIconWidth() + 2 + key.getMaximumWidth(this),
+//                                         Math.max(key.design.getImage().getIconHeight() + 2,
+//                                                  ToolbarGridButton.BUTTON_SIZE.height)));
+//        } else {
+            setPreferredSize(null);
+            setDefaultSizes();
+//        }
+    }
+
+    private void setDefaultSizes() {
+        int height = toToolbar ? ToolbarGridButton.BUTTON_SIZE.height : key.getPreferredHeight(this);
+        setMinimumSize(new Dimension(0, height));
+        setMaximumSize(new Dimension(32767, height));
+    }
+}

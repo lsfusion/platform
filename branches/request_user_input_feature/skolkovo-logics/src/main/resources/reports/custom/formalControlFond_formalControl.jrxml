@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="formalControl" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="231"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<topPen lineWidth="0.0"/>
+			<leftPen lineWidth="0.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="0.0"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<field name="formalControl" class="java.lang.Integer"/>
+	<field name="nameResultFormalControl" class="java.lang.String"/>
+	<field name="nameProjectActionFormalControl" class="java.lang.String"/>
+	<field name="dateTimeFormalControl" class="java.util.Date"/>
+	<field name="dateProjectFormalControl" class="java.util.Date"/>
+	<field name="commentFormalControl" class="java.lang.String"/>
+	<field name="overdueDateFormalControl" class="java.util.Date"/>
+	<field name="sidResultFormalControl" class="java.lang.String"/>
+	<field name="nameNativeClusterProjectFormalControl" class="java.lang.String"/>
+	<field name="isPreliminaryAndStatusProjectFormalControl" class="java.lang.Boolean"/>
+	<field name="executiveLD" class="java.lang.String"/>
+	<field name="phoneExecutiveLD" class="java.lang.String"/>
+	<field name="mobileExecutiveLD" class="java.lang.String"/>
+	<field name="dateResultNoticedFormalControl" class="java.util.Date"/>
+	<field name="sidStatusProjectFormalControl" class="java.lang.String"/>
+	<field name="nameNativeProjectFormalControl" class="java.lang.String"/>
+	<field name="claimerEmailFormalControl" class="java.lang.String"/>
+	<field name="executiveIS" class="java.lang.String"/>
+	<field name="nameNativeClaimerFormalControl" class="java.lang.String"/>
+	<field name="isStatusFormalControl" class="java.lang.Boolean"/>
+	<field name="nameNativeUnionManagerFormalControl" class="java.lang.String"/>
+	<detail>
+		<band height="209">
+			<printWhenExpression><![CDATA["notEnoughDocuments".equals($F{sidResultFormalControl})]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="22" y="10" width="525" height="17"/>
+				<textElement textAlignment="Center">
+					<font size="14" isUnderline="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["В заявке отсутствуют необходимые документы"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="62" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{commentFormalControl}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="81" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Заявка должна быть дорабтана и отправлена повторно не позднее "+platform.base.BaseUtils.formatRussian($F{overdueDateFormalControl}) +" года. \n"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="100" width="525" height="26"/>
+				<textElement>
+					<font size="14" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" \n"+
+" \n"+
+"* Согласно пункту 7 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» срок исправления несоответствий составляет тридцать дней с момента получения уведомления."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="22" y="45" width="525" height="17"/>
+				<textElement>
+					<font size="14" isUnderline="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Уважаемые коллеги! \n"+
+"\n"+
+"К заявке на присвоение статуса Участника проекта от "+ platform.base.BaseUtils.formatRussian($F{dateProjectFormalControl})+" года не были прикреплены следующие обязательные документы:"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="140" width="525" height="19"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Данные заявителя"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="159" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Проект:"+"    "+$F{nameNativeProjectFormalControl}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="190" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["e-mail заявителя:"+"    "+$F{claimerEmailFormalControl}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="189">
+			<printWhenExpression><![CDATA["repeatedFC".equals($F{sidResultFormalControl})]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="22" y="10" width="525" height="17"/>
+				<textElement textAlignment="Center">
+					<font size="14" isUnderline="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Заявка отклонена"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="63" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Заявка должна быть доработана и подана заново."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="82" width="525" height="26"/>
+				<textElement>
+					<font size="14" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" \n"+
+" \n"+
+"* в соответствии с пунктом 8 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково»."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="22" y="46" width="525" height="17"/>
+				<textElement>
+					<font size="14" isUnderline="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Уважаемые коллеги! \n"+
+"\n"+
+"Сообщаем, что была установлена тождественность заявки от "+ platform.base.BaseUtils.formatRussian($F{dateProjectFormalControl})+" года ранее поданным заявкам, в связи с чем заявка остается без рассмотрения*. "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="124" width="525" height="19"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Данные заявителя"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="170" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["e-mail заявителя:"+"    "+$F{claimerEmailFormalControl}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="143" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Проект:"+"    "+$F{nameNativeProjectFormalControl}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="177">
+			<printWhenExpression><![CDATA["notEnoughDocuments".equals($F{sidResultFormalControl})&&"overdueFC".equals($F{sidStatusProjectFormalControl})]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="22" y="10" width="525" height="17"/>
+				<textElement textAlignment="Center">
+					<font size="14" isUnderline="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Заявка отклонена"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="64" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["К сожалению, заявитель не устранили несоответствия, о которых мы сообщили ему в письме от "+ platform.base.BaseUtils.formatRussian($F{dateResultNoticedFormalControl}) +". Мы вынуждены прекратить рассмотрение данной заявки*. \n \n"+
+"\n"+
+"* на основании пункта 7 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково»"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="22" y="47" width="525" height="17"/>
+				<textElement>
+					<font size="14" isUnderline="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Уважаемые коллеги!"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="102" width="525" height="19"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Данные заявителя"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="122" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Проект:"+"    "+$F{nameNativeProjectFormalControl}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="149" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["e-mail заявителя:"+"    "+$F{claimerEmailFormalControl}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="179">
+			<printWhenExpression><![CDATA["notSuitableCluster".equals($F{sidResultFormalControl})]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="102" width="525" height="19"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Данные заявителя"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="64" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["К сожалению, заявка не соответствует ни одному из пяти направлений деятельности Фонда. "+" "+" Мы вынуждены прекратить рассмотрение данной заявки*. \n \n"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="22" y="10" width="525" height="17"/>
+				<textElement textAlignment="Center">
+					<font size="14" isUnderline="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Заявка отклонена"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="149" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["e-mail заявителя:"+"    "+$F{claimerEmailFormalControl}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="122" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Проект:"+"    "+$F{nameNativeProjectFormalControl}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="22" y="47" width="525" height="17"/>
+				<textElement>
+					<font size="14" isUnderline="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Уважаемые коллеги!"]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="190">
+			<printWhenExpression><![CDATA["positiveFormalResult".equals($F{sidResultFormalControl})]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="22" y="47" width="525" height="17"/>
+				<textElement>
+					<font size="14" isUnderline="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Уважаемые коллеги!"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="102" width="525" height="19"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Данные заявителя"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="22" y="10" width="525" height="17"/>
+				<textElement textAlignment="Center">
+					<font size="14" isUnderline="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Заявка направлена на юридическую проверку"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="129" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["e-mail заявителя:"+"    "+$F{claimerEmailFormalControl}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="64" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["На юридическую проверку направляются материалы заявки на " + ($F{isStatusFormalControl} == null ? "предварительную экспертизу" : "присвоение статуса Участника") + " проекта от  "+platform.base.BaseUtils.formatRussian($F{dateProjectFormalControl})+" по проекту "+$F{nameNativeProjectFormalControl}+
+" от заявителя "+$F{nameNativeClaimerFormalControl}+($F{isPreliminaryAndStatusProjectFormalControl}!=null?(" (ранеее "+$F{nameNativeUnionManagerFormalControl}+")."):".")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="22" y="165" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["С уважением, \n"+
+$F{executiveIS}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

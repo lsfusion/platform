@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ACT resident" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.2100000000000017"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<queryString language="SQL">
+		<![CDATA[]]>
+	</queryString>
+	<field name="vote" class="java.lang.Integer"/>
+	<field name="nameNativeClaimerVote2" class="java.lang.String"/>
+	<field name="nameAblateClaimerVote" class="java.lang.String"/>
+	<field name="isStatusVote" class="java.lang.Boolean"/>
+	<field name="nameNativeClusterVote" class="java.lang.String"/>
+	<field name="documentNameExpert" class="java.lang.String"/>
+	<field name="dateAgreementExpert" class="java.util.Date"/>
+	<field name="quantityDoneExpertMonthYear" class="java.lang.Integer"/>
+	<field name="nameNativeJoinClaimerProjectVote" class="java.lang.String"/>
+	<field name="moneyQuantityDoneExpertMonthYear" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="residencyCountryExpert" class="java.lang.Boolean"/>
+	<field name="baseCurrencyExpert" class="java.lang.Boolean"/>
+	<field name="caseCountryExpert" class="java.lang.String"/>
+	<field name="year" class="java.lang.Integer"/>
+	<field name="month" class="java.lang.Integer"/>
+	<variable name="npp" class="java.lang.Integer" resetType="Group" resetGroup="expert" calculation="Count">
+		<variableExpression><![CDATA[0]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
+	</variable>
+	<group name="expert" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{documentNameExpert}]]></groupExpression>
+		<groupHeader>
+			<band height="326">
+				<staticText>
+					<reportElement style="DefaultStyle" x="10" y="26" width="489" height="18"/>
+					<textElement textAlignment="Center">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[приемки-передачи оказанных услуг]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="DefaultStyle" x="10" y="74" width="489" height="18"/>
+					<textElement textAlignment="Center">
+						<font isBold="false"/>
+					</textElement>
+					<text><![CDATA[_______    _________________20______г.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="DefaultStyle" x="10" y="56" width="489" height="18"/>
+					<textElement textAlignment="Center">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[г. Москва]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="DefaultStyle" x="10" y="10" width="489" height="16"/>
+					<textElement textAlignment="Center">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[АКТ]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="DefaultStyle" isPrintRepeatedValues="false" x="10" y="102" width="489" height="219" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Justified" verticalAlignment="Middle">
+						<font fontName="lsf.TimesNewRoman" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, в лице Ответственного Секретаря Совета Дианы Владимировны Дудиной, действующей на основании доверенности от 29 июля 2011 года № 39 (далее – Фонд, Фонд «Сколково»), и \n"+$F{documentNameExpert}+" (далее – Член Экспертной коллегии), в дальнейшем именуемые «Стороны», подписали настоящий Акт о нижеследующем:\n"+
+"В соответствии с Соглашением об исполнении функции члена Экспертной коллегии от "+  (platform.base.BaseUtils.formatRussian ($F{dateAgreementExpert}, true, true))+" г. (далее - Соглашение) Член Экспертной коллегии осуществил экспертизу заявок с целью установления соответствия  проекта юридического лица, подавшего заявку в соответствии с пунктом 3 Положения о присвоении и утрате статуса участника проекта, (физического или юридического лица, подавшего заявку на проведение предварительной экспертизы проекта в соответствии с пунктом 4 Положения о проведении предварительной экспертизы проектов, критериям, установленным Положением о присвоении и утрате статуса участника проекта).\n"+"Член Экспертной коллегии своевременно и надлежащим образом осуществил: \n"+
+$F{quantityDoneExpertMonthYear}+" ("+platform.base.BaseUtils.intToFeminine($F{quantityDoneExpertMonthYear})+") экспертиз(ы) за период c " + platform.base.BaseUtils.formatRussian( platform.base.BaseUtils.getFirstDateInMonth($F{year},$F{month}), false, true)+ " по " + platform.base.BaseUtils.formatRussian(platform.base.BaseUtils.getLastDateInMonth($F{year},$F{month}), false, true) + " по заявкам следующих лиц:"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="258">
+				<staticText>
+					<reportElement positionType="Float" x="291" y="222" width="208" height="16"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom"/>
+					<text><![CDATA[________________ /Д.В. Дудина/]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="154" width="489" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font isBold="true"/>
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Подписи Cторон"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="DefaultStyle" x="10" y="222" width="89" height="16"/>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[____________]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="DefaultStyle" x="291" y="238" width="208" height="16"/>
+					<textElement/>
+					<text><![CDATA[                М.П.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="DefaultStyle" x="10" y="186" width="266" height="16"/>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[ЧЛЕН ЭКСПЕРТНОЙ КОЛЛЕГИИ	]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="DefaultStyle" x="276" y="186" width="223" height="16"/>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[ФОНД]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="7" width="489" height="15"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["Бюллетени оценки проектов по указанным заявкам прилагаются к настоящему Акту."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="489" height="15"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["Фонд по объему и качеству осуществленных экспертиз претензий не имеет."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="37" width="489" height="47"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["В соответствии с указанным Соглашением после подписания настоящего Акта Фонд  выплатит Члену Экспертной коллегии вознаграждение в сумме, равной " + $F{moneyQuantityDoneExpertMonthYear}.intValue() + " долларов США"+(($F{baseCurrencyExpert}==null)?".":(" в рублях по курсу ЦБ РФ на день платежа."))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="84" width="489" height="70"/>
+					<textElement textAlignment="Justified" verticalAlignment="Top"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["Член Экспертной коллегии осуществил проведение экспертизы заявок в "+$F{caseCountryExpert}+" и является налоговым резидентом Российской Федерации, в связи с чем Фонд как налоговый агент удержит из суммы вознаграждения Члена Экспертной коллегии НДФЛ."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="99" y="222" width="165" height="15"/>
+					<textElement verticalAlignment="Bottom">
+						<font isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["/"+platform.base.BaseUtils.justInitials($F{documentNameExpert}, true, true)+"/"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<detail>
+		<band height="16">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="30" y="0" width="469" height="16"/>
+				<textElement verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{npp}+ ". "+$F{nameNativeClaimerVote2}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

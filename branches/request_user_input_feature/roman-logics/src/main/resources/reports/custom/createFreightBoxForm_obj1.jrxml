@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="283" pageHeight="155" orientation="Landscape" columnWidth="283" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="2.5937424601000023"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="GroupCellStyle1" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<field name="obj1" class="java.lang.Integer"/>
+	<field name="objectValueProperty_object" class="java.lang.Integer"/>
+	<field name="nameRouteCreationFreightBox" class="java.lang.String"/>
+	<field name="quantityCreationFreightBox" class="java.lang.Integer"/>
+	<field name="obj7" class="java.lang.Integer"/>
+	<field name="barcode" class="java.lang.String"/>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<detail>
+		<band height="140">
+			<componentElement>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="120" height="76"/>
+				<jr:EAN13 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom">
+					<jr:codeExpression><![CDATA[$F{barcode}]]></jr:codeExpression>
+				</jr:EAN13>
+			</componentElement>
+			<textField isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" x="150" y="0" width="98" height="57"/>
+				<textElement>
+					<font size="36"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameRouteCreationFreightBox}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="150" y="56" width="98" height="20"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<text><![CDATA[Для короба]]></text>
+			</staticText>
+		</band>
+	</detail>
+</jasperReport>
