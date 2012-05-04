@@ -563,6 +563,16 @@ META defineDocumentDetailPrice (object)
     @defineDocumentDetailRetailPrice(object);
 END
 
+META defineDocumentDetailCalcRange (object)
+    calcRange###object##Detail = DATA range (object##Detail);
+    calcRange###object##Detail (detail) <- rangeToTaxStore(tax.taxNDS,
+                                storeDepartmentStore(departmentStore###object##Detail(detail))) WHEN detail IS object##Detail;
+
+    numberCalcRange###object##Detail 'НДС расчетный, номер' (detail) = dataRange(calcRange###object##Detail(detail));
+    dataCalcRange###object##Detail 'НДС расчетный, %' (detail) =
+       dataActingRateRangeDate(calcRange###object##Detail(detail), date###object##Detail(detail));
+END
+
 META defineDocumentDetailAccountPrice (object)
     accountPrice###object##Detail 'Учетная цена' = DATA NUMERIC[14,2] (object##Detail) IN baseGroup;
 END
@@ -574,6 +584,13 @@ END
 
 META defineDocumentDetailSum (object)
     @defineDocumentDetailRetailSum(object);
+END
+
+META defineDocumentDetailCalcVATSum (object)
+    calcVATSum###object##Detail 'Сумма НДС (расч.)' (detail) = retailRndSum###object##Detail(detail) * dataCalcRange###object##Detail(detail) / 100;
+    calcVATRndSum###object##Detail 'Сумма НДС (расч., окр.)' (detail) = round0(calcVATSum###object##Detail(detail));
+
+    calcOutRndSum###object##Detail 'Сумма без НДС (расч., окр.)' (detail) = retailRndSum###object##Detail(detail) (-) calcVATRndSum###object##Detail(detail);
 END
 
 META defineDocumentDetailAccountSumCustom (object, detail)
@@ -641,6 +658,16 @@ END
 
 META defineDocumentHeaderItemSum (object)
     @defineDocumentHeaderItemSumCustom(object, object);
+END
+
+META defineDocumentHeaderCalcVATSumCustom (object, detail)
+    calcVATRndSum###detail###object 'Сумма НДС (расч., окр.)' (iobject) = GROUP SUM calcVATRndSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+
+    calcOutRndSum###detail###object 'Сумма без НДС (расч., окр.)' (iobject) = retailRndSum###detail###object(iobject) (-) calcVATRndSum###detail###object(iobject) IN documentSumGroup;
+END
+
+META defineDocumentHeaderCalcVATSum (object)
+    @defineDocumentHeaderCalcVATSumCustom(object, object##Detail);
 END
 
 META defineDocumentHeaderAccountSumCustom (object, detail)
@@ -5279,10 +5306,14 @@ CLASS specificationDetail 'Строка документа';
 @defineDocumentDetailRetailPrice(specification);
 @defineDocumentDetailRetailSum(specification);
 
+@defineDocumentDetailCalcRange(specification);
+@defineDocumentDetailCalcVATSum(specification);
+
 @defineDocumentHeaderQuantity(specification);
 @defineDocumentHeaderItemQuantity(specification);
 
 @defineDocumentHeaderRetailSum(specification);
+@defineDocumentHeaderCalcVATSum(specification);
 
 customerSpecification(specification) = DATA customer (specification) IN idGroup;
 nameCustomerSpecification 'Покупатель' (specification) = name(customerSpecification(specification)) IN customerGroup;
@@ -5327,20 +5358,6 @@ departmentBankAccountCompanySpecification 'Отдел банка компани�
 CBUBankAccountCompanySpecification 'ЦБУ банка компании' (specification) = CBUBankAccount(accountCompanySpecification(specification));
 phoneCompanySpecification 'Телефон компании' (specification) = phoneLegalEntityVal(companySpecification(specification), dateSpecification(specification)) IN customerGroup;
 
-rangeSpecificationDetail (specificationDetail) = DATA range (specificationDetail) IN baseGroup;
-dataActingRateRangeSpecificationDetail 'Ставка НДС расчетная,%' (specificationDetail) = dataActingRateRangeDate(rangeSpecificationDetail(specificationDetail), dateSpecification(specificationSpecificationDetail(specificationDetail))) IN baseGroup;
-rangeSpecificationDetail (specificationDetail) <- rangeToTaxStore(tax.taxNDS,
-                                storeDepartmentStore(departmentStoreSpecificationDetail(specificationDetail))) WHEN ASSIGNED(specificationDetail IS specificationDetail);
-
-
-sumNDSSpecificationDetail 'НДС за ед.' (specificationDetail) = round0(dataActingRateRangeSpecificationDetail(specificationDetail)*retailPriceSpecificationDetail(specificationDetail)/100) IN baseGroup;
-totalSumNDSSpecificationDetail 'Сумма НДС' (specificationDetail) = round0(dataActingRateRangeSpecificationDetail(specificationDetail)*retailRndSumSpecificationDetail(specificationDetail)/100) IN baseGroup;
-sumNDSSpecification 'Общая сумма НДС' (specification) = GROUP SUM totalSumNDSSpecificationDetail(specificationDetail)
-    BY specificationSpecificationDetail(specificationDetail) IN documentSumGroup;
-
-sumWithoutNDSSpecificationDetail 'Сумма без НДС' (specificationDetail) = retailRndSumSpecificationDetail(specificationDetail) (-) totalSumNDSSpecificationDetail(specificationDetail);
-sumWithoutNDSSpecification 'Общая сумма без НДС' (specification) = retailRndSumSpecificationDetailSpecification(specification) (-) sumNDSSpecification(specification) IN documentSumGroup;
-
 articleItemSpecificationDetail 'Артикул производителя/поставщика' (specificationDetail) = articleItem(itemSpecificationDetail(specificationDetail));
 nameCountryItemSpecificationDetail 'Страна производства/происхождения' (specificationDetail) = nameCountryItem(itemSpecificationDetail(specificationDetail));
 
@@ -5349,12 +5366,6 @@ CONSTRAINT retailPriceSpecificationDetail(specificationDetail) <= 0 MESSAGE 'Ц�
 
 CONSTRAINT specification IS specification AND NOT dateToSpecification(specification) MESSAGE 'Не задан срок действия с/ф';
 CONSTRAINT dateToSpecification(specification) < dateSpecification(specification) MESSAGE 'Дата действия с/ф не может быть меньше даты документа';
-
-
-FORM objectiveAcquiring 'Цель приобретения'
-    OBJECTS oa=objectiveAcquiring  FIXED PANEL
-    PROPERTIES(oa) name
-;
 
 //---------------------------- Документ на отгрузку из розницы ----------------------------------------//
 
@@ -10463,13 +10474,13 @@ FORM specificationPrint 'Счет-фактура' PRINT
                     dataAccountCompanySpecification, nameBankAccountCompanySpecification, addressBankAccountCompanySpecification,
                     MFOBankAccountCompanySpecification, departmentBankAccountCompanySpecification, CBUBankAccountCompanySpecification,
                     nameObjectiveAcquiringSpecification, noteSpecification, phoneCustomerSpecification, phoneCompanySpecification,
-                    quantitySpecificationDetailSpecification, sumWithoutNDSSpecification, sumNDSSpecification, retailRndSumSpecificationDetailSpecification
+                    quantitySpecificationDetailSpecification, calcOutRndSumSpecificationDetailSpecification, calcVATRndSumSpecificationDetailSpecification, retailRndSumSpecificationDetailSpecification
 
     OBJECTS d=specificationDetail
     PROPERTIES (d) READONLY indexSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
                             shortNameUnitOfMeasureItemSpecificationDetail, quantitySpecificationDetail,
-                            retailPriceSpecificationDetail, sumWithoutNDSSpecificationDetail, dataActingRateRangeSpecificationDetail,
-                            sumNDSSpecificationDetail, totalSumNDSSpecificationDetail, retailRndSumSpecificationDetail
+                            retailPriceSpecificationDetail, calcOutRndSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
+                            calcVATRndSumSpecificationDetail, retailRndSumSpecificationDetail
 
     FILTERS inSpecificationSpecificationDetail(sp, d)
 ;
@@ -12095,7 +12106,7 @@ FORM specificationForm 'Отгрузки по данной с/ф'
     OBJECTS sp=specification FIXED PANEL
     PROPERTIES (sp) READONLY seriesObject, numberObject, nameDepartmentStoreSpecification, dateSpecification, timeSpecification,
     dateToSpecification, nameCustomerSpecification, nameObjectiveAcquiringSpecification, noteSpecification,
-    quantitySpecificationDetailSpecification, sumWithoutNDSSpecification, sumNDSSpecification, retailRndSumSpecificationDetailSpecification
+    quantitySpecificationDetailSpecification, calcOutRndSumSpecificationDetailSpecification, calcVATRndSumSpecificationDetailSpecification, retailRndSumSpecificationDetailSpecification
 
     OBJECTS st=statement
     PROPERTIES (st) READONLY seriesNumberObject, dateStatement, nameCustomerStatement, nameDepartmentStoreStatement,
@@ -12169,12 +12180,12 @@ FORM specification 'Счет-фактура'
     PROPERTIES (sp) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreSpecification,
                     dateSpecification, timeSpecification, dateToSpecification, nameCustomerSpecification,
                     nameObjectiveAcquiringSpecification, noteSpecification,
-                    quantitySpecificationDetailSpecification, sumWithoutNDSSpecification, sumNDSSpecification, retailRndSumSpecificationDetailSpecification
+                    quantitySpecificationDetailSpecification, calcOutRndSumSpecificationDetailSpecification, calcVATRndSumSpecificationDetailSpecification, retailRndSumSpecificationDetailSpecification
 
     OBJECTS d=specificationDetail
     PROPERTIES (d) indexSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail, quantitySpecificationDetail,
-                   retailPriceSpecificationDetail, sumWithoutNDSSpecificationDetail, dataActingRateRangeSpecificationDetail,
-                   sumNDSSpecificationDetail, totalSumNDSSpecificationDetail, retailRndSumSpecificationDetail,
+                   retailPriceSpecificationDetail, calcOutRndSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
+                   calcVATRndSumSpecificationDetail, retailRndSumSpecificationDetail,
                    ADDOBJ, delete
 
     PROPERTIES FORCE PANEL READONLY articleItemSpecificationDetail(d), nameCountryItemSpecificationDetail(d), balanceDepartmentStoreItemSpecificationDetail(d)
@@ -12232,7 +12243,7 @@ FORM specifications 'Счет-фактуры'
     OBJECTS sp=specification
     PROPERTIES (sp) READONLY numberObject, seriesObject, dateSpecification, timeSpecification, nameDepartmentStoreSpecification,
                              nameCustomerSpecification, dateToSpecification, countSpecificationDetailSpecification, quantitySpecificationDetailSpecification,
-                             sumWithoutNDSSpecification, sumNDSSpecification, retailRndSumSpecificationDetailSpecification
+                             calcOutRndSumSpecificationDetailSpecification, calcVATRndSumSpecificationDetailSpecification, retailRndSumSpecificationDetailSpecification
     PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
 
     PROPERTIES (sp)          ADDFORM, EDITFORM, delete
@@ -12240,8 +12251,8 @@ FORM specifications 'Счет-фактуры'
     OBJECTS d=specificationDetail
     PROPERTIES (d) READONLY  indexSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
                              quantitySpecificationDetail, retailPriceSpecificationDetail,
-                             sumWithoutNDSSpecificationDetail, dataActingRateRangeSpecificationDetail,
-                             sumNDSSpecificationDetail, totalSumNDSSpecificationDetail, retailRndSumSpecificationDetail
+                             calcOutRndSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
+                             calcVATRndSumSpecificationDetail, retailRndSumSpecificationDetail
 
     PROPERTIES      FORCE PANEL toPrintSpecification(sp) TODRAW d
     FILTERS         inSpecificationSpecificationDetail(sp, d)
@@ -13446,7 +13457,6 @@ NAVIGATOR {
             ADD collationSheetItem;
             ADD innerFlow;
             ADD innerArrival;
-            ADD objectiveAcquiring;
             ADD specification;
             ADD specificationsStatement;
             ADD specificationForm;
