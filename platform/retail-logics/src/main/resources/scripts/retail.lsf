@@ -729,7 +729,7 @@ META metaCodeTotals (object)
     sumVatWare###object##Detail 'Сумма НДС по посуде, за ед.' (object##Detail) = [round1(X*Y/(100+Y))](
         priceWare###object##Detail (object##Detail), dataWareRange###object##Detail(object##Detail));
 
-    priceWareWithoutVAT###object##Detail '' (object##Detail) = priceWare###object##Detail (object##Detail) (-)
+    priceWareWithoutVAT###object##Detail 'Сумма посуды без НДС' (object##Detail) = priceWare###object##Detail (object##Detail) (-)
         sumVatWare###object##Detail(object##Detail);
 
     sumDetailVatWare###object##Detail 'Сумма НДС по посуде' (object##Detail) = round0(
@@ -1166,6 +1166,10 @@ isRevaluationCommitteeDepartmentStore 'По умолчанию' (revaluationComm
 registerCommitteeDepartmentStore 'Комиссия для реестра (ИД)' = DATA registerCommittee (departmentStore);
 nameRegisterCommitteeDepartmentStore 'Комиссия для реестра' (departmentStore) = name(registerCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 isRegisterCommitteeDepartmentStore 'По умолчанию' (registerCommittee, departmentStore) = registerCommitteeDepartmentStore(departmentStore) == registerCommittee;
+
+wastageCommitteeDepartmentStore 'Комиссия для списания отходов (ИД)' = DATA wastageCommittee (departmentStore);
+nameWastageCommitteeDepartmentStore 'Комиссия для реестра' (departmentStore) = name(wastageCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+isWastageCommitteeDepartmentStore 'По умолчанию' (wastageCommittee, departmentStore) = wastageCommitteeDepartmentStore(departmentStore) == wastageCommittee;
 
 controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
 deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
@@ -2799,6 +2803,7 @@ TABLE committee (committee);
 CLASS revaluationCommittee 'Комиссия переоценки' : committee;
 CLASS inventoryCommittee 'Комиссия для инвентаризации' : committee;
 CLASS registerCommittee 'Комиссия для реестра цен' : committee;
+CLASS wastageCommittee 'Комиссия для списания отходов' : committee;
 
 chairmanCommittee 'Председатель комиссии (ИД)' = DATA employee (committee);
 nameChairmanCommittee 'Председатель комиссии' (committee) = commonName(chairmanCommittee(committee)) IN recognizeGroup;
@@ -2815,6 +2820,9 @@ CONSTRAINT registerCommitteeDepartmentStore(departmentStore) AND NOT inCommittee
 
 CONSTRAINT revaluationCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeDepartmentStore(revaluationCommitteeDepartmentStore(departmentStore), departmentStore)
     CHECKED BY revaluationCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
+
+CONSTRAINT wastageCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeDepartmentStore(wastageCommitteeDepartmentStore(departmentStore), departmentStore)
+    CHECKED BY wastageCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
 
 formedManCommittee = DATA employee (registerCommittee);
 checkedManCommittee = DATA employee (registerCommittee);
@@ -3023,6 +3031,58 @@ DESIGN inventoryCommittee FROM DEFAULT {
     }
 }
 
+FORM wastageCommittee 'Комиссия для списания отходов'
+    OBJECTS c=wastageCommittee FIXED PANEL
+    PROPERTIES(c)      name//, nameChairmanCommittee
+
+    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+    PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
+    FILTERS            stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
+
+    OBJECTS dep=departmentStore
+    PROPERTIES(dep)    READONLY depName = name
+    PROPERTIES(c, dep) inCommitteeDepartmentStore, isWastageCommitteeDepartmentStore
+    FILTERS            inTradingNetworkStoreTypeStoreDepartment(t, st, s, dep)
+    ORDER BY depName
+
+
+    OBJECTS e=employee
+    PROPERTIES(e)      READONLY name, userFirstName, userLastName, nameOfficerEmployee
+    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
+
+    PROPERTIES(c, e)   inCommitteeEmployee
+    FILTERS            isIncludeEmployeeCommittee (e, c)
+    FILTERGROUP filters6
+        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
+
+    FILTERGROUP filters5
+        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeDepartmentStore(c, dep)
+
+    EDIT wastageCommittee OBJECT c
+;
+
+DESIGN wastageCommittee FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+//        NEW OneCase BEFORE e.box {
+//            ADD PROPERTY (nameChairmanCommittee);
+//        }
+
+        NEW caseOne BEFORE e.box {
+            childConstraints = TO THE RIGHT;
+            title = 'Отделы, для которых действуют комиссии';
+
+            ADD treeStore.tree {
+                fillHorizontal = 1;
+            }
+
+            ADD dep.box {
+                fillHorizontal = 2;
+            }
+        };
+    }
+}
 
 FORM registerCommitteeDialog 'Комиссии для реестра цен'
     OBJECTS r=registerCommittee
@@ -3049,6 +3109,13 @@ FORM revaluationCommitteeDialog 'Комиссии переоценки'
     DIALOG revaluationCommittee OBJECT rc
 ;
 
+FORM wastageCommitteeDialog 'Комиссии для списания отходов'
+    OBJECTS wc=wastageCommittee
+    PROPERTIES(wc)      READONLY name, nameDepartmentByCommittee, nameEmployeeCommittee
+    PROPERTIES(wc)      ADDFORM, EDITFORM
+
+    DIALOG wastageCommittee OBJECT wc
+;
 // ----------------------------------- Банк ------------------------------------------- //
 
 GROUP banksGroup 'Информация о банке' : baseGroup;
@@ -3306,6 +3373,8 @@ CONSTRAINT supplier != supplierContract(userContractCompanySupplier(company, sup
 CONSTRAINT company != companyContract(userContractCompanySupplier(company, supplier)) CHECKED MESSAGE 'ошибка: Договор по умолчанию для компании должен соответствовать договорам компании';
 equalsCompanySupplierContract 'Основной договор' (company, supplier, contract) = userContractCompanySupplier(company, supplier) == contract;
 
+nameCompanyDepartmentStore 'Компания' (departmentStore) = name(companyStore(storeDepartmentStore(departmentStore)));
+UNPDepartmentStore 'УНП' (departmentStore) = UNPLegalEntity(companyStore(storeDepartmentStore(departmentStore)));
 
 FORM contract 'Договор'
     OBJECTS c=contract FIXED PANEL
@@ -3617,7 +3686,7 @@ FORM departmentStore 'Отдел магазина'
                     quantityCashChangeOneOperationAccountDepartmentStore, commonNameMRPDepartmentStore, nameOfficerMRPDepartmentStore,
                     commonNameBookkeeperDepartmentStore, nameOfficerBookkeeperDepartmentStore, commonNamePersonCheckDepartmentStore,
                     nameOfficerPersonCheckDepartmentStore, nameRevaluationCommitteeDepartmentStore,
-                    nameRegisterCommitteeDepartmentStore, namediscount, showFormNamediscount
+                    nameRegisterCommitteeDepartmentStore, nameWastageCommitteeDepartmentStore, namediscount, showFormNamediscount
 
     OBJECTS e=employee
     PROPERTIES(e) READONLY userFirstName, userLastName
@@ -5668,6 +5737,11 @@ nameRevaluationCommitteeShipment 'Комиссия переоценки' (shipme
 revaluationCommitteeShipment(shipment) <- revaluationCommitteeDepartmentStore(departmentStoreShipment(shipment))
     WHEN ASSIGNED(shipment IS shipment);
 
+wastageCommitteeShipment 'Комиссия для списания отходов ИД' (shipment) = DATA wastageCommittee (shipment) IN idGroup;
+nameWastageCommitteeShipment 'Комиссия для списания отходов' (shipment) = name(wastageCommitteeShipment(shipment)) IN documentPrmGroup;
+wastageCommitteeShipment(shipment) <- wastageCommitteeDepartmentStore(departmentStoreShipment(shipment))
+    WHEN ASSIGNED(shipment IS shipment);
+
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
 
@@ -6417,6 +6491,7 @@ seriesNumberWastage 'Серия/номер документа' (wastage) = serie
 
 departmentStoreWastage 'Отдел документа (ИД)' (wastage) = departmentStoreShipment (shipmentWastage(wastage));
 nameDepartmentStoreWastage 'Отдел документа' (wastage) = name(departmentStoreWastage (wastage));
+nameCompanyWastage 'Компания' (wastage) = nameCompanyDepartmentStore(departmentStoreWastage(wastage));
 
 supplierWastage 'Поставщик (ИД)' (wastage) = supplierShipment(shipmentWastage(wastage));
 nameSupplierWastage 'Поставщик' (wastage) = name(supplierWastage(wastage));
@@ -6437,10 +6512,13 @@ percentRateWasteWastageDetail 'Процент списания' (wastageDetail) 
 
 @defineDocumentDetailIndex(wastage);
 
-quantityWastageDetail 'Количество списания '(wastageDetail) = [X*Y/100](
+quantityItemWastageDetail 'Количество'(wastageDetail) =  quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+quantityItemWastage 'Общее количество' (wastage) = GROUP SUM quantityItemWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
+
+quantityWastageDetail 'Количество для списания '(wastageDetail) = [round3(X*Y/100)](
     quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail)), percentRateWasteWastageDetail (wastageDetail));
 
-quantityWastage 'Общее количество' (wastage) = GROUP SUM quantityWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail);
+quantityWastage 'Общее количество для списания' (wastage) = GROUP SUM quantityWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail);
 
 countWastageDetailWastage 'Количество строк' (wastage) = GROUP SUM 1 IF wastageDetail IS wastageDetail BY wastageWastageDetail(wastageDetail);
 
@@ -6453,17 +6531,21 @@ dataSuppliersRangeWastageDetail 'НДС поставщика,%' (wastageDetail) 
 
 @metaCodeTotals(wastage);
 
-sumWastageDetail 'Сумма' (wastageDetail) = quantityWastageDetail(wastageDetail) * retailPriceWastageDetail(wastageDetail);
+sumRetailByWastageDetail 'Сумма в розн. ценах' (wastageDetail) = round0(quantityWastageDetail(wastageDetail) * retailPriceWastageDetail(wastageDetail));
+sumSupplierByWastageDetail 'Сумма в ценах поставщика' (wastageDetail) = round0(quantityWastageDetail(wastageDetail) * supplierPriceWastageDetail(wastageDetail));
+sumVATByWastageDetail 'Сумма НДС' (wastageDetail) = [round0(X*Y/(100+Y))](
+    sumRetailByWastageDetail(wastageDetail), dataRetailRangeWastageDetail(wastageDetail));
+sumMarkupByWastageDetail 'Сумма надбавки' (wastageDetail) = sumRetailByWastageDetail(wastageDetail) (-) sumSupplierByWastageDetail(wastageDetail) (-)
+    sumVATByWastageDetail(wastageDetail);
 
-totalSumWastage 'Общая сумма' (wastage) = GROUP SUM sumWastageDetail (wastageDetail)
-    IF  wastageWastageDetail(wastageDetail) == wastage BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
-
-//totalSumByItemWastage 'Общая сумма, товар' (wastage) =
-//    GROUP SUM sumWastageDetail (wastageDetail) AND NOT isContainerItem(itemWastageDetail(wastageDetail))
-//        BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
-//totalSumByContainerWastage 'Общая сумма, тара' (wastage) =
-//    GROUP SUM sumWastageDetail (wastageDetail)IF  isContainerItem(itemWastageDetail(wastageDetail))
-//        BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
+totalSumRetailByWastage 'Общая сумма, розничная' (wastage) = GROUP SUM sumRetailByWastageDetail (wastageDetail)
+    BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
+totalSumSupplierByWastage 'Общая сумма, в ценах поставщика' (wastage) = GROUP SUM sumSupplierByWastageDetail (wastageDetail)
+    BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
+totalSumVATByWastage 'Общая сумма НДС' (wastage) = GROUP SUM sumVATByWastageDetail (wastageDetail)
+    BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
+totalSumMarkupByWastage 'Общая сумма надбавки' (wastage) = GROUP SUM sumMarkupByWastageDetail (wastageDetail)
+    BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
 
 castWastageObjectsToString100=
     FORMULA STRING[200] '\'Списание отходов \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
@@ -6473,14 +6555,47 @@ descriptionWastage 'Название документа' (wastage) = castWastage
 
 descriptionWastageDetail 'Название документа' (wastageDetail) = descriptionWastage(wastageWastageDetail(wastageDetail));
 
+inWastageEmployee (wastage, employee) = inCommitteeEmployee(wastageCommitteeShipment(shipmentWastage(wastage)), employee);
+nameWastageCommitteeWastage 'Комиссия' (wastage) = name(wastageCommitteeShipment(shipmentWastage(wastage)));
+isWastageCommitteeWastage(wastage) = wastage IS wastage AND wastageCommitteeShipment(shipmentWastage(wastage));
+commonNameEmployee 'Имя' (employee) = commonName(employee) AND employee IS employee;
+
+//-------------------------------Печатная форма---------------------------------//
+FORM wastagePrint 'Списания отходов' PRINT
+
+    OBJECTS w=wastage FIXED PANEL
+    PROPERTIES (w) SELECTOR numberWastage, seriesWastage, dateWastage, timeWastage, nameCompanyWastage, nameDepartmentStoreWastage, nameSupplierWastage,
+                   countWastageDetailWastage, quantityItemWastage, quantityWastage, totalSumSupplierByWastage,
+                   totalSumMarkupByWastage, totalSumVATByWastage, totalSumRetailByWastage, isWastageCommitteeWastage
+
+    OBJECTS d=wastageDetail
+    PROPERTIES (d) SELECTOR indexWastageDetail, barcodeExSkuWastageDetail, nameAttributeItemWastageDetail, quantityItemWastageDetail, quantityWastageDetail, percentRateWasteWastageDetail,
+                   sumSupplierByWastageDetail, sumMarkupByWastageDetail, sumVATByWastageDetail, sumRetailByWastageDetail
+
+    OBJECTS e=employee
+    PROPERTIES(e) SELECTOR   commonName, nameOfficerEmployee
+    OBJECTS a=employee
+    PROPERTIES(a) SELECTOR   commonNameEmployee, nameOfficerEmployee
+
+    FILTERS                  wastageWastageDetail(d)== w,
+                             inWastageEmployee(w, e),
+                             inWastageEmployee(w, a)
+;
+
+toPrintWastage 'Списание отходов' (wastage) = ACTION FORM wastagePrint OBJECTS w IMAGE 'print.png' IN printGroup CONFIRM;
+
 FORM wastages 'Списания отходов'
 
     OBJECTS w=wastage
     PROPERTIES (w) READONLY numberWastage, seriesWastage, dateWastage, timeWastage, nameDepartmentStoreWastage, nameSupplierWastage,
-                   countWastageDetailWastage, quantityWastage, totalSumWastage
+                   countWastageDetailWastage, quantityItemWastage, quantityWastage, totalSumSupplierByWastage, totalSumMarkupByWastage,
+                   totalSumVATByWastage, totalSumRetailByWastage, nameWastageCommitteeWastage
 
     OBJECTS d=wastageDetail
-    PROPERTIES (d) READONLY indexWastageDetail, barcodeExSkuWastageDetail, nameAttributeItemWastageDetail, quantityWastageDetail, retailPriceWastageDetail, sumWastageDetail
+    PROPERTIES (d) READONLY indexWastageDetail, barcodeExSkuWastageDetail, nameAttributeItemWastageDetail, quantityItemWastageDetail, quantityWastageDetail,
+                   sumSupplierByWastageDetail, sumMarkupByWastageDetail, sumVATByWastageDetail, sumRetailByWastageDetail
+
+    PROPERTIES     FORCE PANEL toPrintWastage(w) TODRAW d
 
     FILTERS wastageWastageDetail(d)== w;
 ;
@@ -10373,7 +10488,7 @@ FORM shipment 'Поставка'
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
                    carryingChargesShipment, totalQuantityShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
                    noteShipment, toShowPriceImporterShipment, toShowWareShipment, toShowPapersShipment, nameRegisterCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s),
-                   nameRevaluationCommitteeShipment SHOWIF needToPriceChangeShipment(s)
+                   nameRevaluationCommitteeShipment SHOWIF needToPriceChangeShipment(s), nameWastageCommitteeShipment SHOWIF needToWasteShipment(s)
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
@@ -10854,7 +10969,7 @@ sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSI
                                                                        retailSumReturnSupplier(ledger),
                                                                        accountSumInnerFlow(ledger),
                                                                        sumStatement(ledger),
-                                                                       totalSumWastage(ledger),
+                                                                       totalSumRetailByWastage(ledger),
         // наверное лишнее                                             totalSumSupplierReturnSupplier(ledger),
                                                                        accountSumShortageCollationSheet(ledger),
                                                                        sumZReport(ledger),
@@ -10979,8 +11094,6 @@ sumAccountByContainerADocumentLedgerDate 'Остаток на конец, тар
                                                                            -[GROUP SUM sumAccountByContainerDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) > (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
                                                                            BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date) IN ledgerByContainerGroup;
 
-nameCompanyDepartmentStore 'Компания' (departmentStore) = name(companyStore(storeDepartmentStore(departmentStore)));
-UNPDepartmentStore 'УНП' (departmentStore) = UNPLegalEntity(companyStore(storeDepartmentStore(departmentStore)));
 // ------------------------- Печатная форма----------------------------- //
 FORM sumAccountDocumentLedgerPrint 'Товарный отчет' PRINT
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
@@ -13074,6 +13187,7 @@ NAVIGATOR {
                 ADD registerCommitteeDialog;
                 ADD revaluationCommitteeDialog;
                 ADD inventoryCommitteeDialog;
+                ADD wastageCommitteeDialog;
             }
             ADD groupsUser;
         }
@@ -13181,6 +13295,7 @@ NAVIGATOR {
         ADD consignmentTwoAttach;
         ADD specificationPrint;
         ADD sumAccountDocumentLedgerPrint;
+        ADD wastagePrint;
     }
 
     ADD adminElement TO formsTree {
@@ -13206,6 +13321,7 @@ NAVIGATOR {
             ADD registerCommittee;
             ADD revaluationCommittee;
             ADD inventoryCommittee;
+            ADD wastageCommittee;
             ADD bank;
             ADD ownership;
             ADD supplier;
