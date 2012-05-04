@@ -455,6 +455,10 @@ META defineDocumentHeaderNote (object)
     note###object 'Примечание' = DATA STRING[100] (object) IN additionalInfo MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup;
 END
 
+META defineDocumentDetailNote (object)
+    note###object##Detail 'Примечание' = DATA STRING[100] (object##Detail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+END
+
 // Проведение
 
 META defineDocumentHeaderPosted (object)
@@ -494,8 +498,9 @@ META defineDocumentDetailIndex (object)
 END
 
 META defineDocumentDetailNumbered (object)
-    number###object##Detail 'Номер накладной' (detail) = numberObject(object###object##Detail(detail));
-    series###object##Detail 'Серия накладной' (detail) = seriesObject(object###object##Detail(detail));
+    number###object##Detail 'Номер' (detail) = numberObject(object###object##Detail(detail));
+    series###object##Detail 'Серия' (detail) = seriesObject(object###object##Detail(detail));
+    seriesNumber###object##Detail 'Серия/номер' (detail) = seriesNumberObject(object###object##Detail(detail));
 END
 
 META defineDocumentDetailItem (object)
@@ -507,6 +512,10 @@ META defineDocumentDetailItem (object)
 
     shortNameUnitOfMeasureItem###object##Detail 'Ед. изм.' (detail) =
         shortNameUnitOfMeasureItem(item###object##Detail(detail)) IN baseGroup;
+
+    articleItem###object##Detail 'Артикул' (detail) = articleItem(item###object##Detail(detail));
+
+    nameCountryItem###object##Detail 'Страна' (detail) = nameCountryItem(item###object##Detail(detail));
 
     barcodeExSku###object##Detail 'Штрих-код товара' (object) =
         barcodeEx(barcodeSku(item###object##Detail (object))) IN baseGroup;
@@ -545,6 +554,13 @@ META defineDocumentDetailQuantity (object)
     quantity###object##Detail 'Кол-во' = DATA NUMERIC[14,3] (object##Detail);
 END
 
+META defineDocumentDetailWare (object)
+    ware###object##Detail = DATA ware(object##Detail);
+    nameWare###object##Detail 'Посуда' (detail) = name(ware###object##Detail(detail));
+
+    priceWare###object##Detail 'Цена посуды' = DATA NUMERIC[14,2] (object##Detail);
+END
+
 META defineDocumentDetailRetailPrice (object)
     retailPrice###object##Detail 'Розничная цена' = DATA NUMERIC[14,2] (object##Detail);
 END
@@ -571,6 +587,8 @@ META defineDocumentDetailCalcRange (object)
     numberCalcRange###object##Detail 'НДС расчетный, номер' (detail) = dataRange(calcRange###object##Detail(detail));
     dataCalcRange###object##Detail 'НДС расчетный, %' (detail) =
        dataActingRateRangeDate(calcRange###object##Detail(detail), date###object##Detail(detail));
+
+    CONSTRAINT taxRange(calcRange###object##Detail(detail)) != tax.taxNDS CHECKED BY calcRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 END
 
 META defineDocumentDetailAccountPrice (object)
@@ -601,6 +619,10 @@ META defineDocumentDetailAccountSum (object)
     @defineDocumentDetailAccountSumCustom(object, object##Detail);
 END
 
+META defineDocumentDetailCurRetailPrice (object)
+    curRetailPrice###object##Detail 'Текущая розничная цена' (detail) = DATA NUMERIC[14,2] (object##Detail);
+END
+
 META defineDocumentDetailCurPrice (object)
     curImporterPrice###object##Detail 'Текущая цена изгтовителя/импортера' = DATA NUMERIC[14,2] (object##Detail);
     curSupplierPrice###object##Detail 'Текущая цена поставщика' = DATA NUMERIC[14,2] (object##Detail);
@@ -612,7 +634,7 @@ META defineDocumentDetailCurPrice (object)
 
     CONSTRAINT taxRange(curRetailRange###object##Detail(detail)) != tax.taxNDS CHECKED BY curRetailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
-    curRetailPrice###object##Detail 'Текущая розничная цена' (detail) = DATA NUMERIC[14,2] (object##Detail);
+    @defineDocumentDetailCurRetailPrice(object);
 END
 
 META defineDocumentHeaderQuantityCustom (object, detail)
@@ -634,8 +656,17 @@ META defineDocumentHeaderItemQuantity (object)
 END
 
 META defineDocumentHeaderRetailSumCustom (object, detail)
-    retailSum###detail###object 'Розничная сумма' (object) = GROUP SUM retailSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
-    retailRndSum###detail###object 'Розничная сумма (окр.)' (object) = GROUP SUM retailRndSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+    retailSum###detail###object 'Розничная сумма' (object) =
+        GROUP SUM retailSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+    retailRndSum###detail###object 'Розничная сумма (окр.)' (object) =
+        GROUP SUM retailRndSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+
+    retailRndSumItem###detail###object 'Розничная сумма (окр.), товар' (idetail) =
+        GROUP SUM retailRndSum###detail(idetail) AND NOT isContainerItem(item###detail(idetail))
+            BY object###detail(idetail) IN documentSumGroup;
+    retailRndSumContainer###detail###object 'Розничная сумма (окр.), тара' (idetail) =
+        GROUP SUM retailRndSum###detail(idetail) IF isContainerItem(item###detail(idetail))
+            BY object###detail(idetail) IN documentSumGroup;
 END
 
 META defineDocumentHeaderRetailSum (object)
@@ -676,6 +707,15 @@ END
 
 META defineDocumentHeaderAccountSum (object)
     @defineDocumentHeaderAccountSumCustom(object, object##Detail);
+END
+
+META defineDocumentHeaderRevaluation (object)
+    numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (object) IN documentPrmGroup;
+
+    revaluationCommittee###object = DATA revaluationCommittee (object) IN idGroup;
+    nameRevaluationCommittee###object 'Комиссия переоценки' (object) = name(revaluationCommittee###object(object)) IN documentPrmGroup;
+    revaluationCommittee###object(object) <- revaluationCommitteeDepartmentStore(departmentStore###object(object))
+        WHEN object IS object;
 END
 
 // ----------------------------------- Свойства для объектов Posted ------------------------------------------ //
@@ -5099,8 +5139,6 @@ nameAttributeItemPageInventoryDetail 'Товар' (pageInventoryDetail) = nameAt
 @defineDocumentHeaderQuantity(pageInventory);
 @defineDocumentHeaderAccountSum(pageInventory);
 
-CONSTRAINT quantityPageInventoryDetail(pageInventoryDetail) < 0 MESSAGE 'Количество должно быть положительным';
-
 // Сличительная ведомость
 
 CLASS ABSTRACT collationSheet 'Сличительная ведомость' : outAccountSumDocumentLedger;
@@ -5298,6 +5336,8 @@ CLASS specificationDetail 'Строка документа';
 @defineDocumentDepartmentStore(specification);
 @defineDocumentHeaderNote(specification);
 
+@defineDocumentDetailNumbered(specification);
+
 @defineDocumentDetailIndex(specification);
 @defineDocumentDetailItem(specification);
 @defineDocumentDetailItemActions(specification);
@@ -5314,6 +5354,9 @@ CLASS specificationDetail 'Строка документа';
 
 @defineDocumentHeaderRetailSum(specification);
 @defineDocumentHeaderCalcVATSum(specification);
+
+descriptionSpecificationDetail(specificationDetail) = [FORMULA STRING[40] '$1 || CAST ($2 AS character(20)) || $3 || $4 || CAST ($5 AS character(20))']
+            ('Счет-фактура № ', seriesNumberSpecificationDetail(specificationDetail), ' от ', ' ', dateSpecificationDetail(specificationDetail));
 
 customerSpecification(specification) = DATA customer (specification) IN idGroup;
 nameCustomerSpecification 'Покупатель' (specification) = name(customerSpecification(specification)) IN customerGroup;
@@ -5358,12 +5401,6 @@ departmentBankAccountCompanySpecification 'Отдел банка компани�
 CBUBankAccountCompanySpecification 'ЦБУ банка компании' (specification) = CBUBankAccount(accountCompanySpecification(specification));
 phoneCompanySpecification 'Телефон компании' (specification) = phoneLegalEntityVal(companySpecification(specification), dateSpecification(specification)) IN customerGroup;
 
-articleItemSpecificationDetail 'Артикул производителя/поставщика' (specificationDetail) = articleItem(itemSpecificationDetail(specificationDetail));
-nameCountryItemSpecificationDetail 'Страна производства/происхождения' (specificationDetail) = nameCountryItem(itemSpecificationDetail(specificationDetail));
-
-CONSTRAINT quantitySpecificationDetail(specificationDetail) <= 0 MESSAGE 'Количество должно быть положительным';
-CONSTRAINT retailPriceSpecificationDetail(specificationDetail) <= 0 MESSAGE 'Цена должна быть положительной';
-
 CONSTRAINT specification IS specification AND NOT dateToSpecification(specification) MESSAGE 'Не задан срок действия с/ф';
 CONSTRAINT dateToSpecification(specification) < dateSpecification(specification) MESSAGE 'Дата действия с/ф не может быть меньше даты документа';
 
@@ -5379,16 +5416,30 @@ CLASS statementPosted 'Закрытая выписка из розницы' : st
 
 @defineDocumentDefaultProperties(statement);
 
+@defineDocumentHeaderRevaluation(statement);
+
+@defineDocumentDetailQuantity(statement);
+@defineDocumentDetailRetailPrice(statement);
+@defineDocumentDetailRetailSum(statement);
+
+@defineDocumentDetailCalcRange(statement);
+@defineDocumentDetailCalcVATSum(statement);
+
+@defineDocumentDetailCurRetailPrice(statement);
+@defineDocumentDetailWare(statement);
+
+@defineDocumentDetailNote(statement);
+
+@defineDocumentHeaderQuantity(statement);
+@defineDocumentHeaderItemQuantity(statement);
+
+@defineDocumentHeaderRetailSum(statement);
+@defineDocumentHeaderCalcVATSum(statement);
+
 //    шапка документа поставки
 customerStatement 'Покупатель (ИД)' (statement) = DATA customer (statement) IN idGroup;
 nameCustomerStatement 'Покупатель' (statement) = name(customerStatement(statement)) IN documentPrmGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40;
-
-numberDisposalStatement '№ распоряжения на переоценку' (statement) = DATA STRING[30] (statement) IN documentPrmGroup;
-revaluationCommitteeStatement 'Комиссия переоценки ИД' (statement) = DATA revaluationCommittee (statement) IN idGroup;
-nameRevaluationCommitteeStatement 'Комиссия переоценки' (statement) = name(revaluationCommitteeStatement(statement)) IN documentPrmGroup;
-revaluationCommitteeStatement(statement) <- revaluationCommitteeDepartmentStore(departmentStoreStatement(statement))
-    WHEN ASSIGNED(statement IS statement);
 
 inStatementSpecification 'Включить в накладную' (statement, specification) = DATA BOOLEAN (statement, specification)
     IN idGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
@@ -5396,81 +5447,24 @@ inStatementSpecification 'Включить в накладную' (statement, sp
 specificationsStatement 'Ввести на основании с/ф' (statement) = GROUP CONCAT castToString255(seriesNumberObject(specification))
     IF inStatementSpecification(statement, specification), ', ' BY statement IN specificationGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-isCustomerStatementSpecification 'Заявка покупателя' (statement, specification) = customerStatement(statement)== customerSpecification(specification);
+countStatementSpecification(specification) = GROUP SUM 1 IF inStatementSpecification(statement, specification) AND isPostedStatement(statement) BY specification;
+noStatementSpecification(specification) = specification IS specification AND NOT countStatementSpecification(specification);
 
-isDepartmentStoreStatementSpecification 'Заявка отдела' (statement, specification) = departmentStoreStatement(statement)== departmentStoreSpecification(specification);
+statusSpecification 'Расход' (specification) = IF countStatementSpecification(specification)
+                                                  THEN 'Отгрузки были' IF specification IS specification
+                                                  ELSE 'Отгрузок не было' IF specification IS specification
+                                                MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
-quantityStatementsInSpecification(specification) = GROUP SUM 1 IF inStatementSpecification(statement, specification) AND isPostedStatement(statement) BY specification;
-noQuantityStatementsInSpecification(specification) = specification IS specification AND NOT quantityStatementsInSpecification(specification);
+statusStatementSpecification 'Статус' (statement, specification) = IF dateStatement(statement) > dateToSpecification(specification)
+                                                                      THEN 'Просрочена' IF statement IS statement IF specification IS specification
+                                                                      ELSE 'Непросрочена' IF statement IS statement IF specification IS specification
+                                                                   MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
-statusSpecification 'Расход' (specification) = CASE
-    WHEN quantityStatementsInSpecification(specification) > 0 THEN ('Отгрузки были' IF specification IS specification)
-    DEFAULT 'Отгрузок не было' IF specification IS specification
-    END  MINCHARWIDTH 15 PREFCHARWIDTH 15;
+descriptionStatement 'Название документа' (statement) =
+    [FORMULA STRING[200] '\'Выписка из розницы \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)']
+    (seriesNumberObject(statement), dateStatement(statement), nameCustomerStatement(statement));
 
-
-//количество-цены по строкам
-
-quantityStatementDetail 'Количество' (statementDetail) = DATA NUMERIC[14,3] (statementDetail) IN baseGroup;
-
-retailPriceStatementDetail 'Цена товара (розн.)'(statementDetail) = DATA NUMERIC[14,2] (statementDetail) IN baseGroup;
-sumStatementDetail 'Сумма с НДС' (statementDetail) = round0(retailPriceStatementDetail(statementDetail)*quantityStatementDetail(statementDetail))IN baseGroup;
-
-//departmentStoreStatementDetail(statementDetail) = departmentStoreStatement(statementStatementDetail(statementDetail));
-//retailPriceStatementDetail(statementDetail) <- retailPriceItemDepartmentVal (itemStatementDetail(statementDetail),
-//                                                                   departmentStoreStatementDetail(statementDetail),
-//                                                                   dateStatement(statementStatementDetail(statementDetail))) WHEN CHANGED(itemStatementDetail(statementDetail));
-
-curRetailPriceStatementDetail 'Текущая розничная цена' (statementDetail) = DATA NUMERIC[14,2] (statementDetail) IN pricingStatementDetailInfo;
-
-
-
-rangeStatementDetail (statementDetail) = DATA range (statementDetail) IN idGroup;
-dataActingRateRangeStatementDetail 'Ставка НДС расчетная' (statementDetail) = dataActingRateRangeDate(rangeStatementDetail(statementDetail),  dateStatement(statementStatementDetail(statementDetail))) IN documentSumGroup;
-rangeStatementDetail (statementDetail) <- rangeToTaxStore(tax.taxNDS,
-                                          storeDepartmentStore(departmentStoreStatementDetail(statementDetail))) WHEN ASSIGNED(statementDetail IS statementDetail);
-numberRangeStatementDetail 'НДС номер' (statementDetail) = dataRange(rangeStatementDetail(statementDetail));
-
-CONSTRAINT taxRange(rangeStatementDetail(statementDetail)) != tax.taxNDS CHECKED BY rangeStatementDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-sumNDSStatementDetail 'НДС за ед.' (statementDetail) = round0(dataActingRateRangeStatementDetail(statementDetail)*retailPriceStatementDetail(statementDetail)/100) IN baseGroup;
-totalSumNDSStatementDetail 'Сумма НДС' (statementDetail) = round0(dataActingRateRangeStatementDetail(statementDetail)*sumStatementDetail(statementDetail)/100) IN baseGroup;
-sumNDSStatement 'Общая сумма НДС' (statement) = GROUP SUM totalSumNDSStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN documentSumGroup;
-
-@defineDocumentHeaderItemQuantity(statement);
-
-priceByItemStatement(item, statement) = GROUP EQUAL retailPriceStatementDetail(statementDetail)
-    BY itemStatementDetail(statementDetail), statementStatementDetail(statementDetail);
-
-totalQuantityStatement 'Общее количество' (statement) = GROUP SUM quantityStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN documentSumGroup;
-sumStatement 'Общая сумма с НДС' (statement) = GROUP SUM sumStatementDetail(statementDetail) BY statementStatementDetail(statementDetail) IN documentSumGroup;
-
-sumByItemStatement 'Общая сумма с НДС, товар' (statement) =
-    GROUP SUM sumStatementDetail(statementDetail) AND NOT isContainerItem(itemStatementDetail(statementDetail))
-        BY statementStatementDetail(statementDetail) IN documentSumGroup;
-sumByContainerStatement 'Общая сумма с НДС, тара' (statement) =
-    GROUP SUM sumStatementDetail(statementDetail) IF isContainerItem(itemStatementDetail(statementDetail))
-        BY statementStatementDetail(statementDetail) IN documentSumGroup;
-
-sumWithoutNDSStatementDetail 'Сумма без НДС' (statementDetail) = sumStatementDetail(statementDetail) (-) totalSumNDSStatementDetail(statementDetail);
-sumWithoutNDSStatement 'Общая сумма без НДС' (statement) = sumStatement(statement) (-) sumNDSStatement(statement) IN documentSumGroup;
-
-articleItemStatementDetail 'Артикул производителя/поставщика' (statementDetail) = articleItem(itemStatementDetail(statementDetail)) IN itemStatementDetailInfo;
-nameCountryItemStatementDetail 'Страна производства/происхождения' (statementDetail) = nameCountryItem(itemStatementDetail(statementDetail)) IN itemStatementDetailInfo;
-
-
-CONSTRAINT quantityStatementDetail(statementDetail) <= 0 MESSAGE 'Количество должно быть положительным';
-CONSTRAINT retailPriceStatementDetail(statementDetail) <= 0 MESSAGE 'Цена должна быть положительной';
-
-statusStatementSpecification 'Статус' (statement, specification) = CASE
-    WHEN dateStatement(statement) > dateToSpecification(specification) THEN ('Просрочена' IF statement IS statement IF specification IS specification)
-    DEFAULT 'Непросрочена' IF statement IS statement IF specification IS specification
-    END  MINCHARWIDTH 15 PREFCHARWIDTH 15;
-
-castToStringFour = FORMULA STRING[40] '$1 || CAST ($2 AS character(20)) || $3 || $4 || CAST ($5 AS character(20))';
-infoSpecificationDetail(specificationDetail) = castToStringFour('Счет-фактура № ', seriesNumberObject(specificationSpecificationDetail(specificationDetail)), ' от ', ' ', dateSpecification(specificationSpecificationDetail(specificationDetail)));
-
-noteStatementDetail 'Примечание' = DATA STRING[40] (statementDetail) IN baseGroup;
+descriptionStatementDetail 'Название документа' (statementDetail) = descriptionStatement(statementStatementDetail(statementDetail));
 
 toFillStatementDetailsStatement 'Заполнить отгрузку на основании с/ф' =  ACTION (statement) {
     FOR inStatementSpecification (statement, specification) AND inSpecificationSpecificationDetail(specification, specificationDetail) DO {
@@ -5480,25 +5474,11 @@ toFillStatementDetailsStatement 'Заполнить отгрузку на осн
             SET retailPriceStatementDetail(d) <- retailPriceSpecificationDetail(specificationDetail);
             SET quantityStatementDetail(d) <- quantitySpecificationDetail(specificationDetail);
 //            SET barcodeExSkuStatementDetail(d) <- barcodeExSkuSpecificationDetail(specificationDetail);   // может для ш-к по другому
-            SET sumStatementDetail(d) <- retailRndSumSpecificationDetail(specificationDetail);
-            SET noteStatementDetail(d) <- infoSpecificationDetail(specificationDetail);
+            SET retailRndSumStatementDetail(d) <- retailRndSumSpecificationDetail(specificationDetail);
+            SET noteStatementDetail(d) <- descriptionSpecificationDetail(specificationDetail);
         };
     };
 } IN specificationGroup CONFIRM;
-
-wareStatementDetail 'Текущая посуда' (statementDetail) = DATA ware(statementDetail) IN idGroup;
-nameWareStatementDetail 'Текущая посуда' (statementDetail) = name(wareStatementDetail(statementDetail)) IN pricingStatementDetailInfo;
-//wareStatementDetail(statementDetail) <- wareItem(itemStatementDetail(statementDetail)) WHEN CHANGED(itemStatementDetail(statementDetail));
-
-priceWareStatementDetail 'Текущая цена посуды' (statementDetail) = DATA NUMERIC[14,2] (statementDetail) IN pricingStatementDetailInfo;
-
-castStatementObjectsToString100=
-    FORMULA STRING[200] '\'Выписка из розницы \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
-
-descriptionStatement 'Название документа' (statement) = castStatementObjectsToString100(
-    seriesNumberObject(statement), dateStatement(statement), nameCustomerStatement(statement));
-
-descriptionStatementDetail 'Название документа' (statementDetail) = descriptionStatement(statementStatementDetail(statementDetail));
 
 // ---------------------------------- Переоценка при реализации из розницы ------------------------------------------
 
@@ -5741,12 +5721,7 @@ namebanRevaluationItemDepartmentShipmentDetail 'Запрет на переоце
 
 supplierShipmentDetail 'Поставщик (ИД)' (shipmentDetail) = supplierShipment(shipmentShipmentDetail(shipmentDetail));
 
-
-numberDisposalShipment '№ распоряжения на переоценку' (shipment) = DATA STRING[30] (shipment) IN documentPrmGroup;
-revaluationCommitteeShipment 'Комиссия переоценки ИД' (shipment) = DATA revaluationCommittee (shipment) IN idGroup;
-nameRevaluationCommitteeShipment 'Комиссия переоценки' (shipment) = name(revaluationCommitteeShipment(shipment)) IN documentPrmGroup;
-revaluationCommitteeShipment(shipment) <- revaluationCommitteeDepartmentStore(departmentStoreShipment(shipment))
-    WHEN ASSIGNED(shipment IS shipment);
+@defineDocumentHeaderRevaluation(shipment);
 
 wastageCommitteeShipment 'Комиссия для списания отходов ИД' (shipment) = DATA wastageCommittee (shipment) IN idGroup;
 nameWastageCommitteeShipment 'Комиссия для списания отходов' (shipment) = name(wastageCommitteeShipment(shipment)) IN documentPrmGroup;
@@ -6311,11 +6286,7 @@ priceItemInnerArrival 'Цена (максим.)' (item, innerArrival) = priceIte
 //    itemInnerArrivalDetail(innerArrivalDetail), innerArrivalInnerArrivalDetail(innerArrivalDetail))
 //    WHEN CHANGED(itemInnerArrivalDetail (innerArrivalDetail));
 
-numberDisposalInnerArrival '№ распоряжения на переоценку' (innerArrival) = DATA STRING[30] (innerArrival) IN documentPrmGroup;
-revaluationCommitteeInnerArrival 'Комиссия переоценки ИД' (innerArrival) = DATA revaluationCommittee (innerArrival) IN idGroup;
-nameRevaluationCommitteeInnerArrival 'Комиссия переоценки' (innerArrival) = name(revaluationCommitteeInnerArrival(innerArrival)) IN documentPrmGroup;
-revaluationCommitteeInnerArrival(innerArrival) <- revaluationCommitteeDepartmentStore(departmentStoreInnerArrival(innerArrival))
-    WHEN ASSIGNED(innerArrival IS innerArrival);
+@defineDocumentHeaderRevaluation(innerArrival);
 
 curRetailPriceInnerArrivalDetail 'Текущая розничная цена' (innerArrivalDetail) = DATA NUMERIC[14,2] (innerArrivalDetail) IN pricingInnerArrivalDetailInfo;
 
@@ -6647,13 +6618,7 @@ CONSTRAINT contractReturnSupplier(returnSupplier) AND NOT isSupplierContractRetu
 CONSTRAINT contractReturnSupplier(returnSupplier) AND NOT isCompanyContractReturnSupplier(returnSupplier) CHECKED BY contractReturnSupplier MESSAGE 'Выберите договор данного юр. лица';
 CONSTRAINT contractReturnSupplier(returnSupplier) AND NOT isOperatingContractReturnSupplier(returnSupplier) CHECKED BY contractReturnSupplier MESSAGE 'Выберите действующий договор';
 
-
-numberDisposalReturnSupplier '№ распоряжения на переоценку' (returnSupplier) = DATA STRING[30] (returnSupplier) IN documentPrmGroup;
-revaluationCommitteeReturnSupplier 'Комиссия переоценки ИД' (returnSupplier) = DATA revaluationCommittee (returnSupplier) IN idGroup;
-nameRevaluationCommitteeReturnSupplier 'Комиссия переоценки' (returnSupplier) = name(revaluationCommitteeReturnSupplier(returnSupplier)) IN documentPrmGroup;
-revaluationCommitteeReturnSupplier(returnSupplier) <- revaluationCommitteeDepartmentStore(departmentStoreReturnSupplier(returnSupplier))
-    WHEN ASSIGNED(returnSupplier IS returnSupplier);
-
+@defineDocumentHeaderRevaluation(returnSupplier);
 
 returnLossSupplierReturnSupplier '% потерь при возврате' (returnSupplier) = DATA NUMERIC[8,3] (returnSupplier) IN documentPrmGroup;
 
@@ -7150,11 +7115,7 @@ seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND user
 quantityUserPriceChangeDetail 'Кол-во переоценки' = DATA NUMERIC[14,3] (userPriceChangeDetail);
 @defineDocumentHeaderItemQuantity(userPriceChange);
 
-numberDisposalUserPriceChange '№ распоряжения на переоценку' (userPriceChange) = DATA STRING[30] (userPriceChange) IN documentPrmGroup;
-revaluationCommitteeUserPriceChange 'Комиссия переоценки ИД' (userPriceChange) = DATA revaluationCommittee (userPriceChange) IN idGroup;
-nameRevaluationCommitteeUserPriceChange 'Комиссия переоценки' (userPriceChange) = name(revaluationCommitteeUserPriceChange(userPriceChange)) IN documentPrmGroup;
-revaluationCommitteeUserPriceChange(userPriceChange) <- revaluationCommitteeDepartmentStore(departmentStoreUserPriceChange(userPriceChange))
-    WHEN ASSIGNED(userPriceChange IS userPriceChange);
+@defineDocumentHeaderRevaluation(userPriceChange);
 
 importerPriceUserPriceChangeDetail 'Цена изготовителя' = DATA NUMERIC[14,2] (userPriceChangeDetail);
 supplierPriceUserPriceChangeDetail 'Цена поставщика' = DATA NUMERIC[14,2] (userPriceChangeDetail);
@@ -7792,7 +7753,7 @@ descriptionSalesLedger 'Название документа' (ledger) = UNION EX
 quantitySalesLedger 'Кол-во' (ledger) = quantityBalanceItemLedger(ledger) AND ledger IS salesLedger;
 
 retailSumSalesLedger 'Сумма продажи' (ledger) = UNION EXCLUSIVE sumBillSaleDetail(ledger),
-                                                                sumStatementDetail(ledger) PERSISTENT;
+                                                                retailRndSumStatementDetail(ledger) PERSISTENT;
 
 retailRangeSalesLedger 'НДС (ИД)' (ledger) = UNION EXCLUSIVE retailRangeBillSaleDetail(ledger),
                                                              retailRangeStatementDetail(ledger) PERSISTENT;
@@ -9606,7 +9567,7 @@ quantityConsignmentDetail 'Количество' (consignmentDetail) = UNION EXC
                                                                              quantityReturnSupplierDetail(consignmentDetail),
                                                                              quantityInnerFlowDetail(consignmentDetail);
 
-sumQuantityConsignment 'Общее количество' (consignment) = UNION EXCLUSIVE totalQuantityStatement(consignment),
+sumQuantityConsignment 'Общее количество' (consignment) = UNION EXCLUSIVE quantityStatementDetailStatement(consignment),
                                                                           totalQuantityReturnSupplier(consignment),
                                                                           totalQuantityInnerFlow(consignment) IN sumConsignmentGroup;
 
@@ -9614,31 +9575,31 @@ priceConsignmentDetail 'Цена' (consignmentDetail) = UNION EXCLUSIVE retailPr
                                                                     supplierPriceReturnSupplierDetail (consignmentDetail),
                                                                     retailPriceInnerFlowDetail(consignmentDetail);
 
-costConsignmentDetail 'Стоимость' (consignmentDetail) = UNION EXCLUSIVE sumStatementDetail (consignmentDetail),
+costConsignmentDetail 'Стоимость' (consignmentDetail) = UNION EXCLUSIVE retailRndSumStatementDetail (consignmentDetail),
                                                                         sumSupplierPriceReturnSupplierDetail (consignmentDetail),
                                                                         accountSumInnerFlowDetail (consignmentDetail);
 
-sumCostConsignmentDetail 'Общая стоимость' (consignment) = UNION EXCLUSIVE sumStatement(consignment),
+sumCostConsignmentDetail 'Общая стоимость' (consignment) = UNION EXCLUSIVE retailRndSumStatementDetailStatement(consignment),
                                                                            totalSumSupplierPriceWithWareReturnSupplier(consignment),
                                                                            accountSumInnerFlow(consignment) IN sumConsignmentGroup;
 
-vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION EXCLUSIVE dataActingRateRangeStatementDetail (consignmentDetail),
+vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION EXCLUSIVE dataCalcRangeStatementDetail (consignmentDetail),
                                                                                dataSuppliersRangeReturnSupplierDetail (consignmentDetail),
                                                                                dataRetailRangeInnerFlowDetail (consignmentDetail);
 
-sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION EXCLUSIVE totalSumNDSStatementDetail (consignmentDetail),
+sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION EXCLUSIVE calcVATRndSumStatementDetail (consignmentDetail),
                                                                           sumDetailSupplierVATReturnSupplierDetail (consignmentDetail),
                                                                           sumRetailVATInnerFlowDetail (consignmentDetail);
 
-totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNION EXCLUSIVE sumNDSStatement (consignment),
+totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNION EXCLUSIVE calcVATRndSumStatementDetailStatement (consignment),
                                                                                totalSumIncVATReturnSupplier (consignment),
                                                                                totalSumRetailVATInnerFlow (consignment) IN sumConsignmentGroup;
 
-costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION EXCLUSIVE sumStatementDetail (consignmentDetail),
+costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION EXCLUSIVE retailRndSumStatementDetail (consignmentDetail),
                                                                                  sumSupplierReturnSupplierDetail (consignmentDetail),
                                                                                  accountSumInnerFlowDetail (consignmentDetail);
 
-costWithVATConsignment 'Сумма с НДС' (consignment) = UNION EXCLUSIVE sumStatement (consignment),
+costWithVATConsignment 'Сумма с НДС' (consignment) = UNION EXCLUSIVE retailRndSumStatementDetailStatement (consignment),
                                                                      totalSumSupplierReturnSupplier (consignment),
                                                                      accountSumInnerFlow (consignment) IN sumConsignmentGroup;
 
@@ -10394,10 +10355,6 @@ diffTotalSumWarePriceChangeDocument 'Изменение суммы посуды'
 diffTotalSumVatWarePriceChangeDocument 'Изменение суммы НДС посуды' (priceChangeDocument) = totalSumVatWarePriceChangeDocument(priceChangeDocument) (-)
     oldTotalSumVatWarePriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
-//revaluationCommitteePriceChangeDocument 'Комиссия переоценки ИД' (priceChangeDocument) = DATA revaluationCommittee(priceChangeDocument);
-//revaluationCommitteePriceChangeDocument(priceChangeDocument) <- revaluationCommitteeDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument))
-//    WHEN ASSIGNED(priceChangeDocument IS priceChangeDocument);
-
 isRevaluationCommitteePriceChangeDocument(priceChangeDocument) = priceChangeDocument IS priceChangeDocument AND revaluationCommitteePriceChangeDocument(priceChangeDocument);
 
 nameRevaluationCommitteePriceChangeDocument 'Комиссия переоценки' (priceChangeDocument) = name(revaluationCommitteePriceChangeDocument(priceChangeDocument));
@@ -10979,7 +10936,7 @@ sumIncAccountByContainerDocumentLedger 'Сумма прихода, тара' (le
 sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSIVE accountSumWriteOff(ledger),
                                                                        retailSumReturnSupplier(ledger),
                                                                        accountSumInnerFlow(ledger),
-                                                                       sumStatement(ledger),
+                                                                       retailRndSumStatementDetailStatement(ledger),
                                                                        totalSumRetailByWastage(ledger),
         // наверное лишнее                                             totalSumSupplierReturnSupplier(ledger),
                                                                        accountSumShortageCollationSheet(ledger),
@@ -10991,7 +10948,7 @@ sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSI
 sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledger) = UNION EXCLUSIVE accountSumByItemWriteOff(ledger),
                                                                        retailSumByItemReturnSupplier(ledger),
                                                                        accountSumByItemInnerFlow(ledger),
-                                                                       sumByItemStatement(ledger),
+                                                                       retailRndSumItemStatementDetailStatement(ledger),
                                                                        accountSumItemShortageCollationSheet(ledger),
                                                                        sumZReport(ledger),
                                                                        sumSaleDiscountDocument(ledger) PERSISTENT IN ledgerByItemGroup; // subtotalByItemConsumption(ledger), totalSumByItemWastage(ledger),
@@ -10999,7 +10956,7 @@ sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledge
 sumOutAccountByContainerDocumentLedger 'Сумма расхода, тара' (ledger) = UNION EXCLUSIVE accountSumByContainerWriteOff(ledger),
                                                                        retailSumByContainerReturnSupplier(ledger),
                                                                        accountSumByContainerInnerFlow(ledger),
-                                                                       sumByContainerStatement(ledger),
+                                                                       retailRndSumContainerStatementDetailStatement(ledger),
                                                                        accountSumContainerShortageCollationSheet(ledger) PERSISTENT IN ledgerByContainerGroup;
 //                                                                       sumZReport(ledger),
 //                                                                       sumSaleDiscountDocument(ledger),
@@ -12110,13 +12067,13 @@ FORM specificationForm 'Отгрузки по данной с/ф'
 
     OBJECTS st=statement
     PROPERTIES (st) READONLY seriesNumberObject, dateStatement, nameCustomerStatement, nameDepartmentStoreStatement,
-                             noteStatement, totalQuantityStatement, sumNDSStatement, sumStatement
+                             noteStatement, quantityStatementDetailStatement, calcVATRndSumStatementDetailStatement, retailRndSumStatementDetailStatement
 
     OBJECTS d=statementDetail
     PROPERTIES (d)  READONLY indexStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
-                             retailPriceStatementDetail, sumWithoutNDSStatementDetail, numberRangeStatementDetail,
-                             dataActingRateRangeStatementDetail, sumNDSStatementDetail, totalSumNDSStatementDetail,
-                             sumStatementDetail, noteStatementDetail
+                             retailPriceStatementDetail, calcOutRndSumStatementDetail, numberCalcRangeStatementDetail,
+                             dataCalcRangeStatementDetail, calcVATRndSumStatementDetail,
+                             retailRndSumStatementDetail, noteStatementDetail
 
     FILTERS inStatementSpecification(st, sp),
             isPostedStatement(st),
@@ -12244,7 +12201,7 @@ FORM specifications 'Счет-фактуры'
     PROPERTIES (sp) READONLY numberObject, seriesObject, dateSpecification, timeSpecification, nameDepartmentStoreSpecification,
                              nameCustomerSpecification, dateToSpecification, countSpecificationDetailSpecification, quantitySpecificationDetailSpecification,
                              calcOutRndSumSpecificationDetailSpecification, calcVATRndSumSpecificationDetailSpecification, retailRndSumSpecificationDetailSpecification
-    PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  quantityStatementsInSpecification(sp)
+    PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  countStatementSpecification(sp)
 
     PROPERTIES (sp)          ADDFORM, EDITFORM, delete
 
@@ -12287,14 +12244,14 @@ FORM specificationsStatement 'Счета'
                                  dateToSpecification, quantitySpecificationDetailSpecification, retailRndSumSpecificationDetailSpecification, statusSpecification
     PROPERTIES (st, sp) statusStatementSpecification
 
-    FILTERS isCustomerStatementSpecification (st, sp),
-            isDepartmentStoreStatementSpecification (st, sp),
+    FILTERS customerStatement(st) == customerSpecification(sp),
+            departmentStoreStatement(st)== departmentStoreSpecification(sp),
             dateSpecification(sp) <= dateStatement(st)
 
     FILTERGROUP filters6
             FILTER 'Просроченные с/ф' 'F10' overdueSpecificationStatement(sp, st)
             FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecificationStatement(sp, st) DEFAULT
-            FILTER 'Без отгрузок с/ф ' 'F8' noQuantityStatementsInSpecification(sp)
+            FILTER 'Без отгрузок с/ф ' 'F8' noStatementSpecification(sp)
 ;
 
 showFormSpecificationsStatement 'Заказы' (statement) = ACTION FORM specificationsStatement OBJECTS st MODAL SHORTCUT specificationsStatement DEFAULT;
@@ -12307,7 +12264,7 @@ FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
     PROPERTIES (st) numberObject, seriesObject, dateStatement, timeStatement, nameCustomerStatement,
                     nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, showFormSpecificationsStatement,
-                    noteStatement, totalQuantityStatement, sumWithoutNDSStatement, sumNDSStatement, sumStatement,
+                    noteStatement, quantityStatementDetailStatement, calcOutRndSumStatementDetailStatement, calcVATRndSumStatementDetailStatement, retailRndSumStatementDetailStatement,
                     numberDisposalStatement SHOWIF needToPriceChangeStatement(st), nameRevaluationCommitteeStatement SHOWIF needToPriceChangeStatement(st)
 
     PROPERTIES(st) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
@@ -12321,8 +12278,8 @@ FORM statement 'Отгрузка из розницы'
 
     OBJECTS d=statementDetail
     PROPERTIES (d)  indexStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
-                    retailPriceStatementDetail, sumWithoutNDSStatementDetail, numberRangeStatementDetail, dataActingRateRangeStatementDetail,
-                    sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail,
+                    retailPriceStatementDetail, calcOutRndSumStatementDetail, numberCalcRangeStatementDetail, dataCalcRangeStatementDetail,
+                    calcVATRndSumStatementDetail, retailRndSumStatementDetail,
                     noteStatementDetail, ADDOBJ, delete
 
     PROPERTIES (d)  FORCE PANEL importerPriceStatementDetail, supplierPriceStatementDetail, nameWareStatementDetail, priceWareStatementDetail, dataRetailRangeStatementDetail,
@@ -12402,8 +12359,8 @@ DESIGN statement FROM DEFAULT {
 FORM statements 'Отгрузки из розницы'
     OBJECTS st=statement
     PROPERTIES (st)  READONLY objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameDepartmentStoreStatement,
-                     nameCustomerStatement, countStatementDetailStatement, totalQuantityStatement,
-                     sumWithoutNDSStatement, sumNDSStatement, sumStatement
+                     nameCustomerStatement, countStatementDetailStatement, quantityStatementDetailStatement,
+                     calcOutRndSumStatementDetailStatement, calcVATRndSumStatementDetailStatement, retailRndSumStatementDetailStatement
     PROPERTIES (st)  FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
                      toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,
                      toPrintTransportConsignmentAttach, toPrintConsignmentTwoHorizontal,
@@ -12415,8 +12372,8 @@ FORM statements 'Отгрузки из розницы'
 
     OBJECTS d=statementDetail
     PROPERTIES (d)   READONLY indexStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
-                              retailPriceStatementDetail, sumWithoutNDSStatementDetail, numberRangeStatementDetail, dataActingRateRangeStatementDetail,
-                              sumNDSStatementDetail, totalSumNDSStatementDetail, sumStatementDetail, noteStatementDetail
+                              retailPriceStatementDetail, calcOutRndSumStatementDetail, numberCalcRangeStatementDetail, dataCalcRangeStatementDetail,
+                              calcVATRndSumStatementDetail, retailRndSumStatementDetail, noteStatementDetail
 
     FILTERS          inStatementStatementDetail(st, d)
 ;
