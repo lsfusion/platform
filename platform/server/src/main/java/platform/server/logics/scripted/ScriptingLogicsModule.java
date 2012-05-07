@@ -1094,11 +1094,15 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LP<?> addScriptedSFProp(String typeName, String formulaText) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedSFProp(" + typeName + ", " + formulaText + ");");
-        ValueClass cls = findClassByCompoundName(typeName);
-        checkFormulaClass(cls);
         Set<Integer> params = findFormulaParameters(formulaText);
         checkFormulaParameters(params);
-        return addSFProp(transformFormulaText(formulaText), (DataClass) cls, params.size());
+        if (typeName != null) {
+            ValueClass cls = findClassByCompoundName(typeName);
+            checkFormulaClass(cls);
+            return addSFProp(transformFormulaText(formulaText), (DataClass) cls, params.size());
+        } else {
+            return addSFProp(transformFormulaText(formulaText), params.size());
+        }
     }
 
     private Set<Integer> findFormulaParameters(String text) {

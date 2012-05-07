@@ -1135,12 +1135,17 @@ specialPropertyName
 
 
 formulaPropertyDefinition returns [LP property]
+@init {
+	String className = null;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedSFProp($className.sid, $formulaText.val);
+		$property = self.addScriptedSFProp(className, $formulaText.val);
 	}
 }
-	:	'FORMULA' className=classId formulaText=stringLiteral
+	:	'FORMULA' 
+		(clsName=classId { className = $clsName.sid; })? 
+		formulaText=stringLiteral
 	;
 
 
