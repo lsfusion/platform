@@ -4053,14 +4053,6 @@ CLASS scales 'Весы' : machinery;
 CLASS check 'Прайс чекер' : machinery;
 CLASS terminal 'ТСД' : machinery;
 
-CLASS terminalDocumentType 'Тип документов';
-
-nameTerminalDocumentType 'Название' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
-idTerminalDocumentType 'Код' = DATA STRING[10] (terminalDocumentType) IN baseGroup;
-groupTerminalDocumentTypeTerminalDocumentType 'Группа типов документов (ИД)' = DATA groupTerminalDocumentType (terminalDocumentType);
-nameGroupTerminalDocumentTypeTerminalDocumentType 'Группа типов документов' (terminalDocumentType) = nameGroupTerminalDocumentType(groupTerminalDocumentTypeTerminalDocumentType(terminalDocumentType));
-isGroupTerminalDocumentTypeTerminalDocumentType (groupTerminalDocumentType, terminalDocumentType) = groupTerminalDocumentTypeTerminalDocumentType(terminalDocumentType) == groupTerminalDocumentType;
-
 isGroupCashRegister (machinery) = machinery IS groupCashRegister;
 groupCashRegisterCashRegister 'Группа (ИД)' = DATA groupCashRegister (cashRegister) IN idGroup;
 isGroupCashRegisterCashRegister (groupCashRegister, cashRegister) = groupCashRegisterCashRegister(cashRegister) == groupCashRegister;
@@ -4137,6 +4129,36 @@ sidScales 'ID весов для Set Retail' = DATA INTEGER (scales) IN baseGroup
 filterItemsGroupMachinery 'Фильтровать по группам товаров' = DATA BOOLEAN (groupMachinery);
 
 inGroupMachineryItemGroup 'Вкл' = DATA BOOLEAN (groupMachinery, itemGroup);
+
+//---------------------------- типы документов ----------------------------------------//
+
+CLASS terminalDocumentType 'Тип документов';
+
+nameTerminalDocumentType 'Название' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
+idTerminalDocumentType 'Код' = DATA STRING[10] (terminalDocumentType) IN baseGroup;
+groupTerminalDocumentTypeTerminalDocumentType 'Группа типов документов (ИД)' = DATA groupTerminalDocumentType (terminalDocumentType);
+nameGroupTerminalDocumentTypeTerminalDocumentType 'Группа типов документов' (terminalDocumentType) = nameGroupTerminalDocumentType(groupTerminalDocumentTypeTerminalDocumentType(terminalDocumentType));
+isGroupTerminalDocumentTypeTerminalDocumentType (groupTerminalDocumentType, terminalDocumentType) = groupTerminalDocumentTypeTerminalDocumentType(terminalDocumentType) == groupTerminalDocumentType;
+
+CLASS STATIC terminalHandbookType 'Вид справочника ТСД'
+{
+supplier 'Поставщик',
+customer 'Покупатель'
+};
+
+idTerminalHandbookType 'Код' = DATA STRING[10] (terminalHandbookType) IN baseGroup;
+terminalHandbookType1TerminalDocumentType = DATA terminalHandbookType (terminalDocumentType);
+terminalHandbookType2TerminalDocumentType = DATA terminalHandbookType (terminalDocumentType);
+idTerminalHandbookType1TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
+nameTerminalHandbookType1TerminalDocumentType 'Имя' (terminalDocumentType)  = name (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
+idTerminalHandbookType2TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType2TerminalDocumentType(terminalDocumentType));
+nameTerminalHandbookType2TerminalDocumentType 'Имя' (terminalDocumentType)  = name (terminalHandbookType2TerminalDocumentType(terminalDocumentType));
+
+nameInHandbook1TerminalDocumentType 'Наименование в справочнике 1' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
+nameInHandbook1TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType1TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType1TerminalDocumentType(terminalDocumentType));
+nameInHandbook2TerminalDocumentType 'Наименование в справочнике 2' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
+nameInHandbook2TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType2TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType2TerminalDocumentType(terminalDocumentType));
+
 
 FORM filterItemsGroupMachinery 'Фильтрация по группам товаров'
     OBJECTS gm = groupMachinery FIXED PANEL
@@ -4299,7 +4321,9 @@ FORM groupsTerminal 'Группы ТСД'
     PROPERTIES(grt)  ADDFORM, EDITFORM, delete
 
     PROPERTIES(t) READONLY nppMachinery, descriptionMachinery, portMachinery,
-                           useMachinery, directoryTerminal, nameTerminalModelTerminal
+                           useMachinery, directoryTerminal, nameTerminalModelTerminal,
+                           nameInHandbook1TerminalDocumentType, idTerminalHandbookType1TerminalDocumentType,
+                           nameInHandbook2TerminalDocumentType, idTerminalHandbookType2TerminalDocumentType
     FILTERS isGroupTerminalTerminal(grt, t)
 ;
 
@@ -4310,7 +4334,9 @@ FORM groupTerminalDocumentType 'Группа типов документов'
 
     OBJECTS tdt=terminalDocumentType
     PROPERTIES(tdt)   idTerminalDocumentType, nameTerminalDocumentType, nameGroupTerminalDocumentTypeTerminalDocumentType,
-                    ADDOBJ, delete
+                      nameInHandbook1TerminalDocumentType, idTerminalHandbookType1TerminalDocumentType,
+                      nameInHandbook2TerminalDocumentType, idTerminalHandbookType2TerminalDocumentType,
+                      ADDOBJ, delete
 
     FILTERGROUP filters3
         FILTER 'Показывать только для данной группы' 'F10' isGroupTerminalDocumentTypeTerminalDocumentType(gtdt, tdt) DEFAULT
@@ -4323,9 +4349,17 @@ FORM groupsTerminalDocumentType 'Группы типов документов'
     PROPERTIES(gtdt) nameGroupTerminalDocumentType
     PROPERTIES(gtdt)  ADDFORM, EDITFORM, delete
 
-    PROPERTIES(tdt) READONLY idTerminalDocumentType, nameTerminalDocumentType, nameGroupTerminalDocumentTypeTerminalDocumentType
+    PROPERTIES(tdt) READONLY idTerminalDocumentType, nameTerminalDocumentType,
+    nameInHandbook1TerminalDocumentType, idTerminalHandbookType1TerminalDocumentType,
+    nameInHandbook2TerminalDocumentType, idTerminalHandbookType2TerminalDocumentType
 
     FILTERS groupTerminalDocumentTypeTerminalDocumentType (tdt) == gtdt
+;
+
+FORM handbooksTerminalDocumentType 'Виды справочников ТСД'
+    OBJECTS h=terminalHandbookType
+    PROPERTIES(h)  name, idTerminalHandbookType
+    PROPERTIES(h)  ADDFORM, EDITFORM, delete
 ;
 
 FORM equipmentServer 'Серверы оборудования'
@@ -13183,6 +13217,7 @@ NAVIGATOR {
                 ADD groupsTerminal;
                 ADD terminalModels;
                 ADD groupsTerminalDocumentType;
+                ADD handbooksTerminalDocumentType;
             }
             ADD stages;
             ADD cashReports;

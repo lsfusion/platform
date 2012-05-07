@@ -53,7 +53,7 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                 Index fileBarcodeIndex = fileBarcode.createIndex(directory + "/" + transactionInfo.dateTimeCode + "B.NDX", "BARCODE", true, true);
 
                 for (ItemInfo item : transactionInfo.itemsList) {
-                    if (fileBarcode.findExact(item.barcodeEx)) {
+                    if (fileBarcode.findExact(item.barcodeEx.trim())) {
                         fileBarcode.getField("ARTICUL").put(item.barcodeEx);
                         fileBarcode.getField("BARCODE").put(item.barcodeEx);
                         fileBarcode.update();
@@ -87,7 +87,7 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                 Index fileGoodsIndex = fileGoods.createIndex(directory + "/" + transactionInfo.dateTimeCode + "G.NDX", "ARTICUL", true, true);
 
                 for (ItemInfo item : transactionInfo.itemsList) {
-                    if (fileGoods.findExact(item.barcodeEx)) {
+                    if (fileGoods.findExact(item.barcodeEx.trim())) {
                         fileGoods.getField("ARTICUL").put(item.barcodeEx);
                         fileGoods.getField("NAME").put(item.name);
                         fileGoods.getField("PRICE").put(item.price.toString());
@@ -149,16 +149,27 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                 for (TerminalDocumentTypeInfo docType : terminalDocumentTypeInfoList) {
                     String id = docType.id!=null ? docType.id.trim() : "";
                     String name = docType.name!=null ? docType.name.trim() : "";
-                    String groupName = docType.groupName!=null ? docType.groupName.trim() : "";
-                    if (fileSPRDOC.findExact(docType.id)) {
+
+                    String nameInHandbook1 = docType.nameInHandbook1!=null ? docType.nameInHandbook1.trim() : "";
+                    String idTerminalHandbookType1 = docType.idTerminalHandbookType1!=null ? docType.idTerminalHandbookType1.trim() : "";
+                    String nameInHandbook2 = docType.nameInHandbook2!=null ? docType.nameInHandbook2.trim() : "";
+                    String idTerminalHandbookType2 = docType.idTerminalHandbookType2!=null ? docType.idTerminalHandbookType2.trim() : "";
+
+                    if (fileSPRDOC.findExact(docType.id.trim())) {
                         fileSPRDOC.getField("CODE").put(id);
                         fileSPRDOC.getField("NAME").put(name);
-                        fileSPRDOC.getField("SPRT1").put(groupName);
+                        fileSPRDOC.getField("SPRT1").put(nameInHandbook1);
+                        fileSPRDOC.getField("VIDSPR1").put(idTerminalHandbookType1);
+                        fileSPRDOC.getField("SPRT2").put(nameInHandbook2);
+                        fileSPRDOC.getField("VIDSPR2").put(idTerminalHandbookType2);
                         fileSPRDOC.update();
                     } else {
                         fileSPRDOC.getField("CODE").put(id);
                         fileSPRDOC.getField("NAME").put(name);
-                        fileSPRDOC.getField("SPRT1").put(groupName);
+                        fileSPRDOC.getField("SPRT1").put(nameInHandbook1);
+                        fileSPRDOC.getField("VIDSPR1").put(idTerminalHandbookType1);
+                        fileSPRDOC.getField("SPRT2").put(nameInHandbook2);
+                        fileSPRDOC.getField("VIDSPR2").put(idTerminalHandbookType2);
                         fileSPRDOC.write();
                     }
                 }

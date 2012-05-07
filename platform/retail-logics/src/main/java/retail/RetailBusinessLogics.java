@@ -318,7 +318,10 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         Query<Object, Object> terminalDocumentTypeQuery = new Query<Object, Object>(terminalDocumentTypeKeys);
         terminalDocumentTypeQuery.properties.put("idTerminalDocumentType", retailLM.getLPByName("idTerminalDocumentType").getExpr(terminalDocumentTypeKey));
         terminalDocumentTypeQuery.properties.put("nameTerminalDocumentType", retailLM.getLPByName("nameTerminalDocumentType").getExpr(terminalDocumentTypeKey));
-        terminalDocumentTypeQuery.properties.put("nameGroupTerminalDocumentTypeTerminalDocumentType", retailLM.getLPByName("nameGroupTerminalDocumentTypeTerminalDocumentType").getExpr(terminalDocumentTypeKey));
+        terminalDocumentTypeQuery.properties.put("nameInHandbook1TerminalDocumentType", retailLM.getLPByName("nameInHandbook1TerminalDocumentType").getExpr(terminalDocumentTypeKey));
+        terminalDocumentTypeQuery.properties.put("idTerminalHandbookType1TerminalDocumentType", retailLM.getLPByName("idTerminalHandbookType1TerminalDocumentType").getExpr(terminalDocumentTypeKey));
+        terminalDocumentTypeQuery.properties.put("nameInHandbook2TerminalDocumentType", retailLM.getLPByName("nameInHandbook2TerminalDocumentType").getExpr(terminalDocumentTypeKey));
+        terminalDocumentTypeQuery.properties.put("idTerminalHandbookType2TerminalDocumentType", retailLM.getLPByName("idTerminalHandbookType2TerminalDocumentType").getExpr(terminalDocumentTypeKey));
         terminalDocumentTypeQuery.and(isTerminalDocumentType.property.getExpr(terminalDocumentTypeKeys).getWhere());
 
         OrderedMap<Map<Object, Object>, Map<Object, Object>> terminalDocumentTypeResult = terminalDocumentTypeQuery.execute(session.sql);
@@ -326,8 +329,12 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         for (Map<Object, Object> values : terminalDocumentTypeResult.values()) {
             String id = (String) values.get("idTerminalDocumentType");
             String name = (String) values.get("nameTerminalDocumentType");
-            String nameGroup = (String) values.get("nameGroupTerminalDocumentTypeTerminalDocumentType");
-            terminalDocumentTypeInfoList.add(new TerminalDocumentTypeInfo(id, name, nameGroup));
+            String nameInHandbook1 = (String) values.get("nameInHandbook1TerminalDocumentType");
+            String idTerminalHandbookType1 = (String) values.get("idTerminalHandbookType1TerminalDocumentType");
+            String nameInHandbook2 = (String) values.get("nameInHandbook2TerminalDocumentType");
+            String idTerminalHandbookType2 = (String) values.get("idTerminalHandbookType1TerminalDocumentType");
+            terminalDocumentTypeInfoList.add(new TerminalDocumentTypeInfo(id, name, nameInHandbook1, idTerminalHandbookType1,
+                    nameInHandbook2, idTerminalHandbookType2));
         }
         return terminalDocumentTypeInfoList;
     }
