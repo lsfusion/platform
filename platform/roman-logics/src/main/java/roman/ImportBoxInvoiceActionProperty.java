@@ -104,11 +104,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             boxKey = new ImportKey(LM.supplierBox, LM.supplierBoxSIDSupplier.getMapping(boxNumberField, supplier));
             properties.add(new ImportProperty(invoiceSIDField, LM.boxInvoiceSupplierBox.getMapping(boxKey), LM.object(LM.boxInvoice).getMapping(invoiceKey)));
             properties.add(new ImportProperty(boxNumberField, LM.sidSupplierBox.getMapping(boxKey)));
-            if (hasBarCode()) {
-                properties.add(new ImportProperty(boxNumberField, LM.baseLM.barcode.getMapping(boxKey)));
-            } else {
-                properties.add(new ImportProperty(boxNumberField, LM.itemSupplierArticleSIDColorSIDSizeSID.getMapping(boxKey, sidField, colorCodeField, sizeField)));
-            }
+            properties.add(new ImportProperty(boxNumberField, LM.baseLM.barcode.getMapping(boxKey)));
             destinationKey = new ImportKey(LM.store, LM.destinationSIDSupplier.getMapping(sidDestinationDataSupplierBoxField, supplier));
             properties.add(new ImportProperty(sidDestinationDataSupplierBoxField, LM.sidDestinationSupplier.getMapping(destinationKey, supplier)));
             properties.add(new ImportProperty(sidDestinationDataSupplierBoxField, LM.destinationDataSupplierBox.getMapping(boxKey), LM.object(LM.destination).getMapping(destinationKey)));
