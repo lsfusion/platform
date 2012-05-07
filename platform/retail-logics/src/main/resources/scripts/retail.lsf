@@ -503,22 +503,24 @@ META defineDocumentDetailNumbered (object)
     seriesNumber###object##Detail 'Серия/номер' (detail) = seriesNumberObject(object###object##Detail(detail));
 END
 
+GROUP itemDetailGroup 'Товар' : publicGroup;
+
 META defineDocumentDetailItem (object)
 
-    item###object##Detail 'Товар (ИД)' = DATA item (object##Detail) IN idGroup;
+    item###object##Detail = DATA item (object##Detail);
 
     nameAttributeItem###object##Detail 'Товар' (detail) =
-        nameAttributeItem(item###object##Detail(detail)) IN recognizeGroup;
+        nameAttributeItem(item###object##Detail(detail)) IN itemDetailGroup;
 
     shortNameUnitOfMeasureItem###object##Detail 'Ед. изм.' (detail) =
-        shortNameUnitOfMeasureItem(item###object##Detail(detail)) IN baseGroup;
+        shortNameUnitOfMeasureItem(item###object##Detail(detail)) IN itemDetailGroup;
 
-    articleItem###object##Detail 'Артикул' (detail) = articleItem(item###object##Detail(detail));
+    articleItem###object##Detail 'Артикул' (detail) = articleItem(item###object##Detail(detail)) IN itemDetailGroup;
 
-    nameCountryItem###object##Detail 'Страна' (detail) = nameCountryItem(item###object##Detail(detail));
+    nameCountryItem###object##Detail 'Страна' (detail) = nameCountryItem(item###object##Detail(detail)) IN itemDetailGroup;
 
-    barcodeExSku###object##Detail 'Штрих-код товара' (object) =
-        barcodeEx(barcodeSku(item###object##Detail (object))) IN baseGroup;
+    barcodeExSku###object##Detail 'Штрих-код' (object) =
+        barcodeEx(barcodeSku(item###object##Detail (object))) IN itemDetailGroup;
 
 END
 
@@ -554,28 +556,31 @@ META defineDocumentDetailQuantity (object)
     quantity###object##Detail 'Кол-во' = DATA NUMERIC[14,3] (object##Detail);
 END
 
+GROUP priceDetailGroup 'Цены' : publicGroup;
+
 META defineDocumentDetailWare (object)
     ware###object##Detail = DATA ware(object##Detail);
-    nameWare###object##Detail 'Посуда' (detail) = name(ware###object##Detail(detail));
+    nameWare###object##Detail 'Посуда' (detail) = name(ware###object##Detail(detail)) IN priceDetailGroup;
 
-    priceWare###object##Detail 'Цена посуды' = DATA NUMERIC[14,2] (object##Detail);
+    priceWare###object##Detail 'Цена посуды' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
 END
 
 META defineDocumentDetailRetailPrice (object)
-    retailPrice###object##Detail 'Розничная цена' = DATA NUMERIC[14,2] (object##Detail);
+    retailPrice###object##Detail 'Розничная цена' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
 END
 
 META defineDocumentDetailPrice (object)
-    importerPrice###object##Detail 'Цена изготовителя/импортера' = DATA NUMERIC[14,2] (object##Detail);
-    supplierPrice###object##Detail 'Цена поставщика' = DATA NUMERIC[14,2] (object##Detail);
+    importerPrice###object##Detail 'Цена изготовителя/импортера' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+    supplierPrice###object##Detail 'Цена поставщика' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
 
     retailRange###object##Detail = DATA range (object##Detail);
-    numberRetailRange###object##Detail 'НДС розничный, номер' (detail) = dataRange(retailRange###object##Detail(detail));
+    numberRetailRange###object##Detail 'НДС розничный, номер' (detail) = dataRange(retailRange###object##Detail(detail)) IN priceDetailGroup;
     dataRetailRange###object##Detail 'НДС розничный, %' (detail) =
-       dataActingRateRangeDate(retailRange###object##Detail(detail), date###object##Detail(detail));
+       dataActingRateRangeDate(retailRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 
     CONSTRAINT taxRange(retailRange###object##Detail(detail)) != tax.taxNDS CHECKED BY retailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
+    @defineDocumentDetailWare(object);
     @defineDocumentDetailRetailPrice(object);
 END
 
@@ -620,17 +625,17 @@ META defineDocumentDetailAccountSum (object)
 END
 
 META defineDocumentDetailCurRetailPrice (object)
-    curRetailPrice###object##Detail 'Текущая розничная цена' (detail) = DATA NUMERIC[14,2] (object##Detail);
+    curRetailPrice###object##Detail 'Тек. розничная цена' (detail) = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
 END
 
 META defineDocumentDetailCurPrice (object)
-    curImporterPrice###object##Detail 'Текущая цена изгтовителя/импортера' = DATA NUMERIC[14,2] (object##Detail);
-    curSupplierPrice###object##Detail 'Текущая цена поставщика' = DATA NUMERIC[14,2] (object##Detail);
+    curImporterPrice###object##Detail 'Тек. цена изгтовителя/импортера' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+    curSupplierPrice###object##Detail 'Тек. цена поставщика' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
 
     curRetailRange###object##Detail = DATA range (object##Detail);
-    curNumberRetailRange###object##Detail 'Текущий НДС розничный, номер' (detail) = dataRange(curRetailRange###object##Detail(detail));
-    curDataRetailRange###object##Detail 'Текущий НДС розничный, %' (detail) =
-       dataActingRateRangeDate(curRetailRange###object##Detail(detail), dateStudyOutputDetail(detail));
+    curNumberRetailRange###object##Detail 'Тек. НДС розничный, номер' (detail) = dataRange(curRetailRange###object##Detail(detail)) IN priceDetailGroup;
+    curDataRetailRange###object##Detail 'Тек. НДС розничный, %' (detail) =
+       dataActingRateRangeDate(curRetailRange###object##Detail(detail), dateStudyOutputDetail(detail)) IN priceDetailGroup;
 
     CONSTRAINT taxRange(curRetailRange###object##Detail(detail)) != tax.taxNDS CHECKED BY curRetailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
@@ -716,6 +721,57 @@ META defineDocumentHeaderRevaluation (object)
     nameRevaluationCommittee###object 'Комиссия переоценки' (object) = name(revaluationCommittee###object(object)) IN documentPrmGroup;
     revaluationCommittee###object(object) <- revaluationCommitteeDepartmentStore(departmentStore###object(object))
         WHEN object IS object;
+END
+
+// ------------------------- Автоматическое изменение цен ---------------------------------- //
+
+META defineDocumentPriceChange (object)
+
+    needToPriceChange###object (object) = GROUP SUM 1 IF needToPriceChange###object##Detail(detail) BY object###object##Detail(detail);
+
+    @metaCodeDetailAggregation(object, priceChange###object, needToPriceChange###object);
+
+    //// атрибуты документа переоценки
+
+    dateTimePriceChange###object 'Дата/время' (priceChange) = dateTime###object(object##PriceChange###object(priceChange));
+    datePriceChange###object 'Дата' (priceChange) = date###object(object##PriceChange###object(priceChange));
+
+    departmentStorePriceChange###object (priceChange) = departmentStore###object(statementPriceChangeStatement(priceChange));
+    nameDepartmentStorePriceChange###object 'Отдел документа' (priceChange) = name(departmentStorePriceChange###object(priceChange));
+
+    isPostedPriceChange###object 'Закрыт' (priceChange) = isPosted###object(object##PriceChange###object(priceChange));
+    numberPriceChange###object 'Номер документа' (priceChange) = numberObject(object##PriceChange###object(priceChange));
+    seriesPriceChange###object 'Серия документа' (priceChange) = seriesObject(object##PriceChange###object(priceChange));
+    descriptionPriceChange###object 'Название документа' (priceChange) = description###object(object##PriceChange###object(priceChange));
+
+    numberDisposalPriceChange###object '№ распоряжения на переоценку' (priceChange) = numberDisposal###object(object##PriceChange###object(priceChange));
+    revaluationCommitteePriceChange###object 'Комиссия переоценки ИД' (priceChange) = revaluationCommittee###object(object##PriceChange###object(priceChange));
+
+    //// атрибуты детализации документа переоценки
+
+    itemPriceChange###object##Detail (priceChangeDetail) = item###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+    nameItemPriceChange###object##Detail 'Товар' (priceChangeDetail) = nameAttributeItem(itemPriceChange###object##Detail(priceChangeDetail));
+
+END
+
+META defineDocumentPriceChangeQuantity (object)
+    quantityPriceChange###object##Detail 'Количество' (priceChangeDetail) = quantity###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+END
+
+META defineDocumentPriceChangePrice (object)
+    importerPriceChange###object##Detail 'Цена изготовителя' (priceChangeDetail) = importerPrice###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+    supplierPriceChange###object##Detail 'Цена поставщика' (priceChangeDetail) = supplierPrice###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+
+    dataRetailRangePriceChange###object##Detail 'НДС, %' (priceChangeDetail) = dataRetailRange###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+
+    warePriceChange###object##Detail 'Посуда' (priceChangeDetail) = ware###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+    priceWarePriceChange###object##Detail 'Цена посуды' (priceChangeDetail) =  priceWare###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+
+    retailPriceChange###object##Detail 'Розничная цена' (priceChangeDetail) = retailPrice###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+END
+
+META defineDocumentPriceChangeCurRetailPrice (object)
+    curRetailPriceChange###object##Detail 'Старая розничная цена' (priceChangeDetail) = curRetailPrice###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
 END
 
 // ----------------------------------- Свойства для объектов Posted ------------------------------------------ //
@@ -5441,8 +5497,6 @@ CONSTRAINT dateToSpecification(specification) < dateSpecification(specification)
 //---------------------------- Документ на отгрузку из розницы ----------------------------------------//
 
 GROUP specificationGroup 'Счет-фактуры' : publicGroup;
-GROUP itemStatementDetailInfo 'Информация по товару' : publicGroup;
-GROUP pricingStatementDetailInfo 'Дополнительные ценовые параметры': publicGroup;
 
 CLASS statement 'Выписка из розницы' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
 CLASS statementDetail 'Строка выписки из розницы' : outAutoBalanceItemLedger, salesLedger, consignmentDetail;
@@ -5453,14 +5507,13 @@ CLASS statementPosted 'Закрытая выписка из розницы' : st
 @defineDocumentHeaderRevaluation(statement);
 
 @defineDocumentDetailQuantity(statement);
-@defineDocumentDetailRetailPrice(statement);
+@defineDocumentDetailPrice(statement);
 @defineDocumentDetailRetailSum(statement);
 
 @defineDocumentDetailCalcRange(statement);
 @defineDocumentDetailCalcVATSum(statement);
 
 @defineDocumentDetailCurRetailPrice(statement);
-@defineDocumentDetailWare(statement);
 
 @defineDocumentDetailNote(statement);
 
@@ -5483,6 +5536,8 @@ specificationsStatement 'Ввести на основании с/ф' (statement)
 
 countStatementSpecification(specification) = GROUP SUM 1 IF inStatementSpecification(statement, specification) AND isPostedStatement(statement) BY specification;
 noStatementSpecification(specification) = specification IS specification AND NOT countStatementSpecification(specification);
+
+differsPriceStatementDetail(statementDetail) = retailPriceStatementDetail(statementDetail) != curRetailPriceStatementDetail(statementDetail);
 
 statusSpecification 'Расход' (specification) = IF countStatementSpecification(specification)
                                                   THEN 'Отгрузки были' IF specification IS specification
@@ -5522,58 +5577,10 @@ CLASS priceChangeStatementDetail 'Строка переоценки при от�
 needToPriceChangeStatementDetail (statementDetail) = curRetailPriceStatementDetail(statementDetail) != retailPriceStatementDetail(statementDetail) AND
                                                    quantityStatementDetail(statementDetail) >0; // <= balanceDepartmentStoreItemStatementDetail(statementDetail);
 
-needToPriceChangeStatement (statement) = GROUP SUM 1 IF needToPriceChangeStatementDetail(statementDetail) BY statementStatementDetail(statementDetail);
-
-@metaCodeDetailAggregation(statement, priceChangeStatement, needToPriceChangeStatement);
-
-//// атрибуты документа переоценки
-
-dateTimePriceChangeStatement 'Дата/время' (priceChangeStatement) = dateTimeStatement(statementPriceChangeStatement(priceChangeStatement));
-datePriceChangeStatement 'Дата' (priceChangeStatement) = dateStatement(statementPriceChangeStatement(priceChangeStatement));
-isPostedPriceChangeStatement 'Закрыт' (priceChangeStatement) = isPostedStatement(statementPriceChangeStatement(priceChangeStatement));
-numberPriceChangeStatement 'Номер накладной' (priceChangeStatement) = numberObject(statementPriceChangeStatement(priceChangeStatement));
-seriesPriceChangeStatement 'Серия накладной' (priceChangeStatement) = seriesObject(statementPriceChangeStatement(priceChangeStatement));
-descriptionPriceChangeStatement 'Название документа' (priceChangeStatement) = descriptionStatement(statementPriceChangeStatement(priceChangeStatement));
-numberDisposalPriceChangeStatement '№ распоряжения на переоценку' (priceChangeStatement) = numberDisposalStatement(statementPriceChangeStatement(priceChangeStatement));
-revaluationCommitteePriceChangeStatement 'Комиссия переоценки ИД' (priceChangeStatement) = revaluationCommitteeStatement(statementPriceChangeStatement(priceChangeStatement));
-
-customerPriceChangeStatement (priceChangeStatement) = customerStatement(statementPriceChangeStatement(priceChangeStatement));
-nameCustomerPriceChangeStatement 'Покупатель' (priceChangeStatement) = name(customerPriceChangeStatement(priceChangeStatement));
-
-departmentStorePriceChangeStatement (priceChangeStatement) = departmentStoreStatement(statementPriceChangeStatement(priceChangeStatement));
-nameDepartmentStorePriceChangeStatement 'Отдел документа' (priceChangeStatement) = name(departmentStorePriceChangeStatement(priceChangeStatement));
-
-
-////старые ценовые параметры для переоценок
-
-notEqualsPriceStatementDetail(statementDetail)  = retailPriceStatementDetail(statementDetail) != curRetailPriceStatementDetail(statementDetail);
-
-retailRangeStatementDetail(statementDetail) = DATA range (statementDetail) IN idGroup;
-dataRetailRangeStatementDetail 'Текущий НДС розничный,%' (statementDetail) =
-   dataActingRateRangeDate(retailRangeStatementDetail(statementDetail),  dateStatement(statementStatementDetail(statementDetail))) IN pricingStatementDetailInfo;
-
-importerPriceStatementDetail 'Текущая цена изготовителя/импортера' (statementDetail) = DATA NUMERIC[14,2] (statementDetail) IN pricingStatementDetailInfo;
-supplierPriceStatementDetail 'Текущая цена поставщика' (statementDetail) = DATA NUMERIC[14,2] (statementDetail) IN pricingStatementDetailInfo;
-
-//// атрибуты детализации документа переоценки
-
-itemPriceChangeStatementDetail (priceChangeStatementDetail) = itemStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
-nameItemPriceChangeStatementDetail 'Товар' (priceChangeStatementDetail) = nameAttributeItem(itemPriceChangeStatementDetail(priceChangeStatementDetail));
-
-quantityPriceChangeStatementDetail 'Количество' (priceChangeStatementDetail) = quantityStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
-
-importerPriceChangeStatementDetail 'Текущая цена изготовителя' (priceChangeStatementDetail) = importerPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
-supplierPriceChangeStatementDetail 'Текущая цена поставщика' (priceChangeStatementDetail) = supplierPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
-
-//importerPriceChangeStatementDetail 'Новая цена изготовителя' (priceChangeStatementDetail) = importerPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
-                                     //  пока что цена изготовителя старая и новая равны   //
-dataRetailRangePriceChangeStatementDetail 'Текущий НДС, %' (priceChangeStatementDetail) = dataRetailRangeStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
-                                    //  пока что НДС старый и новый равны   //
-curRetailPriceChangeStatementDetail 'Текущая розничная цена' (priceChangeStatementDetail) = curRetailPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
-retailPriceChangeStatementDetail 'Новая розничная цена' (priceChangeStatementDetail) = retailPriceStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail));
-
-warePriceChangeStatementDetail 'Текущая посуда' (priceChangeStatementDetail) = wareStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail)) IN baseGroup;
-priceWarePriceChangeStatementDetail 'Текущая цена посуды' (priceChangeStatementDetail) =  priceWareStatementDetail(statementDetailPriceChangeStatementDetail(priceChangeStatementDetail)) IN baseGroup;
+@defineDocumentPriceChange(statement);
+@defineDocumentPriceChangeQuantity(statement);
+@defineDocumentPriceChangePrice(statement);
+@defineDocumentPriceChangeCurRetailPrice(statement);
 
 @metaCodeIsPriceChangeWrong(statement);
 
@@ -9965,13 +9972,13 @@ retailRangeBillDetail (billDetail) <- rangeRetailBLedgerDateTime(
                 WHEN CHANGED(itemBillDetail(billDetail));
 
 balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) = balanceBItemLedgerDateTime(
-                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail)) IN itemStatementDetailInfo;
+                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail)) IN itemDetailGroup;
 
 quantityItemByStatementDetail(statementDetail) = quantityStatementDetailItemStatement(itemStatementDetail(statementDetail), statementStatementDetail(statementDetail));
 highlightStatementDetail(statementDetail) =  quantityItemByStatementDetail(statementDetail) > balanceDepartmentStoreItemStatementDetail(statementDetail);
 
 balanceDepartmentStoreItemSpecificationDetail 'Текущий остаток' (specificationDetail) = balanceBItemLedgerDateTime(
-                itemSpecificationDetail(specificationDetail), departmentStoreSpecificationDetail(specificationDetail), dateTimeSpecificationDetail(specificationDetail));
+                itemSpecificationDetail(specificationDetail), departmentStoreSpecificationDetail(specificationDetail), dateTimeSpecificationDetail(specificationDetail)) IN itemDetailGroup;
 
 quantityItemBySpecificationDetail(specificationDetail) = quantitySpecificationDetailItemSpecification( itemSpecificationDetail(specificationDetail), specificationSpecificationDetail(specificationDetail));
 highlightSpecificationDetail(specificationDetail) =  quantityItemBySpecificationDetail(specificationDetail) > balanceDepartmentStoreItemSpecificationDetail(specificationDetail);
@@ -9986,7 +9993,7 @@ quantityExhibitedItemBySpecificationDetail(specificationDetail) = reservedItemDe
     itemSpecificationDetail(specificationDetail), dateSpecification(specificationSpecificationDetail(specificationDetail)));
 
 availableQuantityItemBySpecificationDetail 'Доступное к-во, с учетом непросроченных с/ф' (specificationDetail) =
-    balanceDepartmentStoreItemSpecificationDetail(specificationDetail)-quantityExhibitedItemBySpecificationDetail(specificationDetail);
+    balanceDepartmentStoreItemSpecificationDetail(specificationDetail)-quantityExhibitedItemBySpecificationDetail(specificationDetail) IN itemDetailGroup;
 
 NotNullAvailableQuantityItemBySpecificationDetail(specificationDetail) = availableQuantityItemBySpecificationDetail(specificationDetail) < 0;
 
@@ -12317,7 +12324,7 @@ FORM statement 'Отгрузка из розницы'
                     noteStatementDetail, ADDOBJ, delete
 
     PROPERTIES (d)  FORCE PANEL importerPriceStatementDetail, supplierPriceStatementDetail, nameWareStatementDetail, priceWareStatementDetail, dataRetailRangeStatementDetail,
-                                curRetailPriceStatementDetail BACKGROUND notEqualsPriceStatementDetail(d),
+                                curRetailPriceStatementDetail BACKGROUND differsPriceStatementDetail(d),
                                 articleItemStatementDetail, nameCountryItemStatementDetail,
                                 balanceDepartmentStoreItemStatementDetail BACKGROUND highlightStatementDetail(d)
 
@@ -12341,8 +12348,8 @@ DESIGN statement FROM DEFAULT {
                     panelLocation = TOOLBAR;
                 }
 
-                ADD d.panel{
-                    POSITION d.pricingStatementDetailInfo TO THE LEFT d.itemStatementDetailInfo;
+                ADD d.panel {
+                    POSITION d.priceDetailGroup TO THE LEFT d.itemDetailGroup;
                 }
             }
             NEW consignment{
