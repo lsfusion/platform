@@ -6041,86 +6041,43 @@ descriptionWriteOff 'Название документа' (writeOff) =
 descriptionWriteOffDetail 'Название документа' (writeOffDetail) = descriptionWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
+
 CLASS innerFlow 'Расход в отдел' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
 CLASS innerFlowDetail 'Строка расхода в отдел' : outAutoBalanceItemLedger, consignmentDetail;
 CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow, postedObject;
 
 @defineDocumentDefaultProperties (innerFlow);
 
-recipientDepartmentInnerFlow 'Отдел-получатель (ИД)' (innerFlow) = DATA departmentStore(innerFlow);
-nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentPrmGroup;
+@defineDocumentDetailQuantity(innerFlow);
+@defineDocumentDetailBasePrice(innerFlow);
 
-quantityInnerFlowDetail 'Количество' (innerFlowDetail) = DATA NUMERIC[14,3] (innerFlowDetail) IN baseGroup;
+@defineDocumentDetailInSum(innerFlow);
+@defineDocumentDetailWareSum(innerFlow);
+@defineDocumentDetailSum(innerFlow);
 
-retailPriceInnerFlowDetail 'Розничная цена' (innerFlowDetail) = DATA NUMERIC[14,2] (innerFlowDetail) IN baseGroup;
-
-priceItemInnerFlow 'Цена (максим.)' (item, innerFlow) = GROUP MAX retailPriceInnerFlowDetail (innerFlowDetail)
-    IF innerFlowInnerFlowDetail(innerFlowDetail) == innerFlow
-    BY itemInnerFlowDetail(innerFlowDetail), innerFlowInnerFlowDetail(innerFlowDetail);
-
-accountSumInnerFlowDetail 'Сумма' (innerFlowDetail) = round0(
-    quantityInnerFlowDetail(innerFlowDetail) * retailPriceInnerFlowDetail (innerFlowDetail)) IN baseGroup;
-
-importerPriceInnerFlowDetail 'Цена изготовителя' (innerFlowDetail) = DATA NUMERIC[14,2] (innerFlowDetail) IN baseGroup;
-supplierPriceInnerFlowDetail 'Цена поставщика' (innerFlowDetail) = DATA NUMERIC[14,2] (innerFlowDetail) IN baseGroup;
-
-importerPriceItemInnerFlow 'Цена изготовителя (максим.)' (item, innerFlow) = GROUP MAX importerPriceInnerFlowDetail (innerFlowDetail)
-    IF innerFlowInnerFlowDetail(innerFlowDetail) == innerFlow BY itemInnerFlowDetail(innerFlowDetail), innerFlowInnerFlowDetail(innerFlowDetail);
-
-retailRangeInnerFlowDetail(innerFlowDetail) = DATA range (innerFlowDetail) IN idGroup;
-numberRetailRangeInnerFlowDetail 'НДС номер' (innerFlowDetail) = dataRange(retailRangeInnerFlowDetail(innerFlowDetail));
-dataRetailRangeInnerFlowDetail 'НДС розничный,%' (innerFlowDetail) = dataActingRateRangeDate(retailRangeInnerFlowDetail(innerFlowDetail), dateInnerFlowDetail(innerFlowDetail)) IN baseGroup;
-
-CONSTRAINT taxRange(retailRangeInnerFlowDetail(innerFlowDetail))!=tax.taxNDS CHECKED BY retailRangeInnerFlowDetail
-    MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
+@defineDocumentHeaderQuantity(innerFlow);
 @defineDocumentHeaderItemQuantity(innerFlow);
 
-totalQuantityInnerFlow 'Общее количество' (innerFlow) = GROUP SUM quantityInnerFlowDetail(innerFlowDetail)
-    BY innerFlowInnerFlowDetail(innerFlowDetail) IN documentSumGroup;
+@defineDocumentHeaderWareSum(innerFlow);
+@defineDocumentHeaderSum(innerFlow);
 
-accountSumInnerFlow 'Общая сумма' (innerFlow) = GROUP SUM accountSumInnerFlowDetail (innerFlowDetail)
-    IF innerFlowInnerFlowDetail (innerFlowDetail) == innerFlow BY innerFlowInnerFlowDetail(innerFlowDetail) IN documentSumGroup;
+recipientDepartmentInnerFlow (innerFlow) = DATA departmentStore(innerFlow);
+nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentPrmGroup;
 
-accountSumByItemInnerFlow 'Общая сумма, товар' (innerFlow) =
-    GROUP SUM accountSumInnerFlowDetail (innerFlowDetail) AND NOT isContainerItem(itemInnerFlowDetail(innerFlowDetail))
-        BY innerFlowInnerFlowDetail(innerFlowDetail) IN documentSumGroup;
-accountSumByContainerInnerFlow 'Общая сумма, тара' (innerFlow) =
-    GROUP SUM accountSumInnerFlowDetail (innerFlowDetail) IF isContainerItem(itemInnerFlowDetail(innerFlowDetail))
-        BY innerFlowInnerFlowDetail(innerFlowDetail) IN documentSumGroup;
-
-castInnerFlowObjectsToString100=
-    FORMULA STRING[200] '\'Расход в отдел \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
-
-descriptionInnerFlow 'Название документа' (innerFlow) = castInnerFlowObjectsToString100(
+descriptionInnerFlow 'Название документа' (innerFlow) =
+    [FORMULA STRING[200] '\'Расход в отдел \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     seriesNumberObject(innerFlow), dateInnerFlow(innerFlow), nameRecipientDepartmentInnerFlow(innerFlow));
 
 descriptionInnerFlowDetail 'Название документа' (innerFlowDetail) = descriptionInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail));
 
-wareInnerFlowDetail 'Посуда (ИД)' (innerFlowDetail) = DATA ware(innerFlowDetail) IN baseGroup;
-nameWareInnerFlowDetail 'Посуда' (innerFlowDetail) = name(wareInnerFlowDetail(innerFlowDetail));
-//wareInnerFlowDetail(innerFlowDetail) <- wareItem(itemInnerFlowDetail(innerFlowDetail)) WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
-warePriceInnerFlowDetail 'Цена посуды' (innerFlowDetail) = DATA NUMERIC[14,2] (innerFlowDetail) IN baseGroup;
+// расчет цен для внутреннего прихода
 
+importerPriceItemInnerFlow 'Цена изготовителя (максим.)' (item, innerFlow) = GROUP MAX importerPriceInnerFlowDetail (innerFlowDetail)
+    IF innerFlowInnerFlowDetail(innerFlowDetail) == innerFlow BY itemInnerFlowDetail(innerFlowDetail), innerFlowInnerFlowDetail(innerFlowDetail);
 
-withoutWarePriceInnerFlowDetail 'Цена без посуды' (innerFlowDetail) = retailPriceInnerFlowDetail(innerFlowDetail) (-)
-    warePriceInnerFlowDetail(innerFlowDetail);
-
-sumRetailVATUnitInnerFlowDetail 'Сумма НДС за ед.' (innerFlowDetail) = [X*Y/(100+Y)](
-    withoutWarePriceInnerFlowDetail(innerFlowDetail), dataRetailRangeInnerFlowDetail(innerFlowDetail));
-
-sumRetailVATInnerFlowDetail 'Сумма розничного НДС' (innerFlowDetail) = round0(
-    sumRetailVATUnitInnerFlowDetail(innerFlowDetail)*quantityInnerFlowDetail(innerFlowDetail));
-
-totalSumRetailVATInnerFlow 'Сумма розничного НДС' (innerFlow) = GROUP SUM sumRetailVATInnerFlowDetail(innerFlowDetail)
-    BY innerFlowInnerFlowDetail(innerFlowDetail);
-
-supplierMarkupInnerFlowDetail 'Оптовая надбавка' (innerFlowDetail) =
-    (supplierPriceInnerFlowDetail(innerFlowDetail)/importerPriceInnerFlowDetail(innerFlowDetail) - 1)*100;
-
-retailMarkupInnerFlowDetail 'Торговая надбавка' (innerFlowDetail) =
-    ((withoutWarePriceInnerFlowDetail(innerFlowDetail) (-) sumRetailVATUnitInnerFlowDetail(innerFlowDetail))/
-    importerPriceInnerFlowDetail(innerFlowDetail) - 1)*100;
+retailPriceItemInnerFlow 'Цена (максим.)' (item, innerFlow) = GROUP MAX retailPriceInnerFlowDetail (innerFlowDetail)
+    IF innerFlowInnerFlowDetail(innerFlowDetail) == innerFlow
+    BY itemInnerFlowDetail(innerFlowDetail), innerFlowInnerFlowDetail(innerFlowDetail);
 
 // для накладной (шапка и хвост)
 carInnerFlow 'Автомобиль' (innerFlow) = DATA STRING[30] (innerFlow);
@@ -6178,17 +6135,20 @@ grossWeightInnerFlowDetail 'Масса груза, т.' (innerFlowDetail) = roun
 sumGrossWeightInnerFlow 'Общая масса груза, т.' (innerFlow) = GROUP SUM grossWeightInnerFlowDetail(innerFlowDetail)
     BY innerFlowInnerFlowDetail(innerFlowDetail);
 
-castTripleNoteInnerFlowDetailToString=
-    FORMULA STRING[200] '\'РОЦ: \' || CAST($1 AS TEXT) ||  \'; Оптовая надбавка: \' || CAST($2 AS TEXT)||  \'; Торговая наценка: \' || CAST($3 AS TEXT)';
+supplierMarkupInnerFlowDetail 'Оптовая надбавка' (innerFlowDetail) =
+    (supplierPriceInnerFlowDetail(innerFlowDetail)/importerPriceInnerFlowDetail(innerFlowDetail) - 1)*100;
 
-castDoubleNoteInnerFlowDetailToString=
-    FORMULA STRING[200] '\'РОЦ: \' || CAST($1 AS TEXT) ||  \'; Торговая наценка: \' || CAST($2 AS TEXT)';
+// todo : все таки наверное нужно с собой тянуть надбавку (по крайней мере для реестра цен)
+retailMarkupInnerFlowDetail 'Торговая надбавка' (innerFlowDetail) =
+    [(X*100/(100+Y)/Z-1)*100](
+    retailPriceInnerFlowDetail(innerFlowDetail), dataRetailRangeInnerFlowDetail(innerFlowDetail), importerPriceInnerFlowDetail(innerFlowDetail));
 
 noteInnerFlowDetail 'Примечание' (innerFlowDetail) =
     IF supplierMarkupInnerFlowDetail(innerFlowDetail)!=0
-    THEN castTripleNoteInnerFlowDetailToString(importerPriceInnerFlowDetail(innerFlowDetail),
-                    supplierMarkupInnerFlowDetail(innerFlowDetail), retailMarkupInnerFlowDetail(innerFlowDetail))
-    ELSE castDoubleNoteInnerFlowDetailToString(importerPriceInnerFlowDetail(innerFlowDetail), retailMarkupInnerFlowDetail(innerFlowDetail));
+    THEN [FORMULA STRING[200] '\'РОЦ: \' || CAST($1 AS TEXT) ||  \'; Оптовая надбавка: \' || CAST($2 AS TEXT)||  \'; Торговая наценка: \' || CAST($3 AS TEXT)']
+         (importerPriceInnerFlowDetail(innerFlowDetail), supplierMarkupInnerFlowDetail(innerFlowDetail), retailMarkupInnerFlowDetail(innerFlowDetail))
+    ELSE [FORMULA STRING[200] '\'РОЦ: \' || CAST($1 AS TEXT) ||  \'; Торговая наценка: \' || CAST($2 AS TEXT)']
+         (importerPriceInnerFlowDetail(innerFlowDetail), retailMarkupInnerFlowDetail(innerFlowDetail));
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 GROUP pricingInnerArrivalDetailInfo 'Дополнительные ценовый параметры' : publicGroup;
@@ -6229,7 +6189,7 @@ senderDepartmentInnerArrival (innerArrival) <- departmentStoreInnerFlow(innerFlo
 quantityInnerArrivalDetail 'Количество' (innerArrivalDetail) = DATA NUMERIC[14,3] (innerArrivalDetail) IN baseGroup;
 retailPriceInnerArrivalDetail 'Цена розничная' (innerArrivalDetail) = DATA NUMERIC[14,2] (innerArrivalDetail) IN baseGroup;
 
-priceItemInnerArrival 'Цена (максим.)' (item, innerArrival) = priceItemInnerFlow (
+priceItemInnerArrival 'Цена (максим.)' (item, innerArrival) = retailPriceItemInnerFlow (
     item, innerFlowInnerArrival(innerArrival));
                // todo: derived зацикливает, придумать что-то другое
 //retailPriceInnerArrivalDetail (innerArrivalDetail) <- priceItemInnerArrival(
@@ -9571,7 +9531,7 @@ quantityConsignmentDetail 'Количество' (consignmentDetail) = UNION EXC
 
 sumQuantityConsignment 'Общее количество' (consignment) = UNION EXCLUSIVE quantityStatementDetailStatement(consignment),
                                                                           totalQuantityReturnSupplier(consignment),
-                                                                          totalQuantityInnerFlow(consignment) IN sumConsignmentGroup;
+                                                                          quantityInnerFlowDetailInnerFlow(consignment) IN sumConsignmentGroup;
 
 priceConsignmentDetail 'Цена' (consignmentDetail) = UNION EXCLUSIVE retailPriceStatementDetail (consignmentDetail),
                                                                     supplierPriceReturnSupplierDetail (consignmentDetail),
@@ -9579,11 +9539,11 @@ priceConsignmentDetail 'Цена' (consignmentDetail) = UNION EXCLUSIVE retailPr
 
 costConsignmentDetail 'Стоимость' (consignmentDetail) = UNION EXCLUSIVE retailRndSumStatementDetail (consignmentDetail),
                                                                         supplierSumReturnSupplierDetail (consignmentDetail),
-                                                                        accountSumInnerFlowDetail (consignmentDetail);
+                                                                        retailRndSumInnerFlowDetail (consignmentDetail);
 
 sumCostConsignmentDetail 'Общая стоимость' (consignment) = UNION EXCLUSIVE retailRndSumStatementDetailStatement(consignment),
                                                                            quoteSumReturnSupplierDetailReturnSupplier(consignment),
-                                                                           accountSumInnerFlow(consignment) IN sumConsignmentGroup;
+                                                                           retailRndSumInnerFlowDetailInnerFlow(consignment) IN sumConsignmentGroup;
 
 vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION EXCLUSIVE dataCalcRangeStatementDetail (consignmentDetail),
                                                                                dataSuppliersRangeReturnSupplierDetail (consignmentDetail),
@@ -9591,19 +9551,20 @@ vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION EXCLUSIVE
 
 sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION EXCLUSIVE calcVATRndSumStatementDetail (consignmentDetail),
                                                                           supplierVATSumReturnSupplierDetail (consignmentDetail),
-                                                                          sumRetailVATInnerFlowDetail (consignmentDetail);
+                                                                          saleVATSumInnerFlowDetail (consignmentDetail);
 
 totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNION EXCLUSIVE calcVATRndSumStatementDetailStatement (consignment),
                                                                                invoiceVATSumReturnSupplierDetailReturnSupplier (consignment),
-                                                                               totalSumRetailVATInnerFlow (consignment) IN sumConsignmentGroup;
+                                                                               retailVATSumInnerFlowDetailInnerFlow (consignment) IN sumConsignmentGroup;
+
 
 costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION EXCLUSIVE retailRndSumStatementDetail (consignmentDetail),
                                                                                  shipSumReturnSupplierDetail (consignmentDetail),
-                                                                                 accountSumInnerFlowDetail (consignmentDetail);
+                                                                                 retailRndSumInnerFlowDetail (consignmentDetail);
 
 costWithVATConsignment 'Сумма с НДС' (consignment) = UNION EXCLUSIVE retailRndSumStatementDetailStatement (consignment),
                                                                      invoiceSumReturnSupplierDetailReturnSupplier (consignment),
-                                                                     accountSumInnerFlow (consignment) IN sumConsignmentGroup;
+                                                                     retailRndSumInnerFlowDetailInnerFlow (consignment) IN sumConsignmentGroup;
 
 
 packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = UNION EXCLUSIVE packQuantityStatementDetail(consignmentDetail),
@@ -10924,7 +10885,7 @@ sumIncAccountByContainerDocumentLedger 'Сумма прихода, тара' (le
 
 sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSIVE accountSumWriteOffDetailWriteOff(ledger),
                                                                        retailSumReturnSupplier(ledger),
-                                                                       accountSumInnerFlow(ledger),
+                                                                       retailRndSumInnerFlowDetailInnerFlow(ledger),
                                                                        retailRndSumStatementDetailStatement(ledger),
                                                                        totalSumRetailByWastage(ledger),
                                                                        accountSumShortageCollationSheet(ledger),
@@ -10935,7 +10896,7 @@ sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSI
 
 sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledger) = UNION EXCLUSIVE accountSumItemWriteOffDetailWriteOff(ledger),
                                                                        retailSumByItemReturnSupplier(ledger),
-                                                                       accountSumByItemInnerFlow(ledger),
+                                                                       retailRndSumItemInnerFlowDetailInnerFlow(ledger),
                                                                        retailRndSumItemStatementDetailStatement(ledger),
                                                                        accountSumItemShortageCollationSheet(ledger),
                                                                        sumZReport(ledger),
@@ -10943,7 +10904,7 @@ sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledge
 
 sumOutAccountByContainerDocumentLedger 'Сумма расхода, тара' (ledger) = UNION EXCLUSIVE accountSumContainerWriteOffDetailWriteOff(ledger),
                                                                        retailSumByContainerReturnSupplier(ledger),
-                                                                       accountSumByContainerInnerFlow(ledger),
+                                                                       retailRndSumContainerInnerFlowDetailInnerFlow(ledger),
                                                                        retailRndSumContainerStatementDetailStatement(ledger),
                                                                        accountSumContainerShortageCollationSheet(ledger) PERSISTENT IN ledgerByContainerGroup;
 //                                                                       sumZReport(ledger),
@@ -11709,7 +11670,7 @@ DESIGN userPriceChanges FROM DEFAULT {
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
     PROPERTIES (f) numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
-                   nameRecipientDepartmentInnerFlow, noteInnerFlow, totalQuantityInnerFlow, accountSumInnerFlow
+                   nameRecipientDepartmentInnerFlow, noteInnerFlow, quantityInnerFlowDetailInnerFlow, retailRndSumInnerFlowDetailInnerFlow
 
     PROPERTIES (f) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
                    nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
@@ -11724,7 +11685,7 @@ FORM innerFlow 'Расход в другой отдел'
     PROPERTIES (d) indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                    quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
                    dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, warePriceInnerFlowDetail,
-                   retailPriceInnerFlowDetail, accountSumInnerFlowDetail, ADDOBJ, delete
+                   retailPriceInnerFlowDetail, retailRndSumInnerFlowDetail, ADDOBJ, delete
 
     PROPERTIES inputMultipleItemsInnerFlow(f) TODRAW d, addInnerFlowDetailBarcode(f) TODRAW d, cleanAllInnerFlowDetailsInnerFlow(f) FORCE PANEL TODRAW d
     FILTERS inInnerFlowInnerFlowDetail(f, d)
@@ -11794,7 +11755,7 @@ FORM innerFlows 'Расходы в другие отделы'
     OBJECTS f=innerFlow
     PROPERTIES (f) READONLY objectClassName, numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
                             nameRecipientDepartmentInnerFlow, countInnerFlowDetailInnerFlow,
-                            totalQuantityInnerFlow, accountSumInnerFlow
+                            quantityInnerFlowDetailInnerFlow, retailRndSumInnerFlowDetailInnerFlow
 
     PROPERTIES(f) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
     PROPERTIES (f) FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
@@ -11809,7 +11770,7 @@ FORM innerFlows 'Расходы в другие отделы'
     PROPERTIES (d) READONLY indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                             quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
                             dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, warePriceInnerFlowDetail,
-                            retailPriceInnerFlowDetail, accountSumInnerFlowDetail
+                            retailPriceInnerFlowDetail, retailRndSumInnerFlowDetail
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 ;
 
@@ -11877,13 +11838,13 @@ FORM innerFlowPosted 'Расходы в другие отделы'
     OBJECTS f=innerFlowPosted
     PROPERTIES (f) READONLY objectClassName, numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
                             nameRecipientDepartmentInnerFlow, countInnerFlowDetailInnerFlow,
-                            totalQuantityInnerFlow, accountSumInnerFlow
+                            quantityInnerFlowDetailInnerFlow, retailRndSumInnerFlowDetailInnerFlow
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) READONLY indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                             quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
                             dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, warePriceInnerFlowDetail,
-                            retailPriceInnerFlowDetail, accountSumInnerFlowDetail
+                            retailPriceInnerFlowDetail, retailRndSumInnerFlowDetail
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 
     DIALOG innerFlowPosted OBJECT f
