@@ -729,14 +729,21 @@ META defineDocumentDetailCurRetailPrice (object)
     curRetailPrice###object##Detail 'Тек. розничная цена' (detail) = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
 END
 
+META defineDocumentDetailCurWarePrice (object)
+    curWare###object##Detail = DATA ware (object##Detail) IN idGroup;
+    curNameWare###object##Detail 'Текущая посуда' (detail) = name(curWare###object##Detail(detail)) IN priceDetailGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+    curWarePrice###object##Detail 'Текущая цена посуды' (detail) = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+END
+
 META defineDocumentDetailCurPrice (object)
-    curImporterPrice###object##Detail 'Тек. цена изгтовителя/импортера' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+    curImporterPrice###object##Detail 'Тек. цена изготовителя/импортера' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
     curSupplierPrice###object##Detail 'Тек. цена поставщика' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
 
     curRetailRange###object##Detail = DATA range (object##Detail);
     curNumberRetailRange###object##Detail 'Тек. НДС розничный, номер' (detail) = dataRange(curRetailRange###object##Detail(detail)) IN priceDetailGroup;
     curDataRetailRange###object##Detail 'Тек. НДС розничный, %' (detail) =
-       dataActingRateRangeDate(curRetailRange###object##Detail(detail), dateStudyOutputDetail(detail)) IN priceDetailGroup;
+       dataActingRateRangeDate(curRetailRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 
     CONSTRAINT taxRange(curRetailRange###object##Detail(detail)) != tax.taxNDS CHECKED BY curRetailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
@@ -871,45 +878,57 @@ META defineDocumentPriceChange (object)
 
     //// атрибуты документа переоценки
 
-    dateTimePriceChange###object 'Дата/время' (priceChange) = dateTime###object(object##PriceChange###object(priceChange));
-    datePriceChange###object 'Дата' (priceChange) = date###object(object##PriceChange###object(priceChange));
+    dateTimePriceChange###object 'Дата/время' (object) = dateTime###object(object##PriceChange###object(object));
+    datePriceChange###object 'Дата' (object) = date###object(object##PriceChange###object(object));
 
-    departmentStorePriceChange###object (priceChange) = departmentStore###object(statementPriceChangeStatement(priceChange));
-    nameDepartmentStorePriceChange###object 'Отдел документа' (priceChange) = name(departmentStorePriceChange###object(priceChange));
+    departmentStorePriceChange###object (object) = departmentStore###object(object##PriceChange###object(object));
+    nameDepartmentStorePriceChange###object 'Отдел документа' (object) = name(departmentStorePriceChange###object(object));
 
-    isPostedPriceChange###object 'Закрыт' (priceChange) = isPosted###object(object##PriceChange###object(priceChange));
-    numberPriceChange###object 'Номер документа' (priceChange) = numberObject(object##PriceChange###object(priceChange));
-    seriesPriceChange###object 'Серия документа' (priceChange) = seriesObject(object##PriceChange###object(priceChange));
-    descriptionPriceChange###object 'Название документа' (priceChange) = description###object(object##PriceChange###object(priceChange));
+    isPostedPriceChange###object 'Закрыт' (object) = isPosted###object(object##PriceChange###object(object));
+    numberPriceChange###object 'Номер документа' (object) = numberObject(object##PriceChange###object(object));
+    seriesPriceChange###object 'Серия документа' (object) = seriesObject(object##PriceChange###object(object));
+    descriptionPriceChange###object 'Название документа' (object) = description###object(object##PriceChange###object(object));
 
-    numberDisposalPriceChange###object '№ распоряжения на переоценку' (priceChange) = numberDisposal###object(object##PriceChange###object(priceChange));
-    revaluationCommitteePriceChange###object 'Комиссия переоценки ИД' (priceChange) = revaluationCommittee###object(object##PriceChange###object(priceChange));
+    numberDisposalPriceChange###object '№ распоряжения на переоценку' (object) = numberDisposal###object(object##PriceChange###object(object));
+    revaluationCommitteePriceChange###object 'Комиссия переоценки ИД' (object) = revaluationCommittee###object(object##PriceChange###object(object));
 
     //// атрибуты детализации документа переоценки
 
-    itemPriceChange###object##Detail (priceChangeDetail) = item###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
-    nameItemPriceChange###object##Detail 'Товар' (priceChangeDetail) = nameAttributeItem(itemPriceChange###object##Detail(priceChangeDetail));
-
+    itemPriceChange###object##Detail (detail) = item###object##Detail(object##DetailPriceChange###object##Detail(detail));
+    nameItemPriceChange###object##Detail 'Товар' (detail) = nameAttributeItem(itemPriceChange###object##Detail(detail));
 END
 
 META defineDocumentPriceChangeQuantity (object)
-    quantityPriceChange###object##Detail 'Количество' (priceChangeDetail) = quantity###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+    quantityPriceChange###object##Detail 'Количество' (detail) = quantity###object##Detail(object##DetailPriceChange###object##Detail(detail));
 END
 
 META defineDocumentPriceChangePrice (object)
-    importerPriceChange###object##Detail 'Цена изготовителя' (priceChangeDetail) = importerPrice###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
-    supplierPriceChange###object##Detail 'Цена поставщика' (priceChangeDetail) = supplierPrice###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+    importerPriceChange###object##Detail 'Цена изготовителя' (detail) = importerPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
+    supplierPriceChange###object##Detail 'Цена поставщика' (detail) = supplierPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
 
-    dataRetailRangePriceChange###object##Detail 'НДС, %' (priceChangeDetail) = dataRetailRange###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+    dataRetailRangePriceChange###object##Detail 'НДС, %' (detail) = dataRetailRange###object##Detail(object##DetailPriceChange###object##Detail(detail));
 
-    warePriceChange###object##Detail 'Посуда' (priceChangeDetail) = ware###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
-    warePricePriceChange###object##Detail 'Цена посуды' (priceChangeDetail) =  warePrice###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+    warePriceChange###object##Detail 'Посуда' (detail) = ware###object##Detail(object##DetailPriceChange###object##Detail(detail));
+    warePricePriceChange###object##Detail 'Цена посуды' (detail) =  warePrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
 
-    retailPriceChange###object##Detail 'Розничная цена' (priceChangeDetail) = retailPrice###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+    retailPriceChange###object##Detail 'Розничная цена' (detail) = retailPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
 END
 
 META defineDocumentPriceChangeCurRetailPrice (object)
-    curRetailPriceChange###object##Detail 'Старая розничная цена' (priceChangeDetail) = curRetailPrice###object##Detail(object##DetailPriceChange###object##Detail(priceChangeDetail));
+    curRetailPriceChange###object##Detail 'Старая розничная цена' (detail) = curRetailPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
+END
+
+META defineDocumentPriceChangeCurPrice (object)
+
+    curImporterPriceChange###object##Detail 'Цена изготовителя' (detail) = curImporterPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
+    curSupplierPriceChange###object##Detail 'Цена поставщика' (detail) = curSupplierPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
+
+    curDataRetailRangePriceChange###object##Detail 'НДС, %' (detail) = curDataRetailRange###object##Detail(object##DetailPriceChange###object##Detail(detail));
+
+    curWarePriceChange###object##Detail 'Посуда' (detail) = curWare###object##Detail(object##DetailPriceChange###object##Detail(detail));
+    curWarePricePriceChange###object##Detail 'Цена посуды' (detail) = curWarePrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
+
+    @defineDocumentPriceChangeCurRetailPrice (object);
 END
 
 // ----------------------------------- Свойства для объектов Posted ------------------------------------------ //
@@ -5786,6 +5805,9 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 @defineDocumentDetailShipPrice(shipment);
 @defineDocumentDetailOutPrice(shipment);
 
+@defineDocumentDetailCurWarePrice(shipment);
+@defineDocumentDetailCurPrice(shipment);
+
 @defineDocumentDetailInSum(shipment);
 @defineDocumentDetailWareSum(shipment);
 @defineDocumentDetailShipSum(shipment);
@@ -5841,11 +5863,6 @@ nameRegisterCommitteeShipment 'Комиссия для реестра цен' (s
 registerCommitteeShipment(shipment) <- registerCommitteeDepartmentStore(departmentStoreShipment(shipment))
     WHEN ASSIGNED(shipment IS shipment);
 
-wastageCommitteeShipment (shipment) = DATA wastageCommittee (shipment) IN idGroup;
-nameWastageCommitteeShipment 'Комиссия для списания отходов' (shipment) = name(wastageCommitteeShipment(shipment)) IN documentPrmGroup;
-wastageCommitteeShipment(shipment) <- wastageCommitteeDepartmentStore(departmentStoreShipment(shipment))
-    WHEN ASSIGNED(shipment IS shipment);
-
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
 
@@ -5853,10 +5870,31 @@ balanceBeforeShipmentShipmentDetail 'Остаток до поставки' (ship
 
 dateFitToShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
 
-isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN pricingShipmentDetailInfo;
+isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN itemDetailGroup;
 isFixPriceShipmentDetail(shipmentDetail) <- isFixPriceItem (itemShipmentDetail (shipmentDetail)) WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail) = DATA NUMERIC[8,3] (shipmentDetail) IN baseGroup;
+importerMarkupShipmentDetail '% надбавки с уч. оптовой' (shipmentDetail) = [X*(100+Y)/100](
+    retailMarkupShipmentDetail(shipmentDetail), supplierMarkupShipmentDetail(shipmentDetail));
+
+descriptionShipment 'Название документа' (shipment) =
+    [FORMULA STRING[200] '\'Приход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+    seriesNumberObject(shipment), dateShipment(shipment), nameSupplierShipment(shipment));
+
+descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
+
+// ------------------------ Списание отходов --------------------------- //
+
+wastageCommitteeShipment (shipment) = DATA wastageCommittee (shipment) IN idGroup;
+nameWastageCommitteeShipment 'Комиссия для списания отходов' (shipment) = name(wastageCommitteeShipment(shipment)) IN documentPrmGroup;
+wastageCommitteeShipment(shipment) <- wastageCommitteeDepartmentStore(departmentStoreShipment(shipment))
+    WHEN ASSIGNED(shipment IS shipment);
+
+percentRateWasteShipmentDetail 'Процент для списания отходов' (shipmentDetail) = DATA NUMERIC[10,3] (shipmentDetail);
+
+percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShipmentDetail(shipmentDetail))
+    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
+
 
 // ------ Запись значений по умолчанию ----- //
 
@@ -5917,47 +5955,7 @@ retailPriceShipmentDetail (shipmentDetail) <-
     calculatedRetailPriceShipmentDetail (shipmentDetail)
     WHEN CHANGED(calculatedRetailPriceShipmentDetail (shipmentDetail));
 
-//--------------------показатели для реестра цен----------------------------//
-
-fullMarkupShipmentDetail '% надбавки с уч. оптовой' (shipmentDetail) = [X*(100+Y)/100](
-    retailMarkupShipmentDetail(shipmentDetail), supplierMarkupShipmentDetail(shipmentDetail));
-
-//старые ценовые параметры для переоценок
-curRetailPriceShipmentDetail 'Текущая розничная цена' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
-
-curRetailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
-curDataRetailRangeShipmentDetail 'Текущий НДС розничный,%' (shipmentDetail) = dataActingRateRangeDate(curRetailRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo;
-
-curImporterPriceShipmentDetail 'Текущая цена изготовителя/импортера' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
-curSupplierPriceShipmentDetail 'Текущая цена поставщика' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
-
-curWarePriceShipmentDetail 'Текущая цена посуды' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
-curWareShipmentDetail = DATA ware (shipmentDetail) IN idGroup;
-curNameWareShipmentDetail 'Текущая посуда' (shipmentDetail) = name(curWareShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo MINCHARWIDTH 20 PREFCHARWIDTH 20;
-
-percentRateWasteShipmentDetail 'Процент для списания отходов' (shipmentDetail) = DATA NUMERIC[10,3] (shipmentDetail);
-
-percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShipmentDetail(shipmentDetail))
-    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
-
-descriptionShipment 'Название документа' (shipment) =
-    [FORMULA STRING[200] '\'Приход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
-    seriesNumberObject(shipment), dateShipment(shipment), nameSupplierShipment(shipment));
-
-descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
-
-//numberPaper 'Номер документа' (paper) = DATA STRING[30] (paper) IN baseGroup;
-//datePaper 'Дата документа' (paper) = DATA DATE (paper) IN baseGroup;
-//dateToPaper 'Срок действия' (paper) = DATA DATE (paper) IN baseGroup;
-//holderPaper 'Держатель ИД' (paper) = DATA legalEntity (paper) IN idGroup;
-//nameHolderPaper 'Наименование держателя' (paper) = name(holderPaper(paper)) IN baseGroup;
-//issuedPaper 'Документ выдал ИД' (paper) = DATA legalEntity (paper) IN idGroup;
-//nameIssuedPaper 'Наименование органа, выдавшего документ' (paper) = name(issuedPaper(paper)) IN baseGroup;
-
-//CLASS customsCertificate 'Таможенный сертификат' : paper;
-//CLASS certificateGGR 'Удостоверение о ГГР' : paper;
-//CLASS certificateConformity 'Сертификат соответствия' : paper;
-//CLASS stateExamination 'Акт гос. сан.-гиг. экспертизы' : paper;
+//-------------------- Документы качества ----------------------------//
 
 customsCertificateShipmentDetail 'Таможенный сертификат ИД' (shipmentDetail)= DATA customsCertificate (shipmentDetail) IN idGroup;
 certificateGGRShipmentDetail 'Удостоверение о ГГР ИД' (shipmentDetail)= DATA certificateGGR (shipmentDetail) IN idGroup;
@@ -5979,6 +5977,7 @@ CONSTRAINT certificateConformityShipmentDetail(shipmentDetail) AND NOT actingPap
     CHECKED BY certificateConformityShipmentDetail MESSAGE 'Сертификат соответствия не действующий';
 CONSTRAINT stateExaminationShipmentDetail(shipmentDetail) AND NOT actingPaperDate(stateExaminationShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
     CHECKED BY stateExaminationShipmentDetail MESSAGE 'Акт гос. сан.-гиг. не действующий';
+
 // ---------------------------------- Дооценка на приходе ------------------------------------------
 
 CLASS priceChangeShipment 'Переоценка на приходе' : priceChangeDocument;
@@ -5987,53 +5986,13 @@ CLASS priceChangeShipmentDetail 'Строка переоценки на прих
 needToPriceChangeShipmentDetail (shipmentDetail) = curRetailPriceShipmentDetail(shipmentDetail) != retailPriceShipmentDetail(shipmentDetail) AND
                                                    balanceBeforeShipmentShipmentDetail(shipmentDetail) != 0;
 
-needToPriceChangeShipment (shipment) = GROUP SUM 1 IF needToPriceChangeShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail);
-
-@metaCodeDetailAggregation(shipment, priceChangeShipment, needToPriceChangeShipment);
-
-// атрибуты документа переоценки
-
-dateTimePriceChangeShipment 'Дата/время' (priceChangeShipment) = dateTimeShipment(shipmentPriceChangeShipment(priceChangeShipment));
-datePriceChangeShipment 'Дата' (priceChangeShipment) = dateShipment(shipmentPriceChangeShipment(priceChangeShipment));
-isPostedPriceChangeShipment 'Закрыт' (priceChangeShipment) = isPostedShipment(shipmentPriceChangeShipment(priceChangeShipment));
-numberPriceChangeShipment 'Номер накладной' (priceChangeShipment) = numberObject(shipmentPriceChangeShipment(priceChangeShipment));
-seriesPriceChangeShipment 'Серия накладной' (priceChangeShipment) = seriesObject(shipmentPriceChangeShipment(priceChangeShipment));
-descriptionPriceChangeShipment 'Название документа' (priceChangeShipment) = descriptionShipment(shipmentPriceChangeShipment(priceChangeShipment));
+@defineDocumentPriceChange(shipment);
+quantityPriceChangeShipmentDetail (priceChangeShipmentDetail) = balanceBeforeShipmentShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
+@defineDocumentPriceChangePrice(shipment);
+@defineDocumentPriceChangeCurPrice(shipment);
 
 supplierPriceChangeShipment (priceChangeShipment) = supplierShipment(shipmentPriceChangeShipment(priceChangeShipment));
 nameSupplierPriceChangeShipment 'Поставщик' (priceChangeShipment) = name(supplierPriceChangeShipment(priceChangeShipment));
-
-departmentStorePriceChangeShipment (priceChangeShipment) = departmentStoreShipment(shipmentPriceChangeShipment(priceChangeShipment));
-nameDepartmentStorePriceChangeShipment 'Отдел магазина' (priceChangeShipment) = name(departmentStorePriceChangeShipment(priceChangeShipment));
-
-numberDisposalPriceChangeShipment '№ распоряжения на переоценку' (priceChangeShipment) = numberDisposalShipment(shipmentPriceChangeShipment(priceChangeShipment));
-revaluationCommitteePriceChangeShipment 'Комиссия переоценки ИД' (priceChangeShipment) = revaluationCommitteeShipment(shipmentPriceChangeShipment(priceChangeShipment));
-
-
-// атрибуты детализации документа переоценки
-
-itemPriceChangeShipmentDetail (priceChangeShipmentDetail) = itemShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
-nameItemPriceChangeShipmentDetail 'Товар' (priceChangeShipmentDetail) = nameAttributeItem(itemPriceChangeShipmentDetail(priceChangeShipmentDetail));
-
-quantityPriceChangeShipmentDetail 'Остаток' (priceChangeShipmentDetail) = balanceBeforeShipmentShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
-
-curImporterPriceChangeShipmentDetail 'Текущая цена изготовителя' (priceChangeShipmentDetail) = curImporterPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
-importerPriceChangeShipmentDetail 'Новая цена изготовителя' (priceChangeShipmentDetail) = importerPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
-
-curSupplierPriceChangeShipmentDetail 'Текущая цена поставщика' (priceChangeShipmentDetail) = curSupplierPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
-supplierPriceChangeShipmentDetail 'Новая цена поставщика' (priceChangeShipmentDetail) = supplierPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
-
-curDataRetailRangePriceChangeShipmentDetail 'Текущий НДС, %' (priceChangeShipmentDetail) = curDataRetailRangeShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
-dataRetailRangePriceChangeShipmentDetail 'Новый НДС, %' (priceChangeShipmentDetail) = dataRetailRangeShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
-
-curRetailPriceChangeShipmentDetail 'Текущая розничная цена' (priceChangeShipmentDetail) = curRetailPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
-retailPriceChangeShipmentDetail 'Новая розничная цена' (priceChangeShipmentDetail) = retailPriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
-
-warePriceChangeShipmentDetail 'Новая посуда' (priceChangeShipmentDetail) = wareShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
-warePricePriceChangeShipmentDetail 'Новая цена посуды' (priceChangeShipmentDetail) = warePriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
-
-curWarePriceChangeShipmentDetail 'Текущая посуда' (priceChangeShipmentDetail) = curWareShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail)) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 15;
-curWarePricePriceChangeShipmentDetail 'Текущая цена посуды' (priceChangeShipmentDetail) = curWarePriceShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 
 @metaCodeIsPriceChangeWrong(shipment);
 
@@ -9822,7 +9781,7 @@ FORM pricesRegister 'Реестр цен' PRINT
     PROPERTIES (d)  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, shortNameUnitOfMeasureItemShipmentDetail, quantityShipmentDetail,
                     importerPriceShipmentDetail, quoteSumShipmentDetail, supplierMarkupShipmentDetail, supplierVATSumShipmentDetail, dataSuppliersRangeShipmentDetail,
                     wareSumShipmentDetail, warePriceShipmentDetail, wareVATSumShipmentDetail, dataWareRangeShipmentDetail,
-                    invoiceSumShipmentDetail, fullMarkupShipmentDetail, markupSumShipmentDetail, dataRetailRangeShipmentDetail,
+                    invoiceSumShipmentDetail, importerMarkupShipmentDetail, markupSumShipmentDetail, dataRetailRangeShipmentDetail,
                     retailVATSumShipmentDetail, retailPriceShipmentDetail, retailRndSumShipmentDetail
 
     FILTERS inShipmentShipmentDetail(s, d)
@@ -10590,24 +10549,8 @@ DESIGN shipment FROM DEFAULT{
                 PROPERTY (cleanAllShipmentDetailsShipment(s)) {
                     panelLocation = TOOLBAR;
                 }
-                ADD d.pricingShipmentDetailInfo {
-                    childConstraints = TO THE BOTTOM;
-                };
                 ADD d.itemDetailGroup;
-                NEW commonCase { title = 'Общая информация';
-                    ADD PROPERTY (isFixPriceShipmentDetail(d));
-                    ADD PROPERTY (importerPriceShipmentDetail(d));
-                    ADD PROPERTY (dataWareRangeShipmentDetail(d));
-                }
-                NEW booleanCase { title = 'Вспомогательная информация';
-                    ADD PROPERTY (controlExpiryShipmentDetail(d));
-                    ADD PROPERTY (isManufacturedShipmentDetail(d));
-                    ADD PROPERTY (isWeightShipmentDetail(d));
-                    ADD PROPERTY (nameinActionItemDepartmentShipmentDetail(d));
-                }
-                POSITION d.pricingShipmentDetailInfo TO THE LEFT booleanCase;
-                POSITION booleanCase TO THE LEFT commonCase;
-                POSITION commonCase TO THE LEFT d.itemDetailGroup;
+                ADD d.priceDetailGroup;
             };
             ADD i.box;
         };
