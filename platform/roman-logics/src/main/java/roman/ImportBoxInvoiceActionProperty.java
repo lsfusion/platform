@@ -77,6 +77,10 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         return true;
     }
 
+    protected boolean hasBarCodeKey() {
+        return true;
+    }
+
 
     public void execute(ExecutionContext context) throws SQLException {
         DataObject supplier = context.getKeyValue(supplierInterface);
@@ -118,12 +122,13 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
 
         ImportKey<?> itemKey = null;
-        if (hasBarCode()) {
+        if (hasBarCodeKey()) {
             itemKey = new ImportKey(LM.item, LM.baseLM.barcodeToObject.getMapping(barCodeField));
-            properties.add(new ImportProperty(barCodeField, LM.baseLM.barcode.getMapping(itemKey)));
         } else {
             itemKey = new ImportKey(LM.item, LM.itemSupplierArticleSIDColorSIDSizeSID.getMapping(supplier, sidField, colorCodeField, sizeField));
         }
+        if (hasBarCode())
+            properties.add(new ImportProperty(barCodeField, LM.baseLM.barcode.getMapping(itemKey)));
 
         properties.add(new ImportProperty(unitNetWeightField, LM.netWeightDataSku.getMapping(itemKey)));
         properties.add(new ImportProperty(sidField, LM.articleCompositeItem.getMapping(itemKey), LM.object(LM.articleComposite).getMapping(articleKey)));

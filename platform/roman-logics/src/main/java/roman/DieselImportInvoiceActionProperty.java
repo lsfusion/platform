@@ -19,6 +19,11 @@ public class DieselImportInvoiceActionProperty extends ImportBoxInvoiceActionPro
     }
 
     @Override
+    protected boolean hasBarCodeKey() {
+        return false;
+    }
+
+    @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException, ParseException {
         return new DieselInvoiceInputTable(inFile);
     }

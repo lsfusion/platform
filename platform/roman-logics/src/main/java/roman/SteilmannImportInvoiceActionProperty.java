@@ -13,7 +13,7 @@ public class SteilmannImportInvoiceActionProperty extends ImportBoxInvoiceAction
     private final RomanBusinessLogics BL;
 
     @Override
-    protected boolean hasBarCode() {
+    protected boolean hasBarCodeKey() {
         return false;
     }
 
