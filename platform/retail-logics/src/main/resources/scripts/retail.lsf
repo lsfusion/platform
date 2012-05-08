@@ -15,7 +15,7 @@ castToString255 = FORMULA STRING[255] 'CAST($1 AS character(255))';
 castToString3 = FORMULA STRING[3] 'CAST($1 AS character(3))';
 isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE 0 END';
 
-roundMinus1 (number) = round(number, -1);
+roundM1 (number) = round(number, -1);
 round0 (number) = round(number, 0);
 round1 (number) = round(number, 1);
 round2 (number) = round(number, 2);
@@ -578,7 +578,7 @@ GROUP priceDetailGroup 'Цены' : publicGroup;
 
 META defineDocumentDetailInPrice (object)
     importerPrice###object##Detail 'Цена изготовителя/импортера' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
-    supplierPrice###object##Detail 'Цена поставщика' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+    supplierPrice###object##Detail 'Цена поставщика без НДС' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
 END
 
 META defineDocumentDetailShipPrice (object)
@@ -606,7 +606,7 @@ META defineDocumentDetailWare (object)
 
     inWare###object##Detail 'Товар в посуде' (detail) = inWareItem(item###object##Detail(detail));
 
-    warePrice###object##Detail 'Цена посуды' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+    warePrice###object##Detail 'Цена посуды с НДС' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
 END
 
 META defineDocumentDetailRetailPrice (object)
@@ -625,8 +625,8 @@ META defineDocumentDetailOutPrice (object)
 END
 
 META defineDocumentDetailBasePrice (object)
-    @defineDocumentDetailInPrice (object);
-    @defineDocumentDetailOutPrice (object);
+    @defineDocumentDetailInPrice(object);
+    @defineDocumentDetailOutPrice(object);
     @defineDocumentDetailWare(object);
 END
 
@@ -646,8 +646,49 @@ META defineDocumentDetailAccountPrice (object)
     accountPrice###object##Detail 'Учетная цена' = DATA NUMERIC[14,2] (object##Detail) IN baseGroup;
 END
 
+META defineDocumentDetailInSum (object)
+    supplierSum###object##Detail 'Сумма поставщика без НДС' (detail) = quantity###object##Detail(detail) * supplierPrice###object##Detail(detail);
+END
+
+META defineDocumentDetailShipSum (object)
+    supplierVAT###object##Detail 'Цена НДС поставщика (без посуды)' (detail) = [X*Y/100](
+        supplierPrice###object##Detail(detail), dataSuppliersRange###object##Detail(detail));
+
+    calcSupplierVATSum###object##Detail 'Сумма НДС (расч.)' (detail) = round0(
+        quantity###object##Detail(detail) * supplierVAT###object##Detail(detail));
+
+    supplierVATSum###object##Detail 'Сумма НДС поставщика (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
+    supplierVATSum###object##Detail(detail) <- calcSupplierVATSum###object##Detail(detail)
+                                                       WHEN CHANGED(calcSupplierVATSum###object##Detail(detail));
+
+    calcShipSum###object##Detail 'Сумма поставщика с НДС (расч.)' (detail) =
+        supplierSum###object##Detail(detail) (+) supplierVATSum###object##Detail(detail);
+
+    shipSum###object##Detail 'Сумма поставщика с НДС (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
+    shipSum###object##Detail(detail) <- calcShipSum###object##Detail(detail)
+                                          WHEN CHANGED(calcShipSum###object##Detail(detail));
+
+    invoiceSum###object##Detail 'Сумма поставщика с НДС' (detail) =
+        shipSum###object##Detail(detail) (+) wareSum###object##Detail(detail);
+
+    quoteSum###object##Detail 'Сумма поставщика без НДС' (detail) =
+        shipSum###object##Detail (detail) (-) supplierVATSum###object##Detail (detail) + wareSupplierSum###object##Detail(detail);
+END
+
 META defineDocumentDetailWareSum (object)
-    wareSum###object##Detail 'Сумма посуды' (detail) = quantity###object##Detail(detail) * warePrice###object##Detail(detail);
+    wareSum###object##Detail 'Сумма посуды с НДС' (detail) = quantity###object##Detail(detail) * warePrice###object##Detail(detail);
+
+    wareVATPrice###object##Detail 'Цена НДС посуды' (object##Detail) = [round1(X*Y/(100+Y))](
+        warePrice###object##Detail (object##Detail), dataWareRange###object##Detail(object##Detail));
+
+    wareVATSum###object##Detail 'Сумма НДС по посуде' (object##Detail) = round0(
+        quantity###object##Detail(object##Detail) * wareVATPrice###object##Detail(object##Detail));
+
+    wareSupplierPrice###object##Detail 'Цена посуды без НДС' (object##Detail) =
+        warePrice###object##Detail (object##Detail) (-) wareVATPrice###object##Detail(object##Detail);
+
+    wareSupplierSum###object##Detail 'Сумма посуды без НДС' (object##Detail) =
+        wareSum###object##Detail(object##Detail) (-) wareVATSum###object##Detail(object##Detail);
 END
 
 META defineDocumentDetailRetailSum (object)
@@ -657,6 +698,16 @@ END
 
 META defineDocumentDetailSum (object)
     @defineDocumentDetailRetailSum(object);
+
+    saleRndSum###object##Detail 'Розничная сумма (без посуды)' (detail) = retailRndSum###object##Detail(detail) (-) wareSum###object##Detail(detail);
+
+    saleVATSum###object##Detail 'Сумма НДС (без посуды)' (detail) = [round0(X*Y/(100+Y))](
+                saleRndSum###object##Detail(detail), dataRetailRange###object##Detail(detail));
+
+    retailVATSum###object##Detail 'Сумма НДС' (detail) = saleVATSum###object##Detail(detail) (+) wareVATSum###object##Detail(detail);
+
+    markupSum###object##Detail 'Сумма надбавки' (detail) =
+        saleRndSum###object##Detail(detail) (-) saleVATSum###object##Detail(detail) (-) supplierSum###object##Detail(detail);
 END
 
 META defineDocumentDetailCalcVATSum (object)
@@ -710,6 +761,35 @@ META defineDocumentHeaderItemQuantity (object)
     @defineDocumentHeaderItemQuantityCustom(object, object###detail);
 END
 
+META defineDocumentHeaderShipSum (object)
+    supplierVATSum###object##Detail###object 'Сумма НДС поставщика (без посуды)' (object) =
+        GROUP SUM supplierVATSum###object##Detail(detail) BY object###object##Detail(detail);
+
+    shipSum###object##Detail###object 'Сумма поставщика с НДС (без посуды)' (object) =
+        GROUP SUM shipSum###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
+
+    invoiceVATSum###object##Detail###object 'Сумма НДС поставщика' (object) =
+        supplierVATSum###object##Detail###object(object) (+) wareVATSum###object##Detail###object(object) IN documentSumGroup PERSISTENT;
+
+    invoiceSum###object##Detail###object 'Сумма поставщика с НДС' (object) =
+        shipSum###object##Detail###object(object) (+) wareSum###object##Detail###object(object) IN documentSumGroup PERSISTENT;
+
+    quoteSum###object##Detail###object 'Сумма поставщика без НДС' (object) =
+        invoiceSum###object##Detail###object (object) (-) invoiceVATSum###object##Detail###object (object);
+END
+
+META defineDocumentHeaderWareSumCustom (object, detail)
+    wareSum###detail###object 'Сумма посуды с НДС' (object) =
+        GROUP SUM wareSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+
+    wareVATSum###detail###object 'Сумма НДС по посуде' (object) =
+        GROUP SUM wareVATSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+END
+
+META defineDocumentHeaderWareSum (object)
+    @defineDocumentHeaderWareSumCustom(object, object##Detail);
+END
+
 META defineDocumentHeaderRetailSumCustom (object, detail)
     retailSum###detail###object 'Розничная сумма' (object) =
         GROUP SUM retailSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
@@ -730,10 +810,18 @@ END
 
 META defineDocumentHeaderSumCustom (object, detail)
     @defineDocumentHeaderRetailSumCustom(object, detail);
+
+    saleVATSum###detail###object 'Сумма НДС (без посуды)' (object) =
+        GROUP SUM saleVATSum###detail(idetail) BY object###detail(idetail);
+
+    retailVATSum###detail###object 'Сумма НДС' (detail) = saleVATSum###detail###object(detail) (+) wareVATSum###detail###object(detail);
+
+    markupSum###detail###object 'Сумма надбавки' (object) =
+        GROUP SUM markupSum###detail(idetail) BY object###detail(idetail);
 END
 
 META defineDocumentHeaderSum (object)
-    @defineDocumentHeaderRetailSum(object);
+    @defineDocumentHeaderSumCustom(object, object##Detail);
 END
 
 META defineDocumentHeaderItemSumCustom (object, detail)
@@ -896,98 +984,6 @@ META metaCodeDetailAggregation (primObject, aggrObject, aggrProperty)
     aggrObject###aggrObject##Detail (detail) = unique###aggrObject(primObject###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)));
 
 END
-
-META metaCodeTotals (object)
-
-    sumVatWare###object##Detail 'Сумма НДС по посуде, за ед.' (object##Detail) = [round1(X*Y/(100+Y))](
-        warePrice###object##Detail (object##Detail), dataWareRange###object##Detail(object##Detail));
-
-    warePriceWithoutVAT###object##Detail 'Сумма посуды без НДС' (object##Detail) = warePrice###object##Detail (object##Detail) (-)
-        sumVatWare###object##Detail(object##Detail);
-
-    sumDetailVatWare###object##Detail 'Сумма НДС по посуде' (object##Detail) = round0(
-        quantity###object##Detail(object##Detail) * sumVatWare###object##Detail(object##Detail));
-
-    withoutWarePrice###object##Detail 'Цена без посуды' (object##Detail) = retailPrice###object##Detail(object##Detail) (-)
-        warePrice###object##Detail(object##Detail);
-
-    sumRetailVAT###object##Detail 'Сумма НДС за ед. (без посуды)' (object##Detail) = [X*Y/(100+Y)](
-        withoutWarePrice###object##Detail(object##Detail), dataRetailRange###object##Detail(object##Detail));
-
-    sumDetailVat###object##Detail 'Сумма НДС (без посуды)' (object##Detail) = round0(
-        sumRetailVAT###object##Detail(object##Detail) * quantity###object##Detail(object##Detail));
-
-    sumMarkup###object##Detail 'Сумма надбавки, за ед.' (object##Detail) = withoutWarePrice###object##Detail(object##Detail) (-)
-        sumRetailVAT###object##Detail(object##Detail) (-) supplierPrice###object##Detail(object##Detail);
-
-    sumDetailMarkup###object##Detail 'Сумма надбавки' (object##Detail) = round0(
-        sumMarkup###object##Detail(object##Detail) * quantity###object##Detail(object##Detail));
-
-    totalSumSupplierPrice###object##Detail 'Сумма без НДС' (object##Detail) = round0(
-        supplierPrice###object##Detail(object##Detail)*quantity###object##Detail(object##Detail)) PERSISTENT;
-    totalSumWare###object##Detail 'Сумма посуды' (object##Detail) = round0(
-        quantity###object##Detail(object##Detail) * warePrice###object##Detail (object##Detail));
-
-    totalSumWareWithoutVAT###object##Detail 'Сумма посуды (без НДС)' (object##Detail) =
-        totalSumWare###object##Detail(object##Detail) (-) sumDetailVatWare###object##Detail(object##Detail);
-
-    totalSumSupplierPrice###object 'Сумма без НДС' (object) = GROUP SUM totalSumSupplierPrice###object##Detail(object##Detail)
-        BY object###object##Detail(object##Detail) PERSISTENT;
-
-    totalSumWare###object 'Сумма посуды' (object) = GROUP SUM totalSumWare###object##Detail(object##Detail)
-        BY object###object##Detail(object##Detail);
-
-    totalSumVatWare###object 'Сумма НДС по посуде' (object) =  GROUP SUM sumDetailVatWare###object##Detail(object##Detail)
-        BY object###object##Detail(object##Detail);
-
-    totalSumRetailVAT###object 'Сумма розничного НДС(без посуды)' (object) = GROUP SUM sumDetailVat###object##Detail(object##Detail)
-        BY object###object##Detail(object##Detail);
-
-    totalSumMarkup###object 'Сумма надбавки' (object) = GROUP SUM sumDetailMarkup###object##Detail(object##Detail)
-        BY object###object##Detail(object##Detail);
-
-    //для цен и НДС поставщика
-
-    sumSupplierPrice###object##Detail 'Сумма без НДС (без посуды)' (object##Detail) = round0(
-        supplierPrice###object##Detail(object##Detail) * quantity###object##Detail(object##Detail));
-
-    sumSupplierPriceWithWare###object##Detail 'Сумма без НДС (с посудой)' (object##Detail) =
-        sumSupplierPrice###object##Detail(object##Detail) (+) totalSumWareWithoutVAT###object##Detail(object##Detail);
-
-    sumSupplierVAT###object##Detail 'Сумма НДС, за ед.' (object##Detail) = [round0(X*Y/100)](
-        supplierPrice###object##Detail(object##Detail), dataSuppliersRange###object##Detail(object##Detail));
-
-    calcSumDetailSupplierVAT###object##Detail 'Сумма НДС (расч.)' (object##Detail) = round0(
-        quantity###object##Detail(object##Detail) * sumSupplierVAT###object##Detail(object##Detail));
-
-    sumDetailSupplierVAT###object##Detail 'Сумма НДС' (object##Detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
-    sumDetailSupplierVAT###object##Detail(object##Detail) <- calcSumDetailSupplierVAT###object##Detail(object##Detail)
-                                                   WHEN CHANGED(calcSumDetailSupplierVAT###object##Detail(object##Detail));
-
-    calcSumSupplier###object##Detail 'Сумма с НДС (расч.)' (object##Detail) =
-        sumSupplierPrice###object##Detail(object##Detail) (+) sumDetailSupplierVAT###object##Detail(object##Detail);
-
-    sumSupplier###object##Detail 'Сумма с НДС' (object##Detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
-    sumSupplier###object##Detail(object##Detail) <- calcSumSupplier###object##Detail(object##Detail)
-                                          WHEN CHANGED(calcSumSupplier###object##Detail(object##Detail));
-
-    totalSumSupplierVAT###object 'Общая сумма НДС поставщика (без посуды)' (object) =
-        GROUP SUM sumDetailSupplierVAT###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
-
-    totalSumCleanSupplier###object 'Общая сумма поставщика с НДС (без посуды)' (object) =
-        GROUP SUM sumSupplier###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
-
-    totalSumSupplierPriceWithWare###object 'Общая сумма поставщика без НДС (с посудой)' (object) =
-        GROUP SUM sumSupplierPriceWithWare###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
-
-    totalSumIncVAT###object 'Общая сумма НДС' (object) =
-        totalSumSupplierVAT###object(object) (+) totalSumVatWare###object(object) IN documentSumGroup PERSISTENT;
-
-    totalSumSupplier###object 'Общая сумма с НДС' (object) =
-        totalSumCleanSupplier###object(object) (+) totalSumWare###object(object) IN documentSumGroup PERSISTENT;
-
-END
-
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 CLASS itemGroup 'Товарная группа' : named, externalObject;
@@ -4786,7 +4782,7 @@ TABLE warePriceLedger (warePriceLedger);
 CLASS ABSTRACT balanceItemLedger 'Изменение остатка по товару';
 TABLE balanceItemLedger (balanceItemLedger);
 
-CLASS ABSTRACT inBalanceItemLedger 'Расход' : balanceItemLedger;
+CLASS ABSTRACT inBalanceItemLedger 'Приход' : balanceItemLedger;
 CLASS ABSTRACT outBalanceItemLedger 'Расход' : balanceItemLedger;
 
 CLASS ABSTRACT batch 'Партия' : inBalanceItemLedger, importerPriceLedger; // todo : смотри выше
@@ -5032,6 +5028,9 @@ TABLE studyOutputDetail(studyOutputDetail);
 
 @defineDocumentDetailQuantity(studyInput);
 @defineDocumentDetailBasePrice(studyInput);
+
+@defineDocumentDetailInSum(studyInput);
+@defineDocumentDetailWareSum(studyInput);
 @defineDocumentDetailSum(studyInput);
 
 @defineDocumentDetailPostedCustom(actOfStudy, studyInputDetail);
@@ -5039,6 +5038,7 @@ TABLE studyOutputDetail(studyOutputDetail);
 @defineDocumentHeaderQuantityCustom(actOfStudy, studyInputDetail);
 @defineDocumentHeaderItemQuantityCustom(actOfStudy, studyInputDetail);
 
+@defineDocumentHeaderWareSumCustom(actOfStudy, studyInputDetail);
 @defineDocumentHeaderSumCustom(actOfStudy, studyInputDetail);
 @defineDocumentHeaderItemSumCustom(actOfStudy, studyInputDetail);
 
@@ -5090,6 +5090,9 @@ quantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE calculatedStudyOut
                                                               actualQuantityStudyOutputDetail(studyOutputDetail);
 
 @defineDocumentDetailBasePrice(studyOutput);
+
+@defineDocumentDetailInSum(studyOutput);
+@defineDocumentDetailWareSum(studyOutput);
 @defineDocumentDetailSum(studyOutput);
 
 @defineDocumentDetailCurPrice(studyOutput);
@@ -5099,6 +5102,7 @@ quantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE calculatedStudyOut
 @defineDocumentHeaderQuantityCustom(actOfStudy, studyOutputDetail);
 @defineDocumentHeaderItemQuantityCustom(actOfStudy, studyOutputDetail);
 
+@defineDocumentHeaderWareSumCustom(actOfStudy, studyOutputDetail);
 @defineDocumentHeaderSumCustom(actOfStudy, studyOutputDetail);
 @defineDocumentHeaderItemSumCustom(actOfStudy, studyOutputDetail);
 
@@ -5116,7 +5120,7 @@ roundImporterPriceStudyOutputDetail 'Расчетная цена импорте�
 roundSupplierPriceStudyOutputDetail 'Расчетная цена поставщика' (studyOutputDetail) = round2(
     supplierPriceStudyInputDetail (studyInputDetailStudyOutputDetail(studyOutputDetail)) * factorStudyOutputDetail(studyOutputDetail));
 
-roundRetailPriceStudyOutputDetail 'Расчетная розничная цена' (studyOutputDetail) = roundMinus1([X*Y*(100+Z)/100]
+roundRetailPriceStudyOutputDetail 'Расчетная розничная цена' (studyOutputDetail) = roundM1([X*Y*(100+Z)/100]
     (retailPriceStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail)), factorStudyOutputDetail(studyOutputDetail), overPercAllowancesStudyOutputDetail(studyOutputDetail)));
 
 toFillStudyOutputDetailsStudyInputDetail 'Заполнить данные для п/ф' (studyInputDetail) =  ACTION (studyInputDetail) {
@@ -5777,13 +5781,22 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 
 @defineDocumentDetailQuantity(shipment);
 
+@defineDocumentDetailWare(shipment);
+
 @defineDocumentDetailShipPrice(shipment);
 @defineDocumentDetailOutPrice(shipment);
-@defineDocumentDetailWare(shipment);
+
+@defineDocumentDetailInSum(shipment);
+@defineDocumentDetailWareSum(shipment);
+@defineDocumentDetailShipSum(shipment);
+@defineDocumentDetailSum(shipment);
 
 @defineDocumentHeaderQuantity(shipment);
 @defineDocumentHeaderItemQuantity(shipment);
 
+@defineDocumentHeaderWareSum(shipment);
+@defineDocumentHeaderShipSum(shipment);
+@defineDocumentHeaderSum(shipment);
 
 sidShipmentDetail 'Уникальный номер накладной' (shipmentDetail) = DATA STRING[50] (shipmentDetail) IN documentHeaderGroup;
 
@@ -5845,9 +5858,10 @@ isFixPriceShipmentDetail(shipmentDetail) <- isFixPriceItem (itemShipmentDetail (
 
 retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail) = DATA NUMERIC[8,3] (shipmentDetail) IN baseGroup;
 
+// ------ Запись значений по умолчанию ----- //
+
 supplierPriceShipmentDetail(shipmentDetail) <-
-    priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail), itemShipmentDetail(shipmentDetail),
-    departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
+    priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail), itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
     WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 nonRoundImporterPriceShipmentDetail 'Цена изготовителя/импортера (неокругленная)' (shipmentDetail) =
@@ -5855,36 +5869,29 @@ nonRoundImporterPriceShipmentDetail 'Цена изготовителя/импо�
      [X*(100+Y)/100](supplierPriceShipmentDetail(shipmentDetail), overSupplierMarkupShipmentDetail(shipmentDetail)) ELSE
      [X*100/(100+Y)](supplierPriceShipmentDetail(shipmentDetail), overSupplierMarkupShipmentDetail(shipmentDetail));
 
-importerPriceShipmentDetail (shipmentDetail) <- round0(nonRoundImporterPriceShipmentDetail(shipmentDetail)) WHEN CHANGED(nonRoundImporterPriceShipmentDetail(shipmentDetail));
+importerPriceShipmentDetail (shipmentDetail) <-
+    round0(nonRoundImporterPriceShipmentDetail(shipmentDetail))
+    WHEN CHANGED(nonRoundImporterPriceShipmentDetail(shipmentDetail));
 
-suppliersRangeShipmentDetail(shipmentDetail) <- suppliersRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) WHEN CHANGED(itemShipmentDetail(shipmentDetail));
+suppliersRangeShipmentDetail(shipmentDetail) <-
+    suppliersRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
+    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 retailMarkupShipmentDetail(shipmentDetail) <-
-    markupItemDepartmentVal (itemShipmentDetail(shipmentDetail),
-    departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
+    markupItemDepartmentVal (itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
     WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
-retailRangeShipmentDetail(shipmentDetail) <- retailRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
+retailRangeShipmentDetail(shipmentDetail) <-
+    retailRangeItemVal(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
     WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
-wareShipmentDetail(shipmentDetail) <- wareItem(itemShipmentDetail(shipmentDetail)) WHEN
-    CHANGED(itemShipmentDetail(shipmentDetail));
-warePriceShipmentDetail (shipmentDetail) <- warePriceVal (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
-                                            WHEN CHANGED(itemShipmentDetail(shipmentDetail));
+wareShipmentDetail(shipmentDetail) <-
+    wareItem(itemShipmentDetail(shipmentDetail))
+    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
-sumWarePriceShipmentDetail 'Сумма посуды' (shipmentDetail) = quantityShipmentDetail(shipmentDetail) * warePriceShipmentDetail(shipmentDetail);
-
-// todo : здесь надо деление на 0 во что-то обернуть - иначе будет division by zero
-commonMarkupShipmentDetail 'Общий процент надбавки от цены изготовителя' (shipmentDetail) = [(X*(Y+100)/Z/100-1)*100](
-    supplierPriceShipmentDetail(shipmentDetail), retailMarkupShipmentDetail(shipmentDetail), importerPriceShipmentDetail(shipmentDetail));
-
-amountMarkupShipmentDetail 'Сумма торговой надбавки (за ед.)' (shipmentDetail) =
-    supplierPriceShipmentDetail(shipmentDetail) *
-    (UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, retailMarkupShipmentDetail(shipmentDetail))/100;
-
-amountRetailVATShipmentDetail 'Сумма розничного НДС (за ед.)' (shipmentDetail) =
-    (supplierPriceShipmentDetail(shipmentDetail) (+) amountMarkupShipmentDetail(shipmentDetail))*
-    (UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, dataRetailRangeShipmentDetail(shipmentDetail))/100;
+warePriceShipmentDetail (shipmentDetail) <-
+    warePriceVal (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
+    WHEN CHANGED(wareShipmentDetail(shipmentDetail));
 
 nonRoundRetailPriceShipmentDetail 'Цена розничная (неокруглен.)'(shipmentDetail) = [X*(Y+100)*(Z+100)/10000] (
     supplierPriceShipmentDetail(shipmentDetail),
@@ -5892,63 +5899,34 @@ nonRoundRetailPriceShipmentDetail 'Цена розничная (неокругл
     (UNION OVERRIDE 0.0 IF shipmentDetail IS shipmentDetail, dataRetailRangeShipmentDetail(shipmentDetail)));
 
 // todo : такой подход создает охрененную сложность на сохранении
-//nonRoundRetailPriceShipmentDetail 'Цена розничная (неокруглен.)'(shipmentDetail) = supplierPriceShipmentDetail(shipmentDetail) (+) amountMarkupShipmentDetail(shipmentDetail) (+) amountRetailVATShipmentDetail(shipmentDetail);
+//markupPriceShipmentDetail 'Сумма торговой надбавки (за ед.)' (shipmentDetail) =
+//    supplierPriceShipmentDetail(shipmentDetail) *
+//    (UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, retailMarkupShipmentDetail(shipmentDetail))/100;
+//
+//saleVATPriceShipmentDetail 'Сумма розничного НДС (за ед.)' (shipmentDetail) =
+//    (supplierPriceShipmentDetail(shipmentDetail) (+) markupPriceShipmentDetail(shipmentDetail))*
+//    (UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, dataRetailRangeShipmentDetail(shipmentDetail))/100;
+
+//nonRoundRetailPriceShipmentDetail 'Цена розничная (неокруглен.)'(shipmentDetail) = supplierPriceShipmentDetail(shipmentDetail) (+) markupPriceShipmentDetail(shipmentDetail) (+) saleVATPriceShipmentDetail(shipmentDetail);
 
 calculatedRetailPriceShipmentDetail 'Новая розничная цена (расч.)' (shipmentDetail) = IF isFixPriceShipmentDetail(shipmentDetail)
-    THEN roundMinus1(importerPriceShipmentDetail(shipmentDetail) (+) warePriceShipmentDetail(shipmentDetail))
-    ELSE roundMinus1(nonRoundRetailPriceShipmentDetail(shipmentDetail) (+) warePriceShipmentDetail(shipmentDetail));
+    THEN roundM1(importerPriceShipmentDetail(shipmentDetail) (+) warePriceShipmentDetail(shipmentDetail))
+    ELSE roundM1(nonRoundRetailPriceShipmentDetail(shipmentDetail) (+) warePriceShipmentDetail(shipmentDetail));
 
-retailPriceShipmentDetail (shipmentDetail) <- calculatedRetailPriceShipmentDetail (shipmentDetail)
+retailPriceShipmentDetail (shipmentDetail) <-
+    calculatedRetailPriceShipmentDetail (shipmentDetail)
     WHEN CHANGED(calculatedRetailPriceShipmentDetail (shipmentDetail));
-
-@metaCodeTotals (shipment);
-
-exSumSupplierShipmentDetail 'Сумма с ндс и посудой' (shipmentDetail) = sumWarePriceShipmentDetail(shipmentDetail) (+) sumSupplierShipmentDetail(shipmentDetail);
-exSumSupplierShipment 'Сумма с ндс и посудой' (shipment) = GROUP SUM exSumSupplierShipmentDetail(shipmentDetail)
-    BY shipmentShipmentDetail(shipmentDetail);
-
-//totalSumSupplierShipmentDetail 'Сумма с ндс и посудой' (shipmentDetail) = sumWarePriceShipmentDetail(shipmentDetail) (+) sumSupplierShipmentDetail(shipmentDetail);
-
-amountSumRetailVATShipmentDetail 'Сумма розничного НДС' (shipmentDetail) = amountRetailVATShipmentDetail(shipmentDetail)*quantityShipmentDetail(shipmentDetail);
-
-diffRoundShipmentDetail 'Сумма округления (за ед.)'(shipmentDetail) = retailPriceShipmentDetail(shipmentDetail) (-) nonRoundRetailPriceShipmentDetail(shipmentDetail);
-
-retailSumShipmentDetail 'Розничная сумма' (shipmentDetail) = quantityShipmentDetail(shipmentDetail) * retailPriceShipmentDetail(shipmentDetail);
-retailSumShipment 'Розничная сумма' (shipment) = GROUP SUM retailSumShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN documentSumGroup PERSISTENT;
-
-retailSumByItemShipment 'Розничная сумма, товар' (shipment) =
-    GROUP SUM retailSumShipmentDetail(shipmentDetail) AND NOT isContainerItem(itemShipmentDetail(shipmentDetail))
-        BY shipmentShipmentDetail(shipmentDetail) IN documentSumGroup PERSISTENT;
-retailSumByContainerShipment 'Розничная сумма, тара' (shipment) =
-    GROUP SUM retailSumShipmentDetail(shipmentDetail) IF isContainerItem(itemShipmentDetail(shipmentDetail))
-        BY shipmentShipmentDetail(shipmentDetail) IN documentSumGroup PERSISTENT;
 
 //--------------------показатели для реестра цен----------------------------//
 
-supportSumPriceShipmentDetail 'Сумма пост-ка с посудой без НДС' (shipmentDetail) = sumSupplierPriceShipmentDetail(shipmentDetail) (+) sumWarePriceShipmentDetail(shipmentDetail) (-) sumDetailVatWareShipmentDetail(shipmentDetail);
-supportSumPriceShipment 'Сумма пост-ка с посудой без НДС' (shipment) = GROUP SUM supportSumPriceShipmentDetail(shipmentDetail)
-    BY shipmentShipmentDetail(shipmentDetail);
-
-//fullSumPriceShipmentDetail 'Сумма пост-ка с посудой и НДС' (shipmentDetail) = sumPriceShipmentDetail(shipmentDetail) (+) sumSupplierVATShipmentDetail(shipmentDetail) (+) sumWarePriceShipmentDetail(shipmentDetail);
-
-percMarkupShipmentDetail '% надбавки с уч. оптовой' (shipmentDetail) = [x*100/y](
-    sumMarkupShipmentDetail(shipmentDetail), importerPriceShipmentDetail(shipmentDetail));
-
-fullDetailVatShipmentDetail 'НДС розн. с пос.' (shipmentDetail) = sumDetailVatShipmentDetail(shipmentDetail) (+) sumDetailVatWareShipmentDetail(shipmentDetail);
-fullDetailVatShipment 'НДС розн. с пос.' (shipment) = GROUP SUM fullDetailVatShipmentDetail(shipmentDetail)
-    BY shipmentShipmentDetail(shipmentDetail);
-
+fullMarkupShipmentDetail '% надбавки с уч. оптовой' (shipmentDetail) = [X*(100+Y)/100](
+    retailMarkupShipmentDetail(shipmentDetail), supplierMarkupShipmentDetail(shipmentDetail));
 
 //старые ценовые параметры для переоценок
 curRetailPriceShipmentDetail 'Текущая розничная цена' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
 
 curRetailRangeShipmentDetail(shipmentDetail) = DATA range (shipmentDetail) IN idGroup;
 curDataRetailRangeShipmentDetail 'Текущий НДС розничный,%' (shipmentDetail) = dataActingRateRangeDate(curRetailRangeShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN pricingShipmentDetailInfo;
-
-//oldPriceShipmentDetail 'Старая цена поставщика'(shipmentDetail) = DATA DOUBLE (shipmentDetail) IN baseGroup;
-//oldPriceShipmentDetail(shipmentDetail) <- priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail),
-//    itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail),
-//    subtractDate(dateShipmentDetail(shipmentDetail),1)) WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 curImporterPriceShipmentDetail 'Текущая цена изготовителя/импортера' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
 curSupplierPriceShipmentDetail 'Текущая цена поставщика' (shipmentDetail) = DATA NUMERIC[14,2] (shipmentDetail) IN pricingShipmentDetailInfo;
@@ -5962,10 +5940,8 @@ percentRateWasteShipmentDetail 'Процент для списания отхо�
 percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShipmentDetail(shipmentDetail))
     WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
-castShipmentObjectsToString100=
-    FORMULA STRING[200] '\'Приход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
-
-descriptionShipment 'Название документа' (shipment) = castShipmentObjectsToString100(
+descriptionShipment 'Название документа' (shipment) =
+    [FORMULA STRING[200] '\'Приход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     seriesNumberObject(shipment), dateShipment(shipment), nameSupplierShipment(shipment));
 
 descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
@@ -6101,13 +6077,11 @@ CONSTRAINT taxRange(retailRangeWriteOffDetail(writeOffDetail))!=tax.taxNDS CHECK
 accountPriceWriteOffDetail 'Цена учётная' = DATA NUMERIC[14,2] (writeOffDetail) IN baseGroup;
 retailPriceWriteOffDetail 'Розничная цена' (writeOffDetail) = DATA NUMERIC[14,2] (writeOffDetail) IN baseGroup;
 
-suppliersRangeWriteOffDetail(writeOffDetail) = DATA range (writeOffDetail) IN idGroup;
-suppliersRangeWriteOffDetail(writeOffDetail) <- suppliersRangeItemVal(itemWriteOffDetail(writeOffDetail), dateWriteOffDetail(writeOffDetail)) WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
-dataSuppliersRangeWriteOffDetail 'НДС поставщика,%' (writeOffDetail) = dataActingRateRangeDate
-    (suppliersRangeWriteOffDetail(writeOffDetail), dateWriteOffDetail(writeOffDetail));
-// сами по себе не нужны, только чтобы сработал метакод....
+@defineDocumentDetailInSum(writeOff);
+@defineDocumentDetailWareSum(writeOff);
+@defineDocumentDetailSum(writeOff);
 
-@metaCodeTotals (writeOff);
+@defineDocumentHeaderWareSum(writeOff);
 
 accountSumWriteOffDetail 'Сумма' (writeOffDetail) = accountPriceWriteOffDetail(writeOffDetail)*quantityWriteOffDetail(writeOffDetail);
 accountSumWriteOff 'Общая сумма' (writeOff) = GROUP SUM accountSumWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN documentSumGroup;
@@ -6570,7 +6544,11 @@ warePriceWastageDetail 'Цена посуды' (wastageDetail) = warePriceShipme
 dataWareRangeWastageDetail 'НДС по посуде' (wastageDetail) = dataWareRangeShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 dataSuppliersRangeWastageDetail 'НДС поставщика,%' (wastageDetail) = dataSuppliersRangeShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 
-@metaCodeTotals(wastage);
+@defineDocumentDetailInSum(wastage);
+@defineDocumentDetailWareSum(wastage);
+@defineDocumentDetailSum(wastage);
+
+@defineDocumentHeaderWareSum(wastage);
 
 sumRetailByWastageDetail 'Сумма в розн. ценах' (wastageDetail) = round0(quantityWastageDetail(wastageDetail) * retailPriceWastageDetail(wastageDetail));
 sumSupplierByWastageDetail 'Сумма в ценах поставщика' (wastageDetail) = round0(quantityWastageDetail(wastageDetail) * supplierPriceWastageDetail(wastageDetail));
@@ -6778,13 +6756,20 @@ retailPriceReturnSupplierDetail 'Розничная цена' = DATA NUMERIC[14,
 retailPriceReturnSupplierDetail (returnSupplierDetail) <- retailPriceShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                           WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
 
-@metaCodeTotals(returnSupplier);
+@defineDocumentDetailInSum(returnSupplier);
+@defineDocumentDetailWareSum(returnSupplier);
+@defineDocumentDetailShipSum(returnSupplier);
+@defineDocumentDetailSum(returnSupplier);
+
+@defineDocumentHeaderWareSum(returnSupplier);
+@defineDocumentHeaderShipSum(returnSupplier);
+@defineDocumentHeaderSum(returnSupplier);
 
 lossSumCleanSupplierReturnSupplier 'Сумма потерь при возврате (без НДС)' (returnSupplier) =
-    totalSumCleanSupplierReturnSupplier (returnSupplier) * returnLossSupplierReturnSupplier(returnSupplier);
+    shipSumReturnSupplierDetailReturnSupplier (returnSupplier) * returnLossSupplierReturnSupplier(returnSupplier);
 
 lossSumIncVATReturnSupplier 'Сумма НДС по потерям при возврате' (returnSupplier) =
-    totalSumIncVATReturnSupplier (returnSupplier) * returnLossSupplierReturnSupplier(returnSupplier);
+    invoiceVATSumReturnSupplierDetailReturnSupplier (returnSupplier) * returnLossSupplierReturnSupplier(returnSupplier);
 
 //текущие параметры
 
@@ -7982,7 +7967,7 @@ dataWareRangeOrderSupplier 'НДС посуды, %' (orderSupplier, item) =
 sumWareOrderSupplier 'Сумма по посуде' (orderSupplier, item) =
     UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item,
                    sumQuantityItemOrderSupplier(orderSupplier, item) * warePriceOrderSupplier(orderSupplier, item);
-totalSumWareOrderSupplier 'Общая сумма по посуде' (orderSupplier) =
+wareSumOrderSupplier 'Общая сумма по посуде' (orderSupplier) =
     GROUP SUM sumWareOrderSupplier(orderSupplier, item) BY orderSupplier;
 
 sumItemOrderSupplier 'Сумма заказа' (orderSupplier, item) =
@@ -7993,7 +7978,7 @@ sumVatOrderSupplier 'Сумма НДС, за ед.' (orderSupplier, item) =
     round0(
     (UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, priceSupplierItemOrderSupplier(orderSupplier, item) *
      UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, dataSuppliersRangeOrderSupplier(orderSupplier, item))/100);
-sumDetailVatOrderSupplier 'Сумма НДС по товару' (orderSupplier, item) =
+saleVATSumOrderSupplier 'Сумма НДС по товару' (orderSupplier, item) =
     round0(
     (UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item,
                     sumQuantityItemOrderSupplier(orderSupplier, item) * sumVatOrderSupplier(orderSupplier, item)));
@@ -8002,18 +7987,18 @@ sumVatWareOrderSupplier 'Сумма НДС по посуде, за ед.' (order
     round0(
     (UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, warePriceOrderSupplier(orderSupplier, item) *
      UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, dataWareRangeOrderSupplier(orderSupplier, item))/100);
-sumDetailVatWareOrderSupplier 'Сума НДС по посуде' (orderSupplier, item) =
+saleVATSumWareOrderSupplier 'Сума НДС по посуде' (orderSupplier, item) =
     round0(
     (UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item,
                     sumQuantityItemOrderSupplier(orderSupplier, item) * sumVatWareOrderSupplier(orderSupplier, item)));
-sumDetailVatItemOrderSupplier 'Сумма НДС' (orderSupplier, item) =
-    sumDetailVatOrderSupplier(orderSupplier, item) (+) sumDetailVatWareOrderSupplier(orderSupplier, item);
+saleVATSumItemOrderSupplier 'Сумма НДС' (orderSupplier, item) =
+    saleVATSumOrderSupplier(orderSupplier, item) (+) saleVATSumWareOrderSupplier(orderSupplier, item);
 
 totalSumVatOrderSupplier 'Общая сумма НДС' (orderSupplier) =
-    GROUP SUM sumDetailVatItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
+    GROUP SUM saleVATSumItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
 
 fullSumItemOrderSupplier 'Сумма заказа с НДС' (orderSupplier, item) =
-    sumItemOrderSupplier(orderSupplier, item) (+) sumDetailVatOrderSupplier(orderSupplier, item) (+) sumWareOrderSupplier(orderSupplier, item);
+    sumItemOrderSupplier(orderSupplier, item) (+) saleVATSumOrderSupplier(orderSupplier, item) (+) sumWareOrderSupplier(orderSupplier, item);
 totalFullSumOrderSupplier 'Общая сумма заказа с НДС' (orderSupplier) =
     GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
 
@@ -8404,7 +8389,7 @@ FORM orderSupplier 'Заказ поставщику'
 
     PROPERTIES             currentBalanceOrderSupplierItem(o, i), quantityToSellNextOrder(o, i), minReserveItem(i), recommendCountOrderSupplier(o, i)
     PROPERTIES(o, i)       priceSupplierItemOrderSupplier, numberSuppliersRangeOrderSupplier,
-                           dataSuppliersRangeOrderSupplier, sumWareOrderSupplier, sumDetailVatItemOrderSupplier,
+                           dataSuppliersRangeOrderSupplier, sumWareOrderSupplier, saleVATSumItemOrderSupplier,
                            fullSumItemOrderSupplier
 
     PROPERTIES(o)          fillInOrderSupplier TODRAW i FORCE PANEL
@@ -8503,7 +8488,7 @@ FORM orderSuppliers 'Заказы поставщику'
     PROPERTIES(i) READONLY     quantityPackItem, minQuantityOrderItem
 
     PROPERTIES(o, i) READONLY  priceSupplierItemOrderSupplier, numberSuppliersRangeOrderSupplier,
-                               dataSuppliersRangeOrderSupplier, sumWareOrderSupplier, sumDetailVatItemOrderSupplier,
+                               dataSuppliersRangeOrderSupplier, sumWareOrderSupplier, saleVATSumItemOrderSupplier,
                                fullSumItemOrderSupplier
 
     FILTERS sumQuantityItemOrderSupplier(o, i)
@@ -8720,8 +8705,6 @@ curWarePriceReturnSupplierDetail (returnSupplierDetail) <- warePriceBLedgerDateT
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
                 dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
-retailSumReturnSupplierDetail 'Розничная сумма' (returnSupplierDetail) =
-    quantityReturnSupplierDetail(returnSupplierDetail) * retailPriceReturnSupplierDetail(returnSupplierDetail);
 retailSumReturnSupplier 'Розничная сумма' (returnSupplier) = GROUP SUM retailSumReturnSupplierDetail(returnSupplierDetail)
                                                              BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN documentSumGroup;
 
@@ -9677,11 +9660,11 @@ priceConsignmentDetail 'Цена' (consignmentDetail) = UNION EXCLUSIVE retailPr
                                                                     retailPriceInnerFlowDetail(consignmentDetail);
 
 costConsignmentDetail 'Стоимость' (consignmentDetail) = UNION EXCLUSIVE retailRndSumStatementDetail (consignmentDetail),
-                                                                        sumSupplierPriceReturnSupplierDetail (consignmentDetail),
+                                                                        supplierSumReturnSupplierDetail (consignmentDetail),
                                                                         accountSumInnerFlowDetail (consignmentDetail);
 
 sumCostConsignmentDetail 'Общая стоимость' (consignment) = UNION EXCLUSIVE retailRndSumStatementDetailStatement(consignment),
-                                                                           totalSumSupplierPriceWithWareReturnSupplier(consignment),
+                                                                           quoteSumReturnSupplierDetailReturnSupplier(consignment),
                                                                            accountSumInnerFlow(consignment) IN sumConsignmentGroup;
 
 vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION EXCLUSIVE dataCalcRangeStatementDetail (consignmentDetail),
@@ -9689,19 +9672,19 @@ vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION EXCLUSIVE
                                                                                dataRetailRangeInnerFlowDetail (consignmentDetail);
 
 sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION EXCLUSIVE calcVATRndSumStatementDetail (consignmentDetail),
-                                                                          sumDetailSupplierVATReturnSupplierDetail (consignmentDetail),
+                                                                          supplierVATSumReturnSupplierDetail (consignmentDetail),
                                                                           sumRetailVATInnerFlowDetail (consignmentDetail);
 
 totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNION EXCLUSIVE calcVATRndSumStatementDetailStatement (consignment),
-                                                                               totalSumIncVATReturnSupplier (consignment),
+                                                                               invoiceVATSumReturnSupplierDetailReturnSupplier (consignment),
                                                                                totalSumRetailVATInnerFlow (consignment) IN sumConsignmentGroup;
 
 costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION EXCLUSIVE retailRndSumStatementDetail (consignmentDetail),
-                                                                                 sumSupplierReturnSupplierDetail (consignmentDetail),
+                                                                                 shipSumReturnSupplierDetail (consignmentDetail),
                                                                                  accountSumInnerFlowDetail (consignmentDetail);
 
 costWithVATConsignment 'Сумма с НДС' (consignment) = UNION EXCLUSIVE retailRndSumStatementDetailStatement (consignment),
-                                                                     totalSumSupplierReturnSupplier (consignment),
+                                                                     invoiceSumReturnSupplierDetailReturnSupplier (consignment),
                                                                      accountSumInnerFlow (consignment) IN sumConsignmentGroup;
 
 
@@ -9748,9 +9731,9 @@ META metaCodeConsignmentTwo(prop, caption)
 
         PROPERTIES(d) nameItemConsignmentDetail, shortNameConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
-                      noteInnerFlowDetail, nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, totalSumWareReturnSupplierDetail,
-                      dataWareRangeReturnSupplierDetail, sumDetailVatWareReturnSupplierDetail, warePriceWithoutVATReturnSupplierDetail,
-                      totalSumWareWithoutVATReturnSupplierDetail
+                      noteInnerFlowDetail, nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, wareSumReturnSupplierDetail,
+                      dataWareRangeReturnSupplierDetail, wareVATSumReturnSupplierDetail, wareSupplierPriceReturnSupplierDetail,
+                      wareSupplierSumReturnSupplierDetail
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
@@ -9776,7 +9759,7 @@ META metaCodeTransportConsignment(prop, caption)
                        sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail, sumKgGrossWeightConsignment,
                        sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment, UNPRecipientConsignment, UNPSenderConsignment,
                        addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment, fullNameRecipientConsignment,
-                       quantityConsignmentDetailsConsignment, sumWareReturnSupplier, totalSumSupplierPriceWithWareReturnSupplier,
+                       quantityConsignmentDetailsConsignment, sumWareReturnSupplier, quoteSumReturnSupplierDetailReturnSupplier,
                        seriesObject, numberObject, isReturnSupplierConsignment
 
         OBJECTS d=consignmentDetail
@@ -9785,8 +9768,8 @@ META metaCodeTransportConsignment(prop, caption)
                       costConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, costWithVATConsignmentDetail,
                       packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteInnerFlowDetail,
                       nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, dataWareRangeReturnSupplierDetail,
-                      warePriceWithoutVATReturnSupplierDetail, sumWareReturnSupplierDetail, totalSumWareWithoutVATReturnSupplierDetail,
-                      sumDetailVatWareReturnSupplierDetail, totalSumWareReturnSupplierDetail
+                      wareSupplierPriceReturnSupplierDetail, sumWareReturnSupplierDetail, wareSupplierSumReturnSupplierDetail,
+                      wareVATSumReturnSupplierDetail, wareSumReturnSupplierDetail
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
@@ -9829,18 +9812,18 @@ FORM pricesRegister 'Реестр цен' PRINT
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s)  SELECTOR numberObject, objectClassName, dateShipment, nameDepartmentStoreShipment,
                     numberContractShipment, dateContractShipment,  nameSupplierShipment, consigneeShipment,
-                    quantityShipmentDetailShipment, supportSumPriceShipment, totalSumSupplierVATShipment,
-                    totalSumWareShipment, totalSumVatWareShipment, exSumSupplierShipment, totalSumMarkupShipment,
-                    fullDetailVatShipment, retailSumShipment, nameRegisterCommitteeShipment,
+                    quantityShipmentDetailShipment, quoteSumShipmentDetailShipment, supplierVATSumShipmentDetailShipment,
+                    wareSumShipmentDetailShipment, wareVATSumShipmentDetailShipment, invoiceSumShipmentDetailShipment, markupSumShipmentDetailShipment,
+                    retailVATSumShipmentDetailShipment, retailRndSumShipmentDetailShipment, nameRegisterCommitteeShipment,
                     nameFormedManShipment, nameCheckedManShipment, nameLabeledManShipment, nameAccountantManShipment,
                     nameHeadManShipment
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, shortNameUnitOfMeasureItemShipmentDetail, quantityShipmentDetail,
-                    importerPriceShipmentDetail, supportSumPriceShipmentDetail, supplierMarkupShipmentDetail, sumDetailSupplierVATShipmentDetail, dataSuppliersRangeShipmentDetail,
-                    sumWarePriceShipmentDetail, warePriceShipmentDetail, sumDetailVatWareShipmentDetail, dataWareRangeShipmentDetail,
-                    exSumSupplierShipmentDetail, percMarkupShipmentDetail, sumDetailMarkupShipmentDetail, dataRetailRangeShipmentDetail,
-                    fullDetailVatShipmentDetail, retailPriceShipmentDetail, retailSumShipmentDetail
+                    importerPriceShipmentDetail, quoteSumShipmentDetail, supplierMarkupShipmentDetail, supplierVATSumShipmentDetail, dataSuppliersRangeShipmentDetail,
+                    wareSumShipmentDetail, warePriceShipmentDetail, wareVATSumShipmentDetail, dataWareRangeShipmentDetail,
+                    invoiceSumShipmentDetail, fullMarkupShipmentDetail, markupSumShipmentDetail, dataRetailRangeShipmentDetail,
+                    retailVATSumShipmentDetail, retailPriceShipmentDetail, retailRndSumShipmentDetail
 
     FILTERS inShipmentShipmentDetail(s, d)
 ;
@@ -10296,7 +10279,7 @@ sumVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде, за �
      warePricePriceChangeDocumentDetail (priceChangeDocumentDetail),
      dataWareRangePriceChangeDocumentDetail(priceChangeDocumentDetail));
 
-sumDetailVatWarePriceChangeDocumentDetail 'Сумма НДС по посуде' (priceChangeDocumentDetail) = round0(
+wareVATSumPriceChangeDocumentDetail 'Сумма НДС по посуде' (priceChangeDocumentDetail) = round0(
     sumVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) * quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 totalSumImporterPricePriceChangeDocument 'Сумма изготовителя' (priceChangeDocument) = GROUP SUM
@@ -10304,10 +10287,10 @@ totalSumImporterPricePriceChangeDocument 'Сумма изготовителя' (
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 
-totalSumSupplierPricePriceChangeDocumentDetail 'Новая сумма поставщика' (priceChangeDocumentDetail)= round0(
+supplierSumPriceChangeDocumentDetail 'Новая сумма поставщика' (priceChangeDocumentDetail)= round0(
     supplierPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
-totalSumSupplierPricePriceChangeDocument 'Новая сумма поставщика' (priceChangeDocument) = GROUP SUM
-    totalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail)
+supplierSumPriceChangeDocument 'Новая сумма поставщика' (priceChangeDocument) = GROUP SUM
+    supplierSumPriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 
@@ -10317,14 +10300,14 @@ totalSumRetailVATPriceChangeDocument 'Новая сумма розничного
     totalSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-totalSumWarePriceChangeDocumentDetail 'Новая сумма посуды' (priceChangeDocumentDetail)= round0(
+wareSumPriceChangeDocumentDetail 'Новая сумма посуды' (priceChangeDocumentDetail)= round0(
     warePricePriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
-totalSumWarePriceChangeDocument 'Новая сумма посуды' (priceChangeDocument) = GROUP SUM
-    totalSumWarePriceChangeDocumentDetail(priceChangeDocumentDetail)
+wareSumPriceChangeDocument 'Новая сумма посуды' (priceChangeDocument) = GROUP SUM
+    wareSumPriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-totalSumVatWarePriceChangeDocument 'Новая сумма НДС по посуде' (priceChangeDocument) =  GROUP SUM
-    sumDetailVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+wareVATSumPriceChangeDocument 'Новая сумма НДС по посуде' (priceChangeDocument) =  GROUP SUM
+    wareVATSumPriceChangeDocumentDetail(priceChangeDocumentDetail) BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 quantityPriceChangeDocument 'Количество' (priceChangeDocument) = GROUP SUM quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)
     BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
@@ -10333,10 +10316,10 @@ quantityPriceChangeDocument 'Количество' (priceChangeDocument) = GROUP
 totalSumMarkupPriceChangeDocumentDetail 'Новая сумма надбавки' (priceChangeDocumentDetail)=
 //    sumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
      retailSumChangeDocumentDetail(priceChangeDocumentDetail) (-)
-     totalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+     supplierSumPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
      totalSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
-     totalSumWarePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
-     sumDetailVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail);
+     wareSumPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+     wareVATSumPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 totalSumMarkupPriceChangeDocument 'Новая сумма надбавки' (priceChangeDocument) = GROUP SUM
     totalSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)
@@ -10382,10 +10365,10 @@ oldTotalSumImporterPricePriceChangeDocument 'Старая сумма изгот�
 
 
 
-oldTotalSumSupplierPricePriceChangeDocumentDetail 'Старая сумма поставщика' (priceChangeDocumentDetail) = round0(
+oldSupplierSumPriceChangeDocumentDetail 'Старая сумма поставщика' (priceChangeDocumentDetail) = round0(
     oldSupplierPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
-oldTotalSumSupplierPricePriceChangeDocument 'Старая сумма поставщика' (priceChangeDocument) = GROUP SUM
-    oldTotalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail)
+oldSupplierSumPriceChangeDocument 'Старая сумма поставщика' (priceChangeDocument) = GROUP SUM
+    oldSupplierSumPriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 
@@ -10410,7 +10393,7 @@ oldTotalSumVatWarePriceChangeDocument 'Старая сумма НДС по по�
 oldTotalSumMarkupPriceChangeDocumentDetail 'Старая сумма надбавки' (priceChangeDocumentDetail) =
 //    oldSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail);
      oldRetailSumChangeDocumentDetail(priceChangeDocumentDetail) (-)
-     oldTotalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+     oldSupplierSumPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
      oldTotalSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
      oldTotalSumWarePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
      oldSumDetailVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail);
@@ -10422,8 +10405,8 @@ oldTotalSumMarkupPriceChangeDocument 'Старая сумма надбавки' 
 
                          // ---------Дельта  показателей переоценки--------------- //
 
-diffTotalSumSupplierPricePriceChangeDocumentDetail 'Изменение суммы поставщика' (priceChangeDocumentDetail) = totalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
-    oldTotalSumSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail);
+diffSupplierSumPriceChangeDocumentDetail 'Изменение суммы поставщика' (priceChangeDocumentDetail) = supplierSumPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+    oldSupplierSumPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 diffTotalSumMarkupPriceChangeDocumentDetail 'Изменение суммы надбавки' (priceChangeDocumentDetail) = totalSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
     oldTotalSumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail);
@@ -10431,18 +10414,18 @@ diffTotalSumMarkupPriceChangeDocumentDetail 'Изменение суммы на�
 diffTotalSumRetailVATPriceChangeDocumentDetail 'Изменение суммы розничного НДС' (priceChangeDocumentDetail) = totalSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
     oldTotalSumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-diffTotalSumWarePriceChangeDocumentDetail 'Изменение суммы посуды' (priceChangeDocumentDetail) = totalSumWarePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+diffTotalSumWarePriceChangeDocumentDetail 'Изменение суммы посуды' (priceChangeDocumentDetail) = wareSumPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
     oldTotalSumWarePriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-diffTotalSumVatWarePriceChangeDocumentDetail 'Изменение суммы НДС посуды' (priceChangeDocumentDetail) = sumDetailVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+diffTotalSumVatWarePriceChangeDocumentDetail 'Изменение суммы НДС посуды' (priceChangeDocumentDetail) = wareVATSumPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
     oldSumDetailVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 
 diffTotalSumImporterPricePriceChangeDocument 'Изменение суммы изготовителя' (priceChangeDocument) = totalSumImporterPricePriceChangeDocument(priceChangeDocument) (-)
     oldTotalSumImporterPricePriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
-diffTotalSumSupplierPricePriceChangeDocument 'Изменение суммы поставщика' (priceChangeDocument) = totalSumSupplierPricePriceChangeDocument(priceChangeDocument) (-)
-    oldTotalSumSupplierPricePriceChangeDocument(priceChangeDocument) IN documentSumGroup;
+diffSupplierSumPriceChangeDocument 'Изменение суммы поставщика' (priceChangeDocument) = supplierSumPriceChangeDocument(priceChangeDocument) (-)
+    oldSupplierSumPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
 diffTotalSumMarkupPriceChangeDocument 'Изменение суммы надбавки' (priceChangeDocument) = totalSumMarkupPriceChangeDocument(priceChangeDocument) (-)
     oldTotalSumMarkupPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
@@ -10450,10 +10433,10 @@ diffTotalSumMarkupPriceChangeDocument 'Изменение суммы надба�
 diffTotalSumRetailVATPriceChangeDocument 'Изменение суммы розничного НДС' (priceChangeDocument) = totalSumRetailVATPriceChangeDocument(priceChangeDocument) (-)
     oldTotalSumRetailVATPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
-diffTotalSumWarePriceChangeDocument 'Изменение суммы посуды' (priceChangeDocument) = totalSumWarePriceChangeDocument(priceChangeDocument) (-)
+diffTotalSumWarePriceChangeDocument 'Изменение суммы посуды' (priceChangeDocument) = wareSumPriceChangeDocument(priceChangeDocument) (-)
     oldTotalSumWarePriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
-diffTotalSumVatWarePriceChangeDocument 'Изменение суммы НДС посуды' (priceChangeDocument) = totalSumVatWarePriceChangeDocument(priceChangeDocument) (-)
+diffTotalSumVatWarePriceChangeDocument 'Изменение суммы НДС посуды' (priceChangeDocument) = wareVATSumPriceChangeDocument(priceChangeDocument) (-)
     oldTotalSumVatWarePriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
 isRevaluationCommitteePriceChangeDocument(priceChangeDocument) = priceChangeDocument IS priceChangeDocument AND revaluationCommitteePriceChangeDocument(priceChangeDocument);
@@ -10471,23 +10454,23 @@ FORM actOfRevaluation 'Акт переоценки' PRINT
                              nameDepartmentStorePriceChangeDocument, datePriceChangeDocument, nameRevaluationCommitteePriceChangeDocument,
                              commonNameChairmanPriceChangeDocument, nameOfficerChairmanPriceChangeDocument, commonNameEmployeeCommitteePriceChangeDocument,
                              quantityPriceChangeDocument, numberDisposalPriceChangeDocument, isRevaluationCommitteePriceChangeDocument,
-                             oldTotalSumSupplierPricePriceChangeDocument, oldTotalSumMarkupPriceChangeDocument, oldTotalSumRetailVATPriceChangeDocument,
+                             oldSupplierSumPriceChangeDocument, oldTotalSumMarkupPriceChangeDocument, oldTotalSumRetailVATPriceChangeDocument,
                              oldTotalSumWarePriceChangeDocument, oldTotalSumVatWarePriceChangeDocument, oldRetailSumChangeDocument,
-                             totalSumSupplierPricePriceChangeDocument, totalSumMarkupPriceChangeDocument, totalSumRetailVATPriceChangeDocument,
-                             totalSumWarePriceChangeDocument, totalSumVatWarePriceChangeDocument, retailSumChangeDocument,
-                             diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
+                             supplierSumPriceChangeDocument, totalSumMarkupPriceChangeDocument, totalSumRetailVATPriceChangeDocument,
+                             wareSumPriceChangeDocument, wareVATSumPriceChangeDocument, retailSumChangeDocument,
+                             diffSupplierSumPriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
                              diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument
 
     OBJECTS pcd=priceChangeDocumentDetail
     PROPERTIES(pcd) READONLY numberPriceChangeDocumentDetail, nameItemPriceChangeDocumentDetail, shortNameUnitOfMeasureItemPriceChangeDocumentDetail,
                              quantityPriceChangeDocumentDetail,
-                             oldTotalSumSupplierPricePriceChangeDocumentDetail, oldTotalSumMarkupPriceChangeDocumentDetail,
+                             oldSupplierSumPriceChangeDocumentDetail, oldTotalSumMarkupPriceChangeDocumentDetail,
                              oldTotalSumRetailVATPriceChangeDocumentDetail, oldTotalSumWarePriceChangeDocumentDetail,
                              oldSumDetailVatWarePriceChangeDocumentDetail, oldRetailPriceChangeDocumentDetail, oldRetailSumChangeDocumentDetail,
-                             totalSumSupplierPricePriceChangeDocumentDetail, totalSumMarkupPriceChangeDocumentDetail,
-                             totalSumRetailVATPriceChangeDocumentDetail, totalSumWarePriceChangeDocumentDetail,
-                             sumDetailVatWarePriceChangeDocumentDetail, retailPriceChangeDocumentDetail, retailSumChangeDocumentDetail,
-                             diffTotalSumSupplierPricePriceChangeDocumentDetail, diffTotalSumMarkupPriceChangeDocumentDetail,
+                             supplierSumPriceChangeDocumentDetail, totalSumMarkupPriceChangeDocumentDetail,
+                             totalSumRetailVATPriceChangeDocumentDetail, wareSumPriceChangeDocumentDetail,
+                             wareVATSumPriceChangeDocumentDetail, retailPriceChangeDocumentDetail, retailSumChangeDocumentDetail,
+                             diffSupplierSumPriceChangeDocumentDetail, diffTotalSumMarkupPriceChangeDocumentDetail,
                              diffTotalSumRetailVATPriceChangeDocumentDetail, diffTotalSumWarePriceChangeDocumentDetail,
                              diffTotalSumVatWarePriceChangeDocumentDetail, accountSumChangeDocumentDetail
 
@@ -10506,7 +10489,7 @@ FORM priceChangeDocuments 'Акты переоценки'
     PROPERTIES(pc) READONLY objectClassName, isPostedPriceChangeDocument FORCE GRID, dateTimePriceChangeDocument, nameDepartmentStorePriceChangeDocument,
                             numberPriceChangeDocument, seriesPriceChangeDocument, nameSupplierPriceChangeShipment, nameSupplierPriceChangeReturnSupplier,
                             nameSenderDepartmentPriceChangeInnerArrival,
-                            diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
+                            diffSupplierSumPriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
                             diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument, nameRevaluationCommitteePriceChangeDocument
 
     OBJECTS pcd=priceChangeDocumentDetail
@@ -10555,7 +10538,7 @@ FORM shipment 'Поставка'
     PROPERTIES (s) nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
                    nameSupplierShipment, numberContractShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
-                   carryingChargesShipment, quantityShipmentDetailShipment, totalSumIncVATShipment, totalSumSupplierShipment, retailSumShipment,
+                   carryingChargesShipment, quantityShipmentDetailShipment, invoiceVATSumShipmentDetailShipment, invoiceSumShipmentDetailShipment, retailRndSumShipmentDetailShipment,
                    noteShipment, toShowPriceImporterShipment, toShowWareShipment, toShowPapersShipment, nameRegisterCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s),
                    nameRevaluationCommitteeShipment SHOWIF needToPriceChangeShipment(s), nameWastageCommitteeShipment SHOWIF needToWasteShipment(s)
 
@@ -10564,7 +10547,7 @@ FORM shipment 'Поставка'
                     supplierPriceShipmentDetail BACKGROUND isAllowPriceItemShipment(d), supplierMarkupShipmentDetail SHOWIF toShowPriceImporterShipment(s),
                     importerPriceShipmentDetail READONLY SHOWIF toShowPriceImporterShipment(s), dateFitToShipmentDetail,
                     balanceBeforeShipmentShipmentDetail, numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail,
-                    sumDetailSupplierVATShipmentDetail, sumSupplierShipmentDetail, nameWareShipmentDetail SHOWIF toShowWareShipment(s),
+                    supplierVATSumShipmentDetail, shipSumShipmentDetail, nameWareShipmentDetail SHOWIF toShowWareShipment(s),
                     warePriceShipmentDetail SHOWIF toShowWareShipment(s), numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
                     retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail,
                     numberCustomsCertificateShipmentDetail SHOWIF toShowPapersShipment(s),  numberCertificateGGRShipmentDetail SHOWIF toShowPapersShipment(s),
@@ -10664,8 +10647,8 @@ DESIGN shipment FROM DEFAULT{
 FORM shipments 'Поставки'
     OBJECTS s=shipment
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
-                            nameSupplierShipment, countShipmentDetailShipment, totalSumSupplierPriceShipment, totalSumIncVATShipment,
-                            totalSumSupplierShipment, retailSumShipment,
+                            nameSupplierShipment, countShipmentDetailShipment, quoteSumShipmentDetailShipment, invoiceVATSumShipmentDetailShipment,
+                            invoiceSumShipmentDetailShipment, retailRndSumShipmentDetailShipment,
                             statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionShipment(s),
                             statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionShipment(s)
 
@@ -10683,7 +10666,7 @@ FORM shipments 'Поставки'
     PROPERTIES (d) READONLY  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
                              supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateFitToShipmentDetail,
                              balanceBeforeShipmentShipmentDetail, numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail,
-                             sumDetailSupplierVATShipmentDetail, sumSupplierShipmentDetail, nameWareShipmentDetail, warePriceShipmentDetail,
+                             supplierVATSumShipmentDetail, shipSumShipmentDetail, nameWareShipmentDetail, warePriceShipmentDetail,
                              numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail, retailMarkupShipmentDetail,
                              curRetailPriceShipmentDetail, retailPriceShipmentDetail
 
@@ -10739,7 +10722,7 @@ FORM returnSupplier 'Возврат поставщику'
     OBJECTS r=returnSupplier FIXED PANEL
     PROPERTIES(r) numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
                   nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, numberContractReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
-                  totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier,
+                  totalQuantityReturnSupplier, invoiceVATSumReturnSupplierDetailReturnSupplier, invoiceSumReturnSupplierDetailReturnSupplier,
                   retailSumReturnSupplier, returnLossSupplierReturnSupplier, numberDisposalReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r),
                   nameRevaluationCommitteeReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
@@ -10756,7 +10739,7 @@ FORM returnSupplier 'Возврат поставщику'
     PROPERTIES(d) indexReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
                   commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
                   supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail READONLY, numberSupplierRangeReturnSupplierDetail,
-                  dataSuppliersRangeReturnSupplierDetail, sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
+                  dataSuppliersRangeReturnSupplierDetail, supplierVATSumReturnSupplierDetail, shipSumReturnSupplierDetail,
                   nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
                   retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
@@ -10780,7 +10763,7 @@ FORM returnSuppliers 'Возвраты поставщику'
     OBJECTS r=returnSupplier
     PROPERTIES(r) READONLY objectClassName, numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
                            nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
-                           totalQuantityReturnSupplier, totalSumIncVATReturnSupplier, totalSumSupplierReturnSupplier, retailSumReturnSupplier
+                           totalQuantityReturnSupplier, invoiceVATSumReturnSupplierDetailReturnSupplier, invoiceSumReturnSupplierDetailReturnSupplier, retailSumReturnSupplier
     PROPERTIES (r) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES(r) FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
@@ -10796,7 +10779,7 @@ FORM returnSuppliers 'Возвраты поставщику'
     PROPERTIES(d) READONLY indexReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
                            commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
                            supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail,
-                           dataSuppliersRangeReturnSupplierDetail, sumDetailSupplierVATReturnSupplierDetail, sumSupplierReturnSupplierDetail,
+                           dataSuppliersRangeReturnSupplierDetail, supplierVATSumReturnSupplierDetail, shipSumReturnSupplierDetail,
                            nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
                            retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail
     FILTERS isReturnSupplier(r, d)
@@ -10943,8 +10926,12 @@ DESIGN commonInfoBatchReturnSupplierDetail FROM DEFAULT {
 }
 
 // ---------------------------------- Контроль предельных надбавок ------------------------------------------
-CONSTRAINT commonMarkupShipmentDetail (shipmentDetail) >
-    maxTradeAllowanceItem (itemShipmentDetail(shipmentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
+
+// todo : здесь надо деление на 0 во что-то обернуть - иначе будет division by zero
+CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
+            supplierPriceShipmentDetail(shipmentDetail), retailMarkupShipmentDetail(shipmentDetail), importerPriceShipmentDetail(shipmentDetail))
+                >
+            maxTradeAllowanceItem (itemShipmentDetail(shipmentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
 
 CONSTRAINT commonMarkupPriceChangeDocumentDetail (priceChangeDocumentDetail) >
     maxTradeAllowanceItem (itemPriceChangeDocumentDetail(priceChangeDocumentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
@@ -11021,16 +11008,16 @@ departmentStoreAccountSumDocumentLedger (ledger) = UNION EXCLUSIVE departmentSto
 
 nameDepartmentStoreAccountSumDocumentLedger 'Отдел магазина' (ledger) = name(departmentStoreAccountSumDocumentLedger(ledger));
 
-sumIncAccountDocumentLedger 'Сумма прихода' (ledger) = UNION EXCLUSIVE retailSumShipment(ledger),
+sumIncAccountDocumentLedger 'Сумма прихода' (ledger) = UNION EXCLUSIVE retailRndSumShipmentDetailShipment(ledger),
                                                                        accountSumInnerArrival(ledger),
                                                                        accountSumChangeDocument(ledger),
                                                                        retailSumParish(ledger) PERSISTENT IN ledgerGroup;
 
-sumIncAccountByItemDocumentLedger 'Сумма прихода, товар' (ledger) = UNION EXCLUSIVE retailSumByItemShipment(ledger),
+sumIncAccountByItemDocumentLedger 'Сумма прихода, товар' (ledger) = UNION EXCLUSIVE retailRndSumItemShipmentDetailShipment(ledger),
                                                                        accountSumByItemInnerArrival(ledger),
                                                                        accountSumByItemChangeDocument(ledger) PERSISTENT IN ledgerByItemGroup;//      subtotalByItemParish(ledger)
 
-sumIncAccountByContainerDocumentLedger 'Сумма прихода, тара' (ledger) = UNION EXCLUSIVE retailSumByContainerShipment(ledger),
+sumIncAccountByContainerDocumentLedger 'Сумма прихода, тара' (ledger) = UNION EXCLUSIVE retailRndSumContainerShipmentDetailShipment(ledger),
                                                                        accountSumByContainerInnerArrival(ledger),
                                                                        accountSumByContainerChangeDocument(ledger) PERSISTENT IN ledgerByContainerGroup; //  subtotalByContainerParish(ledger)
 
@@ -11039,7 +11026,6 @@ sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSI
                                                                        accountSumInnerFlow(ledger),
                                                                        retailRndSumStatementDetailStatement(ledger),
                                                                        totalSumRetailByWastage(ledger),
-        // наверное лишнее                                             totalSumSupplierReturnSupplier(ledger),
                                                                        accountSumShortageCollationSheet(ledger),
                                                                        sumZReport(ledger),
                                                                        sumSaleDiscountDocument(ledger),
@@ -11601,10 +11587,10 @@ percDiscountUserPriceChange 'Процент скидки от розн. цены
 toShowDiscountUserPriceChange (userPriceChange) =  userPriceChange IS userPriceChange AND NOT percMarkupUserPriceChange(userPriceChange);
 toShowMarkupUserPriceChange (userPriceChange) =  userPriceChange IS userPriceChange AND NOT percDiscountUserPriceChange(userPriceChange);
 
-newDiscountRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetail) =  [roundMinus1(X-(X*Y)/100)](
+newDiscountRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetail) =  [roundM1(X-(X*Y)/100)](
     curRetailPriceUserPriceChangeDetail(userPriceChangeDetail), percDiscountUserPriceChange(userPriceChange));
 
-newMarkupRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetail) = [roundMinus1(X+(X*Y)/100+(X+(X*Y)/100)*Z/100+F)](
+newMarkupRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetail) = [roundM1(X+(X*Y)/100+(X+(X*Y)/100)*Z/100+F)](
     curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail),
     percMarkupUserPriceChange(userPriceChange),
     curDataRetailRangeUserPriceChangeDetail(userPriceChangeDetail),
@@ -11674,7 +11660,7 @@ FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
     PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
                    dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
-                   diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
+                   diffSupplierSumPriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
                    diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument,
                    noteUserPriceChange, numberDisposalUserPriceChange, nameRevaluationCommitteeUserPriceChange
 
@@ -11750,7 +11736,7 @@ FORM userPriceChanges 'Переоценки товаров'
 
     OBJECTS u=userPriceChange
     PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
-                   diffTotalSumSupplierPricePriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
+                   diffSupplierSumPriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
                    diffTotalSumWarePriceChangeDocument, diffTotalSumVatWarePriceChangeDocument, accountSumChangeDocument,
                    statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionUserPriceChange(u),
                    statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionUserPriceChange(u)
