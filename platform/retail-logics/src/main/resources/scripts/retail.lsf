@@ -1058,6 +1058,13 @@ CLASS statisticGroup 'Статистическая группа' : named, extern
 TABLE statisticGroup(statisticGroup);
 TABLE statisticGroupStatisticGroup (statisticGroup, statisticGroup);
 
+CLASS STATIC groupStatic 'Ед. изм.' {
+    liter 'Литр',
+    thing 'Штука',
+    pounds 'Килограмм',
+    ruble 'Рубль'
+};
+
 parentStatisticGroup = DATA statisticGroup (statisticGroup);
 nameParentStatisticGroup 'Родительская группа' (statisticGroup) = name(parentStatisticGroup(statisticGroup));
 
@@ -1076,16 +1083,17 @@ hasParentStatisticGroup 'Уровень' (child, parent) = TRUE AND hasParentSta
 
 hasParentAndLeafStatisticGroup (child, parent) = hasParentStatisticGroup(child, parent) AND isLeafStatisticGroup(child);
 
-unitOfMeasureStatisticGroup 'Ед. изм.' (statisticGroup) = DATA unitOfMeasure (statisticGroup);
-shortNameUnitOfMeasureStatisticGroup 'Еденица измерения' (statisticGroup) = shortName(unitOfMeasureStatisticGroup(statisticGroup));
-SidStatisticGroup 'Код группы по ОКРБ 007-2007' (statisticGroup) = DATA STRING[12] (statisticGroup)  MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
+unitMeasureStatisticGroup 'Ед. изм. ИД' (statisticGroup) = DATA groupStatic (statisticGroup) IN idGroup;
+nameUnitOfMeasureStatisticGroup 'Ед. изм.' (statisticGroup) = name(unitMeasureStatisticGroup(statisticGroup)) MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
+
+sidStatisticGroup 'Код группы по ОКРБ 007-2007' (statisticGroup) = DATA STRING[12] (statisticGroup)  MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
 conversionFactorStatisticGroup 'Коэффициент перевода' (statisticGroup) = DATA NUMERIC[14,5] (statisticGroup);
 canonicalNameStatisticGroup 'Каноническое имя' (statisticGroup) = castToString255(
                            [GROUP CONCAT name(parent), ' / ' BY child ORDER DESC hasParentStatisticGroupLevel(child, parent)](statisticGroup))
                            MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 
 canonicalNumberStatisticGroup 'Каноническое код' (statisticGroup) = castToString255(
-                           [GROUP CONCAT SidStatisticGroup(parent), ' / ' BY child ORDER DESC hasParentStatisticGroupLevel(child, parent)](statisticGroup))
+                           [GROUP CONCAT sidStatisticGroup(parent), ' / ' BY child ORDER DESC hasParentStatisticGroupLevel(child, parent)](statisticGroup))
                            MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 
 canonicalNumberNameStatisticGroup 'Канонический код-название' (statisticGroup) = [FORMULA STRING[100] '$1 || \' / \' || $2'](
@@ -1093,7 +1101,7 @@ canonicalNumberNameStatisticGroup 'Канонический код-назван�
 
 FORM statisticGroup 'Статистическая группа'
     OBJECTS g=statisticGroup FIXED PANEL
-    PROPERTIES(g)   name, nameParentStatisticGroup, SidStatisticGroup, shortNameUnitOfMeasureStatisticGroup,
+    PROPERTIES(g)   name, nameParentStatisticGroup, sidStatisticGroup, nameUnitOfMeasureStatisticGroup,
                     conversionFactorStatisticGroup
 
     EDIT statisticGroup OBJECT g
@@ -1111,13 +1119,13 @@ addStatisticGroup 'Добавить' = ACTION (statisticGroup) NEWSESSION {
 
 FORM statisticGroups 'Статистические группы'
     TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
-    PROPERTIES READONLY name(g), SidStatisticGroup(g)
+    PROPERTIES READONLY name(g), sidStatisticGroup(g)
     PROPERTIES(g)       addStatisticGroup, EDITFORM
-    ORDER BY SidStatisticGroup
+    ORDER BY sidStatisticGroup
 
     OBJECTS cg=statisticGroup
-    PROPERTIES(cg)     READONLY canonicalNumberNameStatisticGroup, SidStatisticGroup, shortNameUnitOfMeasureStatisticGroup SHOWIF isLeafStatisticGroup(g),
-                       conversionFactorStatisticGroup SHOWIF isLeafStatisticGroup(g)
+    PROPERTIES(cg)     READONLY canonicalNumberNameStatisticGroup, sidStatisticGroup, nameUnitOfMeasureStatisticGroup,
+                       conversionFactorStatisticGroup
 PROPERTIES(cg)  delete
 
     ORDER BY canonicalNumberNameStatisticGroup
@@ -1140,9 +1148,9 @@ DESIGN statisticGroups FROM DEFAULT {
 
 FORM statisticGroupDialog 'Статистические группы'
     TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
-    PROPERTIES(g) READONLY name, SidStatisticGroup
+    PROPERTIES(g) READONLY name, sidStatisticGroup
     PROPERTIES(g) addStatisticGroup, EDITFORM
-    ORDER BY SidStatisticGroup
+    ORDER BY sidStatisticGroup
 
     DIALOG statisticGroup OBJECT g
 ;
@@ -1255,6 +1263,8 @@ CLASS ABSTRACT stock 'Склад' : named;
 
 CLASS store 'Магазин' : named, externalObject;
 TABLE store (store);
+CLASS region 'Регион' : named;
+TABLE region (region);
 
 CLASS tradingNetwork 'Торговая сеть' : named, externalObject; // "Рублевский", "Базар"
 TABLE tradingNetwork (tradingNetwork);
@@ -1265,6 +1275,8 @@ TABLE storeType (storeType);
 companyStore 'Юридическое лицо магазина (ИД)' = DATA company (store);
 nameCompanyStore 'Компания' (store) = name(companyStore(store)) IN baseGroup;
 addressStore 'Адрес магазина' = DATA STRING[100] (store);
+regionStore 'Регион магазина ИД' = DATA region (store);
+nameRegionStore 'Регион для стат. отчета' (store) = name(regionStore(store));
 
 storeTypeStore 'Формат магазина (ИД)' = DATA storeType (store) AUTOSET;
 nameStoreTypeStore 'Формат магазина' (store) = name(storeTypeStore(store)) IN baseGroup;
@@ -1534,9 +1546,12 @@ coolingDegreeItem 'Степень охлаждения (ИД)' = DATA coolingDeg
 nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegreeItem(item)) IN descriptionGroup;
 @metaCodeShowItemAttribute(CoolingDegree, 'Показывать степень охлаждения', displayGroup);
 
+residentCountry 'Отечественное производство' (country) = DATA BOOLEAN (country);
+
 countryItem = DATA country (item) IN idGroup;
 nameCountryItem 'Страна' = name(countryItem(item)) IN headGroup;
 @metaCodeShowItemAttribute(Country, 'Показывать страну', displayGroup);
+residentItem 'Отечественное производство' (item) = residentCountry(countryItem(item)) IN headGroup;
 
 extSIDCountry 'Внешний код страны' = DATA STRING[60] (country);
 extSIDToCountry 'Страна по коду' (string) = GROUP UNIQUE country BY extSIDCountry (country) WHERE country IS country;
@@ -1557,8 +1572,12 @@ nameRateWasteItem 'Норма отходов' = name(rateWasteItem(item)) IN rat
 percentRateWasteItem 'Норма отходов,%' = percentRateWaste(rateWasteItem(item)) IN rateGroup;
 @metaCodeShowItemAttribute(RateWaste, 'Показывать норму отходов', displayGroup);
 
-statisticGroupItem = DATA statisticGroup(item) IN idGroup AUTOSET;
-nameStatisticGroupItem 'Статистическая группа' (item) = name(statisticGroupItem(item)) IN rateGroup;
+statisticGroupSku = DATA statisticGroup(sku) IN idGroup AUTOSET;
+nameStatisticGroupSku 'Статистическая группа' (sku) = name(statisticGroupSku(sku)) IN rateGroup;
+
+TABLE statisticGroupSku (statisticGroup, sku);
+
+hasParentStatisticGroupSku (statisticGroup, sku) = hasParentStatisticGroup(statisticGroupSku(sku), statisticGroup) PERSISTENT;
 
 wareItem = DATA ware (item) IN idGroup;
 nameWareItem 'Посуда' = name(wareItem(item)) IN retailGroup;
@@ -1600,7 +1619,7 @@ lengthPackItem 'Длина упаковки' = DATA NUMERIC[8,2] (item) IN sizeG
 widthPackItem 'Ширина упаковки' = DATA NUMERIC[8,2] (item) IN sizeGroup;
 heightPackItem 'Высота упаковки' = DATA NUMERIC[8,2] (item) IN sizeGroup;
 grossWeightPackItem 'Вес брутто упаковки' = DATA NUMERIC[9,3] (item) IN manufactoryGroup;
-volumeItem 'Объём' = DATA NUMERIC[9,3] (item) IN sizeGroup;
+volumeItem 'Объём (л)' = DATA NUMERIC[9,3] (item) IN sizeGroup;
 netWeightItem 'Вес нетто (кг)' = DATA NUMERIC[9,3] (item) IN orderGroup;
 quantityPackItem 'Количество в грузовом месте' = DATA NUMERIC[9,3] (item) IN orderGroup;
 
@@ -1816,6 +1835,7 @@ nameScalesAttributeItem 'Наименование для весов' (item) = ca
 
 nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAttributeItem(item) AND hasParentItemGroupSku(itemGroup, item) PERSISTENT INDEXED;
 
+nameAttributeStatisticGroupItem 'Наименование' (statisticGroup, item) = nameAttributeItem(item) AND hasParentStatisticGroupSku(statisticGroup, item) PERSISTENT INDEXED;
 // ---------------------------------------------------------------------------------------- //
 
 TABLE departmentStoreDate (departmentStore, DATE);
@@ -2636,7 +2656,7 @@ FORM item 'Товар'
                   normOutItem SHOWIF isManufacturedItem(i), nameGroupMenuItem SHOWIF isManufacturedItem(i),
                   isCutedItem SHOWIF isManufacturedItem(i), coefficientNetGrossItem SHOWIF isManufacturedItem(i), showFormcoefficientNetGrossItem,
 
-                  nameRateWasteItem, percentRateWasteItem, nameGroupNaturalLossItem, rateGroupNaturalLossItem, nameStatisticGroupItem,
+                  nameRateWasteItem, percentRateWasteItem, nameGroupNaturalLossItem, rateGroupNaturalLossItem, nameStatisticGroupSku,
 
                   volumeItem, lengthItem, widthItem, heightItem, lengthPackItem, widthPackItem, heightPackItem,
 
@@ -3942,7 +3962,7 @@ DESIGN departmentStores FROM DEFAULT {
 
 FORM store 'Магазин'
     OBJECTS s=store FIXED PANEL
-    PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameCompanyStore
+    PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameCompanyStore, nameRegionStore
 
     OBJECTS d=departmentStore
     PROPERTIES(d) READONLY objectClassName, name, defaultTradingSquareDepartmentStore
@@ -3974,7 +3994,7 @@ FORM stores 'Магазины'
     PROPERTIES(t)          addT=ADDFORM FORCE PANEL, editT=EDITFORM FORCE PANEL, delete FORCE PANEL//FORCE PANEL
 
     OBJECTS s=store
-    PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore
+    PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore, nameRegionStore
     PROPERTIES(s)          ADDFORM, EDITFORM, delete
     FILTERS inTradingNetworkStoreTypeStore(t, st, s)
 
@@ -7502,6 +7522,7 @@ META metaCodeItemDepartmentStoreLedger(prefix)
 
     nameItem###prefix##Ledger 'Товар' (ledger) = nameAttributeItem(item###prefix##Ledger(ledger));
     nameDepartmentStore###prefix##Ledger 'Отдел магазина' (ledger) = name(departmentStore###prefix##Ledger(ledger));
+//    date###prefix##Ledger 'Дата' (ledger) = dateInTime(dateTime###prefix##Ledger(ledger)) PERSISTENT;
 
     // todo : переделать на concat и deconcat
 
@@ -7524,6 +7545,27 @@ META metaCodeItemDepartmentStoreLedger(prefix)
         BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger);
 
     currentLedger###prefix (item, departmentStore) = concatLedgerCurrent###prefix(item, departmentStore)[2];
+                           //На дату//
+    orderBy###prefix##Ledger = LIST(date###prefix##Ledger(ledger), ledger) PERSISTENT;
+
+    concatLedgerB###prefix##Date (item, departmentStore, date) = GROUP MAX orderBy###prefix##Ledger(ledger) AND
+        isPosted###prefix##Ledger(ledger) AND date###prefix##Ledger(ledger) < (date AS DATE)
+        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), date;
+
+    ledgerB###prefix##Date (item, departmentStore, date) = concatLedgerB###prefix##Date(item, departmentStore, date)[2];
+
+    concatLedgerA###prefix##Date (item, departmentStore, date) = GROUP MAX orderBy###prefix##Ledger(ledger) AND
+        isPosted###prefix##Ledger(ledger) AND date###prefix##Ledger(ledger) <= (date AS DATE)
+        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), date;
+
+    ledgerA###prefix##Date (item, departmentStore, date) = concatLedgerA###prefix##Date(item, departmentStore, date)[2];
+
+    concatLedgerCurrentDate###prefix (item, departmentStore) = GROUP MAX orderBy###prefix##Ledger(ledger) AND
+        isPosted###prefix##Ledger(ledger)
+        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger);
+
+    currentLedgerDate###prefix (item, departmentStore) = concatLedgerCurrentDate###prefix(item, departmentStore)[2];
+
 END
 
 
@@ -7532,6 +7574,8 @@ dateTimeImporterPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dat
                                                                     dateTimeInnerArrivalDetail(ledger),
                                                                     dateTimeUserPriceChangeDetail(ledger),
                                                                     dateTimeStudyOutputDetail(ledger) PERSISTENT INDEXED;
+
+dateImporterPriceLedger 'Дата' (ledger) = dateInTime(dateTimeImporterPriceLedger(ledger)) PERSISTENT;
 
 isPostedImporterPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                                 isPostedInnerArrivalDetail(ledger),
@@ -7570,6 +7614,8 @@ dateTimeSupplierPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dat
                                                                     dateTimeUserPriceChangeDetail(ledger),
                                                                     dateTimeStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
+dateSupplierPriceLedger 'Дата' (ledger) = dateInTime(dateTimeSupplierPriceLedger(ledger)) PERSISTENT;
+
 isPostedSupplierPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                                 isPostedInnerArrivalDetail(ledger),
                                                                 isPostedUserPriceChangeDetail(ledger),
@@ -7605,6 +7651,8 @@ currentPriceSupplierLedger 'Цена поставщика' (item, departmentStor
 dateTimeWarePriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
                                                                 dateTimeInnerArrivalDetail(ledger),
                                                                 dateTimeUserPriceChangeDetail(ledger) PERSISTENT INDEXED;
+
+dateWarePriceLedger 'Дата' (ledger) = dateInTime(dateTimeWarePriceLedger(ledger)) PERSISTENT;
 
 isPostedWarePriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                             isPostedInnerArrivalDetail(ledger),
@@ -7645,6 +7693,9 @@ dateTimeRetailVATLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTim
                                                                 dateTimeInnerArrivalDetail(ledger),
                                                                 dateTimeUserPriceChangeDetail(ledger),
                                                                 dateTimeStudyOutputDetail(ledger) PERSISTENT INDEXED;
+
+dateRetailVATLedger 'Дата' (ledger) = dateInTime(dateTimeRetailVATLedger(ledger)) PERSISTENT;
+
 
 isPostedRetailVATLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                             isPostedInnerArrivalDetail(ledger),
@@ -7693,6 +7744,8 @@ dateTimeAccountPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE date
                                                                    dateTimeUserPriceChangeDetail(ledger),
                                                                    dateTimeStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
+dateAccountPriceLedger 'Дата' (ledger) = dateInTime(dateTimeAccountPriceLedger(ledger)) PERSISTENT;
+
 isPostedAccountPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                                isPostedInnerArrivalDetail(ledger),
                                                                isPostedUserPriceChangeDetail(ledger),
@@ -7733,6 +7786,8 @@ dateTimeRetailPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateT
                                                                   dateTimeUserPriceChangeDetail(ledger),
                                                                   dateTimeStudyOutputDetail(ledger) PERSISTENT INDEXED;
 
+dateRetailPriceLedger 'Дата' (ledger) = dateInTime(dateTimeRetailPriceLedger(ledger)) PERSISTENT;
+
 isPostedRetailPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
                                                               isPostedInnerArrivalDetail(ledger),
                                                               isPostedUserPriceChangeDetail(ledger),
@@ -7762,6 +7817,9 @@ priceRetailLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetai
 
 priceRetailBLedgerDateTime 'Розничная цена (до)' (item, departmentStore, dateTime) = priceRetailLedger(ledgerBRetailPriceDateTime(item, departmentStore, dateTime));
 priceRetailALedgerDateTime 'Розничная цена (после)' (item, departmentStore, dateTime) = priceRetailLedger(ledgerARetailPriceDateTime(item, departmentStore, dateTime));
+
+priceRetailBLedgerDate 'Розничная цена (до)' (item, departmentStore, date) = priceRetailLedger(ledgerBRetailPriceDate(item, departmentStore, date));
+priceRetailALedgerDate 'Розничная цена (после)' (item, departmentStore, date) = priceRetailLedger(ledgerARetailPriceDate(item, departmentStore, date));
 
 currentPriceRetailLedger 'Розничная цена' (item, departmentStore) = priceRetailLedger(currentLedgerRetailPrice(item, departmentStore)) PERSISTENT;
 ledgerPriceBarcodeDepartmentStore 'Текущая цена по учету' (barcode, departmentStore) = currentPriceRetailLedger(skuBarcode(barcode), departmentStore);
@@ -7805,6 +7863,10 @@ markupSumSalesLedger 'Надбавка' (ledger) = retailSumSalesLedger(ledger) 
 
 quantitySoldItemDepartmentStoreDateFromTo 'Продано' (item, departmentStore, dateFrom, dateTo) = GROUP SUM
         quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
+        BY itemSalesLedger(ledger), departmentStoreSalesLedger(ledger), dateFrom, dateTo;
+
+retailSumSoldItemDepartmentStoreDateFromTo 'Сумма проданного товара, руб.' (item, departmentStore, dateFrom, dateTo) = GROUP SUM
+        retailSumSalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
         BY itemSalesLedger(ledger), departmentStoreSalesLedger(ledger), dateFrom, dateTo;
 
 itemDepartmentStoreAverageInterval 'Интервал расчета продаж в день' = DATA INTEGER ();
@@ -13047,6 +13109,432 @@ DESIGN salesItemDepartmentStore FROM DEFAULT {
     }
 }
 
+//---------------------------------------------- Формы стат. отчетов -------------------------------------//
+
+//  12 ТОРГ ПРОДАЖИ
+
+netWeightSoldItemDepartmentStoreDateFromTo 'Вес проданного товара, кг' (item, departmentStore, dateFrom, dateTo) =
+    quantitySoldItemDepartmentStoreDateFromTo(item, departmentStore, dateFrom, dateTo) *
+    (UNION OVERRIDE 1 IF item IS item, netWeightItem(item) AND NOT isWeightItem(item));
+volumeSoldItemDepartmentStoreDateFromTo 'Объем проданного товара, л' (item, departmentStore, dateFrom, dateTo) =
+    quantitySoldItemDepartmentStoreDateFromTo(item, departmentStore, dateFrom, dateTo) * volumeItem(item);
+// retailSumSoldItemDepartmentStoreDateFromTo 'Продано, сумма' (item, departmentStore, dateFrom, dateTo)   - рубли
+//quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo)                      - шт.
+
+retailSumCardDepartmentDateFromTo 'Продано с использованием банк. карточек' (departmentStore, dateFrom, dateTo) = GROUP SUM sumPayment(payment) AND paymentMeansPayment(payment)==paymentMeans.card
+    AND dateBill(billPayment(payment)) >= (dateFrom AS DATE) AND dateBill(billPayment(payment)) <= (dateTo AS DATE) AND isPostedBill(billPayment(payment))
+        BY departmentStoreBill(billPayment(payment)), dateFrom, dateTo;
+
+retailSumSaleDepartmentDateFromTo 'Продано по кассе' (departmentStore, dateFrom, dateTo) = GROUP SUM sumBill(bill)
+    AND dateBill(bill) >= (dateFrom AS DATE) AND dateBill(bill) <= (dateTo AS DATE) AND isPostedBill(bill)
+        BY departmentStoreBill(bill), dateFrom, dateTo;
+
+                            //с коэффициентом пересчета за период//
+//всего
+quantitySoldByStatisticGroupDateFromTo 'Продано, шт' (statisticGroup, departmentStore, dateFrom, dateTo)=
+    [GROUP SUM quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+netWeightSoldByStatisticGroupDateFromTo 'Продано, кг' (statisticGroup, departmentStore, dateFrom, dateTo)=
+    [GROUP SUM netWeightSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+volumeSoldByStatisticGroupDateFromTo 'Продано, л' (statisticGroup, departmentStore, dateFrom, dateTo)=
+    [GROUP SUM volumeSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+retailSumSoldByStatisticGroupDateFromTo 'Продано, руб.' (statisticGroup, departmentStore, dateFrom, dateTo)=
+    [GROUP SUM retailSumSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+//бел. пр-ва
+quantitySoldResidentByStatisticGroupDateFromTo 'Продано, шт' (statisticGroup, departmentStore, dateFrom, dateTo)=
+    [GROUP SUM quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+netWeightSoldResidentByStatisticGroupDateFromTo 'Продано, кг' (statisticGroup, departmentStore, dateFrom, dateTo)=
+    [GROUP SUM netWeightSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+volumeSoldResidentByStatisticGroupDateFromTo 'Продано, л' (statisticGroup, departmentStore, dateFrom, dateTo)=
+    [GROUP SUM volumeSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+retailSumSoldResidentByStatisticGroupDateFromTo 'Продано, руб.' (statisticGroup, departmentStore, dateFrom, dateTo)=
+    [GROUP SUM retailSumSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+netWeightBalanceAItemLedgerDate 'Вес товара на конец , кг' (item, departmentStore, dateTo) =
+    balanceAItemLedgerDate (item, departmentStore, dateTo) * (UNION OVERRIDE 1 IF item IS item, netWeightItem(item) AND NOT isWeightItem(item));
+volumeBalanceAItemLedgerDate 'Объем товара на конец , л' (item, departmentStore, dateTo) =
+    balanceAItemLedgerDate (item, departmentStore, dateTo) * volumeItem(item);
+retailSumBalanceAItemLedgerDate 'Сумма товара на конец , руб' (item, departmentStore, dateTo) =
+    priceRetailALedgerDate (item, departmentStore, dateTo) * balanceAItemLedgerDate(item, departmentStore, dateTo);
+//balanceAItemLedgerDate (item, departmentStore, dateTo)    - шт.
+
+                                   //с коэффициентом пересчета на коцен//
+// всего
+balanceByStatisticGroupDateTo 'Остаток на конец' (statisticGroup, departmentStore, dateTo)=
+    [GROUP SUM balanceAItemLedgerDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateTo](statisticGroup, departmentStore, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+netWeightByStatisticGroupDateTo 'Вес на конец, кг' (statisticGroup, departmentStore, dateTo)=
+    [GROUP SUM netWeightBalanceAItemLedgerDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateTo](statisticGroup, departmentStore, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+volumeByStatisticGroupDateTo 'Объем на конец, л' (statisticGroup, departmentStore, dateTo)=
+    [GROUP SUM volumeBalanceAItemLedgerDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateTo](statisticGroup, departmentStore, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+retailSumByStatisticGroupDateTo 'Сумма на конец, руб' (statisticGroup, departmentStore, dateTo)=
+    [GROUP SUM retailSumBalanceAItemLedgerDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateTo](statisticGroup, departmentStore, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+// бел. пр-ва
+balanceResidentByStatisticGroupDateTo 'Остаток на конец' (statisticGroup, departmentStore, dateTo)=
+    [GROUP SUM balanceAItemLedgerDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateTo](statisticGroup, departmentStore, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+netWeightResidentByStatisticGroupDateTo 'Вес на конец, кг' (statisticGroup, departmentStore, dateTo)=
+    [GROUP SUM netWeightBalanceAItemLedgerDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateTo](statisticGroup, departmentStore, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+volumeResidentByStatisticGroupDateTo 'Объем на конец, л' (statisticGroup, departmentStore, dateTo)=
+    [GROUP SUM volumeBalanceAItemLedgerDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateTo](statisticGroup, departmentStore, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+retailSumResidentByStatisticGroupDateTo 'Сумма на конец, руб' (statisticGroup, departmentStore, dateTo)=
+    [GROUP SUM retailSumBalanceAItemLedgerDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, departmentStore, dateTo](statisticGroup, departmentStore, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+valueByStatisticGroupDateFromTo 'Продано' (statisticGroup, departmentStore, dateFrom, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.thing
+            THEN quantitySoldByStatisticGroupDateFromTo(statisticGroup, departmentStore, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.pounds
+            THEN netWeightSoldByStatisticGroupDateFromTo(statisticGroup, departmentStore, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.liter
+            THEN volumeSoldByStatisticGroupDateFromTo(statisticGroup, departmentStore, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.ruble
+            THEN retailSumSoldByStatisticGroupDateFromTo(statisticGroup, departmentStore, dateFrom, dateTo)
+        DEFAULT 0 AND statisticGroup IS statisticGroup AND departmentStore IS departmentStore AND dateFrom IS DATE AND dateTo IS DATE
+    END;
+valueResidentByStatisticGroupDateFromTo 'Продано, бел. пр-ва' (statisticGroup, departmentStore, dateFrom, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.thing
+            THEN quantitySoldResidentByStatisticGroupDateFromTo(statisticGroup, departmentStore, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.pounds
+            THEN netWeightSoldResidentByStatisticGroupDateFromTo(statisticGroup, departmentStore, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.liter
+            THEN volumeSoldResidentByStatisticGroupDateFromTo(statisticGroup, departmentStore, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.ruble
+            THEN retailSumSoldResidentByStatisticGroupDateFromTo(statisticGroup, departmentStore, dateFrom, dateTo)
+        DEFAULT 0 AND statisticGroup IS statisticGroup AND departmentStore IS departmentStore AND dateFrom IS DATE AND dateTo IS DATE
+    END;
+
+valueByStatisticGroupDateTo 'Остаток на конец' (statisticGroup, departmentStore, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.thing
+            THEN balanceByStatisticGroupDateTo(statisticGroup, departmentStore, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.pounds
+            THEN netWeightByStatisticGroupDateTo(statisticGroup, departmentStore, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.liter
+            THEN volumeByStatisticGroupDateTo(statisticGroup, departmentStore, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.ruble
+            THEN retailSumByStatisticGroupDateTo(statisticGroup, departmentStore, dateTo)
+        DEFAULT 0 IF statisticGroup IS statisticGroup AND departmentStore IS departmentStore AND dateTo IS DATE
+    END;
+valueResidentByStatisticGroupDateTo 'Остаток на конец, бел. пр-ва' (statisticGroup, departmentStore, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.thing
+            THEN balanceResidentByStatisticGroupDateTo(statisticGroup, departmentStore, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.pounds
+            THEN netWeightResidentByStatisticGroupDateTo(statisticGroup, departmentStore, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.liter
+            THEN volumeResidentByStatisticGroupDateTo(statisticGroup, departmentStore, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.ruble
+            THEN retailSumResidentByStatisticGroupDateTo(statisticGroup, departmentStore, dateTo)
+        DEFAULT 0 IF statisticGroup IS statisticGroup AND departmentStore IS departmentStore AND dateTo IS DATE
+    END;
+
+FORM statisticalReport '12-Торг (продажи) справочно'
+
+    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
+
+    TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
+    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+
+    TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
+    PROPERTIES READONLY gname = name(g), sidStatisticGroup(g)
+    ORDER BY gname
+
+    OBJECTS           dsi=(dep=departmentStore, i=item)
+    PROPERTIES        READONLY nameIt=nameAttributeStatisticGroupItem(g, i), nameDep=name(dep)
+    FILTERS           nameAttributeStatisticGroupItem (g, i),
+                      inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
+    ORDER BY          nameIt
+
+    PROPERTIES        balanceBItemLedgerDate(i, dep, dFrom),
+                      quantitySoldItemDepartmentStoreDateFromTo(i, dep, dFrom, dTo),
+                      balanceAItemLedgerDate(i, dep, dTo)
+    PROPERTIES  FORCE PANEL valueByStatisticGroupDateFromTo(g, ds, dFrom, dTo), valueResidentByStatisticGroupDateFromTo(g, ds, dFrom, dTo)
+    PROPERTIES  FORCE PANEL valueByStatisticGroupDateTo(g, ds, dTo), valueResidentByStatisticGroupDateTo(g, ds, dTo)
+    PROPERTIES  FORCE PANEL retailSumCardDepartmentDateFromTo(ds, dFrom, dTo), retailSumSaleDepartmentDateFromTo(ds, dFrom, dTo)
+;
+
+DESIGN statisticalReport FROM DEFAULT {
+
+    main{
+        NEW firstCase {
+                childConstraints = TO THE BOTTOM;
+                ADD treeStore.box {title = 'Магазины';};
+                ADD treeGroups.box {title = 'Статистические группы';};
+        }
+
+        NEW secondCase {
+                fillHorizontal = 2;
+                childConstraints = TO THE BOTTOM;
+                ADD dates.box;
+                ADD dsi.box {fillVertical = 2;
+                    title = 'Показатели по продажам в номинальных еденицах';
+                }
+
+        }
+        POSITION firstCase TO THE LEFT secondCase;
+        NEW row {
+            title = 'Суммы';
+            childConstraints = TO THE BOTTOM;
+            NEW row1 {
+            title = 'По отдел-группа, с учетом ед. изм. и коэфф. перевода';
+            ADD PROPERTY(valueByStatisticGroupDateFromTo(g, ds, dFrom, dTo));
+            ADD PROPERTY(valueResidentByStatisticGroupDateFromTo(g, ds, dFrom, dTo));
+            ADD PROPERTY(valueByStatisticGroupDateTo(g, ds, dTo));
+            ADD PROPERTY(valueResidentByStatisticGroupDateTo(g, ds, dTo));
+            }
+            NEW row2 {
+            title = 'По отделу, руб.';
+            ADD PROPERTY(retailSumCardDepartmentDateFromTo(ds, dFrom, dTo));
+            ADD PROPERTY(retailSumSaleDepartmentDateFromTo(ds, dFrom, dTo));
+            }
+        }
+        ADD functions.box;
+    }
+}
+                ///////////////--------по регионам и компании----------/////////////////
+regionDepartmentStore(departmentStore) = regionStore(storeDepartmentStore(departmentStore));
+
+                           //c коэффициентом пересчета за период//
+// всего
+quantitySoldByStatisticGroupRegionDateFromTo 'Продано, шт' (statisticGroup, company, region, dateFrom, dateTo)=
+    [GROUP SUM quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+netWeightSoldByStatisticGroupRegionDateFromTo 'Продано, кг' (statisticGroup, company, region, dateFrom, dateTo)=
+    [GROUP SUM netWeightSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+volumeSoldByStatisticGroupRegionDateFromTo 'Продано, л' (statisticGroup, company, region, dateFrom, dateTo)=
+    [GROUP SUM volumeSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+retailSumSoldByStatisticGroupRegionDateFromTo 'Продано, руб.' (statisticGroup, company, region, dateFrom, dateTo)=
+    [GROUP SUM retailSumSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+// белорусского производствава
+quantitySoldResidentByStatisticGroupRegionDateFromTo 'Продано, шт' (statisticGroup, company, region, dateFrom, dateTo)=
+    [GROUP SUM quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+netWeightSoldResidentByStatisticGroupRegionDateFromTo 'Продано, кг' (statisticGroup, company, region, dateFrom, dateTo)=
+    [GROUP SUM netWeightSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+volumeSoldResidentByStatisticGroupRegionDateFromTo 'Продано, л' (statisticGroup, company, region, dateFrom, dateTo)=
+    [GROUP SUM volumeSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+retailSumSoldResidentByStatisticGroupRegionDateFromTo 'Продано, руб.' (statisticGroup, company, region, dateFrom, dateTo)=
+    [GROUP SUM retailSumSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+                             //с коэффициентом пересчета на коцен//
+// всего
+balanceByStatisticGroupRegionDateTo 'Остаток на конец' (statisticGroup, company, region, dateTo)=
+    [GROUP SUM balanceAItemLedgerDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+netWeightByStatisticGroupRegionDateTo 'Вес на конец, кг' (statisticGroup, company, region, dateTo)=
+    [GROUP SUM netWeightBalanceAItemLedgerDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+volumeByStatisticGroupRegionDateTo 'Объем на конец, л' (statisticGroup, company, region, dateTo)=
+    [GROUP SUM volumeBalanceAItemLedgerDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+retailSumByStatisticGroupRegionDateTo 'Сумма на конец, руб' (statisticGroup, company, region, dateTo)=
+    [GROUP SUM retailSumBalanceAItemLedgerDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+// белорусского производства
+balanceResidentByStatisticGroupRegionDateTo 'Остаток на конец' (statisticGroup, company, region, dateTo)=
+    [GROUP SUM balanceAItemLedgerDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+netWeightResidentByStatisticGroupRegionDateTo 'Вес на конец, кг' (statisticGroup, company, region, dateTo)=
+    [GROUP SUM netWeightBalanceAItemLedgerDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+volumeResidentByStatisticGroupRegionDateTo 'Объем на конец, л' (statisticGroup, company, region, dateTo)=
+    [GROUP SUM volumeBalanceAItemLedgerDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+retailSumResidentByStatisticGroupRegionDateTo 'Сумма на конец, руб' (statisticGroup, company, region, dateTo)=
+    [GROUP SUM retailSumBalanceAItemLedgerDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+valueByStatisticGroupCompanyRegionDateFromTo 'Продано всего' (statisticGroup, company, region, dateFrom, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.thing
+            THEN quantitySoldByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.pounds
+            THEN netWeightSoldByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.liter
+            THEN volumeSoldByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.ruble
+            THEN retailSumSoldByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+        DEFAULT 0 AND statisticGroup IS statisticGroup AND company IS company AND region IS region AND dateFrom IS DATE AND dateTo IS DATE
+    END;
+
+valueByStatisticGroupCompanyRegionDateTo 'Остаток на конец всего' (statisticGroup, company, region, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.thing
+            THEN balanceByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.pounds
+            THEN netWeightByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.liter
+            THEN volumeByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.ruble
+            THEN retailSumByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+        DEFAULT 0 IF statisticGroup IS statisticGroup AND company IS company AND region IS region AND dateTo IS DATE
+    END;
+
+valueResidentByStatisticGroupCompanyRegionDateFromTo 'Продано отеч. пр-ва' (statisticGroup, company, region, dateFrom, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.thing
+            THEN quantitySoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.pounds
+            THEN netWeightSoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.liter
+            THEN volumeSoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.ruble
+            THEN retailSumSoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+        DEFAULT 0 AND statisticGroup IS statisticGroup AND company IS company AND region IS region AND dateFrom IS DATE AND dateTo IS DATE
+    END;
+
+valueResidentByStatisticGroupCompanyRegionDateTo 'Остаток на конец отеч. пр-ва' (statisticGroup, company, region, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.thing
+            THEN balanceResidentByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.pounds
+            THEN netWeightResidentByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.liter
+            THEN volumeResidentByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.ruble
+            THEN retailSumResidentByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+        DEFAULT 0 IF statisticGroup IS statisticGroup AND company IS company AND region IS region AND dateTo IS DATE
+    END;
+
+totalRetailSumSoldByStatisticGroupRegionDateFromTo 'Итого продано, руб.' (statisticGroup, company, region, dateFrom, dateTo)=
+    GROUP SUM retailSumSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo;
+
+retailSumCardCompanyRegionDateFromTo 'Продано с использованием банк. карточек' (company, region, dateFrom, dateTo) =
+    GROUP SUM  retailSumCardDepartmentDateFromTo(departmentStore, dateFrom, dateTo)
+        BY companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo;
+
+retailSumSaleCompanyRegionDateFromTo 'Продано по кассе' (company, region, dateFrom, dateTo) =
+    GROUP SUM  retailSumSaleDepartmentDateFromTo(departmentStore, dateFrom, dateTo)
+        BY companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo;
+
+
+FORM torgSales '12-Торг (продажи)'
+
+    OBJECTS params = (dFrom = DATE, dTo = DATE) FIXED PANEL
+
+    PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
+
+    OBJECTS c=company  FIXED PANEL
+    PROPERTIES(c) SELECTOR name
+
+    OBJECTS r=region  FIXED PANEL
+    PROPERTIES(r) SELECTOR name
+
+    TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
+    PROPERTIES READONLY gname = name(g), sidStatisticGroup(g), nameUnitOfMeasureStatisticGroup(g)
+    ORDER BY sidStatisticGroup
+
+    PROPERTIES(g, c, r, dFrom, dTo) valueByStatisticGroupCompanyRegionDateFromTo, valueResidentByStatisticGroupCompanyRegionDateFromTo
+    PROPERTIES(g, c, r, dTo) valueByStatisticGroupCompanyRegionDateTo, valueResidentByStatisticGroupCompanyRegionDateTo
+    PROPERTIES(g, c, r, dFrom, dTo) totalRetailSumSoldByStatisticGroupRegionDateFromTo
+    PROPERTIES(c, r, dFrom, dTo) retailSumSaleCompanyRegionDateFromTo, retailSumCardCompanyRegionDateFromTo
+;
+
+DESIGN torgSales FROM DEFAULT {
+
+    main{
+        ADD treeGroups.box  BEFORE functions.box {
+            title = 'Показатели по стат. группам с учетом ед. изм. и коэфф. перевода';
+        }
+        NEW firstCase BEFORE treeGroups.box {
+            childConstraints = TO THE RIGHT;
+            title = 'Параметры отчета';
+
+            NEW dateCase {
+                title = 'Даты';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(objFrom) {
+                    caption = 'Дата (с)';
+                }
+                ADD PROPERTY(objTo) {
+                    caption = 'Дата (по)';
+                }
+            }
+            ADD c.box;
+            ADD r.box;
+        }
+        NEW secondCase {
+            childConstraints = TO THE RIGHT;
+            title = 'Суммы, руб.';
+            ADD PROPERTY(retailSumSaleCompanyRegionDateFromTo(c, r, dFrom, dTo));
+            ADD PROPERTY(retailSumCardCompanyRegionDateFromTo(c, r, dFrom, dTo));
+        }
+
+        ADD functions.box;
+    }
+}
+
 //---------------------------------------------- Форма поставки товаров в отдел -------------------------------------//
 
 inSupplierItemDepartmentOver(sp, i, dep, t) = isSupplierItemDepartmentOver(sp, i, dep, t) == yesNo.yes;
@@ -13288,6 +13776,10 @@ NAVIGATOR {
         NEW sales 'Продажи' {
             ADD salesLedger;
             ADD salesItemDepartmentStore;
+        }
+        NEW report 'Отчеты' {
+            ADD statisticalReport;
+            ADD torgSales;
         }
     }
     NEW printedForms 'Печатные формы' TO formsToolbar{
