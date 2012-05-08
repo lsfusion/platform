@@ -21,6 +21,4 @@ public interface CellTableInterface {
     Color getForegroundColor(int row, int column);
 
     ClientFormController getForm();
-
-    boolean invokeDefaultAction(ClientPropertyDraw property);
 }

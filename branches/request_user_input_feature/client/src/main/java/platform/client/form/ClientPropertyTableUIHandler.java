@@ -8,6 +8,9 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import static javax.swing.SwingUtilities.isLeftMouseButton;
+import static javax.swing.SwingUtilities.isRightMouseButton;
+
 /**
  * Основа этого класса - copy/paste из BasicTableUI$Handler
  */
@@ -23,10 +26,11 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
     }
 
     public void mousePressed(MouseEvent e) {
-        if (SwingUtilities2.shouldIgnore(e, table)) {
+        if (shouldIgnore(e)) {
             return;
         }
 
+        boolean isLeftMouseButton = isLeftMouseButton(e);
         boolean hasFocus = SwingUtils.isFocusOwnerDescending(table);
 
         if (!table.getForm().commitCurrentEditing()) {
@@ -58,7 +62,7 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
 
         boolean rowHasFocus = hasFocus && (oldRow == pressedRow);
 
-        if (keySelected && (rowHasFocus || e.getClickCount() > 1)) {
+        if (isLeftMouseButton && keySelected && (rowHasFocus || e.getClickCount() > 1)) {
             if (table.editCellAt(pressedRow, pressedCol, e)) {
                 setDispatchComponent(e);
                 repostEvent(e);
@@ -66,16 +70,23 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
             }
         }
 
-        table.changeSelection(pressedRow, pressedCol, SwingUtils.isMenuShortcutKeyDown(e), e.isShiftDown());
+
+        boolean toggle = isLeftMouseButton && SwingUtils.isMenuShortcutKeyDown(e);
+        boolean extend = isLeftMouseButton && e.isShiftDown();
+        table.changeSelection(pressedRow, pressedCol, toggle, extend);
     }
 
     public void mouseReleased(MouseEvent e) {
-        if (SwingUtilities2.shouldIgnore(e, table)) {
-            return;
+        if (!shouldIgnore(e)) {
+            repostEvent(e);
+            dispatchComponent = null;
         }
+    }
 
-        repostEvent(e);
-        dispatchComponent = null;
+    private boolean shouldIgnore(MouseEvent e) {
+        return !table.isEnabled() ||
+                e.isConsumed() ||
+                !(isLeftMouseButton(e) || isRightMouseButton(e));
     }
 
     private void setDispatchComponent(MouseEvent e) {

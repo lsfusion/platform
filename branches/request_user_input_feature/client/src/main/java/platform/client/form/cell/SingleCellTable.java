@@ -94,14 +94,6 @@ public abstract class SingleCellTable extends ClientPropertyTable {
         return false;
     }
 
-    public boolean invokeDefaultAction(ClientPropertyDraw property) {
-        return false;
-    }
-
-    protected void buildShortcut(Component invoker, Point point) {
-        //do nothing by default
-    }
-
     // приходится делать вот таким извращенным способом, поскольку ComponentListener срабатывает после перерисовки формы
     @Override
     public void setBounds(int x, int y, int width, int height) {

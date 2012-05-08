@@ -16,13 +16,13 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.util.EventObject;
 
 public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, CellTableInterface, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher = new EditPropertyDispatcher(this);
     protected final EditBindingMap editBindingMap = new EditBindingMap();
+    private final CellTableContextMenuHandler contextMenuHandler = new CellTableContextMenuHandler(this);
 
     protected EventObject editEvent;
     protected int editRow;
@@ -42,25 +42,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
         initializeActionMap();
 
-        //todo: reimplement логику правой кнопки...
-//        addMouseListener(new MouseAdapter() {
-//            @Override
-//            public void mousePressed(MouseEvent e) {
-//                if (SwingUtilities.isRightMouseButton(e)) {
-//                    buildShortcut(e.getComponent(), e.getPoint());
-//                }
-//            }
-//        });
-//
-//        addKeyListener(new KeyAdapter() {
-//            @Override
-//            public void keyPressed(KeyEvent e) {
-//                if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
-//                    Rectangle rect = getCellRect(getSelectedRow(), getSelectedColumn(), true);
-//                    buildShortcut(getComponentAt(rect.getLocation()), new Point(rect.x, rect.y + rect.height - 1));
-//                }
-//            }
-//        });
+        contextMenuHandler.install();
     }
 
     private void initializeActionMap() {
@@ -68,8 +50,6 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         InputMap im = getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         im.put(KeyStrokes.getEnter(), im.get(KeyStrokes.getTab()));
     }
-
-    //    protected abstract void buildShortcut(Component invoker, Point point);
 
     public ClientType getCurrentEditType() {
         return currentEditType;
@@ -168,7 +148,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     public Component prepareEditor(TableCellEditor editor, int row, int column) {
         Component component = super.prepareEditor(editor, row, column);
         if (component instanceof JComponent) {
-            JComponent jComponent = (JComponent)component;
+            JComponent jComponent = (JComponent) component;
             // у нас есть возможность редактировать нефокусную таблицу, и тогда после редактирования фокус теряется,
             // поэтому даём возможность FocusManager'у самому поставить фокус
             if (!isFocusable() && jComponent.getNextFocusableComponent() == this) {

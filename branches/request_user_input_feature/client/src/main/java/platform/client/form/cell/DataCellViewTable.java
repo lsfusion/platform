@@ -57,14 +57,4 @@ public class DataCellViewTable extends SingleCellTable {
     public ClientFormController getForm() {
         return form;
     }
-
-    @Override
-    public void buildShortcut(Component invoker, Point point) {
-        form.controllers.get(getProperty().groupObject).showShortcut(invoker, point, getProperty());
-    }
-
-    @Override
-    public boolean invokeDefaultAction(ClientPropertyDraw property) {
-        return form.controllers.get(property.groupObject).invokeDefaultAction(property);
-    }
 }

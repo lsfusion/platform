@@ -42,6 +42,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     private final EditBindingMap editBindingMap = new EditBindingMap();
 
+    private final CellTableContextMenuHandler contextMenuHandler = new CellTableContextMenuHandler(this);
+
     protected EventObject editEvent;
     protected int editRow;
     protected int editCol;
@@ -74,6 +76,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         treeGroup = itreeGroup;
         plainTreeMode = itreeGroup.plainTreeMode;
         pasteDispatcher = form.getSimpleDispatcher();
+
+        contextMenuHandler.install();
 
         setTreeTableModel(model = new GroupTreeTableModel(form, plainTreeMode));
         setupHierarhicalColumn();
@@ -710,18 +714,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 return new Dimension(pref.width, 34);
             }
         };
-    }
-
-    public void buildShortcut(Component invoker, Point point) {
-        if (rowAtPoint(point) != -1) {
-            changeSelection(rowAtPoint(point), columnAtPoint(point), false, false);
-            requestFocusInWindow();
-            form.treeControllers.get(treeGroup).showShortcut(invoker, point, getCurrentProperty());
-        }
-    }
-
-    public boolean invokeDefaultAction(ClientPropertyDraw property) {
-        return false;
     }
 
     private class ChangeObjectEvent extends AWTEvent implements ActiveEvent {

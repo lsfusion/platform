@@ -5,6 +5,7 @@ import platform.interop.action.ClientAction;
 import java.io.Serializable;
 
 public class EditActionResult implements Serializable {
+    public static EditActionResult edited = new EditActionResult(new ClientAction[0], false, null, null);
     public static EditActionResult finished = new EditActionResult(null, false, null, null);
 
     public static final String CHANGE = "change";

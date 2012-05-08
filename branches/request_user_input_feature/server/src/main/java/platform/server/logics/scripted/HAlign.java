@@ -3,56 +3,32 @@ package platform.server.logics.scripted;
 import javax.swing.*;
 
 public enum HAlign {
-    LEFT {
-        @Override
-        public float asToolbarAlign() {
-            return JToolBar.LEFT_ALIGNMENT;
-        }
+    LEFT, CENTER, RIGHT;
 
-        @Override
-        public int asComponentAlign() {
-            return SwingConstants.LEFT;
+    public float asToolbarAlign() {
+        switch (this) {
+            case LEFT: return JToolBar.LEFT_ALIGNMENT;
+            case CENTER: return JToolBar.CENTER_ALIGNMENT;
+            case RIGHT: return JToolBar.RIGHT_ALIGNMENT;
         }
+        throw new IllegalStateException("wrong enum value");
+    }
 
-        @Override
-        public int asTextPosition() {
-            return SwingUtilities.LEADING;
+    public int asComponentAlign() {
+        switch (this) {
+            case LEFT: return SwingConstants.LEFT;
+            case CENTER: return SwingConstants.CENTER;
+            case RIGHT: return SwingConstants.RIGHT;
         }
-    },
-    CENTER {
-        @Override
-        public float asToolbarAlign() {
-            return JToolBar.CENTER_ALIGNMENT;
-        }
+        throw new IllegalStateException("wrong enum value");
+    }
 
-        @Override
-        public int asComponentAlign() {
-            return SwingUtilities.CENTER;
+    public int asTextPosition() {
+        switch (this) {
+            case LEFT: return SwingUtilities.LEADING;
+            case CENTER: return SwingConstants.CENTER;
+            case RIGHT: return SwingConstants.RIGHT;
         }
-
-        @Override
-        public int asTextPosition() {
-            return SwingUtilities.CENTER;
-        }
-    },
-    RIGHT {
-        @Override
-        public float asToolbarAlign() {
-            return JToolBar.RIGHT_ALIGNMENT;
-        }
-
-        @Override
-        public int asComponentAlign() {
-            return SwingUtilities.RIGHT;
-        }
-
-        @Override
-        public int asTextPosition() {
-            return SwingUtilities.TRAILING;
-        }
-    };
-
-    public abstract float asToolbarAlign();
-    public abstract int asComponentAlign();
-    public abstract int asTextPosition();
+        throw new IllegalStateException("wrong enum value");
+    }
 }

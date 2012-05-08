@@ -5,6 +5,7 @@ import platform.client.ClientResourceBundle;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.remote.SelectedObject;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -30,12 +31,17 @@ public class ClientDialog extends ClientModalForm {
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
+        setupUndecorated();
+    }
+
+    protected void setupUndecorated() {
         try {
-            Boolean undecorated = dialog.isUndecorated();
+            Boolean undecorated = remoteDialog.isUndecorated();
             if (undecorated == null || undecorated) {
                 setResizable(false);
                 // делаем, чтобы не выглядел как диалог
                 setUndecorated(true);
+                ((JPanel)getContentPane()).setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
             }
         } catch (RemoteException e) {
             Throwables.propagate(e);

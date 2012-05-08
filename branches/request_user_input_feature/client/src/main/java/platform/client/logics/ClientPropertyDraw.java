@@ -139,17 +139,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return editType.equals(PropertyEditType.READONLY);
     }
 
-    private ClientGroupObject getClientGroupObject(Collection<ClientGroupObject> groups, int groupID) {
-        for (ClientGroupObject group : groups) {
-            if (group.getID() == groupID) {
-                return group;
-            }
-        }
-        return null;
-    }
-
     public ClientGroupObject getGroupObject() {
         return groupObject;
+    }
+
+    public LinkedHashMap<String, String> getContextMenuItems() {
+        return editBindingMap == null ? null : editBindingMap.getContextMenuItems();
     }
 
     public PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientGroupObjectValue key, Object value) throws IOException, ClassNotFoundException {
@@ -176,8 +171,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientGroupObjectValue key, Object value) throws IOException, ClassNotFoundException {
         ClientType changeType = getPropertyChangeType(form, key, true);
         return changeType == null
-                ? null
-                : changeType.getObjectEditorComponent(ownerComponent, form, this, value);
+               ? null
+               : changeType.getObjectEditorComponent(ownerComponent, form, this, value);
     }
 
 
@@ -423,21 +418,34 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         String mouseBinding = pool.readString(inStream);
         if (mouseBinding != null) {
-            editBindingMap = new EditBindingMap();
+            initEditBindingMap();
             editBindingMap.setMouseAction(mouseBinding);
         }
 
         int keyBindingSize = inStream.readInt();
-
         if (keyBindingSize > 0) {
-            if (editBindingMap == null) {
-                editBindingMap = new EditBindingMap();
-            }
+            initEditBindingMap();
             for (int i = 0; i < keyBindingSize; ++i) {
                 KeyStroke keyStroke = pool.readObject(inStream);
                 String actionSID = pool.readString(inStream);
                 editBindingMap.setKeyAction(keyStroke, actionSID);
             }
+        }
+
+        int contextMenuBindingsSize = inStream.readInt();
+        if (contextMenuBindingsSize > 0) {
+            initEditBindingMap();
+            for (int i = 0; i < contextMenuBindingsSize; ++i) {
+                String actionSID = pool.readString(inStream);
+                String caption = pool.readString(inStream);
+                editBindingMap.setContextMenuAction(actionSID, caption);
+            }
+        }
+    }
+
+    private void initEditBindingMap() {
+        if (editBindingMap == null) {
+            editBindingMap = new EditBindingMap();
         }
     }
 

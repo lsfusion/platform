@@ -3,29 +3,23 @@ package platform.server.logics.scripted;
 import javax.swing.*;
 
 public enum Orientation {
-    HORIZONTAL {
-        @Override
-        public int asMenuOrientation() {
-            return SwingConstants.HORIZONTAL;
-        }
+    HORIZONTAL, VERTICAL;
 
-        @Override
-        public int asToolbarOrientation() {
-            return SwingConstants.HORIZONTAL;
+    public int asMenuOrientation() {
+        switch (this) {
+            case HORIZONTAL: return SwingConstants.HORIZONTAL;
+            case VERTICAL: return SwingConstants.VERTICAL;
         }
-    },
-    VERTICAL {
-        @Override
-        public int asMenuOrientation() {
-            return SwingConstants.VERTICAL;
-        }
+        throw new IllegalStateException("wrong enum value");
+    }
 
-        @Override
-        public int asToolbarOrientation() {
-            return SwingConstants.VERTICAL;
+    public int asToolbarOrientation() {
+        switch (this) {
+            case HORIZONTAL: return SwingConstants.HORIZONTAL;
+            case VERTICAL: return SwingConstants.VERTICAL;
         }
-    };
+        throw new IllegalStateException("wrong enum value");
+    }
 
-    public abstract int asToolbarOrientation();
-    public abstract int asMenuOrientation();
+
 }

@@ -1,5 +1,6 @@
 package platform.server.form.entity;
 
+import platform.base.OrderedMap;
 import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
@@ -31,6 +32,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public String mouseBinding;
     public Map<KeyStroke, String> keyBindings;
+    public OrderedMap<String, String> contextMenuBindings;
     public Map<String, PropertyObjectEntity> editActions;
 
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
@@ -83,6 +85,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         editActions.put(actionSID, editAction);
     }
 
+    public void setContextMenuAction(String caption, String actionSID) {
+        if (contextMenuBindings == null) {
+            contextMenuBindings = new OrderedMap<String, String>();
+        }
+        contextMenuBindings.remove(actionSID);
+        contextMenuBindings.put(actionSID, caption);
+    }
+
     public void setKeyEditAction(KeyStroke keyStroke, String actionSID, PropertyObjectEntity editAction) {
         setKeyAction(keyStroke, actionSID);
         setEditAction(actionSID, editAction);
@@ -90,6 +100,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public void setMouseEditAction(String actionSID, PropertyObjectEntity editAction) {
         setMouseAction(actionSID);
+        setEditAction(actionSID, editAction);
+    }
+
+    public void setContextMenuEditAction(String caption, String actionSID, PropertyObjectEntity editAction) {
+        setContextMenuAction(caption, actionSID);
         setEditAction(actionSID, editAction);
     }
 

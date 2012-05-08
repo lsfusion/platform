@@ -8,7 +8,6 @@ import platform.client.form.ClientFormController;
 import platform.client.form.ClientPropertyTable;
 import platform.client.form.GroupObjectController;
 import platform.client.form.grid.groupchange.GroupChangeAction;
-import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.form.sort.MultiLineHeaderRenderer;
 import platform.client.form.sort.TableSortableHeaderManager;
 import platform.client.logics.ClientForm;
@@ -208,12 +207,6 @@ public class GridTable extends ClientPropertyTable {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                int column = columnAtPoint(e.getPoint());
-                int row = rowAtPoint(e.getPoint());
-                if (row != -1 && column != -1 && pressedCellColumn == column && pressedCellRow == row && getProperty(row, column).getRendererComponent() instanceof ActionPropertyRenderer &&
-                        !SwingUtilities.isRightMouseButton(e)) {
-                    editCellAt(row, column);
-                }
                 pressedCellRow = -1;
                 pressedCellColumn = -1;
                 previousSelectedRow = getSelectedRow();
@@ -320,7 +313,9 @@ public class GridTable extends ClientPropertyTable {
         inputMap.put(KeyStrokes.getGroupCorrectionDialogKeyStroke(), GROUP_CORRECTION_ACTION);
 
         if (form.isDialog()) {
+            //вырезаем ввод в диалоге, чтобы закрывал диалог
             inputMap.put(KeyStrokes.getApplyKeyStroke(0), "none");
+            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getApplyKeyStroke(0), "none");
         }
     }
 
@@ -603,10 +598,10 @@ public class GridTable extends ClientPropertyTable {
 
     public void setOrResetPreferredColumnWidths() {
         if (getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) {
-                setPreferredColumnWidthsAsMinWidth();
-            } else {
-                resetPreferredColumnWidths();
-            }
+            setPreferredColumnWidthsAsMinWidth();
+        } else {
+            resetPreferredColumnWidths();
+        }
     }
 
     @Override
@@ -747,27 +742,6 @@ public class GridTable extends ClientPropertyTable {
         }
 
         return edited;
-    }
-
-    @Override
-    public boolean isCellEditable(int row, int column) {
-        return super.isCellEditable(row, column) || hasDefaultAction(getProperty(row, column));
-    }
-
-    public void buildShortcut(Component invoker, Point point) {
-        if (rowAtPoint(point) != -1) {
-            changeSelection(rowAtPoint(point), columnAtPoint(point), false, false);
-            requestFocusInWindow();
-            groupController.showShortcut(invoker, point, getCurrentProperty());
-        }
-    }
-
-    public boolean hasDefaultAction(ClientPropertyDraw property) {
-        return groupController.hasDefaultAction(property);
-    }
-
-    public boolean invokeDefaultAction(ClientPropertyDraw property) {
-        return groupController.invokeDefaultAction(property);
     }
 
     private void moveToFocusableCellIfNeeded() {

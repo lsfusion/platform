@@ -4,7 +4,6 @@ import platform.interop.Compare;
 import platform.interop.action.ConfirmClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.UserInputResult;
-import platform.server.Context;
 import platform.server.classes.*;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
@@ -217,10 +216,10 @@ public class SampleLogicsModule extends LogicsModule {
 
             PropertyDrawEntity descriptionDraw = getPropertyDraw(articleDescription, objArt);
             descriptionDraw.setMouseAction("annoyingChange");
-            descriptionDraw.setKeyAction(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "annoyingChange");
-            descriptionDraw.setEditAction("annoyingChange", null);
-
             descriptionDraw.setKeyEditAction(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "annoyingChange", addPropertyObject(annoyingChangeArticleDescriptionAction, objArt));
+
+            descriptionDraw.setContextMenuAction("Annoying change", "annoyingChange");
+            descriptionDraw.setContextMenuAction("Change annoyingly", "annoyingChange");
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(quantity)));
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(balanceQuantity)));

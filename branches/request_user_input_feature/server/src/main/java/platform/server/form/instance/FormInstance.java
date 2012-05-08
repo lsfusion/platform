@@ -1,11 +1,5 @@
 package platform.server.form.instance;
 
-import jasperapi.ReportGenerator;
-import net.sf.jasperreports.engine.JRAbstractExporter;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporterParameter;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.export.JRPdfExporter;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Result;
@@ -16,7 +10,6 @@ import platform.interop.Scroll;
 import platform.interop.action.*;
 import platform.interop.form.FormColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.UserInputResult;
 import platform.server.Context;
 import platform.server.Message;
@@ -46,7 +39,6 @@ import platform.server.form.instance.filter.RegularFilterInstance;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.form.instance.remote.RemoteDialog;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -60,7 +52,6 @@ import platform.server.session.*;
 import javax.swing.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
@@ -1342,7 +1333,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 if (columnGroup.curClassView == GRID)
                     columnGroupGrids.add(columnGroup);
 
-            Boolean inInterface = null; Set<GroupObjectInstance> drawGridObjects = null;
+            Boolean inInterface = null;
+            Set<GroupObjectInstance> drawGridObjects = null;
             if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == GRID && (forceViewType == null || forceViewType == GRID) &&
                     drawProperty.propertyObject.isInInterface(drawGridObjects = BaseUtils.addSet(columnGroupGrids, drawProperty.toDraw), forceViewType != null)) // в grid'е
                 inInterface = true;
@@ -1359,21 +1351,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                         result.panelProperties.add(drawProperty);
                 }
 
-                if (drawProperty.propertyCaption != null && (read || propertyUpdated(drawProperty.propertyCaption, columnGroupGrids, changedProps)))
+                if (drawProperty.propertyCaption != null && (read || propertyUpdated(drawProperty.propertyCaption, columnGroupGrids, changedProps))) {
                     readProperties.put(drawProperty.captionReader, columnGroupGrids);
-                if (drawProperty.propertyFooter != null && (read || propertyUpdated(drawProperty.propertyFooter, columnGroupGrids, changedProps)))
+                }
+                if (drawProperty.propertyFooter != null && (read || propertyUpdated(drawProperty.propertyFooter, columnGroupGrids, changedProps))) {
                     readProperties.put(drawProperty.footerReader, columnGroupGrids);
+                }
                 if (drawProperty.propertyBackground != null && (read || propertyUpdated(drawProperty.propertyBackground, drawGridObjects, changedProps))) {
                     readProperties.put(drawProperty.backgroundReader, drawGridObjects);
-                    if (!inInterface) {
-                        result.panelProperties.add(drawProperty.backgroundReader);
-                    }
                 }
                 if (drawProperty.propertyForeground != null && (read || propertyUpdated(drawProperty.propertyForeground, drawGridObjects, changedProps))) {
                     readProperties.put(drawProperty.foregroundReader, drawGridObjects);
-                    if (!inInterface) {
-                        result.panelProperties.add(drawProperty.foregroundReader);
-                    }
                 }
             } else if (previous!=null) // говорим клиенту что свойство надо удалить
                 result.dropProperties.add(drawProperty);

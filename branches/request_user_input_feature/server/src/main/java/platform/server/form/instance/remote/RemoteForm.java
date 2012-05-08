@@ -1094,7 +1094,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                         RemoteForm.this.actions.addAll(actions);
                     }
 
-                    return EditActionResult.finished;
+                    return actions != null ? EditActionResult.edited : EditActionResult.finished;
                 } finally {
                     threads.remove(Thread.currentThread());
                 }

@@ -255,6 +255,14 @@ public class PropertyDrawView extends ComponentView {
                 pool.writeString(outStream, e.getValue());
             }
         }
+
+        outStream.writeInt(entity.contextMenuBindings == null ? 0 : entity.contextMenuBindings.size());
+        if (entity.contextMenuBindings != null) {
+            for (Map.Entry<String, String> e : entity.contextMenuBindings.entrySet()) {
+                pool.writeString(outStream, e.getKey());
+                pool.writeString(outStream, e.getValue());
+            }
+        }
     }
 
     @Override

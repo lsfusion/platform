@@ -14,7 +14,10 @@ import platform.server.caches.PackComplex;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.*;
-import platform.server.data.expr.*;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.PullExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.Stat;
@@ -35,7 +38,6 @@ import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.form.view.panellocation.PanelLocationView;
@@ -879,6 +881,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 if (drawEntity.toDraw != null) {
                     entity.toDraw = drawEntity.toDraw;
                 }
+
+                //добавляем в контекстное меню...
+                drawEntity.setContextMenuEditAction(caption, getSID(), entity.propertyObject);
             }
         }
     }

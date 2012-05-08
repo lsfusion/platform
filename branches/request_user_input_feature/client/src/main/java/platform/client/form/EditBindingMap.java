@@ -6,12 +6,11 @@ import platform.interop.form.EditActionResult;
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.EventObject;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class EditBindingMap {
     private Map<KeyStroke, String> keyBindingMap = new HashMap<KeyStroke, String>();
+    private LinkedHashMap<String, String> contextMenuBindingMap = new LinkedHashMap<String, String>();
 
     //пока одно значение, возможно в будущем расширится до мэпа (типа клик, дабл клик и т. д.)
     private String mouseBinding;
@@ -36,6 +35,8 @@ public class EditBindingMap {
             }
         } else if (editEvent instanceof MouseEvent) {
             return mouseBinding;
+        } else if (editEvent instanceof ContextMenuEvent) {
+            return ((ContextMenuEvent) editEvent).action;
         }
 
         return EditActionResult.CHANGE;
@@ -43,6 +44,14 @@ public class EditBindingMap {
 
     public void setKeyAction(KeyStroke keyStroke, String actionSID) {
         keyBindingMap.put(keyStroke, actionSID);
+    }
+
+    public void setContextMenuAction(String actionSID, String caption) {
+        contextMenuBindingMap.put(actionSID, caption);
+    }
+
+    public LinkedHashMap<String, String> getContextMenuItems() {
+        return contextMenuBindingMap;
     }
 
     public void setMouseAction(String actionSID) {
