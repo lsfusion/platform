@@ -853,6 +853,13 @@ END
 
 META defineDocumentHeaderAccountSumCustom (object, detail)
     accountSum###detail###object 'Учетная сумма' (object) = GROUP SUM accountSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+
+    accountSumItem###detail###object 'Учетная сумма, товар' (idetail) =
+        GROUP SUM accountSum###detail(idetail) AND NOT isContainerItem(item###detail(idetail))
+            BY object###detail(idetail) IN documentSumGroup;
+    accountSumContainer###detail###object 'Учетная сумма, тара' (idetail) =
+        GROUP SUM accountSum###detail(idetail) IF isContainerItem(item###detail(idetail))
+            BY object###detail(idetail) IN documentSumGroup;
 END
 
 META defineDocumentHeaderAccountSum (object)
@@ -5312,8 +5319,8 @@ dateTimePageInventoryDetail(pageInventoryDetail) = dateTimeInventory(inventoryPa
 barcodePageInventoryDetail(pageInventoryDetail) = DATA barcode (pageInventoryDetail) IN idGroup;
 
 barcodeExPageInventoryDetail 'Штрих-код' (pageInventoryDetail) = barcodeEx(barcodePageInventoryDetail(pageInventoryDetail));
-skuBarcodePageInventoryDetail 'Товар (ИД)' (pageInventoryDetail) =  skuBarcode(barcodePageInventoryDetail(pageInventoryDetail));
-nameAttributeItemPageInventoryDetail 'Товар' (pageInventoryDetail) = nameAttributeItem(skuBarcodePageInventoryDetail(pageInventoryDetail)) IN recognizeGroup;
+itemPageInventoryDetail (pageInventoryDetail) =  skuBarcode(barcodePageInventoryDetail(pageInventoryDetail));
+nameAttributeItemPageInventoryDetail 'Товар' (pageInventoryDetail) = nameAttributeItem(itemPageInventoryDetail(pageInventoryDetail)) IN recognizeGroup;
 
 @defineDocumentDetailIndex(pageInventory);
 
@@ -5391,10 +5398,10 @@ accountSumPageInventoryDetailDepartmentStoreInventory 'Сумма по опис�
     GROUP SUM accountSumPageInventoryDetailListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN adverbGroup;
 
 quantityPageInventoryDetailCollationSheetItem 'Кол-во по описям' (collationSheet, item) = GROUP SUM quantityPageInventoryDetail(pageInventoryDetail)
-    BY collationSheetPageInventoryDetail(pageInventoryDetail), skuBarcodePageInventoryDetail(pageInventoryDetail);
-accountPricePageInventoryDetailCollationSheetItem 'Цена по описям' (collationSheet, item) = GROUP EQUAL accountPricePageInventoryDetail(pageInventoryDetail) BY collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)), skuBarcodePageInventoryDetail(pageInventoryDetail);
+    BY collationSheetPageInventoryDetail(pageInventoryDetail), itemPageInventoryDetail(pageInventoryDetail);
+accountPricePageInventoryDetailCollationSheetItem 'Цена по описям' (collationSheet, item) = GROUP EQUAL accountPricePageInventoryDetail(pageInventoryDetail) BY collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)), itemPageInventoryDetail(pageInventoryDetail);
 accountSumPageInventoryDetailCollationSheetItem 'Сумма по описям' (collationSheet, item) = GROUP SUM accountSumPageInventoryDetail(pageInventoryDetail)
-    BY collationSheetPageInventoryDetail(pageInventoryDetail), skuBarcodePageInventoryDetail(pageInventoryDetail);
+    BY collationSheetPageInventoryDetail(pageInventoryDetail), itemPageInventoryDetail(pageInventoryDetail);
 
 quantityPageInventoryDetailCollationSheet 'Кол-во по описям' (collationSheet) =
     GROUP SUM quantityPageInventoryDetailCollationSheetItem(collationSheet, item) BY collationSheet;
@@ -5997,87 +6004,38 @@ nameSupplierPriceChangeShipment 'Поставщик' (priceChangeShipment) = nam
 @metaCodeIsPriceChangeWrong(shipment);
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
-CLASS writeOff 'Списание' : outAccountSumDocumentLedger, historyObject, numeratedObject;
-CLASS writeOffDetail 'Строка списания' : outAutoBalanceItemLedger;
-CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
-
-@defineDocumentDefaultProperties (writeOff);
-
 CLASS reasonOff 'Причина списания' : named;
 TABLE reasonOff (reasonOff);
-
-reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
-nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN documentPrmGroup;
-
-quantityWriteOffDetail 'Кол-во для строки списания' = DATA NUMERIC[14,3] (writeOffDetail) IN baseGroup;
-
-quantityWriteOff 'Общее кол-во' (writeOff) = GROUP SUM quantityWriteOffDetail(writeOffDetail)
-                                                    BY writeOffWriteOffDetail(writeOffDetail) IN documentSumGroup;
-
-supplierPriceWriteOffDetail 'Цена поставщика' (writeOffDetail) = DATA NUMERIC[14,2] (writeOffDetail) IN baseGroup;
-wareWriteOffDetail = DATA ware (writeOffDetail) IN idGroup;
-nameWareWriteOffDetail 'Посуда' (writeOffDetail) = name(wareWriteOffDetail(writeOffDetail)) IN baseGroup;
-warePriceWriteOffDetail 'Цена посуды' (writeOffDetail) = DATA NUMERIC[14,2] (writeOffDetail) IN baseGroup;
-
-wareWriteOffDetail(writeOffDetail) <- wareItem(itemWriteOffDetail(writeOffDetail)) WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
-
-dataWareRangeWriteOffDetail 'НДС по посуде' (writeOffDetail) =
-    dataActingRateRangeDate(rangeWareVal(wareWriteOffDetail(writeOffDetail), dateWriteOffDetail(writeOffDetail)),
-    dateWriteOffDetail(writeOffDetail));
-
-retailRangeWriteOffDetail(writeOffDetail) = DATA range (writeOffDetail) IN idGroup;
-numberRetailRangeWriteOffDetail 'НДС номер' (writeOffDetail) = dataRange(retailRangeWriteOffDetail(writeOffDetail));
-dataRetailRangeWriteOffDetail 'НДС розничный,%' (writeOffDetail) = dataActingRateRangeDate(retailRangeWriteOffDetail(writeOffDetail), dateWriteOffDetail(writeOffDetail)) IN baseGroup;
-
-CONSTRAINT taxRange(retailRangeWriteOffDetail(writeOffDetail))!=tax.taxNDS CHECKED BY retailRangeWriteOffDetail
-    MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-
-accountPriceWriteOffDetail 'Цена учётная' = DATA NUMERIC[14,2] (writeOffDetail) IN baseGroup;
-retailPriceWriteOffDetail 'Розничная цена' (writeOffDetail) = DATA NUMERIC[14,2] (writeOffDetail) IN baseGroup;
-
-@defineDocumentDetailInSum(writeOff);
-@defineDocumentDetailWareSum(writeOff);
-@defineDocumentDetailSum(writeOff);
-
-@defineDocumentHeaderWareSum(writeOff);
-
-accountSumWriteOffDetail 'Сумма' (writeOffDetail) = accountPriceWriteOffDetail(writeOffDetail)*quantityWriteOffDetail(writeOffDetail);
-accountSumWriteOff 'Общая сумма' (writeOff) = GROUP SUM accountSumWriteOffDetail(writeOffDetail) BY writeOffWriteOffDetail(writeOffDetail) IN documentSumGroup;
-
-accountSumByItemWriteOff 'Общая сумма, товар' (writeOff) =
-    GROUP SUM accountSumWriteOffDetail(writeOffDetail) AND NOT isContainerItem(itemWriteOffDetail(writeOffDetail))
-        BY writeOffWriteOffDetail(writeOffDetail) IN documentSumGroup;
-accountSumByContainerWriteOff 'Общая сумма, тара' (writeOff) =
-    GROUP SUM accountSumWriteOffDetail(writeOffDetail) IF isContainerItem(itemWriteOffDetail(writeOffDetail))
-        BY writeOffWriteOffDetail(writeOffDetail) IN documentSumGroup;
-
-articleItemWriteOff 'Артикул производителя/поставщика' (writeOffDetail) = articleItem(itemWriteOffDetail(writeOffDetail));
-nameCountryItemWriteOff 'Страна' (writeOffDetail) = nameCountryItem(itemWriteOffDetail(writeOffDetail));
-
-minReserveItemDepartmentWriteOff 'Минимальнодопустимый товарный запас в днях' (writeOffDetail) =
-    minReserveItemDepartmentOver(itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail),
-                                 dateWriteOffDetail(writeOffDetail));
-maxReserveItemDepartmentWriteOff 'Максимальнодопустимы товарный запас в днях' (writeOffDetail) =
-    maxReserveItemDepartmentOver(itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail),
-                                 dateWriteOffDetail(writeOffDetail));
-CONSTRAINT quantityWriteOffDetail(writeOffDetail) <= 0 MESSAGE 'Количество должно быть положительным';
-CONSTRAINT accountPriceWriteOffDetail(writeOffDetail) <= 0 MESSAGE 'Цена должна быть положительной';
-
-dateLastShipment 'Дата последней поставки' (writeOffDetail) = GROUP MAX dateShipmentDetail(shipmentDetail)
-    IF (dateShipmentDetail(shipmentDetail) < dateWriteOffDetail(writeOffDetail)
-    AND itemWriteOffDetail(writeOffDetail) == itemShipmentDetail(shipmentDetail))
-    BY writeOffDetail;
 
 FORM reasonOff 'Причина списания'
     OBJECTS r=reasonOff  FIXED PANEL
     PROPERTIES(r) name
 ;
 
-castWriteOffObjectsToString100=
-    FORMULA STRING[200] '\'Списание \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)';
+CLASS writeOff 'Списание' : outAccountSumDocumentLedger, historyObject, numeratedObject;
+CLASS writeOffDetail 'Строка списания' : outAutoBalanceItemLedger;
+CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
 
-descriptionWriteOff 'Название документа' (writeOff) = castWriteOffObjectsToString100(
+@defineDocumentDefaultProperties (writeOff);
+
+@defineDocumentDetailQuantity(writeOff);
+@defineDocumentDetailBasePrice(writeOff);
+@defineDocumentDetailAccountPrice(writeOff);
+
+@defineDocumentDetailInSum(writeOff);
+@defineDocumentDetailWareSum(writeOff);
+@defineDocumentDetailSum(writeOff);
+@defineDocumentDetailAccountSum(writeOff);
+
+@defineDocumentHeaderQuantity(writeOff);
+@defineDocumentHeaderWareSum(writeOff);
+@defineDocumentHeaderAccountSum(writeOff);
+
+reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
+nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN documentPrmGroup;
+
+descriptionWriteOff 'Название документа' (writeOff) =
+    [FORMULA STRING[200] '\'Списание \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(writeOff), dateWriteOff(writeOff));
 
 descriptionWriteOffDetail 'Название документа' (writeOffDetail) = descriptionWriteOff(writeOffWriteOffDetail(writeOffDetail));
@@ -7628,6 +7586,7 @@ nameWareWarePriceLedger 'Посуда' (ledger) = name(wareWarePriceLedger(ledge
 warePriceBLedgerDateTime 'Цена посуды (до)' (item, departmentStore, dateTime) = wareWarePricePriceLedger(ledgerBWarePriceDateTime(item, departmentStore, dateTime));
 warePriceALedgerDateTime 'Цена посуды (после)' (item, departmentStore, dateTime) = wareWarePricePriceLedger(ledgerAWarePriceDateTime(item, departmentStore, dateTime));
 
+currentWareLedger 'Посуда' (item, departmentStore) = wareWarePriceLedger(currentLedgerWarePrice(item, departmentStore));
 currentWarePriceLedger 'Цена посуды' (item, departmentStore) = wareWarePricePriceLedger(currentLedgerWarePrice(item, departmentStore));
 
 wareBLedgerDateTime (item, departmentStore, dateTime) = wareWarePriceLedger(ledgerBWarePriceDateTime(item, departmentStore, dateTime));
@@ -9793,15 +9752,14 @@ FORM pricesRegister 'Реестр цен' PRINT
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
     PROPERTIES (w) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreWriteOff,
-                   dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, accountSumWriteOff
+                   dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, accountSumWriteOffDetailWriteOff
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) indexWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
                    accountPriceWriteOffDetail, accountSumWriteOffDetail, ADDOBJ, delete
 
-    PROPERTIES FORCE PANEL READONLY articleItemWriteOff(d), nameCountryItemWriteOff(d), retailPriceWriteOffDetail(d),
-                                    balanceDepartmentStoreItemWriteOff(d), minReserveItemDepartmentWriteOff(d),
-                                    maxReserveItemDepartmentWriteOff(d), dateLastShipment(d)
+    PROPERTIES FORCE PANEL READONLY articleItemWriteOffDetail(d), nameCountryItemWriteOffDetail(d), retailPriceWriteOffDetail(d),
+                                    balanceDepartmentStoreItemWriteOff(d)
 
     PROPERTIES inputMultipleItemsWriteOff(w) TODRAW d, addWriteOffDetailBarcode(w) TODRAW d, cleanAllWriteOffDetailsWriteOff(w) FORCE PANEL TODRAW d
     FILTERS inWriteOffWriteOffDetail(w, d)
@@ -9855,7 +9813,7 @@ DESIGN writeOff FROM DEFAULT{
 FORM writeOffs 'Списания'
     OBJECTS w=writeOff
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWriteOff, timeWriteOff, nameDepartmentStoreWriteOff,
-                            nameReasonOffWriteOff, noteWriteOff, quantityWriteOff, countWriteOffDetailWriteOff, accountSumWriteOff
+                            nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, countWriteOffDetailWriteOff, accountSumWriteOffDetailWriteOff
 
     PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWriteOff(w), delete FORCE PANEL SHOWIF isDraftWriteOff(w),
                    postWriteOff SHOWIF isDraftWriteOff(w), unpostWriteOff SHOWIF isPostedWriteOff(w)
@@ -10005,8 +9963,8 @@ noOverdueSpecificationStatement 'Непросроченные с/ф' (specificat
 // --------------------------- Использование регистров (автоматическое заполнение): инвентаризация---------------//
 
 accountPricePageInventoryDetail(pageInventoryDetail) <- priceAccountBLedgerDateTime(
-                skuBarcodePageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
-                WHEN CHANGED(skuBarcodePageInventoryDetail(pageInventoryDetail));
+                itemPageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
+                WHEN CHANGED(itemPageInventoryDetail(pageInventoryDetail));
 
 accountPriceBalanceCollationSheetItem(collationSheet, item) <- priceAccountBLedgerDateTime(
                 item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
@@ -10021,7 +9979,7 @@ fillBalanceInventory 'Заполнить остатки' (inventory) = ACTION(in
 
 convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
     SET accountPricePageInventoryDetail(pageInventoryDetail) AND inventoryPageInventoryDetail(pageInventoryDetail) == inventory <- priceAccountBLedgerDateTime(
-            skuBarcodePageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
+            itemPageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
             AND inventoryPageInventoryDetail(pageInventoryDetail) == inventory;
     SET accountPriceBalanceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- priceAccountBLedgerDateTime(
             item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
@@ -10032,7 +9990,7 @@ convertPriceInventory 'Пересчитать цены по всей инвен�
 
 convertPriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION(collationSheet) {
     SET accountPricePageInventoryDetail(pageInventoryDetail) AND collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) == collationSheet <- priceAccountBLedgerDateTime(
-            skuBarcodePageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
+            itemPageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
             AND collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) == collationSheet;
     SET accountPriceBalanceCollationSheetItem(collationSheet, item) <- priceAccountBLedgerDateTime(
             item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
@@ -10964,7 +10922,7 @@ sumIncAccountByContainerDocumentLedger 'Сумма прихода, тара' (le
                                                                        accountSumByContainerInnerArrival(ledger),
                                                                        accountSumByContainerChangeDocument(ledger) PERSISTENT IN ledgerByContainerGroup; //  subtotalByContainerParish(ledger)
 
-sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSIVE accountSumWriteOff(ledger),
+sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSIVE accountSumWriteOffDetailWriteOff(ledger),
                                                                        retailSumReturnSupplier(ledger),
                                                                        accountSumInnerFlow(ledger),
                                                                        retailRndSumStatementDetailStatement(ledger),
@@ -10975,7 +10933,7 @@ sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSI
                                                                        retailSumConsumption(ledger) PERSISTENT IN ledgerGroup;
 
 
-sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledger) = UNION EXCLUSIVE accountSumByItemWriteOff(ledger),
+sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledger) = UNION EXCLUSIVE accountSumItemWriteOffDetailWriteOff(ledger),
                                                                        retailSumByItemReturnSupplier(ledger),
                                                                        accountSumByItemInnerFlow(ledger),
                                                                        retailRndSumItemStatementDetailStatement(ledger),
@@ -10983,7 +10941,7 @@ sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledge
                                                                        sumZReport(ledger),
                                                                        sumSaleDiscountDocument(ledger) PERSISTENT IN ledgerByItemGroup; // subtotalByItemConsumption(ledger), totalSumByItemWastage(ledger),
 
-sumOutAccountByContainerDocumentLedger 'Сумма расхода, тара' (ledger) = UNION EXCLUSIVE accountSumByContainerWriteOff(ledger),
+sumOutAccountByContainerDocumentLedger 'Сумма расхода, тара' (ledger) = UNION EXCLUSIVE accountSumContainerWriteOffDetailWriteOff(ledger),
                                                                        retailSumByContainerReturnSupplier(ledger),
                                                                        accountSumByContainerInnerFlow(ledger),
                                                                        retailRndSumContainerStatementDetailStatement(ledger),
